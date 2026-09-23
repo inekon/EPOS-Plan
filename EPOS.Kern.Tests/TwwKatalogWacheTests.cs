@@ -480,6 +480,100 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Testdatenbank = abgeleitete JSON (läuft überall, ohne Originale)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die abgeleiteten VDI-Zeilen der Testdatenbank gleichen der JSON-Datei</b>
+        /// (<c>Referenzlaeufe/Skripte/tww_katalogwerte_abgeleitet.json</c>, ZU19), so wie das
+        /// Einspielskript sie umrechnet: Bedarf niedrig/mittel/hoch = Minimum/Mittel/Maximum in Litern
+        /// bei den Bezugstemperaturen der Zeile, Monatsfaktoren auf Mittel 1, Wochenanteile und
+        /// Tagesgänge auf Summe 1 (Tagtyp 1 Werktag, 2 Samstag, 3 und 4 Sonntag, „alle“ für jeden);
+        /// dazu Blatt und Anzahl (je abgeleitete Nutzungsart ein eigener Satz mit vier Tagesgängen).
+        /// Relativ 1e-12. Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
+        /// </summary>
+        [Fact]
+        public void Die_abgeleiteten_Zeilen_der_Testdatenbank_gleichen_der_JSON()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string json = Path.Combine(Path.GetDirectoryName(pfad), "Skripte", "tww_katalogwerte_abgeleitet.json");
+            Assert.True(File.Exists(json), "Die abgeleitete JSON-Datei fehlt: " + json);
+
+            var funde = new List<string>();
+            void Gleich(string was, double ist, double soll)
+            {
+                if (!(Math.Abs(ist - soll) <= 1e-12 * Math.Max(1.0, Math.Abs(soll)))) funde.Add(was + " weicht ab");
+            }
+            static double[] Normiert(IEnumerable<double> werte, double ziel)
+            {
+                double[] w = werte.ToArray();
+                double s = w.Sum();
+                return w.Select(x => x * ziel / s).ToArray();
+            }
+
+            using JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8));
+            JsonElement wurzel = d.RootElement;
+            var bedarf = wurzel.GetProperty("bedarf").EnumerateArray().ToDictionary(b => b.GetProperty("nutzungsart").GetString());
+            string[] monate = { "jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez" };
+            string[] tage = { "mo", "di", "mi", "do", "fr", "sa", "so" };
+
+            using SqliteConnection c = Oeffnen(pfad);
+            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)' ORDER BY \"ID\"", null);
+            Assert.NotEmpty(arten);
+            var saetze = new HashSet<long>();
+            foreach (Dictionary<string, object> z in arten)
+            {
+                string name = Convert.ToString(z["Bezeichner"]);
+                if (!name.EndsWith(" (abgeleitet)", StringComparison.Ordinal)) { funde.Add(name + ": ohne Zusatz (abgeleitet)"); continue; }
+                string art = name.Substring(0, name.Length - " (abgeleitet)".Length);
+                if (!bedarf.TryGetValue(art, out JsonElement b)) { funde.Add(name + ": keine Nutzungsart der JSON-Datei"); continue; }
+                string quelle = string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, b.GetProperty("blatt").GetString());
+                foreach (string g in new[] { "Bedarf", "Jahresgang", "Wochengang" })
+                    if (Convert.ToString(z[g + "_Quelle"]) != quelle) funde.Add(name + ": " + g + "_Quelle weicht ab");
+
+                double proLiter = CW * (Convert.ToDouble(z["Bezug_Zapftemperatur"]) - Convert.ToDouble(z["Bezug_Kaltwasser"])) / 1000.0;
+                Gleich(name + " Bedarf_Niedrig", Convert.ToDouble(z["Bedarf_Niedrig"]), b.GetProperty("minimum").GetDouble() * proLiter);
+                Gleich(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]), b.GetProperty("mittel").GetDouble() * proLiter);
+                Gleich(name + " Bedarf_Hoch", Convert.ToDouble(z["Bedarf_Hoch"]), b.GetProperty("maximum").GetDouble() * proLiter);
+
+                double[] m = Normiert(monate.Select(x => wurzel.GetProperty("saisonfaktoren").GetProperty(art).GetProperty(x).GetDouble()), 12.0);
+                for (int i = 0; i < 12; i++) Gleich(name + " Monat_" + (i + 1), Convert.ToDouble(z["Monat_" + (i + 1)]), m[i]);
+                double[] w = Normiert(tage.Select(x => wurzel.GetProperty("wochenanteile").GetProperty(art).GetProperty(x).GetDouble()), 1.0);
+                for (int i = 0; i < 7; i++) Gleich(name + " Woche_" + (i + 1), Convert.ToDouble(z["Woche_" + (i + 1)]), w[i]);
+
+                long satz = Convert.ToInt64(z["ID_Tagesgangsatz"]);
+                if (!saetze.Add(satz)) funde.Add(name + ": Tagesgangsatz mit einer anderen abgeleiteten Nutzungsart geteilt");
+                JsonElement profile = wurzel.GetProperty("tagesprofile").GetProperty(art);
+                bool alle = profile.TryGetProperty("alle", out _);
+                List<Dictionary<string, object>> gaenge = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                                                    "\" WHERE \"ID_Tagesgangsatz\" = $w ORDER BY \"Tagtyp\"",
+                                                                    satz.ToString(CultureInfo.InvariantCulture));
+                if (gaenge.Count != 4) { funde.Add(name + ": " + gaenge.Count + " Tagesgänge statt 4"); continue; }
+                foreach (Dictionary<string, object> g in gaenge)
+                {
+                    int tagtyp = Convert.ToInt32(g["Tagtyp"]);
+                    string quelltyp = alle ? "alle" : tagtyp == 1 ? "werktag" : tagtyp == 2 ? "samstag" : "sonntag";
+                    if (Convert.ToString(g["Quelle"]) != quelle) funde.Add(name + " Tagtyp " + tagtyp + ": Quelle weicht ab");
+                    double[] soll = Normiert(profile.GetProperty(quelltyp).EnumerateArray().Select(x => x.GetDouble()), 1.0);
+                    for (int h = 1; h <= 24; h++)
+                        Gleich(name + " Tagtyp " + tagtyp + " Anteil_" + h.ToString("00", CultureInfo.InvariantCulture),
+                               Convert.ToDouble(g["Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)]), soll[h - 1]);
+                }
+            }
+            long abgeleiteteSaetze = Zahl(c, "SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                             "\" WHERE \"Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'", null);
+            if (abgeleiteteSaetze != arten.Count)
+                funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + arten.Count);
+
+            Assert.True(funde.Count == 0, "Die abgeleiteten Zeilen der Testdatenbank weichen von der JSON-Datei ab — " +
+                                          "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py nachlaufen lassen:\n" +
+                                          string.Join("\n", funde.Take(40)));
+        }
+
+        // =============================================================================
         //  Testdatenbank = freier Paketteil (läuft überall, ohne Originale)
         // =============================================================================
 
