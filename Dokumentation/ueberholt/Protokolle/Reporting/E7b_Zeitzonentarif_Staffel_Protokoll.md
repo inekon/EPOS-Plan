@@ -128,7 +128,8 @@ Zeitzonentarif zu streichen ist Weg 3 aus Nach #291). Anwender 23.09.2026: „Pu
   `SchemaStand`, `TestDatenbank.SchemaNachziehen`, Werkzeug).
 - **E7b/11 — die Testdatenbank auf Schemastand 104** (vom Orchestrator committet): LFS-Zeiger, SHA-256
   `044e44db…`, 67 727 360 Byte; der Schritt fand keinen Zonensatz und verwarf kein Ergebnis, die acht Zonenzeilen
-  der Strommatrix von 1018 und 1031 sind je eine Jahreszeile (gleiche Summe, −14,471 bzw. −14,723 MWh).
+  der Strommatrix von 1018 und 1031 sind je eine Jahreszeile (gleiche Summe, −14,471 bzw. −14,723 MWh). Der
+  Nachtrag „Schemastand 104" in `Referenzlaeufe/LIESMICH.md` steht mit den Papieren zu #439.
 
 ## Fragen aus der Etappe
 
@@ -267,5 +268,5 @@ rechnet mit den Preisen des Stromträgers. (6) Englisch.
   Analysepapier (Kopf, Nachtrag, § 5, § 6), Rechenwege 04, 05 und 07, Mockup (Trägerkarte, Berechnungsgrundlage
   und Schlüsseltafel der Kategorie 4, Knopfzeile und Schlüsseltafel der Kategorie 5, Schlüsseltafeln der
   Kategorien 7 und 8, Fußleiste der Ergebnisseite, U1 und U32, Stand-Absatz), Logbuch-Sätze und die Wiki-Quellen
-  der Seiten Wirtschaftlichkeit und Kosten; die Messung der Pflegewege nach `ueberholt/`; ein Nachsatz zur
-  Umnummerierung im Protokoll E7a.
+  der Seiten Wirtschaftlichkeit und Kosten; der Nachtrag „Schemastand 104" in `Referenzlaeufe/LIESMICH.md`; die
+  Messung der Pflegewege nach `ueberholt/`; ein Nachsatz zur Umnummerierung im Protokoll E7a.
