@@ -129,6 +129,11 @@ namespace EPOS.Kern.Tests
                 DataRepository.ExecuteNonQuery(
                     "DELETE FROM " + TABELLE + " WHERE Schluessel = ?",
                     new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_STROMST_REDUZIERT });
+                // ETAPPE E7c: dazu die JÜNGEREN Generationen (8: das Fristende der
+                // Inbetriebnahme) — sonst hinge die Zählung unten am Saatstand der
+                // Testdatenbank: Steht sie schon auf 8, meldete die Nachsaat die Zeile als
+                // Dublette, steht sie auf 7, säte sie sie neu.
+                int juengere = JuengereGenerationenAbraeumen(7);
                 DataRepository.ExecuteNonQuery(
                     "UPDATE " + TABELLE + " SET [Wert] = 6 WHERE Schluessel = ?",
                     new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_KATALOG_GENERATION });
@@ -140,7 +145,7 @@ namespace EPOS.Kern.Tests
                 Assert.True(GesetzKatalog.SaatWarnungen.Count == 0,
                             "Die Nachsaat meldet Warnungen: " +
                             string.Join(" | ", GesetzKatalog.SaatWarnungen));
-                Assert.Equal(4, GesetzKatalog.ZuletztNachgesaet);
+                Assert.Equal(4 + juengere, GesetzKatalog.ZuletztNachgesaet);
 
                 IList<GesetzParameter> umlagen =
                     new GesetzKatalog().AlleDerKlasse(DbWerte.GESETZ_KLASSE_UMLAGEN);
@@ -185,6 +190,9 @@ namespace EPOS.Kern.Tests
                 DataRepository.ExecuteNonQuery(
                     "DELETE FROM " + TABELLE + " WHERE Schluessel = ?",
                     new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_STROMST_REDUZIERT });
+                // ETAPPE E7c: dieselbe Unabhängigkeit vom Saatstand wie oben — eine schon
+                // stehende Zeile einer jüngeren Generation wäre sonst eine zweite Warnung.
+                JuengereGenerationenAbraeumen(7);
                 DataRepository.ExecuteNonQuery(
                     "UPDATE " + TABELLE + " SET [Wert] = 6 WHERE Schluessel = ?",
                     new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_KATALOG_GENERATION });
@@ -209,6 +217,28 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("2026", w);
                 Assert.Contains("Probe US-1", w);
             }
+        }
+
+        /// <summary>
+        /// ETAPPE E7c — räumt die Saatzeilen aller Generationen JÜNGER als
+        /// <paramref name="generation"/> aus der Arbeitskopie (Schlüssel, Klasse,
+        /// Stichjahr — das Tripel des eindeutigen Index) und liefert, wie viele Zeilen die
+        /// Vorbelegung für sie führt: genau so viele sät die Nachsaat danach neu.
+        /// </summary>
+        private static int JuengereGenerationenAbraeumen(int generation)
+        {
+            int zahl = 0;
+            foreach (GesetzParameter p in GesetzKatalog.Vorbelegung())
+            {
+                if (p.Generation <= generation) continue;
+                DataRepository.ExecuteNonQuery(
+                    "DELETE FROM " + TABELLE + " WHERE Schluessel = ? AND Klasse = ? AND JahrVon = ?",
+                    new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = p.Schluessel },
+                    new DbParam("@k", DbParamTyp.VarWChar, 40) { Wert = p.Klasse },
+                    new DbParam("@j", DbParamTyp.Integer) { Wert = p.JahrVon });
+                zahl++;
+            }
+            return zahl;
         }
 
         private static void Erwarte(IList<GesetzParameter> zeilen, string schluessel, double wert)

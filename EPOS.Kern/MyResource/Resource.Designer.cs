@@ -63439,7 +63439,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Inbetriebnahme nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}); für diese Anlage kein Zuschlag. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ANLAGE_FRIST {
             get {
@@ -63570,6 +63570,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_FALL2_VERTEILUNG_PEL {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_FALL2_VERTEILUNG_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird ohne sie. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FRISTENDE_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FRISTENDE_FEHLT", resourceCulture);
             }
         }
         
@@ -63768,6 +63777,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_MODUL_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_MODUL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}) — kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_NACH_FRISTENDE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_NACH_FRISTENDE", resourceCulture);
             }
         }
         

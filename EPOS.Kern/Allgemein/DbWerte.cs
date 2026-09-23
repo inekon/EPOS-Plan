@@ -2537,6 +2537,16 @@ namespace WindowsFormsApplication1
         public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
 
         /// <summary>
+        /// ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b, 23.09.2026) — das <b>Ende der Frist zur
+        /// Inbetriebnahme</b> als Kalenderjahr: Inbetriebnahme bis zum 31.12. dieses Jahres
+        /// (Förderende 2030, R‑U5). Eine Anlage, die danach in Betrieb geht, bekommt keinen
+        /// Zuschlag; die Zuschlagsreihe einer Anlage davor läuft bis zum Ende ihres
+        /// Kontingents weiter — eine Höchstdauer in Kalenderjahren gibt es nicht. Löst die
+        /// feste Realisierungsfrist von vier Jahren ab dem Stichtag ab.
+        /// </summary>
+        public const string GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE = "KWKG_INBETRIEBNAHME_FRISTENDE";
+
+        /// <summary>
         /// ETAPPE E6 — elektrische Nennleistung, bis zu der der Zuschlag auf SELBST
         /// GENUTZTEN Strom nach § 6 Abs. 3 <b>Nr. 1</b> ueberhaupt in Betracht kommt
         /// (100 kW). Oberhalb bleiben nur Nr. 2 (Kundenanlage / geschlossenes

@@ -6369,7 +6369,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>CHP Act: {0} — order/permit dated after {1} and therefore not eligible under current law (section 6 KWKG 2025, regulatory risk of an amendment); no bonus for this unit.</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
-    <value>CHP Act: {0} — commissioning after the realisation deadline of section 6 KWKG 2025 (until {1}); no bonus for this unit.</value>
+    <value>CHP Act: {0} — commissioning after the end of the commissioning deadline on {1} ({2}); no bonus for this unit.</value>
   </data>
   <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
     <value>{0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}).</value>
@@ -23200,5 +23200,11 @@ Do you want to allow this?</value>
   </data>
   <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
     <value>Power-to-heat ratio missing: {0} carries the flag "heat dissipation device", but neither a maintained power-to-heat ratio nor P_el and P_th in the unit record — CHP electricity under sec. 2 no. 16 CHP Act cannot be determined, no bonus is calculated for this unit. The power-to-heat ratio is entered in the CHP dialog under "Rates and origin".</value>
+  </data>
+  <data name="WIRT_KWKG_NACH_FRISTENDE" xml:space="preserve">
+    <value>CHP Act: commissioning on {0} after the end of the commissioning deadline on {1} ({2}) — no bonus.</value>
+  </data>
+  <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
+    <value>CHP Act: {0}the catalogue of statutory parameters holds no end of the commissioning deadline for commissioning year {1} ({2}) — the deadline is unchecked; the calculation proceeds without it.</value>
   </data>
 </root>

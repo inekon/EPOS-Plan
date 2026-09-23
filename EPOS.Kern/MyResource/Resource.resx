@@ -6385,7 +6385,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>KWKG: {0} — Bestellung/Genehmigung nach dem {1} und damit nach geltendem Recht nicht förderfähig (§ 6 KWKG 2025, Regulierungsrisiko Novelle); für diese Anlage kein Zuschlag.</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
-    <value>KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag.</value>
+    <value>KWKG: {0} — Inbetriebnahme nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}); für diese Anlage kein Zuschlag.</value>
   </data>
   <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
     <value>{0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}).</value>
@@ -23207,5 +23207,11 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
     <value>Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“.</value>
+  </data>
+  <data name="WIRT_KWKG_NACH_FRISTENDE" xml:space="preserve">
+    <value>KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}) — kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
+    <value>KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird ohne sie.</value>
   </data>
 </root>

@@ -280,7 +280,7 @@ namespace EPOS.Kern.Tests
         [InlineData("EF_BILANZ", 38)]
         [InlineData("EF_NACHWEIS", 30)]
         [InlineData("ENERGIESTEUER", 15)]
-        [InlineData("KWKG", 52)]
+        [InlineData("KWKG", 53)]
         [InlineData("PEF_NACHWEIS", 29)]
         [InlineData("STROMSTEUER", 8)]
         [InlineData("UMLAGEN", 3)]
@@ -288,6 +288,12 @@ namespace EPOS.Kern.Tests
         public void JedeKlasseFuehrtIhreEingefroreneZeilenzahl(string klasse, int zeilen)
         {
             if (!_db.Vorhanden) return;
+
+            // ETAPPE E7c (A20): KWKG 52 → 53 (KWKG_INBETRIEBNAHME_FRISTENDE, Generation 8).
+            // Gezählt wird der Stand, den die Pflegemaske nach dem Programmstart zeigt —
+            // also nach der Nachsaat; sie ist wiederholbar und bringt eine Kopie, die auf
+            // einem älteren Saatstand steht, auf die Zielgeneration.
+            GesetzKatalog.StelleKatalogSicher();
             Assert.Equal(zeilen, new GesetzKatalog().AlleDerKlasse(klasse).Count);
         }
 
@@ -350,8 +356,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void DieVorbelegungIstEingefroren()
         {
-            Assert.Equal(225, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(7, GesetzKatalog.AktuelleGeneration);
+            // ETAPPE E7c (A20): 225 → 226 Zeilen, Generation 7 → 8 — das Ende der Frist
+            // zur Inbetriebnahme (KWKG_INBETRIEBNAHME_FRISTENDE, 2030).
+            Assert.Equal(226, GesetzKatalog.Vorbelegung().Count);
+            Assert.Equal(8, GesetzKatalog.AktuelleGeneration);
         }
 
         // ==================================================================

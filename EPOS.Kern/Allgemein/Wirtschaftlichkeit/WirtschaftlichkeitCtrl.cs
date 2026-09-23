@@ -202,9 +202,15 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_PV_FORM"/>
         public const string SPALTE_PV_VERMIEDEN = "PvVermiedenerBezug";
 
-        /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
+        /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).
+        ///
+        /// <para><b>ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b):</b> Die feste
+        /// Realisierungsfrist von vier Jahren ab dem Stichtag ist entfallen. An ihre Stelle
+        /// tritt das Katalogdatum „Ende der Frist zur Inbetriebnahme"
+        /// (<c>DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE</c>, 31.12.2030), gelesen über
+        /// <see cref="FristendeInbetriebnahme"/> — ohne Katalogwert keine stille Vorgabe,
+        /// sondern eine Herleitungszeile.</para></summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
-        public const int KWKG_REALISIERUNG_JAHRE = 4;
         /// <summary>
         /// Ausschreibungsgrenze des § 8a KWKG / der KWKAusV [kW el] — <b>je Anlage</b>,
         /// nicht je Projektsumme (Nutzerentscheidung 19.08.2026, Nachtrag zu Etappe E2).
@@ -2570,28 +2576,38 @@ namespace WindowsFormsApplication1
 
             if (!eigeneFristdaten)
             {
-                if (p.KwkgStichtag.HasValue)
+                if (p.KwkgStichtag.HasValue && p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
                 {
-                    if (p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
+                    hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
+                              "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
+                    return null;
+                }
+
+                // ETAPPE E7c (A20, Entscheid E7-Q3 Lesart b): Die Frist zur
+                // Inbetriebnahme endet am Katalogdatum (31.12.2030) — nicht mehr vier
+                // Jahre nach dem Stichtag. Geprüft wird die Inbetriebnahme, sobald sie
+                // bekannt ist, auch ohne Stichtag; ohne Katalogwert keine stille Vorgabe,
+                // sondern eine Herleitungszeile („ungeprüft").
+                if (p.KwkgInbetriebnahme.HasValue)
+                {
+                    GesetzParameter quelle;
+                    DateTime? fristende = FristendeInbetriebnahme(p.KwkgInbetriebnahme.Value.Year, out quelle);
+                    if (!fristende.HasValue)
+                        hinweise.Add(FristendeFehltZeile(null, p.KwkgInbetriebnahme.Value.Year));
+                    else if (p.KwkgInbetriebnahme.Value.Date > fristende.Value)
                     {
-                        hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
-                                  "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
-                        return null;
-                    }
-                    // Realisierungsfrist: Dauerbetrieb bis zum ABLAUF des 4. Jahres nach
-                    // dem Stichtag (§ 6, Pfad 2 — für den Bestellungs-Pfad 3 großzügig
-                    // um maximal ein Jahr; im Konzept 8.5 als Näherung dokumentiert).
-                    DateTime fristende = new DateTime(
-                        p.KwkgStichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
-                    if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Date > fristende)
-                    {
-                        hinweis = "KWKG: Inbetriebnahme nach Ablauf des " + KWKG_REALISIERUNG_JAHRE +
-                                  ". Jahres nach dem Stichtag (§ 6 Realisierungsfrist, bis " +
-                                  fristende.ToString("dd.MM.yyyy") + "); Bonus = 0.";
+                        hinweis = string.Format(BerichtTexte.Kultur,
+                            T("WIRT_KWKG_NACH_FRISTENDE",
+                              "KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur " +
+                              "Inbetriebnahme am {1} ({2}) — kein Zuschlag."),
+                            p.KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", BerichtTexte.Kultur),
+                            fristende.Value.ToString("dd.MM.yyyy", BerichtTexte.Kultur),
+                            Herkunft(quelle));
                         return null;
                     }
                 }
-                else
+
+                if (!p.KwkgStichtag.HasValue)
                     hinweise.Add("KWKG: kein Bestell-/Genehmigungsdatum hinterlegt — " +
                                  "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
             }
@@ -2615,8 +2631,9 @@ namespace WindowsFormsApplication1
             // dieser Nachtrag nichts, er korrigiert ausschließlich den BEZUG.
             //
             // ETAPPE E6: Dieselbe Kette entscheidet jetzt auch über Stichtag und
-            // Realisierungsfrist je Anlage, und die Ausschreibungsgrenze wird mit dem
-            // Inbetriebnahmejahr DIESER Anlage im Katalog nachgeschlagen.
+            // Frist zur Inbetriebnahme je Anlage (seit E7c das Katalogdatum), und die
+            // Ausschreibungsgrenze wird mit dem Inbetriebnahmejahr DIESER Anlage im
+            // Katalog nachgeschlagen.
             double grenzeKW = AusschreibungsgrenzeKW(foerderbeginn);
             bool oelAusschluss = p.KwkgInbetriebnahme.HasValue
                               && p.KwkgInbetriebnahme.Value.Year >= 2025;
@@ -2722,6 +2739,7 @@ namespace WindowsFormsApplication1
                                            auswahl.Klartext(auswahl.NurHeizoel),
                                            auswahl.PelFoerderfaehigKW.ToString("N0")));
             foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
+            foreach (string s in auswahl.Fristhinweise) hinweise.Add(s);   // E7c (A20)
 
             // Öl-Anlagen ohne Inbetriebnahmedatum werden NICHT ausgeschlossen (der
             // Ausschluss gilt nur für Neuanlagen) — der Anwender muss aber wissen, dass
@@ -2753,6 +2771,7 @@ namespace WindowsFormsApplication1
                 hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
                                            grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze)));
             foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
+            foreach (string s in auswahl.Fristhinweise) hinweise.Add(s);   // E7c (A20)
         }
 
         /// <summary>
@@ -4481,7 +4500,7 @@ namespace WindowsFormsApplication1
             public DateTime? Stichtag;
 
             /// <summary>Inbetriebnahmedatum DIESER Anlage; <c>null</c> = Projektvorgabe.
-            /// Es entscheidet über Realisierungsfrist, Satzstichtag, Deckelstaffel und
+            /// Es entscheidet über die Frist zur Inbetriebnahme, Satzstichtag, Deckelstaffel und
             /// über Neuanlage/Bestandsanlage (Heizöl-Ausschluss).</summary>
             public DateTime? Inbetriebnahme;
 
@@ -4656,11 +4675,19 @@ namespace WindowsFormsApplication1
             public bool[] Foerderfaehig = new bool[0];
 
             /// <summary>
-            /// Fertige Meldungen zu Anlagen, die an <b>Stichtag oder Realisierungsfrist</b>
+            /// Fertige Meldungen zu Anlagen, die an <b>Stichtag oder Frist zur Inbetriebnahme</b>
             /// des § 6 gescheitert sind (Etappe E6). Sie stehen einzeln statt als
             /// Aufzählung, weil jede ihr eigenes Datum nennt.
             /// </summary>
             public readonly List<string> Fristmeldungen = new List<string>();
+
+            /// <summary>
+            /// ETAPPE E7c (A20) — Zeilen zu Anlagen, deren Frist zur Inbetriebnahme sich
+            /// NICHT prüfen ließ, weil der Katalog für ihr Inbetriebnahmejahr kein
+            /// Fristende führt. Die Anlage bleibt förderfähig; die Zeile sagt, dass die
+            /// Prüfung fehlt, statt still eine Vorgabe anzunehmen.
+            /// </summary>
+            public readonly List<string> Fristhinweise = new List<string>();
 
             /// <summary>
             /// Ölbetriebene Anlagen ohne wirksames Inbetriebnahmedatum — sie werden NICHT
@@ -4680,6 +4707,58 @@ namespace WindowsFormsApplication1
         /// Datenbank, deren Katalog vor diesem Nachtrag eingesät wurde —, gilt
         /// <see cref="KWKG_MAX_LEISTUNG_KW"/> mit demselben Wert.
         /// </summary>
+        /// <summary>
+        /// ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b) — das <b>Ende der Frist zur
+        /// Inbetriebnahme</b> aus dem Gesetzeskatalog
+        /// (<c>DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE</c>, als Kalenderjahr: bis zum
+        /// 31.12. dieses Jahres), nachgeschlagen mit dem Inbetriebnahmejahr der Anlage.
+        ///
+        /// <para><b>Nullbar gelesen.</b> Fehlt die Zeile oder ihr Wert, ist das
+        /// <c>null</c> — und der Aufrufer schreibt eine Herleitungszeile statt eine
+        /// Vorgabe anzunehmen (keine stille Konstante wie die entfallene
+        /// Realisierungsfrist von vier Jahren).</para>
+        /// </summary>
+        /// <param name="jahr">Stichjahr der Nachschlagung — das Inbetriebnahmejahr.</param>
+        /// <param name="quelle">Die Katalogzeile (Schlüssel, Quelle) für die Herleitung;
+        /// <c>null</c>, wenn es keine gibt.</param>
+        private DateTime? FristendeInbetriebnahme(int jahr, out GesetzParameter quelle)
+        {
+            quelle = null;
+            try
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                quelle = _gesetze.WertMitHerkunft(DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE, jahr);
+                if (quelle == null || !quelle.Wert.HasValue) return null;
+                int bis = (int)Math.Round(quelle.Wert.Value);
+                if (bis < GesetzKatalog.JAHR_MIN || bis > GesetzKatalog.JAHR_MAX) return null;
+                return new DateTime(bis, 12, 31);
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Die Herleitungszeile „Fristende nicht im Katalog — ungeprüft";
+        /// <paramref name="anlage"/> leer = der Projektblock (keine Anlage mit eigenem
+        /// Datum).</summary>
+        private static string FristendeFehltZeile(string anlage, int jahr)
+        {
+            return string.Format(BerichtTexte.Kultur,
+                T("WIRT_KWKG_FRISTENDE_FEHLT",
+                  "KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende " +
+                  "der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird " +
+                  "ohne sie."),
+                string.IsNullOrEmpty(anlage) ? "" : anlage + " — ",
+                jahr.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE);
+        }
+
+        /// <summary>Die Herkunft einer Katalogzeile für eine Herleitung: Schlüssel und
+        /// Fundstelle.</summary>
+        private static string Herkunft(GesetzParameter p)
+        {
+            if (p == null) return DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE;
+            return string.IsNullOrEmpty(p.Quelle) ? p.Schluessel : p.Schluessel + ", " + p.Quelle;
+        }
+
         private double AusschreibungsgrenzeKW(int jahr)
         {
             try
@@ -4760,14 +4839,26 @@ namespace WindowsFormsApplication1
                 // Rückfall) — vorher entschied ein einziges Projektdatum für alle zugleich.
                 bool oelAusschluss = oel && ibn.HasValue && ibn.Value.Year >= 2025;
 
-                // § 6 KWKG je Anlage (Etappe E6): Stichtag und Realisierungsfrist.
+                // § 6 KWKG je Anlage (Etappe E6): Stichtag und Frist zur Inbetriebnahme.
+                // ETAPPE E7c (A20, E7-Q3 Lesart b): Das Fristende ist das Katalogdatum
+                // (31.12.2030), nicht mehr vier Jahre nach dem Stichtag — und es gilt
+                // für jede Anlage mit bekannter Inbetriebnahme, auch ohne Stichtag. Ohne
+                // Katalogwert bleibt die Anlage förderfähig, und eine Zeile sagt, dass
+                // die Frist ungeprüft ist (keine stille Vorgabe).
                 bool nachStichtag = stichtag.HasValue && stichtag.Value.Date > KWKG_STICHTAG_ENDE;
                 bool nachFrist = false;
                 DateTime fristende = DateTime.MinValue;
-                if (!nachStichtag && stichtag.HasValue && ibn.HasValue)
+                GesetzParameter fristquelle = null;
+                if (!nachStichtag && ibn.HasValue)
                 {
-                    fristende = new DateTime(stichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
-                    nachFrist = ibn.Value.Date > fristende;
+                    DateTime? ende = FristendeInbetriebnahme(ibn.Value.Year, out fristquelle);
+                    if (ende.HasValue)
+                    {
+                        fristende = ende.Value;
+                        nachFrist = ibn.Value.Date > fristende;
+                    }
+                    else
+                        a.Fristhinweise.Add(FristendeFehltZeile(klartext, ibn.Value.Year));
                 }
 
                 if (ueberGrenze) a.UeberGrenze.Add(klartext);
@@ -4779,7 +4870,8 @@ namespace WindowsFormsApplication1
                                                        klartext, KWKG_STICHTAG_ENDE.ToString("dd.MM.yyyy")));
                 else if (nachFrist)
                     a.Fristmeldungen.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_FRIST,
-                                                       klartext, fristende.ToString("dd.MM.yyyy")));
+                                                       klartext, fristende.ToString("dd.MM.yyyy"),
+                                                       Herkunft(fristquelle)));
 
                 // EIN Ausschluss je Anlage, gleich wie viele Gründe zutreffen — sonst
                 // fehlte eine mehrfach betroffene Anlage mehrfach in den Bezugsgrößen.
