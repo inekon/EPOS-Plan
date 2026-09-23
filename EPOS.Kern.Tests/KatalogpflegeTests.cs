@@ -863,7 +863,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(DbWerte.GESETZ_KLASSE_EEG, new GesetzKatalog().Klassen());
         }
 
-        /// <summary>Die fuenfzehn Einheiten und die drei Statuswerte, eingefroren samt
+        /// <summary>Die fuenfzehn Einheiten und die vier Statuswerte, eingefroren samt
         /// ihren DB-Schreibweisen.</summary>
         [Fact]
         public void EinheitenUndStatuswerteSindEingefroren()
@@ -874,7 +874,8 @@ namespace EPOS.Kern.Tests
                 "ct/kWh", "g/kWh", "GJ/MWh", "h", "kW", "km", "Prozent", "Jahr", "-"
             }, GesetzKatalog.Einheiten().ToArray());
 
-            Assert.Equal(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE" },
+            // ETAPPE E7c3 (E7c1‑Q8): der vierte Status ABGEKUENDIGT — Zeilen ohne Leser.
+            Assert.Equal(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE", "ABGEKUENDIGT" },
                          GesetzKatalog.Statuswerte().ToArray());
         }
 

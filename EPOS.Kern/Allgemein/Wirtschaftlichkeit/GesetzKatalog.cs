@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
         /// <summary>Gesetzliche Einheit, siehe <c>DbWerte.GESETZ_EINHEIT_*</c>.</summary>
         public string Einheit { get; private set; }
 
-        /// <summary>GESICHERT / VORLAEUFIG / PROGNOSE, siehe <c>DbWerte.GESETZ_STATUS_*</c>.</summary>
+        /// <summary>GESICHERT / VORLAEUFIG / PROGNOSE / ABGEKUENDIGT, siehe <c>DbWerte.GESETZ_STATUS_*</c>.</summary>
         public string Status { get; private set; }
 
         /// <summary>Fundstelle oder Veröffentlichung, aus der der Wert stammt.</summary>
@@ -84,7 +84,7 @@ namespace WindowsFormsApplication1
         ///   <item><term>6</term><description>Etappe P4: die Jahresmarktwerte Solar</description></item>
         ///   <item><term>7</term><description>SP-E-3-Q1/S-6 (17.09.2026): der reduzierte Stromsteuersatz und die drei Umlagen (KWKG, Offshore, § 19 StromNEV)</description></item>
         ///   <item><term>8</term><description>Etappe E7c (A20, E7‑Q3, 23.09.2026): das Ende der Frist zur Inbetriebnahme nach KWKG (31.12.2030)</description></item>
-        ///   <item><term>9</term><description>Etappe E7c3 (23.09.2026): keine neue Zeile, nur <see cref="GesetzKatalog.Nachpflege"/> — Brennstoff 24 „Sonstige" mit H_i = H_s = 1,0</description></item>
+        ///   <item><term>9</term><description>Etappe E7c3 (23.09.2026): keine neue Zeile, nur <see cref="GesetzKatalog.Nachpflege"/> — Brennstoff 24 „Sonstige" mit H_i = H_s = 1,0; die KWKG-Zeilen ohne Leser als ABGEKUENDIGT gekennzeichnet (E7c1‑Q8)</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -365,14 +365,18 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Die drei Statuswerte einer Zeile (gesichert / vorläufig / Prognose).</summary>
+        /// <summary>Die vier Statuswerte einer Zeile (gesichert / vorläufig / Prognose /
+        /// abgekündigt). ETAPPE E7c3: „abgekündigt" steht an einer Zeile ohne Leser
+        /// (Entscheid E7c1‑Q8); die Pflegemaske führt ihn, damit eine solche Zeile beim
+        /// Bearbeiten ihren Status behält.</summary>
         public static IReadOnlyList<string> Statuswerte()
         {
             return new[]
             {
                 DbWerte.GESETZ_STATUS_GESICHERT,
                 DbWerte.GESETZ_STATUS_VORLAEUFIG,
-                DbWerte.GESETZ_STATUS_PROGNOSE
+                DbWerte.GESETZ_STATUS_PROGNOSE,
+                DbWerte.GESETZ_STATUS_ABGEKUENDIGT
             };
         }
 
@@ -982,12 +986,31 @@ namespace WindowsFormsApplication1
         /// <summary>Der Heizwert des Brennstoffs 24 nach der Nachpflege [kWh je kWh].</summary>
         public const double SONSTIGE_HEIZWERT = 1.0;
 
+        /// <summary>
+        /// ETAPPE E7c3, Punkt 7 — Entscheid E7c1‑Q8: die zwei Katalogzeilen ohne Leser
+        /// (<c>KWKG_REALISIERUNGSFRIST</c>, <c>KWKG_STICHTAG_DAUERBETRIEB</c>) tragen den
+        /// Status <c>ABGEKUENDIGT</c>. Gelöscht wird nichts, Wert, Stichjahr und Quelle
+        /// bleiben; jede Zeile dieser zwei Schlüssel der Klasse KWKG wird gekennzeichnet.
+        /// </summary>
+        public const string SQL_NACHPFLEGE_ABGEKUENDIGT =
+            "UPDATE [Tab_Gesetzesparameter] SET [Status] = ? WHERE [Klasse] = ? " +
+            "AND [Schluessel] IN (?, ?) AND COALESCE([Status], '') <> ?";
+
+        /// <summary>Die Schlüssel ohne Leser, die die Generation 9 als abgekündigt
+        /// kennzeichnet (Entscheid E7c1‑Q8).</summary>
+        public static readonly string[] ABGEKUENDIGTE_SCHLUESSEL =
+        {
+            DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST,
+            DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB
+        };
+
         private static List<Nachpflegeschritt> _nachpflege;
 
         /// <summary>
         /// Die Schritte der Nachpflege in Generationsreihenfolge (ETAPPE E7c3).
         /// <list type="table">
         ///   <item><term>9</term><description>Brennstoff 24 „Sonstige": H_i = H_s = 1,0 (Punkt 6)</description></item>
+        ///   <item><term>9</term><description>zwei KWKG-Zeilen ohne Leser: Status ABGEKUENDIGT (Punkt 7, E7c1‑Q8)</description></item>
         /// </list>
         /// </summary>
         public static IReadOnlyList<Nachpflegeschritt> Nachpflege()
@@ -1002,6 +1025,16 @@ namespace WindowsFormsApplication1
                         new DbParam("@hi", SONSTIGE_HEIZWERT),
                         new DbParam("@hs", SONSTIGE_HEIZWERT),
                         new DbParam("@id", GaseNormkubikmeter.SONSTIGE)
+                    }),
+                new Nachpflegeschritt(9, "KWKG-Zeilen ohne Leser: abgekuendigt", TAB_GESETZESPARAMETER,
+                    SQL_NACHPFLEGE_ABGEKUENDIGT,
+                    () => new[]
+                    {
+                        new DbParam("@st", DbWerte.GESETZ_STATUS_ABGEKUENDIGT),
+                        new DbParam("@k", DbWerte.GESETZ_KLASSE_KWKG),
+                        new DbParam("@s1", ABGEKUENDIGTE_SCHLUESSEL[0]),
+                        new DbParam("@s2", ABGEKUENDIGTE_SCHLUESSEL[1]),
+                        new DbParam("@st2", DbWerte.GESETZ_STATUS_ABGEKUENDIGT)
                     }),
             };
             _nachpflege = l;
@@ -1335,9 +1368,13 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_KWKG_PAUSCHALE_BIS2KW_VBH, KWKG, 2020, 60000.0, H, G, Q_PAUSCH));
             l.Add(N(DbWerte.GESETZ_KWKG_PAUSCHALE_GRENZE, KWKG, 2020, 2.0, KW, G, Q_PAUSCH));
 
-            l.Add(N(DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB, KWKG, 2020, 2026.0, JAHR, G,
+            // ETAPPE E7c3 (Entscheid E7c1‑Q8): Die zwei Zeilen haben seit E7c1 (A20) keinen
+            // Leser mehr — sie bleiben gesät, tragen aber den Status ABGEKUENDIGT; in
+            // Datenbanken mit älterem Saatstand setzt ihn die Nachpflege der Generation 9.
+            const string A = DbWerte.GESETZ_STATUS_ABGEKUENDIGT;
+            l.Add(N(DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB, KWKG, 2020, 2026.0, JAHR, A,
                     "KWKG 2025 § 6 Abs. 1 — Dauerbetrieb bis zum 31.12. dieses Jahres"));
-            l.Add(N(DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST, KWKG, 2025, 4.0, JAHR, G,
+            l.Add(N(DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST, KWKG, 2025, 4.0, JAHR, A,
                     "KWKG 2025 § 6 — Novelle 2025: bis 4 Jahre später bei Genehmigung/Beauftragung"));
 
             // GENERATION 8 (Etappe E7c, A20, Entscheid E7-Q3 Lesart b vom 23.09.2026): das
