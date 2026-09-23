@@ -147,7 +147,7 @@ Gruppen Energiesteuer und Stromsteuer, Satz und Herkunft in der Überlagerung):
 |---|---|---|---|---|
 | Energiesteuer § 53a Abs. 5 | 4,42 €/MWh | 4.797,2 MWh (H_s) | 21.203,4 € | Katalog Erdgas ab 2024, Formular 1135 · Nutzungsgrad 83 % ≥ 70 % ✓ · Brennwertmenge 4.342,1 × 11,6 ÷ 10,5 · nur Brennstoff des BHKW |
 | Stromsteuer-Entlastung § 9b | 20,00 €/MWh | 250,0 MWh Netzbezug | 4.750,0 € | Katalog ab 2026, Sockel 250 €/a · produzierendes Gewerbe ✓ · hängt am Restbezug, nicht an der Anlage |
-| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 | 20,50 €/MWh | 1.155,0 MWh brutto | 23.677,5 € · Ausweis | Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P_el ≤ 2 MW ✓ · CO₂ 242,1 < 270 g/kWh ✓ · Modus Ausweis |
+| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 | 20,50 €/MWh | 1.155,0 MWh brutto | 23.677,5 € · Ausweis | Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P_el ≤ 2 MW ✓ · CO₂ 218,6 < 270 g/kWh brennwertbezogen ✓ · Modus Ausweis |
 
 Die Steuersätze kommen jahresscharf aus dem Katalog; einen Satz von Hand gibt es nicht. Die Unternehmensart spielt
 bei §§ 53 und 53a Abs. 5 keine Rolle, sie wirkt nur auf § 54 (Kessel) und § 9b (Netzbezug).
@@ -222,7 +222,13 @@ Stromsteuer
                      Anteil = Σ Strom(a, bestanden) / Σ Strom(a, alle) ; Regelsatz 20,50 €/MWh
                      vier Bedingungen: Hocheffizienz · räumlicher Zusammenhang 4,5 km (Anwenderangaben)
                      P_el ≤ 2 MW je Anlage · CO₂ < 270 g/kWh Energieertrag
-                     CO₂-Energieertrag = Faktor_EBeV × Brennstoff / (Strom + Wärme)
+                     CO₂-Energieertrag = Faktor_Ho × Brennstoff / (Strom + Wärme)   BRENNWERTBEZOGEN
+                       Faktor_Ho: Katalogwert H_s, wo der Katalog einen führt (Erdgas 181,4 g/kWh,
+                                  EF_BILANZ_EBEV_ERDGAS_HO) ; sonst Faktor_EBeV (H_i) × H_i/H_s des
+                                  Trägers ; ohne gepflegten Brennwert Faktor_EBeV (H_i), konservativ,
+                                  mit Begründung
+                       Brennstoff bleibt die heizwertbezogene Menge ; Herleitung je Anlage in der
+                       Begründung (über dem Grenzwert) bzw. in der Herkunft (mit Befreiung)
                      KwkEigen nur mit Stundenreihen — sonst 0 mit Begründung
   § 9b               Betrag = max(0, 20,00 €/MWh × Netzbezug [MWh/a] − 250 €/a) ; nur produzierendes
                      Gewerbe ; hängt an keiner KWK-Anlage
@@ -292,7 +298,7 @@ Mockup zeigt die Reihe als Balkendiagramm.
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
-| CO₂-Energieertrag | 200,9 × 4.342,1 / (1.650,0 + 1.953,9) | 242,1 g/kWh | < 270 ✓ (Heizöl 303 g/kWh würde scheitern) |
+| CO₂-Energieertrag | 181,4 × 4.342,1 / (1.650,0 + 1.953,9) | 218,6 g/kWh | < 270 ✓, **brennwertbezogen** (EBeV Erdgas H_s; heizwertbezogen wären es 200,9 × … = 242,1 g/kWh); Herleitung „BHKW 1: 218,6 g/kWh (EBeV 181,4 g/kWh, brennwertbezogen)". Heizöl EL scheitert auch brennwertbezogen: 266,4 × 1,2048 = 321,0 g/kWh heizwertbezogen, mit H_i/H_s 0,9052 noch 290,5 g/kWh |
 | § 9 Abs. 1 Nr. 3 | 1.155,0 MWh (brutto) × 20,50 | 23.677,5 €/a | **Ausweis** (Vorgabe, Schemaschritt 88); Erlösreihe nur bei ausdrücklicher Wahl ERLOES, mit Kohärenzwarnung |
 | § 9b | max(0, 250,0 × 20,00 − 250) | 4.750,0 €/a | Netzbezug, produzierendes Gewerbe |
 
@@ -300,7 +306,9 @@ Mockup zeigt die Reihe als Balkendiagramm.
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt **A** des Analysepapiers § 6 — die Nummer fällt bei der Umsetzung, heute ab **101**, weil 90–100 vergeben sind; Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6 |
+| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt **A** des Analysepapiers § 6 — die Nummer fällt bei der Umsetzung, heute **103**: 101 trägt Konzept § 6.3 Nr. 30 (#437), 102 den Zapfprofilgenerator; Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6. Die Messung nach A2 ist mit E7a (#437) erfolgt: Wärmeüberschuss nur als Projektsumme, es greift die Aufteilung nach P_el; fünf Teilfragen offen (E7‑Q2 im Register) |
+| ✔ Nr. 29 | CO₂-Grenzwert heizwertbezogen geprüft (Befund R11, `04`): Zähler mit 200,9 g/kWh, im Beispiel 242,1 g/kWh | **umgesetzt #437**: brennwertbezogen — im Beispiel 218,6 g/kWh, die Befreiung bleibt 23.677,5 €/a; ein Grenzfall mit 72 % Energieertrag bekommt 8.200,00 statt 0,00 €/a (Konzept § 3.8) |
+| A20 | Förderende 2030 (R‑U5) nicht gebaut: Die Prüfkette führt die Realisierungsfrist als Konstante (4 Jahre), die Jahresreihe oben zahlt bis 2037 | offen — Frage E7‑Q3: kein Zuschlag nach 2030 (Lesart a) oder 2030 als Ende der Frist zur Inbetriebnahme (Lesart b, Empfehlung) |
 | ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht — es entsteht aber gar keine Stromsteuer; gemessen 1.510,84 €/a auf beiden Pfaden (Projekt 1024) | umgesetzt mit B6: Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS, Schemaschritt 88); der Messwert zu 1024 ist am heutigen Stand der Testdatenbank nicht nachstellbar (Hocheffizienznachweis 0) |
 | ✔ K3 | Modusfeld § 9 Nr. 3 | erledigt mit B6: Schemaschritt 88, Feld offen, Vorgabe AUSWEIS |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |

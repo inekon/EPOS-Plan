@@ -133,6 +133,9 @@ Emissionsfaktor-Kette (eine für alle Rechner)   PROJEKT → KATALOG → STAMM �
   Hi/Ho-Falle: Erdgas 200,9 g/kWh gilt heizwertbezogen ; auf die brennwertbezogene
   Abrechnungsmenge gehört der KATALOGWERT 181,4 (GESETZ_EF_BILANZ_EBEV_ERDGAS_HO) —
   keine Umrechnung des Beispiels, sonst rund 10 % zu viel CO2
+  Bilanz und BEHG: heizwertbezogener Faktor × heizwertbezogene Menge (Tafel unten)
+  CO₂-Grenzwert § 9 Abs. 1 Nr. 3 StromStG: BRENNWERTBEZOGEN — Erdgas mit dem Katalogwert
+  181,4, sonst Hi-Faktor × H_i/H_s des Trägers, ohne Brennwert der Hi-Faktor (`05`)
 ```
 
 ## Berechnungserläuterung am Beispielprojekt
@@ -161,7 +164,7 @@ sein — die Kohärenzprüfung (`05`) soll das anzeigen.
 | ✔ N3 | Ungepflegte Anteilsspalten lasen sich als Vorschlagswerte, nicht als 0 (+32 % Energiekosten) | erledigt: Die Anteile zerlegen den Arbeitspreis; ein ungepflegter Anteil ist inaktiv und trägt 0 bei, der Vorschlag steht nur im Feld und wirkt erst mit dem Haken bzw. dem Knopf am Feld (Beschaffung als Rest, Stromsteuer § 3 / § 9b). Entscheid 18.09.2026 zu N-3 nach Empfehlung; offen bleibt allein ein Sammelknopf „Vorschlagswerte übernehmen" — Bequemlichkeit, kein Fehler |
 | ✔ R5 | CO₂ doppelt: Preisbestandteil und BEHG-Reihe | **umgesetzt #405**: `KohaerenzPruefung.Co2DoppelansatzBehg` meldet den Fall als **WARNUNG mit dem doppelt gebuchten Jahresbetrag** (`KohaerenzCo2Tests`, 11 Fälle). Der Rechenweg bleibt, wie er ist — die Zeile ist Ausweis, nicht Korrektur (Entscheid Q3, Weg a) |
 | ✔ R6 | Die Kohärenzzeilen erreichten nur die Seite; der Strommix-Rückfall war ein Laufhinweis ohne seinen Wert | **umgesetzt #405**: Die Zeilen stehen im **einen** Zeilenkatalog (`WirtschaftlichkeitZeilen`) und damit in Rubrik, Wort- und Excelbericht; der Rückfall nennt seine 435 g CO₂/kWh |
-| R11 | Hi/Ho am CO₂-Grenzwert: Der Katalog führt Erdgas heiz- **und** brennwertbezogen (200,9 / 181,4 g/kWh), gelesen wird der Schlüssel der Anlage; ist der Grenzwert 270 g/kWh des § 2 StromStG brennwertbezogen, zählt ein heizwertbezogener Zähler rund 10 % zu hoch | **entschieden 22.09.2026 (Anwender): „es gilt immer der Brennwert"** — der Grenzwert wird brennwertbezogen geprüft (Ho-Faktor, bei heizwertbezogenem Katalogwert die Umrechnung Hi → Ho); Umsetzung mit E7 (Konzept § 6.3 Nr. 29), die Pinnung in `KleinkorrekturenE2Tests` wird dabei auf den Brennwert umgestellt |
+| ✔ R11 | Hi/Ho am CO₂-Grenzwert: Der Katalog führt Erdgas heiz- **und** brennwertbezogen (200,9 / 181,4 g/kWh), gelesen wurde der Schlüssel der Anlage; ist der Grenzwert 270 g/kWh des § 2 StromStG brennwertbezogen, zählt ein heizwertbezogener Zähler rund 10 % zu hoch | **umgesetzt #437** (E7 Teil a; Entscheid 22.09.2026, Anwender: „es gilt immer der Brennwert"): `SteuerGutschriftRechner.Co2JeEnergieertrag` nimmt zu Erdgas den Katalogwert 181,4 g/kWh (H_s), zu den übrigen Trägern den heizwertbezogenen Wert × H_i/H_s des Trägers, ohne gepflegten Brennwert den Hi-Faktor mit Begründung; die Herleitung nennt den Wert je Anlage. Die Pinnung in `KleinkorrekturenE2Tests` steht auf dem Brennwert (Grenzfall 0,00 → 8.200,00 €/a); das Beispiel in `05` liegt bei 218,6 statt 242,1 g/kWh. Bilanz und BEHG bleiben heizwertbezogen |
 | D-1 / E-1 | Emissionsspalte: eine Größe, Tooltip benennt Äquivalent/Vorkette | entschieden 30.08.2026 |
 | § 3.11 | Nachweis- und Bilanzsatz strikt trennen; Stichtag 01.01.2027 (GModG) mit Methodenwechsel für KWK | Katalog mit Gültig-ab-Datum, beide Sätze parallel |
 | § 3.11 | CO₂-Preispfad ab 2028 ist Prognose | editierbare Stützstellenreihe mit Status GESICHERT / VORLÄUFIG / PROGNOSE |
