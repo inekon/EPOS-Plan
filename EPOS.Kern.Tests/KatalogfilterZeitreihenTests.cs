@@ -318,5 +318,63 @@ namespace EPOS.Kern.Tests
 
         private static string[] Schluessel(Zeitreihenart art)
             => Katalogfilterprofil.FuerZeitreihe(art).Spalten.Select(s => s.Schluessel).ToArray();
+
+        // =====================================================================
+        // Die Verwendung in Projekten (Neuordnung der Administrationsdialoge,
+        // Stufe 4: "Loeschen" weich gesperrt mit dem Projektnamen)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Verwendung kommt aus EINER Abfrage je Katalog</b> und nennt je
+        /// Bezeichner die Projekte — dieselbe Bedingung wie <c>HatProjektzuordnung</c>
+        /// der drei Stamm-Controller: Wo die Karte einen Eintrag führt, sagt auch der
+        /// Controller „zugeordnet", und umgekehrt. Die Namen stehen ohne Doppel.
+        /// </summary>
+        [Theory]
+        [InlineData(Zeitreihenart.Stromganglinie)]
+        [InlineData(Zeitreihenart.Waermebedarf)]
+        [InlineData(Zeitreihenart.Solarganglinie)]
+        public void Die_Verwendung_nennt_die_Projekte_wie_die_Zuordnungspruefung(Zeitreihenart art)
+        {
+            if (!_db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, IReadOnlyList<string>> karte = ZeitreihenKatalogCtrl.Projektverwendung(art);
+
+            foreach (Katalogfilterzeile zeile in ZeitreihenKatalogCtrl.Katalogfilterzeilen(art))
+            {
+                bool zugeordnet = art switch
+                {
+                    Zeitreihenart.Stromganglinie => new StromganglinieStammCtrl().HatProjektzuordnung(zeile.Bezeichner),
+                    Zeitreihenart.Solarganglinie => new SolarganglinieStammCtrl().HatProjektzuordnung(zeile.Bezeichner),
+                    _ => new WaermebedarfStammCtrl().HatProjektzuordnung(zeile.Bezeichner)
+                };
+                bool inKarte = karte.TryGetValue(zeile.Bezeichner, out IReadOnlyList<string> projekte);
+                Assert.Equal(zugeordnet, inKarte);
+                if (inKarte)
+                {
+                    Assert.NotEmpty(projekte);
+                    Assert.Equal(projekte.Count, projekte.Distinct(StringComparer.Ordinal).Count());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die Testdatenbank führt die Stromganglinie „Lastgang_Strom_NestleLB-05-2010-05-2011"
+        /// in zwei Projekten — das Projekt „Heinestr 15" zweimal zugeordnet, es steht
+        /// trotzdem EINMAL in der Karte.
+        /// </summary>
+        [Fact]
+        public void Eine_doppelte_Zuordnung_nennt_das_Projekt_einmal()
+        {
+            if (!_db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, IReadOnlyList<string>> karte =
+                ZeitreihenKatalogCtrl.Projektverwendung(Zeitreihenart.Stromganglinie);
+
+            Assert.True(karte.TryGetValue("Lastgang_Strom_NestleLB-05-2010-05-2011",
+                                          out IReadOnlyList<string> projekte));
+            Assert.Equal(1, projekte.Count(p => p == "Heinestr 15"));
+            Assert.Equal(2, projekte.Count);
+        }
     }
 }

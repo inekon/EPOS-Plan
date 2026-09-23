@@ -173,9 +173,12 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         Assert.Equal(titel, cut.Find(".epos-dialog-titel").TextContent);
 
-        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        // Stufe 4 (V13): Ein Auslieferungssatz zeigt seine Felder als TEXT (Name und
+        // Wert, ohne Doppelpunkt) - gezaehlt wird beides.
+        var texte = cut.FindAll(".epos-feld-text, .epos-stammblattwert dt")
+                       .Select(e => e.TextContent.Trim().TrimEnd(':').Trim()).ToList();
         foreach (var feld in Profil(art).Detailfelder)
-            Assert.Contains(feld.Bezeichnung, texte);
+            Assert.Contains(feld.Bezeichnung.Trim().TrimEnd(':').Trim(), texte);
 
         // Ein Feld je Profilzeile — Textfelder, Zahlenfelder, Ganzzahlfelder und der
         // eine Schalter zusammengezählt.
@@ -184,7 +187,8 @@ public class KatalogBrowserDialogTests : EposBunitContext
         // (epos-schalter), die uebrigen in epos-feld.
         int gezeichnet = cut.FindAll(".epos-feld input").Count
                        + cut.FindAll(".epos-feld textarea").Count
-                       + cut.FindAll(".epos-schalter input").Count;
+                       + cut.FindAll(".epos-schalter input").Count
+                       + cut.FindAll(".epos-stammblattwert").Count;
         Assert.Equal(felder, gezeichnet);
     }
 
@@ -349,11 +353,11 @@ public class KatalogBrowserDialogTests : EposBunitContext
         // gesperrt wie Neu...
         Assert.True(Loeschknopf(cut, art).HasAttribute("disabled"));
 
-        // Liste und Detailblock stehen unveraendert.
+        // Liste und Detailblock stehen - seit Stufe 4 (V13) im Lesemodus als TEXT, nicht
+        // als gesperrte Felder.
         Assert.Equal(2, cut.Instance.Zeilen.Count);
-        Assert.Equal(6, cut.FindAll(".epos-feld input").Count
-                      + cut.FindAll(".epos-feld textarea").Count
-                      + cut.FindAll(".epos-schalter input").Count);
+        Assert.Equal(6, cut.FindAll(".epos-stammblattwert").Count);
+        Assert.Empty(cut.FindAll(".epos-stammblatt .epos-feld input"));
     }
 
     /// <summary>

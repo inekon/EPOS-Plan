@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dienste;
@@ -56,7 +57,8 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Func<string, Task<bool>>? mitSystem = null,
         Func<string, IProgress<ImportFortschritt>, Task<SolarganglinieImportErgebnis>>? einlesen = null,
         IReadOnlyList<Katalogfilterzeile>? katalog = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null)
     {
         IReadOnlyList<Katalogfilterzeile> liste = katalog ?? KATALOG;
 
@@ -69,13 +71,26 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
             .Add(x => x.DateiWaehlen, dateiWaehlen)
             .Add(x => x.Ablegen, ablegen)
             .Add(x => x.MitSystemOeffnen, mitSystem)
-            .Add(x => x.Einlesen, einlesen)
+            .Add(x => x.Einlesen, einlesen ?? ((_, _) => Task.FromResult(new SolarganglinieImportErgebnis())))
+            .Add(x => x.Verwendung, verwendung is null ? null : () => Task.FromResult(verwendung))
+            .Add(x => x.Ansicht, n => Task.FromResult(Ganglinienansicht.Ohne("Keine Reihe fuer " + n)))
             .Add(x => x.Ordner, @"D:\VDI-3805-Daten\Solarthermie")
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
     }
 
     private static IElement Knopf(IRenderedComponent<SolarganglinieAdminDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    /// <summary>„Import…" in der Fußleiste öffnet die Überlagerung des Einlesens (V14).</summary>
+    private static void ImportOeffnen(IRenderedComponent<SolarganglinieAdminDialog> cut)
+    {
+        cut.Find("button.epos-importknopf").Click();
+        Assert.Single(cut.FindAll(".epos-einlesen"));
+    }
+
+    /// <summary>Die Zeilen der Katalogliste (nicht die des Stammblatts).</summary>
+    private static int Zeilen(IRenderedComponent<SolarganglinieAdminDialog> cut)
+        => cut.FindAll(".epos-katalogliste tbody tr").Count;
 
     // =====================================================================
     // 1 — Feldbestand
@@ -94,6 +109,13 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
 
         Assert.Equal("Solarthermie Ganglinie", cut.Find(".epos-dialog-titel").TextContent);
 
+        // Seit Stufe 4: Loeschen in der Auswahlleiste, Import... und Beenden in der
+        // Fussleiste, die Knoepfe des Einlesens in der Ueberlagerung.
+        Assert.Contains("Ganglinie Löschen", cut.Find(".epos-auswahlleiste").TextContent);
+        Assert.Equal(new[] { "Import…", "Beenden" },
+                     cut.FindAll(".epos-katalog-dialog > .epos-leiste").Last().QuerySelectorAll("button")
+                        .Select(b => b.TextContent.Trim()).ToArray());
+        ImportOeffnen(cut);
         string knoepfe = string.Join("|", cut.FindAll("button").Select(b => b.TextContent.Trim()));
         Assert.Contains("Datei Auswählen...", knoepfe);
         Assert.Contains("Datei bearbeiten...", knoepfe);
@@ -104,7 +126,6 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         // Der Hilfeknopf ist der InfoKnopf, kein eigener Knopf mit totem Handler.
         Assert.DoesNotContain("Hilfe", knoepfe);
 
-        Assert.Contains("Ganglinien in DB", cut.Markup);
         Assert.Contains("Ganglinie aus Datei Einlesen", cut.Markup);
         Assert.Contains("Stundenwerte über 1 Jahr als Textdatei", cut.Markup);
     }
@@ -118,6 +139,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     public void Der_Ganglinienordner_ist_sichtbar()
     {
         var cut = Aufbauen();
+        ImportOeffnen(cut);
 
         Assert.Contains("Datei Basis Ordner:", cut.Markup);
         Assert.Contains(@"D:\VDI-3805-Daten\Solarthermie", cut.Markup);
@@ -129,7 +151,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Assert.Equal(3, cut.FindAll("tbody tr").Count);
+        Assert.Equal(3, Zeilen(cut));
         Assert.Contains("Tsol1", cut.Find("tbody").TextContent);
         Assert.Contains("Leistung Solarsystem [W]", cut.Find("tbody").TextContent);
         Assert.Contains("Messreihe Nord", cut.Find("tbody").TextContent);
@@ -143,10 +165,15 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Auswahl_ist_der_Loeschknopf_gesperrt()
     {
+        // Beim Oeffnen steht die erste Zeile im Stammblatt (Konzept 3.3); ohne
+        // Katalog gibt es weder Fokuszeile noch Loeschhandlung.
         var cut = Aufbauen();
+        Assert.Equal("Tsol1", cut.Instance.Gewaehlt);
+        Assert.False(Knopf(cut, "Ganglinie Löschen").HasAttribute("aria-disabled"));
 
-        Assert.Equal("", cut.Instance.Gewaehlt);
-        Assert.True(Knopf(cut, "Ganglinie Löschen").HasAttribute("disabled"));
+        var leer = Aufbauen(katalog: Array.Empty<Katalogfilterzeile>());
+        Assert.Equal("", leer.Instance.Gewaehlt);
+        Assert.DoesNotContain(leer.FindAll("button"), b => b.TextContent.Trim() == "Ganglinie Löschen");
     }
 
     /// <summary>
@@ -193,7 +220,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);
         Knopf(cut, "Ganglinie Löschen").Click();
 
-        Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
+        Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
         Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
     }
 
@@ -216,8 +243,8 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Knopf(cut, "Ganglinie Löschen").Click();
         Knopf(cut, "Ja").Click();
 
-        Assert.Equal(2, cut.FindAll("tbody tr").Count);
-        Assert.Contains("Tsol1", cut.Instance.Meldung);
+        Assert.Equal(2, Zeilen(cut));
+        Assert.Contains("Tsol1", cut.Instance.Status);
     }
 
     [Fact]
@@ -230,7 +257,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Knopf(cut, "Ja").Click();
 
         Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
-        Assert.Equal(3, cut.FindAll("tbody tr").Count);
+        Assert.Equal(3, Zeilen(cut));
     }
 
     // =====================================================================
@@ -247,11 +274,12 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         var cut = Aufbauen(
             dateiWaehlen: _ => Task.FromResult<string?>(@"C:\Downloads\Tsol2.txt"),
             ablegen: q => Task.FromResult(new AblageErgebnis(@"D:\VDI-3805-Daten\Solarthermie\Tsol2.txt")));
+        ImportOeffnen(cut);
 
         Knopf(cut, "Datei Auswählen...").Click();
 
         Assert.Equal(@"D:\VDI-3805-Daten\Solarthermie\Tsol2.txt", cut.Instance.Pfad);
-        Assert.Equal("", cut.Instance.Meldung);
+        Assert.Equal("", cut.Instance.Importmeldung);
     }
 
     /// <summary>
@@ -265,11 +293,12 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         var cut = Aufbauen(
             dateiWaehlen: _ => Task.FromResult<string?>(@"C:\Downloads\Tsol2.txt"),
             ablegen: q => Task.FromResult(new AblageErgebnis("", "Kopieren ging nicht: Zugriff verweigert")));
+        ImportOeffnen(cut);
 
         Knopf(cut, "Datei Auswählen...").Click();
 
         Assert.Equal(@"C:\Downloads\Tsol2.txt", cut.Instance.Pfad);
-        Assert.Contains("Zugriff verweigert", cut.Instance.Meldung);
+        Assert.Contains("Zugriff verweigert", cut.Instance.Importmeldung);
     }
 
     /// <summary>
@@ -285,6 +314,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
             dateiWaehlen: _ => Task.FromResult<string?>(@"C:\Downloads\Tsol2.txt"),
             ablegen: q => Task.FromResult(new AblageErgebnis(@"D:\VDI-3805-Daten\Solarthermie\Tsol2.txt")),
             mitSystem: p => { geoeffnet = p; return Task.FromResult(true); });
+        ImportOeffnen(cut);
 
         Assert.True(Knopf(cut, "Datei bearbeiten...").HasAttribute("disabled"));
 
@@ -303,6 +333,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     public void Ohne_Datei_ist_das_Einlesen_gesperrt()
     {
         var cut = Aufbauen(einlesen: (p, m) => Task.FromResult(new SolarganglinieImportErgebnis()));
+        ImportOeffnen(cut);
 
         Assert.True(Knopf(cut, "Datei Einlesen...").HasAttribute("disabled"));
     }
@@ -328,12 +359,15 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
                     Meldung = "Die Ganglinie \"Tsol2\" wurde mit 8760 Werten eingelesen."
                 });
             });
+        ImportOeffnen(cut);
 
         Knopf(cut, "Datei Auswählen...").Click();
         Knopf(cut, "Datei Einlesen...").Click();
 
-        Assert.Equal(4, cut.FindAll("tbody tr").Count);
-        Assert.Contains("8760", cut.Instance.Meldung);
+        Assert.Equal(4, Zeilen(cut));
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Equal("Tsol2", cut.Instance.Gewaehlt);
+        Assert.Contains("8760", cut.Instance.Status);
         Assert.Equal("", cut.Instance.Pfad);
     }
 
@@ -352,13 +386,84 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
                 Erfolgreich = false,
                 Meldung = "Solarganglinie ist bereits in Datenbank vorhanden!"
             }));
+        ImportOeffnen(cut);
 
         Knopf(cut, "Datei Auswählen...").Click();
         Knopf(cut, "Datei Einlesen...").Click();
 
-        Assert.Contains("bereits in Datenbank", cut.Instance.Meldung);
-        Assert.Equal(3, cut.FindAll("tbody tr").Count);
+        Assert.Contains("bereits in Datenbank", cut.Instance.Importmeldung);
+        Assert.Equal(3, Zeilen(cut));
         Assert.Equal(@"D:\VDI-3805-Daten\Solarthermie\Tsol1.txt", cut.Instance.Pfad);
+    }
+
+    // =====================================================================
+    // 4b — Stufe 4: Stammblatt, Verwendung, Ueberlagerung
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Das Stammblatt</b>: die Gruppen Ganglinie und Herkunft — die Herkunft als
+    /// Text mit der Beschreibung aus der Kopfzeile der Datei; ohne Reihe steht der Grund.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_traegt_Ganglinie_und_Herkunft_mit_Beschreibung()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(new[] { "Ganglinie", "Herkunft" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
+        Assert.Contains("Keine Reihe fuer Tsol1", cut.Markup);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "groß…");
+
+        var herkunft = cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Herkunft");
+        Assert.Equal(new[] { "Satz", "Beschreibung", "Verwendet in", "Ablageordner" },
+                     herkunft.QuerySelectorAll("dt").Select(e => e.TextContent).ToArray());
+        Assert.Contains("Leistung Solarsystem [W]", herkunft.TextContent);
+        Assert.Empty(herkunft.QuerySelectorAll("input, textarea, select"));
+    }
+
+    /// <summary>
+    /// <b>Verwendet ein Projekt die Ganglinie</b>, ist „Löschen" weich gesperrt und nennt
+    /// das Projekt (Konzept 3.4).
+    /// </summary>
+    [Fact]
+    public void Eine_verwendete_Ganglinie_sperrt_Loeschen_mit_dem_Projektnamen()
+    {
+        var cut = Aufbauen(verwendung: new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["Tsol1"] = new[] { "Projekt 1" }
+        });
+
+        IElement knopf = Knopf(cut, "Ganglinie Löschen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Contains("„Projekt 1“", knopf.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>„Import…"</b> öffnet die Überlagerung mit Titel und EINEM Kreuz; Kreuz, Esc
+    /// und „Abbrechen" schließen sie, ohne den Dialog zu schließen.
+    /// </summary>
+    [Fact]
+    public void Import_oeffnet_die_Ueberlagerung_und_Kreuz_Esc_Abbrechen_schliessen_sie()
+    {
+        bool? antwort = null;
+        var cut = Aufbauen(geschlossen: b => antwort = b);
+
+        ImportOeffnen(cut);
+        IElement ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Ganglinie aus Datei Einlesen", ueberlagerung.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-ueberlagerung-zu"));
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.ImportOffen);
+
+        ImportOeffnen(cut);
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.ImportOffen);
+
+        ImportOeffnen(cut);
+        cut.Find(".epos-einlesen").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Null(antwort);
     }
 
     // =====================================================================

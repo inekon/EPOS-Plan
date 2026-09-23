@@ -323,4 +323,142 @@ public class StammblattTests : EposBunitContext
         Assert.Equal("eigener Satz", Stammblattkopf.Unterzeile(profil, null, "eigener Satz"));
         Assert.Empty(Stammblattkopf.Kennzahlen(profil, null));
     }
+
+    // =====================================================================
+    //  Stufe 4: der LESEMODUS (V13) - Werte als Text statt gesperrter Felder
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Gruppe im Lesemodus</b> zeichnet ihre Werte als Liste aus Name und Wert —
+    /// kein Eingabefeld, der Inhalt des Wirts entfällt; der Nachsatz steht darunter.
+    /// Ohne Lesemodus bleibt der Inhalt.
+    /// </summary>
+    [Fact]
+    public void Die_Gruppe_zeigt_im_Lesemodus_ihre_Werte_als_Text()
+    {
+        var werte = new[]
+        {
+            Stammblattwert.Abschnitt("Gerät"),
+            new Stammblattwert("Nennleistung:", "50", "kW"),
+            new Stammblattwert("Brennwert", ""),
+        };
+
+        var lesen = Render<Stammblattgruppe>(p => p
+            .Add(x => x.Titel, "Kenndaten")
+            .Add(x => x.KindInhalt, Text("felder", "<input>"))
+            .Add(x => x.Lesemodus, true)
+            .Add(x => x.Werte, werte)
+            .Add(x => x.Nachsatz, Text("herleitung", "aus dem Datenbestand")));
+
+        Assert.True(lesen.Instance.ZeigtWerte);
+        Assert.Contains("epos-stammblattgruppe--lesen", lesen.Find("section").ClassName);
+        Assert.Empty(lesen.FindAll("#felder"));
+        Assert.Empty(lesen.FindAll("input, select, textarea"));
+        Assert.Equal("Gerät", lesen.Find(".epos-stammblattwerte-abschnitt").TextContent);
+        Assert.Equal(new[] { "Nennleistung", "Brennwert" },
+                     lesen.FindAll(".epos-stammblattwert dt").Select(e => e.TextContent).ToArray());
+        Assert.Equal(new[] { "50 kW", "–" },
+                     lesen.FindAll(".epos-stammblattwert dd").Select(e => e.TextContent).ToArray());
+        Assert.Single(lesen.FindAll("#herleitung"));
+
+        var bearbeiten = Render<Stammblattgruppe>(p => p
+            .Add(x => x.Titel, "Kenndaten")
+            .Add(x => x.KindInhalt, Text("felder", "Felder"))
+            .Add(x => x.Lesemodus, false)
+            .Add(x => x.Werte, werte));
+
+        Assert.False(bearbeiten.Instance.ZeigtWerte);
+        Assert.Single(bearbeiten.FindAll("#felder"));
+        Assert.Empty(bearbeiten.FindAll(".epos-stammblattwerte"));
+    }
+
+    /// <summary>
+    /// <b>Das Stammblatt im Lesemodus</b> (Auslieferungssatz): Kenndaten und Kosten
+    /// zeigen die Werte des Wirts statt seiner Felder; ohne Werte bleiben die Felder,
+    /// ohne Lesemodus erst recht.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_zeigt_im_Lesemodus_Kenndaten_und_Kosten_als_Text()
+    {
+        var cut = Aufbauen(p => p
+            .Add(x => x.Lesemodus, true)
+            .Add(x => x.KenndatenWerte, new[] { new Stammblattwert("Nennleistung", "50", "kW") })
+            .Add(x => x.KostenWerte, new[] { new Stammblattwert("Investition", "12000", "€") }));
+
+        Assert.Empty(cut.FindAll("#kenndaten"));
+        Assert.Empty(cut.FindAll("#kosten"));
+        Assert.Equal(new[] { "50 kW", "12000 €" },
+                     cut.FindAll(".epos-stammblattwert dd").Select(e => e.TextContent).ToArray());
+
+        var ohneWerte = Aufbauen(p => p.Add(x => x.Lesemodus, true));
+        Assert.Single(ohneWerte.FindAll("#kenndaten"));
+        Assert.Single(ohneWerte.FindAll("#kosten"));
+    }
+
+    /// <summary>
+    /// <b>Der Wert eines Lesemodus</b>: ohne Wert der Halbgeviertstrich OHNE Einheit, mit
+    /// Wert die Einheit dahinter; eine Feldbeschriftung verliert ihren Doppelpunkt.
+    /// </summary>
+    [Fact]
+    public void Der_Stammblattwert_zeigt_Wert_und_Einheit()
+    {
+        Assert.Equal("50 kW", new Stammblattwert("P", "50", "kW").Anzeige);
+        Assert.Equal("–", new Stammblattwert("P", "", "kW").Anzeige);
+        Assert.Equal("–", new Stammblattwert("P", "–", "kW").Anzeige);
+        Assert.Equal("Text", new Stammblattwert("P", " Text ").Anzeige);
+        Assert.Equal("Name", Stammblattwert.OhneDoppelpunkt("Name:"));
+        Assert.Equal("Name", Stammblattwert.OhneDoppelpunkt(" Name : "));
+        Assert.True(Stammblattwert.Abschnitt("Eingang").IstAbschnitt);
+    }
+
+    // =====================================================================
+    //  Stufe 4: die Loeschsperre der Zeitreihenverwaltungen (Ganglinienblatt)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Löschen ist gesperrt, wenn KEINE Zielzeile gelöscht werden darf</b>: Der Grund
+    /// nennt die Projekte, die die Zeilen führen; sind es nur Auslieferungssätze, sagt er
+    /// das. Darf eine Zeile weg, ist nichts gesperrt.
+    /// </summary>
+    [Fact]
+    public void Die_Loeschsperre_der_Ganglinien_nennt_die_Projekte()
+    {
+        var geschuetzt = new HashSet<string> { "Auslieferung" };
+        var verwendung = new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["Messung 1"] = new[] { "Projekt 1" },
+            ["Messung 2"] = new[] { "Projekt 1", "Projekt 2" }
+        };
+
+        Assert.Equal("", Ganglinienblatt.LoeschSperrgrund(Array.Empty<string>(), geschuetzt, verwendung));
+        Assert.Equal("", Ganglinienblatt.LoeschSperrgrund(new[] { "Frei", "Messung 1" }, geschuetzt, verwendung));
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt.",
+                     Ganglinienblatt.LoeschSperrgrund(new[] { "Auslieferung" }, geschuetzt, verwendung));
+        Assert.Equal("In Projekten verwendet („Projekt 1“, „Projekt 2“) – Löschen gesperrt; dort zuerst entfernen.",
+                     Ganglinienblatt.LoeschSperrgrund(new[] { "Messung 1", "Messung 2", "Auslieferung" },
+                                                      geschuetzt, verwendung));
+
+        // Ohne Karte sperrt nur die Auslieferung.
+        Assert.Equal("", Ganglinienblatt.LoeschSperrgrund(new[] { "Messung 1" }, geschuetzt, null));
+    }
+
+    /// <summary>
+    /// <b>Die Rückfrage</b> nennt, was gelöscht wird, und getrennt, was stehen bleibt —
+    /// Auslieferung und Verwendung; die Statuszeile danach den Namen oder die Zahlen.
+    /// </summary>
+    [Fact]
+    public void Rueckfrage_und_Statuszeile_der_Ganglinien()
+    {
+        string frage = Ganglinienblatt.Rueckfrage(new[] { "A", "B" }, new[] { "C" }, new[] { "D" },
+                                                  "Soll {0} gelöscht werden?");
+        Assert.Contains("Sollen diese 2 Sätze gelöscht werden? A, B", frage);
+        Assert.Contains("Stehen bleiben (Auslieferungssatz): C", frage);
+        Assert.Contains("Stehen bleiben (in Projekten verwendet): D", frage);
+
+        Assert.Equal("Soll A gelöscht werden?",
+                     Ganglinienblatt.Rueckfrage(new[] { "A" }, Array.Empty<string>(), Array.Empty<string>(),
+                                                "Soll {0} gelöscht werden?"));
+        Assert.Equal("A weg", Ganglinienblatt.Geloescht(1, 1, "A", "{0} weg"));
+        Assert.Equal("2 gelöscht, 1 stehen geblieben", Ganglinienblatt.Geloescht(3, 2, "", "{0} weg"));
+    }
 }

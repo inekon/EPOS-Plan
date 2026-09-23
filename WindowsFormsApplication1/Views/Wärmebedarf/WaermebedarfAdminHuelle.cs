@@ -82,6 +82,13 @@ namespace WindowsFormsApplication1
                     name => Task.FromResult(new WaermebedarfStammCtrl().HatProjektzuordnung(name))),
                 ["Loeschen"] = new Func<string, Task<bool>>(
                     name => Task.FromResult(new WaermebedarfStammCtrl().Delete(name))),
+                // Neuordnung Stufe 4: das Stammblatt mit Jahresverlauf und Kennzahlen und
+                // die weiche Loeschsperre mit dem Projektnamen - plattformfrei in
+                // EPOS.UI.Daten, dieselben Wege wie bei der Solar- und Stromganglinie.
+                ["Ansicht"] = new Func<string, Task<EPOS.UI.Bausteine.Ganglinienansicht>>(
+                    n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.Waermebedarf, n)),
+                ["Verwendung"] = new Func<Task<IReadOnlyDictionary<string, IReadOnlyList<string>>>>(
+                    () => ZeitreihenAdminWege.Verwendung(Zeitreihenart.Waermebedarf)),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
                 ["Ablegen"] = new Func<string, Task<AblageErgebnis>>(Ablegen),
                 ["MitSystemOeffnen"] = new Func<string, Task<bool>>(

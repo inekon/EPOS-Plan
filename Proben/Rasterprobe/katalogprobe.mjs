@@ -452,6 +452,76 @@ async function stufe3probe(seite, f) {
   return e;
 }
 
+// ------------------------------------------------ STUFE 4 der Neuordnung
+//  (Konzept Administrationsdialoge, V9 und V14): die einlesenden Verwaltungen
+//  - Klimadaten und die drei Zeitreihen - im Stammblatt, das Einlesen als
+//  Ueberlagerung hinter "Import...". Gemessen:
+//    blatt  - das Bild der Gruppe Jahresverlauf bzw. Ganglinie steht GANZ im
+//             Stammblatt (rechts nicht ueber dessen Inhalt hinaus), und der
+//             Inhalt des Blatts rollt nicht quer. Schmal (unter 900 px) steht
+//             das Blatt erst nach "Stammblatt ›" da - gemessen wird im
+//             geoeffneten Blatt, danach fuehrt "‹ Liste" zurueck;
+//    offen  - "Import..." (button.epos-importknopf, an der KLASSE gefunden: Der
+//             Wirt laeuft in der Sprache des Rechners) oeffnet EINE Ueberlagerung
+//             mit Titel und genau einem Kreuz, sie steht ganz im Fenster, rollt
+//             nicht quer, und die Seite auch nicht;
+//    zu     - ihr Kreuz schliesst sie wieder.
+async function stufe4probe(seite, f) {
+  const lies = () => seite.evaluate(() => {
+    const r = el => {
+      if (!el) return null;
+      const b = el.getBoundingClientRect();
+      return { links: +b.left.toFixed(1), oben: +b.top.toFixed(1), rechts: +b.right.toFixed(1),
+               unten: +b.bottom.toFixed(1), breite: +b.width.toFixed(1), hoehe: +b.height.toFixed(1) };
+    };
+    const blatt = document.querySelector('.epos-katalog-stammblatt');
+    const inhalt = document.querySelector('.epos-stammblatt-inhalt');
+    const flaeche = [...document.querySelectorAll('.epos-stammblatt .epos-diagramm-svg-flaeche')]
+      .find(e => e.getBoundingClientRect().width > 0.5);
+    const svg = flaeche ? flaeche.querySelector('svg') : null;
+    const ueb = document.querySelector('.epos-ueberlagerung');
+    return {
+      blatt: r(blatt), inhalt: r(inhalt), bild: r(flaeche), svg: r(svg),
+      inhaltQuer: inhalt ? inhalt.scrollWidth - inhalt.clientWidth : null,
+      seiteQuer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ueberlagerung: ueb ? {
+        ...r(ueb),
+        titel: ((ueb.querySelector('.epos-ueberlagerung-titel') || {}).textContent || '').trim(),
+        kreuze: ueb.querySelectorAll('.epos-ueberlagerung-zu').length,
+        quer: ueb.scrollWidth - ueb.clientWidth
+      } : null,
+      einlesen: document.querySelectorAll('.epos-einlesen').length
+    };
+  });
+
+  const e = {};
+  const schmal = f.breite < 900;
+  if (schmal) {
+    const auf = seite.locator('.epos-auswahlleiste .epos-nur-schmal');
+    if (await auf.count()) { await auf.click(); await schlaf(800); }
+  }
+  await schlaf(600);
+  e.blatt = await lies();
+  if (schmal) {
+    const zu = seite.locator('.epos-stammblatt-zurliste');
+    if (await zu.count()) { await zu.click(); await schlaf(500); }
+  }
+
+  const knopf = seite.locator('button.epos-importknopf');
+  if (await knopf.count()) {
+    await knopf.click();
+    await schlaf(800);
+    e.offen = await lies();
+    const kreuz = seite.locator('.epos-ueberlagerung .epos-ueberlagerung-zu');
+    if (await kreuz.count()) {
+      await kreuz.first().click();
+      await schlaf(600);
+      e.zu = await lies();
+    }
+  }
+  return e;
+}
+
 // ---------------------------------------------------------------- Helfer
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
@@ -560,6 +630,7 @@ async function fall(browser, f) {
     k.tasten = await tastenprobe(seite);
   }
   if (f.stufe3) k.stufe3 = await stufe3probe(seite, f);
+  if (f.stufe4) k.stufe4 = await stufe4probe(seite, f);
 
   if (FOTOS) {
     const marke = (f.vorher || VORHER) ? 'vorher' : 'nachher';
@@ -713,6 +784,36 @@ function pruefe(e) {
     } else if (!f3breit(e)) m.push('schmal fehlt der Knopf „Stammblatt ›"');
   }
 
+  // STUFE 4 (V9, V14): das Bild passt in die Gruppe, das Blatt rollt nicht quer,
+  // "Import..." oeffnet die Ueberlagerung mit Titel und einem Kreuz, das Kreuz
+  // schliesst sie, nichts rollt quer.
+  const v = e.stufe4;
+  if (v) {
+    const b = v.blatt;
+    if (!b || !b.bild) m.push('kein Diagramm in der Gruppe des Stammblatts');
+    else {
+      if (b.inhalt && b.bild.rechts > b.inhalt.rechts + 0.5)
+        m.push(`das Diagramm ragt ueber das Stammblatt (${b.bild.rechts} > ${b.inhalt.rechts})`);
+      if (b.svg && b.svg.breite > b.bild.breite + 0.5)
+        m.push(`das SVG ist breiter als seine Flaeche (${b.svg.breite} > ${b.bild.breite})`);
+    }
+    if (b && b.inhaltQuer > 1) m.push(`das Stammblatt rollt quer um ${b.inhaltQuer} px`);
+    if (b && b.seiteQuer > 0) m.push(`mit dem Blatt rollt die Seite quer um ${b.seiteQuer} px`);
+    const o = v.offen;
+    if (!o || !o.ueberlagerung) m.push('„Import…" oeffnet keine Ueberlagerung');
+    else {
+      const u = o.ueberlagerung;
+      if (!u.titel) m.push('die Ueberlagerung des Einlesens traegt keinen Titel');
+      if (u.kreuze !== 1) m.push(`die Ueberlagerung traegt ${u.kreuze} Kreuze (soll 1)`);
+      if (u.links < -0.5 || u.oben < -0.5 || u.rechts > e.fenster.breite + 0.5 || u.unten > e.fenster.hoehe + 0.5)
+        m.push(`die Ueberlagerung ragt aus dem Fenster (${u.links},${u.oben})-(${u.rechts},${u.unten})`);
+      if (u.quer > 1) m.push(`die Ueberlagerung rollt quer um ${u.quer} px`);
+      if (o.seiteQuer > 0) m.push(`mit der Ueberlagerung rollt die Seite quer um ${o.seiteQuer} px`);
+      if (o.einlesen !== 1) m.push('in der Ueberlagerung stehen die Felder des Einlesens nicht');
+      if (!v.zu || v.zu.ueberlagerung || v.zu.einlesen) m.push('das Kreuz schliesst die Ueberlagerung nicht');
+    }
+  }
+
   return m;
 }
 
@@ -777,6 +878,16 @@ function zeige(e) {
   if (t && !t.fehler)
     console.log('            Tasten: ' + Object.entries(t).map(([w, s2]) =>
       `${w} → Zeile ${s2.index}/${s2.zeilen} sichtbar=${s2.sichtbar} fokus=${s2.fokus} roll ${s2.rollstand}`).join(' · '));
+  const v4 = e.stufe4;
+  if (v4) {
+    for (const [was, s4] of Object.entries(v4)) {
+      if (!s4) continue;
+      const u = s4.ueberlagerung;
+      console.log(`  [Stufe 4] ${was.padEnd(6)} Blatt ${r(s4.blatt)}  Inhalt ${r(s4.inhalt)} quer ${s4.inhaltQuer}  ` +
+                  `Bild ${r(s4.bild)}  SVG ${r(s4.svg)}  Seite quer ${s4.seiteQuer}` +
+                  (u ? `  Ueberlagerung ${r(u)} „${u.titel}" Kreuze ${u.kreuze} quer ${u.quer}` : '  Ueberlagerung —'));
+    }
+  }
   const d = e.stufe3;
   if (!d) return;
   for (const [was, s3] of Object.entries(d)) {
@@ -805,9 +916,14 @@ const FAELLE = [
   { name: 'S1_solar_1180x780',        maske: 'solar',        zeilen: 35, breite: 1180, hoehe: 780 },
   { name: 'C1_browser_1180x780',      maske: 'browser',      zeilen: 35, breite: 1180, hoehe: 780 },
   { name: 'P1_waermepumpe_1180x780',  maske: 'waermepumpe',  zeilen: 35, breite: 1180, hoehe: 780 },
-  // DIE GEGENPROBE: derselbe Klimadialog mit dem Mass VOR KL-5. Sie MUSS den
-  // Befund zeigen - sonst belegt die Behebung nichts.
-  { name: 'G1_klima_vor_KL5',         maske: 'klima',        zeilen: 35, breite: 1180, hoehe: 780,
+  // DER RAHMEN MIT EINGABEBLOCK (seit Stufe 4): Klimadaten und Zeitreihen tragen
+  // das Stammblatt, keine Verwaltung steht mehr "Liste oben, Eingabeblock darunter".
+  // Die Seite "rahmen" stellt diese Anordnung des Katalograhmens nach - K4 misst
+  // sie mit der Behebung von KL-5, G1 ohne.
+  { name: 'K4_rahmen_mit_Eingabeblock', maske: 'rahmen',     zeilen: 35, breite: 1180, hoehe: 780 },
+  // DIE GEGENPROBE: derselbe Rahmen mit dem Mass VOR KL-5. Sie MUSS den Befund
+  // zeigen - sonst belegt die Behebung nichts.
+  { name: 'G1_rahmen_vor_KL5',        maske: 'rahmen',       zeilen: 35, breite: 1180, hoehe: 780,
     vorher: true, mussFehlschlagen: true }
 ];
 
@@ -866,16 +982,21 @@ FAELLE.push({ name: 'P2b_projekt_heizkessel_400x624', maske: 'projekt-heizkessel
 // STUFE 3 (V3, V6, V8, V12): die Verwaltungen mit Stammblatt. Bei 1 088 x 624
 // muss die Liste mindestens ACHT ganze Zeilen zeigen - das war die Schwaeche
 // von Stufe 1 (drei Zeilen neben dem Eingabeblock darunter).
+// STUFE 4 (V9, V14): Klimadaten und die drei Zeitreihen tragen seit Stufe 4 das
+// Stammblatt - sie kommen zur Menge der Stufe 3 und bekommen dazu die Messung des
+// Bildes in der Gruppe und der Ueberlagerung des Einlesens.
 const STUFE3 = new Set(['N01', 'N02', 'N03', 'N04', 'N05', 'N06', 'N07', 'N08',
-                        'N10', 'N11', 'N12']);
+                        'N09', 'N10', 'N11', 'N12', 'N13', 'N14', 'N15']);
+const STUFE4 = new Set(['N09', 'N13', 'N14', 'N15']);
 for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
   const s3 = STUFE3.has(nr);
+  const s4 = STUFE4.has(nr);
   FAELLE.push({ name: `${nr}a_${name}_1088x624`, maske, art, zeilen, breite: 1088, hoehe: 624,
                 voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
-                stufe3: s3, mindestZeilen: s3 && zeilen >= 8 ? 8 : 0 });
+                stufe3: s3, stufe4: s4, mindestZeilen: s3 && zeilen >= 8 ? 8 : 0 });
   FAELLE.push({ name: `${nr}b_${name}_400x624`, maske, art, zeilen, breite: 400, hoehe: 624,
                 voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
-                stufe3: s3 });
+                stufe3: s3, stufe4: s4 });
 }
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });

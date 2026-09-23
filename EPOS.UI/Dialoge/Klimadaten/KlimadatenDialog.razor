@@ -83,7 +83,31 @@
    3. "Bei der Auswahl der Klimadaten soll das gleiche Schema (Filter, Sortieren
       ...) verwendet werden. Die Quelle und Bezeichnung der Klimadaten soll mit
       angezeigt werden." -> die Liste ist eine Katalogliste mit sieben Spalten.
-   4. Startseite: siehe Seiten/Start/Startseite.razor. *@
+   4. Startseite: siehe Seiten/Start/Startseite.razor.
+
+   STUFE 4 DER NEUORDNUNG (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13
+   V14; Mockup-Reiter "Klimadaten"): dasselbe Geruest wie die Geraetekataloge.
+     * LISTE links ueber die ganze Hoehe, mit Kaestchen (V6); die Zeile ist die
+       Wahl, beim Oeffnen steht die erste Region im Stammblatt.
+     * AUSWAHLLEISTE (V8) ueber dem Stammblatt: Vergleichen (ab zwei Kaestchen)
+       und Loeschen - auch mehrere Regionen auf einmal (AD-Q9); eine
+       Auslieferungsregion bleibt stehen, sind es nur solche, ist Loeschen WEICH
+       gesperrt und nennt den Grund. Kein Duplizieren: Eine Region entsteht nur
+       durch Einlesen.
+     * STAMMBLATT (V9) mit den Gruppen JAHRESVERLAUF (die zwei Bilder in zwei
+       Reitern, "gross..." zeigt das gewaehlte breit) und HERKUNFT (Quelle,
+       Importdatum, Standort, Lage, Herkunftsvermerk - als TEXT, V13). Kopf mit
+       drei Kennzahlen der Temperatur (Jahresmittel, Tiefst-, Hoechstwert). Keine
+       Kenndaten, keine Kosten: Eine Region hat kein Feld zum Pflegen (Konzept
+       3.6 Punkt 2).
+     * EINLESEN ALS UEBERLAGERUNG (V14): Quelle, Datei, Standort, Regionsvorschau
+       und Fortschritt standen als Block unter der Liste und nahmen ihr die
+       Hoehe; jetzt oeffnet "Import..." in der Fussleiste die Ueberlagerung
+       "Klimadaten einlesen" mit Titel und Schliesskreuz. Nach dem Einlesen ist
+       sie zu, die neue Region steht gewaehlt in der Liste, die Statuszeile nennt
+       sie. Ein gescheiterter Lauf meldet sich IN der Ueberlagerung.
+     * Die Fussleiste: Statuszeile - Import... - Beenden (Konzept Knopfleisten;
+       kein Speichern, denn es gibt kein Feld). *@
 
 @namespace EPOS.UI.Dialoge.Klimadaten
 @using System.Globalization
@@ -91,17 +115,13 @@
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
-<div class="epos-dialog epos-katalog-dialog" tabindex="-1"
+<div class="epos-dialog epos-katalog-dialog epos-klimadaten" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-        @* Waehrend eines Laufs steht KEIN Kreuz - wie Esc, der dann nicht schliesst. *@
-        @if (!_laeuft)
-        {
-            <Schliesskreuz Geschlossen="BeiSchliessen" />
-        }
+        <Schliesskreuz Geschlossen="BeiSchliessen" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -109,218 +129,265 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Herleitungszeile Text="@KopfText" />
-
-    @* --- Liste LINKS, Bilder und Import RECHTS (Anwenderwunsch 05.09.2026)
-           Das Vorbild Form_Klimadaten (757 x 641) hatte die Regionsliste
-           (201 x 282) links und die Anzeige rechts. Die beiden Huellklassen
-           epos-klimaregion-mitte/-liste/-bilder waren dabei NIE im Stilblatt
-           angekommen - die zwei Spalten standen deshalb untereinander, und
-           der Importblock lag noch darunter (derselbe Befund wie beim
-           Katalogbrowser). Sie sind durch den Katalograhmen ersetzt. *@
-    <Katalograhmen>
+    @* --- STUFE 4 (V3 V6 V8 V9): Liste LINKS ueber die ganze Hoehe, rechts die
+           Auswahlleiste und das STAMMBLATT der Fokuszeile. Unter 900 px steht
+           die Liste allein, "Stammblatt ›" schiebt das Blatt ueber sie. Das
+           Vorbild Form_Klimadaten (757 x 641) hatte die Regionsliste links und
+           die Anzeige rechts - dahin kehrt die Maske zurueck, ohne den
+           Einleseblock, der jetzt eine Ueberlagerung ist (V14). *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Gruppenkopf Titel="@GruppeListeText" />
-
-            @* DIE EINE KATALOGLISTE DES HAUSES (Anwenderwunsch 19.09.2026, Punkt 3:
-               "das gleiche Schema (Filter, Sortieren ...) wie bei den Modulen").
-               Bis hierher standen hier zwei Spalten in einem nackten Raster - kein
-               Suchfeld, kein Trichter, kein Sortierpfeil, und vor allem: NICHT die
-               Quelle und nicht der Standort, nach denen der Anwender sucht. Die
-               Liste ist jetzt derselbe Baustein wie in den vierzehn anderen
-               Katalogen; ihre Spalten stehen als DATEN im Profil.
-
-               OHNE Vergleichsknopf (Vergleichbar="false"): Eine Klimaregion ist
-               kein Geraet mit Kennwerten - "vergleichen" hiesse hier, die Liste
-               noch einmal danebenzustellen.
-
-               DIE WAHL HAENGT AM BEZEICHNER, wie im ganzen Dialog: Loeschen,
-               Ansicht und Schreibschutz gehen ueber den Namen. Katalogfilterzeile
-               fuehrt ihn als Schluessel, ein Filter- oder Sortierwechsel laesst
-               ihn deshalb unberuehrt. *@
+            @* DIE EINE KATALOGLISTE DES HAUSES (Anwenderwunsch 19.09.2026, Punkt 3).
+               Seit Stufe 4 mit KAESTCHEN (V6): Sie waehlen mehrere Regionen fuer
+               Vergleichen und Loeschen; die Leertaste setzt das Kaestchen der
+               Fokuszeile. DIE WAHL HAENGT AM BEZEICHNER, wie im ganzen Dialog. *@
             <Katalogliste Profil="@Filterprofil" Zeilen="@_regionen"
                           Filterstand="@Filterstand" Texte="@Texte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichbar="false" ZeileIstWahl="true" />
+                          ZeileIstWahl="true" Kaestchen="true"
+                          Gewaehlte="@_auswahl.Gewaehlte" GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            @* ---- die zwei Diagramme in zwei Reitern ---------------------- *@
-            <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
-                <KindInhalt>
-                    @* ZWEI BILDER, ZWEI KENNUNGEN: Die clipPath-Kennungen des
-                       SVG muessen sich unterscheiden, sonst schneidet das eine
-                       Bild am Rechteck des anderen. Die Palette geht
-                       ausdruecklich mit - nur so wechselt mit ihr die Referenz,
-                       und der Baum wird nach einer Farbwahl neu gebaut. *@
-                    <Reiterblatt Schluessel="TEMPERATUR" Titel="@ReiterTemperaturText">
+        <Auswahl>
+            @* ZONE 4 (V8): Vergleichen und Loeschen - auf die gewaehlten Zeilen,
+               sonst auf die Fokuszeile. Loeschen ist WEICH gesperrt, wenn jede
+               Zielzeile eine Auslieferungsregion ist (V13). *@
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Texte.Schloss"
+                        Kennzahlen="@Kennzahlen" Texte="@_blatttexte"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* JAHRESVERLAUF (V9, dialogspezifisch): die zwei Bilder des Kerns
+                       (ChartRenderer.JahresgangModell) in zwei Reitern. ZWEI BILDER,
+                       ZWEI KENNUNGEN: Die clipPath-Kennungen des SVG muessen sich
+                       unterscheiden. Die Palette geht ausdruecklich mit - nur so
+                       wechselt mit ihr die Referenz, und der Baum wird nach einer
+                       Farbwahl neu gebaut. "gross..." vertieft die Gruppe: dasselbe
+                       Modell breit in einer Ueberlagerung. *@
+                    <Stammblattgruppe Titel="@GruppeJahresverlaufText">
+                        <Kopf>
+                            @if (HatBild)
+                            {
+                                <button type="button" class="epos-textknopf"
+                                        @onclick="() => _grossOffen = true">@GrossText</button>
+                            }
+                        </Kopf>
                         <KindInhalt>
-                            <DiagrammSvg Modell="@_modellTemperatur" Kennung="klima-temperatur"
-                                         Bezeichnung="@DiagrammTemperaturText"
-                                         PlatzhalterText="@KeineDatenText"
-                                         Einheit="@EinheitTemperaturText"
-                                         Palette="@Farbpalette.Aktuell"
-                                         FarbwahlErlaubt="@FarbwahlMoeglich"
-                                         FarbeGewaehlt="FarbeUebernehmen"
-                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                            <Reiter Bezeichnung="@GruppeJahresverlaufText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
+                                <KindInhalt>
+                                    <Reiterblatt Schluessel="TEMPERATUR" Titel="@ReiterTemperaturText">
+                                        <KindInhalt>
+                                            <DiagrammSvg Modell="@_modellTemperatur" Kennung="klima-temperatur"
+                                                         Bezeichnung="@DiagrammTemperaturText"
+                                                         PlatzhalterText="@KeineDatenText"
+                                                         Einheit="@EinheitTemperaturText"
+                                                         Palette="@Farbpalette.Aktuell"
+                                                         FarbwahlErlaubt="@FarbwahlMoeglich"
+                                                         FarbeGewaehlt="FarbeUebernehmen"
+                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
+                                    <Reiterblatt Schluessel="SONNENWINKEL" Titel="@ReiterSonnenwinkelText">
+                                        <KindInhalt>
+                                            <DiagrammSvg Modell="@_modellSonnenwinkel" Kennung="klima-sonnenwinkel"
+                                                         Bezeichnung="@DiagrammSonnenwinkelText"
+                                                         PlatzhalterText="@KeineDatenText"
+                                                         Einheit="@EinheitWinkelText"
+                                                         Palette="@Farbpalette.Aktuell"
+                                                         FarbwahlErlaubt="@FarbwahlMoeglich"
+                                                         FarbeGewaehlt="FarbeUebernehmen"
+                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
+                                </KindInhalt>
+                            </Reiter>
                         </KindInhalt>
-                    </Reiterblatt>
-                    <Reiterblatt Schluessel="SONNENWINKEL" Titel="@ReiterSonnenwinkelText">
-                        <KindInhalt>
-                            <DiagrammSvg Modell="@_modellSonnenwinkel" Kennung="klima-sonnenwinkel"
-                                         Bezeichnung="@DiagrammSonnenwinkelText"
-                                         PlatzhalterText="@KeineDatenText"
-                                         Einheit="@EinheitWinkelText"
-                                         Palette="@Farbpalette.Aktuell"
-                                         FarbwahlErlaubt="@FarbwahlMoeglich"
-                                         FarbeGewaehlt="FarbeUebernehmen"
-                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
-                        </KindInhalt>
-                    </Reiterblatt>
-                </KindInhalt>
-            </Reiter>
+                    </Stammblattgruppe>
 
-            <Textfeld Bezeichnung="@LabelDetails" Wert="@_details"
-                      Mehrzeilig="true" Zeilen="3" NurLesen="true" />
-
-            @* ---- die KLIMAQUELLE (Auftrag KL1-B) -------------------------
-                   Drei Quellen stehen zur Wahl; die Optionsgruppe zeigt sie
-                   alle, statt sie in einer Klappliste zu verstecken. Je nach
-                   Wahl stehen darunter die Felder, die nur diese Quelle
-                   braucht - ein Feld ohne Wirkung waere eine Behauptung, die
-                   nicht stimmt. *@
-            <Gruppenkopf Titel="@GruppeQuelleText" />
-
-            @* FORMULARRASTER, EINSPALTIG (Auftrag KL-4, Anwenderwunsch Punkt 1).
-               Die zwei Bloecke standen in einem nackten div.epos-klimaregion-eingabe -
-               einer Klasse, die im Stilblatt NIE angekommen ist (derselbe Befund wie
-               bei epos-klimaregion-mitte/-liste/-bilder). Folge: Die Beschriftungen
-               standen UEBER ihren Feldern, jedes Feld nahm die volle Breite, und
-               "Durchsuchen" der Dateiwahl fiel unter sein Feld statt daneben.
-               Das Formularraster stellt die Beschriftung NEBEN das Feld und traegt
-               die Dateiwahl als Beschriftung - Feld - Knopf in EINER Zeile
-               (.epos-dateiwahl > .epos-knopf). Einspaltig, weil der Block neben den
-               Diagrammen steht und dort wenig Breite hat. *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Optionsgruppe Bezeichnung="@GruppeQuelleText" Eintraege="@Quelleneintraege"
-                                   Auswahl="@((int)_quelle)" AuswahlChanged="BeiQuelle"
-                                   Aktiv="@(!_laeuft)" />
-
-                    @if (_quelle == KlimaQuelle.TryDatei)
-                    {
-                        <Dateiwahl Bezeichnung="@LabelTryDateiText" Filter="@TryDateiFilter"
-                                   KnopfText="@WaehlenText" Pfad="@_tryPfad"
-                                   Waehlen="@DateiWaehlen" PfadChanged="BeiTryPfad"
-                                   Aktiv="@(!_laeuft)" />
-                    }
-                    else if (_quelle == KlimaQuelle.TryRegional)
-                    {
-                        <Auswahlfeld Bezeichnung="@LabelTryJahrText" Eintraege="@Jahreseintraege"
-                                     Auswahl="@_tryJahr" AuswahlChanged="BeiTryJahr"
-                                     Aktiv="@(!_laeuft)" />
-                        <Auswahlfeld Bezeichnung="@LabelTrySzenarioText" Eintraege="@Szenarioeintraege"
-                                     Auswahl="@((int)_szenario)" AuswahlChanged="BeiSzenario"
-                                     Aktiv="@(!_laeuft)" />
-                        <Dateiwahl Bezeichnung="@LabelTryPaketText" Filter="@TryPaketFilter"
-                                   KnopfText="@WaehlenText" Pfad="@_tryPaketPfad"
-                                   Waehlen="@DateiWaehlen" PfadChanged="BeiTryPaket"
-                                   Aktiv="@(!_laeuft)" />
-
-                        @* Die REGIONSVORSCHAU (Auftrag KL-3): Welche Region der Standort
-                           trifft, steht sonst erst NACH dem Einlesen im Herkunftsvermerk -
-                           wer 8 760 Stunden einliest, um zu erfahren, dass es die falsche
-                           Region war, hat sie umsonst eingelesen. Der Knopf liest allein
-                           das Zentralverzeichnis des Pakets; der Import liest es danach ein
-                           zweites Mal. *@
-                        <div class="epos-leiste">
-                            <button type="button" class="epos-knopf" disabled="@(!RegionErlaubt)"
-                                    @onclick="BeiRegion">@RegionErmittelnText</button>
-                        </div>
-
-                        @if (_regionszeile.Length > 0)
-                        {
-                            <Herleitungszeile Text="@_regionszeile" />
-                        }
-                    }
-                </KindInhalt>
-            </Formularraster>
-
-            @* ---- der Import ---------------------------------------------- *@
-            <Gruppenkopf Titel="@GruppeStandortText" />
-
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    @* comboBox_Ort: DropDownStyle.DropDown - Vorschlaege UND freie Eingabe.
-                       Entscheid E-7: Fehlt die Ortsliste, bleibt die Vorschlagsliste leer.
-                       Die Beschriftung traegt epos-feld-text wie jedes Feld des Hauses;
-                       epos-feld-beschriftung stand nie im Stilblatt. *@
-                    <label class="epos-feld">
-                        <span class="epos-feld-text">@LabelOrtText</span>
-                        <span class="epos-feld-zeile">
-                            <input type="text" class="epos-eingabe" list="epos-klimaregion-orte"
-                                   value="@_ortsname" @oninput="BeiOrtsname" disabled="@_laeuft" />
-                        </span>
-                    </label>
-                    <datalist id="epos-klimaregion-orte">
-                        @foreach (string ort in Ortsvorschlaege)
-                        {
-                            <option value="@ort"></option>
-                        }
-                    </datalist>
-
-                    @* Das "oder" ist eine ZWISCHENUEBERSCHRIFT, keine Zeile neben einem
-                       Feld: Es trennt den Weg ueber den Ortsnamen von dem ueber die
-                       Koordinaten. Formulargruppe zeichnet genau das - leise, ueber die
-                       volle Breite, ohne zweiten Gruppenkopf. *@
-                    <Formulargruppe Titel="@OderText">
-                        <KindInhalt>
-                            @* Schreibt der Anwender selbst in eines der beiden Felder, gilt SEIN
-                               Wert - und die Herkunftszeile der Datei stimmt nicht mehr (KL-2). *@
-                            <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                                        WertChanged="@(w => { _longitude = w; _meldung = ""; _tryStandort = ""; _regionszeile = ""; })"
-                                        Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
-                                        Aktiv="@(!_laeuft)" />
-                            <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                                        WertChanged="@(w => { _latitude = w; _meldung = ""; _tryStandort = ""; _regionszeile = ""; })"
-                                        Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
-                                        Aktiv="@(!_laeuft)" />
-                            <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
-                                      WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
-                        </KindInhalt>
-                    </Formulargruppe>
-
-                    @* Der Standort einer TRY-Datei kommt aus IHREM Kopf (Auftrag KL-2).
-                       Die Zeile sagt, woher die Zahlen stammen - und dass sie
-                       ueberschreibbar sind; ohne sie waere die Vorbelegung eine
-                       Behauptung ohne Herkunft. *@
-                    @if (_tryStandort.Length > 0)
-                    {
-                        <Herleitungszeile Text="@_tryStandort" />
-                    }
-                </KindInhalt>
-            </Formularraster>
-        </Eingabe>
+                    @* HERKUNFT (V9): woher die Region kommt - als TEXT (V13), denn
+                       keiner dieser Werte war je ein Feld. *@
+                    <Stammblattgruppe Titel="@GruppeHerkunftText" Lesemodus="true"
+                                      Werte="@Herkunftswerte" />
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
-    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
-                 Abbrechen="@(Abbrechen is null ? null : EventCallback.Factory.Create(this, BeiAbbrechen))"
-                 AbbrechenText="@AbbrechenText" />
-
-    @* DIE EINE FUSSLEISTE (Anwenderwunsch 19.09.2026, Punkt 1) - Hausmuster
-       ModulKatalogDialog: links die Tat, rechts Beenden als primaerer Knopf, der
-       Fueller dazwischen. "Loeschen" stand bis hierher IN der Listenspalte und
-       stiess bei schmalem Fenster an die Reiterleiste daneben; hier steht es neben
-       den anderen drei. Die Rueckfrage und LoeschenErlaubt bleiben unveraendert. *@
+    @* DIE FUSSLEISTE (V14, V15; Konzept Knopfleisten): Statuszeile - Import... -
+       Beenden. Loeschen steht in der Auswahlleiste (V8: keine Handlung an zwei
+       Orten), das Einlesen hinter "Import...". Kein Speichern: Eine Region hat
+       kein Feld, das der Anwender pflegt. *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" disabled="@(!ImportErlaubt)"
-                @onclick="BeiImport">@ImportText</button>
-        <span class="epos-leiste-fueller"></span>
-        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
-                @onclick="BeiLoeschen">@LoeschenText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Importieren is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf"
+                    @onclick="ImportOeffnen">@ImportOeffnenText</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiSchliessen">@BeendenText</button>
     </div>
+
+    @* --- DAS EINLESEN ALS UEBERLAGERUNG (V14). Das Kreuz steht beim Titel;
+           waehrend eines Laufs schliessen weder Kreuz noch Esc noch Abbrechen -
+           abgebrochen wird der LAUF ueber den Knopf des Fortschritts. *@
+    <Ueberlagerung Offen="@_importOffen" Titel="@ImportTitelText" Geschlossen="ImportSchliessen">
+        <KindInhalt>
+            @if (_importOffen)
+            {
+                <div class="epos-einlesen">
+                    @if (_importMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_importMeldungStufe" Text="@_importMeldung" />
+                    }
+
+                    <Herleitungszeile Text="@KopfText" />
+
+                    @* ---- die KLIMAQUELLE (Auftrag KL1-B) -------------------------
+                           Drei Quellen stehen zur Wahl; die Optionsgruppe zeigt sie
+                           alle. Je nach Wahl stehen darunter die Felder, die nur diese
+                           Quelle braucht. Formularraster, EINSPALTIG (Auftrag KL-4):
+                           Beschriftung neben dem Feld, die Dateiwahl als Beschriftung -
+                           Feld - Knopf in EINER Zeile. *@
+                    <Gruppenkopf Titel="@GruppeQuelleText" />
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Optionsgruppe Bezeichnung="@GruppeQuelleText" Eintraege="@Quelleneintraege"
+                                           Auswahl="@((int)_quelle)" AuswahlChanged="BeiQuelle"
+                                           Aktiv="@(!_laeuft)" />
+
+                            @if (_quelle == KlimaQuelle.TryDatei)
+                            {
+                                <Dateiwahl Bezeichnung="@LabelTryDateiText" Filter="@TryDateiFilter"
+                                           KnopfText="@WaehlenText" Pfad="@_tryPfad"
+                                           Waehlen="@DateiWaehlen" PfadChanged="BeiTryPfad"
+                                           Aktiv="@(!_laeuft)" />
+                            }
+                            else if (_quelle == KlimaQuelle.TryRegional)
+                            {
+                                <Auswahlfeld Bezeichnung="@LabelTryJahrText" Eintraege="@Jahreseintraege"
+                                             Auswahl="@_tryJahr" AuswahlChanged="BeiTryJahr"
+                                             Aktiv="@(!_laeuft)" />
+                                <Auswahlfeld Bezeichnung="@LabelTrySzenarioText" Eintraege="@Szenarioeintraege"
+                                             Auswahl="@((int)_szenario)" AuswahlChanged="BeiSzenario"
+                                             Aktiv="@(!_laeuft)" />
+                                <Dateiwahl Bezeichnung="@LabelTryPaketText" Filter="@TryPaketFilter"
+                                           KnopfText="@WaehlenText" Pfad="@_tryPaketPfad"
+                                           Waehlen="@DateiWaehlen" PfadChanged="BeiTryPaket"
+                                           Aktiv="@(!_laeuft)" />
+
+                                @* Die REGIONSVORSCHAU (Auftrag KL-3): Welche Region der
+                                   Standort trifft, steht sonst erst NACH dem Einlesen im
+                                   Herkunftsvermerk. Der Knopf gehoert zu seinen Feldern
+                                   und bleibt deshalb im Blatt (Konzept Knopfleisten). *@
+                                <div class="epos-leiste">
+                                    <button type="button" class="epos-knopf" disabled="@(!RegionErlaubt)"
+                                            @onclick="BeiRegion">@RegionErmittelnText</button>
+                                </div>
+
+                                @if (_regionszeile.Length > 0)
+                                {
+                                    <Herleitungszeile Text="@_regionszeile" />
+                                }
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+
+                    @* ---- der STANDORT ------------------------------------------- *@
+                    <Gruppenkopf Titel="@GruppeStandortText" />
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            @* comboBox_Ort: DropDownStyle.DropDown - Vorschlaege UND freie
+                               Eingabe. Entscheid E-7: Fehlt die Ortsliste, bleibt die
+                               Vorschlagsliste leer. *@
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">@LabelOrtText</span>
+                                <span class="epos-feld-zeile">
+                                    <input type="text" class="epos-eingabe" list="epos-klimaregion-orte"
+                                           value="@_ortsname" @oninput="BeiOrtsname" disabled="@_laeuft" />
+                                </span>
+                            </label>
+                            <datalist id="epos-klimaregion-orte">
+                                @foreach (string ort in Ortsvorschlaege)
+                                {
+                                    <option value="@ort"></option>
+                                }
+                            </datalist>
+
+                            @* Das "oder" ist eine ZWISCHENUEBERSCHRIFT: Es trennt den Weg
+                               ueber den Ortsnamen von dem ueber die Koordinaten. *@
+                            <Formulargruppe Titel="@OderText">
+                                <KindInhalt>
+                                    @* Schreibt der Anwender selbst in eines der beiden Felder,
+                                       gilt SEIN Wert - und die Herkunftszeile der Datei stimmt
+                                       nicht mehr (KL-2). *@
+                                    <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
+                                                WertChanged="@(w => { _longitude = w; _importMeldung = ""; _tryStandort = ""; _regionszeile = ""; })"
+                                                Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
+                                                Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
+                                                WertChanged="@(w => { _latitude = w; _importMeldung = ""; _tryStandort = ""; _regionszeile = ""; })"
+                                                Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
+                                                Aktiv="@(!_laeuft)" />
+                                    <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
+                                              WertChanged="@(t => { _bezeichnung = t; _importMeldung = ""; })" />
+                                </KindInhalt>
+                            </Formulargruppe>
+
+                            @* Der Standort einer TRY-Datei kommt aus IHREM Kopf (KL-2). *@
+                            @if (_tryStandort.Length > 0)
+                            {
+                                <Herleitungszeile Text="@_tryStandort" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                                 Abbrechen="@(Abbrechen is null ? null : EventCallback.Factory.Create(this, BeiAbbrechen))"
+                                 AbbrechenText="@AbbrechenText" />
+
+                    @* Die Knopfleiste der Ueberlagerung: Abbrechen schliesst ohne zu lesen,
+                       "Daten einlesen" liest und schreibt sofort. Enter bleibt unbelegt. *@
+                    <div class="epos-leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="ImportSchliessen">@AbbrechenText</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!ImportErlaubt)"
+                                @onclick="BeiImport">@ImportText</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- "gross...": das Bild des gewaehlten Reiters breit (V9: ein Knopf, der
+           die Gruppe vertieft, oeffnet eine Ueberlagerung im selben Fenster). Eine
+           EIGENE Kennung - dasselbe Modell steht zugleich im Blatt. *@
+    <Ueberlagerung Offen="@_grossOffen" Titel="@GrossTitel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="() => _grossOffen = false">
+        <KindInhalt>
+            @if (_grossOffen)
+            {
+                <DiagrammSvg Modell="@GrossModell" Kennung="@("klima-gross-" + _reiter.ToLowerInvariant())"
+                             Bezeichnung="@GrossTitel" PlatzhalterText="@KeineDatenText"
+                             Einheit="@(_reiter == "SONNENWINKEL" ? EinheitWinkelText : EinheitTemperaturText)"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@FarbwahlMoeglich"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
                 TitelText="@TitelLoeschenText" VorgabeNein="true"
@@ -338,7 +405,20 @@
     public sealed record Regionsansicht(string Details, double? Longitude, double? Latitude,
                                         Zeichenmodell? ModellTemperatur,
                                         Zeichenmodell? ModellSonnenwinkel,
-                                        string Meldung);
+                                        string Meldung)
+    {
+        /// <summary>
+        /// Das Jahresmittel der Außentemperatur [°C] — Kennzahl im Kopf des Stammblatts
+        /// (Stufe 4); <c>null</c> = keine Stundenwerte.
+        /// </summary>
+        public double? Jahresmittel { get; init; }
+
+        /// <summary>Der Tiefstwert der Außentemperatur [°C]; <c>null</c> = keine Stundenwerte.</summary>
+        public double? Tiefstwert { get; init; }
+
+        /// <summary>Der Höchstwert der Außentemperatur [°C]; <c>null</c> = keine Stundenwerte.</summary>
+        public double? Hoechstwert { get; init; }
+    }
 
     // =====================================================================
     // Delegaten — die Datenseite liegt in der Huelle
@@ -346,12 +426,12 @@
 
     /// <summary>
     /// Die Regionen des Katalogs als KATALOGZEILEN
-    /// (<c>KlimaregionStammCtrl.Katalogfilterzeilen</c>, über die Hülle) — sieben
-    /// Spalten samt Quelle, Standort und Importdatum (Auftrag KL-4).
+    /// (<c>KlimaregionStammCtrl.Katalogfilterzeilen</c>, über die Hülle) — Bezeichner,
+    /// Quelle, Standort, Koordinaten und Importdatum (Auftrag KL-4).
     ///
     /// <para>Der <c>Bezeichner</c> jeder Zeile bleibt der Schlüssel jeder Aktion
     /// (Ansicht, Löschen), <see cref="Katalogfilterzeile.Geschuetzt"/> trägt den
-    /// Schreibschutz der Auslieferung.</para>
+    /// Schreibschutz der Auslieferung — das Schloss an der Zeile.</para>
     /// </summary>
     [Parameter] public Func<Task<IReadOnlyList<Katalogfilterzeile>>>? Regionen { get; set; }
 
@@ -363,25 +443,22 @@
     [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
-    /// Die Beschriftungen der Katalogliste — EIN Bündel (Hausregel). Nur der Kopf der
-    /// Wahlspalte wird gesetzt: <c>Katalogfiltertexte.SpalteWahl</c> trägt ein
-    /// deutsches Literal als Vorgabe, hier steht der Schlüssel, den der Dialog schon
-    /// vorher benutzt hat.
+    /// Die Beschriftungen der Katalogliste — EIN Bündel (Hausregel). Das Schloss trägt
+    /// die Vorgabe „Auslieferungssatz – nur lesen": Eine Region kennt kein Duplizieren.
     /// </summary>
     [Parameter] public Katalogfiltertexte Texte { get; set; }
         = new Katalogfiltertexte { SpalteWahl = Resource.KFAK_SP_WAHL };
 
     /// <summary>
-    /// Die Ansicht einer Region samt der beiden Zeichenmodelle. <b>Ein Delegat,
-    /// nicht zwei</b>: Der Zeitausschnitt liegt seit Etappe E2 im Browser (die
-    /// viewBox des SVG), der Wirt zeichnet dafür nichts mehr neu.
+    /// Die Ansicht einer Region samt der beiden Zeichenmodelle und der drei Kennzahlen.
+    /// <b>Ein Delegat, nicht zwei</b>: Der Zeitausschnitt liegt seit Etappe E2 im
+    /// Browser (die viewBox des SVG), der Wirt zeichnet dafür nichts mehr neu.
     /// </summary>
     [Parameter] public Func<string, Task<Regionsansicht>>? Ansicht { get; set; }
 
     /// <summary>
     /// Die Farbe einer Rolle anwendungsweit setzen (<c>Diagrammfarben.Setze</c> in
-    /// der Hülle). <b>Ohne ihn öffnet kein Farbwähler</b> — ein Wähler, dessen Wahl
-    /// niemand speichert, wäre eine Behauptung.
+    /// der Hülle). <b>Ohne ihn öffnet kein Farbwähler</b>.
     /// </summary>
     [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
 
@@ -390,7 +467,7 @@
 
     /// <summary>
     /// Der Import (<c>KlimaImportAblauf.Laufen</c>) — im <c>Task.Run</c> der Hülle,
-    /// mit Fortschritt und Abbruch (A-4).
+    /// mit Fortschritt und Abbruch (A-4). <b>Ohne ihn steht „Import…" nicht da.</b>
     /// </summary>
     [Parameter]
     public Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? Importieren { get; set; }
@@ -399,10 +476,8 @@
     [Parameter] public Action? Abbrechen { get; set; }
 
     /// <summary>
-    /// Die REGIONSVORSCHAU (<c>KlimaImportAblauf.RegionErmittelnAsync</c>) — sie sagt
-    /// vor dem Einlesen, welche TRY-Region der Standort trifft, ohne eine Stundenreihe
-    /// zu entpacken. <b>Ohne Delegat bleibt der Knopf gesperrt</b>; einlesen lässt sich
-    /// trotzdem.
+    /// Die REGIONSVORSCHAU (<c>KlimaImportAblauf.RegionErmittelnAsync</c>). <b>Ohne
+    /// Delegat bleibt der Knopf gesperrt</b>; einlesen lässt sich trotzdem.
     /// </summary>
     [Parameter]
     public Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? RegionErmitteln { get; set; }
@@ -410,14 +485,14 @@
     /// <summary>
     /// Der Dateiwähler der Plattform (Filter hinein, Pfad heraus; <c>null</c> =
     /// abgebrochen) — für die TRY-Datei und das Regionalpaket. <b>Ohne ihn bleibt der
-    /// Knopf weg</b> (Regel des Bausteins <c>Dateiwahl</c>); die Felder sind dann von
-    /// Hand zu füllen.
+    /// Knopf weg</b> (Regel des Bausteins <c>Dateiwahl</c>).
     /// </summary>
     [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
 
     /// <summary>
     /// Löscht eine Region samt ihren Datenblöcken (A-7/A-8);
-    /// <c>false</c> = sie blieb stehen (Auslieferungssatz).
+    /// <c>false</c> = sie blieb stehen (Auslieferungssatz). Ohne ihn steht „Löschen" nicht
+    /// in der Auswahlleiste.
     /// </summary>
     [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
 
@@ -437,6 +512,12 @@
     [Parameter] public string TitelText { get; set; } = Resource.KLIMA_TITEL;
     [Parameter] public string KopfText { get; set; } = Resource.KLIMA_LBL_IMPORT_KOPF;
     [Parameter] public string GruppeStandortText { get; set; } = Resource.KLIMA_GRP_STANDORT;
+
+    /// <summary>
+    /// Die frühere Überschrift der Liste — seit Stufe 4 ohne Wirkung: Die Liste nennt
+    /// sich über ihre Spaltenköpfe, und die Überschrift nahm ihr eine Zeile (Muster der
+    /// Gerätekataloge seit Stufe 3). Der Parameter bleibt, damit kein Parametersatz bricht.
+    /// </summary>
     [Parameter] public string GruppeListeText { get; set; } = Resource.KLIMA_GRP_LISTE;
     [Parameter] public string LabelOrtText { get; set; } = Resource.KLIMA_LBL_ORT;
     [Parameter] public string OderText { get; set; } = Resource.KLIMA_LBL_ODER;
@@ -445,8 +526,18 @@
     [Parameter] public string FeldLongitudeText { get; set; } = Resource.KLIMA_FELD_LONGITUDE;
     [Parameter] public string FeldLatitudeText { get; set; } = Resource.KLIMA_FELD_LATITUDE;
     [Parameter] public string LabelBezeichnungText { get; set; } = Resource.KLIMA_LBL_BEZEICHNUNG;
-    [Parameter] public string LabelDetails { get; set; } = Resource.KLIMA_LBL_DETAILS;
+
+    /// <summary>Die Beschriftung des Herkunftsvermerks — seit Stufe 4 in der Gruppe Herkunft.</summary>
+    [Parameter] public string LabelDetails { get; set; } = Resource.KLIMA_SB_VERMERK;
+
+    /// <summary>Der primäre Knopf der Überlagerung „Klimadaten einlesen" — „Daten einlesen".</summary>
     [Parameter] public string ImportText { get; set; } = Resource.KLIMA_BTN_IMPORT;
+
+    /// <summary>„Import…" in der Fußleiste — öffnet die Überlagerung (V14).</summary>
+    [Parameter] public string ImportOeffnenText { get; set; } = Resource.ADM_BTN_IMPORT;
+
+    /// <summary>Der Titel der Überlagerung — „Klimadaten einlesen".</summary>
+    [Parameter] public string ImportTitelText { get; set; } = Resource.KLIMA_IMPORT_TITEL;
     [Parameter] public string LoeschenText { get; set; } = Resource.KLIMA_BTN_LOESCHEN;
     [Parameter] public string BeendenText { get; set; } = Resource.KLIMA_BTN_BEENDEN;
     /// <summary>Die Einheit der Zeigerzeile am Temperaturbild — ein Zeichen, kein Satz.</summary>
@@ -469,6 +560,14 @@
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Klimadaten.btn_Help";
+
+    // ---- Stammblatt (Stufe 4) ------------------------------------------
+    [Parameter] public string GruppeJahresverlaufText { get; set; } = Resource.ADM_SB_JAHRESVERLAUF;
+    [Parameter] public string GruppeHerkunftText { get; set; } = Resource.ADM_SB_HERKUNFT;
+    [Parameter] public string GrossText { get; set; } = Resource.ADM_SB_GROSS;
+    [Parameter] public string KennzahlMittelText { get; set; } = Resource.KLIMA_KZ_MITTEL;
+    [Parameter] public string KennzahlTiefstText { get; set; } = Resource.KLIMA_KZ_TIEFST;
+    [Parameter] public string KennzahlHoechstText { get; set; } = Resource.KLIMA_KZ_HOECHST;
 
     // ---- Klimaquelle (Auftrag KL1-B) -----------------------------------
     [Parameter] public string GruppeQuelleText { get; set; } = Resource.KLIMA_QUELLE;
@@ -527,6 +626,9 @@
     private string _details = "";
     private Zeichenmodell? _modellTemperatur;
     private Zeichenmodell? _modellSonnenwinkel;
+    private double? _jahresmittel;
+    private double? _tiefstwert;
+    private double? _hoechstwert;
 
     private bool _laeuft;
     private double? _anteil;
@@ -539,6 +641,35 @@
     private string _loeschfrage = "";
 
     private readonly HashSet<string> _fehlerFelder = new();
+
+    // ---- Stufe 4: Auswahl, Stammblatt, Einlesen als Ueberlagerung ------
+    private readonly Zeilenauswahl _auswahl = new();
+    private Katalogfilterzeile? _fokuszeile;
+    private bool _auslieferung;
+    private HashSet<string> _geschuetzt = new(StringComparer.Ordinal);
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
+    private string _status = "";
+
+    private bool _importOffen;
+    private string _importMeldung = "";
+    private WarnStufe _importMeldungStufe = WarnStufe.Hinweis;
+    private bool _grossOffen;
+
+    private EventCallback _vergleichen;
+    private EventCallback _loeschenWeg;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    /// <summary>
+    /// Der Hinweis eines Auslieferungssatzes im Kopf des Blatts: nur lesen, nicht
+    /// löschbar — OHNE den Satz zum Duplizieren, das die Klimadaten nicht kennen.
+    /// </summary>
+    private readonly Stammblatttexte _blatttexte = new() { NurLesen = Resource.ADM_SB_NUR_LESEN_OHNE_KOPIE };
 
     // ---- Klimaquelle (Auftrag KL1-B) -----------------------------------
     private KlimaQuelle _quelle = KlimaQuelle.PvgisTmy;
@@ -594,20 +725,13 @@
     /// hinter ihrem Namen (Konzept Administrationsdialoge, V10).
     ///
     /// <para><b>Die Spalten stehen als DATEN im Kern</b>
-    /// (<c>Katalogfilterprofil.AusSpalten</c>) — derselbe Weg, den die zwei
-    /// Importmasken gehen. Die BESCHRIFTUNGEN kommen von hier: Der Kern kennt keine
-    /// Anzeigetexte.</para>
+    /// (<c>Katalogfilterprofil.AusSpalten</c>); die BESCHRIFTUNGEN kommen von hier.
+    /// Longitude und Latitude sind ZAHLEN (sortieren als Zahl, Trichter mit <c>&gt;50</c>),
+    /// das Importdatum ist ein TEXT (ISO sortiert wie ein Datum).</para>
     ///
-    /// <para><b>Longitude und Latitude sind ZAHLEN</b> mit vier Nachkommastellen —
-    /// damit sortieren sie als Zahl („9" vor „10") und der Trichter versteht
-    /// <c>&gt;50</c> und <c>8..10</c>. <b>Das Importdatum ist ein TEXT</b>: ISO
-    /// sortiert als Zeichenkette in derselben Reihenfolge wie als Datum, und
-    /// „enthält 2026-09" wird damit zum Monatsfilter.</para>
-    ///
-    /// <para><b>Der Rang der Spalten</b> (Konzept Administrationsdialoge, V2): Region und
-    /// Importdatum stehen immer — das Datum ist der Kennwert, nach dem man eine
-    /// eingelesene Region wiederfindet; Quelle und Standort, sobald Platz ist; die
-    /// Koordinaten nur in einer breiten Liste.</para>
+    /// <para><b>Der Rang der Spalten</b> (V2): Region und Importdatum stehen immer;
+    /// Quelle und Standort, sobald Platz ist; die Koordinaten nur in einer breiten
+    /// Liste — im Stammblatt stehen sie in der Gruppe Herkunft.</para>
     /// </summary>
     private Katalogfilterprofil Filterprofil => _filterprofil ??= Katalogfilterprofil.AusSpalten(
         KATALOG,
@@ -638,20 +762,42 @@
     /// <summary>Die gewählte Region (Prüfhilfe für Tests).</summary>
     public string Gewaehlt => _gewaehlt;
 
-    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    /// <summary>Der Text des Warnbanners des Dialogs (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
+
+    /// <summary>Der Text des Warnbanners IN der Überlagerung „Klimadaten einlesen" (Prüfhilfe).</summary>
+    public string Importmeldung => _importMeldung;
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
 
     /// <summary>Läuft gerade ein Import? (Prüfhilfe für Tests)</summary>
     public bool Laeuft => _laeuft;
 
-    private bool LoeschenErlaubt => !_laeuft && _gewaehlt.Length > 0 && Loeschen is not null;
+    /// <summary>Steht die Überlagerung „Klimadaten einlesen"? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _importOffen;
+
+    /// <summary>Steht die breite Ansicht des Jahresverlaufs? (Prüfhilfe für Tests.)</summary>
+    public bool GrossOffen => _grossOffen;
+
+    /// <summary>Ist die Fokuszeile eine Auslieferungsregion? (Prüfhilfe für Tests.)</summary>
+    public bool Auslieferungssatz => _auslieferung;
+
+    /// <summary>Die über das Kästchen gewählten Regionen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen
+        => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
 
     /// <summary>
     /// Der STANDORT: ein Ortsname ODER die drei Handangaben. Er wird bei JEDER Quelle
     /// gebraucht — ohne ihn ließe sich weder die Sonnengeometrie noch die nächste
     /// TRY-Region bestimmen. Bei einer TRY-Datei füllt ihn
-    /// <see cref="StandortAusDatei"/> aus dem Dateikopf vor (Auftrag KL-2); der
-    /// Anwender kann jedes Feld überschreiben.
+    /// <see cref="StandortAusDatei"/> aus dem Dateikopf vor (Auftrag KL-2).
     /// </summary>
     private bool StandortSteht =>
         _ortsname.Trim().Length > 0 ||
@@ -659,15 +805,8 @@
 
     /// <summary>
     /// „Daten einlesen" braucht einen Standort und — je nach Quelle — eine Datei:
-    /// <list type="bullet">
-    ///   <item><description><b>PVGIS</b>: Standort, wie bisher.</description></item>
-    ///   <item><description><b>TRY-Datei</b>: zusätzlich der Pfad der
-    ///     <c>.dat</c>-Datei.</description></item>
-    ///   <item><description><b>TRY-Regionaldaten</b>: Standort wie bisher; das
-    ///     Regionalpaket darf leer bleiben, dann wird die eingestellte Adresse
-    ///     abgerufen.</description></item>
-    /// </list>
-    /// Ein fehlerhaftes Zahlenfeld sperrt in jedem Fall.
+    /// PVGIS den Standort; die TRY-Datei zusätzlich ihren Pfad; die TRY-Regionaldaten
+    /// den Standort (das Paket darf leer bleiben). Ein fehlerhaftes Zahlenfeld sperrt.
     /// </summary>
     private bool ImportErlaubt => !_laeuft && Importieren is not null &&
         _fehlerFelder.Count == 0 && StandortSteht &&
@@ -675,25 +814,166 @@
 
     /// <summary>
     /// Der Standort, den die REGIONSVORSCHAU braucht: ein Ortsname ODER ein
-    /// Koordinatenpaar. <b>Ohne die Bezeichnung</b> — anders als
-    /// <see cref="StandortSteht"/>: Die Vorschau legt nichts an, sie sagt nur, welche
-    /// Region der Punkt trifft; ein Name wäre dafür eine Hürde ohne Grund.
+    /// Koordinatenpaar — ohne Bezeichnung: Die Vorschau legt nichts an.
     /// </summary>
     private bool StandortFuerVorschau =>
         _ortsname.Trim().Length > 0 || (_longitude.HasValue && _latitude.HasValue);
 
-    /// <summary>„Region ermitteln" braucht die Regionaldaten als Quelle und einen
-    /// Standort; ein fehlerhaftes Zahlenfeld sperrt wie beim Einlesen.</summary>
+    /// <summary>„Region ermitteln" braucht die Regionaldaten als Quelle und einen Standort.</summary>
     private bool RegionErlaubt => !_laeuft && !_regionLaeuft && RegionErmitteln is not null &&
         _quelle == KlimaQuelle.TryRegional && _fehlerFelder.Count == 0 && StandortFuerVorschau;
+
+    // =====================================================================
+    // Stammblatt (Stufe 4): Kopf, Kennzahlen, Herkunft
+    // =====================================================================
+
+    /// <summary>„Quelle · Standort · Auslieferungssatz" — aus den Spalten der Zeile.</summary>
+    private string Unterzeile => Stammblattkopf.Unterzeile(Filterprofil, _fokuszeile,
+        _fokuszeile is null ? "" : _auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+
+    /// <summary>
+    /// Die drei Kennzahlen der Außentemperatur (Jahresmittel, Tiefst-, Höchstwert) —
+    /// gerechnet in der Hülle aus den Stundenwerten, hier nur formatiert.
+    /// </summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen => _gewaehlt.Length == 0
+        ? Array.Empty<Stammblattkennzahl>()
+        : new[]
+        {
+            new Stammblattkennzahl(Grad(_jahresmittel), KennzahlMittelText),
+            new Stammblattkennzahl(Grad(_tiefstwert), KennzahlTiefstText),
+            new Stammblattkennzahl(Grad(_hoechstwert), KennzahlHoechstText)
+        };
+
+    private string Grad(double? wert) => wert is double w
+        ? w.ToString("0.0", CultureInfo.CurrentCulture) + " " + EinheitTemperaturText
+        : ParameterVerwendung.LEER;
+
+    /// <summary>
+    /// <b>Die Gruppe Herkunft</b> (V9) als Text: Quelle, Importdatum, Standort, Lage
+    /// und der Herkunftsvermerk. Die Koordinaten stehen in der Liste nur bei viel
+    /// Platz (Rang „breit") — hier immer.
+    /// </summary>
+    private IReadOnlyList<Stammblattwert> Herkunftswerte
+    {
+        get
+        {
+            if (_fokuszeile is null) return Stammblattwert.Keine;
+            return new[]
+            {
+                new Stammblattwert(SpalteQuelleText, _fokuszeile.Text(Katalogfilterprofil.SpQuelle)),
+                new Stammblattwert(SpalteImportdatumText, _fokuszeile.Text(Katalogfilterprofil.SpImportdatum)),
+                new Stammblattwert(SpalteStandortText, _fokuszeile.Text(Katalogfilterprofil.SpStandort)),
+                new Stammblattwert(SpalteLongitudeText, _fokuszeile.Text(Katalogfilterprofil.SpLongitude), EinheitWinkelText),
+                new Stammblattwert(SpalteLatitudeText, _fokuszeile.Text(Katalogfilterprofil.SpLatitude), EinheitWinkelText),
+                new Stammblattwert(Stammblattwert.OhneDoppelpunkt(LabelDetails), _details)
+            };
+        }
+    }
+
+    /// <summary>Gibt es ein Bild zum Vergrößern?</summary>
+    private bool HatBild => _modellTemperatur is not null || _modellSonnenwinkel is not null;
+
+    private Zeichenmodell? GrossModell => _reiter == "SONNENWINKEL" ? _modellSonnenwinkel : _modellTemperatur;
+
+    private string GrossTitel => _gewaehlt.Length == 0
+        ? GruppeJahresverlaufText
+        : GruppeJahresverlaufText + " – " + _gewaehlt;
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>
+    /// <b>Die Handlungen der Auswahlleiste</b> (V8): Vergleichen ab zwei Kästchen und
+    /// Löschen — weich gesperrt, wenn jede Zielzeile eine Auslieferungsregion ist
+    /// (V13). Kein Duplizieren: Eine Region entsteht nur durch Einlesen.
+    /// </summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(2)
+        {
+            new(Texte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Loeschen is not null)
+            liste.Add(new(LoeschenText, _loeschenWeg) { Sperrgrund = LoeschSperrgrund, Aus = _laeuft });
+        return liste;
+    }
+
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!_geschuetzt.Contains(z)) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE;
+        }
+    }
+
+    private void Warnen(string text) => Melden(text, WarnStufe.Warnung);
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich</b> (V12): die Spalten der Liste nebeneinander — Quelle,
+    /// Standort, Koordinaten, Importdatum —, dazu die Herkunft (Auslieferungssatz oder
+    /// eigener Satz).
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+
+        var zeilen = namen.Select(n => _regionen.FirstOrDefault(x => x.Schluessel == n))
+                          .Where(x => x is not null).Select(x => x!).ToList();
+        var liste = new List<Vergleichszeile>(Vergleichsbau.AusSpalten(Filterprofil, zeilen));
+        var herkunft = zeilen.Select(z => _geschuetzt.Contains(z.Bezeichner)
+                                              ? Resource.ADM_SB_AUSLIEFERUNG
+                                              : Resource.ADM_SB_EIGENER_SATZ).ToList();
+        liste.Add(new Vergleichszeile(Resource.ADM_VG_HERKUNFT, herkunft, Vergleichsbau.Abweichend(herkunft)));
+        _vergleichszeilen = liste;
+    }
 
     // =====================================================================
     // Aufbau
     // =====================================================================
 
     protected override void OnInitialized()
-        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KLIMADATEN,
-                                             () => KiSicht(), KiHaken());
+    {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _loeschenWeg = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KLIMADATEN, () => KiSicht(), KiHaken());
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -712,9 +992,9 @@
     private KlimadatenKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten auf die LEBENDEN Felder. Setzen nimmt denselben Weg
-    /// wie die Tastatur; die beiden Dateipfade bleiben dem Dateidialog der Plattform
-    /// vorbehalten und sind deshalb nur lesbar.
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder der Überlagerung „Klimadaten
+    /// einlesen". Setzen nimmt denselben Weg wie die Tastatur; die beiden Dateipfade
+    /// bleiben dem Dateidialog der Plattform vorbehalten und sind deshalb nur lesbar.
     /// </summary>
     private KlimadatenKiSicht KiSicht()
     {
@@ -729,7 +1009,7 @@
             OrtsnameSetzen = KiOrtsnameSetzen,
 
             BezeichnungLesen = () => _bezeichnung,
-            BezeichnungSetzen = t => { _bezeichnung = t ?? ""; _meldung = ""; },
+            BezeichnungSetzen = t => { _bezeichnung = t ?? ""; _importMeldung = ""; },
 
             LaengengradLesen = () => _longitude,
             LaengengradSetzen = w => { _longitude = w; KiStandortGeaendert(); },
@@ -755,14 +1035,14 @@
     private void KiOrtsnameSetzen(string wert)
     {
         _ortsname = wert ?? "";
-        _meldung = "";
+        _importMeldung = "";
         _regionszeile = "";
     }
 
     /// <summary>Eine geänderte Koordinate verwirft Meldung, Standort und Regionszeile.</summary>
     private void KiStandortGeaendert()
     {
-        _meldung = "";
+        _importMeldung = "";
         _tryStandort = "";
         _regionszeile = "";
     }
@@ -784,39 +1064,68 @@
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
 
-    /// <summary>Lädt die Regionsliste neu (<c>ReadAll</c> + <c>FillListBox</c>).</summary>
+    /// <summary>
+    /// Lädt die Regionsliste neu (<c>ReadAll</c> + <c>FillListBox</c>). <b>Das
+    /// Stammblatt ist nie leer, solange die Liste Treffer hat</b> (Konzept 3.3): Steht
+    /// die bisherige Wahl nicht mehr da, wird die erste Region gewählt.
+    /// </summary>
     public async Task RegionenLaden()
     {
         if (Regionen is null) return;
         _regionen = await Regionen() ?? Array.Empty<Katalogfilterzeile>();
 
-        if (_regionen.All(z => z.Bezeichner != _gewaehlt))
-        {
-            // Befund W14c-B22: BEIDE Bilder gehen weg, nicht nur das erste.
-            _gewaehlt = "";
-            _details = "";
-            _modellTemperatur = null;
-            _modellSonnenwinkel = null;
-        }
+        _geschuetzt = new HashSet<string>(_regionen.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
+                                          StringComparer.Ordinal);
+
+        // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
+        _auswahl.Abgleichen(_regionen.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        if (_regionen.Count == 0) { Leeren(); return; }
+        string ziel = _regionen.Any(z => z.Bezeichner == _gewaehlt) ? _gewaehlt : _regionen[0].Bezeichner;
+        await Waehlen(ziel);
+    }
+
+    /// <summary>Befund W14c-B22: BEIDE Bilder gehen weg, nicht nur das erste.</summary>
+    private void Leeren()
+    {
+        _gewaehlt = "";
+        _fokuszeile = null;
+        _auslieferung = false;
+        _details = "";
+        _modellTemperatur = null;
+        _modellSonnenwinkel = null;
+        _jahresmittel = _tiefstwert = _hoechstwert = null;
+        _grossOffen = false;
     }
 
     /// <summary>
     /// Eine Zeile der Katalogliste wurde gewählt; sie meldet den SCHLÜSSEL, und der
     /// ist hier der Bezeichner (Auftrag KL-4).
     /// </summary>
-    private async Task BeiZeile(string schluessel)
+    private Task BeiZeile(string schluessel)
     {
-        _gewaehlt = schluessel ?? "";
         _meldung = "";
+        return Waehlen(schluessel ?? "");
+    }
 
-        // EINE ANDERE REGION HEISST EINE ANDERE REIHE. Den Ausschnitt verwirft
-        // der Baustein selbst, sobald ein anderes Modell hereinkommt.
+    /// <summary>
+    /// Eine Region wählen: Fokuszeile, Herkunft, dann Details, Kennzahlen und die zwei
+    /// Zeichenmodelle. EINE ANDERE REGION HEISST EINE ANDERE REIHE — den Ausschnitt
+    /// verwirft der Baustein selbst, sobald ein anderes Modell hereinkommt.
+    /// </summary>
+    private async Task Waehlen(string bezeichner)
+    {
+        _gewaehlt = bezeichner ?? "";
+        _fokuszeile = _regionen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        _auslieferung = _fokuszeile?.Geschuetzt == true;
         await AnsichtLaden();
     }
 
     /// <summary>
-    /// Holt Details und die zwei Zeichenmodelle. <b>Ohne Stundenwerte bleibt es
-    /// bei einer Meldung</b> statt einer Ausnahme (Befund W14c-B19).
+    /// Holt Details, Kennzahlen und die zwei Zeichenmodelle. <b>Ohne Stundenwerte
+    /// bleibt es bei einer Meldung</b> statt einer Ausnahme (Befund W14c-B19).
     /// </summary>
     private async Task AnsichtLaden()
     {
@@ -825,10 +1134,11 @@
         Regionsansicht a = await Ansicht(_gewaehlt);
 
         _details = a.Details ?? "";
-        _longitude = a.Longitude;
-        _latitude = a.Latitude;
         _modellTemperatur = a.ModellTemperatur;
         _modellSonnenwinkel = a.ModellSonnenwinkel;
+        _jahresmittel = a.Jahresmittel;
+        _tiefstwert = a.Tiefstwert;
+        _hoechstwert = a.Hoechstwert;
         if (!string.IsNullOrEmpty(a.Meldung)) Melden(a.Meldung, WarnStufe.Hinweis);
     }
 
@@ -862,10 +1172,41 @@
         StateHasChanged();
     }
 
+    // =====================================================================
+    // Die Ueberlagerung "Klimadaten einlesen" (V14)
+    // =====================================================================
+
+    /// <summary>„Import…" öffnet die Überlagerung; Meldungen des letzten Laufs sind überholt.</summary>
+    private void ImportOeffnen()
+    {
+        if (Importieren is null) return;
+        _meldung = "";
+        _importMeldung = "";
+        _importOffen = true;
+    }
+
+    /// <summary>
+    /// Kreuz, Esc und „Abbrechen" der Überlagerung — <b>nicht während eines Laufs</b>:
+    /// abgebrochen wird der Lauf über den Knopf des Fortschritts, nicht über das
+    /// Schließen seines Fensters. Die Eingaben bleiben für das nächste Öffnen stehen.
+    /// </summary>
+    private void ImportSchliessen()
+    {
+        if (_laeuft) return;
+        _importOffen = false;
+        _importMeldung = "";
+    }
+
+    private void ImportMelden(string text, WarnStufe stufe)
+    {
+        _importMeldung = text ?? "";
+        _importMeldungStufe = stufe;
+    }
+
     private void BeiOrtsname(ChangeEventArgs e)
     {
         _ortsname = e.Value?.ToString() ?? "";
-        _meldung = "";
+        _importMeldung = "";
         _regionszeile = "";
     }
 
@@ -886,14 +1227,14 @@
             (int)KlimaQuelle.TryRegional => KlimaQuelle.TryRegional,
             _ => KlimaQuelle.PvgisTmy
         };
-        _meldung = "";
+        _importMeldung = "";
         _regionszeile = "";
     }
 
     private void BeiTryPfad(string pfad)
     {
         _tryPfad = pfad ?? "";
-        _meldung = "";
+        _importMeldung = "";
         _tryStandort = "";
         StandortAusDatei();
     }
@@ -902,16 +1243,13 @@
     /// Belegt den STANDORT aus dem Kopf der gewählten TRY-Datei vor (Auftrag KL-2).
     ///
     /// <para>Der Kern liest den Kopf — nur bis zur Trennzeile, ohne Netz und ohne
-    /// Datenbank — und rechnet Rechts-/Hochwert über
-    /// <c>LambertKoordinaten</c> in Länge und Breite um. Der Dialog SETZT beides, füllt
-    /// eine leere Bezeichnung aus dem Dateinamen und schreibt darunter, woher die
-    /// Zahlen kommen. <b>Alles bleibt änderbar</b>: Der Anwender kann jedes Feld
-    /// überschreiben, und der Import nimmt dann seine Eingabe.</para>
+    /// Datenbank — und rechnet Rechts-/Hochwert über <c>LambertKoordinaten</c> in Länge
+    /// und Breite um. Der Dialog SETZT beides, füllt eine leere Bezeichnung aus dem
+    /// Dateinamen und schreibt darunter, woher die Zahlen kommen. <b>Alles bleibt
+    /// änderbar.</b></para>
     ///
     /// <para><b>Nicht lesbar ist kein Fehler:</b> Fehlt die Datei oder nennt ihr Kopf
-    /// keinen plausiblen Punkt, bleibt es bei einem Hinweis — die Felder bleiben
-    /// stehen, und ob eingelesen werden darf, entscheidet wie bisher
-    /// <see cref="ImportErlaubt"/>.</para>
+    /// keinen plausiblen Punkt, bleibt es bei einem Hinweis in der Überlagerung.</para>
     /// </summary>
     private void StandortAusDatei()
     {
@@ -920,8 +1258,8 @@
 
         if (!DwdTryLeser.KopfLesen(pfad, out TryKopf kopf) || !kopf.StandortBekannt)
         {
-            Melden(string.Format(CultureInfo.CurrentCulture, StandortUnlesbarText,
-                                 Dateiname(pfad)), WarnStufe.Hinweis);
+            ImportMelden(string.Format(CultureInfo.CurrentCulture, StandortUnlesbarText,
+                                       Dateiname(pfad)), WarnStufe.Hinweis);
             return;
         }
 
@@ -946,15 +1284,26 @@
     private void BeiTryPaket(string pfad)
     {
         _tryPaketPfad = pfad ?? "";
-        _meldung = "";
+        _importMeldung = "";
         _regionszeile = "";
     }
 
     private void BeiTryJahr(int? jahr)
     {
         _tryJahr = jahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
-        _meldung = "";
+        _importMeldung = "";
         _regionszeile = "";
+    }
+
+    private void BeiSzenario(int? id)
+    {
+        _szenario = id switch
+        {
+            (int)TrySzenario.Sommerwarm => TrySzenario.Sommerwarm,
+            (int)TrySzenario.Winterkalt => TrySzenario.Winterkalt,
+            _ => TrySzenario.MittleresJahr
+        };
+        _importMeldung = "";
     }
 
     // =====================================================================
@@ -963,12 +1312,8 @@
 
     /// <summary>
     /// Ermittelt die TRY-Region zum eingetragenen Standort und schreibt das Ergebnis
-    /// als Herleitungszeile unter die Auswahl.
-    ///
-    /// <para><b>Ein Fehlschlag ist kein Absturz und keine Sperre</b>: Er steht als
-    /// Zeile da (kein Bereichsabruf, außerhalb 300 km, Ort unbekannt), und einlesen
-    /// darf der Anwender weiterhin — die Vorschau ist eine Auskunft, keine
-    /// Bedingung.</para>
+    /// als Herleitungszeile unter die Auswahl. <b>Ein Fehlschlag ist kein Absturz und
+    /// keine Sperre</b>: Er steht als Zeile da, und einlesen darf der Anwender weiterhin.
     /// </summary>
     private async Task BeiRegion()
     {
@@ -995,7 +1340,7 @@
 
         _regionLaeuft = true;
         _regionszeile = RegionLaeuftText;
-        _meldung = "";
+        _importMeldung = "";
         await InvokeAsync(StateHasChanged);
 
         try
@@ -1011,21 +1356,16 @@
         }
     }
 
-    private void BeiSzenario(int? id)
-    {
-        _szenario = id switch
-        {
-            (int)TrySzenario.Sommerwarm => TrySzenario.Sommerwarm,
-            (int)TrySzenario.Winterkalt => TrySzenario.Winterkalt,
-            _ => TrySzenario.MittleresJahr
-        };
-        _meldung = "";
-    }
-
     // =====================================================================
     // Import (btn_Import_Click)
     // =====================================================================
 
+    /// <summary>
+    /// „Daten einlesen" in der Überlagerung. <b>Gelingt es</b>, schließt die
+    /// Überlagerung, die neue Region steht gewählt in der Liste, und die Statuszeile
+    /// meldet sie (V14). <b>Scheitert es</b>, bleibt die Überlagerung offen und meldet
+    /// den Grund in ihrem eigenen Warnband — das des Dialogs läge unter ihr.
+    /// </summary>
     private async Task BeiImport()
     {
         if (!ImportErlaubt) return;
@@ -1061,7 +1401,8 @@
         _laeuft = true;
         _anteil = null;
         _fortschrittText = "";
-        _meldung = "";
+        _importMeldung = "";
+        _status = "";
         await InvokeAsync(StateHasChanged);
 
         try
@@ -1075,33 +1416,30 @@
 
             KlimaImportErgebnis erg = await Importieren!(auftrag, melder);
 
-            if (erg.Meldung.Length > 0)
-                Melden(erg.Meldung, erg.Erfolgreich ? WarnStufe.Erfolg
-                                  : erg.Ausgang == KlimaImportAusgang.Abgebrochen ? WarnStufe.Hinweis
-                                  : WarnStufe.Fehler);
-
             if (erg.Erfolgreich)
             {
-                await RegionenLaden();
-                _gewaehlt = erg.Bezeichner;
-                await AnsichtLaden();
-
-                // ANWENDERWUNSCH 19.09.2026, Punkt 2: "'Daten Einlesen' verschwindet
-                // nach dem Einlesen." Der Knopf war NIE weg - er war GESPERRT. Hier
-                // standen bis dahin zwei Zuweisungen, die _ortsname und _bezeichnung
-                // leerten; ImportErlaubt verlangt aber einen STANDORT (Ortsname ODER
-                // Longitude+Latitude+Bezeichnung), und mit den geleerten Feldern hatte
-                // er keinen mehr. Aus Sicht des Anwenders verschwand der Knopf.
-                //
-                // Die Felder BLEIBEN deshalb stehen. Vor einem Doppelimport schuetzt
-                // nicht das Leeren, sondern der Dublettenschutz des Ablaufs
-                // (KlimaImportAblauf: GetStammId(...) > 0 -> KlimaImportAusgang.Dublette
-                // mit KLIMA_MSG_SCHON_VORHANDEN) - und der ist der richtige Ort dafuer:
-                // Er kennt den Katalog, das Formular kennt nur seine Felder.
-                //
-                // Die Regionszeile der Vorschau geht weg: Sie gehoerte zum Lauf, der
-                // gerade zu Ende ist, und ihre Aussage steht jetzt im Herkunftsvermerk.
+                // ANWENDERWUNSCH 19.09.2026, Punkt 2: Die Felder BLEIBEN stehen - vor
+                // einem Doppelimport schuetzt der Dublettenschutz des Ablaufs
+                // (KlimaImportAusgang.Dublette), nicht das Leeren des Formulars.
+                // Die Regionszeile der Vorschau geht weg: Sie gehoerte zum Lauf.
                 _regionszeile = "";
+                _importOffen = false;
+
+                // V14: die neue Region steht gewaehlt, die Kaestchen fallen - die
+                // naechste Handlung gilt ihr.
+                _auswahl.Aufheben();
+                _vergleichszeilen = null;
+                _gewaehlt = erg.Bezeichner ?? "";
+                await RegionenLaden();
+
+                _status = erg.Meldung.Length > 0
+                    ? erg.Meldung
+                    : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, erg.Bezeichner);
+            }
+            else if (erg.Meldung.Length > 0)
+            {
+                ImportMelden(erg.Meldung, erg.Ausgang == KlimaImportAusgang.Abgebrochen
+                                              ? WarnStufe.Hinweis : WarnStufe.Fehler);
             }
         }
         finally
@@ -1132,36 +1470,71 @@
     }
 
     // =====================================================================
-    // Loeschen (btn_Delete_Click) - A-7 mit Rueckfrage, A-8 mit Kaskade
+    // Loeschen (btn_Delete_Click) - A-7 mit Rueckfrage, A-8 mit Kaskade,
+    // seit Stufe 4 aus der Auswahlleiste und auch fuer mehrere Regionen (AD-Q9)
     // =====================================================================
 
+    /// <summary>
+    /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten
+    /// Zeilen, sonst auf die Fokuszeile; Auslieferungsregionen bleiben stehen (V13),
+    /// und die Rückfrage nennt sie.
+    /// </summary>
     private void BeiLoeschen()
     {
-        if (_laeuft) return;
-        if (_gewaehlt.Length == 0) { Melden(AuswaehlenText, WarnStufe.Hinweis); return; }
+        if (_laeuft || Loeschen is null) return;
 
-        Katalogfilterzeile? zeile = _regionen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
-        if (zeile is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) { Melden(AuswaehlenText, WarnStufe.Hinweis); return; }
 
-        if (zeile.Geschuetzt) { Melden(ReadOnlyText, WarnStufe.Warnung); return; }
+        var loeschbar = ziele.Where(z => !_geschuetzt.Contains(z)).ToList();
+        var bleiben = ziele.Where(z => _geschuetzt.Contains(z)).ToList();
+        if (loeschbar.Count == 0) { Warnen(Resource.ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE); return; }
 
-        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschziele = loeschbar;
+        _loeschBleiben = bleiben.Count;
+
+        string frage = loeschbar.Count == 1
+            ? string.Format(VorlageLoeschfrage, loeschbar[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            loeschbar.Count, string.Join(", ", loeschbar));
+        if (bleiben.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", bleiben));
+        _loeschfrage = frage;
         _loeschfrageOffen = true;
     }
 
+    /// <summary>
+    /// Nach dem „Ja": je Region ein Schritt (der Kern löscht samt Datenblöcken). Ein
+    /// Fehlschlag meldet sich im Warnband; Gelungenes nennt die Statuszeile (V11).
+    /// </summary>
     private async Task LoeschfrageBeantwortet(bool? antwort)
     {
         _loeschfrageOffen = false;
         if (antwort != true || Loeschen is null) return;
 
-        bool weg = await Loeschen(_gewaehlt);
-        if (!weg) { Melden(ReadOnlyText, WarnStufe.Warnung); return; }
+        int geloescht = 0;
+        bool fehler = false;
+        foreach (string name in _loeschziele)
+        {
+            if (await Loeschen(name)) geloescht++;
+            else fehler = true;
+        }
 
-        _gewaehlt = "";
-        await RegionenLaden();
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        string einzeln = _loeschziele.Count == 1 ? _loeschziele[0] : "";
+        _loeschziele = new List<string>();
 
-        // Der Vorlaeufer waehlte danach die erste Region und zeichnete neu.
-        if (_regionen.Count > 0) { _gewaehlt = _regionen[0].Bezeichner; await AnsichtLaden(); }
+        if (geloescht > 0) await RegionenLaden();
+        if (fehler) Warnen(ReadOnlyText);
+        if (geloescht == 0) return;
+
+        _status = ziele == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
     }
 
     // =====================================================================
@@ -1177,13 +1550,24 @@
     /// <summary>
     /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg
     /// (Konzept Administrationsdialoge, V15). Einlesen und Löschen schreiben sofort.
+    /// Während eines Laufs schließt der Dialog nicht.
     /// </summary>
-    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+    private Task BeiSchliessen() => _laeuft ? Task.CompletedTask : Geschlossen.InvokeAsync(true);
 
+    /// <summary>
+    /// Esc stufenweise (Konzept 3.3): Überlagerungen und Rückfrage fangen ihr Esc
+    /// selbst; im schmalen Fenster schließt Esc zuerst das Blatt, zuletzt den Dialog.
+    /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_loeschfrageOffen || _laeuft) return Task.CompletedTask;
+        if (_loeschfrageOffen || _laeuft || _importOffen || _grossOffen) return Task.CompletedTask;
+
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return BeiSchliessen();
     }
 }
