@@ -1071,7 +1071,7 @@ und der Nachweis hängen.
 
 | Papiername | Klasse | Inhalt | Ergebnisneutral? | Saat | Auslieferung |
 |---|---|---|---|---|---|
-| **GB** | — | kein DDL: Instanzzustand statt `static`, Warnungen in der Ferienmaske, Korrektur der Bauweise eines Testgebäudes, die 100-Gebäude-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | **nein** — zwei Referenzprojekte ändern sich | Wert in der Testdatenbank korrigieren | unberührt |
+| **GB** | — | kein DDL: Instanzzustand statt `static`, Warnungen in der Ferienmaske, Korrektur der Bauweise eines Testgebäudes, die 100-Gebäude-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | **nein** — ein Referenzprojekt ändert sich (1008; 1039 blieb entgegen der Planung byte-gleich) | Wert in der Testdatenbank korrigieren | unberührt |
 | **M2** | — | kein DDL: Umbenennung `Fensterflaeche_Ost` → `Fensterflaeche_OstWest` im Modell, 15 Stellen | **ja**, byte-gleich | — | — |
 | **M3** | `GebaeudeSchema` | 15 Spalten × 2 Tabellen, `RENAME COLUMN Wohnflaeche → Nutzflaeche` (E19), Sicht `DROP` + `CREATE`, Leser auf **Namenszugriff**, `DbWerte`; **die Altweg-Spalten bleiben unberührt** (W13, E20) | **ja**, solange kein Leser rechnet | keine — neue Spalten bleiben NULL (= Vorgabe), `Nutzflaeche` behält die Werte von `Wohnflaeche` | läuft ohne Handgriff mit |
 | **S-E** | — | kein DDL: Umbau von `GebaeudeStammCtrl.CopyFromStamm`, `Insert` und `Overwrite` auf die Spaltenlisten-Bauweise mit NULL-erhaltender Bindung (W14). **In den Nachbarpapieren ist S-E genau dieser Schritt** (Mehrzonenkonzept 4.4, Datenaustauschkonzept 7.4); hier ist er **Sperrpunkt und Bestandteil von M3**, nicht ein eigener Migrationsschritt — er trägt kein DDL | **ja**, byte-gleich: Der Kopierweg läuft im Referenzlauf nicht | — | — |
@@ -1300,7 +1300,7 @@ stateDiagram-v2
 
 | Schritt | Nachweis, der zu führen ist |
 |---|---|
-| **GB** | Lauf, Vergleich, Begründung, grüner Kern-Lauf; die zwei betroffenen Projekte namentlich mit alter und neuer Zahl. Diese Basis ist die **letzte reine Bestandsbasis** (A15) |
+| **GB** | Lauf, Vergleich, Begründung, grüner Kern-Lauf; das betroffene Projekt namentlich mit alter und neuer Zahl — gemessen allein 1008 (1039 blieb byte-gleich, der statische Zustand erreichte dort nie ein Ergebnis). Diese Basis ist die **letzte reine Bestandsbasis** (A15) |
 | **M2** | `GESAMT: PASS` byte-gleich gegen die GB-Basis. Eigener Merge, weil jede der 15 Stellen in die solaren Gewinne mündet |
 | **M3** | byte-gleich; die Probe **ist** der Sichtneubau: Der Leser liefert alle 58 Bestandsfelder unverändert, `Nutzflaeche` mit den Werten der alten `Wohnflaeche` (E19); `SqlDialektPruefer` grün |
 | **M4** (Schemaschritt 95, erbracht) | byte-gleich — reines DDL, kein Rechenweg liest die Spalten, alle Bestandsregionen NULL; die Importprobe gegen die eingefrorene PVGIS-Antwort liefert dieselben Strahlungsreihen wie bisher. Die Einfrierregel „gesäte Klimareihen" gehört **nicht** hierher, sondern zu G1 + G2 |
@@ -2161,7 +2161,7 @@ Stufe **GA** steht in keiner Summe (E26).
 | Stufe | Was aus diesem Papier entsteht | Vorbedingung | Abnahme |
 |---|---|---|---|
 | **G0** | `Zonenmodell2K`, `Stundenrand`, `Stundenergebnis`, `ErsatzparameterRC.AusKlassenweg`, `Bauteilreduktion` als leerer Platz; die Vorrichtung für nicht ausgelieferte Prüfdaten samt `EPOS.Kern.Tests/GebaeudeModellNormfallTests` (1.8) | — | Kern-Filter grün; `GebaeudeModellNormfallTests` **lokal** im Band nach E10, in der CI schweigend; **Referenzlauf unberührt** (kein Aufrufer) |
-| **GB** | Instanzzustand statt statischem Feld, Warnungen in der Ferienmaske, die 100er-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | G0 | zwei Referenzprojekte ändern sich — **eigener Einfrierschritt**; letzte reine Bestandsbasis (A15) |
+| **GB** | Instanzzustand statt statischem Feld, Warnungen in der Ferienmaske, die 100er-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | G0 | ein Referenzprojekt ändert sich (1008; 1039 blieb byte-gleich) — **eigener Einfrierschritt**; letzte reine Bestandsbasis (A15) |
 | **Merge M2** | Umbenennung des Ostfensterfeldes, 15 Stellen | GB | **byte-gleich** gegen die GB-Basis; eigener Merge, weil jede Zeile in die solaren Gewinne mündet |
 | **Merge M3** | `GebaeudeSchema` samt Sichtneubau, Namensleser, `DbWerte`, **Katalogkopie NULL-erhaltend über alle drei Schreibstellen** (W14), `SichtQuelleWache` | M2 | byte-gleich; die Probe **ist** der Sichtneubau; SQL-Dialekt-Prüfer grün |
 | **M4** (vorweggenommen) | **umgesetzt als Schemaschritt 95** (Anwenderentscheid 19.09.2026): Klimaspalten in `SchemaKatalog.Schritt95_Klimaspalten`, Leseweg der PVGIS- und der TRY-Antwort; keine `Windgeschwindigkeit` ([Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)) | — (lief vor GB) | erbracht: byte-gleich; Importprobe liefert dieselben Strahlungsreihen |
