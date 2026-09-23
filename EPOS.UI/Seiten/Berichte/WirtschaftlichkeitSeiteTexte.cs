@@ -114,11 +114,16 @@ public sealed class WirtschaftlichkeitSeiteTexte
     /// <summary>WIRT_VALERI_NORM_5</summary>
     public string Norm5 { get; set; } = T("WIRT_VALERI_NORM_5", "DIN EN 17463 · 7 · 9 · Anhang E");
 
-    /// <summary>WIRT_VALERI_BLOCK_2_HINWEIS — die EINE Zeile an der Stelle der Zahlungsreihen.</summary>
+    /// <summary>WIRT_VALERI_BLOCK_2_HINWEIS — die EINE Zeile an der Stelle der Zahlungsreihen,
+    /// solange in dieser Sitzung kein Lauf Jahresreihen geliefert hat (ETAPPE E8a).</summary>
     public string Block2Hinweis { get; set; } = T("WIRT_VALERI_BLOCK_2_HINWEIS",
-        "Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. "
-        + "Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die "
-        + "Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht).");
+        "Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder "
+        + "„Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine "
+        + "Jahresreihen.");
+    /// <summary>WIRT_ZR_STAND — die Wahl des Standes in Block 2 (ETAPPE E8a).</summary>
+    public string ZrStand { get; set; } = T("WIRT_ZR_STAND", "Stand:");
+    /// <summary>WIRT_ZR_SZENARIO — die Wahl des Szenarios in Block 2 (ETAPPE E8a).</summary>
+    public string ZrSzenario { get; set; } = T("WIRT_ZR_SZENARIO", "Szenario:");
     /// <summary>WIRT_VALERI_KZ_HINWEIS — die Einordnung der Kennzahlen in Block 3.</summary>
     public string KennzahlHinweis { get; set; } = T("WIRT_VALERI_KZ_HINWEIS",
         "Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die "

@@ -16549,13 +16549,46 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>DIN EN 17463 · 7 · 9 · Anhang E</value>
   </data>
   <data name="WIRT_VALERI_BLOCK_2_HINWEIS" xml:space="preserve">
-    <value>Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht).</value>
+    <value>Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine Jahresreihen.</value>
   </data>
   <data name="WIRT_VALERI_MASSNAHME" xml:space="preserve">
     <value>Maßnahme</value>
   </data>
   <data name="WIRT_VALERI_KZ_HINWEIS" xml:space="preserve">
     <value>Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die Annuität legt ihn auf gleiche Jahresbeträge um. Dynamische Amortisation und interner Zinsfuß stehen nachrichtlich (Anhang C).</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION" xml:space="preserve">
+    <value>Investition I₀</value>
+  </data>
+  <data name="WIRT_GL_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE" xml:space="preserve">
+    <value>Energiekosten</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE" xml:space="preserve">
+    <value>Erlöse</value>
+  </data>
+  <data name="WIRT_GL_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffungen</value>
+  </data>
+  <data name="WIRT_GL_RESTWERT" xml:space="preserve">
+    <value>Restwert am Ende</value>
+  </data>
+  <data name="WIRT_ZR_STAND" xml:space="preserve">
+    <value>Stand:</value>
+  </data>
+  <data name="WIRT_ZR_SZENARIO" xml:space="preserve">
+    <value>Szenario:</value>
+  </data>
+  <data name="WIRT_ZR_SUMME" xml:space="preserve">
+    <value>Summe nominal</value>
+  </data>
+  <data name="WIRT_ZR_HINWEIS" xml:space="preserve">
+    <value>Nominal und unabgezinst, Ausgaben negativ; das Jahr 0 trägt die Investition nach Zuschussabzug, das letzte Jahr den Restwert. Die Zeile „Barwert“ zinst jede Spalte mit i = {0} % ab — dieselben Zahlen wie die Gliederung unter „Woraus entsteht die Zahl?“; ihre Summe ist der Nettobarwert ({1} €).</value>
+  </data>
+  <data name="WIRT_ZR_ABWEICHEND" xml:space="preserve">
+    <value>{0}: Die Jahresreihen passen nicht zu den gespeicherten Ergebnissen — „Berechnen“ rechnet sie neu.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.</value>

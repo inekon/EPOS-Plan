@@ -18,10 +18,11 @@
      "Was ist angenommen?" (Annahmentafel, Hinweistext, Parameternachweis,
      Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
      Deklarationen, Knopf "Bericht erzeugen").
-   - "ValERI-Bewertung": die Bloecke 1, 3, 4, 5 der Norm; an der Stelle von
-     Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile. Block 4 traegt seit
-     Etappe E8a (E6-Q1) auch Spannenbild und Verlauf - dieselben Bausteine wie
-     "Wie sicher ist das?".
+   - "ValERI-Bewertung": die fuenf Bloecke der Norm. Block 2 (Zahlungsreihen,
+     Etappe E8a) zeigt je Stand und Szenario die Jahresreihen des Laufs; ohne Lauf
+     in dieser Sitzung steht an seiner Stelle EINE benannte Hinweiszeile. Block 4
+     traegt seit Etappe E8a (E6-Q1) auch Spannenbild und Verlauf - dieselben
+     Bausteine wie "Wie sicher ist das?".
    Die Fussleiste traegt die Sichten (Photovoltaik, BHKW - je nach
    Ausstattung) und "Berechnen" - in beiden Zustaenden dieselbe; der Umschalter
    wechselt nur den Leib. Den Knopf "Verlauf..." gibt es nicht mehr (Etappe E6,
@@ -445,13 +446,15 @@
     {
         @* ============== Darstellung "ValERI-Bewertung" (V-1, V-C) ==============
 
-           IN DIESER ETAPPE NUR, WAS DATEN HAT: Block 1 (Gegenstand und Rahmen aus
-           dem Parametersatz), Block 3 (Kennzahlen), Block 4 (Unsicherheit, seit E8a
-           mit Spannenbild und Verlauf) und
-           Block 5 (Deklarationen). Block 2 - die Zahlungsreihen je Jahr samt
-           Zahlungsstrombild - kommt mit E8; an seiner Stelle steht EINE benannte
-           Hinweiszeile, kein leerer Rahmen. Der Normbezug steht als Untertitel im
-           Balken (Mockup-Tafel "ValERI-Bewertung - die fuenf Bloecke"). *@
+           DIE FUENF BLOECKE DER NORM: Block 1 (Gegenstand und Rahmen aus dem
+           Parametersatz), Block 2 (Zahlungsreihen, seit E8a), Block 3 (Kennzahlen),
+           Block 4 (Unsicherheit, seit E8a mit Spannenbild und Verlauf) und Block 5
+           (Deklarationen). Block 2 zeigt die Zahlungsreihen je Jahr aus den
+           Zahlungsbildern des Laufs dieser Sitzung; solange es keine gibt, steht an
+           seiner Stelle EINE benannte Hinweiszeile, kein leerer Rahmen. Das
+           Zahlungsstrombild (U42) ist nicht gebaut - Konzeptentscheid offen. Der
+           Normbezug steht als Untertitel im Balken (Mockup-Tafel "ValERI-Bewertung -
+           die fuenf Bloecke"). *@
         <Gruppenkopf Titel="@Texte.Block1" Summe="@Texte.Norm1">
             <KindInhalt>
                 @if (_stand.Ansicht.Rahmen.Zeilen.Count > 0)
@@ -464,9 +467,7 @@
 
         <Gruppenkopf Titel="@Texte.Block2" Summe="@Texte.Norm2">
             <KindInhalt>
-                <div class="epos-wirt-block-luecke">
-                    <Herleitungszeile Text="@Texte.Block2Hinweis" />
-                </div>
+                @Zahlungsreihenteil
             </KindInhalt>
         </Gruppenkopf>
 
@@ -1413,6 +1414,41 @@
     </div>;
 
     /// <summary>
+    /// ETAPPE E8a (ValERI-Block 2 „Zahlungsreihen", DIN EN 17463 6.1 bis 6.4): je Stand und
+    /// Szenario die Jahresreihen der sechs Bestandteile, Netto und Barwert, darunter die
+    /// Summe nominal und die Barwerte — dieselben Zahlen wie die Gliederung unter „Woraus
+    /// entsteht die Zahl?". Zwei Klapplisten wählen Stand und Szenario (Vorgabe: die
+    /// Leitversion im Erwartungsfall); sie wählen nur, was die Hülle schon geliefert hat.
+    /// Ohne Jahresreihen (kein Lauf in dieser Sitzung) steht EINE benannte Zeile.
+    /// </summary>
+    private RenderFragment Zahlungsreihenteil => @<div class="epos-wirt-zahlungsreihen-teil">
+        @if (Zahlungsreihe is ZahlungsreihenTafel tafel)
+        {
+            <div class="epos-seite-zeile epos-wirt-zahlungsreihen-wahl">
+                <Auswahlfeld Bezeichnung="@Texte.ZrStand" Eintraege="@_stand.Ansicht.Zahlungsstaende"
+                             Auswahl="@tafel.IdStand" AuswahlChanged="BeiZahlungsstand" />
+                <Auswahlfeld Bezeichnung="@Texte.ZrSzenario" Eintraege="@_stand.Szenarien"
+                             Auswahl="@tafel.Szenario" AuswahlChanged="BeiZahlungsszenario" />
+            </div>
+            @Tafel(tafel.Tafel, "epos-raster epos-wirt-tafel epos-wirt-zahlungsreihen", false)
+            @if (!string.IsNullOrEmpty(tafel.Unterzeile))
+            {
+                <Herleitungszeile Text="@tafel.Unterzeile" />
+            }
+            @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
+            {
+                <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
+            }
+        }
+        else
+        {
+            <div class="epos-wirt-block-luecke">
+                <Herleitungszeile Text="@(string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis) ? Texte.Block2Hinweis : _stand.Ansicht.Zahlungshinweis)" />
+            </div>
+        }
+    </div>;
+
+    /// <summary>
     /// U44: der Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks. Er ist KEIN
     /// Primärknopf — die Seite trägt genau einen, „Berechnen" in der Fußleiste (Q8).
     /// </summary>
@@ -1447,7 +1483,7 @@
                 @for (int r = 0; r < m.Zeilen.Count; r++)
                 {
                     MatrixZeile z = m.Zeilen[r];
-                    <tr class="@(ersteIstReferenz && r == 0 ? "epos-wirt-referenzzeile" : null)">
+                    <tr class="@Zeilenklasse(z, ersteIstReferenz && r == 0)">
                         <th scope="row" class="epos-matrix-titel">@z.Titel</th>
                         @for (int i = 0; i < z.Zellen.Count; i++)
                         {
@@ -1487,6 +1523,53 @@
             </tbody>
         </table>
     </div>;
+
+    /// <summary>Die Klasse einer Tafelzeile: die Referenzzeile der Bandbreite hinterlegt, eine
+    /// Summenzeile (ETAPPE E8a) abgesetzt; sonst keine.</summary>
+    private static string? Zeilenklasse(MatrixZeile z, bool referenz)
+        => referenz ? "epos-wirt-referenzzeile" : z.IstSumme ? "epos-wirt-summenzeile" : null;
+
+    // =====================================================================
+    // ETAPPE E8a — Block 2 „Zahlungsreihen": die Wahl von Stand und Szenario
+    // =====================================================================
+
+    /// <summary>Der in Block 2 gewählte Stand; <c>null</c> = die Leitversion.</summary>
+    private int? _zahlungsstand;
+
+    /// <summary>Das in Block 2 gewählte Szenario; <c>null</c> = Erwartet (Nummer 0).</summary>
+    private int? _zahlungsszenario;
+
+    /// <summary>
+    /// Die gezeigte Tafel der Zahlungsreihen: der gewählte Stand (sonst die Leitversion,
+    /// sonst der erste) im gewählten Szenario (sonst Erwartet, sonst das erste, das der
+    /// Stand trägt). <c>null</c> = keine Jahresreihen. Eine Wahl, die die Ansicht nicht mehr
+    /// trägt (Vergleichswahl gewechselt), fällt still auf die Vorgabe zurück — sie ist eine
+    /// Blickrichtung, kein Zustand.
+    /// </summary>
+    private ZahlungsreihenTafel? Zahlungsreihe
+    {
+        get
+        {
+            IReadOnlyList<ZahlungsreihenTafel> tafeln = _stand.Ansicht.Zahlungsreihen;
+            if (tafeln is null || tafeln.Count == 0) return null;
+
+            int stand = tafeln[0].IdStand;
+            if (_zahlungsstand is int s && tafeln.Any(t => t.IdStand == s)) stand = s;
+            else if (tafeln.Any(t => t.IdStand == _stand.Ansicht.Leitversion)) stand = _stand.Ansicht.Leitversion;
+
+            int szenario = _zahlungsszenario ?? 0;
+            return tafeln.FirstOrDefault(t => t.IdStand == stand && t.Szenario == szenario)
+                ?? tafeln.FirstOrDefault(t => t.IdStand == stand && t.Szenario == 0)
+                ?? tafeln.First(t => t.IdStand == stand);
+        }
+    }
+
+    /// <summary>Die gezeigte Tafel der Zahlungsreihen (Prüfhilfe).</summary>
+    public ZahlungsreihenTafel? GezeigteZahlungsreihe => Zahlungsreihe;
+
+    private void BeiZahlungsstand(int? id) => _zahlungsstand = id;
+
+    private void BeiZahlungsszenario(int? id) => _zahlungsszenario = id;
 
     // =====================================================================
     // ETAPPE E5 (U44) — „Bericht erzeugen"

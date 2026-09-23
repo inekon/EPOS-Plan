@@ -76,6 +76,19 @@ namespace WindowsFormsApplication1
         /// <summary>Der Betrachtungszeitraum T beim letzten Rechnen [a].</summary>
         private int _t;
 
+        /// <summary>
+        /// ETAPPE E8a — die drei Läufe über den Betrachtungszeitraum, falls der Verlauf auf einem
+        /// anderen Horizont steht; <c>null</c> = keine (der Verlauf selbst steht auf T).
+        /// </summary>
+        private WirtschaftlichkeitVerlaufSzenarien _ueberT;
+
+        /// <summary>Wofür <see cref="_ueberT"/> gilt: Horizont, Sicht, Referenz, Eingangsdaten.</summary>
+        private string _ueberTSchluessel;
+
+        /// <summary>Rechnet „Aktualisieren" gerade auf dem Arbeitsfaden? Dann rechnet
+        /// <see cref="GliederungenUeberT"/> nichts nach.</summary>
+        private volatile bool _rechnet;
+
         /// <param name="kontext">Liefert die Wahl der Seite frisch (Vergleich, Sicht, Referenzzeile).</param>
         internal KapitalwertVerlaufHuelle(int idStamm, string stammName, Func<VerlaufKontext> kontext)
         {
@@ -109,6 +122,8 @@ namespace WindowsFormsApplication1
             _daten = daten;
             _verlauf = null;
             _schluessel = null;
+            _ueberT = null;
+            _ueberTSchluessel = null;
             if (daten == null) return;
             try { Rechne(_kontext()); }
             catch { _verlauf = null; _schluessel = null; }
@@ -122,6 +137,56 @@ namespace WindowsFormsApplication1
         {
             _verlauf = null;
             _schluessel = null;
+            _ueberT = null;
+            _ueberTSchluessel = null;
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (Konzept § 2.11.4 V‑C; ValERI-Block 2, U41, U46, U47) — die
+        /// <b>Gliederungen der drei Läufe über den Betrachtungszeitraum</b>, abgeglichen gegen
+        /// die Ergebnisse, neben denen die Seite sie zeigt.
+        ///
+        /// <para><b>Keine eigene Rechnung.</b> Quelle ist der gerechnete Verlauf: Steht er auf
+        /// T (die Vorgabe), IST er die Quelle; ist er verworfen, rechnet dieser Weg ihn aus
+        /// denselben Eingangsdaten nach — genau das, was das nächste Zeichnen des Abschnitts
+        /// ohnehin täte. Nur wenn der Anwender den Horizont des Verlaufs verstellt hat,
+        /// entstehen die drei Läufe über T eigens, mit demselben Rechenweg, und werden gemerkt.
+        /// Während „Aktualisieren" auf dem Arbeitsfaden rechnet, wird nichts nachgerechnet.</para>
+        /// </summary>
+        /// <param name="gespeichert">Die Ergebnisse der Seite (gespeichert bzw. in Sicht 2
+        /// gegen A gerechnet); eine Gliederung, die nicht zu ihnen passt, fehlt im Satz.</param>
+        /// <returns><c>null</c>, solange in dieser Sitzung keine Eingangsdaten vorliegen (kein
+        /// „Berechnen", kein „Aktualisieren").</returns>
+        internal Zahlungsgliederungen GliederungenUeberT(IEnumerable<WirtschaftlichkeitErgebnis> gespeichert)
+        {
+            if (_daten == null) return null;
+            VerlaufKontext k = _kontext();
+            WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+            int t = p.Betrachtungszeitraum;
+
+            WirtschaftlichkeitVerlaufSzenarien laeufe;
+            int horizont = _jahre > 0 ? _jahre : Horizont(p);
+            if (horizont == t)
+            {
+                if (!_rechnet &&
+                    (_verlauf == null || !string.Equals(_schluessel, Schluessel(k), StringComparison.Ordinal)))
+                    Rechne(k);
+                laeufe = _verlauf;
+            }
+            else
+            {
+                string schluessel = Schluessel(k, t);
+                if (!_rechnet &&
+                    (_ueberT == null || !string.Equals(_ueberTSchluessel, schluessel, StringComparison.Ordinal)))
+                {
+                    _daten.Sicht = k.Sicht != null && k.Sicht.IstPaar ? k.Sicht.Kopie() : null;
+                    _daten.IdGruppenreferenz = p.IdReferenzprojekt;
+                    _ueberT = _ctrl.BerechneVerlaufSzenarien(_daten, p, t);
+                    _ueberTSchluessel = schluessel;
+                }
+                laeufe = _ueberT;
+            }
+            return laeufe == null ? null : Zahlungsgliederungen.Aus(laeufe, p, gespeichert);
         }
 
         // =====================================================================
@@ -160,27 +225,38 @@ namespace WindowsFormsApplication1
 
             // E3/6-Muster: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten statt
             // ueber ein nacktes Task.Run (Waechter ParallelitaetWacheTests).
-            await Kulturweitergabe.Starten(() =>
+            // ETAPPE E8a: Solange er rechnet, rechnet GliederungenUeberT nichts nach.
+            _rechnet = true;
+            try
             {
-                if (!Deckt(_daten, k.Gewaehlt))
+                await Kulturweitergabe.Starten(() =>
                 {
-                    var varianten = k.Gewaehlt.Where(id => id != _idStamm).ToList();
-                    TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
-                    // Dieselbe EINE Regel wie im Kern und auf der Seite (BK1, SP-W1, LS-E-2);
-                    // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
-                    bool mitZeitreihen = tarif.Wirksam ||
-                                         KwkgAktivierung.IstAktiv(_idStamm, varianten) ||
-                                         KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, varianten);
-                    BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
-                        _idStamm, _stammName, varianten, false, mitZeitreihen, null, ct);
-                    // Exaktes Kriterium: Der Sammler markiert neu simulierte Projekte selbst.
-                    neu = daten.Varianten.Any(v => v.FrischSimuliert);
-                    _daten = daten;
-                }
-                ct.ThrowIfCancellationRequested();
-                Rechne(k);
-                return true;
-            }, ct);
+                    if (!Deckt(_daten, k.Gewaehlt))
+                    {
+                        var varianten = k.Gewaehlt.Where(id => id != _idStamm).ToList();
+                        TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
+                        // Dieselbe EINE Regel wie im Kern und auf der Seite (BK1, SP-W1, LS-E-2);
+                        // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+                        bool mitZeitreihen = tarif.Wirksam ||
+                                             KwkgAktivierung.IstAktiv(_idStamm, varianten) ||
+                                             KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, varianten);
+                        BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
+                            _idStamm, _stammName, varianten, false, mitZeitreihen, null, ct);
+                        // Exaktes Kriterium: Der Sammler markiert neu simulierte Projekte selbst.
+                        neu = daten.Varianten.Any(v => v.FrischSimuliert);
+                        _daten = daten;
+                        _ueberT = null;
+                        _ueberTSchluessel = null;
+                    }
+                    ct.ThrowIfCancellationRequested();
+                    Rechne(k);
+                    return true;
+                }, ct);
+            }
+            finally
+            {
+                _rechnet = false;
+            }
 
             VerlaufAnsicht ansicht = Ansicht(wahl, k);
             ansicht.NeuSimuliert = neu;
@@ -264,6 +340,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wofür ein gerechneter Verlauf gilt — ändert sich einer der Teile, wird nachgerechnet.</summary>
         private string Schluessel(VerlaufKontext k)
+            => Schluessel(k, _jahre > 0 ? _jahre : 0);
+
+        /// <summary>Derselbe Schlüssel für einen ausdrücklich genannten Horizont (ETAPPE E8a:
+        /// die Läufe über T, wenn der Verlauf auf einem anderen Horizont steht).</summary>
+        private string Schluessel(VerlaufKontext k, int jahre)
         {
             int referenz = 0;
             try { referenz = _ctrl.LadeParameter(_idStamm).IdReferenzprojekt; }

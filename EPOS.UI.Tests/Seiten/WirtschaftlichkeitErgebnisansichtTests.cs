@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -15,8 +16,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Klappliste, die nur die Tafeln darunter steuert, die Sensitivität mit Steigung, der
 /// Hinweistext unter der Annahmentafel (U10), die Deklarationen als Klappblock, die
 /// Nutzungsdauer- und die Nr.-31-Zeile, „— ‹Grund›" statt einer Null (Q16), der Knopf
-/// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den Blöcken 1, 3, 4, 5 und der
-/// benannten Lücke für Block 2 (E8).
+/// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den fünf Blöcken — Block 2 mit den
+/// Zahlungsreihen oder, ohne Lauf, seiner benannten Hinweiszeile (E8a).
 ///
 /// <para><b>Kulturpinnung</b>: Die Beschriftungen kommen aus dem Bündel
 /// <see cref="WirtschaftlichkeitSeiteTexte"/> und damit aus <c>MyResource</c>; die
@@ -693,6 +694,106 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         // Die Szenario-Klappliste gehört zur Kennzahlen-Darstellung.
         Assert.Empty(cut.FindAll(".epos-wirt-szenariozeile"));
     }
+
+    /// <summary>
+    /// ETAPPE E8a (ValERI-Block 2 „Zahlungsreihen", DIN EN 17463 6.1 bis 6.4): Mit
+    /// Jahresreihen des Laufs zeigt Block 2 die Tafel des gewählten Standes im gewählten
+    /// Szenario — Vorgabe die Leitversion im Erwartungsfall —, darunter ihre Zeile; die zwei
+    /// Summenzeilen sind abgesetzt, die Hinweiszeile an der Stelle des Blocks entfällt. Die
+    /// zwei Klapplisten wählen nur, was die Hülle geliefert hat.
+    /// </summary>
+    [Fact]
+    public void Block_2_zeigt_die_Zahlungsreihen_mit_Wahl_von_Stand_und_Szenario()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (STAMM, "Stamm"), (WP, "WP klein"), (BHKW, "BHKW") };
+        stand.Ansicht.Zahlungsreihen = new[]
+        {
+            Zahlungstafel(STAMM, 0, "S0"), Zahlungstafel(WP, 0, "W0"), Zahlungstafel(WP, 2, "W2"),
+            Zahlungstafel(BHKW, 0, "B0"), Zahlungstafel(BHKW, 2, "B2")
+        };
+        var cut = Zeige(stand);
+
+        IElement b2 = Abschnitt(cut, 1);
+        Assert.Empty(b2.QuerySelectorAll(".epos-wirt-block-luecke"));
+        IElement tafel = b2.QuerySelector(".epos-wirt-zahlungsreihen")!;
+        Assert.Equal(new[] { "Jahr", "Investition I₀", "Betriebskosten", "Energiekosten", "Erlöse",
+                             "Ersatzbeschaffungen", "Restwert am Ende", "Netto nominal", "Barwert" },
+                     tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.Equal("W0", Zellen(tafel.QuerySelectorAll("tbody tr")[0])[0]);            // Leitversion, Erwartet
+        IReadOnlyList<IElement> summen = tafel.QuerySelectorAll("tbody tr.epos-wirt-summenzeile").ToList();
+        Assert.Equal(new[] { "Summe nominal", "Barwert" },
+                     summen.Select(z => z.QuerySelector("th")!.TextContent.Trim()).ToArray());
+        Assert.Contains(b2.QuerySelectorAll(".epos-herleitung-text"), e => e.TextContent == "Zeile W0");
+        Assert.Equal(WP, cut.Instance.GezeigteZahlungsreihe!.IdStand);
+
+        // Die zwei Klapplisten: Stand, dann Szenario.
+        IReadOnlyList<IElement> listen = b2.QuerySelectorAll("select").ToList();
+        Assert.Equal(2, listen.Count);
+        listen[0].Change(BHKW.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("B0", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+
+        Abschnitt(cut, 1).QuerySelectorAll("select")[1].Change("2");
+        Assert.Equal("B2", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+        Assert.Equal(2, cut.Instance.GezeigteZahlungsreihe!.Szenario);
+
+        // Ein Szenario, das der Stand nicht trägt, fällt auf Erwartet zurück.
+        Abschnitt(cut, 1).QuerySelectorAll("select")[0].Change(STAMM.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("S0", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+    }
+
+    /// <summary>
+    /// ETAPPE E8a: Passen die Jahresreihen eines Standes nicht zu den gespeicherten
+    /// Ergebnissen, sagt Block 2 es — unter der Tafel, oder an der Stelle des Blocks, wenn
+    /// es gar keine Tafel gibt.
+    /// </summary>
+    [Fact]
+    public void Block_2_nennt_die_abweichenden_Staende()
+    {
+        const string abweichend = "BHKW: Die Jahresreihen passen nicht zu den gespeicherten Ergebnissen — „Berechnen“ rechnet sie neu.";
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Zahlungshinweis = abweichend;
+        var ohneTafel = Zeige(stand);
+
+        IElement luecke = Abschnitt(ohneTafel, 1).QuerySelector(".epos-wirt-block-luecke")!;
+        Assert.Equal(abweichend, luecke.TextContent.Trim());
+        Assert.Single(Abschnitt(ohneTafel, 1).QuerySelectorAll(".epos-herleitung-text"));
+
+        WirtschaftlichkeitStand mit = Voll();
+        mit.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        mit.Ansicht.Zahlungshinweis = abweichend;
+        mit.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein") };
+        mit.Ansicht.Zahlungsreihen = new[] { Zahlungstafel(WP, 0, "W0") };
+        var mitTafel = Zeige(mit);
+
+        Assert.Contains(Abschnitt(mitTafel, 1).QuerySelectorAll(".epos-herleitung-text"), e => e.TextContent == abweichend);
+        Assert.NotNull(Abschnitt(mitTafel, 1).QuerySelector(".epos-wirt-zahlungsreihen"));
+    }
+
+    /// <summary>Eine Probetafel für Block 2: die erste Zelle nennt Stand und Szenario.</summary>
+    private static ZahlungsreihenTafel Zahlungstafel(int stand, int szenario, string kennung) => new ZahlungsreihenTafel
+    {
+        IdStand = stand,
+        Szenario = szenario,
+        Unterzeile = "Zeile " + kennung,
+        Tafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Jahr", "Investition I₀", "Betriebskosten", "Energiekosten", "Erlöse",
+                              "Ersatzbeschaffungen", "Restwert am Ende", "Netto nominal", "Barwert" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "0", Zellen = new[] { kennung, "—", "—", "—", "—", "—", "−1.000", "−1.000" } },
+                new MatrixZeile { Titel = "1", Zellen = new[] { "—", "−100", "−500", "+900", "—", "—", "300", "291" } },
+                new MatrixZeile { Titel = "Summe nominal", IstSumme = true,
+                                  Zellen = new[] { "−1.000", "−100", "−500", "+900", "0", "0", "−700", "" } },
+                new MatrixZeile { Titel = "Barwert", IstSumme = true,
+                                  Zellen = new[] { "−1.000", "−97", "−485", "+874", "0", "0", "", "−709" } }
+            }
+        }
+    };
 
     /// <summary>
     /// Block 5 nennt die nicht monetären Wirkungen, wenn ein Text gepflegt ist — mit der

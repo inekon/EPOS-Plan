@@ -115,6 +115,36 @@ public sealed class MatrixZeile
     public string Zellwarnung(int spalte)
         => Zellwarnungen is not null && spalte >= 0 && spalte < Zellwarnungen.Count
            ? Zellwarnungen[spalte] ?? "" : "";
+
+    /// <summary>
+    /// ETAPPE E8a: eine <b>Summenzeile</b> — die Zeilen „Summe nominal" und „Barwert" unter
+    /// den Zahlungsreihen (Block 2), der Nettobarwert der Gliederung. Die Seite setzt sie
+    /// ab; gerechnet ist sie in der Hülle.
+    /// </summary>
+    public bool IstSumme { get; set; }
+}
+
+/// <summary>
+/// ETAPPE E8a (ValERI-Block 2 „Zahlungsreihen", DIN EN 17463 6.1 bis 6.4) — die
+/// Zahlungsreihen EINES Standes in EINEM Szenario: je Jahr eine Zeile mit den sechs
+/// Bestandteilen der Gliederung (Investition, Betriebskosten, Energiekosten, Erlöse,
+/// Ersatzbeschaffungen, Restwert), dem Netto und dem Barwert; darunter die Summe nominal
+/// und die Barwerte. Die Hülle baut sie aus dem Zahlungsbild des Laufs, fertig formatiert.
+/// </summary>
+public sealed class ZahlungsreihenTafel
+{
+    /// <summary>Der Stand (<c>Tab_Projekt.ID</c>).</summary>
+    public int IdStand { get; set; }
+
+    /// <summary>Das Szenario als Nummer der Szenario-Klappliste
+    /// (<see cref="WirtschaftlichkeitStand.Szenarien"/>, 0 = Erwartet).</summary>
+    public int Szenario { get; set; }
+
+    /// <summary>Die Tafel: Spalten Jahr · sechs Bestandteile · Netto nominal · Barwert.</summary>
+    public ErgebnisMatrix Tafel { get; set; } = new();
+
+    /// <summary>Die Zeile unter der Tafel: nominal, Vorzeichen, Zins und Nettobarwert.</summary>
+    public string Unterzeile { get; set; } = "";
 }
 
 /// <summary>
@@ -309,6 +339,36 @@ public sealed class ErgebnisAnsicht
     /// <c>null</c> = keine Bandbreite, dann steht kein Bild.
     /// </summary>
     public Zeichenmodell? Spannenbild { get; set; }
+
+    // =====================================================================
+    // ETAPPE E8a — Zahlungsreihen (Block 2)
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E8a (ValERI-Block 2): die Zahlungsreihen je Stand und Szenario — aus den
+    /// Zahlungsbildern des Laufs, der in dieser Sitzung gerechnet ist, und nur, wo sie zum
+    /// gespeicherten Ergebnis passen. Leer = keine Jahresreihen (dann steht
+    /// <see cref="Zahlungshinweis"/> bzw. die Hinweiszeile des Blocks). Sie hängen an der
+    /// Vergleichswahl, nicht an der Szenario-Klappliste: Block 2 wählt selbst.
+    /// </summary>
+    public IReadOnlyList<ZahlungsreihenTafel> Zahlungsreihen { get; set; } = Array.Empty<ZahlungsreihenTafel>();
+
+    /// <summary>Die Stände, für die es Zahlungsreihen gibt (Id, Name) — die Auswahl in Block 2.</summary>
+    public IReadOnlyList<(int Id, string Text)> Zahlungsstaende { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// ETAPPE E8a: die <b>Leitversion</b> — der Stand, dessen Differenz zur Referenz
+    /// Differenzspalte, Brückenbild und „Was daraus im Lauf wird" zeigen (die größte
+    /// Kapitalwertdifferenz im Erwartungsfall, in Sicht 2 B); Block 2 zeigt ihn zuerst.
+    /// 0 = keiner.
+    /// </summary>
+    public int Leitversion { get; set; }
+
+    /// <summary>
+    /// ETAPPE E8a: warum Jahresreihen fehlen — kein Lauf in dieser Sitzung, oder die Reihen
+    /// eines Standes passen nicht zu den gespeicherten Ergebnissen. Leer = alle da.
+    /// </summary>
+    public string Zahlungshinweis { get; set; } = "";
 }
 
 /// <summary>

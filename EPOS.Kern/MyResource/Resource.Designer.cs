@@ -66517,6 +66517,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_BETRIEB {
+            get {
+                return ResourceManager.GetString("WIRT_GL_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ENERGIE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlöse ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERLOESE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERLOESE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I₀ ähnelt.
+        /// </summary>
+        public static string WIRT_GL_INVESTITION {
+            get {
+                return ResourceManager.GetString("WIRT_GL_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende ähnelt.
+        /// </summary>
+        public static string WIRT_GL_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_GL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
         /// </summary>
         public static string WIRT_GRUND_BRENNSTOFFPREIS_FEHLT {
@@ -68587,7 +68641,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine Jahresreihen. ähnelt.
         /// </summary>
         public static string WIRT_VALERI_BLOCK_2_HINWEIS {
             get {
@@ -69357,6 +69411,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_ZUSCHUSS {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Jahresreihen passen nicht zu den gespeicherten Ergebnissen — „Berechnen“ rechnet sie neu. ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominal und unabgezinst, Ausgaben negativ; das Jahr 0 trägt die Investition nach Zuschussabzug, das letzte Jahr den Restwert. Die Zeile „Barwert“ zinst jede Spalte mit i = {0} % ab — dieselben Zahlen wie die Gliederung unter „Woraus entsteht die Zahl?“; ihre Summe ist der Nettobarwert ({1} €). ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe nominal ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SUMME {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SZENARIO {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SZENARIO", resourceCulture);
             }
         }
         

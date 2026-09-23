@@ -806,6 +806,19 @@ namespace WindowsFormsApplication1
                 Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur)
             };
 
+            // ETAPPE E8a (Konzept § 2.11.4 V‑C, Mockup Kategorie 8): die ZAHLUNGSREIHEN der
+            // gezeigten Stände (ValERI-Block 2) — aus den Zahlungsbildern des Laufs dieser
+            // Sitzung (der Verlauf rechnet sie mit „Berechnen" ohnehin mit), nur wo sie zum
+            // gespeicherten Ergebnis passen. Gerechnet wird hier nichts; die Leitversion ist
+            // die Regel des Kerns.
+            var staendeSpalten = new List<KeyValuePair<int, string>>();
+            foreach (int id in spaltenIds) staendeSpalten.Add(new KeyValuePair<int, string>(id, Name(id)));
+            Zahlungsgliederungen gliederungen = Gliederungen();
+            ansicht.Leitversion = Zahlungsgliederungen.Leitversion(_ergebnisse, spaltenIds, idReferenz);
+            ansicht.Zahlungsreihen = ZahlungsreihenAnsicht.Jahrestafeln(gliederungen, staendeSpalten, SZENARIEN, kultur);
+            ansicht.Zahlungsstaende = ZahlungsreihenAnsicht.Staende(ansicht.Zahlungsreihen, staendeSpalten);
+            ansicht.Zahlungshinweis = ZahlungsreihenAnsicht.Hinweis(gliederungen, staendeSpalten, kultur);
+
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
             for (int i = 0; i < spaltenErg.Count; i++)
             {
@@ -904,6 +917,19 @@ namespace WindowsFormsApplication1
 
             ansicht.Matrix = new ErgebnisMatrix { Spalten = spalten, Zeilen = matrixzeilen };
             return ansicht;
+        }
+
+        /// <summary>
+        /// ETAPPE E8a: die Gliederungen der drei Läufe über den Betrachtungszeitraum — aus der
+        /// Verlaufshülle, abgeglichen gegen die Ergebnisse der Seite
+        /// (<see cref="KapitalwertVerlaufHuelle.GliederungenUeberT"/>). <c>null</c> = in dieser
+        /// Sitzung ist nichts gerechnet, oder das Lesen scheiterte — dann stehen die
+        /// Zahlungsreihen nicht da, und die Seite sagt es; eine Kennzahl hängt nie daran.
+        /// </summary>
+        private Zahlungsgliederungen Gliederungen()
+        {
+            try { return Verlauf.GliederungenUeberT(_ergebnisse); }
+            catch { return null; }
         }
 
         /// <summary>
