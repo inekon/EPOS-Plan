@@ -264,7 +264,13 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.PROJEKTKOPF,
           typeof(EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht) },
         { KiMaskennamen.STARTSEITE,
-          typeof(EPOS.UI.Seiten.Start.StartseiteKiSicht) }
+          typeof(EPOS.UI.Seiten.Start.StartseiteKiSicht) },
+
+        // Die Programmeinstellungen: sechs benannte Werte und die Diagrammfarben als
+        // FELDTAFEL - hier greift fuer die Farben nur die Typprobe vor dem Punkt, den
+        // Feldbestand haelt Die_Einstellungen_fuehren_je_Farbrolle_ein_Feld.
+        { KiMaskennamen.EINSTELLUNGEN,
+          typeof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht) }
     };
 
     /// <summary>
@@ -366,7 +372,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_einundsiebzig_Masken()
+    public void Der_Katalog_fuehrt_zweiundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -374,8 +380,9 @@ public class KiDialogkatalogTests : IDisposable
         // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
-        // Kennlinieneditor, der Projektkopf des Assistenten und die Startseite.
-        Assert.Equal(71, katalog.Anzahl);
+        // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
+        // Programmeinstellungen.
+        Assert.Equal(72, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -760,6 +767,36 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.NUTZUNGSDAUER_VERWALTUNG);
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Gesetzeskatalog,
                      KiMaskenziele.GESETZESKATALOG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Einstellungen,
+                     KiMaskenziele.EINSTELLUNGEN);
+    }
+
+    /// <summary>
+    /// <b>Die Programmeinstellungen führen je Farbrolle ein Feld</b> (Welle #458,
+    /// Stufe 2) — erzeugt aus derselben Rollenliste, aus der die Hülle die Rubrik
+    /// „Diagramme" füllt (<c>Diagrammfarben.Gruppen</c>): Name mit Vorsilbe, Pfad der
+    /// Feldtafel, Anzeigename der Rolle, setzbar. Er ersetzt für die Farben die
+    /// Reflection-Probe, die eine Feldtafel nicht leisten kann.
+    /// </summary>
+    [Fact]
+    public void Die_Einstellungen_fuehren_je_Farbrolle_ein_Feld()
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.EINSTELLUNGEN)!;
+        Assert.NotNull(d);
+
+        var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
+        Assert.Equal(6 + rollen.Count, d.Felder.Count);
+
+        foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
+        {
+            KiDialogFeld? f = d.FindeFeld(KiDialoge.FARBFELD_VORSILBE + rolle.Name.ToLowerInvariant());
+            Assert.True(f is not null, "Die Farbrolle " + rolle.Name + " fehlt im Katalog.");
+            Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + "." + rolle.Name, f!.Eigenschaftspfad);
+            Assert.Equal(WindowsFormsApplication1.Zeichnung.Diagrammfarben.Anzeigename(rolle), f.Anzeigename);
+            Assert.False(f.NurLesen, rolle.Name);
+        }
+
+        Assert.Equal(nameof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht), KiDialoge.EINSTELLUNGEN_SICHT);
     }
 
     /// <summary>
@@ -1380,7 +1417,11 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.STARTSEITE] =
             "bindet über die Sichtklasse StartseiteKiSicht auf die privaten Felder der " +
             "Seite (Klimaregion des Kopfbandes, Weiche der Solarthermiekachel); Zeuge ist " +
-            "StartseiteTests"
+            "StartseiteTests",
+        [KiMaskennamen.EINSTELLUNGEN] =
+            "bindet über die Sichtklasse EinstellungenKiSicht: der Wertesatz führt Felder " +
+            "statt Eigenschaften, die Diagrammfarben stehen als Feldtafel je Farbrolle; " +
+            "Zeugen sind EinstellungenDialogTests und der Rollenwächter"
     };
 
     /// <summary>

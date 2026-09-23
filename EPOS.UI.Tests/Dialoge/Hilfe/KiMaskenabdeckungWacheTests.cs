@@ -113,6 +113,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
+        new("EinstellungenDialog", 9, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),

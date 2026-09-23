@@ -28322,6 +28322,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_FARBE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_FARBE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_FARBE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_FARBE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Geokodierungsdienstes (Nominatim), der aus einer Anschrift Breite und Länge eines Standorts sucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_GEOKODIERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_GEOKODIERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anfangswert der Kühlung eines NEU angelegten Projekts; vorhandene Projekte und Läufe ändert der Schalter nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_KUEHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_KUEHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse der PVGIS-Schnittstelle, aus der die Klimadaten weltweite Wetterjahre (TMY) laden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_PVGIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_PVGIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Portals der DWD-Testreferenzjahre. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_TRY_PORTAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_TRY_PORTAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse, unter der die TRY-Regionaldaten liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_TRY_REGIONAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_TRY_REGIONAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Hilfe-Wikis, das „Hilfe“ und die Info-Knöpfe öffnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_WIKI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_WIKI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
@@ -31828,6 +31900,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_LPR_KONTEXT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_LPR_KONTEXT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Programmeinstellungen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_ADMSET {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_ADMSET", resourceCulture);
             }
         }
         

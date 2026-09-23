@@ -26024,4 +26024,31 @@ Do you want to allow this?</value>
   <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
     <value>No project is open — climate region and solar mode belong to the open project.</value>
   </data>
+  <data name="KI_DLG_MASKE_ADMSET" xml:space="preserve">
+    <value>Application settings</value>
+  </data>
+  <data name="KI_DLG_ADMSET_WIKI_ERL" xml:space="preserve">
+    <value>The address of the help wiki opened by “Help” and the info buttons.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_GEOKODIERUNG_ERL" xml:space="preserve">
+    <value>The address of the geocoding service (Nominatim) that looks up latitude and longitude from a postal address.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_PVGIS_ERL" xml:space="preserve">
+    <value>The address of the PVGIS interface from which the climate data load worldwide weather years (TMY).</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_PORTAL_ERL" xml:space="preserve">
+    <value>The address of the DWD test reference year portal.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_REGIONAL_ERL" xml:space="preserve">
+    <value>The address where the TRY regional data are stored.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_KUEHLUNG_ERL" xml:space="preserve">
+    <value>The initial cooling setting of a NEWLY created project; the switch does not change existing projects or runs.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_ERL" xml:space="preserve">
+    <value>The colour of “{0}” (group “{1}”) in all charts and reports, as a colour #RRGGBB; the opacity stays that of the chart.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
+    <value>“{0}” is not a colour — #RRGGBB is expected, for example #1F77B4.</value>
+  </data>
 </root>

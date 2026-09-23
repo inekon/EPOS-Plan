@@ -141,6 +141,7 @@ public class KiFeldwerteTests : EposBunitContext
     [InlineData(typeof(EPOS.UI.Dialoge.Waermepumpe.KennlinienEditorDialog))]
     [InlineData(typeof(EPOS.UI.Seiten.Assistent.ProjektKopfSeite))]
     [InlineData(typeof(EPOS.UI.Seiten.Start.Startseite))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Admin.EinstellungenDialog))]
     public void Jede_angemeldete_Komponente_kann_sich_abmelden(Type komponente)
     {
         // Ohne IDisposable käme das Abmelden nie — die Anmeldung überlebte den Dialog,

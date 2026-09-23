@@ -808,8 +808,8 @@
         _ = InvokeAsync(StateHasChanged);
 
         return ergebnis.Fehler
-            ? KiKern.KiErgebnis.Abgelehnt(ergebnis.Text)
-            : KiKern.KiErgebnis.Ok(ergebnis.Text, anzahl: 1);
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
     }
 
     private void BeiZustand()

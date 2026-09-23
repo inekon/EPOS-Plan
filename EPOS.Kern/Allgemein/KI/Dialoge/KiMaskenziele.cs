@@ -201,6 +201,19 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string PROJEKT_VARIANTE = "PROJEKT_ALS_VARIANTE";
 
+        /// <summary>
+        /// Der Seitenschluessel der PROGRAMMEINSTELLUNGEN (Welle #458, Stufe 2).
+        /// </summary>
+        /// <remarks>
+        /// Derselbe Menueweg wie bei <see cref="KLIMADATEN"/>: Unter Windows reicht
+        /// <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
+        /// Hauptfensterhuelle weiter, der das Fenster des Menuepunkts oeffnet. Auf iOS
+        /// fuehrt die <c>AppWurzel</c> die Einstellungen nicht; <c>dialog_oeffnen</c>
+        /// lehnt dort benannt ab. Ein Waechter in <c>EPOS.UI.Tests</c> haelt die
+        /// Zeichenkette gegen <c>Seitenschluessel.Einstellungen</c>.
+        /// </remarks>
+        public const string EINSTELLUNGEN = "EINSTELLUNGEN";
+
         // =================================================================
         //  Die ARGUMENTE - zweite Datenspalte neben dem Ziel (KI-D-Q8)
         // =================================================================
@@ -519,7 +532,11 @@ namespace WindowsFormsApplication1
 
                 // Die STARTSEITE ist ihr eigenes Ziel; ohne Argument entscheidet sie
                 // selbst, welcher Reiter vorn steht.
-                { KiMaskennamen.STARTSEITE, STARTSEITE }
+                { KiMaskennamen.STARTSEITE, STARTSEITE },
+
+                // Die PROGRAMMEINSTELLUNGEN haengen am Menuepunkt „Administration →
+                // Einstellungen" - siehe EINSTELLUNGEN.
+                { KiMaskennamen.EINSTELLUNGEN, EINSTELLUNGEN }
             };
 
         /// <summary>

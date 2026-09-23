@@ -2424,5 +2424,29 @@
         internal static string StartKlimaErl => MyResource.Resource.KI_DLG_START_KLIMA_ERL;
         internal static string StartSolarartName => MyResource.Resource.KI_DLG_START_SOLARART_NAME;
         internal static string StartSolarartErl => MyResource.Resource.KI_DLG_START_SOLARART_ERL;
+
+        // ---- Die Programmeinstellungen (Form_AdminSettings)
+        internal static string MaskeEinstellungen => MyResource.Resource.KI_DLG_MASKE_ADMSET;
+
+        /// <summary>Die Beschriftung der Maske ohne den Doppelpunkt am Ende.</summary>
+        private static string OhneDoppelpunkt(string text) => (text ?? "").TrimEnd(' ', ':');
+
+        internal static string AdmsetWikiName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_WORDPRESS);
+        internal static string AdmsetWikiErl => MyResource.Resource.KI_DLG_ADMSET_WIKI_ERL;
+        internal static string AdmsetGeokodierungName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_GEOKODIERUNG);
+        internal static string AdmsetGeokodierungErl => MyResource.Resource.KI_DLG_ADMSET_GEOKODIERUNG_ERL;
+        internal static string AdmsetPvgisName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_PVGIS);
+        internal static string AdmsetPvgisErl => MyResource.Resource.KI_DLG_ADMSET_PVGIS_ERL;
+        internal static string AdmsetTryPortalName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_TRY_PORTAL);
+        internal static string AdmsetTryPortalErl => MyResource.Resource.KI_DLG_ADMSET_TRY_PORTAL_ERL;
+        internal static string AdmsetTryRegionalName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_TRY_REGIONAL);
+        internal static string AdmsetTryRegionalErl => MyResource.Resource.KI_DLG_ADMSET_TRY_REGIONAL_ERL;
+        internal static string AdmsetKuehlungName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
+        internal static string AdmsetKuehlungErl => MyResource.Resource.KI_DLG_ADMSET_KUEHLUNG_ERL;
+
+        /// <summary>Die Erlaeuterung eines Farbfeldes: Rolle und Gruppe, wie die Rubrik sie zeigt.</summary>
+        internal static string AdmsetFarbeErl(string rolle, string gruppe)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_ADMSET_FARBE_ERL, rolle ?? "", gruppe ?? "");
     }
 }

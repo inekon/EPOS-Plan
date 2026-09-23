@@ -231,11 +231,6 @@ namespace WindowsFormsApplication1
             new KiAusnahme("WaermepumpeReiter", KiAusnahmegrund.Anzeige,
                            "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
 
-            // ---- Offen: Stufe 2 --------------------------------------------------------
-            new KiAusnahme("EinstellungenDialog", KiAusnahmegrund.Offen,
-                           "Die Programmeinstellungen — steuerbar wird eine Teilmenge ohne Pfade.", STUFE_2,
-                           hilfeschluessel: "Form_AdminSettings.btn_Help"),
-
             // ---- Offen: Stufe 3 (nach dem Merge der Zapfprofil-Sitzung) --------------
             new KiAusnahme("ZapfprofilDialog", KiAusnahmegrund.Offen,
                            "Der Zapfprofilgenerator wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,

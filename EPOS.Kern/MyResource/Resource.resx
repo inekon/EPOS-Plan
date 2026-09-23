@@ -26031,4 +26031,31 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt.</value>
   </data>
+  <data name="KI_DLG_MASKE_ADMSET" xml:space="preserve">
+    <value>Programmeinstellungen</value>
+  </data>
+  <data name="KI_DLG_ADMSET_WIKI_ERL" xml:space="preserve">
+    <value>Die Adresse des Hilfe-Wikis, das „Hilfe“ und die Info-Knöpfe öffnen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_GEOKODIERUNG_ERL" xml:space="preserve">
+    <value>Die Adresse des Geokodierungsdienstes (Nominatim), der aus einer Anschrift Breite und Länge eines Standorts sucht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_PVGIS_ERL" xml:space="preserve">
+    <value>Die Adresse der PVGIS-Schnittstelle, aus der die Klimadaten weltweite Wetterjahre (TMY) laden.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_PORTAL_ERL" xml:space="preserve">
+    <value>Die Adresse des Portals der DWD-Testreferenzjahre.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_REGIONAL_ERL" xml:space="preserve">
+    <value>Die Adresse, unter der die TRY-Regionaldaten liegen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_KUEHLUNG_ERL" xml:space="preserve">
+    <value>Der Anfangswert der Kühlung eines NEU angelegten Projekts; vorhandene Projekte und Läufe ändert der Schalter nicht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_ERL" xml:space="preserve">
+    <value>Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4.</value>
+  </data>
 </root>

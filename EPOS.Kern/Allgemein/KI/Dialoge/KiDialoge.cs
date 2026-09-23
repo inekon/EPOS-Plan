@@ -503,6 +503,12 @@ namespace WindowsFormsApplication1
         public const string STARTSEITE = "Form_Start";
 
         /// <summary>
+        /// Die Programmeinstellungen (<c>EinstellungenDialog</c>) — der Nachfolger von
+        /// <c>Form_AdminSettings</c>, dessen Namen er behaelt.
+        /// </summary>
+        public const string EINSTELLUNGEN = "Form_AdminSettings";
+
+        /// <summary>
         /// Der Katalogschluessel der Verwaltung zu einer Auspraegung des Katalogbrowsers —
         /// die EINE Stelle, an der der Dialog erfaehrt, unter welchem Namen er sich anmeldet.
         /// </summary>
@@ -699,7 +705,8 @@ namespace WindowsFormsApplication1
                 ProjektVariante(),
                 Kennlinien(),
                 Projektkopf(),
-                Startseite());
+                Startseite(),
+                Einstellungen());
         }
 
         // =====================================================================
@@ -6837,6 +6844,89 @@ namespace WindowsFormsApplication1
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern)
+                });
+        }
+
+        // =====================================================================
+        // Form_AdminSettings  ->  Dialoge.Admin.EinstellungenDialog   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse der Programmeinstellungen
+        /// (<c>EPOS.UI.Dialoge.Admin.EinstellungenKiSicht</c>).
+        /// </summary>
+        public const string EINSTELLUNGEN_SICHT = "EinstellungenKiSicht";
+
+        /// <summary>Die Vorsilbe der Farbfelder: <c>farbe_waerme_wp</c>.</summary>
+        public const string FARBFELD_VORSILBE = "farbe_";
+
+        /// <summary>
+        /// Die Programmeinstellungen — sechs benannte Werte und je Farbrolle der
+        /// Diagramme ein Feld der FELDTAFEL.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Setzbar sind die Adressen</b> (Wiki, Geokodierung, PVGIS, DWD-Portal,
+        /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b> und <b>die
+        /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
+        /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
+        /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
+        /// Vorsilbe + Rollenname klein, Anzeigename = der Name der Rolle, der Wert ein
+        /// Farbton <c>#RRGGBB</c>.
+        /// </para>
+        /// <para>
+        /// <b>Nicht ueber den Assistenten</b> gehen die fuenf Ordner (Dateiwahlen), der
+        /// Name der Datenbank (ein Datenbankwechsel beim naechsten Start) und der
+        /// Abschalter des Assistenten selbst. „Standardwerte" und „Hausfarben" setzen
+        /// zurueck und bleiben Knoepfe des Anwenders.
+        /// </para>
+        /// <para>
+        /// <b>Speichern ist der Weg von „OK"</b>, nur ohne zu schliessen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Einstellungen()
+        {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("wiki_url", EINSTELLUNGEN_SICHT + ".WikiUrl",
+                                 KiDialogTexte.AdmsetWikiName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetWikiErl, leerErlaubt: true),
+                new KiDialogFeld("geokodierung_url", EINSTELLUNGEN_SICHT + ".GeokodierungUrl",
+                                 KiDialogTexte.AdmsetGeokodierungName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetGeokodierungErl, leerErlaubt: true),
+                new KiDialogFeld("pvgis_url", EINSTELLUNGEN_SICHT + ".PvgisUrl",
+                                 KiDialogTexte.AdmsetPvgisName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetPvgisErl, leerErlaubt: true),
+                new KiDialogFeld("try_portal_url", EINSTELLUNGEN_SICHT + ".TryPortalUrl",
+                                 KiDialogTexte.AdmsetTryPortalName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetTryPortalErl, leerErlaubt: true),
+                new KiDialogFeld("try_regional_url", EINSTELLUNGEN_SICHT + ".TryRegionalUrl",
+                                 KiDialogTexte.AdmsetTryRegionalName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetTryRegionalErl, leerErlaubt: true),
+                new KiDialogFeld("neue_projekte_kuehlung", EINSTELLUNGEN_SICHT + ".NeueProjekteMitKuehlung",
+                                 KiDialogTexte.AdmsetKuehlungName, KiParameterTyp.Wahrheitswert,
+                                 KiDialogTexte.AdmsetKuehlungErl)
+            };
+
+            foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)
+                foreach (Zeichnung.Farbrolle rolle in gruppe.Rollen)
+                {
+                    string name = Zeichnung.Diagrammfarben.Anzeigename(rolle);
+                    felder.Add(new KiDialogFeld(
+                        FARBFELD_VORSILBE + rolle.Name.ToLowerInvariant(),
+                        EINSTELLUNGEN_SICHT + "." + rolle.Name,
+                        name, KiParameterTyp.Text,
+                        KiDialogTexte.AdmsetFarbeErl(name, gruppe.Titel)));
+                }
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.EINSTELLUNGEN,
+                anzeigename: KiDialogTexte.MaskeEinstellungen,
+                felder: felder,
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
                 });
         }
     }
