@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 22.09.2026, nach den Entscheiden E16–E28 und der Prüfung vom 17.09.2026.**
+**Stand 23.09.2026, nach den Entscheiden E16–E29 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -44,7 +44,8 @@ Umsetzungskonzept (U1, U3, U5–U8, U10, U12, U17), 4 im Mehrzonenkonzept (M2, M
 Datenaustauschkonzept (D1, D2, D4, D5, D6, D11, D16, D17), 15 in der Softwarearchitektur (A1–A6,
 A9–A15, A17, A18; A4, A5 und A9 über U1, U3 und U5) und 5 im Kühlkonzept (K10, K11, K19, K22,
 K24) — und die Festlegung K2 (8.2) bestätigt; alle bis auf **K10** nach Empfehlung. Drei
-entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1), **K22**
+entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1 — mit **E29**
+am 23.09.2026 erledigt: Stundenanfang, Konzept N1.34), **K22**
 (Prüfung vor KU2), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
 **E28** (22.09.2026) hat danach **U4** und **U9** nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen.
@@ -80,7 +81,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **U3** | `Platzhalter` am `Zahlenfeld`, rein additiv. | **G1** | — |
 | **U7** | Ortszeit-Kalender (Option (a)); die Probe gegen `Tab_Klimadaten.WE` bleibt. | **G1** | — |
 | **A15** | Option (a): ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` bis GA in der jeweils aktuellen Basis; GB-Arbeitskopie nur bis zum Merge G1 + G2; Rückweg-Test nur dieses Projekt, endet mit GA. | **G1 + G2** | — |
-| **U6** | Verfahren: in G1 beide Zeitbezüge an der einen Stelle (Klimaklasse, A18) messen, Entscheid vor dem Einfrieren. | **Einfrieren von G1 + G2** | **Endwahl** nach der Messung in G1 |
+| **U6** | Verfahren: in G1 beide Zeitbezüge an der einen Stelle (Klimaklasse, A18) messen, Entscheid vor dem Einfrieren. | **Einfrieren von G1 + G2** | **Endwahl erledigt** (E29, 23.09.2026): Stundenanfang |
 | **A18** | Der Klimaweg bleibt eigene Klasse, ausschließlich vom Eingangsbauer gerufen. | **G1** | — |
 | **A10** | Der Gebäudedialog zieht mit G1 nach `EPOS.UI.Daten`. | **G1** | — |
 | **A12** | Produktausweis in Wiki und Berichtskopf, im Wortlaut von E10. | **G1** (Berichtskopf), G2 (Wiki) | — |
@@ -364,6 +365,8 @@ N1.25, N1.28, N1.31, ADR-006.
 ### U6 — Zeitbezug der Sonnengeometrie: Stundenanfang oder Stundenmitte
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — Verfahren nach Empfehlung — in G1 werden beide Zeitbezüge (Stundenanfang und Stundenmitte) an der einen Stelle (Klimaklasse, A18) gemessen und die Wirkung auf Ost und West beziffert; der Entscheid fällt vor dem Einfrieren. **Offen bleibt als Folgeaufgabe die Endwahl:** Sie folgt mit der Messung in G1, vor dem Einfrieren von G1 + G2.
+
+**Folgeaufgabe erledigt: E29 (23.09.2026, Konzept N1.34)** — Endwahl **Stundenanfang**, wie Photovoltaik und Solarthermie. Die Messung in G1 ergab bei Stundenmitte Ost −10,1 %, West +10,5 %, Süd +0,2 % und für die Jahresheizwärme +0,04 bis +0,10 % — für den Heizbedarf ohne Belang; dafür rechnen Gebäude, PV und Solarthermie denselben Sonnenstand. Eine Umstellung auf die Stundenmitte nur für alle drei gemeinsam.
 
 - **Frage:** Rechnet das Gebäudemodell die Sonnengeometrie auf den **Stundenanfang** wie der
   Bestand — oder auf die **Stundenmitte** wie Blatt 3 der Richtlinie?
@@ -1949,6 +1952,6 @@ entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (
 Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept N1.32)" bzw. „Entschieden: E28
 (22.09.2026, Konzept N1.33)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
-(U6, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
+(U6 — mit E29 erledigt —, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.

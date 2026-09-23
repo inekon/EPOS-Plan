@@ -3597,7 +3597,33 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_100_FREMDSCHLUESSEL_VORGABE = 100;
 
         /// <summary>
-        /// Schritt 101 — die <b>leere Anlagenart wird NULL</b> (Konzept Wirtschaftlichkeit
+        /// Schritt 101 — der <b>Gebäudespalten-Schritt M3</b> der Gebäudesimulation
+        /// (Stufe G1, Auftrag vom 23.09.2026; Umsetzungskonzept Gebäudesimulation 1.6
+        /// und 1.7, Entscheide E19, E27/U5, F-S1, F-S2).
+        ///
+        /// <para><b>In dieser Reihenfolge</b> (Konzept N1.24): die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> verwerfen — sie nennt <c>Wohnflaeche</c>
+        /// namentlich, und SQLite kennt kein <c>ALTER VIEW</c>; in
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> <c>Wohnflaeche</c> in
+        /// <c>Nutzflaeche</c> umbenennen (E19, Wertübernahme); je fünfzehn neue
+        /// Spalten anlegen (zwölf der Stufe G1, drei der Stufe G2 — ein Schritt, ein
+        /// Sichtneubau, U5); die Sicht neu bauen. Definitionen:
+        /// <see cref="GebaeudeSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Die neuen Spalten bleiben NULL (die zwei
+        /// Schalter 0), kein Rechenweg liest sie; die Umbenennung trägt die Werte 1:1.
+        /// Der Referenzlauf bleibt byte-gleich, die Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.</para>
+        ///
+        /// <para><b>Nach Schritt 100</b>: 100 baut <c>Tab_Gebaeude</c> neu (Vorgabe 0
+        /// von <c>ID_ProjektGebaeude</c>), und die Umbenennung und die neuen Spalten
+        /// gehören an die neu gebaute Tabelle.</para>
+        /// </summary>
+        public const int SCHRITT_101_GEBAEUDESPALTEN = 101;
+
+        /// <summary>
+        /// Schritt 102 — die <b>leere Anlagenart wird NULL</b> (Konzept Wirtschaftlichkeit
         /// § 6.3 Nr. 30, Register R‑NR Nr. 30, Anwenderentscheid vom 22.09.2026: „ein
         /// DML-Schritt setzt die leere Zeichenkette auf NULL; NULL heißt ‚nicht
         /// gepflegt'").
@@ -3614,10 +3640,41 @@ namespace WindowsFormsApplication1
         /// die leere Zeichenkette von NULL. <b>Wiederholbar:</b> Ein zweiter Lauf findet
         /// nichts mehr.</para>
         ///
-        /// <para><b>Nach Schritt 100</b>, ohne Reihenfolgebedingung: Der Schritt fasst
-        /// allein einen Spaltenwert an und baut nichts um.</para>
+        /// <para><b>Nach Schritt 101</b> (Gebäudespalten), ohne Reihenfolgebedingung: Der
+        /// Schritt fasst allein einen Spaltenwert an und baut nichts um.</para>
         /// </summary>
-        public const int SCHRITT_101_KWKG_ANLAGENART_LEER = 101;
+        public const int SCHRITT_102_KWKG_ANLAGENART_LEER = 102;
+
+        /// <summary>
+        /// Schritt 103 — <b>Katalog, Zonen und Projekt des Zapfprofilgenerators</b>
+        /// (Papiername T1; <c>Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c> 3.1
+        /// und 3.2, Stufe Z0).
+        ///
+        /// <para><b>Was der Schritt herstellt.</b> Zehn leere Tabellen: sieben Kataloge
+        /// (<c>Tab_TwwNutzungsart_STAMM</c>, <c>Tab_TwwTagesgangsatz_STAMM</c>,
+        /// <c>Tab_TwwTagesgang_STAMM</c>, <c>Tab_TwwBedarfstag_STAMM</c>,
+        /// <c>Tab_TwwBedarfstagEreignis_STAMM</c>, <c>Tab_TwwParameter_STAMM</c>,
+        /// <c>Tab_TwwDin4708Wert_STAMM</c>) und drei Projekttabellen (<c>Tab_TwwZone</c>,
+        /// <c>Tab_TwwWohnungstyp</c>, <c>Tab_TwwProjekt</c>), dazu vier Indizes auf
+        /// Kindspalten der Fremdschlüssel. Die DDL steht bei
+        /// <see cref="TwwSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Kein Katalogwert kommt über den
+        /// Schritt herein — die Auslieferungswerte bringt ein Katalogpaket außerhalb des
+        /// Repositoriums (Konzept Kapitel 6 (b)). Nach dem Schritt sind alle zehn
+        /// Tabellen leer, kein Projekt steht auf dem Generator, und kein Rechenweg liest
+        /// sie: Der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Wiederholbar</b> über <c>IF NOT EXISTS</c> in jeder Anweisung.
+        /// <b>Nach Schritt 102</b>, und das ist unbedenklich: 102 fasst allein einen
+        /// Spaltenwert in <c>Tab_Energieanlagen</c> an, 101 allein die Gebäudetabellen
+        /// und ihre Sicht; die neuen
+        /// Fremdschlüsselspalten tragen keine Vorgabe, 100 hat an ihnen nichts zu
+        /// tun.</para>
+        /// </summary>
+        public const int SCHRITT_103_ZAPFPROFIL_KATALOG = 103;
 
         /// <summary>
         /// Schritt 103 — der <b>Zeitzonentarif HT/NT wird abgelöst</b> (Entscheid Q11,
@@ -5008,11 +5065,27 @@ namespace WindowsFormsApplication1
                         "ab.",
                         Schritt_100_FremdschluesselVorgabe),
 
+            // AUFTRAG 23.09.2026 (Stufe G1 der Gebaeudesimulation) - der
+            // Gebaeudespalten-Schritt M3. REIN DDL, kein DML; die Quelle ist
+            // GebaeudeSchema. Er steht NACH 100, weil 100 Tab_Gebaeude neu baut.
+            new Schritt(SCHRITT_101_GEBAEUDESPALTEN,
+                        "Tab_Gebaeude(_STAMM): Wohnflaeche heisst Nutzflaeche, fuenfzehn " +
+                        "neue Spalten fuer das Gebaeudemodell, die Sicht " +
+                        "Abfrage_Projektgebaeude neu gebaut",
+                        "Die neuen Spalten erreichten den Leser nicht - die Sicht hat eine " +
+                        "feste Spaltenliste, und SQLite kennt kein ALTER VIEW. Das " +
+                        "Gebaeudemodell liefe fuer jedes Gebaeude auf die Vorgabewerte, " +
+                        "ohne dass eine Eingabe des Anwenders je ankaeme. Die Bezugsflaeche " +
+                        "heisst ab hier, was sie ist: Nutzflaeche; die Werte gehen 1:1 " +
+                        "hinueber. KEIN Rechenergebnis aendert sich - die neuen Spalten " +
+                        "bleiben leer, und kein Rechenweg liest sie.",
+                        Schritt_101_Gebaeudespalten),
+
             // ANWENDERENTSCHEID 22.09.2026 (Konzept Wirtschaftlichkeit § 6.3 Nr. 30,
             // Register R-NR Nr. 30) - die leere Anlagenart wird NULL. REIN DML, kein
-            // DDL; die Quelle ist KwkgAnlagenartLeer. Keine Reihenfolgebedingung - der
-            // Schritt fasst allein einen Spaltenwert an.
-            new Schritt(SCHRITT_101_KWKG_ANLAGENART_LEER,
+            // DDL; die Quelle ist KwkgAnlagenartLeer. Er steht NACH 101 ohne
+            // Reihenfolgebedingung - der Schritt fasst allein einen Spaltenwert an.
+            new Schritt(SCHRITT_102_KWKG_ANLAGENART_LEER,
                         "Tab_Energieanlagen.KWKG_Anlagenart: leere Zeichenkette wird NULL",
                         "Die Anlagenart nach Paragraf 8 KWKG entscheidet ueber Kontingent " +
                         "und Satzstaffel. Eine leere Zeichenkette ist weder 'nicht " +
@@ -5022,7 +5095,21 @@ namespace WindowsFormsApplication1
                         "gepflegte Anlagenart und jede andere Spalte bleibt. " +
                         "ERGEBNISNEUTRAL: Kein Rechenweg unterscheidet die leere " +
                         "Zeichenkette von NULL.",
-                        Schritt_101_KwkgAnlagenartLeer),
+                        Schritt_102_KwkgAnlagenartLeer),
+
+            // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z0 (Papiername T1) - zehn
+            // leere Tabellen fuer Katalog, Zonen und Projekt. REIN DDL; die Quelle ist
+            // TwwSchema. Er steht NACH 102, 101 und 100: 102 fasst allein einen
+            // Spaltenwert an, 101 allein die Gebaeudetabellen und ihre Sicht; seine
+            // Fremdschluesselspalten tragen keine Vorgabe, 100 hat an ihnen nichts zu
+            // tun.
+            new Schritt(SCHRITT_103_ZAPFPROFIL_KATALOG,
+                        "Zapfprofilgenerator: Katalog, Zonen und Projekt anlegen " +
+                        "(zehn Tabellen Tab_Tww*)",
+                        "Der Zapfprofilgenerator bleibt dann unerreichbar: Katalog, " +
+                        "Zonen und Weiche haetten keine Tabelle. Gerechnet wird " +
+                        "unveraendert auf dem Bestandsweg des Brauchwassers.",
+                        Schritt_103_ZapfprofilKatalog),
 
             // ENTSCHEID Q11 (22.09.2026, "kein HT/NT") - der Zeitzonentarif wird
             // abgeloest. DDL UND DML; die Quellen sind
@@ -7606,12 +7693,72 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 101 - die leere Anlagenart wird NULL (Anwenderentscheid 22.09.2026)
+        // Schritt 101 - der Gebaeudespalten-Schritt M3 (Auftrag 23.09.2026, Stufe G1)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 101 — Anlass und Wortlaut des Entscheids stehen bei
-        /// <see cref="SCHRITT_101_KWKG_ANLAGENART_LEER"/> und bei
+        /// Schritt 101 — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_101_GEBAEUDESPALTEN"/>, die Definitionen bei
+        /// <see cref="GebaeudeSchema"/>.
+        ///
+        /// <para><b>Wiederholbar:</b> Die Sicht fällt mit <c>IF EXISTS</c>, die
+        /// Umbenennung läuft nur, wo <c>Wohnflaeche</c> noch steht,
+        /// <see cref="SqliteSpalteAnlegen"/> übergeht eine vorhandene Spalte, und die
+        /// Sicht wird immer neu gebaut. Die Nachprobe fragt
+        /// <see cref="GebaeudeSchema.Vollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_101_Gebaeudespalten(Lauf l)
+        {
+            // vorweg: die Sicht nennt die Spalte - erst weg damit (kein ALTER VIEW in SQLite)
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // 1. Umbenennung zuerst (E19, Konzept N1.24)
+            foreach (string t in GebaeudeSchema.TABELLEN)
+                if (SqliteSpalteVorhanden(t, GebaeudeSchema.SPALTE_WOHNFLAECHE_ALT)
+                    && !SqliteDdl(l, GebaeudeSchema.UmbenennungSql(t),
+                                  t + ": " + GebaeudeSchema.SPALTE_WOHNFLAECHE_ALT + " -> " +
+                                  GebaeudeSchema.SPALTE_NUTZFLAECHE))
+                    return false;
+
+            // 2. dann die neuen Spalten (fuenfzehn je Tabelle, 30 Eintraege)
+            foreach (SchemaSpalte s in GebaeudeSchema.Gebaeudespalten)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            // 3. zuletzt die Sicht neu - aus SQL_VIEW_NEU, der einzigen Quelle der Definition
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_NEU, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = GebaeudeSchema.Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Gebaeudetabellen oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("101: Gebaeudespalten-Schritt M3 - Wohnflaeche heisst Nutzflaeche, " +
+                    GebaeudeSchema.Gebaeudespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten stehen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_ALLE.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die neuen Spalten bleiben leer; KEIN Rechenergebnis aendert " +
+                    "sich durch diesen Schritt.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 102 - die leere Anlagenart wird NULL (Anwenderentscheid 22.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 102 — Anlass und Wortlaut des Entscheids stehen bei
+        /// <see cref="SCHRITT_102_KWKG_ANLAGENART_LEER"/> und bei
         /// <see cref="KwkgAnlagenartLeer"/>.
         ///
         /// <para><b>Reines DML</b> über eine Spalte. Die betroffenen Zeilen werden VOR dem
@@ -7619,7 +7766,7 @@ namespace WindowsFormsApplication1
         /// geschrieben — danach findet die Abfrage nichts mehr, und die Notiz soll sagen,
         /// welche Anlagen der Schritt angefasst hat.</para>
         /// </summary>
-        private static bool Schritt_101_KwkgAnlagenartLeer(Lauf l)
+        private static bool Schritt_102_KwkgAnlagenartLeer(Lauf l)
         {
             List<string> betroffene = KwkgAnlagenartLeer.Betroffene();
 
@@ -7630,7 +7777,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     l.LetzterFehler = a.Key + ": " + ex.Message;
-                    l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                    l.Notiz("102: FEHLER - " + l.LetzterFehler);
                     return false;
                 }
             }
@@ -7641,16 +7788,63 @@ namespace WindowsFormsApplication1
                 l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
                                   " Anlagenzeile(n) tragen nach dem Schritt weiter eine leere " +
                                   "Anlagenart.";
-                l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                l.Notiz("102: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("101: " + betroffene.Count.ToString(CultureInfo.InvariantCulture) +
+            l.Notiz("102: " + betroffene.Count.ToString(CultureInfo.InvariantCulture) +
                     " Anlagenzeile(n) mit leerer Anlagenart auf NULL gesetzt" +
                     (betroffene.Count > 0 ? " - " + string.Join("; ", betroffene.ToArray()) : "") +
                     ". NULL heisst 'nicht gepflegt'; geraten wird kein Wert. Kein Rechenweg " +
                     "unterscheidet die leere Zeichenkette von NULL - der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 103 - Katalog, Zonen und Projekt des Zapfprofilgenerators (T1, Stufe Z0)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 103 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema"/>), dieselbe
+        /// Schleife wie Schritt 65: <see cref="TwwSchema.Anweisungen"/> in
+        /// Anlegereihenfolge, erst die Tabelle, auf die verwiesen wird, dann die
+        /// verweisende; danach <see cref="TwwSchema.Indizes"/>. <b>Nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/></b> — <c>Lauf.Conn</c> ist im SQLite-Zweig
+        /// <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_103_ZapfprofilKatalog(Lauf l)
+        {
+            int angelegt = 0;
+            int gesamt = 0;
+
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            {
+                gesamt++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            // Danach die Indizes auf den Kindspalten - sie brauchen ihre Tabelle.
+            int indizes = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                if (!SqliteDdl(l, i.Value, i.Key)) return false;
+                indizes++;
+            }
+
+            l.Notiz("103: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) des " +
+                    "Zapfprofilgenerators angelegt (Katalog, Zonen, Projekt), " +
+                    indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) " +
+                    "sichergestellt. KEIN DML: alle " +
+                    "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
+                    "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
+                    "sich; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

@@ -29,6 +29,7 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="decimal" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
+               placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
                disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
         {
@@ -55,6 +56,14 @@
 
     /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
     [Parameter] public double? Max { get; set; }
+
+    /// <summary>
+    /// Leiser Text im LEEREN Feld, z. B. „Vorgabe 0,3" (Entscheid E27/U3, Stufe G1 der
+    /// Gebaeudesimulation). Er zeigt, was gilt, solange nichts eingetragen ist - der Wert
+    /// bleibt dabei <c>null</c>, und der Dialog schreibt NULL, nicht die Vorgabe. Leer =
+    /// kein Platzhalter (das Feld zeichnet dann kein <c>placeholder</c>-Attribut).
+    /// </summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
 
     /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie noetig.</summary>
     [Parameter] public int? Nachkommastellen { get; set; }

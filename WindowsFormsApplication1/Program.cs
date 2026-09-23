@@ -269,6 +269,15 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Stufe G1 der Gebaeudesimulation (Umsetzungskonzept 2.8, E27/A10): Die
+            // Gebaeudehuellen liegen in EPOS.UI.Daten; zwei ihrer Unterdialoge haben die
+            // Datenhaelfte noch hier - die Brauchwasser-Profilliste und die
+            // Gebaeudetypen-Verwaltung. Ohne diese Haken fehlen ihre Knoepfe (iOS).
+            Gebaeudewege.BrauchwasserGaben = (projektId, zeilen, geaendert) =>
+                BedarfsProfileHuelle.Gaben(null, BedarfsArt.Brauchwasser, projektId,
+                                           zeilen, geaendert, wizard: false);
+            Gebaeudewege.GebaeudetypGaben = () => GebaeudetypHuelle.Gaben();
+
             // ETAPPE E3, SCHRITTE 5 UND 6: Die Uebergangsnaht Wirtschaftlichkeitswege
             // ist WEG. Alle Huellen der Kosten- und Wirtschaftlichkeitsseite liegen
             // jetzt in EPOS.UI.Daten und rufen einander unmittelbar; ihre Dialoge

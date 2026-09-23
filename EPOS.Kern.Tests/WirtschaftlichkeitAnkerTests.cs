@@ -35,7 +35,7 @@ namespace EPOS.Kern.Tests
     /// 1024 −2.896.359,13 €, 1030 −21.895.377,28 €, 99,00 €/a, Kaskade 13.000,00 €).
     /// Die Gründe: Der Brennwert am CO₂-Grenzwert (Konzept § 6.3 Nr. 29) wirkt nur auf
     /// die Stromsteuerbefreiung, und kein Ankerprojekt erreicht sie (Hocheffizienz und
-    /// räumlicher Zusammenhang ungepflegt); Schemaschritt 101 (Nr. 30) setzt allein die
+    /// räumlicher Zusammenhang ungepflegt); Schemaschritt 102 (Nr. 30) setzt allein die
     /// leere Anlagenart von Nicht-BHKW-Anlagen auf NULL; die vermiedene Menge ohne jede
     /// Eigenerzeugung (Nr. 32) ist Ausweis im Rollentarif, und diese Kette hat weder
     /// Stundenreihen noch einen Tarif.</para>

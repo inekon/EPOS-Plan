@@ -2264,6 +2264,45 @@ namespace WindowsFormsApplication1
         public const string PV_TECHNOLOGIE_SONSTIGE = "SONSTIGE";
 
         // =====================================================================
+        // Gebaeudemodell, Stufe G1 (Umsetzungskonzept Gebaeudesimulation 1.7,
+        //   Gebaeudespalten-Schritt M3 = Schemaschritt 101)
+        //   Persistenzwerte, eingefroren und ASCII (in SQL verglichen).
+        // =====================================================================
+
+        /// <summary>
+        /// Rechenweg eines Gebaeudes: der Tagesbilanz-Weg des Bestands
+        /// (<c>Tab_Gebaeude(_STAMM).Gebaeude_Modell</c>). Nur ein ausdrücklich
+        /// gesetzter Wert führt auf diesen Weg.
+        /// </summary>
+        public const string GEBAEUDE_MODELL_TAGESBILANZ = "TAGESBILANZ";
+
+        /// <summary>
+        /// Rechenweg eines Gebaeudes: das Zweikapazitaetenmodell nach VDI 6007.
+        ///
+        /// <para><b>Auch NULL bedeutet VDI6007</b> (Entscheid E1, Konzept N1.1 — es
+        /// kehrt die Semantik von Konzept 6.1 Rev. 1 um). Die Spalte bleibt deshalb
+        /// in der Auslieferung NULL; ein Katalogsatz mit
+        /// <see cref="GEBAEUDE_MODELL_TAGESBILANZ"/> braechte den Altweg still
+        /// zurueck.</para>
+        /// </summary>
+        public const string GEBAEUDE_MODELL_VDI6007 = "VDI6007";
+
+        /// <summary>
+        /// Randbedingung der Grundflaeche: Erdreich
+        /// (<c>Tab_Gebaeude(_STAMM).Grundflaeche_Randbedingung</c>).
+        /// <b>Auch NULL bedeutet ERDREICH.</b>
+        /// </summary>
+        public const string GRUND_ERDREICH = "ERDREICH";
+
+        /// <summary>Randbedingung der Grundflaeche: unbeheizter Keller mit der
+        /// Temperatur aus <c>Kellertemperatur</c> (NULL dort = Vorgabewert).</summary>
+        public const string GRUND_KELLER = "KELLER";
+
+        /// <summary>Randbedingung der Grundflaeche: Aussenluft (aufgestaendertes
+        /// Gebaeude, Durchfahrt).</summary>
+        public const string GRUND_AUSSENLUFT = "AUSSENLUFT";
+
+        // =====================================================================
         // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)
         //   Persistenzwerte der Spalte Tab_Wechselrichter(_STAMM).Herkunft,
         //   eingefroren (Drei-Schichten-Regel).

@@ -1,21 +1,22 @@
 ﻿using System;
-using WPPlan.Core;
+using WindowsFormsApplication1.Altweg;
 using Xunit;
 
 namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Der Nachweis des Anwenderentscheids W8‑O‑5d‑Q2</b> vom 07.09.2026: „keine Treue
-    /// zur alten DLL". Die drei Physik-Funktionen des BHKW-Plan-Ports geben seither
+    /// zur alten DLL". Die drei Physik-Funktionen des BHKW-Plan-Ports (seit Stufe G1.0 im
+    /// Modul Altweg/, <see cref="TagesbilanzPhysik"/>) geben seither
     /// <c>double</c> zurück und schneiden nicht mehr ab.
     ///
     /// <para><b>Was abgeschafft wurde.</b> Die native <c>BHKWPLAN.DLL</c> gab
-    /// <see cref="BhkwPlan.SolareGewinneC"/>, <see cref="BhkwPlan.SpezWaermeverlusteC"/>
-    /// und <see cref="BhkwPlan.TaeglHeizlastWG"/> als <c>int</c> zurück (Borland
+    /// <see cref="TagesbilanzPhysik.SolareGewinneC"/>, <see cref="TagesbilanzPhysik.SpezWaermeverlusteC"/>
+    /// und <see cref="TagesbilanzPhysik.TaeglHeizlastWG"/> als <c>int</c> zurück (Borland
     /// <c>_ftol</c>, Abschneiden Richtung Null); der Port hat das nachgebildet. Zwei der
     /// drei liefern das Hundertfache und werden vom Aufrufer wieder durch 100 geteilt —
     /// die Quantisierung landete damit als Hundertstel in den Eingangsgrößen der
-    /// Tagesheizlast. Bei <see cref="BhkwPlan.SpezWaermeverlusteC"/> kam ein ZWEITES
+    /// Tagesheizlast. Bei <see cref="TagesbilanzPhysik.SpezWaermeverlusteC"/> kam ein ZWEITES
     /// Abschneiden dazu: <c>SimulationWaermebedarf</c> teilte das <c>int</c>-Ergebnis mit
     /// <c>/ 100</c>, also ganzzahlig.</para>
     ///
@@ -27,7 +28,7 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Ohne Datenbank — die drei Funktionen sind reine Rechnungen über ihre
     /// Argumente. Einzige Ausnahme ist die Vortemperatur in
-    /// <see cref="BhkwPlan.TaeglHeizlastWG"/>; jeder Fall bringt dafür seinen eigenen,
+    /// <see cref="TagesbilanzPhysik.TaeglHeizlastWG"/>; jeder Fall bringt dafür seinen eigenen,
     /// frischen <see cref="Tagesbilanzzustand"/> mit.</para>
     /// </summary>
     public class BhkwPlanRueckgabeTests
@@ -45,7 +46,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_solaren_Gewinne_behalten_ihre_Nachkommastelle()
         {
-            double wert = BhkwPlan.SolareGewinneC(
+            double wert = TagesbilanzPhysik.SolareGewinneC(
                 en: 137.5, an: 1.0, ew: 0.0, eo: 0.0, awo: 0.0, es: 0.0, uAs: 0.0,
                 transmissionsgrad: 0.73);
 
@@ -64,7 +65,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Waermeverlustkoeffizient_behaelt_seine_Nachkommastellen()
         {
-            double wert = BhkwPlan.SpezWaermeverlusteC(
+            double wert = TagesbilanzPhysik.SpezWaermeverlusteC(
                 kw: 0, aw: 0, kf: 1.25, af: 10.03, kd: 0, ad: 0, kg: 0, ag: 0,
                 ks: 0, uAs: 0, kwb1: 0, lwb1: 0, kwb2: 0, lwb2: 0, kwb3: 0, lwb3: 0,
                 aussenTemp: 5.0, wohnflaeche: 0, raumhoehe: 0, lwr: 0);
@@ -131,7 +132,7 @@ namespace EPOS.Kern.Tests
         {
             foreach (string name in new[] { "SolareGewinneC", "SpezWaermeverlusteC", "TaeglHeizlastWG" })
             {
-                var m = typeof(BhkwPlan).GetMethod(name);
+                var m = typeof(TagesbilanzPhysik).GetMethod(name);
                 Assert.NotNull(m);
                 Assert.Equal(typeof(double), m.ReturnType);
             }
@@ -148,7 +149,7 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static double Tagesheizlast(double gesamtflaeche, double wohnflaeche)
         {
-            return BhkwPlan.TaeglHeizlastWG(
+            return TagesbilanzPhysik.TaeglHeizlastWG(
                 zustand: new Tagesbilanzzustand(),
                 day: 1, weAbsenkung: 0, weTemp: 20.0, ferienAbsenkung: 0, ferienTemp: 20.0,
                 raumsolltempTag: 20.0, raumsolltempNacht: 20.0,

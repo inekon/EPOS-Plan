@@ -6073,9 +6073,6 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>The name “{0}” is already used in this project. The storage variant was renamed to “{1}”.</value>
   </data>
-  <data name="GEB2_TITEL" xml:space="preserve">
-    <value>Building data – room temperatures, thermal bridges and holiday periods</value>
-  </data>
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Statutory parameters…</value>
   </data>
@@ -12653,17 +12650,11 @@ Overwrite it anyway?</value>
   <data name="GEBK_BTN_BRAUCHWASSER" xml:space="preserve">
     <value>Domestic water...</value>
   </data>
-  <data name="GEBK_BTN_SPEICHERN" xml:space="preserve">
-    <value>Save</value>
-  </data>
   <data name="GEBK_BTN_SPEICHERN_UNTER" xml:space="preserve">
     <value>Save as</value>
   </data>
   <data name="GEBK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Apply values</value>
-  </data>
-  <data name="GEBK_BTN_UEBERSCHREIBEN" xml:space="preserve">
-    <value>Overwrite</value>
   </data>
   <data name="GEBK_FELD_ANSCHLUSS_DACH" xml:space="preserve">
     <value>Connection wall-roof</value>
@@ -12683,11 +12674,14 @@ Overwrite it anyway?</value>
   <data name="GEBK_FELD_FF_NORD" xml:space="preserve">
     <value>North window area</value>
   </data>
-  <data name="GEBK_FELD_FF_OSTWEST" xml:space="preserve">
-    <value>Window area east + west</value>
+  <data name="GEBK_FELD_FF_OST" xml:space="preserve">
+    <value>Window area east</value>
   </data>
   <data name="GEBK_FELD_FF_SUED" xml:space="preserve">
     <value>South window area</value>
+  </data>
+  <data name="GEBK_FELD_FF_WEST" xml:space="preserve">
+    <value>Window area west</value>
   </data>
   <data name="GEBK_FELD_FLAECHE_NUTZER" xml:space="preserve">
     <value>Area / Users</value>
@@ -12723,7 +12717,7 @@ Overwrite it anyway?</value>
     <value>Internal heat gains</value>
   </data>
   <data name="GEBK_FELD_WOHNFLAECHE" xml:space="preserve">
-    <value>Living/usable area</value>
+    <value>Usable area</value>
   </data>
   <data name="GEBK_FERIEN_HERBST" xml:space="preserve">
     <value>Autumn :</value>
@@ -12737,8 +12731,8 @@ Overwrite it anyway?</value>
   <data name="GEBK_FERIEN_WINTER" xml:space="preserve">
     <value>Winter:</value>
   </data>
-  <data name="GEBK_GRP_ANSCHLUSS" xml:space="preserve">
-    <value>Dimensions connection [m]</value>
+  <data name="GEBK_GRP_FENSTER_ORIENTIERUNG" xml:space="preserve">
+    <value>Windows by orientation</value>
   </data>
   <data name="GEBK_GRP_FERIEN_ANFANG" xml:space="preserve">
     <value>Holiday start</value>
@@ -12746,11 +12740,17 @@ Overwrite it anyway?</value>
   <data name="GEBK_GRP_FERIEN_ENDE" xml:space="preserve">
     <value>Holiday end</value>
   </data>
-  <data name="GEBK_GRP_FLAECHEN" xml:space="preserve">
-    <value>Areas [m²]</value>
+  <data name="GEBK_GRP_HUELLE" xml:space="preserve">
+    <value>Envelope: transmission per building component</value>
   </data>
   <data name="GEBK_GRP_KENNGROESSEN" xml:space="preserve">
     <value>Characteristic values</value>
+  </data>
+  <data name="GEBK_GRP_LEITWERTE" xml:space="preserve">
+    <value>Heat loss coefficients</value>
+  </data>
+  <data name="GEBK_GRP_MODELLPARAMETER" xml:space="preserve">
+    <value>Model parameters (VDI 6007)</value>
   </data>
   <data name="GEBK_GRP_RAUMTEMPERATUREN" xml:space="preserve">
     <value>Room temperatures</value>
@@ -12758,17 +12758,56 @@ Overwrite it anyway?</value>
   <data name="GEBK_GRP_SONSTIGES" xml:space="preserve">
     <value>Miscellaneous</value>
   </data>
-  <data name="GEBK_GRP_UWERTE" xml:space="preserve">
-    <value>U-values ​​[W/m²K]</value>
-  </data>
-  <data name="GEBK_GRP_WAERMEBRUECKEN" xml:space="preserve">
-    <value>Thermal bridge loss coefficients [W/(mK)]</value>
+  <data name="GEBK_GRP_TAGESBILANZ" xml:space="preserve">
+    <value>Daily balance (legacy method)</value>
   </data>
   <data name="GEBK_HINWEIS_FENSTERDURCHLASS" xml:space="preserve">
     <value>(e.g. 0.4)</value>
   </data>
+  <data name="GEBK_HINWEIS_FENSTER_SUMME" xml:space="preserve">
+    <value>The window area is the sum of the four orientations.</value>
+  </data>
+  <data name="GEBK_HINWEIS_GEWICHTE" xml:space="preserve">
+    <value>The daily balance weights the external wall and thermal bridges by 0.83, the roof by 0.95 and the ground floor slab by 0.45. The hourly model calculates unweighted.</value>
+  </data>
+  <data name="GEBK_HINWEIS_LUEFTUNG" xml:space="preserve">
+    <value>H_ve = air exchange rate · usable area · room height · 0.34 Wh/(m³K).</value>
+  </data>
+  <data name="GEBK_HINWEIS_MODELLPARAMETER" xml:space="preserve">
+    <value>Empty fields use the default value. The values apply to the VDI 6007 calculation method.</value>
+  </data>
+  <data name="GEBK_LBL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration :</value>
+  </data>
+  <data name="GEBK_LBL_NUTZERLUEFTUNG" xml:space="preserve">
+    <value>Occupant ventilation :</value>
+  </data>
+  <data name="GEBK_LBL_SOMMERLUEFTUNG" xml:space="preserve">
+    <value>Summer ventilation</value>
+  </data>
+  <data name="GEBK_HINWEIS_LUFTWECHSEL" xml:space="preserve">
+    <value>VDI 6007 calculates with {0} 1/h ({1}).</value>
+  </data>
+  <data name="GEBK_HERKUNFT_INFILTRATION_NUTZER" xml:space="preserve">
+    <value>infiltration + occupant ventilation</value>
+  </data>
+  <data name="GEBK_HERKUNFT_LUFTWECHSELRATE" xml:space="preserve">
+    <value>air exchange rate of the building</value>
+  </data>
+  <data name="GEBK_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>default value</value>
+  </data>
+  <data name="GEBK_HINWEIS_SOMMERLUEFTUNG" xml:space="preserve">
+    <value>Summer ventilation: if the indoor air is above {0} °C and the outdoor air at least 2 K cooler, the air exchange rate rises to {1} 1/h.</value>
+  </data>
+  <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
+    <value>“Save as” creates a new catalogue entry under the name entered and closes like OK.</value>
+  </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Exterior wall cellar:</value>
+  </data>
+  <data name="GEBK_LBL_AUSSEN_STRAHLUNG" xml:space="preserve">
+    <value>External components with solar radiation</value>
   </data>
   <data name="GEBK_LBL_BAUART" xml:space="preserve">
     <value>Type:</value>
@@ -12791,14 +12830,26 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_FENSTER_WAND" xml:space="preserve">
     <value>Window wall:</value>
   </data>
+  <data name="GEBK_LBL_FF_GESAMT" xml:space="preserve">
+    <value>Total window area:</value>
+  </data>
   <data name="GEBK_LBL_FF_NORD" xml:space="preserve">
     <value>North window area:</value>
+  </data>
+  <data name="GEBK_LBL_FF_OST" xml:space="preserve">
+    <value>Window area east:</value>
   </data>
   <data name="GEBK_LBL_FF_OSTWEST" xml:space="preserve">
     <value>Window area east + west:</value>
   </data>
   <data name="GEBK_LBL_FF_SUED" xml:space="preserve">
     <value>South window area:</value>
+  </data>
+  <data name="GEBK_LBL_FF_SUMME_OW" xml:space="preserve">
+    <value>Total east + west:</value>
+  </data>
+  <data name="GEBK_LBL_FF_WEST" xml:space="preserve">
+    <value>Window area west:</value>
   </data>
   <data name="GEBK_LBL_FLAECHE_NUTZER" xml:space="preserve">
     <value>Area / Users:</value>
@@ -12815,8 +12866,35 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_GRUNDFLAECHE" xml:space="preserve">
     <value>Building footprint:</value>
   </data>
+  <data name="GEBK_LBL_HEIZLEISTUNG_MAX" xml:space="preserve">
+    <value>Heating power limit:</value>
+  </data>
+  <data name="GEBK_LBL_HEIZUNG_STRAHLUNG" xml:space="preserve">
+    <value>Radiative fraction of heating:</value>
+  </data>
+  <data name="GEBK_LBL_HGES" xml:space="preserve">
+    <value>H_total:</value>
+  </data>
+  <data name="GEBK_LBL_HT" xml:space="preserve">
+    <value>H_T transmission:</value>
+  </data>
+  <data name="GEBK_LBL_HT_GEWICHTET" xml:space="preserve">
+    <value>H_T weighted (daily balance):</value>
+  </data>
+  <data name="GEBK_LBL_HVE" xml:space="preserve">
+    <value>H_ve ventilation:</value>
+  </data>
+  <data name="GEBK_LBL_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Internal area factor:</value>
+  </data>
+  <data name="GEBK_LBL_KELLERTEMPERATUR" xml:space="preserve">
+    <value>Basement temperature:</value>
+  </data>
   <data name="GEBK_LBL_LUFTWECHSEL" xml:space="preserve">
     <value>Air exchange rate:</value>
+  </data>
+  <data name="GEBK_LBL_MASSEANTEIL" xml:space="preserve">
+    <value>External mass fraction:</value>
   </data>
   <data name="GEBK_LBL_MAXTEMPERATUR" xml:space="preserve">
     <value>Maximum room temperature:</value>
@@ -12830,8 +12908,14 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_NAME" xml:space="preserve">
     <value>Name:</value>
   </data>
+  <data name="GEBK_LBL_RAHMENANTEIL" xml:space="preserve">
+    <value>Frame fraction:</value>
+  </data>
   <data name="GEBK_LBL_RAUMHOEHE" xml:space="preserve">
     <value>Room height:</value>
+  </data>
+  <data name="GEBK_LBL_RECHENWEG" xml:space="preserve">
+    <value>Calculation method:</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Should be on vacation:</value>
@@ -12860,6 +12944,9 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_U_SONSTIGES" xml:space="preserve">
     <value>Miscellaneous :</value>
   </data>
+  <data name="GEBK_LBL_VERSCHATTUNG" xml:space="preserve">
+    <value>Shading factor:</value>
+  </data>
   <data name="GEBK_LBL_VERWENDUNG" xml:space="preserve">
     <value>Use:</value>
   </data>
@@ -12873,7 +12960,10 @@ Overwrite it anyway?</value>
     <value>Weekend reduction:</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
-    <value>Living/usable area:</value>
+    <value>Usable area:</value>
+  </data>
+  <data name="GEBK_MSG_BAUWEISE" xml:space="preserve">
+    <value>The thermal mass must be between 5 and 200 Wh/(m²K) per m² of usable area. Please select the construction type.</value>
   </data>
   <data name="GEBK_MSG_FEHLER" xml:space="preserve">
     <value>Error while saving!
@@ -12891,26 +12981,80 @@ Please check all entries!</value>
   <data name="GEBK_MSG_FERIEN_WINTER" xml:space="preserve">
     <value>The holidays must span the turn of the year!</value>
   </data>
-  <data name="GEBK_MSG_GESPEICHERT" xml:space="preserve">
-    <value>Building has been saved!</value>
+  <data name="GEBK_MSG_FLAECHE_NUTZER" xml:space="preserve">
+    <value>The area per occupant must be greater than 0.</value>
+  </data>
+  <data name="GEBK_MSG_G_WERT" xml:space="preserve">
+    <value>The window transmittance must be greater than 0 and at most 1.</value>
+  </data>
+  <data name="GEBK_MSG_LUFTWECHSEL" xml:space="preserve">
+    <value>The air exchange rate must be greater than 0.</value>
   </data>
   <data name="GEBK_MSG_NAME_LEER" xml:space="preserve">
     <value>Please enter a building name!</value>
   </data>
+  <data name="GEBK_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>A building with this name already exists in the catalogue.</value>
+  </data>
+  <data name="GEBK_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>The usable area must be greater than 0.</value>
+  </data>
+  <data name="GEBK_MSG_OST_WEST" xml:space="preserve">
+    <value>Please enter both the east and west window areas or leave both empty.</value>
+  </data>
+  <data name="GEBK_MSG_RAUMHOEHE" xml:space="preserve">
+    <value>The room height must be greater than 0.</value>
+  </data>
   <data name="GEBK_MSG_READONLY" xml:space="preserve">
     <value>This master record is read-only and cannot be overwritten.</value>
   </data>
-  <data name="GEBK_MSG_UEBERNOMMEN" xml:space="preserve">
-    <value>Values applied.</value>
+  <data name="GEBK_MSG_RREST" xml:space="preserve">
+    <value>The building components do not yield a positive residual resistance; the mean U-value of the opaque components exceeds 4.17 W/(m²K).</value>
   </data>
-  <data name="GEBK_MSG_UEBERSCHRIEBEN" xml:space="preserve">
-    <value>Building record has been overwritten!</value>
+  <data name="GEBK_MSG_UNGUELTIG" xml:space="preserve">
+    <value>The value in the field “{0}” is invalid.</value>
+  </data>
+  <data name="GEBK_MSG_U_BEREICH" xml:space="preserve">
+    <value>The U-value {0} must be between 0.1 and 6 W/(m²K).</value>
   </data>
   <data name="GEBK_MSG_ZAHL" xml:space="preserve">
     <value>Please enter {0} as a number.</value>
   </data>
-  <data name="GEBK_REITER_FLAECHEN" xml:space="preserve">
-    <value>Areas and U-values</value>
+  <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>Outdoor air</value>
+  </data>
+  <data name="GEBK_RAND_ERDREICH" xml:space="preserve">
+    <value>Ground</value>
+  </data>
+  <data name="GEBK_RAND_KELLER" xml:space="preserve">
+    <value>Unheated basement</value>
+  </data>
+  <data name="GEBK_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Daily balance</value>
+  </data>
+  <data name="GEBK_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007</value>
+  </data>
+  <data name="GEBK_REITER_HUELLE" xml:space="preserve">
+    <value>Building and envelope</value>
+  </data>
+  <data name="GEBK_REITER_TEMPERATUREN" xml:space="preserve">
+    <value>Temperatures and holidays</value>
+  </data>
+  <data name="GEBK_SP_A_L" xml:space="preserve">
+    <value>A or L</value>
+  </data>
+  <data name="GEBK_SP_BAUTEIL" xml:space="preserve">
+    <value>Building component</value>
+  </data>
+  <data name="GEBK_SP_RANDBEDINGUNG" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="GEBK_SP_UA" xml:space="preserve">
+    <value>U·A [W/K]</value>
+  </data>
+  <data name="GEBK_SP_U_PSI" xml:space="preserve">
+    <value>U or ψ</value>
   </data>
   <data name="GEBK_TITEL" xml:space="preserve">
     <value>Building data: areas, U-values</value>
@@ -12921,6 +13065,45 @@ Please check all entries!</value>
   <data name="GEBK_VERWENDUNG_WOHN" xml:space="preserve">
     <value>residential buildings</value>
   </data>
+  <data name="GEBK_VORGABE" xml:space="preserve">
+    <value>Default value {0}</value>
+  </data>
+  <data name="GEBK_VORGABE_UNBEGRENZT" xml:space="preserve">
+    <value>Default value: unlimited</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSSENWAND" xml:space="preserve">
+    <value>External wall</value>
+  </data>
+  <data name="GEBK_ZEILE_BODENPLATTE" xml:space="preserve">
+    <value>Ground floor slab</value>
+  </data>
+  <data name="GEBK_ZEILE_DACH" xml:space="preserve">
+    <value>Roof</value>
+  </data>
+  <data name="GEBK_ZEILE_FENSTER" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Daily balance: the frozen legacy method with weighted building components; it knows neither indoor temperature nor cooling load nor plant coupling.</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007: indoor temperature, cooling demand and peak load per hour.</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_VORGABE" xml:space="preserve">
+    <value>No calculation method is set for the building; the program default applies: {0}.</value>
+  </data>
+  <data name="GEBK_ZEILE_SONSTIGES" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_DACH" xml:space="preserve">
+    <value>Thermal bridge wall–roof</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_FENSTER" xml:space="preserve">
+    <value>Thermal bridge window–wall</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_KELLER" xml:space="preserve">
+    <value>Thermal bridge external wall–basement</value>
+  </data>
   <data name="GEBW_GRP_EINGABE" xml:space="preserve">
     <value>Input for the selected building</value>
   </data>
@@ -12929,6 +13112,9 @@ Please check all entries!</value>
   </data>
   <data name="GEBW_HINWEIS_NUTZUNGSGRAD" xml:space="preserve">
     <value>When specifying fuel, please enter the boiler annual utilization rate: e.g. 0.85 for 85%</value>
+  </data>
+  <data name="GEBW_HINWEIS_SKALIERUNG" xml:space="preserve">
+    <value>The scaling factor of the building calculation is derived from the usable area or consumption; every calculation method reads these values.</value>
   </data>
   <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
     <value>Type of information:</value>
@@ -12955,13 +13141,13 @@ Please check all entries!</value>
     <value>Annual utilization rate:</value>
   </data>
   <data name="GEBW_LBL_VERBRAUCH" xml:space="preserve">
-    <value>Heat requirement/ living space:</value>
+    <value>Heat demand/usable area:</value>
   </data>
   <data name="GEBW_MSG_ZAHL" xml:space="preserve">
     <value>Please enter {0} as a number.</value>
   </data>
   <data name="GEBW_TITEL" xml:space="preserve">
-    <value>Enter the total living/usable area of ​​the selected building</value>
+    <value>Enter the usable area or consumption of the selected building</value>
   </data>
   <data name="GEB_BAK_A" xml:space="preserve">
     <value>before 1919</value>
@@ -13062,6 +13248,63 @@ Please check all entries!</value>
   <data name="GEBB_EINHEIT_STUNDEN" xml:space="preserve">
     <value>h/a</value>
   </data>
+  <data name="GEBB_GRP_VERGLEICH" xml:space="preserve">
+    <value>Comparison of calculation methods</value>
+  </data>
+  <data name="GEBB_SP_KENNZAHL" xml:space="preserve">
+    <value>Indicator</value>
+  </data>
+  <data name="GEBB_SP_TAGESBILANZ" xml:space="preserve">
+    <value>Daily balance</value>
+  </data>
+  <data name="GEBB_SP_VDI6007" xml:space="preserve">
+    <value>VDI 6007</value>
+  </data>
+  <data name="GEBB_SP_ABWEICHUNG" xml:space="preserve">
+    <value>Deviation</value>
+  </data>
+  <data name="GEBB_LBL_SPITZE_STUNDE" xml:space="preserve">
+    <value>Peak load (hour):</value>
+  </data>
+  <data name="GEBB_LBL_SPITZE_TAGESMITTEL" xml:space="preserve">
+    <value>Peak load (daily mean):</value>
+  </data>
+  <data name="GEBB_LBL_SPITZE_QUANTIL95" xml:space="preserve">
+    <value>95 % value of hourly load:</value>
+  </data>
+  <data name="GEBB_LBL_KUEHLBEDARF" xml:space="preserve">
+    <value>Cooling demand (informative):</value>
+  </data>
+  <data name="GEBB_LBL_KUEHLSTUNDEN" xml:space="preserve">
+    <value>Hours with cooling demand:</value>
+  </data>
+  <data name="GEBB_LBL_MITTLERE_RAUMTEMPERATUR" xml:space="preserve">
+    <value>mean indoor temperature (occupancy period):</value>
+  </data>
+  <data name="GEBB_LBL_UEBERHITZUNG" xml:space="preserve">
+    <value>Overheating hours:</value>
+  </data>
+  <data name="GEBB_LBL_SOMMERLUEFTUNG" xml:space="preserve">
+    <value>Hours with summer ventilation:</value>
+  </data>
+  <data name="GEBB_EINHEIT_H" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="GEBB_BILD_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Indoor temperature</value>
+  </data>
+  <data name="GEBB_REIHE_RAUMLUFT" xml:space="preserve">
+    <value>Indoor air</value>
+  </data>
+  <data name="GEBB_REIHE_OPERATIV" xml:space="preserve">
+    <value>operative temperature</value>
+  </data>
+  <data name="GEBB_REIHE_HEIZSOLLWERT" xml:space="preserve">
+    <value>Heating setpoint</value>
+  </data>
+  <data name="GEBB_REIHE_OBERE_GRENZE" xml:space="preserve">
+    <value>maximum indoor temperature</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Remove from project</value>
   </data>
@@ -13098,17 +13341,23 @@ Please check all entries!</value>
   <data name="GEB_LBL_GEBAEUDENAME" xml:space="preserve">
     <value>Building name:</value>
   </data>
+  <data name="GEB_LBL_HGES" xml:space="preserve">
+    <value>Heat loss coefficient H_total:</value>
+  </data>
   <data name="GEB_LBL_KATALOG" xml:space="preserve">
     <value>Building in DB:</value>
   </data>
   <data name="GEB_LBL_PROJEKTLISTE" xml:space="preserve">
     <value>selected buildings in the project:</value>
   </data>
+  <data name="GEB_LBL_RECHENWEG" xml:space="preserve">
+    <value>Calculation method:</value>
+  </data>
   <data name="GEB_LBL_SUCHE" xml:space="preserve">
     <value>Filter:</value>
   </data>
   <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
-    <value>Living/usable area:</value>
+    <value>Usable area:</value>
   </data>
   <data name="GEB_MSG_GELOESCHT" xml:space="preserve">
     <value>Building deleted!</value>
@@ -13121,6 +13370,18 @@ Please check all entries!</value>
   </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Search, e.g. house*_1990*</value>
+  </data>
+  <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Daily balance (legacy method)</value>
+  </data>
+  <data name="GEB_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007</value>
+  </data>
+  <data name="GEB_RECHENWEG_VORGABE" xml:space="preserve">
+    <value>{0} (default)</value>
+  </data>
+  <data name="GEB_SP_RECHENWEG" xml:space="preserve">
+    <value>Calculation method</value>
   </data>
   <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
     <value>Type/living area</value>
@@ -21259,6 +21520,48 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
     <value>The air change rate of the building; it determines the ventilation losses.</value>
+  </data>
+  <data name="KI_DLG_GEBK_RAHMENANTEIL_ERL" xml:space="preserve">
+    <value>Share of the window frame in the window area (VDI 6007); empty = default value 0.3.</value>
+  </data>
+  <data name="KI_DLG_GEBK_VERSCHATTUNGSFAKTOR_ERL" xml:space="preserve">
+    <value>Flat shading factor of the windows (VDI 6007); empty = default value 0.9.</value>
+  </data>
+  <data name="KI_DLG_GEBK_MASSEANTEIL_AUSSEN_ERL" xml:space="preserve">
+    <value>Share of the thermal mass in the external components (VDI 6007); empty = default value 0.3.</value>
+  </data>
+  <data name="KI_DLG_GEBK_INNENFLAECHENFAKTOR_ERL" xml:space="preserve">
+    <value>Internal component area per m² of usable area (VDI 6007); empty = default value 2.5.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZUNG_STRAHLUNGSANTEIL_ERL" xml:space="preserve">
+    <value>Radiative fraction of the heat emission (VDI 6007); empty = default value 0.3.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZLEISTUNG_MAX_ERL" xml:space="preserve">
+    <value>Maximum heating power of the hourly model in kW; empty = unlimited.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSSENBAUTEILE_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Includes solar irradiation and long-wave emission on the opaque external components (VDI 6007).</value>
+  </data>
+  <data name="KI_DLG_GEBK_LUFTWECHSEL_INFILTRATION_ERL" xml:space="preserve">
+    <value>Air exchange through leakage (VDI 6007); if infiltration and occupant ventilation are empty, the air exchange rate applies.</value>
+  </data>
+  <data name="KI_DLG_GEBK_LUFTWECHSEL_NUTZER_ERL" xml:space="preserve">
+    <value>Air exchange through window ventilation by occupants (VDI 6007); together with infiltration the air exchange of the hourly model.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOMMERLUEFTUNG_ERL" xml:space="preserve">
+    <value>Increased air exchange on warm days when the outdoor air is cooler (VDI 6007).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL" xml:space="preserve">
+    <value>Window area facing east in m²; empty = half of east + west.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FENSTERFLAECHE_WEST_ERL" xml:space="preserve">
+    <value>Window area facing west in m²; empty = half of east + west.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KELLERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Temperature of the unheated basement below the ground floor slab in °C; empty = default value 10 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_RECHENWEG_ERL" xml:space="preserve">
+    <value>The calculation method of the building: VDI 6007 (hourly model) or daily balance (legacy method); read-only.</value>
   </data>
   <data name="KI_DLG_GEBK_BETRIEBSART_NAME" xml:space="preserve">
     <value>Screen operating mode</value>

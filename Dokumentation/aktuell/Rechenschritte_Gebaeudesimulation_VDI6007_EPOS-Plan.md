@@ -371,8 +371,14 @@ H_ext = H_ve + Σψ·L                                          [W/K]
 R_ext = 1 / H_ext                                            [K/W]
 ```
 
-In Stufe G2 tritt an die Stelle von n die Summe n_inf + n_nutz; die Sommerlüftungsregel schaltet
-auf n = 2,0 1/h. **Wann** sie schaltet, legt 7.2 fest: ausgewertet wird **einmal je Stunde am
+In Stufe G2 tritt an die Stelle von n die Summe n_inf + n_nutz — ist nur eines der beiden
+gesetzt, trägt das andere seine Vorgabe (0,3 bzw. 0,4 1/h); sind beide NULL, gilt die
+`Luftwechselrate` des Gebäudes, und erst wenn sie fehlt (0), die Summe der Vorgaben, 0,7 1/h
+(Softwarearchitektur 2.8; die eine Stelle der Regel ist
+`Gebaeudemodellvorgaben.WirksamerLuftwechsel`, die auch der Gebäudedialog für H_ve und seine
+Herleitungszeile ruft). Die Sommerlüftungsregel schaltet auf n = 2,0 1/h: Sie legt den
+Zusatzleitwert (2,0 − n)·A_f·H·c·ρ (nie negativ) über `Stundenrand.ZusatzleitwertWK` parallel zu
+R_ext; der Löser bildet dafür den zweiten Satz Φ, Γ, Ψ des freien Laufs. **Wann** sie schaltet, legt 7.2 fest: ausgewertet wird **einmal je Stunde am
 Stundenbeginn** mit θ_air und θ_out der Vorstunde, der Zustand gilt die ganze Stunde, mit einer
 Hysterese von 1 K und einer Mindestverweildauer von einer Stunde. Die Schwelle ist bis KU1
 23 °C, ab KU1 θ_kuehl − 3 K.
@@ -670,8 +676,11 @@ anderen Sonnenstand als PV und Solarthermie. Zwei weitere Festlegungen:
 - **Zeitbezug:** Blatt 3 rechnet zur **Stundenmitte** (Seite 11). Der Klimaimport des Bestands
   übergibt dagegen den Stundenanfang aus der TMY-Zeitmarke. Der Unterschied ist eine halbe
   Stunde Stundenwinkel = 7,5° und verschiebt gerade die Ost- und Westflächen. Entschieden wird
-  an **einer** Stelle, im Eingangsbauer (Frage U6, Konzept N1.10); `Tab_Solar.Sol_*` bleibt
-  unberührt, damit die Referenzbasis des Bestandswegs gültig bleibt.
+  an **einer** Stelle, im Klimaweg des Eingangsbauers (Frage U6, Konzept N1.10): **mit E29
+  (23.09.2026, Konzept N1.34) gilt der Stundenanfang**, wie für PV und Solarthermie — gemessen
+  verschiebt die Stundenmitte Ost um −10,1 %, West um +10,5 % und die Jahresheizwärme um höchstens
+  +0,10 %; umgestellt würde nur für alle drei gemeinsam. `Tab_Solar.Sol_*` bleibt unberührt, damit
+  die Referenzbasis des Bestandswegs gültig bleibt.
 - **Azimutkonvention** des Eingangsbauers: Grad gegen Süd, Ost −90°, Nord 180°, West +90°,
   Fassadenneigung 90°, Dach nach Projektangabe. (Blatt 3 zählt Nord = 0°, Süd = 180° — die
   Umrechnung steht im Eingangsbauer, nicht verstreut.)
@@ -742,15 +751,24 @@ nicht der Löser: Die Aufteilung 0,5/0,5 und die Flächengewichte stehen hier, i
 **E5 — äquivalente Außentemperatur je Fläche** (Gl. (32)–(40))
 
 ```
-θ_A,eq,k = θ_out + Δθ_lw,k + Δθ_kw,k                          [°C]
-Δθ_kw,k  = (I_dir,k + I_diff,k) · a_F / α_A                   (32), (38)
-Δθ_lw,k  = φ_k · ε_F · (E_A − E_E) / α_A                      (33)–(37)
-mit φ_k  = (1 + cos γ_F,k)/2                                  (36a), geometrischer Sichtfaktor
+θ_A,eq,k = θ_out + Δθ_lw,k + Δθ_kw,k                                          (32)  [°C]
+Δθ_lw,k  = ((θ_Erd − θ_out)·(1 − φ_k) + (θ_Atm − θ_out)·φ_k) · ε_F·α_str,A/(α_A·0,93)   (33)
+θ_Atm    = (E_A/(0,93·5,67))^0,25 · 100 − 273,15                                (34)
+θ_Erd    = (−E_E/(0,93·5,67))^0,25 · 100 − 273,15                               (35)
+φ_k      = (1 + cos γ_F,k)/2                                                  (36a)
+Δθ_kw,k  = (I_dir,k + I_diff,k) · a_F / α_A                                   (38)
+E_E      = −0,93·5,671·10⁻⁸·(273,15 + θ_out)⁴ + (1 − 0,93)·E_A        Blatt 3 (89)
 ```
 
-φ ist der **geometrische** Sichtfaktor (0,5 für die senkrechte Wand, 1,0 für das waagerechte
-Dach); die Bewölkung steckt allein in der Gegenstrahlung E_A der Klimadaten. Für **transparente**
-Flächen entfällt der kurzwellige Term (39).
+Die Gleichungsnummern ohne Zusatz sind die von Blatt 1; die Ausstrahlung der Erdoberfläche
+samt reflektierter Gegenstrahlung kommt aus Blatt 3 (89) und folgt der Vorzeichenregel des DWD
+(Einstrahlung positiv, Ausstrahlung negativ) — deshalb das Minus in (35). φ ist der
+**geometrische** Sichtfaktor (0,5 für die senkrechte Wand, 1,0 für das waagerechte Dach); die
+Bewölkung steckt allein in der Gegenstrahlung E_A der Klimadaten. ε_F = 0,9 für alle
+Außenflächen (die Testfälle rechnen 0,9; Kapitel 11, Zeile 8), a_F = 0,6 (1.3). Für
+**transparente** Flächen entfällt der kurzwellige Term (39). Der langwellige Term in der
+verkürzten Form „φ·ε_F·(E_A − E_E)/α_A", die diese Stelle bis G2 führte, ist durch (33) mit
+(34)/(35) ersetzt: Mit der Vorzeichenregel von (89) hätte sie das falsche Vorzeichen getragen.
 
 Der äußere Übergang nach (37)/(38):
 
@@ -765,9 +783,16 @@ Erdoberfläche (Blatt 3 Gl. (89), aus θ_out abgeleitet, 1.2). **Fehlt E_A oder 
 α_A = 25 W/(m²K) bleibt — das ist der Fall der Stufe G1 und ab G2 der Fall jeder Stunde, deren
 `Tab_Solar.Gegenstrahlung` NULL ist (1.2).
 
-In Stufe G1 steht der Schalter `Aussenbauteile_Strahlung` auf aus, also θ_A,eq,k = θ_out für
-Wand, Dach und Sonstiges — Parität mit dem Bestandsweg. Mit G2 wird der Schalter mit der
-obigen Normformel gefüllt.
+**Umsetzung (Stufe G2, `GebaeudeKlimaweg`).** Die **Fenster** bekommen θ_out + Δθ_lw nach (39)
+in jeder Stunde mit Gegenstrahlung — unabhängig vom Schalter. Der Schalter
+`Aussenbauteile_Strahlung` betrifft allein die **opaken** Flächen: aus heißt θ_A,eq,k = θ_out
+für Wand, Dach und Sonstiges (die Parität mit dem Bestandsweg), ein heißt (32) mit beiden
+Termen. Weil der Klassenweg keine opaken Flächen je Orientierung kennt, gilt die **benannte
+Festlegung** (Kapitel 11, Zeile 18): Außenwand und Sonstiges sind senkrecht (φ = 0,5) und
+bekommen als I_dir + I_diff das **Mittel der vier Fassaden** aus E2; das Dach ist waagerecht
+(φ = 1,0) und bekommt die Globalstrahlung. Die Grundfläche behält die Temperatur aus E6 ohne
+Strahlungsterm. Der Leitwert des Netzes (α_A = 25 W/(m²K) in A4/A7a) bleibt unverändert;
+α_str,A aus (37) wirkt allein in den beiden Δθ-Termen.
 
 **E6 — Grundfläche: Erdreich, Keller oder Außenluft**
 
@@ -1016,7 +1041,11 @@ in der Beispielstunde 1 399 (9.5) sind es 0,054 K, mehr als ein Drittel des Prü
   von 1 K** (das Zurückschalten verlangt 1 K Abstand zur Einschaltschwelle) und eine
   **Mindestverweildauer von einer Stunde**. Die Schwelle ist bis KU1 23 °C, ab KU1
   θ_kuehl − 3 K. Weil der Zustand innerhalb der Stunde fest ist, bleibt es bei den fünf
-  Verletzungsmaßen aus 7.1.
+  Verletzungsmaßen aus 7.1. **Umsetzung (G2, `Sommerlueftungsregel`):** ein, wenn
+  θ_air > 23 °C und θ_out < θ_air − 2 K; aus erst, wenn θ_air < 22 °C oder
+  θ_out > θ_air − 1 K — die Hysterese von 1 K gilt damit für **beide** Bedingungen (benannte
+  Festlegung, Kapitel 11, Zeile 19); ohne Vorstunde (erste Stunde des Vorlaufs) ist die Regel aus,
+  und der Zustand läuft vom Vorlauf ins Jahr weiter.
 - **Kühlung.** Die Kühllast ist **kein Nebenprodukt**. Sie entsteht in den Fällen „Kühlen
   geregelt" und „Kühlgrenze" auf dem Kühlsollwert θ_kuehl (NULL = `Maximaleraumtemperatur`) mit
   der Grenze Φ_c,max = 1 000 · `Kuehlleistung_Max`, wird als Reihe `KuehlbedarfKwh` geführt und
@@ -1653,7 +1682,7 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | 2 | **Kusuda-Erdreich** | VDI 6007-1 hat kein Erdreichmodell; erdberührte Bauteile laufen über θ_NR,eq (40) mit vorzugebender Nachbarraumtemperatur | Ein Anwender soll für die Bodenplatte keine Temperatur erfinden müssen. Kusuda ergänzt die Norm, ohne sie zu verletzen: er liefert genau das θ_NR, das (40) verlangt. `KELLER` ist der Normweg mit vorgegebener Temperatur | Konzept N1.3, 4.4 |
 | 3 | **Klassenweg-Parameter** h_ms = 9,1 W/(m²K), a_AW = 0,3, f_IW = 2,5 | Die Richtlinie leitet R_1, R_Rest und C_1 aus dem Schichtaufbau ab (1)–(17) | `Tab_Gebaeude` führt keine Schichtaufbauten. Der Klassenweg ist die Brücke, bis der Bauteilkatalog (G3) und der IFC-Import (G4) sie liefern. h_ms stammt aus DIN EN ISO 13790 und wird — bewusst abweichend von dort — auf **beide** Massepfade angewandt | Konzept 4.3 |
 | 4 | **Fenster im Außenwandzweig — keine Abweichung im Produkt**; allein der Prototyp (Prüfwerkzeug, Kapitel 9) führt die Fenster noch im Lüftungszweig | (25)–(28): Fenster mit R_1,AF = R_AF/6 **nach** den Wänden parallel, und in θ_A,eq,gew (41) | Das Produkt rechnet ab G1 den Normweg (E14, A7a): Fensterzweig am Oberflächenknoten θ_s,AW, Fensterfläche in Strahlungsverteilung, θ_eq-Gewichtung, R_conv,AW, A_rad und θ_op (A2, E3, E7, 8.1). Der Prototypweg — Fenster als masseloser Widerstand in R_ext zwischen Außenluft und Luftknoten — ist eine Vereinfachung, die den AW-Massenknoten und das innere Oberflächennetz umgeht (stationär um den inneren Übergang, transient um die Pufferung durch C_AW anders); er bleibt die Konvention, in der die Zahlen in Kapitel 9 entstanden sind, und wird dort nicht neu gerechnet | Konzept N1.19 (E14), A7a, Frage Q6 |
-| 5 | **Zeitbezug Stundenanfang statt Stundenmitte** | Blatt 3, Seite 11: Sonnenstand zur Stundenmitte | Der Klimaimport des Bestands übergibt den Stundenanfang. Der Unterschied sind 7,5° Stundenwinkel und trifft Ost und West. Entschieden wird an einer Stelle, im Eingangsbauer; `Tab_Solar.Sol_*` bleibt unberührt | Umsetzungskonzept 1.2, Frage U6 |
+| 5 | **Zeitbezug Stundenanfang statt Stundenmitte** | Blatt 3, Seite 11: Sonnenstand zur Stundenmitte | Der Klimaimport des Bestands übergibt den Stundenanfang. Der Unterschied sind 7,5° Stundenwinkel und trifft Ost und West. Entschieden wird an einer Stelle, im Eingangsbauer; `Tab_Solar.Sol_*` bleibt unberührt. **Entschieden mit E29 (23.09.2026): Stundenanfang**, derselbe Sonnenstand wie PV und Solarthermie; die Jahresheizwärme ändert sich mit der Stundenmitte um höchstens +0,10 % | Umsetzungskonzept 1.2, Frage U6, Konzept N1.34 |
 | 6 | **F_F (Rahmenanteil) und F_W = 0,9** | Blatt 2 schließt Rahmen ausdrücklich aus; Blatt 3 kennt die winkelabhängige Korrektur korg (59)–(61) | F_F stammt aus DIN V 18599 und bildet ab, dass die Katalogfläche die Rohbaufläche ist. F_W = 0,9 ist die Näherung für korg; korg kommt mit G3 | Konzept N1.3 |
 | 7 | **F_S als Pauschalfaktor** (0,9 / 0,8 / 0,7) | Blatt 3, Abschnitt 12: Verschattung geometrisch | Die Datenbank führt keine Verbauungsgeometrie. Mit dem IFC-Import wird sie verfügbar | Konzept N1.3 |
 | 8 | **a_F = 0,6** für opake Außenflächen | kein Normwert; die Testfälle rechnen a = 0,70 und ε = 0,90 | EPOS-Vorgabe für den Klassenweg; je Bauteil eingebbar mit G3. In G1 ist der Term ohnehin abgeschaltet (`Aussenbauteile_Strahlung` = 0) | Konzept N1.3 |
@@ -1666,6 +1695,8 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | 15 | **Verteilung der Strahlungslasten flächenproportional** | (45)/(46): die bestrahlte Fläche und die zu ihr parallelen Bauteile werden nicht beaufschlagt, Gewichte mit A_v je Orientierung | `Tab_Gebaeude` führt keine opaken Flächen je Orientierung, also ist A_v nicht rechenbar; in G1 gilt A_v = 0. Die Wirkung wird in **G0** einmal gemessen: derselbe Lauf mit A_v = 0 gegen einen Lauf mit A_v aus den Fensterflächen je Orientierung (E3). Mit dem Bauteilkatalog (G3) oder neuen Spalten in 1.1 wird auf (45)/(46) umgestellt | E3, E4 |
 | 16 | **Σψ·L im masselosen Zweig** | Kein eigener masseloser Zweig für Wärmebrücken: der Transmissionsleitwert der Außenbauteile läuft über den Massepfad und die Gewichtung (41) | Nach E14 trägt H_ext nur noch Lüftung und Wärmebrücken; Σψ·L hängt damit ohne Speichermasse, ohne inneres Oberflächennetz und ohne eigene äquivalente Außentemperatur unmittelbar zwischen θ_out und Luftknoten — für das Gebäude aus Kapitel 9 knapp ein Drittel von H_ext. Die Wirkung wird in **G0** einmal gemessen: derselbe Fall mit Σψ·L im masselosen Zweig und mit Σψ·L in der Außenwandgruppe (Σ(U·A)_opak um Σψ·L erhöht, sodass E7 und die stationäre Probe 10.4 die Wärmebrücken mitgewichten) | A7, 4.1, 10.4 |
 | 17 | **Innerer Strahlungsaustausch über A_rad = min(A_AW,ges, A_IW)** | Gl. (29)/(31): Austausch der beiden Oberflächengruppen aus den Flächen beider Gruppen | EPOS-Festlegung des Klassenwegs ohne Quelle in der Richtlinie (A2, A6); die Bezugsfläche zählt nach E14 die Fensterfläche mit. Umstellung auf (29)/(31) mit **G3** (Konzept N1.19). Die Wirkung wird in **G0** einmal gemessen: derselbe Fall mit beiden Bildungen von R_rad | A2, A6, Konzept N1.19 |
+| 18 | **Opake Außenflächen des Klassenwegs ohne Orientierung** (Stufe G2) | (32)–(38) je Außenfläche mit ihrer eigenen Orientierung und Neigung | `Tab_Gebaeude` führt die opaken Flächen nur als Summen. Mit Schalter `Aussenbauteile_Strahlung` gelten Außenwand und Sonstiges als senkrecht (φ = 0,5) mit dem Mittel der Einstrahlung auf die vier Fassaden, das Dach als waagerecht (φ = 1,0) mit der Globalstrahlung; die Grundfläche bleibt ohne Strahlungsterm. Mit dem Bauteilweg (G3) je Fläche | E5, Konzept 4.4 |
+| 19 | **Hysterese der Sommerlüftung auch auf den Außenabstand** (Stufe G2) | — (die Sommerlüftung ist keine Regel der Richtlinie, sondern EPOS-Ergänzung, Konzept 4.4) | Ohne Hysterese auf den Abstand θ_air − θ_out schaltete die Regel an Abenden mit gerade 2 K Abstand Stunde für Stunde; zurückgeschaltet wird bei θ_air < 22 °C oder θ_out > θ_air − 1 K | 7.2, F-P4 |
 
 ---
 

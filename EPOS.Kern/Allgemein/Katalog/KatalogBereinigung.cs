@@ -71,6 +71,20 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
+                // Eine benutzte Zeile eines Katalogs mit VerwendungSperrt ist unveraenderlich
+                // (Zapfprofilgenerator 3.2) - auch dann, wenn sie wie eine leere Kopie aussieht.
+                if (k.VerwendungSperrt)
+                {
+                    string sperre = Sperrgrund(k, dublette.Id);
+                    if (sperre != null)
+                    {
+                        erg.Protokoll.Add(k.Tabelle + ", ID " + dublette.Id + " \"" + dublette.Name +
+                            "\": gesperrt (" + sperre + ") - bleibt stehen.");
+                        erg.Offen++;
+                        continue;
+                    }
+                }
+
                 string eigenerWert = ErsteEigeneSpalte(k, behalten.Zeile, dublette.Zeile);
                 if (eigenerWert != null)
                 {
@@ -124,17 +138,57 @@ namespace WindowsFormsApplication1
         /// Loescht einen Kopfsatz samt seiner Datenbloecke (Kaskade, Konzept 7.1 -
         /// bei der WP haengen die Kennlinien an ID_WP, bei Ganglinien die Werte an
         /// ID_Ganglinie). Reihenfolge: erst die Bloecke, dann der Kopf.
+        ///
+        /// <para><b>In EINEM Vorgang.</b> Bloecke und Kopf fallen zusammen oder gar nicht:
+        /// Scheitert der Kopf (etwa an einem Fremdschluessel, der auf ihn zeigt) oder gibt
+        /// es ihn nicht, rollt der Vorgang zurueck, und die Bloecke stehen unveraendert da.
+        /// Bei einem Katalog mit <see cref="KatalogDefinition.VerwendungSperrt"/> prueft
+        /// derselbe Vorgang vorher die Sperre (<see cref="Sperrgrund(KatalogDefinition, int)"/>)
+        /// und loescht eine benutzte oder ausgelieferte Zeile nicht.</para>
         /// </summary>
+        /// <returns>true, wenn Kopf und Bloecke geloescht sind.</returns>
         public static bool SatzLoeschen(KatalogDefinition k, int id)
         {
-            foreach (KatalogDatenblock b in k.Datenbloecke)
-                DataRepository.ExecuteSQL(
-                    "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
-                    new DbParam("@fk", id));
+            if (k == null) return false;
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    if (k.VerwendungSperrt && Sperrgrund(v, k, id) != null)
+                    {
+                        v.Rollback();
+                        return false;
+                    }
 
-            return DataRepository.ExecuteSQL(
-                "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
-                new DbParam("@id", id));
+                    foreach (KatalogDatenblock b in k.Datenbloecke)
+                        v.Ausfuehren(
+                            "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
+                            new DbParam("@fk", id));
+
+                    int kopf = v.Ausfuehren(
+                        "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
+                        new DbParam("@id", id));
+                    if (kopf < 1)
+                    {
+                        v.Rollback();
+                        return false;
+                    }
+
+                    v.Commit();
+                    return true;
+                }
+            }
+            catch (LesemodusException ex)
+            {
+                // Wie der Datenzugriff selbst: ein Satz fuer den Anwender, "nicht geloescht".
+                DataRepository.FehlerMelden(ex.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Katalogsatz nicht geloescht (" + k.Tabelle + ", ID " + id + "): " + ex.Message);
+                return false;
+            }
         }
 
         /// <summary>
@@ -152,6 +206,44 @@ namespace WindowsFormsApplication1
         public static bool SatzUmbenennen(KatalogDefinition k, int id, string neu)
         {
             if (k == null || id <= 0) return false;
+
+            // Eine benutzte oder ausgelieferte Zeile eines Katalogs mit VerwendungSperrt
+            // behaelt ihren Namen - er ist Teil des natuerlichen Schluessels, ueber den der
+            // Projektexport Katalogverweise zuordnet (Zapfprofilgenerator 3.2). Pruefung und
+            // Schreiben in EINEM Vorgang.
+            if (k.VerwendungSperrt)
+            {
+                try
+                {
+                    using (DbVorgang v = DataRepository.Vorgang())
+                    {
+                        if (Sperrgrund(v, k, id) != null)
+                        {
+                            v.Rollback();
+                            return false;
+                        }
+                        int n = v.Ausfuehren(
+                            "UPDATE [" + k.Tabelle + "] SET [" + k.NamensSpalte + "] = ? " +
+                            "WHERE [" + k.IdSpalte + "] = ?",
+                            new DbParam("@name", (object)(neu ?? "")),
+                            new DbParam("@id", id));
+                        if (n < 1)
+                        {
+                            v.Rollback();
+                            return false;
+                        }
+                        v.Commit();
+                        return true;
+                    }
+                }
+                catch (LesemodusException ex)
+                {
+                    DataRepository.FehlerMelden(ex.Message);
+                    return false;
+                }
+                catch { return false; }
+            }
+
             try
             {
                 return DataRepository.ExecuteSQL(
@@ -161,6 +253,64 @@ namespace WindowsFormsApplication1
                     new DbParam("@id", id));
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// <b>Warum ein Satz gesperrt ist</b> — nur fuer Kataloge mit
+        /// <see cref="KatalogDefinition.VerwendungSperrt"/> (Zapfprofilgenerator 3.2): der
+        /// Grund als Text (<c>ReadOnly</c>, Fundstellen der Verwendung, eine gescheiterte
+        /// Pruefung) oder <c>null</c>, wenn der Satz frei ist. Ein Katalog ohne den Schalter
+        /// ist nie gesperrt. Eine Pruefung, die nicht laufen kann, SPERRT (Befund W14c-B44:
+        /// ein Fehlschlag ist nicht "nicht verwendet").
+        /// </summary>
+        public static string Sperrgrund(KatalogDefinition k, int id)
+        {
+            if (k == null || !k.VerwendungSperrt) return null;
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    string grund = Sperrgrund(v, k, id);
+                    v.Rollback();
+                    return grund;
+                }
+            }
+            catch (Exception ex)
+            {
+                return "Verwendungspruefung gescheitert: " + ex.Message;
+            }
+        }
+
+        /// <summary>Die Sperrpruefung im laufenden Vorgang — Pruefung und Schreiben sehen denselben Stand.</summary>
+        private static string Sperrgrund(DbVorgang v, KatalogDefinition k, int id)
+        {
+            if (k == null || !k.VerwendungSperrt) return null;
+
+            object ro = v.Skalar("SELECT [ReadOnly] FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
+                                 new DbParam("@id", id));
+            if (ro != null && Convert.ToInt64(ro, CultureInfo.InvariantCulture) != 0)
+                return "schreibgeschuetzt (ReadOnly)";
+
+            object name = null;
+            var treffer = new List<string>();
+            foreach (VerwendungsPruefung vp in k.VerwendungsPruefungen)
+            {
+                object wert = id;
+                if (vp.UeberName)
+                {
+                    if (name == null)
+                        name = v.Skalar("SELECT [" + k.NamensSpalte + "] FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
+                                        new DbParam("@id", id)) ?? "";
+                    wert = name;
+                }
+
+                object anzahl = v.Skalar("SELECT COUNT(*) FROM [" + vp.Tabelle + "] WHERE [" + vp.Spalte + "] = ?",
+                                         new DbParam("@wert", wert));
+                if (anzahl == null) return "Verwendungspruefung " + vp.Tabelle + " nicht lesbar";
+                long n = Convert.ToInt64(anzahl, CultureInfo.InvariantCulture);
+                if (n > 0) treffer.Add(vp.Tabelle + " (" + n.ToString(CultureInfo.InvariantCulture) + ")");
+            }
+            return treffer.Count > 0 ? "verwendet: " + string.Join(", ", treffer) : null;
         }
 
         /// <summary>

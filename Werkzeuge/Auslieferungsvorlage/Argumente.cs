@@ -32,6 +32,13 @@ namespace Auslieferungsvorlage
 
         internal bool KatalogleerungZulassen { get; private set; }
 
+        /// <summary>
+        /// Der Ordner des Tww-Katalogpakets (<c>--katalogpaket</c>, Umsetzungskonzept
+        /// Zapfprofilgenerator 6 (b), Frage ZU14) oder <c>null</c>. Er liegt AUSSERHALB des
+        /// Repositoriums — Auslieferungswerte gehoeren nie in den Arbeitsbaum.
+        /// </summary>
+        internal string Katalogpaket { get; private set; }
+
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
         internal string Fehler { get; private set; }
 
@@ -64,6 +71,12 @@ namespace Auslieferungsvorlage
             Console.WriteLine("  --katalogleerung-zulassen");
             Console.WriteLine("                    Nur mit --kataloge readonly wirksam: nicht abbrechen, wenn");
             Console.WriteLine("                    die ReadOnly-Regel eine Katalogtabelle vollstaendig leert.");
+            Console.WriteLine("  --katalogpaket <ordner>");
+            Console.WriteLine("                    Das Tww-Katalogpaket des Zapfprofilgenerators: je Tabelle eine");
+            Console.WriteLine("                    Datei <Tab_Tww..._STAMM>.csv (UTF-8, Kopfzeile, Status AUSLIEFERUNG).");
+            Console.WriteLine("                    Muss AUSSERHALB des Repositorys liegen; ersetzt den Tww-Katalog der");
+            Console.WriteLine("                    Quelle. Die Tww-Kataloge folgen unabhaengig von --kataloge ihrer");
+            Console.WriteLine("                    eigenen Regel: nur Status AUSLIEFERUNG, nie FIKTIV, IMPORT oder EIGEN.");
             Console.WriteLine();
             Console.WriteLine("Rueckgabe:");
             Console.WriteLine("  0  Vorlage erzeugt und abgenommen.");
@@ -97,6 +110,11 @@ namespace Auslieferungsvorlage
                         if (args[i] == "alle") a.KatalogeVollstaendig = true;
                         else if (args[i] == "readonly") a.KatalogeVollstaendig = false;
                         else return a.Mit("--kataloge kennt nur 'readonly' und 'alle'.");
+                        break;
+                    case "--katalogpaket":
+                        if (++i >= args.Length) return a.Mit("--katalogpaket braucht einen Ordner.");
+                        string paketgrund = a.KatalogpaketPruefen(args[i]);
+                        if (paketgrund != null) return a.Mit(paketgrund);
                         break;
                     case "--beispiele":
                         if (++i >= args.Length) return a.Mit("--beispiele braucht einen Ordner oder eine Dateiliste.");
@@ -160,6 +178,31 @@ namespace Auslieferungsvorlage
         }
 
         private Argumente Mit(string fehler) { Fehler = fehler; return this; }
+
+        /// <summary>
+        /// Das Katalogpaket: ein vorhandener Ordner AUSSERHALB des Repositorys, der nur
+        /// Dateien <c>&lt;Tww-Katalogtabelle&gt;.csv</c> fuehrt — mindestens eine. Eine fremde
+        /// CSV-Datei ist ein Tippfehler im Paket und wird benannt, nicht uebergangen.
+        /// </summary>
+        private string KatalogpaketPruefen(string wert)
+        {
+            string ordner = Path.GetFullPath(wert);
+            if (!Directory.Exists(ordner)) return "Katalogpaket nicht gefunden (Ordner erwartet): " + ordner;
+            string wurzel = Schreibort.Wurzel(ordner);
+            if (wurzel != null)
+                return "Das Katalogpaket liegt im Repository (" + wurzel + "): " + ordner + ". Auslieferungswerte " +
+                       "kommen von ausserhalb des Repositorys (Umsetzungskonzept Zapfprofilgenerator 6 (b), ZU14).";
+
+            var bekannt = new HashSet<string>(TwwKataloge.PAKETREIHENFOLGE, StringComparer.Ordinal);
+            string[] csv = Directory.GetFiles(ordner, "*.csv");
+            if (csv.Length == 0) return "Im Katalogpaket " + ordner + " liegt keine Datei <Tabelle>.csv.";
+            foreach (string d in csv.OrderBy(x => x, StringComparer.Ordinal))
+                if (!bekannt.Contains(Path.GetFileNameWithoutExtension(d)))
+                    return "Katalogpaket: " + Path.GetFileName(d) + " ist keine Tww-Katalogtabelle (erlaubt: " +
+                           string.Join(", ", TwwKataloge.PAKETREIHENFOLGE) + ").";
+            Katalogpaket = ordner;
+            return null;
+        }
 
         /// <summary>
         /// Ordner oder Liste zu Dateipfaden aufloesen. Ein Ordner wird nach <c>*.wpx</c>

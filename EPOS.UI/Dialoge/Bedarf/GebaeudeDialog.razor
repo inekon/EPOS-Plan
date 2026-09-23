@@ -75,6 +75,9 @@
                         <tr>
                             <th>@SpalteWahl</th>
                             <th>@SpalteName</th>
+                            @* Stufe G1 (Konzept 2.7, E1): ohne diese Spalte waere der Rechenweg
+                               fuer den Anwender unsichtbar - sie bleibt bis Stufe GA. *@
+                            <th>@SpalteRechenweg</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,6 +90,7 @@
                                                 Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
                                 </td>
                                 <td>@z.Name</td>
+                                <td>@z.Rechenweg</td>
                             </tr>
                         }
                     </tbody>
@@ -180,6 +184,9 @@
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@_detailWohnflaeche" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelEinheit" Wert="@_detailEinheit" NurLesen="true" />
+            @* Stufe G1 (Konzept 2.7): zwei leise Kennzahlen, nur lesend. *@
+            <Textfeld Bezeichnung="@LabelHges" Wert="@_detailHges" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelRechenweg" Wert="@_detailRechenweg" NurLesen="true" />
             </KindInhalt>
         </Formularraster>
 
@@ -392,6 +399,15 @@
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche:";
     [Parameter] public string LabelEinheit { get; set; } = "Art der Angabe:";
+
+    /// <summary>Kopf der Spalte „Rechenweg" der Projektliste (<c>GEB_SP_RECHENWEG</c>).</summary>
+    [Parameter] public string SpalteRechenweg { get; set; } = "Rechenweg";
+
+    /// <summary>Beschriftung des Wärmeleitwerts im Detailblock (<c>GEB_LBL_HGES</c>).</summary>
+    [Parameter] public string LabelHges { get; set; } = "Wärmeleitwert H_ges:";
+
+    /// <summary>Beschriftung des Rechenwegs im Detailblock (<c>GEB_LBL_RECHENWEG</c>).</summary>
+    [Parameter] public string LabelRechenweg { get; set; } = "Rechenweg:";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
     [Parameter] public string SpalteName { get; set; } = "Name";
     [Parameter] public string SpalteTypFlaeche { get; set; } = "Typ/Wohnfläche";
@@ -505,6 +521,8 @@
     private string _detailBeschreibung = "";
     private string _detailWohnflaeche = "";
     private string _detailEinheit = "";
+    private string _detailHges = "";
+    private string _detailRechenweg = "";
 
     private IReadOnlyDictionary<string, object>? _katalogGaben;
     private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
@@ -775,7 +793,13 @@
         _detailBeschreibung = z.Beschreibung;
         _detailWohnflaeche = z.Wohnflaeche.ToString("F2");
         _detailEinheit = z.Einheit;
+        _detailHges = Leitwert(z.HgesWK);
+        _detailRechenweg = z.Rechenweg;
     }
+
+    /// <summary>Der Wärmeleitwert als Anzeige — „—" ohne Wert, nie eine erfundene Zahl.</summary>
+    private static string Leitwert(double? wk)
+        => wk.HasValue ? wk.Value.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " W/K" : "—";
 
     /// <summary>
     /// Der Katalogsatz füllt den Detailblock aus den STAMMDATEN; Einheit „Wohnfläche [m²]"
@@ -793,6 +817,8 @@
         _detailBeschreibung = detail?.Beschreibung ?? "";
         _detailWohnflaeche = detail?.Wohnflaeche ?? k.Wohnflaeche;
         _detailEinheit = "Wohnfläche [m²]";
+        _detailHges = Leitwert(detail?.HgesWK);
+        _detailRechenweg = detail?.Rechenweg ?? "";
     }
 
     // =================================================================================

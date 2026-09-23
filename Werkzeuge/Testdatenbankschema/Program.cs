@@ -1111,29 +1111,70 @@ namespace Testdatenbankschema
                                       FremdschluesselVorgabe.ZeilenMitVorgabe(s.Tabelle, s.Name) + ".");
             }
 
-            // ---- Schritt 101: die leere Anlagenart wird NULL (Konzept Wirtschaftlichkeit
+            // ---- Schritt 101: der Gebaeudespalten-Schritt M3 (Auftrag 23.09.2026, Stufe G1
+            //      der Gebaeudesimulation). REIN DDL: Sicht verwerfen, Wohnflaeche ->
+            //      Nutzflaeche in Tab_Gebaeude(_STAMM), fuenfzehn neue Spalten je Tabelle,
+            //      Sicht Abfrage_Projektgebaeude neu. DIESELBE Quelle (GebaeudeSchema), aus
+            //      der sich SchemaMigration.Schritt_101_Gebaeudespalten bedient.
+            //
+            //      ER STEHT NACH 100: 100 baut Tab_Gebaeude neu.
+            //
+            //      ERGEBNISNEUTRAL: Die neuen Spalten bleiben NULL (die zwei Schalter 0),
+            //      kein Rechenweg liest sie; die Umbenennung traegt die Werte 1:1.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 101 - Gebaeudespalten: " +
+                              (GebaeudeSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht101 = new List<string>();
+                int angelegt101 = GebaeudeSchema.Alle(bericht101);
+                angelegt += angelegt101;
+                foreach (string zeile in bericht101)
+                    Console.WriteLine("Schritt 101 - " + zeile + ".");
+                Console.WriteLine("Schritt 101 - vollstaendig: " + GebaeudeSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 102: die leere Anlagenart wird NULL (Konzept Wirtschaftlichkeit
             //      § 6.3 Nr. 30, Anwenderentscheid 22.09.2026). REIN DML, eine Anweisung aus
             //      KwkgAnlagenartLeer - DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_101_KwkgAnlagenartLeer bedient.
+            //      SchemaMigration.Schritt_102_KwkgAnlagenartLeer bedient.
             //
             //      ERGEBNISNEUTRAL: Kein Rechenweg unterscheidet die leere Zeichenkette von
             //      NULL - die dreizehn Referenzprojekte rechnen byte-gleich weiter.
             Console.WriteLine();
-            List<string> betroffene101 = KwkgAnlagenartLeer.Betroffene();
-            Console.WriteLine("Schritt 101 - " + KwkgAnlagenartLeer.TABELLE + "." +
-                              KwkgAnlagenartLeer.SPALTE + ": " + betroffene101.Count +
+            List<string> betroffene102 = KwkgAnlagenartLeer.Betroffene();
+            Console.WriteLine("Schritt 102 - " + KwkgAnlagenartLeer.TABELLE + "." +
+                              KwkgAnlagenartLeer.SPALTE + ": " + betroffene102.Count +
                               " Zeile(n) mit leerer Zeichenkette.");
-            foreach (string zeile in betroffene101)
-                Console.WriteLine("Schritt 101 - " + zeile);
+            foreach (string zeile in betroffene102)
+                Console.WriteLine("Schritt 102 - " + zeile);
             if (!trocken)
             {
-                int gesetzt101 = KwkgAnlagenartLeer.Ausfuehren();
-                Console.WriteLine("Schritt 101 - " + gesetzt101 + " Zeile(n) auf NULL gesetzt, offen " +
+                int gesetzt102 = KwkgAnlagenartLeer.Ausfuehren();
+                Console.WriteLine("Schritt 102 - " + gesetzt102 + " Zeile(n) auf NULL gesetzt, offen " +
                                   KwkgAnlagenartLeer.Offen() + " (erwartet 0).");
             }
 
-            // ---- Schritt 102 gehoert dem Zapfprofilgenerator (eigener Zweig).
+            // ---- Schritt 103: die zehn Tabellen des Zapfprofilgenerators (Umsetzungskonzept
+            //      Zapfprofilgenerator 3.2, T1). REIN DDL aus TwwSchema - DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_103_ZapfprofilKatalog bedient; erst
+            //      die Tabellen, dann die Indizes auf den Kindspalten. CREATE ... IF NOT
+            //      EXISTS ist selbst wiederholbar.
             //
+            //      ERGEBNISNEUTRAL: Die Tabellen entstehen leer, kein Projekt steht auf dem
+            //      Generator, kein Rechenweg liest sie. Den FIKTIVEN Testkatalog spielt
+            //      danach Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py ein - er ist
+            //      Testdatum, kein Schemaschritt.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 103, trocken);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                Console.WriteLine("Schritt 103 - Index " + i.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                if (!trocken) DataRepository.ExecuteNonQuery(i.Value);
+            }
+
             // ---- Schritt 103: der Zeitzonentarif wird abgeloest (Entscheid Q11,
             //      22.09.2026: "kein HT/NT"). DDL UND DML aus DENSELBEN Quellen, aus denen
             //      sich SchemaMigration.Schritt_103_ZeitzonentarifAbloesung bedient: erst

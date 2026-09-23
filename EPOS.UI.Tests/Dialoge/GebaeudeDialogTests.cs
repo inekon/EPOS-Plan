@@ -144,10 +144,11 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Contains("Typ/Wohnfläche", cut.Markup);
 
         // Zwei Klapplisten (Gebaeudeart, Baujahr), eine Optionsgruppe mit zwei Optionen,
-        // ein Suchfeld, fuenf gesperrte Detailfelder.
+        // ein Suchfeld, fuenf gesperrte Detailfelder und seit Stufe G1 zwei leise
+        // Kennzahlen (H_ges, Rechenweg).
         Assert.Equal(2, cut.FindAll("select").Count);
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
-        Assert.Equal(4, cut.FindAll("input[type=text][readonly]").Count);
+        Assert.Equal(6, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
         foreach (string t in new[] { "Ändern", "Gebäude in DB ändern...",
@@ -888,7 +889,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
         Assert.Equal("Haus B",
-                     cut.Find(".epos-zeile--markiert td:last-child").TextContent.Trim());
+                     cut.Find(".epos-zeile--markiert td:nth-child(2)").TextContent.Trim());
     }
 
     /// <summary>
@@ -1012,5 +1013,68 @@ public class GebaeudeDialogTests : EposBunitContext
         KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE)
                                          .Single(f => f.Name == "filter_baujahr");
         Assert.Equal("Passivhaus", wert.Text);
+    }
+
+    // =================================================================================
+    // Stufe G1 (Umsetzungskonzept Gebaeudesimulation 2.7): Rechenweg und H_ges
+    // =================================================================================
+
+    /// <summary>
+    /// Die Spalte „Rechenweg" der Projektliste — ohne sie wäre der Rechenweg (E1) für den
+    /// Anwender unsichtbar; den Text setzt die Hülle so, wie die Weiche rechnet.
+    /// </summary>
+    [Fact]
+    public void Die_Projektliste_fuehrt_die_Spalte_Rechenweg()
+    {
+        GebaeudeProjektZeile z = Zeile(1);
+        z.Rechenweg = "Tagesbilanz (Bestandsweg) (Vorgabe)";
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { z });
+
+        var koepfe = cut.FindAll(".epos-zweispalten table.epos-raster")[0]
+                        .QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToList();
+        Assert.Contains("Rechenweg", koepfe);
+        Assert.Contains("Tagesbilanz (Bestandsweg) (Vorgabe)", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Detailblock_zeigt_H_ges_und_den_Rechenweg_nur_lesend()
+    {
+        GebaeudeProjektZeile z = Zeile(1);
+        z.Rechenweg = "VDI 6007";
+        z.HgesWK = 2046.25;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { z });
+
+        var felder = cut.FindAll("label.epos-feld");
+        IElement hges = felder.First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!;
+        IElement weg = felder.First(l => l.TextContent.Contains("Rechenweg:")).QuerySelector("input")!;
+
+        Assert.Equal(2046.25.ToString("N1", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " W/K", hges.GetAttribute("value"));
+        Assert.True(hges.HasAttribute("readonly"));
+        Assert.Equal("VDI 6007", weg.GetAttribute("value"));
+    }
+
+    /// <summary>Ohne Wert steht „—", nie eine erfundene Zahl — auch bei einem Katalogsatz.</summary>
+    [Fact]
+    public void Ohne_Wert_steht_ein_Strich_und_der_Katalogsatz_bringt_seine_Kennwerte()
+    {
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { Zeile(1) })
+            .Add(x => x.Katalog, (wohn, art, klasse, ausBaujahr) => KATALOG_WOHN)
+            .Add(x => x.Gebaeudearten, wohn => ARTEN_WOHN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext",
+                                                                  "150,00", "VDI 6007", 500.0)));
+
+        IElement hges = cut.FindAll("label.epos-feld")
+                           .First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!;
+        Assert.Equal("—", hges.GetAttribute("value"));
+
+        cut.FindAll(".epos-zweispalten table.epos-raster")[1].QuerySelectorAll("tbody tr")[0]
+           .QuerySelector("input, button")!.Click();
+
+        Assert.Equal(500.0.ToString("N1", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " W/K",
+                     cut.FindAll("label.epos-feld")
+                        .First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!
+                        .GetAttribute("value"));
     }
 }

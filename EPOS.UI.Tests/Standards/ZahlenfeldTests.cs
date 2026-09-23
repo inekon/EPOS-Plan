@@ -267,4 +267,32 @@ public class ZahlenfeldTests : BunitContext
 
         Assert.Equal("94,87", cut.Find("input").GetAttribute("value"));
     }
+
+    /// <summary>
+    /// Der Platzhalter (Entscheid E27/U3): ein leiser Text im leeren Feld, der Wert bleibt
+    /// <c>null</c>. Ohne Platzhalter zeichnet das Feld kein <c>placeholder</c>-Attribut.
+    /// </summary>
+    [Fact]
+    public void Der_Platzhalter_steht_im_leeren_Feld_und_der_Wert_bleibt_null()
+    {
+        double? erhalten = 1;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Platzhalter, "Vorgabe 0,3")
+            .Add(x => x.WertChanged, (double? w) => erhalten = w));
+
+        Assert.Equal("Vorgabe 0,3", cut.Find("input").GetAttribute("placeholder"));
+        Assert.Equal("", cut.Find("input").GetAttribute("value") ?? "");
+
+        cut.Find("input").Input("0,4");
+        cut.Find("input").Input("");
+        Assert.Null(erhalten);
+    }
+
+    [Fact]
+    public void Ohne_Platzhalter_zeichnet_das_Feld_kein_placeholder()
+    {
+        var cut = Render<Zahlenfeld>();
+
+        Assert.False(cut.Find("input").HasAttribute("placeholder"));
+    }
 }

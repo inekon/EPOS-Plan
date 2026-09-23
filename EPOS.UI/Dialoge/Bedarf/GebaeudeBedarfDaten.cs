@@ -35,4 +35,46 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>Die zwölf Monatssummen in <b>MWh</b>; leer = keine Monatsübersicht.</summary>
     public IReadOnlyList<double> MonatswerteMwh { get; init; } = new List<double>();
+
+    // ---- Stufen G1 und G2 (Umsetzungskonzept Gebaeudesimulation 1.4, 2.7) --------
+    //
+    // Alle nullbar: ohne Wert steht "—", nie eine erfundene Zahl.
+
+    /// <summary>
+    /// Der Rechenweg als Anzeigetext — auf dem Altweg „Tagesbilanz (Bestandsweg)".
+    /// Leer = keine Zeile.
+    /// </summary>
+    public string Modelltext { get; init; } = "";
+
+    /// <summary>Größtes gleitendes Mittel über 24 Stunden in <b>kW</b>.</summary>
+    public double? SpitzeTagesmittelKw { get; init; }
+
+    /// <summary>95-%-Quantil der Stundenlast in <b>kW</b>.</summary>
+    public double? SpitzeQuantil95Kw { get; init; }
+
+    /// <summary>Kühlbedarf (informativ) in <b>MWh</b> — nur auf dem VDI-Weg.</summary>
+    public double? KuehlenergieMwh { get; init; }
+
+    /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
+    public int? KuehlstundenH { get; init; }
+
+    /// <summary>Mittlere Raumlufttemperatur in der Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
+    public double? MittlereRaumtemperaturC { get; init; }
+
+    /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur [h] — nur auf dem VDI-Weg.</summary>
+    public int? UeberhitzungsstundenH { get; init; }
+
+    /// <summary>Stunden mit Sommerlüftung [h] — nur auf dem VDI-Weg mit eingeschalteter Regel.</summary>
+    public int? SommerlueftungsstundenH { get; init; }
+
+    /// <summary>
+    /// Der jeweils ANDERE Rechenweg desselben Gebäudes — die zweite Spalte des Vergleichs
+    /// alt/neu (Konzept 8.2, Umsetzungskonzept 2.7). <c>null</c> = kein Vergleich (der andere
+    /// Weg lieferte nichts). Er lebt, solange es zwei Rechenwege gibt (bis Stufe GA,
+    /// Löschliste Kapitel 6).
+    /// </summary>
+    public GebaeudeBedarfDaten? Vergleich { get; init; }
+
+    /// <summary>Rechnet dieser Satz auf dem VDI-Weg? Nur dann gibt es das Bild „Raumtemperatur".</summary>
+    public bool IstVdi6007 { get; init; }
 }

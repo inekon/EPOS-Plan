@@ -334,15 +334,30 @@ namespace WindowsFormsApplication1
         /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
         /// Referenzlauf bleibt byte-gleich</b>, die Basis
         /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
-        /// Mit der LEEREN ANLAGENART (Schritt 101, Konzept Wirtschaftlichkeit § 6.3
-        /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>101</b>: Die
+        /// Mit dem GEBÄUDESPALTEN-SCHRITT M3 (Schritt 101, Stufe G1 der
+        /// Gebäudesimulation, Auftrag vom 23.09.2026) steht das Ziel auf <b>101</b>:
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> benennen
+        /// <c>Wohnflaeche</c> in <c>Nutzflaeche</c> um (E19), bekommen je fünfzehn
+        /// neue Spalten (zwölf der Stufe G1, drei der Stufe G2; U5), und die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> wird neu gebaut — der erste Sichtneubau des
+        /// SQLite-Zweigs. Alles steht bei <see cref="GebaeudeSchema"/>. Die neuen
+        /// Spalten bleiben NULL (die zwei Schalter 0), kein Rechenweg liest sie —
+        /// <b>der Referenzlauf bleibt byte-gleich</b>, die Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.
+        /// Mit der LEEREN ANLAGENART (Schritt 102, Konzept Wirtschaftlichkeit § 6.3
+        /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>102</b>: Die
         /// leere Zeichenkette in <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL,
         /// und NULL heißt „nicht gepflegt". Die Anweisung steht bei
         /// <see cref="KwkgAnlagenartLeer"/>. <b>Reines DML, ergebnisneutral:</b> Kein
         /// Rechenweg unterscheidet die leere Zeichenkette von NULL; der Referenzlauf
         /// bleibt byte-gleich.
-        /// Schritt <b>102</b> gehört dem Zapfprofilgenerator (eigener Zweig, wird vor
-        /// diesem zusammengeführt).
+        /// Mit KATALOG, ZONEN UND PROJEKT DES ZAPFPROFILGENERATORS (Schritt 103,
+        /// Papiername T1, Umsetzungskonzept Zapfprofilgenerator Stufe Z0) steht das Ziel
+        /// auf <b>103</b>: zehn leere Tabellen <c>Tab_Tww*</c>, deren DDL bei
+        /// <see cref="TwwSchema"/> steht. <b>Reines DDL, kein Wert</b> — der Katalog kommt
+        /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
+        /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
+        /// byte-gleich</b>.
         /// Mit der ABLÖSUNG DES ZEITZONENTARIFS (Schritt 103, Entscheid Q11 vom
         /// 22.09.2026: „kein HT/NT") steht das Ziel auf <b>103</b>:
         /// <c>energy_project_settings</c> bekommt die zweistufige Leistungspreis-Staffel

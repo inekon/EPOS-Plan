@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
                 // im Modus Admin; Form_Gebaeude ist im selben Schritt GELOESCHT (Regel M1).
                 // Die Huelle liefert dasselbe true/false wie MitOk.
                 case Masken.GebaeudeAdmin:
-                    return GebaeudeHuelle.Katalogverwaltung(null);
+                    return GebaeudeFenster.Katalogverwaltung(null);
 
                 // iU9-W8.4: Die Gebaeudetypen-Verwaltung ist die Razor-Komponente
                 // GebaeudetypDialog; Form_EingGebTyp ist im selben Schritt GELOESCHT

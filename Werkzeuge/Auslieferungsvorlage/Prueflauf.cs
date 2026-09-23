@@ -26,6 +26,12 @@ namespace Auslieferungsvorlage
 
         internal Prueflauf(Bericht bericht, Projektsicht sicht) { _bericht = bericht; _sicht = sicht; }
 
+        /// <summary>Die Eingabepfade des Laufs (Quelle, Katalogpaket, Beispiele) — Posten ZU11.</summary>
+        internal IReadOnlyList<string> Eingaben { get; set; } = new List<string>();
+
+        /// <summary>Die Tww-Mitnahmen der Beispielpakete (<see cref="Vorlagenbau.TwwMitnahmen"/>).</summary>
+        internal IReadOnlyList<string> TwwMitnahmen { get; set; } = new List<string>();
+
         /// <summary>
         /// Die sechs Fragen, die eine GEOEFFNETE Datenbank beantwortet. Die siebte —
         /// liegen Beidateien daneben? — kann erst danach gestellt werden und steht
@@ -90,6 +96,9 @@ namespace Auslieferungsvorlage
 
             // ---- 6. Datenschutzwaechter --------------------------------------------
             ok &= Datenschutzwaechter(beispielIds);
+
+            // ---- 7. Zapfprofil-Kataloge (Konzept Zapfprofilgenerator 3.2, 6 (b), (c)) --
+            ok &= new TwwKataloge(_bericht).Pruefen(Eingaben, TwwMitnahmen);
             return ok;
         }
 

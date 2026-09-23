@@ -1778,20 +1778,20 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entscheid K-1 (→ Register R‑EZ, EZ‑5): Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **103** (90 BK1a,
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **104** (90 BK1a,
 > 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel,
-> 97–100 außerhalb dieses Feldes, 101 die leere Anlagenart (§ 6.3 Nr. 30), 102 der Zapfprofilgenerator, siehe Kopf;
+> 97–100 außerhalb dieses Feldes, 101 die leere Anlagenart (§ 6.3 Nr. 30), 102 der Zapfprofilgenerator, 103 die Leistungspreis-Staffel (E7b), siehe Kopf;
 > die Nummer wird bei der Umsetzung vergeben). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
-> wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. **Wo die Fallunterscheidung sitzt:**
+> wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. Ohne gepflegten Wert (`KWKG_Stromkennzahl`) oder P_th gibt es keinen Ersatzwert, sondern die Kohärenzzeile „Stromkennzahl fehlt" (Entscheid E7‑Q2 (2), 23.09.2026: keine willkürliche Vorgabe). **Wo die Fallunterscheidung sitzt:**
 > `WirtschaftlichkeitCtrl.ReiheJeAnlage` bildet je Anlage `stromNettoJeAnlage[i] = max(0,
 > StromVon(Modul[i]) − Hilfsstrom[i])` mit `StromVon` = Klemmenerzeugung (`Stromproduktion`);
 > bei gesetztem Kennzeichen tritt dort `min(Nettostromerzeugung, Nutzwärme × σ)` — die Nutzwärme je
 > Modul aus Wärmeproduktion abzüglich Wärmeüberschuss. **Gemessen mit E7a (#437, A2):** Die
 > Wärmeproduktion liegt je Modul vor, der Wärmeüberschuss nur als Projektsumme (in allen
-> BHKW-Basisprojekten 0) — es greift die Aufteilung nach P_el; wie genau, fragen fünf Teilfragen
-> (E7‑Q2, → Register R‑E7). Der Torwächter `BaueKwkgReihe` (`v.Ergebnis.BHKW.Stromproduktion`
+> BHKW-Basisprojekten 0) — es greift die Aufteilung nach P_el, und zwar nur für den Überschuss
+> (E7‑Q2, entschieden 23.09.2026, → Register R‑E7). Der Torwächter `BaueKwkgReihe` (`v.Ergebnis.BHKW.Stromproduktion`
 > als Summe) bleibt. **Referenzprojekte, gemessen an der Testdatenbank:** BHKW führen 1017, 1018,
 > 1024 und 1030 (und das Nichtbasisprojekt 1031); KWKG-Sätze trägt allein 1030 (8,0 / 4,0 an beiden
 > Anlagen), `Betriebsart` ist überall leer, `Wärmeüberschuss` in der Basis überall 0. Das
@@ -2390,7 +2390,7 @@ Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepap
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
 (#436) und E7 Teil a (#437)**; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als
 Nächstes kommen **E7b** (Zeitzonentarif HT/NT und Leistungspreis-Staffel, Q11) und **E7c** (die übrigen
-rechenwirksamen Lücken, nach dem Entscheid E7‑Q2). Aus der früheren Etappenreihe B5–B9
+rechenwirksamen Lücken, E7‑Q2 entschieden 23.09.2026). Aus der früheren Etappenreihe B5–B9
 dieses Papiers ist nur noch B8 offen (es läuft in E7c mit); B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2453,7 +2453,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
 | **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge `57b15a7c`) |
 | **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 101, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
-| **E7b**, **E7c** … **E12** | Q11 (HT/NT, Leistungspreis-Staffel) · die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappen: E7b und E7c** (E7c nach dem Entscheid E7‑Q2) |
+| **E7b**, **E7c** … **E12** | Q11 (HT/NT, Leistungspreis-Staffel) · die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappen: E7b und E7c** (E7‑Q2 entschieden 23.09.2026 — E7c kann beginnen) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
