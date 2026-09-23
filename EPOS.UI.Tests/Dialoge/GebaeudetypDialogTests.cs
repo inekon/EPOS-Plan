@@ -622,6 +622,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.Equal("Neu beschrieben", feld.Lesen());
         Assert.Equal("Neu beschrieben", cut.Find(".epos-stammblatt textarea").GetAttribute("value")
                                         ?? cut.Find(".epos-stammblatt textarea").TextContent);
+    }
 
     // =================================================================================
     // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)

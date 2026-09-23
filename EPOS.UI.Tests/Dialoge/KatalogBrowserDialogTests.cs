@@ -1716,6 +1716,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.True(p.Gueltig, p.FehlerText());
 
         return schicht.Register.Finde(aktion)!.Vorbedingung!(p.Aufruf!);
+    }
 
     // =================================================================================
     // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
