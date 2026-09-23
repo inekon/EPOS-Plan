@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace WindowsFormsApplication1
 {
@@ -45,6 +47,21 @@ namespace WindowsFormsApplication1
     /// <para><b>Interne Spalten reisen nicht.</b> <c>Beleg</c> (interne Sekundärquelle,
     /// Konzept 6 (e)) und <c>Freigabe</c> (Vier-Augen-Vermerk der Katalogpflege) bleiben im
     /// Paket leer; eine mitgenommene Zeile trägt beide leer.</para>
+    ///
+    /// <para><b>Inhaltsvergleich namensgleicher Zeilen (ZU17, N6).</b> Findet der Import am
+    /// Ziel eine Zeile mit demselben natürlichen Schlüssel, die NICHT zur Auslieferung gehört
+    /// (<c>EIGEN</c> oder <c>IMPORT</c> — beide sind beim Anwender änderbar), vergleicht er
+    /// ihre Werte mit dem Paket (<see cref="TwwInhaltGleich"/>): alle Wertgruppen des Kopfes —
+    /// ohne Schlüssel, Status, <c>ReadOnly</c>, Vorlage, interne Spalten und ohne die
+    /// Provenienzspalten, die den Wert beschreiben, nicht ihn —, den Tagesgangsatz einer
+    /// Nutzungsart über seine Tagesgänge (nicht über seine Id) und die Kindzeilen (Tagesgänge,
+    /// Ereignisse) als Menge. Gleich: Die Zone zeigt auf die Zielzeile. Abweichend: Die Zeile
+    /// kommt als NEUE Version mit Status <c>IMPORT</c> und dem Zusatz
+    /// <c>„ (Import n)“</c> im Bezeichner — beim DIN-4708-Wert im <c>Schluessel</c> —, n die
+    /// kleinste freie Zahl ab 1; trägt eine frühere Version „(Import n)“ schon denselben
+    /// Inhalt, wird sie wiederverwendet. Die Zielzeile bleibt unberührt, der Bericht nennt
+    /// beides. Eine Auslieferungszeile ist eine unveränderliche Version und wird nicht
+    /// verglichen.</para>
     /// </summary>
     public partial class ProjektExportImportCtrl
     {
@@ -82,6 +99,27 @@ namespace WindowsFormsApplication1
         /// <summary>Die internen Spalten der Tww-Kataloge, die nie in ein Paket gehen.</summary>
         private static readonly string[] TWW_INTERN = { "Beleg", "Freigabe" };
 
+        /// <summary>Die Kindtabellen des Pakets (Manifest) — für den Inhaltsvergleich (ZU17).</summary>
+        private List<KindMeta> _twwKinderMeta = new List<KindMeta>();
+
+        /// <summary>Die Kindzeilen des Pakets je Kindtabelle — für den Inhaltsvergleich (ZU17).</summary>
+        private Dictionary<string, List<Dictionary<string, JsonElement>>> _twwKindRows =
+            new Dictionary<string, List<Dictionary<string, JsonElement>>>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Spalten, die den Inhalt nicht tragen: Verwaltung, Vorlage, interne Spalten (ZU17).</summary>
+        private static readonly HashSet<string> TWW_NICHT_VERGLICHEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "ID", "Status", "ReadOnly", "ID_Vorlage", "Beleg", "Freigabe", "Katalogversion"
+        };
+
+        /// <summary>Die Provenienzspalten — sie beschreiben einen Wert, sie sind keiner (ZU17).</summary>
+        private static readonly Regex TWW_PROVENIENZ = new Regex(
+            "^(Bedarf_|Jahresgang_|Wochengang_)?(Quelle|Ausgabe|Version|Herkunftsart)$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>Der Zusatz einer abweichenden namensgleichen Version: „ (Import n)“ (ZU17).</summary>
+        private static string TwwZusatz(int n) => " (Import " + n.ToString(CultureInfo.InvariantCulture) + ")";
+
         private class KindMeta
         {
             public string name { get; set; }
@@ -103,6 +141,8 @@ namespace WindowsFormsApplication1
             _twwBericht = new List<string>();
             _twwDirekt = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _twwVorgemerkt = new Dictionary<long, (KatMeta, Dictionary<string, JsonElement>, Dictionary<string, Type>)>();
+            _twwKinderMeta = new List<KindMeta>();
+            _twwKindRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>Die benannte Ablehnung einer Tww-Katalogzeile, die das Paket nicht führt.</summary>
@@ -226,6 +266,30 @@ namespace WindowsFormsApplication1
             Dictionary<string, long> katMap, Dictionary<string, Type> zielTypen)
         {
             string name = TwwName(k, row);
+
+            // ZU17: Steht der natürliche Schlüssel am Ziel schon (mit anderem Inhalt — sonst
+            // wären wir nicht hier), kommt die Zeile als neue Version „… (Import n)“; eine
+            // frühere Version mit demselben Inhalt wird wiederverwendet.
+            string namensspalte = TwwNamensspalte(k);
+            string neuerName = null;
+            if (TwwSchluesselId(v, k, row, null, zielTypen).HasValue)
+            {
+                string basis = Convert.ToString(JsonToObject(row[namensspalte]), CultureInfo.InvariantCulture);
+                for (int n = 1; neuerName == null; n++)
+                {
+                    string kandidat = basis + TwwZusatz(n);
+                    long? vorhanden = TwwSchluesselId(v, k, row, kandidat, zielTypen);
+                    if (!vorhanden.HasValue) { neuerName = kandidat; break; }
+                    if (TwwInhaltGleich(v, k, row, vorhanden.Value, katMap))
+                    {
+                        _twwBericht.Add("Katalogzeile " + name + " (" + k.name + ") weicht vom namensgleichen Eintrag am " +
+                                        "Ziel ab und entspricht der schon mitgenommenen Version „" + kandidat +
+                                        "“ - das Projekt zeigt auf diese.");
+                        return vorhanden.Value;
+                    }
+                }
+            }
+
             var cs = row.Keys.Where(x => !x.Equals(k.pk, StringComparison.OrdinalIgnoreCase)
                                          && zielTypen.ContainsKey(x)).ToList();
             var cps = new List<DbParam>();
@@ -234,7 +298,8 @@ namespace WindowsFormsApplication1
                 string spalte = cs[n];
                 object wert = JsonToObject(row[spalte]);
 
-                if (spalte.Equals("Status", StringComparison.OrdinalIgnoreCase)) wert = TwwSchema.STATUS_IMPORT;
+                if (neuerName != null && spalte.Equals(namensspalte, StringComparison.OrdinalIgnoreCase)) wert = neuerName;
+                else if (spalte.Equals("Status", StringComparison.OrdinalIgnoreCase)) wert = TwwSchema.STATUS_IMPORT;
                 else if (spalte.Equals("ReadOnly", StringComparison.OrdinalIgnoreCase)) wert = 0L;
                 else if (spalte.Equals("ID_Vorlage", StringComparison.OrdinalIgnoreCase)) wert = null;
                 else if (TWW_INTERN.Contains(spalte, StringComparer.OrdinalIgnoreCase)) wert = null;
@@ -274,9 +339,145 @@ namespace WindowsFormsApplication1
                 _twwMitgenommen[k.name] = map = new Dictionary<long, long>();
             map[row[k.pk].GetInt64()] = neuId;
 
-            _twwBericht.Add("Katalogzeile " + name + " (" + k.name + ") fehlte am Ziel und wurde mit Status IMPORT " +
-                            "mitgenommen.");
+            _twwBericht.Add(neuerName == null
+                ? "Katalogzeile " + name + " (" + k.name + ") fehlte am Ziel und wurde mit Status IMPORT mitgenommen."
+                : "Katalogzeile " + name + " (" + k.name + ") weicht vom namensgleichen Eintrag am Ziel ab und wurde " +
+                  "als neue Version „" + neuerName + "“ mit Status IMPORT mitgenommen; der Eintrag am Ziel bleibt unverändert.");
             return neuId;
+        }
+
+        // =================================================================================
+        //  ZU17 — Inhaltsvergleich namensgleicher Zeilen
+        // =================================================================================
+
+        /// <summary>Die Spalte, die den Zusatz „ (Import n)“ trägt: <c>Schluessel</c> beim DIN-4708-Wert, sonst <c>Bezeichner</c>.</summary>
+        private static string TwwNamensspalte(KatMeta k) =>
+            string.Equals(k.name, TwwSchema.TAB_TWW_DIN4708_WERT_STAMM, StringComparison.OrdinalIgnoreCase)
+                ? "Schluessel" : "Bezeichner";
+
+        /// <summary>
+        /// Die Id der Zielzeile mit dem natürlichen Schlüssel der Paketzeile —
+        /// mit <paramref name="name"/> an Stelle ihres Bezeichners (bzw. Schlüssels), wenn gesetzt.
+        /// </summary>
+        private long? TwwSchluesselId(DbVorgang v, KatMeta k, Dictionary<string, JsonElement> row, string name,
+                                      Dictionary<string, Type> zielTypen)
+        {
+            string namensspalte = TwwNamensspalte(k);
+            var wo = new List<string>();
+            var ps = new List<DbParam>();
+            foreach (string key in k.naturalKey)
+            {
+                object wert = name != null && key.Equals(namensspalte, StringComparison.OrdinalIgnoreCase)
+                    ? name : JsonToObject(row[key]);
+                wo.Add("[" + key + "] = ?");
+                ps.Add(MacheParam("@k" + ps.Count, wert, TypVon(zielTypen, key)));
+            }
+            object o = v.Skalar("SELECT [" + k.pk + "] FROM [" + k.name + "] WHERE " + string.Join(" AND ", wo), ps.ToArray());
+            return o == null || o == DBNull.Value ? (long?)null : Convert.ToInt64(o, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Trägt die Zielzeile <paramref name="zielId"/> denselben Inhalt wie die Paketzeile? Eine
+        /// Auslieferungszeile gilt als gleich (unveränderliche Version). Verglichen werden die
+        /// Wertspalten des Kopfes, der Tagesgangsatz einer Nutzungsart über seine Tagesgänge und
+        /// die Kindzeilen als Menge.
+        /// </summary>
+        private bool TwwInhaltGleich(DbVorgang v, KatMeta k, Dictionary<string, JsonElement> row, long zielId,
+                                     Dictionary<string, long> katMap)
+        {
+            DataTable dt = v.Lese("SELECT * FROM [" + k.name + "] WHERE [" + k.pk + "] = ?", new DbParam("@id", zielId));
+            if (dt == null || dt.Rows.Count == 0) return false;
+            DataRow ziel = dt.Rows[0];
+            if (dt.Columns.Contains("Status")
+                && string.Equals(Convert.ToString(ziel["Status"], CultureInfo.InvariantCulture), TwwSchema.STATUS_AUSLIEFERUNG,
+                                 StringComparison.Ordinal))
+                return true;
+
+            foreach (var kv in row)
+            {
+                string s = kv.Key;
+                if (!dt.Columns.Contains(s) || TwwNichtVerglichen(k, s)) continue;
+                object paket = JsonToObject(kv.Value);
+                if (s.Equals("ID_Tagesgangsatz", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Der Satz zählt über seinen INHALT (die vier Tagesgänge), nicht über seine Id:
+                    // Die Zielzeile ist gleich, wenn ihr Satz dieselben Tagesgänge trägt wie der
+                    // Satz des Pakets — gleich, unter welchem Namen er am Ziel steht.
+                    object ist = ziel[s];
+                    bool istLeer = ist == null || ist == DBNull.Value;
+                    if (paket == null) { if (istLeer) continue; return false; }
+                    if (istLeer) return false;
+                    KindMeta gaenge = _twwKinderMeta.FirstOrDefault(m =>
+                        string.Equals(m.parent, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, StringComparison.OrdinalIgnoreCase));
+                    if (gaenge == null || !TwwKinderGleich(v, gaenge, Convert.ToInt64(paket, CultureInfo.InvariantCulture),
+                                                           Convert.ToInt64(ist, CultureInfo.InvariantCulture)))
+                        return false;
+                    continue;
+                }
+                if (TwwNorm(paket) != TwwNorm(ziel[s])) return false;
+            }
+
+            long altId = row[k.pk].GetInt64();
+            foreach (KindMeta km in _twwKinderMeta)
+                if (string.Equals(km.parent, k.name, StringComparison.OrdinalIgnoreCase) && !TwwKinderGleich(v, km, altId, zielId))
+                    return false;
+            return true;
+        }
+
+        /// <summary>Stimmen die Kindzeilen eines Paketkopfs und einer Zielzeile als Menge überein?</summary>
+        private bool TwwKinderGleich(DbVorgang v, KindMeta km, long altId, long zielId)
+        {
+            DataTable dt = v.Lese("SELECT * FROM [" + km.name + "] WHERE [" + km.parentColumn + "] = ?",
+                                  new DbParam("@id", zielId));
+            var spalten = new List<string>();
+            if (dt != null)
+                foreach (DataColumn c in dt.Columns)
+                    if (!c.ColumnName.Equals(km.pk, StringComparison.OrdinalIgnoreCase)
+                        && !c.ColumnName.Equals(km.parentColumn, StringComparison.OrdinalIgnoreCase)
+                        && !TWW_PROVENIENZ.IsMatch(c.ColumnName)
+                        && !TWW_INTERN.Contains(c.ColumnName, StringComparer.OrdinalIgnoreCase))
+                        spalten.Add(c.ColumnName);
+            spalten.Sort(StringComparer.OrdinalIgnoreCase);
+
+            var ziel = new List<string>();
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                    ziel.Add(string.Join(";", spalten.Select(s => s + "=" + TwwNorm(r[s]))));
+
+            var paket = new List<string>();
+            if (_twwKindRows.TryGetValue(km.name, out var zeilen))
+                foreach (var r in zeilen)
+                {
+                    if (!r.TryGetValue(km.parentColumn, out JsonElement e) || e.ValueKind != JsonValueKind.Number
+                        || e.GetInt64() != altId) continue;
+                    paket.Add(string.Join(";", spalten.Select(s =>
+                        s + "=" + TwwNorm(r.TryGetValue(s, out JsonElement je) ? JsonToObject(je) : null))));
+                }
+
+            ziel.Sort(StringComparer.Ordinal);
+            paket.Sort(StringComparer.Ordinal);
+            return ziel.SequenceEqual(paket, StringComparer.Ordinal);
+        }
+
+        /// <summary>Verwaltungs-, Schlüssel-, interne und Provenienzspalten tragen den Inhalt nicht.</summary>
+        private static bool TwwNichtVerglichen(KatMeta k, string spalte) =>
+            spalte.Equals(k.pk, StringComparison.OrdinalIgnoreCase)
+            || TWW_NICHT_VERGLICHEN.Contains(spalte)
+            || (k.naturalKey ?? new string[0]).Contains(spalte, StringComparer.OrdinalIgnoreCase)
+            || TWW_PROVENIENZ.IsMatch(spalte);
+
+        /// <summary>Ein Wert in vergleichbarer Textform: Zahlen (auch Wahrheitswerte) als double „R“, Text mit Vorsatz, leer als ∅.</summary>
+        private static string TwwNorm(object w)
+        {
+            if (w == null || w == DBNull.Value) return "∅";
+            switch (w)
+            {
+                case bool b: return b ? "1" : "0";
+                case string s: return "s:" + s;
+                case byte _: case short _: case int _: case long _: case float _: case double _: case decimal _:
+                    return Convert.ToDouble(w, CultureInfo.InvariantCulture).ToString("R", CultureInfo.InvariantCulture);
+                default: return "s:" + Convert.ToString(w, CultureInfo.InvariantCulture);
+            }
         }
 
         /// <summary>
