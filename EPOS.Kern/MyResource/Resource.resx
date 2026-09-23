@@ -24225,6 +24225,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
     <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
   </data>
+  <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit.</value>
   </data>

@@ -24218,6 +24218,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
     <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
   </data>
+  <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours from the CHP electricity {1} MWh ÷ {2} kW = {3} h/a (the whole module output would give {4} h/a); quota and annual cap count these hours.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours from the CHP electricity of the combined plant {0} MWh ÷ {1} kW = {2} h/a (instead of {3} h/a); quota and annual cap count these hours.</value>
+  </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>This database cannot store the selected price basis yet (schema version before 108) — the card shows the billing unit.</value>
   </data>

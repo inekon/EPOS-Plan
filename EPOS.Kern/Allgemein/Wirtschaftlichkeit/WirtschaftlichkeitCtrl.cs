@@ -2912,6 +2912,27 @@ namespace WindowsFormsApplication1
                                                luecken);
             if (fall2Zeile != null) hinweise.Add(fall2Zeile);
 
+            // ETAPPE E7c — Entscheid E7c1‑Q2 b auf dem Ersatzweg: Trägt eine Anlage das
+            // Kennzeichen, zählen die Vbh der Gesamtanlage aus ihrem KWK-Strom (die
+            // gekürzten Mengen) ÷ ihrer Leistung — dieselbe Regel wie je Anlage auf dem
+            // Regelweg. Ohne Kennzeichen oder ohne Leistung bleibt es bei der
+            // Projektgröße.
+            if (fall2Zeile != null && nachLeistung && vbh > 0)
+            {
+                double kwkMWh = mitMatrix ? eigenNettoMWh + einspNettoMWh : stromNettoMWh;
+                double vbhKwk = Math.Max(0, kwkMWh) * 1000.0 / pelSumme;
+                hinweise.Add(string.Format(BerichtTexte.Kultur, T("WIRT_KWKG_FALL2_VBH_ERSATZ",
+                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem " +
+                    "KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); " +
+                    "Kontingent und Jahresdeckel zählen diese Stunden."),
+                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur),
+                    pelSumme.ToString("N0", BerichtTexte.Kultur),
+                    vbhKwk.ToString("N0", BerichtTexte.Kultur),
+                    vbh.ToString("N0", BerichtTexte.Kultur)));
+                vbh = vbhKwk;
+                if (vbh <= 0) return null;
+            }
+
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
@@ -3113,6 +3134,30 @@ namespace WindowsFormsApplication1
                 if (bonusVoll <= 0) continue;
 
                 double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
+
+                // ETAPPE E7c — ENTSCHEID E7c1‑Q2 b (23.09.2026): „Vollbenutzungsstunden
+                // betrifft nur den KWK erzeugten Strom". In Fall 2 zählen die Vbh deshalb
+                // aus dem KWK-STROM der Anlage — Vbh = KWK-Strom ÷ P_el —, nicht aus dem
+                // ganzen Modulstrom; Kontingentverbrauch und Jahresdeckel laufen über
+                // diese Stunden (die Reihe wird länger, wo das Kontingent bindet). Ohne
+                // Kennzeichen (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie
+                // vorher. Ohne bestimmbare Kennzahl ist der Zuschlag ohnehin 0 (oben).
+                string vbhZeile = null;
+                if (fall2 != null && fall2.Stromkennzahl.Bestimmbar && a.PelKW > 0)
+                {
+                    double vbhKwk = fall2.KwkStromMWh * 1000.0 / a.PelKW;
+                    // WirtschaftlichkeitCtrl.T: die Laufzeit T dieser Methode verdeckt den Namen.
+                    vbhZeile = string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
+                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom " +
+                        "{1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); " +
+                        "Kontingent und Jahresdeckel zählen diese Stunden."),
+                        a.Bezeichner, fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur),
+                        a.PelKW.ToString("N0", BerichtTexte.Kultur),
+                        vbhKwk.ToString("N0", BerichtTexte.Kultur),
+                        vbhAnlage.ToString("N0", BerichtTexte.Kultur));
+                    hinweise.Add(vbhZeile);
+                    vbhAnlage = vbhKwk;
+                }
                 if (vbhAnlage <= 0) continue;
 
                 int beginn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : foerderbeginn;
@@ -3181,6 +3226,9 @@ namespace WindowsFormsApplication1
                         n.NutzwaermeMWh = fall2.NutzwaermeMWh;
                         n.KwkStromMWh = fall2.KwkStromMWh;
                         n.KuerzungMWh = fall2.KuerzungMWh;
+                        // E7c1-Q2 b: die Stunden aus dem KWK-Strom stehen in VbhElektrisch
+                        // (oben) und als eigene Hinweiszeile; die Herleitung bleibt die
+                        // der Menge.
                         n.HerleitungKwkStrom = fall2Zeile;
                     }
                     try

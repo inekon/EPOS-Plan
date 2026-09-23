@@ -74,9 +74,14 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// σ = 0,5 an der 50-kW-Anlage: KWK-Strom = min(373,78 ; 605,52 × 0,5) = 302,76 MWh,
-        /// Kürzung 71,02 MWh. Ohne Stundenreihen ist alles Eigenverbrauch; der Zuschlag
-        /// dieser Anlage sinkt im Verhältnis KWK-Strom / Netto, die 9-kW-Anlage (ohne
-        /// Kennzeichen) bleibt, wie sie war. Gemessen: Jahr 1 7.315,96 → 6.137,94 €.
+        /// Kürzung 71,02 MWh. Ohne Stundenreihen ist alles Eigenverbrauch; die 9-kW-Anlage
+        /// (ohne Kennzeichen) bleibt, wie sie war.
+        /// <para><b>ETAPPE E7c2 — Entscheid E7c1‑Q2 b:</b> Die Vollbenutzungsstunden
+        /// zählen aus dem KWK-Strom (302,76 MWh ÷ 50 kW = 6.055,2 h/a statt 7.475,69 h/a
+        /// aus dem Modulstrom). Der Jahresdeckel der Staffel bindet, also wird je Jahr der
+        /// gedeckelte KWK-Strom bezahlt — der Zuschlag der Anlage steht wieder auf
+        /// 6.200,00 € (alt 5.021,91 €, im Verhältnis KWK-Strom / Netto gekürzt), Jahr 1
+        /// gesamt <b>7.316,03 € (alt 6.137,94 €)</b>.</para>
         /// </summary>
         [Fact]
         public void Gepflegte_Stromkennzahl_kuerzt_auf_Nutzwaerme_mal_Sigma()
@@ -105,12 +110,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(netto - kwk, gross.KuerzungMWh.Value, 9);
             Assert.Equal(kwk, gross.EigenMWh, 9);                // ohne Stundenreihen: alles Eigen
             Assert.Equal(netto, gross.StromNettoMWh, 9);          // der Anteil bleibt physikalisch
-            Gleich(grossOhne.Jahr1Eur * kwk / netto, gross.Jahr1Eur, "Jahr 1 der 50-kW-Anlage");
+            // E7c1-Q2 b: die Vbh aus dem KWK-Strom (alt: 7.475,69 h/a aus dem Modulstrom).
+            Assert.Equal(kwk * 1000.0 / PEL_GROSS, gross.VbhElektrisch, 9);
+            Gleich(6200.00, gross.Jahr1Eur, "Jahr 1 der 50-kW-Anlage");   // alt: 5.021,91 (= ohne × KWK/Netto)
 
             KwkgModulNachweis klein = Modul(mit, NAME_KLEIN);
             Assert.Null(klein.Abwaermeabfuhr);
             Gleich(kleinOhne.Jahr1Eur, klein.Jahr1Eur, "Jahr 1 der 9-kW-Anlage");
-            Gleich(6137.940960, mit.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");
+            Gleich(7316.031276, mit.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");   // alt: 6.137,940960
+            Assert.Contains("Vollbenutzungsstunden aus dem KWK-Strom 302,760 MWh ÷ 50 kW = 6.055 h/a",
+                            mit.Hinweis ?? "");
 
             Assert.Contains("„" + NAME_GROSS + "“: Stromkennzahl σ 0,500 (gepflegt)", mit.Hinweis ?? "");
             Assert.Equal(gross.HerleitungKwkStrom, (mit.Hinweis ?? "").Split(" | ")
@@ -153,7 +162,10 @@ namespace EPOS.Kern.Tests
 
             // Die 9-kW-Anlage trägt kein Kennzeichen — ihr Anteil am Überschuss wirkt nicht.
             Assert.Null(Modul(e, NAME_KLEIN).Abwaermeabfuhr);
-            Gleich(6448.212218, e.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");
+            // E7c1-Q2 b: Vbh aus dem KWK-Strom (321,466 MWh ÷ 50 kW = 6.429,3 h/a); der
+            // Staffeldeckel bindet, der Zuschlag steht auf dem gedeckelten KWK-Strom.
+            Assert.Equal(kwk * 1000.0 / PEL_GROSS, gross.VbhElektrisch, 9);
+            Gleich(7316.031276, e.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");   // alt: 6.448,212218
         }
 
         // =================================================================
@@ -237,7 +249,8 @@ namespace EPOS.Kern.Tests
         /// nach P_el: an die 50-kW-Anlage 50/59. Mit σ = 0,5 ist ihr KWK-Strom
         /// min(366,356 ; 623,915 × 0,5) = 311,958 MWh, die Kürzung 54,398 MWh — ohne
         /// Stundenreihen mindert sie die Gesamtmenge, der Zuschlag sinkt im selben
-        /// Verhältnis. Gemessen: Jahr 1 7.315,95 → 6.395,35 €.
+        /// Verhältnis. Gemessen: Jahr 1 7.315,95 → 6.395,35 € (vor E7c1‑Q2 b); seit
+        /// Q2 b zählen die Vbh aus dem KWK-Strom, der Deckel bindet — 7.316,00 €.
         /// </summary>
         [Fact]
         public void Der_Ersatzweg_verteilt_die_Nutzwaerme_des_Projekts_nach_Pel()
@@ -257,10 +270,17 @@ namespace EPOS.Kern.Tests
             double nutz = bhkw.Waermeproduktion - bhkw.Waermeueberschuss;
             double kuerzung = netto * anteil - Math.Min(netto * anteil, nutz * anteil * 0.5);
 
-            Gleich(ohne * (netto - kuerzung) / netto, e.KwkgErloesJahr1, "Jahr 1 auf dem Ersatzweg");
+            // E7c1-Q2 b: Die Vbh der Gesamtanlage zählen aus ihrem KWK-Strom
+            // ((432,3 − 54,398) MWh ÷ 59 kW = 6.405 h/a statt 7.327 h/a); der Deckel bindet,
+            // Jahr 1 = 59 kW × Deckel × Satz — alt: ohne × (Netto − Kürzung) / Netto = 6.395,35 €.
+            Assert.True(kuerzung > 0);
+            Gleich(7316.00, e.KwkgErloesJahr1, "Jahr 1 auf dem Ersatzweg");
+            Assert.True(e.KwkgErloesJahr1 >= ohne - 0.01);
             Assert.Contains(Resource.WIRT_KWKG_ERSATZ_GEWICHTET.Substring(0, 30), e.Hinweis ?? "");
             Assert.Contains("KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg", e.Hinweis ?? "");
             Assert.Contains("Kürzung zusammen 54,398 MWh", e.Hinweis ?? "");
+            Assert.Contains("Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage 377,902 MWh ÷ 59 kW = 6.405 h/a",
+                            e.Hinweis ?? "");
         }
 
         // =================================================================
