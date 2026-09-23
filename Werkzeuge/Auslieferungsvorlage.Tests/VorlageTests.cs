@@ -147,7 +147,10 @@ namespace Auslieferungsvorlage.Tests
             //
             // 119 seit Schemaschritt 75 (Auftrag #269, 14.09.2026): Tab_Nutzungsdauer
             // kommt hinzu und traegt STRICT von ihrer ersten Zeile an.
-            Assert.Equal(119, befund.Strict);
+            //
+            // 129 seit Schemaschritt 102 (Zapfprofilgenerator T1): die zehn Tww-Tabellen,
+            // alle STRICT.
+            Assert.Equal(129, befund.Strict);
         }
 
         // =============================================================================
