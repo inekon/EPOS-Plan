@@ -964,7 +964,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         var zeilen = cut.FindAll(".epos-katalogliste tbody tr");
         var schloss = zeilen[0].QuerySelector(".epos-schloss");
         Assert.NotNull(schloss);
-        Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren erlaubt", schloss!.GetAttribute("title"));
+        Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt", schloss!.GetAttribute("title"));
         Assert.Equal(schloss.GetAttribute("title"), schloss.GetAttribute("aria-label"));
         Assert.Equal("", schloss.TextContent.Trim());
         Assert.Null(zeilen[1].QuerySelector(".epos-schloss"));
@@ -1504,5 +1504,89 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         Assert.False(cut.Instance.ImportOffen);
         Assert.False(zu);
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss aufheben</b> (AD-Q15): Die Handlung steht zwischen „Duplizieren…" und
+    /// „Löschen", heißt beim Auslieferungssatz „Schloss aufheben…", fragt mit „Nein" als
+    /// Vorgabe und schaltet erst nach dem „Ja". Danach liest der Dialog neu: kein Schloss
+    /// mehr, das Band „Schloss aufgehoben" im Stammblatt, „Speichern" frei.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Speichern_frei()
+    {
+        var schloss = new Schlosspruefung(1);
+        string? gespeichert = null;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => schloss.Markieren(Zeilen(KatalogBrowserArt.Bhkw)),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Speichern = (n, _, __) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "gespeichert", n); },
+            Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name),
+            Schloss = schloss.Weg()
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        Assert.True(cut.Instance.Auslieferungssatz);
+        Assert.Equal(new[] { "Vergleichen", "Duplizieren...", "Schloss aufheben...", "Löschen" },
+                     Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.True(cut.Instance.Schlossfrage);
+        Assert.StartsWith("Schloss von „BHKW A“ aufheben?", Schlosspruefung.Frage(cut));
+        Assert.Empty(schloss.Aufrufe);                    // erst das „Ja" schreibt
+
+        Schlosspruefung.Ja(cut);
+
+        Assert.False(cut.Instance.Schlossfrage);
+        Assert.Equal(new[] { 1 }, schloss.Aufrufe.Single().Ids);
+        Assert.False(schloss.Aufrufe.Single().Gesperrt);
+        Assert.False(cut.Instance.Auslieferungssatz);
+        Assert.Equal("Schloss von „BHKW A“ aufgehoben.", cut.Instance.Status);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss setzen...", Schlosspruefung.Beschriftung(cut));
+
+        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
+        var speichern = cut.FindAll(".epos-leiste .epos-knopf")[0];
+        Assert.Null(speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+        Assert.Equal("BHKW A", gespeichert);
+    }
+
+    /// <summary>
+    /// <b>Das Schloss setzen</b> und die harte Sperre: Ein eigener Satz wird nach Rückfrage
+    /// zum Auslieferungssatz; im Lesemodus des Dialogs oder der Lizenz ist die Handlung
+    /// <c>disabled</c>.
+    /// </summary>
+    [Fact]
+    public void Schloss_setzen_und_harte_Sperre_im_Lesemodus()
+    {
+        var schloss = new Schlosspruefung(1);
+        KatalogBrowserWege Wege(bool lizenzLesemodus) => new()
+        {
+            Katalogzeilen = () => schloss.Markieren(Zeilen(KatalogBrowserArt.Bhkw)),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Schloss = schloss.Weg(lizenzLesemodus)
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: Wege(false));
+
+        Zeilenklick.Zeile(cut, 1);                       // "BHKW B", eigener Satz
+        Assert.Equal("Schloss setzen...", Schlosspruefung.Beschriftung(cut));
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.StartsWith("„BHKW B“ als Auslieferungssatz sperren?", Schlosspruefung.Frage(cut));
+        Schlosspruefung.Ja(cut);
+
+        Assert.True(schloss.Aufrufe.Single().Gesperrt);
+        Assert.True(cut.Instance.Auslieferungssatz);
+        Assert.False(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss von „BHKW B“ gesetzt.", cut.Instance.Status);
+
+        Assert.True(Schlosspruefung.Knopf(Aufbauen(KatalogBrowserArt.Bhkw, nurLesen: true, wege: Wege(false)))
+                                   .HasAttribute("disabled"));
+        Assert.True(Schlosspruefung.Knopf(Aufbauen(KatalogBrowserArt.Bhkw, wege: Wege(true)))
+                                   .HasAttribute("disabled"));
     }
 }

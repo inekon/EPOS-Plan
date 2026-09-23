@@ -150,6 +150,7 @@
         <Blatt>
             <Stammblatt Name="@Blattname" Unterzeile="@Unterzeile"
                         Auslieferung="@NurLesbar" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_neu && _schloss.Entsperrt(_fokuszeile))"
                         Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
@@ -290,6 +291,10 @@
     <Rueckfrage Offen="@_loeschfrage" Frage="@_loeschtext" TitelText="@BtnLoeschenText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
 
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchlossAntwort" />
+
     @* --- Namensabfrage von „Duplizieren…" (AD-Q11) ------------------------ *@
     <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
                    Geschlossen="() => _duplizierfrage = false">
@@ -374,6 +379,14 @@
     /// (<c>WPStammCtrl.Duplizieren</c>). Ohne ihn steht der Knopf nicht da.
     /// </summary>
     [Parameter] public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>
+    /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): das
+    /// Auslieferungskennzeichen der gewählten Geräte umschalten — nur der Kopfsatz, die
+    /// Kennlinien bleiben (<c>WPStammCtrl.SchlossSetzen</c> über <c>Schlosswege.Aus</c>).
+    /// Ohne ihn steht die Handlung nicht da.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
 
     /// <summary>Die Kennlinien eines Geräts für den Editor.</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
@@ -608,6 +621,9 @@
     /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
     public bool Duplizierfrage => _duplizierfrage;
 
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
     /// <summary>
     /// Steht ein Auslieferungssatz da? Dann sind die Felder nur lesbar und „Speichern"
     /// ist weich gesperrt (AD-Q11). Ein neuer Satz ist nie einer.
@@ -651,7 +667,11 @@
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
     private EventCallback _loeschen;
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
+    private readonly Schlossumschaltung _schloss = new();
     private EventCallback _blattOeffnen;
     private EventCallback _blattSchliessen;
 
@@ -713,6 +733,9 @@
                 Hoechstens = 1,
                 ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
             });
+        // AD-Q15: die Beschriftung folgt der Auswahl.
+        if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
         if (Loeschen is not null)
             liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
         return liste;
@@ -886,6 +909,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -1121,6 +1145,45 @@
         _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    /// <summary>Die Zeilen, auf die die Auswahlleiste gerade wirkt.</summary>
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _liste);
+
+    /// <summary>
+    /// Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein". Geänderte Felder oder ein
+    /// ungespeichertes neues Gerät halten sie auf.
+    /// </summary>
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(Schloss, SchlossZiele, _geaendert || _neu);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Nach dem „Ja": schalten, die Liste neu lesen und die Fokuszeile neu wählen —
+    /// <c>Daten.NurLesen</c>, Lesemodus des Stammblatts und Speichern folgen aus ihr —,
+    /// Erfolg in die Statuszeile.
+    /// </summary>
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeNeuLaden();
+        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Id == _gewaehlteId);
+        if (zeile is not null) ZeileWaehlen(zeile);
+        _meldung = "";
+        _status = a.Status;
+    }
+
     /// <summary>„Neu": leere Vorgaben, keine Zeile markiert (<c>btn_Neu_Click</c>:458).</summary>
     private void BeiNeu()
     {
@@ -1314,7 +1377,7 @@
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage || _duplizierfrage
-            || ImportOffen)
+            || _schloss.FrageOffen || ImportOffen)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).

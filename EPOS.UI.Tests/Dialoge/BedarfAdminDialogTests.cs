@@ -909,4 +909,62 @@ public class BedarfAdminDialogTests : EposBunitContext
         Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
         Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
     }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss eines Bedarfsprofils aufheben</b> (AD-Q15): Die Rückfrage sagt, dass
+    /// das Wochenprofil beim gesperrten Typ gesperrt bleibt (das Typ-Schloss ist getrennt);
+    /// nach dem „Ja" sind die Kenndaten bedienbar und „Speichern" schreibt.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nennt_das_Typschloss_und_gibt_Speichern_frei()
+    {
+        var schloss = new Schlosspruefung(1);
+        var geschrieben = new List<string>();
+        var cut = Render<BedarfAdminDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Brauchwasser)
+            .Add(x => x.Katalogzeilen, () => schloss.Markieren(new[]
+            {
+                new Katalogfilterzeile(1, "Alpha")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Alpha")
+                    .MitText(Katalogfilterprofil.SpTyp, "EFH"),
+                new Katalogfilterzeile(2, "Beta")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Beta")
+                    .MitText(Katalogfilterprofil.SpTyp, "MFH")
+            }))
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Brauchwasser))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("Beschreibung " + n, "EFH")))
+            .Add(x => x.Jahressumme, n => "1")
+            .Add(x => x.Typen, () => new[] { "EFH", "MFH" })
+            .Add(x => x.Monatswerte, n => Enumerable.Repeat(1.0, 12).ToArray())
+            .Add(x => x.Monatsnamen, Enumerable.Range(1, 12).Select(m => "Monat " + m + ":").ToArray())
+            .Add(x => x.Speichern, (name, typ, beschr, monate) =>
+            {
+                geschrieben.Add(name);
+                return new KatalogSpeicherErgebnis(true, "", name);
+            })
+            .Add(x => x.Schloss, schloss.Weg())
+            .Add(x => x.TypGesperrt, typ => typ == "EFH")
+            .Add(x => x.BtnLoeschenText, "Profil löschen"));
+
+        Assert.Equal(new[] { "Vergleichen", "Schloss aufheben...", "Profil löschen" },
+                     Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.EndsWith("Das Wochenprofil gehört zum Typ „EFH“ und bleibt gesperrt.", Schlosspruefung.Frage(cut));
+        Schlosspruefung.Ja(cut);
+
+        Assert.Equal(new[] { 1 }, schloss.Aufrufe.Single().Ids);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
+
+        cut.Find(".epos-stammblatt textarea").Input("neu");
+        var speichern = cut.FindAll(".epos-leiste .epos-knopf")[0];
+        Assert.Null(speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+        Assert.Equal(new[] { "Alpha" }, geschrieben);
+    }
 }

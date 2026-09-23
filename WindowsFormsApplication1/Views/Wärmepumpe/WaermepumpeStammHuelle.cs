@@ -115,6 +115,8 @@ namespace WindowsFormsApplication1
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(
                     (id, name) => KatalogBrowserHuelle.Kopie(WPStammCtrl.Duplizieren(id, name))),
                 ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(KennlinienZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     KennlinienAbgleichen),
