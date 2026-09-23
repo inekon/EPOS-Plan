@@ -1852,6 +1852,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
     <value>Abnehmer der Wärme — er wird unmittelbar von einem Erzeuger oder aus einem Pufferspeicher versorgt.</value>
   </data>
+  <data name="SIM_SCHEMA_WARNUNG_OHNE_VERSORGER" xml:space="preserve">
+    <value>Kein Versorger</value>
+  </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Vorlauf unter dem Puffer-Sollwert</value>
   </data>
@@ -2596,7 +2599,7 @@ sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.</value>
     <value>Heizkreis</value>
   </data>
   <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
-    <value>Heizkreis (beides)</value>
+    <value>Heizkreis (Heizung + Warmwasser)</value>
   </data>
   <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
     <value>Heizkreis (nur Heizwärme)</value>
@@ -5061,18 +5064,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Übernehmen aus</value>
   </data>
-  <data name="OPT_QUELLE_TARIF" xml:space="preserve">
-    <value>Tarifstruktur (Wirtschaftlichkeit): {0} €/(kW·a) — {1}</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE1" xml:space="preserve">
-    <value>Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE2" xml:space="preserve">
-    <value>Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_OHNE_SPITZE" xml:space="preserve">
-    <value>Stufe 1, Bezugsspitze nicht bekannt</value>
-  </data>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträger Strom: {0} €/(kW·a)</value>
   </data>
@@ -6000,7 +5991,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
   </data>
   <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
-    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides).</value>
+    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (Heizung + Warmwasser).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
@@ -6239,6 +6230,9 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
   </data>
+  <data name="ADM_BTN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
   <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
     <value>Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet.</value>
   </data>
@@ -6394,7 +6388,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>KWKG: {0} — Bestellung/Genehmigung nach dem {1} und damit nach geltendem Recht nicht förderfähig (§ 6 KWKG 2025, Regulierungsrisiko Novelle); für diese Anlage kein Zuschlag.</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
-    <value>KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag.</value>
+    <value>KWKG: {0} — Inbetriebnahme nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}); für diese Anlage kein Zuschlag.</value>
   </data>
   <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
     <value>{0} kW nach Leistungsanteilen: {1} → Mischsatz {2} ct/kWh ({3}, Stand {4}).</value>
@@ -6757,7 +6751,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Bedarf ohne Anlage [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
+    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort 0, fehlte die Strombedarfsreihe im Lauf.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>
@@ -8785,9 +8779,6 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_LP_SAISON" xml:space="preserve">
     <value>Saisonale Sätze…</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
-    <value>Leistungspreis Strom: über die Tarifstruktur.</value>
-  </data>
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträgerverwaltung…</value>
   </data>
@@ -8963,7 +8954,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Eingespeister KWK-Strom (Tranchen):</value>
   </data>
   <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
-    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
+    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung steht nicht hier, sondern im Dialog „BHKW-Wirtschaftlichkeit“ (Einspeisevergütung KWK-Strom) und, bei aktivem Rollentarif, im Einspeisepreis der Tarifstruktur — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
   </data>
   <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
     <value>Förderdauer und Jahresdeckel</value>
@@ -9262,14 +9253,8 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
-    <value>Tarifstruktur…</value>
-  </data>
   <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
     <value>BHKW-Tarif…</value>
-  </data>
-  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
-    <value>Strombezug…</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Einspeise-Tarif…</value>
@@ -9356,6 +9341,18 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
     <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}". Der Erzeuger kann den Speicher nie auf Solltemperatur laden.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_DIREKT_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solarthermie ohne Pufferspeicher deckt Prozesswärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Prozess.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
+    <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE" xml:space="preserve">
+    <value>Kanal {0} hat Bedarf, aber keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
   </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer.</value>
@@ -9577,7 +9574,7 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet (Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf den HEIZKREIS.</value>
   </data>
   <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
-    <value>Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}.</value>
+    <value>{0}: keine Senke zugeordnet – der Lauf nimmt {1}.</value>
   </data>
   <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
     <value>Solarspeicher</value>
@@ -10313,9 +10310,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>Erlös (im Kapitalwert)</value>
   </data>
-  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
-    <value>Strombezug…</value>
-  </data>
   <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
     <value>BHKW-Tarif…</value>
   </data>
@@ -10523,9 +10517,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
     <value>Arbeitspreis (Durchschnitt) [€/kWh]:</value>
   </data>
-  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
   <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
     <value>Einspeisepreis [€/kWh]:</value>
   </data>
@@ -10535,35 +10526,14 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_GUELTIG_AB" xml:space="preserve">
     <value>Preisstand (gültig ab):</value>
   </data>
-  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
-    <value>Bezugspreise [€/kWh]</value>
-  </data>
-  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
-    <value>Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld)</value>
-  </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
     <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
   </data>
-  <data name="TARIF_G_STAFFEL" xml:space="preserve">
-    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
-  </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
-    <value>Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)</value>
-  </data>
-  <data name="TARIF_G_ZONEN" xml:space="preserve">
-    <value>Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel</value>
-  </data>
-  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
-    <value>Zonenmodell (Stufe W3) — Einspeisepreise</value>
-  </data>
-  <data name="TARIF_HT_BIS" xml:space="preserve">
-    <value>HT bis Stunde (exklusiv):</value>
-  </data>
-  <data name="TARIF_HT_VON" xml:space="preserve">
-    <value>HT von Stunde (nur Zonenmodell):</value>
+    <value>Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)</value>
   </data>
   <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
     <value>Leistungspreismodell:</value>
@@ -10577,26 +10547,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_LM_STAFFEL" xml:space="preserve">
     <value>Staffel (Sommer- und Wintermaximum getrennt)</value>
   </data>
-  <data name="TARIF_MODELL" xml:space="preserve">
-    <value>Tarifmodell:</value>
-  </data>
-  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
-    <value>Rollenmodell (Bezug / Reststrom / Einspeisung)</value>
-  </data>
-  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
-    <value>Zonenmodell (Winter/Sommer × HT/NT)</value>
-  </data>
   <data name="TARIF_MONATSPREIS" xml:space="preserve">
     <value>Monatlicher Leistungspreis [€/kW·Monat]:</value>
   </data>
-  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
-    <value>Das HT-Fenster ist leer (von ≥ bis).</value>
-  </data>
   <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
     <value>Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
-  </data>
-  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
-    <value>Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
   </data>
   <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>Die Tarifstruktur konnte nicht gespeichert werden.</value>
@@ -10610,12 +10565,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
     <value>Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und geteilte Preisfelder erscheinen in mehreren Sichten und meinen dieselben Werte.</value>
   </data>
-  <data name="TARIF_SOMMER_HT" xml:space="preserve">
-    <value>Sommer HT:</value>
-  </data>
-  <data name="TARIF_SOMMER_NT" xml:space="preserve">
-    <value>Sommer NT:</value>
-  </data>
   <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
     <value>Obergrenze [kW]</value>
   </data>
@@ -10625,29 +10574,14 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_SP_WINTER" xml:space="preserve">
     <value>Winter [€/kW·a]</value>
   </data>
-  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
-    <value>Staffelgrenze [kW]:</value>
-  </data>
   <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
     <value>Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt bis 500 kW Stufe 1, 500–2.000 kW Stufe 2, 2.000–8.000 kW Stufe 3, darüber Stufe 4. Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind vor der Übernahme umzurechnen.</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
-    <value>Preis bis Grenze [€/kW·a]:</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
-    <value>Preis über Grenze [€/kW·a]:</value>
   </data>
   <data name="TARIF_STUFE" xml:space="preserve">
     <value>Stufe {0}</value>
   </data>
   <data name="TARIF_STUFE_REST" xml:space="preserve">
     <value>Stufe {0} (Rest)</value>
-  </data>
-  <data name="TARIF_TITEL" xml:space="preserve">
-    <value>Tarifstruktur Strom</value>
-  </data>
-  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
-    <value>Tarifstruktur Strombezug (Wärmepumpe &amp; Verbraucher)</value>
   </data>
   <data name="TARIF_TITEL_BHKW" xml:space="preserve">
     <value>Tarifstruktur BHKW (Strom)</value>
@@ -10657,12 +10591,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="TARIF_WINTER_BIS" xml:space="preserve">
     <value>Winter bis Monat:</value>
-  </data>
-  <data name="TARIF_WINTER_HT" xml:space="preserve">
-    <value>Winter HT:</value>
-  </data>
-  <data name="TARIF_WINTER_NT" xml:space="preserve">
-    <value>Winter NT:</value>
   </data>
   <data name="TARIF_WINTER_VON" xml:space="preserve">
     <value>Winter von Monat:</value>
@@ -13646,7 +13574,7 @@ Alle Eingaben überprüfen!</value>
     <value>Maximaler Gasbezug:</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Gesamte Wärmeleistung der Module:</value>
+    <value>Wärmeproduktion der Module:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Überschuß:</value>
@@ -19263,6 +19191,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
     <value>die Speicherflotte wurde neu gerechnet</value>
   </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PROJEKT" xml:space="preserve">
+    <value>Bedarf, Senken oder Anlagen wurden nach dem Lauf geändert</value>
+  </data>
+  <data name="SIMERG_ST_HINWEIS_OHNE_ABNEHMER" xml:space="preserve">
+    <value>Ertrag {0} MWh/a ohne Abnehmer: Die Senke „{1}" bedient nicht den Kanal {2}, in dem der Bedarf liegt.</value>
+  </data>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>in der Stromspeicher-Auslegung wurde etwas geändert</value>
   </data>
@@ -22380,38 +22314,14 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
     <value>Wird die Tarifstruktur überhaupt angewendet? Ausgeschaltet rechnet die Simulation mit dem einfachen Arbeitspreis des Energieträgers.</value>
   </data>
-  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
-    <value>Zonenmodell oder Rollenmodell. Das Zonenmodell rechnet mit vier Preiszonen und einer Leistungsstaffel, das Rollenmodell mit je einem Arbeits-, Grund- und Leistungspreis je Rolle.</value>
-  </data>
   <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
     <value>Der Preisstand, ab dem die Tarifstruktur gilt (ISO, JJJJ-MM-TT).</value>
   </data>
   <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
-    <value>Der Monat, mit dem die Winterzone beginnt.</value>
+    <value>Der Monat, mit dem die Winterspanne beginnt — sie trennt Sommer- und Wintermaximum des Leistungspreismodells „Staffel“.</value>
   </data>
   <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
-    <value>Der Monat, mit dem die Winterzone endet.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
-    <value>Die Stunde, mit der der Hochtarif beginnt — nur im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
-    <value>Die Stunde, mit der der Hochtarif endet (exklusiv) — nur im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
-    <value>Der Bezugspreis dieser Preiszone im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
-    <value>Der Einspeisepreis dieser Preiszone im Zonenmodell. Er gilt für PV UND KWK — beide teilen sich das Feld.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
-    <value>Die Leistungsgrenze, ab der der zweite Staffelpreis gilt.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
-    <value>Der Leistungspreis unterhalb der Staffelgrenze.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
-    <value>Der Leistungspreis oberhalb der Staffelgrenze.</value>
+    <value>Der Monat, mit dem die Winterspanne endet.</value>
   </data>
   <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
     <value>Der Arbeitspreis der Bezugsrolle im Rollenmodell.</value>
@@ -24077,5 +23987,197 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BERG_LBL_DAVON_ZIRKULATION" xml:space="preserve">
     <value>davon Zirkulation:</value>
+  </data>
+  <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
+    <value>Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell und wird nicht mehr gerechnet — der Strom ist mit den Preisen des Stromträgers aus der Kostenverwaltung bepreist.</value>
+  </data>
+  <data name="WIRT_TARIF_NACHWEIS_ZONEN" xml:space="preserve">
+    <value>Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung</value>
+  </data>
+  <data name="WIRT_MATRIX_TITEL" xml:space="preserve">
+    <value>Strommengen</value>
+  </data>
+  <data name="WIRT_MATRIX_HERKUNFT" xml:space="preserve">
+    <value>Jahressummen aus den Stundenreihen der In-Memory-Simulation. KWK-Aufteilung: Eigenstrom = min(BHKW-Erzeugung, Strombedarf nach Photovoltaik) je Stunde — dokumentierte Näherung.</value>
+  </data>
+  <data name="WIRT_MATRIX_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="WIRT_MATRIX_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENSPITZE" xml:space="preserve">
+    <value>Höchste Stundenlast des Netzbezugs: {0} kW — Bemessungsgröße der Leistungspreise im Rollentarif; der Leistungspreis des Stromträgers bemisst sich an der Viertelstundenspitze.</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
+    <value>Höchste Stundenlast</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel des Stromträgers: {0} €/(kW·a) — {1}</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE1" xml:space="preserve">
+    <value>Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE2" xml:space="preserve">
+    <value>Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
+    <value>Stufe 1, Bezugsspitze nicht bekannt</value>
+  </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Staffelgrenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Preis bis zur Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Preis über der Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen „keine Staffel“.</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Leistungspreis-Staffel ließ sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>Die Grenze der zweistufigen Leistungspreis-Staffel in kW: bis zu ihr gilt der erste, darüber der zweite Preis — bemessen an der Viertelstundenspitze des Netzbezugs im Jahr. Nur beim Stromträger im Projekt.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>Der Leistungspreis bis zur Staffelgrenze in €/(kW·a). Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze des Stromträgers.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>Der Leistungspreis über der Staffelgrenze in €/(kW·a).</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_BERECHNET" xml:space="preserve">
+    <value>berechnet aus P_el ÷ P_th der Gerätezeile = {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_FEHLT" xml:space="preserve">
+    <value>weder gepflegt noch aus P_el ÷ P_th der Gerätezeile bestimmbar</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ANLAGE" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: Stromkennzahl σ {1} ({2}); Nutzwärme {3} MWh (Wärmeproduktion {4} MWh − Anteil am Wärmeüberschuss {5} MWh); KWK-Strom min({6} ; {3} × {1}) = {7} MWh; Kürzung {8} MWh, davon Einspeisung {9} MWh und Eigenverbrauch {10} MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_OHNE_SIGMA" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: keine Stromkennzahl ({1}) — kein KWK-Strom nach Fall 2, für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg — Nutzwärme des Projekts {0} MWh (Wärmeproduktion {1} MWh − Wärmeüberschuss {2} MWh) und Nettostromerzeugung {3} MWh {4} auf die Anlagen verteilt: {5}. Kürzung zusammen {6} MWh, zuerst von der Einspeisung.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_ANLAGE" xml:space="preserve">
+    <value>„{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA" xml:space="preserve">
+    <value>„{0}“ ohne Stromkennzahl — KWK-Strom 0 MWh, Kürzung {1} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_PEL" xml:space="preserve">
+    <value>nach P_el</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_GLEICH" xml:space="preserve">
+    <value>zu gleichen Teilen (keine Anlage führt P_el)</value>
+  </data>
+  <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
+    <value>Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“.</value>
+  </data>
+  <data name="WIRT_KWKG_NACH_FRISTENDE" xml:space="preserve">
+    <value>KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}) — kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
+    <value>KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird ohne sie.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART" xml:space="preserve">
+    <value>KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent ab; für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
+    <value>Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. Anlagenart oder Kontingent im BHKW-Dialog eintragen.</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_ANLAGE" xml:space="preserve">
+    <value>Sätze und Herkunft…</value>
+  </data>
+  <data name="BHW_UEB_TITEL" xml:space="preserve">
+    <value>Sätze und Herkunft — {0}</value>
+  </data>
+  <data name="BHW_UEB_G_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag — diese Anlage</value>
+  </data>
+  <data name="BHW_UEB_KWK_STROM" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG)</value>
+  </data>
+  <data name="BHW_FLD_FALL1" xml:space="preserve">
+    <value>Fall 1 — Nettostromerzeugung</value>
+  </data>
+  <data name="BHW_FLD_ABWAERMEABFUHR" xml:space="preserve">
+    <value>Fall 2 — Vorrichtung zur Abwärmeabfuhr</value>
+  </data>
+  <data name="BHW_UEB_FALL1_MENGE" xml:space="preserve">
+    <value>→ {0} MWh Nettostromerzeugung im zuletzt gebuchten Lauf</value>
+  </data>
+  <data name="BHW_UEB_FALL1_OHNE_LAUF" xml:space="preserve">
+    <value>→ die Nettostromerzeugung der Anlage (Klemme minus Hilfsstrom)</value>
+  </data>
+  <data name="BHW_UEB_FALL2_FORMEL" xml:space="preserve">
+    <value>→ min(Nettostromerzeugung ; Nutzwärme × σ) — Nutzwärme: Wärmeproduktion des Moduls abzüglich seines Anteils am Wärmeüberschuss (nach P_el)</value>
+  </data>
+  <data name="BHW_UEB_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="BHW_UEB_SP_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="BHW_UEB_SP_EIGEN" xml:space="preserve">
+    <value>eigener Wert</value>
+  </data>
+  <data name="BHW_UEB_SP_GILT" xml:space="preserve">
+    <value>gilt</value>
+  </data>
+  <data name="BHW_UEB_LEER_VORSCHLAG" xml:space="preserve">
+    <value>leer = Vorschlag</value>
+  </data>
+  <data name="BHW_FLD_STROMKENNZAHL" xml:space="preserve">
+    <value>Stromkennzahl σ</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL" xml:space="preserve">
+    <value>P_el ÷ P_th der Gerätezeile: {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL_OHNE" xml:space="preserve">
+    <value>Gerätezeile ohne P_el oder P_th — kein Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_VORSCHLAG" xml:space="preserve">
+    <value>{0} Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN" xml:space="preserve">
+    <value>{0} eigener Wert — Vorschlag {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN_OHNE" xml:space="preserve">
+    <value>{0} eigener Wert</value>
+  </data>
+  <data name="BHW_UEB_GILT_KEINE" xml:space="preserve">
+    <value>keine — kein KWK-Strom nach Fall 2, kein Zuschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_FALL1" xml:space="preserve">
+    <value>— (Fall 1 liest keine Stromkennzahl)</value>
+  </data>
+  <data name="BHW_UEB_INFO_SIGMA" xml:space="preserve">
+    <value>Leer heißt: σ wird beim Rechnen aus P_el ÷ P_th der Gerätezeile gebildet. Ein eigener Wert gilt dauerhaft, auch wenn sich die Gerätezeile ändert; „Vorschlag übernehmen“ leert das Feld — der Weg zurück. Gibt es weder einen eigenen Wert noch P_el und P_th, gibt es keinen KWK-Strom nach Fall 2 und für diese Anlage keinen Zuschlag. Gelesen wird σ nur bei Fall 2.</value>
+  </data>
+  <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BHW_A_KWK_FALL1" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung.</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ {0} ({1}).</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
   </data>
 </root>

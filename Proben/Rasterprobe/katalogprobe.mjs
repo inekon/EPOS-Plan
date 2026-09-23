@@ -60,12 +60,22 @@ const VORHER = process.argv.includes('--vorher');
 // schrumpfen (flex 1 1 auto, min-height 0), hatte KEINEN eigenen Rollbalken
 // (overflow: visible), und seine zwei Kinder trugen min-height: 0 - womit die
 // Mindestgroesse einer Rasterreihe null war.
+//
+// Seit Stufe 1 der Neuordnung ist der Rahmen eine Flexspalte mit zwei
+// rollenden Bereichen; die Gegenprobe stellt deshalb auch das RASTER von damals
+// wieder her (zwei auto-Reihen), den Eingabeblock ohne Hoechsthoehe und die
+// Liste mit ihren 457,6 px - sonst gaebe es den Befund in der neuen Anordnung
+// gar nicht zu zeigen.
 const VORHER_STIL = `
   .epos-katalog-paar.epos-katalog-fuellend {
+    display: grid !important; grid-template-rows: auto auto !important;
     flex: 1 1 auto !important; min-height: 0 !important; overflow: visible !important;
   }
   .epos-katalog-paar > .epos-katalog-liste,
-  .epos-katalog-paar > .epos-katalog-eingabe { min-height: 0 !important; }
+  .epos-katalog-paar > .epos-katalog-eingabe { min-height: 0 !important; max-height: none !important;
+    overflow: visible !important; }
+  .epos-katalog-liste .epos-katalogliste > .epos-raster-huelle { max-height: 457.6px !important;
+    flex: 0 1 auto !important; }
 `;
 
 // --------------------------------------------------- Messung im Browser
@@ -186,6 +196,95 @@ const KAESTEN = () => {
   };
 };
 
+// =====================================================================
+//  STUFE 1 DER NEUORDNUNG (Konzept Administrationsdialoge, V1 V2 V7)
+// =====================================================================
+//
+//  KAESTEN fragt, ob sich Kaesten UEBERLAGERN (KL-5). Die Neuordnung fragt
+//  weiter: WIE VIELE Bereiche rollen, liegt einer IM anderen, rollt die Liste
+//  QUER, und welche Spalte ist daran schuld? Alles in Fensterkoordinaten, im
+//  Zustand nach der Wahl der ersten Zeile.
+//
+//  Ein Element ROLLT, wenn es overflow auto/scroll traegt UND mehr Inhalt hat
+//  als Platz (scrollHeight > clientHeight + 1 bzw. quer). Ein Element mit
+//  overflow: auto, das gerade nichts zu rollen hat, ist kein Rollbereich -
+//  der Anwender sieht keinen Balken.
+const STUFE1 = () => {
+  const wurzel = document.querySelector('.epos-katalog-dialog');
+  if (!wurzel) return { fehler: 'kein .epos-katalog-dialog im Baum' };
+
+  const name = el => el.tagName.toLowerCase() +
+    (el.className && typeof el.className === 'string'
+      ? '.' + el.className.trim().split(/\s+/).slice(0, 3).join('.') : '');
+
+  const bereiche = [];
+  for (const el of [wurzel, ...wurzel.querySelectorAll('*')]) {
+    const s = getComputedStyle(el);
+    if (s.display === 'none') continue;
+    const y = (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 1;
+    const x = (s.overflowX === 'auto' || s.overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1;
+    if (x || y) bereiche.push({ el, name: name(el), x, y,
+      client: `${el.clientWidth}x${el.clientHeight}`, roll: `${el.scrollWidth}x${el.scrollHeight}` });
+  }
+  const verschachtelt = [];
+  for (const a of bereiche)
+    for (const b of bereiche)
+      if (a !== b && a.el.contains(b.el)) verschachtelt.push(`${b.name} in ${a.name}`);
+
+  const huelle = wurzel.querySelector('.epos-katalogliste .epos-raster-huelle');
+  const tabelle = huelle ? huelle.querySelector('table') : null;
+  const hr = huelle ? huelle.getBoundingClientRect() : null;
+  const spalten = tabelle ? [...tabelle.querySelectorAll('thead th')].map(t => {
+    const r = t.getBoundingClientRect();
+    return {
+      text: (t.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 28),
+      klasse: String(t.className || '').replace(/\s+/g, ' ').trim(),
+      sichtbar: getComputedStyle(t).display !== 'none',
+      breite: +r.width.toFixed(1),
+      // rechter Rand relativ zur INNENkante der Huelle, ohne Rollstand
+      rechts: huelle ? +(r.right - hr.left - huelle.clientLeft + huelle.scrollLeft).toFixed(1) : 0
+    };
+  }) : [];
+
+  // Die erste echte Datenzeile und die Zelle des Bezeichners darin.
+  const zeile = tabelle ? [...tabelle.querySelectorAll('tbody > tr')]
+    .find(z => z.querySelector('td') && !z.querySelector('td.grid-cell-placeholder')) : null;
+  let bezIndex = spalten.findIndex(s => /bezeichner/.test(s.klasse));
+  if (bezIndex < 0) bezIndex = spalten.findIndex(s => /^(Bezeichner|Modell|Region|Bezeichnung)/.test(s.text));
+  const bezZelle = zeile && bezIndex >= 0 ? zeile.children[bezIndex] : null;
+  const bezTraeger = bezZelle ? (bezZelle.querySelector('[title]') || bezZelle) : null;
+
+  const rechteck = el => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { links: +r.left.toFixed(1), oben: +r.top.toFixed(1), breite: +r.width.toFixed(1), hoehe: +r.height.toFixed(1) };
+  };
+
+  return {
+    fenster: { breite: innerWidth, hoehe: innerHeight },
+    dialogRollt: wurzel.scrollHeight > wurzel.clientHeight + 1,
+    dialogMass: `${wurzel.clientWidth}x${wurzel.clientHeight} / Inhalt ${wurzel.scrollWidth}x${wurzel.scrollHeight}`,
+    bereiche: bereiche.map(b => ({ name: b.name, quer: b.x, hoch: b.y, client: b.client, roll: b.roll })),
+    verschachtelt,
+    rahmen: rechteck(wurzel.querySelector('.epos-katalog-paar')),
+    liste: rechteck(wurzel.querySelector('.epos-katalog-liste')),
+    eingabe: rechteck(wurzel.querySelector('.epos-katalog-eingabe')),
+    huelle: huelle ? { ...rechteck(huelle), innen: huelle.clientWidth, inhalt: huelle.scrollWidth,
+                       innenHoehe: huelle.clientHeight, inhaltHoehe: huelle.scrollHeight,
+                       maxHoehe: getComputedStyle(huelle).maxHeight } : null,
+    tabelle: rechteck(tabelle),
+    querUeberlauf: huelle ? huelle.scrollWidth - huelle.clientWidth : 0,
+    spalten,
+    zeilenhoehe: zeile ? +zeile.getBoundingClientRect().height.toFixed(3) : null,
+    bezeichner: bezTraeger ? {
+      text: (bezTraeger.textContent || '').trim().slice(0, 40),
+      gekuerzt: bezZelle.scrollWidth > bezZelle.clientWidth + 1,
+      titel: bezTraeger.getAttribute('title') || '',
+      textOverflow: getComputedStyle(bezZelle).textOverflow
+    } : null
+  };
+};
+
 // ---------------------------------------------------------------- Helfer
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
@@ -211,21 +310,51 @@ async function fall(browser, f) {
   const seite = await kontext.newPage();
 
   const adresse = `${WURZEL}/katalogprobe?maske=${f.maske}&zeilen=${f.zeilen}` +
-                  (f.bilder === false ? '&bilder=0' : '');
+                  (f.bilder === false ? '&bilder=0' : '') +
+                  (f.art ? '&art=' + f.art : '') + (f.voll ? '&voll=1' : '');
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
+
+  // EIN PROJEKTDIALOG (Faelle P): kein Katalograhmen, nur die geerbte Katalogliste.
+  // Gemessen wird, ob sie in ihrer Spalte steht (nicht auf null faellt - sie ist
+  // seit V2 ein Container ihrer Breite) und wie weit sie quer rollt.
+  if (f.projekt) {
+    await seite.waitForSelector('.epos-katalogliste tbody tr', { timeout: 30000 });
+    await schlaf(800);
+    const p = await seite.evaluate(() => {
+      const liste = document.querySelector('.epos-katalogliste');
+      const huelle = liste.querySelector('.epos-raster-huelle');
+      return {
+        liste: +liste.getBoundingClientRect().width.toFixed(1),
+        eltern: +liste.parentElement.getBoundingClientRect().width.toFixed(1),
+        klasse: liste.className,
+        quer: huelle.scrollWidth - huelle.clientWidth,
+        innen: huelle.clientWidth,
+        spalten: [...liste.querySelectorAll('thead th')].map(t =>
+          ((t.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 24) || '[]') +
+          (getComputedStyle(t).display === 'none' ? ' AUS' : ' ' + t.getBoundingClientRect().width.toFixed(0) + 'px'))
+      };
+    });
+    if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${f.name}.png`, fullPage: false });
+    await kontext.close();
+    return { name: f.name, fall: f, adresse, projekt: p };
+  }
+
   await seite.waitForSelector('.epos-katalog-dialog', { timeout: 30000 });
 
-  if (f.vorher || VORHER) await seite.addStyleTag({ content: VORHER_STIL });
 
   // STILPROBE wie in der Rasterprobe: Ohne epos-ui.css gibt es keine
   // Hoechsthoehe, keine Rollbehaelter und damit auch keine Ueberlagerung -
   // der Lauf saehe gruen aus und haette nichts gemessen.
+  // Gelesen wird der RAHMEN der Huelle und nicht mehr ihre Hoechsthoehe: Seit
+  // Stufe 1 der Neuordnung nimmt die Liste im Katalogdialog die Resthoehe und
+  // traegt KEINE Hoechsthoehe mehr (max-height: none) - der Rahmen aber steht
+  // nur im Hausstilblatt (1px solid --epos-rahmen).
   const stil = await seite.evaluate(() => {
     const h = document.querySelector('.epos-raster-huelle');
-    return h ? getComputedStyle(h).maxHeight : '(keine Huelle)';
+    return h ? getComputedStyle(h).borderTopStyle : '(keine Huelle)';
   });
-  if (stil === 'none' || stil === '(keine Huelle)') {
-    throw new Error(`Das Stilblatt epos-ui.css wirkt nicht (max-height der Huelle: ${stil}). ` +
+  if (stil !== 'solid') {
+    throw new Error(`Das Stilblatt epos-ui.css wirkt nicht (Rahmen der Huelle: ${stil}). ` +
       'Der Wirt liefert seine statischen Dateien nicht aus - Messung wertlos.');
   }
 
@@ -246,7 +375,15 @@ async function fall(browser, f) {
              .click({ timeout: 15000 });
   await schlaf(1400);
 
+  // Die Gegenproben setzen ihr altes Mass ERST NACH der Wahl der Zeile: Die Wahl
+  // laedt nur den Eingabeblock, und im alten Mass liegt die erste Zeile unter dem
+  // klebenden Spaltenkopf - der Klick traefe den Kopf.
+  if (f.vorher || VORHER) await seite.addStyleTag({ content: VORHER_STIL });
+  if (f.stil) await seite.addStyleTag({ content: f.stil });
+  if (f.vorher || VORHER || f.stil) await schlaf(400);
+
   const k = await seite.evaluate(KAESTEN);
+  if (f.stufe1) k.stufe1 = await seite.evaluate(STUFE1);
 
   if (FOTOS) {
     const marke = (f.vorher || VORHER) ? 'vorher' : 'nachher';
@@ -261,6 +398,15 @@ async function fall(browser, f) {
 function pruefe(e) {
   const m = [];
   if (e.fehler) return [e.fehler];
+  if (e.projekt) {
+    // Die Liste fuellt ihre Spalte (hoechstens der Rand fehlt) - faellt sie als
+    // Container auf ihre Eigenbreite null, ist das der Befund.
+    if (e.projekt.liste < e.projekt.eltern - 4)
+      m.push(`die Katalogliste ist ${e.projekt.liste} px breit in einer Spalte von ${e.projekt.eltern} px`);
+    if (e.fall.querHoechstens !== undefined && e.projekt.quer > e.fall.querHoechstens)
+      m.push(`die Liste rollt quer um ${e.projekt.quer} px`);
+    return m;
+  }
 
   const paare = [
     ['Eingabeblock über Liste', e.eingabe, e.liste],
@@ -296,6 +442,25 @@ function pruefe(e) {
       m.push(`Knopf „${b.text}" ist beschnitten (${b.sicht.breite}x${b.sicht.hoehe} von ${b.breite}x${b.hoehe})`);
   }
 
+  // STUFE 1 (V1, V2): ein Rollbereich nie im anderen, der Dialog rollt nicht,
+  // die Liste rollt nicht quer, die Zeile ist so hoch wie ItemSize.
+  const s = e.stufe1;
+  if (s) {
+    if (s.fehler) { m.push(s.fehler); return m; }
+    for (const v of s.verschachtelt) m.push(`Rollbereich in Rollbereich: ${v}`);
+    if (s.dialogRollt) m.push(`der Dialog rollt (${s.dialogMass})`);
+    if (s.querUeberlauf > 1) {
+      const schuld = s.spalten.filter(sp => sp.sichtbar && sp.rechts > s.huelle.innen + 0.5)
+                              .map(sp => `„${sp.text}" bis ${sp.rechts}`);
+      m.push(`die Liste rollt quer um ${s.querUeberlauf} px (Innenbreite ${s.huelle.innen}); ` +
+             `jenseits: ${schuld.join(', ') || '—'}`);
+    }
+    if (s.zeilenhoehe !== null && Math.abs(s.zeilenhoehe - 53) > 0.5)
+      m.push(`Zeilenhoehe ${s.zeilenhoehe} px statt 53 (ItemSize)`);
+    if (e.fall.bezeichnerKurz && s.bezeichner && s.bezeichner.gekuerzt && !s.bezeichner.titel)
+      m.push('ein gekuerzter Bezeichner traegt keinen Kurztext (title)');
+  }
+
   return m;
 }
 
@@ -303,6 +468,13 @@ function zeige(e) {
   console.log('');
   console.log('=== ' + e.name + ' ===  ' + e.adresse);
   if (e.fehler) { console.log('  FEHLER: ' + e.fehler); return; }
+  if (e.projekt) {
+    const p = e.projekt;
+    console.log(`  [Projektdialog] Katalogliste ${p.liste} px in ${p.eltern} px  (${p.klasse})` +
+                `   Huelle innen ${p.innen} px, quer ${p.quer} px`);
+    console.log('            Spalten: ' + p.spalten.join(' · '));
+    return;
+  }
   const z = k => {
     if (!k) return '—';
     const roh = `y ${k.oben} … ${k.unten}  (h ${k.hoehe}, x ${k.links} … ${k.rechts})`;
@@ -321,6 +493,24 @@ function zeige(e) {
   console.log(`  Fussleiste    ${z(e.fuss)}`);
   for (const b of e.fussknoepfe)
     console.log(`     Knopf „${b.text}"  ${z(b)}  ${b.verdeckt.length ? 'VERDECKT durch ' + b.verdeckt.join(', ') : 'frei'}`);
+
+  const s = e.stufe1;
+  if (!s || s.fehler) return;
+  const r = k => k ? `${k.breite}x${k.hoehe} @ (${k.links},${k.oben})` : '—';
+  console.log(`  [Stufe 1] Dialog ${s.dialogMass}  rollt: ${s.dialogRollt ? 'JA' : 'nein'}`);
+  console.log(`            Rahmen ${r(s.rahmen)}   Liste ${r(s.liste)}   Eingabe ${r(s.eingabe)}`);
+  if (s.huelle)
+    console.log(`            Huelle ${r(s.huelle)}  innen ${s.huelle.innen} / Inhalt ${s.huelle.inhalt} px quer, ` +
+                `${s.huelle.innenHoehe} / ${s.huelle.inhaltHoehe} px hoch, max-height ${s.huelle.maxHoehe}` +
+                `   Tabelle ${r(s.tabelle)}   Querueberlauf ${s.querUeberlauf} px`);
+  console.log(`            Rollbereiche (${s.bereiche.length}): ` +
+              (s.bereiche.map(b => `${b.name} [${b.hoch ? 'hoch' : ''}${b.quer ? ' quer' : ''} ${b.client} von ${b.roll}]`).join(' | ') || '—'));
+  console.log(`            verschachtelt: ${s.verschachtelt.join(' | ') || 'keiner'}`);
+  console.log(`            Spalten: ` + s.spalten.map(sp =>
+    `${sp.text || '[]'} ${sp.sichtbar ? sp.breite + 'px→' + sp.rechts : 'AUS'}`).join(' · '));
+  console.log(`            Zeilenhoehe ${s.zeilenhoehe}   Bezeichner: ` +
+              (s.bezeichner ? `„${s.bezeichner.text}" gekuerzt=${s.bezeichner.gekuerzt} ` +
+                              `title=${s.bezeichner.titel ? 'ja' : 'nein'} text-overflow=${s.bezeichner.textOverflow}` : '—'));
 }
 
 // ------------------------------------------------------------- Hauptlauf
@@ -346,6 +536,62 @@ const FAELLE = [
   { name: 'G1_klima_vor_KL5',         maske: 'klima',        zeilen: 35, breite: 1180, hoehe: 780,
     vorher: true, mussFehlschlagen: true }
 ];
+
+// STUFE 1 DER NEUORDNUNG (Konzept Administrationsdialoge, Abschnitt 7): alle
+// sieben Komponenten im Katalograhmen, jede Auspraegung, im Fenstermass des
+// Anwenders (1 088 x 624 CSS-Pixel = 85 % x 90 % von 1 920 x 1 040 bei 150 %)
+// und schmal (400 x 624). Die Zeilenzahl ist die der Testdatenbank (Konzept
+// 3.5), die Zeilen sind VOLL belegt (Zeilenbau.Voll). Die virtualisierte Liste
+// im Rahmen (6 654 Stromspeicher) misst rasterprobe.mjs, Faelle J und K.
+const STUFE1_MASKEN = [
+  ['N01', 'heizkessel',       'browser',      'heizkessel',       63],
+  ['N02', 'bhkw',             'browser',      'bhkw',             79],
+  ['N03', 'solarkollektoren', 'browser',      'solarkollektoren', 7],
+  ['N04', 'pufferspeicher',   'browser',      'pufferspeicher',   13],
+  ['N05', 'pv',               'modul',        'photovoltaik',     35],
+  ['N06', 'wechselrichter',   'modul',        'wechselrichter',   35],
+  ['N07', 'stromspeicher',    'modul',        'stromspeicher',    35],
+  ['N08', 'waermepumpe',      'waermepumpe',  '',                 51],
+  ['N09', 'klima',            'klima',        '',                 32],
+  ['N10', 'brauchwasser',     'bedarf',       'brauchwasser',     16],
+  ['N11', 'prozesswaerme',    'bedarf',       'prozesswaerme',    32],
+  ['N12', 'stromverbraucher', 'bedarf',       'stromverbraucher', 41],
+  ['N13', 'waermebedarf',     'waermebedarf', '',                 4],
+  ['N14', 'solarganglinie',   'solar',        '',                 1],
+  ['N15', 'stromganglinie',   'stromganglinie', '',               3]
+];
+// DIE GEGENPROBE ZU STUFE 1: derselbe Heizkessel mit den Regeln von VOR Stufe 1
+// - der Rahmen rollt in sich, die Liste traegt ihre Hoechsthoehe, der
+// Eingabeblock rollt nicht selbst, die Liste ist kein Container (keine Spalte
+// weicht) und der Bezeichner kuerzt nicht. Sie MUSS den Befund zeigen:
+// Rollbereich in Rollbereich und waagerechten Ueberlauf.
+const STUFE1_VORHER_STIL = `
+  .epos-katalog-paar.epos-katalog-fuellend { display: grid !important;
+    grid-template-rows: auto auto !important; overflow: auto !important; }
+  .epos-katalog-paar > .epos-katalog-eingabe { max-height: none !important; overflow: visible !important; }
+  .epos-katalog-liste .epos-katalogliste > .epos-raster-huelle { max-height: 457.6px !important;
+    flex: 0 1 auto !important; }
+  .epos-katalogliste--raenge { container-type: normal !important; }
+  .epos-katalogliste table.epos-raster td.epos-spalte--bezeichner { max-width: none !important; }
+`;
+FAELLE.push({ name: 'G2_heizkessel_vor_Stufe1', maske: 'browser', art: 'heizkessel', zeilen: 63,
+              breite: 1088, hoehe: 624, voll: true, stufe1: true, stil: STUFE1_VORHER_STIL,
+              mussFehlschlagen: true });
+
+// EIN PROJEKTDIALOG ALS NACHBAR (nicht Gegenstand der Neuordnung): Er erbt die
+// Katalogliste samt Raengen. Er darf nicht schlechter werden - die Liste faellt
+// nicht zusammen und rollt bei 1 088 px nicht quer.
+FAELLE.push({ name: 'P2a_projekt_heizkessel_1088x624', maske: 'projekt-heizkessel', zeilen: 63,
+              breite: 1088, hoehe: 624, projekt: true, querHoechstens: 1 });
+FAELLE.push({ name: 'P2b_projekt_heizkessel_400x624', maske: 'projekt-heizkessel', zeilen: 63,
+              breite: 400, hoehe: 624, projekt: true });
+
+for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
+  FAELLE.push({ name: `${nr}a_${name}_1088x624`, maske, art, zeilen, breite: 1088, hoehe: 624,
+                voll: true, stufe1: true, bezeichnerKurz: true });
+  FAELLE.push({ name: `${nr}b_${name}_400x624`, maske, art, zeilen, breite: 400, hoehe: 624,
+                voll: true, stufe1: true, bezeichnerKurz: true });
+}
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });
 

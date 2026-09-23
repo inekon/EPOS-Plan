@@ -105,7 +105,11 @@ namespace WindowsFormsApplication1
                 // HANDLUNGSFAEHIG. Keine Automatik fuer andere Erzeugerarten - der
                 // Anwender entscheidet je Projekt, aber mit einem Handgriff statt mit
                 // einem Hinweis.
-                OhnePlatzAngebote = Platzangebote(tool)
+                OhnePlatzAngebote = Platzangebote(tool),
+
+                // Bedarf in einem Kanal ohne Versorger - derselbe Satz wie im
+                // Laufprotokoll, aus demselben Kanalbedarf dieses Laufs.
+                KanaeleOhneVersorger = KanaeleOhneVersorger()
             };
 
             return d;
@@ -337,6 +341,21 @@ namespace WindowsFormsApplication1
                 if (b != null && !string.IsNullOrEmpty(b.Steuerwert)) ohne.Add(b.Steuerwert);
 
             return ohne;
+        }
+
+        /// <summary>
+        /// Die Bedarfskanäle ohne Versorger (<c>Warnkriterien.KanaeleOhneVersorger</c>)
+        /// als fertige Sätze — gemessen am Kanalbedarf DIESES Laufs.
+        /// </summary>
+        private List<string> KanaeleOhneVersorger()
+        {
+            var saetze = new List<string>();
+
+            foreach (Warnbefund b in Warnkriterien.KanaeleOhneVersorger(
+                         m_ID_Projekt, SimulationRunner.BedarfJeKanal(_waermebedarf)))
+                if (b != null && !string.IsNullOrEmpty(b.Text)) saetze.Add(b.Text);
+
+            return saetze;
         }
 
         /// <summary>

@@ -300,6 +300,25 @@ namespace WindowsFormsApplication1
         /// </param>
         public static SchemaModell Aufbauen(int idProjekt, IList<string> kaskade)
         {
+            return Aufbauen(idProjekt, kaskade, null);
+        }
+
+        /// <summary>
+        /// Dasselbe Schema, dazu der JAHRESBEDARF JE KANAL [MWh/a] für die Abnehmer ohne
+        /// Versorger: Ein Kanal mit Bedarf, den keine Senke bedient, bekommt seinen
+        /// Abnehmerknoten trotzdem — mit Warnzeichen und dem Satz
+        /// <see cref="Warnkriterien.KanalOhneVersorgerText"/> im Hinweis.
+        /// </summary>
+        /// <param name="kanalBedarfMwh">
+        /// Kanalbedarf wie <c>SimulationRunner.BedarfJeKanal</c>; <c>null</c> = nicht
+        /// gerechnet. Dann gilt für Warmwasser und Prozesswärme die Zuordnungsfrage
+        /// (Profil zugeordnet ja/nein) als Bedarf, der Satz steht ohne Menge, und für den
+        /// Heizkreis entsteht ohne Versorger kein Knoten — ob dort Bedarf liegt, weiß
+        /// ohne Rechnung niemand.
+        /// </param>
+        public static SchemaModell Aufbauen(int idProjekt, IList<string> kaskade,
+                                            double[] kanalBedarfMwh)
+        {
             SchemaModell m = new SchemaModell();
             m.ID_Projekt = idProjekt;
             if (idProjekt <= 0) return m;
@@ -358,7 +377,8 @@ namespace WindowsFormsApplication1
             // dem Band — sie steht hier fest, bevor eine Kette gesucht wird.
             m.HatKaskade = quellpuffer.Count > 0;
 
-            m.SpeicherKnotenAnlegen(anlagen, puffer, quellpuffer, hatBrauchwasser, hatProzess);
+            m.SpeicherKnotenAnlegen(anlagen, puffer, quellpuffer, hatBrauchwasser, hatProzess,
+                                    kanalBedarfMwh);
             m.ErzeugerKnotenAnlegen(bild, anlagen, pufferJeId, quellpuffer, rangJeTyp);
             m.KantenAnlegen(idProjekt, anlagen, quellpuffer, hatBrauchwasser, hatProzess);
             m.KettenAbleiten(anlagen, pufferJeId, quellpuffer, hatBrauchwasser);
@@ -460,7 +480,8 @@ namespace WindowsFormsApplication1
         private void SpeicherKnotenAnlegen(List<Hydraulikbild.AnlagenEintrag> anlagen,
                                            List<WaermesenkeClass.PufferInfo> puffer,
                                            Dictionary<int, int> quellpuffer,
-                                           bool hatBrauchwasser, bool hatProzess)
+                                           bool hatBrauchwasser, bool hatProzess,
+                                           double[] kanalBedarfMwh)
         {
             // PAKET S2: über ALLE Senkenzeilen, nicht mehr über die zwei Altslots — ein
             // Speicher, den erst Rang 3 lädt, fehlte bis hierher im Schema.
@@ -507,7 +528,10 @@ namespace WindowsFormsApplication1
                 Knotenliste.Add(k);
             }
 
-            // Abnehmerknoten: nur die, die auch bedient werden (siehe KantenAnlegen).
+            // Abnehmerknoten: die, die auch bedient werden (siehe KantenAnlegen) — und,
+            // MIT WARNZEICHEN, der Abnehmer eines Kanals mit Bedarf, den keine Senke
+            // bedient. Bis hierher verschwand er still aus dem Bild, und mit ihm die
+            // Auskunft, dass sein Bedarf ungedeckt bleibt.
             if (BedientKanal(anlagen, Kanal.HEIZUNG))
                 Knotenliste.Add(new Knoten
                 {
@@ -516,8 +540,12 @@ namespace WindowsFormsApplication1
                     Titel = MyResource.Resource.SIM_HEIZKREIS,
                     Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
                 });
+            else
+                OhneVersorgerAnlegen(ABNEHMER_HEIZKREIS, MyResource.Resource.SIM_HEIZKREIS,
+                                     Kanal.HEIZUNG, false, kanalBedarfMwh);
 
-            if (hatBrauchwasser && BedientKanal(anlagen, Kanal.BRAUCHWASSER))
+            bool brauchwasserBedient = BedientKanal(anlagen, Kanal.BRAUCHWASSER);
+            if (hatBrauchwasser && brauchwasserBedient)
                 Knotenliste.Add(new Knoten
                 {
                     Schluessel = ABNEHMER_WARMWASSER,
@@ -525,8 +553,13 @@ namespace WindowsFormsApplication1
                     Titel = MyResource.Resource.SIM_SCHEMA_ABNEHMER_WARMWASSER,
                     Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
                 });
+            else if (!brauchwasserBedient)
+                OhneVersorgerAnlegen(ABNEHMER_WARMWASSER,
+                                     MyResource.Resource.SIM_SCHEMA_ABNEHMER_WARMWASSER,
+                                     Kanal.BRAUCHWASSER, hatBrauchwasser, kanalBedarfMwh);
 
-            if (hatProzess && BedientKanal(anlagen, Kanal.PROZESS))
+            bool prozessBedient = BedientKanal(anlagen, Kanal.PROZESS);
+            if (hatProzess && prozessBedient)
                 Knotenliste.Add(new Knoten
                 {
                     Schluessel = ABNEHMER_PROZESS,
@@ -534,6 +567,42 @@ namespace WindowsFormsApplication1
                     Titel = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
                     Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
                 });
+            else if (!prozessBedient)
+                OhneVersorgerAnlegen(ABNEHMER_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                                     Kanal.PROZESS, hatProzess, kanalBedarfMwh);
+        }
+
+        /// <summary>
+        /// Der Abnehmerknoten eines Kanals OHNE Versorger — nur, wenn der Kanal Bedarf
+        /// hat: nach dem gerechneten Kanalbedarf, sonst nach
+        /// <paramref name="bedarfOhneMenge"/> (Profil zugeordnet). Er trägt das
+        /// Warnzeichen und als Warntext denselben Satz wie Laufprotokoll und
+        /// Ergebnisübersicht (<see cref="Warnkriterien.KanalOhneVersorgerText"/>).
+        /// Kanten bekommt er keine — es gibt keine Senke, aus der eine käme.
+        /// </summary>
+        private void OhneVersorgerAnlegen(string schluessel, string titel, int kanal,
+                                          bool bedarfOhneMenge, double[] kanalBedarfMwh)
+        {
+            double? mwh = null;
+            bool bedarf = bedarfOhneMenge;
+
+            if (kanalBedarfMwh != null && kanal < kanalBedarfMwh.Length)
+            {
+                mwh = kanalBedarfMwh[kanal];
+                bedarf = mwh.Value >= Warnkriterien.KANAL_BEDARF_SCHWELLE_MWH;
+            }
+
+            if (!bedarf) return;
+
+            Knotenliste.Add(new Knoten
+            {
+                Schluessel = schluessel,
+                Art = Knotenart.Abnehmer,
+                Titel = titel,
+                Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER,
+                Warnung = true,
+                Warntext = Warnkriterien.KanalOhneVersorgerText(kanal, mwh)
+            });
         }
 
         /// <summary>

@@ -5,6 +5,7 @@
 @using EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Waermepumpe
+@using EPOS.UI.Dialoge.Strom
 @inject NavigationManager Navigation
 
 @*  DIE KATALOGPROBE (Auftrag KL-5).
@@ -16,10 +17,19 @@
     die Fussleiste); ohne Layout ist sie nicht zu sehen.
 
     Gaben ueber die Adresse:
-      ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe
+      ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe|
+             stromganglinie
       ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
       ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
                    Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
+      ?art=...     Die Auspraegung (Neuordnung Stufe 1): fuer browser
+                   heizkessel|bhkw|solarkollektoren|pufferspeicher, fuer modul
+                   photovoltaik|wechselrichter|stromspeicher, fuer bedarf
+                   brauchwasser|prozesswaerme|stromverbraucher. Ohne Angabe
+                   der Stand von KL-5 (BHKW, Photovoltaik, Stromverbraucher).
+      ?voll=1      JEDE Spalte des Profils belegt, in den Textlaengen der
+                   Testdatenbank (Zeilenbau.Voll) - die Breite der Liste ist
+                   sonst schmaler als in Wirklichkeit.
 
     Die Zeilen und die Bilder sind synthetisch, aber in Aufbau und MASSEN wie
     die echten: Das Diagramm kommt aus demselben ChartRenderer.Jahresgang
@@ -37,9 +47,9 @@
             break;
 
         case "bedarf":
-            <BedarfAdminDialog Art="BedarfsArt.Stromverbraucher"
+            <BedarfAdminDialog Art="@_bedarfArt"
                                Katalogzeilen="@(() => BedarfZeilen())"
-                               Katalogprofil="@Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s)"
+                               Katalogprofil="@Katalogfilterprofil.FuerBedarf(_bedarfArt, Uebersetzt)"
                                Filterstandvorgabe="@_filterstand"
                                Kopf="@(n => n.Length > 0 ? ("Beschreibung " + n, "Typ " + n) : ((string, string)?)null)"
                                Jahressumme="@(n => n.Length > 0 ? "123,45" : "")"
@@ -57,7 +67,7 @@
             break;
 
         case "modul":
-            <ModulKatalogDialog Art="ModulKatalogArt.Photovoltaik"
+            <ModulKatalogDialog Art="@_modulArt"
                                 ProfilVorgabe="@ModulProfil"
                                 Filterstandvorgabe="@_filterstand"
                                 Wege="@ModulWege"
@@ -66,7 +76,7 @@
 
         case "waermebedarf":
             <WaermebedarfAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
-                                     Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, s => s)"
+                                     Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, Uebersetzt)"
                                      Filterstandvorgabe="@_filterstand"
                                      HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                      Loeschen="@(_ => Task.FromResult(true))"
@@ -76,7 +86,7 @@
 
         case "solar":
             <SolarganglinieAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
-                                       Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, s => s)"
+                                       Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, Uebersetzt)"
                                        Filterstandvorgabe="@_filterstand"
                                        HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                        Loeschen="@(_ => Task.FromResult(true))"
@@ -84,8 +94,32 @@
                                        Geschlossen="@(b => { })" />
             break;
 
+        case "projekt-heizkessel":
+            @* Ein PROJEKTDIALOG (Neuordnung Stufe 1, nicht Gegenstand): Er erbt die
+               Katalogliste mit ihren Raengen und soll dadurch nicht schlechter werden -
+               die Liste darf in der Zweispaltenauswahl nicht auf null zusammenfallen
+               (sie ist seit V2 ein Container ihrer Breite). *@
+            <HeizkesselDialog Zeilen="@(new List<ErzeugerZeile>())"
+                              Katalogprofil="@Katalogfilterprofil.MitVerwendung(Anlagenart.Heizkessel, Uebersetzt)"
+                              Katalogzeilen="@(() => Zeilenbau.Voll(Katalogfilterprofil.MitVerwendung(Anlagenart.Heizkessel, Uebersetzt), _anzahl))"
+                              Filterstandvorgabe="@_filterstand"
+                              Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
+                              Geschlossen="@(b => { })" />
+            break;
+
+        case "stromganglinie":
+            @* Die Stromganglinie (A8) steht seit Stufe 1 der Neuordnung im
+               gemeinsamen Rahmen - vorher stand sie frei in der Maske. *@
+            <StromganglinieAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
+                                       Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, Uebersetzt)"
+                                       Filterstandvorgabe="@_filterstand"
+                                       Loeschen="@(_ => Task.FromResult(true))"
+                                       DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                                       Geschlossen="@(b => { })" />
+            break;
+
         case "browser":
-            <KatalogBrowserDialog Art="KatalogBrowserArt.Bhkw"
+            <KatalogBrowserDialog Art="@_browserArt"
                                   ProfilVorgabe="@BrowserProfil"
                                   Filterstandvorgabe="@_filterstand"
                                   Wege="@BrowserWege"
@@ -94,6 +128,7 @@
 
         case "waermepumpe":
             <WaermepumpeStammDialog Filterstandvorgabe="@_filterstand"
+                                    Filterprofil="@Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, Uebersetzt)"
                                     Liste="@(() => WaermepumpenZeilen())"
                                     Satz="@WaermepumpeSatz"
                                     Bilder="@((id, kuehl) => new KennlinienBilder(_modell, _modell))"
@@ -133,9 +168,38 @@
         if (abfrage.TryGetValue("maske", out var m)) _maske = m.ToString();
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("bilder", out var b)) _mitBildern = b.ToString() != "0";
+        if (abfrage.TryGetValue("voll", out var v)) _voll = v.ToString() == "1";
+        if (abfrage.TryGetValue("art", out var a)) ArtSetzen(a.ToString());
 
         _modell = Diagrammmodell();
     }
+
+    // ------------------------------------------- Auspraegung (Stufe 1)
+    private bool _voll;
+    private KatalogBrowserArt _browserArt = KatalogBrowserArt.Bhkw;
+    private ModulKatalogArt _modulArt = ModulKatalogArt.Photovoltaik;
+    private BedarfsArt _bedarfArt = BedarfsArt.Stromverbraucher;
+
+    private void ArtSetzen(string art)
+    {
+        switch (art)
+        {
+            case "heizkessel": _browserArt = KatalogBrowserArt.Heizkessel; break;
+            case "bhkw": _browserArt = KatalogBrowserArt.Bhkw; break;
+            case "solarkollektoren": _browserArt = KatalogBrowserArt.Solarkollektoren; break;
+            case "pufferspeicher": _browserArt = KatalogBrowserArt.Pufferspeicher; break;
+            case "photovoltaik": _modulArt = ModulKatalogArt.Photovoltaik; break;
+            case "wechselrichter": _modulArt = ModulKatalogArt.Wechselrichter; break;
+            case "stromspeicher": _modulArt = ModulKatalogArt.Stromspeicher; break;
+            case "brauchwasser": _bedarfArt = BedarfsArt.Brauchwasser; break;
+            case "prozesswaerme": _bedarfArt = BedarfsArt.Prozesswaerme; break;
+            case "stromverbraucher": _bedarfArt = BedarfsArt.Stromverbraucher; break;
+        }
+    }
+
+    /// <summary>Die Beschriftungen aus der Ressource — sonst stuenden die Schluessel im Kopf, breiter als die Texte.</summary>
+    private static string Uebersetzt(string schluessel)
+        => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
 
     // ---------------------------------------------------------------- Bild
     // DASSELBE Bild wie die Windows-Huelle: ChartRenderer.JahresgangModell mit
@@ -213,6 +277,7 @@
     // ------------------------------------------------------------- Bedarf
     private IReadOnlyList<Katalogfilterzeile> BedarfZeilen()
     {
+        if (_voll) return Zeilenbau.Voll(Katalogfilterprofil.FuerBedarf(_bedarfArt, Uebersetzt), _anzahl);
         var liste = new List<Katalogfilterzeile>(_anzahl);
         for (int i = 0; i < _anzahl; i++)
         {
@@ -230,6 +295,7 @@
     // -------------------------------------------------------- Zeitreihen
     private IReadOnlyList<Katalogfilterzeile> ZeitreihenZeilen()
     {
+        if (_voll) return Zeilenbau.Voll(Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, Uebersetzt), _anzahl);
         var liste = new List<Katalogfilterzeile>(_anzahl);
         for (int i = 0; i < _anzahl; i++)
         {
@@ -247,7 +313,7 @@
 
     // -------------------------------------------------------------- Modul
     private ModulKatalogProfil ModulProfil =>
-        ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik,
+        ModulKatalogProfil.Finde(_modulArt,
                                  s => Resource.ResourceManager.GetString(s) ?? s);
 
     private ModulKatalogWege ModulWege => new()
@@ -263,6 +329,7 @@
 
     private IReadOnlyList<Katalogfilterzeile> ModulZeilen()
     {
+        if (_voll) return Zeilenbau.Voll(ModulProfil.Filterprofil, _anzahl);
         string[] firmen = { "Ablytek", "Jinkosolar", "Canadian Solar", "Q-Cells", "Trina" };
         var liste = new List<Katalogfilterzeile>(_anzahl);
         for (int i = 0; i < _anzahl; i++)
@@ -301,7 +368,7 @@
 
     // ------------------------------------------------------------ Browser
     private KatalogBrowserProfil BrowserProfil =>
-        KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw,
+        KatalogBrowserProfil.Finde(_browserArt,
                                    s => Resource.ResourceManager.GetString(s) ?? s);
 
     private KatalogBrowserWege BrowserWege => new()
@@ -316,6 +383,7 @@
 
     private IReadOnlyList<Katalogfilterzeile> BrowserZeilen()
     {
+        if (_voll) return Zeilenbau.Voll(BrowserProfil.Filterprofil, _anzahl);
         string[] firmen = { "Alpha Energie", "Beta Motoren", "Gamma Kraft", "Delta BHKW" };
         var liste = new List<Katalogfilterzeile>(_anzahl);
         for (int i = 0; i < _anzahl; i++)
@@ -355,6 +423,7 @@
     // -------------------------------------------------------- Waermepumpe
     private IReadOnlyList<Katalogfilterzeile> WaermepumpenZeilen()
     {
+        if (_voll) return Zeilenbau.Voll(Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, Uebersetzt), _anzahl);
         string[] firmen = { "Alpha", "Beta", "Gamma", "Delta" };
         string[] quellen = { "Luft-Wasser", "Sole-Wasser", "Wasser-Wasser" };
         var liste = new List<Katalogfilterzeile>(_anzahl);

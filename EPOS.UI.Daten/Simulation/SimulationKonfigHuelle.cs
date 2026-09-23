@@ -99,6 +99,13 @@ namespace WindowsFormsApplication1
         /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
         private Action _auslegungWeg;
 
+        /// <summary>
+        /// Der Kanalbedarf des gerechneten, noch gültigen Laufs [MWh/a] — für die
+        /// Abnehmer ohne Versorger im Schema. <c>null</c> (oder ein Weg, der <c>null</c>
+        /// liefert) = keine Mengen bekannt; das Schema nennt dann den Bedarf ohne Zahl.
+        /// </summary>
+        private Func<double[]> _kanalbedarf;
+
         /// <summary>Der gemerkte Kurzstand der Auslegung (#274); <c>null</c> = noch nicht gelesen.</summary>
         private StromspeicherStand _stromspeicherstand;
 
@@ -287,6 +294,7 @@ namespace WindowsFormsApplication1
 
                 ["SchemaLeerText"] = MyResource.Resource.SIM_SCHEMA_LEER,
                 ["SchemaWarnungText"] = MyResource.Resource.SIM_SCHEMA_WARNUNG,
+                ["SchemaAbnehmerWarnungText"] = MyResource.Resource.SIM_SCHEMA_WARNUNG_OHNE_VERSORGER,
                 ["SchemaKetteKopfText"] = MyResource.Resource.SIM_SCHEMA_KETTE_KOPF,
                 ["SchemaKeineKetteText"] = MyResource.Resource.SIM_SCHEMA_KEINE_KETTE,
 
@@ -1415,6 +1423,15 @@ namespace WindowsFormsApplication1
         /// EPOS-Zeitreihen, und den hält die Ergebnishülle. Ohne Weg — eine Schale, die
         /// die Ansicht nicht führt — bleibt der Knopf weg, still fällt nichts aus.
         /// </remarks>
+        /// <summary>
+        /// Legt die Quelle des Kanalbedarfs für das Schema ein — die Ergebnishülle
+        /// (<c>SimulationAnsichtQuelle</c>), denn nur sie hält den gerechneten Lauf.
+        /// </summary>
+        internal void KanalbedarfQuelleSetzen(Func<double[]> quelle)
+        {
+            _kanalbedarf = quelle;
+        }
+
         internal void AuslegungWegSetzen(Action weg)
         {
             _auslegungWeg = weg;
@@ -1670,7 +1687,12 @@ namespace WindowsFormsApplication1
             if (idProjekt != m_ID_Projekt) ProjektSetzen(idProjekt);
             if (_gesperrt) return SchemaBild.Leer;
 
-            SchemaModell modell = SchemaModell.Aufbauen(m_ID_Projekt, Kaskade.Belegt(_konfiguration));
+            // Der Kanalbedarf des gueltigen Laufs, falls einer steht: Dann nennt der
+            // Abnehmer ohne Versorger seine Menge (dieselbe Zahl wie das Laufprotokoll).
+            double[] kanalbedarf = _kanalbedarf != null ? _kanalbedarf() : null;
+
+            SchemaModell modell = SchemaModell.Aufbauen(m_ID_Projekt, Kaskade.Belegt(_konfiguration),
+                                                        kanalbedarf);
             SchemaHinweiseSetzen(modell);
 
             return SchemaAbbilden(SchemaLayout.Anordnen(modell, 0));

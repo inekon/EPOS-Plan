@@ -654,45 +654,43 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Vereinfachtes Tarifmodell (Stufe W3, Entscheidung 11.08.2026): Winterzeitraum
-    /// als Monatsspanne, EIN HT-Fenster Mo–Fr, je vier Zonenpreise für Bezug und
-    /// Einspeisung, zweistufige Leistungspreis-Staffel. Eine Zeile je STAMM in
-    /// Tab_ProjektTarif; Aktiv = false → Flat-Preise der Kostenmaske gelten weiter.
+    /// Der Tarifsatz Strom eines STAMMS (<c>Tab_ProjektTarif</c>, eine Zeile je Stamm):
+    /// das <b>Rollenmodell</b> der Etappe E5 — Bezugstarif ohne Anlage, Reststromtarif
+    /// mit Anlage, Einspeisetarif — für die Differenzmethode der vermiedenen Kosten.
+    /// Aktiv = false → die Preise des Stromträgers aus der Kostenverwaltung gelten.
+    ///
+    /// <para><b>Kein Zeitzonentarif</b> (Entscheid Q11, Anwender 22.09.2026: „kein
+    /// HT/NT"). Das vereinfachte Zonenmodell der Stufe W3 — Winter/Sommer × HT/NT mit
+    /// je vier Zonenpreisen für Bezug und Einspeisung und einer zweistufigen
+    /// Leistungspreis-Staffel — entfällt: Der Kern liest dessen Spalten nicht mehr und
+    /// schreibt sie nicht mehr (sie bleiben bis zu einem späteren Aufräumschritt in der
+    /// Tabelle stehen), die Staffel steht seit Schemaschritt 104 am Stromträger der
+    /// Kostenverwaltung (<see cref="LeistungspreisStaffel"/>). Ein Satz mit dem Modus
+    /// <c>ZONEN</c> (oder leer — Bestand vor Schritt 21) ist ein Satz des alten
+    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>); Schemaschritt 104 löscht
+    /// ihn samt der mit ihm gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4).</para>
     /// </summary>
     public class TarifParameter
     {
         public int IdStamm;
         public bool Aktiv;
 
+        /// <summary>
+        /// Die Winterspanne als Monatsspanne (über den Jahreswechsel möglich). Sie
+        /// trennt im Lastbild Sommer- und Wintermaximum — die Bemessung des
+        /// Leistungspreismodells <c>STAFFEL</c> der beiden Bezugsrollen.
+        /// </summary>
         public int WinterVonMonat = 10;    // Oktober …
         public int WinterBisMonat = 3;     // … März (über den Jahreswechsel)
-        public int HtVonStunde = 6;        // HT Mo–Fr [von, bis)
-        public int HtBisStunde = 22;
-
-        // Bezugspreise [€/kWh]
-        public double PreisBezugWinterHT;
-        public double PreisBezugWinterNT;
-        public double PreisBezugSommerHT;
-        public double PreisBezugSommerNT;
-
-        // Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung)
-        public double PreisEinspWinterHT;
-        public double PreisEinspWinterNT;
-        public double PreisEinspSommerHT;
-        public double PreisEinspSommerNT;
-
-        // Leistungspreis-Staffel: bis Grenze Preis 1, darüber Preis 2 [€/kW·a]
-        public double StaffelGrenzeKW;
-        public double StaffelPreis1EurKW;
-        public double StaffelPreis2EurKW;
 
         // ---- ETAPPE E5 — Rollenmodell (Migrationsschritt 21) ----
-        //
-        // Additiv: Alles oberhalb bleibt unverändert und wird weiter gelesen. Modus
-        // ZONEN (Vorbelegung) = Bestandsverhalten der Stufe W3; ROLLEN schaltet auf
-        // Bezugs-, Reststrom- und Einspeisetarif mit der Differenzmethode um.
 
-        /// <summary>Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>.</summary>
+        /// <summary>
+        /// Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>. Nur <c>ROLLEN</c>
+        /// rechnet; <c>ZONEN</c> ist der Wert des entfallenen Zonenmodells, und er ist
+        /// die Vorbelegung, damit ein neu angelegter Satz erst mit dem Speichern des
+        /// Dialogs (der <c>ROLLEN</c> schreibt) rechnet.
+        /// </summary>
         public string Modus = DbWerte.TARIF_MODUS_ZONEN;
 
         /// <summary>Preisstand des Tarifsatzes; null = nicht gepflegt (nur Ausweis,
@@ -719,6 +717,15 @@ namespace WindowsFormsApplication1
         public bool RollenModus
         { get { return string.Equals(Modus, DbWerte.TARIF_MODUS_ROLLEN, StringComparison.Ordinal); } }
 
+        /// <summary>
+        /// Rechnet dieser Tarifsatz? Nur ein AKTIVER Satz im ROLLENmodell (Q11, Etappe
+        /// E7b): Einen Zeitzonentarif gibt es nicht mehr, ein Satz im Zonenmodell wirkt
+        /// nicht. Wer fragt, ob ein Lauf Stundenreihen braucht, fragt deshalb diese
+        /// Eigenschaft und nicht <see cref="Aktiv"/>.
+        /// </summary>
+        public bool Wirksam
+        { get { return Aktiv && RollenModus; } }
+
         /// <summary>Eine Rolle mit vier leeren Staffelstufen (Vorbelegung MONATLICH).</summary>
         private static TarifRolle NeueRolle(string rolle)
         {
@@ -727,6 +734,8 @@ namespace WindowsFormsApplication1
             return r;
         }
 
+        /// <summary>Der Nachweis des Tarifsatzes in einer Zeile (Parameterzeile der Seite,
+        /// Wort- und Excelbericht).</summary>
         public string Nachweis(System.Globalization.CultureInfo kultur)
         {
             if (!Aktiv) return "Tarifstruktur inaktiv (Flat-Preise der Kostenmaske)";
@@ -743,13 +752,10 @@ namespace WindowsFormsApplication1
                     t += " · Preisstand " + GueltigAb.Value.ToString("dd.MM.yyyy", kultur);
                 return t;
             }
-            return "Tarif aktiv: Winter " + WinterVonMonat + "–" + WinterBisMonat +
-                   " · HT Mo–Fr " + HtVonStunde + "–" + HtBisStunde + " Uhr · Bezug W/S HT/NT " +
-                   PreisBezugWinterHT.ToString("N3", kultur) + "/" + PreisBezugWinterNT.ToString("N3", kultur) + "/" +
-                   PreisBezugSommerHT.ToString("N3", kultur) + "/" + PreisBezugSommerNT.ToString("N3", kultur) +
-                   " €/kWh · Leistungspreis " + StaffelPreis1EurKW.ToString("N0", kultur) + "/" +
-                   StaffelPreis2EurKW.ToString("N0", kultur) + " €/kW (Grenze " +
-                   StaffelGrenzeKW.ToString("N0", kultur) + " kW)";
+            // Q11 (Anwender 22.09.2026, „kein HT/NT"): Einen Zeitzonentarif gibt es
+            // nicht mehr. Ein Satz, der noch aktiv auf dem Zonenmodell steht, rechnet
+            // nicht — der Nachweis sagt das, statt Zonenpreise zu zeigen, die nicht gelten.
+            return MyResource.Resource.WIRT_TARIF_NACHWEIS_ZONEN;
         }
     }
 
@@ -1281,7 +1287,7 @@ namespace WindowsFormsApplication1
         public bool OhneNachweis;
 
         // Stufe W3 (Phase 8)
-        public double? StromkostenTarif;       // Bezugskosten nach Tarifmatrix [€/a] (null = Flat-Rechnung)
+        public double? StromkostenTarif;       // Reststromkosten nach Rollentarif [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)
 
         /// <summary>
@@ -1376,7 +1382,7 @@ namespace WindowsFormsApplication1
     /// Differenz zweier PROJEKTweiter Rollenrechnungen (Bezug ohne Anlage gegen
     /// Reststrom mit Anlage). Wer fragt „was bringt das Blockheizkraftwerk?", bekommt
     /// aus dieser Differenz keine Antwort — sie kennt die Anlage nicht. Die Strommatrix
-    /// hilft nicht weiter: Sie trennt nach TARIFZONE, nicht nach Anlage (Befund R8).</para>
+    /// hilft nicht weiter: Sie trennt nicht nach Anlage (Befund R8).</para>
     ///
     /// <para><b>Die Naeherung V‑4, ausgewiesen.</b> Verteilt wird nach dem
     /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>) — seit E7 (Konzept § 6.3
@@ -1654,6 +1660,44 @@ namespace WindowsFormsApplication1
         /// <summary>Vorgeschlagener Einspeisesatz nach § 7 KWKG [ct/kWh];
         /// <c>null</c> = kein Vorschlag bekannt.</summary>
         public double? VorschlagEinspeisungCt;
+
+        // ------------- ETAPPE E7c — § 2 Nr. 16 KWKG, zweiter Fall (Befund K‑1) -------------
+        //
+        // Trägt die Anlage das Kennzeichen „Vorrichtung zur Abwärmeabfuhr", ist ihr
+        // KWK-Strom min(Nettostromerzeugung, Nutzwärme × σ); EigenMWh und EinspeisungMWh
+        // oben sind dann die GEKÜRZTEN Mengen (Kürzung zuerst von der Einspeisung).
+        //
+        // NULLBAR MIT ABSICHT, wie die zwei Vorschlagsfelder darüber: Bei Fall 1 bleiben
+        // alle Felder null, und WhenWritingNull lässt sie aus dem Nachweisumschlag — der
+        // Nachweis einer Anlage ohne Kennzeichen bleibt Zeichen für Zeichen, wie er war,
+        // und ein gebuchter Stand von vorher liest sich als Fall 1.
+
+        /// <summary>true = die Anlage rechnet Fall 2 (Vorrichtung zur Abwärmeabfuhr);
+        /// <c>null</c> = Fall 1, die Nettostromerzeugung.</summary>
+        public bool? Abwaermeabfuhr;
+
+        /// <summary>Die angesetzte Stromkennzahl σ; <c>null</c> bei Fall 1 oder wenn sie
+        /// nicht bestimmbar war.</summary>
+        public double? Stromkennzahl;
+
+        /// <summary>Herkunft von σ, Steuerwert <c>KwkStromRechner.HERKUNFT_*</c>;
+        /// <c>null</c> bei Fall 1.</summary>
+        public string StromkennzahlHerkunft;
+
+        /// <summary>Nutzwärme dieser Anlage [MWh/a] — Wärmeproduktion des Moduls minus
+        /// Anteil am Wärmeüberschuss (nach P_el); <c>null</c> bei Fall 1.</summary>
+        public double? NutzwaermeMWh;
+
+        /// <summary>KWK-Strom nach Fall 2 [MWh/a] = min(Netto, Nutzwärme × σ);
+        /// <c>null</c> bei Fall 1.</summary>
+        public double? KwkStromMWh;
+
+        /// <summary>Kürzung Netto − KWK-Strom [MWh/a]; <c>null</c> bei Fall 1.</summary>
+        public double? KuerzungMWh;
+
+        /// <summary>Die Herleitungszeile des KWK-Stroms (Fall, σ und Herkunft, Nutzwärme,
+        /// KWK-Strom, Kürzung) in der Sprache des Laufs; <c>null</c> bei Fall 1.</summary>
+        public string HerleitungKwkStrom;
     }
 
     /// <summary>

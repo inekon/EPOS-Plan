@@ -565,7 +565,8 @@ namespace WindowsFormsApplication1
         /// <c>YESNO</c> (Access legt sie mit <c>False</c> an ⇒ Aufschläge AUS) und
         /// <c>DOUBLE</c> (bleibt NULL ⇒ keine KWK-Vergütung). Die Leseseite behandelt
         /// einen leeren Modus genauso wie <c>ZONEN</c> — eine nicht migrierte Datenbank
-        /// rechnet deshalb ebenfalls wie bisher.
+        /// rechnet deshalb ebenfalls wie bisher. (Seit Q11 rechnet der Zonenmodus nicht
+        /// mehr; Schritt 104 löscht seine Sätze.)
         ///
         /// <b>Warum der Aufschlagsschalter überhaupt existiert.</b> Netzentgelt,
         /// Umlagen, Stromsteuer, Konzession und Vertrieb sind seit dem
@@ -3612,8 +3613,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Ergebnisneutral.</b> Die neuen Spalten bleiben NULL (die zwei
         /// Schalter 0), kein Rechenweg liest sie; die Umbenennung trägt die Werte 1:1.
-        /// Der Referenzlauf bleibt byte-gleich, die Basis
-        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.</para>
+        /// Der Referenzlauf bleibt byte-gleich, gemessen gegen die damalige Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c>.</para>
         ///
         /// <para><b>Nach Schritt 100</b>: 100 baut <c>Tab_Gebaeude</c> neu (Vorgabe 0
         /// von <c>ID_ProjektGebaeude</c>), und die Umbenennung und die neuen Spalten
@@ -3674,6 +3675,52 @@ namespace WindowsFormsApplication1
         /// tun.</para>
         /// </summary>
         public const int SCHRITT_103_ZAPFPROFIL_KATALOG = 103;
+
+        /// <summary>
+        /// Schritt 104 — der <b>Zeitzonentarif HT/NT wird abgelöst</b> (Entscheid Q11,
+        /// Register R‑Q: „kein HT/NT"; der Rest nach Empfehlung: die zweistufige
+        /// Leistungspreis-Staffel zieht in die Kostenverwaltung neben die
+        /// Energiepreisstruktur). Er steht NACH 103 (Zapfprofilgenerator) ohne
+        /// Reihenfolgebedingung: Er fasst weder die Tww- noch die Gebäudetabellen an.
+        ///
+        /// <para><b>DDL und DML in EINEM Schritt</b>, wie Schritt 99. Die drei Spalten der
+        /// Staffel an <c>energy_project_settings</c> stehen bei
+        /// <see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/>, der Datenteil bei
+        /// <see cref="ZeitzonentarifAbloesung"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>: Die Staffel eines Tarifsatzes, in dem sie rechnete, geht
+        /// an den Stromträger jeder Version der Gruppe; die Sätze des Zonenmodells werden
+        /// gelöscht und die mit ihnen gerechneten gespeicherten Ergebnisse verworfen
+        /// (Entscheid E7b‑Q4, Anwender 23.09.2026: „alte Tarife verwerfen, nicht mehr
+        /// relevant"; ein Rollensatz bleibt); die Zonenzeilen der gespeicherten Strommatrix
+        /// werden je Projekt eine Jahreszeile.</para>
+        ///
+        /// <para><b>Rechenwirkung nur, wo ein Zonentarif rechnete</b> — dann mit dem
+        /// nächsten Lauf und benannt im Protokoll des Schrittes. In der Testdatenbank
+        /// trägt kein Projekt einen Tarifsatz; der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar:</b> Ein zweiter Lauf findet nichts mehr.</para>
+        /// </summary>
+        public const int SCHRITT_104_ZEITZONENTARIF_ABLOESUNG = 104;
+
+        /// <summary>
+        /// Schritt 105 — der <b>zweite Fall des § 2 Nr. 16 KWKG</b> (Befund K‑1, Entscheide
+        /// EZ‑5 und E7‑Q2 vom 23.09.2026): Verfügt eine Anlage über eine Vorrichtung zur
+        /// Abwärmeabfuhr, ist KWK-Strom nicht die Nettostromerzeugung, sondern
+        /// <c>min(Nettostromerzeugung, Nutzwärme × Stromkennzahl)</c>. Er folgt auf
+        /// <see cref="SCHRITT_104_ZEITZONENTARIF_ABLOESUNG"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, zwei Spalten an <c>Tab_Energieanlagen</c>: das Kennzeichen
+        /// <c>KWKG_Abwaermeabfuhr</c> (0/1 mit <c>CHECK</c>, Vorgabe 0) und die nullbare
+        /// Stromkennzahl <c>KWKG_Stromkennzahl</c> — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>, EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c>, die Vorsorge der
+        /// Wirtschaftlichkeit und den Nachweis in <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> 0 heißt Fall 1 — genau der Rechenweg vor dem
+        /// Schritt; der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine
+        /// vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_105_KWKG_ABWAERMEABFUHR = 105;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5083,6 +5130,45 @@ namespace WindowsFormsApplication1
                         "Zonen und Weiche haetten keine Tabelle. Gerechnet wird " +
                         "unveraendert auf dem Bestandsweg des Brauchwassers.",
                         Schritt_103_ZapfprofilKatalog),
+
+            // ENTSCHEID Q11 (22.09.2026, "kein HT/NT") - der Zeitzonentarif wird
+            // abgeloest. DDL UND DML; die Quellen sind
+            // SchemaKatalog.Schritt104_LeistungspreisStaffel (Spalten) und
+            // ZeitzonentarifAbloesung (Datenteil). Er steht NACH 103 ohne
+            // Reihenfolgebedingung - er fasst weder die Tww- noch die Gebaeudetabellen an.
+            new Schritt(SCHRITT_104_ZEITZONENTARIF_ABLOESUNG,
+                        "energy_project_settings bekommt die Leistungspreis-Staffel, der " +
+                        "Zeitzonentarif HT/NT wird abgeloest",
+                        "Den Zeitzonentarif (Winter/Sommer x HT/NT) gibt es nicht mehr. Die " +
+                        "zweistufige Leistungspreis-Staffel steht ab hier am Stromtraeger der " +
+                        "Kostenverwaltung (Staffelgrenze, Preis bis und Preis ueber der " +
+                        "Grenze) und wird an der Viertelstundenspitze des Netzbezugs " +
+                        "bemessen. Uebernommen wird sie aus jedem Tarifsatz, in dem sie " +
+                        "rechnete, an den Stromtraeger jeder Version der Gruppe. Die " +
+                        "Tarifsaetze des Zonenmodells werden geloescht, gespeicherte " +
+                        "Ergebnisse, die mit einem Zonentarif gerechnet wurden, verworfen " +
+                        "(ein Satz im Rollenmodell bleibt), und die gespeicherte " +
+                        "Strommatrix fuehrt je Projekt eine Jahreszeile statt vier " +
+                        "Zonenzeilen. Wo ein Zonentarif rechnete, rechnet der naechste Lauf " +
+                        "mit den Preisen des Stromtraegers - das Protokoll nennt jeden Satz " +
+                        "und jedes Projekt.",
+                        Schritt_104_ZeitzonentarifAbloesung),
+
+            // BEFUND K-1 (Entscheide EZ-5 und E7-Q2, 23.09.2026) - der zweite Fall des
+            // Paragraf 2 Nr. 16 KWKG. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr. Er steht NACH 104 ohne
+            // Reihenfolgebedingung - er legt allein zwei neue Spalten in
+            // Tab_Energieanlagen an, die kein anderer Schritt liest oder schreibt.
+            new Schritt(SCHRITT_105_KWKG_ABWAERMEABFUHR,
+                        "Tab_Energieanlagen bekommt Kennzeichen Abwaermeabfuhr und Stromkennzahl",
+                        "Verfuegt eine KWK-Anlage ueber eine Vorrichtung zur Abwaermeabfuhr " +
+                        "(Notkuehler), ist KWK-Strom nach Paragraf 2 Nr. 16 KWKG nicht die " +
+                        "Nettostromerzeugung, sondern das Produkt aus Nutzwaerme und " +
+                        "Stromkennzahl. Dafuer bekommt jede Anlage ein Kennzeichen (0/1, " +
+                        "Vorgabe 0) und eine Stromkennzahl (leer = berechnet aus P_el / P_th " +
+                        "der Geraetezeile). ERGEBNISNEUTRAL: Das Kennzeichen steht ueberall " +
+                        "auf 0, und 0 heisst wie bisher Nettostromerzeugung.",
+                        Schritt_105_KwkgAbwaermeabfuhr),
         };
 
         /// <summary>
@@ -7795,6 +7881,106 @@ namespace WindowsFormsApplication1
                     "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
                     "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
                     "sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 104 - der Zeitzonentarif wird abgeloest (Entscheid Q11, 22.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 104 — Anlass, Spalten und Datenteil stehen bei
+        /// <see cref="SCHRITT_104_ZEITZONENTARIF_ABLOESUNG"/>, bei
+        /// <see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/> und bei
+        /// <see cref="ZeitzonentarifAbloesung"/>.
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in Spalten, die
+        /// derselbe Schritt eben angelegt hat, und zwar in EINER Transaktion
+        /// (<see cref="ZeitzonentarifAbloesung.Ausfuehren"/>). <b>Die Nachprobe</b> fragt
+        /// dasselbe wie der Datenteil: Steht danach noch ein Satz im Zonenmodell oder eine
+        /// Zonenzeile der Strommatrix, ist der Schritt nicht gelaufen.</para>
+        ///
+        /// <para><b>Die Ausweisung gehört ins Protokoll</b>: jede übernommene und jede
+        /// nicht übernommene Staffel (mit Grund), jeder gelöschte Satz, jedes Projekt,
+        /// dessen mit einem Zonentarif gerechneter Lauf verworfen wurde, jedes Projekt,
+        /// dessen Matrix zusammengefasst wurde.</para>
+        /// </summary>
+        private static bool Schritt_104_ZeitzonentarifAbloesung(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            ZeitzonentarifAbloesung.Bericht bericht;
+            try { bericht = ZeitzonentarifAbloesung.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = "Datenteil: " + ex.Message;
+                l.Notiz("104: FEHLER - " + l.LetzterFehler + " (nichts geschrieben; der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int saetze = ZeitzonentarifAbloesung.OffeneZonensaetze();
+            int zeilen = ZeitzonentarifAbloesung.OffeneZonenzeilen();
+            if (saetze > 0 || zeilen > 0)
+            {
+                l.LetzterFehler = saetze.ToString(CultureInfo.InvariantCulture) +
+                                  " Tarifsatz/-saetze stehen weiter im Zonenmodell, " +
+                                  zeilen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) der Strommatrix tragen weiter einen Zonenschluessel.";
+                l.Notiz("104: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("104: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt104_LeistungspreisStaffel.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt. " + bericht.Text() + ". Wo ein Zonentarif rechnete, " +
+                    "rechnet der naechste Lauf mit den Preisen des Stromtraegers; der " +
+                    "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 105 - der zweite Fall des § 2 Nr. 16 KWKG (Befund K-1, 23.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 105 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> und bei
+        /// <see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>.
+        ///
+        /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 95: Spaltenliste aus
+        /// dem Kern, Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c> — das Kennzeichen
+        /// als <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>, die Stromkennzahl als
+        /// nullbares <c>REAL</c>; beides ist an der STRICT-Tabelle per
+        /// <c>ADD COLUMN</c> zulässig. <b>Wiederholbar</b>: Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        private static bool Schritt_105_KwkgAbwaermeabfuhr(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("105: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.TAB_ENERGIEANLAGEN + "." +
+                    SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR + " (0/1, Vorgabe 0) und " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL +
+                    " (nullbar). KEIN DML: Das Kennzeichen steht ueberall auf 0 - KWK-Strom " +
+                    "bleibt die Nettostromerzeugung; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

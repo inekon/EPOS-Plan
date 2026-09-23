@@ -4,7 +4,7 @@
 [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) — wortgetreu und in der
 Reihenfolge des Originals hierher ausgelagert. Dort stehen seither nur noch die Regeln, die
 Bedienung und die **aktuelle** Basis
-[`2026-09-22_R11_Bestandsbefunde`](../../../Referenzlaeufe/2026-09-22_R11_Bestandsbefunde/);
+[`2026-09-23_R12_Gebaeudemodell`](../../../Referenzlaeufe/2026-09-23_R12_Gebaeudemodell/);
 hier steht, **welche Basis wann von welcher abgelöst wurde und warum**.
 
 **Was hier beschrieben wird, liegt nicht mehr im Arbeitsbaum.** Die Ordner der Basen sind am

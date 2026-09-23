@@ -31,6 +31,12 @@ namespace WindowsFormsApplication1
     /// damit auch überschreibt. Die Aufzählung ist mit dem Port nach
     /// <c>EPOS.UI</c> gewandert (sie stand im Quelltext der Maske) und heißt
     /// unverändert.</para>
+    ///
+    /// <para><b>Q11 (E7b): nur noch das Rollenmodell.</b> Die Sichten
+    /// „Strombezug" und „Komplett" sind entfallen, mit ihnen Zonenpreise,
+    /// Hochtarif-Fenster, Modellwahl und Staffel; der Dialog speichert jeden Satz im
+    /// Rollenmodell. Die Leistungspreis-Staffel pflegt der Stromträger in der
+    /// Kostenverwaltung (<c>EnergietraegerHuelle</c>).</para>
     /// </summary>
     internal static class TarifstrukturHuelle
     {

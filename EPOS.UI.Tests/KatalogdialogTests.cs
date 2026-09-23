@@ -8,6 +8,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Klimadaten;
 using EPOS.UI.Dialoge.Solarthermie;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
@@ -132,6 +133,23 @@ public class KatalogdialogTests : EposBunitContext
                  Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, s => s))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
+    /// <summary>
+    /// Die Stromganglinienverwaltung (A8) steht seit Stufe 1 der Neuordnung
+    /// (Konzept Administrationsdialoge) im gemeinsamen Rahmen — vorher stand sie frei
+    /// in der Maske.
+    /// </summary>
+    private IRenderedComponent<StromganglinieAdminDialog> Stromganglinienverwaltung() =>
+        Render<StromganglinieAdminDialog>(p => p
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(
+                (IReadOnlyList<Katalogfilterzeile>)new[]
+                {
+                    new Katalogfilterzeile(1, "Lastgang A")
+                        .MitText(Katalogfilterprofil.SpBezeichner, "Lastgang A")
+                }))
+            .Add(x => x.Katalogprofil,
+                 Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
+
     private IRenderedComponent<WaermebedarfAdminDialog> Waermebedarfsverwaltung() =>
         Render<WaermebedarfAdminDialog>(p => p
             .Add(x => x.Katalogzeilen, () => Task.FromResult(
@@ -191,6 +209,7 @@ public class KatalogdialogTests : EposBunitContext
             Modulkatalog().Find("div").ClassName,
             Solarganglinienverwaltung().Find("div").ClassName,
             Waermebedarfsverwaltung().Find("div").ClassName,
+            Stromganglinienverwaltung().Find("div").ClassName,
             Bedarfsverwaltung().Find("div").ClassName,
             Klimaregionen().Find("div").ClassName,
             Gesetzeskatalog().Find("div").ClassName
@@ -247,6 +266,7 @@ public class KatalogdialogTests : EposBunitContext
     {
         RahmenPruefen(Waermebedarfsverwaltung(), gestapelt: true);
         RahmenPruefen(Bedarfsverwaltung(), gestapelt: true);
+        RahmenPruefen(Stromganglinienverwaltung(), gestapelt: true);
     }
 
     /// <summary>

@@ -269,8 +269,10 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Stufe GB — die Fälle mit Datenbank.</b> Gerechnet wird über
     /// <c>SimulationWaermebedarf.HeizwaermeEinesGebaeudes</c>, also genau den Rumpf, den
-    /// der Lauf je Gebäude ruft. Die Gebäudezeile wird nur im Speicher verändert; die
-    /// Arbeitskopie der Testdatenbank bleibt unberührt.
+    /// der Lauf je Gebäude ruft. Die Gebäudezeile wird nur im Speicher verändert und dort
+    /// ausdrücklich auf den Tagesbilanz-Weg gestellt — diese Fälle prüfen den Altweg, und
+    /// ohne Angabe rechnet ein Gebäude nach VDI 6007; die Arbeitskopie der Testdatenbank
+    /// bleibt unberührt.
     /// </summary>
     [Collection("Testdatenbank")]
     public class GebaeudeBestandsbefundeDatenbankTests : IClassFixture<TestDatenbank>
@@ -293,12 +295,17 @@ namespace EPOS.Kern.Tests
             return sim;
         }
 
-        /// <summary>Die Gebäudezeile <paramref name="nummer"/> des Projekts, frisch gelesen.</summary>
+        /// <summary>
+        /// Die Gebäudezeile <paramref name="nummer"/> des Projekts, frisch gelesen und im
+        /// Speicher auf den Tagesbilanz-Weg gestellt.
+        /// </summary>
         private static ProjektGebaeudeModel Zeile(int idProjekt, int nummer)
         {
             var ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(idProjekt);
-            return ctrl.items[nummer];
+            ProjektGebaeudeModel item = ctrl.items[nummer];
+            item.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+            return item;
         }
 
         private static double[] Rechne(SimulationWaermebedarf sim, ProjektGebaeudeModel item, int index = 0)
@@ -429,8 +436,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Lauf dimensioniert den Merkplatz auf die Gebäude des Projekts (1039: drei),
-        /// und das tote Feld <c>MaxP</c> ist fort.
+        /// Der Lauf rechnet alle Gebäude des Projekts (1039: drei, auf dem VDI-Weg je ein
+        /// Ergebnis), und das tote Feld <c>MaxP</c> ist fort. Das Wachsen des Merkplatzes auf
+        /// dem Tagesbilanz-Weg prüft der Fall mit Merkplatz 150.
         /// </summary>
         [Fact]
         public void Der_Lauf_dimensioniert_den_Merkplatz_nach_der_Gebaeudezahl()
@@ -441,7 +449,7 @@ namespace EPOS.Kern.Tests
             sim.Waermebedarf_berechnen(1039, Klimaregion(1039));
 
             Assert.Equal(3, sim.Anzahl_Gebaeude);
-            Assert.Equal(3, sim.Tagesbilanzweg.HeizwaermebedarfGeb.Length);
+            Assert.Equal(3, sim.GebaeudeErgebnisse.Alle.Count);
             Assert.Null(typeof(SimulationWaermebedarf).GetField("MaxP",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
         }

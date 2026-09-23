@@ -153,8 +153,9 @@ namespace WindowsFormsApplication1
                     w(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B));
 
             werte["Fk7Text"] = T("KDLG_ERTRAG_FK7",
-                "FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der " +
-                "Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt " +
+                "FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung steht nicht hier, " +
+                "sondern im Dialog „BHKW-Wirtschaftlichkeit“ (Einspeisevergütung KWK-Strom) " +
+                "und, bei aktivem Rollentarif, im Einspeisepreis der Tarifstruktur — dieser Reiter zeigt " +
                 "die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom " +
                 "KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. " +
                 "Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, " +

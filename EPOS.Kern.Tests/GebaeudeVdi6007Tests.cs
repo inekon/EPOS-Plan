@@ -165,15 +165,15 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Die_Weiche_fuehrt_nur_VDI6007_auf_den_VDI_Weg()
+        public void Die_Weiche_fuehrt_nur_TAGESBILANZ_auf_den_Tagesbilanz_Weg()
         {
             var sim = new SimulationWaermebedarf();
             Assert.IsType<Vdi6007Rechenweg>(sim.RechenwegWaehlen(new ProjektGebaeudeModel { Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_VDI6007 }));
-            Assert.Same(sim.Tagesbilanzweg, sim.RechenwegWaehlen(new ProjektGebaeudeModel { Gebaeude_Modell = null }));
+            Assert.IsType<Vdi6007Rechenweg>(sim.RechenwegWaehlen(new ProjektGebaeudeModel { Gebaeude_Modell = null }));
             Assert.Same(sim.Tagesbilanzweg, sim.RechenwegWaehlen(new ProjektGebaeudeModel { Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ }));
 
-            // Die NULL-Regel ist eine benannte Stelle — die Schlusswelle G1+G2 schaltet sie um.
-            Assert.Equal(DbWerte.GEBAEUDE_MODELL_TAGESBILANZ, SimulationWaermebedarf.MODELL_OHNE_ANGABE);
+            // Die NULL-Regel ist eine benannte Stelle: VDI 6007 ist das Vorgabemodell (E1).
+            Assert.Equal(DbWerte.GEBAEUDE_MODELL_VDI6007, SimulationWaermebedarf.MODELL_OHNE_ANGABE);
         }
 
         private static void Nahe(double erwartet, double ist, double relativ)
@@ -228,6 +228,12 @@ namespace EPOS.Kern.Tests
             return item;
         }
 
+        /// <summary>
+        /// Das Abnahmefenster der Katalogkennzahl (Kriterium (4), Leitkonzept 10.4): Jahres-
+        /// heizwärme je m² auf dem VDI-Weg gegen <c>spez_Waermeverbrauch</c> des Katalogs.
+        /// </summary>
+        private const double KATALOGFENSTER_UNTEN = 0.90, KATALOGFENSTER_OBEN = 1.15;
+
         /// <summary>Die dreizehn Referenzprojekte der Basis und 1009 (Datenfehler Bauweise).</summary>
         private static readonly int[] Projekte =
             { 1007, 1008, 1009, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046 };
@@ -249,7 +255,7 @@ namespace EPOS.Kern.Tests
                 {
                     SimulationWaermebedarf alt = NeueRechnung(projekt);
                     var wAlt = new double[8760];
-                    Assert.True(alt.HeizwaermeEinesGebaeudes(Zeile(projekt, i, null), i, wAlt));
+                    Assert.True(alt.HeizwaermeEinesGebaeudes(Zeile(projekt, i, DbWerte.GEBAEUDE_MODELL_TAGESBILANZ), i, wAlt));
 
                     SimulationProtokoll protokoll = SimulationProtokoll.NeuStarten();
                     SimulationWaermebedarf vdi = NeueRechnung(projekt);
@@ -275,6 +281,17 @@ namespace EPOS.Kern.Tests
                     GebaeudeModellErgebnis r = vdi.GebaeudeErgebnisse.Ergebnis(i);
                     Assert.NotNull(r);
                     Assert.Equal(sVdi / 1000.0, r.JahresheizwaermeMwh, 6);
+
+                    // Abnahmekriterium (3), Leitkonzept 10.4: Tagessummen-Korrelation zum
+                    // Tagesbilanz-Weg r >= 0,98.
+                    Assert.True(Korrelation(Tagessummen(wAlt), Tagessummen(wVdi)) >= 0.98);
+
+                    // Abnahmekriterium (4), Leitkonzept 10.4, mit dem Auslieferungsweg neu
+                    // bestimmt (Schlusswelle G1 + G2): gemessen 95,8 % bis 109,4 % der
+                    // Katalogkennzahl, das Fenster ist 90 bis 115 %. Ohne Katalogwert keine Probe.
+                    if (item.spez_Waermeverbrauch > 0)
+                        Assert.InRange(sVdi / item.Z_AuswahlWohnflaeche / item.spez_Waermeverbrauch,
+                                       KATALOGFENSTER_UNTEN, KATALOGFENSTER_OBEN);
 
                     _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         "{0};{1};{2};{3:F0};{4:F0};{5:F0};{6:F3};{7:F1};{8:F0};{9:F2};{10:F2};{11:F0};{12:F3};{13:F1}",

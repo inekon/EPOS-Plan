@@ -139,7 +139,6 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. " +
         "Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die " +
         "Stromsteuer enthält.");
-    public string BtnStrombezug { get; } = T("BHW_BTN_STROMBEZUG", "Strombezug…");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 
     /// <summary>Der Sprung laeuft ueber die Huelle und schliesst diesen Dialog
@@ -218,4 +217,91 @@ public sealed class BhkwWirtschaftlichkeitTexte
 
     // ----------------------------------------------------------- Speichern
     public string MsgFehler { get; } = T("BHW_MSG_FEHLER", "{0} Angabe(n) konnten nicht gespeichert werden.");
+
+    // ------------------- ETAPPE E7c — Überlagerung „Sätze und Herkunft" (U22, K‑1)
+    //
+    // Gebaut so weit, wie die zwei Felder des zweiten Falls des § 2 Nr. 16 KWKG es
+    // brauchen (Entscheid E7‑Q2 (5)): Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und
+    // Stromkennzahl σ mit Vorschlag, Herkunft, eigenem Wert und „Übernehmen". Die
+    // Schlüssel folgen dem Ressourcenplan des Mockups (BHW_UEB_*, BHW_FLD_*,
+    // BHW_HERL_*).
+
+    /// <summary>Knopf bei den Angaben der gewählten Anlage, der die Überlagerung öffnet.</summary>
+    public string UebKnopf { get; } = T("BHW_UEB_KNOPF_ANLAGE", "Sätze und Herkunft…");
+
+    /// <summary>Titel der Überlagerung; {0} = Bezeichner der Anlage.</summary>
+    public string UebTitel { get; } = T("BHW_UEB_TITEL", "Sätze und Herkunft — {0}");
+
+    public string UebGKwkg { get; } = T("BHW_UEB_G_KWKG", "KWK-Zuschlag — diese Anlage");
+    public string UebKwkStrom { get; } = T("BHW_UEB_KWK_STROM", "KWK-Strom (§ 2 Nr. 16 KWKG)");
+    public string UebFall1 { get; } = T("BHW_FLD_FALL1", "Fall 1 — Nettostromerzeugung");
+    public string UebFall2 { get; } = T("BHW_FLD_ABWAERMEABFUHR", "Fall 2 — Vorrichtung zur Abwärmeabfuhr");
+
+    /// <summary>Wirkung von Fall 1 aus dem gebuchten Lauf; {0} = Nettostromerzeugung [MWh].</summary>
+    public string UebFall1Menge { get; } = T("BHW_UEB_FALL1_MENGE",
+        "→ {0} MWh Nettostromerzeugung im zuletzt gebuchten Lauf");
+
+    /// <summary>Wirkung von Fall 1 ohne gebuchten Lauf.</summary>
+    public string UebFall1OhneLauf { get; } = T("BHW_UEB_FALL1_OHNE_LAUF",
+        "→ die Nettostromerzeugung der Anlage (Klemme minus Hilfsstrom)");
+
+    /// <summary>Die Formel des zweiten Falls.</summary>
+    public string UebFall2Formel { get; } = T("BHW_UEB_FALL2_FORMEL",
+        "→ min(Nettostromerzeugung ; Nutzwärme × σ) — Nutzwärme: Wärmeproduktion des Moduls " +
+        "abzüglich seines Anteils am Wärmeüberschuss (nach P_el)");
+
+    public string UebSpGroesse { get; } = T("BHW_UEB_SP_GROESSE", "Größe");
+    public string UebSpVorschlag { get; } = T("BHW_UEB_SP_VORSCHLAG", "Vorschlag");
+    public string UebSpHerkunft { get; } = T("BHW_UEB_SP_HERKUNFT", "Herkunft");
+    public string UebSpEigen { get; } = T("BHW_UEB_SP_EIGEN", "eigener Wert");
+    public string UebSpGilt { get; } = T("BHW_UEB_SP_GILT", "gilt");
+    public string UebLeerVorschlag { get; } = T("BHW_UEB_LEER_VORSCHLAG", "leer = Vorschlag");
+    public string UebSigma { get; } = T("BHW_FLD_STROMKENNZAHL", "Stromkennzahl σ");
+
+    /// <summary>Herkunft des Vorschlags; {0} = P_el, {1} = P_th [kW].</summary>
+    public string UebHerkunftSigma { get; } = T("BHW_HERL_STROMKENNZAHL",
+        "P_el ÷ P_th der Gerätezeile: {0} kW ÷ {1} kW");
+
+    /// <summary>Herkunft, wenn die Gerätezeile keinen Vorschlag hergibt — zugleich der
+    /// Sperrgrund des Knopfes „Vorschlag übernehmen".</summary>
+    public string UebHerkunftSigmaOhne { get; } = T("BHW_HERL_STROMKENNZAHL_OHNE",
+        "Gerätezeile ohne P_el oder P_th — kein Vorschlag");
+
+    /// <summary>Spalte „gilt": {0} = σ.</summary>
+    public string UebGiltVorschlag { get; } = T("BHW_UEB_GILT_VORSCHLAG", "{0} Vorschlag");
+
+    /// <summary>Spalte „gilt" bei eigenem Wert: {0} = eigener Wert, {1} = Vorschlag.</summary>
+    public string UebGiltEigen { get; } = T("BHW_UEB_GILT_EIGEN", "{0} eigener Wert — Vorschlag {1}");
+
+    /// <summary>Spalte „gilt" bei eigenem Wert ohne Vorschlag: {0} = eigener Wert.</summary>
+    public string UebGiltEigenOhne { get; } = T("BHW_UEB_GILT_EIGEN_OHNE", "{0} eigener Wert");
+
+    /// <summary>Spalte „gilt" ohne jede Kennzahl — kein Ersatz, keine Vorgabe (E7‑Q2 (2)).</summary>
+    public string UebGiltKeine { get; } = T("BHW_UEB_GILT_KEINE",
+        "keine — kein KWK-Strom nach Fall 2, kein Zuschlag");
+
+    /// <summary>Spalte „gilt" bei Fall 1: σ wird nicht gelesen.</summary>
+    public string UebGiltFall1 { get; } = T("BHW_UEB_GILT_FALL1", "— (Fall 1 liest keine Stromkennzahl)");
+
+    public string UebInfo { get; } = T("BHW_UEB_INFO_SIGMA",
+        "Leer heißt: σ wird beim Rechnen aus P_el ÷ P_th der Gerätezeile gebildet. Ein eigener " +
+        "Wert gilt dauerhaft, auch wenn sich die Gerätezeile ändert; „Vorschlag übernehmen“ " +
+        "leert das Feld — der Weg zurück. Gibt es weder einen eigenen Wert noch P_el und P_th, " +
+        "gibt es keinen KWK-Strom nach Fall 2 und für diese Anlage keinen Zuschlag. Gelesen wird " +
+        "σ nur bei Fall 2.");
+
+    public string UebUebernehmen { get; } = T("BHW_UEB_UEBERNEHMEN", "Übernehmen");
+
+    /// <summary>Die Zeile bei den Angaben der Anlage: Fall 1.</summary>
+    public string AKwkFall1 { get; } = T("BHW_A_KWK_FALL1",
+        "KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung.");
+
+    /// <summary>Die Zeile bei den Angaben der Anlage: Fall 2; {0} = σ, {1} = Herkunft.</summary>
+    public string AKwkFall2 { get; } = T("BHW_A_KWK_FALL2",
+        "KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ {0} ({1}).");
+
+    /// <summary>Die Zeile bei den Angaben der Anlage: Fall 2 ohne Kennzahl; {0} = Grund.</summary>
+    public string AKwkFall2Ohne { get; } = T("BHW_A_KWK_FALL2_OHNE",
+        "KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine " +
+        "Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.");
 }

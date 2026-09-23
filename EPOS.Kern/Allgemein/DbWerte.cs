@@ -883,6 +883,12 @@ namespace WindowsFormsApplication1
         /// der Grund, aus dem E5 fuer Bestandsprojekte ergebnisneutral ist.
         /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
         /// </summary>
+        /// <remarks>
+        /// Q11 (E7b, Anwender 22.09.2026: „kein HT/NT"): Dieser Modus rechnet nicht
+        /// mehr. Schemaschritt 104 loescht die Saetze in ihm; der Wert bleibt der
+        /// Rueckfall eines leeren Modus (Altzeilen) und das Merkmal, an dem Kern und
+        /// Migration einen Satz des entfallenen Modells erkennen.
+        /// </remarks>
         public const string TARIF_MODUS_ZONEN = "ZONEN";
 
         /// <summary>
@@ -2568,6 +2574,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).</summary>
         public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
+
+        /// <summary>
+        /// ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b, 23.09.2026) — das <b>Ende der Frist zur
+        /// Inbetriebnahme</b> als Kalenderjahr: Inbetriebnahme bis zum 31.12. dieses Jahres
+        /// (Förderende 2030, R‑U5). Eine Anlage, die danach in Betrieb geht, bekommt keinen
+        /// Zuschlag; die Zuschlagsreihe einer Anlage davor läuft bis zum Ende ihres
+        /// Kontingents weiter — eine Höchstdauer in Kalenderjahren gibt es nicht. Löst die
+        /// feste Realisierungsfrist von vier Jahren ab dem Stichtag ab.
+        /// </summary>
+        public const string GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE = "KWKG_INBETRIEBNAHME_FRISTENDE";
 
         /// <summary>
         /// ETAPPE E6 — elektrische Nennleistung, bis zu der der Zuschlag auf SELBST

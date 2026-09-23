@@ -588,6 +588,30 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Empty(Zeichnen(Daten()).FindAll("div.epos-warnbanner"));
     }
 
+    /// <summary>
+    /// BEDARFSKANAL OHNE VERSORGER: Jeder Satz der Hülle steht als WARNBANNER über dem
+    /// Dashboard — derselbe Satz wie im Laufprotokoll. Einen Knopf trägt er nicht: Der
+    /// Handgriff ist die Senkenzuordnung einer Anlage, und welche das sein soll,
+    /// entscheidet der Anwender.
+    /// </summary>
+    [Fact]
+    public void Ein_Kanal_ohne_Versorger_steht_als_Warnbanner_ueber_dem_Dashboard()
+    {
+        UebersichtDaten daten = Daten();
+        daten.KanaeleOhneVersorger = new[]
+        {
+            "Kanal Prozesswärme mit 50,0 MWh/a Bedarf hat keinen Versorger: keine Anlage " +
+            "trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen."
+        };
+
+        var seite = Zeichnen(daten);
+
+        var banner = seite.Find("div.epos-warnbanner");
+        Assert.Contains("epos-warnbanner--warnung", banner.ClassName);
+        Assert.Contains("Kanal Prozesswärme mit 50,0 MWh/a", banner.TextContent);
+        Assert.Empty(seite.FindAll("button.epos-warnbanner-aktion"));
+    }
+
     // =====================================================================
     //  Der Fuß
     // =====================================================================

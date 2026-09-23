@@ -42,7 +42,21 @@
    Kennzeichen ja/nein (Brennwert, Kuehlen).
 
    KEIN display:flex AUF EINER ZELLE (Befund W5-B-1): Der Kopfinhalt steht in
-   einem eigenen <div class="epos-spaltenkopf"> IN der Zelle. *@
+   einem eigenen <div class="epos-spaltenkopf"> IN der Zelle.
+
+   KEINE WAAGERECHTE ROLLLEISTE (Konzept Administrationsdialoge, Stufe 1, V2
+   und V7). Gemessen vor Stufe 1 bei 1 088 x 624: Heizkessel 234 px quer,
+   Waermepumpe 1 269 px quer. Seitdem gilt dreierlei:
+     * Der BEZEICHNER ist die elastische Spalte: Er nimmt, was die anderen
+       uebrig lassen, und kuerzt mit "..." - der volle Name steht im Kurztext
+       der Zelle (epos-spalte--bezeichner).
+     * Jede andere TEXTspalte hat eine Hoechstbreite und kuerzt ebenso
+       (epos-spalte--begrenzt); Zahlen stehen so breit wie ihr Inhalt.
+     * Spalten mit RANG weichen, wenn die Liste schmal wird - in der Folge
+       Breit, dann BeiPlatz; wann, rechnet Spaltenraenge aus der Breite des
+       Inhalts, und eine Containerabfrage im Stilblatt blendet aus. Eine
+       Spalte mit Filter oder Sortierung weicht nie, sonst saehe niemand, dass
+       gefiltert wird. Die Suche findet weiter in ALLEN Spalten. *@
 
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
@@ -50,7 +64,7 @@
 
 @if (Profil is not null)
 {
-<div class="epos-katalogliste">
+<div class="@Wurzelklasse">
 
     @* ---------------- ZONE A - die EINE Suchzeile (5.6.4) ---------------- *@
     <div class="epos-katalog-suchzeile">
@@ -157,7 +171,10 @@
             @for (int i = 0; i < Profil.Spalten.Count; i++)
             {
                 Katalogspalte spalte = Profil.Spalten[i];
-                bool rechtsbuendig = i >= Profil.Spalten.Count - 2;
+                // Das Popover oeffnet in der rechten Haelfte nach LINKS. Seit Spalten
+                // weichen koennen (V2), steht rechts nicht mehr sicher die letzte des
+                // Profils - die Haelfte des Profils ist die ehrlichere Grenze.
+                bool rechtsbuendig = i > 0 && i >= Profil.Spalten.Count / 2;
 
                 <TemplateColumn TGridItem="Katalogfilterzeile" Class="@Spaltenklasse(spalte)">
                     <HeaderTemplate>
@@ -214,7 +231,8 @@
                         </div>
                     </HeaderTemplate>
                     <ChildContent>
-                        <span class="@Zellenklasse(context)">@context.Text(spalte.Schluessel)</span>
+                        <span class="@Zellenklasse(context)"
+                              title="@Zellkurztext(spalte, context)">@context.Text(spalte.Schluessel)</span>
                     </ChildContent>
                 </TemplateColumn>
             }
@@ -574,6 +592,10 @@
 
         Neurechnungen++;
 
+        // Die Stufen der Spalten (V2/V7) folgen demselben Abzug: Sie haengen an
+        // Zeilen, Profil und Filterstand und an nichts sonst.
+        RaengeRechnen();
+
         IReadOnlyList<Katalogfilterzeile> neu = Profil is null
             ? Zeilen
             : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
@@ -764,7 +786,20 @@
     private string Spaltenklasse(Katalogspalte spalte)
     {
         string k = spalte.Rechtsbuendig ? "epos-spalte-zahl" : "epos-spalte-text";
-        return Stand.Gefiltert(spalte.Schluessel) ? k + " epos-spalte--gefiltert" : k;
+        if (Stand.Gefiltert(spalte.Schluessel)) k += " epos-spalte--gefiltert";
+
+        // V2: die elastische Bezeichnerspalte, die begrenzten Textspalten, der Rang
+        // und - fuer eine weichende Spalte - die Stufe, ab der sie steht.
+        if (Spaltenraenge.IstElastisch(spalte)) k += " epos-spalte--bezeichner";
+        else if (Spaltenraenge.IstBegrenzt(spalte)) k += " epos-spalte--begrenzt";
+
+        if (_hatRaenge)
+        {
+            k += " epos-spalte-rang" + ((int)spalte.Rang).ToString(CultureInfo.InvariantCulture);
+            if (_stufen.TryGetValue(spalte.Schluessel, out int stufe) && stufe > 0)
+                k += " epos-spalte-ab-" + stufe.ToString(CultureInfo.InvariantCulture);
+        }
+        return k;
     }
 
     /// <summary>
@@ -773,6 +808,75 @@
     /// </summary>
     private static string Zellenklasse(Katalogfilterzeile zeile) =>
         zeile.Geschuetzt ? "epos-gesperrt" : "";
+
+    // =====================================================================
+    //  Spalten nach Rang (Konzept Administrationsdialoge, V2 und V7)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Wurzel trägt <c>epos-katalogliste--raenge</c> nur, wenn das Profil eine
+    /// weichende Spalte kennt. Erst diese Klasse macht die Liste zum Container der
+    /// Abfragen (<c>container-type: inline-size</c>) — und ein Container misst seine
+    /// Breite nicht mehr am Inhalt. Die Wirte ohne Rang (Importe, Flotte, Gesetze,
+    /// Projekttransfer) bleiben damit, wie sie waren.
+    /// </summary>
+    private string Wurzelklasse => _hatRaenge ? "epos-katalogliste epos-katalogliste--raenge" : "epos-katalogliste";
+
+    private bool _hatRaenge;
+
+    /// <summary>Die längsten Werte je Spalte — nur neu, wenn Zeilen oder Profil wechseln.</summary>
+    private IReadOnlyDictionary<string, int> _laengen = new Dictionary<string, int>();
+    private object? _laengenZeilen;
+    private int _laengenZahl = -1;
+    private object? _laengenProfil;
+
+    /// <summary>Die Stufe je Spalte (0 = steht immer) — neu nach jeder Filter- oder Sortieränderung.</summary>
+    private IReadOnlyDictionary<string, int> _stufen = new Dictionary<string, int>();
+
+    /// <summary>Die Stufen je Spaltenschlüssel (Prüfhilfe für Tests; 0 = steht immer).</summary>
+    public IReadOnlyDictionary<string, int> Stufen => _stufen;
+
+    /// <summary>
+    /// Rechnet Längen und Stufen nach. Die LÄNGEN laufen über alle Zeilen und nur, wenn
+    /// Zeilen (Referenz oder Anzahl) oder Profil wechseln — nie je Zeichenlauf (Befund
+    /// #212). Die STUFEN sind eine Rechnung je Spalte und folgen dem Filterstand:
+    /// Eine gefilterte oder sortierte Spalte weicht nie (V7).
+    /// </summary>
+    private void RaengeRechnen()
+    {
+        _hatRaenge = Spaltenraenge.HatRaenge(Profil);
+        if (Profil is null || !_hatRaenge)
+        {
+            _stufen = new Dictionary<string, int>();
+            return;
+        }
+
+        if (!ReferenceEquals(Zeilen, _laengenZeilen) || (Zeilen?.Count ?? 0) != _laengenZahl
+            || !ReferenceEquals(Profil, _laengenProfil))
+        {
+            _laengen = Spaltenraenge.Laengen(Profil, Zeilen ?? Array.Empty<Katalogfilterzeile>());
+            _laengenZeilen = Zeilen;
+            _laengenZahl = Zeilen?.Count ?? 0;
+            _laengenProfil = Profil;
+        }
+
+        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten);
+    }
+
+    /// <summary>Trägt die Spalte einen Filter oder die Sortierung? Dann weicht sie nie (V7).</summary>
+    private bool Festgehalten(Katalogspalte spalte)
+        => Stand.Gefiltert(spalte.Schluessel) || Stand.Sortierspalte == spalte.Schluessel;
+
+    /// <summary>
+    /// Der Kurztext einer Zelle, die kürzen kann — der volle Wert. Nur der Bezeichner
+    /// und die begrenzten Textspalten tragen ihn; ein Leerwert („—") nicht.
+    /// </summary>
+    private static string? Zellkurztext(Katalogspalte spalte, Katalogfilterzeile zeile)
+    {
+        if (!Spaltenraenge.IstElastisch(spalte) && !Spaltenraenge.IstBegrenzt(spalte)) return null;
+        string text = zeile.Text(spalte.Schluessel);
+        return text.Length == 0 || text == ParameterVerwendung.LEER ? null : text;
+    }
 
     private Task BeiZeile(Katalogfilterzeile zeile)
     {

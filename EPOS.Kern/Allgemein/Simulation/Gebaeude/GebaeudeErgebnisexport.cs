@@ -48,9 +48,9 @@ namespace WindowsFormsApplication1
     /// keinen Eintrag im Ergebnisträger und erzeugt deshalb keinen einzigen Satz — so bleibt
     /// ein Bestandsordner byte-gleich (Muster Erdreichblock, Umsetzungskonzept 1.8).</para>
     ///
-    /// <para><b>Wer schreibt.</b> Die CSV-Dateien schreibt <c>Referenzlauf/Ergebnisexport.cs</c>;
-    /// angebunden wird dieser Satz dort mit der Schlusswelle G1 + G2, weil die neuen Dateien die
-    /// Referenzbasis bewegen (Einfrierschritt G1 + G2).</para>
+    /// <para><b>Wer schreibt.</b> Die CSV-Dateien und die Skalare in <c>aggregate.csv</c>
+    /// schreibt <c>Referenzlauf/Ergebnisexport.cs</c> (beide Referenzlauf-Werkzeuge und die
+    /// iOS-Prüfung teilen die Datei).</para>
     ///
     /// <para>Öffentlich, weil der Referenzlauf den Kern ohne <c>InternalsVisibleTo</c>
     /// liest; ohne Datenbank, ohne Zustand.</para>

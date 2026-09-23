@@ -94,6 +94,14 @@
 
            IST KEIN PLATZ FREI, steht kein Knopf da, sondern der Grund - ein Knopf,
            der nichts tut, waere schlimmer als keiner. *@
+        @* BEDARFSKANAL OHNE VERSORGER: Bedarf, den keine Senke bedient, steht im
+           Restbedarf und deckt sich nie. Derselbe Satz wie im Laufprotokoll; der
+           Handgriff ist die Senkenzuordnung der Anlage (Schritt 1). *@
+        @foreach (string kanal in D.KanaeleOhneVersorger)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@kanal" />
+        }
+
         @foreach (Platzangebot angebot in D.OhnePlatzAngebote)
         {
             Platzangebot a = angebot;

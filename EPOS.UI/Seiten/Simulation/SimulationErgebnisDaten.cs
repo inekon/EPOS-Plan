@@ -286,6 +286,16 @@ public sealed class UebersichtDaten
     /// </summary>
     public IReadOnlyList<Platzangebot> OhnePlatzAngebote = Array.Empty<Platzangebot>();
 
+    /// <summary>
+    /// BEDARFSKANÄLE OHNE VERSORGER — je Kanal mit Bedarf, den keine Senke einer Anlage
+    /// bedient, der fertige Satz („Kanal Prozesswärme mit 50,0 MWh/a Bedarf hat keinen
+    /// Versorger …"). Leer = jeder Kanal mit Bedarf hat einen Versorger.
+    ///
+    /// <para>Derselbe Satz wie im Laufprotokoll — beide kommen aus
+    /// <c>Warnkriterien.KanaeleOhneVersorger</c> mit dem Kanalbedarf DIESES Laufs.</para>
+    /// </summary>
+    public IReadOnlyList<string> KanaeleOhneVersorger = Array.Empty<string>();
+
     /// <summary>Der Mittelwert der beiden Ringe in Prozent.</summary>
     public double WaermedeckungProzent;
     public double StromdeckungProzent;

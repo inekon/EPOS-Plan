@@ -1,21 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Strommengen-Matrix Winter/Sommer × HT/NT (Konzept Kap. 2.5 / Stufe W3,
-    /// Phase 8) — gebaut aus den Stundenreihen der In-Memory-Simulation
-    /// (ZeitreihenSatz). Vereinfachtes Tarifmodell (Entscheidung 11.08.2026):
-    /// Winterzeitraum als Monatsspanne, EIN HT-Fenster Mo–Fr; Wochentage über
-    /// das Referenzjahr 2026 (Standardjahr, kein Schaltjahr).
+    /// Strommengen-Matrix (Konzept Kap. 2.5 / Stufe W3, Phase 8) — die JAHRESSUMMEN der
+    /// Strommengen, gebaut aus den Stundenreihen der In-Memory-Simulation
+    /// (ZeitreihenSatz), dazu die Lastbilder der Bezugsseite.
     ///
-    /// Je Zone werden geführt:
+    /// <para><b>Keine Tarifzonen</b> (Entscheid Q11, Anwender 22.09.2026: „kein HT/NT";
+    /// Konzept Wirtschaftlichkeit § 3.5). Die Matrix trennte jede Stunde nach
+    /// Winter/Sommer × HT/NT und bepreiste die vier Zonen mit eigenen Bezugs- und
+    /// Einspeisepreisen und einer zweistufigen Leistungspreis-Staffel auf die höchste
+    /// Stundenlast. Den Zeitzonentarif gibt es nicht mehr: Den Netzbezug bepreist der
+    /// Stromträger der Kostenverwaltung — Arbeits-, Grund- und Leistungspreis samt der
+    /// dorthin verlegten Staffel auf die Viertelstundenspitze
+    /// (<c>KostenEmissionRechner</c>) — oder, bei aktivem Rollentarif,
+    /// <see cref="StromTarifRechner"/>. Die Matrix führt nur noch Mengen und Lasten.</para>
+    ///
+    /// Geführt werden, je als Jahressumme:
     ///  - Netzbezug [MWh]           (Zeitreihe NETZBEZUG)
     ///  - PV-Einspeisung [MWh]      (Zeitreihe PV_UEBERSCHUSS)
-    ///  - KWK-Eigenstrom [MWh]      (stundenweise min(BHKW-Strom, Strombedarf))
+    ///  - KWK-Eigenstrom [MWh]      (stundenweise min(BHKW-Strom, Strombedarf nach PV))
     ///  - KWK-Einspeisung [MWh]     (BHKW-Strom − Eigenanteil)
-    /// plus die Jahres-Bezugsspitze [kW] für die Leistungspreis-Staffel.
+    ///  - Bedarf ohne jede Eigenerzeugung und PV-Eigennutzung [MWh] (Etappen E5/E7)
+    /// plus die höchste Stundenlast des Netzbezugs [kW] und die zwei Lastbilder, an
+    /// denen die Leistungspreismodelle des Rollentarifs bemessen werden.
     ///
     /// Die KWK-Aufteilung ist eine dokumentierte Näherung: die Simulation führt
     /// den BHKW-Strom nicht getrennt nach Eigennutzung/Einspeisung — die
@@ -24,59 +33,69 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class StromMatrix
     {
-        /// <summary>Zonen-Schlüssel (auch Persistenz in Tab_ErgebnisStromMatrix).</summary>
-        public const string Z_WINTER_HT = "Winter HT";
-        public const string Z_WINTER_NT = "Winter NT";
-        public const string Z_SOMMER_HT = "Sommer HT";
-        public const string Z_SOMMER_NT = "Sommer NT";
-        public static readonly string[] Zonen = { Z_WINTER_HT, Z_WINTER_NT, Z_SOMMER_HT, Z_SOMMER_NT };
+        /// <summary>
+        /// Schlüssel der EINEN Zeile je Projekt in <c>Tab_ErgebnisStromMatrix.Zone</c>.
+        ///
+        /// <para>Die Spalte hieß nach den vier Tarifzonen; die Tabelle bleibt, wie sie
+        /// ist, und trägt jetzt eine Jahreszeile. Gelesen wird ohne Blick auf den
+        /// Schlüssel — der Leser summiert alle Zeilen eines Projekts
+        /// (<c>WirtschaftlichkeitCtrl.LadeStromMatrix</c>), damit ein gespeicherter
+        /// Stand mit vier Zonenzeilen dieselben Jahressummen liefert, bis der
+        /// Schemaschritt 104 ihn zu einer Zeile zusammenfasst oder ein neuer Lauf ihn
+        /// ersetzt.</para>
+        /// </summary>
+        public const string ZEILE_JAHR = "Jahr";
 
-        /// <summary>Mengen einer Tarifzone [MWh].</summary>
-        public class Zone
-        {
-            public string Name = "";
-            public double BezugMWh;
-            public double EinspeisungPvMWh;
-            public double KwkEigenMWh;
-            public double KwkEinspeisungMWh;
+        /// <summary>Netzbezug gesamt [MWh/a] (Plausibilitätsabgleich, Restbezug des
+        /// Rollentarifs).</summary>
+        public double BezugGesamtMWh;
 
-            /// <summary>
-            /// ETAPPE E5 — Strombedarf <b>ohne die Anlage</b> [MWh]: die Menge, die ohne
-            /// jede Eigenerzeugung aus dem Netz käme. Sie ist die Bezugsgröße der
-            /// Differenzmethode („Bezugskosten ohne Anlage").
-            ///
-            /// <para><b>OHNE JEDE EIGENERZEUGUNG</b> (Konzept Wirtschaftlichkeit § 6.3
-            /// Nr. 32, Entscheid U6‑Q1 vom 22.09.2026): der Strombedarf der Stunde VOR
-            /// Abzug der PV-Eigennutzung. Bis E7 war es <c>Strombedarf −
-            /// PV-Eigennutzung</c> (die Rechnung der Altanwendung, „ohne
-            /// Blockheizkraftwerk"); die vermiedene Menge trug dadurch allein den
-            /// KWK-Eigenverbrauch. Jetzt führt sie KWK- und PV-Eigenverbrauch. Ohne die
-            /// Strombedarfsreihe bleibt der Wert 0 und <see cref="StrombedarfFehlt"/> sagt
-            /// warum.</para>
-            /// </summary>
-            public double BedarfMWh;
+        /// <summary>PV-Einspeisung gesamt [MWh/a].</summary>
+        public double EinspeisungPvGesamtMWh;
 
-            /// <summary>
-            /// ETAPPE E7 (Konzept § 6.3 Nr. 32) — die PV-Eigennutzung, soweit sie den
-            /// Strombedarf der Stunde deckt [MWh]: <c>Strombedarf − max(0, Strombedarf −
-            /// PV-Eigennutzung)</c>. Genau um diese Menge ist <see cref="BedarfMWh"/>
-            /// größer als der Bedarf nach Photovoltaik, auf den der KWK-Eigenanteil
-            /// begrenzt bleibt — der Verteilschlüssel der vermiedenen Kosten bringt sie für
-            /// die Photovoltaik ein.
-            /// </summary>
-            public double PvEigenMWh;
-        }
+        /// <summary>KWK-Eigenstrom gesamt [MWh/a] (Basis KWKG-Eigenstromsatz).</summary>
+        public double KwkEigenGesamtMWh;
 
-        public Dictionary<string, Zone> ZonenWerte = new Dictionary<string, Zone>();
+        /// <summary>KWK-Einspeisung gesamt [MWh/a] (Basis KWKG-Einspeisesatz).</summary>
+        public double KwkEinspeisungGesamtMWh;
 
-        /// <summary>Jahres-Bezugsspitze [kW] (Basis der Leistungspreis-Staffel).</summary>
+        /// <summary>
+        /// ETAPPE E5 — Strombedarf <b>ohne die Anlage</b> [MWh/a]: die Menge, die ohne
+        /// jede Eigenerzeugung aus dem Netz käme. Sie ist die Bezugsgröße der
+        /// Differenzmethode („Bezugskosten ohne Anlage").
+        ///
+        /// <para><b>OHNE JEDE EIGENERZEUGUNG</b> (Konzept Wirtschaftlichkeit § 6.3
+        /// Nr. 32, Entscheid U6‑Q1 vom 22.09.2026): der Strombedarf der Stunde VOR
+        /// Abzug der PV-Eigennutzung. Die vermiedene Menge führt damit KWK- und
+        /// PV-Eigenverbrauch. 0 zusammen mit <see cref="StrombedarfFehlt"/> heißt
+        /// „nicht bestimmbar", nicht „null".</para>
+        /// </summary>
+        public double BedarfGesamtMWh;
+
+        /// <summary>
+        /// ETAPPE E7 (Konzept § 6.3 Nr. 32) — die PV-Eigennutzung, soweit sie den
+        /// Strombedarf der Stunde deckt [MWh/a]: <c>Strombedarf − max(0, Strombedarf −
+        /// PV-Eigennutzung)</c>. Genau um diese Menge ist <see cref="BedarfGesamtMWh"/>
+        /// größer als der Bedarf nach Photovoltaik, auf den der KWK-Eigenanteil begrenzt
+        /// bleibt — der Verteilschlüssel der vermiedenen Kosten bringt sie für die
+        /// Photovoltaik ein.
+        /// </summary>
+        public double PvEigenGesamtMWh;
+
+        /// <summary>
+        /// Höchste STUNDENlast des Netzbezugs [kW]. Sie ist ein Stundenmittel und damit
+        /// kleiner als die gemessene Viertelstundenspitze (<see cref="Netzbezugsspitze"/>),
+        /// an der der Leistungspreis des Stromträgers — auch seine Staffel — bemessen
+        /// wird; hier steht sie als Größe des Lastbilds (<see cref="LastBezug"/>) und im
+        /// Bericht.
+        /// </summary>
         public double MaxBezugKW;
 
         // ------------------------------------------------------- Lastbilder (Etappe E5)
 
         /// <summary>
         /// Die Maxima EINER Bezugsgröße [kW] — die Bemessungsgrundlage aller drei
-        /// Leistungspreismodelle (Etappe E5, Leitentscheidung L7).
+        /// Leistungspreismodelle des Rollentarifs (Etappe E5, Leitentscheidung L7).
         ///
         /// <para>Ein Modell braucht genau eines davon: <c>JAHRESHOECHSTLAST</c> das
         /// Jahresmaximum, <c>STAFFEL</c> Sommer- und Wintermaximum getrennt,
@@ -125,25 +144,17 @@ namespace WindowsFormsApplication1
         /// als „alles Eigenstrom" und wird im Ergebnis als Hinweis ausgewiesen.</summary>
         public bool StrombedarfFehlt;
 
-        public Zone Hole(string name)
-        { return ZonenWerte.ContainsKey(name) ? ZonenWerte[name] : null; }
-
-        /// <summary>Summe Netzbezug über alle Zonen [MWh] (Plausibilitätsabgleich).</summary>
-        public double BezugGesamtMWh
-        {
-            get
-            {
-                double s = 0;
-                foreach (Zone z in ZonenWerte.Values) s += z.BezugMWh;
-                return s;
-            }
-        }
-
         // ------------------------------------------------------------- Aufbau
 
         /// <summary>
         /// Baut die Matrix aus den Stundenreihen. Liefert null, wenn die
         /// Bezugsreihe fehlt (dann bleibt die Flat-Preisrechnung aktiv).
+        ///
+        /// <para>Der Tarifsatz liefert allein die <b>Winterspanne</b>
+        /// (<see cref="TarifParameter.WinterVonMonat"/> bis
+        /// <see cref="TarifParameter.WinterBisMonat"/>) für Sommer- und Wintermaximum
+        /// der Lastbilder — die Bemessung des Leistungspreismodells
+        /// <c>STAFFEL</c> im Rollentarif. Eine Zone bildet er nicht mehr.</para>
         /// </summary>
         public static StromMatrix Baue(ZeitreihenSatz zeitreihen, TarifParameter tarif)
         {
@@ -160,26 +171,24 @@ namespace WindowsFormsApplication1
 
             var m = new StromMatrix();
             m.StrombedarfFehlt = bedarf == null;
-            foreach (string name in Zonen) m.ZonenWerte[name] = new Zone { Name = name };
 
-            // Referenzjahr für die Wochentage (2026 beginnt an einem Donnerstag).
+            // Referenzjahr 2026 (Standardjahr, kein Schaltjahr) für die Monatsgrenzen.
             DateTime start = new DateTime(2026, 1, 1);
             int stunden = ZeitreihenSatz.Stunden;
 
             for (int h = 0; h < stunden; h++)
             {
                 DateTime t = start.AddHours(h);
-                Zone z = m.ZonenWerte[ZonenName(t, tarif)];
                 bool winter = IstWinter(t.Month, tarif.WinterVonMonat, tarif.WinterBisMonat);
                 int monat = t.Month - 1;
 
                 double b = bezug[h] / 1000.0;                     // kWh → MWh
-                z.BezugMWh += b;
+                m.BezugGesamtMWh += b;
                 if (b * 1000.0 > m.MaxBezugKW) m.MaxBezugKW = b * 1000.0;   // kWh/h ≙ kW
                 m.LastBezug.Nimm(bezug[h], monat, winter);                  // E5
 
                 if (pvUeber != null && h < pvUeber.Length)
-                    z.EinspeisungPvMWh += pvUeber[h] / 1000.0;
+                    m.EinspeisungPvGesamtMWh += pvUeber[h] / 1000.0;
 
                 // ETAPPE E5/E7 — zwei Bedarfsgrößen aus derselben Stunde:
                 //  * der Bedarf NACH Photovoltaik begrenzt wie seit W3 den KWK-Eigenanteil
@@ -196,8 +205,8 @@ namespace WindowsFormsApplication1
                     bedarfNachPv = bedarf[h];
                     if (pvGenutzt != null && h < pvGenutzt.Length) bedarfNachPv -= pvGenutzt[h];
                     if (bedarfNachPv < 0) bedarfNachPv = 0;
-                    z.BedarfMWh += bedarfVoll / 1000.0;
-                    z.PvEigenMWh += Math.Max(0, bedarfVoll - bedarfNachPv) / 1000.0;
+                    m.BedarfGesamtMWh += bedarfVoll / 1000.0;
+                    m.PvEigenGesamtMWh += Math.Max(0, bedarfVoll - bedarfNachPv) / 1000.0;
                     m.LastBedarf.Nimm(bedarfVoll, monat, winter);
                 }
 
@@ -211,24 +220,11 @@ namespace WindowsFormsApplication1
                         // sonst wäre der KWK-Eigenanteil systematisch zu hoch.
                         eigen = Math.Min(erz, bedarfNachPv);
                     }
-                    z.KwkEigenMWh += eigen / 1000.0;
-                    z.KwkEinspeisungMWh += Math.Max(0, erz - eigen) / 1000.0;
+                    m.KwkEigenGesamtMWh += eigen / 1000.0;
+                    m.KwkEinspeisungGesamtMWh += Math.Max(0, erz - eigen) / 1000.0;
                 }
             }
             return m;
-        }
-
-        /// <summary>Zonenzuordnung einer Stunde nach dem vereinfachten Tarifmodell.</summary>
-        private static string ZonenName(DateTime t, TarifParameter tarif)
-        {
-            bool winter = IstWinter(t.Month, tarif.WinterVonMonat, tarif.WinterBisMonat);
-
-            // HT: Mo–Fr innerhalb des Fensters [HtVonStunde, HtBisStunde).
-            bool werktag = t.DayOfWeek != DayOfWeek.Saturday && t.DayOfWeek != DayOfWeek.Sunday;
-            bool ht = werktag && t.Hour >= tarif.HtVonStunde && t.Hour < tarif.HtBisStunde;
-
-            return winter ? (ht ? Z_WINTER_HT : Z_WINTER_NT)
-                          : (ht ? Z_SOMMER_HT : Z_SOMMER_NT);
         }
 
         /// <summary>Monat in der (ggf. über den Jahreswechsel laufenden) Winterspanne?</summary>
@@ -236,119 +232,6 @@ namespace WindowsFormsApplication1
         {
             if (von <= bis) return monat >= von && monat <= bis;     // z. B. 1–3
             return monat >= von || monat <= bis;                     // z. B. 10–3
-        }
-
-        // ------------------------------------------------------------- Kosten
-
-        /// <summary>Strom-Bezugskosten p. a. [€] nach Zonenpreisen + Leistungspreis-Staffel.</summary>
-        public double Bezugskosten(TarifParameter tarif)
-        {
-            double summe = 0;
-            summe += Kosten(Z_WINTER_HT, tarif.PreisBezugWinterHT);
-            summe += Kosten(Z_WINTER_NT, tarif.PreisBezugWinterNT);
-            summe += Kosten(Z_SOMMER_HT, tarif.PreisBezugSommerHT);
-            summe += Kosten(Z_SOMMER_NT, tarif.PreisBezugSommerNT);
-            summe += Leistungspreis(tarif);
-            return summe;
-        }
-
-        /// <summary>Einspeiseerlöse p. a. [€] (PV- + KWK-Einspeisung) nach Zonenpreisen.</summary>
-        public double Einspeiseerloes(TarifParameter tarif)
-        {
-            double summe = 0;
-            summe += Erloes(Z_WINTER_HT, tarif.PreisEinspWinterHT);
-            summe += Erloes(Z_WINTER_NT, tarif.PreisEinspWinterNT);
-            summe += Erloes(Z_SOMMER_HT, tarif.PreisEinspSommerHT);
-            summe += Erloes(Z_SOMMER_NT, tarif.PreisEinspSommerNT);
-            return summe;
-        }
-
-        /// <summary>
-        /// ETAPPE E7 — der Anteil des <b>PV-Überschusses</b> am Einspeiseerlös [€/a].
-        ///
-        /// <para><see cref="Einspeiseerloes"/> bewertet PV-Überschuss und KWK-Einspeisung
-        /// gemeinsam; im Bericht sind das zwei Zeilen mit zwei Rechtsgrundlagen. Diese
-        /// Methode ändert die Gesamtsumme NICHT — der Aufrufer bildet den KWK-Anteil als
-        /// Differenz <c>Einspeiseerloes − EinspeiseerloesPv</c>, damit beide Teile
-        /// zusammen ohne Rundungsrest die ausgewiesene Summe ergeben.</para>
-        /// </summary>
-        public double EinspeiseerloesPv(TarifParameter tarif)
-        {
-            double summe = 0;
-            summe += ErloesPv(Z_WINTER_HT, tarif.PreisEinspWinterHT);
-            summe += ErloesPv(Z_WINTER_NT, tarif.PreisEinspWinterNT);
-            summe += ErloesPv(Z_SOMMER_HT, tarif.PreisEinspSommerHT);
-            summe += ErloesPv(Z_SOMMER_NT, tarif.PreisEinspSommerNT);
-            return summe;
-        }
-
-        private double ErloesPv(string zone, double preisEurKWh)
-        {
-            Zone z = Hole(zone);
-            return z == null ? 0 : z.EinspeisungPvMWh * 1000.0 * preisEurKWh;
-        }
-
-        /// <summary>Zweistufige Leistungspreis-Staffel auf die Bezugsspitze [€/a].</summary>
-        public double Leistungspreis(TarifParameter tarif)
-        {
-            if (MaxBezugKW <= 0) return 0;
-            double grenze = Math.Max(0, tarif.StaffelGrenzeKW);
-            double stufe1 = Math.Min(MaxBezugKW, grenze);
-            double stufe2 = Math.Max(0, MaxBezugKW - grenze);
-            return stufe1 * tarif.StaffelPreis1EurKW + stufe2 * tarif.StaffelPreis2EurKW;
-        }
-
-        private double Kosten(string zone, double preisEurKWh)
-        {
-            Zone z = Hole(zone);
-            return z == null ? 0 : z.BezugMWh * 1000.0 * preisEurKWh;
-        }
-
-        private double Erloes(string zone, double preisEurKWh)
-        {
-            Zone z = Hole(zone);
-            return z == null ? 0 : (z.EinspeisungPvMWh + z.KwkEinspeisungMWh) * 1000.0 * preisEurKWh;
-        }
-
-        // ------------------------------------------------------------- KWK-Summen
-
-        /// <summary>KWK-Eigenstrom gesamt [MWh/a] (Basis KWKG-Eigenstromsatz).</summary>
-        public double KwkEigenGesamtMWh
-        {
-            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.KwkEigenMWh; return s; }
-        }
-
-        /// <summary>KWK-Einspeisung gesamt [MWh/a] (Basis KWKG-Einspeisesatz).</summary>
-        public double KwkEinspeisungGesamtMWh
-        {
-            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.KwkEinspeisungMWh; return s; }
-        }
-
-        /// <summary>PV-Einspeisung gesamt [MWh/a].</summary>
-        public double EinspeisungPvGesamtMWh
-        {
-            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.EinspeisungPvMWh; return s; }
-        }
-
-        /// <summary>
-        /// ETAPPE E5 — Strombedarf OHNE Anlage gesamt [MWh/a]: die Bezugsgröße der
-        /// vermiedenen Kosten, seit E7 ohne jede Eigenerzeugung (Konzept § 6.3 Nr. 32).
-        /// 0 zusammen mit <see cref="StrombedarfFehlt"/> heißt „nicht bestimmbar",
-        /// nicht „null".
-        /// </summary>
-        public double BedarfGesamtMWh
-        {
-            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.BedarfMWh; return s; }
-        }
-
-        /// <summary>
-        /// ETAPPE E7 (Konzept § 6.3 Nr. 32) — PV-Eigennutzung gesamt, soweit sie Bedarf
-        /// deckt [MWh/a]: der Beitrag der Photovoltaik zum Verteilschlüssel der
-        /// vermiedenen Kosten (<see cref="Zone.PvEigenMWh"/>).
-        /// </summary>
-        public double PvEigenGesamtMWh
-        {
-            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.PvEigenMWh; return s; }
         }
     }
 }

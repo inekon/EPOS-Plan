@@ -1,8 +1,8 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
 **Stand 23.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`befec9dc` · `SchemaStand.Zielversion` = **101**, Schemaschritte 90–101 vergeben, 102 an den
-Zapfprofilgenerator, **nächster freier Schritt 103** · Gegenstand: das konsolidierte Konzept
+`ea8e2a12` · `SchemaStand.Zielversion` = **105**, Schemaschritte 90–105 vergeben (105 = K‑1, #440),
+**nächster freier Schritt 106** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -31,10 +31,15 @@ Zeilennummern und Messungen:
 > in drei Papiere (A13) folgte mit #435. Die **Schemaschritte 97–100** sind inzwischen anderweitig
 > vergeben — § 6 ist entsprechend umgeschrieben.
 
-> **Nachtrag 23.09.2026 (#432 bis #437).** Gebaut sind inzwischen auch **E4** (#432), **E5** (#434),
-> **E6** (#436) und **E7 Teil a** (#437: Nr. 29, Nr. 30 ohne die Kern-Regel, Nr. 32); der Schnitt **A13**
-> ist mit #435 ausgeführt. **Nächste Etappen: E7b** (Q11) und **E7c** (die übrigen rechenwirksamen
-> Lücken; E7‑Q1, E7‑Q2 und E7‑Q3 sind am 23.09.2026 entschieden, Bau in E7c).
+> **Nachtrag 23.09.2026 (#432 bis #440).** Gebaut sind inzwischen auch **E4** (#432), **E5** (#434),
+> **E6** (#436), **E7 Teil a** (#437: Nr. 29, Nr. 30 ohne die Kern-Regel, Nr. 32), **E7 Teil b** (#439:
+> Q11 — kein Zeitzonentarif, Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell; E7b‑Q1 bis
+> E7b‑Q4 am 23.09.2026 entschieden) und **E7 Teil c1** (#440: K‑1 mit Schemaschritt 105, das Fristende der
+> Inbetriebnahme 2030 als Katalogdatum, die Kern-Regel und Kohärenzzeile zu Nr. 30; E7‑Q1 bis E7‑Q3
+> umgesetzt, die acht Fragen E7c1‑Q1 bis E7c1‑Q8 am 23.09.2026 entschieden); der Schnitt **A13** ist mit #435
+> ausgeführt. **Nächste Etappe: E7c2** (die übrigen rechenwirksamen Lücken). Die Schemaschritte sind am
+> 23.09.2026 neu geordnet (§ 6): 101 Gebäudesimulation, 102 Nr. 30, 103 Zapfprofilgenerator, 104 Q11,
+> 105 K‑1 (gebaut #440).
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
@@ -52,8 +57,8 @@ Zeilennummern und Messungen:
    und die Bewertung des § 51a mit dem anzulegenden Wert statt der Einspeisevergütung; dazu als neuer
    Befund eine Restreihenfolgeabhängigkeit in Kaskadenrunde 2 und als Ausweislücke die fehlende
    CO₂-Kohärenzzeile (`01/§ 6`, `02/§ 7`). — **Stand:** Kaskadenrunde 2 ist **umgesetzt #380**, die
-   CO₂-Kohärenzzeile **umgesetzt #405**; die drei rechenwirksamen Lücken bleiben offen und sind mit
-   A2, A3 und A4 entschieden (E7).
+   CO₂-Kohärenzzeile **umgesetzt #405**; von den drei rechenwirksamen Lücken ist der zweite Fall des
+   § 2 Nr. 16 (A2) **umgesetzt #440**, die beiden übrigen sind mit A3 und A4 entschieden (E7c2).
 3. **Die größte Lücke ist keine Formel, sondern die Schicht:** Die Energiekosten- und
    Wirtschaftlichkeitsrechnung des Berichts wird allein aus der Windows-Schale gerufen
    (`WindowsFormsApplication1/Allgemein/Bericht/BerichtsDatenSammler.cs`, Zeilen 180 und 421), 6 631
@@ -71,8 +76,8 @@ Zeilennummern und Messungen:
    für drei Szenarien (`04/§ 6`, `05/§ 1, § 3, § 4`).
 5. **Das Datenmodell ist gesünder als das Konzept sagt:** alle 20 Wirtschaftlichkeitstabellen sind
    `STRICT`, sechs der acht als „neu" geführten Rahmen-Szenariospalten stehen seit Schritt 71; nötig sind
-   sieben ergebnisneutrale DDL-Schritte (Schritte **A–G**, § 6; Nummern bei der Umsetzung, heute ab
-   **101**) und ein DML-Schritt für den Einheitenbruch, der
+   sieben ergebnisneutrale DDL-Schritte (Schritte **A–G**, § 6; Nummern bei der Umsetzung — A (K‑1)
+   ist 105, gebaut #440, die übrigen ab **106**) und ein DML-Schritt für den Einheitenbruch, der
    entgegen dem Konzept nie gelaufen ist (Schritt 62 löscht Klimawaisen). Nur der Anschluss der
    Speicherflotte berührt die Einfrierregel der Referenzbasis. Der zweite Migrationsmechanismus im
    `WirtschaftlichkeitCtrl` legt fünf Tabellen ohne `STRICT` und ohne Fremdschlüssel an — gegen ADR‑001,
@@ -439,10 +444,10 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E4 Erlösrubrik und Steuerzeilen** | U7 (zwei Beträge, zwei Zeilen, Umschlagfassung), 9d (Gründe je Position), dann U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit", Näherung ausgewiesen) | M + L | keine (Summen unverändert) | Anker; `ErloesrubrikTests`; Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a | — | Wirtschaftlichkeit `block-a`, `energiekosten-je-anlage`; U6 wesentlich | Opus | Q15, A12; E1 — **Q15 entschieden 22.09.2026: U6 ja, der Leistungsanteil der vermiedenen Stromkosten bleibt projektweit; Q11 „kein HT/NT" (22.09.2026) ist **nicht** Teil von E4: Die Rückführung der Strommatrix auf eine Zone ohne HT/NT ändert die Bezugskosten und damit den Rechenweg (Messung `Messung_Pflegewege_Tarifstruktur_Strom.md`, Nach #291 Weg 3) — sie gehört mit A/B-Nachweis und gegebenenfalls neuer Referenzbasis zu E7. Beauftragt 22.09.2026 („E4 starten mit Q15 ja")** — **umgesetzt #432** (Merge `1190622c`; Zweig `e4`: `1a4ec24d`, `ee3efacc`, `74aa192d`, `f9fe94a1`, `468ce047`; 10 451 Tests, Referenzlauf 13/13 mit 357 byte-gleichen CSV; Anwenderfragen U6‑Q1 bis Q3 und U7‑Q1/Q2 in Nach #432; U6‑Q1 als Konzept § 6.3 Nr. 32 zu E7) |
 | **E5 Ergebnisansicht und V‑A** — **umgesetzt #434** | U2 Umschalter, U10 Hinweistext (A14), U4 Bandbreite, U5 Empfehlungskarten, Kennzahl-Reihenfolge, Strich/Null (Q16), V‑A (Deklarationen, IZF-Warnung, Steigung, „nachrichtlich"), Hinweiszeile „k von n ohne Dauer" über den Kern (N1) | L | keine | bunit, Kern-Tests, Berichtsprobe, Sichtprüfung | — | Wirtschaftlichkeit, neue Anker; wesentlich | Opus | E3 (sonst nur Windows), Q8/Q9/Q13 für neue Rahmen — **umgesetzt #434** (Merge `deba5e57`; Zweig `e5`: neun Commits `e8ebef76` … `7724ffda` samt zwei Zusammenführungen des Arbeitszweigs; dazu U44 „Bericht erzeugen" und die Kennzeichnung Nr. 31; 10 624 Tests, Referenzlauf 13/13 mit 357 byte-gleichen CSV; vier offene Fragen in Nach #434) |
 | **E6 Verlauf mit drei Szenarien** — **umgesetzt #436** | dritte Strichart (Aufzählung, Vorgabe byte-gleich), `VerlaufsReihen` Farbe = Variante / Strichart = Szenario, Dreierlauf, Legende und Bildmaß, Hülle nach `EPOS.UI.Daten`, Knopf „Verlauf…" entfällt (mit E5 bewusst stehen geblieben), Spaltengruppen je Szenario im Tabellenbericht, zweites Bild im Wortbericht; aus E5 nach Empfehlung zu Frage (4) in Nach #434: das Spannen-Balkenbild unter „Wie sicher ist das?" | M–L | keine | **ChartProben** (Bild und Gegenprobe), Berichtsprobe, bunit | — | Wirtschaftlichkeit `verlauf` neu; wesentlich | Opus | E5 (Umschalter), E1 (Wache) — **umgesetzt #436** (Merge `57b15a7c`; Zweig `e6`: siebzehn Commits `ef84a3ec` … `fa80786a` samt den Zusammenführungen `67e56293` und `c54188c2`; dazu die Nachträge E5b‑2 und E5b‑3; im Wortbericht ersetzt das Dreierbild das Differenzbild „Erwartet", das Bild je Version bleibt; 10 758 Tests, Referenzlauf 13/13 gegen R11 mit 357 byte-gleichen CSV; zwei offene Fragen E6‑Q1/E6‑Q2 in Nach #436) |
-| **E7 Rechenwirksame Lücken** — **Teil a umgesetzt #437** | K‑1 (Schritt **A**, Dialogfeld Gruppe 1b, Schreibweg), S‑2 (A3), V‑2/V‑1 (A4), Ersatz/Restwert-Kennzeichen (Schritt **E**), Preisbasis-Spalte (Schritt **F**), U‑1 (Schritt **G**), B‑4 Rest, B‑6, Hi/Ho-Leser (R11, entschieden 22.09.2026: Brennwert), Förderende (A20), **Q11 (22.09.2026): Zeitzonentarif HT/NT streichen (Weg 3 aus Nach #291, A/B-Nachweis, gegebenenfalls neue Basis) und die Leistungspreis-Staffel in die Kostenverwaltung neben die Energiepreisstruktur verlegen (Weg 2), danach Tarifstrukturdialog und Menüpunkt abkündigen**; U6‑Q1 aus E4 (entschieden 22.09.2026 nach Empfehlung: vermiedene Bezugsmenge ohne jede Eigenerzeugung, § 9b-Korrektur auf beide Anlagen, KWK-Split unverändert, Anker 316.159,6 €/a; Konzept § 6.3 Nr. 32) | L | **ja**, je Punkt mit A/B | Anker als Vorher/Nachher, Referenzlauf byte-gleich (Simulation unberührt), neue Testklassen aus E1 | 101 (Nr. 30, gebaut #437); A = 104, E, F, G (Nummern ab 104) | Wirtschaftlichkeit `kwk-abwaermeabfuhr` neu; Kosten `ersatz-restwert` | Opus | A2, A3, A4, A6, A9; E1 — **Teil a umgesetzt #437** (Merge `befec9dc`; Zweig `e7`: neun Commits `57ba5097` … `ff8a17f9` — Nr. 29 CO₂-Grenzwert brennwertbezogen, Nr. 30 Schemaschritt 101 und „(bitte wählen)" ohne die Kern-Regel, Nr. 32 vermiedene Menge ohne jede Eigenerzeugung mit beiden Schlüsseln brutto, dazu die Messung nach A2 für K‑1; 10 778 Tests, Referenzlauf 13/13 gegen R11 mit 357 byte-gleichen CSV, die dreizehn Basisprojekte wirtschaftlich unverändert; drei Fragen E7‑Q1 bis E7‑Q3 in Nach #437, alle am 23.09.2026 entschieden (E7‑Q1, E7‑Q3 Lesart b; E7‑Q2 mit Auflage zu σ). Offen: **Teil b** — Q11 (HT/NT streichen, Leistungspreis-Staffel in die Kostenverwaltung, Tarifstrukturdialog abkündigen); **Teil c** — K‑1 (Schritt A = 104, E7‑Q2 entschieden 23.09.2026), Nr. 30 Kern-Regel (E7‑Q1 entschieden, Lesart b), A20 (E7‑Q3 entschieden, Lesart b), S‑2, V‑2/V‑1, die Schritte E, F, G, B‑4 Rest, B‑6, Kapitalwert 1024 |
+| **E7 Rechenwirksame Lücken** — **Teil a umgesetzt #437, Teil b umgesetzt #439, Teil c1 umgesetzt #440** | K‑1 (Schritt **A**, Dialogfeld Gruppe 1b, Schreibweg), S‑2 (A3), V‑2/V‑1 (A4), Ersatz/Restwert-Kennzeichen (Schritt **E**), Preisbasis-Spalte (Schritt **F**), U‑1 (Schritt **G**), B‑4 Rest, B‑6, Hi/Ho-Leser (R11, entschieden 22.09.2026: Brennwert), Förderende (A20), **Q11 (22.09.2026): Zeitzonentarif HT/NT streichen (Weg 3 aus Nach #291, A/B-Nachweis, gegebenenfalls neue Basis) und die Leistungspreis-Staffel in die Kostenverwaltung neben die Energiepreisstruktur verlegen (Weg 2), danach Tarifstrukturdialog und Menüpunkt abkündigen**; U6‑Q1 aus E4 (entschieden 22.09.2026 nach Empfehlung: vermiedene Bezugsmenge ohne jede Eigenerzeugung, § 9b-Korrektur auf beide Anlagen, KWK-Split unverändert, Anker 316.159,6 €/a; Konzept § 6.3 Nr. 32) | L | **ja**, je Punkt mit A/B | Anker als Vorher/Nachher, Referenzlauf byte-gleich (Simulation unberührt), neue Testklassen aus E1 | 102 (Nr. 30, gebaut #437; bis #438 als 101 geführt), 104 (Q11, gebaut #439), A = 105 (K‑1, gebaut #440); E, F, G (Nummern ab 106) | Wirtschaftlichkeit `kwk-abwaermeabfuhr` neu; Kosten `ersatz-restwert` | Opus | A2, A3, A4, A6, A9; E1 — **Teil a umgesetzt #437** (Merge `befec9dc`; Zweig `e7`: neun Commits `57ba5097` … `ff8a17f9` — Nr. 29 CO₂-Grenzwert brennwertbezogen, Nr. 30 Schemaschritt 102 (bis #438 als 101 geführt) und „(bitte wählen)" ohne die Kern-Regel, Nr. 32 vermiedene Menge ohne jede Eigenerzeugung mit beiden Schlüsseln brutto, dazu die Messung nach A2 für K‑1; 10 778 Tests, Referenzlauf 13/13 gegen R11 mit 357 byte-gleichen CSV, die dreizehn Basisprojekte wirtschaftlich unverändert; drei Fragen E7‑Q1 bis E7‑Q3 in Nach #437, alle am 23.09.2026 entschieden (E7‑Q1, E7‑Q3 Lesart b; E7‑Q2 mit Auflage zu σ). **Teil b umgesetzt #439** (Merge `954d4dcc`; Zweig `e7b`: E7b/1 bis E7b/11, `1b3797a3` … `bfbfbbb9`, mit den Zusammenführungen `a9be7581` und `d93488ef` — Q11: Strommatrix ohne Tarifzonen mit einer Jahreszeile je Projekt, Schemaschritt 104 übernimmt die Staffel an den Stromträger, löscht die Zonensätze und verwirft ihre gespeicherten Läufe, die zweistufige Leistungspreis-Staffel in der Kostenverwaltung an der Viertelstundenspitze, der Tarifstrukturdialog nur noch im Rollenmodell, der Einstieg „Strombezug…" entfällt, einen Menüpunkt gab es nicht; Gate 10 996 Tests, Referenzlauf 13/13 gegen R11 byte-gleich, die dreizehn Basisprojekte unverändert; vier Fragen E7b‑Q1 bis E7b‑Q4 in Nach #439, alle am 23.09.2026 entschieden). **Teil c1 umgesetzt #440** (Merge `ea8e2a12`; Zweig `e7c1`: E7c1/1 bis E7c1/9, `e531f0bf` … `ccf9f22f`, mit den Zusammenführungen `91dd77ba` und `c3bf4882` — K‑1 mit Schemaschritt 105: Fall 2 `min(Netto, Nutzwärme × σ)` auf Regel- und Ersatzweg, σ gepflegt oder P_el ÷ P_th, Kürzung zuerst an der Einspeisung, die Überlagerung „Sätze und Herkunft" mit den zwei Feldern statt des Dialogfelds in Gruppe 1b (E7‑Q2 (5)); A20: das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum (Generation 8) statt `KWKG_REALISIERUNG_JAHRE`; Nr. 30: die Kohärenzzeile „Anlagenart fehlt" nur bei abzuleitendem Kontingent und die Anlagenart der 1030-BHKW in der Testdatenbank; Gate 11 058 Tests, Referenzlauf 13/13 gegen R11 byte-gleich, die dreizehn Basisprojekte unverändert; acht Fragen E7c1‑Q1 bis E7c1‑Q8 in Nach #440, alle am 23.09.2026 entschieden). Offen: **Teil c2** — S‑2, V‑2/V‑1, die Schritte E, F, G, B‑4 Rest, B‑6, Kapitalwert 1024, der Rest der Überlagerung (U22) samt KI-Feldkatalog und Berichtsspalten zu Fall 2 (E7c1‑Q7), Vollbenutzungsstunden aus dem KWK-Strom (E7c1‑Q2 b) und der Rundungshinweis der Herleitung (E7c1‑Q1) |
 | **E8 V‑C und V‑D** | fünf ValERI-Blöcke hinter dem Umschalter (die Blöcke 1, 3, 4 und 5 mit E5 vorgezogen, offen Block 2); Formelbericht Stufe 0 (Parameterblock), 1 (Mehrjahrestabelle), 2 (NBW/RMZ/IKV über Differenzreihe), 3 (Betriebskostenblock); Anhang-E-Checkliste (U43); Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`; aus E5 nach Empfehlung zu Frage (4) in Nach #434: Nominalsummen, Differenzspalte und Brückenbild der Gliederung, Tafel „Was daraus im Lauf wird", Fußzeile „Drei Szenarien gerechnet…" | L | keine (Werte bleiben gleich) | Blattstruktur-Wache vorher/nachher, Kern-Fall mit Normsollwerten | — | Wirtschaftlichkeit `bericht`, je Stufe ein Logbuch-Satz | Opus; Fable für die Stufenauslegung und die ClosedXML-Fragen | E1, E5; ClosedXML-Fragen aus `05/§ 3.3` geklärt |
-| **E9 V‑E Szenarioabdeckung** | Schritte **B–D** (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt; **ohne Degradation** (A5) | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | B, C, D (Nummern ab 101) | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 entschieden; E5, E7 |
-| **E10 Nutzungsdauer S3 und Speicherflotte** | Instandsetzung/Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge; Speicherflotte an `Tab_Nutzungsdauer` mit **Neueinfrieren der Basis**; geräteeigene Spalten kennzeichnen (A8) | M + M | **ja** | A/B, neue Referenzbasis mit Begründung in `Referenzlaeufe/LIESMICH.md` | (104 optional) | Kosten `nutzungsdauern` | Opus | ND‑S3-Entscheid, A7 |
+| **E9 V‑E Szenarioabdeckung** | Schritte **B–D** (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt; **ohne Degradation** (A5) | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | B, C, D (Nummern ab 106) | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 entschieden; E5, E7 |
+| **E10 Nutzungsdauer S3 und Speicherflotte** | Instandsetzung/Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge; Speicherflotte an `Tab_Nutzungsdauer` mit **Neueinfrieren der Basis**; geräteeigene Spalten kennzeichnen (A8) | M + M | **ja** | A/B, neue Referenzbasis mit Begründung in `Referenzlaeufe/LIESMICH.md` | (H optional) | Kosten `nutzungsdauern` | Opus | ND‑S3-Entscheid, A7 |
 | **E11 Zahlenprobe A8/B9** — **entfällt** (Anwenderentscheid 22.09.2026: „BHKW-Plan-Mappen: nicht relevant") | ~~Referenzmappe festlegen (A17), Generation und Zelltafel einfrieren, Eingabespiegel, Neutralschaltung, fünf Teilproben (Annuität, Brennstoff, § 53, KWKG, Kapitalwert), erwartete Abweichungen vorab benennen (Grundlagen § 5)~~ — Nachweis der Wirtschaftlichkeitsgrößen über die Anker aus E1 und die A/B-Nachweise von E7, E9, E10 | — | keine | — | — | — | — | entfällt |
 | **E12 Wiki-Runden** | Sammel-Upload 28.09.2026: die 14+1 Sätze der Mockup-Prüfung, die fünf Lücken, U17/U23/U36, `help_mapping` (Tarifstruktur, BHKW, PV, acht Anker), Höfingen neutralisiert (A16), Hilfesystem 13.2 ergänzt; danach je Etappe die Sätze aus `06/§ 3` | S je Runde | — | Tabuwort-Regex, Produktdaten-Wache | — | — | Sonnet | A16, A18 |
 
@@ -486,10 +491,11 @@ sieben Commits):
 | (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog` | **umgesetzt #431** — BHKW-Tarif, Strombezug und PV-Tarif öffnen die Tarifstruktur als Überlagerung; **Abweichung:** die `MessageBox` war bereits mit Schritt 6 ersatzlos entfallen, keine Ablösung durch `Dienste.Dialog` |
 | (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern | **umgesetzt #431** — liefert jetzt alle vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht); **Abweichung:** zusätzlich `UebersichtSeiteGaben`, `BerichteKostenHuelle` und `BerichtSeiteGaben` → `EPOS.UI.Daten/Bericht/`; Whitelist jetzt 21 Schlüssel (`KOSTENVERWALTUNG`, `NUTZUNGSDAUER_VERWALTUNG`, `GESETZESKATALOG`), Umfang wie mit **A19** entschieden |
 
-**E4 — umgesetzt #432, E5 — umgesetzt #434, E6 — umgesetzt #436, E7 Teil a — umgesetzt #437**
-(Einzelheiten in der Tafel oben, in den Statuszeilen und ihren Protokollen); der **A13-Schnitt** ist mit
-#435 ausgeführt. **Nächste Etappen:** **E7b** (Q11) und **E7c** (die übrigen rechenwirksamen Lücken, nach
-den Entscheiden vom 23.09.2026 zu E7‑Q1, E7‑Q2 und E7‑Q3). **E7b bis E12** bleiben offen, E11 entfällt.
+**E4 — umgesetzt #432, E5 — umgesetzt #434, E6 — umgesetzt #436, E7 Teil a — umgesetzt #437, E7 Teil b —
+umgesetzt #439, E7 Teil c1 — umgesetzt #440** (Einzelheiten in der Tafel oben, in den Statuszeilen und ihren
+Protokollen); der **A13-Schnitt** ist mit #435 ausgeführt. **Nächste Etappe:** **E7c2** (die übrigen
+rechenwirksamen Lücken und der Rest der Überlagerung „Sätze und Herkunft"; die acht Fragen aus E7c1 stehen
+beim Anwender). **E7c2 bis E12** bleiben offen, E11 entfällt.
 **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
 zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
 wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.
@@ -508,22 +514,26 @@ Schritt 8 begründet und läuft nur nach Rückfrage.
 Schritt; inzwischen sind **97–100 anderweitig vergeben** — 97 Szenario und Bezugsjahr der Klimaregion
 (`Schritt97_KlimaSzenario`, KL‑6, #382), 98 BHKW-Gesamtwirkungsgrad als Faktor (reines DML, BW‑1,
 #383), 99 die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1) und 100 die
-Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426). **101** trägt E7 Teil a — die leere `KWKG_Anlagenart`
-wird NULL (Konzept § 6.3 Nr. 30, #437), nicht K‑1 —, **102** führt die Sitzung des Zapfprofilgenerators
-für ihre Tabellen (Zweig `z0`, noch nicht zusammengeführt). `SchemaStand.Zielversion` steht auf **101**,
-der **nächste freie Schritt ist 103** — ihn bekommt K‑1 (Schritt **A**).
+Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426). Am 23.09.2026 sind die folgenden Nummern neu geordnet
+worden (#438): **101** trägt die Gebäudespalten der Gebäudesimulation (`SCHRITT_101_GEBAEUDESPALTEN`),
+**102** E7 Teil a — die leere `KWKG_Anlagenart` wird NULL (Konzept § 6.3 Nr. 30, #437; bis #438 als 101
+geführt) —, **103** Katalog, Zonen und Projekt des Zapfprofilgenerators (Z0, #438), **104** E7 Teil b — der
+Zeitzonentarif wird abgelöst, die Leistungspreis-Staffel zieht an den Stromträger (Q11, #439) —, **105**
+E7 Teil c1 — Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl je Anlage (K‑1, Schritt **A**,
+#440). `SchemaStand.Zielversion` steht auf **105**; der **nächste freie Schritt ist 106**.
 
 Damit keine Nummer zweimal vergeben wird, führt dieses Papier die geplanten Schritte fortan mit
 **Buchstaben**. Jeder bekommt seine Nummer **bei der Umsetzung**, aus dem dann freien Bereich (heute ab
-103), und der Umsetzende misst sie an `SchemaStand.Zielversion` neu — nicht an diesem Papier. Alle
+106), und der Umsetzende misst sie an `SchemaStand.Zielversion` neu — nicht an diesem Papier. Alle
 Schritte außer **G** sind reines DDL ohne DML, ergebnisneutral bis zur ersten Pflege; Testdatenbank
 über `Werkzeuge/Testdatenbankschema`, Auslieferungsvorlage und Erstbereitstellung ohne
 Sonderbehandlung.
 
 | Schritt | vormals | Inhalt | Tabelle | Doppelpflicht `SpalteSicher` | Einfrierregel | Etappe |
 |---|---|---|---|---|---|---|
-| **101** | — | Nr. 30: leere `KWKG_Anlagenart` → NULL (`SCHRITT_101_KWKG_ANLAGENART_LEER`) — **reines DML**, sieben Zellen der Testdatenbank, kein BHKW | `Tab_Energieanlagen` | nein | nein | E7 Teil a, **gebaut #437** |
-| **A** | 97 | K‑1: `KWKG_Abwaermeabfuhr` (0/1, CHECK), `KWKG_Stromkennzahl` (nullbar) | `Tab_Energieanlagen` | nein | nein | E7c — entschieden 23.09.2026, Nummer **104** (103 an E7b) |
+| **102** | — | Nr. 30: leere `KWKG_Anlagenart` → NULL (`SCHRITT_102_KWKG_ANLAGENART_LEER`; bis #438 als 101 geführt) — **reines DML**, sieben Zellen der Testdatenbank, kein BHKW | `Tab_Energieanlagen` | nein | nein | E7 Teil a, **gebaut #437** |
+| **104** | — | Q11: `Leistungspreis_Staffelgrenze`, `Leistungspreis_Staffel1`, `Leistungspreis_Staffel2` (DOUBLE) — dazu DML in einer Transaktion: die Staffel der Zonensätze an den Stromträger, die Zonensätze gelöscht, ihre gespeicherten Läufe verworfen, die Zonenzeilen der Strommatrix je Projekt eine Jahreszeile (`SCHRITT_104_ZEITZONENTARIF_ABLOESUNG`) | `energy_project_settings`, `Tab_ProjektTarif`, `Tab_ErgebnisWirtschaftlichkeit`, `Tab_ErgebnisWirtSensitivitaet`, `Tab_ErgebnisStromMatrix` | nein | nein | E7 Teil b, **gebaut #439** |
+| **105** (A) | 97 | K‑1: `KWKG_Abwaermeabfuhr` (INTEGER 0/1, CHECK, Vorgabe 0), `KWKG_Stromkennzahl` (REAL, nullbar) — **reines DDL** (`SCHRITT_105_KWKG_ABWAERMEABFUHR`), ergebnisneutral | `Tab_Energieanlagen` | nein; die Vorsorge in `StelleTabellenSicher` trägt sie dennoch | nein | E7 Teil c1, **gebaut #440** |
 | **B** | 98 | Szenariorahmen: `Szen_Best/Worst_Zeitraum`, `Szen_Best/Worst_Menge` (nicht `_Dauer`) | `Tab_ProjektWirtschaftlichkeit` | **ja** | nein | E9 |
 | **C** | 99 | Trägerpreise best/worst: `custom_price_work/base/power_best/_worst` | `energy_project_settings` | nein | nein | E9 |
 | **D** | 100 | Erlössätze best/worst: `Einspeiseverguetung(_KWK)_Best/_Worst`; `DvEntgelt_Best/_Worst`, `PpaPreis_Best/_Worst` | `Tab_ProjektWirtschaftlichkeit`, `Tab_ProjektPhotovoltaik` | **ja** (PPV) | nein | E9 |

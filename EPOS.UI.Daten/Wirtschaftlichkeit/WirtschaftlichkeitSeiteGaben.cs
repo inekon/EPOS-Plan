@@ -205,7 +205,6 @@ namespace WindowsFormsApplication1
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
                 ["PhotovoltaikText"] = T("PVW_KNOPF", "Photovoltaik…"),
                 ["BhkwText"] = T("BHW_KNOPF", "BHKW-Wirtschaftlichkeit…"),
-                ["StrombezugText"] = T("WIRT_BTN_STROM_TARIF", "Strombezug…"),
 
                 // E3/7: die Titel der Tarif-Ueberlagerung, wenn sie als ZIEL
                 // eines Sprungs aufgeht. Sie kommen aus demselben Textbuendel,
@@ -401,18 +400,9 @@ namespace WindowsFormsApplication1
             WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
             try { flags = _ctrl.ErzeugerDerGruppe(_idStamm); }
             catch { }
-            bool tarifAktiv = false;
-            try { tarifAktiv = _ctrl.LadeTarif(_idStamm).Aktiv; }
-            catch { }
 
             stand.MitPhotovoltaik = flags != null && flags.Photovoltaik;
             stand.MitBhkw = flags != null && flags.Bhkw;
-
-            // Der Einstieg "Strombezug..." haengt allein am TARIFSATZ des Projekts:
-            // Er pflegt die Sicht "Strombezug" von Tab_ProjektTarif, und die wirkt
-            // nur, solange der Satz aktiv ist (ohne ihn gelten die Flat-Preise der
-            // Kostenmaske). Die Erzeugerlage der Gruppe entscheidet nicht mit.
-            stand.MitStrombezug = tarifAktiv;
 
             // ETAPPE W5-B-11 (Anwenderentscheid 09.09.2026): die zwei VALERI-Ausweise
             // des Nachweisblocks. Sie haengen am Projekt, nicht an der Wahl - deshalb
@@ -706,17 +696,19 @@ namespace WindowsFormsApplication1
         /// <b>Braucht der Lauf dieser Gruppe Stundenreihen?</b> — die EINE Herleitung für
         /// den Rechenlauf und für den Ausweis in der Parameterzeile (VF-1).
         ///
-        /// <para>W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen; dann wird je
+        /// <para>W3: Rollentarif und KWKG-Split brauchen Stundenreihen; dann wird je
         /// Projekt frisch in-memory simuliert. SP-W1: derselbe Grund für den
-        /// Leistungspreis des Stromträgers — seine Basis ist die Bezugsspitze aus der
-        /// Viertelstundenreihe, und die gibt es nur aus dem frischen Lauf. LS-E-2: Der
+        /// Leistungspreis des Stromträgers samt Staffel — seine Basis ist die
+        /// Bezugsspitze aus der Viertelstundenreihe, und die gibt es nur aus dem
+        /// frischen Lauf. LS-E-2: Der
         /// Leistungspreis zählt für die GANZE Gruppe, nicht nur für den Stamm — sonst
         /// fiele er einer Variante still weg, die ihn als Einzige führt.</para>
         /// </summary>
         private bool MitZeitreihen(WirtschaftlichkeitParameter p, TarifParameter tarif)
         {
-            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle.
-            return tarif.Aktiv || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
+            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle; Q11 (E7b):
+            // nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+            return tarif.Wirksam || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
                    KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, _gruppe);
         }
 
@@ -1463,12 +1455,9 @@ namespace WindowsFormsApplication1
                         string titel;
                         return BhkwWirtschaftlichkeitHuelle.Gaben(_idStamm, _ergebnisse, out titel);
 
-                    // E3/7: Dieselbe Huelle, drei Sichten - der Knopf
-                    // "Strombezug..." und die zwei Sprungziele aus dem BHKW-
-                    // und dem PV-Dialog. Die Ueberlagerung ist EINE.
-                    case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
-                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
-
+                    // E3/7: Dieselbe Huelle, zwei Sichten - die Sprungziele aus
+                    // dem BHKW- und dem PV-Dialog. Die Ueberlagerung ist EINE.
+                    // Die Sicht "Strombezug" mit eigenem Knopf ist mit Q11 entfallen.
                     case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
                         return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Bhkw);
 
@@ -1505,9 +1494,8 @@ namespace WindowsFormsApplication1
                 case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
                     return T("BHW_MELD_GESPEICHERT",
                              "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen.");
-                // E3/7: Dieselbe Meldung fuer alle drei Sichten - gespeichert
+                // E3/7: Dieselbe Meldung fuer beide Sichten - gespeichert
                 // wurde dieselbe Tarifstruktur, egal auf welchem Weg sie aufging.
-                case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
                 case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
                 case WirtschaftlichkeitSeite.Unterdialog.TarifPv:
                     return T("WIRT_MELD_TARIF", "Tarifstruktur gespeichert — bitte neu berechnen.");

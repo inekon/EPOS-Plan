@@ -503,8 +503,7 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Anzeige folgt der Rechnung</b> (ADR-006): Ein Gebäude ohne Angabe steht auf dem
-    /// Weg, den die Weiche für NULL nimmt — bis zur Schlusswelle G1 + G2 die Tagesbilanz,
-    /// danach VDI 6007 —, und die Herleitungszeile sagt, dass die Vorgabe gilt.
+    /// Weg, den die Weiche für NULL nimmt — VDI 6007 —, und die Herleitungszeile sagt, dass die Vorgabe gilt.
     /// </summary>
     [Fact]
     public void Ohne_Angabe_zeigt_der_Schalter_den_Weg_der_Vorgabe()

@@ -203,8 +203,12 @@ public static class BhkwWahlen
 /// <summary>
 /// Wohin der Anwender aus dem Dialog springen wollte.
 ///
-/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Beide Ziele sind
-/// Sichten desselben Tarifdialogs. Zu Etappe B5b war das eine WinForms-Maske
+/// <para><b>Ein Ziel.</b> Der zweite Sprung „Strombezug…" in die Einkaufsseite der
+/// Tarifstruktur ist mit Q11 entfallen: Den Zeitzonentarif gibt es nicht mehr, und
+/// die Leistungspreis-Staffel pflegt der Stromträger in der Kostenverwaltung.</para>
+///
+/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Das Ziel ist eine
+/// Sicht des Tarifdialogs. Zu Etappe B5b war das eine WinForms-Maske
 /// (<c>Form_Tarifstruktur</c>), fuer die es kein Muster gab, sie aus einem
 /// Blazor-Dialog heraus zu oeffnen; seit iU9-W2.2 gibt es dafuer die
 /// <c>Sprungbruecke</c> — der Tarifdialog ist mit iU9-W2.3 aber SELBST eine
@@ -220,10 +224,7 @@ public enum BhkwSprung
     Keiner,
 
     /// <summary>BHKW-Sicht der Tarifstruktur (<c>TarifSicht.Bhkw</c>).</summary>
-    BhkwTarif,
-
-    /// <summary>Einkaufsseite der Tarifstruktur (<c>TarifSicht.Strombezug</c>).</summary>
-    Strombezug
+    BhkwTarif
 }
 
 /// <summary>
@@ -237,8 +238,9 @@ public enum BhkwSprung
 public sealed record BhkwWirtschaftlichkeitErgebnis(bool Gespeichert, BhkwSprung Sprung);
 
 /// <summary>
-/// Der ARBEITSSTAND einer Anlagenzeile — genau die elf Felder, die der Dialog
-/// pflegt (K7).
+/// Der ARBEITSSTAND einer Anlagenzeile — genau die Felder, die der Dialog pflegt:
+/// die elf aus K7 und der Kostenanteil (BK1), dazu seit Etappe E7c Kennzeichen und
+/// Stromkennzahl aus der Überlagerung „Sätze und Herkunft".
 ///
 /// <para><b>Warum es ihn gibt.</b> Der Dialog traegt OK und Abbrechen; wer
 /// Abbrechen anbietet, darf vorher nichts geschrieben haben. Die Eingaben
@@ -292,6 +294,15 @@ public sealed class BhkwAnlagenstand
     /// <summary>Hilfsenergieanteil [%] (1.17); 0 = keine Hilfsenergie (BF4).</summary>
     public double? HilfsenergieAnteil;
 
+    /// <summary>ETAPPE E7c (Befund K‑1, Entscheid E7‑Q2) — Kennzeichen „Vorrichtung zur
+    /// Abwärmeabfuhr": true = KWK-Strom nach Fall 2 des § 2 Nr. 16 KWKG. Gepflegt in der
+    /// Überlagerung „Sätze und Herkunft".</summary>
+    public bool Abwaermeabfuhr;
+
+    /// <summary>ETAPPE E7c — die eigene Stromkennzahl σ; <c>null</c> = keine, dann gilt
+    /// P_el ÷ P_th der Gerätezeile (Vorschlag aus <c>KwkStromRechner</c>).</summary>
+    public double? Stromkennzahl;
+
     /// <summary>Der Stand, wie die Zeile geladen wurde.</summary>
     public static BhkwAnlagenstand Aus(KwkgAnlagenAngabe a) => new BhkwAnlagenstand
     {
@@ -306,7 +317,9 @@ public sealed class BhkwAnlagenstand
         Kostenanteil = a.Kostenanteil,
         EnergiesteuerWahl = a.EnergiesteuerWahl ?? "",
         AufteilungMethode = a.AufteilungMethode ?? "",
-        HilfsenergieAnteil = a.HilfsenergieAnteil
+        HilfsenergieAnteil = a.HilfsenergieAnteil,
+        Abwaermeabfuhr = a.Abwaermeabfuhr,
+        Stromkennzahl = a.Stromkennzahl
     };
 
     /// <summary>
@@ -314,7 +327,7 @@ public sealed class BhkwAnlagenstand
     /// der Arbeitsstand führt? Dann hat der Anwender an dieser Zeile nichts
     /// geändert, und ein Schreiben wäre folgenlos — schlimmer: In einer
     /// Mehrbenutzerlage überschriebe es die Änderung eines anderen mit dem
-    /// eigenen geladenen Stand. Die Sprungknöpfe fragen deshalb hier, statt
+    /// eigenen geladenen Stand. Der Sprungknopf fragt deshalb hier, statt
     /// sich auf ein Merkflag zu verlassen: Ein Flag kippt schon bei einem
     /// Fokuswechsel oder einem Neuzeichnen, ein Wertvergleich nicht.
     /// </summary>
@@ -330,11 +343,15 @@ public sealed class BhkwAnlagenstand
         && Kostenanteil == a.Kostenanteil
         && EnergiesteuerWahl == (a.EnergiesteuerWahl ?? "")
         && AufteilungMethode == (a.AufteilungMethode ?? "")
-        && HilfsenergieAnteil == a.HilfsenergieAnteil;
+        && HilfsenergieAnteil == a.HilfsenergieAnteil
+        && Abwaermeabfuhr == a.Abwaermeabfuhr
+        && Stromkennzahl == a.Stromkennzahl;
 
     /// <summary>Den Stand auf die geladene Zeile legen — NUR im OK-Weg.</summary>
     public void Anwenden(KwkgAnlagenAngabe a)
     {
+        a.Abwaermeabfuhr = Abwaermeabfuhr;
+        a.Stromkennzahl = Stromkennzahl;
         a.Stichtag = Stichtag;
         a.Inbetriebnahme = Inbetriebnahme;
         a.Anlagenart = Anlagenart;

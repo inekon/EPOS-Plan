@@ -102,14 +102,19 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 
 - **Eine LISTE steht in einem festen Rahmen mit Rollbalken:** `.epos-raster-huelle` trägt
   `max-height: var(--epos-listenhoehe)`, `overflow: auto` und einen stehenden Spaltenkopf — eine
-  Höchsthöhe, Rückweg `Begrenzt="false"`.
+  Höchsthöhe, Rückweg `Begrenzt="false"`; im `Katalograhmen` (siehe unten) fällt die Höchsthöhe.
 - **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`:** Projektliste oben mit Höhengrenze,
   darunter die Übernahmeleiste (je ein Zeichen ▲/▼ als `aria-hidden`-Element, nie im
   Ressourcentext), darunter die Katalogliste über die ganze Breite; Filter darüber, Detailblöcke
   darunter.
 - **Ein KATALOGDIALOG nutzt die Höhe:** Wurzel `epos-katalog-dialog`, Baustein `Katalograhmen`
-  mit `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander gehören); nur hier fällt
-  `--epos-listenhoehe`, Umbruch bei **900 CSS-Pixeln**.
+  mit `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander gehören), Umbruch bei
+  **900 CSS-Pixeln**. Die Liste hat keine Maximalhöhe mehr und nimmt die verbleibende Höhe des
+  Rahmens, nur ihre Hülle rollt; der Eingabeblock ist höchstens 34 % des Rahmens hoch, so hoch wie
+  sein Inhalt, und rollt eigenständig, oben durch eine Linie abgesetzt. Spalten blenden nach Rang
+  aus (`Katalogspaltenrang`, Baustein `Spaltenraenge`); eine Spalte mit gesetztem Filter oder
+  Sortierung weicht nie. Verwaltungen ohne Spaltenprofil (Gebäude, Gebäudetypen,
+  Lastspitzenkappung) stehen außerhalb dieser Regel.
 - **Ein PARAMETERBLOCK steht im `Formularraster`:** Beschriftung neben dem Feld, und ein Feld
   sagt **selbst**, wie lang es ist (`epos-feld--kurz` an Zahlenfeldern, `epos-feld--breit` am
   mehrzeiligen Textfeld; ein `Datumsfeld` nie kurz).

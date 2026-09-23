@@ -58,9 +58,11 @@ namespace WindowsFormsApplication1
     /// Leistungspreis Tarifstruktur/Energieträger Strom (Übernahme in die Maske als
     /// Auswahl)". Die Übernahme ist deshalb ein ANGEBOT und keine automatische
     /// Vorbelegung — die drei Werte sind fachlich verschieden (die Variante trägt den
-    /// für den Speicher gültigen, die Tarifstruktur den der Wirtschaftlichkeitsrechnung,
-    /// der Energieträger den des Kostenmoduls), und welcher gilt, entscheidet der
-    /// Anwender.
+    /// für den Speicher gültigen, die Staffel des Stromträgers den Preis der Stufe an
+    /// der Spitze, der Energieträger seinen konstanten Satz), und welcher gilt,
+    /// entscheidet der Anwender. Die Staffel stand bis Schemaschritt 104 in der
+    /// Tarifstruktur der Wirtschaftlichkeit; sie steht seither am Stromträger der
+    /// Kostenverwaltung (Entscheid Q11).
     /// </remarks>
     public sealed class SpeicherOptimierungLeistungspreisQuelle
     {
@@ -192,10 +194,11 @@ namespace WindowsFormsApplication1
         /// erklärender Beschriftung (Anwenderentscheid W11b‑E‑3, 10.09.2026).
         /// </summary>
         /// <remarks>
-        /// <para><b>(1) Tarifstruktur der Wirtschaftlichkeit</b> —
-        /// <c>Tab_ProjektTarif</c> führt eine zweistufige Staffel je Stammprojekt:
-        /// bis <c>Staffel_Grenze</c> gilt <c>Staffel_Preis1</c>, darüber
-        /// <c>Staffel_Preis2</c> [€/(kW·a)]. Angeboten wird der Preis der Stufe, in der
+        /// <para><b>(1) Leistungspreis-Staffel des Stromträgers</b> — die
+        /// Projektübersteuerung des Stromträgers führt eine zweistufige Staffel
+        /// (Schemaschritt 104, Entscheid Q11; bis dahin stand sie im Tarifsatz des
+        /// Stammprojekts): bis zur Staffelgrenze gilt der erste, darüber der zweite Preis
+        /// [€/(kW·a)]. Angeboten wird der Preis der Stufe, in der
         /// die BEZUGSSPITZE liegt, und zwar aus einem fachlichen Grund: Eine Kappung
         /// nimmt die Leistung IMMER von oben weg. Die erste eingesparte Kilowattstunde
         /// Leistung ist deshalb die teuerste — die der obersten Stufe. Reicht die Kappung
@@ -225,21 +228,6 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // Der Tarif hängt am STAMM der Vergleichsgruppe, nicht an der Variante.
-                int idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt);
-                if (idStamm <= 0) idStamm = idProjekt;
-
-                SpeicherOptimierungLeistungspreisQuelle ausTarif =
-                    TarifQuelle(new WirtschaftlichkeitCtrl().LadeTarif(idStamm), bezugsspitzeKw);
-                if (ausTarif != null) quellen.Add(ausTarif);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Tarifstruktur konnte nicht gelesen werden: " + ex.Message);
-            }
-
-            try
-            {
                 int idTraeger = Emissionsquelle.StromTraeger(idProjekt);
                 if (idTraeger > 0)
                 {
@@ -247,6 +235,12 @@ namespace WindowsFormsApplication1
 
                     EnergietraegerPreisCtrl.Projektpreis projekt =
                         EnergietraegerPreisCtrl.ProjektpreisLesen(idProjekt, idTraeger);
+
+                    // (1) Die Staffel des Stromträgers — dieses Projekts, nicht des Stammes:
+                    // Seit Schemaschritt 104 steht sie je Version an ihrem Stromträger.
+                    SpeicherOptimierungLeistungspreisQuelle ausStaffel =
+                        StaffelQuelle(projekt != null ? projekt.Staffel : null, bezugsspitzeKw);
+                    if (ausStaffel != null) quellen.Add(ausStaffel);
                     if (projekt != null && projekt.Leistungspreis.HasValue && projekt.Leistungspreis.Value > 0.0)
                         preis = projekt.Leistungspreis.Value;
 
@@ -287,41 +281,44 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Leistungspreis-Quelle „Tarifstruktur" aus einem Tarifsatz;
-        /// <c>null</c>, wenn keine Staffel gepflegt ist (W11b‑E‑3, 10.09.2026).
+        /// Die Leistungspreis-Quelle „Staffel des Stromträgers" aus einer Staffel;
+        /// <c>null</c>, wenn keine gepflegt ist (W11b‑E‑3, 10.09.2026; seit
+        /// Schemaschritt 104 am Stromträger statt im Tarifsatz).
         /// </summary>
         /// <remarks>
         /// <b>Ohne Datenbank prüfbar</b> — deshalb steht die Stufenwahl hier und nicht
         /// mitten im Leseweg. Die Regel: Eine Kappung nimmt die Leistung IMMER von oben
         /// weg, die erste eingesparte Kilowatt ist also die der obersten Stufe. Liegt
         /// die Bezugsspitze über der Staffelgrenze und ist ein Preis der zweiten Stufe
-        /// gepflegt, gilt dieser; sonst der erste. Ist die Spitze unbekannt (kein
-        /// gelaufener Durchgang), wird die untere Stufe angeboten und der Text sagt es.
+        /// gepflegt, gilt dieser; sonst der erste
+        /// (<see cref="LeistungspreisStaffel.PreisAnDerSpitze"/>). Ist die Spitze
+        /// unbekannt (kein gelaufener Durchgang), wird die untere Stufe angeboten und der
+        /// Text sagt es.
         /// </remarks>
-        /// <param name="tarif">Der Tarifsatz des Stammprojekts; <c>null</c> ist zulässig.</param>
+        /// <param name="staffel">Die Staffel des Stromträgers; <c>null</c> ist zulässig.</param>
         /// <param name="bezugsspitzeKw">Höchste Bezugsleistung [kW]; 0 = unbekannt.</param>
-        public static SpeicherOptimierungLeistungspreisQuelle TarifQuelle(
-            TarifParameter tarif, double bezugsspitzeKw)
+        public static SpeicherOptimierungLeistungspreisQuelle StaffelQuelle(
+            LeistungspreisStaffel staffel, double bezugsspitzeKw)
         {
-            if (tarif == null) return null;
+            if (staffel == null) return null;
 
             CultureInfo k = CultureInfo.CurrentCulture;
-            double grenze = Math.Max(0.0, tarif.StaffelGrenzeKW);
-            bool stufe2 = bezugsspitzeKw > grenze && tarif.StaffelPreis2EurKW > 0.0;
-            double wert = stufe2 ? tarif.StaffelPreis2EurKW : tarif.StaffelPreis1EurKW;
+            double grenze = Math.Max(0.0, staffel.GrenzeKW ?? 0.0);
+            bool stufe2 = staffel.ZweiteStufe(bezugsspitzeKw);
+            double wert = staffel.PreisAnDerSpitze(bezugsspitzeKw);
             if (!(wert > 0.0)) return null;
 
             string grund = bezugsspitzeKw <= 0.0
-                ? MyResource.Resource.OPT_QUELLE_TARIF_OHNE_SPITZE
+                ? MyResource.Resource.OPT_QUELLE_STAFFEL_OHNE_SPITZE
                 : string.Format(k,
-                    stufe2 ? MyResource.Resource.OPT_QUELLE_TARIF_STUFE2
-                           : MyResource.Resource.OPT_QUELLE_TARIF_STUFE1,
+                    stufe2 ? MyResource.Resource.OPT_QUELLE_STAFFEL_STUFE2
+                           : MyResource.Resource.OPT_QUELLE_STAFFEL_STUFE1,
                     bezugsspitzeKw.ToString("0.#", k), grenze.ToString("0.#", k));
 
             return new SpeicherOptimierungLeistungspreisQuelle
             {
                 WertEurProKwA = wert,
-                Bezeichnung = string.Format(k, MyResource.Resource.OPT_QUELLE_TARIF,
+                Bezeichnung = string.Format(k, MyResource.Resource.OPT_QUELLE_STAFFEL,
                     wert.ToString("0.##", k), grund)
             };
         }

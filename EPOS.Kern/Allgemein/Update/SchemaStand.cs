@@ -342,8 +342,8 @@ namespace WindowsFormsApplication1
         /// <c>Abfrage_Projektgebaeude</c> wird neu gebaut — der erste Sichtneubau des
         /// SQLite-Zweigs. Alles steht bei <see cref="GebaeudeSchema"/>. Die neuen
         /// Spalten bleiben NULL (die zwei Schalter 0), kein Rechenweg liest sie —
-        /// <b>der Referenzlauf bleibt byte-gleich</b>, die Basis
-        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.
+        /// <b>der Referenzlauf bleibt byte-gleich</b>, gemessen gegen die damalige Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c>.
         /// Mit der LEEREN ANLAGENART (Schritt 102, Konzept Wirtschaftlichkeit § 6.3
         /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>102</b>: Die
         /// leere Zeichenkette in <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL,
@@ -358,11 +358,28 @@ namespace WindowsFormsApplication1
         /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
         /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
         /// byte-gleich</b>.
+        /// Mit der ABLÖSUNG DES ZEITZONENTARIFS (Schritt 104, Entscheid Q11 vom
+        /// 22.09.2026: „kein HT/NT") steht das Ziel auf <b>104</b>:
+        /// <c>energy_project_settings</c> bekommt die zweistufige Leistungspreis-Staffel
+        /// des Stromträgers (<see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/>),
+        /// und der Datenteil (<see cref="ZeitzonentarifAbloesung"/>) übernimmt die Staffel
+        /// aus jedem Tarifsatz, in dem sie rechnete, löscht die Sätze des Zonenmodells,
+        /// verwirft die mit ihnen gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4)
+        /// und fasst die Zonenzeilen der gespeicherten Strommatrix zu je einer Jahreszeile
+        /// zusammen. <b>Der Referenzlauf bleibt byte-gleich</b> — die Wirtschaftlichkeit
+        /// steht nicht im Export; in der Testdatenbank trägt kein Projekt einen Tarifsatz.
+        /// Mit dem ZWEITEN FALL DES § 2 Nr. 16 KWKG (Schritt 105, Befund K‑1, Entscheide
+        /// EZ‑5 und E7‑Q2 vom 23.09.2026) steht das Ziel auf <b>105</b>:
+        /// <c>Tab_Energieanlagen</c> bekommt das Kennzeichen „Vorrichtung zur
+        /// Abwärmeabfuhr" (0/1 mit <c>CHECK</c>, Vorgabe 0) und die nullbare Stromkennzahl
+        /// (<see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>). <b>Reines DDL,
+        /// ergebnisneutral:</b> 0 heißt Fall 1, die Nettostromerzeugung — der Rechenweg
+        /// vor dem Schritt; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 103;
+        public const int Zielversion = 105;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

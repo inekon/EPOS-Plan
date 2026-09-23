@@ -9,9 +9,9 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Anzeige folgt der Rechnung.</b> Die Regel steht einmal, an der Weiche
     /// (<c>SimulationWaermebedarf.RechenwegWaehlen</c>): <c>VDI6007</c> führt auf den
     /// VDI-Weg, <c>TAGESBILANZ</c> und jeder unbekannte Wert auf den Tagesbilanz-Weg, und
-    /// NULL folgt <c>SimulationWaermebedarf.MODELL_OHNE_ANGABE</c>. Diese Klasse liest
-    /// dieselbe Konstante — schaltet die Schlusswelle G1 + G2 sie auf <c>VDI6007</c>, zeigt
-    /// der Dialog ein Gebäude ohne Angabe ohne weiteres Zutun als „VDI 6007".</para>
+    /// NULL folgt <c>SimulationWaermebedarf.MODELL_OHNE_ANGABE</c> — dem VDI-Weg. Diese Klasse
+    /// liest dieselbe Konstante; der Dialog zeigt ein Gebäude ohne Angabe deshalb als
+    /// „VDI 6007".</para>
     ///
     /// <para>Rein, ohne Datenbank; öffentlich, weil der Katalogeditor in <c>EPOS.UI</c> sie
     /// braucht (dieselbe Lage wie <see cref="Gebaeudebauweise"/>).</para>
@@ -19,8 +19,7 @@ namespace WindowsFormsApplication1
     public static class Gebaeuderechenweg
     {
         /// <summary>
-        /// Der Rechenweg eines Gebäudes ohne Angabe (Spaltenwert NULL) — in dieser Welle
-        /// <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/>, ab der Schlusswelle G1 + G2
+        /// Der Rechenweg eines Gebäudes ohne Angabe (Spaltenwert NULL):
         /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/>.
         /// </summary>
         public static string OhneAngabe => SimulationWaermebedarf.MODELL_OHNE_ANGABE;

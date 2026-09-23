@@ -12,12 +12,12 @@ namespace EPOS.UI.Dialoge.Wirtschaftlichkeit;
 /// setzte ins Leere — dieselbe Lage wie bei den Masken der
 /// Simulationskonfiguration (Welle KI‑F2).</para>
 ///
-/// <para><b>Zwei Modelle, eine Maske.</b> Das ZONENMODELL rechnet mit vier
-/// Preiszonen (Winter/Sommer × Hoch-/Niedertarif) und einer Leistungsstaffel, das
-/// ROLLENMODELL mit je einem Arbeits-, Grund- und Leistungspreis für Bezug und
-/// Reststrom. Welches gilt, sagt das Feld <see cref="Modell"/>; die Felder des
-/// jeweils anderen stehen gesperrt da. Deklariert sind beide — der Anwender sieht
-/// beide.</para>
+/// <para><b>Ein Modell, das Rollenmodell</b> (Entscheid Q11, Anwender 22.09.2026:
+/// „kein HT/NT"): je ein Arbeits-, Grund- und Leistungspreis für Bezug und
+/// Reststrom, dazu die Einspeisung. Die Felder des entfallenen Zonenmodells —
+/// Modellwahl, Hochtarif-Fenster, Zonenpreise, zweistufige Staffel — gibt es auf der
+/// Maske nicht mehr, also auch nicht hier; die Staffel pflegt der Stromträger
+/// (Maske Energieträger).</para>
 ///
 /// <para><b>Die vier LEISTUNGSSTUFEN je Rolle bleiben draußen.</b> Zwölf Zellen je
 /// Rolle (Obergrenze, Sommer- und Winterpreis × vier Stufen) entstehen aus einer
@@ -37,9 +37,6 @@ public sealed class TarifstrukturKiSicht
     public Func<bool>? AktivLesen { get; init; }
     public Action<bool>? AktivSetzen { get; init; }
 
-    public Func<string>? ModellLesen { get; init; }
-    public Action<string>? ModellSetzen { get; init; }
-    public Func<IReadOnlyList<KiWahleintrag>>? ModellEintraege { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? LeistungsmodellEintraege { get; init; }
 
     public Func<string>? GueltigAbLesen { get; init; }
@@ -49,35 +46,6 @@ public sealed class TarifstrukturKiSicht
     public Action<int?>? WinterVonSetzen { get; init; }
     public Func<int?>? WinterBisLesen { get; init; }
     public Action<int?>? WinterBisSetzen { get; init; }
-    public Func<int?>? HtVonLesen { get; init; }
-    public Action<int?>? HtVonSetzen { get; init; }
-    public Func<int?>? HtBisLesen { get; init; }
-    public Action<int?>? HtBisSetzen { get; init; }
-
-    public Func<double?>? BezugWinterHtLesen { get; init; }
-    public Action<double?>? BezugWinterHtSetzen { get; init; }
-    public Func<double?>? BezugWinterNtLesen { get; init; }
-    public Action<double?>? BezugWinterNtSetzen { get; init; }
-    public Func<double?>? BezugSommerHtLesen { get; init; }
-    public Action<double?>? BezugSommerHtSetzen { get; init; }
-    public Func<double?>? BezugSommerNtLesen { get; init; }
-    public Action<double?>? BezugSommerNtSetzen { get; init; }
-
-    public Func<double?>? EinspWinterHtLesen { get; init; }
-    public Action<double?>? EinspWinterHtSetzen { get; init; }
-    public Func<double?>? EinspWinterNtLesen { get; init; }
-    public Action<double?>? EinspWinterNtSetzen { get; init; }
-    public Func<double?>? EinspSommerHtLesen { get; init; }
-    public Action<double?>? EinspSommerHtSetzen { get; init; }
-    public Func<double?>? EinspSommerNtLesen { get; init; }
-    public Action<double?>? EinspSommerNtSetzen { get; init; }
-
-    public Func<double?>? StaffelGrenzeLesen { get; init; }
-    public Action<double?>? StaffelGrenzeSetzen { get; init; }
-    public Func<double?>? StaffelPreis1Lesen { get; init; }
-    public Action<double?>? StaffelPreis1Setzen { get; init; }
-    public Func<double?>? StaffelPreis2Lesen { get; init; }
-    public Action<double?>? StaffelPreis2Setzen { get; init; }
 
     public Func<double?>? BezugArbeitLesen { get; init; }
     public Action<double?>? BezugArbeitSetzen { get; init; }
@@ -106,10 +74,6 @@ public sealed class TarifstrukturKiSicht
     //  Die Wahllisten (KI-D-Q6)
     // =====================================================================
 
-    /// <summary>Zonenmodell oder Rollenmodell — Schlüssel ist der Steuerwert.</summary>
-    public IReadOnlyList<KiWahleintrag> ModellWahl
-        => ModellEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
-
     /// <summary>Das Leistungsmodell der Bezugsrolle.</summary>
     public IReadOnlyList<KiWahleintrag> BezugLeistungsmodellWahl
         => LeistungsmodellEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
@@ -129,13 +93,6 @@ public sealed class TarifstrukturKiSicht
         set => AktivSetzen?.Invoke(value);
     }
 
-    /// <summary>Zonenmodell oder Rollenmodell.</summary>
-    public string Modell
-    {
-        get => ModellLesen?.Invoke() ?? "";
-        set => ModellSetzen?.Invoke(value ?? "");
-    }
-
     /// <summary>Der Preisstand, ab dem die Tarifstruktur gilt (ISO).</summary>
     public string GueltigAb
     {
@@ -144,116 +101,21 @@ public sealed class TarifstrukturKiSicht
     }
 
     // =====================================================================
-    //  Zeitzonen
+    //  Winterspanne (Leistungspreismodell „Staffel" der Bezugsrollen)
     // =====================================================================
 
-    /// <summary>Der Monat, mit dem die Winterzone beginnt.</summary>
+    /// <summary>Der Monat, mit dem die Winterspanne beginnt.</summary>
     public int? WinterVon
     {
         get => WinterVonLesen?.Invoke();
         set => WinterVonSetzen?.Invoke(value);
     }
 
-    /// <summary>Der Monat, mit dem die Winterzone endet.</summary>
+    /// <summary>Der Monat, mit dem die Winterspanne endet.</summary>
     public int? WinterBis
     {
         get => WinterBisLesen?.Invoke();
         set => WinterBisSetzen?.Invoke(value);
-    }
-
-    /// <summary>Die Stunde, mit der der Hochtarif beginnt.</summary>
-    public int? HochtarifVon
-    {
-        get => HtVonLesen?.Invoke();
-        set => HtVonSetzen?.Invoke(value);
-    }
-
-    /// <summary>Die Stunde, mit der der Hochtarif endet.</summary>
-    public int? HochtarifBis
-    {
-        get => HtBisLesen?.Invoke();
-        set => HtBisSetzen?.Invoke(value);
-    }
-
-    // =====================================================================
-    //  Zonenmodell: Bezug, Einspeisung, Staffel
-    // =====================================================================
-
-    /// <summary>Bezugspreis Winter im Hochtarif.</summary>
-    public double? BezugWinterHoch
-    {
-        get => BezugWinterHtLesen?.Invoke();
-        set => BezugWinterHtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Bezugspreis Winter im Niedertarif.</summary>
-    public double? BezugWinterNieder
-    {
-        get => BezugWinterNtLesen?.Invoke();
-        set => BezugWinterNtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Bezugspreis Sommer im Hochtarif.</summary>
-    public double? BezugSommerHoch
-    {
-        get => BezugSommerHtLesen?.Invoke();
-        set => BezugSommerHtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Bezugspreis Sommer im Niedertarif.</summary>
-    public double? BezugSommerNieder
-    {
-        get => BezugSommerNtLesen?.Invoke();
-        set => BezugSommerNtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Einspeisepreis Winter im Hochtarif — er gilt für PV UND KWK.</summary>
-    public double? EinspeisungWinterHoch
-    {
-        get => EinspWinterHtLesen?.Invoke();
-        set => EinspWinterHtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Einspeisepreis Winter im Niedertarif.</summary>
-    public double? EinspeisungWinterNieder
-    {
-        get => EinspWinterNtLesen?.Invoke();
-        set => EinspWinterNtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Einspeisepreis Sommer im Hochtarif.</summary>
-    public double? EinspeisungSommerHoch
-    {
-        get => EinspSommerHtLesen?.Invoke();
-        set => EinspSommerHtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Einspeisepreis Sommer im Niedertarif.</summary>
-    public double? EinspeisungSommerNieder
-    {
-        get => EinspSommerNtLesen?.Invoke();
-        set => EinspSommerNtSetzen?.Invoke(value);
-    }
-
-    /// <summary>Die Leistungsgrenze, ab der der zweite Staffelpreis gilt.</summary>
-    public double? StaffelGrenze
-    {
-        get => StaffelGrenzeLesen?.Invoke();
-        set => StaffelGrenzeSetzen?.Invoke(value);
-    }
-
-    /// <summary>Der Leistungspreis unterhalb der Staffelgrenze.</summary>
-    public double? StaffelPreisUnten
-    {
-        get => StaffelPreis1Lesen?.Invoke();
-        set => StaffelPreis1Setzen?.Invoke(value);
-    }
-
-    /// <summary>Der Leistungspreis oberhalb der Staffelgrenze.</summary>
-    public double? StaffelPreisOben
-    {
-        get => StaffelPreis2Lesen?.Invoke();
-        set => StaffelPreis2Setzen?.Invoke(value);
     }
 
     // =====================================================================
