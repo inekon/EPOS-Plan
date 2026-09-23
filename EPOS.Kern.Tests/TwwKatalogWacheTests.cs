@@ -58,18 +58,6 @@ namespace EPOS.Kern.Tests
         /// <summary>Frist eines Skriptlaufs; danach wird abgebrochen statt die CI zu blockieren.</summary>
         private const int SKRIPT_FRIST_MS = 120000;
 
-        /// <summary>
-        /// <b>Vermerk Übergang Z2 (23.09.2026).</b> Die Stufe Z2 erweitert den fiktiven
-        /// Testkatalog (Parameter der Auslegung, zwei Bedarfstage, DIN-4708-Werte); die
-        /// Repo-Testdatenbank bekommt ihn erst beim Nachzug im Merge der Stufe Z2 (Skript auf die
-        /// Repo-Datei, LFS). Bis dahin darf Lauf 0 auf der Arbeitskopie Zeilen anlegen und
-        /// nachführen; ab dem zweiten Lauf gilt 0/0. Trägt die Repo-Datei jeden Parameterschlüssel
-        /// von Bilanz und Auslegung (Nachzug erfolgt), gilt 0/0 schon ab Lauf 0 — der Übergang
-        /// endet von selbst.
-        /// </summary>
-        internal const string VERMERK_UEBERGANG_Z2 =
-            "Übergang Z2 (Vermerk 23.09.2026): Lauf 0 darf bis zum Nachzug der Testdatenbank beim Merge der Stufe Z2 anlegen.";
-
         [Fact]
         public void Keine_Zeile_mit_Status_AUSLIEFERUNG_in_der_Testdatenbank()
         {
@@ -221,11 +209,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das Einspielskript ist wiederholbar: Ein erster Lauf zieht die Arbeitskopie auf den
-        /// Stand des Skripts nach (<see cref="VERMERK_UEBERGANG_Z2"/>: nur bis zum Nachzug der
-        /// Repo-Datei; danach legt schon er nichts an); der zweite und dritte Lauf legen nichts an,
-        /// führen nichts nach und lassen jede Tww-Zeile gleich. Ohne Python schweigt der Fall —
-        /// der Handlauf steht im Kopf des Skripts.
+        /// Das Einspielskript ist wiederholbar, und die Repo-Testdatenbank steht auf seinem Stand:
+        /// Sie trägt schon jeden Parameterschlüssel von Bilanz und Auslegung, und jeder Lauf — auch
+        /// der erste auf der Arbeitskopie — legt nichts an, führt nichts nach und lässt jede
+        /// Tww-Zeile gleich. Wer den Testkatalog im Skript erweitert, zieht die Repo-Datei im
+        /// selben Schritt nach. Ohne Python schweigt der Fall — der Handlauf steht im Kopf des
+        /// Skripts.
         /// </summary>
         [Fact]
         public void Das_Einspielskript_ist_wiederholbar()
@@ -243,36 +232,22 @@ namespace EPOS.Kern.Tests
                 string kopie = Path.Combine(ordner, "Kenndaten_Test.sqlite");
                 File.Copy(pfad, kopie);
 
-                // Ist die Repo-Datei schon nachgezogen (jeder Parameterschlüssel da)? Dann gilt 0/0
-                // ab Lauf 0; sonst der Übergang des Vermerks.
-                List<string> fehlendVorher = FehlendeParameter(kopie);
-                SqliteConnection.ClearAllPools();
-                bool nachgezogen = fehlendVorher.Count == 0;
-
-                (int code, string ausgabe)? erster = PythonStarten(skript, kopie);
-                if (erster == null) return;                                 // kein Python - schweigen
-                Assert.True(erster.Value.code == 0, "Lauf 0 endete mit " + erster.Value.code + ":\n" + erster.Value.ausgabe);
-                if (nachgezogen)
-                    Assert.True(erster.Value.ausgabe.Contains("0 Zeile(n) angelegt, 0 nachgefuehrt"),
-                        "Die Repo-Datei trägt jeden Parameterschlüssel (Nachzug erfolgt) — Lauf 0 muss 0/0 melden:\n"
-                        + erster.Value.ausgabe);
-                string vorher = Abbild(kopie);
-
-                // Der Testkatalog trägt jeden Schlüssel, den Bilanz und Auslegung lesen — so rechnet
+                // Die Repo-Datei trägt jeden Schlüssel, den Bilanz und Auslegung lesen — so rechnet
                 // der Generator auf einer Projektkopie ohne fehlenden Parameter.
                 List<string> fehlend = FehlendeParameter(kopie);
-                Assert.True(fehlend.Count == 0, "Dem Testkatalog fehlen Parameter: " + string.Join(", ", fehlend));
+                Assert.True(fehlend.Count == 0, "Dem Testkatalog der Repo-Datei fehlen Parameter: " + string.Join(", ", fehlend));
                 SqliteConnection.ClearAllPools();
+                string vorher = Abbild(kopie);
 
-                // Der zweite und der dritte Lauf: streng 0/0, keine Tww-Zeile verändert.
-                for (int lauf = 1; lauf <= 2; lauf++)
+                // Lauf 0 bis 2: streng 0/0, keine Tww-Zeile verändert.
+                for (int lauf = 0; lauf <= 2; lauf++)
                 {
                     (int code, string ausgabe)? r = PythonStarten(skript, kopie);
                     if (r == null) return;                                  // kein Python - schweigen
                     Assert.True(r.Value.code == 0, "Lauf " + lauf + " endete mit " + r.Value.code + ":\n" + r.Value.ausgabe);
                     Assert.True(r.Value.ausgabe.Contains("0 Zeile(n) angelegt, 0 nachgefuehrt"),
-                        "Lauf " + lauf + " (der " + (lauf + 1) + ". Lauf) legt an oder führt nach — nicht wiederholbar ("
-                        + VERMERK_UEBERGANG_Z2 + "):\n" + r.Value.ausgabe);
+                        "Lauf " + lauf + " legt an oder führt nach — die Repo-Testdatenbank steht nicht auf dem Stand "
+                        + "des Einspielskripts oder das Skript ist nicht wiederholbar:\n" + r.Value.ausgabe);
                     Assert.True(vorher == Abbild(kopie), "Lauf " + lauf + " hat Tww-Zeilen veraendert.");
                 }
             }
@@ -332,23 +307,11 @@ namespace EPOS.Kern.Tests
             return fehlend;
         }
 
-        /// <summary>Das Einspielskript, vom Ausgabeordner aufwärts gesucht; <c>null</c>, wenn es fehlt.</summary>
-        internal static string Einspielskript()
-        {
-            DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory);
-            for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
-            {
-                string kandidat = Path.Combine(d.FullName, SKRIPT.Replace('/', Path.DirectorySeparatorChar));
-                if (File.Exists(kandidat)) return kandidat;
-            }
-            return null;
-        }
-
         /// <summary>
         /// Startet das Skript über <c>py</c> (Windows-Starter) oder <c>python3</c>;
         /// <c>null</c>, wenn keines von beiden startet.
         /// </summary>
-        internal static (int, string)? PythonStarten(string skript, string datenbank)
+        private static (int, string)? PythonStarten(string skript, string datenbank)
         {
             foreach (string programm in new[] { "py", "python3" })
             {

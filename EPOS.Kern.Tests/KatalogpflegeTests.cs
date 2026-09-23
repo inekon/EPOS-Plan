@@ -206,11 +206,10 @@ namespace EPOS.Kern.Tests
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
         // Zapfprofilgenerator (P4): der FIKTIVE Testkatalog aus
         // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei Nutzungsarten, ein
-        // Tagesgangsatz, alle Status EIGEN. Den Bedarfstagkatalog zaehlt
-        // DerBedarfstagkatalogZaehltNachDemEinspielskriptDreiSaetze auf einer Kopie NACH dem
-        // Skriptlauf (Uebergang Z2, TwwKatalogWacheTests.VERMERK_UEBERGANG_Z2).
+        // Tagesgangsatz, drei Bedarfstage (Konstruktor, Referenztag, Normtag), alle Status EIGEN.
         [InlineData("TWW_NUTZUNGSART", 3, 0, 0)]
         [InlineData("TWW_TAGESGANGSATZ", 1, 0, 0)]
+        [InlineData("TWW_BEDARFSTAG", 3, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
         [InlineData("PROZESSWAERME", 32, 0, 1)]
@@ -231,37 +230,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(saetze, e.Saetze.Count);
             Assert.Equal(namensgruppen, e.Namensgruppen.Count);
             Assert.Equal(inhaltsgruppen, e.Inhaltsgruppen.Count);
-        }
-
-        /// <summary>
-        /// <b>Der Bedarfstagkatalog zählt nach dem Einspielskript drei Sätze</b> — gezählt auf
-        /// einer EIGENEN Arbeitskopie NACH dem Lauf von
-        /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c>. Warum nicht als Zeile der
-        /// Theorie oben: Die Repo-Testdatenbank trägt bis zum Nachzug beim Merge der Stufe Z2
-        /// einen Bedarfstag, danach drei (<see cref="TwwKatalogWacheTests.VERMERK_UEBERGANG_Z2"/>);
-        /// eine feste 1 würde mit dem Nachzug rot, eine feste 3 ist es heute. Nach dem Skriptlauf
-        /// steht auf der Kopie beide Male der Stand des Skripts — heute legt der Lauf die zwei
-        /// fehlenden an, nach dem Nachzug nichts. Ohne Python schweigt der Fall wie die Wache.
-        /// </summary>
-        [Fact]
-        public void DerBedarfstagkatalogZaehltNachDemEinspielskriptDreiSaetze()
-        {
-            string skript = TwwKatalogWacheTests.Einspielskript();
-            if (skript == null) return;
-            using (var eigene = new TestDatenbank())
-            {
-                if (!eigene.Vorhanden) return;
-                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-                (int, string)? lauf = TwwKatalogWacheTests.PythonStarten(skript, DataRepository.PfadUeberschreibung);
-                if (lauf == null) return;                                   // kein Python - schweigen
-                Assert.True(lauf.Value.Item1 == 0, "Das Einspielskript endete mit " + lauf.Value.Item1 + ":\n" + lauf.Value.Item2);
-
-                ScanErgebnis e = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("TWW_BEDARFSTAG"));
-                Assert.Null(e.Fehler);
-                Assert.Equal(3, e.Saetze.Count);
-                Assert.Empty(e.Namensgruppen);
-                Assert.Empty(e.Inhaltsgruppen);
-            }
         }
 
         /// <summary>
