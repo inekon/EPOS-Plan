@@ -1957,6 +1957,48 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Null(haken.Speichern);
     }
 
+    /// <summary>
+    /// <b>Der Extrapolationsschalter steht in der Feldkarte</b> (Welle #458): Er gehört dem
+    /// PROJEKT, nicht dem Feldsatz, und geht denselben Weg wie der Schalter — sofort über
+    /// <c>ExtrapolationSchreiben</c>. Scheitert das Schreiben, bleibt der Stand, und die
+    /// Setzung nennt den Satz des Kennlinienbands.
+    /// </summary>
+    [Fact]
+    public void Der_Extrapolationsschalter_schreibt_ueber_seinen_Weg_und_nennt_den_Fehlschlag()
+    {
+        var geschrieben = new List<bool>();
+        bool gelingt = true;
+        var cut = Aufbauen(extrapolationSchreiben: w => { geschrieben.Add(w); return gelingt; },
+                           extrapolationErlaubt: true);
+
+        KiFeldzugang feld =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "extrapolation");
+        Assert.NotNull(feld);
+        Assert.True(feld.Setzbar);
+        Assert.Equal(true, feld.Lesen());
+
+        cut.InvokeAsync(() => feld.Setzen(false));
+        Assert.Equal(new[] { false }, geschrieben);
+        Assert.Equal(false, feld.Lesen());
+
+        gelingt = false;
+        var fehler = Assert.Throws<InvalidOperationException>(() => feld.Setzen(true));
+        Assert.Equal(cut.Instance.WarnungExtrapolation, fehler.Message);
+        Assert.Equal(false, feld.Lesen());
+    }
+
+    /// <summary>Ohne Schreibweg lehnt die Setzung benannt ab, statt still nichts zu tun.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_lehnt_der_Extrapolationsschalter_benannt_ab()
+    {
+        Aufbauen(extrapolationSchreiben: null);
+
+        KiFeldzugang feld =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "extrapolation");
+        var fehler = Assert.Throws<InvalidOperationException>(() => feld.Setzen(false));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, fehler.Message);
+    }
+
     // =================================================================================
     // Senken der Anlage (Anwenderentscheid 23.09.2026)
     // =================================================================================

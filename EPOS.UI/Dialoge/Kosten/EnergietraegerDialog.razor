@@ -695,7 +695,10 @@
             Nachziehen = Nachziehen,
             // Die Preisbasis geht den Weg der Klappliste, nicht den eines Feldes -
             // sonst verschoebe sich der gespeicherte Preis um den Heizwert.
-            PreisbasisSetzen = id => _ = PreisbasisWechseln(id)
+            PreisbasisSetzen = id => _ = PreisbasisWechseln(id),
+            // Der Leistungspreismodus ebenso - die Optionsgruppe schreibt ihn sofort in
+            // den Katalog; ein Setzen nur in der Karte ginge verloren (Welle #458).
+            LeistungsModusSetzen = monat => _ = LeistungsModusWechseln(monat)
         };
     }
 

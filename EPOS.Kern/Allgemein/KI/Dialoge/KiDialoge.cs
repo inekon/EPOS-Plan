@@ -3154,10 +3154,13 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kurve", "GebaeudetypKiSicht.Kurve",
                                      KiDialogTexte.GtypKurveName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GtypKurveErl, leerErlaubt: true),
+                    // Welle #458: Die Beschreibung ist seit der Neuordnung der
+                    // Verwaltungen im Stammblatt bearbeitbar (BeiBeschreibung) - und
+                    // damit auch fuer den Assistenten; ein Auslieferungstyp bleibt
+                    // ueber Schreibgeschuetzt geschuetzt.
                     new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
                                      KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.GtypBeschreibungErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -4263,8 +4266,11 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Waermepumpen-ANLAGE eines Projekts — einundzwanzig Felder aus
-        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten</c>.
+        /// Die Waermepumpen-ANLAGE eines Projekts — dreiundzwanzig Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageKiSicht</c>, die den Feldsatz
+        /// <c>WaermepumpeAnlageDaten</c> unveraendert durchreicht und die
+        /// Projekteinstellung „Extrapolation der WP-Kennlinie erlauben" dazu traegt
+        /// (Welle #458).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4289,9 +4295,9 @@ namespace WindowsFormsApplication1
         /// Kostenlauf wortlos ueberschriebe.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht</b> — er steht im Daten-Objekt allein
-        /// als Id (<c>CarrierId</c>); dieselbe Regel wie bei Kessel, BHKW und
-        /// Stromspeicher. Die KENNLINIEN fehlen ebenfalls: Sie sind eine Tabelle von
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b): Die Id (<c>CarrierId</c>)
+        /// ist der Schluessel, die Eintraege reicht der Dialog aus dem Traegerkatalog
+        /// herein. Die KENNLINIEN fehlen mit Absicht: Sie sind eine Tabelle von
         /// Stuetzstellen mit eigenem Editor, kein Maskenfeld.
         /// </para>
         /// <para>
@@ -4308,87 +4314,97 @@ namespace WindowsFormsApplication1
                 felder: new[]
                 {
                     // ---- Woran der Anwender gerade arbeitet -------------------------
-                    new KiDialogFeld("anlage", "WaermepumpeAnlageDaten.Bezeichner",
+                    new KiDialogFeld("anlage", "WaermepumpeAnlageKiSicht.Bezeichner",
                                      KiDialogTexte.WpaAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
 
                     // ---- Auslegung fuer die Verteilung ------------------------------
-                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageDaten.Vorlauf",
+                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageKiSicht.Vorlauf",
                                      KiDialogTexte.WpaVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageDaten.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageKiSicht.Ruecklauf",
                                      KiDialogTexte.WpaRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageDaten.Nutzungszeit",
+                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageKiSicht.Nutzungszeit",
                                      KiDialogTexte.WpaNutzungsdauerName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNutzungsdauerErl,
                                      einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
 
+                    // ---- Die Projekteinstellung neben der Auslegung (Welle #458) -----
+                    //
+                    // „Extrapolation der WP-Kennlinie erlauben" gilt allen Waermepumpen
+                    // des Projekts und schreibt SOFORT (ExtrapolationSchreiben) - sie
+                    // haengt nicht am Feldsatz der Anlage; deshalb meldet der Dialog
+                    // eine Sichtklasse an, die beides traegt.
+                    new KiDialogFeld("extrapolation", "WaermepumpeAnlageKiSicht.Extrapolation",
+                                     KiDialogTexte.WpaExtrapolationName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaExtrapolationErl),
+
                     // ---- Der Block „Konfiguration" ---------------------------------
-                    new KiDialogFeld("heizstab", "WaermepumpeAnlageDaten.Heizstab",
+                    new KiDialogFeld("heizstab", "WaermepumpeAnlageKiSicht.Heizstab",
                                      KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaHeizstabErl),
-                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageDaten.Sperrung",
+                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageKiSicht.Sperrung",
                                      KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaSperrungErl),
-                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageDaten.SperrzeitVon",
+                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageKiSicht.SperrzeitVon",
                                      KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitVonErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageDaten.SperrzeitBis",
+                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageKiSicht.SperrzeitBis",
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageDaten.BivalenterBetrieb",
+                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaBivalentErl),
-                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageDaten.CarrierId",
+                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageKiSicht.CarrierId",
                                      KiDialogTexte.WpaTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTraegerErl),
-                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageDaten.Betriebsart",
+                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageKiSicht.Betriebsart",
                                      KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBetriebsartErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageDaten.Abschaltpunkt",
+                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageKiSicht.Abschaltpunkt",
                                      KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaAbschaltpunktErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Die Felder des Geraets (Stammfeldblock) --------------------
-                    new KiDialogFeld("hersteller", "WaermepumpeAnlageDaten.Firma",
+                    new KiDialogFeld("hersteller", "WaermepumpeAnlageKiSicht.Firma",
                                      KiDialogTexte.WpaFirmaName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaFirmaErl, leerErlaubt: true),
-                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageDaten.Beschreibung",
+                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageKiSicht.Beschreibung",
                                      KiDialogTexte.WpaBeschreibungName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaBeschreibungErl, leerErlaubt: true),
-                    new KiDialogFeld("typ", "WaermepumpeAnlageDaten.Typ",
+                    new KiDialogFeld("typ", "WaermepumpeAnlageKiSicht.Typ",
                                      KiDialogTexte.WpaTypName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTypErl, leerErlaubt: true),
-                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageDaten.Regelung",
+                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageKiSicht.Regelung",
                                      KiDialogTexte.WpaRegelungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaRegelungErl, leerErlaubt: true),
-                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageDaten.Aufstellung",
+                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageKiSicht.Aufstellung",
                                      KiDialogTexte.WpaAufstellungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaAufstellungErl, leerErlaubt: true),
-                    new KiDialogFeld("baujahr", "WaermepumpeAnlageDaten.Baujahr",
+                    new KiDialogFeld("baujahr", "WaermepumpeAnlageKiSicht.Baujahr",
                                      KiDialogTexte.WpaBaujahrName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBaujahrErl),
-                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageDaten.Nennleistung",
+                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageKiSicht.Nennleistung",
                                      KiDialogTexte.WpaNennleistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNennleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW),
-                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageDaten.HeizstabLeistung",
+                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageKiSicht.HeizstabLeistung",
                                      KiDialogTexte.WpaHeizstabLeistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaHeizstabLeistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageDaten.Kuehlleistung",
+                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageKiSicht.Kuehlleistung",
                                      KiDialogTexte.WpaKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageDaten.Modulkosten",
+                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageKiSicht.Modulkosten",
                                      KiDialogTexte.WpaModulkostenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaModulkostenErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, nurLesen: true)

@@ -21688,7 +21688,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon.</value>
   </data>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt.</value>
+    <value>Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar.</value>
   </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
@@ -25952,5 +25952,8 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
     <value>Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen.</value>
+  </data>
+  <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
+    <value>An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort.</value>
   </data>
 </root>

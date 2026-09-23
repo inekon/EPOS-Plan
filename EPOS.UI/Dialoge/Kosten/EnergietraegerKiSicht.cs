@@ -67,6 +67,14 @@ public sealed class EnergietraegerKiSicht
     /// </summary>
     public Action<int>? PreisbasisSetzen { get; init; }
 
+    /// <summary>
+    /// Der Wechsel „Leistungspreis je Monat / je Jahr" — DERSELBE Weg wie die
+    /// Optionsgruppe der Karte (<c>LeistungsModusGewechselt</c>): Die Hülle schreibt den
+    /// Modus sofort in den Katalog und zieht die Einheit nach. <c>null</c> = der Assistent
+    /// kann den Modus nicht setzen.
+    /// </summary>
+    public Action<bool>? LeistungsModusSetzen { get; init; }
+
     // =====================================================================
     //  Die Wahllisten (KI‑D‑Q6)
     // =====================================================================
@@ -150,11 +158,28 @@ public sealed class EnergietraegerKiSicht
         set => Setze(s => s.Leistungspreis = value);
     }
 
-    /// <summary>Gilt der Leistungspreis je MONAT statt je Jahr?</summary>
+    /// <summary>
+    /// Gilt der Leistungspreis je MONAT statt je Jahr?
+    ///
+    /// <para><b>Nicht über <see cref="Setze"/></b> (Welle #458, Befund aus #457): Die
+    /// Optionsgruppe der Karte schreibt den Modus SOFORT in den Katalog
+    /// (<c>LeistungsModusGewechselt</c>); ein Setzen allein im Kartenstand ginge beim
+    /// Speichern nicht mit. Der Wechsel nimmt deshalb <see cref="LeistungsModusSetzen"/>,
+    /// denselben Weg wie ein Klick — Muster <see cref="Preisbasis"/>.</para>
+    /// </summary>
     public bool LeistungspreisMonatlich
     {
         get => Stand?.LeistungsModusMonat ?? false;
-        set => Setze(s => s.LeistungsModusMonat = value);
+        set
+        {
+            EnergietraegerStand? s = Stand;
+            if (s is null || LeistungsModusSetzen is null) return;
+            if (value == s.LeistungsModusMonat) return;
+
+            // Wie BeiLeistungsModus: erst die Karte, dann der Weg nach außen.
+            s.LeistungsModusMonat = value;
+            LeistungsModusSetzen(value);
+        }
     }
 
     /// <summary>

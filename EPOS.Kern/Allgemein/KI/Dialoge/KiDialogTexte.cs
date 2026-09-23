@@ -447,6 +447,10 @@
         internal static string WpaModulkostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
         internal static string WpaModulkostenErl => MyResource.Resource.KI_DLG_WPA_MODULKOSTEN_ERL;
 
+        // Welle #458: die Projekteinstellung neben der Auslegung.
+        internal static string WpaExtrapolationName => MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
+        internal static string WpaExtrapolationErl => MyResource.Resource.KI_DLG_WPA_EXTRAPOLATION_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;

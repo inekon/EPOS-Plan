@@ -582,4 +582,39 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.True(kurve.Setzbar);
         Assert.Equal(0, kurve.Lesen());
     }
+
+    /// <summary>
+    /// <b>Die Beschreibung ist setzbar</b> (Welle #458, Nachzug der Feldkarte): Sie geht
+    /// denselben Weg wie eine Eingabe im Stammblatt — in den Arbeitsstand, gespeichert
+    /// wird mit „Speichern". Ein Auslieferungstyp meldet den Schreibschutz und nimmt
+    /// nichts an.
+    /// </summary>
+    [Fact]
+    public void Die_Beschreibung_ist_setzbar_und_ein_Auslieferungstyp_geschuetzt()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang feld =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDETYP, "beschreibung");
+        Assert.NotNull(feld);
+        Assert.True(feld.Setzbar);
+
+        // Der Auslieferungstyp: geschuetzt, und die Maske nimmt die Eingabe nicht an.
+        Zeilenklick.Zeile(cut, 2);
+        Assert.True(KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDETYP).IstSchreibgeschuetzt());
+        string vorher = (string)feld.Lesen()!;
+        cut.InvokeAsync(() => feld.Setzen("Gegenprobe"));
+        Assert.Equal(vorher, feld.Lesen());
+
+        // Ein eigener Typ: Die Beschreibung geht in den Arbeitsstand und steht im Stammblatt.
+        Zeilenklick.Zeile(cut, 1);
+        Assert.False(KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDETYP).IstSchreibgeschuetzt());
+
+        cut.InvokeAsync(() => feld.Setzen("Neu beschrieben"));
+        cut.Render();
+
+        Assert.Equal("Neu beschrieben", feld.Lesen());
+        Assert.Equal("Neu beschrieben", cut.Find(".epos-stammblatt textarea").GetAttribute("value")
+                                        ?? cut.Find(".epos-stammblatt textarea").TextContent);
+    }
 }

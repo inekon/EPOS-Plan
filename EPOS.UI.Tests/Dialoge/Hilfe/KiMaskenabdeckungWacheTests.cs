@@ -166,6 +166,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
         new("VorlagenZeile", 4),
+        new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
+        new("WaermepumpeKonfiguration", 8),
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),
         new("WirtschaftlichkeitSeite", 7)
@@ -199,16 +201,6 @@ public sealed class KiMaskenabdeckungWacheTests
                 "Filterschalter der Katalogliste (Trichter auf die Kühlleistung) — eine Listenauswahl, kein Einstellwert",
             ["(_kuehlung ? 1 : 0)"] =
                 "wählt nur das gezeigte Kennfeld (Wärme oder Kühlung) — ein Bildschalter"
-        },
-        [KiMaskennamen.WAERMEPUMPE_ANLAGE] = new()
-        {
-            ["_extrapolation"] =
-                "Projekteinstellung „Extrapolation der WP-Kennlinie erlauben“ — Nachzug 3 von #458 Stufe 1",
-            ["_mitKennlinien"] =
-                "gehört zur Aktion „Übernehmen“ eines Katalogsatzes (mit Kennlinien übernehmen)",
-            ["Daten.Name"] =
-                "der Bezeichner ist im Anlagendialog nur lesbar (NurLesen ohne BezeichnerAenderbar); umbenannt " +
-                "wird in der Katalogverwaltung Form_WP, deren Feldkarte ihn führt"
         },
         [KiMaskennamen.PV_ANLAGENWERTE] = new()
         {

@@ -30896,7 +30896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar. ähnelt.
         /// </summary>
         public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
             get {
@@ -36526,6 +36526,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_EINSP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_EINSP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_EXTRAPOLATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_EXTRAPOLATION_ERL", resourceCulture);
             }
         }
         

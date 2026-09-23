@@ -21681,7 +21681,7 @@ Do you want to allow this?</value>
     <value>The daily curve whose 24 hourly values the screen shows; a type carries five or eight of them.</value>
   </data>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>The free text of the loaded type; the screen shows it locked.</value>
+    <value>The free text of the loaded type; saved with “Save”. A delivered type is read-only.</value>
   </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>The loaded type. Setting it loads its weekly profile — the same path as a click in the list.</value>
@@ -25945,5 +25945,8 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
     <value>The configuration (step ①) is not shown; switch to it, then the value can be set.</value>
+  </data>
+  <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
+    <value>On = the simulation may extend the heat pump characteristic beyond its support points. Project setting for all heat pumps; the switch is written immediately.</value>
   </data>
 </root>
