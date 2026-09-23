@@ -1132,6 +1132,25 @@ namespace Testdatenbankschema
                                   KwkgAnlagenartLeer.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 102: die zehn Tabellen des Zapfprofilgenerators (Umsetzungskonzept
+            //      Zapfprofilgenerator 3.2, T1). REIN DDL aus TwwSchema - DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_102_ZapfprofilKatalog bedient; erst
+            //      die Tabellen, dann die Indizes auf den Kindspalten. CREATE ... IF NOT
+            //      EXISTS ist selbst wiederholbar.
+            //
+            //      ERGEBNISNEUTRAL: Die Tabellen entstehen leer, kein Projekt steht auf dem
+            //      Generator, kein Rechenweg liest sie. Den FIKTIVEN Testkatalog spielt
+            //      danach Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py ein - er ist
+            //      Testdatum, kein Schemaschritt.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 102, trocken);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                Console.WriteLine("Schritt 102 - Index " + i.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                if (!trocken) DataRepository.ExecuteNonQuery(i.Value);
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

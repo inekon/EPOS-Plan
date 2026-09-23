@@ -405,6 +405,16 @@ namespace EPOS.Kern.Tests
                 // Migration; wiederholbar, auf einer nachgezogenen Kopie ohne Treffer.
                 KwkgAnlagenartLeer.Ausfuehren();
 
+                // Schritt 102 (Umsetzungskonzept Zapfprofilgenerator 3.2, T1): die zehn
+                // Tww-Tabellen und ihre Indizes. Reines DDL aus DERSELBEN Quelle wie in
+                // der Migration und im Werkzeug (TwwSchema); CREATE … IF NOT EXISTS ist
+                // selbst wiederholbar. Die Quelldatei fuehrt die Tabellen samt fiktivem
+                // Testkatalog; hier stehen sie fuer eine aeltere Kopie.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.Indizes)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

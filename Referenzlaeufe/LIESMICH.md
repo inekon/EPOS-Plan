@@ -298,6 +298,23 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Schemastand 100 wie 101 gerechnet). Nachgezogen mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
 
+> **Nachtrag: Schemastand 102 (Zapfprofilgenerator, Stufe Z0), die Basis bleibt.** Migrationsschritt
+> **102** (`SCHRITT_102_ZAPFPROFIL_KATALOG`, Quelle `EPOS.Kern/Allgemein/Update/TwwSchema.cs`;
+> [Umsetzungskonzept Zapfprofilgenerator](../Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md)
+> 3.1/3.2, Schritt T1) legt die zehn Tabellen `Tab_Tww*` samt vier Indizes an — **reines DDL**,
+> nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+> Danach spielt [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) den
+> **fiktiven Testkatalog** ein (Konzept Kapitel 6 (b)): ein Tagesgangsatz mit vier Tagesgängen,
+> drei Nutzungsarten, drei Parameter mit neutralen Schlüsseln `Test.*`, ein Bedarfstag mit drei
+> Ereignissen und vier DIN-4708-Werte — **19 Zeilen**, alle erfunden und rund, Katalogversion
+> `TEST-1`, Status `EIGEN`, Herkunftsart `FIKTIV`, Quelle „Testkatalog (fiktiv)"; **keine** Zeile
+> mit Status `AUSLIEFERUNG` oder `IMPORT`, keine Zone, keine Zeile in `Tab_TwwProjekt`. Das Skript
+> ist wiederholbar (ein zweiter Lauf legt nichts an). Der Zellvergleich aller 120 Tabellen vor und
+> nach dem Schritt zeigt nur den Schemastand in `Tab_Applikation`; `integrity_check` ok,
+> `foreign_key_check` ohne Befund. Kein Projekt steht auf dem Generator, **keine Einfrierregel ist
+> berührt**, und der Referenzlauf der fünf CI-Projekte (1007, 1017, 1030, 1045, 1046) ist
+> **byte-gleich** gegen diese Basis (143/143 CSV).
+
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
 > Schemaständen 99 und 100 steht in
@@ -313,7 +330,7 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8) und `gebaeude_10576_bauweise.py` (Stufe GB, Befund D) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 102) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
