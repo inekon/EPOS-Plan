@@ -299,6 +299,11 @@ namespace WindowsFormsApplication1
                             ? ", [" + SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE + "], [" +
                               SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1 + "], [" + SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2 + "]"
                             : "";
+                    // ETAPPE E7c (Schritt F, Schemaschritt 108): der Kartenzustand
+                    // „Preisbasis" wandert mit - die Version oeffnet ihre Karte mit
+                    // derselben Basis wie der Stamm. Ohne die Spalte wie bisher.
+                    if (EnergietraegerPreisCtrl.PreisbasisSpalteVorhanden())
+                        staffel += ", [" + SchemaKatalog.SPALTE_EPS_PREISBASIS + "]";
                     string sqlSettings =
                         "INSERT INTO energy_project_settings " +
                         "(ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +

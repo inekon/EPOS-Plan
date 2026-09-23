@@ -24222,4 +24222,7 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
     <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
   </data>
+  <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
+    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit.</value>
+  </data>
 </root>

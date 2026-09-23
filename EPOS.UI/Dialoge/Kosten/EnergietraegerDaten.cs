@@ -169,6 +169,13 @@ public sealed class EnergietraegerStand
     /// <summary>Die gewählte Preisbasis.</summary>
     public int? PreisbasisId { get; set; }
 
+    /// <summary>
+    /// ETAPPE E7c (Schritt F, Mockup U32): die Herleitungszeile unter der Preisbasis —
+    /// gesetzt, wenn die Datenbank den Kartenzustand noch nicht speichern kann
+    /// (Schemastand vor 108); leer = keine Zeile.
+    /// </summary>
+    public string PreisbasisHerleitung { get; set; } = "";
+
     /// <summary>Der Leistungspreis-Modus: <c>true</c> = Monat, <c>false</c> = Jahr (FK6).</summary>
     public bool LeistungsModusMonat { get; set; }
 

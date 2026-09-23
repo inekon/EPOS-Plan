@@ -4212,6 +4212,33 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE E7c — die Preisbasis als eigener Kartenzustand (Schritt F, Schritt 108)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt F, Entscheid ET‑D‑3 Rest, Mockup U32) — die <b>Preisbasis
+        /// der Trägerkarte</b> je Projekt und Träger: der Einheitentext der gewählten
+        /// Basis („kWh" oder die Abrechnungseinheit). TEXT, nullbar; <b>NULL = die
+        /// Abrechnungseinheit</b> (die Vorgabe einer neu zugeordneten Zeile). Reiner
+        /// Kartenzustand — gespeichert und gerechnet wird der Basiswert je
+        /// Abrechnungseinheit; <c>ID_Umrechnung</c> bleibt die Regel der
+        /// Einheitenprüfung.
+        /// </summary>
+        public const string SPALTE_EPS_PREISBASIS = "Preisbasis";
+
+        /// <summary>
+        /// Schritt 108 der Migration (Etappe E7c, Schritt F) — die Spalte
+        /// <see cref="SPALTE_EPS_PREISBASIS"/> an <c>energy_project_settings</c>. Der
+        /// Datenteil steht bei <see cref="PreisbasisUebernahme"/> (einmalig aus
+        /// <c>ID_Umrechnung</c>: Regel nach kWh → „kWh", sonst die Abrechnungseinheit).
+        /// Ergebnisneutral; die Spalte steht BEWUSST NICHT in <see cref="Alle"/>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt108_Preisbasis =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREISBASIS, "TEXT"),
+        };
+
+        // ---------------------------------------------------------------------------
         // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierungsregeln je Projekt
         // ---------------------------------------------------------------------------
 

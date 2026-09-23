@@ -451,6 +451,14 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
                     SpalteSicherstellen(s);
 
+                // Schritt 108 (Schritt F, ET-D-3 Rest, U32): die Preisbasis der
+                // Traegerkarte als eigene Spalte an energy_project_settings, dann der
+                // Datenteil aus DERSELBEN Quelle wie in der Migration (ID_Umrechnung ->
+                // kWh bzw. Abrechnungseinheit). Wiederholbar - gesetzt wird nur leer.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt108_Preisbasis)
+                    SpalteSicherstellen(s);
+                PreisbasisUebernahme.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

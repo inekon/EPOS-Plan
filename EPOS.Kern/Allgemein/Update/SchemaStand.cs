@@ -385,11 +385,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>). <b>Reines
         /// DDL, ergebnisneutral:</b> NULL heißt „wie bisher"; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit der PREISBASIS ALS EIGENEM KARTENZUSTAND (Schritt 108, Schritt F,
+        /// Entscheid ET‑D‑3 Rest, Mockup U32) steht das Ziel auf <b>108</b>:
+        /// <c>energy_project_settings</c> bekommt die nullbare Textspalte
+        /// <c>Preisbasis</c> (<see cref="SchemaKatalog.Schritt108_Preisbasis"/>), und der
+        /// Datenteil (<see cref="PreisbasisUebernahme"/>) setzt sie einmalig aus
+        /// <c>ID_Umrechnung</c> — Regel nach kWh → „kWh", sonst die Abrechnungseinheit,
+        /// also genau die Basis, die die Karte bis dahin beim Öffnen zeigte.
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 107;
+        public const int Zielversion = 108;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -10265,6 +10265,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit. ähnelt.
+        /// </summary>
+        public static string ETV_PREISBASIS_OHNE_SPALTE {
+            get {
+                return ResourceManager.GetString("ETV_PREISBASIS_OHNE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert. ähnelt.
         /// </summary>
         public static string ETV_REGELN_HINWEIS {

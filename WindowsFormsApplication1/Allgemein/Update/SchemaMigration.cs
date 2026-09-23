@@ -3742,6 +3742,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN = 107;
 
+        /// <summary>
+        /// Schritt 108 — <b>die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
+        /// (Schritt F des Analysepapiers § 6, Entscheid ET‑D‑3 Rest, Mockup U32). Er folgt
+        /// auf <see cref="SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und DML</b>: die nullbare Textspalte <c>Preisbasis</c> an
+        /// <c>energy_project_settings</c>
+        /// (<see cref="SchemaKatalog.Schritt108_Preisbasis"/>), dann der einmalige
+        /// Datenteil (<see cref="PreisbasisUebernahme"/>): <c>ID_Umrechnung</c> nach kWh →
+        /// „kWh", sonst die Abrechnungseinheit des Trägers — genau die Basis, die die Karte
+        /// bis hierher beim Öffnen zeigte.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar:</b> Gesetzt wird nur, wo die Spalte leer
+        /// ist.</para>
+        /// </summary>
+        public const int SCHRITT_108_PREISBASIS = 108;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5206,6 +5225,21 @@ namespace WindowsFormsApplication1
                         "Kennzeichen - leer = wie bisher, ja, nein. ERGEBNISNEUTRAL: Alle " +
                         "Zeilen stehen auf leer, und leer rechnet wie bisher.",
                         Schritt_107_ErsatzRestwertKennzeichen),
+
+            // ENTSCHEID ET-D-3, offener Rest U32 (Schritt F) - die Preisbasis der
+            // Traegerkarte als eigener Kartenzustand. DDL UND DML; die Quellen sind
+            // SchemaKatalog.Schritt108_Preisbasis und PreisbasisUebernahme. Er steht NACH
+            // 107 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_108_PREISBASIS,
+                        "energy_project_settings bekommt die Preisbasis der Traegerkarte",
+                        "Die Traegerkarte merkt sich die gewaehlte Preisbasis (kWh oder die " +
+                        "Abrechnungseinheit) in einer eigenen Spalte statt ueber die " +
+                        "Umrechnungsregel - die Wahl kWh bleibt so auch dann stehen, wenn der " +
+                        "Brennstoff keine Regel nach kWh fuehrt. Jede Zeile bekommt einmalig " +
+                        "die Basis, die die Karte bis dahin beim Oeffnen zeigte. " +
+                        "ERGEBNISNEUTRAL: Die Preisbasis ist eine Eingabehilfe, gerechnet wird " +
+                        "unveraendert mit dem Basiswert je Abrechnungseinheit.",
+                        Schritt_108_Preisbasis),
         };
 
         /// <summary>
@@ -8057,6 +8091,59 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - Ersatz und Restwert rechnen " +
                     "wie bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 108 - die Preisbasis als eigener Kartenzustand (Schritt F, ET-D-3, U32)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 108 — Anlass, Spalte und Datenteil stehen bei
+        /// <see cref="SCHRITT_108_PREISBASIS"/>, bei
+        /// <see cref="SchemaKatalog.Schritt108_Preisbasis"/> und bei
+        /// <see cref="PreisbasisUebernahme"/>.
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in die Spalte, die
+        /// derselbe Schritt eben angelegt hat. <b>Die Nachprobe</b> fragt dasselbe wie der
+        /// Datenteil: Trägt danach noch eine Zeile mit Abrechnungseinheit keine
+        /// Preisbasis, ist der Schritt nicht gelaufen.</para>
+        /// </summary>
+        private static bool Schritt_108_Preisbasis(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_Preisbasis)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            PreisbasisUebernahme.Bericht bericht;
+            try { bericht = PreisbasisUebernahme.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = "Datenteil: " + ex.Message;
+                l.Notiz("108: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = PreisbasisUebernahme.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) mit Abrechnungseinheit tragen nach dem Schritt keine Preisbasis.";
+                l.Notiz("108: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("108: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt108_Preisbasis.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt; " + bericht.Text() + ". Die Karte oeffnet mit derselben " +
+                    "Basis wie bisher; kein Rechenweg liest die Spalte - der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

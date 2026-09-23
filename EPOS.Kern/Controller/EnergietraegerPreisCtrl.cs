@@ -88,8 +88,31 @@ namespace WindowsFormsApplication1
                 NOx = Zahl(row, "nox"),
                 IdUmrechnung = row["ID_Umrechnung"] != DBNull.Value
                     ? (int?)Convert.ToInt32(row["ID_Umrechnung"]) : null,
-                Staffel = StaffelAus(row)
+                Staffel = StaffelAus(row),
+                // ETAPPE E7c (Schritt F, Schemaschritt 108): der Kartenzustand „Preisbasis"
+                // aus seiner eigenen Spalte — NICHT mehr aus ID_Umrechnung abgeleitet.
+                // Fehlt die Spalte (Datenbank vor 108), wird das benannt, nicht still
+                // auf die Abrechnungseinheit zurückgefallen.
+                PreisbasisSpalteFehlt = !row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS),
+                Preisbasis = row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS) &&
+                             row[SchemaKatalog.SPALTE_EPS_PREISBASIS] != DBNull.Value
+                    ? Convert.ToString(row[SchemaKatalog.SPALTE_EPS_PREISBASIS]) : null
             };
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt F): Führt <c>energy_project_settings</c> die Spalte
+        /// <c>Preisbasis</c> (Schemaschritt 108)? Ohne sie schreibt
+        /// <see cref="Projektwerte"/> die übrigen Felder wie bisher.
+        /// </summary>
+        public static bool PreisbasisSpalteVorhanden()
+        {
+            try
+            {
+                return DataRepository.SpalteVorhanden(SchemaKatalog.ENERGY_PROJECT_SETTINGS,
+                                                      SchemaKatalog.SPALTE_EPS_PREISBASIS);
+            }
+            catch { return false; }
         }
 
         // =====================================================================
@@ -576,11 +599,20 @@ namespace WindowsFormsApplication1
             public double SO2;
             public double NOx;
 
-            /// <summary>Gewählte Umrechnung; −1 = keine (dann wird NULL geschrieben).</summary>
+            /// <summary>Gewählte Umrechnung; −1 = keine (dann wird NULL geschrieben).
+            /// Sie ist die REGEL der Einheitenprüfung, nicht mehr der Kartenzustand —
+            /// den trägt seit Schemaschritt 108 <see cref="Preisbasis"/>.</summary>
             public int IdUmrechnung = -1;
 
             /// <summary>Anzeigetext der Basiseinheit — geht in die Historie.</summary>
             public string Basiseinheit = "";
+
+            /// <summary>
+            /// ETAPPE E7c (Schritt F, Mockup U32): der Einheitentext der gewählten
+            /// Preisbasis („kWh" oder die Abrechnungseinheit) — der eigene Kartenzustand.
+            /// Leer/<c>null</c> schreibt NULL (= Abrechnungseinheit).
+            /// </summary>
+            public string Preisbasis;
         }
 
         /// <summary>
@@ -712,48 +744,65 @@ namespace WindowsFormsApplication1
             object idUmrechnung = stand.IdUmrechnung != -1
                 ? (object)stand.IdUmrechnung : DBNull.Value;
 
+            // ETAPPE E7c (Schritt F, Schemaschritt 108): Der Kartenzustand „Preisbasis"
+            // wandert mit, wo die Spalte steht; eine Datenbank vor 108 schreibt die
+            // übrigen Felder wie bisher. Kein −1-Rückfall mehr für die Karte: Die
+            // Basis steht als Einheitentext da, unabhängig davon, ob der Brennstoff eine
+            // Regel nach kWh führt.
+            bool mitBasis = PreisbasisSpalteVorhanden();
+            object basis = string.IsNullOrWhiteSpace(stand.Preisbasis)
+                ? (object)DBNull.Value : stand.Preisbasis.Trim();
+
+            var werte = new List<DbParam>
+            {
+                new DbParam("@p", stand.Arbeitspreis),
+                new DbParam("@pl", stand.Leistungspreis),
+                new DbParam("@hi", stand.Hi),
+                new DbParam("@hs", stand.Hs),
+                new DbParam("@b", stand.Grundpreis),
+                new DbParam("@cid", idUmrechnung),
+                new DbParam("@co2", stand.CO2),
+                new DbParam("@so2", stand.SO2),
+                new DbParam("@nox", stand.NOx)
+            };
+            if (mitBasis) werte.Add(new DbParam("@basis", basis));
+            werte.Add(new DbParam("@pid", projektId));
+            werte.Add(new DbParam("@eid", traegerId));
+
             int zeilen = (int)DataRepository.ExecuteNonQuery(
                 @"UPDATE energy_Project_settings
                   SET custom_price_work = ?, custom_price_power = ?, custom_hi = ?, custom_hs = ?,
                       custom_price_base = ?, ID_Umrechnung = ?,
-                      co2 = ?, so2 = ?, nox = ?
+                      co2 = ?, so2 = ?, nox = ?" +
+                (mitBasis ? ", [" + SchemaKatalog.SPALTE_EPS_PREISBASIS + "] = ?" : "") + @"
                   WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new DbParam[]
-                {
-                    new DbParam("@p", stand.Arbeitspreis),
-                    new DbParam("@pl", stand.Leistungspreis),
-                    new DbParam("@hi", stand.Hi),
-                    new DbParam("@hs", stand.Hs),
-                    new DbParam("@b", stand.Grundpreis),
-                    new DbParam("@cid", idUmrechnung),
-                    new DbParam("@co2", stand.CO2),
-                    new DbParam("@so2", stand.SO2),
-                    new DbParam("@nox", stand.NOx),
-                    new DbParam("@pid", projektId),
-                    new DbParam("@eid", traegerId)
-                });
+                werte.ToArray());
 
             if (zeilen != 0) return;
+
+            var neu = new List<DbParam>
+            {
+                new DbParam("@pid", projektId),
+                new DbParam("@eid", traegerId),
+                new DbParam("@p", stand.Arbeitspreis),
+                new DbParam("@pl", stand.Leistungspreis),
+                new DbParam("@h", stand.Hi),
+                new DbParam("@hs", stand.Hs),
+                new DbParam("@b", stand.Grundpreis),
+                new DbParam("@cid", idUmrechnung),
+                new DbParam("@co2", stand.CO2),
+                new DbParam("@so2", stand.SO2),
+                new DbParam("@nox", stand.NOx)
+            };
+            if (mitBasis) neu.Add(new DbParam("@basis", basis));
 
             DataRepository.ExecuteSQL(
                 @"INSERT INTO energy_Project_settings
                   (ID_Projekt, [ID_Energieträger], custom_price_work, custom_price_power,
-                   custom_hi, custom_Hs, custom_price_base, ID_Umrechnung, co2, so2, nox)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                new DbParam[]
-                {
-                    new DbParam("@pid", projektId),
-                    new DbParam("@eid", traegerId),
-                    new DbParam("@p", stand.Arbeitspreis),
-                    new DbParam("@pl", stand.Leistungspreis),
-                    new DbParam("@h", stand.Hi),
-                    new DbParam("@hs", stand.Hs),
-                    new DbParam("@b", stand.Grundpreis),
-                    new DbParam("@cid", idUmrechnung),
-                    new DbParam("@co2", stand.CO2),
-                    new DbParam("@so2", stand.SO2),
-                    new DbParam("@nox", stand.NOx)
-                });
+                   custom_hi, custom_Hs, custom_price_base, ID_Umrechnung, co2, so2, nox" +
+                (mitBasis ? ", [" + SchemaKatalog.SPALTE_EPS_PREISBASIS + "]" : "") + @")
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" + (mitBasis ? ", ?" : "") + ")",
+                neu.ToArray());
         }
 
         // =====================================================================
@@ -776,6 +825,15 @@ namespace WindowsFormsApplication1
             /// <summary>Die zweistufige Leistungspreis-Staffel (Schritt 104); leer, wenn
             /// nicht gepflegt oder die Spalten fehlen — nie <c>null</c>.</summary>
             public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
+
+            /// <summary>ETAPPE E7c (Schritt F, Schritt 108): die gemerkte Preisbasis der
+            /// Karte (Einheitentext); <c>null</c> = nicht gepflegt, also die
+            /// Abrechnungseinheit.</summary>
+            public string Preisbasis;
+
+            /// <summary>ETAPPE E7c: Die Datenbank führt die Spalte noch nicht (vor
+            /// Schemaschritt 108) — die Karte nennt das, statt still zurückzufallen.</summary>
+            public bool PreisbasisSpalteFehlt;
         }
 
         private static double? Zahl(DataRow r, string spalte)

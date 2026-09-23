@@ -1243,6 +1243,27 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 107, trocken);
 
+            // ---- Schritt 108: die Preisbasis der Traegerkarte als eigener Kartenzustand
+            //      (Schritt F, Entscheid ET-D-3 Rest, Mockup U32). DDL UND DML aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_108_Preisbasis: die
+            //      nullbare Textspalte Preisbasis an energy_project_settings
+            //      (SchemaKatalog.Schritt108_Preisbasis), dann der Datenteil
+            //      (PreisbasisUebernahme): ID_Umrechnung nach kWh -> "kWh", sonst die
+            //      Abrechnungseinheit des Traegers - genau die Basis, die die Karte bis
+            //      hierher beim Oeffnen zeigte.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Spalte.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_Preisbasis)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 108, trocken);
+            if (!trocken)
+            {
+                PreisbasisUebernahme.Bericht bericht108 = PreisbasisUebernahme.Ausfuehren();
+                Console.WriteLine("Schritt 108 - " + bericht108.Text() + "; offen: " +
+                                  PreisbasisUebernahme.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

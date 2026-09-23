@@ -24215,4 +24215,7 @@ Do you want to allow this?</value>
   <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
     <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
   </data>
+  <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
+    <value>This database cannot store the selected price basis yet (schema version before 108) — the card shows the billing unit.</value>
+  </data>
 </root>
