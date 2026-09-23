@@ -8067,3 +8067,75 @@ Regel dazu gilt künftig strikt.
 > Seit 23.09.2026 rollt in den Verwaltungsdialogen nur noch die Liste,
 > Spalten passen sich der Fensterbreite an, und die Felder des gewählten
 > Satzes werden ohne „Bearbeiten…" direkt geändert und gespeichert.
+
+## #444 — Simulation: Senken beim Anlegen, Heizkreis-Kriterium, Duplizieren ohne Ergebnisverweise (23.09.2026)
+
+Anwenderentscheide 23.09.2026 (aus „Nach #441"): Heizkreis-Kriterium
+einschalten; Senke beim Anlegen aus dem Bedarf; Kopierweg der
+Wirtschaftlichkeitszeilen prüfen und beheben; dazu Push ohne Rückfrage nach
+grünem Gate. Commits `aa407bfd` (Senken beim Anlegen aus dem Bedarf,
+Heizkreis-Kriterium aktiv), `b570394a` (Duplizieren kopiert keine
+Ergebnisverweise, Schemaschritt 106), `05997e0a` (Testdatenbank auf Schemastand
+106 nachgezogen), `7c078901` (Merge origin/ios_migration_september:
+Gebäudemodell R12 in die Welle).
+
+**Umsetzung.** (1) `SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV = true`; Text „{Anlage}:
+Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über
+dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher."; in der
+Testdatenbank melden nur 1026, 1028, 1029 (Solarthermie direkt am Heizkreis),
+keines der 13 Referenzprojekte. (2) Neuer Kern-Baustein `Senkenvorbelegung`
+(`EPOS.Kern/Allgemein/Simulation/`): Bedarf je Kanal aus Gebäude, Brauchwasser,
+Prozesswärme und Ganglinie; Heizung/Warmwasser → Heizkreis (Heizung +
+Warmwasser), Prozesswärme → zusätzlich oder allein Prozesswärme, kein Bedarf →
+keine Zeile; gilt für Wärmepumpe, Solarthermie, Kessel (auch Elektrokessel) und
+BHKW; alle Erzeugerdialoge und der Assistent schreiben über
+`WizardCtrl.Add_WP_Waermeerzeuger` (löschen und neu anlegen) — nur wirklich
+neue Anlagen (Typ und Bezeichner vorher nicht vorhanden) bekommen Zeilen,
+bestehende Senken werden gerettet; der Assistent zieht nach dem Speichern nach
+(`AssistentCtrl`). Die Anlagendialoge Wärmepumpe, Heizkessel, BHKW,
+Solarkollektoren zeigen die Zeile „Senken: …" (Ressourcen `ANL_SENKEN_ZEILE`,
+`ANL_SENKEN_VORBELEGUNG`, `ANL_SENKEN_BEIM_SPEICHERN`), aus dem Kern
+formuliert. Kein Schemaschritt, Rechenweg unberührt. (3) Ursache:
+`ProjektDuplizierenCtrl.ErmittleZieltabelle` lieferte für
+`Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis` kein Ziel, die Spalte wurde
+unversetzt kopiert — jede Kopie und Variante zeigte auf den Lauf des
+Quellprojekts. Regel `ERGEBNISVERWEISE_LEEREN`: Kopie behält die Zeilen,
+Verweis NULL, Wirtschaftlichkeit rechnet nach dem ersten Lauf neu.
+Schemaschritt 106 (`WirtschaftlichkeitFremdverweis`, reines DML): jeder Verweis
+ohne Lauf desselben Projekts wird NULL; Zielversion 106; Testdatenbank: 21
+Zellen NULL (Zeilen 16/18/20 Projekt 1028, 21/23/25 1029, 189/191/193 1040,
+194/196/198 1041 auf Lauf 167 von 1026; 213–218 1043 und 219–221 1044 auf Lauf
+206 von 1042), sonst unverändert, integrity_check ok, foreign_key_check leer,
+zweiter Lauf No-op; nach dem Merge von origin die dortige Datenbank (Stand 105,
+Gebäudemodell) mit `Werkzeuge/Testdatenbankschema` erneut auf 106 gezogen
+(dieselben 21 Zellen). Merge-Konflikt nur in der Testdatenbank.
+
+**Prüfung (vor dem Merge, Basis R11).** Kern-Filter 0 Fehler; EPOS.Kern.Tests 4
+851, EPOS.UI.Tests 5 324, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; 27 neue/geänderte Tests (14 vorher rot belegt);
+Windows-Schale 0 Fehler; SQL-Prüfer 1 657 Texte, 0 Fundstellen; Referenzlauf
+13/13 PASS (3 882 737 Werte). Gate auf dem gemergten Stand `7c078901`:
+Kern-Filter 0 Fehler; EPOS.Kern.Tests 4 981, EPOS.UI.Tests 5 360, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R12_Gebaeudemodell`:
+alle 13 Basisprojekte PASS (4 250 839 Werte innerhalb der Toleranz).
+
+**Was offen bleibt.** (1) Zwei gleichnamige Anlagen gleichen Typs teilen sich
+den Senkenstand; eine im Dialog umbenannte Anlage gilt als neu (wie bisher).
+(2) „Bedarf vorhanden" heißt „zugeordnet", nicht „gerechnete Menge". (3) Kopien
+tragen weiter einen kopierten Simulationslauf in `Tab_Ergebnis` —
+Anwenderentscheid, ob Ergebnistabellen künftig nicht mitkopiert oder der
+Verweis auf den kopierten Lauf versetzt werden soll. (4) Komponenten-Übernahme
+und Duplizieren kopieren die Senkenliste der Quelle, auch eine leere. (5) iOS
+zeigt die Senkenzeile nicht (Hüllen nur in der Windows-Schale). (6) Ein
+Referenzlauf startete, während ein fremder Testprozess lief (Ergebnis PASS; die
+Regel dazu gilt künftig strikt).
+
+**Logbuch-Vorschlag** (Version 1.2.0.4):
+
+> Seit 23.09.2026 erhalten neue Wärmeerzeuger beim Anlegen ihre
+> Wärmesenken aus dem Bedarf des Projekts, auch für Prozesswärme, und
+> die Anlagendialoge zeigen sie. Seit 23.09.2026 wird Solarthermie
+> ohne Pufferspeicher am Heizkreis als Hinweis gemeldet. Seit
+> 23.09.2026 übernehmen Kopien und Varianten keine gespeicherten
+> Wirtschaftlichkeitsergebnisse mehr als aktuell.
