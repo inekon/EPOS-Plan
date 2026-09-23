@@ -209,10 +209,10 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das Einspielskript ist wiederholbar: Die Repo-Datei ist das Ergebnis eines ersten
-        /// Laufs; zwei weitere Läufe auf einer Arbeitskopie legen nichts an, führen nichts nach
-        /// und lassen jede Tww-Zeile gleich. Ohne Python schweigt der Fall — der Handlauf
-        /// steht im Kopf des Skripts.
+        /// Das Einspielskript ist wiederholbar: Ein erster Lauf zieht die Arbeitskopie auf den
+        /// Stand des Skripts nach; zwei weitere Läufe legen nichts an, führen nichts nach und
+        /// lassen jede Tww-Zeile gleich. Ohne Python schweigt der Fall — der Handlauf steht im
+        /// Kopf des Skripts.
         /// </summary>
         [Fact]
         public void Das_Einspielskript_ist_wiederholbar()
@@ -229,7 +229,35 @@ namespace EPOS.Kern.Tests
             {
                 string kopie = Path.Combine(ordner, "Kenndaten_Test.sqlite");
                 File.Copy(pfad, kopie);
+
+                // Lauf 0 zieht die Arbeitskopie auf den Stand des Skripts nach: Die Stufe Z2
+                // erweitert den Testkatalog, die Repo-Datei wird erst beim Zusammenführen über das
+                // Skript nachgezogen (danach legt auch dieser Lauf nichts mehr an). Ab Lauf 1 gilt
+                // die Wiederholbarkeit streng.
+                (int code, string ausgabe)? erster = PythonStarten(skript, kopie);
+                if (erster == null) return;                                 // kein Python - schweigen
+                Assert.True(erster.Value.code == 0, "Lauf 0 endete mit " + erster.Value.code + ":\n" + erster.Value.ausgabe);
                 string vorher = Abbild(kopie);
+
+                // Der Testkatalog trägt jeden Schlüssel, den Bilanz und Auslegung lesen — so rechnet
+                // der Generator auf einer Projektkopie ohne fehlenden Parameter.
+                using (SqliteConnection c = Oeffnen(kopie))
+                {
+                    var fehlend = new List<string>();
+                    foreach (Type t in new[] { typeof(ZapfParameter), typeof(ZapfAuslegungParameter) })
+                        foreach (System.Reflection.FieldInfo f in t.GetFields(System.Reflection.BindingFlags.Static
+                                     | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
+                        {
+                            if (!f.IsLiteral || f.FieldType != typeof(string)) continue;
+                            string schluessel = (string)f.GetRawConstantValue();
+                            if (schluessel.EndsWith(".", StringComparison.Ordinal)) continue;   // Präfix
+                            if (Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Schluessel\" = $w",
+                                     schluessel) == 0)
+                                fehlend.Add(schluessel);
+                        }
+                    Assert.True(fehlend.Count == 0, "Dem Testkatalog fehlen Parameter: " + string.Join(", ", fehlend));
+                }
+                SqliteConnection.ClearAllPools();
 
                 for (int lauf = 1; lauf <= 2; lauf++)
                 {

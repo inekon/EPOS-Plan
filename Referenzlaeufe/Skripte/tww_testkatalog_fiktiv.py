@@ -17,8 +17,14 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
     EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs) mit runden, ERFUNDENEN Werten - kein
     Wert faellt mit einer Normvorgabe zusammen; sie machen den Generatorweg auf einer
     Projektkopie der Testdatenbank rechenbar (Stufe Z1, Gruppe 2);
-  - ein Bedarfstag (Konstruktor) mit drei Ereignissen;
-  - vier DIN-4708-Werte (zwei Belegungen, zwei Ausstattungsklassen) mit erfundenen Zahlen.
+  - die Parameter der Auslegung (Schluessel wie ZapfAuslegungParameter in
+    EPOS.Kern/Allgemein/Zapfprofil/Auslegungsparameter.cs: Summenlinie, DIN-4708-Kennzahl samt
+    Zapfbloecken des Profils, Speicherauslegung, Grossanlage, Konstruktorregel) mit runden,
+    ERFUNDENEN Werten neben jeder Normvorgabe (Stufe Z2);
+  - drei Bedarfstage mit erfundenen Ereignissen: Konstruktor, Referenztag, Normtag
+    (Quelle_Art 4, 2, 3) - keiner ist ein Normprofil;
+  - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
+    erfundenen Zahlen.
 
 Jede Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog (fiktiv)",
 Katalogversion "TEST-1", kein Beleg. KEINE Zeile mit Status 'AUSLIEFERUNG' oder 'IMPORT', keine
@@ -109,22 +115,82 @@ PARAMETER += [
     ("Zapfprofil.Formvektor.Warnschwelle", 0.01, "-"),
 ]
 
-BEDARFSTAG = "Testbedarfstag (fiktiv)"
-BEDARFSTAG_QUELLE_ART = 4          # Konstruktor
-BEDARFSTAG_BEZUGSMENGE = 10.0
-# (Minute_Beginn, Dauer_min, Energie_Kwh, Reihenfolge)
-EREIGNISSE = [
-    (420, 10, 1.0, 1),
-    (720, 5, 0.5, 2),
-    (1140, 20, 2.0, 3),
+# Die Schluessel der Auslegung (ZapfAuslegungParameter, Stufe Z2) - Werte rund und ERFUNDEN,
+# bewusst neben jeder Normvorgabe und jedem Wert der Vorlage gewaehlt (Kapitel 6 (a)).
+PARAMETER += [
+    ("A100.Kaltwasser.Auslegung", 12.0, "°C"),
+    ("W551.Mindesttemperatur", 62.0, "°C"),
+    ("A100.Ladungsfaktor", 0.8, "-"),
+    ("A100.Sensorhoehe", 0.5, "-"),
+    ("A100.Mischwassertemperatur", 44.0, "°C"),
+    ("A100.Verzoegerung", 2.0, "min"),
+    ("A100.Uebertrager.U", 500.0, "W/(m²·K)"),
+    ("A100.Uebertrager.Uebertemperatur", 20.0, "K"),
+    ("A100.Uebertragerflaeche.Steigung", 0.01, "m²/l"),
+    ("A100.Uebertragerflaeche.Achsabschnitt", -0.5, "m²"),
+    ("A100.Zeitkonstante.Koeffizient", 60.0, "min/h"),
+    ("A100.Vereinfachung.Anwendungsgrenze", 5.0, "WE"),
+    ("A100.Vereinfachung.Sensorhoehe", 0.7, "-"),
+    ("A100.Vereinfachung.Speichertemperatur", 58.0, "°C"),
+    ("Summenlinie.Wertepaare", 5.0, "-"),
+    ("DIN4708.a1", 0.3, "1/h"),
+    ("DIN4708.a2", 3.0, "1/h"),
+    ("DIN4708.z", 0.2, "h"),
+    ("DIN4708.p_b", 4.0, "Personen"),
+    ("DIN4708.w_b", 6000.0, "Wh"),
+    ("DIN4708.W_b", 5000.0, "Wh"),
+    ("DIN4708.Kappung", 1.5, "-"),
+    ("DIN4708.Profil.Bloecke", 2.0, "-"),
+    ("DIN4708.Profil.Block.1.Beginn", 420.0, "min"),
+    ("DIN4708.Profil.Block.1.Dauer", 10.0, "min"),
+    ("DIN4708.Profil.Block.1.Anteil", 1.0, "-"),
+    ("DIN4708.Profil.Block.2.Beginn", 1080.0, "min"),
+    ("DIN4708.Profil.Block.2.Dauer", 60.0, "min"),
+    ("DIN4708.Profil.Block.2.Anteil", 2.0, "-"),
+    ("Speicherauslegung.Nutzanteil", 0.75, "-"),
+    ("Speicherauslegung.Zuschlag", 0.1, "-"),
+    ("Speicherauslegung.Ladefenster.Laenge", 10.0, "h"),
+    ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
+    ("Speicherauslegung.GLF.Obergrenze", 40.0, "-"),
+    ("Speicherauslegung.Klassisch.LiterJePersonTag", 40.0, "l/(P·d)"),
+    ("Speicherauslegung.Klassisch.Spreizung", 45.0, "K"),
+    ("Speicherauslegung.Klassisch.Warnfaktor", 2.5, "-"),
+    ("Speicherauslegung.Nenninhalt.Raster", 500.0, "l"),
+    ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
+    ("W551.Grossanlage.Leitungsinhalt", 4.0, "l"),
+    ("W551.Leitungsinhalt.JeMeter", 0.2, "l/m"),
+    ("Konstruktor.Regel.Testbrause.Volumenstrom", 10.0, "l/min"),
+    ("Konstruktor.Regel.Testbrause.Dauer", 4.0, "min"),
+    ("Konstruktor.Regel.Testbrause.Temperatur", 40.0, "°C"),
 ]
 
-# (Art, Schluessel, Wert)
+# (Bezeichner, Quelle_Art, Bezugsmenge, [(Minute_Beginn, Dauer_min, Energie_Kwh, Reihenfolge)])
+# Quelle_Art: 2 Referenztag, 3 Normtag, 4 Konstruktor - alle Ereignisse erfunden, kein Normprofil.
+BEDARFSTAGE = [
+    ("Testbedarfstag (fiktiv)", 4, 10.0, [
+        (420, 10, 1.0, 1),
+        (720, 5, 0.5, 2),
+        (1140, 20, 2.0, 3),
+    ]),
+    ("Testreferenztag (fiktiv)", 2, 20.0, [
+        (390, 30, 3.0, 1),
+        (450, 15, 1.5, 2),
+        (780, 10, 0.5, 3),
+        (1110, 45, 4.0, 4),
+    ]),
+    ("Testnormtag (fiktiv)", 3, 5.0, [
+        (420, 10, 2.0, 1),
+        (1080, 60, 4.0, 2),
+    ]),
+]
+
+# (Art, Schluessel, Wert) - Belegung in Personen, Ausstattung als Sigma v*w_v in Wh.
 DIN4708_WERTE = [
     ("BELEGUNG", "2", 1.0),
+    ("BELEGUNG", "3", 1.5),
     ("BELEGUNG", "4", 3.0),
-    ("AUSSTATTUNG", "Testklasse A", 10.0),
-    ("AUSSTATTUNG", "Testklasse B", 20.0),
+    ("AUSSTATTUNG", "Testklasse A", 4000.0),
+    ("AUSSTATTUNG", "Testklasse B", 9000.0),
 ]
 
 KATALOGTABELLEN = [
@@ -138,8 +204,8 @@ ERWARTET = {
     "Tab_TwwTagesgangsatz_STAMM": 1,
     "Tab_TwwTagesgang_STAMM": len(TAGESGAENGE),
     "Tab_TwwNutzungsart_STAMM": len(NUTZUNGSARTEN),
-    "Tab_TwwBedarfstag_STAMM": 1,
-    "Tab_TwwBedarfstagEreignis_STAMM": len(EREIGNISSE),
+    "Tab_TwwBedarfstag_STAMM": len(BEDARFSTAGE),
+    "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE),
     "Tab_TwwParameter_STAMM": len(PARAMETER),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
     "Tab_TwwZone": 0,
@@ -262,17 +328,19 @@ def main():
                             (schluessel, wert, einheit, VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
                 angelegt += 1
 
-            # --- Bedarfstag samt Ereignissen (nur mit neu angelegtem Kopf) ----------------
-            if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwBedarfstag_STAMM" WHERE "Bezeichner" = ? '
-                         'AND "Katalogversion" = ?', BEDARFSTAG, VERSION) == 0:
+            # --- Bedarfstage samt Ereignissen (nur mit neu angelegtem Kopf) ---------------
+            for (bezeichner, quelle_art, bezugsmenge, ereignisse) in BEDARFSTAGE:
+                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwBedarfstag_STAMM" WHERE "Bezeichner" = ? '
+                             'AND "Katalogversion" = ?', bezeichner, VERSION) > 0:
+                    continue
                 cur = con.execute('INSERT INTO "Tab_TwwBedarfstag_STAMM" ("Bezeichner", "Katalogversion", '
                                   '"Quelle_Art", "Bezugsmenge", "Quelle", "Ausgabe", "Version", "Herkunftsart", '
                                   '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
-                                  (BEDARFSTAG, VERSION, BEDARFSTAG_QUELLE_ART, BEDARFSTAG_BEZUGSMENGE,
+                                  (bezeichner, VERSION, quelle_art, bezugsmenge,
                                    QUELLE, VERSION, HERKUNFT, STATUS))
                 id_tag = cur.lastrowid
                 angelegt += 1
-                for (beginn, dauer, energie, reihenfolge) in EREIGNISSE:
+                for (beginn, dauer, energie, reihenfolge) in ereignisse:
                     con.execute('INSERT INTO "Tab_TwwBedarfstagEreignis_STAMM" ("ID_Bedarfstag", "Minute_Beginn", '
                                 '"Dauer_min", "Energie_Kwh", "Reihenfolge") VALUES (?, ?, ?, ?, ?)',
                                 (id_tag, beginn, dauer, energie, reihenfolge))
