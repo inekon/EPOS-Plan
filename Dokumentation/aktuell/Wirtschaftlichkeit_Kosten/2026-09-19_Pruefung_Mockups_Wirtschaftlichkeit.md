@@ -1,9 +1,9 @@
 # Prüfung der Mockups zur Wirtschaftlichkeit — Konsistenz, Darstellung, Berechnung, Einheitlichkeit
 
-**Stand 22.09.2026** (Prüfung vom 19.09.2026, seither fortgeschrieben) · Codestand `3b71871c` ·
+**Stand 23.09.2026** (Prüfung vom 19.09.2026, seither fortgeschrieben) · Codestand `ea8e2a12` ·
 Prüfgegenstand: die sechs HTML-Mockups unter `../Mockups/` und die
 einschlägigen Papiere dieses Ordners · Schemastand 94 zur Prüfzeit; heute steht
-`SchemaStand.Zielversion` auf **100** (90–100 vergeben), **nächster freier Schritt 101** ·
+`SchemaStand.Zielversion` auf **105** (90–105 vergeben), **nächster freier Schritt 106** ·
 Prüfprotokolle mit allen Einzelbefunden:
 [`ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/`](../../ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/)
 

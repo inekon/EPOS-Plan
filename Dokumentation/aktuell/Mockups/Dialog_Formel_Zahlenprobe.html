@@ -2872,17 +2872,24 @@ Stromsteuer
         <tr><td>Hilfsstrom: Basiszeile, Mengenkette, Kesselhinweis, ohne Lauf</td><td class="rs">BHW_H_BASIS · BHW_H_KETTE1 · BHW_H_KETTE2 · BHW_H_KESSEL · BHW_H_OHNE_LAUF</td><td>Hilfsstrom</td></tr>
         <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit" · ohne Lauf · Standzeile</td><td class="rs">WIRT_ERL_TEILSUMME · WIRT_ERL_PROJEKTWEIT · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
         <tr><td>Fußleiste „Speichern" · „Abbrechen" · Fehlermeldung</td><td class="rs">BHW_BTN_SPEICHERN · ALLG_BTN_ABBRECHEN · BHW_MSG_FEHLER</td><td>Fußleiste</td></tr>
-        <tr><td>Knöpfe „Sätze und Herkunft…" · „Wahl und Herkunft…" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_KNOPF_ANLAGE · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_KNOPF_STEUERN · geplant · U22</span></td><td>Angaben der gewählten Anlage · Energiesteuer</td></tr>
-        <tr><td>Überlagerung: Titel „Sätze und Herkunft — {0}" · drei Gruppenköpfe · Wirkung je Wahl „→ {0}" · „Wirkung Jahr 1 ({0})" · Knopf „Übernehmen" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_TITEL · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_KWKG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_ENERGIEST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_STROMST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG_JAHR1 · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_UEBERNEHMEN · geplant · U22</span></td><td>Überlagerung</td></tr>
-        <tr><td>Spalten „Vorschlag" · „Herkunft" · „eigener Wert" · „gilt" · Platzhalter „leer = Vorschlag" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_SP_VORSCHLAG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_HERKUNFT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_EIGEN · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_GILT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_LEER_VORSCHLAG · geplant · U22</span></td><td>Überlagerung, KWK-Zuschlag</td></tr>
-        <tr><td>Wahl „Fall 1 / Fall 2" · Feld „Stromkennzahl σ" · Vorschlagszeile <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_FLD_ABWAERMEABFUHR · geplant · U1</span> · <span class="rs-geplant">BHW_FLD_STROMKENNZAHL · geplant · U1</span> · <span class="rs-geplant">BHW_HERL_STROMKENNZAHL · geplant · U1</span></td><td>Überlagerung, KWK-Strom</td></tr>
-        <tr><td>Mengenzeile „Nutzwärme × Stromkennzahl" <b>neu</b></td><td class="rs"><span class="rs-geplant">WIRT_KWKG_MENGE_FALL2 · geplant · U1</span></td><td>Nachweisumschlag</td></tr>
+        <tr><td>Knöpfe „Sätze und Herkunft…" · „Wahl und Herkunft…" <b>neu</b></td><td class="rs">BHW_UEB_KNOPF_ANLAGE · <span class="rs-geplant">BHW_UEB_KNOPF_STEUERN · geplant · U22</span></td><td>Angaben der gewählten Anlage · Energiesteuer</td></tr>
+        <tr><td>Überlagerung: Titel „Sätze und Herkunft — {0}" · drei Gruppenköpfe · Wirkung je Wahl „→ {0}" · „Wirkung Jahr 1 ({0})" · Knopf „Übernehmen" <b>neu</b></td><td class="rs">BHW_UEB_TITEL · BHW_UEB_G_KWKG · <span class="rs-geplant">BHW_UEB_G_ENERGIEST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_STROMST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG_JAHR1 · geplant · U22</span> · BHW_UEB_UEBERNEHMEN</td><td>Überlagerung</td></tr>
+        <tr><td>Spalten „Größe" · „Vorschlag" · „Herkunft" · „eigener Wert" · „gilt" · Platzhalter „leer = Vorschlag" <b>neu</b></td><td class="rs">BHW_UEB_SP_GROESSE · BHW_UEB_SP_VORSCHLAG · BHW_UEB_SP_HERKUNFT · BHW_UEB_SP_EIGEN · BHW_UEB_SP_GILT · BHW_UEB_LEER_VORSCHLAG</td><td>Überlagerung, KWK-Zuschlag</td></tr>
+        <tr><td>KWK-Strom (§ 2 Nr. 16 KWKG): Wahl „Fall 1 / Fall 2" mit der Wirkung je Fall · Feld „Stromkennzahl σ" · Vorschlagszeile und Herkunft · „gilt" · Erklärzeile <b>neu</b></td><td class="rs">BHW_UEB_KWK_STROM · BHW_FLD_FALL1 · BHW_FLD_ABWAERMEABFUHR · BHW_UEB_FALL1_MENGE · BHW_UEB_FALL1_OHNE_LAUF · BHW_UEB_FALL2_FORMEL · BHW_FLD_STROMKENNZAHL · BHW_HERL_STROMKENNZAHL · BHW_HERL_STROMKENNZAHL_OHNE · BHW_UEB_GILT_VORSCHLAG · BHW_UEB_GILT_EIGEN · BHW_UEB_GILT_EIGEN_OHNE · BHW_UEB_GILT_KEINE · BHW_UEB_GILT_FALL1 · BHW_UEB_INFO_SIGMA</td><td>Überlagerung, KWK-Strom</td></tr>
+        <tr><td>Anzeigezeile „KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung." bzw. „Fall 2 — Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ {0} ({1})" <b>neu</b></td><td class="rs">BHW_A_KWK_FALL1 · BHW_A_KWK_FALL2 · BHW_A_KWK_FALL2_OHNE</td><td>Angaben der gewählten Anlage</td></tr>
+        <tr><td>Herleitung je Anlage „KWKG § 2 Nr. 16 Fall 2 … Stromkennzahl σ … Nutzwärme … KWK-Strom min(…) … Kürzung …" (hier als Mengenzeile „Nutzwärme × Stromkennzahl" unter dem Namen <span class="mono">WIRT_KWKG_MENGE_FALL2</span> geplant) · Herkunft von σ · ohne σ · Ersatzweg <b>neu</b></td><td class="rs">WIRT_KWKG_FALL2_ANLAGE · WIRT_KWKG_SIGMA_GEPFLEGT · WIRT_KWKG_SIGMA_BERECHNET · WIRT_KWKG_SIGMA_FEHLT · WIRT_KWKG_FALL2_OHNE_SIGMA · WIRT_KWKG_FALL2_ERSATZ · WIRT_KWKG_FALL2_ERSATZ_ANLAGE · WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA · WIRT_KWKG_FALL2_VERTEILUNG_PEL · WIRT_KWKG_FALL2_VERTEILUNG_GLEICH</td><td>Nachweisumschlag der Zuschlagszeile · Mengenkette</td></tr>
         <tr><td>Wahl „Projektvorgabe für alle Anlagen / nur diese Anlage" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_SCOPE_PROJEKT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SCOPE_ANLAGE · geplant · U22</span></td><td>Überlagerung, Energiesteuer</td></tr>
         <tr><td>Staffelzeile unter dem Jahresdeckel · Warnband zum Deckelanteil <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_A_DECKEL_STAFFEL · geplant · U25</span> · <span class="rs-geplant">BHW_W_DECKELANTEIL · geplant · U25</span></td><td>Angaben der gewählten Anlage</td></tr>
         <tr><td>Kohärenzwarnung bei Modus ERLOES</td><td class="rs">KOH_DOPPEL_STROMST_9_1_3</td><td>Kohärenzprüfung</td></tr>
-        <tr><td>Begründung „virtuelle Gesamtanlage" · kein Vbh-Kontingent (Anlagenart fehlt · Anteil an den
-          Neuherstellungskosten fehlt · unter der Mindestschwelle)</td><td class="rs">WIRT_KWKG_ERSATZ_GEWICHTET ·
-          WIRT_KWKG_KONTINGENT_OHNE_ART · WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT · WIRT_KWKG_KONTINGENT_ZU_KLEIN</td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
+        <tr><td>Kohärenzzeilen der KWKG-Rechnung „Stromkennzahl fehlt" · „Anlagenart fehlt" (Hinweis, ohne Betrag)</td><td class="rs">KOH_KWKG_STROMKENNZAHL_FEHLT · KOH_KWKG_ANLAGENART_FEHLT</td><td>Kohärenzprüfung</td></tr>
+        <tr><td>Begründung „virtuelle Gesamtanlage" · kein Vbh-Kontingent (Anlagenart fehlt, es gilt der eingetragene
+          Wert · weder Kontingent noch Anlagenart, kein Zuschlag · Anteil an den Neuherstellungskosten fehlt · unter
+          der Mindestschwelle)</td><td class="rs">WIRT_KWKG_ERSATZ_GEWICHTET ·
+          WIRT_KWKG_KONTINGENT_OHNE_ART · WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART · WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT ·
+          WIRT_KWKG_KONTINGENT_ZU_KLEIN</td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
+        <tr><td>Prüfkette: Inbetriebnahme nach dem Ende der Frist zur Inbetriebnahme (je Anlage, im Projektblock) ·
+          Fristende nicht im Katalog — „ungeprüft"</td><td class="rs">WIRT_KWKG_ANLAGE_FRIST · WIRT_KWKG_NACH_FRISTENDE ·
+          WIRT_KWKG_FRISTENDE_FEHLT</td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
       </tbody>
     </table>
   </div>
@@ -4577,29 +4584,19 @@ Einstufung
   Leistungspreis-Staffel beim Stromträger (Kategorie 4, Trägerkarte, Berechnungsgrundlage und Ressourcentafel),
   die Strommengen-Tafel als Jahreszeile (Ressourcentafel der Kategorie 7). Die Schemaschritte sind am
   23.09.2026 neu geordnet: 101 Gebäudesimulation, 102 die leere Anlagenart, 103 Zapfprofilgenerator, 104 die
-  Leistungspreis-Staffel, 105 K‑1 (U1). Die nächste Etappe ist <b>E7c</b> (die übrigen rechenwirksamen
-  Lücken).</p>
+  Leistungspreis-Staffel, 105 K‑1 (U1). <b>E7 Teil c1 (#440) erledigt U1</b> — Schemaschritt 105 und der
+  zweite Fall des § 2 Nr. 16 in der Mengenbildung je Anlage — und baut von U22 den Knopf „Sätze und
+  Herkunft…" und die zwei Felder des zweiten Falls in der Überlagerung (Wahl Fall 1 / Fall 2, Stromkennzahl σ);
+  der Rest von U22 kommt mit E7c2. Die Ressourcentafel der Kategorie 5 nennt die gebauten Schlüssel — die
+  Mengenzeile heißt dort <span class="mono">WIRT_KWKG_FALL2_ANLAGE</span> statt
+  <span class="mono">WIRT_KWKG_MENGE_FALL2</span> —, dazu die Kohärenzzeilen „Stromkennzahl fehlt" und
+  „Anlagenart fehlt" und die Prüfkette mit dem Ende der Frist zur Inbetriebnahme (31.12.2030 aus dem
+  Katalog). Die nächste Etappe ist <b>E7c2</b> (die übrigen rechenwirksamen Lücken und der Rest von U22).</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Stand</th><th>Nr.</th><th>Abschnitt</th><th>Was fehlt</th><th>Ort im Programm</th><th>Abnahme</th></tr></thead>
       <tbody>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U1</td><td class="num">5</td>
-            <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
-              (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
-              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–104 sind vergeben — 101 trägt die
-              Gebäudespalten, 102 die leere Anlagenart, 103 den Zapfprofilgenerator, 104 die
-              Leistungspreis-Staffel —, der nächste freie ist <b>105</b>).
-              <b>Vorbedingung:</b> Die modulscharfe Nutzwärme (Wärmeproduktion abzüglich
-              Wärmeüberschuss) liegt im Ergebnismodell je Modul nicht vor — ohne sie ist Fall 2 nicht
-              rechenbar. Gemessen mit E7a (#437): Die Wärmeproduktion liegt je Modul vor, der
-              Wärmeüberschuss nur als Projektsumme (in allen BHKW-Basisprojekten 0); nach A2 greift die
-              Aufteilung nach P_el, fünf Teilfragen dazu sind entschieden 23.09.2026 (E7‑Q2).</td>
-            <td><span class="mono">WirtschaftlichkeitCtrl.ReiheJeAnlage</span> ·
-              <span class="mono">ErgebnisBHKWModulModel</span> · repoweit 0 Treffer „Abwärmeabfuhr"</td>
-            <td>Prüffall: Anlage mit Kennzeichen und σ rechnet
-              <span class="mono">min(Netto, Nutzwärme × σ)</span>; ohne Kennzeichen unverändert.
-              Kein Referenzprojekt betroffen — keine neue Basis</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U9</td><td>3 · 6</td>
             <td>Degradation mit Quellenangabe — vorhanden ist sie je Stammprojekt als Feld „Degradation [%/a]"
               des Vergütungsdialogs (wirkt in der Erlösreihe) und beim Stromspeicher; eine Quellenangabe dazu
@@ -4631,7 +4628,7 @@ Einstufung
               Szenario; bis dahin gilt der Hinweistext unter der Annahmentafel</td>
             <td>Konzept § 2.11.5</td>
             <td>A/B-Nachweis: je Szenario ein vollständiger Parametersatz, Kapitalwerte gegenübergestellt</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U22</td><td class="num">5</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · teilweise #440</span></td><td class="mono">U22</td><td class="num">5</td>
             <td>Überlagerung „Sätze und Herkunft" (Anlagenart, Tatbestand, KWK-Strom-Fall mit σ, Energiesteuerwahl mit
               Projekt- oder Anlagenbezug, Unternehmensart, Modus § 9 Nr. 3; je Größe Vorschlag · Herkunft · Eingabefeld
               „eigener Wert" · gilt; Wirkung je Wahl als Satz und unten als Jahresbetrag; ein Knopf „Übernehmen", der in die
@@ -4639,7 +4636,18 @@ Einstufung
               Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" am Feld wandern in die Überlagerung
               (je Größe, als Weg zurück zum Vorschlag); der Schlusssatz von <span class="mono">BHW_P_NUR_PROJEKTWEIT</span>
               nennt dann die Überlagerung statt des Knopfes am Feld. Die Vorschau zeigt den Block Blockheizkraftwerk und
-              die projektweite Zeile statt einer eigenen Summe</td>
+              die projektweite Zeile statt einer eigenen Summe.
+              <b>Teilweise gebaut mit E7c1 (#440) — die zwei Felder des zweiten Falls des § 2 Nr. 16:</b> Knopf
+              „Sätze und Herkunft…" bei den Angaben der gewählten Anlage, darüber die Anzeigezeile „KWK-Strom (§ 2 Nr. 16
+              KWKG): Fall 1 …/Fall 2 …"; die Überlagerung führt nur die Gruppe „KWK-Zuschlag — diese Anlage" mit der Wahl
+              Fall 1 / Fall 2 (Wirkung je Fall) und der Zeile „Stromkennzahl σ" (Vorschlag P<sub>el</sub> ÷ P<sub>th</sub>,
+              Herkunft, eigener Wert, „Vorschlag übernehmen", gilt), dazu Abbrechen und Übernehmen; geschrieben wird im
+              OK-Weg (<span class="mono">KwkgAnlagenCtrl.Speichere</span>). <b>Grund für den Zuschnitt:</b> E7c1 hatte K‑1
+              zum Gegenstand (E7‑Q2 (5): die zwei neuen Felder gehören in diese Überlagerung); die übrigen Größen rechnen
+              nicht anders, sie wechseln nur den Ort ihrer Pflege. <b>Offen — mit E7c2</b> (Frage E7c1‑Q7): Anlagenart,
+              Tatbestand, Satztafel mit Vorschlag und Herkunft, Energiesteuerwahl mit Projekt- oder Anlagenbezug,
+              Unternehmensart, Modus § 9 Nr. 3, „Wirkung Jahr 1", der Knopf „Wahl und Herkunft…"; die Klapplisten
+              stehen weiter im Formular</td>
             <td><span class="mono">BhkwWirtschaftlichkeitDialog</span> ·
               <span class="mono">KwkgSatzRechner</span> · <span class="mono">KwkgKontingentRechner</span> ·
               <span class="mono">SteuerGutschriftRechner</span></td>
@@ -4668,7 +4676,7 @@ Einstufung
               gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
               nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
               Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
-              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–104 sind vergeben, 105 bekommt K‑1 (U1),
+              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–105 sind vergeben — 105 trägt K‑1 (U1) —,
               der nächste freie ist <b>106</b>). Kennung im Text: UR-1 Schritt 2</td>
             <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
               <span class="mono">energy_project_settings</span></td>
@@ -4745,6 +4753,20 @@ Einstufung
               <span class="mono">KapitalwertVerlaufAbschnitt</span></td>
             <td><b>Frage E6‑Q1 — entschieden 23.09.2026: ja, Bau mit E8</b> (Statusdatei „Nach #436"; Empfehlung: ja, dieselben Bausteine wie unter „Wie
               sicher ist das?"). bunit: Block 4 zeigt Spannenbild und Verlauf</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U1</td><td class="num">5</td>
+            <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
+              (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
+              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–104 sind vergeben — 101 trägt die
+              Gebäudespalten, 102 die leere Anlagenart, 103 den Zapfprofilgenerator, 104 die
+              Leistungspreis-Staffel —, der nächste freie ist <b>105</b>).
+              <b>Vorbedingung:</b> Die modulscharfe Nutzwärme (Wärmeproduktion abzüglich
+              Wärmeüberschuss) liegt im Ergebnismodell je Modul nicht vor — ohne sie ist Fall 2 nicht
+              rechenbar. Gemessen mit E7a (#437): Die Wärmeproduktion liegt je Modul vor, der
+              Wärmeüberschuss nur als Projektsumme (in allen BHKW-Basisprojekten 0); nach A2 greift die
+              Aufteilung nach P_el, fünf Teilfragen dazu sind entschieden 23.09.2026 (E7‑Q2).</td>
+            <td><span class="mono">WirtschaftlichkeitCtrl.ReiheJeAnlage</span> ·
+              <span class="mono">ErgebnisBHKWModulModel</span> · repoweit 0 Treffer „Abwärmeabfuhr"</td>
+            <td class="grund"><b>erledigt mit E7c1 (#440):</b> Schemaschritt 105 (<span class="mono">SCHRITT_105_KWKG_ABWAERMEABFUHR</span>) legt <span class="mono">KWKG_Abwaermeabfuhr</span> (0/1, CHECK, Vorgabe 0 = Fall 1) und <span class="mono">KWKG_Stromkennzahl</span> (nullbar) an <span class="mono">Tab_Energieanlagen</span> an. <span class="mono">KwkStromRechner</span> rechnet je Anlage mit Kennzeichen <span class="mono">min(Netto, Nutzwärme × σ)</span>: Nutzwärme = Wärmeproduktion des Moduls − Anteil am Wärmeüberschuss (nur der Überschuss nach P<sub>el</sub> verteilt), σ gepflegt oder P<sub>el</sub> ÷ P<sub>th</sub> der Gerätezeile, sonst kein Zuschlag der Anlage und die Kohärenzzeile „Stromkennzahl fehlt"; die Kürzung geht zuerst von der Einspeisung ab, der Ersatzweg verteilt nach P<sub>el</sub>. Die Herleitung je Anlage (<span class="mono">WIRT_KWKG_FALL2_ANLAGE</span>) nennt Fall, σ mit Herkunft, Nutzwärme, KWK-Strom und Kürzung. Gepflegt werden beide Felder in der Überlagerung „Sätze und Herkunft" (U22, zum Teil gebaut). Ohne Kennzeichen unverändert; kein Referenzprojekt betroffen, keine neue Basis. Proben an 1030: σ 0,5 → KWKG Jahr 1 7.315,96 → 6.137,94 €, ohne σ 1.116,03 € (Zuschlag der Anlage 0). Das Beispiel dieser Seite bleibt bei Fall 1 (1.953,9 × 0,845 = 1.651,2 MWh liegt über der Nettostromerzeugung)</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U2</td><td class="num">8</td>
             <td>Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite; der Knopf „Verlauf…"
               fällt aus der Fußleiste, die dann vier Knöpfe trägt</td>

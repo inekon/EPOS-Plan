@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -222,7 +222,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
 | 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
-| 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.1, § 8.3 |
+| 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3; 30 ganz erledigt mit E7c1 (#440), der Wortlaut vor #440 und der Grund in § 8.7 | § 5.1, § 8.3, § 8.7 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
 | 25–29 | 25–28 erledigt mit E2 (#405); 29 erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.4, § 8.3 |
 | 20 | entfällt (22.09.2026) | § 6.4 |
@@ -1275,7 +1275,8 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 *Was mit den Statuszeilen ab #436 aus dem gültigen Stand des Konzepts hierher gewandert ist und welche
 Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts vor der
 jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
-#437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`) —, nicht vor dem Schnitt.*
+#437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`), in § 8.7 und § 8.8 **vor
+#440** (Stand `ea8e2a12`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1502,3 +1503,119 @@ Die Stellen, die mit E7b veraltet sind, und die Schrittnummern nach der Umnummer
 | § 6.1 | Kurztafel bis E7a (#437), dort „Schemaschritt 101" | E7a mit Schemaschritt 102; Zeile E7b (#439) |
 | § 6.3 | Nr. 30 „Schemaschritt 101 setzt die leere Zeichenkette auf NULL"; Q11 ohne Zeile | Schemaschritt 102; die Gruppe „Aus der Mockup-Prüfung (Q11) — geschlossen" mit dem Einzeiler Q11 (Grund in § 8.5) |
 | § 7 und Anhang | „… und E7 Teil a (#437) … Als Nächstes kommen **E7b** (…) und **E7c** (…)"; Kürzeltafel „Schemaschritt 101"; Etappenzeilen „E7 Teil a" (Schemaschritt 101) und „E7b, E7c … E12 — nächste Etappen: E7b und E7c" | bis E7 Teil b (#439), als Nächstes E7c mit K‑1 als Schritt 105; Kürzeltafel mit Schritt 102 und der Zeile Q11 = #439; Etappenzeilen „E7 Teil a" (Schritt 102), „E7 Teil b — Q11" = #439 und „E7c … E12 — nächste Etappe: E7c" |
+
+### 8.7 E7c1 — K‑1 Fall 2, Förderende 2030, Anlagenart-Kohärenz (#440)
+
+Protokoll [`E7c1_KWKG_Fall2_Foerderende_Protokoll.md`](E7c1_KWKG_Fall2_Foerderende_Protokoll.md); der Stand von A2\*,
+A20, Nr. 30, EZ‑5 und E7‑Q1 bis E7‑Q3 im Register (R‑A, R‑NR, R‑EZ, R‑E7), die acht offenen Fragen der Etappe
+unter R‑E7c1.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E7 Teil c1** (#440, Merge `ea8e2a12`) | Schemaschritt 105 (`KWKG_Abwaermeabfuhr` 0/1 und `KWKG_Stromkennzahl` an `Tab_Energieanlagen`); `KwkStromRechner` — der zweite Fall des § 2 Nr. 16 KWKG, `min(Netto, Nutzwärme × σ)`, σ gepflegt oder P_el ÷ P_th, sonst kein Zuschlag der Anlage mit Kohärenzzeile, nur der Wärmeüberschuss nach P_el verteilt, Kürzung zuerst an der Einspeisung, Ersatzweg nach P_el, Herleitung je Anlage, sieben nullbare Nachweisfelder (Fassung 7); das Ende der Frist zur Inbetriebnahme als Katalogdatum `KWKG_INBETRIEBNAHME_FRISTENDE` 31.12.2030 (Generation 8) an Stelle von `KWKG_REALISIERUNG_JAHRE = 4`, auch ohne Stichtag, ohne Katalogwert „ungeprüft"; die Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt"; die Überlagerung „Sätze und Herkunft" mit den zwei Feldern; 43 Ressourcenschlüssel neu, einer geändert; Testdatenbank auf Schemastand 105 mit der Anlagenart NEUANLAGE der 1030-BHKW | **gewollt, im Bestand ohne Wirkung** — die dreizehn Basisprojekte unverändert (kein Kennzeichen im Bestand; 1030 mit Inbetriebnahme 2027 vor dem Fristende und gepflegtem Kontingent); Proben an 1030 im Protokoll E7c1 (σ 0,5: KWKG Jahr 1 7.315,96 → 6.137,94 €); Referenzlauf gegen R11 13/13, 3 882 737 Werte byte-gleich; Gate 11 058 Tests grün |
+
+*§ 3.6, Befund K‑1 (Z. 1800–1832):*
+
+> ⚠ **Befund K-1 (neu): Der zweite Fall des § 2 Nr. 16 fehlt.** Verfügt eine Anlage **über eine
+> Vorrichtung zur Abwärmeabfuhr** — beim Notkühler größerer BHKW der Regelfall —, ist KWK-Strom
+> **nicht** die Nettostromerzeugung, sondern `Nutzwärme × Stromkennzahl`. Das ist eine völlig
+> andere Größe: Sie hängt an der genutzten Wärme, nicht an der Stromerzeugung, und kann bei
+> Wärmeüberschuss deutlich darunter liegen. EPOS-Plan führt **weder** ein Kennzeichen
+> „Abwärmeabfuhr vorhanden" **noch** eine Stromkennzahl und rechnet immer den ersten Fall.
+> Für Anlagen mit Notkühler fällt der Zuschlag damit **zu hoch** aus. Zu entscheiden, nicht
+> stillschweigend zu lassen.
+>
+> **Entscheid K-1 (→ Register R‑EZ, EZ‑5): Kennzeichen und Stromkennzahl je Anlage aufnehmen,
+> Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
+> § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **105** (90 BK1a,
+> 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel,
+> 97–101 und 103 außerhalb dieses Feldes, 102 die leere Anlagenart (§ 6.3 Nr. 30), 104 die Leistungspreis-Staffel (§ 3.5), siehe Kopf;
+> die Nummer wird bei der Umsetzung vergeben). Das Kennzeichen
+> `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
+> Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
+> wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. Ohne gepflegten Wert (`KWKG_Stromkennzahl`) oder P_th gibt es keinen Ersatzwert, sondern die Kohärenzzeile „Stromkennzahl fehlt" (Entscheid E7‑Q2 (2), 23.09.2026: keine willkürliche Vorgabe). **Wo die Fallunterscheidung sitzt:**
+> `WirtschaftlichkeitCtrl.ReiheJeAnlage` bildet je Anlage `stromNettoJeAnlage[i] = max(0,
+> StromVon(Modul[i]) − Hilfsstrom[i])` mit `StromVon` = Klemmenerzeugung (`Stromproduktion`);
+> bei gesetztem Kennzeichen tritt dort `min(Nettostromerzeugung, Nutzwärme × σ)` — die Nutzwärme je
+> Modul aus Wärmeproduktion abzüglich Wärmeüberschuss. **Gemessen mit E7a (#437, A2):** Die
+> Wärmeproduktion liegt je Modul vor, der Wärmeüberschuss nur als Projektsumme (in allen
+> BHKW-Basisprojekten 0) — es greift die Aufteilung nach P_el, und zwar nur für den Überschuss
+> (E7‑Q2, entschieden 23.09.2026, → Register R‑E7). Der Torwächter `BaueKwkgReihe` (`v.Ergebnis.BHKW.Stromproduktion`
+> als Summe) bleibt. **Referenzprojekte, gemessen an der Testdatenbank:** BHKW führen 1017, 1018,
+> 1024 und 1030 (und das Nichtbasisprojekt 1031); KWKG-Sätze trägt allein 1030 (8,0 / 4,0 an beiden
+> Anlagen), `Betriebsart` ist überall leer, `Wärmeüberschuss` in der Basis überall 0. Das
+> Kennzeichen wäre nach dem Schemaschritt nirgends gesetzt, und die Referenzbasis vergleicht nur
+> Simulationsgrößen — **kein Basisprojekt ist betroffen, keine neue Basis**; nötig würde sie nur,
+> wenn die Umsetzung an der Simulation oder an einer in `aggregate.csv` landenden Spalte der
+> Testdatenbank etwas änderte.
+
+**Erledigt mit E7c1 (#440):** Kennzeichen und Stromkennzahl stehen je Anlage an `Tab_Energieanlagen`
+(Schemaschritt 105); `KwkStromRechner` rechnet Fall 2 nach den fünf Teilantworten zu E7‑Q2 — nur der
+Überschuss nach P_el; σ gepflegt oder P_el ÷ P_th, sonst kein Ersatzwert, sondern kein Zuschlag der Anlage und
+die Kohärenzzeile „Stromkennzahl fehlt"; die Kürzung zuerst an der Einspeisung; der Ersatzweg nach P_el; die
+Pflege in der Überlagerung „Sätze und Herkunft". Die dreizehn Basisprojekte sind unverändert (kein Kennzeichen
+im Bestand); an 1030 gemessen: σ gepflegt 0,5 → KWKG Jahr 1 7.315,96 → 6.137,94 €, σ berechnet 50 ÷ 81 →
+7.315,92 €, ohne σ → 1.116,03 €. Im Konzept steht an der Stelle des Befunds die Regel „Der zweite Fall des § 2
+Nr. 16 — Anlagen mit Vorrichtung zur Abwärmeabfuhr" (§ 3.6), in § 4 der Befund als erledigt.
+
+*§ 3.6, Prüfkette (Z. 1737–1742):*
+
+> Deckelstaffel 5.000 (2021) … 3.300 (2026) … 2.500 (ab 2030). Vorgeschaltete Prüfkette: Stichtag
+> ≤ 31.12.2026 · Realisierungsfrist 4 Jahre · Ausschreibung > 500 kW · Heizöl-Neuanlage ab 2025. Die
+> Realisierungsfrist ist eine Konstante (`KWKG_REALISIERUNG_JAHRE = 4`); das Förderende 2030 (A20,
+> R‑U5) ersetzt sie als Katalogdatum für das Ende der Frist zur Inbetriebnahme — der Zuschlag läuft
+> danach bis zum Ende des Kontingents weiter, keine Höchstdauer in Kalenderjahren (entschieden
+> E7‑Q3, Lesart b, 23.09.2026, → Register R‑E7 — Bau E7c).
+
+**Erledigt mit E7c1 (#440):** Die Konstante ist gestrichen; `KWKG_INBETRIEBNAHME_FRISTENDE` = 2030 (der
+31.12.2030, Katalog-Generation 8) wird mit dem Inbetriebnahmejahr nachgeschlagen, auch ohne Stichtag geprüft
+und ohne Katalogwert mit der Zeile „ungeprüft" übergangen; die Reihe läuft bis zum Kontingentende. Proben an
+1030: Stichtag 2025 und Inbetriebnahme 06/2030 → KWKG Jahr 1 0 → 5.899,97 €; Inbetriebnahme 03/2031 ohne
+Stichtag 5.899,97 → 0 €. Im Konzept steht die Regel in § 3.6 (Absatz „Das Ende der Frist zur Inbetriebnahme
+ist ein Katalogdatum").
+
+*§ 6.3 Nr. 30 (Z. 2362–2371):*
+
+30. **Sieben Energieanlagen trugen `KWKG_Anlagenart = ''`** — **zum Teil erledigt mit E7a (#437),
+    siehe Protokoll:** Schemaschritt 102 setzt die leere Zeichenkette auf NULL (NULL heißt „nicht
+    gepflegt"; die sieben Anlagen der Projekte 1032 und 1043 sind kein BHKW), der Dialog zeigt
+    „(bitte wählen)". Ein geratener Wert würde Kontingent und Satzstaffel setzen, die niemand
+    eingegeben hat. **Entschieden** (E7‑Q1, Lesart b, 23.09.2026, → Register R‑E7): Die Kern-Regel
+    „NULL ⇒ kein KWKG-Zuschlag" und die Kohärenzzeile „Anlagenart fehlt" greifen nur dort, wo das
+    Kontingent nach § 8 abzuleiten ist — nicht wörtlich bei jedem BHKW ohne Anlagenart; das BHKW von
+    1030 behält mit gepflegtem Kontingent (30.000 h) seinen Zuschlag, seine Anlagenart wird in der
+    Testdatenbank gepflegt. Die Live-Datenbank ist vor dem Ausrollen zu prüfen (der Schritt trifft
+    jede leere Zeichenkette). Entscheid: → Register R‑NR. Bau in E7c.
+
+**Erledigt mit E7c1 (#440):** Die Kern-Regel greift nur, wo das Kontingent aus der Anlagenart abzuleiten ist
+(Lesart b) — so rechnete `KwkgKontingentRechner` schon (0 h mit Grund); neu sind die Herleitung
+`WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART` und die Kohärenzzeile „Anlagenart fehlt" (`KOH_KWKG_ANLAGENART_FEHLT`,
+Hinweis, ohne Betrag). Die Testdatenbank führt die Anlagenart der 1030-BHKW (14920, 14921) als NEUANLAGE; das
+Kontingent bleibt gepflegt, kein Anker bewegt sich. Im Konzept steht der Punkt als Einzeiler, die Regel in
+§ 3.6 und § 3.9.
+
+### 8.8 Berichtigungen im gültigen Stand (#440)
+
+Die Stellen, die mit E7c1 veraltet sind; „vorher" ist der Wortlaut vor #440 (Stand `ea8e2a12`). Je Stelle eine
+Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `954d4dcc`, `SchemaStand.Zielversion` = 104, „Schemaschritte 90–104 vergeben, **105** an K‑1 (E7c), neue ab **106**"; „Diesem Feld gehören **102** … und **104** …; **105** bekommt K‑1 (§ 3.6, E7c)" | Codestand `ea8e2a12`, `Zielversion` = 105, 90–105 vergeben, neue ab 106; diesem Feld gehören 102, 104 und 105 (Kennzeichen und Stromkennzahl je Anlage, `SCHRITT_105_KWKG_ABWAERMEABFUHR`, #440) |
+| § 2.2, Gruppe 1, Anlagenart | „(entschieden E7‑Q1, Lesart b, 23.09.2026, § 6.3 Nr. 30 — Bau E7c)"; Stand „„(bitte wählen)" und Schritt 102 #437" | „(E7‑Q1, Lesart b, § 6.3 Nr. 30, § 3.9)"; Stand dazu „Kohärenzzeile #440" |
+| § 2.2, Gruppe 1, Tafel der Anlagenfelder | — | zwei Zeilen „KWK-Strom (§ 2 Nr. 16 KWKG)" (`KWKG_Abwaermeabfuhr`) und „Stromkennzahl σ" (`KWKG_Stromkennzahl`), neu #440 |
+| § 2.2, Gruppe 2 | — | Absatz „Die Überlagerung „Sätze und Herkunft" trägt die zwei Felder des zweiten Falls des § 2 Nr. 16" (gebaut #440; der Rest von U22 mit Frage E7c1‑Q7) |
+| § 2.2, Gruppe 5 | — | ein Satz: bei Fall 2 zeigt die Mengenkette die Herleitung des Laufs |
+| § 3.6, Vbh-Kontingent | „…; darunter 0 mit Fehlgrund." | dazu: ohne Anlagenart 0 h mit Grund und die Kohärenzzeile „Anlagenart fehlt" — nur dann; ein gepflegtes Kontingent bleibt wirksam |
+| § 3.6, Jahresreihe | — | Zeile „Fall 2(A): Eigen/Einsp(A) um Netto(A) − KWK-Strom(A) gekürzt, zuerst Einsp" |
+| § 3.6, Prüfkette | Wortlaut in § 8.7 | „Inbetriebnahme bis zum Ende der Frist zur Inbetriebnahme"; Absatz „Das Ende der Frist zur Inbetriebnahme ist ein Katalogdatum" (auch ohne Stichtag, ohne Katalogwert „ungeprüft", keine Höchstdauer in Kalenderjahren) |
+| § 3.6, Befund K‑1 | Wortlaut in § 8.7 | Regel „Der zweite Fall des § 2 Nr. 16 — Anlagen mit Vorrichtung zur Abwärmeabfuhr" mit Formelblock, den fünf Teilantworten zu E7‑Q2, Herleitung, Nachweisfeldern und den Fragen E7c1‑Q1, Q2 und Q6 |
+| § 3.9 | Tafel bis „Strommix-Rückfall" | zwei Zeilen „Stromkennzahl fehlt" und „Anlagenart fehlt" (Hinweis, ohne Betrag; Schwere: Frage E7c1‑Q5) |
+| § 3.10, Schritt 9 | „Satz (marginal) → Hilfsstrom-Netting → Anteile → Bonus_voll" | „Prüfkette (Fristende der Inbetriebnahme aus dem Katalog) → Satz (marginal) → Hilfsstrom-Netting → Anteile → Fall 2: Kürzung auf den KWK-Strom, zuerst an der Einspeisung → Bonus_voll" |
+| § 4, K‑1 | „⚠ **K-1** … Weder Kennzeichen noch Stromkennzahl sind im Datenmodell vorhanden; der Zuschlag fällt für solche Anlagen zu hoch aus." | „✔ **K-1** … **Erledigt mit E7c1 (#440)**" |
+| § 5, Einheitenbruch | „90–104 sind vergeben, 105 gehört K‑1" | „90–105 sind vergeben, 105 trägt K‑1" |
+| § 5, R-U5 | „Förderzeitraum als Datumsparameter im Katalog, nicht als Konstante" | dazu „umgesetzt #440" mit `KWKG_INBETRIEBNAHME_FRISTENDE` |
+| § 6.1 | Kurztafel bis E7b (#439) | Zeile E7c1 (#440) |
+| § 6.3 Nr. 30 | „zum Teil erledigt mit E7a (#437)", offen die Kern-Regel, „Bau in E7c" (Wortlaut in § 8.7); Gruppentitel „Sachpunkte der Datenaufnahme" | Einzeiler „erledigt mit E7a (#437) und E7c1 (#440)" mit dem Prüfhinweis zur Live-Datenbank; Gruppentitel „…, alle drei erledigt" |
+| § 7 und Anhang | „… und E7 Teil b (#439) … Als Nächstes kommt **E7c** (…, K‑1 mit Schemaschritt 105)"; B8 „in E7c"; Kürzeltafel ohne #440, „U1 = Befund K-1"; Etappenzeile „E7c … E12 — nächste Etappe: E7c" | bis E7 Teil c1 (#440), als Nächstes E7c2; B8 in E7c2; Kürzeltafel mit „#437 (Nr. 30 zum Teil, der Rest #440)", der Zeile K‑1 · A20 · Nr. 30 = #440 und „U1 = Befund K-1 (erledigt #440)"; Etappenzeilen „E7 Teil c1" = #440 und „E7c2 … E12 — nächste Etappe: E7c2" |

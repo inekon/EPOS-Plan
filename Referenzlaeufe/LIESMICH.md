@@ -348,6 +348,21 @@ und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
 > `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`
 > (Commit E7b/11 `bfbfbbb9`, LFS-SHA-256 `044e44db…`).
 
+> **Nachtrag: Schemastand 105 (Auftrag #440, Etappe E7c1), die Basis bleibt.** Migrationsschritt
+> **105** (`SCHRITT_105_KWKG_ABWAERMEABFUHR`, Quelle `SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr`; Konzept
+> Wirtschaftlichkeit § 3.6, Befund K‑1) legt an `Tab_Energieanlagen` zwei Spalten an — `KWKG_Abwaermeabfuhr`
+> (INTEGER NOT NULL DEFAULT 0, `CHECK` 0/1) und `KWKG_Stromkennzahl` (REAL, nullbar) —, **reines DDL**; die
+> Tabelle bleibt `STRICT`, jede Bestandsanlage steht auf 0 (Fall 1) bzw. NULL. Dazu sät das Werkzeug die
+> Katalog-Generation 8 nach: **eine Zeile** `KWKG_INBETRIEBNAHME_FRISTENDE` (2030 — Ende der Frist zur
+> Inbetriebnahme, Quelle KWKG 2025 § 6) in `Tab_Gesetzesparameter`. Mit demselben Commit das
+> **Testdaten-UPDATE** nach Entscheid E7‑Q1 (Lesart b): Die Anlagen 14920 und 14921 des Projekts 1030 tragen
+> `KWKG_Anlagenart` 'NEUANLAGE' statt NULL (nur die Neuanlage erreicht 30.000 Vbh ohne Kostenanteil); ihr
+> Kontingent 30.000 h bleibt gepflegt, **kein Anker bewegt sich**. `Tab_Applikation` trägt 105; die Größe
+> bleibt 67 727 360 Byte, `quick_check` ok. **Keine Einfrierregel ist berührt**, und der Referenzlauf ist
+> **13/13 byte-gleich** gegen diese Basis (357/357 CSV, 3 882 737 Werte, mit und ohne das UPDATE gerechnet).
+> Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
+> das UPDATE als SQL außerhalb des Repos (Commit E7c1/9 `ccf9f22f`, LFS-SHA-256 `66aa52b0…`).
+
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
 > Schemaständen 99 und 100 steht in
