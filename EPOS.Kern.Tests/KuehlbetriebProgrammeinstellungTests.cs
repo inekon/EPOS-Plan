@@ -112,8 +112,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Assistent, Programmeinstellung AN: Das Projekt bekommt seinen Einstellungssatz beim
-        /// Anlegen — mit denselben Vorbelegungen wie beim ersten Speichern der Kaskade — und
-        /// <c>Kuehlbetrieb = 1</c>.
+        /// Anlegen — mit denselben Vorbelegungen wie beim ersten Speichern der Kaskade, aber ohne
+        /// Kaskade (Vormerksatz, alle sechs Plätze NULL) — und <c>Kuehlbetrieb = 1</c>.
         /// </summary>
         [Fact]
         public void Assistent_mit_Einstellung_an_legt_den_Satz_mit_Kuehlbetrieb_1_an()
@@ -130,7 +130,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Convert.ToInt64(satz[SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT], CultureInfo.InvariantCulture));
             Assert.Equal(DbWerte.KNAPPHEIT_DEFAULT, Convert.ToString(satz[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE], CultureInfo.InvariantCulture));
             Assert.Equal(0L, Convert.ToInt64(satz[SchemaKatalog.SPALTE_KASKADE_GEPFLEGT], CultureInfo.InvariantCulture));
-            Assert.True(KonfigurationCtrl.LiesProjekt(id).Kuehlbetrieb);
+            // Der frühe Satz ist ein VORMERKSATZ: für die Leser der Konfiguration „kein Satz"
+            // (Seiteneffekt aus Welle 1 behoben, siehe unten Teil 6).
+            for (int i = 1; i <= 6; i++) Assert.Equal(DBNull.Value, satz["Tool_" + i]);
+            Assert.True(KonfigurationCtrl.IstVormerksatz(satz));
+            Assert.Null(KonfigurationCtrl.LiesProjekt(id));
         }
 
         /// <summary>
@@ -262,6 +266,91 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  6 — Der frühe Satz ändert das Anlagenverhalten nicht (Seiteneffekt aus Welle 1)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Gleiche Kaskade, gleiche Meldung</b> — mit und ohne Programmeinstellung. Ein neues
+        /// Projekt mit BHKW und Heizkessel: Ohne Einstellungssatz meldet der Lauf „keine
+        /// Konfiguration", und die Konfigurationsseite wählt die verbauten Anlagen in ihrer
+        /// Reihenfolge vor (BHKW vor Kessel). Der Vormerksatz der eingeschalteten
+        /// Programmeinstellung ändert daran nichts: Er ist für den Lauf „kein Satz", und
+        /// <c>HeizkesselNachziehen</c> setzt den Kessel nicht vor die Vorwahl. Erst das Speichern
+        /// der Kaskade macht aus beiden denselben Einstellungssatz — mit dem Kühlschalter als
+        /// einzigem Unterschied.
+        /// </summary>
+        [Fact]
+        public void Neues_Projekt_mit_und_ohne_Programmeinstellung_gleiche_Kaskade_gleiche_Meldung()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            int aus = PerAssistentAnlegen("Kaskadenprobe aus");
+            EinstellungenCtrl.NeueProjekteMitKuehlungSchreiben(true);
+            int an = PerAssistentAnlegen("Kaskadenprobe an");
+            AnlagenUebernehmen(REFERENZ, aus);                 // 1030: BHKW und Heizkessel
+            AnlagenUebernehmen(REFERENZ, an);
+
+            Assert.Equal(0L, Saetze(aus));
+            Assert.Equal(1L, Saetze(an));
+            Assert.True(KonfigurationCtrl.IstVormerksatz(Satz(an)));
+
+            // Die Leser der Konfiguration: für beide kein Satz, und der Vormerksatz bleibt unberührt.
+            Assert.Null(KonfigurationCtrl.LiesProjekt(aus));
+            Assert.Null(KonfigurationCtrl.LiesProjekt(an));
+            Assert.False(new KonfigurationCtrl().ProjektLesen(an));
+            Assert.True(KonfigurationCtrl.IstVormerksatz(Satz(an)));
+
+            // Der Lauf: dieselbe Meldung.
+            Assert.False(new SimulationRunner().Simuliere(aus, out string fehlerAus));
+            Assert.False(new SimulationRunner().Simuliere(an, out string fehlerAn));
+            Assert.StartsWith(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.SIMENG_KEINE_KONFIGURATION, aus), fehlerAus);
+            Assert.Equal(fehlerAus.Replace(aus.ToString(CultureInfo.InvariantCulture), "#"),
+                         fehlerAn.Replace(an.ToString(CultureInfo.InvariantCulture), "#"));
+
+            // Die Konfigurationsseite: dieselbe Vorwahl, BHKW vor Kessel.
+            List<string> vorwahlAus = Aufgenommen(Kaskadendienste(aus).Laden(aus));
+            List<string> vorwahlAn = Aufgenommen(Kaskadendienste(an).Laden(an));
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_BHKW, DbWerte.ERZEUGER_HEIZKESSEL }, vorwahlAus);
+            Assert.Equal(vorwahlAus, vorwahlAn);
+
+            // Speichern: derselbe Satz bis auf den Kühlschalter, kein Vormerksatz mehr.
+            Assert.True(Kaskadendienste(aus).Speichern());
+            Assert.True(Kaskadendienste(an).Speichern());
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_BHKW, DbWerte.ERZEUGER_HEIZKESSEL, "", "" }, Plaetze(an));
+            DataRow satzAus = Satz(aus), satzAn = Satz(an);
+            foreach (DataColumn spalte in satzAus.Table.Columns)
+            {
+                if (spalte.ColumnName is "ID" or "ID_Projekt" or KuehlungSchema.SPALTE_KUEHLBETRIEB) continue;
+                Assert.True(Equals(satzAus[spalte.ColumnName], satzAn[spalte.ColumnName]),
+                            spalte.ColumnName + ": " + satzAus[spalte.ColumnName] + " <> " + satzAn[spalte.ColumnName]);
+            }
+            Assert.False(KonfigurationCtrl.IstVormerksatz(satzAn));
+            Assert.NotNull(KonfigurationCtrl.LiesProjekt(an));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(an));
+            Assert.False(KonfigurationCtrl.KuehlbetriebLesen(aus));
+        }
+
+        /// <summary>
+        /// Eine Kaskade, die nichts vorwählt (Projekt ohne Anlagen), wird trotzdem als Text
+        /// gespeichert — ein gespeicherter Satz ist nie ein Vormerksatz.
+        /// </summary>
+        [Fact]
+        public void Eine_gespeicherte_leere_Kaskade_ist_kein_Vormerksatz()
+        {
+            if (!_db.Vorhanden) return;
+            EinstellungenCtrl.NeueProjekteMitKuehlungSchreiben(true);
+            int id = PerAssistentAnlegen("Kaskadenprobe leer");
+            Assert.True(KonfigurationCtrl.IstVormerksatz(Satz(id)));
+
+            Assert.True(Kaskadendienste(id).Speichern());
+            Assert.False(KonfigurationCtrl.IstVormerksatz(Satz(id)));
+            Assert.Equal(new List<string> { "", "", "", "" }, Plaetze(id));
+            Assert.NotNull(KonfigurationCtrl.LiesProjekt(id));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(id));
+        }
+
+        // =============================================================================
         //  5 — Das Projektduplikat übernimmt den Wert der Quelle (10.3, vierter Fall)
         // =============================================================================
 
@@ -336,6 +425,30 @@ namespace EPOS.Kern.Tests
 
         private static long Zahl(string sql)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql), CultureInfo.InvariantCulture);
+
+        /// <summary>Kopiert die Anlagenzeilen eines Projekts in ein anderes (ohne ID) — genug für Vorwahl und Kesselnachzug.</summary>
+        private static void AnlagenUebernehmen(int von, int nach)
+        {
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                                                       new DbParam("?", von));
+            Assert.True(dt.Rows.Count > 0);
+            List<DataColumn> spalten = dt.Columns.Cast<DataColumn>().Where(c => c.ColumnName != "ID").ToList();
+            string sql = "INSERT INTO Tab_Energieanlagen (" + string.Join(", ", spalten.Select(c => "[" + c.ColumnName + "]")) +
+                         ") VALUES (" + string.Join(", ", spalten.Select(c => "?")) + ")";
+            foreach (DataRow r in dt.Rows)
+                DataRepository.ExecuteNonQuery(sql, spalten.Select(c => new DbParam("?", c.ColumnName == "ID_Projekt" ? nach : r[c])).ToArray());
+        }
+
+        /// <summary>Die vier Wärmeplätze, wie sie in der Datenbank stehen (NULL als leer).</summary>
+        private static List<string> Plaetze(int idProjekt)
+        {
+            DataRow r = Satz(idProjekt);
+            return Enumerable.Range(1, 4).Select(i => r["Tool_" + i] == DBNull.Value ? "" : r["Tool_" + i].ToString()).ToList();
+        }
+
+        /// <summary>Die Belegung der Kaskade, wie die Konfigurationsseite sie zeigt (Muster <c>HeizkesselKaskadeTests</c>).</summary>
+        private static List<string> Aufgenommen(SimulationKonfigDaten daten)
+            => daten.Gruppen[0].Zeilen.Where(z => !z.Verfuegbar).Select(z => z.DbWert).Distinct().ToList();
 
         /// <summary>Die Datenseite der Simulationskonfiguration zu einem Projekt (Muster <c>HeizkesselKaskadeTests</c>).</summary>
         private static SimulationKonfigDienste Kaskadendienste(int idProjekt)
