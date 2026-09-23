@@ -8483,3 +8483,19 @@ umgesetzt.
 > Seit 23.09.2026 stehen auch Gebäude, Gebäudetypen und Lastspitzenkappung
 > im einheitlichen Verwaltungsgerüst mit Liste und Stammblatt, und die
 > Gerätekataloge haben „Import…“ in der Fußleiste.
+
+**Merge mit KU1 Welle 4.** Nach dem Doku-Commit `780f47fe` wurde
+`origin/ios_migration_september` (acht Commits Kühlung KU1 Welle 4, neue
+Basis `2026-09-23_R13_Kuehlung`, Testdatenbank mit Referenzprojekt 1017
+unter Kühlung) konfliktfrei als `b587b9c9` zusammengeführt; resx und
+`Resource.Designer.cs` geprüft (unverändert, wiederholbar). Ein
+Folgefehler zeigte sich dabei: `EPOS.Kern.Tests/KuehlungOberflaecheTests.cs`
+rief `GebaeudeHuelle.Gaben` noch mit dem in Stufe 5 entfernten Parameter
+`admin` auf — behoben in `2edc081e`. Gate danach: Kern-Filter 0 Fehler,
+Tests Kern 5 308 / UI 5 591 / KiKern 524 / SpeicherEngine 386 /
+SpeicherPlanung 27 (1 übersprungen) grün, Windows-Schale 0 Fehler,
+Referenzlauf 13/13 PASS gegen R13 (4 145 687 Werte in Toleranz); Push von
+`2edc081e`. Die Commits `b3fa8658` und `780f47fe` lagen zunächst
+versehentlich auf `main` (Hauptbaum stand auf `main`); `ios_migration_september`
+wurde per Fast-Forward darauf gezogen und `main` auf `origin/main`
+(`591229e1`) zurückgesetzt.
