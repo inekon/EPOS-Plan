@@ -24,7 +24,10 @@ namespace WindowsFormsApplication1
         /// <summary>Zeigt den Katalogbrowser als eigenes Fenster (<c>Masken.SolarkollektorenAdmin</c>).</summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
-            return KatalogBrowserHuelle.Oeffnen(besitzer, Profil(), Gaben());
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
+            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs.
+            return KatalogBrowserHuelle.Oeffnen(besitzer, Profil(), KatalogBrowserHuelle.MitWegen(
+                Gaben(), Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Solarkollektoren))));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -44,12 +47,14 @@ namespace WindowsFormsApplication1
         /// Spalten ein Kollektorsatz fuehrt und wie sie zurueckgeschrieben werden, ist
         /// EINE Frage mit EINER Antwort (Muster <see cref="HeizkesselAdminHuelle"/>).
         /// </remarks>
-        internal static KatalogBrowserWege Wege()
+        internal static KatalogBrowserWege Wege(Func<IReadOnlyDictionary<string, object>> import = null)
         {
             KatalogBrowserProfil profil = Profil();
 
             return new KatalogBrowserWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                ImportGaben = import,
                 // W14a-E-10: sechs Spalten statt der dreizeiligen Eigenschaftenzelle -
                 // und der ERSTE Filter dieses Katalogs ueberhaupt (bis hierher
                 // KatalogFilterArt.Keiner).

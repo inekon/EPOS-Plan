@@ -106,6 +106,10 @@ public static class Zeilenbau
         Katalogfilterprofil.SpQuelle => new[] { "Luft-Wasser", "Sole-Wasser", "Wasser-Wasser" }[i % 3],
         Katalogfilterprofil.SpTyp => "Produktion Schicht " + (i % 3 + 1),
         Katalogfilterprofil.SpBeschreibung => "Beschreibung des Satzes mit einigen Worten " + (i + 1),
+        // Stufe 5 (V16): die Gebaeudeverwaltung - die laengsten Werte der Testdatenbank.
+        Katalogfilterprofil.SpGebaeudeart => new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" }[i % 4],
+        Katalogfilterprofil.SpVerwendung => new[] { "Wohngebäude", "Gewerbe+Sonstige" }[i % 2],
+        Katalogfilterprofil.SpBaujahr => new[] { "Eff. 155 (EnEV 2016)", "Niedrigenergiebauweise", "1919 bis 1948" }[i % 3],
         _ => "Wert " + (i + 1)
     };
 

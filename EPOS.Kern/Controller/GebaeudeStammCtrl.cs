@@ -697,5 +697,173 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+
+        #region --- Stufe 5 der Neuordnung: die Verwaltung als Katalogliste (V16) ---
+
+        /// <summary>
+        /// <b>Die Zeilen der Gebaeudeverwaltung</b> (Konzept Administrationsdialoge, V16) —
+        /// ALLE Katalogsaetze mit den fuenf Spalten aus
+        /// <see cref="Katalogfilterprofil.FuerGebaeude"/>, in EINER Abfrage.
+        ///
+        /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der eigenen
+        /// Tabelle (Verwendung, Gebaeudeart, Baujahr, Suche) sind seit Stufe 5 Trichter und
+        /// Suche der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf
+        /// dem ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
+        /// als Steuerwert bzw. Buchstabe.</para>
+        ///
+        /// <para>Ein Satz mit <c>ReadOnly</c> ist ein Auslieferungssatz und traegt das Schloss
+        /// (<see cref="Katalogfilterzeile.Geschuetzt"/>).</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, Gebaeudeart, Wohngebaeude_Nicht_Wohngebaeude, Baualtersklasse, " +
+                "Wohnflaeche_gesamt, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            IReadOnlyList<string> klassen = Baualtersklassen();
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = Spaltentext(r, "Bezeichner");
+                string buchstabe = Spaltentext(r, "Baualtersklasse");
+                object flaeche = r["Wohnflaeche_gesamt"];
+
+                var zeile = new Katalogfilterzeile(Convert.ToInt32(r["ID"]), name)
+                {
+                    Geschuetzt = r["ReadOnly"] != DBNull.Value && Convert.ToInt32(r["ReadOnly"]) != 0
+                };
+                zeile.MitText(Katalogfilterprofil.SpBezeichner, name)
+                     .MitText(Katalogfilterprofil.SpGebaeudeart, Spaltentext(r, "Gebaeudeart"))
+                     .MitText(Katalogfilterprofil.SpVerwendung,
+                              Verwendungstext(Spaltentext(r, "Wohngebaeude_Nicht_Wohngebaeude")))
+                     .MitText(Katalogfilterprofil.SpBaujahr,
+                              buchstabe.Length == 0 ? "" : klassen[KlassenIndex(buchstabe)])
+                     .MitZahl(Katalogfilterprofil.SpFlaecheM2,
+                              flaeche == DBNull.Value ? (double?)null : Convert.ToDouble(flaeche), 0);
+                liste.Add(zeile);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Der ANZEIGETEXT eines Steuerwerts der Spalte <c>Wohngebaeude_Nicht_Wohngebaeude</c>
+        /// — die zwei Worte des frueheren Vorfilters „Verwendung" (<c>GEBK_VERWENDUNG_WOHN</c>,
+        /// <c>GEB_TEXT_SONSTIGE</c>). Leer bleibt leer.
+        ///
+        /// <para><b>Nicht „Nicht Wohngebaeude"</b>: Der Trichter der Katalogliste filtert mit
+        /// „enthaelt…", und „Wohngebaeude" traefe dann beide Werte. Die zwei Worte enthalten
+        /// einander nicht.</para>
+        /// </summary>
+        public static string Verwendungstext(string steuerwert)
+        {
+            if (string.IsNullOrEmpty(steuerwert)) return "";
+            bool wohn = string.Equals(steuerwert, FILTERWERT_WOHN, StringComparison.Ordinal);
+            string schluessel = wohn ? "GEBK_VERWENDUNG_WOHN" : "GEB_TEXT_SONSTIGE";
+            string text = null;
+            try { text = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(text) ? (wohn ? "Wohngebäude" : "Gewerbe+Sonstige") : text;
+        }
+
+        /// <summary>Die zwei Steuerwerte der Spalte <c>Wohngebaeude_Nicht_Wohngebaeude</c> — nie uebersetzt.</summary>
+        public const string FILTERWERT_WOHN = "Wohngebaeude";
+
+        /// <summary>Der zweite Steuerwert: Gewerbe und Sonstige.</summary>
+        public const string FILTERWERT_SONSTIGE = "Nicht Wohngebaeude";
+
+        private static string Spaltentext(DataRow r, string spalte)
+            => r.Table.Columns.Contains(spalte) && r[spalte] != DBNull.Value ? Convert.ToString(r[spalte]) ?? "" : "";
+
+        /// <summary>
+        /// <b>„Duplizieren…"</b> (Stufe 5; Entscheid AD-Q11) — der Gebaeudesatz als EIGENER
+        /// Satz unter <paramref name="neuerName"/>, alle Spalten ausser ID, Bezeichner und
+        /// ReadOnly. Die Regel steht einmal in <see cref="Katalogkopie.Duplizieren(string, int, string, Katalogkopie.Kindtabelle[])"/>.
+        /// </summary>
+        public static Katalogkopie.Ergebnis Duplizieren(int id, string neuerName)
+            => Katalogkopie.Duplizieren(TABLE, id, neuerName);
+
+        /// <summary>
+        /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
+        /// nennt das Projekt) — je Bezeichner die Projektnamen, EINE Abfrage fuer die ganze
+        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>),
+        /// verknuepft ueber den Namen — derselbe Weg, auf dem die Waermepumpenverwaltung ihre
+        /// Loeschsperre findet (<c>WPStammCtrl.GesperrtDurchProjekt</c>). Gross/klein egal.
+        /// </summary>
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung()
+        {
+            var sammlung = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT g.Gebaeudename, p.Projektname FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt ORDER BY p.Projektname");
+            if (dt != null)
+            {
+                foreach (DataRow r in dt.Rows)
+                {
+                    string name = Spaltentext(r, "Gebaeudename").Trim();
+                    string projekt = Spaltentext(r, "Projektname");
+                    if (name.Length == 0) continue;
+                    if (!sammlung.TryGetValue(name, out List<string> projekte))
+                        sammlung[name] = projekte = new List<string>();
+                    if (!projekte.Contains(projekt)) projekte.Add(projekt);
+                }
+            }
+
+            var ergebnis = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, List<string>> p in sammlung) ergebnis[p.Key] = p.Value;
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Kenndaten eines eigenen Satzes schreiben</b> (Stufe 5: das Stammblatt der
+        /// Gebaeudeverwaltung, direkt bedienbar) — genau die fuenf Spalten, die die Gruppe
+        /// Kenndaten fuehrt: Gebaeudetyp, Gebaeudeart, Verwendung (Steuerwert), Baualtersklasse
+        /// (Buchstabe) und Beschreibung.
+        ///
+        /// <para><b>Nur diese fuenf Spalten.</b> Flaechen, U-Werte und die Bauweise haengen
+        /// aneinander (Bauart × Nutzflaeche, Summe der Fensterflaechen) und bleiben dem
+        /// Katalogeditor, der ihre Regeln fuehrt; ein Rundlauf ueber das ganze Modell
+        /// schriebe abgeleitete Spalten neu, die der Anwender hier gar nicht sieht.</para>
+        ///
+        /// <para>Ein Auslieferungssatz wird nie geschrieben (<c>AND ReadOnly = 0</c>); die
+        /// Oberflaeche sperrt ihn vorher weich.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn der Satz geschrieben wurde.</returns>
+        public static bool KenndatenSchreiben(string bezeichner, string typ, string gebaeudeart,
+                                              string verwendung, string baualtersklasse,
+                                              string beschreibung)
+        {
+            if (string.IsNullOrEmpty(bezeichner)) return false;
+            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
+
+            return DataRepository.ExecuteSQL(
+                "UPDATE [" + TABLE + "] SET [Typ] = ?, [Gebaeudeart] = ?, " +
+                "[Wohngebaeude_Nicht_Wohngebaeude] = ?, [Baualtersklasse] = ?, [Beschreibung] = ? " +
+                "WHERE Bezeichner = ? AND ReadOnly = 0",
+                new DbParam("@typ", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
+                new DbParam("@art", DbParamTyp.VarWChar) { Wert = (object)(gebaeudeart ?? "") },
+                new DbParam("@verw", DbParamTyp.VarWChar) { Wert = (object)(verwendung ?? "") },
+                new DbParam("@bak", DbParamTyp.VarWChar) { Wert = (object)(baualtersklasse ?? "") },
+                new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") },
+                new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)bezeichner });
+        }
+
+        /// <summary>
+        /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
+        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze weich und
+        /// fragt vorher zurueck; <see cref="Delete"/> meldete die Sperre ueber
+        /// <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
+        /// </summary>
+        /// <returns><c>true</c>, wenn der Satz geloescht wurde.</returns>
+        public static bool Loeschen(string bezeichner)
+        {
+            if (string.IsNullOrEmpty(bezeichner)) return false;
+            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ? AND ReadOnly = 0",
+                new DbParam("@bez", bezeichner));
+        }
+
+        #endregion
     }
 }

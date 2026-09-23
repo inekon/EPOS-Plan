@@ -13,10 +13,29 @@ Links die Trägerliste (Filterfeld, Gruppenköpfe, im Projektkontext „Aus Kata
 und D über die volle Breite, dann die Preishistorie. Der Kopf nennt den Träger („Energieträger — Erdgas"),
 die Zeile darunter Projekt und Preisstellung („… · Preise netto").
 
-**Block A · Preis und Heizwert:** Arbeitspreis 0,7560 €/m³ · Grundpreis 180 €/a · Leistungspreis
+**Block A · Preis und Heizwert:** Arbeitspreis 0,7560 €/m³, direkt darunter die Klappliste der
+**Preisbasis** („€/m³" oder „€/kWh") · Grundpreis 180 €/a · Leistungspreis
 0,00 €/(kW·a) samt Modus · H_i 10,50 · H_s 11,60 kWh/m³ · Effektivzeile „effektiv: 1 m³ = 10,50 kWh (H_i) /
 11,60 kWh (H_s)" · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i = 1,1048" · Formelzeile
-„Formel: 0,76 €/m³ ÷ 10,50 kWh/m³ = 0,0720 €/kWh". Darunter die saisonalen Sätze (nur bei Trägern mit
+„Formel: 0,7560 €/m³ ÷ 10,50 kWh/m³ = 0,0720 €/kWh".
+
+**Die Preisbasis** (Entscheid ET‑D‑4) sagt, in welcher Einheit der Arbeitspreis *eingegeben* wird: in der
+Mengeneinheit des Trägers oder in €/kWh. Sie steht ohne eigene Beschriftung unter dem Feld, wie der
+Leistungspreis-Modus. Gespeichert wird **immer der Preis je Mengeneinheit**; „€/kWh" rechnet nur die Anzeige
+über H_i um (Faktor = Heizwert, nie der Faktor einer Umrechnungsregel). Bei „€/kWh" läuft die Formelzeile in
+Eingaberichtung: „Formel: 0,0720 €/kWh × 10,50 kWh/m³ = 0,7560 €/m³ (gespeichert je m³)". Die Liste folgt
+dem Heizwert, der gerade im Feld steht: Ohne Heizwert gibt es nur die Mengeneinheit, und eine leise Zeile sagt
+„€/kWh ist wählbar, sobald ein Heizwert gepflegt ist."; wird er eingetragen, steht „€/kWh" sofort zur Wahl.
+Fällt er auf 0, geht die Wahl auf die Mengeneinheit, und das Feld zeigt den zuletzt gültigen Preis je
+Mengeneinheit. Rechnet der Träger ohnehin nach kWh ab (Strom, Fernwärme, „Sonstige"), gibt es keine Liste —
+die Einheit am Feld ist „€/kWh". Die gewählte Preisbasis ist ein eigener Kartenzustand
+(`energy_project_settings.Preisbasis`, Schemaschritt 112): Sie steht beim Wiederöffnen wieder da, auch wenn
+der Brennstoff keine Regel nach kWh führt; leer heißt Mengeneinheit — so beginnen neue Zuordnungen
+(E7c2‑Q3). Führt eine Datenbank vor Schritt 112 die Spalte nicht, zeigt die Karte die Mengeneinheit und nennt
+den Grund. „Katalogwerte übernehmen" lässt die gewählte Preisbasis stehen. Im Katalogkontext wird sie nicht
+gemerkt — dort ist sie Eingabehilfe beim Öffnen.
+
+Unter den Feldern die saisonalen Sätze (nur bei Trägern mit
 Leistungspreis), die Katalogübernahme (nur im Projektkontext) und die Hinweise zu fehlenden oder
 geliehenen Werten. **Beim Stromträger im Projektkontext** steht im selben Block die Gruppe
 „Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)": Staffelgrenze [kW], Preis bis zur Grenze und Preis
@@ -65,14 +84,11 @@ und NO_x werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. Der **
 GEG Anlage 9 (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für einen anderen Zweck und
 belegt im Code nie dieselbe Variable (Konzept § 3.11).
 
-**Block D · Einheiten und Umrechnung** — aufklappbar, Vorgabe zu. Er führt die Klappliste
-**Preisbasis** mit genau zwei Einträgen (Abrechnungseinheit und kWh, Faktor = Heizwert), die
-Basiseinheit und den Regelblock samt „Regel hinzufügen" und Verstoßbanner. Die Zeile darunter sagt,
+**Block D · Einheiten und Umrechnung** — aufklappbar, Vorgabe zu. Er führt die Basiseinheit und den
+Regelblock samt „Regel hinzufügen" und Verstoßbanner; die Preisbasis steht nicht hier, sondern am
+Arbeitspreis (Block A). Die Zeile darunter sagt,
 wozu er da ist: *Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert.*
-Die gewählte Preisbasis ist ein eigener Kartenzustand (`energy_project_settings.Preisbasis`, Schemaschritt
-112): Sie steht beim Wiederöffnen wieder da, auch wenn der Brennstoff keine Regel nach kWh führt; leer heißt
-Abrechnungseinheit — so beginnen neue Zuordnungen (E7c2‑Q3). Führt eine Datenbank vor Schritt 112 die Spalte
-nicht, zeigt die Karte die Abrechnungseinheit und nennt den Grund. Die Gase des Brennstoffkatalogs führen
+Die Gase des Brennstoffkatalogs führen
 ihre Menge in Nm³ (€/Nm³), der Brennstoff „Sonstige" in kWh (€/kWh) — Schemaschritt 113, reiner Stammtext;
 die Rechnung unten bleibt davon unberührt. „Sonstige" trägt wie Strom und Fernwärme Heizwert und Brennwert 1,0
 (H_i = H_s = 1,0, Katalog-Generation 9), ein neu zugeordneter Träger bekommt damit in der Preishistorie den

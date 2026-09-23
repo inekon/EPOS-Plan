@@ -897,14 +897,7 @@ namespace WindowsFormsApplication1
             // UR-1: Die Preisbasis „kWh" traegt den HEIZWERT als Faktor, nicht den
             // Faktor einer Umrechnungsregel. Die Liste kann deshalb erst stehen,
             // wenn der Heizwert gelesen ist.
-            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(
-                _gewaehlt.BillingUnit, _umrechnungen, stand.Heizwert);
-
-            var basen = new List<ValueTuple<int, string>>();
-            for (int i = 0; i < _preisbasen.Count; i++)
-                basen.Add(new ValueTuple<int, string>(i, _preisbasen[i].Einheit));
-            stand.Preisbasen = basen;
-            stand.PreisbasisId = IndexZuEinheit(gemerkteBasis);
+            PreisbasenBauen(stand, stand.Heizwert, gemerkteBasis);
 
             // DIE BASISWERTE SIND, WAS IN DER DATENBANK STEHT - je
             // ABRECHNUNGSEINHEIT. Heiz- und Brennwert bleiben es auch in der
@@ -985,6 +978,59 @@ namespace WindowsFormsApplication1
         private int? IndexZuEinheit(string einheit)
         {
             return EnergietraegerPreisCtrl.PreisbasisIndex(_preisbasen, einheit);
+        }
+
+        /// <summary>
+        /// Baut die Klappliste „Preisbasis" am Arbeitspreis (ET-D-4): die
+        /// Mengeneinheit des Trägers und — sobald ein Heizwert dasteht — die
+        /// Kilowattstunde, beschriftet als Einheit des Arbeitspreises („€/Nm³",
+        /// „€/kWh").
+        ///
+        /// <para><b>„Immer" heißt: auch mitten im Dialog.</b> Gerufen wird sie beim
+        /// Trägerwechsel UND in jedem <see cref="Nachziehen"/>. Wer den Heizwert erst
+        /// hier einträgt, bekommt „€/kWh" sofort angeboten; wer ihn auf 0 setzt,
+        /// verliert den Eintrag wieder. Die Wahl bleibt stehen, solange die Liste ihre
+        /// Einheit führt, sonst fällt sie auf die Mengeneinheit.</para>
+        ///
+        /// <para>Ein Träger ohne Heizwert im Preismodell (Strom, Fernwärme) bekommt
+        /// keine kWh-Basis: <see cref="Faktor"/> rechnet bei ihm ohnehin mit 1.</para>
+        /// </summary>
+        /// <param name="stand">Die Karte, deren Liste gebaut wird.</param>
+        /// <param name="heizwert">Heizwert je Mengeneinheit [kWh], wie er gerade im Feld steht.</param>
+        /// <param name="einheit">Die Einheit, die gewählt bleiben soll; leer = Mengeneinheit.</param>
+        private void PreisbasenBauen(EnergietraegerStand stand, double heizwert, string einheit)
+        {
+            double hi = _gewaehlt.HasHi ? heizwert : 0.0;
+            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(_gewaehlt.BillingUnit, _umrechnungen, hi);
+
+            var basen = new List<ValueTuple<int, string>>();
+            for (int i = 0; i < _preisbasen.Count; i++)
+                basen.Add(new ValueTuple<int, string>(
+                    i, EnergietraegerPreiskarte.ArbeitspreisEinheit(_preisbasen[i].Einheit, true)));
+
+            // Dieselben Einträge behalten dieselbe Liste - die Klappliste zeichnet
+            // sonst in jedem Nachziehen neue Optionen.
+            if (!GleicheEintraege(stand.Preisbasen, basen)) stand.Preisbasen = basen;
+            stand.PreisbasisId = IndexZuEinheit(einheit);
+
+            string mengeneinheit = (_gewaehlt.BillingUnit ?? "").Trim();
+            stand.PreisbasisHinweis =
+                _gewaehlt.HasHi && hi <= 0.0 && mengeneinheit.Length > 0 &&
+                !EnergietraegerPreiskarte.IstKwh(mengeneinheit)
+                    ? T("ETV_PREISBASIS_OHNE_HEIZWERT",
+                        "€/kWh ist wählbar, sobald ein Heizwert gepflegt ist.")
+                    : "";
+        }
+
+        private static bool GleicheEintraege(IReadOnlyList<(int Id, string Text)> alt,
+                                             List<ValueTuple<int, string>> neu)
+        {
+            if (alt == null || alt.Count != neu.Count) return false;
+            for (int i = 0; i < neu.Count; i++)
+                if (alt[i].Id != neu[i].Item1 ||
+                    !string.Equals(alt[i].Text, neu[i].Item2, StringComparison.Ordinal))
+                    return false;
+            return true;
         }
 
         /// <summary>Die gewählte Preisbasis; <c>null</c> = keine Liste.</summary>
@@ -1231,6 +1277,16 @@ namespace WindowsFormsApplication1
         private void Nachziehen()
         {
             if (_stand == null || _gewaehlt == null) return;
+
+            // ET-D-4: Die Preisbasen folgen dem Heizwert, der gerade im Feld steht.
+            // Fällt „€/kWh" dabei weg (Heizwert auf 0), lässt sich die Eingabe in
+            // €/kWh nicht mehr umrechnen - die Karte zeigt dann den zuletzt
+            // gültigen Preis je Mengeneinheit, statt die Zahl still umzudeuten.
+            string vorher = AktuelleEinheit();
+            PreisbasenBauen(_stand, _stand.Heizwert, vorher);
+            if (EnergietraegerPreiskarte.IstKwh(vorher) &&
+                !EnergietraegerPreiskarte.IstKwh(AktuelleEinheit()))
+                _stand.Arbeitspreis = _baseWork;
 
             // DIE EINHEITEN (B1): Heiz- und Brennwert tragen IMMER
             // kWh/<Abrechnungseinheit> - sie sind Stoffwerte und folgen der
@@ -1757,8 +1813,11 @@ namespace WindowsFormsApplication1
         /// dort änderbar; geschrieben wird erst mit „Speichern" bzw. „OK",
         /// und dabei entsteht die Historienzeile.</para>
         ///
-        /// <para>Die Preisbasis geht auf die ABRECHNUNGSEINHEIT zurück — in ihr
-        /// steht die Katalogzeile.</para>
+        /// <para><b>Die gewählte Preisbasis bleibt stehen</b> (ET-D-4). Die
+        /// Katalogzeile führt den Preis je Mengeneinheit; steht die Karte auf
+        /// „€/kWh", wird er über den übernommenen Heizwert in diese Einheit
+        /// umgerechnet angezeigt. Führt der Katalog keinen Heizwert, fällt die
+        /// Wahl auf die Mengeneinheit.</para>
         /// </summary>
         private void KatalogwerteUebernehmen()
         {
@@ -1770,7 +1829,10 @@ namespace WindowsFormsApplication1
             _baseHi = _gewaehlt.HiKwhPerUnit;
             _baseHs = _gewaehlt.HsKwhPerUnit;
 
-            _stand.PreisbasisId = IndexZuEinheit(_abrechnungseinheit);
+            // Die Liste zuerst über den KATALOGheizwert - erst dann steht fest, ob
+            // die gewählte Basis bleiben kann und mit welchem Faktor die Anzeige
+            // rechnet.
+            PreisbasenBauen(_stand, _baseHi, AktuelleEinheit());
             AnzeigeAusBasis();
 
             EmissionswerteUebernehmen();
@@ -2707,7 +2769,7 @@ namespace WindowsFormsApplication1
                     "Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert "
                     + "und Brennwert."),
                 ["TitelHistorie"] = T("ETV_TITEL_HISTORIE", "Preishistorie"),
-                ["LabelPreisbasis"] = T("ETV_LBL_PREISBASIS", "Preisbasis"),
+                ["LabelPreisbasisAria"] = T("ETV_PREISBASIS_ARIA", "Einheit des Arbeitspreises"),
                 ["LabelBasiseinheit"] = T("ETV_LBL_BASISEINHEIT", "Basiseinheit:"),
                 ["LabelArbeitspreis"] = T("ETV_LBL_ARBEITSPREIS", "Arbeitspreis"),
                 ["LabelLeistungspreis"] = T("ETV_LBL_LEISTUNGSPREIS", "Leistungspreis"),

@@ -58,6 +58,15 @@ public sealed class EnergietraegerKiSicht
     /// <summary>Die Hülle rechnet nach — nach JEDER Änderung in der Karte.</summary>
     public Action? Nachziehen { get; init; }
 
+    /// <summary>
+    /// Der Wechsel der Preisbasis — DERSELBE Weg wie die Klappliste der Karte
+    /// (<c>PreisbasisGewechselt</c>): Die Hülle rechnet die Anzeige des
+    /// Arbeitspreises in die neue Einheit um, der gespeicherte Preis je
+    /// Mengeneinheit bleibt. <c>null</c> = der Assistent kann die Preisbasis
+    /// nicht setzen.
+    /// </summary>
+    public Action<int>? PreisbasisSetzen { get; init; }
+
     // =====================================================================
     //  Die Wahllisten (KI‑D‑Q6)
     // =====================================================================
@@ -196,11 +205,24 @@ public sealed class EnergietraegerKiSicht
         set => Setze(s => s.Brennwert = value);
     }
 
-    /// <summary>Die Preisbasis, auf die sich der Arbeitspreis bezieht.</summary>
+    /// <summary>
+    /// Die Preisbasis, in der der Arbeitspreis eingegeben wird.
+    ///
+    /// <para><b>Nicht über <see cref="Setze"/>.</b> Nähme der Assistent den Weg
+    /// eines Zahlenfeldes — Id setzen, dann nachziehen —, läse die Hülle die
+    /// stehende Zahl als Eingabe in der NEUEN Einheit, und der gespeicherte Preis
+    /// verschöbe sich um den Heizwert. Der Wechsel geht deshalb über
+    /// <see cref="PreisbasisSetzen"/>, denselben Weg wie die Klappliste.</para>
+    /// </summary>
     public int? Preisbasis
     {
         get => Stand?.PreisbasisId;
-        set => Setze(s => s.PreisbasisId = value);
+        set
+        {
+            if (Stand is null || !value.HasValue || PreisbasisSetzen is null) return;
+            if (value == Stand.PreisbasisId) return;
+            PreisbasisSetzen(value.Value);
+        }
     }
 
     /// <summary>Die Basiseinheit der Preiskette — Anzeige, nicht Eingabe.</summary>

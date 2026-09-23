@@ -524,6 +524,55 @@ namespace WindowsFormsApplication1
         /// <summary>Der Status einer Katalogzeile: Auslieferung, eigen oder Import.</summary>
         public const string SpStatus = "STATUS";
 
+        // ------------------------------------------------------------------
+        // Stufe 5 der Neuordnung der Administrationsdialoge (V16): die drei
+        // SONDERLISTEN - Gebaeude, Gebaeudetypen, Lastgaenge der
+        // Lastspitzenkappung - bekommen ein Spaltenprofil wie die uebrigen
+        // Kataloge. Die Spalten stehen hier, weil sie DATEN sind.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Die <b>Gebaeudeart</b> eines Katalogsatzes (<c>Tab_Gebaeude_STAMM.Gebaeudeart</c>)
+        /// — bis Stufe 5 der Vorfilter „Gebaeudeart" ueber der eigenen Tabelle, jetzt ein
+        /// Trichter.
+        /// </summary>
+        public const string SpGebaeudeart = "GEBAEUDEART";
+
+        /// <summary>
+        /// Die <b>Verwendung</b> eines Gebaeudes — Wohngebaeude oder Gewerbe und Sonstige
+        /// (<c>Wohngebaeude_Nicht_Wohngebaeude</c>), als ANZEIGETEXT: Der Trichter filtert
+        /// auf dem, was in der Zelle steht.
+        /// </summary>
+        public const string SpVerwendung = "VERWENDUNG";
+
+        /// <summary>
+        /// Das <b>Baujahr</b> eines Gebaeudes — der Klartext der Baualtersklasse
+        /// (<c>GebaeudeStammCtrl.Baualtersklassen</c>), nicht ihr Buchstabe.
+        /// </summary>
+        public const string SpBaujahr = "BAUJAHR";
+
+        /// <summary>Die Wohn- bzw. Nutzflaeche eines Gebaeudes in m² (<c>Wohnflaeche_gesamt</c>).</summary>
+        public const string SpFlaecheM2 = "FLAECHE";
+
+        /// <summary>
+        /// Die Zahl der <b>Tageskurven</b> eines Gebaeudetyps — fuenf oder acht zu je 24
+        /// Stunden (<c>Tab_DBTagVDaten_STAMM</c>, Zeilen ÷ 24).
+        /// </summary>
+        public const string SpKurven = "KURVEN";
+
+        /// <summary>
+        /// Das <b>Zeitraster</b> eines Lastgangs der Lastspitzenkappung in Minuten (15 oder
+        /// 60) — die Zahl hinter „Intervall".
+        /// </summary>
+        public const string SpIntervallMin = "INTERVALL";
+
+        /// <summary>
+        /// Das <b>Jahresmaximum</b> eines Lastgangs in kW — der hoechste abgelegte Wert, also
+        /// die Bezugsgroesse der Lastspitzenkappung (Viertelstunden- bzw. Stundenleistung).
+        /// Nicht <see cref="SpSpitzeKw"/>: Die ist der Hoechstwert der STUNDENreihe.
+        /// </summary>
+        public const string SpJahresmaximumKw = "JAHRESMAXIMUM";
+
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und
@@ -875,6 +924,99 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpHerkunft,       t("KFLT_SP_HERKUNFT")),
                     new Katalogspalte(SpKatalogversion, t("KFLT_SP_KATALOGVERSION")),
                     new Katalogspalte(SpStatus,         t("KFLT_SP_STATUS"))
+                }
+            };
+        }
+
+        // ==================================================================
+        // Stufe 5 der Neuordnung (V16) - die drei Sonderlisten
+        // ==================================================================
+
+        /// <summary>Der Schluessel des Filterstands der Gebaeudeverwaltung.</summary>
+        public const string SCHLUESSEL_GEBAEUDE = "GEBAEUDE";
+
+        /// <summary>Der Schluessel des Filterstands der Gebaeudetypen.</summary>
+        public const string SCHLUESSEL_GEBAEUDETYP = "GEBAEUDETYP";
+
+        /// <summary>Der Schluessel des Filterstands der Lastgaenge der Lastspitzenkappung.</summary>
+        public const string SCHLUESSEL_LASTGANG = "LASTGANG";
+
+        /// <summary>
+        /// <b>Die Gebaeudeverwaltung</b> (Konzept Administrationsdialoge, V16; Bestand A9) —
+        /// fuenf Spalten: Name, Gebaeudeart, Verwendung, Baujahr, Flaeche.
+        ///
+        /// <para><b>Die vier Vorfilter der eigenen Tabelle werden Trichter</b>: Verwendung,
+        /// Gebaeudeart und Baujahr sind Spalten mit Trichter, das Suchmuster ist die Suche
+        /// ueber alle Spalten. Die Zeilen liefert <c>GebaeudeStammCtrl.Katalogfilterzeilen</c>;
+        /// ein Auslieferungssatz traegt das Schloss (<see cref="Katalogfilterzeile.Geschuetzt"/>).</para>
+        ///
+        /// <para><b>Rang:</b> Name und Flaeche stehen immer; Gebaeudeart und Baujahr bei Platz;
+        /// die Verwendung weicht als erste — sie ist die grobe Einteilung, die der Name meist
+        /// schon verraet, und eine gefilterte Spalte weicht ohnehin nie.</para>
+        /// </summary>
+        public static Katalogfilterprofil FuerGebaeude(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_GEBAEUDE,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    new Katalogspalte(SpGebaeudeart, t("KFLT_SP_GEBAEUDEART"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpVerwendung, t("KFLT_SP_VERWENDUNG"), rang: Katalogspaltenrang.Breit),
+                    new Katalogspalte(SpBaujahr, t("KFLT_SP_BAUJAHR"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl)
+                }
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Gebaeudetypen</b> (V16; Bestand A10) — Name, Zahl der Tageskurven und
+        /// Beschreibung. Bis Stufe 5 stand hier eine Typliste mit rundem Wahlknopf und nur dem
+        /// Namen; die Zeilen liefert <c>TagVCtrl.Katalogfilterzeilen</c>, ein nicht
+        /// veraenderbarer Typ traegt das Schloss.
+        /// </summary>
+        public static Katalogfilterprofil FuerGebaeudetyp(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_GEBAEUDETYP,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    new Katalogspalte(SpKurven, t("KFLT_SP_KURVEN"), "", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpBeschreibung, t("KFLT_SP_BESCHREIBUNG"), rang: Katalogspaltenrang.BeiPlatz)
+                }
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Lastgaenge der Lastspitzenkappung</b> (V16; Bestand A11) — Lastgang, Quelle
+        /// (Stamm, Projekt oder Datei), Intervall in Minuten und Jahresmaximum in kW.
+        ///
+        /// <para><b>Ein Rechenwerkzeug, kein Katalog:</b> Die Liste ersetzt Optionsgruppe und
+        /// Klappliste; eine eingelesene Datei erscheint als Zeile mit der Quelle „Datei" und
+        /// wird nicht abgelegt. Die Zeilen der Datenbank liefert
+        /// <c>PeakShavingCtrl.Katalogfilterzeilen</c>.</para>
+        /// </summary>
+        public static Katalogfilterprofil FuerLastgang(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_LASTGANG,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_LASTGANG")),
+                    new Katalogspalte(SpQuelle, t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpIntervallMin, t("KFLT_SP_INTERVALL"), "min", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpJahresmaximumKw, t("KFLT_SP_JAHRESMAXIMUM"), "kW", Katalogspaltenart.Zahl)
                 }
             };
         }

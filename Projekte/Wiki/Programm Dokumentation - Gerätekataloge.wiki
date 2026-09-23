@@ -37,7 +37,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 
 Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, Nutzungsdauer (Jahre) und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers.
 
-Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == BHKW ==
 {{Anker|bhkw}}
@@ -70,7 +70,7 @@ Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennl
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Pufferspeicher ==
 {{Anker|pufferspeicher}}
@@ -84,7 +84,7 @@ Der Pufferspeicherkatalog führt die sechs Gerätewerte, mit denen ein Speicher 
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Wärmepumpen ==
 {{Anker|waermepumpen}}
@@ -100,7 +100,7 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 
 Ein Auslieferungssatz trägt das Schloss und steht in der Liste gedimmt; seine Felder und Kennlinien lassen sich nur ansehen, ''Duplizieren…'' legt eine eigene Kopie samt Kennlinien an.
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == PV-Module ==
 {{Anker|pv-module}}
@@ -118,7 +118,7 @@ Der Modulkatalog der Photovoltaik führt eine Zeile je Modul. Einziges Pflichtfe
 * '''Zelltemperatur NOCT''' – in °C.
 * '''Zelltechnologie''' – Auswahl.
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Wechselrichter ==
 {{Anker|wechselrichter}}
@@ -131,7 +131,7 @@ Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen 
 
 '''Wirkungsgrad''': die Teillastwirkungsgrade bei 5, 10, 20, 30, 50 und 100 % Auslastung, dazu Euro- und Maximalwirkungsgrad — alle als Faktor zwischen 0 und 1, nicht in Prozent —, sowie Standby- und Nachtverbrauch (je in W).
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Stromspeicher ==
 {{Anker|stromspeicher}}
@@ -142,7 +142,7 @@ Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Spe
 
 '''Gerätetechnik''' (alle sechs Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Verschleißkosten (€/(kWh·Zyklus)), Leistungskosten (€/kW), Investition fix (€), Standby-Verbrauch (W).
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Import ==
 {{Anker|import}}
@@ -150,6 +150,8 @@ Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren
 Fünf Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
 
 Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
+
+Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme ist der erste neue Satz in der Liste gewählt, die Statuszeile nennt die Zahl der übernommenen Sätze.
 
 == Übernahme in ein Projekt ==
 {{Anker|uebernahme}}

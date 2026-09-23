@@ -1,57 +1,51 @@
-﻿@* Lastspitzenkappung (Peak-Shaving) — AP7 (iU9-W12.6).
+﻿@* Lastspitzenkappung (Peak-Shaving) — AP7 (iU9-W12.6); seit Stufe 5 der
+   Neuordnung der Administrationsdialoge (V16, Bestand A11) im Geruest der
+   Verwaltungen.
 
-   Vorbild: Views/Stromspeicher/Form_PeakShaving.cs (761 Z.) und
-   .Designer.cs (680 Z., 59 Steuerelemente, 5 MessageBox + 13 indirekte).
+   Vorbild: Views/Stromspeicher/Form_PeakShaving.cs (761 Z.).
 
    WOZU. Eingang ist allein ein Lastgang - eine Ganglinie aus Projekt oder
-   Stammkatalog ODER eine ad hoc importierte Datei. Ein geoeffnetes Projekt ist
+   Stammkatalog ODER eine ad hoc eingelesene Datei. Ein geoeffnetes Projekt ist
    nicht noetig. Bezugsgroesse der Spitze ist das Jahresmaximum der
-   Viertelstundenleistung; abgelegt wird nichts, Exportweg ist CSV. Beides steht
-   woertlich als Hinweiszeile in der Maske.
+   Viertelstundenleistung; abgelegt wird nichts, Exportweg ist CSV.
 
-   DIE IMPORTKETTE LIEGT IM KERN (GanglinienImportAblauf.OhneAblage, W12.0d).
-   Der Vorlaeufer trug sie ein zweites Mal woertlich im Quelltext; hier reicht
-   die Komponente zwei Rueckrufe herein - Optionen und Protokoll - und zeigt sie
-   als UEBERLAGERUNG im selben Fenster (Risiko R2). Konflikte gibt es hier
-   nicht: es wird ja nichts abgelegt.
+   EIN RECHENWERKZEUG IM GERUEST (Konzept 3.6 Punkt 6). Statt Optionsgruppe,
+   Klappliste und Dateiwahl steht links die LISTE DER LASTGAENGE
+   (Katalogliste, Profil FuerLastgang: Lastgang, Quelle, Intervall,
+   Jahresmaximum; die Zeile ist die Wahl). Eine eingelesene Datei erscheint als
+   Zeile mit der Quelle "Datei" und wird nicht abgelegt. Rechts steht das
+   STAMMBLATT des gewaehlten Lastgangs: die Parameter in den Gruppen Speicher,
+   Schwelle und Kosten, dann "Berechnen" - zwischen Parametern und Ergebnis,
+   der Lesefluss aus dem Entscheid DL-Q2 bleibt -, dann die Gruppe Ergebnis mit
+   den drei Reitern. Kein Neu..., Duplizieren, Loeschen, kein Schloss, keine
+   Kaestchen: Die Maske pflegt keinen Katalog. Die Auswahlleiste steht nur im
+   schmalen Fenster - dort traegt sie "Stammblatt ›".
 
-   DER RECHENLAUF LAEUFT NEBENHER (Befund W12-B22, behoben). 35 040 Werte und
-   bei der Schwellensuche eine Schleife ueber ganze Jahreslaeufe liefen im
-   Vorlaeufer im Oberflaechenfaden; in einer WebView ist der Renderfaden
-   derselbe Faden. Beide Laeufe gehen deshalb ueber einen Delegaten, den die
-   Huelle auf Task.Run legt, und melden sich am Baustein Fortschritt. Ein
-   ABBRUCH ist nicht vorgesehen - die Engine kennt keinen, und ein Knopf ohne
-   Wirkung waere schlechter als keiner (Regel des Bausteins).
+   DIE IMPORTKETTE LIEGT IM KERN (GanglinienImportAblauf.OhneAblage). "Lastgang
+   aus Datei..." in der Fussleiste oeffnet die Dateiwahl als Ueberlagerung
+   (V14); Optionen und Protokoll der Kette erscheinen darueber.
 
-   DIE PRUEFREGELN UND DIE UMRECHNUNG LIEGEN IM KERN
-   (PeakShavingEingaben, W12.6): vier Regeln woertlich, das SoC-Band in Prozent
-   an der Maske und in kWh in der Engine, DtH = 0,25 fest, Degradation 0.
+   DER RECHENLAUF LAEUFT NEBENHER (Befund W12-B22): Beide Laeufe gehen ueber
+   einen Delegaten, den die Huelle auf Task.Run legt, und melden sich am
+   Baustein Fortschritt.
 
-   DAS BILD IST EIN BESTANDSBILD. ChartRenderer.ErzeugerStapel traegt seit
-   iU9-W11a eine Sekundaerachse - genau das, was der Ladezustand hier braucht.
-   Kein neuer Renderer, keine neue ChartProbe (PeakShavingBild, W12.0h).
+   DIE PRUEFREGELN UND DIE UMRECHNUNG LIEGEN IM KERN (PeakShavingEingaben).
 
-   ... UND STEHT SEIT DER ETAPPE DG-E3 ALS ZEICHENMODELL IM BAUSTEIN DiagrammSvg.
-   Die Huelle reicht PeakShavingBild.Modell herein - den Zwilling von .Lastgang,
-   gleiche Reihen, gleiche Achsen -, und der Baustein macht daraus Vektoren:
-   Zoom auf der Zeitachse, Legendenwahl und der Wert am Zeiger ohne einen
-   Rundlauf in den Kern. Das PNG kostete bei jeder Stellung des Schalters
-   "Ladezustand" einen vollen Renderlauf und war auf jeder DPI unscharf.
+   DAS BILD IST EIN ZEICHENMODELL im Baustein DiagrammSvg (Etappe DG-E3).
 
-   WOERTLICH TROTZ BEFUND: W12-B24 - der einzige Fussknopf schliesst mit
-   "Abbrechen", die Huelle liefert deshalb immer false. W12-B9 entfaellt: die
-   hartkodiert deutsche Zahlenmeldung von Program.ZahlPruefen ersetzt das
-   Zahlenfeld, das faerbt und seinen Namen meldet.
+   WOERTLICH TROTZ BEFUND: W12-B24 - der Schlussknopf meldet false.
 
-   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst die oberste Ebene (Ueberlagerung, schmales Blatt,
+   Dialog). Enter ist nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
 @using SpeicherEngine
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
-<div class="epos-dialog epos-peakshaving" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-peakshaving" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -64,235 +58,265 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Herleitungszeile Text="@HinweisText" />
+    <Katalograhmen BlattOffen="@_blattOffen">
+        <Liste>
+            @* DIE LISTE DER LASTGAENGE (V16): Stamm, Projekt und eingelesene Dateien;
+               die Zeile ist die Wahl, kein Kaestchen, kein Vergleich. *@
+            <Katalogliste Profil="@Profil" Zeilen="@_zeilen"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Vergleichbar="false" />
+        </Liste>
 
-    @* ================================================== Quelle des Lastgangs *@
-    <Gruppenkopf Titel="@GruppeQuelle">
-        <KindInhalt>
-            @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Der Block traegt
-               ein Pfadfeld (Dateiwahl), das die Breite braucht, und darunter
-               die Zeile mit der geladenen Reihe. *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-            <Optionsgruppe Bezeichnung="@GruppeQuelle" Eintraege="@Quellen"
-                           Auswahl="@_quelle" AuswahlChanged="QuelleGeaendert"
-                           Aktiv="@(!_laeuft)" />
+        <Auswahl>
+            @* NUR IM SCHMALEN FENSTER: Name und "Stammblatt ›" - breit steht keine
+               Auswahlleiste, es gibt keine Handlung an Zeilen. *@
+            <div class="epos-nur-schmal epos-peakshaving-auswahl">
+                <Auswahlleiste Fokus="@Fokusname" HinweisText=""
+                               Stammblatt="@BlattOeffnenWeg" />
+            </div>
+        </Auswahl>
 
-            <Auswahlfeld Bezeichnung="@LabelGanglinie" Eintraege="@Ganglinien"
-                         Auswahl="@_iGanglinie" AuswahlChanged="GanglinieGeaendert"
-                         Aktiv="@(_quelle == QuelleGanglinie && !_laeuft)" />
+        <Blatt>
+            <Stammblatt Name="@Fokusname" Unterzeile="@Unterzeile"
+                        Kennzahlen="@Kopfkennzahlen" ZurListe="@_blattSchliessen">
+                <Gruppen>
+                    @* ================================================ Speicher *@
+                    <Stammblattgruppe Titel="@GruppeSpeicher">
+                        <KindInhalt>
+                            <Herleitungszeile Text="@_herkunft" />
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Zahlenfeld Bezeichnung="@LabelP" Einheit="kW" Feldname="@LabelP"
+                                                Wert="@_pKw" WertChanged="w => _pKw = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelKapazitaet" Einheit="kWh" Feldname="@LabelKapazitaet"
+                                                Wert="@_kapazitaet" WertChanged="w => _kapazitaet = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelEta" Feldname="@LabelEta"
+                                                Wert="@_eta" WertChanged="w => _eta = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelSoCMin" Einheit="%" Feldname="@LabelSoCMin"
+                                                Wert="@_socMin" WertChanged="w => _socMin = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelSoCMax" Einheit="%" Feldname="@LabelSoCMax"
+                                                Wert="@_socMax" WertChanged="w => _socMax = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelStartSoC" Einheit="%" Feldname="@LabelStartSoC"
+                                                Wert="@_startSoC" WertChanged="w => _startSoC = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Stammblattgruppe>
 
-            @if (DateiWaehlen is not null)
-            {
-                <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
-                           Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-                           Aktiv="@(_quelle == QuelleDatei && !_laeuft)" />
-            }
+                    @* ================================================= Schwelle *@
+                    <Stammblattgruppe Titel="@GruppeSchwelle">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@LabelAdaptiv" Wert="@_adaptiv" WertChanged="AdaptivGeaendert"
+                                      Aktiv="@(!_laeuft)" />
+                            <Formularraster>
+                                <KindInhalt>
+                                    @* Woertlich: die Zielschwelle ist gesperrt, solange
+                                       nachgezogen wird - sie bleibt SICHTBAR und lesbar. *@
+                                    <Zahlenfeld Bezeichnung="@LabelZiel" Einheit="kW" Feldname="@LabelZiel"
+                                                Wert="@_ziel" WertChanged="w => _ziel = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_adaptiv && !_laeuft)" />
+                                    <button type="button" class="epos-knopf epos-peakshaving-minimal" disabled="@_laeuft"
+                                            @onclick="BeiMinimal">@MinimalText</button>
+                                    <Zahlenfeld Bezeichnung="@LabelLp" Feldname="@LabelLp"
+                                                Wert="@_lp" WertChanged="w => _lp = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelBezugspreis" Feldname="@LabelBezugspreis"
+                                                Wert="@_bezugspreis" WertChanged="w => _bezugspreis = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                </KindInhalt>
+                            </Formularraster>
+                            <Schalter Bezeichnung="@LabelKompatibel" Wert="@_kompatibel"
+                                      WertChanged="w => _kompatibel = w" Aktiv="@(!_laeuft)" />
+                        </KindInhalt>
+                    </Stammblattgruppe>
 
-            @* lbl_Reihe: leer = "Kein Lastgang geladen." in Grau; der Baustein
-               Herleitungszeile ist die leise Zeile des Hauses. *@
-            <Herleitungszeile Text="@_reiheText" />
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
+                    @* =================================================== Kosten *@
+                    <Stammblattgruppe Titel="@GruppeKosten">
+                        <KindInhalt>
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Zahlenfeld Bezeichnung="@LabelCCap" Feldname="@LabelCCap"
+                                                Wert="@_cCap" WertChanged="w => _cCap = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelCPow" Feldname="@LabelCPow"
+                                                Wert="@_cPow" WertChanged="w => _cPow = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelIFix" Feldname="@LabelIFix"
+                                                Wert="@_iFix" WertChanged="w => _iFix = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelZins" Einheit="%" Feldname="@LabelZins"
+                                                Wert="@_zins" WertChanged="w => _zins = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                    <Zahlenfeld Bezeichnung="@LabelNutzungsdauer" Einheit="a" Feldname="@LabelNutzungsdauer"
+                                                Wert="@_nutzungsdauer" WertChanged="w => _nutzungsdauer = w"
+                                                FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Stammblattgruppe>
 
-    @* ============================================ Speicher- und Bewertungsparameter *@
-    <Gruppenkopf Titel="@GruppeParameter">
-        <KindInhalt>
-            <Herleitungszeile Text="@_herkunft" />
-
-            @* Formularraster (iU8-E-2, Paket P3): Die sechs Speicherwerte. Die
-               handgebauten epos-feldpaar-Kaesten entfallen - der Raster stellt
-               zwei Feldpaare je Zeile, sobald der Platz da ist. *@
-            <Formularraster>
-                <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelP" Einheit="kW" Feldname="@LabelP"
-                        Wert="@_pKw" WertChanged="w => _pKw = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelKapazitaet" Einheit="kWh" Feldname="@LabelKapazitaet"
-                        Wert="@_kapazitaet" WertChanged="w => _kapazitaet = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelEta" Feldname="@LabelEta"
-                        Wert="@_eta" WertChanged="w => _eta = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelSoCMin" Einheit="%" Feldname="@LabelSoCMin"
-                        Wert="@_socMin" WertChanged="w => _socMin = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelSoCMax" Einheit="%" Feldname="@LabelSoCMax"
-                        Wert="@_socMax" WertChanged="w => _socMax = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelStartSoC" Einheit="%" Feldname="@LabelStartSoC"
-                        Wert="@_startSoC" WertChanged="w => _startSoC = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                </KindInhalt>
-            </Formularraster>
-
-            <Schalter Bezeichnung="@LabelAdaptiv" Wert="@_adaptiv" WertChanged="AdaptivGeaendert"
-                      Aktiv="@(!_laeuft)" />
-
-            @* Formularraster (iU8-E-2, Paket P3): Der Knopf zur minimalen
-               Schwelle steht NEBEN der Zielschwelle, wie im Vorbild - er ist
-               das zweite Rasterkind derselben Zeile. *@
-            <Formularraster>
-                <KindInhalt>
-            @* Woertlich: die Zielschwelle ist gesperrt, solange nachgezogen wird -
-               sie bleibt dabei SICHTBAR und lesbar. *@
-            <Zahlenfeld Bezeichnung="@LabelZiel" Einheit="kW" Feldname="@LabelZiel"
-                        Wert="@_ziel" WertChanged="w => _ziel = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_adaptiv && !_laeuft)" />
-            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                    @onclick="BeiMinimal">@MinimalText</button>
-            <Zahlenfeld Bezeichnung="@LabelLp" Feldname="@LabelLp"
-                        Wert="@_lp" WertChanged="w => _lp = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelBezugspreis" Feldname="@LabelBezugspreis"
-                        Wert="@_bezugspreis" WertChanged="w => _bezugspreis = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                </KindInhalt>
-            </Formularraster>
-
-            <Schalter Bezeichnung="@LabelKompatibel" Wert="@_kompatibel"
-                      WertChanged="w => _kompatibel = w" Aktiv="@(!_laeuft)" />
-
-            @* Formularraster (iU8-E-2, Paket P3): die fuenf Wirtschaftlichkeitswerte. *@
-            <Formularraster>
-                <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelCCap" Feldname="@LabelCCap"
-                        Wert="@_cCap" WertChanged="w => _cCap = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelCPow" Feldname="@LabelCPow"
-                        Wert="@_cPow" WertChanged="w => _cPow = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelIFix" Feldname="@LabelIFix"
-                        Wert="@_iFix" WertChanged="w => _iFix = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelZins" Einheit="%" Feldname="@LabelZins"
-                        Wert="@_zins" WertChanged="w => _zins = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@LabelNutzungsdauer" Einheit="a" Feldname="@LabelNutzungsdauer"
-                        Wert="@_nutzungsdauer" WertChanged="w => _nutzungsdauer = w"
-                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
-
-    @* DL-2, Schritt 6 (Entscheid DL-Q2 a): "Berechnen" BLEIBT im Blatt, zwischen
-       Parametern und Ergebnis - der Lesefluss Parameter -> Rechnen -> Ergebnis
-       bleibt stehen. Die Primaerfarbe traegt er nicht mehr: Sie gehoert dem
-       Schlussknopf der einen Fussleiste (Hausregel, Konzept Abschnitt 1). *@
-    <div class="epos-leiste epos-peakshaving-rechnen">
-        <button type="button" class="epos-knopf" disabled="@_laeuft"
-                @onclick="BeiRechnen">@RechnenText</button>
-    </div>
-
-    @if (_laeuft)
-    {
-        <Fortschritt Anteil="null" Text="@_fortschritt" />
-    }
-
-    @* ============================================================ Ergebnis *@
-    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
-        <KindInhalt>
-
-            <Reiterblatt Schluessel="KENNZAHLEN" Titel="@ReiterKennzahlen">
-                <KindInhalt>
-                    <div class="epos-raster-huelle">
-                        <table class="epos-raster">
-                            <thead>
-                                <tr>
-                                    <th>@SpalteGroesse</th>
-                                    <th>@SpalteWert</th>
-                                    <th>@SpalteEinheit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (PeakShavingKennzahlenBlock.Zeile z in _kennzahlen)
-                                {
-                                    <tr class="@(z.IstTrenner ? "epos-zeile--trenner" : null)">
-                                        <td>@z.Bezeichnung</td>
-                                        <td class="@(z.Negativ ? "epos-wert--negativ" : null)">@z.Wert</td>
-                                        <td>@z.Einheit</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                    @* DL-Q2 (a): "Berechnen" steht im Blatt ZWISCHEN den Parametern und dem
+                       Ergebnis - der Lesefluss Parameter -> Rechnen -> Ergebnis. Die
+                       Primaerfarbe traegt er nicht: Sie gehoert dem Schlussknopf. Eine
+                       Knopfzeile im Blatt, die weder primaer ist noch schliesst, ist keine
+                       zweite Fussleiste (Konzept 3.2). *@
+                    <div class="epos-leiste epos-peakshaving-rechnen">
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="BeiRechnen">@RechnenText</button>
                     </div>
-                </KindInhalt>
-            </Reiterblatt>
 
-            <Reiterblatt Schluessel="CHART" Titel="@ReiterChart">
-                <KindInhalt>
-                    <Schalter Bezeichnung="@LabelSoC" Wert="@_socZeigen" WertChanged="SoCGeaendert"
-                              Aktiv="@(!_laeuft)" />
+                    @if (_laeuft)
+                    {
+                        <Fortschritt Anteil="null" Text="@_fortschritt" />
+                    }
 
-                    @* DER LASTGANG ALS ZEICHENMODELL (Etappe DG-E3, Gruppe (b)/(c)).
-                       Gerade hier gewinnt der Zoom: Das Bild traegt 35 040
-                       Viertelstunden, und die gekappte Spitze ist ein Ereignis von
-                       wenigen Stunden - in der Vollansicht liegen rund vierzig Werte
-                       auf einem Bildpunkt. Der LADEZUSTAND steht auf der zweiten
-                       Achse in kWh; welche Reihe dort steht, sagt das Modell
-                       (Datenreihe.Achsenseite), die Einheit steht hier als
-                       Rueckfall. *@
-                    <DiagrammSvg Modell="@_modell" Kennung="peakshaving-lastgang"
-                                 Bezeichnung="@ReiterChart" PlatzhalterText="@LeerText"
-                                 Einheit="kW" EinheitRechts="kWh" />
-                </KindInhalt>
-            </Reiterblatt>
+                    @* ================================================= Ergebnis *@
+                    <Stammblattgruppe Titel="@GruppeErgebnis">
+                        <KindInhalt>
+                            <Reiter @bind-Aktiv="_reiter" Bezeichnung="@GruppeErgebnis">
+                                <KindInhalt>
+                                    <Reiterblatt Schluessel="KENNZAHLEN" Titel="@ReiterKennzahlen">
+                                        <KindInhalt>
+                                            <div class="epos-raster-huelle">
+                                                <table class="epos-raster">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@SpalteGroesse</th>
+                                                            <th>@SpalteWert</th>
+                                                            <th>@SpalteEinheit</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (PeakShavingKennzahlenBlock.Zeile z in _kennzahlen)
+                                                        {
+                                                            <tr class="@(z.IstTrenner ? "epos-zeile--trenner" : null)">
+                                                                <td>@z.Bezeichnung</td>
+                                                                <td class="@(z.Negativ ? "epos-wert--negativ" : null)">@z.Wert</td>
+                                                                <td>@z.Einheit</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </KindInhalt>
+                                    </Reiterblatt>
 
-            <Reiterblatt Schluessel="MONATE" Titel="@ReiterMonate">
-                <KindInhalt>
-                    <div class="epos-raster-huelle">
-                        <table class="epos-raster">
-                            <thead>
-                                <tr>
-                                    <th>@SpalteMonat</th>
-                                    <th>@SpalteAlt</th>
-                                    <th>@SpalteNeu</th>
-                                    <th>@SpalteKappung</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (PeakShavingKennzahlenBlock.Monatszeile m in _monate)
-                                {
-                                    <tr>
-                                        <td>@m.Monat</td>
-                                        <td>@m.Alt</td>
-                                        <td>@m.Neu</td>
-                                        <td>@m.Kappung</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </KindInhalt>
-            </Reiterblatt>
-        </KindInhalt>
-    </Reiter>
+                                    <Reiterblatt Schluessel="CHART" Titel="@ReiterChart">
+                                        <KindInhalt>
+                                            <Schalter Bezeichnung="@LabelSoC" Wert="@_socZeigen" WertChanged="SoCGeaendert"
+                                                      Aktiv="@(!_laeuft)" />
+                                            @* DER LASTGANG ALS ZEICHENMODELL (Etappe DG-E3): Zoom auf
+                                               der Zeitachse, der Ladezustand auf der zweiten Achse. *@
+                                            <DiagrammSvg Modell="@_modell" Kennung="peakshaving-lastgang"
+                                                         Bezeichnung="@ReiterChart" PlatzhalterText="@LeerText"
+                                                         Einheit="kW" EinheitRechts="kWh" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
 
+                                    <Reiterblatt Schluessel="MONATE" Titel="@ReiterMonate">
+                                        <KindInhalt>
+                                            <div class="epos-raster-huelle">
+                                                <table class="epos-raster">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@SpalteMonat</th>
+                                                            <th>@SpalteAlt</th>
+                                                            <th>@SpalteNeu</th>
+                                                            <th>@SpalteKappung</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (PeakShavingKennzahlenBlock.Monatszeile m in _monate)
+                                                        {
+                                                            <tr>
+                                                                <td>@m.Monat</td>
+                                                                <td>@m.Alt</td>
+                                                                <td>@m.Neu</td>
+                                                                <td>@m.Kappung</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </KindInhalt>
+                                    </Reiterblatt>
+                                </KindInhalt>
+                            </Reiter>
+                            <p class="epos-stammblatt-erklaerung">@HinweisText</p>
+                        </KindInhalt>
+                    </Stammblattgruppe>
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE (V14, V15): "Lastgang aus Datei..." an der Stelle von Import...,
+       CSV-Export und "In Variante uebernehmen" (beide wirken auf das Ergebnis),
+       Statuszeile, zuletzt der eine Schlussknopf "Beenden". *@
     <div class="epos-leiste">
+        @if (Einlesen is not null && DateiWaehlen is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" disabled="@_laeuft"
+                    @onclick="DateiOeffnen">@DateiLastgangText</button>
+        }
         @if (CsvSpeichern is not null)
         {
             <button type="button" class="epos-knopf" disabled="@_laeuft"
                     @onclick="BeiCsv">@CsvText</button>
         }
-        @* DER AUSGANG DER MASKE (LS-E-1 (a)): Bis dahin rechnete die
-           Lastspitzenkappung und vergass ihr Ergebnis - es gab keinen Weg in den
-           Projektlauf. Der Knopf schreibt Berechnungsart, Ziel und Adaptiv-Flag in die
-           AKTIVE Speichervariante; fuehrt die eine andere Art, wird vorher gefragt. *@
+        @* DER AUSGANG DER MASKE (LS-E-1 (a)): Berechnungsart, Ziel und Adaptiv-Flag in
+           die AKTIVE Speichervariante; fuehrt die eine andere Art, wird vorher gefragt. *@
         @if (VarianteUebernehmen is not null)
         {
             <button type="button" class="epos-knopf" disabled="@_laeuft"
                     @onclick="BeiVarianteUebernehmen">@VarianteText</button>
         }
-        <span class="epos-leiste-fueller"></span>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
     <Rueckfrage Offen="@_varianteFrageOffen" TitelText="@VarianteText" Frage="@_varianteFrage"
                 Beantwortet="VarianteBeantwortet" />
+
+    @* --- "Lastgang aus Datei..." als Ueberlagerung (V14): die Dateiwahl startet die
+           Kette OHNE Ablage; waehrend sie laeuft, schliessen weder Kreuz noch Esc. *@
+    <Ueberlagerung Offen="@_dateiOffen" Titel="@TitelDatei" Geschlossen="DateiSchliessen">
+        <KindInhalt>
+            @if (_dateiOffen)
+            {
+                <div class="epos-einlesen">
+                    <Herleitungszeile Text="@HinweisDatei" />
+                    @if (DateiWaehlen is not null)
+                    {
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                                <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                                           Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                                           Aktiv="@(!_laeuft)" />
+                            </KindInhalt>
+                        </Formularraster>
+                    }
+                    @if (_laeuft)
+                    {
+                        <Fortschritt Anteil="null" Text="@_fortschritt" />
+                    }
+                    <div class="epos-leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="DateiSchliessen">@AbbrechenText</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* ------------------- Die zwei Ueberlagerungen der Importkette ---------- *@
     <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
@@ -319,83 +343,83 @@
 </div>
 
 @code {
-    /// <summary>Steuerwert der Optionsgruppe: vorhandene Ganglinie.</summary>
+    /// <summary>Steuerwert der Quelle (Sicht des Assistenten): vorhandene Ganglinie.</summary>
     public const int QuelleGanglinie = 0;
 
-    /// <summary>Steuerwert der Optionsgruppe: Datei importieren.</summary>
+    /// <summary>Steuerwert der Quelle (Sicht des Assistenten): eingelesene Datei.</summary>
     public const int QuelleDatei = 1;
+
+    /// <summary>Der Schlüsselanfang einer eingelesenen Datei in der Liste.</summary>
+    private const string DATEI = "D";
+
+    /// <summary>Der Schlüsselanfang einer Ganglinie der Datenbank („G" + Platz).</summary>
+    private const string GANGLINIE = "G";
 
     // =====================================================================
     // Eingaben und Delegaten - die Datenseite liegt in der Huelle
     // =====================================================================
 
     /// <summary>
-    /// Die waehlbaren Ganglinien (<c>PeakShavingCtrl.LeseGanglinien</c>), fertig
-    /// beschriftet: <c>Id</c> ist der Platz in der Liste der Huelle.
+    /// Die wählbaren Ganglinien, fertig beschriftet (<c>Id</c> = Platz in der Liste der
+    /// Hülle). Sie tragen die Sicht des Assistenten und — ohne
+    /// <see cref="Lastgangzeilen"/> — die Liste.
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Ganglinien { get; set; }
         = Array.Empty<(int, string)>();
 
-    /// <summary>Vorbelegung aus Geraet und aktiver Variante; <c>null</c> = die Vorgaben der Modelle.</summary>
+    /// <summary>
+    /// <b>Die Zeilen der Liste der Lastgänge</b> (<c>PeakShavingCtrl.Katalogfilterzeilen</c>,
+    /// V16): Lastgang, Quelle, Intervall, Jahresmaximum; der Schlüssel ist <c>"G" + Platz</c>.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Katalogfilterzeile>? Lastgangzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.FuerLastgang</c>; ohne sie das Profil mit den Ressourcentexten.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers.</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Vorbelegung aus Gerät und aktiver Variante; <c>null</c> = die Vorgaben der Modelle.</summary>
     [Parameter] public PeakShavingVorbelegung? Vorgaben { get; set; }
 
-    /// <summary>Liest die Werte einer Ganglinie (<c>PeakShavingCtrl.LeseWerte</c>).</summary>
+    /// <summary>Liest die Werte einer Ganglinie über ihren Platz (<c>PeakShavingCtrl.LeseWerte</c>).</summary>
     [Parameter] public Func<int, Task<double[]>>? Werte { get; set; }
 
-    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    /// <summary>Der Dateiwähler der Plattform; ohne ihn kein „Lastgang aus Datei…".</summary>
     [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
 
-    /// <summary>
-    /// Faehrt die Importkette OHNE Ablage
-    /// (<c>GanglinienImportAblauf.OhneAblage</c>). Die zwei Entscheidungen kommen
-    /// von dieser Komponente.
-    /// </summary>
+    /// <summary>Fährt die Importkette OHNE Ablage (<c>GanglinienImportAblauf.OhneAblage</c>).</summary>
     [Parameter] public Func<string, GanglinienImportRueckrufe,
                             Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
 
-    /// <summary>Neuzerlegung mit den gewaehlten Optionen (fuer den Optionendialog).</summary>
+    /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
     [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau>>? Vorschau { get; set; }
 
-    /// <summary>Der Rechenlauf; die Huelle legt ihn auf <c>Task.Run</c>.</summary>
+    /// <summary>Der Rechenlauf; die Hülle legt ihn auf <c>Task.Run</c>.</summary>
     [Parameter] public Func<double[], PeakShavingEingaben, Task<PeakShavingErgebnis>>? Rechnen { get; set; }
 
     /// <summary>Die Suche nach der kleinsten haltbaren Schwelle; ebenfalls nebenher.</summary>
     [Parameter] public Func<double[], PeakShavingEingaben, Task<double>>? MinimaleSchwelle { get; set; }
 
-    /// <summary>
-    /// Das Zeichenmodell des Vorher/Nachher-Bildes (<c>PeakShavingBild.Modell</c>).
-    ///
-    /// <para><b>Kein PNG mehr und kein <c>Task</c></b> (Etappe DG-E3): Das Modell ist
-    /// die Beschreibung des Bildes, nicht seine Rasterung — es entsteht ohne
-    /// Zeichenbibliothek und ohne den Faden zu belasten, den der Vorläufer mit
-    /// <c>Task.Run</c> freihalten musste. Gezeichnet wird erst im Baustein
-    /// <c>DiagrammSvg</c>, und zwar als Vektor.</para>
-    /// </summary>
+    /// <summary>Das Zeichenmodell des Vorher/Nachher-Bildes (<c>PeakShavingBild.Modell</c>).</summary>
     [Parameter] public Func<PeakShavingErgebnis, bool, Zeichenmodell?>? Modell { get; set; }
 
-    /// <summary>Schreibt die fuenf Spalten als CSV; ohne Delegat kein Knopf.</summary>
+    /// <summary>Schreibt die fünf Spalten als CSV; ohne Delegat kein Knopf.</summary>
     [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
 
     /// <summary>
-    /// Schreibt Zielschwelle und Adaptiv-Flag in die AKTIVE Speichervariante des
-    /// Projekts und stellt sie auf die Lastspitzenkappung um (Entscheid LS-E-1 (a));
-    /// <c>false</c> heisst „nicht geschrieben" (keine Speicheranlage, Fehler). OHNE
-    /// Delegat - etwa ohne Projekt - gibt es den Knopf nicht.
+    /// Schreibt Zielschwelle und Adaptiv-Flag in die AKTIVE Speichervariante (LS-E-1 (a));
+    /// ohne Delegat — etwa ohne Projekt — gibt es den Knopf nicht.
     /// </summary>
     [Parameter] public Func<double, bool, Task<bool>>? VarianteUebernehmen { get; set; }
 
-    /// <summary>
-    /// Die Berechnungsart, die die aktive Variante HEUTE fuehrt, in der Sprache des
-    /// Anwenders; <c>null</c> = keine aktive Variante. Sie traegt die Rueckfrage: Nur
-    /// eine ABWEICHENDE Art wird erfragt, die Lastspitzenkappung selbst nicht.
-    /// </summary>
+    /// <summary>Die Berechnungsart der aktiven Variante; <c>null</c> = keine aktive Variante.</summary>
     [Parameter] public Func<Task<string?>>? VariantenBerechnungsart { get; set; }
 
-    /// <summary>
-    /// Der Dialog ist zu Ende. <b>Befund W12-B24, woertlich:</b> Der einzige
-    /// Fussknopf des Vorlaeufers trug <c>DialogResult.Cancel</c> — es kommt immer
-    /// <c>false</c> heraus.
-    /// </summary>
+    /// <summary>Der Dialog ist zu Ende — immer <c>false</c> (Befund W12-B24, wörtlich).</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // =====================================================================
@@ -404,13 +428,17 @@
 
     [Parameter] public string TitelText { get; set; } = Resource.PEAK_TITEL;
     [Parameter] public string HinweisText { get; set; } = Resource.PEAK_HINWEIS;
-    [Parameter] public string GruppeQuelle { get; set; } = Resource.PEAK_GRP_QUELLE;
-    [Parameter] public string OptGanglinie { get; set; } = Resource.PEAK_OPT_GANGLINIE;
-    [Parameter] public string OptDatei { get; set; } = Resource.PEAK_OPT_DATEI;
-    [Parameter] public string LabelGanglinie { get; set; } = Resource.PEAK_GRP_QUELLE;
     [Parameter] public string DateiText { get; set; } = Resource.PEAK_BTN_DATEI;
     [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
-    [Parameter] public string GruppeParameter { get; set; } = Resource.PEAK_GRP_PARAMETER;
+    [Parameter] public string DateiLastgangText { get; set; } = Resource.PEAK_BTN_DATEI_LASTGANG;
+    [Parameter] public string TitelDatei { get; set; } = Resource.PEAK_TITEL_DATEI;
+    [Parameter] public string HinweisDatei { get; set; } = Resource.PEAK_HINWEIS_DATEI;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    [Parameter] public string GruppeSpeicher { get; set; } = Resource.PEAK_SB_SPEICHER;
+    [Parameter] public string GruppeSchwelle { get; set; } = Resource.PEAK_SB_SCHWELLE;
+    [Parameter] public string GruppeKosten { get; set; } = Resource.ADM_SB_KOSTEN;
+    [Parameter] public string GruppeErgebnis { get; set; } = Resource.PEAK_SB_ERGEBNIS;
 
     [Parameter] public string LabelP { get; set; } = Resource.PEAK_LBL_P;
     [Parameter] public string LabelKapazitaet { get; set; } = Resource.PEAK_LBL_KAPAZITAET;
@@ -432,11 +460,8 @@
     [Parameter] public string MinimalText { get; set; } = Resource.PEAK_BTN_MINIMAL;
     [Parameter] public string RechnenText { get; set; } = Resource.PEAK_BTN_RECHNEN;
     [Parameter] public string CsvText { get; set; } = Resource.PEAK_BTN_CSV;
-    /// <summary>
-    /// Beschriftung des Schlussknopfes — <c>PEAK_BTN_BEENDEN</c>. Die Maske
-    /// rechnet und schreibt nichts von selbst; sie wird BEENDET, nicht bestätigt
-    /// (DL-2, Schritt 6).
-    /// </summary>
+
+    /// <summary>Beschriftung des Schlussknopfes — <c>PEAK_BTN_BEENDEN</c>.</summary>
     [Parameter] public string BeendenText { get; set; } = Resource.PEAK_BTN_BEENDEN;
 
     [Parameter] public string ReiterKennzahlen { get; set; } = Resource.PEAK_TAB_KENNZAHLEN;
@@ -462,10 +487,7 @@
     [Parameter] public string TextSucht { get; set; } = Resource.PEAK_MSG_SUCHE;
     [Parameter] public string LeerText { get; set; } = Resource.PEAK_MSG_KEIN_ERGEBNIS;
 
-    /// <summary>
-    /// Die Zahlenmeldung des Bausteins — sie ersetzt die hartkodiert deutsche
-    /// <c>MessageBox</c> von <c>Program.ZahlPruefen</c> (Befund W12-B9).
-    /// </summary>
+    /// <summary>Die Zahlenmeldung des Bausteins (Befund W12-B9).</summary>
     [Parameter] public string MeldungZahlUngueltig { get; set; } = Resource.HZKK_MSG_ZAHL;
 
     [Parameter] public string VarianteText { get; set; } = Resource.PEAK_BTN_VARIANTE;
@@ -483,10 +505,17 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private int? _quelle = QuelleGanglinie;
-    private int? _iGanglinie;
+    private Katalogfilterprofil? _profil;
+    private Katalogfilterstand _filterstand = new();
+    private IReadOnlyList<Katalogfilterzeile> _zeilen = Array.Empty<Katalogfilterzeile>();
+    private readonly List<Katalogfilterzeile> _dateizeilen = new();
+    private readonly Dictionary<string, double[]> _dateiwerte = new(StringComparer.Ordinal);
+    private string _gewaehlt = "";
+    private bool _blattOffen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
     private string _pfad = "";
-    private string _importName = "";
     private double[]? _lastgang;
     private string _reiheText = "";
     private string _herkunft = "";
@@ -500,23 +529,20 @@
     private bool _laeuft;
     private string _fortschritt = "";
 
+    private bool _dateiOffen;
     private bool _varianteFrageOffen;
     private string _varianteFrage = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _status = "";
 
     private PeakShavingErgebnis? _ergebnis;
     private List<PeakShavingKennzahlenBlock.Zeile> _kennzahlen = new();
     private List<PeakShavingKennzahlenBlock.Monatszeile> _monate = new();
 
     /// <summary>
-    /// Das gehaltene Zeichenmodell des Lastgangs.
-    ///
-    /// <para><b>Es wird gehalten, nicht je Zeichenlauf geholt:</b> Der Baustein
-    /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des
-    /// Modells wechselt. Ein Modell, das bei jedem Tastendruck der Maske neu
-    /// entstünde, verwürfe mit dem Baum auch Zoom, Zeigerstelle und abgewählte
-    /// Reihen.</para>
+    /// Das gehaltene Zeichenmodell des Lastgangs — es wird gehalten, nicht je Zeichenlauf
+    /// geholt: <c>DiagrammSvg</c> baut seinen Baum nur neu, wenn die REFERENZ wechselt.
     /// </summary>
     private Zeichenmodell? _modell;
 
@@ -533,20 +559,32 @@
     private bool _protokollMoeglich, _protokollBestaetigen;
     private TaskCompletionSource<bool>? _protokollWartet;
 
+    /// <summary>Die zwei Quellen der Sicht des Assistenten.</summary>
     private IReadOnlyList<(int Id, string Text)> Quellen => new[]
     {
-        (QuelleGanglinie, OptGanglinie),
-        (QuelleDatei, OptDatei)
+        (QuelleGanglinie, Resource.PEAK_OPT_GANGLINIE),
+        (QuelleDatei, Resource.PEAK_OPT_DATEI)
     };
 
-    /// <summary>Der geladene Lastgang (Pruefhilfe fuer die Tests).</summary>
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Der geladene Lastgang (Prüfhilfe).</summary>
     public IReadOnlyList<double>? Lastgang => _lastgang;
-
-    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer die Tests).</summary>
+    /// <summary>Der Text des Warnbanners (Prüfhilfe).</summary>
     public string Meldung => _meldung;
-
-    /// <summary>Die Kennzahlzeilen (Pruefhilfe fuer die Tests).</summary>
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
+    public string Status => _status;
+    /// <summary>Die Kennzahlzeilen (Prüfhilfe).</summary>
     public IReadOnlyList<PeakShavingKennzahlenBlock.Zeile> Kennzahlen => _kennzahlen;
+    /// <summary>Der Schlüssel der gewählten Zeile (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Die Zeilen der Liste (Prüfhilfe).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Zeilen => _zeilen;
+    /// <summary>Steht „Lastgang aus Datei…"? (Prüfhilfe)</summary>
+    public bool DateiOffen => _dateiOffen;
+
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.FuerLastgang(s => Resource.ResourceManager.GetString(s) ?? s);
 
     // =====================================================================
     // Aufbau
@@ -554,6 +592,10 @@
 
     protected override void OnInitialized()
     {
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _blattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _blattOffen = false);
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+
         PeakShavingEingaben v = PeakShavingEingaben.Aus(Vorgaben);
 
         _pKw = v.PKw;
@@ -573,18 +615,31 @@
         _adaptiv = true;                       // feste Vorgabe, nicht aus der Variante (:250)
 
         _herkunft = Vorgaben is not null && Vorgaben.AusProjekt
-            ? string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                            VorlageHerkunft, Vorgaben.Bezeichner)
+            ? string.Format(CultureInfo.CurrentCulture, VorlageHerkunft, Vorgaben.Bezeichner)
             : TextHerkunftVorgabe;
 
-        // Woertlich (:227-228): Gibt es keine Ganglinie, steht die Quelle auf Datei.
-        if (Ganglinien.Count > 0) _iGanglinie = Ganglinien[0].Id;
-        else _quelle = QuelleDatei;
-
+        ZeilenBauen();
+        if (_zeilen.Count > 0) _gewaehlt = _zeilen[0].Schluessel;
         _reiheText = TextKeineReihe;
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PEAK_SHAVING,
                                           () => KiSicht(), KiHaken());
+    }
+
+    /// <summary>
+    /// Die Liste: die Zeilen der Hülle (sonst aus <see cref="Ganglinien"/> gebaut), dahinter
+    /// die eingelesenen Dateien dieser Sitzung.
+    /// </summary>
+    private void ZeilenBauen()
+    {
+        var liste = new List<Katalogfilterzeile>();
+        if (Lastgangzeilen is not null) liste.AddRange(Lastgangzeilen);
+        else
+            foreach ((int Id, string Text) g in Ganglinien)
+                liste.Add(new Katalogfilterzeile(g.Id, g.Text) { Schluessel = GANGLINIE + g.Id }
+                    .MitText(Katalogfilterprofil.SpBezeichner, g.Text));
+        liste.AddRange(_dateizeilen);
+        _zeilen = liste;
     }
 
     // =====================================================================
@@ -595,27 +650,22 @@
     private PeakShavingKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten auf die LEBENDEN Felder der Maske.
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder. Quelle und Ganglinie sind seit
+    /// Stufe 5 Zeilen der Liste: „Datei" wählt die zuletzt eingelesene Datei, eine
+    /// Ganglinie ihre Zeile — derselbe Weg wie ein Klick.
     /// </summary>
-    /// <remarks>
-    /// Der Dialog führt keinen veränderlichen Arbeitsstand: Die achtzehn Zahlen und
-    /// Schalter liegen in privaten Feldern, und <c>PeakShavingEingaben</c> entsteht
-    /// erst im Rechenweg. Die Sicht löst beides an EINER Stelle auf — Lesen und
-    /// Setzen gehen denselben Weg wie eine Hand am Eingabefeld.
-    /// </remarks>
     private PeakShavingKiSicht KiSicht()
     {
         return _kiSicht ??= new PeakShavingKiSicht
         {
-            QuelleLesen = () => _quelle,
+            QuelleLesen = () => _gewaehlt.Length == 0 ? null
+                              : _gewaehlt.StartsWith(DATEI, StringComparison.Ordinal) ? QuelleDatei : QuelleGanglinie,
             QuelleSetzen = q => _ = QuelleGeaendert(q),
-            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(
-                Quellen, z => z.Id, z => z.Text),
+            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(Quellen, z => z.Id, z => z.Text),
 
-            GanglinieLesen = () => _iGanglinie,
-            GanglinieSetzen = g => _ = GanglinieGeaendert(g),
-            GanglinieEintraege = () => KiMaskenanmeldung.Eintraege(
-                Ganglinien, z => z.Id, z => z.Text),
+            GanglinieLesen = () => GanglinienPlatz,
+            GanglinieSetzen = g => { if (g is int i) _ = BeiZeile(GANGLINIE + i); },
+            GanglinieEintraege = () => KiMaskenanmeldung.Eintraege(GanglinienEintraege, z => z.Id, z => z.Text),
 
             ReiheLesen = () => _reiheText,
             HerkunftLesen = () => _herkunft,
@@ -626,6 +676,29 @@
             SchalterLesen = KiSchalter,
             SchalterSetzen = KiSchalterSetzen
         };
+    }
+
+    /// <summary>Die Ganglinien der Datenbank als Einträge (Platz, Name).</summary>
+    private IReadOnlyList<(int Id, string Text)> GanglinienEintraege
+        => Ganglinien.Count > 0
+            ? Ganglinien
+            : _zeilen.Where(z => z.Schluessel.StartsWith(GANGLINIE, StringComparison.Ordinal))
+                     .Select(z => (Platz(z.Schluessel) ?? 0, z.Bezeichner)).ToList();
+
+    private static int? Platz(string schluessel)
+        => schluessel.StartsWith(GANGLINIE, StringComparison.Ordinal)
+           && int.TryParse(schluessel.AsSpan(GANGLINIE.Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out int p)
+            ? p : null;
+
+    private int? GanglinienPlatz => Platz(_gewaehlt);
+
+    /// <summary>Die Quelle als Wahl des Assistenten: Ganglinie = erste Zeile der Datenbank, Datei = letzte Datei.</summary>
+    private async Task QuelleGeaendert(int? quelle)
+    {
+        string? ziel = quelle == QuelleDatei
+            ? _dateizeilen.LastOrDefault()?.Schluessel
+            : _zeilen.FirstOrDefault(z => z.Schluessel.StartsWith(GANGLINIE, StringComparison.Ordinal))?.Schluessel;
+        if (ziel is not null) await BeiZeile(ziel);
     }
 
     private double? KiZahl(string feld) => feld switch
@@ -647,10 +720,7 @@
         _                                   => null
     };
 
-    /// <summary>
-    /// Setzt eine Zahl — und verwirft dabei das Ergebnis, genau wie ein Tastendruck
-    /// im Eingabefeld (<c>ErgebnisLeeren</c> hängt dort am <c>WertChanged</c>).
-    /// </summary>
+    /// <summary>Setzt eine Zahl — und verwirft dabei das Ergebnis, genau wie ein Tastendruck.</summary>
     private void KiZahlSetzen(string feld, double? wert)
     {
         switch (feld)
@@ -693,14 +763,9 @@
     }
 
     /// <summary>
-    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// Kein Speicherweg — die Maske legt nichts ab. Geprüft wird mit DENSELBEN Regeln wie
+    /// am Rechenknopf.
     /// </summary>
-    /// <remarks>
-    /// <b>Kein Speicherweg.</b> Die Maske legt nichts ab — das steht wörtlich als
-    /// Hinweiszeile darin, und ihr einziger Fußknopf schließt sie. Geprüft wird
-    /// dagegen mit DENSELBEN Regeln wie am Rechenknopf: die sieben Pflichtzahlen und
-    /// die vier Fachregeln aus <c>PeakShavingEingaben.Pruefe</c>.
-    /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
@@ -716,8 +781,7 @@
 
         if (fehlt is null && !_adaptiv) fehlt = Pflicht(_ziel, LabelZiel);
         if (fehlt is not null)
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                 MeldungZahlUngueltig, fehlt);
+            return string.Format(CultureInfo.CurrentCulture, MeldungZahlUngueltig, fehlt);
 
         PeakShavingEingaben e = new PeakShavingEingaben
         {
@@ -744,53 +808,52 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
 
-        // Der Vorlaeufer rief QuelleGeaendert am Ende des Konstruktors - die erste
-        // Ganglinie steht damit gleich geladen da.
+        // Der Vorlaeufer lud am Ende des Konstruktors - der erste Lastgang steht gleich da.
         await LastgangLaden();
         await _wurzel.FocusAsync();
         StateHasChanged();
     }
 
     // =====================================================================
-    // Quelle
+    // Die Liste der Lastgaenge
     // =====================================================================
 
-    private async Task QuelleGeaendert(int? quelle)
+    private Katalogfilterzeile? Fokuszeile => _zeilen.FirstOrDefault(z => z.Schluessel == _gewaehlt);
+
+    private string Fokusname => Fokuszeile?.Bezeichner ?? "";
+
+    private EventCallback BlattOeffnenWeg => _blattOffen ? default : _blattOeffnen;
+
+    /// <summary>Eine Zeile wählen: den Lastgang laden und ein Ergebnis verwerfen. Während eines Laufs hält die Wahl.</summary>
+    private async Task BeiZeile(string schluessel)
     {
-        _quelle = quelle ?? QuelleGanglinie;
+        if (_laeuft || schluessel == _gewaehlt) return;
+        if (_zeilen.All(z => z.Schluessel != schluessel)) return;
+        _gewaehlt = schluessel;
+        _meldung = "";
         await LastgangLaden();
     }
 
-    private async Task GanglinieGeaendert(int? i)
-    {
-        _iGanglinie = i;
-        if (_quelle == QuelleGanglinie) await LastgangLaden();
-    }
-
     /// <summary>
-    /// Laedt die Reihe der gewaehlten Quelle und verwirft ein vorhandenes Ergebnis —
-    /// woertlich <c>QuelleGeaendert</c> (:268-295).
+    /// Lädt die Reihe der gewählten Zeile und verwirft ein vorhandenes Ergebnis — wörtlich
+    /// <c>QuelleGeaendert</c> (:268-295).
     /// </summary>
     private async Task LastgangLaden()
     {
         ErgebnisLeeren();
 
-        if (_quelle == QuelleDatei)
+        if (_gewaehlt.StartsWith(DATEI, StringComparison.Ordinal))
         {
-            ReiheAnzeigen(_importName);
+            _lastgang = _dateiwerte.TryGetValue(_gewaehlt, out double[]? w) ? w : null;
+            ReiheAnzeigen(Fokusname);
             return;
         }
 
-        if (_iGanglinie is null || Werte is null) { _lastgang = null; ReiheAnzeigen(""); return; }
+        int? platz = GanglinienPlatz;
+        if (platz is null || Werte is null) { _lastgang = null; ReiheAnzeigen(""); return; }
 
-        _lastgang = await Werte(_iGanglinie.Value);
-        ReiheAnzeigen(NameZu(_iGanglinie.Value));
-    }
-
-    private string NameZu(int id)
-    {
-        foreach ((int Id, string Text) e in Ganglinien) if (e.Id == id) return e.Text;
-        return "";
+        _lastgang = await Werte(platz.Value);
+        ReiheAnzeigen(Fokusname);
     }
 
     private void ReiheAnzeigen(string bezeichner)
@@ -801,18 +864,76 @@
             return;
         }
 
-        double max = double.NegativeInfinity;
-        for (int i = 0; i < _lastgang.Length; i++) if (_lastgang[i] > max) max = _lastgang[i];
-
-        var kultur = System.Globalization.CultureInfo.CurrentCulture;
+        var kultur = CultureInfo.CurrentCulture;
         _reiheText = string.Format(kultur, VorlageReihe, bezeichner ?? "",
                                    _lastgang.Length.ToString("N0", kultur),
-                                   max.ToString("0.#", kultur));
+                                   Maximum(_lastgang).ToString("0.#", kultur));
+    }
+
+    private static double Maximum(double[] reihe)
+    {
+        double max = double.NegativeInfinity;
+        for (int i = 0; i < reihe.Length; i++) if (reihe[i] > max) max = reihe[i];
+        return max;
     }
 
     // =====================================================================
-    // Direktimport - die Kette OHNE Ablage
+    // Stammblatt: Kopf
     // =====================================================================
+
+    /// <summary>„Projekt · 35 040 Werte · berechnet".</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            if (Fokuszeile is null) return "";
+            var k = CultureInfo.CurrentCulture;
+            var teile = new List<string>();
+            string quelle = Fokuszeile.Text(Katalogfilterprofil.SpQuelle);
+            if (quelle.Length > 0 && quelle != ParameterVerwendung.LEER) teile.Add(quelle);
+            if (_lastgang is not null && _lastgang.Length > 0)
+                teile.Add(string.Format(k, Resource.PEAK_SB_WERTE, _lastgang.Length.ToString("N0", k)));
+            else teile.Add(TextKeineReihe);
+            teile.Add(_ergebnis is not null ? Resource.PEAK_SB_BERECHNET : Resource.PEAK_SB_OFFEN);
+            return string.Join(" · ", teile);
+        }
+    }
+
+    /// <summary>Die Spitze ohne Speicher, nach dem Lauf dazu die Spitze mit Speicher und der Ertrag.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kopfkennzahlen
+    {
+        get
+        {
+            var k = CultureInfo.CurrentCulture;
+            if (_ergebnis is not null)
+                return new[]
+                {
+                    new Stammblattkennzahl(_ergebnis.PAltMaxKw.ToString("N0", k) + " kW", Resource.PEAK_KZ_KOPF_ALT),
+                    new Stammblattkennzahl(_ergebnis.PNeuMaxKw.ToString("N0", k) + " kW", Resource.PEAK_KZ_KOPF_NEU),
+                    new Stammblattkennzahl(_ergebnis.ErtragPsEur.ToString("N0", k) + " €", Resource.PEAK_KZ_KOPF_ERTRAG)
+                };
+            if (_lastgang is not null && _lastgang.Length > 0)
+                return new[] { new Stammblattkennzahl(Maximum(_lastgang).ToString("N0", k) + " kW", Resource.PEAK_KZ_KOPF_ALT) };
+            return Array.Empty<Stammblattkennzahl>();
+        }
+    }
+
+    // =====================================================================
+    // "Lastgang aus Datei..." - die Kette OHNE Ablage (V14)
+    // =====================================================================
+
+    private void DateiOeffnen()
+    {
+        _meldung = "";
+        _pfad = "";
+        _dateiOffen = true;
+    }
+
+    private void DateiSchliessen()
+    {
+        if (_laeuft) return;                   // waehrend der Kette schliesst nichts
+        _dateiOffen = false;
+    }
 
     private async Task BeiDatei(string pfad)
     {
@@ -832,14 +953,26 @@
 
             if (!string.IsNullOrEmpty(erg.Meldung)) Melden(erg.Meldung, Stufe(erg.MeldungStufe));
 
-            if (erg.Ausgang == ImportAusgang.Erfolg)
+            if (erg.Ausgang == ImportAusgang.Erfolg && erg.Werte is not null && erg.Werte.Length > 0)
             {
-                // Schritt 6 lautet hier „KEINE Ablage": die Reihe bleibt im Speicher.
-                _importName = erg.Bezeichner;
-                _lastgang = erg.Werte;
-                _quelle = QuelleDatei;
-                ErgebnisLeeren();
-                ReiheAnzeigen(_importName);
+                // Schritt 6 lautet hier "KEINE Ablage": die Reihe bleibt im Speicher und
+                // erscheint als Zeile mit der Quelle "Datei".
+                string schluessel = DATEI + (_dateizeilen.Count + 1).ToString(CultureInfo.InvariantCulture);
+                string name = string.IsNullOrEmpty(erg.Bezeichner) ? System.IO.Path.GetFileName(pfad) : erg.Bezeichner;
+                _dateiwerte[schluessel] = erg.Werte;
+                _dateizeilen.Add(new Katalogfilterzeile(0, name) { Schluessel = schluessel }
+                    .MitText(Katalogfilterprofil.SpBezeichner, name)
+                    .MitText(Katalogfilterprofil.SpQuelle, Resource.PEAK_QUELLE_DATEI)
+                    .MitZahl(Katalogfilterprofil.SpIntervallMin,
+                             erg.Werte.Length >= RasterAdapter.ViertelstundenJahr ? 15 : 60, 0)
+                    .MitZahl(Katalogfilterprofil.SpJahresmaximumKw, Maximum(erg.Werte), 1));
+                ZeilenBauen();
+
+                _laeuft = false;
+                _dateiOffen = false;
+                _gewaehlt = schluessel;
+                await LastgangLaden();
+                _status = string.Format(CultureInfo.CurrentCulture, Resource.PEAK_MSG_EINGELESEN, name);
             }
         }
         finally
@@ -886,12 +1019,7 @@
     // Parameter
     // =====================================================================
 
-    private void AdaptivGeaendert(bool adaptiv)
-    {
-        _adaptiv = adaptiv;
-        // Der Vorlaeufer setzte hier zusaetzlich btn_Minimal.Enabled = true - eine
-        // Zuweisung ohne Wirkung (Vermessung :407). Sie entfaellt.
-    }
+    private void AdaptivGeaendert(bool adaptiv) => _adaptiv = adaptiv;
 
     private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
     {
@@ -906,15 +1034,11 @@
     }
 
     /// <summary>
-    /// Die 13 Zahlenpruefungen und die vier Fachregeln des Vorlaeufers
-    /// (<c>ParameterLesen</c>). Die Fachregeln stehen im Kern
-    /// (<see cref="PeakShavingEingaben.Pruefe"/>); hier bleibt, welches Feld leer
-    /// sein darf: Leistungspreis, Bezugspreis, die drei Investitionsanteile und der
-    /// Zins — woertlich <c>leerErlaubt = true</c> (:433-438).
+    /// Die 13 Zahlenprüfungen und die vier Fachregeln des Vorläufers (<c>ParameterLesen</c>);
+    /// die Fachregeln stehen im Kern (<see cref="PeakShavingEingaben.Pruefe"/>). Leer
+    /// bleiben dürfen Leistungspreis, Bezugspreis, die drei Investitionsanteile und der Zins.
     /// </summary>
-    /// <param name="zielNoetig">
-    /// <c>false</c> fuer die Schwellensuche: sie bestimmt P_ziel gerade erst.
-    /// </param>
+    /// <param name="zielNoetig"><c>false</c> für die Schwellensuche: sie bestimmt P_ziel erst.</param>
     private PeakShavingEingaben? EingabenLesen(bool zielNoetig = true)
     {
         if (_fehlerhaft.Count > 0)
@@ -993,8 +1117,8 @@
             // wird ausgeschaltet - sonst ueberschriebe der naechste Lauf sie wieder.
             _adaptiv = false;
             _ziel = minimal;
-            Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageMinimal,
-                                 minimal.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+            Melden(string.Format(CultureInfo.CurrentCulture, VorlageMinimal,
+                                 minimal.ToString("0.##", CultureInfo.CurrentCulture)),
                    WarnStufe.Hinweis);
         }
         catch (ArgumentException ex)
@@ -1033,9 +1157,8 @@
         ModellHolen();
 
         if (_ergebnis is not null && _ergebnis.SchwelleGerissen)
-            Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageGerissen,
-                                 _ergebnis.PNeuMaxKw.ToString("0.#",
-                                     System.Globalization.CultureInfo.CurrentCulture)),
+            Melden(string.Format(CultureInfo.CurrentCulture, VorlageGerissen,
+                                 _ergebnis.PNeuMaxKw.ToString("0.#", CultureInfo.CurrentCulture)),
                    WarnStufe.Warnung);
     }
 
@@ -1053,11 +1176,7 @@
         ModellHolen();
     }
 
-    /// <summary>
-    /// Holt das Zeichenmodell — nach einem Lauf und beim Schalter „Ladezustand".
-    /// Nur an diesen zwei Stellen wechselt sein Inhalt, und nur dort darf seine
-    /// Referenz wechseln (siehe <see cref="_modell"/>).
-    /// </summary>
+    /// <summary>Holt das Zeichenmodell — nach einem Lauf und beim Schalter „Ladezustand".</summary>
     private void ModellHolen()
     {
         _modell = _ergebnis is null || Modell is null ? null : Modell(_ergebnis, _socZeigen);
@@ -1079,24 +1198,20 @@
     // =====================================================================
 
     /// <summary>
-    /// „In Variante uebernehmen". GERECHNET MUSS SEIN: Uebernommen wird die ERREICHTE
-    /// Schwelle des Laufs, nicht die Eingabe - im adaptiven Fall sind das zwei
-    /// verschiedene Zahlen, und nur die erreichte ist die, die der Speicher haelt.
+    /// „In Variante übernehmen". GERECHNET MUSS SEIN: Übernommen wird die ERREICHTE
+    /// Schwelle des Laufs, nicht die Eingabe.
     /// </summary>
     private async Task BeiVarianteUebernehmen()
     {
         if (_ergebnis is null) { Melden(TextKeinErgebnis, WarnStufe.Hinweis); return; }
         if (VarianteUebernehmen is null) return;
 
-        // Die RUECKFRAGE nur bei einer ABWEICHENDEN Berechnungsart: Wer die
-        // Lastspitzenkappung schon fuehrt, tauscht seinen Rechenweg nicht aus.
         string? art = VariantenBerechnungsart is null ? null : await VariantenBerechnungsart();
         if (art is null) { Melden(TextVarianteKeine, WarnStufe.Warnung); return; }
 
         if (!string.Equals(art, Resource.SP_BERECHNUNG_ANZEIGE_PEAKSHAVING, StringComparison.Ordinal))
         {
-            _varianteFrage = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                           VorlageVarianteFrage, art);
+            _varianteFrage = string.Format(CultureInfo.CurrentCulture, VorlageVarianteFrage, art);
             _varianteFrageOffen = true;
             return;
         }
@@ -1118,8 +1233,8 @@
         bool ok = await VarianteUebernehmen(ziel, _adaptiv);
 
         Melden(ok
-            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageVarianteOk,
-                            ziel.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture))
+            ? string.Format(CultureInfo.CurrentCulture, VorlageVarianteOk,
+                            ziel.ToString("0.#", CultureInfo.CurrentCulture))
             : TextVarianteFehler,
             ok ? WarnStufe.Hinweis : WarnStufe.Warnung);
     }
@@ -1141,16 +1256,21 @@
         _ => WarnStufe.Hinweis
     };
 
-    /// <summary>
-    /// <b>Befund W12-B24, woertlich:</b> Der einzige Fussknopf schliesst mit
-    /// „Abbrechen" — es kommt immer <c>false</c> heraus.
-    /// </summary>
+    /// <summary><b>Befund W12-B24, wörtlich:</b> Der Schlussknopf meldet <c>false</c>.</summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(false);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_optionenOffen || _protokollOffen) return Task.CompletedTask;
+        if (_optionenOffen || _protokollOffen || _varianteFrageOffen) return Task.CompletedTask;
+        if (_dateiOffen) { DateiSchliessen(); return Task.CompletedTask; }
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_blattOffen)
+        {
+            _blattOffen = false;
+            return Task.CompletedTask;
+        }
         return Geschlossen.InvokeAsync(false);
     }
 }

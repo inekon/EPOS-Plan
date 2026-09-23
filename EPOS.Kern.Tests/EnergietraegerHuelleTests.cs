@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
@@ -94,11 +95,18 @@ namespace EPOS.Kern.Tests
             ((Func<EnergietraegerAnsicht>)gaben["Nachrechnen"])();
         }
 
+        /// <summary>
+        /// Der Listenplatz einer Preisbasis. Die Klappliste nennt die Einheit des
+        /// ARBEITSPREISES („€/Nm³", „€/kWh" — ET-D-4); gefragt wird mit der
+        /// Mengeneinheit.
+        /// </summary>
         private static int IndexDerEinheit(EnergietraegerStand stand, string einheit)
         {
+            string gesucht = EnergietraegerPreisCtrl.EinheitSchluessel(
+                EnergietraegerPreiskarte.ArbeitspreisEinheit(einheit, true));
             for (int i = 0; i < stand.Preisbasen.Count; i++)
-                if (EnergietraegerPreisCtrl.EinheitSchluessel(stand.Preisbasen[i].Text)
-                    == EnergietraegerPreisCtrl.EinheitSchluessel(einheit)) return i;
+                if (EnergietraegerPreisCtrl.EinheitSchluessel(stand.Preisbasen[i].Text) == gesucht)
+                    return i;
             return -1;
         }
 
@@ -418,6 +426,208 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // ET-D-4 - Der Arbeitspreis wahlweise in €/kWh (Anwenderwunsch)
+        // =================================================================
+
+        /// <summary>Stadtgas: Mengeneinheit Nm³, Hi 4,8 kWh/Nm³.</summary>
+        private const int STADTGAS = 64;
+
+        /// <summary>Projekt 1024 führt Stadtgas mit 0,35 €/Nm³.</summary>
+        private const int PROJEKT_STADTGAS = 1024;
+
+        private static EnergietraegerPreisCtrl.Projektpreis Gespeichert()
+            => EnergietraegerPreisCtrl.ProjektpreisLesen(PROJEKT_STADTGAS, STADTGAS);
+
+        /// <summary>
+        /// Die Klappliste nennt die Einheit des Arbeitspreises; der Wechsel auf
+        /// „€/kWh" rechnet nur die ANZEIGE über Hi um, gespeichert wird je Nm³ — hin
+        /// und zurück, und auch nach einer Eingabe in €/kWh.
+        /// </summary>
+        [Fact]
+        public async Task Die_Preisbasis_kWh_zeigt_je_kWh_und_speichert_je_Mengeneinheit()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT_STADTGAS), STADTGAS, out stand);
+
+            Assert.Equal(new[] { (0, "€/Nm³"), (1, "€/kWh") }, stand.Preisbasen);
+            Assert.Equal(0, stand.PreisbasisId);
+            Assert.Equal(0.35, stand.Arbeitspreis, 9);
+            Assert.Equal("", stand.PreisbasisHinweis);
+
+            // Umschalten: 0,35 €/Nm³ ÷ 4,8 kWh/Nm³ - gespeichert bleibt 0,35 €/Nm³.
+            await PreisbasisSetzen(gaben, 1);
+            Assert.Equal(0.35 / 4.8, stand.Arbeitspreis, 9);
+            Assert.Equal("€/kWh", stand.EinheitArbeitspreis);
+            Assert.Equal("kWh/Nm³", stand.EinheitHeizwert);
+            Assert.Equal("0,0729 €/kWh × 4,80 kWh/Nm³ = 0,3500 €/Nm³ (gespeichert je Nm³)",
+                         stand.FormelText);
+
+            Assert.True(Speichern(gaben));
+            Assert.Equal(0.35, Gespeichert().Arbeitspreis.Value, 9);
+            Assert.Equal("kWh", Gespeichert().Preisbasis);
+
+            // Eine Eingabe in €/kWh: 0,07 × 4,8 = 0,336 €/Nm³ in der Datenbank.
+            Feld(gaben, () => stand.Arbeitspreis = 0.07);
+            Assert.Equal("0,0700 €/kWh × 4,80 kWh/Nm³ = 0,3360 €/Nm³ (gespeichert je Nm³)",
+                         stand.FormelText);
+            Assert.True(Speichern(gaben));
+            Assert.Equal(0.336, Gespeichert().Arbeitspreis.Value, 9);
+            Assert.Equal(4.8, Gespeichert().Hi.Value, 9);
+
+            // Und zurück: derselbe Preis je Nm³, der gespeichert ist.
+            await PreisbasisSetzen(gaben, 0);
+            Assert.Equal(0.336, stand.Arbeitspreis, 9);
+            Assert.Equal("€/Nm³", stand.EinheitArbeitspreis);
+            Assert.Equal("0,3360 €/Nm³ ÷ 4,80 kWh/Nm³ = 0,0700 €/kWh", stand.FormelText);
+        }
+
+        /// <summary>
+        /// „Immer": Ein Träger, dessen Heizwert erst im Dialog eingetragen wird,
+        /// bekommt „€/kWh" in derselben Sitzung angeboten. Bis dahin sagt eine leise
+        /// Zeile, warum es fehlt.
+        /// </summary>
+        [Fact]
+        public async Task Ein_nachtraeglich_eingetragener_Heizwert_macht_kWh_waehlbar()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Der Katalogträger ohne Heizwert - im Katalogkontext gelesen.
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_carrier SET hi_kwh_per_unit = ?, hs_kwh_per_unit = ?, price_work = ? " +
+                "WHERE id = ?",
+                new DbParam("@hi", 0.0), new DbParam("@hs", 0.0), new DbParam("@w", 0.48),
+                new DbParam("@id", STADTGAS));
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(0), STADTGAS, out stand);
+
+            Assert.Equal(new[] { (0, "€/Nm³") }, stand.Preisbasen);
+            Assert.Contains("sobald ein Heizwert gepflegt ist", stand.PreisbasisHinweis);
+
+            Feld(gaben, () => stand.Heizwert = 4.8);
+
+            Assert.Equal(new[] { (0, "€/Nm³"), (1, "€/kWh") }, stand.Preisbasen);
+            Assert.Equal(0, stand.PreisbasisId);
+            Assert.Equal("", stand.PreisbasisHinweis);
+
+            await PreisbasisSetzen(gaben, 1);
+            Assert.Equal(0.1, stand.Arbeitspreis, 9);             // 0,48 ÷ 4,8
+            Assert.Equal("€/kWh", stand.EinheitArbeitspreis);
+        }
+
+        /// <summary>
+        /// Die Gegenrichtung: Fällt der Heizwert auf 0, lässt sich eine Eingabe in
+        /// €/kWh nicht mehr umrechnen. Die Karte fällt auf die Mengeneinheit und
+        /// zeigt den zuletzt gültigen Preis je Nm³ — sie deutet die Zahl nicht still um.
+        /// </summary>
+        [Fact]
+        public async Task Ohne_Heizwert_faellt_die_Preisbasis_auf_die_Mengeneinheit()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT_STADTGAS), STADTGAS, out stand);
+
+            await PreisbasisSetzen(gaben, 1);
+            Feld(gaben, () => stand.Arbeitspreis = 0.07);         // = 0,336 €/Nm³
+
+            Feld(gaben, () => stand.Heizwert = 0.0);
+
+            Assert.Equal(new[] { (0, "€/Nm³") }, stand.Preisbasen);
+            Assert.Equal(0, stand.PreisbasisId);
+            Assert.Equal("€/Nm³", stand.EinheitArbeitspreis);
+            Assert.Equal(0.336, stand.Arbeitspreis, 9);
+            Assert.Contains("sobald ein Heizwert gepflegt ist", stand.PreisbasisHinweis);
+        }
+
+        /// <summary>
+        /// „Katalogwerte übernehmen" lässt die gewählte Preisbasis stehen: Der
+        /// Katalogpreis je Nm³ erscheint in €/kWh, gespeichert wird er je Nm³.
+        /// </summary>
+        [Fact]
+        public async Task Katalogwerte_uebernehmen_behaelt_die_Preisbasis_kWh()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_carrier SET price_work = ? WHERE id = ?",
+                new DbParam("@w", 0.48), new DbParam("@id", STADTGAS));
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT_STADTGAS), STADTGAS, out stand);
+
+            await PreisbasisSetzen(gaben, 1);
+            await KatalogUebernehmen(gaben);
+
+            Assert.Equal(1, stand.PreisbasisId);
+            Assert.Equal("€/kWh", stand.EinheitArbeitspreis);
+            Assert.Equal(0.1, stand.Arbeitspreis, 9);             // 0,48 €/Nm³ ÷ 4,8
+            Assert.Contains("noch nicht gespeichert", stand.UebernahmeHinweis);
+
+            Assert.True(Speichern(gaben));
+            Assert.Equal(0.48, Gespeichert().Arbeitspreis.Value, 9);
+            Assert.Equal("kWh", Gespeichert().Preisbasis);
+        }
+
+        /// <summary>
+        /// Der Assistent setzt die Preisbasis über DENSELBEN Weg wie die Klappliste.
+        /// Ginge er den Weg eines Zahlenfeldes (Id setzen, nachziehen), läse die
+        /// Hülle die stehende Zahl als Eingabe in der neuen Einheit — gespeichert
+        /// würden 0,35 × 4,8 = 1,68 €/Nm³ statt 0,35.
+        /// </summary>
+        [Fact]
+        public void Die_KI_Sicht_setzt_die_Preisbasis_ohne_den_Preis_zu_verschieben()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT_STADTGAS), STADTGAS, out stand);
+
+            var ki = new EnergietraegerKiSicht
+            {
+                StandLesen = () => stand,
+                Nachziehen = () => ((Func<EnergietraegerAnsicht>)gaben["Nachrechnen"])(),
+                PreisbasisSetzen = i => PreisbasisSetzen(gaben, i).GetAwaiter().GetResult()
+            };
+
+            Assert.Equal(new[] { "€/Nm³", "€/kWh" },
+                         ki.PreisbasisWahl.Select(w => w.Text).ToArray());
+
+            ki.Preisbasis = 1;
+
+            Assert.Equal(1, stand.PreisbasisId);
+            Assert.Equal(0.35 / 4.8, ki.Arbeitspreis, 9);
+            Assert.True(Speichern(gaben));
+            Assert.Equal(0.35, Gespeichert().Arbeitspreis.Value, 9);
+
+            // Ohne den Weg der Klappliste setzt der Assistent die Preisbasis nicht.
+            var ohneWeg = new EnergietraegerKiSicht
+            {
+                StandLesen = () => stand,
+                Nachziehen = () => ((Func<EnergietraegerAnsicht>)gaben["Nachrechnen"])()
+            };
+            ohneWeg.Preisbasis = 0;
+            Assert.Equal(1, stand.PreisbasisId);
+        }
+
+        // =================================================================
         // B2 - Preishistorie
         // =================================================================
 
@@ -573,8 +783,9 @@ namespace EPOS.Kern.Tests
 
             await KatalogUebernehmen(gaben);
 
-            // Die Felder tragen die Katalogwerte, die Preisbasis steht auf der
-            // Abrechnungseinheit, und der Hinweis sagt: noch nicht geschrieben.
+            // Die Felder tragen die Katalogwerte, die Preisbasis bleibt, wo sie
+            // stand (hier die Abrechnungseinheit - ET-D-4), und der Hinweis sagt:
+            // noch nicht geschrieben.
             Assert.Equal(1.23, stand.Arbeitspreis, 6);
             Assert.Equal(45.0, stand.Grundpreis, 6);
             Assert.Equal(10.5, stand.Heizwert, 6);

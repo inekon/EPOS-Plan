@@ -36,7 +36,14 @@ namespace WindowsFormsApplication1
         /// </param>
         internal static bool Oeffnen(IWin32Window besitzer, bool nurLesen = false)
         {
-            return KatalogBrowserHuelle.Oeffnen(besitzer, Profil(), Gaben(nurLesen));
+            IReadOnlyDictionary<string, object> gaben = Gaben(nurLesen);
+
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
+            // Verwaltungsfenster - nicht beim Nachschlagen aus dem Projektdialog.
+            if (!nurLesen)
+                gaben = KatalogBrowserHuelle.MitWegen(gaben,
+                    Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Pufferspeicher)));
+            return KatalogBrowserHuelle.Oeffnen(besitzer, Profil(), gaben);
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -56,12 +63,14 @@ namespace WindowsFormsApplication1
         /// Spalten ein Pufferspeichersatz fuehrt und wie sie zurueckgeschrieben werden,
         /// ist EINE Frage mit EINER Antwort (Muster <see cref="HeizkesselAdminHuelle"/>).
         /// </remarks>
-        internal static KatalogBrowserWege Wege()
+        internal static KatalogBrowserWege Wege(Func<IReadOnlyDictionary<string, object>> import = null)
         {
             KatalogBrowserProfil profil = Profil();
 
             return new KatalogBrowserWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                ImportGaben = import,
                 // W14a-E-10: fuenf Spalten statt der einen Namensspalte; die sechs
                 // festen Volumenstufen entfallen zugunsten des Ausdrucks "200..500"
                 // (Frage Q5).

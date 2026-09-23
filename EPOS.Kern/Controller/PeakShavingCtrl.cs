@@ -225,6 +225,79 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
+        // Stufe 5 der Neuordnung (V16): die Lastgaenge als Katalogliste
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Liste der Lastgaenge</b> (Konzept Administrationsdialoge, V16) —
+        /// je Eintrag von <see cref="LeseGanglinien"/> eine Zeile mit Quelle (Stamm oder
+        /// Projekt), Intervall in Minuten und Jahresmaximum in kW.
+        ///
+        /// <para><b>Der Schluessel ist der Platz in der Liste</b> (<c>"G" + Platz</c>), nicht
+        /// der Bezeichner: Projekt und Stamm fuehren gleichnamige Ganglinien, und die Huelle
+        /// liest die Werte ueber den Platz (<c>PeakShavingHuelle.Reihe</c>).</para>
+        ///
+        /// <para><b>Das Jahresmaximum kommt aus EINER Gruppenabfrage je Tabelle</b>
+        /// (<c>MAX(Wert)</c> je Ganglinie), nicht je Zeile. Es ist der hoechste abgelegte
+        /// Wert — Viertelstunden- bzw. Stundenleistung; die Vervielfachung der Stundenwerte
+        /// auf Viertelstunden (<see cref="LeseWerte"/>) aendert das Maximum nicht.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen(
+            IReadOnlyList<GanglinienEintrag> eintraege, int idProjekt)
+        {
+            var liste = new List<Katalogfilterzeile>();
+            if (eintraege == null) return liste;
+
+            Dictionary<int, double> stamm = Maxima(
+                "SELECT ID_Ganglinie, MAX(Wert) AS Spitze FROM " + DataStamm + " GROUP BY ID_Ganglinie", null);
+            Dictionary<int, double> projekt = idProjekt == 0
+                ? new Dictionary<int, double>()
+                : Maxima("SELECT d.ID_Ganglinie, MAX(d.Wert) AS Spitze FROM " + DataProjekt + " AS d " +
+                         "INNER JOIN " + HeadProjekt + " AS k ON k.ID = d.ID_Ganglinie " +
+                         "WHERE k.ID_Projekt = ? GROUP BY d.ID_Ganglinie",
+                         new DbParam("@projekt", DbParamTyp.Integer) { Wert = idProjekt });
+
+            for (int platz = 0; platz < eintraege.Count; platz++)
+            {
+                GanglinienEintrag e = eintraege[platz];
+                double spitze;
+                bool bekannt = (e.AusStamm ? stamm : projekt).TryGetValue(e.Id, out spitze);
+
+                var zeile = new Katalogfilterzeile(e.Id, e.Bezeichner) { Schluessel = "G" + platz };
+                zeile.MitText(Katalogfilterprofil.SpBezeichner, e.Bezeichner)
+                     .MitText(Katalogfilterprofil.SpQuelle, e.AusStamm
+                         ? MyResource.Resource.PEAK_QUELLE_STAMM : MyResource.Resource.PEAK_QUELLE_PROJEKT)
+                     .MitZahl(Katalogfilterprofil.SpIntervallMin, IntervallMinuten(e.Zeitinterval), 0)
+                     .MitZahl(Katalogfilterprofil.SpJahresmaximumKw, bekannt ? spitze : (double?)null, 1);
+                liste.Add(zeile);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Das Raster in Minuten: <c>Zeitinterval</c> 1 = Stunde (60 min), 4 = Viertelstunde
+        /// (15 min); ein anderer Wert ist unbekannt (<c>null</c>).
+        /// </summary>
+        public static double? IntervallMinuten(int zeitinterval)
+            => zeitinterval == 1 ? 60 : zeitinterval == 4 ? 15 : (double?)null;
+
+        private static Dictionary<int, double> Maxima(string sql, DbParam parameter)
+        {
+            var ergebnis = new Dictionary<int, double>();
+            DataTable dt = parameter == null
+                ? DataRepository.GetDataTable(sql, null)
+                : DataRepository.GetDataTable(sql, parameter);
+            if (dt == null) return ergebnis;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (r[0] == DBNull.Value || r[1] == DBNull.Value) continue;
+                ergebnis[Convert.ToInt32(r[0], CultureInfo.InvariantCulture)] =
+                    Convert.ToDouble(r[1], CultureInfo.InvariantCulture);
+            }
+            return ergebnis;
+        }
+
+        // ==================================================================
         // Parametervorbelegung
         // ==================================================================
 

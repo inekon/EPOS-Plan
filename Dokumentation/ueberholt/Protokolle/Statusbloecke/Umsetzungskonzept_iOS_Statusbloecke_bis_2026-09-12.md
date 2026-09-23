@@ -8404,3 +8404,166 @@ nutzt kein Dialog mehr; unbenutzte Parameter `BtnAendernText`,
 > Seit 23.09.2026 zeigen auch Klimadaten und Zeitreihen den gewählten Satz im
 > Stammblatt mit Jahresverlauf und Herkunft, das Einlesen läuft über „Import…“,
 > und Bedarfsprofile werden direkt im Stammblatt geändert.
+
+## #450 — Administrationsdialoge Stufe 5: Gebäude, Gebäudetypen, Lastspitzenkappung im Gerüst; „Import…“ in den Gerätekatalogen (23.09.2026)
+
+Anwenderzuruf „fahre fort Stufe 5“ nach dem Konzept
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md` (V16, Abschnitt 7
+Stufe 5, Abschnitt 7.1 d). Commits `9cb41354` (Gebäude, Gebäudetypen,
+Lastspitzenkappung), `7e7ecb9c` (Katalogprobe Stufe 5), `c938ed32`
+(„Import…“ in den Gerätekatalogen); Merge `b3fa8658`.
+
+**Umsetzung.** Neuer Dialog
+`EPOS.UI/Dialoge/Bedarf/GebaeudeAdminDialog.razor` (Verwaltungsmodus aus
+`GebaeudeDialog` ausgegliedert; Projekt und Assistent unverändert):
+Katalogliste mit Profil `FuerGebaeude`, die vier Vorfilter als Trichter
+(Name, Gebäudeart, Verwendung, Baujahr); Stammblatt mit Gruppen Kenndaten
+(direkt bearbeitbar, Knopf „Gebäudetypen…“ als Überlagerung), Hülle (lesbar,
+„Bearbeiten…“ öffnet den Katalogeditor) und Alle Daten; Auswahlleiste
+Vergleichen, Duplizieren…, Löschen (gesperrt, solange ein Projekt das
+Gebäude nutzt); Schloss, Fußleiste, KI-Anmeldung. `GebaeudetypDialog` neu:
+Zeile ist Wahl, Schloss, Gruppe „Tagesprofil“ (Kurve als Klappliste mit
+Diagramm, „Stundenwerte…“ als Überlagerung mit 24 Feldern, Titel und Kreuz),
+Beschreibung direkt bearbeitbar mit Speichern/Verwerfen,
+Neu…/Duplizieren…/Löschen (gesperrt, solange ein Gebäude den Typ nutzt).
+`PeakShavingDialog` neu: Liste der Lastgänge (Quelle, Intervall,
+Jahresmaximum), Stammblatt mit Gruppen Speicher, Schwelle, Kosten, darunter
+„Berechnen“ und Ergebnis; „Lastgang aus Datei…“ als Überlagerung; kein
+Schloss, keine Kästchen; Fußleiste Statuszeile · Beenden plus CSV-Export und
+„In Variante übernehmen“. „Import…“ in den Gerätekatalogen: Baustein
+`EPOS.UI/Dialoge/Import/ImportUeberlagerung.razor` (Überlagerung ohne
+eigenen Kopf, Titel und Kreuz trägt der Importdialog) für KatalogBrowser,
+Modulkatalog und Wärmepumpenverwaltung (BHKW hat keinen Herstellerimport);
+nach dem Import liest die Liste neu, erster neuer Satz gewählt, Statuszeile
+nennt die Zahl; Windows-Hüllen nur im eigenen Verwaltungsfenster
+(`GebaeudeFenster.cs` neu). Neue Stilregel: Tabellen im Stammblatt brechen
+um. 59 neue Schlüssel (KFLT_SP_*, ADM_BTN_NEU, ADM_MSG_IMPORTIERT, GEBA_*,
+GTYP_*, PEAK_*).
+
+**Messung (Katalogprobe, 60 Fälle, Rasterprobe 13/13, Zeilenmaß 46 px,
+nirgends Querlauf).** Gebäude 1 088 × 624: Liste 426 px (8 Zeilen),
+Stammblatt 380 × 370, Überlagerung „Gebäudetypen…“ 900 × 562 mit einem
+Kreuz; 400 × 624: Liste 288 px (5 Zeilen); Gebäudetypen: 8 Zeilen,
+„Stundenwerte…“ 900 × 507 mit 24 Feldern; Lastspitzenkappung:
+Ergebnistabelle 356 px, 21 Zeilen, „Lastgang aus Datei…“ 900 × 224;
+Import-Überlagerungen 1 044,5 × 586,5 bzw. 384 × 586,5, Fußleiste schmal
+zweizeilig.
+
+**Prüfung (vor dem Merge).** Kern-Filter 0 Fehler; EPOS.UI.Tests 5 556,
+EPOS.Kern.Tests 5 174, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; neue Tests: `GebaeudeAdminDialogTests` (~20),
+`GebaeudetypDialogTests` und `PeakShavingDialogTests` neu geschrieben,
+`SonderlistenVerwaltungTests` 13, Import 9 bunit-Fälle; Windows-Schale 0
+Fehler; SQL-Prüfer 1 724 Texte, 0 Fundstellen; Wachen grün
+(Parametersatz-Wache: Aufruf `KatalogImportHuelle.Gaben` in `Importsatz()`
+verlegt).
+
+**Gate auf dem Merge-Stand `b3fa8658`.** Kern-Filter 0 Fehler;
+EPOS.Kern.Tests 5 306, EPOS.UI.Tests 5 591, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; Windows-Schale 0
+Fehler; Referenzlauf gegen `2026-09-23_R12_Gebaeudemodell`: alle 13
+Basisprojekte PASS (4 250 839 Werte).
+
+**Was offen bleibt.** (1) Gebäude: Hülle und Wohnfläche nur lesbar
+(Bearbeiten im Katalogeditor); keine Gruppe Wärmebedarf (Verwaltung kennt
+weder Projekt noch Klima); Löschsperre erkennt Nutzung am Namen
+(`Z_ProjektGebaeude` ohne Katalogverweis). (2) Gebäudetypen: Klappliste aus
+`TagVCtrl.Typen`, Löschsperre über Stamm-Gebäude neu, Kurvenwechsel bei
+ungespeicherten Änderungen gesperrt. (3) Lastspitzenkappung: Parameter in
+drei Gruppen; CSV-Export und „In Variante übernehmen“ in der Fußleiste —
+Anwenderentscheid, ob das zu „Statuszeile · Beenden“ passt; Auswahlleiste
+nur im schmalen Fenster, kein Vergleich. (4) Import: erster neuer Satz im
+Fokus statt „neue Zeilen gewählt“; Stromspeicherimport im 860 px breiten
+Modulkatalog-Fenster schmaler. (5) Die KI-Maske GEBAEUDE teilen sich
+Projekt- und Verwaltungsdialog. Damit sind alle fünf Stufen des Konzepts
+umgesetzt.
+
+**Logbuch-Vorschlag** (Version wie #449, beim Anwender erfragen):
+
+> Seit 23.09.2026 stehen auch Gebäude, Gebäudetypen und Lastspitzenkappung
+> im einheitlichen Verwaltungsgerüst mit Liste und Stammblatt, und die
+> Gerätekataloge haben „Import…“ in der Fußleiste.
+
+**Merge mit KU1 Welle 4.** Nach dem Doku-Commit `780f47fe` wurde
+`origin/ios_migration_september` (acht Commits Kühlung KU1 Welle 4, neue
+Basis `2026-09-23_R13_Kuehlung`, Testdatenbank mit Referenzprojekt 1017
+unter Kühlung) konfliktfrei als `b587b9c9` zusammengeführt; resx und
+`Resource.Designer.cs` geprüft (unverändert, wiederholbar). Ein
+Folgefehler zeigte sich dabei: `EPOS.Kern.Tests/KuehlungOberflaecheTests.cs`
+rief `GebaeudeHuelle.Gaben` noch mit dem in Stufe 5 entfernten Parameter
+`admin` auf — behoben in `2edc081e`. Gate danach: Kern-Filter 0 Fehler,
+Tests Kern 5 308 / UI 5 591 / KiKern 524 / SpeicherEngine 386 /
+SpeicherPlanung 27 (1 übersprungen) grün, Windows-Schale 0 Fehler,
+Referenzlauf 13/13 PASS gegen R13 (4 145 687 Werte in Toleranz); Push von
+`2edc081e`. Die Commits `b3fa8658` und `780f47fe` lagen zunächst
+versehentlich auf `main` (Hauptbaum stand auf `main`); `ios_migration_september`
+wurde per Fast-Forward darauf gezogen und `main` auf `origin/main`
+(`591229e1`) zurückgesetzt.
+
+## #457 — Energieträgerverwaltung: Arbeitspreis wahlweise in €/kWh, Preisbasis direkt am Feld (ET-D-4) (23.09.2026)
+
+Auftrag des Anwenders wörtlich: „Der Arbeitspreis soll immer zusätzlich
+in €/kWh wählbar sein (außer €/Mengeneinheit)." Commits `2cd92e16`
+(Energieträger: Preisbasis €/kWh direkt am Arbeitspreis), `a71f2260`
+(KI-Sicht Energieträger: Preisbasis über den Weg der Klappliste), `1421701c`
+(Tests zu ET-D-4), `47a45cef` (Papiere zu ET-D-4); Merge `48717545`.
+
+**Befund.** Die Klappliste „Preisbasis" (Mengeneinheit ↔ kWh, seit
+#446 in `energy_project_settings.Preisbasis` gemerkt) existierte, lag
+aber im standardmäßig zugeklappten Block D „Einheiten und Umrechnung"
+(Entscheid ET‑D‑3). Gespeichert wird weiterhin je Mengeneinheit; kein
+Schemaschritt, Rechenkern unverändert.
+
+**Entscheide.** ET‑D‑4 (neu): Die Preisbasis steht künftig direkt am
+Arbeitspreis im Block „Preis und Heizwert", nicht mehr verborgen im Block D
+„Einheiten und Umrechnung"; die Anordnung aus ET‑D‑3 gilt als abgelöst.
+
+**Umsetzung.** Klappliste steht im Block „Preis und Heizwert" direkt unter
+dem Arbeitspreis („€/Nm³" / „€/kWh", ohne eigene Beschriftung,
+Sprachausgabe „Einheit des Arbeitspreises"); bei nur einer Einheit (Strom,
+Fernwärme, Sonstige) keine Liste; die Liste wird bei jedem Nachziehen neu
+gebaut — ein erst im Dialog eingetragener Heizwert macht €/kWh sofort
+wählbar, ohne Heizwert eine leise Hinweiszeile; fällt der Heizwert bei
+gewählter €/kWh auf 0, geht die Wahl auf die Mengeneinheit zurück und
+zeigt den zuletzt gespeicherten Preis; Formelzeile bei €/kWh „0,0700
+€/kWh × 4,80 kWh/Nm³ = 0,3360 €/Nm³ (gespeichert je Nm³)",
+`ETV_FORMEL_DIREKT_BASIS` entfernt; „Katalogwerte übernehmen" behält
+die Preisbasis; KI-Sicht `EnergietraegerKiSicht` setzt die Preisbasis über
+den Weg der Klappliste (vorher verschob sich der gespeicherte Preis um den
+Faktor Hi). Neue Ressourcen `ETV_FORMEL_JE_KWH`, `ETV_PREISBASIS_ARIA`,
+`ETV_PREISBASIS_OHNE_HEIZWERT` (beide Sprachen), `KI_DLG_ET_PREISBASIS_ERL`.
+
+**Tests.** Voller Lauf 11 845 bestanden, 1 übersprungen, 0 rot (Kern 5 314,
+UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27); Doku-Wachen
+26 grün; Windows-Schale 0 Fehler; Referenzlauf 1030 PASS. Neue Tests:
+`EnergietraegerHuelleTests` (Umschalten und Speichern je Nm³, nachgetragener
+Heizwert, Heizwert auf 0, Katalogübernahme behält Preisbasis, KI ohne
+Wertverschiebung), `EnergietraegerDialogTests` (Lage und aria-label, eine
+Einheit samt Hinweis, Assistent über die Klappliste), Preiskarte de/en.
+
+**Papiere.** Entscheidungsregister Wirtschaftlichkeit
+(`Dokumentation/aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md`):
+ET‑D‑4 neu, ET‑D‑3 Anordnung als abgelöst vermerkt;
+`Rechenweg/04_Energiekosten.md` Block A/D; konsolidiertes Konzept §
+2.5 (drei Sätze berichtigt); Mockup `Dialog_Formel_Zahlenprobe.html`
+zwei Stellen; Wiki-Quelle `Projekte/Wiki/Programm Dokumentation -
+Kosten.wiki` (Anker `preisbasis`, `umrechnungsregeln`, `preis-je-kwh`,
+`katalogwerte-uebernehmen`).
+
+**Logbuch-Vorschlag** (Version wie #452, beim Anwender erfragen):
+
+> Der Arbeitspreis eines Energieträgers lässt sich direkt am Feld wahlweise
+> je Mengeneinheit oder in €/kWh eingeben.
+
+**Was offen bleibt.** Katalogkontext merkt die Preisbasis bewusst nicht
+(nur Eingabehilfe, im Entscheidungsregister vermerkt). Nebenbefund:
+`EnergietraegerKiSicht.LeistungspreisMonatlich` setzt nur das Kartenfeld,
+die Oberfläche schreibt den Modus sofort in den Katalog — über den
+Assistenten wird er nie gespeichert (wandert in Welle #458, KI-Maskensteuerung
+der übrigen Masken).
+
+**Gate nach Merge auf `48717545`.** Kern-Filter 0 Fehler; Tests Kern
+5 314, UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
+Toleranz).
