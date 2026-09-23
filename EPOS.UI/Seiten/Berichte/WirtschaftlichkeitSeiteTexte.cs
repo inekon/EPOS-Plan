@@ -128,6 +128,9 @@ public sealed class WirtschaftlichkeitSeiteTexte
         "Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf "
         + "(„Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine "
         + "Jahresreihen.");
+    /// <summary>WIRT_BR_TITEL — die Bezeichnung des Brückenbilds für die Sprachausgabe (ETAPPE
+    /// E8a, U41).</summary>
+    public string BrueckeBild { get; set; } = T("WIRT_BR_TITEL", "Von der Investition zur Kapitalwertdifferenz");
     /// <summary>WIRT_ZR_STAND — die Wahl des Standes in Block 2 (ETAPPE E8a).</summary>
     public string ZrStand { get; set; } = T("WIRT_ZR_STAND", "Stand:");
     /// <summary>WIRT_ZR_SZENARIO — die Wahl des Szenarios in Block 2 (ETAPPE E8a).</summary>

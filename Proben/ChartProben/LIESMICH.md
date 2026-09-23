@@ -301,3 +301,30 @@ von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor
 alle 122 Hashes des Vorstands gleich, 10 neu (132 Zeilen). Die zehn Bilder stehen noch nicht in der
 Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
 wie die Bilder der Etappe E6: alle alten Zeilen gleich, zehn neu, keines geändert.
+
+---
+
+## Etappe E8a der Wirtschaftlichkeit: das Brückenbild
+
+`ChartRenderer.KapitalwertBruecke` zeichnet „Von der Investition zur Kapitalwertdifferenz" als
+Wasserfall: je Bestandteil (Investition, Betriebskosten, Energiekosten, Erlöse,
+Ersatzbeschaffungen, Restwert) eine Säule vom Stand vor bis zum Stand nach dem Schritt — rot,
+wenn er die Differenz mindert, grün, wenn er sie mehrt, gestrichelt verbunden —, zuletzt die
+Ergebnissäule von null bis zur Summe in der Hausfarbe; ein reines Pixelbild, 1240 × 610. Die
+Proben stehen in `Program.Bruecke.cs`; ihre Texte sind die deutsche Vorgabe (`BrueckenTexte`).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kapitalwert_bruecke` | die sechs Schritte des Mockups (ΔKW 1.842.695 €), 1240 × 610, die Farben der Rollen `RASTER_GUT`, `RASTER_SCHLECHT`, `STAMM` |
+| Maßprobe | `kapitalwert_bruecke_unter_referenz` | eine Brücke, die unter der Referenz endet (ΔKW −410.000 €), dasselbe Maß |
+| Maßprobe | `kapitalwert_bruecke_leer` | kein zeichenbarer Schritt: der Leerhinweis, 1240 × 200 |
+| Gegenprobe | `kapitalwert_bruecke_schritt_wirkt` | dieselbe Brücke mit anderem Beitrag der Energiekosten |
+| Gegenprobe | `kapitalwert_bruecke_reihenfolge_wirkt` | dieselben Schritte in umgekehrter Reihenfolge |
+| SVG-Probe | `svg_c_kapitalwert_bruecke` | Pixelbildprobe der Gruppe (c): jede Säule mit ihrem Wert |
+| SVG-Probe | `svg_kapitalwert_bruecke_treppe`, `…_treppe_unter_referenz` | die Säulen bilden eine Treppe: jede beginnt auf der Höhe, auf der die vorige endet, die Ergebnissäule reicht von der Nulllinie bis zum letzten Stand |
+
+Das sind drei Maßproben und zwei Gegenproben — **7 neue Bilder** — und drei SVG-Proben. Kein Bild
+von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Etappe gemessen,
+alle 132 Hashes des Vorstands gleich, 7 neu (139 Zeilen). Die sieben Bilder stehen noch nicht in der
+Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
+wie die Bilder der Etappe E6: alle alten Zeilen gleich, sieben neu, keines geändert.

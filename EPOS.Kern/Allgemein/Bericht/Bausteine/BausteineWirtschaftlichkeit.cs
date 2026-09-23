@@ -137,6 +137,10 @@ namespace WindowsFormsApplication1
             // Erwartungsfall — Zahl für Zahl der bisherige Einzellauf.
             WirtschaftlichkeitVerlaufSzenarien verlauf = HoleVerlauf(k, daten, provider, p, tarifP);
             SchreibeVerlauf(k, verlauf);
+            // ETAPPE E8a (U41): das Brückenbild zur Kapitalwertdifferenz — aus DENSELBEN drei
+            // Läufen, neben den Bildern des Verlaufs und vor den Jahresreihen der Mehrjahrestafel
+            // (im Mockup steht die Brücke unter der Gliederung, vor dem Zahlungsstrom).
+            SchreibeBruecke(k, daten, verlauf, alle, p, bewertung);
             SchreibeMehrjahres(k, daten, verlauf == null ? null : verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET), alle);
 
             // ---------------- Szenarienübersicht (Ungünstig / Erwartet / Günstig) ----------------
@@ -308,6 +312,41 @@ namespace WindowsFormsApplication1
                 "Kumulierte Barwerte je Version",
                 ChartRenderer.VerlaufsReihen(erwartet.Absolut, true, true), null)),
                 620, 310);
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U41, Mockup Kategorie 8 „Von der Investition zur Kapitalwertdifferenz"):
+        /// das <b>Brückenbild</b> — die Leitversion gegen die Referenz des Laufs im
+        /// Erwartungsfall, je Bestandteil der Beitrag zur Kapitalwertdifferenz. Die Zahlen sind
+        /// die Gliederungen der drei Läufe, die der Verlauf darüber zeichnet, abgeglichen gegen
+        /// die Ergebnisse des Laufs (<see cref="Zahlungsgliederungen"/>); dieselbe Leitversion
+        /// und dieselben Texte wie auf der Seite. Ohne Verlauf, ohne Leitversion oder ohne
+        /// passende Gliederung entfällt die Bildstelle.
+        /// </summary>
+        private static void SchreibeBruecke(WordKontext k, BerichtsDaten daten,
+                                            WirtschaftlichkeitVerlaufSzenarien verlauf,
+                                            List<WirtschaftlichkeitErgebnis> alle,
+                                            WirtschaftlichkeitParameter p,
+                                            WirtschaftlichkeitBewertung bewertung)
+        {
+            if (verlauf == null || p == null || bewertung == null || bewertung.Bandbreite == null) return;
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, alle);
+            int idReferenz = bewertung.Bandbreite.IdReferenz;
+            int leit = Zahlungsgliederungen.Leitversion(alle, daten.Varianten.Select(v => v.IdProjekt), idReferenz);
+            string erwartet = WirtschaftlichkeitSzenario.ERWARTET;
+            Zahlungsgliederung stand = satz.Von(leit, erwartet), referenz = satz.Von(idReferenz, erwartet);
+            if (leit == 0 || leit == idReferenz || stand == null || referenz == null) return;
+
+            VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == leit);
+            string name = v == null ? "" : (v.IstStamm ? "Stamm" : v.Anzeige);
+            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer(
+                name, bewertung.Bandbreite.Referenzname, MyResource.Resource.WIRT_SZEN_ERWARTET, stand, k.Kultur);
+            Zeichnung.Zeichenmodell bild = Sicher(() => ChartRenderer.KapitalwertBrueckeModell(
+                ChartRenderer.Brueckenschritt.Aus(stand, referenz), texte));
+            if (bild == null) return;
+
+            k.Ueberschrift2Roh(MyResource.Resource.WIRT_BR_TITEL);
+            k.Bild(bild, 620, bild.Hoehe / 2);
         }
 
         /// <summary>

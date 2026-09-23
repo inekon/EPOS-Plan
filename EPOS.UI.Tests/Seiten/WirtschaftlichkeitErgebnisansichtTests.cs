@@ -553,6 +553,58 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E8a (U41): Das <b>Brückenbild</b> „Von der Investition zur Kapitalwertdifferenz"
+    /// steht unter der Gliederung und vor der Zeilentafel — ein SVG-Baustein ohne Zoom mit
+    /// den Säulen der Bestandteile, der Ergebnissäule und der Nulllinie. Es folgt der
+    /// Szenario-Klappliste; ohne Bild an der Ansicht steht keines.
+    /// </summary>
+    [Fact]
+    public void Das_Brueckenbild_steht_unter_der_Gliederung_und_folgt_der_Klappliste()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        stand.Ansicht.Bruecke = Brueckenbild(70000.0);
+        var cut = Zeige(stand, p => p.Add(x => x.Anzeigen, (int id) =>
+        {
+            ErgebnisAnsicht neu = VolleAnsicht();
+            neu.Bestandteile = Bestandteile("−66.000");
+            neu.Bruecke = Brueckenbild(64000.0);
+            return neu;
+        }));
+
+        IElement woraus = Abschnitt(cut, 2);
+        IElement bruecke = woraus.QuerySelector(".epos-wirt-bruecke-teil")!;
+        Assert.Single(bruecke.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.NotNull(bruecke.QuerySelector("[data-marke='nulllinie']"));
+        Assert.NotNull(bruecke.QuerySelector("[data-marke='reihe:ΔKW']"));
+        Assert.Equal("Energiekosten: +70.000 €",
+                     bruecke.QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+        string[] folge = woraus.QuerySelectorAll(".epos-wirt-bestandteile, .epos-wirt-bruecke-teil, .epos-wirt-gliederung")
+                               .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(3, folge.Length);
+        Assert.Contains("epos-wirt-bestandteile", folge[0]);
+        Assert.Contains("epos-wirt-bruecke-teil", folge[1]);
+        Assert.Contains("epos-wirt-gliederung", folge[2]);
+
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+        Assert.Equal("Energiekosten: +64.000 €",
+                     Abschnitt(cut, 2).QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+
+        var ohne = Zeige();
+        Assert.Empty(Abschnitt(ohne, 2).QuerySelectorAll(".epos-wirt-bruecke-teil"));
+    }
+
+    /// <summary>Ein Probebild der Brücke: drei Schritte, die Energiekosten mit <paramref name="energie"/>.</summary>
+    private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Brueckenbild(double energie)
+        => WindowsFormsApplication1.ChartRenderer.KapitalwertBrueckeModell(
+            new List<WindowsFormsApplication1.ChartRenderer.Brueckenschritt>
+            {
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Investition I₀", Wert = -60000.0 },
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Energiekosten", Wert = energie },
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Restwert am Ende", Wert = 2300.0 }
+            }, null);
+
+    /// <summary>
     /// Eine Probegliederung: Stamm, WP klein und BHKW, die Differenz WP klein − Stamm geht in
     /// +12.300 auf. <paramref name="investitionWp"/> ist der Barwert der Investition von WP klein.
     /// </summary>

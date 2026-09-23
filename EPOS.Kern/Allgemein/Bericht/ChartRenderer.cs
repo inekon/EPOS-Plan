@@ -1880,6 +1880,305 @@ namespace WindowsFormsApplication1
         private static double? EndlicherWert(double? x)
             => x.HasValue && !double.IsNaN(x.Value) && !double.IsInfinity(x.Value) ? x : null;
 
+        // ============ Brücke von der Investition zur Kapitalwertdifferenz (E8a, U41)
+
+        /// <summary>
+        /// ETAPPE E8a (U41, Mockup Kategorie 8 „Woraus entsteht die Zahl?") — EIN Schritt des
+        /// Brückenbilds: ein Bestandteil der Kapitalwertdifferenz mit seinem Namen und seinem
+        /// Beitrag [€] — der Differenz der Barwerte, Stand minus Referenz. Negativ mindert,
+        /// positiv mehrt die Differenz; ein nicht endlicher Wert fällt weg.
+        /// </summary>
+        public sealed class Brueckenschritt
+        {
+            /// <summary>Der Name des Bestandteils — die Beschriftung unter der Säule.</summary>
+            public string Name { get; set; } = "";
+
+            /// <summary>Der Beitrag zur Kapitalwertdifferenz [€].</summary>
+            public double Wert { get; set; }
+
+            /// <summary>
+            /// Die sechs Schritte der Differenz zweier Gliederungen (Stand − Referenz) in der
+            /// Reihenfolge der Gliederung — Investition, Betriebskosten, Energiekosten, Erlöse,
+            /// Ersatzbeschaffungen, Restwert; dieselben Zahlen wie die Differenzspalte der Seite
+            /// (<see cref="Zahlungsgliederung.Differenz"/>). Leer, wenn eine Seite fehlt.
+            /// </summary>
+            public static List<Brueckenschritt> Aus(Zahlungsgliederung stand, Zahlungsgliederung referenz)
+            {
+                var liste = new List<Brueckenschritt>();
+                Zahlungsgliederung d = Zahlungsgliederung.Differenz(stand, referenz);
+                if (d == null) return liste;
+                foreach (string s in Zahlungsgliederung.Reihenfolge)
+                    liste.Add(new Brueckenschritt { Name = Zahlungsgliederung.Titel(s), Wert = d.Bestandteil(s).Barwert });
+                return liste;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U41) — die Texte des Brückenbilds. Die Vorgaben sind der deutsche Wortlaut
+        /// (die ChartProben hängen so nicht an der Sprache des Rechners);
+        /// <see cref="AusRessourcen"/> liest die Oberflächensprache. Unterzeile und Fuß nennen
+        /// Stand, Referenz, Szenario, Zins und Zeitraum — der Aufrufer bildet sie.
+        /// </summary>
+        public sealed class BrueckenTexte
+        {
+            /// <summary>Die Überschrift (<c>WIRT_BR_TITEL</c>); „[€]" hängt das Bild an.</summary>
+            public string Titel { get; set; } = "Von der Investition zur Kapitalwertdifferenz";
+
+            /// <summary>Die Zeile unter der Überschrift (<c>WIRT_BR_UNTER</c>, vom Aufrufer gefüllt).</summary>
+            public string Unterzeile { get; set; } = "";
+
+            /// <summary>Die Zeile unter den Säulen (<c>WIRT_BR_FUSS</c>, vom Aufrufer gefüllt).</summary>
+            public string Fuss { get; set; } = "";
+
+            /// <summary>Der Name der Ergebnissäule (<c>WIRT_BR_ERGEBNIS</c>).</summary>
+            public string Ergebnis { get; set; } = "ΔKW";
+
+            /// <summary>Der Legendeneintrag der roten Säulen (<c>WIRT_BR_LEG_MINDERT</c>).</summary>
+            public string Mindert { get; set; } = "mindert die Differenz";
+
+            /// <summary>Der Legendeneintrag der grünen Säulen (<c>WIRT_BR_LEG_MEHRT</c>).</summary>
+            public string Mehrt { get; set; } = "mehrt die Differenz";
+
+            /// <summary>Der Legendeneintrag der Ergebnissäule (<c>WIRT_BR_LEG_ERGEBNIS</c>).</summary>
+            public string ErgebnisLegende { get; set; } = "Ergebnis";
+
+            /// <summary>Der Leerhinweis ohne zeichenbaren Schritt (<c>WIRT_BR_LEER</c>).</summary>
+            public string Leer { get; set; } = "Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe.";
+
+            /// <summary>Dieselben Texte in der Oberflächensprache (<c>MyResource</c>).</summary>
+            public static BrueckenTexte AusRessourcen(string unterzeile, string fuss)
+            {
+                return new BrueckenTexte
+                {
+                    Titel = MyResource.Resource.WIRT_BR_TITEL,
+                    Unterzeile = unterzeile ?? "",
+                    Fuss = fuss ?? "",
+                    Ergebnis = MyResource.Resource.WIRT_BR_ERGEBNIS,
+                    Mindert = MyResource.Resource.WIRT_BR_LEG_MINDERT,
+                    Mehrt = MyResource.Resource.WIRT_BR_LEG_MEHRT,
+                    ErgebnisLegende = MyResource.Resource.WIRT_BR_LEG_ERGEBNIS,
+                    Leer = MyResource.Resource.WIRT_BR_LEER
+                };
+            }
+
+            /// <summary>
+            /// Die Texte für die Brücke eines Standes gegen die Referenz in einem Szenario —
+            /// Unterzeile („‹Stand› gegenüber ‹Referenz› · Barwerte · Szenario ‹S›") und Fuß
+            /// (Referenz, Szenario, Zins, Zeitraum der Gliederung) aus <c>MyResource</c>. Seite
+            /// und Wortbericht bilden sie hier, damit beide dasselbe sagen.
+            /// </summary>
+            public static BrueckenTexte Fuer(string stand, string referenz, string szenario,
+                                             Zahlungsgliederung gliederung, CultureInfo kultur)
+            {
+                if (kultur == null) kultur = CultureInfo.CurrentCulture;
+                string unterzeile = string.Format(kultur, MyResource.Resource.WIRT_BR_UNTER,
+                                                  stand ?? "", referenz ?? "", szenario ?? "");
+                string fuss = gliederung == null ? ""
+                    : string.Format(kultur, MyResource.Resource.WIRT_BR_FUSS, referenz ?? "", szenario ?? "",
+                                    gliederung.ZinsProzent.ToString("N1", kultur),
+                                    gliederung.Jahre.ToString(CultureInfo.InvariantCulture));
+                return AusRessourcen(unterzeile, fuss);
+            }
+        }
+
+        /// <summary>Die Breite des Brückenbilds [px] — wie Spannenbild und Verlauf.</summary>
+        public const int BRUECKE_BREITE = 1240;
+
+        /// <summary>Die Höhe des Brückenbilds [px] (ohne zeichenbaren Schritt: 200).</summary>
+        public const int BRUECKE_HOEHE = 610;
+
+        /// <summary>Die Beträge der Schritte — mit Vorzeichen („+2.606.605", „−426.922").</summary>
+        private const string BRUECKE_GELD = "+#,##0;−#,##0;0";
+
+        /// <summary>
+        /// ETAPPE E8a — das Brückenbild als PNG (Wortbericht). Siehe
+        /// <see cref="KapitalwertBrueckeModell"/>.
+        /// </summary>
+        public static byte[] KapitalwertBruecke(IReadOnlyList<Brueckenschritt> schritte, BrueckenTexte texte)
+            => SkiaMaler.Png(KapitalwertBrueckeModell(schritte, texte));
+
+        /// <summary>
+        /// ETAPPE E8a (U41, Anwenderentscheid E5b‑4 vom 22.09.2026; Mockup Kategorie 8 „Von der
+        /// Investition zur Kapitalwertdifferenz") — die <b>Brücke</b> als Wasserfall: je
+        /// Bestandteil eine Säule vom Stand vor bis zum Stand nach dem Schritt, rot, wenn er die
+        /// Differenz mindert, grün, wenn er sie mehrt, gestrichelt verbunden auf der Höhe des
+        /// neuen Standes; zuletzt die Ergebnissäule von null bis zur Summe in der Hausfarbe. Die
+        /// Summe der Schritte IST die Kapitalwertdifferenz — das Bild rechnet nichts, es stapelt.
+        ///
+        /// <para><b>Die Achse</b> zählt Euro und schließt die Null immer ein; die Nulllinie ist
+        /// die Referenz und trägt ihre Marke. Die Stufen sind die „schönen" Stufen des
+        /// Spannenbilds (etwa fünf Rasterlinien).</para>
+        ///
+        /// <para><b>Ein reines Pixelbild</b> wie das Spannenbild: keine Zeichenfläche, keine
+        /// Datenreihe. Eine SÄULE ist das Datenelement — Säule und Betrag stehen in der Klammer
+        /// <c>reihe:&lt;Name&gt;</c> und tragen den Betrag am Element. Die Legende schaltet
+        /// nichts (Marke <c>legende</c> ohne Namen).</para>
+        ///
+        /// <para><b>Das Bildmaß:</b> 1240 × 610; ohne zeichenbaren Schritt 1240 × 200 mit dem
+        /// Leerhinweis. Deterministisch: dieselben Schritte, dasselbe Bild.</para>
+        /// </summary>
+        /// <param name="schritte">Die Bestandteile in ihrer Reihenfolge (<see cref="Brueckenschritt.Aus"/>).</param>
+        /// <param name="texte">Überschrift, Unterzeile, Fuß, Legende; <c>null</c> = die Vorgabe.</param>
+        public static Zeichenmodell KapitalwertBrueckeModell(IReadOnlyList<Brueckenschritt> schritte,
+                                                             BrueckenTexte texte)
+        {
+            texte = texte ?? new BrueckenTexte();
+            const int W = BRUECKE_BREITE;
+            string titel = (texte.Titel ?? "") + "  [€]";
+
+            var gueltig = new List<Brueckenschritt>();
+            if (schritte != null)
+                foreach (Brueckenschritt s in schritte)
+                    if (s != null && EndlicherWert(s.Wert).HasValue) gueltig.Add(s);
+
+            if (gueltig.Count == 0)
+            {
+                var leer = Modell(W, 200);
+                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                using (var f = Schrift(18f))
+                {
+                    List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
+                    leer.Markiert("leerhinweis", zl =>
+                    {
+                        for (int i = 0; i < zeilen.Count; i++)
+                            Text(zl, zeilen[i], f, Farbrolle.ACHSE, 110f, 80f + i * (TextHoehe(f) + 6f));
+                    });
+                }
+                return leer;
+            }
+
+            const float links = 150f, rechts = W - 40f, oben = 110f, unten = 470f;
+            var z = Modell(W, BRUECKE_HOEHE);
+            string unterzeile = texte.Unterzeile ?? "";
+            z.Markiert("titel", zt =>
+            {
+                Titel(zt, titel, W);
+                using (var f = Schrift(15f))
+                    Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
+            });
+
+            // Die Treppe: je Schritt der Stand davor; die Skala schließt Null und jeden Stand ein.
+            var davor = new double[gueltig.Count];
+            double stand = 0.0, lo = 0.0, hi = 0.0;
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                davor[i] = stand;
+                stand += gueltig[i].Wert;
+                lo = Math.Min(lo, stand);
+                hi = Math.Max(hi, stand);
+            }
+            double summe = stand;
+            SchoeneStufen(ref lo, ref hi, out double schritt);
+            float Y(double w) => unten - (float)((w - lo) / (hi - lo)) * (unten - oben);
+
+            // Raster und Beschriftung der Euro-Achse.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            int stufen = (int)Math.Round((hi - lo) / schritt);
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (int k = 0; k <= stufen; k++)
+                    {
+                        double wert = lo + k * schritt;
+                        if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
+                        float y = Y(wert);
+                        zy.Linie(links, y, rechts, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
+                    }
+            });
+            float y0 = Y(0.0);
+            z.Markiert("nulllinie", zn => zn.Linie(links, y0, rechts, y0, Stift(Farbrolle.ACHSE, 2f)));
+
+            int n = gueltig.Count + 1;
+            float platz = (rechts - links) / n;
+            float breite = platz * 0.62f;
+            var verbinder = Stift(Farbrolle.ACHSE, 1f, new Strichmuster(4f, 3f));
+
+            using (var wf = Schrift(15f))
+            using (var ef = Schrift(16f, fett: true))
+            {
+                for (int i = 0; i < gueltig.Count; i++)
+                {
+                    Brueckenschritt s = gueltig[i];
+                    double a = davor[i], b = a + s.Wert;
+                    float x = links + i * platz + (platz - breite) / 2f;
+                    float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
+                    Farbrolle rolle = s.Wert < 0.0 ? Farbrolle.RASTER_SCHLECHT : Farbrolle.RASTER_GUT;
+                    string betrag = s.Wert.ToString(BRUECKE_GELD, DE);
+                    string name = s.Name ?? "";
+                    z.Markiert("reihe:" + name, name + ": " + betrag + " €", zr =>
+                    {
+                        zr.Rechteck(x, yo, breite, Math.Max(yu - yo, 1f), null, Flaeche(rolle));
+                        float bb = wf.MeasureText(betrag);
+                        Text(zr, betrag, wf, Farbrolle.ACHSE, x + (breite - bb) / 2f, yo - 6f - TextHoehe(wf));
+                    });
+
+                    // Die Verbindung zur nächsten Säule, auf der Höhe des neuen Standes.
+                    float yb = Y(b);
+                    z.Linie(x + breite, yb, x + platz, yb, verbinder);
+                }
+
+                // Die Ergebnissäule: von null bis zur Summe, in der Hausfarbe.
+                float xe = links + gueltig.Count * platz + (platz - breite) / 2f;
+                float yeo = Y(Math.Max(0.0, summe)), yeu = Y(Math.Min(0.0, summe));
+                string ergebnis = summe.ToString("#,##0;−#,##0;0", DE);
+                string ergName = texte.Ergebnis ?? "";
+                z.Markiert("reihe:" + ergName, ergName + ": " + ergebnis + " €", zr =>
+                {
+                    zr.Rechteck(xe, yeo, breite, Math.Max(yeu - yeo, 1f), null, Flaeche(Farbrolle.STAMM));
+                    float eb = ef.MeasureText(ergebnis);
+                    Text(zr, ergebnis, ef, Farbrolle.STAMM, xe + (breite - eb) / 2f, yeo - 6f - TextHoehe(ef));
+                });
+            }
+
+            // Die Namen unter den Säulen (höchstens zwei Zeilen) und der Fuß.
+            string fuss = texte.Fuss ?? "";
+            string ergebnisname = texte.Ergebnis ?? "";
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                using (var ff = Schrift(15f, fett: true))
+                {
+                    for (int i = 0; i <= gueltig.Count; i++)
+                    {
+                        bool letzte = i == gueltig.Count;
+                        Schriftmass fs = letzte ? ff : f;
+                        List<string> zeilen = Umbruchzeilen(letzte ? ergebnisname : (gueltig[i].Name ?? ""),
+                                                            fs, platz - 8f, 2);
+                        float mitte = links + i * platz + platz / 2f;
+                        for (int k = 0; k < zeilen.Count; k++)
+                            Text(zx, zeilen[k], fs, letzte ? Farbrolle.TEXT : Farbrolle.ACHSE,
+                                 mitte - fs.MeasureText(zeilen[k]) / 2f, unten + 10f + k * (TextHoehe(fs) + 2f));
+                    }
+                    Text(zx, fuss, f, Farbrolle.ACHSE, links, unten + 66f);
+                }
+            });
+
+            // Die Legende: mindert, mehrt, Ergebnis — sie schaltet nichts.
+            float ly = unten + 100f;
+            using (var f = Schrift(16f))
+            {
+                var eintraege = new[]
+                {
+                    (Farbrolle.RASTER_SCHLECHT, texte.Mindert ?? ""),
+                    (Farbrolle.RASTER_GUT, texte.Mehrt ?? ""),
+                    (Farbrolle.STAMM, texte.ErgebnisLegende ?? "")
+                };
+                z.Markiert("legende", zl =>
+                {
+                    float ex = links;
+                    foreach ((Farbrolle rolle, string text) in eintraege)
+                    {
+                        zl.Rechteck(ex, ly + 4f, 26f, 14f, null, Flaeche(rolle));
+                        Text(zl, text, f, Farbrolle.TEXT, ex + 34f, ly + 1f);
+                        ex += 34f + f.MeasureText(text) + 32f;
+                    }
+                });
+            }
+            return z;
+        }
+
         /// <summary>
         /// „Schöne" Stufen für eine Wertachse mit etwa fünf Rasterlinien — derselbe Weg wie
         /// in <see cref="VerlaufAchsen"/>: Schritt 1, 2, 2,5, 5 oder 10 mal einer

@@ -1243,6 +1243,7 @@
         _stand.Ansicht.Bestandteile = neu.Bestandteile ?? new ErgebnisMatrix();
         _stand.Ansicht.BestandteileTitel = neu.BestandteileTitel ?? "";
         _stand.Ansicht.BestandteileUnterzeile = neu.BestandteileUnterzeile ?? "";
+        _stand.Ansicht.Bruecke = neu.Bruecke;               // U41: dasselbe Szenario
     }
 
     // =====================================================================
@@ -1497,6 +1498,16 @@
         else
         {
             <Herleitungszeile Text="@Texte.GliederungNichtGerechnet" />
+        }
+        @* ETAPPE E8a (U41): das BRUECKENBILD unter der Gliederung - dieselben Schritte wie
+           die Differenzspalte, die Ergebnissaeule ist die Kapitalwertdifferenz. Ein reines
+           Pixelbild wie das Spannenbild: ohne Zoom, die Legende schaltet nichts. *@
+        @if (_stand.Ansicht.Bruecke is not null)
+        {
+            <div class="epos-wirt-bruecke-teil">
+                <DiagrammSvg Modell="@_stand.Ansicht.Bruecke" Kennung="kapitalwert-bruecke"
+                             Bezeichnung="@Texte.BrueckeBild" OhneZoom="true" LegendeSchaltbar="false" />
+            </div>
         }
         @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
         {

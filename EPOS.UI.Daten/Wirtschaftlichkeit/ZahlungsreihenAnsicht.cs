@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using EPOS.UI.Seiten.Berichte;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -9,7 +10,9 @@ namespace WindowsFormsApplication1
     /// ETAPPE E8a (Konzept Wirtschaftlichkeit § 2.11.4 V‑C, Mockup Kategorie 8) — die
     /// <b>Tafeln der Zahlungsreihen</b> der Wirtschaftlichkeitsseite, fertig formatiert aus
     /// den Gliederungen des Kerns (<see cref="Zahlungsgliederungen"/>): ValERI-Block 2
-    /// „Zahlungsreihen" je Stand und Szenario.
+    /// „Zahlungsreihen" je Stand und Szenario, die Gliederung des Kapitalwerts mit
+    /// Nominalsumme und Differenzspalte (U46), das Brückenbild (U41) und die Tafel „Was
+    /// daraus im Lauf wird" (U47).
     ///
     /// <para><b>Gerechnet wird hier nichts.</b> Jede Zahl ist ein Bestandteil, ein Barwert
     /// oder eine Nominalsumme der Gliederung — die Hülle ordnet und formatiert nur, die
@@ -144,6 +147,24 @@ namespace WindowsFormsApplication1
             tafel.Spalten = spalten;
             tafel.Zeilen = zeilen;
             return tafel;
+        }
+
+        /// <summary>
+        /// U41 (Mockup „Von der Investition zur Kapitalwertdifferenz"): das <b>Brückenbild</b>
+        /// der Leitversion gegen die Referenz im gezeigten Szenario — dieselben Schritte wie die
+        /// Differenzspalte der Gliederung, gezeichnet vom Renderer des Kerns. <c>null</c> ohne
+        /// Leitversion, wenn sie die Referenz ist, oder wenn eine der beiden Gliederungen fehlt.
+        /// </summary>
+        internal static Zeichenmodell Bruecke(Zahlungsgliederungen satz, string szenario, int leitversion,
+                                              int idReferenz, IList<KeyValuePair<int, string>> staende,
+                                              string szenarioname, CultureInfo kultur)
+        {
+            if (satz == null || staende == null || leitversion == 0 || leitversion == idReferenz) return null;
+            Zahlungsgliederung stand = satz.Von(leitversion, szenario), referenz = satz.Von(idReferenz, szenario);
+            if (stand == null || referenz == null) return null;
+            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer(
+                Name(staende, leitversion), Name(staende, idReferenz), szenarioname, stand, kultur);
+            return ChartRenderer.KapitalwertBrueckeModell(ChartRenderer.Brueckenschritt.Aus(stand, referenz), texte);
         }
 
         /// <summary>

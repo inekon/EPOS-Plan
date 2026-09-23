@@ -16617,6 +16617,30 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_LW_KEINE" xml:space="preserve">
     <value>keine</value>
   </data>
+  <data name="WIRT_BR_TITEL" xml:space="preserve">
+    <value>Von der Investition zur Kapitalwertdifferenz</value>
+  </data>
+  <data name="WIRT_BR_UNTER" xml:space="preserve">
+    <value>{0} gegenüber {1} · Barwerte · Szenario {2}</value>
+  </data>
+  <data name="WIRT_BR_FUSS" xml:space="preserve">
+    <value>Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a</value>
+  </data>
+  <data name="WIRT_BR_ERGEBNIS" xml:space="preserve">
+    <value>ΔKW</value>
+  </data>
+  <data name="WIRT_BR_LEG_MINDERT" xml:space="preserve">
+    <value>mindert die Differenz</value>
+  </data>
+  <data name="WIRT_BR_LEG_MEHRT" xml:space="preserve">
+    <value>mehrt die Differenz</value>
+  </data>
+  <data name="WIRT_BR_LEG_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="WIRT_BR_LEER" xml:space="preserve">
+    <value>Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe.</value>
+  </data>
   <data name="WIRT_FUSS_DREI" xml:space="preserve">
     <value>Drei Szenarien gerechnet</value>
   </data>

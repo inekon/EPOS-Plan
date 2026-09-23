@@ -440,6 +440,83 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  (4b) U41 — das Brückenbild
+        // =====================================================================
+
+        /// <summary>
+        /// U41: <b>Die Brücke stapelt die Differenzspalte</b> — sechs Schritte in der
+        /// Reihenfolge der Gliederung mit den Barwertdifferenzen, die Ergebnissäule ist ihre
+        /// Summe, die Kapitalwertdifferenz. Das Bild ist ein reines Pixelbild mit festem Maß,
+        /// deterministisch; jede Säule nennt ihren Betrag am Element.
+        /// </summary>
+        [Fact]
+        public void Die_Bruecke_stapelt_die_Differenzspalte()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            Zahlungsgliederung v = satz.Von(901, ERWARTET), s = satz.Von(900, ERWARTET);
+
+            List<ChartRenderer.Brueckenschritt> schritte = ChartRenderer.Brueckenschritt.Aus(v, s);
+
+            Zahlungsgliederung d = Zahlungsgliederung.Differenz(v, s);
+            Assert.Equal(Zahlungsgliederung.Reihenfolge.Select(Zahlungsgliederung.Titel), schritte.Select(x => x.Name));
+            Assert.Equal(Zahlungsgliederung.Reihenfolge.Select(k => d.Bestandteil(k).Barwert), schritte.Select(x => x.Wert));
+            Assert.Equal(v.Kapitalwert - s.Kapitalwert, schritte.Sum(x => x.Wert), 6);
+            Assert.Empty(ChartRenderer.Brueckenschritt.Aus(v, null));
+
+            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer("Variante", "Stamm", "Erwartet", v, DE);
+            Assert.Equal("Variante gegenüber Stamm · Barwerte · Szenario Erwartet", texte.Unterzeile);
+            Assert.Equal("Barwerte gegenüber Stamm, Szenario Erwartet — i = 3,0 %, T = 20 a", texte.Fuss);
+            Assert.Equal("Von der Investition zur Kapitalwertdifferenz", texte.Titel);
+
+            WindowsFormsApplication1.Zeichnung.Zeichenmodell m = ChartRenderer.KapitalwertBrueckeModell(schritte, texte);
+            Assert.Equal(ChartRenderer.BRUECKE_BREITE, m.Breite);
+            Assert.Equal(ChartRenderer.BRUECKE_HOEHE, m.Hoehe);
+            Assert.Null(m.Flaeche);
+            Assert.Empty(m.Reihen);
+            Assert.True(m.Gleicht(ChartRenderer.KapitalwertBrueckeModell(schritte, texte)));
+            foreach (ChartRenderer.Brueckenschritt x in schritte)
+                Assert.Contains(m.Befehle, b => b.Marke == "reihe:" + x.Name && b.Wert != null &&
+                                                b.Wert.StartsWith(x.Name + ": ", StringComparison.Ordinal));
+            string ergebnis = (v.Kapitalwert - s.Kapitalwert).ToString("#,##0;−#,##0;0", DE);
+            Assert.Contains(m.Befehle, b => b.Marke == "reihe:ΔKW" && b.Wert == "ΔKW: " + ergebnis + " €");
+            Assert.Contains(m.Befehle, b => b.Marke == "nulllinie");
+            Assert.Contains(m.Befehle, b => b.Marke == "legende");
+
+            // Ohne zeichenbaren Schritt: der Leerhinweis, 1240 × 200.
+            var leer = ChartRenderer.KapitalwertBrueckeModell(
+                new List<ChartRenderer.Brueckenschritt> { new ChartRenderer.Brueckenschritt { Name = "x", Wert = double.NaN } },
+                texte);
+            Assert.Equal(200, leer.Hoehe);
+            Assert.Contains(leer.Befehle, b => b.Marke == "leerhinweis");
+        }
+
+        /// <summary>
+        /// U41 in der Hülle: das Bild der Leitversion gegen die Referenz — keines, wenn die
+        /// Leitversion die Referenz ist, fehlt oder eine Gliederung fehlt.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_baut_die_Bruecke_nur_mit_Leitversion_und_Referenz()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            var staende = new List<KeyValuePair<int, string>>
+            {
+                new KeyValuePair<int, string>(900, "Stamm"), new KeyValuePair<int, string>(901, "Variante")
+            };
+
+            WindowsFormsApplication1.Zeichnung.Zeichenmodell m =
+                ZahlungsreihenAnsicht.Bruecke(satz, ERWARTET, 901, 900, staende, "Erwartet", DE);
+            Assert.NotNull(m);
+            Assert.Contains(m.Befehle, b => b.Marke == "reihe:Energiekosten");
+
+            Assert.Null(ZahlungsreihenAnsicht.Bruecke(satz, ERWARTET, 900, 900, staende, "Erwartet", DE));
+            Assert.Null(ZahlungsreihenAnsicht.Bruecke(satz, ERWARTET, 0, 900, staende, "Erwartet", DE));
+            Assert.Null(ZahlungsreihenAnsicht.Bruecke(satz, ERWARTET, 777, 900, staende, "Erwartet", DE));
+            Assert.Null(ZahlungsreihenAnsicht.Bruecke(null, ERWARTET, 901, 900, staende, "Erwartet", DE));
+        }
+
+        // =====================================================================
         //  (5) U47 — „Was daraus im Lauf wird"
         // =====================================================================
 

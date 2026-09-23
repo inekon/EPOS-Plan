@@ -75,6 +75,10 @@
          Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Spanne.cs" />
 
+    <!-- Etappe E8a (U41): das Brueckenbild von der Investition zur
+         Kapitalwertdifferenz - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Bruecke.cs" />
+
     <!-- Zapfprofilgenerator Z1: die Vorschaubilder Tagesgang, Wochenprofil und
          Jahresgang - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Zapfprofil.cs" />

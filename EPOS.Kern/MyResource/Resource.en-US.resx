@@ -16628,6 +16628,30 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="WIRT_LW_KEINE" xml:space="preserve">
     <value>none</value>
   </data>
+  <data name="WIRT_BR_TITEL" xml:space="preserve">
+    <value>From the investment to the net present value difference</value>
+  </data>
+  <data name="WIRT_BR_UNTER" xml:space="preserve">
+    <value>{0} compared with {1} · present values · scenario {2}</value>
+  </data>
+  <data name="WIRT_BR_FUSS" xml:space="preserve">
+    <value>Present values compared with {0}, scenario {1} — i = {2} %, T = {3} a</value>
+  </data>
+  <data name="WIRT_BR_ERGEBNIS" xml:space="preserve">
+    <value>ΔNPV</value>
+  </data>
+  <data name="WIRT_BR_LEG_MINDERT" xml:space="preserve">
+    <value>reduces the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_MEHRT" xml:space="preserve">
+    <value>increases the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="WIRT_BR_LEER" xml:space="preserve">
+    <value>No difference to draw — version or reference without a cash flow series.</value>
+  </data>
   <data name="WIRT_FUSS_DREI" xml:space="preserve">
     <value>Three scenarios calculated</value>
   </data>

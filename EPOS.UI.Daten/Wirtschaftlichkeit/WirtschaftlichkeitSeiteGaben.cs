@@ -824,13 +824,22 @@ namespace WindowsFormsApplication1
             // steht unter der Szenario-Klappliste und folgt ihr (SzenarioTeileUebernehmen).
             ansicht.Bestandteile = ZahlungsreihenAnsicht.Bestandteile(gliederungen, szenario, staendeSpalten,
                                                                       idReferenz, ansicht.Leitversion, kultur);
+            string szenarioname = SzenarioAnzeige(Math.Max(0, Array.IndexOf(SZENARIEN, szenario)));
             if (ansicht.Bestandteile.Zeilen.Count > 0)
             {
-                ansicht.BestandteileTitel = string.Format(kultur, MyResource.Resource.WIRT_GL_TITEL,
-                    SzenarioAnzeige(Math.Max(0, Array.IndexOf(SZENARIEN, szenario))));
+                ansicht.BestandteileTitel = string.Format(kultur, MyResource.Resource.WIRT_GL_TITEL, szenarioname);
                 ansicht.BestandteileUnterzeile = ZahlungsreihenAnsicht.Unterzeile(gliederungen, szenario,
                                                                                   staendeSpalten, kultur);
             }
+
+            // ETAPPE E8a (U41): das Brückenbild — dieselben Schritte wie die Differenzspalte,
+            // gezeichnet vom Renderer des Kerns; es folgt wie sie der Szenario-Klappliste.
+            try
+            {
+                ansicht.Bruecke = ZahlungsreihenAnsicht.Bruecke(gliederungen, szenario, ansicht.Leitversion,
+                                                                idReferenz, staendeSpalten, szenarioname, kultur);
+            }
+            catch { ansicht.Bruecke = null; }
 
             // ETAPPE E8a (U47): „Was daraus im Lauf wird" — die drei Szenarioläufe der
             // Bandbreite, ihre Wirkung auf die Leitversion.

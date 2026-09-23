@@ -98,6 +98,9 @@ namespace EPOS.Kern.Tests
         ///
         /// <para>Die Auslegung (Stufe Z2) brachte <c>Summenlinie</c> dazu — Summenlinie des
         /// Bedarfstags, Wertepaarkurve und maßgebende Woche der Stundenbilanz.</para>
+        ///
+        /// <para>ETAPPE E8a der Wirtschaftlichkeit brachte <c>KapitalwertBruecke</c> dazu —
+        /// das Brückenbild von der Investition zur Kapitalwertdifferenz (U41).</para>
         /// </summary>
         [Fact]
         public void JedeZeichenmethodeGibtIhrModellAnDenMaler()
@@ -105,7 +108,7 @@ namespace EPOS.Kern.Tests
             string text = RendererQuelle();
 
             int bildmethoden = Regex.Matches(text, @"public static byte\[\] ").Count;
-            Assert.Equal(31, bildmethoden);
+            Assert.Equal(32, bildmethoden);
 
             // Kein Bild entsteht mehr auf einer eigenen Flaeche; jedes geht durch
             // SkiaMaler.Png - auch die vier gemeinsamen Rumpfmethoden.

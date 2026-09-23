@@ -373,6 +373,15 @@ public sealed class ErgebnisAnsicht
     public string BestandteileUnterzeile { get; set; } = "";
 
     /// <summary>
+    /// ETAPPE E8a (U41, Mockup „Von der Investition zur Kapitalwertdifferenz"): das
+    /// <b>Brückenbild</b> der Leitversion gegen die Referenz im gewählten Szenario — je
+    /// Bestandteil eine Säule, die Ergebnissäule ist die Kapitalwertdifferenz; dieselben Zahlen
+    /// wie die Differenzspalte von <see cref="Bestandteile"/>, gebaut vom Renderer des Kerns.
+    /// <c>null</c> = keine Leitversion oder keine Jahresreihen, dann steht kein Bild.
+    /// </summary>
+    public Zeichenmodell? Bruecke { get; set; }
+
+    /// <summary>
     /// ETAPPE E8a (U47, Mockup „Was ist angenommen?"): die Tafel „Was daraus im Lauf wird" —
     /// je Szenario (Ungünstig · Erwartet · Günstig) die Wirkung auf die Leitversion:
     /// Investition I₀, die Jahre der fälligen Ersatzbeschaffungen, der Restwert am Ende. Die

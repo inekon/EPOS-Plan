@@ -65689,6 +65689,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW ähnelt.
+        /// </summary>
+        public static string WIRT_BR_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a ähnelt.
+        /// </summary>
+        public static string WIRT_BR_FUSS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrt die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MEHRT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindert die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MINDERT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MINDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Investition zur Kapitalwertdifferenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_BR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gegenüber {1} · Barwerte · Szenario {2} ähnelt.
+        /// </summary>
+        public static string WIRT_BR_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Berechnen ähnelt.
         /// </summary>
         public static string WIRT_BTN_BERECHNEN {

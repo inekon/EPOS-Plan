@@ -1249,6 +1249,10 @@ namespace ChartProben
             // Mass-, Gegen- und SVG-Proben in Program.Spanne.cs.
             SpannenProben(ziel);
 
+            // ETAPPE E8a (U41) - das Brueckenbild von der Investition zur
+            // Kapitalwertdifferenz: Mass-, Gegen- und SVG-Proben in Program.Bruecke.cs.
+            BrueckenProben(ziel);
+
             // ZAPFPROFILGENERATOR Z1 - die Vorschaubilder Tagesgang, Wochenprofil und Jahresgang:
             // Mass-, Gegen- und SVG-Proben in Program.Zapfprofil.cs.
             ZapfprofilProben(ziel);
