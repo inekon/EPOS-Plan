@@ -11,7 +11,8 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Der portable Zufall</b> (Umsetzungskonzept Zapfprofilgenerator 4.4, ZU8): dieselbe Folge
-    /// auf jeder Plattform — gegen eine feste Erwartungsfolge und gegen die unabhängig in Python
+    /// auf jeder Plattform — gegen den veröffentlichten Prüfvektor von xoshiro256** (Zustand
+    /// {1, 2, 3, 4}), gegen eine feste Erwartungsfolge und gegen die unabhängig in Python
     /// gerechnete Referenz <c>Proben/Zapfprofil/zufall_referenz.csv</c>, Bit für Bit —, dazu die
     /// statistischen Proben der Ziehungen mit Toleranz und die Quelltextprobe „keine transzendente
     /// Funktion in der Ziehung".
@@ -43,6 +44,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0x642E1C7BC266A3A7UL, z.Naechste());
             Assert.Equal(0xB27A48E29A233673UL, z.Naechste());
 
+            // Der veröffentlichte Prüfvektor von xoshiro256**: Zustand {1, 2, 3, 4} unmittelbar (ohne
+            // SplitMix64) — prüft die Umschrift gegen das Verfahren selbst, nicht nur gegen Python.
+            var v = ZapfZufall.AusZustand(1, 2, 3, 4);
+            Assert.Equal(11520UL, v.Naechste());
+            Assert.Equal(0UL, v.Naechste());
+            Assert.Equal(1509978240UL, v.Naechste());
+            Assert.Equal(1215971899390074240UL, v.Naechste());
+
             // Die ganze Referenz, Bit für Bit.
             Dictionary<string, string> r = Referenz();
             int verglichen = 0;
@@ -54,6 +63,8 @@ namespace EPOS.Kern.Tests
                                       ZapfZufall.Realisierungsseed(seed, k));
             ulong basis = ZapfZufall.Realisierungsseed(1, 0);
             for (int i = 0; i < 3; i++) verglichen += Hex(r, "kindseed_" + i, ZapfZufall.Kindseed(basis, i));
+            var pruef = ZapfZufall.AusZustand(1, 2, 3, 4);
+            for (int i = 0; i < 4; i++) verglichen += Hex(r, "xoshiro_zustand_1234_" + i, pruef.Naechste());
             foreach (ulong seed in new[] { 0UL, 1UL, 42UL, ulong.MaxValue })
             {
                 var g = new ZapfZufall(seed);
@@ -222,6 +233,7 @@ namespace EPOS.Kern.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => z.Poisson(double.PositiveInfinity));
             Assert.Throws<ArgumentOutOfRangeException>(() => ZapfZufall.Realisierungsseed(1, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => ZapfZufall.Kindseed(1, -1));
+            Assert.Throws<ArgumentException>(() => ZapfZufall.AusZustand(0, 0, 0, 0));
         }
 
         // =================================================================================

@@ -67,6 +67,26 @@ namespace WindowsFormsApplication1
             if ((_s0 | _s1 | _s2 | _s3) == 0UL) _s0 = SCHRITT;
         }
 
+        private ZapfZufall(ulong s0, ulong s1, ulong s2, ulong s3)
+        {
+            _s0 = s0;
+            _s1 = s1;
+            _s2 = s2;
+            _s3 = s3;
+        }
+
+        /// <summary>
+        /// Ein Generator mit dem Zustand <c>{s0, s1, s2, s3}</c> von xoshiro256** unmittelbar, ohne
+        /// SplitMix64 — für den veröffentlichten Prüfvektor des Verfahrens (Zustand {1, 2, 3, 4}).
+        /// Der Zustand aus vier Nullen ist für xoshiro256** verboten und wird abgelehnt.
+        /// </summary>
+        internal static ZapfZufall AusZustand(ulong s0, ulong s1, ulong s2, ulong s3)
+        {
+            if ((s0 | s1 | s2 | s3) == 0UL)
+                throw new ArgumentException("Der Zustand aus vier Nullen ist für xoshiro256** nicht zulässig.");
+            return new ZapfZufall(s0, s1, s2, s3);
+        }
+
         // =================================================================================
         // Säen
         // =================================================================================

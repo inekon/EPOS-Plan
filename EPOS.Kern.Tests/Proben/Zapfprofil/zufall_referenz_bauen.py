@@ -19,6 +19,12 @@ Beschreibung der Verfahren:
   - Realisierungsseed SplitMix64(SplitMix64(Seed) xor r), Kindseed SplitMix64(Basis xor Index).
 Die Konstanten sind die der Algorithmen, keine Normzahlen.
 
+VEROEFFENTLICHTER PRUEFVEKTOR. Die Umschrift von xoshiro256** wird nicht nur gegen sich selbst
+geprueft: Aus dem Zustand {1, 2, 3, 4} liefert das Verfahren die veroeffentlichten Ausgaben
+11520, 0, 1509978240, 1215971899390074240 (Pruefvektor der Referenzumsetzungen des Verfahrens,
+etwa der Rust-Bibliothek rand_xoshiro). Das Skript rechnet sie nach und bricht ab, wenn die
+Umschrift sie verfehlt; die CSV fuehrt sie als xoshiro_zustand_1234_*.
+
 Der Test EPOS.Kern.Tests/ZapfZufallTests liest die CSV und verlangt BITGLEICHHEIT: jede
 64-Bit-Zahl, jede ganze Zahl und jede Gleitkommazahl (Python-repr, kuerzeste Darstellung, die
 genau diesen Wert zurueckgibt) muss die C#-Ziehung Bit fuer Bit treffen.
@@ -67,7 +73,21 @@ def links(x, k):
     return ((x << k) | (x >> (64 - k))) & MASKE
 
 
+# Veroeffentlichter Pruefvektor von xoshiro256**: Zustand {1, 2, 3, 4}, die ersten vier Ausgaben.
+PRUEFZUSTAND = (1, 2, 3, 4)
+PRUEFVEKTOR = (11520, 0, 1509978240, 1215971899390074240)
+
+
 class Zufall:
+    @classmethod
+    def aus_zustand(cls, s0, s1, s2, s3):
+        """Generator mit dem Zustand von xoshiro256** unmittelbar (ohne SplitMix64)."""
+        if s0 | s1 | s2 | s3 == 0:
+            raise ValueError("Zustand aus vier Nullen")
+        g = cls.__new__(cls)
+        g.s = [s0 & MASKE, s1 & MASKE, s2 & MASKE, s3 & MASKE]
+        return g
+
     def __init__(self, seed):
         zustand = seed & MASKE
         s = []
@@ -152,6 +172,13 @@ def zeilen():
     basis = realisierungsseed(1, 0)
     for i in range(3):
         z.append((f"kindseed_{i}", f"0x{kindseed(basis, i):016X}"))
+    # xoshiro256** - veroeffentlichter Pruefvektor aus dem Zustand {1, 2, 3, 4}.
+    g = Zufall.aus_zustand(*PRUEFZUSTAND)
+    ausgaben = [g.naechste() for _ in range(len(PRUEFVEKTOR))]
+    if tuple(ausgaben) != PRUEFVEKTOR:
+        raise SystemExit(f"Die Umschrift verfehlt den veroeffentlichten Pruefvektor: {ausgaben}")
+    for i, w in enumerate(ausgaben):
+        z.append((f"xoshiro_zustand_1234_{i}", f"0x{w:016X}"))
     # xoshiro256** - Rohfolge je Seed.
     for seed in (0, 1, 42, 0xFFFFFFFFFFFFFFFF):
         g = Zufall(seed)
