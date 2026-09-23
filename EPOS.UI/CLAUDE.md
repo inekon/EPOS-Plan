@@ -128,19 +128,33 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Wahlspalte und 53 px Zeilenhöhe.
 - **Ein Auslieferungssatz trägt nur das KENNZEICHEN:** Baustein `Kennzeichen` (Schloss ohne Wort,
   mit Kurztext und `aria-label`), keine eigene Spalte „Auslieferung" oder „Schreibschutz". Sein
-  Satz ist nur lesbar, „Speichern" ist weich gesperrt mit Grund; ein eigener Satz entsteht über
+  Satz ist nur lesbar, „Speichern" ist weich gesperrt mit Grund — geschrieben wird ein
+  Auslieferungssatz nie, solange das Schloss steht. Ein eigener Satz entsteht über
   `Katalogkopie.Duplizieren` (Kern, alle Spalten außer ID, Bezeichner, `ReadOnly`, `ReadOnly = 0`,
-  eine Transaktion) — nie durch Überschreiben.
+  eine Transaktion) oder, indem der Anwender das Schloss aufhebt.
+- **Das Schloss schaltet der Anwender über die AUSWAHLLEISTE um, nie ein Speicherweg:** Baustein
+  `Schlossumschaltung` baut die Handlung „Schloss aufheben…"/„Schloss setzen…" (zwischen
+  Duplizieren… und Löschen; die Beschriftung folgt der Auswahl, „aufheben" wirkt nur auf die
+  gesperrten Zielzeilen; hart gesperrt bei `NurLesen` und im Lesemodus der Lizenz), die Rückfrage
+  in beiden Richtungen mit Vorgabe „Nein" und die Statuszeile; geschrieben wird über den
+  `Schlossweg` der Hülle (`Schlosswege.Aus(…StammCtrl.SchlossSetzen)`, Kern
+  `Auslieferungskennzeichen`: nur das Kennzeichen des Kopfsatzes, eine Transaktion, kein Wert).
+  Danach liest der Wirt seine Liste neu — Schloss, Lesemodus und Speichern folgen aus der
+  Fokuszeile —, und ein in dieser Sitzung entsperrter Satz trägt im Stammblatt das Band
+  `ADM_SB_ENTSPERRT` (`Stammblatt.Entsperrt`). Esc beendet nicht, solange die Frage steht. Kein
+  KI-Weg für diese Handlung.
 - **Die Fußleiste einer Verwaltung ohne Arbeitsstand ordnet sich Speichern · Verwerfen ·
   Füller/Statuszeile · Neu… · Beenden** (Konzept Knopfleisten); Duplizieren… und Löschen stehen
   nicht mehr in der Fußleiste, sondern in der `Auswahlleiste` (siehe unten). Kreuz und Esc wirken
   wie Beenden, geänderte Felder halten Zeilenwechsel, Neu… und Beenden an.
 - **Zeilenhandlungen stehen in der AUSWAHLLEISTE, nicht in der Fußleiste:** Baustein
   `Auswahlleiste` nennt zuerst, worauf sie wirkt — die Fokuszeile oder „n gewählt" —, bietet
-  Vergleichen, Duplizieren… und Löschen als Daten (Text, Rückruf, kleinste/größte Zeilenzahl,
-  Sperrgrund je Zeile); eine Handlung außerhalb ihrer Zeilenzahl ist weich gesperrt und nennt den
-  Grund, „Auswahl aufheben" nur bei gesetzten Kästchen. Im breiten Fenster steht sie über dem
-  Stammblatt, im schmalen über der Liste.
+  Vergleichen, Duplizieren…, Schloss aufheben…/Schloss setzen… und Löschen als Daten (Text,
+  Rückruf, kleinste/größte Zeilenzahl, Sperrgrund je Zeile, Kurztext); eine Handlung außerhalb
+  ihrer Zeilenzahl ist weich gesperrt und nennt den Grund, „Auswahl aufheben" nur bei gesetzten
+  Kästchen. Eine Beschriftung, die mit der Auswahl wechselt, trägt eine `Breitenvorlage` — der Knopf
+  hält die Breite der längeren, sonst bräche die Leiste anders um. Im breiten Fenster steht sie über
+  dem Stammblatt, im schmalen über der Liste.
 - **Der gewählte Satz steht im STAMMBLATT, nicht mehr im Detailblock:** Baustein `Stammblatt` mit
   Kopf (Name, Herkunft samt Kennzeichen, Kennzahlen), steckbaren `Stammblattgruppe`n (feste
   Gruppen Kenndaten, Kosten, Alle Daten, dazu dialogspezifische wie Kennlinie oder Wochenprofil),

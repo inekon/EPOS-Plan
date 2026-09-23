@@ -421,7 +421,13 @@ sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
    11.09.2026) — siehe den **Befund** unten. `--kataloge readonly` bleibt als
    ausdrücklich wählbarer Schalter: Dann bleibt in den `*_STAMM`-Tabellen nur,
    was `ReadOnly = TRUE` trägt — ausgenommen die `Tab_Tww*_STAMM`, siehe
-   Schritt 3c unten. Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
+   Schritt 3c unten. **Das Kennzeichen geht 1:1 in die Vorlage:** Mit `alle`
+   übernimmt das Werkzeug jede Katalogzeile samt `ReadOnly`, so wie sie in der
+   Quelle steht — auch ein Schloss, das der Anwender in den Verwaltungen gesetzt
+   oder aufgehoben hat („Schloss setzen…/aufheben…“, Entscheid AD-Q15). Was
+   ausgeliefert gesperrt sein soll, wird deshalb in der Quelle gesperrt, bevor
+   die Vorlage entsteht; ein Update überschreibt Katalogsätze beim Anwender nie
+   (6.4). Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
    `Beschreibung`, `Icon` und `ID_Projekt` (auf 0, der Zustand „kein Projekt
    geöffnet", den auch `ProjektCtrl.LoeschenMitVorarbeiten` schreibt). Nötig ist
    das, weil diese Tabelle an keinem Projekt hängt und sonst den Namen des
