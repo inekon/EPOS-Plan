@@ -42,8 +42,12 @@ namespace WindowsFormsApplication1
     /// Die Laufangaben der Auslegung ohne eigene Spalte (N10 (i)): Erzeugerart und Werkstoff des
     /// Übertragers. <c>null</c> = keine Angabe; die Erzeugerart fällt dann auf den Vorschlag des
     /// Anlagenbestands zurück (<see cref="ZapfErzeugerbestand.Vorschlag"/>), der Werkstoff nie.
+    /// Dazu „Stochastisch rechnen" (4.5 b, Stufe Z3): zieht je Topologiegruppe das Ensemble des
+    /// Bedarfstags (<see cref="Auslegungseingang.Stochastisch"/>); Seed, Perzentil und
+    /// Realisierungen kommen aus den Projektgrößen des Stands.
     /// </summary>
-    internal sealed record Auslegungslauf(ZapfErzeugerart? Erzeugerart, ZapfUebertragerwerkstoff? Werkstoff);
+    internal sealed record Auslegungslauf(ZapfErzeugerart? Erzeugerart, ZapfUebertragerwerkstoff? Werkstoff,
+                                          bool Stochastisch = false);
 
     /// <summary>
     /// Das Ergebnis eines Auslegungslaufs samt den Angaben, aus denen er rechnete: Nenninhalte,
@@ -296,7 +300,8 @@ namespace WindowsFormsApplication1
                 Bedarfstage = tage.AsReadOnly(),
                 Nenninhalte = nenn.Liste,
                 Erzeugerart = art,
-                Uebertragerwerkstoff = lauf?.Werkstoff
+                Uebertragerwerkstoff = lauf?.Werkstoff,
+                Stochastisch = lauf?.Stochastisch == true
             };
             Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, katalog, a);
             if (nenn.Hinweis != null)
