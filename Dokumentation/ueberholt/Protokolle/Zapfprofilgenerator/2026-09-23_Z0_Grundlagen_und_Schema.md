@@ -57,7 +57,13 @@ Im Worktree `z0` auf `4ddebed9`:
 
 Jede Postengruppe wurde nach der Umsetzung von einem zweiten Agenten gegengeprüft; nachgebessert
 wurde in eigenen Commits. Gezählt sind die nachgebesserten Befunde mit ihrer Nummer aus der
-Gegenprüfung; eine Schwereeinstufung ist in den Commits nicht festgehalten.
+Gegenprüfung. Schwereverteilung der drei Gegenprüfungen (aus den Workflow-Journalen der
+Orchestrierung): Gruppe P1–P3 zehn Befunde (1 hoch: Schrittnummer 101 doppelt mit e7;
+3 mittel; 6 gering), Gruppe P7/P8/P4 elf Befunde (1 hoch: Dublettendialog löschte benutzte
+Tww-Zeilen; 3 mittel; 7 gering), Gruppe P9–P11 elf Befunde (0 hoch; 4 mittel; 7 gering) —
+zusammen 32 Befunde, 2 hoch, 10 mittel, 20 gering. Beide „hoch" sind behoben (Schritt 102;
+Sperre und Rollback in der Katalogbereinigung); die nicht nachgebesserten Befunde sind
+Prozesshinweise oder vorbestehend (Beidateien der Testdatenbank, ZU18).
 
 | Gruppe | Nachgebessert | Wichtigste |
 |---|---|---|
