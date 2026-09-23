@@ -23935,7 +23935,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen).</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
-    <value>Für die Nutzungsart {0} stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.</value>
+    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.</value>
   </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>die Tabellen des Zapfprofils fehlen in dieser Datenbank.</value>

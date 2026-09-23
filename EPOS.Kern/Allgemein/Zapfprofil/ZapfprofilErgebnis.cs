@@ -11,12 +11,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die genauere Kennung der Ablehnung (<see cref="ZapfprofilEingabeException.Kennung"/>); sonst <c>null</c>.</summary>
         public string Kennung { get; init; }
 
-        /// <summary>Der Wert zur <see cref="Kennung"/> (etwa die Nutzungsart); sonst <c>null</c>.</summary>
-        public string Argument { get; init; }
+        /// <summary>
+        /// Die Werte zur <see cref="Kennung"/>, sprachfrei und getrennt (etwa Bezeichner und
+        /// Katalogversion der Nutzungsart); sonst <c>null</c>.
+        /// </summary>
+        public IReadOnlyList<string> Argumente { get; init; }
 
-        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Kennung und Wert.</summary>
+        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Kennung und Werten.</summary>
         internal static ZapfAblehnung Aus(string zone, ZapfprofilEingabeException ex)
-            => new ZapfAblehnung(zone, ex.Fehler, ex.Message) { Kennung = ex.Kennung, Argument = ex.Argument };
+            => new ZapfAblehnung(zone, ex.Fehler, ex.Message) { Kennung = ex.Kennung, Argumente = ex.Argumente };
     }
 
     /// <summary>

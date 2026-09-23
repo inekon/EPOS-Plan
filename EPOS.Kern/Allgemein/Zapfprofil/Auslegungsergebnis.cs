@@ -39,7 +39,15 @@ namespace WindowsFormsApplication1
     /// empfohlen ja/nein, Text. Die drei Werte stehen nebeneinander, nie zu einer Zahl gemischt.
     /// </summary>
     internal sealed record Auslegungswert(ZapfAuslegungsverfahren Verfahren, Auslegungsstatus Status, double? VolumenL,
-                                          double? LeistungKw, bool Empfohlen, string Text);
+                                          double? LeistungKw, bool Empfohlen, string Text)
+    {
+        /// <summary>
+        /// Die benannte Ablehnung hinter „nicht rechenbar" (etwa fehlende Zapfkategorien) mit
+        /// Kennung und sprachfreien Werten — die Hülle baut daraus den Satz der Oberflächensprache;
+        /// sonst <c>null</c>.
+        /// </summary>
+        public ZapfAblehnung Ablehnung { get; init; }
+    }
 
     /// <summary>
     /// <b>Die Empfehlung einer Topologiegruppe</b> — genau eine: bei Speicher der Punkt der

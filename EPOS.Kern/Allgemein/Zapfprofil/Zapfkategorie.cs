@@ -82,7 +82,8 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Kennung der Ablehnung „keine Kategorien für die Nutzungsart" (Grund
-        /// <see cref="ZapfEingabefehler.StochastikUngueltig"/>); der Wert ist die Nutzungsart.
+        /// <see cref="ZapfEingabefehler.StochastikUngueltig"/>); die Werte sind Bezeichner und
+        /// Katalogversion der Nutzungsart, getrennt (Platzhalter {0} und {1} des Textes).
         /// </summary>
         internal const string KENNUNG_KATEGORIEN_FEHLEN = "STOCHASTIK_KATEGORIEN_FEHLEN";
 
@@ -110,23 +111,21 @@ namespace WindowsFormsApplication1
         /// nicht negativ mit Σ &gt; 0, Kappung positiv, gestutztes Mittel positiv.
         /// </summary>
         internal static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, int idNutzungsart, string zone)
-            => Aus(katalog, idNutzungsart, zone, null);
+            => Aus(katalog, idNutzungsart, zone, null, null);
 
         /// <summary>
         /// Wie <see cref="Aus(IReadOnlyList{Zapfkategorie}, int, string)"/> für die Nutzungsart
         /// <paramref name="art"/> — die Ablehnung ohne Kategorien nennt sie mit Bezeichner und
-        /// Katalogversion statt mit ihrer Id.
+        /// Katalogversion statt mit ihrer Id und trägt beide getrennt als Werte der Kennung.
         /// </summary>
         internal static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, Nutzungsart art, string zone)
         {
             if (art == null) throw new ArgumentNullException(nameof(art));
-            string name = "„" + (art.Name ?? "") + "“"
-                          + (string.IsNullOrEmpty(art.Katalogversion) ? "" : " (Katalogversion " + art.Katalogversion + ")");
-            return Aus(katalog, art.Id, zone, name);
+            return Aus(katalog, art.Id, zone, art.Name ?? "", art.Katalogversion ?? "");
         }
 
         private static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, int idNutzungsart, string zone,
-                                              string nutzungsart)
+                                              string name, string version)
         {
             var eigene = new List<Zapfkategorie>();
             if (katalog != null)
@@ -134,13 +133,17 @@ namespace WindowsFormsApplication1
                     if (k != null && k.IdNutzungsart == idNutzungsart) eigene.Add(k);
             if (eigene.Count == 0)
             {
-                string art = nutzungsart ?? idNutzungsart.ToString(CultureInfo.InvariantCulture);
+                // Der Klartext des Kerns (Protokoll) ist deutsch; die Oberfläche baut den Satz aus
+                // Kennung und den getrennten Werten in ihrer Sprache.
+                string art = name == null
+                    ? idNutzungsart.ToString(CultureInfo.InvariantCulture)
+                    : "„" + name + "“" + (string.IsNullOrEmpty(version) ? "" : " (Katalogversion " + version + ")");
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
                     "Nicht rechenbar — für die Nutzungsart " + art + " der Zone „" + zone
                     + "“ stehen keine Zapfkategorien im Katalog.")
                 {
-                    Kennung = KENNUNG_KATEGORIEN_FEHLEN,
-                    Argument = art
+                    Kennung = name == null ? null : KENNUNG_KATEGORIEN_FEHLEN,
+                    Argumente = name == null ? null : new[] { name, version ?? "" }
                 };
             }
 

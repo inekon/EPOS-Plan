@@ -648,15 +648,19 @@ namespace WindowsFormsApplication1
                     + Auslegungstext.Z(ens.MinutenspitzeKw.Minimum) + "–" + Auslegungstext.Z(ens.MinutenspitzeKw.Maximum) + " kW" + glf + ")"
                     + belastbar);
             }
-            catch (ZapfprofilEingabeException ex) { return PerzentilNichtRechenbar(ex.Message, h); }
-            catch (ParametersatzException ex) { return PerzentilNichtRechenbar(ex.Message, h); }
-            catch (ZapfAuslegungException ex) { return PerzentilNichtRechenbar(ex.Message, h); }
+            // Die benannte Ablehnung des Rechenwegs reist mit Kennung und Werten weiter — nicht nur ihr Satz.
+            catch (ZapfprofilEingabeException ex) { return PerzentilNichtRechenbar(ex.Message, h, ZapfAblehnung.Aus(ex.Zone, ex)); }
+            catch (ParametersatzException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
+            catch (ZapfAuslegungException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
         }
 
-        private static Auslegungswert PerzentilNichtRechenbar(string grund, List<Auslegungshinweis> h)
+        private static Auslegungswert PerzentilNichtRechenbar(string grund, List<Auslegungshinweis> h, ZapfAblehnung ablehnung)
         {
-            h.Add(new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", grund, true));
-            return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, null, false, grund);
+            h.Add(new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", grund, true) { Ablehnung = ablehnung });
+            return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, null, false, grund)
+            {
+                Ablehnung = ablehnung
+            };
         }
 
         /// <summary>

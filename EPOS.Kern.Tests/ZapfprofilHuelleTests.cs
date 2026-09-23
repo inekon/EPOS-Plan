@@ -294,7 +294,7 @@ namespace EPOS.Kern.Tests
             var ablehnung = new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig, "Kernsatz")
             {
                 Kennung = Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN,
-                Argument = "„Probe“ (Katalogversion T1)"
+                Argumente = new[] { "Probe", "T1" }
             };
             ZapfprofilMeldung m = ZapfprofilHuelle.Meldung(ablehnung);
             Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
@@ -303,6 +303,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Kernsatz", m.Klartext);
             string en = Text(m.Kennung, EN);
             Assert.Contains("{0}", en);
+            Assert.Contains("{1}", en);
             Assert.Contains("draw-off categories", en);
 
             // Ohne Kennung bleibt der allgemeine Grund.

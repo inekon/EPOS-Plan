@@ -86,8 +86,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal string Kennung { get; init; }
 
-        /// <summary>Der Wert, den der Text der <see cref="Kennung"/> einsetzt (etwa die Nutzungsart); sonst <c>null</c>.</summary>
-        internal string Argument { get; init; }
+        /// <summary>
+        /// Die Werte, die der Text der <see cref="Kennung"/> in seine Platzhalter {0}, {1}, …
+        /// einsetzt — sprachfrei, je Wert getrennt (etwa Bezeichner und Katalogversion der
+        /// Nutzungsart); sonst <c>null</c>. Den Satz baut die Hülle in der Oberflächensprache.
+        /// </summary>
+        internal IReadOnlyList<string> Argumente { get; init; }
     }
 
     /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>

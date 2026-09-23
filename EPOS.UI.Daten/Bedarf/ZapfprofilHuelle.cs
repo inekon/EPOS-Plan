@@ -910,22 +910,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund. Trägt
         /// die Ablehnung eine genauere Kennung (etwa fehlende Zapfkategorien einer Nutzungsart), ist
-        /// der Grund deren Text <c>ZPG_EINGABE_</c> + Kennung mit dem Wert der Ablehnung; fehlt die
+        /// der Grund deren Text <c>ZPG_EINGABE_</c> + Kennung mit den Werten der Ablehnung; fehlt die
         /// Ressource, bleibt der Wortlaut des Kerns.
         /// </summary>
         internal static ZapfprofilMeldung Meldung(ZapfAblehnung a)
         {
             string schluessel = Schluessel(a.Grund);
             string grund = Text_(schluessel, a.Klartext);
-            if (!string.IsNullOrEmpty(a.Kennung))
+            string genauer = GenauerGrund(a, out string kennung);
+            if (genauer != null)
             {
-                string genauer = "ZPG_EINGABE_" + a.Kennung;
-                string muster = Text_(genauer, null);
-                if (muster != null)
-                {
-                    schluessel = genauer;
-                    grund = Format(muster, a.Argument ?? "");
-                }
+                schluessel = kennung;
+                grund = genauer;
             }
             string text = string.IsNullOrEmpty(a.Zone)
                 ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), grund)
@@ -1160,6 +1156,24 @@ namespace WindowsFormsApplication1
                 sb.Append(char.ToUpperInvariant(c));
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Der Grund einer Ablehnung mit genauerer Kennung in der Oberflächensprache: der Text
+        /// <c>ZPG_EINGABE_</c> + Kennung, seine Platzhalter {0}, {1}, … aus den getrennten Werten der
+        /// Ablehnung (etwa Bezeichner und Katalogversion der Nutzungsart); <c>null</c> ohne Kennung
+        /// oder ohne Ressource — dann gilt der Wortlaut des Kerns.
+        /// </summary>
+        internal static string GenauerGrund(ZapfAblehnung a, out string schluessel)
+        {
+            schluessel = null;
+            if (a == null || string.IsNullOrEmpty(a.Kennung)) return null;
+            string genauer = "ZPG_EINGABE_" + a.Kennung;
+            string muster = Text_(genauer, null);
+            if (muster == null) return null;
+            schluessel = genauer;
+            object[] werte = (a.Argumente ?? new string[0]).Select(w => (object)(w ?? "")).ToArray();
+            return Format(muster, werte);
         }
 
         private static string Format(string muster, params object[] werte)

@@ -430,8 +430,19 @@ namespace WindowsFormsApplication1
             VolumenL = w.VolumenL,
             LeistungKw = w.LeistungKw,
             Empfohlen = w.Empfohlen,
-            Text = w.Text ?? ""
+            Text = AblehnungsSatz(w.Ablehnung) ?? w.Text ?? ""
         };
+
+        /// <summary>
+        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone,
+        /// wo sie eine trägt; <c>null</c> ohne Kennung oder ohne Ressource (dann gilt der Satz des Kerns).
+        /// </summary>
+        private static string AblehnungsSatz(ZapfAblehnung a)
+        {
+            string grund = GenauerGrund(a, out _);
+            if (grund == null) return null;
+            return string.IsNullOrEmpty(a.Zone) ? grund : Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), a.Zone, grund);
+        }
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
@@ -491,7 +502,7 @@ namespace WindowsFormsApplication1
         {
             string kennung = AuslegungsHinweisSchluessel(h.Code);
             string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
-            return new ZapfprofilWarnDaten(kennung, titel, h.Text ?? "",
+            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? h.Text ?? "",
                                            h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
         }
 

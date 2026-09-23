@@ -75393,7 +75393,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart {0} stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch. ähnelt.
         /// </summary>
         public static string ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
             get {

@@ -517,6 +517,19 @@ namespace EPOS.Kern.Tests
             Assert.Contains(TESTNUTZUNG, g.Perzentil.Text);
             Assert.Contains(g.Warnliste, w => w.Kennung == "ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR");
             Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.Grund);
+
+            // Unter en-US dieselbe Ablehnung ganz englisch: Kennung, Bezeichner und Katalogversion
+            // reisen durch das Auslegungsensemble, nicht nur der deutsche Satz des Kerns.
+            CultureInfo.CurrentUICulture = EN;
+            ZapfprofilAuslegungsgruppeDaten e = Assert.Single(ZapfprofilHuelle.Auslegung(PROJEKT, Zonen(), a, null, ZapfprofilStufe.Einfach).Gruppen);
+            Assert.Equal(ZapfprofilKartenstand.NichtRechenbar, e.Perzentil.Stand);
+            Assert.Contains("the usage type “" + TESTNUTZUNG + "” (catalogue version " + VERSION + ")", e.Perzentil.Text);
+            ZapfprofilWarnDaten w = Assert.Single(e.Warnliste, x => x.Kennung == "ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR");
+            foreach (string text in new[] { e.Perzentil.Text, w.Text })
+            {
+                Assert.DoesNotContain("Katalogversion", text);
+                Assert.DoesNotContain("Zapfkategorien", text);
+            }
         }
 
         // =================================================================================

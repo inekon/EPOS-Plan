@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -87,12 +88,49 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex.Fehler);
             Assert.Equal("Zone A", ex.Zone);
             Assert.Equal(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ex.Kennung);
-            Assert.Equal("„Nutzung ohne Kategorien“ (Katalogversion T1)", ex.Argument);
+            // Name und Katalogversion reisen getrennt und sprachfrei — den Satz baut die Hülle.
+            Assert.Equal(new[] { "Nutzung ohne Kategorien", "T1" }, ex.Argumente);
             Assert.Contains("für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) der Zone „Zone A“", ex.Message);
 
             ZapfAblehnung ab = ZapfAblehnung.Aus("Zone A", ex);
             Assert.Equal(ex.Kennung, ab.Kennung);
-            Assert.Equal(ex.Argument, ab.Argument);
+            Assert.Equal(ex.Argumente, ab.Argumente);
+        }
+
+        /// <summary>
+        /// Die Ablehnung „keine Zapfkategorien" steht in BEIDEN Sprachen ganz in der Oberflächensprache:
+        /// Die Hülle setzt Bezeichner und Katalogversion in die Platzhalter des Textes — in der
+        /// Bilanzmeldung wie im Eintrag der Warnliste der Auslegung, der die Ablehnung mitträgt. Unter
+        /// en-US steht kein deutsches Wort des Kerns im Satz.
+        /// </summary>
+        [Fact]
+        public void Die_Ablehnung_ohne_Kategorien_steht_in_beiden_Sprachen()
+        {
+            using var kultur = new Kulturvorrichtung();
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int a = TwwTestdatenbank.NutzungsartAnlegen("Nutzung ohne Kategorien", "T1", satz);
+            Nutzungsart art = TwwNutzungsartCtrl.Lies(a);
+            ZapfprofilEingabeException ex = Assert.Throws<ZapfprofilEingabeException>(
+                () => Zapfkategoriensatz.Aus(ZapfprofilCtrl.Zapfkategorien(new[] { a }), art, "Zone A"));
+            ZapfAblehnung ab = ZapfAblehnung.Aus("Zone A", ex);
+            var hinweis = new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", ex.Message, true) { Ablehnung = ab };
+
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+            Assert.Equal("Zone „Zone A“ trägt 0: Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) stehen keine "
+                         + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", ZapfprofilHuelle.Meldung(ab).Text);
+            Assert.Equal("Zone „Zone A“: Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) stehen keine "
+                         + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", ZapfprofilHuelle.Warnung(hinweis).Text);
+
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            string bilanz = ZapfprofilHuelle.Meldung(ab).Text, auslegung = ZapfprofilHuelle.Warnung(hinweis).Text;
+            foreach (string text in new[] { bilanz, auslegung })
+            {
+                Assert.Contains("the usage type “Nutzung ohne Kategorien” (catalogue version T1)", text);
+                Assert.DoesNotContain("Katalogversion", text);
+                Assert.DoesNotContain("Zapfkategorien", text);
+            }
+            Assert.Equal("ZPG_EINGABE_" + Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ZapfprofilHuelle.Meldung(ab).Kennung);
         }
 
         /// <summary>

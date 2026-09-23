@@ -145,11 +145,12 @@ namespace EPOS.Kern.Tests
             {
                 Assert.Equal(ZapfEingabefehler.StochastikUngueltig, a.Grund);
                 Assert.Contains("keine Zapfkategorien", a.Klartext);
-                // Die Ablehnung nennt die Nutzungsart der Zone (Bezeichner), die Hülle übersetzt die Kennung.
+                // Die Ablehnung nennt die Nutzungsart der Zone — Bezeichner und Katalogversion getrennt,
+                // sprachfrei —; die Hülle übersetzt die Kennung.
                 Assert.Equal(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, a.Kennung);
                 Nutzungsart art = a.Zone == "Wohnhaus" ? Wohnen : Buero;
-                Assert.StartsWith("„" + art.Name + "“", a.Argument);
-                Assert.Contains(a.Argument, a.Klartext);
+                Assert.Equal(new[] { art.Name, art.Katalogversion ?? "" }, a.Argumente);
+                Assert.Contains("„" + art.Name + "“", a.Klartext);
             });
             Assert.Equal(0.0, s.Zapfung.JahressummeKwh);
             Assert.All(s.JeZone, z => Assert.True(z.Abgelehnt));
