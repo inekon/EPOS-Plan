@@ -296,7 +296,9 @@ if (modus == ProfilQuellmodus.Projektrechnung
 ```
 
 Die Bilanzreihe gibt ihre Stunden nur lesend heraus; die Weiche übergibt deshalb Kopien
-(`KopieStundenKwh`, N7).
+(`KopieStundenKwh`, N7). Der Codeblock gibt die Wirkung wieder: Umgesetzt liest die Weiche den
+gespeicherten Stand (`ZapfprofilCtrl.Lies`) und rechnet ihn über `ZapfprofilCtrl.Rechnen` in
+`SimulationWaermebedarf.BrauchwasserAusGenerator` — derselben Methode, die die Vorschau ruft (N8).
 
 **Regeln der Weiche:**
 
@@ -305,9 +307,11 @@ Die Bilanzreihe gibt ihre Stunden nur lesend heraus; die Weiche übergibt deshal
 - **Vorgabe Bestandsweg.** Ohne Zeile in `Tab_TwwProjekt` oder bei `Weg = 'BESTAND'` läuft der
   heutige Code Zeichen für Zeichen. Damit ändert keine Stufe ein Referenzprojekt.
 - **Kein stiller Rückfall.** Fehlt dem Generator eine Eingabe (Zone ohne Bezugsmenge, Nutzungsart
-  gelöscht, Parameter fehlt), meldet `ZapfprofilCtrl.Eingang` den Grund über
+  gelöscht, Parameter fehlt), meldet der Generatorweg (`BrauchwasserAusGenerator`, N8) den Grund über
   `SimulationProtokoll.Aktuell.Warnung` und die Zone trägt 0 — derselbe Ausgang wie der Bestandsweg
-  bei Nullprofil, aber mit benannter Zone.
+  bei Nullprofil, aber mit benannter Zone. Kann der Generator für das Projekt gar nicht rechnen
+  (Tww-Tabellen oder Katalogversion fehlen, unerwarteter Fehler), bricht der Lauf benannt ab, und die
+  Bedarfsfelder stehen auf 0 (N8).
 - **Kalender und Probe.** Die Wochenendkennzeichen liegen schon im Feld `WE` (`:21`), gefüllt in
   `KlimakalenderLesen` (`:524`); ein neues Feld gibt es nicht. Weil die Reihe vor `:341` auf
   `brauchwasserwerte` liegt, bucht `:342` Zapfung **und** Zirkulation in die Energieprobe. Neue
@@ -606,8 +610,8 @@ Datenbank ohne sie rechnet den Bestandsweg, der Knopf ist benannt gesperrt (ZU9)
 | `IReadOnlyList<Nutzungsart> Katalog()` | Nutzungsarten samt Tagesgangsätzen, eine Abfrage je Tabelle |
 | `Parametersatz Parameter()` | gekapselte Parameter der aktuellen Katalogversion |
 | `ZapfprofilStand Lies(int idProjekt)` | Weg, Zonen, Wohnungstabelle und Projektgrößen für den Dialog |
-| `Zapfprofileingang Eingang(int idProjekt, int wochentagJan1, bool[] we)` | Eingang für den Lauf |
-| `void Speichern(int idProjekt, ZapfprofilStand stand, DbVorgang vorgang)` | im übergebenen `DbVorgang`: Zonen und Wohnungstypen löschen und neu schreiben, `Tab_TwwProjekt` per Upsert, **`Weg` immer**, auch ohne Zonenänderung; idempotent — ein zweites OK wiederholt nichts |
+| `Zapfprofileingang Eingang(int idProjekt, int wochentagJan1, bool[] we)` | Eingang für den Lauf; Überladung mit Arbeitsstand, `Rechnen(idProjekt, stand, wochentagJan1, we)` rechnet ihn mit dem einmal gelesenen Katalog (N8) |
+| `ZapfprofilStand Speichern(int idProjekt, ZapfprofilStand stand, DbVorgang vorgang)` | im übergebenen `DbVorgang` (Überladung ohne: eigener Vorgang): Zonen und Wohnungstypen per Upsert, `Tab_TwwProjekt` per Upsert, **`Weg` immer**, auch ohne Zonenänderung; idempotent — ein zweites OK wiederholt nichts; liefert den Stand mit den Ids der Datenbank; Verweise, Gebäude des Projekts und Wertemengen der Projektgrößen vor dem ersten Schreiben geprüft (N8) |
 | `bool Verfuegbar()` | Tabellen vorhanden (iOS-Seed, 3.2) |
 
 **`EPOS.Kern/Controller/TwwNutzungsartCtrl.cs`** (Muster `BedarfStammCtrl.cs:44`, `TypProfilCtrl.Neu`
@@ -669,7 +673,8 @@ Messwert (S6), Reihenfolge: erst Mengengerüst und Zirkulationsanteil (4.3), dan
 ```
 
 Import- und Katalogwerte mit anderem Temperaturbezug werden **zwingend** über `f_θ` umgerechnet; ein
-Wert ohne Bezugstemperaturen wird nicht angenommen. Eingaben: Zone, Nutzungsart, Wohnungstabelle,
+Wert ohne Bezugstemperaturen wird nicht angenommen. Eingaben: Zone (samt Ferien und Fläche des
+gebundenen Gebäudes, soweit die Zone keine eigenen trägt, N8), Nutzungsart, Wohnungstabelle,
 Parametersatz. Ausgabe: `JahresenergieKwh`, Herkunft je Feld. Vorgabe: Niveau „mittel". Hinweise
 (nicht blockierend): Bedarf außerhalb der Bandbreite des Niveaus; Messwert weicht vom Katalogwert mehr
 ab als die Rückfrageschwelle (Konzept 2.2, Parameter). Tests:
@@ -759,7 +764,8 @@ Die Laufzeitstunden liegen zusammenhängend um die Tagesmitte der Zapfung (Festl
 der Stundensummen der Zapfung in Z1, Beginn `⌊m − t_Lauf/2 + ½⌋`, an den Tagesrand geschoben, eine
 gebrochene Laufzeit belegt die letzte Stunde anteilig); `t_Lauf` folgt dem Rahmen
 nach DVGW W 551 (Parameter). **Vorgabe** ist die Methode Flächenkennwert: `A_N` aus `Zirk_Flaeche_m2`
-(gebäudeweit, mit α), sonst aus Wohnfläche je WE × WE der Wohnzonen oder aus dem gebundenen Gebäude (A8);
+(gebäudeweit, mit α), sonst aus Wohnfläche je WE × WE der Wohnzonen oder aus dem gebundenen Gebäude (A8;
+Gebäudefläche minus die eigenen Flächen seiner Zonen, zu gleichen Teilen auf die übrigen, N8);
 stammt `A_N` aus den Zonen, zählen nur die Zonen in Z1 und α entfällt (N7). Kennwert `k_A` und
 Lage sind Parameter. Fehlt jede Fläche, fällt die Vorgabe auf die Methode Anteil mit dem Parameter
 `a` zurück, mit Hinweis. So liefert schon die Stufe Einfach eine Zirkulation (Lehre 3).
@@ -1431,7 +1437,7 @@ Papier voraussetzt:
 | **ZU14** | Wie kommt der Auslieferungskatalog in Bestandsinstallationen? | Katalogpaket außerhalb des Repositoriums, eingespielt von der Auslieferungsvorlage (neue Installation) bzw. über einen Katalogimport in der Verwaltung (Z4); nie über den Schemaschritt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
 | **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | ersetzen, 23.09.2026 (N6) |
-| **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen | nach Empfehlung, 23.09.2026 (N6) |
+| **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen; Festlegungen der Umsetzung (N8) | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 
 ---
@@ -1749,6 +1755,83 @@ Stellen mit Verweis „(N7)" berichtigt. Er enthält **keinen Entscheid** des An
 | (f) | gebundenes Gebäude (A8) als Fläche über `ZapfprofilCtrl.Eingang` | Agent der Stufe Z1 | Z1, Gruppe 2 |
 | (a) | die Weiche übergibt Kopien der Bilanzreihen | Agent der Stufe Z1 | Z1, Gruppe 2 |
 | (b) | Bezugstemperaturen einer Nutzungsart mit Flächenformel im Katalog auf den Bezug des Verfahrens setzen | Katalogpflege | mit dem Auslieferungskatalog |
+
+### N8 (23.09.2026) — Umsetzungsbefunde Z1, Gruppe 2 (Weiche, Schreibweg, Eingang, Projekttransfer)
+
+**Anlass.** Weiche, Schreib- und Eingangsweg, Vorschau und Inhaltsvergleich im Projektimport (ZU17)
+sind auf dem Zweig `z1` umgesetzt und gegengeprüft; die Befunde der Gegenprüfung sind nachgebessert.
+Wo ein Befund dem Papier widersprach, gilt das Papier. Dieser Nachtrag hält fest, wo die Umsetzung
+vom Papier abweicht oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis
+„(N8)" berichtigt. Er enthält **keinen Entscheid** des Anwenders.
+
+**Befunde und Festlegungen:**
+
+- **(a) Signaturen (2.2, 3.3).** `ZapfprofilCtrl.Speichern` liefert den `ZapfprofilStand` mit den Ids
+  der Datenbank (neue Zonen und Wohnungstypen tragen ihre neue Id) statt `void`; eine Überladung ohne
+  `DbVorgang` schreibt im eigenen Vorgang. Neu sind `ZapfprofilCtrl.Rechnen(idProjekt, stand,
+  wochentagJan1, we)` — Katalog einmal gelesen, dann Eingang und `ZapfprofilRechner.Rechnen` — und die
+  Überladung `Eingang(idProjekt, stand, wochentagJan1, we, katalog)` mit Arbeitsstand. Die Weiche liest
+  den gespeicherten Stand mit `Lies` und rechnet ihn in `SimulationWaermebedarf.BrauchwasserAusGenerator`;
+  dieselbe Methode rechnet die Leiste „monatlicher Verlauf" (`BedarfsVorschauCtrl.ProjektVorschau` mit
+  optionalem Arbeitsstand). Der Codeblock in 2.2 gibt die Wirkung wieder, nicht den Wortlaut.
+- **(b) Weiche: Nullzone und Abbruch (2.2).** Eine abgelehnte Zone (oder Zirkulation) trägt 0, jede
+  Ablehnung steht als Warnung „Zone „…" trägt 0: …" im Protokoll, und der Lauf rechnet die übrigen Zonen
+  weiter; die Vorschau nennt dieselben Zonen in ihrer Meldung. Benannt **abgebrochen** wird nur, wenn der
+  Generator für das Projekt nicht rechnen kann: Tww-Tabellen fehlen, die Parameter tragen keine
+  Katalogversion, oder Lesen, Katalog oder Rechnen scheitern unerwartet. Dann meldet der Kern den Grund
+  als Fehler, `SimulationWaermebedarf.Fehlertext` nennt ihn, Lauf und `SimulationLaufCtrl.Bedarf`
+  brechen ab, und Summen, Summenvektor und Kanäle stehen auf 0. Begründung: Ohne Tabellen oder
+  Parametersatz rechnet keine Zone; ein Lauf, der das ganze Projekt still auf 0 setzte, wäre der
+  Rückfall, den 2.2 ausschließt. Die Projektzusammenfassung der Startseite zeigt dann den Grund statt
+  einer Zahl, die Ergebnisvorabrechnung trägt ihn ins Protokoll.
+- **(c) Gebundenes Gebäude (A8; 4.1, 4.3).** Die Zone übernimmt die Ferien des Gebäudes
+  (`Tab_Gebaeude`, nur mit gesetztem Ferienkennzeichen), wenn sie keine eigenen trägt, und seine Fläche
+  (`Wohnflaeche_gesamt`, sonst `Nutzflaeche`), wenn sie keine eigene trägt; die Gebäudefläche geht dann
+  dem Parameter der Wohnfläche je WE vor, weil sie eine Angabe des Projekts ist. **Gemischte Zonen:**
+  Die Gebäudefläche zählt einmal — die eigenen Flächen der Zonen desselben Gebäudes (Bezugsart Fläche:
+  Bezugsmenge; sonst WE-Zahl × eigene Wohnfläche je WE) gehen ab, der Rest zu gleichen Teilen an die
+  Zonen ohne eigene Fläche; ohne positiven Rest belegt das Gebäude keine Fläche vor, und es gilt N7 (f).
+  Gebunden wird nur ein Gebäude des Projekts: `Speichern` lehnt ein fremdes benannt ab
+  (`GebaeudeFremd`), der Eingang liest nur Gebäude mit `ID_Projekt` des Projekts.
+- **(d) Schreibweg (3.3).** Vor dem ersten Schreiben prüft `Speichern` auch die Projektgrößen gegen
+  ihre Wertemengen (`ProjektUngueltig`): Aufzählungen über ihre Mitglieder, Perzentil und Realisierungen
+  aus Konstanten in `TwwSchema`, aus denen auch die CHECK-Klauseln der DDL entstehen (DDL-Text
+  unverändert). Die Id eines Wohnungstyps einer anderen Zone wird abgelehnt (`WohnungstypUngueltig`),
+  eine unbekannte Id legt eine neue Zeile an.
+- **(e) Inhaltsvergleich im Projektimport (ZU17; 3.2, Kapitel 9).** Festlegungen der Umsetzung:
+  1. Die Provenienzspalten (Quelle, Ausgabe, Version, Herkunftsart je Wertgruppe) gehen **nicht** in
+     den Vergleich ein — sie beschreiben einen Wert, sie sind keiner. Eine Zeile mit gleichen Werten und
+     anderer Provenienz wird der Zielzeile zugeordnet; das Projekt übernimmt deren Provenienz. Die
+     Invariante 2.4 (jede Katalogzeile trägt Provenienz je Wertgruppe) bleibt erfüllt.
+  2. Eine Auslieferungszeile am Ziel gilt als gleich (unveränderliche Version).
+  3. Verglichen werden `EIGEN`- und `IMPORT`-Zeilen, weil beide beim Anwender änderbar sind.
+  4. Eine Nutzungsart kommt auch dann als neue Version, wenn nur ihr Tagesgangsatz abweicht — sie muss
+     auf den Satz des Pakets zeigen.
+  5. Trägt eine frühere Version „(Import n)" denselben Inhalt, wird sie wiederverwendet.
+  6. Kindtabellen und Schlüssel der Tww-Kataloge kommen aus den festen Tabellen des Programms
+     (`TWW_KINDER`, `KATALOG_NATURALKEY`, Primärschlüssel `ID`); das Manifest liefert nur den Namen zum
+     Zuordnen. Ein abweichendes Manifest lehnt der Import benannt ab, bevor er schreibt.
+- **(f) Testnamen (2.4, Kapitel 7).** `ZapfprofilWeicheTests.Die_Energieprobe_zaehlt_Zapfung_und_Zirkulation`
+  steht als eigene Methode; `…Netzverluste_gehen_anteilig_auf_den_Generatorkanal` prüft die
+  Netzverlustverteilung im Generatorweg in % und kWh/a (Anteil des Brauchwasserkanals = Stundenbetrag ×
+  Kanalanteil, Energieprobe ohne Verletzung, Monatssummen ohne Netzverlust). Die Nullzone und der
+  Abbruch (b) stehen in `…Ein_fehlender_Parameter_nennt_die_Zone_und_sie_traegt_null`,
+  `…Ohne_Katalogversion_bricht_der_Lauf_benannt_ab` und `…Ein_unerwarteter_Fehler_bricht_den_Lauf_benannt_ab`.
+  Der Fall in `BedarfsProfileDialogTests` (2.4) kommt mit der Oberfläche.
+- **(g) Nicht in dieser Gruppe, mit Grund.** Die Hülle `BedarfsProfileHuelle` übergibt den Arbeitsstand
+  noch nicht als Delegat und zeigt die Meldung der Vorschau nicht; das ist Oberfläche (Gruppe 3) und
+  heute nicht erreichbar, weil der Weg nur über die Datenbank gesetzt wird. Der Kopf der Testdatenbank
+  steht auf WAL (vorbestehend); jeder Leser legt gitignorierte Beidateien an. An der Datenbank ändert
+  diese Gruppe nichts.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (g) | `BedarfsProfileHuelle`: Arbeitsstand als Delegat (5.2), Meldung der Vorschau anzeigen, Titelzusatz im Zapfprofilweg leer oder „Zapfprofilgenerator", bunit-Fall für eine Ablehnung mit sichtbarem Grund | Agent der Stufe Z1 | Z1, Gruppe 3 |
+| (b) | Abbruchgrund der Wärmerechnung auf der Ergebnisseite sichtbar machen | Agent der Stufe Z1 | Z1, Gruppe 3 |
+| (e) 1 | Frage an den Anwender: Provenienz im Inhaltsvergleich mitvergleichen? Empfehlung: nein, wie umgesetzt | Anwender | vor Z2 |
+| (g) | Journalmodus der Testdatenbank im Skript auf DELETE, eigener LFS-Commit mit byte-gleichem Wiederholungsnachweis | Folgeposten mit ZU18 | außerhalb der Z-Stufen |
 
 ---
 
