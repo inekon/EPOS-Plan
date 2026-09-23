@@ -687,6 +687,10 @@ namespace WindowsFormsApplication1
             t.OptionVorgaberegel = Text_("ZPG_AUS_OPT_VORGABEREGEL", t.OptionVorgaberegel);
             t.OptionStundenprofil = Text_("ZPG_AUS_OPT_STUNDENPROFIL", t.OptionStundenprofil);
             t.OptionDin4708 = Text_("ZPG_AUS_OPT_DIN4708", t.OptionDin4708);
+            t.OptionA100 = Text_("ZPG_AUS_OPT_A100", t.OptionA100);
+            t.GrundA100 = Text_("ZPG_AUS_GRUND_A100", t.GrundA100);
+            t.OptionEcodesign = Text_("ZPG_AUS_OPT_ECODESIGN", t.OptionEcodesign);
+            t.GrundEcodesign = Text_("ZPG_AUS_GRUND_ECODESIGN", t.GrundEcodesign);
             t.OptionKatalogtag = Text_("ZPG_AUS_OPT_KATALOGTAG", t.OptionKatalogtag);
             t.OptionEntwurf = Text_("ZPG_AUS_OPT_ENTWURF", t.OptionEntwurf);
             t.KnopfKonstruieren = Text_("ZPG_AUS_BTN_KONSTRUIEREN", t.KnopfKonstruieren);
@@ -730,6 +734,8 @@ namespace WindowsFormsApplication1
             t.Vergleichspunkt = Text_("ZPG_AUS_VERGLEICHSPUNKT", t.Vergleichspunkt);
             t.ZonenAusserhalb = Text_("ZPG_AUS_ZONEN_AUSSERHALB", t.ZonenAusserhalb);
             t.HinweisWaermepumpe = Text_("ZPG_AUS_HINW_WAERMEPUMPE", t.HinweisWaermepumpe);
+            t.Rohrnetz = Text_("ZPG_AUS_ROHRNETZ", t.Rohrnetz);
+            t.GrundRohrnetz = Text_("ZPG_AUS_GRUND_ROHRNETZ", t.GrundRohrnetz);
             t.StandNichtRechenbar = Text_("ZPG_AUS_STAND_NICHT_RECHENBAR", t.StandNichtRechenbar);
             t.StandAusserhalb = Text_("ZPG_AUS_STAND_AUSSERHALB", t.StandAusserhalb);
             t.Empfehlung = Text_("ZPG_AUS_EMPFEHLUNG", t.Empfehlung);
@@ -771,6 +777,8 @@ namespace WindowsFormsApplication1
             t.Warnliste = Text_("ZPG_AUS_WARNLISTE", t.Warnliste);
             t.WarnlisteUnter = Text_("ZPG_AUS_WARNLISTE_UNTER", t.WarnlisteUnter);
             t.WarnlisteLeer = Text_("ZPG_AUS_WARNLISTE_LEER", t.WarnlisteLeer);
+            t.Konsistenz = Text_("ZPG_AUS_KONSISTENZ", t.Konsistenz);
+            t.GrundKonsistenz = Text_("ZPG_AUS_GRUND_KONSISTENZ", t.GrundKonsistenz);
             t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
             t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
             t.StatusPunkt = Text_("ZPG_AUS_STATUS_PUNKT", t.StatusPunkt);

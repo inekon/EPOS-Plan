@@ -23,8 +23,11 @@
    herbeifuehrt (KonstruktorOeffnen einer Gruppe), nicht nach jedem Abbrechen erneut. Ein Tag
    aus dem Stundenprofil traegt das Warnbanner "Spitzen unterschaetzt" (SpitzenUnterschaetzt).
 
-   BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet") und "An Speicherauslegung
-   uebergeben..." kommen mit spaeteren Stufen: Sie stehen da, weich gesperrt mit Grund.
+   BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet"), der Konsistenzhinweis (braucht
+   das Perzentil), der Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der
+   Entnahmearmaturen fehlt im Datenmodell), die Quellen A100-Referenzprofil (solange der
+   Katalog keine Zeile dieser Art traegt) und Ecodesign-Zapfprofil sowie "An
+   Speicherauslegung uebergeben..." kommen spaeter: Sie stehen da, gesperrt mit Grund.
 
    ENTPRELLT. Jede Eingabe rechnet neu, erst EntprellungMs nach der letzten (0 = sofort,
    bunit). *@
@@ -68,7 +71,7 @@
                 <KindInhalt>
                     <Auswahlfeld Bezeichnung="@Texte.LabelBedarfstag" Eintraege="@Bedarfstagwahl"
                                  Auswahl="@BedarfstagAuswahl" AuswahlChanged="BedarfstagWaehlen"
-                                 GesperrteEintraege="@GesperrteTage" GesperrtHinweis="@SperrhinweisTage" />
+                                 GesperrteEintraege="@GesperrteTage" GesperrtHinweise="@Sperrgruende" />
                     <Herleitungszeile Text="@BedarfstagHerleitung" />
                     @if (Konstruieren is not null)
                     {
@@ -191,6 +194,7 @@
                             {
                                 <p class="epos-leisezeile">@Format(Texte.ZonenAusserhalb, string.Join(", ", g.ZonenAusserhalb))</p>
                             }
+                            <p class="epos-leisezeile epos-zapfausl-rohrnetz" aria-disabled="true" title="@Texte.GrundRohrnetz">@Texte.Rohrnetz — @Texte.GrundRohrnetz</p>
                         </section>
                     </div>
 
@@ -305,6 +309,10 @@
                                 }
                             </ul>
                         }
+                        @if (g.Speicher)
+                        {
+                            <p class="epos-leisezeile epos-zapfausl-konsistenz" aria-disabled="true" title="@Texte.GrundKonsistenz">@Texte.Konsistenz — @Texte.GrundKonsistenz</p>
+                        }
                     </section>
                 </KindInhalt>
             </Gruppenkopf>
@@ -349,6 +357,12 @@
 
     /// <summary>Die Auswahl „Stundenprofil".</summary>
     private const int WAHL_STUNDENPROFIL = -1;
+
+    /// <summary>Die Auswahl „A100-Referenzprofil" — benannt gesperrt, solange der Katalog keine Zeile dieser Art trägt.</summary>
+    private const int WAHL_A100 = -2;
+
+    /// <summary>Die Auswahl „Ecodesign-Zapfprofil" — benannt gesperrt, solange der Katalog keine Zeile dieser Art trägt.</summary>
+    private const int WAHL_ECODESIGN = -5;
 
     /// <summary>Die Auswahl „DIN-4708-Profil".</summary>
     private const int WAHL_DIN4708 = -3;
@@ -449,11 +463,13 @@
             var liste = new List<(int Id, string Text)>
             {
                 (WAHL_VORGABE, Texte.OptionVorgaberegel),
-                (WAHL_STUNDENPROFIL, Texte.OptionStundenprofil),
-                (WAHL_DIN4708, Texte.OptionDin4708)
+                (WAHL_STUNDENPROFIL, Texte.OptionStundenprofil)
             };
+            if (A100Gesperrt) liste.Add((WAHL_A100, Texte.OptionA100));
+            liste.Add((WAHL_DIN4708, Texte.OptionDin4708));
             if (_eingabe.Entwurf is { } entwurf)
                 liste.Add((WAHL_ENTWURF, Format(Texte.OptionEntwurf, entwurf.Bezeichner)));
+            if (EcodesignGesperrt) liste.Add((WAHL_ECODESIGN, Texte.OptionEcodesign));
             foreach (ZapfprofilBedarfstagDaten t in Daten.Bedarfstage)
                 liste.Add((t.Id, Format(Texte.OptionKatalogtag, t.Bezeichner, t.Herkunft)));
             // Ein gespeicherter Tag, den der Katalog nicht (mehr) führt, bleibt als Eintrag stehen.
@@ -463,11 +479,26 @@
         }
     }
 
-    private IReadOnlyCollection<int> GesperrteTage
-        => Daten.Bedarfstage.Where(t => !t.Waehlbar).Select(t => t.Id).ToList();
+    /// <summary>Die Quelle A100-Referenzprofil steht gesperrt, solange der Katalog keine Zeile dieser Art führt.</summary>
+    private bool A100Gesperrt => Daten.Bedarfstage.All(t => t.Quelle != ZapfprofilBedarfstagquelle.A100Referenz);
 
-    private string SperrhinweisTage
-        => Daten.Bedarfstage.FirstOrDefault(t => !t.Waehlbar && t.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
+    /// <summary>Die Quelle Ecodesign-Zapfprofil steht gesperrt, solange der Katalog keine Zeile dieser Art führt.</summary>
+    private bool EcodesignGesperrt => Daten.Bedarfstage.All(t => t.Quelle != ZapfprofilBedarfstagquelle.Ecodesign);
+
+    private IReadOnlyCollection<int> GesperrteTage => Sperrgruende.Keys.ToList();
+
+    /// <summary>Je gesperrtem Eintrag sein Grund: Normtage des Katalogs, A100-Referenzprofil, Ecodesign.</summary>
+    private IReadOnlyDictionary<int, string> Sperrgruende
+    {
+        get
+        {
+            var d = new Dictionary<int, string>();
+            foreach (ZapfprofilBedarfstagDaten t in Daten.Bedarfstage.Where(t => !t.Waehlbar)) d[t.Id] = t.Sperrgrund;
+            if (A100Gesperrt) d[WAHL_A100] = Texte.GrundA100;
+            if (EcodesignGesperrt) d[WAHL_ECODESIGN] = Texte.GrundEcodesign;
+            return d;
+        }
+    }
 
     private int BedarfstagAuswahl
     {
@@ -638,6 +669,12 @@
                 _eingabe.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
                 _eingabe.IdBedarfstag = null;
                 break;
+            case WAHL_A100:
+            case WAHL_ECODESIGN:
+                // Gesperrt: Die Wahl kommt im Browser nicht an; über eine nachgereichte Zuweisung
+                // nennt die leise Zeile den Grund, die Eingaben bleiben.
+                _hinweis = Sperrgruende.TryGetValue(id!.Value, out string? grund) ? grund : "";
+                return;
             default:
                 ZapfprofilBedarfstagDaten? t = Daten.Bedarfstage.FirstOrDefault(x => x.Id == id);
                 if (t is not null && !t.Waehlbar) return;

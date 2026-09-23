@@ -70983,6 +70983,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_A100 {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_A100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_ECODESIGN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_ECODESIGN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_KONSISTENZ {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_KONSISTENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die In dieser Fassung noch nicht verfügbar. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_NOCH_NICHT {
@@ -70997,6 +71024,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_GRUND_NORMTAG {
             get {
                 return ResourceManager.GetString("ZPG_AUS_GRUND_NORMTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe der Entnahmearmaturen fehlt im Datenmodell — der Rohrnetz-Spitzendurchfluss kommt mit einer späteren Fassung. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_ROHRNETZ {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_ROHRNETZ", resourceCulture);
             }
         }
         
@@ -71222,6 +71258,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_KEINE_ANGABE {
             get {
                 return ResourceManager.GetString("ZPG_AUS_KEINE_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ", resourceCulture);
             }
         }
         
@@ -71640,11 +71685,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A100-Referenzprofil aus dem Katalog ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_OPT_A100 {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_OPT_A100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die DIN-4708-Profil aus der Wohnungstabelle ähnelt.
         /// </summary>
         public static string ZPG_AUS_OPT_DIN4708 {
             get {
                 return ResourceManager.GetString("ZPG_AUS_OPT_DIN4708", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_OPT_ECODESIGN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_OPT_ECODESIGN", resourceCulture);
             }
         }
         
@@ -71771,6 +71834,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_QUELLE_STUNDENPROFIL {
             get {
                 return ResourceManager.GetString("ZPG_AUS_QUELLE_STUNDENPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohrnetz-Spitzendurchfluss (nachrichtlich, Verfahren nach DIN 1988-300): noch nicht gerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_ROHRNETZ {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_ROHRNETZ", resourceCulture);
             }
         }
         

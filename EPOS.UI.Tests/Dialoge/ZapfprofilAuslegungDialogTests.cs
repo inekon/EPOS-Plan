@@ -221,6 +221,68 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     }
 
     [Fact]
+    public void A100_Referenzprofil_und_Ecodesign_stehen_benannt_gesperrt()
+    {
+        var cut = Aufbauen(rechnen: _ => Ergebnis(Speichergruppe()));
+
+        IElement wahl = Feld(cut, "Bedarfstag", "select");
+        IElement a100 = wahl.QuerySelectorAll("option").Single(o => o.TextContent.StartsWith("A100-Referenzprofil"));
+        Assert.True(a100.HasAttribute("disabled"));
+        Assert.Equal("Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.", a100.GetAttribute("title"));
+        IElement eco = wahl.QuerySelectorAll("option").Single(o => o.TextContent.StartsWith("Ecodesign-Zapfprofil"));
+        Assert.True(eco.HasAttribute("disabled"));
+        Assert.Equal("Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.", eco.GetAttribute("title"));
+        // Jeder gesperrte Eintrag trägt SEINEN Grund.
+        Assert.Equal("Das DIN-4708-Profil rechnet der Kern aus der Kennzahl.",
+                     wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Normtag")).GetAttribute("title"));
+
+        // Eine Wahl kommt nicht an: Die Quelle bleibt.
+        wahl.Change("-2");
+        Assert.Equal(ZapfprofilBedarfstagquelle.Vorgaberegel, cut.Instance.Eingabe.Quelle);
+        Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
+
+        // Führt der Katalog eine Zeile der Art A100, steht sie als Katalogtag da und die Sperrzeile entfällt.
+        ZapfprofilAuslegungStartDaten mitA100 = Start();
+        mitA100.Bedarfstage.Add(new ZapfprofilBedarfstagDaten { Id = 9, Bezeichner = "Referenztag", Herkunft = "Katalog",
+                                                               Quelle = ZapfprofilBedarfstagquelle.A100Referenz });
+        var mit = Aufbauen(mitA100);
+        string[] texte = Feld(mit, "Bedarfstag", "select").QuerySelectorAll("option").Select(o => o.TextContent).ToArray();
+        Assert.Contains("Referenztag · Katalog", texte);
+        Assert.DoesNotContain(texte, t => t.StartsWith("A100-Referenzprofil"));
+        Assert.Contains(texte, t => t.StartsWith("Ecodesign-Zapfprofil"));
+    }
+
+    [Fact]
+    public void Rohrnetzspitze_und_Konsistenzhinweis_stehen_benannt_gesperrt()
+    {
+        var durchfluss = new ZapfprofilAuslegungsgruppeDaten
+        {
+            Topologie = "Durchfluss",
+            Zonen = { "Zone 3" },
+            Hauptwert = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet },
+            Empfehlung = new ZapfprofilEmpfehlungDaten { Rechenbar = true, LeistungKw = 30 }
+        };
+        var cut = Aufbauen(Start(Ergebnis(Speichergruppe(), durchfluss)));
+
+        // DIN 1988-300 nachrichtlich in jeder Karte (c), gesperrt mit Grund.
+        IReadOnlyList<IElement> rohrnetz = cut.FindAll(".epos-zapfausl-rohrnetz");
+        Assert.Equal(2, rohrnetz.Count);
+        Assert.All(rohrnetz, r =>
+        {
+            Assert.Equal("true", r.GetAttribute("aria-disabled"));
+            Assert.Contains("DIN 1988-300", r.TextContent);
+            Assert.Contains("Summe der Entnahmearmaturen", r.GetAttribute("title"));
+        });
+        Assert.NotNull(cut.FindAll(".epos-zapfausl-karte--norm")[0].QuerySelector(".epos-zapfausl-rohrnetz"));
+
+        // Der Konsistenzhinweis gehört zum Summenlinienpunkt — nur in der Speichergruppe.
+        IElement konsistenz = Assert.Single(cut.FindAll(".epos-zapfausl-konsistenz"));
+        Assert.Equal("true", konsistenz.GetAttribute("aria-disabled"));
+        Assert.Contains("braucht das Perzentil", konsistenz.TextContent);
+        Assert.NotNull(cut.FindAll(".epos-zapfausl-warnungen")[0].QuerySelector(".epos-zapfausl-konsistenz"));
+    }
+
+    [Fact]
     public void Ohne_Ergebnis_steht_der_Grund_und_es_gibt_keinen_Punkt()
     {
         var ohne = new ZapfprofilAuslegungDaten { Zustand = ZapfprofilAuslegungZustand.NichtGerechnet, Grund = "Keine Zone" };

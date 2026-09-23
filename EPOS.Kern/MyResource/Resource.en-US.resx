@@ -24257,6 +24257,18 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_OPT_DIN4708" xml:space="preserve">
     <value>DIN 4708 profile from the dwelling table</value>
   </data>
+  <data name="ZPG_AUS_OPT_A100" xml:space="preserve">
+    <value>A100 reference profile from the catalogue</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_A100" xml:space="preserve">
+    <value>Catalogue rows of the type A100 reference profile follow with the catalogue package.</value>
+  </data>
+  <data name="ZPG_AUS_OPT_ECODESIGN" xml:space="preserve">
+    <value>Ecodesign tapping profile (single-family house only, for plausibility checks)</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
+    <value>The Ecodesign tapping profile comes with a later version.</value>
+  </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
   </data>
@@ -24386,6 +24398,12 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_HINW_WAERMEPUMPE" xml:space="preserve">
     <value>The index N is hardly meaningful for the flow temperatures of a heat pump.</value>
   </data>
+  <data name="ZPG_AUS_ROHRNETZ" xml:space="preserve">
+    <value>Peak flow of the pipe network (for information, method of DIN 1988-300): not yet calculated</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ROHRNETZ" xml:space="preserve">
+    <value>The sum of the draw-off fittings is missing from the data model — the peak flow of the pipe network comes with a later version.</value>
+  </data>
   <data name="ZPG_AUS_STAND_NICHT_RECHENBAR" xml:space="preserve">
     <value>not calculable</value>
   </data>
@@ -24508,6 +24526,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_AUS_WARNLISTE_LEER" xml:space="preserve">
     <value>No notes.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ" xml:space="preserve">
+    <value>Consistency note (stochastic peak against the output of the cumulative-curve point): not yet checked</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
+    <value>The consistency note needs the percentile — both come with a later version.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Note</value>

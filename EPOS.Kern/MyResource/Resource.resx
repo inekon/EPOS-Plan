@@ -24264,6 +24264,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_OPT_DIN4708" xml:space="preserve">
     <value>DIN-4708-Profil aus der Wohnungstabelle</value>
   </data>
+  <data name="ZPG_AUS_OPT_A100" xml:space="preserve">
+    <value>A100-Referenzprofil aus dem Katalog</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_A100" xml:space="preserve">
+    <value>Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.</value>
+  </data>
+  <data name="ZPG_AUS_OPT_ECODESIGN" xml:space="preserve">
+    <value>Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
+    <value>Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.</value>
+  </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
   </data>
@@ -24393,6 +24405,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_HINW_WAERMEPUMPE" xml:space="preserve">
     <value>Die Kennzahl N ist für die Vorlauftemperaturen einer Wärmepumpe kaum aussagefähig.</value>
   </data>
+  <data name="ZPG_AUS_ROHRNETZ" xml:space="preserve">
+    <value>Rohrnetz-Spitzendurchfluss (nachrichtlich, Verfahren nach DIN 1988-300): noch nicht gerechnet</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ROHRNETZ" xml:space="preserve">
+    <value>Die Summe der Entnahmearmaturen fehlt im Datenmodell — der Rohrnetz-Spitzendurchfluss kommt mit einer späteren Fassung.</value>
+  </data>
   <data name="ZPG_AUS_STAND_NICHT_RECHENBAR" xml:space="preserve">
     <value>nicht rechenbar</value>
   </data>
@@ -24515,6 +24533,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_AUS_WARNLISTE_LEER" xml:space="preserve">
     <value>Keine Hinweise.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ" xml:space="preserve">
+    <value>Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
+    <value>Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Hinweis</value>

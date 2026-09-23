@@ -47,6 +47,18 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_OPT_DIN4708</c></summary>
     public string OptionDin4708 { get; set; } = "DIN-4708-Profil aus der Wohnungstabelle";
 
+    /// <summary><c>ZPG_AUS_OPT_A100</c></summary>
+    public string OptionA100 { get; set; } = "A100-Referenzprofil aus dem Katalog";
+
+    /// <summary><c>ZPG_AUS_GRUND_A100</c></summary>
+    public string GrundA100 { get; set; } = "Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.";
+
+    /// <summary><c>ZPG_AUS_OPT_ECODESIGN</c></summary>
+    public string OptionEcodesign { get; set; } = "Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)";
+
+    /// <summary><c>ZPG_AUS_GRUND_ECODESIGN</c></summary>
+    public string GrundEcodesign { get; set; } = "Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.";
+
     /// <summary><c>ZPG_AUS_OPT_KATALOGTAG</c></summary>
     public string OptionKatalogtag { get; set; } = "{0} · {1}";
 
@@ -178,6 +190,12 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HINW_WAERMEPUMPE</c></summary>
     public string HinweisWaermepumpe { get; set; } = "Die Kennzahl N ist für die Vorlauftemperaturen einer Wärmepumpe kaum aussagefähig.";
 
+    /// <summary><c>ZPG_AUS_ROHRNETZ</c></summary>
+    public string Rohrnetz { get; set; } = "Rohrnetz-Spitzendurchfluss (nachrichtlich, Verfahren nach DIN 1988-300): noch nicht gerechnet";
+
+    /// <summary><c>ZPG_AUS_GRUND_ROHRNETZ</c></summary>
+    public string GrundRohrnetz { get; set; } = "Die Summe der Entnahmearmaturen fehlt im Datenmodell — der Rohrnetz-Spitzendurchfluss kommt mit einer späteren Fassung.";
+
     /// <summary><c>ZPG_AUS_STAND_NICHT_RECHENBAR</c></summary>
     public string StandNichtRechenbar { get; set; } = "nicht rechenbar";
 
@@ -306,6 +324,12 @@ public sealed class ZapfprofilAuslegungTexte
 
     /// <summary><c>ZPG_AUS_WARNLISTE_LEER</c></summary>
     public string WarnlisteLeer { get; set; } = "Keine Hinweise.";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ</c></summary>
+    public string Konsistenz { get; set; } = "Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft";
+
+    /// <summary><c>ZPG_AUS_GRUND_KONSISTENZ</c></summary>
+    public string GrundKonsistenz { get; set; } = "Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.";
 
     /// <summary><c>ZPG_AUS_STUFE_HINWEIS</c></summary>
     public string StufeHinweis { get; set; } = "Hinweis";
