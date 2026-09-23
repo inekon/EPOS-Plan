@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Entscheid N1 vom 23.09.2026 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1348,51 +1348,58 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 
 ## 9. Fragen mit Empfehlung
 
+**Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
+des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
+K2–K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieses Entscheids; das Papier setzt ihre
+Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
+„Entscheid" zeigt den Stand je Punkt.
+
 **K1–K8 und A1–A12 aus dem Mockup** (dort ausführlich), zusammengefasst mit der Empfehlung, die dieses
 Papier voraussetzt:
 
-| Nr. | Frage | Empfehlung |
-|---|---|---|
-| K1 | Beschaffung A100-Profildateien, Weißdruck-Status, DIN 4708-2/-3 | sofort anfragen; Verzicht auf Verwertungslizenz zur Mitauslieferung bestätigen |
-| K2 | Typenumfang v1.0 | rund 15 neue Typen neben dem Bestandskatalog; Ablösung erst mit K6 |
-| K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt |
-| K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion |
-| K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen |
-| K6 | Bestandsweg | Koexistenz bis nach Z5 |
-| K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich |
-| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs |
-| A1 | Ort des Rechenwegs | Ordner im Kern |
-| A2 | Übergabeform | eigene Projekttabelle mit Weiche; Reihe je Lauf neu gerechnet |
-| A3 | Weiche exklusiv oder additiv | exklusiv |
-| A4 | Zirkulation und Netzverluste | eigene Teilreihe im Brauchwasserkanal; zur F2-Verteilung siehe ZU5 |
-| A5 | Einstieg und Menü | Knopf im Bedarfsprofil-Dialog, Untermenü mit zwei Punkten |
-| A6 | Kalender | Z1 mit Kennzeichen der Klimaregion und Ferienfenstern; Feiertags-/Ferientabelle später |
-| A7 | Feinauflösung | Stunde in der Bilanz, Minuten nur in der Auslegung |
-| A8 | Zone und Gebäude | optionale Bindung, belegt nur vor (auch die Ferienzeiten) |
-| A9 | Lizenz im Bestand | Digitalisate im neuen Katalog nicht übernehmen; Ersatz im Bestandskatalog nach K8 (Abweichung vom Mockup, 1.6); Zahlenteile der Grundlagenpapiere vorbehaltlich K8 entfernen (Posten in Z0) |
-| A10 | Konzeptpapier | Fassung V2 auf die heutige Architektur nach den Entscheiden dieser Liste; V1.2 dann nach `ueberholt/` (Posten in Z0) |
-| A11 | iOS | Bedarfsprofil-Hülle in Z4 vorziehen, falls iU11 nicht steht; kleinere Ensemble-Vorgabe auf dem iPad |
-| A12 | VDI 4655 als Validierungsanker | kein Anker in Repository und CI; lokale Probe nur nach K8 |
+| Nr. | Frage | Empfehlung | Entscheid |
+|---|---|---|---|
+| K1 | Beschaffung A100-Profildateien, Weißdruck-Status, DIN 4708-2/-3 | sofort anfragen; Verzicht auf Verwertungslizenz zur Mitauslieferung bestätigen | nach Empfehlung, 23.09.2026 (N1) |
+| K2 | Typenumfang v1.0 | rund 15 neue Typen neben dem Bestandskatalog; Ablösung erst mit K6 | Empfehlung vorausgesetzt |
+| K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
+| K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
+| K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | Empfehlung vorausgesetzt |
+| K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
+| K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
+| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1) |
+| A1 | Ort des Rechenwegs | Ordner im Kern | Empfehlung vorausgesetzt |
+| A2 | Übergabeform | eigene Projekttabelle mit Weiche; Reihe je Lauf neu gerechnet | Empfehlung vorausgesetzt |
+| A3 | Weiche exklusiv oder additiv | exklusiv | Empfehlung vorausgesetzt |
+| A4 | Zirkulation und Netzverluste | eigene Teilreihe im Brauchwasserkanal; zur F2-Verteilung siehe ZU5 | Empfehlung vorausgesetzt |
+| A5 | Einstieg und Menü | Knopf im Bedarfsprofil-Dialog, Untermenü mit zwei Punkten | Empfehlung vorausgesetzt |
+| A6 | Kalender | Z1 mit Kennzeichen der Klimaregion und Ferienfenstern; Feiertags-/Ferientabelle später | Empfehlung vorausgesetzt |
+| A7 | Feinauflösung | Stunde in der Bilanz, Minuten nur in der Auslegung | Empfehlung vorausgesetzt |
+| A8 | Zone und Gebäude | optionale Bindung, belegt nur vor (auch die Ferienzeiten) | Empfehlung vorausgesetzt |
+| A9 | Lizenz im Bestand | Digitalisate im neuen Katalog nicht übernehmen; Ersatz im Bestandskatalog nach K8 (Abweichung vom Mockup, 1.6); Zahlenteile der Grundlagenpapiere vorbehaltlich K8 entfernen (Posten in Z0) | Empfehlung vorausgesetzt |
+| A10 | Konzeptpapier | Fassung V2 auf die heutige Architektur nach den Entscheiden dieser Liste; V1.2 dann nach `ueberholt/` (Posten in Z0) | Empfehlung vorausgesetzt |
+| A11 | iOS | Bedarfsprofil-Hülle in Z4 vorziehen, falls iU11 nicht steht; kleinere Ensemble-Vorgabe auf dem iPad | Empfehlung vorausgesetzt |
+| A12 | VDI 4655 als Validierungsanker | kein Anker in Repository und CI; lokale Probe nur nach K8 | Empfehlung vorausgesetzt |
 
 **Neue Fragen dieses Papiers:**
 
-| Nr. | Frage | Empfehlung |
-|---|---|---|
-| **ZU1** | Speicherauslegung als Überlagerung im Zapfprofil oder als eigener Dialog? | **Überlagerung „Auslegung"** wie im Mockup; die Kernklassen `TwwSpeicherauslegung` und `Summenlinie` sind so geschnitten, dass ein späterer eigener Dialog (etwa aus dem Pufferspeicher) sie ohne Änderung ruft |
-| **ZU2** | Pufferspeicher-Auslegung aus dem Wärmespeicher-Tool mitnehmen? | **Nein, Folgeauftrag** mit eigenem Konzept nach Z2; er braucht Taktung, Sperrzeiten und Abtauung aus der Wärmepumpe, nicht das Zapfprofil |
-| **ZU3** | Reihenfolge Z-Stufen gegenüber iU11 | Z0–Z3 unabhängig von iU11; Z4 nach iU11 oder mit vorgezogener Bedarfsprofil-Hülle (A11); keine Stufe wartet auf den iOS-Lauf |
-| **ZU4** | Wie wählt der Anwender den Weg? | sichtbare **Optionsgruppe** im Bedarfsprofil-Dialog; das OK des Zapfprofils setzt sie, der Anwender kann zurückschalten, die Zonen bleiben |
-| **ZU5** | Netzverlustverteilung F2 bei Generator-Zirkulation (Mockup A4: Brauchwasseranteil ausnehmen) | **F2 unverändert lassen**: `Netzverluste` sind eine Projektgröße (Verteilnetz), die Zirkulation liegt im Gebäude; Doppelzählung ist nur ein Eingabefehler, dafür ein Hinweis im Dialog, wenn beide gesetzt sind. Die Stelle `SimulationKanaele.cs:686` bleibt unberührt |
-| **ZU6** | Ort des Knopfs „Zapfprofil erzeugen…" | Aktionsschlitz der `SpeichernLeiste`; nicht in der Leiste „Simulation · monatlicher Verlauf", die sonst zum zweiten Fuß würde |
-| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) |
-| **ZU8** | Bitgleichheit Windows/iOS | ganzzahliger Zufall, Normalverteilung ohne transzendente Funktionen, gerundete Einmalwerte, feste Summationsfolge (4.2, 4.4); plattformübergreifend zusätzlich Vergleich mit Toleranz |
-| **ZU9** | Neue Tabellen auf iOS | über einen neuen Seed; ältere Datenbank ohne Tabellen rechnet den Bestandsweg, der Knopf ist benannt gesperrt |
-| **ZU10** | Zapfprofil ohne gespeichertes Projekt (Gebäudekatalog aus Verwaltung oder Assistent vor dem Speichern) | Knopf nur mit gespeichertem Projekt; im Assistenten erst nach dem Speichern des Projekts |
-| **ZU11** | Wache für lokale Normdaten | ja, als Fall in `RepositoryOrdnungWacheTests` und Posten der Auslieferungsvorlage (Kapitel 6) |
-| **ZU12** | Projektkopie der Nutzungsart oder Katalogverweis? | **Katalogverweis auf unveränderliche Versionen** (3.2): kein Kopieren je Projekt, keine rückwirkende Änderung; Umstellen auf eine neue Version nur ausdrücklich je Zone |
-| **ZU13** | Topologie je Zone oder je Gebäude? | je Zone wie im Konzept 2.2; die Auslegung rechnet je Topologiegruppe (4.5) |
-| **ZU14** | Wie kommt der Auslieferungskatalog in Bestandsinstallationen? | Katalogpaket außerhalb des Repositoriums, eingespielt von der Auslieferungsvorlage (neue Installation) bzw. über einen Katalogimport in der Verwaltung (Z4); nie über den Schemaschritt |
+| Nr. | Frage | Empfehlung | Entscheid |
+|---|---|---|---|
+| **ZU1** | Speicherauslegung als Überlagerung im Zapfprofil oder als eigener Dialog? | **Überlagerung „Auslegung"** wie im Mockup; die Kernklassen `TwwSpeicherauslegung` und `Summenlinie` sind so geschnitten, dass ein späterer eigener Dialog (etwa aus dem Pufferspeicher) sie ohne Änderung ruft | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU2** | Pufferspeicher-Auslegung aus dem Wärmespeicher-Tool mitnehmen? | **Nein, Folgeauftrag** mit eigenem Konzept nach Z2; er braucht Taktung, Sperrzeiten und Abtauung aus der Wärmepumpe, nicht das Zapfprofil | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU3** | Reihenfolge Z-Stufen gegenüber iU11 | Z0–Z3 unabhängig von iU11; Z4 nach iU11 oder mit vorgezogener Bedarfsprofil-Hülle (A11); keine Stufe wartet auf den iOS-Lauf | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU4** | Wie wählt der Anwender den Weg? | sichtbare **Optionsgruppe** im Bedarfsprofil-Dialog; das OK des Zapfprofils setzt sie, der Anwender kann zurückschalten, die Zonen bleiben | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU5** | Netzverlustverteilung F2 bei Generator-Zirkulation (Mockup A4: Brauchwasseranteil ausnehmen) | **F2 unverändert lassen**: `Netzverluste` sind eine Projektgröße (Verteilnetz), die Zirkulation liegt im Gebäude; Doppelzählung ist nur ein Eingabefehler, dafür ein Hinweis im Dialog, wenn beide gesetzt sind. Die Stelle `SimulationKanaele.cs:686` bleibt unberührt | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU6** | Ort des Knopfs „Zapfprofil erzeugen…" | Aktionsschlitz der `SpeichernLeiste`; nicht in der Leiste „Simulation · monatlicher Verlauf", die sonst zum zweiten Fuß würde | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU8** | Bitgleichheit Windows/iOS | ganzzahliger Zufall, Normalverteilung ohne transzendente Funktionen, gerundete Einmalwerte, feste Summationsfolge (4.2, 4.4); plattformübergreifend zusätzlich Vergleich mit Toleranz | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU9** | Neue Tabellen auf iOS | über einen neuen Seed; ältere Datenbank ohne Tabellen rechnet den Bestandsweg, der Knopf ist benannt gesperrt | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU10** | Zapfprofil ohne gespeichertes Projekt (Gebäudekatalog aus Verwaltung oder Assistent vor dem Speichern) | Knopf nur mit gespeichertem Projekt; im Assistenten erst nach dem Speichern des Projekts | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU11** | Wache für lokale Normdaten | ja, als Fall in `RepositoryOrdnungWacheTests` und Posten der Auslieferungsvorlage (Kapitel 6) | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU12** | Projektkopie der Nutzungsart oder Katalogverweis? | **Katalogverweis auf unveränderliche Versionen** (3.2): kein Kopieren je Projekt, keine rückwirkende Änderung; Umstellen auf eine neue Version nur ausdrücklich je Zone | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU13** | Topologie je Zone oder je Gebäude? | je Zone wie im Konzept 2.2; die Auslegung rechnet je Topologiegruppe (4.5) | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU14** | Wie kommt der Auslieferungskatalog in Bestandsinstallationen? | Katalogpaket außerhalb des Repositoriums, eingespielt von der Auslieferungsvorlage (neue Installation) bzw. über einen Katalogimport in der Verwaltung (Z4); nie über den Schemaschritt | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1) |
 
 ---
 
@@ -1413,3 +1420,126 @@ Papier voraussetzt:
 - **Den Feiertags- und Ferienkalender je Bundesland** — erst nach A6.
 - **Die Methodik selbst** — sie steht im [Konzept](Konzept_TWW-Zapfprofile_WP-Plan_1.md); dieses Papier
   sagt nur, wo sie im Quelltext andockt.
+
+---
+
+## 11. Nachträge
+
+Nachträge halten Entscheide des Anwenders fest, die nach der Fassung 2 fallen. Ein Nachtrag wird nie
+umgeschrieben; spätere Entscheide kommen als N2, N3 … hinzu. Wo ein Nachtrag eine Empfehlung bestätigt,
+bleibt der Text des Papiers stehen; Kapitel 9 zeigt den Stand in der Spalte „Entscheid".
+
+### N1 (23.09.2026) — offene Punkte nach Empfehlung
+
+**Frage** an den Anwender: die offenen Punkte dieses Umsetzungskonzepts — K1, K8, ZU1 bis ZU14 und die
+Lizenzfrage zu den VDI-6002-Kopien in der Ablage des Anwenders.
+
+**Entscheid** (Philipp, im Wortlaut): „nach Empfehlung".
+
+**Entschieden**, jeweils mit der Empfehlung aus Kapitel 9:
+
+- **K1** — A100-Profildateien, Weißdruck-Status und DIN 4708-2/-3 sofort anfragen; auf eine
+  Verwertungslizenz zur Mitauslieferung wird verzichtet, Profile stehen nur im Katalog (Kapitel 6).
+- **K8** — juristische Prüfung mit Z0 beauftragen; sie umfasst die Kapselung nach Kapitel 6, die lokalen
+  Normkopien und die Digitalisate des Bestandskatalogs (1.6).
+- **ZU1 bis ZU14** — wie in der zweiten Tabelle von Kapitel 9.
+- **ZU15** (in Kapitel 9 neu aufgenommen) — die Exemplare der VDI 6002 in der Ablage des Anwenders tragen
+  den Lizenzstempel einer Universität; die eigene Lizenz wird geprüft oder beschafft, bis dahin bleiben
+  die daraus extrahierten Tabellen lokal und werden nicht weitergegeben.
+
+**Nicht Gegenstand:** K2–K7 (samt K3a) und A1–A12. Das Papier setzt ihre Empfehlung weiterhin voraus
+(Mockup Abschnitt 8); sie gelten nicht als entschieden.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| K1 | Bestellung bzw. Anfrage der A100-Profildateien, des Weißdruck-Status und der DIN 4708-2/-3; der Verzicht auf die Verwertungslizenz zur Mitauslieferung ist bestätigt | Anwender | vor Z0 angestoßen; wirkt in Z2 (A100- und DIN-4708-Profil, ohne sie der Konstruktor) |
+| K8 | Beauftragung der juristischen Prüfung; Gegenstand wie die Empfehlung (Kapselung, lokale Normkopien, Digitalisate des Bestandskatalogs) | Anwender | mit Z0 |
+| ZU15 | Lizenzprüfung der VDI-6002-Kopien, gegebenenfalls eigene Lizenz beschaffen; bis zum Ergebnis keine Weitergabe der extrahierten Tabellen | Anwender | sofort, unabhängig von den Stufen |
+| ZU11 | Wache für lokale Normdaten (`Normzahlen_stehen_im_gitignore` in `RepositoryOrdnungWacheTests`) und Posten der Auslieferungsvorlage (Kapitel 6) | Agent der Stufe Z0 | Z0 (Anhang A, P1 und P10) |
+| A9, A10 | Die Posten „Bereinigung der Zahlenteile der Grundlagenpapiere" (A9) und „Konzept V2" (A10) bleiben in Z0, vorbehaltlich K8; ohne Ergebnis von K8 ruhen sie | Agent der Stufe Z0 nach dem Ergebnis von K8 | Z0 (Anhang A, P14) |
+| ZU1–ZU14 | wirken so, wie das Papier sie voraussetzt; keine Textänderung nötig | — | Z0–Z5 laut Kapitel 7 |
+
+---
+
+## Anhang A — Auftragsblatt Stufe Z0 (Grundlagen und Schema)
+
+Dieses Blatt ist unmittelbar an eine Agentensitzung beauftragbar. Es fasst die Zeile Z0 aus Kapitel 7
+mit dem Stand aus N1 zusammen; die Einzelheiten stehen in den genannten Abschnitten und werden hier nicht
+wiederholt.
+
+**Ziel.** Das Datenmodell des Zapfprofilgenerators steht in Kern und Testdatenbank, lesbar über
+Controller, geschützt durch Wachen — ohne dass sich ein Rechenergebnis ändert. Kein Referenzprojekt setzt
+die Weiche; die Basis unter `Referenzlaeufe/` bleibt unberührt (3.4).
+
+**Vorbedingungen.**
+
+- K1 und K8 sind durch den Anwender angestoßen (N1).
+- K2, K7, A1 und A2 gelten als Empfehlung vorausgesetzt, ZU12 ist entschieden (Kapitel 9).
+- Schemanummer nachgemessen: T1 wird der nächste freie Schritt nach `SchemaStand.Zielversion` in
+  `EPOS.Kern/Allgemein/Update/SchemaStand.cs`; kein anderer Auftrag hebt die Zielversion parallel (3.2,
+  Kapitel 7 „Agentenzuschnitt").
+- Eigener Worktree und Zweig; `AGENT_LAEUFT` vor jeder Arbeit im Hauptbaum anlegen, nach der Abnahme
+  löschen.
+- Modellwahl nach `CLAUDE.md`: Agent mit `model: opus` für Implementierung und Tests, `model: sonnet`
+  nur für Suchen; das Modell wird ausdrücklich gesetzt.
+- Git LFS eingerichtet: die Testdatenbank liegt als Datei vor, nicht als Zeiger.
+
+**Umfang.**
+
+| Nr. | Posten | Abschnitt |
+|---|---|---|
+| P1 | Wache `Normzahlen_stehen_im_gitignore` in `EPOS.Kern.Tests/RepositoryOrdnungWacheTests.cs` (ZU11), vor jeder neuen Datei unter `Referenzlaeufe/Normzahlen/` | 6, N1 |
+| P2 | `EPOS.Kern/Allgemein/Update/TwwSchema.cs` mit der DDL der zehn Tabellen aus 3.1: `Tab_TwwNutzungsart_STAMM`, `Tab_TwwTagesgangsatz_STAMM`, `Tab_TwwTagesgang_STAMM`, `Tab_TwwBedarfstag_STAMM`, `Tab_TwwBedarfstagEreignis_STAMM`, `Tab_TwwParameter_STAMM`, `Tab_TwwDin4708Wert_STAMM`, `Tab_TwwZone`, `Tab_TwwWohnungstyp`, `Tab_TwwProjekt`; Muster `WechselrichterSchema.cs` | 3.1, 3.2 |
+| P3 | Schemaschritt T1 in `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`: Konstante, Methode, Eintrag in `SCHRITTE_SQLITE`, **dann** `SchemaStand.Zielversion` anheben; nur `SqliteDdl`/`SqliteTabelleVorhanden` | 3.2 |
+| P4 | `EPOS.Kern.Tests/TestDatenbank.cs` und `Werkzeuge/Testdatenbankschema/Program.cs` nachziehen; Testdatenbank migrieren, fiktiven Testkatalog einspielen (`Status = 'EIGEN'`, Herkunftsart `FIKTIV`, runde Werte), mit aktivem LFS-Filter committen; Schemastand in `Referenzlaeufe/LIESMICH.md` nachtragen | 3.2, 6 (b) |
+| P5 | `Parametersatz` aus `Tab_TwwParameter_STAMM` der aktuellen Katalogversion; keine Normkonstante im Quelltext, Tests mit erfundenen Parametern | 2.1, 3.3, 6 (a) |
+| P6 | `EPOS.Kern/Controller/ZapfprofilCtrl.cs` **lesend**: `Weg`, `Katalog`, `Parameter`, `Lies`, `Verfuegbar`; `Speichern` und `Eingang` folgen in Z1 | 3.3 |
+| P7 | `EPOS.Kern/Controller/TwwNutzungsartCtrl.cs` mit Sperre benutzter und ReadOnly-Zeilen, „Speichern unter" als neue Zeile | 3.2, 3.3 |
+| P8 | `KatalogRegistry` um `TWW_NUTZUNGSART`, `TWW_TAGESGANGSATZ`, `TWW_BEDARFSTAG`; `Katalogfilterprofil.FuerTwwNutzungsart` | 3.2 |
+| P9 | Kopierstellen: `ProjektDuplizierenCtrl` (abhängige `Tab_TwwWohnungstyp` über `ID_Zone`) und `ProjektExportImportCtrl` (`KATALOG_SPALTE_ZU_TABELLE`, `KATALOG_NATURALKEY`); Mitnahme oder benannte Ablehnung einer fehlenden Katalogzeile nachmessen; je ein Test | 3.2 |
+| P10 | `Werkzeuge/Auslieferungsvorlage`: Tww-Regel unabhängig von `--kataloge`, Fremdschlüssel eingeschaltet, Prüfberichtposten (keine Zeile mit `Status = 'IMPORT'`, keine verwaiste Zeile), Option Katalogpaket von außerhalb des Repositoriums, Posten lokale Normdaten (ZU11) | 3.2, 6 (b), (c) |
+| P11 | Wache `TwwKatalogWacheTests`: keine Zeile mit `Status = 'AUSLIEFERUNG'` in der Testdatenbank | 6 (c) |
+| P12 | `SqlDialektPruefer` nach jedem neuen SQL-Text | 3.2 |
+| P13 | Quellendossier nach der Zeile Z0 in Kapitel 7; Zuschnitt vor Beginn mit der Orchestrierung klären, Quellenangaben nur nach Regel (e) | 7, 6 (e) |
+| P14 | vorbehaltlich K8 (N1): Konzept V2 (A10) samt `git mv` von V1.2 nach `Dokumentation/ueberholt/`; Bereinigung der Zahlenteile der Grundlagenpapiere (A9); bei K8 „ersetzen" der Ersatz der vier Digitalisate als eigener Schritt mit Einfrierprüfung 1007/1045/1046 und Begründung in `Referenzlaeufe/LIESMICH.md` | 1.6, 3.4, 9 |
+
+**Reihenfolge.** P1 zuerst; dann P2 und P3 zusammen, danach P4; dann P5, P6, P7 und P8; dann P9; dann
+P10 und P11; P13 zum Schluss. P12 läuft nach jedem neuen SQL-Text mit. P14 ist kein Teil der Abnahme von
+Z0: er folgt als eigener Schritt, sobald das Ergebnis von K8 vorliegt. Jeder zusammenhängende Schritt
+wird sofort auf dem Zweig committet.
+
+**Nicht-Umfang.** Keine Rechenklassen (S1–S6, Weiche, Summenlinie, Speicherauslegung, Generator — ab
+Z1); keine Oberfläche (kein Dialog, kein Knopf, kein Menüeintrag, keine Ressourcen, kein Wiki); kein
+Referenzprojekt auf dem Generator und keine neue Einfrierregel (3.4, ZU7); keine Schritte T2 und T3;
+keine Auslieferungswerte und keine Normzahl im Repository, in der Testdatenbank oder in der CI
+(Kapitel 6); keine neue `Dienste.*`-Schnittstelle (2.5); kein neuer iOS-Seed und kein iOS-Lauf (ZU9).
+
+**Abnahme** (Befehle aus `CLAUDE.md`, „Bauen und prüfen"):
+
+- `dotnet build WP-Plan.Kern.slnf -c Release` grün.
+- `dotnet test WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false
+  xUnit.MaxParallelThreads=2` grün, darin `TestdatenbankSchemastandWacheTests`, `TwwKatalogWacheTests`,
+  `RepositoryOrdnungWacheTests` mit dem neuen Fall, `DokumentationLinkWacheTests` und je ein Test für
+  `ProjektDuplizierenCtrl` und `ProjektExportImportCtrl`.
+- `EPOS.Referenzlauf` ausdrücklich bauen, dann `lauf` für 1030, 1007, 1017, 1045 und 1046 und `vergleich`
+  gegen die aktuelle Basis unter `Referenzlaeufe/` — grün innerhalb der Toleranz; eine Byte-Abweichung
+  ist ein zu erklärender Befund (Kapitel 7).
+- `SqlDialektPruefer` gegen `Referenzlaeufe/Kenndaten_Test.sqlite` grün.
+- Windows-Schale auf Linux gebaut (`-p:EnableWindowsTargeting=true`), 0 Fehler — der Schemaschritt liegt
+  in der Schale.
+- Testdatenbank über LFS committet; Schemastand in `Referenzlaeufe/LIESMICH.md` nachgezogen, falls die
+  Testdatenbank migriert ist.
+- Statuszeile in `Status_iOS_Migration.md` und Protokoll unter `Dokumentation/ueberholt/Protokolle/`
+  nach dem Gate (Reihenfolge nach `CLAUDE.md`); dieses Papier bekommt keinen Statusvermerk.
+
+**Aufwand.** 7–10 PT (Annahme, ±30 %; Herleitung in Kapitel 7: Grundlage P0 ohne Access-Hygiene, dazu
+Parameter-, Bedarfstag- und DIN-4708-Tabellen, Provenienzgruppen, Kopierstellen und zwei Wachen).
+
+**Bericht und Übergabe.** Der Agent committet auf seinem Zweig, pusht nicht und löst keinen CI-Lauf aus.
+Sein Bericht enthält Befund und Ergebnis, keine Dateiabzüge: Zweig und Commits, gemessene Schemanummer,
+angelegte Tabellen, neue Tests und Testergebnis, Referenzlauf-Vergleich samt Byte-Information, Ergebnis
+des `SqlDialektPruefer`, Build der Windows-Schale, den Befund zur Mitnahme fehlender Katalogzeilen beim
+Projektimport (3.2), die an K8 hängenden offenen Posten und jede Abweichung von diesem Blatt mit Grund.
+Die Orchestrierung nimmt ab, führt zusammen und löscht `AGENT_LAEUFT`.
