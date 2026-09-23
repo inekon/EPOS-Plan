@@ -24,7 +24,9 @@ Quelle: [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md), Abschnitt „Bedienung".
 3. **Ein Katalogdialog ohne Arbeitsstand** (die Bearbeitung schreibt sofort in den Katalog) bietet
    kein Abbrechen an, sondern einen primären **„Beenden"**-Knopf am Ende:
    Speichern · Füller · Neu · Löschen · Beenden (`ModulKatalogDialog`) bzw.
-   Speichern · Füller · Neu · Bearbeiten · Löschen · OK (`KatalogBrowserDialog`).
+   Speichern · Verwerfen · Füller · Neu… · Löschen · OK (`KatalogBrowserDialog`; die Felder sind mit
+   der Neuordnung der Administrationsdialoge, Stufe 1, direkt bedienbar — kein eigener Editor,
+   „Bearbeiten…" entfällt, „Verwerfen" nimmt Änderungen am Eingabeblock zurück).
 
 **Leseregel der Fußleiste,** aus den konformen Vorbildern (`KlimadatenDialog`, `ModulKatalogDialog`,
 `KatalogBrowserDialog`) abgelesen: **links vom Füller** stehen die Knöpfe, die auf den Eingabeblock

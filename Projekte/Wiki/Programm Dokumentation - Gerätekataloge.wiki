@@ -15,7 +15,7 @@ Alle acht Verwaltungen liegen im Menü '''Administration''':
 == Aufbau der Verwaltung ==
 {{Anker|aufbau}}
 
-'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses — und rechts eine Kurzübersicht des markierten Satzes. ''Neu…'' und ''Bearbeiten…'' öffnen einen eigenen Editor als Überlagerung desselben Fensters; ''Löschen'' fragt zuerst nach; ''OK'' übernimmt eine noch offene Eingabe und schließt die Verwaltung. Der Editor selbst führt bis zu drei Speicherwege: ''Überschreiben'' schreibt in den geladenen Satz zurück, ''Speichern unter…'' fragt einen Namen ab und legt eine Kopie an, ''Speichern'' (nur beim Anlegen eines neuen Satzes) legt ihn unter dem vergebenen Namen an; ''Abbrechen'' verwirft die Eingabe. Der Name selbst ist beim Bearbeiten nicht änderbar — umbenannt wird über ''Speichern unter…''.
+'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses — und rechts die Felder des markierten Satzes, direkt bearbeitbar. ''Speichern'' schreibt die Änderungen in den Satz zurück, ''Verwerfen'' nimmt sie zurück und lädt die Felder des Satzes neu; ''Neu…'' fragt einen Namen ab und legt einen leeren Satz an; ''Löschen'' fragt zuerst nach; ''OK'' übernimmt eine noch offene Eingabe und schließt die Verwaltung. Der Name selbst lässt sich nicht ändern.
 
 '''PV-Module, Wechselrichter und Stromspeicher''' fassen Liste und Eingabefelder in einer Maske zusammen: Die Felder rechts gehören unmittelbar zum markierten Satz. ''Speichern'' schreibt sofort, ''Neu…'' fragt einen Namen ab und öffnet eine leere Zeile, ''Löschen'' fragt nach, ''Beenden'' schließt die Maske.
 
@@ -26,7 +26,7 @@ Alle acht Verwaltungen liegen im Menü '''Administration''':
 
 Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 
-* '''Kesselbezeichnung''' – der Name; im Bearbeiten-Modus schreibgeschützt.
+* '''Kesselbezeichnung''' – der Name; schreibgeschützt.
 * '''Hersteller''', '''Beschreibung''' (mehrzeilig).
 * '''Thermische Leistung''' – in kW.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
@@ -37,14 +37,14 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 
 Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, Nutzungsdauer (Jahre) und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers.
 
-Fußleiste der Verwaltung: ''Speichern'' (nur bei ungespeicherten Eingaben), ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Löschen'', ''OK''.
 
 == BHKW ==
 {{Anker|bhkw}}
 
 Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor zeigt:
 
-* '''Modulname''' – schreibgeschützt im Bearbeiten-Modus.
+* '''Modulname''' – schreibgeschützt.
 * '''Hersteller''', '''Motortyp''', '''Beschreibung''' (mehrzeilig).
 * '''Thermische Leistung''' und '''Elektrische Leistung''' – je in kW.
 * '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – je als Faktor zwischen 0 und 1 (Hinweis z. B. 0,30 bzw. 0,60).
@@ -55,14 +55,14 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 
 Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), Nutzungsdauer (Jahre) sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg).
 
-Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Löschen'', ''OK''.
 
 == Solarkollektoren ==
 {{Anker|solarkollektoren}}
 
 Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennlinie. Der Editor zeigt:
 
-* '''Kollektorname''' – schreibgeschützt im Bearbeiten-Modus.
+* '''Kollektorname''' – schreibgeschützt.
 * '''Hersteller''', '''Beschreibung''' (mehrzeilig), '''Kollektortyp'''.
 * '''Modulfläche''' und '''Aperturfläche''' – je in m².
 * Die Kennlinienparameter '''h0''' (optischer Wirkungsgrad), '''k1''' (in W/(m²·K)) und '''k2''' (in W/(m²·K²)) sowie die Einfallswinkel-Korrekturfaktoren '''Kdir''' und '''Kdiff''' (Kdiff bei einem Einfallswinkel von 50°).
@@ -70,7 +70,7 @@ Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennl
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Löschen'', ''OK''.
 
 == Pufferspeicher ==
 {{Anker|pufferspeicher}}
@@ -84,7 +84,7 @@ Der Pufferspeicherkatalog führt die sechs Gerätewerte, mit denen ein Speicher 
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Löschen'', ''OK''.
 
 == Wärmepumpen ==
 {{Anker|waermepumpen}}
@@ -154,7 +154,7 @@ Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, d
 == Übernahme in ein Projekt ==
 {{Anker|uebernahme}}
 
-Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erzeuger- bzw. Anlagendialog des Projekts legt eine eigene Kopie an. Diese Kopie lässt sich im Projekt frei ändern, ohne den Katalogsatz zu berühren. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt dabei den vollen Feldbestand des Katalogsatzes — auch die Felder, die der Katalogeditor selbst nicht mehr zeigt (Kosten, Raumbedarf, Wartung, Nutzungsdauer, Emissionsfaktoren).
+Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erzeuger- bzw. Anlagendialog des Projekts legt eine eigene Kopie an. Diese Kopie lässt sich im Projekt frei ändern, ohne den Katalogsatz zu berühren. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt dabei den vollen Feldbestand des Katalogsatzes — auch die Felder, die der Bereich unter der Liste selbst nicht zeigt (Kosten, Raumbedarf, Wartung, Nutzungsdauer, Emissionsfaktoren).
 
 == Schreibschutz und Löschen ==
 {{Anker|schreibschutz}}

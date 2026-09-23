@@ -771,6 +771,12 @@ Chips — und mit Rev. 3 die **Filterzeile** selbst. Es kommt **eines** dazu: de
 `Katalograhmen` behält seine Bausteine, aber **nicht** seine Anordnung, und die
 `Zweispaltenauswahl` steht ganz zur Frage (Q2).
 
+> **Nachtrag 23.09.2026 (#442).** Die Fußleiste (Zone C) des `KatalogBrowserDialog` trägt heute
+> Speichern · Verwerfen · Füller · Neu… · Löschen · OK; „Kopieren…" und „Vergleichen" aus dem
+> Mockup oben sind noch nicht gebaut (Konzept Administrationsdialoge, Stufe 3). Die Spalten der
+> Zone B blenden seit Stufe 1 nach Rang aus (`Katalogspaltenrang`, Baustein `Spaltenraenge`); eine
+> Spalte mit gesetztem Filter oder Sortierung bleibt dabei immer sichtbar.
+
 #### 5.6.2 Der Spaltenkopf
 
 Vorbild ist der Tabellenkopf aus der Anwendung, die der Anwender als Screenshot 1 gezeigt hat:

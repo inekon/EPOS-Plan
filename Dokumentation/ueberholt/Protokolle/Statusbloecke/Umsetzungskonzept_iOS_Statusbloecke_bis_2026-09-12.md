@@ -7981,3 +7981,89 @@ prüfen.
 > oder Solarthermie ohne Pufferspeicher Prozesswärme decken soll, und die
 > Ergebnisansicht meldet, wenn Bedarf, Senken oder Anlagen nach dem Lauf geändert
 > wurden.
+
+## #442 — Administrationsdialoge Stufe 1: ein Rollbereich, Spalten nach Rang (23.09.2026)
+
+Anwenderzuruf 23.09.2026 „Starte Stufe 1" zum Konzept
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`: ein Rollbereich je
+Spalte im `Katalograhmen`, Spalten mit Rang statt Querrollen, keine gefilterte
+Spalte verschwindet, kein Katalogeditor „Bearbeiten…" neben dem bedienbaren
+Stammblatt (AD-Q6). Commits `c8e5f775` (Rahmen, Spaltenränge, AD-Q6),
+`d9ef80b8` (Proben mit den Messfällen 1 088 × 624 und 400 × 624).
+
+**Befund (Katalogprobe, 28 Fälle N01–N14 vor Stufe 1).** 27 von 28 Fällen mit
+Rollbereichen ineinander; bei 1 088 × 624 lag die Fußleiste zwar im Fenster,
+der Rahmen schnitt Eingabeblock und Liste ab (Heizkessel: Rahmen 474 von
+1 261 px, Liste 367 von 456 px, Eingabeblock 0 px sichtbar; die Wärmepumpe mit
+einem dritten Rollbereich im Kennlinienblatt). Die Tabelle war 1 288 px breit
+in einer 1 054 px breiten Hülle (Bezeichner 487 px, Hersteller 251 px), der
+größte waagerechte Überlauf lag bei der Wärmepumpe (1 269 px bei 1 088,
+1 957 px bei 400 px Fensterbreite); Zahlen standen linksbündig, weil das
+eigene CSS von QuickGrid die Hausregel überstimmte.
+
+**Umsetzung (kein Eingriff in den Rechenweg).** V1: `Katalograhmen` als
+Flex-Spalte ohne eigenes Rollen — die Liste nimmt die verbleibende Höhe ohne
+Deckelung, nur ihre Hülle rollt; der Eingabeblock ist höchstens 34 % des
+Rahmens hoch, rollt eigenständig und ist oben durch eine Trennlinie
+abgesetzt; der Dialog selbst rollt nur unter 22 rem Rahmenhöhe; eingebettet
+nimmt er die Höhe der Überlagerung; bei der Wärmepumpe steht der
+Kennlinienblock im Eingabeschlitz. V2: neue Aufzählung `Katalogspaltenrang`
+und `Katalogspalte.Rang` in allen 14 Profilen der Verwaltungen
+(`Katalogfilterprofil.cs`) und im Klimaprofil; der Baustein
+`EPOS.UI/Bausteine/Spaltenraenge.cs` schätzt Spaltenbreiten aus ihrem Inhalt
+und ordnet einer Leiter von 400 bis 2 400 px eine Stufe zu, `Katalogliste.razor`
+vergibt die Klassen, Container-Queries blenden Spalten nach Breite aus; die
+Bezeichnerspalte ist elastisch mit Auslassung („…") und Tooltip, andere
+Textspalten reichen bis 14 rem, Zahlen stehen rechtsbündig; die Liste wird
+nur zum Container, wenn ihr Profil Ränge trägt (Importe, Flotte und Gesetze
+bleiben unverändert). V7: Eine Spalte mit gesetztem Filter oder Sortierung
+weicht nie, die Suche bleibt über alle Spalten. AD-Q6: `KatalogBrowserDialog`
+ohne „Bearbeiten…", stattdessen „Verwerfen" (neuer Schlüssel
+`ADM_BTN_VERWERFEN`) neben „Speichern"; die Windows-Hülle
+`KatalogBrowserHuelle` ist nachgezogen. Die Stromganglinie (A8) ist dabei
+gleich auf den Rahmen gezogen worden; im Rahmen stehen jetzt A1 bis A8 (15
+Menüpunkte), noch außerhalb: Gebäude (A9), Gebäudetypen (A10) und die
+Lastspitzenkappung (A11) — sie brauchen erst ein Profil der `Katalogliste`
+(V16, Stufe 5).
+
+**Nachher (Proben).** Katalogprobe 45 Fälle grün: keine Rollbereiche
+ineinander, 0 px waagerechter Überlauf bei 1 088 und bei 400 px, der Dialog
+selbst rollt nicht, die Fußleiste bleibt im Fenster, das Zeilenmaß ist
+53 px, der Bezeichner trägt einen Tooltip; beim Heizkessel bei 1 088 px:
+Liste 209 px, Eingabe 160 px, alle sieben Spalten sichtbar; die Gegenproben
+G1/G2 melden weiterhin, der benachbarte Heizkessel-Projektdialog zeigt
+keinen Einbruch. Rasterprobe 13 Fälle grün (virtualisierte Liste mit 6 654
+Zeilen im Dialog: Rollbehälter ist die Hülle, `ItemSize` 53, die
+Beobachter-Rückrufe laufen nach dem Rollen). Node kommt aus dem
+Playwright-NuGet-Paket, dokumentiert in `Proben/Rasterprobe/LIESMICH.md`.
+
+**Prüfung.** Kern-Filter 0 Fehler; EPOS.Kern.Tests 4 832, EPOS.UI.Tests
+5 317, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) —
+0 Fehlschläge; 28 neue Tests (`SpaltenraengeTests` 21, `KatalogBrowserDialogTests`
++5, `KatalograhmenTests`, `WaermepumpeStammDialogTests`), 10 bestehende
+angepasst; Windows-Schale 0 Fehler; die Wachen Schließkreuz,
+Überlagerungstitel und Knopfleisten grün. Kein Rechenweg berührt, kein
+Referenzlauf nötig.
+
+**Was offen bleibt.** (1) Bei 624 px Fensterhöhe bleibt die Liste klein
+(etwa drei Zeilen bei 1 088 px, eine bei 400 px), weil Liste und
+Eingabeblock die Höhe teilen — das löst erst V3 (Stammblatt neben der
+Liste). (2) V10 (Schloss statt Spalten Auslieferung/Schreibschutz) und V15
+(OK → Beenden) aus der Stufe-1-Liste des Konzepts sind nicht umgesetzt, sie
+folgen in Stufe 2. (3) Mit AD-Q6 entfallen Umbenennen und „Speichern unter"
+in der Verwaltung; „Duplizieren" kommt mit V13 (Stufe 3). Der Schlüssel
+`KBROW_BTN_BEARBEITEN` ist verwaist (noch in einem Kern-Test genannt) und
+wird mit dem nächsten Ressourcenaufräumen entfernt. (4) Die Projektdialoge
+erben die Spaltenränge; der Heizkessel-Projektdialog rollt bei 400 px noch
+um 91 px waagerecht, weil die Spalte „im Projekt verwendet" keinen Rang hat
+— außerhalb des Geltungsbereichs dieses Konzepts. (5) Die Breitenschätzung
+ist auf Segoe UI 13 px in Chromium kalibriert; WebView2 auf dem
+Anwenderrechner ist nicht gemessen. (6) Ein kurzer Testlauf überschnitt sich
+mit einem fremden Testprozess (Worktree `z1`) — das Ergebnis blieb grün, die
+Regel dazu gilt künftig strikt.
+
+**Logbuch-Vorschlag** (Version 1.2.0.4):
+
+> Seit 23.09.2026 rollt in den Verwaltungsdialogen nur noch die Liste,
+> Spalten passen sich der Fensterbreite an, und die Felder des gewählten
+> Satzes werden ohne „Bearbeiten…" direkt geändert und gespeichert.
