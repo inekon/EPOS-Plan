@@ -20,5 +20,9 @@
   "summenlinie": {"speicher_c": 60.0, "kaltwasser_auslegung_c": 10.0, "ladungsfaktor": 0.9, "sensorhoehe": 0.5,
                   "speicherart": 1, "mischwasser_c": null, "verzoegerung_min": 2, "speicherverlust_kw": 0.2,
                   "zirkulation_kw": 0.0, "zirkulation_beginn_h": 0.0, "zirkulation_laufzeit_h": 0.0,
-                  "uebertrager": null, "leistung_kw": 6.0}
+                  "uebertrager": null, "leistung_kw": 6.0},
+  "summenlinie_zirkulation": {"speicher_c": 60.0, "kaltwasser_auslegung_c": 10.0, "ladungsfaktor": 0.9, "sensorhoehe": 0.5,
+                              "speicherart": 1, "mischwasser_c": null, "verzoegerung_min": 2, "speicherverlust_kw": 0.2,
+                              "zirkulation_kw": 0.8, "zirkulation_beginn_h": 20.5, "zirkulation_laufzeit_h": 9.0,
+                              "uebertrager": null, "leistung_kw": 6.0}
 }

@@ -18,8 +18,10 @@ namespace EPOS.Kern.Tests
     /// erfundene Kategorien, sechs Realisierungen — nach den Formeln des Papiers, ohne den C#-Code:
     /// Zufallsströme je Realisierung, Zone und Einheit, gestutztes Mittel, Poisson-Zahl, Zeitpunkt,
     /// gekappter Volumenstrom, Superposition, Minutenwerte, Spitzen, Perzentile, Spitze je Einheit,
-    /// GLF_P, der Vergleich μ + z·σ/√N, das Volumen der Summenlinie beim festen Φ_N je Realisierung
-    /// und GLF_V. Dieser Test rechnet dieselbe Eingabe mit <see cref="Zapfensemble"/> und verlangt
+    /// GLF_P, der Vergleich μ + z·σ/√N, das Volumen der Summenlinie beim festen Φ_N je Realisierung,
+    /// das der ersten Einheit je Zone und GLF_V — einmal ohne Zirkulation, einmal mit Zirkulation im
+    /// Laufzeitfenster über Mitternacht. Jede Größe der Referenz wird verglichen, keine ausgefiltert.
+    /// Dieser Test rechnet dieselbe Eingabe mit <see cref="Zapfensemble"/> und verlangt
     /// <b>Abweichung 0 auf 1e-9</b>: |C# − Referenz| ≤ ½ · 1e-9 + 1e-12 · |Referenz|. Alle Werte sind
     /// erfunden; keine Normzahl.</para>
     /// </summary>
@@ -56,23 +58,10 @@ namespace EPOS.Kern.Tests
                     Tageszeitdichte.Aus(ZapfereignisgeneratorTests.Struktur(gang), ZapfTagtyp.Werktag));
             }).ToArray();
 
-            JsonElement s = e.GetProperty("summenlinie");
-            var p = new Summenlinienparameter
-            {
-                KaltwasserAuslegungC = s.GetProperty("kaltwasser_auslegung_c").GetDouble(),
-                SpeicherC = s.GetProperty("speicher_c").GetDouble(),
-                Ladungsfaktor = s.GetProperty("ladungsfaktor").GetDouble(),
-                SensorhoeheAnteil = s.GetProperty("sensorhoehe").GetDouble(),
-                Speicherart = (ZapfSpeicherart)s.GetProperty("speicherart").GetInt32(),
-                VerzoegerungMin = s.GetProperty("verzoegerung_min").GetDouble(),
-                SpeicherverlustKw = s.GetProperty("speicherverlust_kw").GetDouble(),
-                Zirkulation = Zirkulationslast.Keine
-            };
-
             // Parallel gerechnet — die feste Summationsfolge macht es gleichgültig. Die Tage zieht das
             // Ensemble aus ihrem Seed nach (es bewahrt nur Kennzahlen und Vertretertage auf).
-            Bedarfstagensemble ens = Zapfensemble.Ziehen(zonen, e.GetProperty("seed").GetInt64(), realisierungen, perzentil,
-                                                         new Volumenauftrag(p, s.GetProperty("leistung_kw").GetDouble()));
+            long seed = e.GetProperty("seed").GetInt64();
+            Bedarfstagensemble ens = Zapfensemble.Ziehen(zonen, seed, realisierungen, perzentil, Auftrag(e.GetProperty("summenlinie")));
             int v = 0;
             for (int i = 0; i < realisierungen; i++)
             {
@@ -93,15 +82,53 @@ namespace EPOS.Kern.Tests
             v += Gleich(r, "glf_p", ens.GleichzeitigkeitLeistung.Value);
             v += Gleich(r, "wurzel_n_kw", ens.WurzelNSchaetzungKw(e.GetProperty("quantil").GetDouble()));
 
-            Speicherensemble sp = ens.Volumina;
-            v += Perzentile(r, "volumen_l", sp.VolumenL);
-            v += Gleich(r, "glf_v", sp.GleichzeitigkeitVolumen.Value);
-            Assert.Equal(0, sp.OhneNachweis);
+            // Volumina ohne Zirkulation, dann dasselbe Ensemble (derselbe Seed) mit Zirkulation im
+            // Laufzeitfenster über Mitternacht: je Realisierung, Perzentile, erste Einheit je Zone, GLF_V.
+            v += Volumina(r, "", ens, zonen.Length);
+            Bedarfstagensemble zirk = Zapfensemble.Ziehen(zonen, seed, realisierungen, perzentil,
+                                                          Auftrag(e.GetProperty("summenlinie_zirkulation")));
+            Assert.Equal(ens.Kennzahlen.Select(k => k.MinutenspitzeKw), zirk.Kennzahlen.Select(k => k.MinutenspitzeKw));
+            v += Volumina(r, "zirk_", zirk, zonen.Length);
+            Assert.True(zirk.Volumina.VolumenL.P50 != ens.Volumina.VolumenL.P50, "Die Zirkulation muss das Volumen verändern.");
 
-            Assert.Equal(r.Count(kv => !kv.Key.Contains("_volumen_") || kv.Key.StartsWith("volumen_l_", StringComparison.Ordinal)), v);
-            Assert.True(v > 8600, v + " Größen verglichen.");
+            // Jede Größe der Referenz ist verglichen — auch die Volumina je Realisierung und je Einheit.
+            Assert.Equal(r.Count, v);
+            Assert.True(v > 8700, v + " Größen verglichen.");
             // Der Fall deckt die Kappung (Kategorie C, E), leere Stunden und zwei Zonen mit eigenem Index.
             Assert.Equal(new[] { 0, 2 }, zonen.Select(z => z.Index).ToArray());
+        }
+
+        /// <summary>Die Volumina eines Ensembles mit Volumenauftrag gegen die Referenz (Präfix je Summenlinie).</summary>
+        private static int Volumina(Dictionary<string, double> r, string praefix, Bedarfstagensemble ens, int zonen)
+        {
+            int v = 0;
+            Speicherensemble sp = ens.Volumina;
+            Assert.Equal(0, sp.OhneNachweis);
+            for (int i = 0; i < ens.Realisierungen; i++)
+                v += Gleich(r, praefix + "r" + i + "_volumen_l", ens.Kennzahlen[i].VolumenL.Value);
+            v += Perzentile(r, praefix + "volumen_l", sp.VolumenL);
+            for (int z = 0; z < zonen; z++)
+                v += Perzentile(r, praefix + "zone" + z + "_volumen_einheit_l", ens.Zonen[z].VolumenEinheitL);
+            v += Gleich(r, praefix + "glf_v", sp.GleichzeitigkeitVolumen.Value);
+            return v;
+        }
+
+        /// <summary>Der Volumenauftrag aus einem Summenlinienblock der Eingabe (mit Zirkulation und Laufzeitfenster).</summary>
+        private static Volumenauftrag Auftrag(JsonElement s)
+        {
+            var p = new Summenlinienparameter
+            {
+                KaltwasserAuslegungC = s.GetProperty("kaltwasser_auslegung_c").GetDouble(),
+                SpeicherC = s.GetProperty("speicher_c").GetDouble(),
+                Ladungsfaktor = s.GetProperty("ladungsfaktor").GetDouble(),
+                SensorhoeheAnteil = s.GetProperty("sensorhoehe").GetDouble(),
+                Speicherart = (ZapfSpeicherart)s.GetProperty("speicherart").GetInt32(),
+                VerzoegerungMin = s.GetProperty("verzoegerung_min").GetDouble(),
+                SpeicherverlustKw = s.GetProperty("speicherverlust_kw").GetDouble(),
+                Zirkulation = new Zirkulationslast(s.GetProperty("zirkulation_kw").GetDouble(),
+                    new Tagesfenster(s.GetProperty("zirkulation_beginn_h").GetDouble(), s.GetProperty("zirkulation_laufzeit_h").GetDouble()))
+            };
+            return new Volumenauftrag(p, s.GetProperty("leistung_kw").GetDouble());
         }
 
         // =================================================================================

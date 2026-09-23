@@ -24,7 +24,9 @@ den C#-Code:
     naechsten Rang (P50/P90/P95/P99, Minimum, Maximum); Spitze je Einheit je Zone;
     Gleichzeitigkeit GLF_P; Vergleich mu + z * sigma / sqrt(N) aus der Einzelstatistik;
   - Summenlinie beim festen Phi_N (kleinstes Volumen, Funktion aus auslegung_referenzfall_bauen.py,
-    ebenfalls ohne C#): Volumen je Realisierung, Perzentile, GLF_V mit dem Anteil der Einheit.
+    ebenfalls ohne C#): Volumen je Realisierung, Perzentile, Volumen der ersten Einheit je Zone,
+    GLF_V mit dem Anteil der Einheit - einmal ohne Zirkulation ("summenlinie") und einmal mit
+    Zirkulation im Laufzeitfenster ("summenlinie_zirkulation", Groessen mit Praefix zirk_).
 
 Der Test EPOS.Kern.Tests/ZapfensembleReferenzfallTests liest Eingabe und CSV, rechnet mit
 Zapfensemble und verlangt Abweichung 0 auf 1e-9 (|C# - Referenz| <= 0,5e-9 + 1e-12 * |Referenz|).
@@ -288,15 +290,23 @@ def rechnen(e):
             groesste = w
     werte["wurzel_n_kw"] = groesste * 60
 
-    # Summenlinie beim festen Phi_N.
-    p = dict(e["summenlinie"])
+    # Summenlinie beim festen Phi_N - ohne Zirkulation und mit Zirkulation (Laufzeitfenster).
+    volumina(werte, "", e["summenlinie"], tage, vertreter, zonen, pz)
+    volumina(werte, "zirk_", e["summenlinie_zirkulation"], tage, vertreter, zonen, pz)
+    return werte
+
+
+def volumina(werte, praefix, summenlinie, tage, vertreter, zonen, pz):
+    """Volumen je Realisierung beim festen Phi_N, Perzentile, Volumen der ersten Einheit je Zone
+    (Anteil ihrer Tagesmenge an Phi_N, Speicherverlust und Zirkulation) und GLF_V."""
+    p = dict(summenlinie)
     phi = p["leistung_kw"]
     vol = [volumen(q, p, phi) for q in tage]
     for r, v in enumerate(vol):
-        werte[f"r{r}_volumen_l"] = v
+        werte[f"{praefix}r{r}_volumen_l"] = v
     pv = perzentile(vol)
     for k, v in pv.items():
-        werte[f"volumen_l_{k}"] = v
+        werte[f"{praefix}volumen_l_{k}"] = v
     tag_summe = 0.0
     for z in zonen:
         tag_summe += z["tagesmenge_kwh"]
@@ -311,10 +321,9 @@ def rechnen(e):
         einzel = [volumen(minutenwerte(ev), eigen, phi * anteil) for ev in vertreter[zi]]
         pe = perzentile(einzel)
         for k, v in pe.items():
-            werte[f"zone{zi}_volumen_einheit_l_{k}"] = v
+            werte[f"{praefix}zone{zi}_volumen_einheit_l_{k}"] = v
         nenner += z["einheiten"] * pe[pz]
-    werte["glf_v"] = pv[pz] / nenner
-    return werte
+    werte[f"{praefix}glf_v"] = pv[pz] / nenner
 
 
 def main():
