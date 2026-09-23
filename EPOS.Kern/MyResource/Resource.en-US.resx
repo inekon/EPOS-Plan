@@ -4473,7 +4473,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>name occurs more than once in the selection</value>
   </data>
   <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
-    <value>Factory data set: an overwrite will be reverted by the next database update.</value>
+    <value>Delivery record: overwriting replaces the delivered values; a program update does not restore them.</value>
   </data>
   <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
     <value>Import</value>
@@ -11601,11 +11601,6 @@ Overwrite it anyway?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>The record could not be transferred into the project.</value>
   </data>
-  <!-- ===========================================================  </data>
-       iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
-       (Sammelnachtrag der Welle 5; Zugriff ueber
-       ResourceManager.GetString mit deutschem Rueckfall im Code).
-       ================================================================== -->
   <data name="BKS_LBL_FORTSCHRITT" xml:space="preserve">
     <value>Progress</value>
   </data>
@@ -20274,7 +20269,7 @@ Do you want to allow this?</value>
     <value>Catalogue record “{0}” created.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
-    <value>Factory data sets are not overwritten.</value>
+    <value>Delivery records are not overwritten – unlock the record in the heat pump administration first.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
     <value>The transfer to the catalogue failed.</value>
@@ -22107,7 +22102,7 @@ Do you want to allow this?</value>
     <value>The daily curve whose 24 hourly values the screen shows; a type carries five or eight of them.</value>
   </data>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>The free text of the loaded type; the screen shows it locked.</value>
+    <value>The free text of the loaded type; saved with “Save”. A delivered type is read-only.</value>
   </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>The loaded type. Setting it loads its weekly profile — the same path as a click in the list.</value>
@@ -22954,6 +22949,18 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
+    <value>Cash flow series: version</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_ERL" xml:space="preserve">
+    <value>The version whose cash flow series block 2 of the ValERI assessment shows — by default the lead version. The choice only changes the display of the annual table and the cash flow chart, not the key figures; only versions for which the last calculation run delivered annual series can be chosen.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_NAME" xml:space="preserve">
+    <value>Cash flow series: scenario</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_ERL" xml:space="preserve">
+    <value>The scenario whose cash flow series block 2 of the ValERI assessment shows — by default the expected case. The choice only changes the display; if the version does not carry the scenario, the expected case is shown. The scenario of the key figures is set by the field “Scenario”.</value>
   </data>
   <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
     <value>h0</value>
@@ -24885,7 +24892,7 @@ Do you want to allow this?</value>
     <value>Delivered record – read only</value>
   </data>
   <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
-    <value>Delivered record – read only, duplicating allowed</value>
+    <value>Delivered record – read only, duplicating or unlocking allowed</value>
   </data>
   <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
     <value>Delivered record – read only. To change it, create your own record with “Duplicate...”.</value>
@@ -25752,7 +25759,7 @@ Do you want to allow this?</value>
     <value>Duplicate works on exactly one row.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
-    <value>Delivery record – deletion locked. Create your own record with “Duplicate...”.</value>
+    <value>Delivery record – deletion locked. Create your own record with “Duplicate...” or “Unlock...”.</value>
   </data>
   <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
     <value>Delete these {0} records? {1}</value>
@@ -25788,7 +25795,7 @@ Do you want to allow this?</value>
     <value>All data</value>
   </data>
   <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
-    <value>Delivery record – read only. To change it, duplicate it in the selection bar.</value>
+    <value>Delivery record – read only. To change it, duplicate or unlock it in the selection bar.</value>
   </data>
   <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
     <value>Delivery record</value>
@@ -25986,13 +25993,82 @@ Do you want to allow this?</value>
     <value>enlarge…</value>
   </data>
   <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
-    <value>Delivered record – read only, cannot be deleted.</value>
+    <value>Delivered record – read only, cannot be deleted. To change it, unlock it in the selection bar.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
-    <value>Delivered record – deletion is locked.</value>
+    <value>Delivered record – deletion is locked. Unlock it first (“Unlock...”).</value>
   </data>
   <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
     <value>Used in projects ({0}) – deletion is locked; remove it there first.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN" xml:space="preserve">
+    <value>Unlock...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN" xml:space="preserve">
+    <value>Lock...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN_KURZ" xml:space="preserve">
+    <value>The selected delivery records become your own records – after confirmation.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN_KURZ" xml:space="preserve">
+    <value>The selected records become delivery records: read only, cannot be deleted – after confirmation.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Unlock “{0}”? It becomes your own record: you can edit and delete it. A program update neither changes nor restores it; the delivered values then exist only in a database backup. You can lock it again; its values then stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Unlock {0} records ({1})? They become your own records: you can edit and delete them. A program update neither changes nor restores them; the delivered values then exist only in a database backup. You can lock them again; their values then stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT" xml:space="preserve">
+    <value>The weekly profile belongs to type “{0}” and stays locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT_MEHR" xml:space="preserve">
+    <value>The weekly profiles belong to their types ({0}) and stay locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_TITEL" xml:space="preserve">
+    <value>Lock</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE" xml:space="preserve">
+    <value>Lock “{0}” as a delivery record? It is then read only and cannot be deleted; you can change it again only after “Unlock...”. Its values stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Lock {0} records as delivery records ({1})? They are then read only and cannot be deleted; you can change them again only after “Unlock...”. Their values stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
+    <value>Already in that state, unchanged: {0}.</value>
+  </data>
+  <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
+    <value>Delivered record, unlocked – your changes count as your own values; an update does not restore the delivered values.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN" xml:space="preserve">
+    <value>“{0}” unlocked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR" xml:space="preserve">
+    <value>{0} records unlocked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT" xml:space="preserve">
+    <value>“{0}” locked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT_MEHR" xml:space="preserve">
+    <value>{0} records locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_KATALOG_UNBEKANNT" xml:space="preserve">
+    <value>Unknown catalogue “{0}” – the lock stays as it is.</value>
+  </data>
+  <data name="ADM_SCHLOSS_STATUS" xml:space="preserve">
+    <value>The lock of this catalogue follows its release status and cannot be switched here.</value>
+  </data>
+  <data name="ADM_SCHLOSS_OHNE_KENNZEICHEN" xml:space="preserve">
+    <value>The catalogue “{0}” has no delivery flag – there is no lock to switch.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SATZ_FEHLT" xml:space="preserve">
+    <value>Record {0} is no longer in the catalogue – no lock was switched.</value>
+  </data>
+  <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
+    <value>The lock could not be switched; nothing was changed.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Kept (used in projects): {0}</value>
@@ -26260,5 +26336,215 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>There is nothing to save in “{0}” – no field has been changed.</value>
+  </data>
+  <data name="KI_DLG_BEWUSST_NICHT_STEUERBAR" xml:space="preserve">
+    <value>This form is deliberately not controllable: {0}</value>
+  </data>
+  <data name="KI_DLG_NOCH_NICHT_STEUERBAR" xml:space="preserve">
+    <value>This form is not controllable yet: {0}</value>
+  </data>
+  <data name="KI_AUSNAHME_ANZEIGE" xml:space="preserve">
+    <value>It displays results; its switches only adjust the view and hold no settings.</value>
+  </data>
+  <data name="KI_AUSNAHME_OHNE_EINSTELLWERTE" xml:space="preserve">
+    <value>It only manages time series and their origin and holds no settings.</value>
+  </data>
+  <data name="KI_AUSNAHME_ANLEGEN" xml:space="preserve">
+    <value>It creates or removes records — that remains the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_IMPORT" xml:space="preserve">
+    <value>It belongs to an import; the user decides what is read in.</value>
+  </data>
+  <data name="KI_AUSNAHME_EXPORT" xml:space="preserve">
+    <value>It belongs to an export or transfer; the user decides what is written out.</value>
+  </data>
+  <data name="KI_AUSNAHME_DATEI" xml:space="preserve">
+    <value>It selects files; choosing paths remains the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_RUECKFRAGE" xml:space="preserve">
+    <value>It is a confirmation prompt that the user answers.</value>
+  </data>
+  <data name="KI_AUSNAHME_LIZENZ" xml:space="preserve">
+    <value>It takes licence or key entries, which remain the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_ASSISTENT" xml:space="preserve">
+    <value>It belongs to the help assistant itself.</value>
+  </data>
+  <data name="KI_AUSNAHME_AKTION" xml:space="preserve">
+    <value>It triggers an action (transfer, selection to open) that the user confirms personally.</value>
+  </data>
+  <data name="KI_AUSNAHME_WERKZEUG" xml:space="preserve">
+    <value>It is a maintenance tool whose interventions the user makes personally.</value>
+  </data>
+  <data name="KI_AUSNAHME_FELD_DES_WIRTS" xml:space="preserve">
+    <value>Its value is a field of the form it belongs to; the assistant sets it there.</value>
+  </data>
+  <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
+    <value>Its connection to the assistant is planned but not yet implemented.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>On = the run includes the cooling of the buildings, off = without cooling. Project setting; the switch is written immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_NAME" xml:space="preserve">
+    <value>Plant (heat source)</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_ERL" xml:space="preserve">
+    <value>The heat pump or boiler to which heat source, constant source temperature, HP priority and operating mode refer. Setting it selects the card in the configuration.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_NAME" xml:space="preserve">
+    <value>Heat source</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_ERL" xml:space="preserve">
+    <value>The heat source of the selected plant. System return, outdoor air and constant are written immediately; buffer storage, source profile and ground open their dialogue, which only applies them with OK; a CSV file is chosen by the user.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_NAME" xml:space="preserve">
+    <value>Constant source temperature</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_ERL" xml:space="preserve">
+    <value>The temperature of the “constant” source of the selected plant; can be set when this source is selected. Written immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_NAME" xml:space="preserve">
+    <value>HP priority</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_ERL" xml:space="preserve">
+    <value>The deployment order of the selected heat pump, a whole number from 1; applies to heat pumps only. Written immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_NAME" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_ERL" xml:space="preserve">
+    <value>The output control of the selected heat pump: runtime-, output- or PV-optimised; applies to heat pumps only. Written immediately.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_UNBEKANNT" xml:space="preserve">
+    <value>Plant {0} is not among the heat pumps and boilers of the configuration.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>No heat pump or boiler is selected — set the field “quellanlage” first.</value>
+  </data>
+  <data name="KI_SIM_NUR_WP" xml:space="preserve">
+    <value>This value applies to heat pumps only; “{0}” is not one.</value>
+  </data>
+  <data name="KI_SIM_UEBERLAGERUNG_OFFEN" xml:space="preserve">
+    <value>A dialogue is open on the configuration; the value is chosen there or set after closing it.</value>
+  </data>
+  <data name="KI_SIM_WERT_UNBEKANNT" xml:space="preserve">
+    <value>“{0}” is not among the choices of the selected plant.</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DATEI" xml:space="preserve">
+    <value>The source “{0}” reads a profile from a file; the user chooses the file on the card (chip “Source”).</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DIALOG" xml:space="preserve">
+    <value>The source “{0}” needs its details in the dialogue “{1}”; it is now open — set the values there, they only apply with OK.</value>
+  </data>
+  <data name="KI_SIM_QUELLTEMP_NUR_KONSTANT" xml:space="preserve">
+    <value>The source temperature only applies to the source “{0}”; change the heat source first.</value>
+  </data>
+  <data name="KI_SIM_PRIORITAET_POSITIV" xml:space="preserve">
+    <value>The HP priority is a whole number from 1.</value>
+  </data>
+  <data name="KI_SIM_KEIN_SCHREIBWEG" xml:space="preserve">
+    <value>The platform does not write this value here.</value>
+  </data>
+  <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
+    <value>The configuration (step ①) is not shown; switch to it, then the value can be set.</value>
+  </data>
+  <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
+    <value>On = the simulation may extend the heat pump characteristic beyond its support points. Project setting for all heat pumps; the switch is written immediately.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_DATEI" xml:space="preserve">
+    <value>No file has been read in yet. “Load profile from file…” reads one in; choosing the file remains the user's task.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
+    <value>The list of load profiles contains no stored profile.</value>
+  </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Cooling mode</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Cooling flow temperature</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Auxiliary power share (cooling)</value>
+  </data>
+  <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
+    <value>Cooling circuit</value>
+  </data>
+  <data name="SIMENG_SENKE_KAELTEZIEL_ALTSPALTE" xml:space="preserve">
+    <value>Heat sink: System {0} carries the cooling target "cooling circuit" in the legacy column WS_Ziel. The legacy columns only know heat targets — there it is calculated on the heating circuit; a cooling sink belongs in the sink list only.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>There is no cooling characteristic for this unit — cooling mode remains locked.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_QUELLSPEICHER" xml:space="preserve">
+    <value>Cooling mode with a source storage is not calculated — cooling mode remains locked.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Heat pump "{0}": rated cooling capacity without a cooling characteristic — this unit only calculates heat.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode with a source storage is not calculated — the unit only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode without a cooling characteristic in the project — there is no cooling data for this unit; it only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG" xml:space="preserve">
+    <value>The catalogue holds a cooling characteristic for this unit; it can be fetched from the catalogue.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HEIZLAGE" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling characteristic for the flow temperature {1} °C is a heating-mode block (evaporator capacity in heating mode, not an EER) — it is not read as a cooling characteristic; the unit does not cool.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_ACHSEN" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling characteristic for the flow temperature {1} °C carries the chilled-water temperature on the temperature axis instead of the outdoor or source temperature — it is not reinterpreted; the unit does not cool.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling flow temperature {1} °C is not a data point of the cooling characteristic ({2} °C) — {3} °C is used; there is no interpolation across flow temperatures.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
+    <value>Heat pump "{0}": {1} data points of the cooling characteristic are stored twice with equal values — they have been merged.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND" xml:space="preserve">
+    <value>Heat pump "{0}": {1} data points of the cooling characteristic are stored more than once with differing values — the row stored first applies.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Heat pump "{0}": the auxiliary power share {1} is not between 0 and 1 — no auxiliary power surcharge is applied.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
+    <value>Heat pump "{0}": the electricity carrier chosen for cooling is not priced separately yet — the cooling electricity carries the project's tariff and emission factor.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
+    <value>Heat pump "{0}", cooling flow temperature {1} °C: in {2} hours with cooling demand the temperature was below the lowest data point ({3} °C, its values apply), in {4} hours above the highest ({5} °C, {6}).</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_VERLAENGERT" xml:space="preserve">
+    <value>linearly extended</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_GEKAPPT" xml:space="preserve">
+    <value>its values apply</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_EINZELPUNKT" xml:space="preserve">
+    <value>Heat pump "{0}", cooling flow temperature {1} °C: the cooling characteristic has only one data point ({2} °C) — cooling capacity and EER apply unchanged in every hour.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %), cooling electricity {3} MWh/a, seasonal EER {4}; {5} cooling days.</value>
+  </data>
+  <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
+    <value>Cooling demand partly uncovered: {0} MWh/a — of which {1} MWh/a on heating days (the operating mode of the day is heating), {2} MWh/a on cooling days (capacity too small, or the hour taken by domestic hot water or a lock-out period).</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+    <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
+    <value>Cooling coverage check: {0} heat bookings in the cooling channel, {1} hours with a changed cooling channel, {2} hours with a changed heat channel, {3} hours with an open cooling balance (largest deviation {4} kWh). The separation of heat and cooling does not hold; the run is not saved.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE" xml:space="preserve">
+    <value>Heat pump "{0}": {1} cooling blocks in heating position not imported (flow temperature {2} °C) — they describe the evaporator capacity in heating mode, not cooling mode.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
+    <value>Heat pump "{0}": {1} cooling blocks with swapped axes not imported (flow temperature {2} °C) — the temperature axis carries the chilled-water temperature instead of the outdoor or source temperature.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
+    <value>The heat pumps in cooling mode cover {0} MWh/a of the cooling demand ({1} %).</value>
   </data>
 </root>

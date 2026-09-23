@@ -671,7 +671,12 @@
                                          // der neun Reiterblaetter - die
                                          // Speicherkapazitaet der Autarkierechnung auf
                                          // dem Blatt "Ergebnis".
-                                         kwh => _ergebnisSeite?.SpeicherkapazitaetSetzen(kwh));
+                                         kwh => _ergebnisSeite?.SpeicherkapazitaetSetzen(kwh),
+                                         // Welle #458: Schritt ① selbst - er traegt die
+                                         // Werte JE ANLAGE (Quelle, Prioritaet,
+                                         // Betriebsmodus) samt den Vorpruefungen seiner
+                                         // Ueberlagerungen.
+                                         () => _konfigSeite);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => _kiSicht, KiHaken());
     }

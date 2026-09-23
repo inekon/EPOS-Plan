@@ -99,6 +99,10 @@ namespace WindowsFormsApplication1
                     (id, name) => KatalogBrowserHuelle.Kopie(BedarfStammCtrl.Duplizieren(art, id, name))),
                 ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
                 ["MeldungDupliziert"] = MyResource.Resource.ADM_MSG_DUPLIZIERT,
+                // AD-Q15: das Schloss des Profils laesst sich nach Rueckfrage umschalten;
+                // das des Typs bleibt getrennt - die Rueckfrage nennt es.
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) => BedarfStammCtrl.SchlossSetzen(art, ids, gesperrt)),
+                ["TypGesperrt"] = new Func<string, bool>(typ => TypProfilCtrl.IstReadOnly(art, typ)),
 
                 ["TypStammGaben"] =
                     new Func<string, string, string, bool, IReadOnlyDictionary<string, object>>(

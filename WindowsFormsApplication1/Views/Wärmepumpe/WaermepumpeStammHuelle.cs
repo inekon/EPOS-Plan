@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
                 // schreibt sie anwendungsweit. Kein Delegat, kein Waehler.
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
-                ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndaten),
+                ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndatenStamm),
                 ["Speichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(Speichern),
                 ["GesperrtDurch"] = new Func<string, string>(
                     name => new WPStammCtrl().GesperrtDurchProjekt(name)),
@@ -115,6 +115,8 @@ namespace WindowsFormsApplication1
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(
                     (id, name) => KatalogBrowserHuelle.Kopie(WPStammCtrl.Duplizieren(id, name))),
                 ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(KennlinienZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     KennlinienAbgleichen),

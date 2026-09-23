@@ -987,9 +987,11 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Die DATEIWAHL bleibt draussen</b> (KI-D-Q6): Eine Datei einzulesen ist
-        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist ein
-        /// Optionsfeld der Maske, und auf „Datei importieren" umzustellen ist dasselbe
-        /// wie ein Klick darauf. Der Pfad selbst laedt nichts.
+        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist die Spalte
+        /// „Quelle" der Lastgangliste (Stufe 5 der Neuordnung): „Ganglinie" waehlt die
+        /// erste Ganglinienzeile, „Datei" die zuletzt eingelesene Datei, wie ein Klick;
+        /// ohne eingelesene Datei lehnt die Setzung benannt ab. Die GANGLINIE waehlt
+        /// ihre Zeile. Der Pfad selbst laedt nichts.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Berechnen", „Minimale Schwelle" und „In Variante
@@ -1297,7 +1299,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Reiterblatt „Wirtschaftlichkeit" — sechs Felder aus
+        /// Das Reiterblatt „Wirtschaftlichkeit" — acht Felder aus
         /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1312,6 +1314,11 @@ namespace WindowsFormsApplication1
         /// Seite holt sich zu jeder Wahl einen NEUEN Stand aus der Huelle und rechnet
         /// das Warnband nach. Sie bindet deshalb ueber eine Sichtklasse, die jede
         /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Die zwei Anzeigewahlen von Block 2 der ValERI-Bewertung sind drin</b>
+        /// (KI-D-Q11): Stand und Szenario der Zahlungsreihen waehlen nur, welche schon
+        /// gelieferte Jahrestafel die Seite zeigt - kein neuer Stand, kein Nachrechnen.
         /// </para>
         /// <para>
         /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
@@ -1346,7 +1353,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nicht_monetaer",
                                      "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
                                      KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
-                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_stand",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenStand",
+                                     KiDialogTexte.WseZrStandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrStandErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_szenario",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenSzenario",
+                                     KiDialogTexte.WseZrSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrSzenarioErl, leerErlaubt: true)
                 });
         }
 
@@ -3154,10 +3169,13 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kurve", "GebaeudetypKiSicht.Kurve",
                                      KiDialogTexte.GtypKurveName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GtypKurveErl, leerErlaubt: true),
+                    // Welle #458: Die Beschreibung ist seit der Neuordnung der
+                    // Verwaltungen im Stammblatt bearbeitbar (BeiBeschreibung) - und
+                    // damit auch fuer den Assistenten; ein Auslieferungstyp bleibt
+                    // ueber Schreibgeschuetzt geschuetzt.
                     new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
                                      KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.GtypBeschreibungErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -4263,8 +4281,11 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Waermepumpen-ANLAGE eines Projekts — einundzwanzig Felder aus
-        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten</c>.
+        /// Die Waermepumpen-ANLAGE eines Projekts — dreiundzwanzig Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageKiSicht</c>, die den Feldsatz
+        /// <c>WaermepumpeAnlageDaten</c> unveraendert durchreicht und die
+        /// Projekteinstellung „Extrapolation der WP-Kennlinie erlauben" dazu traegt
+        /// (Welle #458).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4289,9 +4310,9 @@ namespace WindowsFormsApplication1
         /// Kostenlauf wortlos ueberschriebe.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht</b> — er steht im Daten-Objekt allein
-        /// als Id (<c>CarrierId</c>); dieselbe Regel wie bei Kessel, BHKW und
-        /// Stromspeicher. Die KENNLINIEN fehlen ebenfalls: Sie sind eine Tabelle von
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b): Die Id (<c>CarrierId</c>)
+        /// ist der Schluessel, die Eintraege reicht der Dialog aus dem Traegerkatalog
+        /// herein. Die KENNLINIEN fehlen mit Absicht: Sie sind eine Tabelle von
         /// Stuetzstellen mit eigenem Editor, kein Maskenfeld.
         /// </para>
         /// <para>
@@ -4308,87 +4329,97 @@ namespace WindowsFormsApplication1
                 felder: new[]
                 {
                     // ---- Woran der Anwender gerade arbeitet -------------------------
-                    new KiDialogFeld("anlage", "WaermepumpeAnlageDaten.Bezeichner",
+                    new KiDialogFeld("anlage", "WaermepumpeAnlageKiSicht.Bezeichner",
                                      KiDialogTexte.WpaAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
 
                     // ---- Auslegung fuer die Verteilung ------------------------------
-                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageDaten.Vorlauf",
+                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageKiSicht.Vorlauf",
                                      KiDialogTexte.WpaVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageDaten.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageKiSicht.Ruecklauf",
                                      KiDialogTexte.WpaRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageDaten.Nutzungszeit",
+                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageKiSicht.Nutzungszeit",
                                      KiDialogTexte.WpaNutzungsdauerName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNutzungsdauerErl,
                                      einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
 
+                    // ---- Die Projekteinstellung neben der Auslegung (Welle #458) -----
+                    //
+                    // „Extrapolation der WP-Kennlinie erlauben" gilt allen Waermepumpen
+                    // des Projekts und schreibt SOFORT (ExtrapolationSchreiben) - sie
+                    // haengt nicht am Feldsatz der Anlage; deshalb meldet der Dialog
+                    // eine Sichtklasse an, die beides traegt.
+                    new KiDialogFeld("extrapolation", "WaermepumpeAnlageKiSicht.Extrapolation",
+                                     KiDialogTexte.WpaExtrapolationName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaExtrapolationErl),
+
                     // ---- Der Block „Konfiguration" ---------------------------------
-                    new KiDialogFeld("heizstab", "WaermepumpeAnlageDaten.Heizstab",
+                    new KiDialogFeld("heizstab", "WaermepumpeAnlageKiSicht.Heizstab",
                                      KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaHeizstabErl),
-                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageDaten.Sperrung",
+                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageKiSicht.Sperrung",
                                      KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaSperrungErl),
-                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageDaten.SperrzeitVon",
+                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageKiSicht.SperrzeitVon",
                                      KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitVonErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageDaten.SperrzeitBis",
+                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageKiSicht.SperrzeitBis",
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageDaten.BivalenterBetrieb",
+                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaBivalentErl),
-                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageDaten.CarrierId",
+                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageKiSicht.CarrierId",
                                      KiDialogTexte.WpaTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTraegerErl),
-                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageDaten.Betriebsart",
+                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageKiSicht.Betriebsart",
                                      KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBetriebsartErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageDaten.Abschaltpunkt",
+                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageKiSicht.Abschaltpunkt",
                                      KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaAbschaltpunktErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Die Felder des Geraets (Stammfeldblock) --------------------
-                    new KiDialogFeld("hersteller", "WaermepumpeAnlageDaten.Firma",
+                    new KiDialogFeld("hersteller", "WaermepumpeAnlageKiSicht.Firma",
                                      KiDialogTexte.WpaFirmaName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaFirmaErl, leerErlaubt: true),
-                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageDaten.Beschreibung",
+                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageKiSicht.Beschreibung",
                                      KiDialogTexte.WpaBeschreibungName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaBeschreibungErl, leerErlaubt: true),
-                    new KiDialogFeld("typ", "WaermepumpeAnlageDaten.Typ",
+                    new KiDialogFeld("typ", "WaermepumpeAnlageKiSicht.Typ",
                                      KiDialogTexte.WpaTypName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTypErl, leerErlaubt: true),
-                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageDaten.Regelung",
+                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageKiSicht.Regelung",
                                      KiDialogTexte.WpaRegelungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaRegelungErl, leerErlaubt: true),
-                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageDaten.Aufstellung",
+                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageKiSicht.Aufstellung",
                                      KiDialogTexte.WpaAufstellungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaAufstellungErl, leerErlaubt: true),
-                    new KiDialogFeld("baujahr", "WaermepumpeAnlageDaten.Baujahr",
+                    new KiDialogFeld("baujahr", "WaermepumpeAnlageKiSicht.Baujahr",
                                      KiDialogTexte.WpaBaujahrName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBaujahrErl),
-                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageDaten.Nennleistung",
+                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageKiSicht.Nennleistung",
                                      KiDialogTexte.WpaNennleistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNennleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW),
-                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageDaten.HeizstabLeistung",
+                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageKiSicht.HeizstabLeistung",
                                      KiDialogTexte.WpaHeizstabLeistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaHeizstabLeistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageDaten.Kuehlleistung",
+                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageKiSicht.Kuehlleistung",
                                      KiDialogTexte.WpaKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageDaten.Modulkosten",
+                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageKiSicht.Modulkosten",
                                      KiDialogTexte.WpaModulkostenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaModulkostenErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, nurLesen: true)
@@ -4521,11 +4552,11 @@ namespace WindowsFormsApplication1
         /// mit siebenundzwanzig Feldern.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht.</b> Er steht als Wahl ueber Gruppe
-        /// und Art auf der Maske, im Daten-Objekt aber allein als Id
-        /// (<c>ErzeugerZeile.CarrierId</c>); gelesen waere er eine nackte Zahl,
-        /// gesetzt eine geratene — dieselbe Regel wie bei der Brennstoffvariante der
-        /// Kessel- und BHKW-Maske.
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b, KI-D-Q6): Auf der Maske
+        /// steht er ueber Gruppe und Art, im Daten-Objekt als Id
+        /// (<c>ErzeugerZeile.CarrierId</c>); die Eintraege reicht der Dialog als
+        /// Wahlquelle herein, gesetzt wird ueber den angezeigten Text — dieselbe Regel
+        /// wie bei der Traegervariante der Kessel- und BHKW-Maske.
         /// </para>
         /// </remarks>
         private static KiDialog StromspeicherProjekt()
@@ -4567,12 +4598,12 @@ namespace WindowsFormsApplication1
         /// Zustand, den der Anwender auf der Maske sieht.
         /// </para>
         /// <para>
-        /// <b>Die BRENNSTOFFVARIANTE fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus den
-        /// Varianten der Traegergruppe); sie ueber ihre rohe Id setzen zu lassen hiesse,
-        /// das Modell eine Zahl raten zu lassen, deren Bedeutung nur die Maske kennt —
-        /// dieselbe Regel wie bei der Bemessung der Kostenverwaltung. Sie kommt in den
-        /// Katalog, sobald es dafuer eine benannte Auswahl gibt.
+        /// <b>Die TRAEGERVARIANTE ist eine Wahl</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus
+        /// den Varianten der Traegergruppe). Die Eintraege reicht der Dialog als
+        /// Wahlquelle herein; der Assistent setzt sie ueber den angezeigten Text und
+        /// raet keine rohe Id — dieselbe Regel wie bei der Bemessung der
+        /// Kostenverwaltung.
         /// </para>
         /// <para>
         /// <b>Der Aufklapper „Alle Daten" bleibt draussen.</b> Er zeigt die Spalten des
@@ -4624,8 +4655,7 @@ namespace WindowsFormsApplication1
         /// <b>Die untere GRENZLEISTUNG ist der Unterschied zum Heizkessel.</b> Sie sagt,
         /// bis wohin das Modul moduliert; 0 heisst „Projektvorgabe"
         /// (<c>Tab_Einstellungen.Leistungsgrenze</c>), und genau das steht in ihrer
-        /// Erlaeuterung. Die Brennstoffvariante fehlt aus demselben Grund wie beim
-        /// Heizkessel.
+        /// Erlaeuterung. Die Traegervariante ist eine Wahl wie beim Heizkessel.
         /// </remarks>
         private static KiDialog BhkwProjekt()
         {
@@ -4696,12 +4726,11 @@ namespace WindowsFormsApplication1
         /// setzen - und die naechste Neuberechnung ueberschriebe es wortlos.
         /// </para>
         /// <para>
-        /// <b>Die Bemessung fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>); sie ueber
-        /// ihre rohe Id setzen zu lassen hiesse, das Modell eine Zahl raten zu lassen,
-        /// deren Bedeutung nur die Maske kennt. Sie kommt in den Katalog, sobald es
-        /// dafuer eine benannte Auswahl gibt - dieselbe Regel wie ueberall:
-        /// Aufzaehlungswerte stammen aus dem Bestand, nie aus Modelltext.
+        /// <b>Die Bemessung ist eine Wahl je Zeile</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>),
+        /// gesetzt ueber den angezeigten Text statt ueber die rohe Id — dieselbe Regel
+        /// wie ueberall: Aufzaehlungswerte stammen aus dem Bestand, nie aus
+        /// Modelltext.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Speichern" und „OK" sind datenbankwirksam und laufen
@@ -5756,7 +5785,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
-        /// „Simulation" — achtunddreissig Felder aus
+        /// „Simulation" — sechsundvierzig Felder aus
         /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -5802,9 +5831,18 @@ namespace WindowsFormsApplication1
         /// <c>dialog_speichern</c> druecken koennte, fehlt hier weiterhin.
         /// </para>
         /// <para>
-        /// <b>Die PREISREIHE bleibt draussen</b> — ein Verweis in eine
-        /// kontextabhaengige Liste (rohe Id, deren Inhalt mit der Preisquelle
-        /// wechselt); dieselbe Regel wie bei der Brennstoffvariante.
+        /// <b>Die PREISREIHE ist eine Wahl</b> (KI‑F1b): Ihre Einträge hängen an der
+        /// Preisquelle und kommen bei jedem Zugriff frisch aus dem Stand
+        /// (<c>SpeicherPreisreiheWahl</c>); eine Id, die die Liste gerade nicht führt,
+        /// weist die Sichtklasse ab.
+        /// </para>
+        /// <para>
+        /// <b>Welle #458: der Kühlschalter und die Werte JE ANLAGE</b> — die
+        /// Projekteinstellung „Kühlung rechnen" und, für die gewählte Karte
+        /// (<c>quellanlage</c>), Wärmequelle, konstante Quelltemperatur, WP-Priorität und
+        /// Betriebsmodus. Sie gehen dieselben Wege wie die Überlagerungen der Karte; eine
+        /// offene Überlagerung hält die Setzung benannt an, weil sie ihren Stand von
+        /// vorhin mit OK zurückschriebe.
         /// </para>
         /// </remarks>
         private static KiDialog Simulation()
@@ -5851,6 +5889,43 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+
+                    // ---- Der Kuehlschalter von Schritt ① (Welle #458) ---------------
+                    //
+                    // Die Projekteinstellung „Kuehlung rechnen" steht neben den
+                    // Netzverlusten und schreibt wie sie SOFORT - ueber denselben
+                    // Delegaten wie der Schalter (KuehlbetriebSchreiben).
+                    new KiDialogFeld("kuehlbetrieb", "SimulationKiSicht.Kuehlbetrieb",
+                                     KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimKuehlbetriebErl),
+
+                    // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
+                    //
+                    // Quelle, konstante Quelltemperatur, WP-Prioritaet und Betriebsmodus
+                    // setzt der Anwender ueber die Ueberlagerungen der Karte
+                    // (Quellenwahl, WertAbfrage, BetriebsmodusDialog). Hier stehen sie
+                    // als Felder der Ansicht - fuer die GEWAEHLTE Karte (quellanlage,
+                    // eine Satzwahl) und mit denselben Schreibwegen und Vorpruefungen
+                    // wie die Ueberlagerungen (SimulationKonfigSeite.Ki*Setzen). Die
+                    // Ueberlagerung „Betriebsmodus" steht deshalb mit dem Grund
+                    // FeldDesWirts auf der Ausnahmeliste und bekommt keine eigene Maske.
+                    new KiDialogFeld("quellanlage", "SimulationKiSicht.Quellanlage",
+                                     KiDialogTexte.SimAnlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAnlageErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("waermequelle", "SimulationKiSicht.Waermequelle",
+                                     KiDialogTexte.SimQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("quelltemperatur_konstant",
+                                     "SimulationKiSicht.QuelltemperaturKonstant",
+                                     KiDialogTexte.SimQuelltempName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimQuelltempErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C),
+                    new KiDialogFeld("wp_prioritaet", "SimulationKiSicht.WpPrioritaet",
+                                     KiDialogTexte.SimPrioritaetName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimPrioritaetErl),
+                    new KiDialogFeld("wp_betriebsmodus", "SimulationKiSicht.WpBetriebsmodus",
+                                     KiDialogTexte.SimBetriebsmodusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimBetriebsmodusErl, leerErlaubt: true),
 
                     // ---- Schritt ③ : die Kennzahlen des Laufs (nur lesend) ----------
                     new KiDialogFeld("waermebedarf", "SimulationKiSicht.WaermebedarfMwh",

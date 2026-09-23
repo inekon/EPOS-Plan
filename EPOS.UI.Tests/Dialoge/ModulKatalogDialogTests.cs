@@ -984,4 +984,46 @@ public class ModulKatalogDialogTests : EposBunitContext
         Assert.Equal("Modul C", cut.Instance.Gewaehlt);
         Assert.Equal("2 Sätze eingelesen.", cut.Instance.Status);
     }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss aufheben</b> (AD-Q15) im Modulkatalog: Rückfrage mit „Nein" als
+    /// Vorgabe, Esc beendet den Dialog dabei nicht; nach dem „Ja" ist der Satz ein eigener,
+    /// seine Felder sind bearbeitbar und „Speichern" ist frei.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Speichern_frei()
+    {
+        var schloss = new Schlosspruefung(1);
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => schloss.Markieren(ZeilenMitAuslieferung()),
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            Speichern = (f, _, __) => new KatalogSpeicherErgebnis(true, "gespeichert", "Modul A"),
+            Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name),
+            Schloss = schloss.Weg()
+        };
+        ModulErgebnis? ergebnis = null;
+        var cut = Aufbauen(wege: wege, geschlossen: e => ergebnis = e);
+
+        Assert.True(cut.Instance.Auslieferungssatz);
+        Assert.Equal(new[] { "Vergleichen", "Duplizieren...", "Schloss aufheben...", "Löschen" },
+                     Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(ergebnis);
+        Assert.True(cut.Instance.Schlossfrage);
+
+        Schlosspruefung.Ja(cut);
+
+        Assert.False(schloss.Aufrufe.Single().Gesperrt);
+        Assert.False(cut.Instance.Auslieferungssatz);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.NotEmpty(cut.FindAll("input[inputmode=decimal]"));
+        Assert.Null(cut.FindAll(".epos-leiste .epos-knopf")[0].GetAttribute("aria-disabled"));
+        Assert.Equal("Schloss von „Modul A“ aufgehoben.", cut.Instance.Status);
+    }
 }

@@ -125,7 +125,8 @@
 
         <Auswahl>
             @* ZONE 4, DIE AUSWAHLLEISTE (V8): alle Handlungen an Zeilen an EINER
-               Stelle - Vergleichen, Duplizieren..., Loeschen. Sie wirken auf die
+               Stelle - Vergleichen, Duplizieren..., Schloss aufheben... bzw.
+               Schloss setzen... (AD-Q15), Loeschen. Sie wirken auf die
                gewaehlten Zeilen, sonst auf die Fokuszeile; Loeschen eines
                Auslieferungssatzes ist WEICH gesperrt und nennt den Grund (V13). *@
             <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
@@ -143,6 +144,7 @@
                Zeilen und "Vergleichen" zeigt es den Vergleich (V12). *@
             <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
                         Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@_schloss.Entsperrt(_fokuszeile)"
                         Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
@@ -221,9 +223,12 @@
                 @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
 
-    @* --- Rueckfrage: nur vor dem Loeschen (V11) ------------------------- *@
+    @* --- Rueckfragen: vor dem Loeschen (V11) und vor dem Umschalten des
+           Schlosses (AD-Q15, Vorgabe Nein) ---------------------------------- *@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchlossAntwort" />
 
     @* --- Namensabfrage von „Duplizieren…" (AD-Q11): Vorbelegung „… (Kopie)" -- *@
     <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
@@ -460,6 +465,9 @@
     /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
     public bool Duplizierfrage => _duplizierfrage;
 
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
     /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
     public string Status => _status;
 
@@ -518,7 +526,11 @@
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
     private EventCallback _loeschen;
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
+    private readonly Schlossumschaltung _schloss = new();
     private EventCallback _blattOeffnen;
     private EventCallback _blattSchliessen;
 
@@ -562,6 +574,9 @@
                 ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND,
                 Aus = NurLesen
             });
+        // AD-Q15: die Beschriftung folgt der Auswahl; hart gesperrt im Lesemodus.
+        if (_schloss.Handlung(Wege.Schloss, _schlossHandlung, SchlossZiele, NurLesen) is { } schloss)
+            liste.Add(schloss);
         liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund, Aus = NurLesen });
         return liste;
     }
@@ -735,6 +750,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -1141,6 +1157,44 @@
         _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    /// <summary>Die Zeilen, auf die die Auswahlleiste gerade wirkt.</summary>
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _zeilen);
+
+    /// <summary>
+    /// Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein". Geänderte Felder halten
+    /// sie auf — sonst verschwänden sie unter einem gesetzten Schloss.
+    /// </summary>
+    private void BeiSchloss()
+    {
+        if (NurLesen) return;
+        string? grund = _schloss.Fragen(Wege.Schloss, SchlossZiele, _geaendert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Nach dem „Ja": schalten, die Liste neu lesen — Schloss, Lesemodus des Stammblatts
+    /// und Speichern folgen aus der Fokuszeile —, Erfolg in die Statuszeile.
+    /// </summary>
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Wege.Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeAufbauen();
+        if (_gewaehlt.Length > 0) DetailLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
     /// <summary>
     /// „Neu…": Namensabfrage → <c>Exists</c>-Vorabtest → Editor im Modus „Neu".
     /// <b>Angleichung:</b> Der Vorabtest gab es im Bestand nur bei Heizkessel und
@@ -1359,7 +1413,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage || _importGaben is not null)
+        if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage || _schloss.FrageOffen
+            || _importGaben is not null)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3), dann den Dialog.

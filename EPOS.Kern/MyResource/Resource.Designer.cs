@@ -124,7 +124,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“ oder „Schloss aufheben...“. ähnelt.
         /// </summary>
         public static string ADM_AW_LOESCHEN_GESPERRT {
             get {
@@ -133,7 +133,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“. ähnelt.
         /// </summary>
         public static string ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE {
             get {
@@ -147,6 +147,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_AW_LOESCHEN_VERWENDET {
             get {
                 return ResourceManager.GetString("ADM_AW_LOESCHEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss aufheben... ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Auslieferungssätze werden eigene Sätze – nach Rückfrage. ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_AUFHEBEN_KURZ {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_AUFHEBEN_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss setzen... ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_SETZEN {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Sätze werden Auslieferungssätze: nur lesbar, nicht löschbar – nach Rückfrage. ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_SETZEN_KURZ {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_SETZEN_KURZ", resourceCulture);
             }
         }
         
@@ -837,6 +873,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ aufgehoben. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_AUFGEHOBEN {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_AUFGEHOBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen aufgehoben. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ gesetzt. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_GESETZT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen gesetzt. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_GESETZT_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_GESETZT_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“. ähnelt.
         /// </summary>
         public static string ADM_MSG_UNGESPEICHERT {
@@ -878,6 +950,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SB_EIGENER_SATZ {
             get {
                 return ResourceManager.GetString("ADM_SB_EIGENER_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her. ähnelt.
+        /// </summary>
+        public static string ADM_SB_ENTSPERRT {
+            get {
+                return ResourceManager.GetString("ADM_SB_ENTSPERRT", resourceCulture);
             }
         }
         
@@ -999,7 +1080,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben. ähnelt.
         /// </summary>
         public static string ADM_SB_NUR_LESEN {
             get {
@@ -1008,7 +1089,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, nicht löschbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben. ähnelt.
         /// </summary>
         public static string ADM_SB_NUR_LESEN_OHNE_KOPIE {
             get {
@@ -1080,11 +1161,137 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, Duplizieren erlaubt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ aufheben? Der Satz wird ein eigener Satz: Sie können ihn ändern und löschen. Ein Programm-Update ändert ihn nicht und stellt ihn nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen aufheben ({1})? Die Sätze werden eigene Sätze: Sie können sie ändern und löschen. Ein Programm-Update ändert sie nicht und stellt sie nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss aufheben ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_DUPLIZIEREN {
             get {
                 return ResourceManager.GetString("ADM_SCHLOSS_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss ließ sich nicht umschalten; nichts wurde geändert. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog „{0}“ ist nicht bekannt – das Schloss bleibt, wie es ist. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_KATALOG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_KATALOG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog „{0}“ führt kein Auslieferungskennzeichen – es gibt kein Schloss zum Umschalten. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_OHNE_KENNZEICHEN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_OHNE_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz {0} steht nicht mehr im Katalog – kein Schloss wurde umgeschaltet. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ als Auslieferungssatz sperren? Er ist danach nur lesbar und nicht löschbar; ändern lässt er sich erst nach „Schloss aufheben...“ wieder. Seine Werte bleiben, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_FRAGE_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_FRAGE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss setzen ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss dieses Katalogs folgt seinem Freigabestatus und lässt sich hier nicht umschalten. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_STATUS {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenprofil gehört zum Typ „{0}“ und bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_TYP_BLEIBT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_TYP_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenprofile gehören zu ihren Typen ({0}) und bleiben gesperrt. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_TYP_BLEIBT_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_TYP_BLEIBT_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schon so und unverändert: {0}. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_UNVERAENDERT", resourceCulture);
             }
         }
         
@@ -22764,6 +22971,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KUEHLBLOCK_ACHSE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KUEHLBLOCK_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Kühlblöcke in Heizlage nicht übernommen (Vorlauf {2} °C) — sie beschreiben die Kälteleistung am Verdampfer im Heizbetrieb, keinen Kühlbetrieb. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_KAT_PROT_LESEFEHLER {
@@ -23070,7 +23295,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her. ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_HINWEIS_READONLY {
             get {
@@ -27616,6 +27841,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_AKTION {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zum Hilfe-Assistenten selbst. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ASSISTENT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_DATEI {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_EXPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_FELD_DES_WIRTS {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_FELD_DES_WIRTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_IMPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_LIZENZ {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OHNE_EINSTELLWERTE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OHNE_EINSTELLWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist eine Rückfrage, die der Anwender beantwortet. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_WERKZEUG {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_WERKZEUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion wurde abgebrochen. ähnelt.
         /// </summary>
         public static string KI_AUS_ABGEBROCHEN {
@@ -28300,6 +28642,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BERG_TABELLE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist bewusst nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEWUSST_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEWUSST_NICHT_STEUERBAR", resourceCulture);
             }
         }
         
@@ -30725,7 +31076,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar. ähnelt.
         /// </summary>
         public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
             get {
@@ -32507,6 +32858,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist noch nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_NOCH_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_NOCH_NICHT_STEUERBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer dieses Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_AFA_ERL {
@@ -33839,6 +34199,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe oder der Heizkessel, auf den sich Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus beziehen. Setzen wählt die Karte in der Konfiguration. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage (Wärmequelle) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUTARKIE_ERL {
@@ -33889,6 +34267,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_BETRIEBSART_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungssteuerung der gewählten Wärmepumpe: laufzeit-, leistungs- oder PV-optimiert; gilt nur für Wärmepumpen. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSMODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsmodus ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSMODUS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_NAME", resourceCulture);
             }
         }
         
@@ -33965,6 +34361,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = der Lauf rechnet die Kühlung der Gebäude mit, aus = ohne Kühlung. Projekteinstellung; der Schalter schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHLBETRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHLBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die An = die Wärmepumpe liest den Speicherzustand vom Stundenanfang (konservativ), aus = vom Stundenende. Der Schalter gilt dem ganzen Projekt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_LESEPUNKT_ERL {
@@ -34006,6 +34411,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_OHNE_PLATZ_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_OHNE_PLATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einsatzreihenfolge der gewählten Wärmepumpe, eine ganze Zahl ab 1; gilt nur für Wärmepumpen. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_PRIORITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_PRIORITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP-Priorität ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_PRIORITAET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_PRIORITAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmequelle der gewählten Anlage. Systemrücklauf, Außenluft und Konstant schreiben sofort; Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog, der erst mit OK übernimmt; eine CSV-Datei wählt der Anwender selbst. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur der Quelle „Konstant“ der gewählten Anlage; setzbar, wenn diese Quelle gewählt ist. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLTEMP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLTEMP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konstante Quelltemperatur ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLTEMP_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLTEMP_NAME", resourceCulture);
             }
         }
         
@@ -36251,6 +36710,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_EXTRAPOLATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_EXTRAPOLATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Geräts, wie er in der Projektkopie steht; freier Text. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_FIRMA_ERL {
@@ -36922,6 +37390,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WSE_WIRKUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stand, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist die Leitversion. Die Wahl ändert nur die Anzeige von Jahrestafel und Zahlungsstrombild, nicht die Kennzahlen; zur Wahl steht nur, wofür der letzte Rechenlauf Jahresreihen geliefert hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_STAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_STAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsreihen: Stand ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_STAND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_STAND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist der Erwartungsfall. Die Wahl ändert nur die Anzeige; trägt der Stand das Szenario nicht, steht der Erwartungsfall. Das Szenario der Kennzahlen stellt das Feld „Szenario“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_SZENARIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsreihen: Szenario ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_SZENARIO_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_SZENARIO_NAME", resourceCulture);
             }
         }
         
@@ -38293,6 +38797,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_MENUE_ASSISTENT_HILFE {
             get {
                 return ResourceManager.GetString("KI_MENUE_ASSISTENT_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste der Lastgänge führt keine Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_GANGLINIE {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_GANGLINIE", resourceCulture);
             }
         }
         
@@ -40870,6 +41392,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SICH_QUELLE_FEHLT {
             get {
                 return ResourceManager.GetString("KI_SICH_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Wärmepumpe und kein Heizkessel gewählt — zuerst das Feld „quellanlage“ setzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_ANLAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_SIM_ANLAGE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage {0} steht nicht unter den Wärmepumpen und Heizkesseln der Konfiguration. ähnelt.
+        /// </summary>
+        public static string KI_SIM_ANLAGE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_SIM_ANLAGE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Wert schreibt die Plattform hier nicht. ähnelt.
+        /// </summary>
+        public static string KI_SIM_KEIN_SCHREIBWEG {
+            get {
+                return ResourceManager.GetString("KI_SIM_KEIN_SCHREIBWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Wert gilt nur für Wärmepumpen; „{0}“ ist keine. ähnelt.
+        /// </summary>
+        public static string KI_SIM_NUR_WP {
+            get {
+                return ResourceManager.GetString("KI_SIM_NUR_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die WP-Priorität ist eine ganze Zahl ab 1. ähnelt.
+        /// </summary>
+        public static string KI_SIM_PRIORITAET_POSITIV {
+            get {
+                return ResourceManager.GetString("KI_SIM_PRIORITAET_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle „{0}“ liest ein Profil aus einer Datei; die Datei wählt der Anwender an der Karte (Chip „Quelle“). ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle „{0}“ braucht ihre Angaben im Dialog „{1}“; er steht jetzt offen — die Werte dort setzen, übernommen wird erst mit OK. ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLE_DIALOG {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLE_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelltemperatur gilt nur für die Quelle „{0}“; zuerst die Wärmequelle umstellen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLTEMP_NUR_KONSTANT {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLTEMP_NUR_KONSTANT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_SCHRITT1_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_SIM_SCHRITT1_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf der Konfiguration steht ein Dialog offen; der Wert wird dort gewählt oder nach dem Schließen gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_SIM_UEBERLAGERUNG_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_SIM_UEBERLAGERUNG_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht nicht in der Auswahl der gewählten Anlage. ähnelt.
+        /// </summary>
+        public static string KI_SIM_WERT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_SIM_WERT_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -53882,11 +54503,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %), Kältestrom {3} MWh/a, EER-Jahreswert {4}; {5} Kühltage. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsprobe Kälte: {0} Wärmebuchungen im Kühlkanal, {1} Stunden mit verändertem Kühlkanal, {2} Stunden mit verändertem Wärmekanal, {3} Stunden mit offener Kältebilanz (größte Abweichung {4} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNGSPROBE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNGSPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}&quot;) — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_HEIZEN_UND_KUEHLEN {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_HEIZEN_UND_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_HEIZKANAL_GESPERRT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_HEIZKANAL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die deren Werte gelten ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KENNLINIE_GEKAPPT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KENNLINIE_GEKAPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear verlängert ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KENNLINIE_VERLAENGERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KENNLINIE_VERLAENGERT", resourceCulture);
             }
         }
         
@@ -53914,6 +54580,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_PROJEKT_AUS {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_UNTERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_UNTERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_ACHSEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_ACHSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_DUBLETTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_DUBLETTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Stützstellen der Kühlkennlinie stehen mehrfach mit abweichenden Werten — es gilt jeweils die zuerst gespeicherte Zeile. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;, Kühl-Vorlauf {1} °C: Die Kühlkennlinie hat nur eine Stützstelle ({2} °C) — Kälteleistung und EER gelten in jeder Stunde unverändert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_EINZELPUNKT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_EINZELPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;, Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt zu diesem Gerät eine Kühlkennlinie; sie lässt sich aus dem Katalog nachholen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Kühlbetrieb ohne Kühlkennlinie im Projekt — zu diesem Gerät liegen keine Kühlkenndaten vor; die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus) — die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_QUELLSPEICHER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_QUELLSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN", resourceCulture);
             }
         }
         
@@ -54211,6 +55012,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_SENKENZEILE_OHNE_PUFFER {
             get {
                 return ResourceManager.GetString("SIMENG_SENKENZEILE_OHNE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Die Anlage {0} trägt in der Altspalte WS_Ziel das Kälteziel „Kältekreis&quot;. Die Altspalten kennen nur Wärmeziele — dort rechnet sie auf dem Heizkreis; eine Kältesenke steht allein in der Senkenliste. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKE_KAELTEZIEL_ALTSPALTE {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKE_KAELTEZIEL_ALTSPALTE", resourceCulture);
             }
         }
         
@@ -54724,6 +55534,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_GRP_WAERME {
             get {
                 return ResourceManager.GetString("SIMERG_GRP_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %). ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_GEDECKT", resourceCulture);
             }
         }
         
@@ -61146,6 +61965,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_STROMPLATZ_BELEGT {
             get {
                 return ResourceManager.GetString("SIM_W_STROMPLATZ_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältekreis ähnelt.
+        /// </summary>
+        public static string SIM_ZIEL_KAELTEKREIS {
+            get {
+                return ResourceManager.GetString("SIM_ZIEL_KAELTEKREIS", resourceCulture);
             }
         }
         
@@ -72873,11 +73701,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
         /// </summary>
         public static string WPS_LBL_KUEHLLEISTUNG {
             get {
                 return ResourceManager.GetString("WPS_LBL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil Kühlung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_VORLAUF {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_VORLAUF", resourceCulture);
             }
         }
         
@@ -73260,6 +74115,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_QUELLSPEICHER {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_QUELLSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern. ähnelt.
         /// </summary>
         public static string WP_PROJ_MSG_NICHT_GESPEICHERT {
@@ -73287,7 +74160,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze werden nicht überschrieben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben. ähnelt.
         /// </summary>
         public static string WP_STAMM_UEBERNAHME_MSG_READONLY {
             get {

@@ -106,7 +106,10 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
 
         // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
-        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) },
+        // Welle #458: Angemeldet ist seither eine SICHTKLASSE - sie reicht den Feldsatz
+        // durch und traegt die Projekteinstellung „Extrapolation" (siehe
+        // OhneMarkupprobe).
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageKiSicht) },
 
         // Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION. Sie melden je eine
         // SICHTKLASSE an - siehe OhneMarkupprobe.
@@ -1102,13 +1105,9 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
           "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor" },
 
-        // DREI Dateien: Der Anlagendialog zeichnet die Auslegung selbst und bettet
-        // die Konfiguration und den Stammfeldblock ein - jedes Feld steht damit vor
-        // dem Anwender, nur eben teils in einer Kinddatei.
-        { KiMaskennamen.WAERMEPUMPE_ANLAGE,
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
+        // Form_WP_Anlage steht seit der Welle #458 in OhneMarkupprobe: Der
+        // Extrapolationsschalter gehoert dem PROJEKT und haengt an keiner Bindung des
+        // Feldsatzes (Muster Form_PV, KI-F7).
 
         // Welle KI-F3: der Kopfsatz eines Bedarfskatalogs - die einzige Maske der
         // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
@@ -1270,7 +1269,8 @@ public class KiDialogkatalogTests : IDisposable
             "der Seite; Zeuge ist KostenSeiteTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
             "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
-            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests",
+            "Wahlwege, den Freitext und die zwei Anzeigewahlen der Zahlungsreihen; " +
+            "Zeuge ist WirtschaftlichkeitSeiteTests",
 
         // Welle KI-F5: die drei Ausprägungen des Modulkatalogs. Ihre Felder stehen
         // NICHT im Markup — es zeichnet eine Schleife über den Feldsatz, den das
@@ -1343,6 +1343,11 @@ public class KiDialogkatalogTests : IDisposable
             "sie an die gewählte ErzeugerZeile durch, die zwei Auslegungstemperaturen " +
             "gehören dem PROJEKT (Tab_Einstellungen) und stehen in den lebenden " +
             "Feldern des Strangbausteins; Zeuge ist PhotovoltaikDialogTests",
+        [KiMaskennamen.WAERMEPUMPE_ANLAGE] =
+            "bindet über die Sichtklasse WaermepumpeAnlageKiSicht: den Feldsatz " +
+            "WaermepumpeAnlageDaten reicht sie unverändert durch, der Schalter " +
+            "„Extrapolation der WP-Kennlinie erlauben“ gehört dem PROJEKT und schreibt " +
+            "über ExtrapolationSchreiben; Zeuge ist WaermepumpeAnlageDialogTests",
         [KiMaskennamen.KOSTENVERWALTUNG] =
             "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
             "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
@@ -1481,8 +1486,9 @@ public class KiDialogkatalogTests : IDisposable
         //
         // Mit der Welle KI-F7 verliert die Probe die Felder von Form_PV und der
         // Kostenverwaltung (beide binden jetzt ueber eine Sichtklasse) und gewinnt die
-        // vier der Ueberlagerung „Anlagenwerte". Die Schranke sagt weiterhin nur, dass
-        // die Probe nicht ins Leere greift.
+        // vier der Ueberlagerung „Anlagenwerte". Mit der Welle #458 geht auch die
+        // Waermepumpen-Anlage auf eine Sichtklasse ueber. Die Schranke sagt weiterhin
+        // nur, dass die Probe nicht ins Leere greift.
         Assert.True(felder >= 65, "Nur " + felder + " Feldpfade geprüft.");
     }
 

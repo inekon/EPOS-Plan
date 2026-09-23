@@ -156,7 +156,8 @@ public class ParameteruebersichtTests : EposBunitContext
 
     /// <summary>
     /// „nicht verwendet" erscheint dort, wo der Katalog es sagt — die fünf Maße der
-    /// Wärmepumpe aus dem VDI-3805-Import.
+    /// Wärmepumpe aus dem VDI-3805-Import und die drei Spalten des Kühlbetriebs am Erzeuger
+    /// (KU-S3, Schemaschritt 114), die vor KU2 Welle 2 kein Rechenweg liest.
     /// </summary>
     [Fact]
     public void Nicht_verwendet_wird_benannt()
@@ -165,7 +166,7 @@ public class ParameteruebersichtTests : EposBunitContext
         k.Find("button.epos-modulparameter-knopf").Click();
 
         Assert.Contains(T("PARV_VERW_KEINE"), k.Markup);
-        Assert.Equal(5, k.FindAll("span.epos-verwendung--keine").Count);
+        Assert.Equal(8, k.FindAll("span.epos-verwendung--keine").Count);
     }
 
     /// <summary>

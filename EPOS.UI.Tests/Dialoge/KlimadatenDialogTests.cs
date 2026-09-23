@@ -94,11 +94,13 @@ public class KlimadatenDialogTests : EposBunitContext
         Func<string, Task<string?>>? dateiWaehlen = null,
         Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null,
         Func<Farbrolle, Farbe, Task>? farbeSetzen = null,
-        Func<Farbrolle, Task>? farbeZuruecksetzen = null)
+        Func<Farbrolle, Task>? farbeZuruecksetzen = null,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
     {
         IReadOnlyList<Katalogfilterzeile> liste = regionen ?? Regionen();
         return Render<KlimadatenDialog>(p => p
             .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
                 new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, MODELL, MODELL, ""))))
@@ -351,7 +353,7 @@ public class KlimadatenDialogTests : EposBunitContext
         var loeschen = cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Löschen");
         Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
         Assert.False(loeschen.HasAttribute("disabled"));
-        Assert.Equal("Auslieferungssatz – Löschen gesperrt.", loeschen.GetAttribute("title"));
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.", loeschen.GetAttribute("title"));
 
         loeschen.Click();
 
@@ -1439,7 +1441,8 @@ public class KlimadatenDialogTests : EposBunitContext
 
         var schloss = cut.Find(".epos-stammblatt-name .epos-schloss");
         Assert.Equal("Auslieferungssatz – nur lesen", schloss.GetAttribute("title"));
-        Assert.Equal("Auslieferungssatz – nur lesen, nicht löschbar.", cut.Find(".epos-stammblatt-schutz").TextContent);
+        Assert.Equal("Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben.",
+                     cut.Find(".epos-stammblatt-schutz").TextContent);
         Assert.DoesNotContain("uplizier", cut.Find(".epos-stammblatt").TextContent);
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("Duplizieren"));
     }
@@ -1802,5 +1805,36 @@ public class KlimadatenDialogTests : EposBunitContext
         cut.Render();
 
         Assert.Equal((int)KlimaQuelle.TryDatei, zugang.Lesen());
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss einer Region aufheben</b> (AD-Q15): Kein Duplizieren, aber die
+    /// Handlung steht vor „Löschen"; nach dem „Ja" liest der Dialog die Regionen neu, das
+    /// Schloss ist fort, das Band steht im Stammblatt und „Löschen" ist frei.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Loeschen_frei()
+    {
+        IReadOnlyList<Katalogfilterzeile> zeilen = Regionen();
+        var schloss = new Schlosspruefung(3);
+        var cut = Zeige(regionen: zeilen, schloss: schloss.Weg(zeilen: zeilen));
+
+        Zeilenklick.Zeile(cut, 2);       // "Auslieferung Nord"
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Auslieferungssatz), TimeSpan.FromSeconds(10));
+        Assert.Equal(new[] { "Vergleichen", "Schloss aufheben...", "Löschen" }, Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.True(cut.Instance.Schlossfrage);
+        Schlosspruefung.Ja(cut);
+
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.Auslieferungssatz), TimeSpan.FromSeconds(10));
+        Assert.Equal(new[] { 3 }, schloss.Aufrufe.Single().Ids);
+        Assert.True(Schlosspruefung.Band(cut));
+        var loeschen = cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Löschen");
+        Assert.Null(loeschen.GetAttribute("aria-disabled"));
+        Assert.Equal("Schloss von „Auslieferung Nord“ aufgehoben.", cut.Instance.Status);
     }
 }

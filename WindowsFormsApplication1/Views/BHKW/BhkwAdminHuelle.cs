@@ -69,7 +69,9 @@ namespace WindowsFormsApplication1
                 Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
-                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(BHKWStammCtrl.Duplizieren(id, name))
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(BHKWStammCtrl.Duplizieren(id, name)),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                Schloss = Schlosswege.Aus(BHKWStammCtrl.SchlossSetzen)
             };
         }
 

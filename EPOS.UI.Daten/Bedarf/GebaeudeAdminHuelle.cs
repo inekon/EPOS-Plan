@@ -54,6 +54,8 @@ namespace WindowsFormsApplication1
                 ["Speichern"] = new Func<GebaeudeKenndaten, KatalogSpeicherErgebnis>(Speichern),
                 ["Loeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Exists"] = new Func<string, bool>(n => new GebaeudeStammCtrl().Lies(n) != null),
                 ["KatalogGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
                     name => GebaeudeKatalogHuelle.Gaben(name,

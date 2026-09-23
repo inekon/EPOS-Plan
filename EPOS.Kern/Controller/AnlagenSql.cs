@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     internal static class AnlagenSql
     {
         /// <summary>
-        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 64 Spalten (gezaehlt).
+        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 65 Spalten (gezaehlt).
         ///
         /// <para>
         /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
@@ -68,6 +68,14 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// KU-S3 (Schemaschritt 114; Kuehlkonzept 7.3, K9/E33) hat <c>Kuehl_ID_Carrier</c>
+        /// ergaenzt - den Stromtraeger des Kaeltestroms, eine MODELLspalte wie
+        /// <c>ID_Carrier</c>: Der Erzeugerdialog schreibt sie, ab KU2 Welle 2 liest sie der
+        /// Kaeltestrom. Sie reist deshalb im Modell mit, wie der Stromtraeger des Heizbetriebs,
+        /// und verlaesst damit die Rettungsmenge <c>WizardCtrl.Fachspalten</c>.
+        /// </para>
+        ///
+        /// <para>
         /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
@@ -92,13 +100,15 @@ namespace WindowsFormsApplication1
                          WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2,
                          PV_WrWirkungsgrad, PV_Systemverluste,
                          PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
-                         PV_Wechselrichterweg)
+                         PV_Wechselrichterweg,
+                         Kuehl_ID_Carrier)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,
+                                ?,
                                 ?)";
 
         /// <summary>
@@ -219,7 +229,14 @@ namespace WindowsFormsApplication1
                         // Ausdruecklicher Typ aus demselben Grund wie bei PV_Modell:
                         // NULL ist hier der Regelfall des Bestands ("vereinfacht"), und
                         // ein Leerstring waere davon nicht zu unterscheiden.
-                        ProjektPuffer.Par("@pvwrweg",   DbParamTyp.VarWChar,  item.PV_Wechselrichterweg)
+                        ProjektPuffer.Par("@pvwrweg",   DbParamTyp.VarWChar,  item.PV_Wechselrichterweg),
+
+                        // --- Stromtraeger der Kuehlung (KU-S3, Schritt 114; K9, E33) -----
+                        // NULL = wie Heizbetrieb. Die Spalte steht unter einer Beziehung auf
+                        // energy_carrier.id; ein Verweis ins Leere faellt zu NULL, statt das
+                        // INSERT nach dem DELETE des Speicherwegs scheitern zu lassen.
+                        ProjektPuffer.Par("@kuehlcarrier", DbParamTyp.Integer,
+                            TraegerVerweisOderNull(item.Kuehl_ID_Carrier, item.Bezeichner))
                     };
         }
 
@@ -270,6 +287,32 @@ namespace WindowsFormsApplication1
             Console.WriteLine("Energieanlage \"" + (bezeichner ?? "") + "\": " + spalte + " = " +
                               id.Value + " zeigt auf keinen Pufferspeicher mehr - " +
                               "die Referenz wird als leer gespeichert.");
+            return null;
+        }
+
+        /// <summary>
+        /// Der Stromtraeger der Kuehlung fuer das INSERT und fuer
+        /// <c>WErzeugerCtrl.KonfigurationSchreiben</c> (KU-S3, Schemaschritt 114; K9, E33).
+        ///
+        /// <para>Dieselben zwei Regeln wie bei <see cref="PufferFkOderNull"/>: NULL bleibt NULL
+        /// („wie Heizbetrieb"), 0 und kleiner werden NIE geschrieben; und ein Verweis, der auf
+        /// keinen Energietraeger (mehr) zeigt, faellt zu NULL, statt das Schreiben an der
+        /// Beziehung auf <c>energy_carrier.id</c> scheitern zu lassen - der Speicherweg laeuft
+        /// IMMER nach einem DELETE. Der Fall wird protokolliert.</para>
+        /// </summary>
+        internal static object TraegerVerweisOderNull(int? id, string bezeichner)
+        {
+            if (!id.HasValue || id.Value <= 0) return null;   // -> DBNull, nie 0
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM energy_carrier WHERE id = ?",
+                new DbParam[] { new DbParam("@id", id.Value) });
+            if (v != null && v != DBNull.Value && Convert.ToInt32(v) > 0) return id.Value;
+
+            Console.WriteLine("Energieanlage \"" + (bezeichner ?? "") + "\": " +
+                              KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + " = " + id.Value +
+                              " zeigt auf keinen Energietraeger mehr - der Stromtraeger der " +
+                              "Kuehlung wird als leer (wie Heizbetrieb) gespeichert.");
             return null;
         }
 

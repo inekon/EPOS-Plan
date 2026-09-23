@@ -784,15 +784,42 @@ namespace WindowsFormsApplication1
                 // (oder aus dem genannten Maskennamen) EINE Maske erschliessen laesst,
                 // ist die Liste der uebrigen sechs nur Rauschen.
                 KiDialog gemeint = GemeinteMaske(gesucht, felder);
-                if (gemeint != null)
-                    return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNichtOffen,
-                                         gemeint.Anzeigename, gemeint.Maskenname);
+                string weg = gemeint == null
+                    ? null
+                    : string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNichtOffen,
+                                    gemeint.Anzeigename, gemeint.Maskenname);
+
+                // Welle #458: Kam der Aufruf aus einer Maske der AUSNAHMELISTE, sagt die
+                // Absage das zuerst - mit ihrem Grund statt der Liste aller Masken.
+                // Nur ohne genannte Maske: Wer eine nennt, meint sie.
+                string ausnahme = gesucht.Length == 0 ? AbsageAusDemAufruf() : null;
+                if (ausnahme != null) return weg == null ? ausnahme : ausnahme + " " + weg;
+
+                if (weg != null) return weg;
 
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
                                      Aufzaehlen(Anzeigenamen()));
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Die Absage für einen Aufruf aus einer Maske, die der Assistent mit Absicht
+        /// nicht steuert (<see cref="KiDialogAusnahmen"/>, Welle #458); <c>null</c>, wenn
+        /// der Aufruf keine solche Maske trifft.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Aufruf ist der einzige Kontext, den es dafür gibt.</b> Eine ausgenommene
+        /// Maske meldet sich nicht an der Brücke an; was der Assistent über sie weiß, ist
+        /// der Hilfeschlüssel ihres Info-Knopfes, mit dem sie ihn gerufen hat
+        /// (<see cref="KiChatKontext.Aufruf"/>). Er bleibt stehen, bis das Chatfenster
+        /// schließt oder ein neuer Aufruf kommt.
+        /// </remarks>
+        private static string AbsageAusDemAufruf()
+        {
+            KiAufrufkontext aufruf = KiChatKontext.Aufruf;
+            return aufruf == null ? null : KiDialogAusnahmen.Absage(aufruf.Hilfeschluessel);
         }
 
         /// <summary>

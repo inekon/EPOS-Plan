@@ -433,7 +433,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 3. Waermepumpe — Tab_WP_STAMM (20 Spalten)
+        // 3. Waermepumpe — Tab_WP_STAMM (23 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -500,7 +500,14 @@ namespace WindowsFormsApplication1
                 E("Bauart", t("WPK_LBL_BAUART"), "", BER,
                   "AbweichungsErmittler.cs:78; WaermepumpenKatalogFilter.cs:98"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "WPStammCtrl.Speichern (Auslieferungssatz, Liste gedimmt)")
+                  "WPStammCtrl.Speichern (Auslieferungssatz, Liste gedimmt)"),
+                // KU-S3 (Schemaschritt 114; Kuehlkonzept 7.3, E33): der Kuehlbetrieb am
+                // Erzeuger. Noch KEIN Leser - die reversible Waermepumpe rechnet ab KU2 Welle 2;
+                // bis dahin reisen die Werte nur mit (Katalogkopie ins Projekt, Uebernahme in
+                // den Katalog).
+                E(KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB, t("WPS_LBL_KUEHLBETRIEB"), "", NIX),
+                E(KuehlungSchema.SPALTE_KUEHL_VORLAUF, t("WPS_LBL_KUEHL_VORLAUF"), "°C", NIX),
+                E(KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL, t("WPS_LBL_KUEHL_HILFSSTROM"), "", NIX)
             };
         }
 

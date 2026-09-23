@@ -90,6 +90,15 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…" einer Zeitreihe</b> (Entscheid AD-Q15)
+        /// — nur der Kopfsatz; die Werte bleiben, wie sie sind. Die Kopftabelle kommt aus
+        /// <see cref="GanglinienQuelle"/>, die Regel steht einmal in
+        /// <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>.
+        /// </summary>
+        internal static Auslieferungskennzeichen.Ergebnis SchlossSetzen(Zeitreihenart art, IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(GanglinienQuelle.Zu(art).KopfStamm, ids, gesperrt);
+
         // =====================================================================
         // Die VERWENDUNG in Projekten (Neuordnung der Administrationsdialoge,
         // Stufe 4: Loeschen weich gesperrt mit dem Projektnamen)

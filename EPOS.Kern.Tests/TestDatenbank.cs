@@ -539,6 +539,13 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
                     SpalteSicherstellen(s);
 
+                // Schritt 114 (KU-S3, Kuehlkonzept 7.3, Stufe KU2 Welle 1; E15, E33): Kuehlbetrieb,
+                // Kuehl_Vorlauf und Kuehl_Hilfsstromanteil an Tab_WP und Tab_WP_STAMM, dazu die
+                // Stromtraegerwahl Tab_Energieanlagen.Kuehl_ID_Carrier mit Fremdschluessel. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug - NICHT ueber SpalteSicherstellen,
+                // dessen Typuebersetzung den Fremdschluessel verloere; wiederholbar, kein DML.
+                KuehlungSchema.ErzeugerspaltenAlle(null);
+
                 // Schritt 111 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
                 // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
                 // Tab_KostenVorlagePosition. Wie in der Migration ueber ADD COLUMN, aus

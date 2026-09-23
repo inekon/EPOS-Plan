@@ -11,7 +11,9 @@
        darunter die Herkunft ("Hersteller - Brennstoff - Auslieferungssatz")
        und bis zu drei Kennzahlen. Ein Auslieferungssatz sagt HIER in Worten,
        dass er nur lesbar ist und wie man ihn aendert (V13) - der Kurztext am
-       Schloss erreicht eine Beruehrung nicht.
+       Schloss erreicht eine Beruehrung nicht. Ein Satz, dessen Schloss der Wirt
+       in dieser Sitzung aufgehoben hat (Entsperrt, AD-Q15), sagt an derselben
+       Stelle, was ein Aendern jetzt bedeutet.
      * INHALT (rollt allein): zuerst die dialogspezifischen Gruppen (Kennlinie,
        Wochenprofil ...), dann "Kenndaten" und "Kosten", dann "Alle Daten" (der
        Aufklapper der Parameteruebersicht) und ein Nachsatz des Wirts. Jede
@@ -69,6 +71,13 @@
             @if (Auslieferung && Texte.NurLesen.Length > 0)
             {
                 <p class="epos-stammblatt-schutz">@Texte.NurLesen</p>
+            }
+            else if (Entsperrt && !Auslieferung && Texte.Entsperrt.Length > 0)
+            {
+                @* AD-Q15: am selben Platz wie der Hinweis des Auslieferungssatzes - fuer
+                   einen Satz, dessen Schloss in dieser Sitzung aufgehoben wurde. Er
+                   erklaert, was ein Aendern jetzt bedeutet; eine Warnung ist er nicht. *@
+                <p class="epos-stammblatt-schutz epos-stammblatt-schutz--entsperrt">@Texte.Entsperrt</p>
             }
             @if (Kennzahlen.Count > 0)
             {
@@ -145,6 +154,12 @@
 
     /// <summary>Ist die Fokuszeile ein Auslieferungssatz? Dann Schloss und Hinweis im Kopf (V13).</summary>
     [Parameter] public bool Auslieferung { get; set; }
+
+    /// <summary>
+    /// Hat der Wirt das Schloss der Fokuszeile in dieser Sitzung aufgehoben (AD-Q15)? Dann
+    /// steht an der Stelle des Auslieferungshinweises das Band <c>ADM_SB_ENTSPERRT</c>.
+    /// </summary>
+    [Parameter] public bool Entsperrt { get; set; }
 
     /// <summary>Der Kurztext am Schloss — derselbe wie an der Zeile.</summary>
     [Parameter] public string SchlossText { get; set; } = Resource.ADM_SCHLOSS;

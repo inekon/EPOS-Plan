@@ -4489,7 +4489,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Name kommt in der Auswahl mehrfach vor</value>
   </data>
   <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
-    <value>Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.</value>
+    <value>Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her.</value>
   </data>
   <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
     <value>Importieren</value>
@@ -11608,11 +11608,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
   </data>
-  <!-- ===========================================================  </data>
-       iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
-       (Sammelnachtrag der Welle 5; Zugriff ueber
-       ResourceManager.GetString mit deutschem Rueckfall im Code).
-       ================================================================== -->
   <data name="BKS_LBL_FORTSCHRITT" xml:space="preserve">
     <value>Fortschritt</value>
   </data>
@@ -20281,7 +20276,7 @@ Möchten Sie das zulassen?</value>
     <value>Katalogsatz „{0}“ neu angelegt.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
-    <value>Auslieferungssätze werden nicht überschrieben.</value>
+    <value>Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
     <value>Die Übernahme in den Katalog ist fehlgeschlagen.</value>
@@ -22114,7 +22109,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon.</value>
   </data>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt.</value>
+    <value>Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar.</value>
   </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
@@ -22961,6 +22956,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
+    <value>Zahlungsreihen: Stand</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_ERL" xml:space="preserve">
+    <value>Der Stand, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist die Leitversion. Die Wahl ändert nur die Anzeige von Jahrestafel und Zahlungsstrombild, nicht die Kennzahlen; zur Wahl steht nur, wofür der letzte Rechenlauf Jahresreihen geliefert hat.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_NAME" xml:space="preserve">
+    <value>Zahlungsreihen: Szenario</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist der Erwartungsfall. Die Wahl ändert nur die Anzeige; trägt der Stand das Szenario nicht, steht der Erwartungsfall. Das Szenario der Kennzahlen stellt das Feld „Szenario“.</value>
   </data>
   <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
     <value>h0</value>
@@ -24892,7 +24899,7 @@ Möchten Sie das zulassen?</value>
     <value>Auslieferungssatz – nur lesen</value>
   </data>
   <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+    <value>Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt</value>
   </data>
   <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
     <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
@@ -25759,7 +25766,7 @@ Möchten Sie das zulassen?</value>
     <value>Duplizieren gilt für genau eine Zeile.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“ oder „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
     <value>Sollen diese {0} Sätze gelöscht werden? {1}</value>
@@ -25795,7 +25802,7 @@ Möchten Sie das zulassen?</value>
     <value>Alle Daten</value>
   </data>
   <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.</value>
+    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben.</value>
   </data>
   <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
     <value>Auslieferungssatz</value>
@@ -25993,13 +26000,82 @@ Möchten Sie das zulassen?</value>
     <value>groß…</value>
   </data>
   <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, nicht löschbar.</value>
+    <value>Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
     <value>In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN" xml:space="preserve">
+    <value>Schloss aufheben...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN" xml:space="preserve">
+    <value>Schloss setzen...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Auslieferungssätze werden eigene Sätze – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Sätze werden Auslieferungssätze: nur lesbar, nicht löschbar – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Schloss aufheben</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Schloss von „{0}“ aufheben? Der Satz wird ein eigener Satz: Sie können ihn ändern und löschen. Ein Programm-Update ändert ihn nicht und stellt ihn nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufheben ({1})? Die Sätze werden eigene Sätze: Sie können sie ändern und löschen. Ein Programm-Update ändert sie nicht und stellt sie nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT" xml:space="preserve">
+    <value>Das Wochenprofil gehört zum Typ „{0}“ und bleibt gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT_MEHR" xml:space="preserve">
+    <value>Die Wochenprofile gehören zu ihren Typen ({0}) und bleiben gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_TITEL" xml:space="preserve">
+    <value>Schloss setzen</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE" xml:space="preserve">
+    <value>„{0}“ als Auslieferungssatz sperren? Er ist danach nur lesbar und nicht löschbar; ändern lässt er sich erst nach „Schloss aufheben...“ wieder. Seine Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE_MEHR" xml:space="preserve">
+    <value>{0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
+    <value>Schon so und unverändert: {0}.</value>
+  </data>
+  <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
+    <value>Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN" xml:space="preserve">
+    <value>Schloss von „{0}“ aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT" xml:space="preserve">
+    <value>Schloss von „{0}“ gesetzt.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen gesetzt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_KATALOG_UNBEKANNT" xml:space="preserve">
+    <value>Der Katalog „{0}“ ist nicht bekannt – das Schloss bleibt, wie es ist.</value>
+  </data>
+  <data name="ADM_SCHLOSS_STATUS" xml:space="preserve">
+    <value>Das Schloss dieses Katalogs folgt seinem Freigabestatus und lässt sich hier nicht umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_OHNE_KENNZEICHEN" xml:space="preserve">
+    <value>Der Katalog „{0}“ führt kein Auslieferungskennzeichen – es gibt kein Schloss zum Umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Satz {0} steht nicht mehr im Katalog – kein Schloss wurde umgeschaltet.</value>
+  </data>
+  <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
+    <value>Das Schloss ließ sich nicht umschalten; nichts wurde geändert.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Stehen bleiben (in Projekten verwendet): {0}</value>
@@ -26267,5 +26343,215 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
+  </data>
+  <data name="KI_DLG_BEWUSST_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist bewusst nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_DLG_NOCH_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist noch nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_AUSNAHME_ANZEIGE" xml:space="preserve">
+    <value>Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_OHNE_EINSTELLWERTE" xml:space="preserve">
+    <value>Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_ANLEGEN" xml:space="preserve">
+    <value>Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_IMPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_EXPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_DATEI" xml:space="preserve">
+    <value>Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders.</value>
+  </data>
+  <data name="KI_AUSNAHME_RUECKFRAGE" xml:space="preserve">
+    <value>Sie ist eine Rückfrage, die der Anwender beantwortet.</value>
+  </data>
+  <data name="KI_AUSNAHME_LIZENZ" xml:space="preserve">
+    <value>Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben.</value>
+  </data>
+  <data name="KI_AUSNAHME_ASSISTENT" xml:space="preserve">
+    <value>Sie gehört zum Hilfe-Assistenten selbst.</value>
+  </data>
+  <data name="KI_AUSNAHME_AKTION" xml:space="preserve">
+    <value>Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt.</value>
+  </data>
+  <data name="KI_AUSNAHME_WERKZEUG" xml:space="preserve">
+    <value>Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt.</value>
+  </data>
+  <data name="KI_AUSNAHME_FELD_DES_WIRTS" xml:space="preserve">
+    <value>Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent.</value>
+  </data>
+  <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
+    <value>Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>An = der Lauf rechnet die Kühlung der Gebäude mit, aus = ohne Kühlung. Projekteinstellung; der Schalter schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_NAME" xml:space="preserve">
+    <value>Anlage (Wärmequelle)</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_ERL" xml:space="preserve">
+    <value>Die Wärmepumpe oder der Heizkessel, auf den sich Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus beziehen. Setzen wählt die Karte in der Konfiguration.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_NAME" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_ERL" xml:space="preserve">
+    <value>Die Wärmequelle der gewählten Anlage. Systemrücklauf, Außenluft und Konstant schreiben sofort; Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog, der erst mit OK übernimmt; eine CSV-Datei wählt der Anwender selbst.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_NAME" xml:space="preserve">
+    <value>Konstante Quelltemperatur</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_ERL" xml:space="preserve">
+    <value>Die Temperatur der Quelle „Konstant“ der gewählten Anlage; setzbar, wenn diese Quelle gewählt ist. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_NAME" xml:space="preserve">
+    <value>WP-Priorität</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_ERL" xml:space="preserve">
+    <value>Die Einsatzreihenfolge der gewählten Wärmepumpe, eine ganze Zahl ab 1; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_NAME" xml:space="preserve">
+    <value>Betriebsmodus</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_ERL" xml:space="preserve">
+    <value>Die Leistungssteuerung der gewählten Wärmepumpe: laufzeit-, leistungs- oder PV-optimiert; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_UNBEKANNT" xml:space="preserve">
+    <value>Die Anlage {0} steht nicht unter den Wärmepumpen und Heizkesseln der Konfiguration.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>Es ist keine Wärmepumpe und kein Heizkessel gewählt — zuerst das Feld „quellanlage“ setzen.</value>
+  </data>
+  <data name="KI_SIM_NUR_WP" xml:space="preserve">
+    <value>Dieser Wert gilt nur für Wärmepumpen; „{0}“ ist keine.</value>
+  </data>
+  <data name="KI_SIM_UEBERLAGERUNG_OFFEN" xml:space="preserve">
+    <value>Auf der Konfiguration steht ein Dialog offen; der Wert wird dort gewählt oder nach dem Schließen gesetzt.</value>
+  </data>
+  <data name="KI_SIM_WERT_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“ steht nicht in der Auswahl der gewählten Anlage.</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DATEI" xml:space="preserve">
+    <value>Die Quelle „{0}“ liest ein Profil aus einer Datei; die Datei wählt der Anwender an der Karte (Chip „Quelle“).</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DIALOG" xml:space="preserve">
+    <value>Die Quelle „{0}“ braucht ihre Angaben im Dialog „{1}“; er steht jetzt offen — die Werte dort setzen, übernommen wird erst mit OK.</value>
+  </data>
+  <data name="KI_SIM_QUELLTEMP_NUR_KONSTANT" xml:space="preserve">
+    <value>Die Quelltemperatur gilt nur für die Quelle „{0}“; zuerst die Wärmequelle umstellen.</value>
+  </data>
+  <data name="KI_SIM_PRIORITAET_POSITIV" xml:space="preserve">
+    <value>Die WP-Priorität ist eine ganze Zahl ab 1.</value>
+  </data>
+  <data name="KI_SIM_KEIN_SCHREIBWEG" xml:space="preserve">
+    <value>Diesen Wert schreibt die Plattform hier nicht.</value>
+  </data>
+  <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
+    <value>Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen.</value>
+  </data>
+  <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
+    <value>An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_DATEI" xml:space="preserve">
+    <value>Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
+    <value>Die Liste der Lastgänge führt keine Ganglinie.</value>
+  </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil Kühlung</value>
+  </data>
+  <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
+    <value>Kältekreis</value>
+  </data>
+  <data name="SIMENG_SENKE_KAELTEZIEL_ALTSPALTE" xml:space="preserve">
+    <value>Wärmesenke: Die Anlage {0} trägt in der Altspalte WS_Ziel das Kälteziel „Kältekreis". Die Altspalten kennen nur Wärmeziele — dort rechnet sie auf dem Heizkreis; eine Kältesenke steht allein in der Senkenliste.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_QUELLSPEICHER" xml:space="preserve">
+    <value>Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb ohne Kühlkennlinie im Projekt — zu diesem Gerät liegen keine Kühlkenndaten vor; die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG" xml:space="preserve">
+    <value>Der Katalog führt zu diesem Gerät eine Kühlkennlinie; sie lässt sich aus dem Katalog nachholen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_ACHSEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen mehrfach mit abweichenden Werten — es gilt jeweils die zuerst gespeicherte Zeile.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}).</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_VERLAENGERT" xml:space="preserve">
+    <value>linear verlängert</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_GEKAPPT" xml:space="preserve">
+    <value>deren Werte gelten</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_EINZELPUNKT" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: Die Kühlkennlinie hat nur eine Stützstelle ({2} °C) — Kälteleistung und EER gelten in jeder Stunde unverändert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG" xml:space="preserve">
+    <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %), Kältestrom {3} MWh/a, EER-Jahreswert {4}; {5} Kühltage.</value>
+  </data>
+  <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
+    <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+    <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
+    <value>Deckungsprobe Kälte: {0} Wärmebuchungen im Kühlkanal, {1} Stunden mit verändertem Kühlkanal, {2} Stunden mit verändertem Wärmekanal, {3} Stunden mit offener Kältebilanz (größte Abweichung {4} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke in Heizlage nicht übernommen (Vorlauf {2} °C) — sie beschreiben die Kälteleistung am Verdampfer im Heizbetrieb, keinen Kühlbetrieb.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
+    <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>
 </root>

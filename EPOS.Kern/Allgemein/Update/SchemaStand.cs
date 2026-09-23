@@ -421,11 +421,19 @@ namespace WindowsFormsApplication1
         /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
         /// kein Zahlenwert, kein Rechenweg liest den Stammtext; dazu der Brennstoff 24
         /// „Sonstige" auf kWh (Entscheid E7c2‑Q4).
+        /// Mit dem KUEHLBETRIEB AM ERZEUGER (Schritt 114, KU-S3, Stufe KU2 Welle 1;
+        /// Kuehlkonzept 7.3, Entscheide E15 und E33 vom 23.09.2026) steht das Ziel auf
+        /// <b>114</b>: <c>Kuehlbetrieb</c> (0/1, Vorgabe 0), <c>Kuehl_Vorlauf</c> und
+        /// <c>Kuehl_Hilfsstromanteil</c> an <c>Tab_WP</c> und <c>Tab_WP_STAMM</c>, dazu die
+        /// Stromtraegerwahl der Kuehlung <c>Tab_Energieanlagen.Kuehl_ID_Carrier</c> (Verweis
+        /// auf <c>energy_carrier.id</c>, NULL = wie Heizbetrieb) — alle bei
+        /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> kein Rechenweg
+        /// liest die Spalten; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 113;
+        public const int Zielversion = 114;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -187,6 +187,8 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_PROT_SCHREIBEN": return Resource.IMP_KAT_PROT_SCHREIBEN;
                 case "IMP_KAT_PROT_FERTIG": return Resource.IMP_KAT_PROT_FERTIG;
                 case "IMP_KAT_PROT_AUFSTELLUNG": return Resource.IMP_KAT_PROT_AUFSTELLUNG;
+                case "IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE;
+                case "IMP_KAT_PROT_KUEHLBLOCK_ACHSE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_ACHSE;
 
                 case "IMP_TXT_KEIN_PFAD": return Resource.IMP_TXT_KEIN_PFAD;
                 case "IMP_TXT_LESEFEHLER": return Resource.IMP_TXT_LESEFEHLER;

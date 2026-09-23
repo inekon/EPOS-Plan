@@ -105,6 +105,39 @@ namespace WindowsFormsApplication1
             return (zeile != null && kanal < zeile.Length) ? zeile[kanal] : 0.0;
         }
 
+        /// <summary>
+        /// <b>DECKUNGSGRAD DES KÜHLKANALS</b> [%] — der EIGENE Zweig der Kälteseite (Stufe KU2,
+        /// Kühlkonzept 6.4, K16; <c>kaelte.deckungsgrad</c>), kein vierter Fall von
+        /// <see cref="DeckungKanal"/>: Dessen Erzeugerliste ist eine WÄRMEliste und sein Nenner
+        /// <c>Waermebedarf_Gesamt</c> enthält den Kältebedarf ausdrücklich nicht — ein Aufruf mit
+        /// <see cref="Kanal.KUEHLUNG"/> lieferte eine Zahl mit dem falschen Nenner und ohne
+        /// Fehlermeldung.
+        ///
+        /// <para>Summiert wird über die KÄLTEerzeuger — in KU2 die reversible Wärmepumpe, deren
+        /// Spalte <c>Deckung_Kuehlung</c> ihren Anteil am Kältebedarf trägt —, umgerechnet mit
+        /// <c>Kaeltebedarf_Gesamt</c> auf den Kanalbedarf. Mit dem einen Kältekanal ist der Faktor
+        /// 1; er trennt sich, sobald ein zweiter Kältekanal hinzukommt.</para>
+        ///
+        /// <para>null (Anzeige „—") ohne Ergebnis, ohne erhobene Kälte oder ohne Kältebedarf: Ein
+        /// Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.</para>
+        /// </summary>
+        public static double? DeckungKanalKaelte(VariantenDaten v)
+        {
+            var e = E(v);
+            if (e == null || e.Waermebedarf_Kanal == null || Kanal.KUEHLUNG >= e.Waermebedarf_Kanal.Length)
+                return null;
+            if (!e.Kaeltebedarf_Gesamt.HasValue) return null;
+
+            double kanalbedarf = e.Waermebedarf_Kanal[Kanal.KUEHLUNG];
+            double gesamt = e.Kaeltebedarf_Gesamt.Value;
+            if (kanalbedarf <= 0 || gesamt <= 0) return null;
+
+            double anteil = 0;
+            if (WP(v) != null) anteil += Kanalwert(WP(v).Deckung_Kanal, Kanal.KUEHLUNG);
+
+            return anteil * gesamt / kanalbedarf;
+        }
+
         // ------------------------------------------------------------------
         // STUFE KU1 (Kühlkonzept 6.4) — die Kanalkennzahlen der Kälte
         // ------------------------------------------------------------------

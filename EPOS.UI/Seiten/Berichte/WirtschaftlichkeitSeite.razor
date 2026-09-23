@@ -1048,8 +1048,9 @@
 
     /// <summary>
     /// Die Sicht des Assistenten: die fünf Wahlfelder, die entscheiden, WAS gegen WAS
-    /// unter welchem Szenario gerechnet wird, und der Freitext der nicht monetären
-    /// Wirkungen.
+    /// unter welchem Szenario gerechnet wird, der Freitext der nicht monetären
+    /// Wirkungen und die zwei Anzeigewahlen von Block 2 (Stand und Szenario der
+    /// Zahlungsreihen).
     /// </summary>
     /// <remarks>
     /// Jede Setzung läuft durch denselben Rückruf wie ein Griff in die Klappliste:
@@ -1087,7 +1088,20 @@
                 EintraegeB, z => z.Id, z => z.Text),
 
             WirkungLesen = () => _nichtMonetaer,
-            WirkungSetzen = wert => _nichtMonetaer = wert ?? ""
+            WirkungSetzen = wert => _nichtMonetaer = wert ?? "",
+
+            // Block 2 „Zahlungsreihen": zwei Anzeigewahlen. Gelesen wird die GEZEIGTE
+            // Tafel (mit ihrem Rückfall), gesetzt durch dieselben Rückrufe wie die
+            // Klapplisten — kein neuer Stand, kein Nachrechnen.
+            ZahlungsstandLesen = () => Zahlungsreihe?.IdStand,
+            ZahlungsstandSetzen = BeiZahlungsstand,
+            ZahlungsstandEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Ansicht.Zahlungsstaende, z => z.Id, z => z.Text),
+
+            ZahlungsszenarioLesen = () => Zahlungsreihe?.Szenario,
+            ZahlungsszenarioSetzen = BeiZahlungsszenario,
+            ZahlungsszenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Szenarien, z => z.Id, z => z.Text)
         };
     }
 
