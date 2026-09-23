@@ -738,6 +738,26 @@ namespace ChartProben
                             },
                             minAuto: true));
 
+            // --- Gebaeudesimulation G2: Raumtemperatur eines Gebaeudes -----------------
+            // Raumluft und operative Temperatur mit dem Sollwertband (Heizsollwert als
+            // Tag-/Nachtfahrplan, obere Raumtemperatur als Festwert), beide gestrichelt.
+            double[] raumluft = Temperaturreihe(21.5, 2.5, 0.8, -Math.PI / 2);
+            double[] operativ = Temperaturreihe(21.0, 3.0, 0.5, -Math.PI / 2);
+            var sollwert = new double[STUNDEN];
+            for (int i = 0; i < STUNDEN; i++) sollwert[i] = (i % 24) >= 6 && (i % 24) <= 21 ? 20.0 : 17.0;
+            Pruefe(ziel, "raumtemperatur_gebaeude", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.SERIE_1), Rollenfarbe(Farbrolle.SERIE_2) },
+                   () => ChartRenderer.Raumtemperatur("Raumtemperatur", raumluft, operativ, sollwert, 26.0,
+                                                      new ChartRenderer.Raumtemperaturnamen()));
+
+            // Gegenprobe: das Sollwertband muss im Bild stehen - ohne es waeren Masse und
+            // Farben der beiden Temperaturreihen dieselben.
+            Unterschiedlich("raumtemperatur_sollband_wirkt",
+                () => ChartRenderer.Raumtemperatur("Raumtemperatur", raumluft, operativ, null, null,
+                                                   new ChartRenderer.Raumtemperaturnamen()),
+                () => ChartRenderer.Raumtemperatur("Raumtemperatur", raumluft, operativ, sollwert, 26.0,
+                                                   new ChartRenderer.Raumtemperaturnamen()));
+
             // =========================================================================
             // 37/38 - die ZWEI BILDER DER AUSLEGUNGSOPTIMIERUNG (W11b-B-5)
             // =========================================================================
@@ -2336,6 +2356,10 @@ namespace ChartProben
             }
             return w;
         }
+
+        /// <summary>Die Farbe einer Rolle in der Vorgabe-Palette — die Erwartung einer Maßprobe.</summary>
+        private static SKColor Rollenfarbe(Farbrolle rolle)
+            => Farbpalette.Vorgabe.Loese(Farbton.Aus(rolle)).Skiafarbe();
 
         /// <summary>Reihe, die NICHT bei 0 anfangen soll (Temperaturen) — ohne Abschnitt.</summary>
         private static double[] Temperaturreihe(double mitte, double jahresHub, double tagesHub,

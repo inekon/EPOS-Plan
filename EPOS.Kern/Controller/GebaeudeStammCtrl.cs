@@ -52,6 +52,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Liest EINEN Katalogsatz nach seinem Bezeichner in ein frisches Modell;
+        /// <c>null</c>, wenn es ihn nicht gibt (Schreibweg des Gebäudedialogs, Stufe G1).
+        /// </summary>
+        public GebaeudeModel Lies(string szBezeichner)
+        {
+            if (string.IsNullOrEmpty(szBezeichner)) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                new DbParam("@bez", szBezeichner));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var item = new GebaeudeModel();
+            FillModel(item, dt.Rows[0]);
+            return item;
+        }
+
         public bool IsReadOnly(string szBezeichner)
         {
             object v = DataRepository.ExecuteScalar(
@@ -288,7 +304,7 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Interne_Waermegewinne") && row["Interne_Waermegewinne"] != DBNull.Value) item.Interne_Waermegewinne = Convert.ToDouble(row["Interne_Waermegewinne"]);
             if (dt.Columns.Contains("Bauweise") && row["Bauweise"] != DBNull.Value) item.Bauweise = Convert.ToDouble(row["Bauweise"]);
             if (dt.Columns.Contains("Fensterflaeche_Sued") && row["Fensterflaeche_Sued"] != DBNull.Value) item.Fensterflaeche_Sued = Convert.ToDouble(row["Fensterflaeche_Sued"]);
-            if (dt.Columns.Contains("Fensterflaeche_Ost_West") && row["Fensterflaeche_Ost_West"] != DBNull.Value) item.Fensterflaeche_Ost = Convert.ToDouble(row["Fensterflaeche_Ost_West"]);
+            if (dt.Columns.Contains("Fensterflaeche_Ost_West") && row["Fensterflaeche_Ost_West"] != DBNull.Value) item.Fensterflaeche_OstWest = Convert.ToDouble(row["Fensterflaeche_Ost_West"]);
             if (dt.Columns.Contains("Fensterflaeche_Nord") && row["Fensterflaeche_Nord"] != DBNull.Value) item.Fensterflaeche_Nord = Convert.ToDouble(row["Fensterflaeche_Nord"]);
             if (dt.Columns.Contains("Fensterdurchlassgrad") && row["Fensterdurchlassgrad"] != DBNull.Value) item.Fensterdurchlassgrad = Convert.ToDouble(row["Fensterdurchlassgrad"]);
             if (dt.Columns.Contains("Raumsolltemperatur_Nachtabsenkung") && row["Raumsolltemperatur_Nachtabsenkung"] != DBNull.Value) item.Raumsolltemperatur_Nachtabsenkung = Convert.ToDouble(row["Raumsolltemperatur_Nachtabsenkung"]);
@@ -306,7 +322,7 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Dachflaeche") && row["Dachflaeche"] != DBNull.Value) item.Dachflaeche = Convert.ToDouble(row["Dachflaeche"]);
             if (dt.Columns.Contains("Grundflaeche") && row["Grundflaeche"] != DBNull.Value) item.Grundflaeche = Convert.ToDouble(row["Grundflaeche"]);
             if (dt.Columns.Contains("Sonstige_Flaechen") && row["Sonstige_Flaechen"] != DBNull.Value) item.Sonstige_Flaechen = Convert.ToDouble(row["Sonstige_Flaechen"]);
-            if (dt.Columns.Contains("Wohnflaeche") && row["Wohnflaeche"] != DBNull.Value) item.Wohnflaeche = Convert.ToDouble(row["Wohnflaeche"]);
+            if (dt.Columns.Contains("Nutzflaeche") && row["Nutzflaeche"] != DBNull.Value) item.Nutzflaeche = Convert.ToDouble(row["Nutzflaeche"]);
             if (dt.Columns.Contains("Raumhoehe") && row["Raumhoehe"] != DBNull.Value) item.Raumhoehe = Convert.ToDouble(row["Raumhoehe"]);
             if (dt.Columns.Contains("WBVK_Anschluß_Fenster_Wand") && row["WBVK_Anschluß_Fenster_Wand"] != DBNull.Value) item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = Convert.ToDouble(row["WBVK_Anschluß_Fenster_Wand"]);
             if (dt.Columns.Contains("WBVK_Anschluß_Wand_Dach") && row["WBVK_Anschluß_Wand_Dach"] != DBNull.Value) item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = Convert.ToDouble(row["WBVK_Anschluß_Wand_Dach"]);
@@ -331,6 +347,7 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Baualtersklasse") && row["Baualtersklasse"] != DBNull.Value) item.Baualtersklasse = row["Baualtersklasse"].ToString();
             if (dt.Columns.Contains("Gebaeudeart") && row["Gebaeudeart"] != DBNull.Value) item.Gebaeudeart = row["Gebaeudeart"].ToString();
             if (dt.Columns.Contains("Wohngebaeude_Nicht_Wohngebaeude") && row["Wohngebaeude_Nicht_Wohngebaeude"] != DBNull.Value) item.Wohngebaeude_Nicht_Wohngebaeude = row["Wohngebaeude_Nicht_Wohngebaeude"].ToString();
+            NeueSpaltenLesen(item, row);
             if (item == this && dt.Columns.Contains("ReadOnly") && row["ReadOnly"] != DBNull.Value)
                 this.m_bReadOnly = Convert.ToBoolean(row["ReadOnly"]);
         }
@@ -355,7 +372,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@b06", DbParamTyp.Double) { Wert = m.Interne_Waermegewinne },
                 new DbParam("@b07", DbParamTyp.Double) { Wert = m.Bauweise },
                 new DbParam("@b08", DbParamTyp.Double) { Wert = m.Fensterflaeche_Sued },
-                new DbParam("@b09", DbParamTyp.Double) { Wert = m.Fensterflaeche_Ost },
+                new DbParam("@b09", DbParamTyp.Double) { Wert = m.Fensterflaeche_OstWest },
                 new DbParam("@b10", DbParamTyp.Double) { Wert = m.Fensterflaeche_Nord },
                 new DbParam("@b11", DbParamTyp.Double) { Wert = m.Fensterdurchlassgrad },
                 new DbParam("@b12", DbParamTyp.Double) { Wert = m.Raumsolltemperatur_Nachtabsenkung },
@@ -373,7 +390,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@b24", DbParamTyp.Double) { Wert = m.Dachflaeche },
                 new DbParam("@b25", DbParamTyp.Double) { Wert = m.Grundflaeche },
                 new DbParam("@b26", DbParamTyp.Double) { Wert = m.Sonstige_Flaechen },
-                new DbParam("@b27", DbParamTyp.Double) { Wert = m.Wohnflaeche },
+                new DbParam("@b27", DbParamTyp.Double) { Wert = m.Nutzflaeche },
                 new DbParam("@b28", DbParamTyp.Double) { Wert = m.Raumhoehe },
                 new DbParam("@b29", DbParamTyp.Double) { Wert = m.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand },
                 new DbParam("@b30", DbParamTyp.Double) { Wert = m.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach },
@@ -398,15 +415,37 @@ namespace WindowsFormsApplication1
                 new DbParam("@b49", DbParamTyp.VarWChar) { Wert = (object)(m.Baualtersklasse ?? "") },
                 new DbParam("@b50", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudeart ?? "") },
                 new DbParam("@b51", DbParamTyp.VarWChar) { Wert = (object)(m.Wohngebaeude_Nicht_Wohngebaeude ?? "") },
+                // Gebaeudespalten-Schritt M3 (Schemaschritt 101): NULL-erhaltend
+                new DbParam("@b52", DbParamTyp.VarWChar) { Wert = Wert(m.Gebaeude_Modell) },
+                new DbParam("@b53", DbParamTyp.Double) { Wert = Wert(m.Fensterflaeche_Ost) },
+                new DbParam("@b54", DbParamTyp.Double) { Wert = Wert(m.Fensterflaeche_West) },
+                new DbParam("@b55", DbParamTyp.Double) { Wert = Wert(m.Rahmenanteil) },
+                new DbParam("@b56", DbParamTyp.Double) { Wert = Wert(m.Verschattungsfaktor) },
+                new DbParam("@b57", DbParamTyp.VarWChar) { Wert = Wert(m.Grundflaeche_Randbedingung) },
+                new DbParam("@b58", DbParamTyp.Double) { Wert = Wert(m.Kellertemperatur) },
+                new DbParam("@b59", DbParamTyp.Double) { Wert = Wert(m.Masseanteil_Aussen) },
+                new DbParam("@b60", DbParamTyp.Double) { Wert = Wert(m.Innenflaechenfaktor) },
+                new DbParam("@b61", DbParamTyp.Double) { Wert = Wert(m.Heizung_Strahlungsanteil) },
+                new DbParam("@b62", DbParamTyp.Double) { Wert = Wert(m.Heizleistung_Max) },
+                new DbParam("@b63", DbParamTyp.Boolean) { Wert = m.Aussenbauteile_Strahlung },
+                new DbParam("@b64", DbParamTyp.Double) { Wert = Wert(m.Luftwechsel_Infiltration) },
+                new DbParam("@b65", DbParamTyp.Double) { Wert = Wert(m.Luftwechsel_Nutzer) },
+                new DbParam("@b66", DbParamTyp.Boolean) { Wert = m.Sommerlueftung },
             };
         }
+
+        /// <summary>Ein nullbarer Wert als Parameterwert - NULL bleibt NULL (Vorgabe).</summary>
+        private static object Wert(double? x) => x.HasValue ? (object)x.Value : DBNull.Value;
+
+        /// <summary>Ein Text als Parameterwert - NULL bleibt NULL (Vorgabe).</summary>
+        private static object Wert(string x) => x != null ? (object)x : DBNull.Value;
 
         // Legt einen neuen Gebaeude-Stammdatensatz an. ID explizit als MAX(ID)+1
         // (beim Kopieren einer Access-Tabelle wird die Autonummerierung zu einer normalen Long-Zahl).
         public bool Insert(GebaeudeModel m)
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
-            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Wohnflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             var ps = new List<DbParam>();
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
@@ -423,10 +462,60 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Wohnflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ? WHERE Bezeichner = ?";
+            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ? WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        #endregion
+
+        #region --- Gebaeudespalten-Schritt M3 (NULL-erhaltend) ---
+
+        /// <summary>
+        /// Liest die fuenfzehn Spalten des Gebaeudespalten-Schritts M3 (Schemaschritt 101)
+        /// NULL-ERHALTEND in das Modell: NULL bleibt <c>null</c>, die zwei Schalter werden
+        /// 0/1. Fehlt eine Spalte (Datenbank vor Schritt 101), bleibt das Feld auf seiner
+        /// Vorbelegung. Gerufen fuer Katalog (hier) und Projekt (<c>GebaeudeCtrl</c>).
+        /// </summary>
+        internal static void NeueSpaltenLesen(GebaeudeModel item, DataRow row)
+        {
+            item.Gebaeude_Modell = Text(row, GebaeudeSchema.SPALTE_GEBAEUDE_MODELL);
+            item.Fensterflaeche_Ost = Zahl(row, GebaeudeSchema.SPALTE_FENSTERFLAECHE_OST);
+            item.Fensterflaeche_West = Zahl(row, GebaeudeSchema.SPALTE_FENSTERFLAECHE_WEST);
+            item.Rahmenanteil = Zahl(row, GebaeudeSchema.SPALTE_RAHMENANTEIL);
+            item.Verschattungsfaktor = Zahl(row, GebaeudeSchema.SPALTE_VERSCHATTUNGSFAKTOR);
+            item.Grundflaeche_Randbedingung = Text(row, GebaeudeSchema.SPALTE_GRUNDFLAECHE_RANDBEDINGUNG);
+            item.Kellertemperatur = Zahl(row, GebaeudeSchema.SPALTE_KELLERTEMPERATUR);
+            item.Masseanteil_Aussen = Zahl(row, GebaeudeSchema.SPALTE_MASSEANTEIL_AUSSEN);
+            item.Innenflaechenfaktor = Zahl(row, GebaeudeSchema.SPALTE_INNENFLAECHENFAKTOR);
+            item.Heizung_Strahlungsanteil = Zahl(row, GebaeudeSchema.SPALTE_HEIZUNG_STRAHLUNGSANTEIL);
+            item.Heizleistung_Max = Zahl(row, GebaeudeSchema.SPALTE_HEIZLEISTUNG_MAX);
+            item.Aussenbauteile_Strahlung = Schalter(row, GebaeudeSchema.SPALTE_AUSSENBAUTEILE_STRAHLUNG);
+            item.Luftwechsel_Infiltration = Zahl(row, GebaeudeSchema.SPALTE_LUFTWECHSEL_INFILTRATION);
+            item.Luftwechsel_Nutzer = Zahl(row, GebaeudeSchema.SPALTE_LUFTWECHSEL_NUTZER);
+            item.Sommerlueftung = Schalter(row, GebaeudeSchema.SPALTE_SOMMERLUEFTUNG);
+        }
+
+        private static object Roh(DataRow row, string spalte)
+            => row.Table.Columns.Contains(spalte) ? row[spalte] : DBNull.Value;
+
+        private static string Text(DataRow row, string spalte)
+        {
+            object w = Roh(row, spalte);
+            return w == DBNull.Value ? null : Convert.ToString(w, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        private static double? Zahl(DataRow row, string spalte)
+        {
+            object w = Roh(row, spalte);
+            return w == DBNull.Value ? (double?)null : Convert.ToDouble(w, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        private static bool Schalter(DataRow row, string spalte)
+        {
+            object w = Roh(row, spalte);
+            return w != DBNull.Value && Convert.ToInt64(w, System.Globalization.CultureInfo.InvariantCulture) != 0;
         }
 
         #endregion
@@ -446,7 +535,7 @@ namespace WindowsFormsApplication1
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Wohnflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -479,7 +568,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@c27", DbParamTyp.Double) { Wert = (object)(r["Dachflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Dachflaeche"])) },
                 new DbParam("@c28", DbParamTyp.Double) { Wert = (object)(r["Grundflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Grundflaeche"])) },
                 new DbParam("@c29", DbParamTyp.Double) { Wert = (object)(r["Sonstige_Flaechen"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Sonstige_Flaechen"])) },
-                new DbParam("@c30", DbParamTyp.Double) { Wert = (object)(r["Wohnflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wohnflaeche"])) },
+                new DbParam("@c30", DbParamTyp.Double) { Wert = (object)(r["Nutzflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Nutzflaeche"])) },
                 new DbParam("@c31", DbParamTyp.Double) { Wert = (object)(r["Raumhoehe"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumhoehe"])) },
                 new DbParam("@c32", DbParamTyp.Double) { Wert = (object)(r["WBVK_Anschluß_Fenster_Wand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Fenster_Wand"])) },
                 new DbParam("@c33", DbParamTyp.Double) { Wert = (object)(r["WBVK_Anschluß_Wand_Dach"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Wand_Dach"])) },
@@ -504,6 +593,26 @@ namespace WindowsFormsApplication1
                 new DbParam("@c52", DbParamTyp.VarWChar) { Wert = (object)(r["Baualtersklasse"] == DBNull.Value ? "" : r["Baualtersklasse"].ToString()) },
                 new DbParam("@c53", DbParamTyp.VarWChar) { Wert = (object)(r["Gebaeudeart"] == DBNull.Value ? "" : r["Gebaeudeart"].ToString()) },
                 new DbParam("@c54", DbParamTyp.VarWChar) { Wert = (object)(r["Wohngebaeude_Nicht_Wohngebaeude"] == DBNull.Value ? "" : r["Wohngebaeude_Nicht_Wohngebaeude"].ToString()) },
+                // Gebaeudespalten-Schritt M3 (Schemaschritt 101): NULL-ERHALTEND. Anders
+                // als die Bestandsspalten oben wird NULL hier nicht zu 0 oder "" - NULL
+                // heisst "Vorgabe", und fuer Rahmenanteil, Verschattungsfaktor & Co. ist 0
+                // kein neutraler Wert (Umsetzungskonzept Gebaeudesimulation 1.6). Die zwei
+                // Schalter kennen kein NULL und gehen als 0/1 hinueber.
+                new DbParam("@c55", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_GEBAEUDE_MODELL) },
+                new DbParam("@c56", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_FENSTERFLAECHE_OST) },
+                new DbParam("@c57", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_FENSTERFLAECHE_WEST) },
+                new DbParam("@c58", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_RAHMENANTEIL) },
+                new DbParam("@c59", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_VERSCHATTUNGSFAKTOR) },
+                new DbParam("@c60", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_GRUNDFLAECHE_RANDBEDINGUNG) },
+                new DbParam("@c61", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KELLERTEMPERATUR) },
+                new DbParam("@c62", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_MASSEANTEIL_AUSSEN) },
+                new DbParam("@c63", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_INNENFLAECHENFAKTOR) },
+                new DbParam("@c64", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZUNG_STRAHLUNGSANTEIL) },
+                new DbParam("@c65", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZLEISTUNG_MAX) },
+                new DbParam("@c66", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_AUSSENBAUTEILE_STRAHLUNG) },
+                new DbParam("@c67", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_LUFTWECHSEL_INFILTRATION) },
+                new DbParam("@c68", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_LUFTWECHSEL_NUTZER) },
+                new DbParam("@c69", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_SOMMERLUEFTUNG) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 

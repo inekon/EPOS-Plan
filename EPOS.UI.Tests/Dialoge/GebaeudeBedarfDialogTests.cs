@@ -363,4 +363,151 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
     }
+
+    // =================================================================================
+    // Stufe G1 (ADR-006, Umsetzungskonzept 2.7): der Ausweis des Rechenwegs
+    // =================================================================================
+
+    [Fact]
+    public void Der_Rechenweg_steht_bei_den_Kennzahlen()
+    {
+        GebaeudeBedarfDaten daten = new()
+        {
+            Name = "EFH", HeizwaermeMwh = 50, MaxLastKw = 30, VollbenutzungsstundenH = 1666,
+            MonatswerteMwh = new double[12], Modelltext = "Tagesbilanz (Bestandsweg)"
+        };
+        var cut = Aufbauen(daten);
+
+        Assert.Contains("Rechenweg:", cut.Markup);
+        Assert.Contains("Tagesbilanz (Bestandsweg)", cut.Markup);
+    }
+
+    [Fact]
+    public void Ohne_Rechenweg_steht_keine_Zeile()
+    {
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain("Rechenweg:", cut.Markup);
+    }
+
+    // =================================================================================
+    // Stufe G2 (Konzept 8.2, Umsetzungskonzept 2.7): Kennzahlen, Vergleich, Raumtemperatur
+    // =================================================================================
+
+    /// <summary>Ein Satz auf dem VDI-Weg mit dem Tagesbilanz-Weg als Vergleich.</summary>
+    private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true) => new()
+    {
+        Name = "EFH", HeizwaermeMwh = 60.0, MaxLastKw = 40.0, VollbenutzungsstundenH = 1500.0,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007", IstVdi6007 = true,
+        SpitzeTagesmittelKw = 25.0, SpitzeQuantil95Kw = 20.0,
+        KuehlenergieMwh = 1.25, KuehlstundenH = 312, MittlereRaumtemperaturC = 21.4,
+        UeberhitzungsstundenH = 150, SommerlueftungsstundenH = 420,
+        Vergleich = mitVergleich
+            ? new GebaeudeBedarfDaten
+            {
+                Name = "EFH", HeizwaermeMwh = 50.0, MaxLastKw = 32.0, VollbenutzungsstundenH = 1562.5,
+                MonatswerteMwh = new double[12], Modelltext = "Tagesbilanz (Bestandsweg)",
+                SpitzeTagesmittelKw = 20.0, SpitzeQuantil95Kw = 16.0
+            }
+            : null
+    };
+
+    [Fact]
+    public void Auf_dem_VDI_Weg_stehen_die_neuen_Kennzahlen()
+    {
+        var cut = Aufbauen(VdiSatz());
+
+        Assert.Contains("Kühlbedarf (informativ):", cut.Markup);
+        Assert.Contains("1,25", cut.Markup);                    // MWh
+        Assert.Contains("Stunden mit Kühlbedarf:", cut.Markup);
+        Assert.Contains("312", cut.Markup);
+        Assert.Contains("mittlere Raumtemperatur (Nutzungszeit):", cut.Markup);
+        Assert.Contains("21,40", cut.Markup);
+        Assert.Contains("Überhitzungsstunden:", cut.Markup);
+        Assert.Contains("Stunden mit Sommerlüftung:", cut.Markup);
+        Assert.Equal(5, cut.FindAll("tr.gebb-vdi").Count);
+    }
+
+    [Fact]
+    public void Der_Kuehlbedarf_folgt_der_Einheitenwahl()
+    {
+        var cut = Aufbauen(VdiSatz(), einheit: Energieeinheit.KWh);
+
+        Assert.Contains("1250", cut.Markup.Replace(".", ""));
+    }
+
+    [Fact]
+    public void Auf_dem_Tagesbilanz_Weg_fehlen_die_VDI_Kennzahlen()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll("tr.gebb-vdi"));
+        Assert.DoesNotContain("Kühlbedarf", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Vergleich_alt_neu_zeigt_vier_Spalten_und_fuenf_Zeilen()
+    {
+        var cut = Aufbauen(VdiSatz());
+
+        var tabelle = cut.Find("table.gebb-vergleich");
+        var koepfe = tabelle.QuerySelectorAll("th").Select(k => k.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Kennzahl", "Tagesbilanz", "VDI 6007", "Abweichung" }, koepfe);
+        Assert.Equal(5, tabelle.QuerySelectorAll("tbody tr").Length);
+
+        // Heizwärme 50 → 60 MWh: +20,0 %; Spitze 32 → 40 kW: +25,0 %; Tagesmittel 20 → 25: +25,0 %.
+        var erste = tabelle.QuerySelectorAll("tbody tr")[0].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("Wärmebedarf Heizung [MWh]", erste[0]);
+        Assert.Equal("50,00", erste[1]);
+        Assert.Equal("60,00", erste[2]);
+        Assert.Equal("+20,0 %", erste[3]);
+        Assert.Contains("+25,0 %", tabelle.QuerySelectorAll("tbody tr")[1].TextContent);
+        Assert.Contains("Spitzenlast (Tagesmittel) [kW]", tabelle.QuerySelectorAll("tbody tr")[2].TextContent);
+        Assert.Contains("-4,0 %", tabelle.QuerySelectorAll("tbody tr")[4].TextContent);   // 1562,5 → 1500 h/a
+    }
+
+    [Fact]
+    public void Auf_dem_Tagesbilanz_Weg_steht_der_Vergleich_in_derselben_Spaltenordnung()
+    {
+        GebaeudeBedarfDaten vdi = VdiSatz(false);
+        GebaeudeBedarfDaten alt = new()
+        {
+            Name = "EFH", HeizwaermeMwh = 50.0, MaxLastKw = 32.0, VollbenutzungsstundenH = 1562.5,
+            MonatswerteMwh = new double[12], Modelltext = "Tagesbilanz (Bestandsweg)", Vergleich = vdi
+        };
+        var cut = Aufbauen(alt);
+
+        var zellen = cut.Find("table.gebb-vergleich tbody tr").QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("50,00", zellen[1]);                       // Tagesbilanz links, auch wenn sie der Hauptsatz ist
+        Assert.Equal("60,00", zellen[2]);
+    }
+
+    [Fact]
+    public void Ohne_Vergleich_steht_keine_Vergleichstabelle()
+    {
+        var cut = Aufbauen(VdiSatz(mitVergleich: false));
+
+        Assert.Empty(cut.FindAll("table.gebb-vergleich"));
+    }
+
+    [Fact]
+    public void Das_Bild_Raumtemperatur_steht_nur_mit_Delegat_und_wird_einmal_gerechnet()
+    {
+        int aufrufe = 0;
+        var luft = new double[168];
+        for (int i = 0; i < luft.Length; i++) luft[i] = 21.0 + Math.Sin(i / 12.0);
+        Zeichenmodell raum = ChartRenderer.RaumtemperaturModell("Raumtemperatur", luft, luft, null, 26.0,
+                                                                new ChartRenderer.Raumtemperaturnamen());
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, VdiSatz())
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragRaumtemperatur, () => { aufrufe++; return raum; }));
+
+        Assert.Equal(2, cut.FindAll("svg.epos-flaeche").Count);
+        cut.Render();
+        Assert.Equal(1, aufrufe);
+
+        var ohne = Aufbauen(VdiSatz());
+        Assert.Single(ohne.FindAll("svg.epos-flaeche"));
+    }
 }

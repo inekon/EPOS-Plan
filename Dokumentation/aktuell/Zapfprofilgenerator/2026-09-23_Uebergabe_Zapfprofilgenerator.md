@@ -199,3 +199,36 @@ print("geschrieben:", ZIEL, os.path.getsize(ZIEL), "Byte | Lader entfernt:", n_l
 | Bestand des Brauchwasserkatalogs (VDI 6002, 168-h-Profile, Monatssätze) | [`KONTEXT_Brauchwassertypen_VDI6002.md`](../KONTEXT_Brauchwassertypen_VDI6002.md) |
 | Lizenzlage VDI 4655 und Datenstrategie | [Grundlagen 5](../Grundlagen_5_VDI-4655_Auswertung.md), Abschnitte 0, 7.6–7.8; Umsetzungskonzept Kapitel 6 |
 | Normzahlen der Gebäudesimulation (gleiches Muster U8) | [`Referenzlaeufe/Normzahlen/LIESMICH.md`](../../../Referenzlaeufe/Normzahlen/LIESMICH.md) |
+
+## 7 Nachtrag 23.09.2026 — Stufe Z0 umgesetzt
+
+Nach Abschnitt 2.2 wurde die Stufe Z0 noch in dieser Sitzung ausgeführt; der Übertrag setzt
+damit bei Z1 an.
+
+- **Ergebnis:** Posten P1–P13 umgesetzt (P14 ruht bis K8), Zweig `z0` in `ios_migration_september`
+  zusammengeführt (Merge `6de8b031`, danach der Merge des GitHub-Stands der Gebäudesimulation),
+  Statuszeile #438, Protokoll
+  [`2026-09-23_Z0_Grundlagen_und_Schema.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-23_Z0_Grundlagen_und_Schema.md),
+  Quellendossier [`Quellendossier_Zapfprofilgenerator.md`](Quellendossier_Zapfprofilgenerator.md),
+  Nachträge N2–N4 im Umsetzungskonzept (Umsetzungsbefunde, Berichtigungen, Umnummerierung).
+- **Schemanummern:** 101 Gebäudespalten (Gebäudesimulation, anderes Konto), 102 KWKG-Anlagenart
+  (Wirtschaftlichkeit), **103 Tww-Tabellen (T1)**; `SchemaStand.Zielversion = 103`; Testdatenbank auf
+  103 mit fiktivem Testkatalog (Skript `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py`).
+- **Gate auf dem Merge-Stand:** Kern-Filter 0 Fehler; voller Testlauf grün; Werkzeugtests der
+  Auslieferungsvorlage 26/26; Windows-Schale 0 Fehler; ChartProben 122 Bilder ohne Verstoß;
+  SqlDialektPruefer 0 Fundstellen; Referenzlauf der fünf CI-Projekte gegen
+  `2026-09-22_R11_Bestandsbefunde` bestanden und byte-gleich.
+- **Gegenprüfungen:** drei Prüfgruppen mit 32 Befunden (2 hoch, 10 mittel, 20 gering) und eine
+  Papierprüfung mit 16 Befunden; alle wesentlichen behoben.
+- **Lehre für die nächste Stufe:** Vor der Vergabe einer Schemanummer `git fetch origin` und
+  `SchemaStand.Zielversion` auf `origin/ios_migration_september` **und** auf allen lokalen Zweigen
+  und Worktrees messen; die Nummer erst im Merge festschreiben. Dreimal wurde am 23.09. dieselbe
+  Nummer 101 vergeben (Gebäudesimulation, Wirtschaftlichkeit, Zapfprofilgenerator).
+- **Entschieden am 23.09.2026 (Nachträge N5 und N6 des Umsetzungskonzepts):** Lizenz vorab zu
+  Testzwecken freigegeben (K8 und ZU15 laufen weiter); K1-Unterlagen liegen in der Ablage des
+  Anwenders (DIN 4708-2/-3, A100-Entwurf, weiter Entwurfsstand) und werden in Z2 als lokale
+  Testdaten erfasst; ZU16 ersetzen; ZU17 und ZU18 nach Empfehlung (Inhaltsvergleich im
+  Projektimport in Z1; Testklassen-Umstellung als Folgeposten). Dazu die Hilfeausgabe der
+  Auslieferungsvorlage um `--katalogpaket` ergänzen (Protokoll, offene Punkte).
+- **Nächster Auftrag:** Stufe Z1 (Bilanz deterministisch mit Weiche) nach Kapitel 7 des
+  Umsetzungskonzepts; Voraussetzungen wie in Anhang A, Schemanummer für T2 erst in Z3.

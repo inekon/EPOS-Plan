@@ -14,7 +14,7 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Bis E7b stand die Staffel im Tarifsatz und rechnete allein im Zonenmodell,
     /// bemessen an der höchsten STUNDENlast der Strommatrix. Jetzt steht sie an der
-    /// Projektübersteuerung des Stromträgers (Schemaschritt 103), der
+    /// Projektübersteuerung des Stromträgers (Schemaschritt 104), der
     /// <see cref="KostenEmissionRechner"/> liest sie dort und bemisst sie an der
     /// VIERTELSTUNDENspitze — wie jeden Leistungspreis des Stromträgers. Eine gepflegte
     /// Staffel geht dem konstanten Satz und der Saisonreihe vor.</para>
@@ -159,6 +159,52 @@ namespace EPOS.Kern.Tests
             Assert.Equal(STAFFELBETRAG, staffel.EnergieLeistungsanteil.Value, 2);
         }
 
+        /// <summary>
+        /// <b>Entscheid E7b‑Q3</b> (Anwender 23.09.2026): „Eine gepflegte Staffel ersetzt
+        /// beides, sie addiert sich nicht. Entweder Leistungspreis gesetzt oder eine Reihe,
+        /// keine Addition." Die drei Quellen des Strom-Leistungspreises schließen einander
+        /// aus — Rangfolge Staffel, Saisonreihe, konstanter Satz — und der Anteil ist nie
+        /// ihre Summe. Gemessen am Leistungsanteil UND an den Netzkosten: Der Rest ohne
+        /// Leistungsanteil ist in allen vier Fällen derselbe, der Anteil steht also genau
+        /// einmal darin.
+        ///
+        /// <para>Spitze: Jahr 2 011 kW, jeder Monat 1 500 kW. Satz 50 €/(kW·a) (Modus JAHR)
+        /// → 100 550 €/a; Saisonreihe 4 €/(kW·Monat) in jedem Monat → 12 × 4 × 1 500 =
+        /// 72 000 €/a; Staffel 1 500 kW / 60 / 90 → 135 990 €/a.</para>
+        /// </summary>
+        [Fact]
+        public void Satz_Saisonreihe_und_Staffel_schliessen_einander_aus()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZeitreihenSatz spitze = Spitze(2011, 1500);
+
+            // Ohne jeden Leistungspreis: kein Anteil — der Rest der Netzkosten.
+            VariantenDaten ohne = Rechne(PROJEKT, spitze);
+            Assert.Null(ohne.EnergieLeistungsanteil);
+            double rest = ohne.StromkostenNetz.Value;
+
+            // (1) Nur der Satz.
+            Leistungspreis(50.0);
+            VariantenDaten satz = Rechne(PROJEKT, spitze);
+            Assert.Equal(50.0 * 2011, satz.EnergieLeistungsanteil.Value, 2);
+            Assert.Equal(rest + 50.0 * 2011, satz.StromkostenNetz.Value, 2);
+
+            // (2) Satz UND Saisonreihe: Die Reihe ersetzt den Satz — nicht 72 000 + 100 550.
+            Saisonreihe(4.0);
+            VariantenDaten reihe = Rechne(PROJEKT, spitze);
+            Assert.Equal(12 * 4.0 * 1500, reihe.EnergieLeistungsanteil.Value, 2);
+            Assert.Equal(rest + 12 * 4.0 * 1500, reihe.StromkostenNetz.Value, 2);
+
+            // (3) Satz, Reihe UND Staffel: Die Staffel ersetzt beide.
+            EnergietraegerPreisCtrl.StaffelSchreiben(PROJEKT, STROM, Staffel(1500, 60, 90));
+            VariantenDaten staffel = Rechne(PROJEKT, spitze);
+            Assert.Equal(STAFFELBETRAG, staffel.EnergieLeistungsanteil.Value, 2);
+            Assert.Equal(rest + STAFFELBETRAG, staffel.StromkostenNetz.Value, 2);
+            Assert.Equal(ohne.Energiekosten.Value + STAFFELBETRAG, staffel.Energiekosten.Value, 2);
+        }
+
         [Fact]
         public void Ohne_Spitze_faellt_der_Staffelanteil_aus_und_wird_benannt()
         {
@@ -217,6 +263,32 @@ namespace EPOS.Kern.Tests
             var v = new VariantenDaten { IdProjekt = idProjekt, Ergebnis = erg, Zeitreihen = zeitreihen };
             KostenEmissionRechner.Berechne(v);
             return v;
+        }
+
+        /// <summary>Der konstante Leistungspreis der Projektübersteuerung [€/(kW·a)].</summary>
+        private static void Leistungspreis(double satz)
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_project_settings SET custom_price_power = ? WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@l", satz), new DbParam("@p", PROJEKT), new DbParam("@c", STROM));
+        }
+
+        /// <summary>Eine Saisonreihe des Stromträgers auf Projektebene — zwölf gleiche
+        /// Monatssätze [€/(kW·Monat)], wie sie der Dialog „Leistungspreis-Reihe" anlegt.</summary>
+        private static void Saisonreihe(double jeMonat)
+        {
+            var werte = new double[12];
+            for (int i = 0; i < 12; i++) werte[i] = jeMonat;
+            int id = new PreisreiheCtrl().Insert(new PreisreiheModel
+            {
+                ID_Projekt = PROJEKT,
+                ID_Energietraeger = STROM,
+                Bezeichner = "Saisonreihe E7b-Q3",
+                Jahr = 2026,
+                Aufloesung = DbWerte.PREISREIHE_AUFLOESUNG_MONAT,
+                Einheit = DbWerte.PREISREIHE_EINHEIT_EUR_KW_MONAT
+            }, werte);
+            Assert.True(id > 0, "Die Saisonreihe ließ sich nicht anlegen.");
         }
     }
 }

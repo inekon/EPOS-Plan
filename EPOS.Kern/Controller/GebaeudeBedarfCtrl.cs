@@ -44,6 +44,52 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal double? VollbenutzungsstundenH
             => MaxLastKw > 0 ? HeizwaermeMwh * 1000.0 / MaxLastKw : (double?)null;
+
+        // ---- Stufe G1: der Rechenweg und die Kennzahlen des Vergleichs (Konzept 1.4, 2.7) ----
+
+        /// <summary>
+        /// Der Rechenweg, auf dem gerechnet wurde (<c>DbWerte.GEBAEUDE_MODELL_*</c>) — der
+        /// Spaltenwert nach der NULL-Regel der Weiche bzw. der erzwungene Weg.
+        /// </summary>
+        internal string Modell = "";
+
+        /// <summary>Wurde der Rechenweg erzwungen (Vergleich alt/neu) statt aus der Spalte gelesen?</summary>
+        internal bool ModellErzwungen;
+
+        /// <summary>Größtes gleitendes Mittel über 24 Stunden [kW]; <c>null</c> ohne Ergebnis.</summary>
+        internal double? SpitzeTagesmittelKw;
+
+        /// <summary>95-%-Quantil der Stundenlast nach nächstgelegenem Rang [kW].</summary>
+        internal double? SpitzeQuantil95Kw;
+
+        /// <summary>Kühlbedarf (informativ) [MWh] — nur auf dem VDI-Weg, sonst <c>null</c>.</summary>
+        internal double? KuehlenergieMwh;
+
+        /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
+        internal int? KuehlstundenH;
+
+        /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
+        internal double? MittlereRaumtemperaturC;
+
+        // ---- Stufe G2: die Reihen des Bildes „Raumtemperatur" und zwei Stundenzahlen ----
+
+        /// <summary>Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur [h] — nur VDI-Weg.</summary>
+        internal int? UeberhitzungsstundenH;
+
+        /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
+        internal int? SommerlueftungsstundenH;
+
+        /// <summary>Raumlufttemperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
+        internal double[] RaumtemperaturC;
+
+        /// <summary>Operative Temperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
+        internal double[] OperativeTemperaturC;
+
+        /// <summary>Heizsollwert je Stunde [°C] — untere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double[] HeizsollwertC;
+
+        /// <summary>Die obere Raumtemperatur [°C] — obere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double? ObereRaumtemperaturC;
     }
 
     /// <summary>
@@ -91,22 +137,27 @@ namespace WindowsFormsApplication1
         /// <param name="idZ">Der Schlüssel der ZUORDNUNG (<c>Z_ProjektGebaeude.ID</c>) —
         /// nicht die Stamm-Id: Zwei gleiche Gebäude im Projekt teilen sich eine
         /// Stamm-Id.</param>
-        internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, int idZ)
+        /// <param name="modellErzwungen">Der Rechenweg, auf dem gerechnet wird
+        /// (<c>DbWerte.GEBAEUDE_MODELL_*</c>); <c>null</c> = der Spaltenwert des Gebäudes. Er
+        /// wirkt allein auf der GELESENEN Modellinstanz, schreibt nichts und ruft dieselbe
+        /// Weiche wie der Lauf — so entstehen die beiden Spalten des Vergleichs alt/neu aus
+        /// zwei Aufrufen desselben Controllers (Umsetzungskonzept 1.4, 2.7). Er lebt, solange
+        /// es zwei Rechenwege gibt (bis Stufe GA, Löschliste Kapitel 6).</param>
+        internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, int idZ,
+                                                       string modellErzwungen = null)
         {
             var ergebnis = new GebaeudeBedarfErgebnis();
             if (idProjekt <= 0 || idKlimaregion <= 0 || idZ <= 0) return ergebnis;
 
-            int idTabGebaeude = TabGebaeudeId(idZ);
-            if (idTabGebaeude == 0) return ergebnis;
-
-            var ctrl = new ProjektGebaeudeCtrl();
-            ctrl.ReadAll(idProjekt);
-
-            ProjektGebaeudeModel gebaeude = null;
-            for (int i = 0; i < ctrl.rows; i++)
-                if (ctrl.items[i].ID_Gebaeude == idTabGebaeude) { gebaeude = ctrl.items[i]; break; }
-
+            ProjektGebaeudeModel gebaeude = Projektgebaeude(idProjekt, idZ);
             if (gebaeude == null) return ergebnis;
+
+            if (modellErzwungen != null)
+            {
+                gebaeude.Gebaeude_Modell = modellErzwungen;
+                ergebnis.ModellErzwungen = true;
+            }
+            ergebnis.Modell = Gebaeuderechenweg.Wirksam(gebaeude.Gebaeude_Modell);
 
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
             sim.KlimakalenderLesen(idKlimaregion);
@@ -131,8 +182,46 @@ namespace WindowsFormsApplication1
             ergebnis.MaxLastKw = Hoechstwert(werte);
             WPPlan.Core.BhkwPlan.MonatsSumme(werte, ergebnis.MonatswerteMwh,
                                              sim.mo_anfang, sim.mo_ende);
+            ergebnis.SpitzeTagesmittelKw = GroesstesTagesmittel(werte);
+            ergebnis.SpitzeQuantil95Kw = Quantil95(werte);
+
+            // Die Kennzahlen, die es nur auf dem VDI-Weg gibt, kommen aus dem Ergebnistraeger
+            // des Laufs (Merkplatz 0) - skaliert nach E8 wie die Reihe.
+            GebaeudeModellErgebnis vdi = sim.GebaeudeErgebnisse.Ergebnis(0);
+            if (vdi != null)
+            {
+                ergebnis.KuehlenergieMwh = vdi.KuehlenergieMwh;
+                ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
+                ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
+                ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
+                ergebnis.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                ergebnis.RaumtemperaturC = vdi.Raumtemperatur;
+                ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
+                ergebnis.HeizsollwertC = vdi.Heizsollwert;
+                ergebnis.ObereRaumtemperaturC = vdi.ThetaMax;
+            }
             ergebnis.Erfolgreich = true;
             return ergebnis;
+        }
+
+        /// <summary>
+        /// Das Projektgebäude der Zuordnung <paramref name="idZ"/> so, wie der Lauf es liest
+        /// (Sicht <c>Abfrage_Projektgebaeude</c>); <c>null</c>, wenn es keins gibt. Auch der
+        /// Gebäudedialog liest hierüber Rechenweg und Wärmeleitwert einer Projektzeile.
+        /// </summary>
+        internal static ProjektGebaeudeModel Projektgebaeude(int idProjekt, int idZ)
+        {
+            if (idProjekt <= 0 || idZ <= 0) return null;
+
+            int idTabGebaeude = TabGebaeudeId(idZ);
+            if (idTabGebaeude == 0) return null;
+
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(idProjekt);
+
+            for (int i = 0; i < ctrl.rows; i++)
+                if (ctrl.items[i].ID_Gebaeude == idTabGebaeude) return ctrl.items[i];
+            return null;
         }
 
         /// <summary>
@@ -151,6 +240,32 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idZ));
             if (dt == null || dt.Rows.Count == 0 || dt.Rows[0][0] == DBNull.Value) return 0;
             return Convert.ToInt32(dt.Rows[0][0]);
+        }
+
+        /// <summary>
+        /// Das größte gleitende Mittel über 24 Stunden [kW] — dieselbe Bildung wie
+        /// <c>GebaeudeModellErgebnis.SpitzeTagesmittelKw</c>, hier auf der Reihe beider Wege.
+        /// </summary>
+        private static double GroesstesTagesmittel(double[] werte)
+        {
+            double fenster = 0.0;
+            for (int h = 0; h < 24 && h < werte.Length; h++) fenster += werte[h];
+            double bestes = fenster;
+            for (int h = 24; h < werte.Length; h++)
+            {
+                fenster += werte[h] - werte[h - 24];
+                if (fenster > bestes) bestes = fenster;
+            }
+            return bestes / 24.0;
+        }
+
+        /// <summary>Das 95-%-Quantil nach nächstgelegenem Rang (1-basiert) [kW].</summary>
+        private static double Quantil95(double[] werte)
+        {
+            double[] sortiert = (double[])werte.Clone();
+            Array.Sort(sortiert);
+            int rang = (int)Math.Ceiling(0.95 * sortiert.Length);
+            return sortiert[Math.Max(rang, 1) - 1];
         }
 
         /// <summary>Der Höchstwert der Stundenreihe — wie <c>Maximaler_Waermebedarf</c>.</summary>

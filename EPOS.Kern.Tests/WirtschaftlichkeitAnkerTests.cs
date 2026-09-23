@@ -35,7 +35,7 @@ namespace EPOS.Kern.Tests
     /// 1024 −2.896.359,13 €, 1030 −21.895.377,28 €, 99,00 €/a, Kaskade 13.000,00 €).
     /// Die Gründe: Der Brennwert am CO₂-Grenzwert (Konzept § 6.3 Nr. 29) wirkt nur auf
     /// die Stromsteuerbefreiung, und kein Ankerprojekt erreicht sie (Hocheffizienz und
-    /// räumlicher Zusammenhang ungepflegt); Schemaschritt 101 (Nr. 30) setzt allein die
+    /// räumlicher Zusammenhang ungepflegt); Schemaschritt 102 (Nr. 30) setzt allein die
     /// leere Anlagenart von Nicht-BHKW-Anlagen auf NULL; die vermiedene Menge ohne jede
     /// Eigenerzeugung (Nr. 32) ist Ausweis im Rollentarif, und diese Kette hat weder
     /// Stundenreihen noch einen Tarif.</para>
@@ -43,9 +43,9 @@ namespace EPOS.Kern.Tests
     /// <para><b>ETAPPE E7b (Q11, „kein HT/NT") — gemessen, kein Anker bewegt sich</b>
     /// (alt = neu: 1024 −2.896.359,13 € mit Energiekosten 188.167,18 €/a, 1030
     /// −21.895.377,28 € mit Energiekosten 1.176.906,60 €/a, 99,00 €/a, Kaskade
-    /// 13.000,00 €; Messung auf der nach Schritt 103 migrierten Kopie, alle Größen der
+    /// 13.000,00 €; Messung auf der nach Schritt 104 migrierten Kopie, alle Größen der
     /// Kette bitgleich). Die Gründe: Die Testdatenbank führt keinen Tarifsatz — kein
-    /// Anker rechnete je mit Zonenpreisen oder der Staffel des Tarifsatzes; Schritt 103
+    /// Anker rechnete je mit Zonenpreisen oder der Staffel des Tarifsatzes; Schritt 104
     /// übernimmt deshalb keine Staffel, und die drei Staffelspalten am Stromträger
     /// bleiben leer; und diese Kette hat keine Stundenreihen, also keine Strommatrix,
     /// deren Summen jetzt in einer statt in vier Teilsummen entstehen.</para>

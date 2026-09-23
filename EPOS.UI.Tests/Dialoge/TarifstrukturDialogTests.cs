@@ -252,7 +252,7 @@ public class TarifstrukturDialogTests : EposBunitContext
 
     /// <summary>
     /// Q11 (E7b): Ein Satz, der noch auf dem Zonenmodell steht (eine Datenbank vor
-    /// Schemaschritt 103), wird mit dem ersten Speichern ein Rollentarif — mit den
+    /// Schemaschritt 104), wird mit dem ersten Speichern ein Rollentarif — mit den
     /// Rollenpreisen, die der Dialog zeigt. Einen anderen Modus rechnet der Kern
     /// nicht mehr.
     /// </summary>

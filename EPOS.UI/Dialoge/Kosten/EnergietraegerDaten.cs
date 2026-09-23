@@ -180,7 +180,7 @@ public sealed class EnergietraegerStand
     /// <summary>
     /// Zeigt die Karte die zweistufige Leistungspreis-Staffel? Nur beim
     /// STROMträger im PROJEKTkontext — sie steht an der Projektübersteuerung
-    /// (<c>energy_project_settings</c>, Schemaschritt 103), der Katalog führt keine.
+    /// (<c>energy_project_settings</c>, Schemaschritt 104), der Katalog führt keine.
     /// </summary>
     public bool MitStaffel { get; set; }
 

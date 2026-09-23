@@ -69,6 +69,63 @@ namespace WindowsFormsApplication1
         /// Weiterlauf.
         /// </summary>
         VorlaufNichtKonvergiert,
+
+        // ---- Stufe G1: der Klassenweg und der Eingangsbauer (Konzept 4.8) ----------
+
+        /// <summary>
+        /// Eine Pflichtgröße des Gebäudes fehlt oder ist nicht größer null: Nutzfläche,
+        /// Raumhöhe, Fläche je Nutzer oder die Luftwechselrate (Rechenschritte 1.1, A1, A7).
+        /// </summary>
+        PflichtgroesseFehlt,
+
+        /// <summary>
+        /// Die Speichermasse je Nutzfläche liegt außerhalb der Plausibilitätsgrenze
+        /// (Bauweise/Nutzfläche, Rechenschritte A1, Konzept 4.8).
+        /// </summary>
+        BauweiseUnplausibel,
+
+        /// <summary>Ein U-Wert einer Bauteilgruppe mit Fläche liegt außerhalb der Plausibilitätsgrenze (Konzept 4.8).</summary>
+        UWertUnplausibel,
+
+        /// <summary>Der Gesamtenergiedurchlassgrad liegt nicht in (0, 1] (Konzept 4.8).</summary>
+        GWertUnplausibel,
+
+        /// <summary>
+        /// Die Fensterflächen je Orientierung ergeben nicht die gesamte Fensterfläche, oder
+        /// eine davon ist negativ (Rechenschritte 1.1, Konzept 4.8).
+        /// </summary>
+        FensterflaechenWidersprechen,
+
+        /// <summary>
+        /// Ein Modellparameter der Stufe G1 liegt außerhalb seines Wertebereichs:
+        /// Rahmenanteil, Verschattungsfaktor, Masseanteil außen, Innenflächenfaktor,
+        /// Strahlungsanteil der Heizung, Heizleistungsgrenze, Kellertemperatur, innere Lasten,
+        /// Wärmebrücken, Randbedingung der Grundfläche (Rechenschritte 1.1).
+        /// </summary>
+        ParameterUngueltig,
+
+        /// <summary>
+        /// Der Sollwertfahrplan ist widersprüchlich: ein Sollwert nicht endlich, die obere
+        /// Raumtemperatur nicht über dem Tagsollwert, oder ein aktiver Ferienfahrplan mit einem
+        /// Tag außerhalb 1…365 (Rechenschritte E8, 1.1).
+        /// </summary>
+        SollwertfahrplanUngueltig,
+
+        /// <summary>
+        /// Die Klimadaten reichen für das Stundenmodell nicht: keine 8 760 Stunden in
+        /// Ortszeit, keine Wochenendmaske, ein nicht endlicher Wert (Rechenschritte 1.2, E1).
+        /// </summary>
+        KlimadatenUnvollstaendig,
+
+        /// <summary>
+        /// Der unskalierte Jahreswert des Laufs ist null oder nicht endlich; die
+        /// Verbrauchs-Rückrechnung (E8) hätte eine Division durch null (Rechenschritte 8.3,
+        /// Umsetzungskonzept 1.5 Punkt 2).
+        /// </summary>
+        VerbrauchAltNull,
+
+        /// <summary>Eine Ergebnisreihe des Laufs ist nicht endlich oder negativ (Plausibilität nach dem Lauf).</summary>
+        ErgebnisUnplausibel,
     }
 
     /// <summary>

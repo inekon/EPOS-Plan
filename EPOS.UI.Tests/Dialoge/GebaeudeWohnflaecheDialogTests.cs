@@ -340,4 +340,21 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         Assert.Equal("Ölverbrauch [l/a]", cut.Instance.GewaehlteEinheit);
         Assert.Equal("l/a", cut.Instance.Einheitszeichen);
     }
+
+    /// <summary>
+    /// Stufe G1 (E19, E20): Der Skalierungsdialog sagt, dass aus Fläche bzw. Verbrauch der
+    /// Skalierungsfaktor entsteht — nur mit Text, sonst keine leere Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Herleitung_der_Skalierung_steht_nur_mit_Text()
+    {
+        var ohne = Aufbauen();
+        Assert.DoesNotContain("Skalierungsfaktor", ohne.Markup);
+
+        var mit = Render<GebaeudeWohnflaecheDialog>(p => p
+            .Add(x => x.Bedarfsarten, BEDARFSARTEN)
+            .Add(x => x.Einheit, "Wohnfläche [m²]")
+            .Add(x => x.HinweisSkalierung, "Aus Nutzfläche bzw. Verbrauch entsteht der Skalierungsfaktor."));
+        Assert.Contains("Skalierungsfaktor", mit.Markup);
+    }
 }

@@ -93,12 +93,12 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Die Leistungspreis-Staffel des Stromträgers (Q11, Schemaschritt 103)
+        // Die Leistungspreis-Staffel des Stromträgers (Q11, Schemaschritt 104)
         // =====================================================================
 
         /// <summary>
         /// Die zweistufige Leistungspreis-Staffel eines Trägers im Projekt
-        /// (<c>energy_project_settings</c>, Schritt 103). Leer (nie <c>null</c>), wenn die
+        /// (<c>energy_project_settings</c>, Schritt 104). Leer (nie <c>null</c>), wenn die
         /// Zeile oder die Spalten fehlen — dann rechnet keine Staffel.
         /// </summary>
         public static LeistungspreisStaffel StaffelLesen(int projektId, int traegerId)
@@ -773,7 +773,7 @@ namespace WindowsFormsApplication1
             public double? NOx;
             public int? IdUmrechnung;
 
-            /// <summary>Die zweistufige Leistungspreis-Staffel (Schritt 103); leer, wenn
+            /// <summary>Die zweistufige Leistungspreis-Staffel (Schritt 104); leer, wenn
             /// nicht gepflegt oder die Spalten fehlen — nie <c>null</c>.</summary>
             public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
         }

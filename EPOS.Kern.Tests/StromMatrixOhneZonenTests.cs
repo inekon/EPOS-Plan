@@ -23,7 +23,7 @@ namespace EPOS.Kern.Tests
     /// Winterspanne der Lastbilder. Ein Lauf schreibt EINE Jahreszeile und ersetzt dabei
     /// einen Altstand mit Zonenzeilen, statt ihn stehen zu lassen; der Leser summiert
     /// einen solchen Altstand zu denselben Jahressummen, statt eine Zone als Jahr zu
-    /// lesen. Den Datenteil des Schemaschritts 103 prüft
+    /// lesen. Den Datenteil des Schemaschritts 104 prüft
     /// <see cref="ZeitzonentarifAbloesungTests"/>.</para>
     /// </summary>
     [Collection("Testdatenbank")]
@@ -177,7 +177,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ein Altstand mit vier Zonenzeilen (eine Datenbank vor Schemaschritt 103) wird
+        /// Ein Altstand mit vier Zonenzeilen (eine Datenbank vor Schemaschritt 104) wird
         /// weder falsch gelesen noch als Zone gezeigt: Der Leser summiert alle Zeilen des
         /// Projekts zu den Jahressummen, die höchste Stundenlast ist das Maximum.
         /// </summary>

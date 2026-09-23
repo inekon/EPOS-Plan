@@ -19,6 +19,10 @@ Nachgezogen am 22.09.2026 mit **E28** (N1.33): U4 und U9 sind nach Empfehlung en
 Glossarabschnitt „Gebäudehülle und Gebäudemodell" entsteht vor den Übersetzungen (vor G1), die
 Grenze von 100 Gebäuden im Bestandsweg fällt in GB; vor G0, GB und G1 ist kein Anwenderentscheid
 mehr offen, das Register zählt 20 offene Punkte.
+Nachgezogen am 23.09.2026 mit **E29** (N1.34): Die Endwahl zu U6 ist gefallen — das Gebäudemodell
+rechnet die Sonnengeometrie auf den **Stundenanfang**, wie Photovoltaik und Solarthermie; eine
+Umstellung auf die Stundenmitte gibt es nur für alle drei gemeinsam. Die Folgeaufgabe aus E27 zu
+U6 ist damit erledigt.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3091,3 +3095,52 @@ U4 und U9, Kopf, Kapitel 0, 2 und 9, Zählung 20);
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Vorspann, 1.1,
 2.9, 4 (Stufe GB) und 5; [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
 (Verweise auf U4 und U9); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.34 Entscheid E29 — U6: Die Sonnengeometrie rechnet auf den Stundenanfang
+
+**Entscheid E29 (Anwender, 23.09.2026).** Das Gebäudemodell rechnet den Sonnenstand jeder
+Klimastunde auf den **Stundenanfang** der UTC-Stunde — dieselbe Konvention wie Photovoltaik und
+Solarthermie und wie der Klimaimport, der die Zeitmarke des Stundenanfangs übergibt. Das ist die
+Endwahl, die E27 (N1.32) zu **U6** als Folgeaufgabe offen gelassen hatte: Das Verfahren — in G1
+beide Zeitbezüge an der einen Stelle messen, dann wählen — ist durchlaufen.
+
+**Die Messung in G1** (Klimaweg `GebaeudeKlimaweg`, Testdatenbank, Klimaregionen der Projekte
+1045, 1017 und 1023; Stundenmitte gegenüber Stundenanfang):
+
+| Größe | Wirkung der Stundenmitte |
+|---|---|
+| Jahressumme der Strahlung auf die Ostfassade | −10,1 % |
+| Jahressumme der Strahlung auf die Westfassade | +10,5 % |
+| Jahressumme der Strahlung auf die Südfassade | +0,2 % |
+| Jahresheizwärme der Gebäude | +0,04 bis +0,10 % |
+
+**Begründung.** Für den Heizbedarf ist der Zeitbezug ohne Belang: Ost und West gleichen sich in
+der Jahressumme nahezu aus, die Jahresheizwärme bewegt sich um höchstens ein Promille. Dagegen
+wiegt, dass in einem Programm **eine** Sonne scheint: Gebäude, Photovoltaik und Solarthermie
+rechnen denselben Sonnenstand zur selben Stunde, und ein Vergleich zwischen Gebäudegewinnen und
+Anlagenertrag bekommt keinen Versatz von einer halben Stunde, der nur im Gebäude stünde.
+
+**Was damit gilt.**
+
+- Die Vorgabe `GebaeudeKlimaweg.ZEITBEZUG_VORGABE = Zeitbezug.Stundenanfang` ist **entschieden**,
+  nicht mehr vorläufig. Der Schalter `Zeitbezug` bleibt im Kern stehen — für Messungen und Tests,
+  nicht als Eingabe des Anwenders.
+- Die Abweichung „Zeitbezug Stundenanfang statt Stundenmitte" der
+  [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Kapitel 11, Zeile 5)
+  bleibt als **benannte Abweichung** von Blatt 3 stehen; sie ist jetzt entschieden.
+- **Eine Umstellung auf die Stundenmitte gibt es nur für alle drei gemeinsam** — Gebäude,
+  Photovoltaik und Solarthermie —, als eigener Auftrag mit eigenem Einfrierschritt. Das
+  Gebäudemodell allein wird nicht umgestellt.
+- Die Basis, die mit G1 + G2 neu eingefroren wird, rechnet mit dem Stundenanfang.
+
+**Was offen bleibt.** Von den Folgeaufgaben aus E27 bleiben **K22** (vor KU2) und **D6** (vor der
+Stufe über die semantische hinaus). Das Register zählt weiterhin **20 offene Punkte**; U6 war mit
+E27 bereits entschieden, erledigt ist jetzt seine Folgeaufgabe.
+
+**Betroffene Stufen:** G1 + G2 (Einfrieren der Basis).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 und 2; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (U6, Kopf,
+Kapitel 0 und 9); [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+Vorspann, 1.2 und 5 (U6); [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+Schritt E1 und Kapitel 11 (Zeile 5); im Code die Vorgabe in `GebaeudeKlimaweg`.

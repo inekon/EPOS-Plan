@@ -865,7 +865,7 @@ namespace WindowsFormsApplication1
                 gemerkteBasis = idUmrechnung > 0
                     ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
 
-                // Q11: die zweistufige Leistungspreis-Staffel (Schemaschritt 103) —
+                // Q11: die zweistufige Leistungspreis-Staffel (Schemaschritt 104) —
                 // leer bleibt leer, sie hat keinen Katalogwert.
                 stand.StaffelGrenze = projekt.Staffel.GrenzeKW;
                 stand.StaffelPreis1 = projekt.Staffel.Preis1EurKWa;

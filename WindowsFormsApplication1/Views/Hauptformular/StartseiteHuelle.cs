@@ -862,7 +862,7 @@ namespace WindowsFormsApplication1
 
             List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
 
-            if (GebaeudeHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            if (GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
             {
                 wizctrl.Del_Projekt_ZuordungGebäude(_kontext.Id);
                 wizctrl.Add_Projekt_ZuordungGebäude(_kontext.Id, liste);

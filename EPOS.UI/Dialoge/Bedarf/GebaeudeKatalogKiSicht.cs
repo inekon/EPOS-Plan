@@ -8,8 +8,9 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <para><b>EIN Katalogeintrag, ZWEI Stände — und deshalb ein Sichtmodell.</b> Das erste
 /// Reiterblatt (Kenngrößen, Flächen, U‑Werte) bindet unmittelbar an
 /// <c>GebaeudeKatalogDaten</c>; das zweite (Raumtemperaturen, Wärmebrücken,
-/// Anschlussmaße, Luftwechsel) führt einen EIGENEN Arbeitsstand in den Feldern der Maske
-/// und gibt ihn erst mit „Werte übernehmen" in den Satz. Ein Katalog, der beide Blätter
+/// Anschlussmaße, Luftwechsel) führte bis Stufe G1 einen EIGENEN Arbeitsstand in den Feldern
+/// der Maske; seit G1 greifen alle Wege auf den EINEN Arbeitsstand des Dialogs (E27/U1) —
+/// die Zugriffswege bleiben, damit die Feldliste des Kerns (<c>KiDialoge</c>) unverändert gilt. Ein Katalog, der beide Blätter
 /// an den Satz hängte, schriebe in Zahlen, die die Maske im selben Augenblick wieder
 /// überschreibt. Diese Klasse legt sich über BEIDE Stände unter einem Namen — dieselbe
 /// Bauart wie <c>KomponentenKonfigurationKiSicht</c>.</para>
@@ -391,6 +392,104 @@ public sealed class GebaeudeKatalogKiSicht
         get => LuftwechselrateLesen?.Invoke();
         set => LuftwechselrateSetzen?.Invoke(value);
     }
+
+    // =====================================================================
+    //  Modellparameter VDI 6007 (Stufen G1 und G2) — am Satz, wie die Kenngrößen
+    // =====================================================================
+
+    /// <summary>Anteil des Fensterrahmens an der Fensterfläche (VDI 6007); leer = Vorgabe 0,3.</summary>
+    public double? Rahmenanteil
+    {
+        get => Satz?.Rahmenanteil;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Rahmenanteil = value; }
+    }
+
+    /// <summary>Pauschaler Verschattungsfaktor der Fenster (VDI 6007); leer = Vorgabe 0,9.</summary>
+    public double? Verschattungsfaktor
+    {
+        get => Satz?.Verschattungsfaktor;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Verschattungsfaktor = value; }
+    }
+
+    /// <summary>Anteil der Speichermasse in den Außenbauteilen (VDI 6007); leer = Vorgabe 0,3.</summary>
+    public double? MasseanteilAussen
+    {
+        get => Satz?.MasseanteilAussen;
+        set { if (Satz is GebaeudeKatalogDaten d) d.MasseanteilAussen = value; }
+    }
+
+    /// <summary>Innenbauteilfläche je m² Nutzfläche (VDI 6007); leer = Vorgabe 2,5.</summary>
+    public double? Innenflaechenfaktor
+    {
+        get => Satz?.Innenflaechenfaktor;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Innenflaechenfaktor = value; }
+    }
+
+    /// <summary>Strahlungsanteil der Wärmeübergabe (VDI 6007); leer = Vorgabe 0,3.</summary>
+    public double? HeizungStrahlungsanteil
+    {
+        get => Satz?.HeizungStrahlungsanteil;
+        set { if (Satz is GebaeudeKatalogDaten d) d.HeizungStrahlungsanteil = value; }
+    }
+
+    /// <summary>Größte Heizleistung des Stundenmodells in kW; leer = unbegrenzt.</summary>
+    public double? HeizleistungMax
+    {
+        get => Satz?.HeizleistungMax;
+        set { if (Satz is GebaeudeKatalogDaten d) d.HeizleistungMax = value; }
+    }
+
+    /// <summary>Rechnet Sonneneinstrahlung und langwellige Abstrahlung auf die opaken Außenbauteile ein (VDI 6007).</summary>
+    public bool AussenbauteileStrahlung
+    {
+        get => Satz?.AussenbauteileStrahlung ?? false;
+        set { if (Satz is GebaeudeKatalogDaten d) d.AussenbauteileStrahlung = value; }
+    }
+
+    /// <summary>Luftwechsel durch Undichtheiten (VDI 6007); sind Infiltration und Nutzerlüftung leer, gilt die Luftwechselrate.</summary>
+    public double? LuftwechselInfiltration
+    {
+        get => Satz?.LuftwechselInfiltration;
+        set { if (Satz is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value; }
+    }
+
+    /// <summary>Luftwechsel durch Fensterlüftung der Nutzer (VDI 6007); zusammen mit der Infiltration der Luftwechsel des Stundenmodells.</summary>
+    public double? LuftwechselNutzer
+    {
+        get => Satz?.LuftwechselNutzer;
+        set { if (Satz is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value; }
+    }
+
+    /// <summary>Erhöhter Luftwechsel an warmen Tagen, wenn die Außenluft kühler ist (VDI 6007).</summary>
+    public bool Sommerlueftung
+    {
+        get => Satz?.Sommerlueftung ?? false;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Sommerlueftung = value; }
+    }
+
+    /// <summary>Fensterfläche nach Osten in m²; leer = die Hälfte von Ost + West.</summary>
+    public double? FensterflaecheOst
+    {
+        get => Satz?.FensterflaecheOst;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheOst = value; }
+    }
+
+    /// <summary>Fensterfläche nach Westen in m²; leer = die Hälfte von Ost + West.</summary>
+    public double? FensterflaecheWest
+    {
+        get => Satz?.FensterflaecheWest;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheWest = value; }
+    }
+
+    /// <summary>Temperatur des unbeheizten Kellers unter der Bodenplatte in °C; leer = Vorgabe 10 °C.</summary>
+    public double? Kellertemperatur
+    {
+        get => Satz?.Kellertemperatur;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Kellertemperatur = value; }
+    }
+
+    /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
+    public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Satz?.Modell);
 
     /// <summary>
     /// Die Betriebsart der Maske — Bearbeiten, Neu oder Katalogverwaltung. Sie

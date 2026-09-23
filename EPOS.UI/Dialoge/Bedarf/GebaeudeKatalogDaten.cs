@@ -11,7 +11,9 @@
 /// das bleibt: EIN Feldsatz, zwei Reiter darauf.</para>
 ///
 /// <para><b>Die Zahlen sind <c>double?</c></b>, weil ein leeres Feld etwas anderes ist
-/// als eine 0. Die 17 Felder des ersten Reiters sind PFLICHT
+/// als eine 0. Seit Stufe G1 prüft der Dialog seine Pflichtzahlen und Regeln an EINER
+/// Stelle im OK-Weg (Umsetzungskonzept Gebäudesimulation 2.4, Konzept 4.8); die früher
+/// 17 Pflichtfelder des ersten Reiters waren PFLICHT
 /// (<c>InitModelFromControls</c>:154-172 ruft <c>ZahlPruefen</c> ohne
 /// <c>leerErlaubt</c>); die 28 des zweiten dürfen leer bleiben und zählen dann als 0
 /// (<c>Text2Wert</c>:109).</para>
@@ -23,7 +25,8 @@
 /// jetzt an der BAUART-Klappliste, und die bedient der Dialog — siehe
 /// <see cref="Bauweise"/>. Die vier Flags
 /// <c>Wochenende</c>, <c>Ferien</c>, <c>WW_Bedarf</c> und der gehobene
-/// Winterferienbeginn entstehen beim Übernehmen des zweiten Reiters (wie
+/// Winterferienbeginn entstehen seit G1 im OK-Weg des Dialogs (früher beim Übernehmen
+/// des zweiten Reiters, wie
 /// <c>btn_Speichern_Click</c>).</para>
 /// </summary>
 public sealed class GebaeudeKatalogDaten
@@ -134,7 +137,7 @@ public sealed class GebaeudeKatalogDaten
 
     /// <summary>
     /// <c>Wochenende</c> (0/1) — 1, sobald eine Wochenendabsenkung eingetragen ist.
-    /// Wird beim Übernehmen des zweiten Reiters gesetzt.
+    /// Wird im OK-Weg des Dialogs gesetzt.
     /// </summary>
     public double Wochenende { get; set; }
 
@@ -152,4 +155,70 @@ public sealed class GebaeudeKatalogDaten
 
     /// <summary>Der Wärmebedarf aus dem Bestand — unverändert übernommen.</summary>
     public double Waermebedarf { get; set; }
+
+    // ------------------------------------ Stufe G1: VDI-6007-Struktur (Konzept 2.4)
+    //
+    // Alle nullbar: Der Dialog schreibt null, nicht die Vorgabe (Vorbild
+    // PvModellFelder) - die Vorgabe setzt der Kern beim Rechnen ein.
+
+    /// <summary>
+    /// Der Rechenweg (<c>Gebaeude_Modell</c>): <c>DbWerte.GEBAEUDE_MODELL_*</c> oder
+    /// <c>null</c> = keine Angabe, es gilt die Vorgabe des Programms
+    /// (<c>Gebaeuderechenweg.OhneAngabe</c>).
+    /// </summary>
+    public string? Modell { get; set; }
+
+    /// <summary>Randbedingung der Bodenplatte (<c>DbWerte.GRUND_*</c>); <c>null</c> = Erdreich.</summary>
+    public string? GrundflaecheRandbedingung { get; set; }
+
+    /// <summary>Kellertemperatur [°C] bei Randbedingung Keller; <c>null</c> = Vorgabe.</summary>
+    public double? Kellertemperatur { get; set; }
+
+    /// <summary>Fensterfläche Ost [m²]; <c>null</c> = die Hälfte des Bestandsfelds Ost + West.</summary>
+    public double? FensterflaecheOst { get; set; }
+
+    /// <summary>Fensterfläche West [m²]; <c>null</c> = die Hälfte des Bestandsfelds Ost + West.</summary>
+    public double? FensterflaecheWest { get; set; }
+
+    /// <summary>Rahmenanteil der Fenster [–]; <c>null</c> = Vorgabe.</summary>
+    public double? Rahmenanteil { get; set; }
+
+    /// <summary>Verschattungsfaktor [–]; <c>null</c> = Vorgabe.</summary>
+    public double? Verschattungsfaktor { get; set; }
+
+    /// <summary>Masseanteil außen [–]; <c>null</c> = Vorgabe.</summary>
+    public double? MasseanteilAussen { get; set; }
+
+    /// <summary>Innenflächenfaktor [–]; <c>null</c> = Vorgabe.</summary>
+    public double? Innenflaechenfaktor { get; set; }
+
+    /// <summary>Strahlungsanteil der Heizung [–]; <c>null</c> = Vorgabe.</summary>
+    public double? HeizungStrahlungsanteil { get; set; }
+
+    /// <summary>Heizleistungsgrenze [kW]; <c>null</c> = unbegrenzt.</summary>
+    public double? HeizleistungMax { get; set; }
+
+    /// <summary>Außenbauteile mit Strahlung (0/1-Spalte, <c>NOT NULL DEFAULT 0</c>).</summary>
+    public bool AussenbauteileStrahlung { get; set; }
+
+    /// <summary>Infiltration [1/h] (Stufe G2); <c>null</c> = Vorgabe bzw. Luftwechselrate.</summary>
+    public double? LuftwechselInfiltration { get; set; }
+
+    /// <summary>Nutzerlüftung [1/h] (Stufe G2); <c>null</c> = Vorgabe bzw. Luftwechselrate.</summary>
+    public double? LuftwechselNutzer { get; set; }
+
+    /// <summary>Sommerlüftungsregel (0/1-Spalte, <c>NOT NULL DEFAULT 0</c>, Stufe G2).</summary>
+    public bool Sommerlueftung { get; set; }
+
+    /// <summary>
+    /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
+    /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").
+    /// </summary>
+    public GebaeudeKatalogDaten Kopie()
+    {
+        var k = (GebaeudeKatalogDaten)MemberwiseClone();
+        k.Ferienbeginn = (int[])(Ferienbeginn ?? new int[4]).Clone();
+        k.Ferienende = (int[])(Ferienende ?? new int[4]).Clone();
+        return k;
+    }
 }

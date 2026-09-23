@@ -8,7 +8,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E7 — Schemaschritt <b>101</b>: Die leere Zeichenkette in
+    /// ETAPPE E7 — Schemaschritt <b>102</b>: Die leere Zeichenkette in
     /// <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL (Konzept Wirtschaftlichkeit
     /// § 6.3 Nr. 30, Register R‑NR Nr. 30, Anwenderentscheid 22.09.2026).
     ///
@@ -30,10 +30,10 @@ namespace EPOS.Kern.Tests
         private static readonly int[] SIEBEN = { 12310, 14819, 14842, 14843, 14844, 14851, 14852 };
 
         [Fact]
-        public void Der_Zielstand_ist_101_und_der_Schritt_trifft_genau_die_leere_Zeichenkette()
+        public void Der_Zielstand_ist_102_und_der_Schritt_trifft_genau_die_leere_Zeichenkette()
         {
-            Assert.True(SchemaStand.Zielversion >= 101,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 101.");
+            Assert.True(SchemaStand.Zielversion >= 102,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 102.");
 
             Assert.Equal("Tab_Energieanlagen", KwkgAnlagenartLeer.TABELLE);
             Assert.Equal("KWKG_Anlagenart", KwkgAnlagenartLeer.SPALTE);

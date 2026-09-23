@@ -885,7 +885,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Q11 (E7b, Anwender 22.09.2026: „kein HT/NT"): Dieser Modus rechnet nicht
-        /// mehr. Schemaschritt 103 schaltet aktive Saetze in ihm ab; der Wert bleibt der
+        /// mehr. Schemaschritt 104 loescht die Saetze in ihm; der Wert bleibt der
         /// Rueckfall eines leeren Modus (Altzeilen) und das Merkmal, an dem Kern und
         /// Migration einen Satz des entfallenen Modells erkennen.
         /// </remarks>
@@ -2262,6 +2262,45 @@ namespace WindowsFormsApplication1
         /// <summary>Sonstige/unbekannte Zelltechnologie — wie
         /// <see cref="PV_TECHNOLOGIE_A_SI"/> ohne Huld-Koeffizienten.</summary>
         public const string PV_TECHNOLOGIE_SONSTIGE = "SONSTIGE";
+
+        // =====================================================================
+        // Gebaeudemodell, Stufe G1 (Umsetzungskonzept Gebaeudesimulation 1.7,
+        //   Gebaeudespalten-Schritt M3 = Schemaschritt 101)
+        //   Persistenzwerte, eingefroren und ASCII (in SQL verglichen).
+        // =====================================================================
+
+        /// <summary>
+        /// Rechenweg eines Gebaeudes: der Tagesbilanz-Weg des Bestands
+        /// (<c>Tab_Gebaeude(_STAMM).Gebaeude_Modell</c>). Nur ein ausdrücklich
+        /// gesetzter Wert führt auf diesen Weg.
+        /// </summary>
+        public const string GEBAEUDE_MODELL_TAGESBILANZ = "TAGESBILANZ";
+
+        /// <summary>
+        /// Rechenweg eines Gebaeudes: das Zweikapazitaetenmodell nach VDI 6007.
+        ///
+        /// <para><b>Auch NULL bedeutet VDI6007</b> (Entscheid E1, Konzept N1.1 — es
+        /// kehrt die Semantik von Konzept 6.1 Rev. 1 um). Die Spalte bleibt deshalb
+        /// in der Auslieferung NULL; ein Katalogsatz mit
+        /// <see cref="GEBAEUDE_MODELL_TAGESBILANZ"/> braechte den Altweg still
+        /// zurueck.</para>
+        /// </summary>
+        public const string GEBAEUDE_MODELL_VDI6007 = "VDI6007";
+
+        /// <summary>
+        /// Randbedingung der Grundflaeche: Erdreich
+        /// (<c>Tab_Gebaeude(_STAMM).Grundflaeche_Randbedingung</c>).
+        /// <b>Auch NULL bedeutet ERDREICH.</b>
+        /// </summary>
+        public const string GRUND_ERDREICH = "ERDREICH";
+
+        /// <summary>Randbedingung der Grundflaeche: unbeheizter Keller mit der
+        /// Temperatur aus <c>Kellertemperatur</c> (NULL dort = Vorgabewert).</summary>
+        public const string GRUND_KELLER = "KELLER";
+
+        /// <summary>Randbedingung der Grundflaeche: Aussenluft (aufgestaendertes
+        /// Gebaeude, Durchfahrt).</summary>
+        public const string GRUND_AUSSENLUFT = "AUSSENLUFT";
 
         // =====================================================================
         // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)

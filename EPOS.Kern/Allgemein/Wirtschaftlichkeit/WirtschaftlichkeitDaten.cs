@@ -664,10 +664,11 @@ namespace WindowsFormsApplication1
     /// je vier Zonenpreisen für Bezug und Einspeisung und einer zweistufigen
     /// Leistungspreis-Staffel — entfällt: Der Kern liest dessen Spalten nicht mehr und
     /// schreibt sie nicht mehr (sie bleiben bis zu einem späteren Aufräumschritt in der
-    /// Tabelle stehen), die Staffel steht seit Schemaschritt 103 am Stromträger der
+    /// Tabelle stehen), die Staffel steht seit Schemaschritt 104 am Stromträger der
     /// Kostenverwaltung (<see cref="LeistungspreisStaffel"/>). Ein Satz mit dem Modus
     /// <c>ZONEN</c> (oder leer — Bestand vor Schritt 21) ist ein Satz des alten
-    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>).</para>
+    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>); Schemaschritt 104 löscht
+    /// ihn samt der mit ihm gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4).</para>
     /// </summary>
     public class TarifParameter
     {

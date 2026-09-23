@@ -20,7 +20,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Ohne Datenbank.</b> <c>StaffelQuelle</c> bekommt die Staffel als
     /// Parameter; der Leseweg zu Variante, Stromtraeger und seiner Staffel ist
     /// Datenbanksache und steckt in <c>Leistungspreisquellen</c>, von dem hier nur der
-    /// Fall "kein Projekt" geprueft ist. Seit Schemaschritt 103 (Entscheid Q11) steht
+    /// Fall "kein Projekt" geprueft ist. Seit Schemaschritt 104 (Entscheid Q11) steht
     /// die Staffel am Stromtraeger der Kostenverwaltung statt im Tarifsatz — die
     /// Stufenwahl ist dieselbe geblieben.</para>
     /// </summary>

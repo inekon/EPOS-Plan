@@ -205,8 +205,18 @@ namespace Auslieferungsvorlage.Tests
             Assert.Equal(vorher.Keys.OrderBy(k => k, StringComparer.Ordinal),
                          nachher.Keys.OrderBy(k => k, StringComparer.Ordinal));
             foreach (string t in vorher.Keys)
+            {
+                // Die Tww-Kataloge des Zapfprofilgenerators folgen ihrer EIGENEN Regel,
+                // unabhaengig von --kataloge (Umsetzungskonzept Zapfprofilgenerator 3.2,
+                // 6 (b)): Der fiktive Testkatalog (EIGEN, FIKTIV) faellt. Siehe TwwVorlageTests.
+                if (t.StartsWith("Tab_Tww", StringComparison.Ordinal))
+                {
+                    Assert.True(nachher[t] == 0, t + ": " + nachher[t] + " Zeile(n) — der fiktive Testkatalog gehoert nicht in die Vorlage.");
+                    continue;
+                }
                 Assert.True(vorher[t] == nachher[t],
                             t + ": Quelle " + vorher[t] + " Zeile(n) gegen Vorlage " + nachher[t] + ".");
+            }
             Assert.True(vorher.Values.Sum() > 0, "Die Quelle fuehrt keine Katalogzeile — die Probe waere leer.");
         }
 
@@ -300,6 +310,8 @@ namespace Auslieferungsvorlage.Tests
                     string name = Convert.ToString(r["name"]);
                     if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
                     if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) continue;
+                    // Tww-Kataloge: eigene Regel ueber Status (TwwVorlageTests.T1).
+                    if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
                     gepruefte.Add(name);
                     long uebrig = Convert.ToInt64(DataRepository.ExecuteScalar(
                         "SELECT COUNT(*) FROM \"" + name + "\" WHERE \"ReadOnly\" IS NULL OR \"ReadOnly\" = 0"));

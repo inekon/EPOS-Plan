@@ -3233,7 +3233,8 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Gebaeude-Katalogeditor — 37 Felder aus
+        /// Der Gebaeude-Katalogeditor — 51 Felder (darunter die vierzehn Modellparameter
+        /// VDI 6007 der Stufen G1 und G2 samt Rechenweg) aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht</c>: die groesste Maske des
         /// Katalogs.
         /// </summary>
@@ -3425,6 +3426,61 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkLuftwechselName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkLuftwechselErl,
                                      einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true),
+
+                    // ---- Modellparameter VDI 6007 (Stufen G1 und G2) -------------------
+                    new KiDialogFeld("rahmenanteil", "GebaeudeKatalogKiSicht.Rahmenanteil",
+                                     KiDialogTexte.GebkRahmenanteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkRahmenanteilErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("verschattungsfaktor", "GebaeudeKatalogKiSicht.Verschattungsfaktor",
+                                     KiDialogTexte.GebkVerschattungsfaktorName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkVerschattungsfaktorErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("masseanteil_aussen", "GebaeudeKatalogKiSicht.MasseanteilAussen",
+                                     KiDialogTexte.GebkMasseanteilAussenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkMasseanteilAussenErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("innenflaechenfaktor", "GebaeudeKatalogKiSicht.Innenflaechenfaktor",
+                                     KiDialogTexte.GebkInnenflaechenfaktorName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkInnenflaechenfaktorErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("heizung_strahlungsanteil", "GebaeudeKatalogKiSicht.HeizungStrahlungsanteil",
+                                     KiDialogTexte.GebkHeizungStrahlungsanteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkHeizungStrahlungsanteilErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("heizleistung_max", "GebaeudeKatalogKiSicht.HeizleistungMax",
+                                     KiDialogTexte.GebkHeizleistungMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkHeizleistungMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("aussenbauteile_strahlung", "GebaeudeKatalogKiSicht.AussenbauteileStrahlung",
+                                     KiDialogTexte.GebkAussenbauteileStrahlungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkAussenbauteileStrahlungErl),
+                    new KiDialogFeld("luftwechsel_infiltration", "GebaeudeKatalogKiSicht.LuftwechselInfiltration",
+                                     KiDialogTexte.GebkLuftwechselInfiltrationName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkLuftwechselInfiltrationErl,
+                                     einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true),
+                    new KiDialogFeld("luftwechsel_nutzer", "GebaeudeKatalogKiSicht.LuftwechselNutzer",
+                                     KiDialogTexte.GebkLuftwechselNutzerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkLuftwechselNutzerErl,
+                                     einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true),
+                    new KiDialogFeld("sommerlueftung", "GebaeudeKatalogKiSicht.Sommerlueftung",
+                                     KiDialogTexte.GebkSommerlueftungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkSommerlueftungErl),
+                    new KiDialogFeld("fensterflaeche_ost", "GebaeudeKatalogKiSicht.FensterflaecheOst",
+                                     KiDialogTexte.GebkFensterflaecheOstName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFensterflaecheOstErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    new KiDialogFeld("fensterflaeche_west", "GebaeudeKatalogKiSicht.FensterflaecheWest",
+                                     KiDialogTexte.GebkFensterflaecheWestName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFensterflaecheWestErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    new KiDialogFeld("kellertemperatur", "GebaeudeKatalogKiSicht.Kellertemperatur",
+                                     KiDialogTexte.GebkKellertemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKellertemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("rechenweg", "GebaeudeKatalogKiSicht.Rechenweg",
+                                     KiDialogTexte.GebkRechenwegName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebkRechenwegErl, nurLesen: true),
 
                     new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
                                      KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
