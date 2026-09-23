@@ -57,7 +57,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string OptionEcodesign { get; set; } = "Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)";
 
     /// <summary><c>ZPG_AUS_GRUND_ECODESIGN</c></summary>
-    public string GrundEcodesign { get; set; } = "Die Katalogzeile des Ecodesign-Zapfprofils folgt mit dem Katalogpaket.";
+    public string GrundEcodesign { get; set; } = "Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder dem Katalogimport.";
 
     /// <summary><c>ZPG_AUS_OPT_KATALOGTAG</c></summary>
     public string OptionKatalogtag { get; set; } = "{0} · {1}";

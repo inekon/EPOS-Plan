@@ -31,7 +31,8 @@ namespace EPOS.Kern.Tests
     /// (Anwenderentscheid ZU19: geringfügig abweichende VDI-Werte, Regel in
     /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c> — Testdaten nach Regel, weder
     /// Eigenkonstruktion noch Normwert), in Bedarfstagen <c>FREI</c> mit der Ecodesign-Verordnung
-    /// (EU-Recht). Eine Tabelle ohne Status — die
+    /// (EU-Recht), und überall, wo der freie Paketteil (<c>Referenzlaeufe/Katalogpaket_frei/</c>) eine Datei
+    /// führt, <c>FREI</c> mit einer Quelle dieser Datei. Eine Tabelle ohne Status — die
     /// Tagesgänge — prüft nur Herkunft und Quelle, eine ohne Herkunftsspalte — der
     /// Tagesgangsatz — nur den Status. Die Katalogversion ist nie leer; das Einspielskript
     /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist wiederholbar — ein weiterer
@@ -71,7 +72,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
         /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19, Herkunftsart
-        /// <c>FIKTIV</c>); in den Bedarfstagen das Ecodesign-Zapfprofil.
+        /// <c>FIKTIV</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
+        /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen).
         /// </summary>
         private static IEnumerable<(string Herkunft, string Quelle)> Zugelassen(string tabelle)
         {
@@ -79,8 +81,11 @@ namespace EPOS.Kern.Tests
             if (tabelle == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM || tabelle == TwwSchema.TAB_TWW_TAGESGANG_STAMM)
                 foreach (string blatt in new[] { "1", "2" })
                     yield return (TwwSchema.HERKUNFT_FIKTIV, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
-            if (tabelle == TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
-                yield return (TwwSchema.HERKUNFT_FREI, QUELLE_ECODESIGN);
+            string ordner = PaketteilOrdner();
+            if (ordner != null && File.Exists(Path.Combine(ordner, tabelle + ".csv")))
+                foreach (var paar in Paketteil(ordner, tabelle).Where(z => z.ContainsKey("Herkunftsart"))
+                                                               .Select(z => (z["Herkunftsart"], z["Quelle"])).Distinct())
+                    yield return paar;
         }
 
         private const string SKRIPT = "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py";
@@ -472,6 +477,208 @@ namespace EPOS.Kern.Tests
                 try { SqliteConnection.ClearAllPools(); } catch { }
                 try { Directory.Delete(ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
             }
+        }
+
+        // =============================================================================
+        //  Testdatenbank = freier Paketteil (läuft überall, ohne Originale)
+        // =============================================================================
+
+        /// <summary>Die Spalten einer Paketzeile, die die Testdatenbank anders führt (Kapitel 6 (c)) oder abbildet.</summary>
+        private static readonly string[] NICHT_VERGLICHEN = { "ID", "ID_Bedarfstag", "Status", "ReadOnly" };
+
+        /// <summary>
+        /// <b>Die freien Zeilen der Testdatenbank gleichen dem Paketteil</b>
+        /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
+        /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
+        /// Ereignissen) der Dateien steht mit Herkunftsart <c>FREI</c> und der Katalogversion des
+        /// Testkatalogs da, jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien, und keine
+        /// weitere Zeile trägt <c>FREI</c>. Status und ReadOnly folgen der Regel der Testdatenbank
+        /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
+        /// </summary>
+        [Fact]
+        public void Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string ordner = PaketteilOrdner();
+            Assert.True(ordner != null, "Der freie Paketteil Referenzlaeufe/Katalogpaket_frei fehlt.");
+
+            List<string> funde = PaketteilAbweichungen(pfad, ordner);
+            Assert.True(funde.Count == 0, "Die freien Zeilen der Testdatenbank weichen vom Paketteil ab — " +
+                                          "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py nachlaufen lassen:\n" +
+                                          string.Join("\n", funde.Take(40)));
+        }
+
+        /// <summary>
+        /// Gegenprobe auf einer Arbeitskopie: ein geänderter freier Parameter, eine fehlende
+        /// Zapfkategorie und ein zusätzliches Ereignis des Ecodesign-Zapfprofils schlagen an.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_Abweichungen_vom_Paketteil_schlagen_an()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string ordner = PaketteilOrdner();
+            Assert.True(ordner != null, "Der freie Paketteil Referenzlaeufe/Katalogpaket_frei fehlt.");
+
+            string arbeit = Path.Combine(Path.GetTempPath(), "epos-twwwache-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(arbeit);
+            try
+            {
+                string kopie = Path.Combine(arbeit, "Kenndaten_Test.sqlite");
+                File.Copy(pfad, kopie);
+                using (var s = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = kopie, Pooling = false }.ToString()))
+                {
+                    s.Open();
+                    using SqliteCommand b = s.CreateCommand();
+                    b.CommandText =
+                        "UPDATE \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" SET \"Wert\" = \"Wert\" + 1 WHERE \"ID\" = " +
+                        "(SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI');" +
+                        "DELETE FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\" WHERE \"ID\" = " +
+                        "(SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\");" +
+                        "INSERT INTO \"" + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + "\" (\"ID_Bedarfstag\", \"Minute_Beginn\", " +
+                        "\"Dauer_min\", \"Energie_Kwh\", \"Reihenfolge\") SELECT \"ID\", 1300, 1, 0.1, 99 FROM \"" +
+                        TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI';";
+                    Assert.Equal(3, b.ExecuteNonQuery());
+                }
+                List<string> funde = PaketteilAbweichungen(kopie, ordner);
+                Assert.Contains(funde, f => f.StartsWith(TwwSchema.TAB_TWW_PARAMETER_STAMM + " \"", StringComparison.Ordinal)
+                                            && f.EndsWith(": Wert weicht ab", StringComparison.Ordinal));
+                Assert.Contains(funde, f => f.Contains(" Zapfkategorien statt "));
+                Assert.Contains(funde, f => f.Contains(" Ereignisse statt "));
+            }
+            finally
+            {
+                try { SqliteConnection.ClearAllPools(); } catch { }
+                try { Directory.Delete(arbeit, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
+        /// <summary>Die Abweichungen der freien Zeilen einer Datenbank vom Paketteil (leer = gleich).</summary>
+        private static List<string> PaketteilAbweichungen(string pfad, string ordner)
+        {
+            using SqliteConnection c = Oeffnen(pfad);
+            var funde = new List<string>();
+
+            // --- Parameter und Bedarfstage: je Zeile der Datei die Zeile der Testdatenbank ------
+            foreach ((string tabelle, string schluessel) in new[]
+                     {
+                         (TwwSchema.TAB_TWW_PARAMETER_STAMM, "Schluessel"), (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Bezeichner")
+                     })
+            {
+                List<Dictionary<string, string>> soll = Paketteil(ordner, tabelle);
+                Assert.NotEmpty(soll);
+                foreach (Dictionary<string, string> z in soll)
+                {
+                    List<Dictionary<string, object>> ist = Zeilen(c, "SELECT * FROM \"" + tabelle + "\" WHERE \"" + schluessel +
+                                                                     "\" = $w AND \"Katalogversion\" = 'TEST-1'", z[schluessel]);
+                    if (ist.Count != 1) { funde.Add(tabelle + " \"" + z[schluessel] + "\": " + ist.Count + " Zeile(n)"); continue; }
+                    Vergleichen(tabelle + " \"" + z[schluessel] + "\"", z, ist[0], funde);
+                    if (Convert.ToString(ist[0]["Status"]) != TwwSchema.STATUS_EIGEN || Convert.ToInt64(ist[0]["ReadOnly"]) != 0)
+                        funde.Add(tabelle + " \"" + z[schluessel] + "\": nicht EIGEN/ReadOnly 0");
+
+                    if (tabelle != TwwSchema.TAB_TWW_BEDARFSTAG_STAMM) continue;
+                    List<Dictionary<string, string>> e = Paketteil(ordner, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM)
+                        .Where(x => x["ID_Bedarfstag"] == z["ID"]).ToList();
+                    List<Dictionary<string, object>> ei = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM +
+                                                                    "\" WHERE \"ID_Bedarfstag\" = $w ORDER BY \"Reihenfolge\", \"ID\"",
+                                                                    Convert.ToString(ist[0]["ID"], CultureInfo.InvariantCulture));
+                    if (e.Count != ei.Count) funde.Add(z[schluessel] + ": " + ei.Count + " Ereignisse statt " + e.Count);
+                    else for (int i = 0; i < e.Count; i++) Vergleichen(z[schluessel] + " Ereignis " + (i + 1), e[i], ei[i], funde);
+                }
+                long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_FREI);
+                if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI statt " + soll.Count);
+            }
+
+            // --- Zapfkategorien: der Vorgabesatz an jeder Nutzungsart, sonst nichts ----------------
+            List<Dictionary<string, string>> satz = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            Assert.NotEmpty(satz);
+            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT \"ID\", \"Bezeichner\" FROM \"" +
+                                                                TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" ORDER BY \"ID\"", null);
+            Assert.NotEmpty(arten);
+            foreach (Dictionary<string, object> a in arten)
+            {
+                List<Dictionary<string, object>> k = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
+                                                               "\" WHERE \"ID_Nutzungsart\" = $w ORDER BY \"Reihenfolge\", \"ID\"",
+                                                               Convert.ToString(a["ID"], CultureInfo.InvariantCulture));
+                string art = Convert.ToString(a["Bezeichner"]);
+                if (k.Count != satz.Count) { funde.Add(art + ": " + k.Count + " Zapfkategorien statt " + satz.Count); continue; }
+                for (int i = 0; i < satz.Count; i++) Vergleichen(art + " Kategorie " + (i + 1), satz[i], k[i], funde);
+            }
+            long alle = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\"", null);
+            if (alle != (long)arten.Count * satz.Count)
+                funde.Add(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ": " + alle + " Zeile(n) statt " + arten.Count * satz.Count);
+            return funde;
+        }
+
+        /// <summary>
+        /// Vergleicht jede Spalte einer Paketzeile (ausser <see cref="NICHT_VERGLICHEN"/>) mit der
+        /// Datenbankzeile: Zahlen als Zahl (relativ 1e-12), leer gegen NULL, sonst Text.
+        /// </summary>
+        private static void Vergleichen(string was, Dictionary<string, string> soll, Dictionary<string, object> ist, List<string> funde)
+        {
+            foreach (KeyValuePair<string, string> s in soll)
+            {
+                if (NICHT_VERGLICHEN.Contains(s.Key)) continue;
+                if (!ist.TryGetValue(s.Key, out object w)) { funde.Add(was + ": Spalte " + s.Key + " fehlt"); continue; }
+                bool gleich;
+                if (s.Value.Length == 0) gleich = w == null;
+                else if (w is double || w is long)
+                {
+                    double d = Convert.ToDouble(w, CultureInfo.InvariantCulture);
+                    gleich = double.TryParse(s.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double e)
+                             && Math.Abs(d - e) <= 1e-12 * Math.Max(1.0, Math.Abs(e));
+                }
+                else gleich = string.Equals(Convert.ToString(w, CultureInfo.InvariantCulture), s.Value, StringComparison.Ordinal);
+                if (!gleich) funde.Add(was + ": " + s.Key + " weicht ab");
+            }
+        }
+
+        /// <summary>Die Zeilen einer Abfrage als dict Spaltenname → Wert (NULL = null); <c>$w</c> optional.</summary>
+        private static List<Dictionary<string, object>> Zeilen(SqliteConnection c, string sql, string wert)
+        {
+            using SqliteCommand b = c.CreateCommand();
+            b.CommandText = sql;
+            if (wert != null) b.Parameters.AddWithValue("$w", wert);
+            var liste = new List<Dictionary<string, object>>();
+            using SqliteDataReader r = b.ExecuteReader();
+            while (r.Read())
+            {
+                var z = new Dictionary<string, object>(StringComparer.Ordinal);
+                for (int i = 0; i < r.FieldCount; i++) z[r.GetName(i)] = r.IsDBNull(i) ? null : r.GetValue(i);
+                liste.Add(z);
+            }
+            return liste;
+        }
+
+        /// <summary>Der Ordner des freien Paketteils neben der Testdatenbank; <c>null</c> ohne Testdatenbank oder Ordner.</summary>
+        private static string PaketteilOrdner()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return null;
+            string ordner = Path.Combine(Path.GetDirectoryName(pfad), "Katalogpaket_frei");
+            return Directory.Exists(ordner) ? ordner : null;
+        }
+
+        /// <summary>
+        /// Eine Datei des Paketteils (Semikolon, Kopfzeile, UTF-8) als Zeilen nach Spaltennamen; die
+        /// Dateien führen weder Trenner noch Anführungszeichen in Feldern.
+        /// </summary>
+        private static List<Dictionary<string, string>> Paketteil(string ordner, string tabelle)
+        {
+            string[] zeilen = File.ReadAllLines(Path.Combine(ordner, tabelle + ".csv"), Encoding.UTF8)
+                                  .Where(z => z.Trim().Length > 0).ToArray();
+            string[] kopf = zeilen[0].TrimStart('\uFEFF').Split(';');
+            return zeilen.Skip(1).Select(z =>
+            {
+                string[] f = z.Split(';');
+                Assert.Equal(kopf.Length, f.Length);
+                var d = new Dictionary<string, string>(StringComparer.Ordinal);
+                for (int i = 0; i < kopf.Length; i++) d[kopf[i]] = f[i];
+                return d;
+            }).ToList();
         }
 
         // =============================================================================

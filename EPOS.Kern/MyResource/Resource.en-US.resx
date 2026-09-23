@@ -24651,7 +24651,7 @@ Do you want to allow this?</value>
     <value>Ecodesign tapping profile (single-family house only, for plausibility checks)</value>
   </data>
   <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
-    <value>The catalogue row of the Ecodesign tapping profile follows with the catalogue package.</value>
+    <value>The catalogue does not contain the Ecodesign tapping profile; it comes with the delivery template or the catalogue import.</value>
   </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>

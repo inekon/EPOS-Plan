@@ -236,7 +236,8 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Equal("Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.", a100.GetAttribute("title"));
         IElement eco = wahl.QuerySelectorAll("option").Single(o => o.TextContent.StartsWith("Ecodesign-Zapfprofil"));
         Assert.True(eco.HasAttribute("disabled"));
-        Assert.Equal("Die Katalogzeile des Ecodesign-Zapfprofils folgt mit dem Katalogpaket.", eco.GetAttribute("title"));
+        Assert.Equal("Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder dem Katalogimport.",
+                     eco.GetAttribute("title"));
         // Jeder gesperrte Eintrag trägt SEINEN Grund.
         Assert.Equal("Das DIN-4708-Profil rechnet der Kern aus der Kennzahl.",
                      wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Normtag")).GetAttribute("title"));

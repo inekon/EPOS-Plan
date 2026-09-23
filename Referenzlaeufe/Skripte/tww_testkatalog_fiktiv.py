@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Spielt den FIKTIVEN Testkatalog des Zapfprofilgenerators in die Testdatenbank ein
-(Umsetzungskonzept Zapfprofilgenerator, Stufe Z0, Posten P4; Kapitel 6 (b)).
+(Umsetzungskonzept Zapfprofilgenerator, Stufe Z0, Posten P4; Kapitel 6 (b)) - samt den
+abgeleiteten VDI-6002-Werten (ZU19) und dem FREIEN PAKETTEIL (Referenzlaeufe/Katalogpaket_frei/).
 
 WARUM FIKTIV. Die Testdatenbank ist Messlatte fuer Tests, Referenzlauf und CI und liegt im
 Repository. Normzahlen, Kennwerte und Referenzprofile duerfen dort nie stehen (Kapitel 6 (a)
@@ -25,25 +26,30 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - drei Bedarfstage mit erfundenen Ereignissen: Konstruktor, Referenztag, Normtag
     (Quelle_Art 4, 2, 3) - keiner ist ein Normprofil;
   - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
-    erfundenen Zahlen;
-  - Stufe Z3 (Schemaschritt T2, Schritt 114): Zapfkategorien je Nutzungsart und die fuenf
-    Parameter der Stochastik (Schluessel wie ZapfStochastikParameter in
-    EPOS.Kern/Allgemein/Zapfprofil/Zapfkategorie.cs), erfunden - keine Jordan/Vajen-Zahl.
+    erfundenen Zahlen.
 
 ABGELEITETE VDI-6002-WERTE (Anwenderentscheid ZU19 vom 23.09.2026, Stufe Z3). Neben dem fiktiven
 Katalog traegt die Testdatenbank vier Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten
 (je ein eigener Tagesgangsatz; Bedarf, Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie
 allein aus tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von
 normzahlen_abgeleitet_bauen.py nach der dort dokumentierten Regel; die Originale braucht dieses
-Skript nicht. Die Zeilen (Nutzungsart in allen drei Provenienzgruppen, Tagesgaenge) tragen
-Herkunftsart 'FIKTIV' mit der Quelle "VDI 6002 Blatt <n> (abgeleitet)": Sie sind weder
-Eigenkonstruktion noch Normwert, sondern Testdaten nach einer Regel. Wie jede FIKTIV-Zeile fallen
-sie deshalb in der Auslieferungsvorlage (TwwKataloge.Bereinigen) - gewollt, solange die Frage ZU20
-(abgeleitete Werte in der Auslieferung?) beim Anwender offen ist.
+Skript nicht. Niedrig/mittel/hoch der Nutzungsart sind Minimum/Mittel/Maximum der Datei (Kopf von
+normzahlen_abgeleitet_bauen.py). Die Zeilen (Nutzungsart in allen drei Provenienzgruppen,
+Tagesgaenge) tragen Herkunftsart 'FIKTIV' mit der Quelle "VDI 6002 Blatt <n> (abgeleitet)": Sie
+sind weder Eigenkonstruktion noch Normwert, sondern Testdaten nach einer Regel. Wie jede
+FIKTIV-Zeile fallen sie deshalb in der Auslieferungsvorlage (TwwKataloge.Bereinigen) - gewollt,
+solange die Frage ZU20 (abgeleitete Werte in der Auslieferung?) beim Anwender offen ist.
 
-DAS ECODESIGN-ZAPFPROFIL (Stufe Z3, Konzept 4.5 Quelle (5)): ein Bedarfstag der Art 5 mit den 24
-Zapfungen des Lastprofils L der Verordnung (EU) Nr. 814/2013, Anhang III, Tabelle 1 - EU-Recht,
-frei verwendbar; Herkunftsart 'FREI'. Die Tagessumme ist Q_ref des Profils.
+DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26; Modellannahme
+bis Z5), die fuenf Parameter Zapfprofil.Stochastik.* und das Ecodesign-Zapfprofil L (Verordnung
+(EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
+im Paketformat N2 unter Referenzlaeufe/Katalogpaket_frei/ (Aufbau und Quellen in dessen
+LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Dieses
+Skript liest dieselben Dateien und schreibt ihre Zeilen in die Testdatenbank - Herkunftsart
+'FREI' wie im Paket, aber nach der Regel der Testdatenbank (Kapitel 6 (c)) Status 'EIGEN',
+ReadOnly 0 und die Katalogversion des Testkatalogs (der Paketteil fuehrt keine eigene). Die
+Kategorien des Paketteils sind ein Vorgabesatz ohne Nutzungsart: Jede Nutzungsart dieses Katalogs
+bekommt ihn.
 
 Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
 (fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
@@ -54,25 +60,25 @@ unberuehrt.
 VORAUSSETZUNG. Schemastand 114 (die zehn Tww-Tabellen und die Zapfkategorien), nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
-WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die
-Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Eine vorhandene
-Nutzungsart dieses Katalogs, deren Bezugstemperaturen von BEZUG_ZAPF/BEZUG_KALT abweichen, wird
-auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank; ebenso
-die Provenienz (Quelle, Ausgabe, Herkunftsart) der Nutzungsarten und Tagesgaenge dieses Katalogs,
-ein vorhandener Parameter mit anderem Wert oder anderer Einheit und ein vorhandener DIN-4708-Wert
-mit anderem Wert. Ein zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
-diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
+WIEDERHOLBAR UND NACHFUEHREND. Jede Zeile wird ueber ihren natuerlichen Schluessel gesucht, fehlt
+sie, angelegt, steht sie da, auf den Stand dieses Skripts (bzw. der JSON- und CSV-Dateien)
+nachgefuehrt - Werte, Provenienz, Status; die Ereignisse eines Bedarfstags werden ersetzt, wenn
+sie abweichen. Eine Zapfkategorie einer Nutzungsart dieses Katalogs und ein freier Parameter oder
+Bedarfstag, die der Paketteil nicht (mehr) fuehrt, fallen. Ein zweiter Lauf aendert nichts und
+meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu diesem Katalog
+gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite
-(der Schalter --stochastik der Stufe Z2 ist ohne Wirkung - der Block ist dauerhaft an)
+(der Schalter --stochastik der Stufe Z2 ist ohne Wirkung)
 """
 
+import csv
+import io
 import json
 import os
 import sqlite3
 import sys
-from decimal import Decimal, ROUND_HALF_UP
 
 QUELLE = "Testkatalog (fiktiv)"
 VERSION = "TEST-1"
@@ -288,70 +294,6 @@ BEDARFSTAGE = [
     ]),
 ]
 
-# --- Das Ecodesign-Zapfprofil (Konzept 4.5 Quelle (5), Stufe Z3) ------------------------------
-# Verordnung (EU) Nr. 814/2013 der Kommission vom 2. August 2013, Anhang III, Tabelle 1
-# "Lastprofile von Warmwasserbereitern", Profil L (ABl. L 239 vom 6.9.2013, S. 162) - EU-Recht,
-# frei verwendbar; abgerufen am 23.09.2026 ueber das Amt fuer Veroeffentlichungen
-# (publications.europa.eu, CELEX 32013R0814, deutsche Fassung).
-# (Uhrzeit, Q_tap in kWh, f in l/min, T_m in Grad C, T_p in Grad C oder None)
-ECODESIGN_QUELLE = "Verordnung (EU) Nr. 814/2013 Anhang III"
-ECODESIGN_AUSGABE = "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L"
-ECODESIGN_Q_REF = "11.655"           # Q_ref des Profils L in kWh (Tabelle 1, letzte Zeile)
-ECODESIGN_L = [
-    ("07:00", "0.105", 3, 25, None),
-    ("07:05", "1.4", 6, 40, None),
-    ("07:30", "0.105", 3, 25, None),
-    ("07:45", "0.105", 3, 25, None),
-    ("08:05", "3.605", 10, 10, 40),
-    ("08:25", "0.105", 3, 25, None),
-    ("08:30", "0.105", 3, 25, None),
-    ("08:45", "0.105", 3, 25, None),
-    ("09:00", "0.105", 3, 25, None),
-    ("09:30", "0.105", 3, 25, None),
-    ("10:30", "0.105", 3, 10, 40),
-    ("11:30", "0.105", 3, 25, None),
-    ("11:45", "0.105", 3, 25, None),
-    ("12:45", "0.315", 4, 10, 55),
-    ("14:30", "0.105", 3, 25, None),
-    ("15:30", "0.105", 3, 25, None),
-    ("16:30", "0.105", 3, 25, None),
-    ("18:00", "0.105", 3, 25, None),
-    ("18:15", "0.105", 3, 40, None),
-    ("18:30", "0.105", 3, 40, None),
-    ("19:00", "0.105", 3, 25, None),
-    ("20:30", "0.735", 4, 10, 55),
-    ("21:00", "3.605", 10, 10, 40),
-    ("21:30", "0.105", 3, 25, None),
-]
-# Die Dauer einer Zapfung steht nicht in der Tabelle; die Setzung der Umsetzung (nicht der
-# Verordnung): Dauer = Volumen / f, Volumen = Q_tap / (CW * (Nutztemperatur - Kaltwasser)),
-# Nutztemperatur = T_p, wo angegeben, sonst T_m; Kaltwasser 10 Grad C; ganze Minuten
-# kaufmaennisch, mindestens 1. Die Energie jeder Zapfung ist Q_tap unveraendert.
-ECODESIGN_KALTWASSER = Decimal("10")
-
-
-def ecodesign_dauer(q_tap, f, t_m, t_p):
-    nutz = Decimal(t_p if t_p is not None else t_m)
-    volumen = Decimal(q_tap) * 1000 / (Decimal(str(CW)) * (nutz - ECODESIGN_KALTWASSER))
-    minuten = (volumen / Decimal(f)).quantize(Decimal(1), rounding=ROUND_HALF_UP)
-    return max(1, int(minuten))
-
-
-def ecodesign_ereignisse():
-    liste = []
-    for n, (uhrzeit, q_tap, f, t_m, t_p) in enumerate(ECODESIGN_L, start=1):
-        h, m = uhrzeit.split(":")
-        liste.append((int(h) * 60 + int(m), ecodesign_dauer(q_tap, f, t_m, t_p), float(q_tap), n))
-    return liste
-
-
-# Bedarfstage mit eigener Provenienz: (Bezeichner, Quelle_Art, Bezugsmenge, Ereignisse, Quelle,
-# Ausgabe, Herkunftsart). Bezugsmenge NULL: der Tag wird nicht skaliert (nur Einfamilienhaus).
-BEDARFSTAGE_FREI = [
-    ("Ecodesign-Zapfprofil L", 5, None, ecodesign_ereignisse(), ECODESIGN_QUELLE, ECODESIGN_AUSGABE, "FREI"),
-]
-ALLE_BEDARFSTAGE = [(b, q, m, e, QUELLE, None, HERKUNFT) for (b, q, m, e) in BEDARFSTAGE] + BEDARFSTAGE_FREI
-
 # (Art, Schluessel, Wert) - Belegung in Personen, Ausstattung als Sigma v*w_v in Wh.
 DIN4708_WERTE = [
     ("BELEGUNG", "2", 1.0),
@@ -361,38 +303,59 @@ DIN4708_WERTE = [
     ("AUSSTATTUNG", "Testklasse B", 9000.0),
 ]
 
-# --- Stufe Z3: Stochastik (Zapfkategorien T2 und Parameter) ---------------------------------------
-# Dauerhaft an seit dem Schemaschritt T2 (Schritt 114, Tab_TwwZapfkategorie_STAMM). Die Werte sind
-# ERFUNDEN: keine Jordan/Vajen-Zahl, kein Normquantil, keine Setzung eines fremden Generators
-# (Kapitel 6). Die Spaltennamen folgen der DDL von T2 (TwwSchema.SQL_CREATE_ZAPFKATEGORIE).
-STOCHASTIK_AKTIV = True
-
-# (Schluessel, Wert, Einheit) - Schluessel wie ZapfStochastikParameter, runde erfundene Werte.
-STOCHASTIK_PARAMETER = [
-    ("Zapfprofil.Stochastik.Urlaubsversatz", 20.0, "d"),
-    ("Zapfprofil.Stochastik.Auslegung.Vielfaches", 1.5, "-"),
-    ("Zapfprofil.Stochastik.Konsistenzschwelle", 1.8, "-"),
-    ("Zapfprofil.Stochastik.Quantil.P95", 1.7, "-"),
-    ("Zapfprofil.Stochastik.Quantil.P99", 2.4, "-"),
-]
-
-# (Nutzungsart, Kategorie, Volumenstrom_l_min, Dauer_min, Anteil, Sigma_l_min, Kappung_l_min oder None)
-# - je Nutzungsart Anteile mit Summe 1, jede Kategorie erfunden.
-ZAPFKATEGORIEN = [
-    ("Testnutzung A (fiktiv)", "Testkategorie A (fiktiv)", 2.0, 1, 0.20, 1.0, None),
-    ("Testnutzung A (fiktiv)", "Testkategorie B (fiktiv)", 5.0, 2, 0.30, 2.0, None),
-    ("Testnutzung A (fiktiv)", "Testkategorie C (fiktiv)", 12.0, 8, 0.15, 3.0, 15.0),
-    ("Testnutzung A (fiktiv)", "Testkategorie D (fiktiv)", 7.0, 4, 0.35, 2.0, None),
-    ("Testnutzung B (fiktiv)", "Testkategorie E (fiktiv)", 1.5, 3, 0.40, 2.0, None),
-    ("Testnutzung B (fiktiv)", "Testkategorie F (fiktiv)", 6.0, 5, 0.60, 2.5, 10.0),
-    ("Testnutzung C (fiktiv)", "Testkategorie G (fiktiv)", 4.0, 2, 0.50, 1.5, None),
-    ("Testnutzung C (fiktiv)", "Testkategorie H (fiktiv)", 9.0, 6, 0.50, 3.0, 12.0),
-]
-# Die abgeleiteten Nutzungsarten bekommen den erfundenen Satz der Testnutzung A - ohne Kategorien
-# rechnete eine stochastische Zone auf ihnen nicht.
-ZAPFKATEGORIEN += [(a["name"],) + k[1:] for a in ABGELEITETE_NUTZUNGSARTEN
-                   for k in ZAPFKATEGORIEN if k[0] == "Testnutzung A (fiktiv)"]
+# --- Der freie Paketteil (Stufe Z3) -------------------------------------------------------------
+# EINE Quelle: die CSV-Dateien unter Referenzlaeufe/Katalogpaket_frei/ (Paketformat N2), dieselben,
+# die Werkzeuge/Auslieferungsvorlage in jede Vorlage einspielt. Hier steht kein Wert daraus.
+PAKETTEIL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Katalogpaket_frei")
+T_BEDARFSTAG = "Tab_TwwBedarfstag_STAMM"
+T_EREIGNIS = "Tab_TwwBedarfstagEreignis_STAMM"
+T_PARAMETER = "Tab_TwwParameter_STAMM"
 TABELLE_KATEGORIEN = "Tab_TwwZapfkategorie_STAMM"
+PAKETTEIL_TABELLEN = (T_BEDARFSTAG, T_EREIGNIS, T_PARAMETER, TABELLE_KATEGORIEN)
+HERKUNFT_FREI = "FREI"
+STATUS_PAKET = "AUSLIEFERUNG"
+EREIGNISSPALTEN = ("Minute_Beginn", "Dauer_min", "Energie_Kwh", "Reihenfolge")
+
+
+def paketteil_lesen():
+    """Je Tabelle die Zeilen des Paketteils als dict Spaltenname -> Text (leeres Feld = None)."""
+    teil = {}
+    for t in PAKETTEIL_TABELLEN:
+        pfad = os.path.join(PAKETTEIL, t + ".csv")
+        with open(pfad, encoding="utf-8-sig", newline="") as f:
+            text = f.read()
+        trenner = ";" if ";" in text.split("\n", 1)[0] else ","
+        zeilen = [z for z in csv.reader(io.StringIO(text), delimiter=trenner) if z and any(s.strip() for s in z)]
+        kopf = [s.strip() for s in zeilen[0]]
+        teil[t] = []
+        for n, z in enumerate(zeilen[1:], start=2):
+            assert len(z) == len(kopf), f"{t}.csv Zeile {n}: {len(z)} Felder, die Kopfzeile nennt {len(kopf)}"
+            teil[t].append({k: (w if w != "" else None) for k, w in zip(kopf, z)})
+    return teil
+
+
+PAKET = paketteil_lesen()
+
+
+def pruefe_paketteil(teil):
+    """Die Regeln des Paketteils (LIESMICH.md des Ordners) - vor jedem Schreiben."""
+    for t, zeilen in teil.items():
+        assert zeilen, f"{t}.csv: keine Zeile"
+        assert "Katalogversion" not in zeilen[0], f"{t}.csv: der Paketteil fuehrt keine Katalogversion"
+        if t == T_EREIGNIS:
+            continue
+        for z in zeilen:
+            assert z.get("Herkunftsart") == HERKUNFT_FREI, f"{t}.csv: Herkunftsart {z.get('Herkunftsart')} statt FREI"
+            assert z.get("Status") == STATUS_PAKET, f"{t}.csv: Status {z.get('Status')} statt AUSLIEFERUNG"
+            assert z.get("ReadOnly") in (None, "1"), f"{t}.csv: ReadOnly {z.get('ReadOnly')} statt 1"
+    assert "ID_Nutzungsart" not in teil[TABELLE_KATEGORIEN][0], "Kategorien des Paketteils: Vorgabesatz ohne Nutzungsart"
+    koepfe = {z["ID"] for z in teil[T_BEDARFSTAG]}
+    for e in teil[T_EREIGNIS]:
+        assert e["ID_Bedarfstag"] in koepfe, "Ereignis ohne Bedarfstag im Paketteil"
+        assert sorted(k for k in e if k not in ("ID", "ID_Bedarfstag")) == sorted(EREIGNISSPALTEN), "Ereignisspalten"
+    summe = sum(float(k["Anteil"]) for k in teil[TABELLE_KATEGORIEN])
+    assert abs(summe - 1.0) < 1e-12, f"Kategorien des Paketteils: Anteile {summe}"
+
 
 KATALOGTABELLEN = [
     "Tab_TwwTagesgangsatz_STAMM", "Tab_TwwTagesgang_STAMM", "Tab_TwwNutzungsart_STAMM",
@@ -405,22 +368,19 @@ ERWARTET = {
     "Tab_TwwTagesgangsatz_STAMM": len(SAETZE),
     "Tab_TwwTagesgang_STAMM": sum(len(s[1]) for s in SAETZE),
     "Tab_TwwNutzungsart_STAMM": len(ALLE_NUTZUNGSARTEN),
-    "Tab_TwwBedarfstag_STAMM": len(ALLE_BEDARFSTAGE),
-    "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in ALLE_BEDARFSTAGE),
-    "Tab_TwwParameter_STAMM": len(PARAMETER),
+    "Tab_TwwBedarfstag_STAMM": len(BEDARFSTAGE) + len(PAKET[T_BEDARFSTAG]),
+    "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE) + len(PAKET[T_EREIGNIS]),
+    "Tab_TwwParameter_STAMM": len(PARAMETER) + len(PAKET[T_PARAMETER]),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
     "Tab_TwwZone": 0,
     "Tab_TwwWohnungstyp": 0,
     "Tab_TwwProjekt": 0,
+    TABELLE_KATEGORIEN: len(ALLE_NUTZUNGSARTEN) * len(PAKET[TABELLE_KATEGORIEN]),
 }
 
 
 def pruefe_summen():
-    """Die erfundenen Formen sind in sich stimmig - vor jedem Schreiben."""
-    for name in {k[0] for k in ZAPFKATEGORIEN}:
-        summe = sum(k[4] for k in ZAPFKATEGORIEN if k[0] == name)
-        assert abs(summe - 1.0) < 1e-12, f"{name}: Anteile der Zapfkategorien {summe}"
-        assert name in [n["name"] for n in ALLE_NUTZUNGSARTEN], f"{name}: keine Nutzungsart des Katalogs"
+    """Die erfundenen Formen sind in sich stimmig, der Paketteil haelt seine Regeln - vor jedem Schreiben."""
     for (name, gaenge, _q, _a, _h) in SAETZE:
         assert sorted(gaenge) == [1, 2, 3, 4], f"{name}: Tagtypen"
         for t, a in gaenge.items():
@@ -429,14 +389,71 @@ def pruefe_summen():
         assert len(n["monate"]) == 12 and abs(sum(n["monate"]) / 12.0 - 1.0) < 1e-12, f"{n['name']}: Monatsmittel"
         assert len(n["woche"]) == 7 and abs(sum(n["woche"]) - 1.0) < 1e-12, f"{n['name']}: Wochensumme"
         assert n["satz"] in [s[0] for s in SAETZE], f"{n['name']}: Tagesgangsatz"
-    for a in ALLE_NUTZUNGSARTEN:
-        assert any(k[0] == a["name"] for k in ZAPFKATEGORIEN), f"{a['name']}: keine Zapfkategorien"
-    summe = sum(Decimal(e[1]) for e in ECODESIGN_L)
-    assert summe == Decimal(ECODESIGN_Q_REF), f"Ecodesign L: Tagessumme {summe} statt Q_ref {ECODESIGN_Q_REF}"
+    pruefe_paketteil(PAKET)
 
 
 def zahl(con, sql, *p):
     return con.execute(sql, p).fetchone()[0]
+
+
+def spaltentypen(con, tabelle):
+    return {r[1]: (r[2] or "").upper() for r in con.execute("SELECT * FROM pragma_table_info(?)", (tabelle,))}
+
+
+def typisiert(roh, typ):
+    """Ein CSV-Feld im Typ der Spalte (wie TwwKataloge.Wert): INTEGER, REAL oder Text; None bleibt."""
+    if roh is None:
+        return None
+    if typ.startswith("INT"):
+        return int(roh)
+    if typ.startswith("REAL"):
+        return float(roh)
+    return roh
+
+
+def paketwerte(con, tabelle, zeile, ohne=()):
+    """Die Werte einer Paketzeile im Typ ihrer Spalten, ohne die genannten Spalten."""
+    typen = spaltentypen(con, tabelle)
+    for s in zeile:
+        assert s in typen, f"{tabelle}.csv: die Spalte {s} gibt es in {tabelle} nicht"
+    return {s: typisiert(w, typen[s]) for s, w in zeile.items() if s not in ohne}
+
+
+def spaltenliste(namen):
+    return ", ".join('"' + s + '"' for s in namen)
+
+
+def upsert(con, tabelle, schluessel, werte):
+    """Legt die Zeile an oder fuehrt sie nach: (angelegt, nachgefuehrt, ID)."""
+    bedingung = " AND ".join(f'"{k}" = ?' for k in schluessel)
+    zeile = con.execute(f'SELECT "ID" FROM "{tabelle}" WHERE {bedingung}', list(schluessel.values())).fetchone()
+    if zeile is None:
+        alle = dict(schluessel)
+        alle.update(werte)
+        cur = con.execute(f'INSERT INTO "{tabelle}" ({spaltenliste(alle)}) VALUES ({", ".join("?" for _ in alle)})',
+                          list(alle.values()))
+        return 1, 0, cur.lastrowid
+    setzen = ", ".join(f'"{k}" = ?' for k in werte)
+    abweichend = " OR ".join(f'"{k}" IS NOT ?' for k in werte)
+    cur = con.execute(f'UPDATE "{tabelle}" SET {setzen} WHERE "ID" = ? AND ({abweichend})',
+                      list(werte.values()) + [zeile[0]] + list(werte.values()))
+    return 0, cur.rowcount, zeile[0]
+
+
+def ereignisse_setzen(con, id_tag, ereignisse):
+    """Die Ereignisse des Bedarfstags genau so (dicts mit EREIGNISSPALTEN, in Reihenfolge); ersetzt,
+    wenn sie abweichen: (angelegt, nachgefuehrt)."""
+    soll = [{s: e[s] for s in EREIGNISSPALTEN} for e in ereignisse]
+    ist = [dict(zip(EREIGNISSPALTEN, r)) for r in con.execute(
+        f'SELECT {spaltenliste(EREIGNISSPALTEN)} FROM "{T_EREIGNIS}" WHERE "ID_Bedarfstag" = ? '
+        'ORDER BY "Reihenfolge", "ID"', (id_tag,))]
+    if ist == soll:
+        return 0, 0
+    alt = con.execute(f'DELETE FROM "{T_EREIGNIS}" WHERE "ID_Bedarfstag" = ?', (id_tag,)).rowcount
+    for e in soll:
+        con.execute(f'INSERT INTO "{T_EREIGNIS}" ("ID_Bedarfstag", {spaltenliste(EREIGNISSPALTEN)}) '
+                    f'VALUES (?, {", ".join("?" for _ in EREIGNISSPALTEN)})', [id_tag] + list(e.values()))
+    return (len(soll), 0) if alt == 0 else (0, len(soll))
 
 
 def main():
@@ -444,18 +461,12 @@ def main():
         print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik]")
         return 2
     pruefe_summen()
-    stochastik = STOCHASTIK_AKTIV or "--stochastik" in sys.argv[2:]   # der Schalter bleibt fuer alte Aufrufe
-    parameter = PARAMETER + (STOCHASTIK_PARAMETER if stochastik else [])
-    erwartet = dict(ERWARTET)
-    if stochastik:
-        erwartet["Tab_TwwParameter_STAMM"] = len(parameter)
-        erwartet[TABELLE_KATEGORIEN] = len(ZAPFKATEGORIEN)
 
     con = sqlite3.connect(sys.argv[1])
     try:
         con.execute("PRAGMA foreign_keys = ON")
         stand = zahl(con, "SELECT SchemaVersion FROM Tab_Applikation")
-        fehlend = [t for t in erwartet
+        fehlend = [t for t in ERWARTET
                    if zahl(con, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", t) == 0]
         if fehlend:
             print(f"Schemastand {stand}: es fehlen {', '.join(fehlend)} - erst Werkzeuge/Testdatenbankschema"
@@ -463,179 +474,127 @@ def main():
                   + ". Abbruch ohne Schreiben.")
             return 2
 
-        # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / FIKTIV ist.
+        # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / ReadOnly 0 ist.
         fremd = 0
         for t in ("Tab_TwwTagesgangsatz_STAMM", "Tab_TwwNutzungsart_STAMM", "Tab_TwwBedarfstag_STAMM",
                   "Tab_TwwParameter_STAMM", "Tab_TwwDin4708Wert_STAMM"):
             fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "Katalogversion" <> ? OR "Status" <> ? '
                                'OR "ReadOnly" <> 0', VERSION, STATUS)
-        if stochastik:
-            # Die Kategorien tragen keine eigene Katalogversion - sie gehoeren zu ihrer Nutzungsart.
-            fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
-                               'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
-                               'WHERE "Katalogversion" = ?)', STATUS, VERSION)
+        # Die Kategorien tragen keine eigene Katalogversion - sie gehoeren zu ihrer Nutzungsart.
+        fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
+                           'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
+                           'WHERE "Katalogversion" = ?)', STATUS, VERSION)
         for t in ("Tab_TwwZone", "Tab_TwwWohnungstyp", "Tab_TwwProjekt"):
             fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}"')
         if fremd:
             print(f"{fremd} Zeile(n) gehoeren nicht zum fiktiven Testkatalog - Abbruch ohne Schreiben.")
             return 2
 
-        angelegt = 0
-        nachgefuehrt = 0
+        zaehler = [0, 0]                        # angelegt, nachgefuehrt
+
+        def zaehlen(ergebnis):
+            zaehler[0] += ergebnis[0]
+            zaehler[1] += ergebnis[1]
+            return ergebnis[2] if len(ergebnis) > 2 else None
+
+        testdb = {"Status": STATUS, "ReadOnly": 0}
         with con:
             # --- Tagesgangsaetze und ihre vier Tagesgaenge (fiktiv und abgeleitet) -------------
-            spalten = ", ".join(f'"Anteil_{h:02d}"' for h in range(1, 25))
-            platz = ", ".join("?" for _ in range(24))
             id_saetze = {}
             for (satz, gaenge, quelle, ausgabe, herkunft) in SAETZE:
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
-                             'AND "Katalogversion" = ?', satz, VERSION) == 0:
-                    con.execute('INSERT INTO "Tab_TwwTagesgangsatz_STAMM" ("Bezeichner", "Katalogversion", '
-                                '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, NULL, 0)', (satz, VERSION, STATUS))
-                    angelegt += 1
-                id_satz = zahl(con, 'SELECT "ID" FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
-                                    'AND "Katalogversion" = ?', satz, VERSION)
+                id_satz = zaehlen(upsert(con, "Tab_TwwTagesgangsatz_STAMM",
+                                         {"Bezeichner": satz, "Katalogversion": VERSION},
+                                         {"Status": STATUS, "Beleg": None, "ReadOnly": 0}))
                 id_saetze[satz] = id_satz
                 for tagtyp, werte in sorted(gaenge.items()):
-                    if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgang_STAMM" WHERE "ID_Tagesgangsatz" = ? '
-                                 'AND "Tagtyp" = ?', id_satz, tagtyp) == 0:
-                        con.execute(f'INSERT INTO "Tab_TwwTagesgang_STAMM" ("ID_Tagesgangsatz", "Tagtyp", {spalten}, '
-                                    f'"Quelle", "Ausgabe", "Version", "Herkunftsart") VALUES (?, ?, {platz}, ?, ?, ?, ?)',
-                                    (id_satz, tagtyp, *werte, quelle, ausgabe, VERSION, herkunft))
-                        angelegt += 1
+                    w = {f"Anteil_{h:02d}": werte[h - 1] for h in range(1, 25)}
+                    w.update({"Quelle": quelle, "Ausgabe": ausgabe, "Version": VERSION, "Herkunftsart": herkunft})
+                    zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
+            id_arten = []
             for n in ALLE_NUTZUNGSARTEN:
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwNutzungsart_STAMM" WHERE "Bezeichner" = ? '
-                             'AND "Katalogversion" = ?', n["name"], VERSION) > 0:
-                    continue
-                prov = [n["quelle"], n["ausgabe"], VERSION, n["herkunft"]]
-                namen = ["Bezeichner", "Katalogversion", "Bezugsart",
-                         "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
-                         "Bedarf_Quelle", "Bedarf_Ausgabe", "Bedarf_Version", "Bedarf_Herkunftsart",
-                         "Bezug_Zapftemperatur", "Bezug_Kaltwasser", "Bilanzgrenze", "Kalenderart", "Ferienfaktor"]
-                werte = [n["name"], VERSION, n["bezug"], *n["bedarf"], *prov,
-                         n["bezug_zapf"], n["bezug_kalt"], n["grenze"], n["kalender"], n["ferien"]]
-                namen += [f"Monat_{m}" for m in range(1, 13)]
-                werte += n["monate"]
-                namen += ["Jahresgang_Quelle", "Jahresgang_Ausgabe", "Jahresgang_Version", "Jahresgang_Herkunftsart"]
-                werte += prov
-                namen += [f"Woche_{w}" for w in range(1, 8)]
-                werte += n["woche"]
-                namen += ["Wochengang_Quelle", "Wochengang_Ausgabe", "Wochengang_Version", "Wochengang_Herkunftsart",
-                          "ID_Tagesgangsatz", "ID_Vorlage", "Status", "Beleg", "Freigabe", "ReadOnly"]
-                werte += prov + [id_saetze[n["satz"]], None, STATUS, None, None, 0]
-                con.execute(f'INSERT INTO "Tab_TwwNutzungsart_STAMM" ({", ".join(chr(34) + s + chr(34) for s in namen)}) '
-                            f'VALUES ({", ".join("?" for _ in namen)})', werte)
-                angelegt += 1
-
-            # --- Bezugstemperaturen vorhandener Zeilen nachfuehren -------------------------
-            for n in ALLE_NUTZUNGSARTEN:
-                cur = con.execute('UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezug_Zapftemperatur" = ?, '
-                                  '"Bezug_Kaltwasser" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
-                                  'AND ("Bezug_Zapftemperatur" <> ? OR "Bezug_Kaltwasser" <> ?)',
-                                  (n["bezug_zapf"], n["bezug_kalt"], n["name"], VERSION, n["bezug_zapf"], n["bezug_kalt"]))
-                nachgefuehrt += cur.rowcount
-
-            # --- Provenienz vorhandener Zeilen nachfuehren (Quelle, Ausgabe, Herkunftsart) ---
-            # So erreicht eine berichtigte Herkunftsart (etwa FIKTIV statt EIGENKONSTRUKTION fuer
-            # die abgeleiteten VDI-Zeilen) auch eine schon gefuellte Testdatenbank.
-            for n in ALLE_NUTZUNGSARTEN:
+                w = {"Bezugsart": n["bezug"], "Bedarf_Niedrig": n["bedarf"][0], "Bedarf_Mittel": n["bedarf"][1],
+                     "Bedarf_Hoch": n["bedarf"][2],
+                     "Bezug_Zapftemperatur": n["bezug_zapf"], "Bezug_Kaltwasser": n["bezug_kalt"],
+                     "Bilanzgrenze": n["grenze"], "Kalenderart": n["kalender"], "Ferienfaktor": n["ferien"]}
                 for g in ("Bedarf", "Jahresgang", "Wochengang"):
-                    cur = con.execute(f'UPDATE "Tab_TwwNutzungsart_STAMM" SET "{g}_Quelle" = ?, "{g}_Ausgabe" = ?, '
-                                      f'"{g}_Herkunftsart" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
-                                      f'AND ("{g}_Quelle" IS NOT ? OR "{g}_Ausgabe" IS NOT ? OR "{g}_Herkunftsart" IS NOT ?)',
-                                      (n["quelle"], n["ausgabe"], n["herkunft"], n["name"], VERSION,
-                                       n["quelle"], n["ausgabe"], n["herkunft"]))
-                    nachgefuehrt += cur.rowcount
-            for (satz, _gaenge, quelle, ausgabe, herkunft) in SAETZE:
-                cur = con.execute('UPDATE "Tab_TwwTagesgang_STAMM" SET "Quelle" = ?, "Ausgabe" = ?, "Herkunftsart" = ? '
-                                  'WHERE "ID_Tagesgangsatz" = ? AND ("Quelle" IS NOT ? OR "Ausgabe" IS NOT ? '
-                                  'OR "Herkunftsart" IS NOT ?)',
-                                  (quelle, ausgabe, herkunft, id_saetze[satz], quelle, ausgabe, herkunft))
-                nachgefuehrt += cur.rowcount
+                    w.update({f"{g}_Quelle": n["quelle"], f"{g}_Ausgabe": n["ausgabe"], f"{g}_Version": VERSION,
+                              f"{g}_Herkunftsart": n["herkunft"]})
+                w.update({f"Monat_{m}": n["monate"][m - 1] for m in range(1, 13)})
+                w.update({f"Woche_{t}": n["woche"][t - 1] for t in range(1, 8)})
+                w.update({"ID_Tagesgangsatz": id_saetze[n["satz"]], "ID_Vorlage": None, "Status": STATUS,
+                          "Beleg": None, "Freigabe": None, "ReadOnly": 0})
+                id_arten.append(zaehlen(upsert(con, "Tab_TwwNutzungsart_STAMM",
+                                               {"Bezeichner": n["name"], "Katalogversion": VERSION}, w)))
 
-            # --- Parameter --------------------------------------------------------------
-            for (schluessel, wert, einheit) in parameter:
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwParameter_STAMM" WHERE "Schluessel" = ? '
-                             'AND "Katalogversion" = ?', schluessel, VERSION) > 0:
-                    # Vorhanden: Wert und Einheit nachfuehren, wenn sie abweichen.
-                    cur = con.execute('UPDATE "Tab_TwwParameter_STAMM" SET "Wert" = ?, "Einheit" = ? '
-                                      'WHERE "Schluessel" = ? AND "Katalogversion" = ? '
-                                      'AND ("Wert" <> ? OR "Einheit" IS NOT ?)',
-                                      (wert, einheit, schluessel, VERSION, wert, einheit))
-                    nachgefuehrt += cur.rowcount
-                    continue
-                con.execute('INSERT INTO "Tab_TwwParameter_STAMM" ("Schluessel", "Wert", "Einheit", "Katalogversion", '
-                            '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '
-                            'VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
-                            (schluessel, wert, einheit, VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
-                angelegt += 1
+            # --- Parameter: fiktiv, dann die des Paketteils ---------------------------------
+            for (schluessel, wert, einheit) in PARAMETER:
+                zaehlen(upsert(con, T_PARAMETER, {"Schluessel": schluessel, "Katalogversion": VERSION},
+                               {"Wert": wert, "Einheit": einheit, "Quelle": QUELLE, "Ausgabe": None, "Version": VERSION,
+                                "Herkunftsart": HERKUNFT, "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
+            frei_parameter = []
+            for z in PAKET[T_PARAMETER]:
+                w = paketwerte(con, T_PARAMETER, z, ohne=("ID", "Schluessel"))
+                w.update(testdb)
+                zaehlen(upsert(con, T_PARAMETER, {"Schluessel": z["Schluessel"], "Katalogversion": VERSION}, w))
+                frei_parameter.append(z["Schluessel"])
 
-            # --- Bedarfstage samt Ereignissen (nur mit neu angelegtem Kopf) ---------------
-            for (bezeichner, quelle_art, bezugsmenge, ereignisse, quelle, ausgabe, herkunft) in ALLE_BEDARFSTAGE:
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwBedarfstag_STAMM" WHERE "Bezeichner" = ? '
-                             'AND "Katalogversion" = ?', bezeichner, VERSION) > 0:
-                    continue
-                cur = con.execute('INSERT INTO "Tab_TwwBedarfstag_STAMM" ("Bezeichner", "Katalogversion", '
-                                  '"Quelle_Art", "Bezugsmenge", "Quelle", "Ausgabe", "Version", "Herkunftsart", '
-                                  '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)',
-                                  (bezeichner, VERSION, quelle_art, bezugsmenge,
-                                   quelle, ausgabe, VERSION, herkunft, STATUS))
-                id_tag = cur.lastrowid
-                angelegt += 1
-                for (beginn, dauer, energie, reihenfolge) in ereignisse:
-                    con.execute('INSERT INTO "Tab_TwwBedarfstagEreignis_STAMM" ("ID_Bedarfstag", "Minute_Beginn", '
-                                '"Dauer_min", "Energie_Kwh", "Reihenfolge") VALUES (?, ?, ?, ?, ?)',
-                                (id_tag, beginn, dauer, energie, reihenfolge))
-                    angelegt += 1
+            # --- Bedarfstage samt Ereignissen: fiktiv, dann die des Paketteils --------------
+            for (bezeichner, quelle_art, bezugsmenge, ereignisse) in BEDARFSTAGE:
+                id_tag = zaehlen(upsert(con, T_BEDARFSTAG, {"Bezeichner": bezeichner, "Katalogversion": VERSION},
+                                        {"Quelle_Art": quelle_art, "Bezugsmenge": bezugsmenge, "Quelle": QUELLE,
+                                         "Ausgabe": None, "Version": VERSION, "Herkunftsart": HERKUNFT,
+                                         "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
+                zaehlen(ereignisse_setzen(con, id_tag, [dict(zip(EREIGNISSPALTEN, e)) for e in ereignisse]))
+            frei_tage = []
+            for z in PAKET[T_BEDARFSTAG]:
+                w = paketwerte(con, T_BEDARFSTAG, z, ohne=("ID", "Bezeichner"))
+                w.update(testdb)
+                id_tag = zaehlen(upsert(con, T_BEDARFSTAG, {"Bezeichner": z["Bezeichner"], "Katalogversion": VERSION}, w))
+                zaehlen(ereignisse_setzen(con, id_tag, [paketwerte(con, T_EREIGNIS, e, ohne=("ID", "ID_Bedarfstag"))
+                                                        for e in PAKET[T_EREIGNIS] if e["ID_Bedarfstag"] == z["ID"]]))
+                frei_tage.append(z["Bezeichner"])
 
             # --- DIN-4708-Werte ---------------------------------------------------------
             for (art, schluessel, wert) in DIN4708_WERTE:
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwDin4708Wert_STAMM" WHERE "Art" = ? AND "Schluessel" = ? '
-                             'AND "Katalogversion" = ?', art, schluessel, VERSION) > 0:
-                    # Vorhanden: den Wert nachfuehren, wenn er abweicht.
-                    cur = con.execute('UPDATE "Tab_TwwDin4708Wert_STAMM" SET "Wert" = ? WHERE "Art" = ? '
-                                      'AND "Schluessel" = ? AND "Katalogversion" = ? AND "Wert" <> ?',
-                                      (wert, art, schluessel, VERSION, wert))
-                    nachgefuehrt += cur.rowcount
-                    continue
-                con.execute('INSERT INTO "Tab_TwwDin4708Wert_STAMM" ("Art", "Schluessel", "Wert", "Katalogversion", '
-                            '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '
-                            'VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
-                            (art, schluessel, wert, VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
-                angelegt += 1
+                zaehlen(upsert(con, "Tab_TwwDin4708Wert_STAMM",
+                               {"Art": art, "Schluessel": schluessel, "Katalogversion": VERSION},
+                               {"Wert": wert, "Quelle": QUELLE, "Ausgabe": None, "Version": VERSION,
+                                "Herkunftsart": HERKUNFT, "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
 
-            # --- Stufe Z3: Zapfkategorien (nur mit T2 und eingeschaltetem Block) -----------------
-            if stochastik:
-                reihenfolge = {}
-                for (art, kategorie, volumenstrom, dauer, anteil, sigma, kappung) in ZAPFKATEGORIEN:
-                    reihenfolge[art] = reihenfolge.get(art, 0) + 1
-                    id_art = zahl(con, 'SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" WHERE "Bezeichner" = ? '
-                                       'AND "Katalogversion" = ?', art, VERSION)
-                    if zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "ID_Nutzungsart" = ? '
-                                 'AND "Kategorie" = ?', id_art, kategorie) > 0:
-                        continue
-                    con.execute(f'INSERT INTO "{TABELLE_KATEGORIEN}" ("ID_Nutzungsart", "Kategorie", "Reihenfolge", '
-                                '"Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min", '
-                                '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", '
-                                '"Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
-                                (id_art, kategorie, reihenfolge[art], volumenstrom, dauer, anteil, sigma, kappung,
-                                 QUELLE, VERSION, HERKUNFT, STATUS))
-                    angelegt += 1
+            # --- Zapfkategorien: der Vorgabesatz des Paketteils an jeder Nutzungsart ------------
+            namen = [z["Kategorie"] for z in PAKET[TABELLE_KATEGORIEN]]
+            for id_art in id_arten:
+                for z in PAKET[TABELLE_KATEGORIEN]:
+                    w = paketwerte(con, TABELLE_KATEGORIEN, z, ohne=("ID", "Kategorie"))
+                    w.update(testdb)
+                    zaehlen(upsert(con, TABELLE_KATEGORIEN, {"ID_Nutzungsart": id_art, "Kategorie": z["Kategorie"]}, w))
+                zaehler[1] += con.execute(
+                    f'DELETE FROM "{TABELLE_KATEGORIEN}" WHERE "ID_Nutzungsart" = ? AND "Kategorie" NOT IN '
+                    f'({", ".join("?" for _ in namen)})', [id_art] + namen).rowcount
 
+            # --- Freie Zeilen, die der Paketteil nicht (mehr) fuehrt, fallen ------------------
+            zaehler[1] += con.execute(
+                f'DELETE FROM "{T_PARAMETER}" WHERE "Herkunftsart" = ? AND "Katalogversion" = ? AND "Schluessel" NOT IN '
+                f'({", ".join("?" for _ in frei_parameter)})', [HERKUNFT_FREI, VERSION] + frei_parameter).rowcount
+            zaehler[1] += con.execute(
+                f'DELETE FROM "{T_BEDARFSTAG}" WHERE "Herkunftsart" = ? AND "Katalogversion" = ? AND "Bezeichner" NOT IN '
+                f'({", ".join("?" for _ in frei_tage)})', [HERKUNFT_FREI, VERSION] + frei_tage).rowcount
+
+        angelegt, nachgefuehrt = zaehler
         print(f"Schemastand {stand}: {angelegt} Zeile(n) angelegt, {nachgefuehrt} nachgefuehrt"
               + (" - der Testkatalog stand schon vollstaendig da." if angelegt == 0 and nachgefuehrt == 0 else "."))
 
         ok = True
-        for t, soll in erwartet.items():
+        for t, soll in ERWARTET.items():
             ist = zahl(con, f'SELECT COUNT(*) FROM "{t}"')
             print(f"  {t}: {ist} Zeile(n)" + ("" if ist == soll else f"  (erwartet {soll})"))
             ok = ok and ist == soll
         ausgeliefert = sum(zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "Status" IN (\'AUSLIEFERUNG\', \'IMPORT\')')
                            for t in ("Tab_TwwTagesgangsatz_STAMM", "Tab_TwwNutzungsart_STAMM",
                                      "Tab_TwwBedarfstag_STAMM", "Tab_TwwParameter_STAMM",
-                                     "Tab_TwwDin4708Wert_STAMM") + ((TABELLE_KATEGORIEN,) if stochastik else ()))
+                                     "Tab_TwwDin4708Wert_STAMM", TABELLE_KATEGORIEN))
         integritaet = con.execute("PRAGMA integrity_check").fetchone()[0]
         fk = con.execute("PRAGMA foreign_key_check").fetchall()
         print(f"  Status AUSLIEFERUNG/IMPORT: {ausgeliefert}; integrity_check: {integritaet}; "
