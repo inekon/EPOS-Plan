@@ -49,6 +49,169 @@ namespace EPOS.Kern.Tests
                 Assert.StartsWith("Tab_Tww", a.Key, StringComparison.Ordinal);
             }
             Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+
+            // Vier Indizes, je auf einer Fremdschluesselspalte ihrer Tabelle.
+            Assert.Equal(4, TwwSchema.Indizes.Count());
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                string tabelle = Skalar(c, "SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = $n",
+                                        ("$n", i.Key)) as string;
+                Assert.NotNull(tabelle);
+                List<object[]> spalten = Zeilen(c, "SELECT name FROM pragma_index_info($i)", ("$i", i.Key));
+                Assert.Single(spalten);
+                Assert.Contains(Zeilen(c, "SELECT \"from\" FROM pragma_foreign_key_list($t)", ("$t", tabelle)),
+                                fk => (string)fk[0] == (string)spalten[0][0]);
+            }
+        }
+
+        [Fact]
+        public void Eine_geloeschte_ID_wird_nie_wieder_vergeben()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            // Jede Tabelle zaehlt ihre ID fort (Muster WechselrichterSchema).
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                Assert.Contains("\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,", a.Value, StringComparison.Ordinal);
+
+            // Die hoechste Katalogzeile geht - die naechste bekommt trotzdem eine neue ID.
+            const string neu = "INSERT INTO \"Tab_TwwTagesgangsatz_STAMM\" (\"Bezeichner\", \"Katalogversion\", \"Status\") VALUES ($b, 'V1', 'EIGEN')";
+            Ausfuehren(c, neu, ("$b", "A"));
+            Ausfuehren(c, neu, ("$b", "B"));
+            Assert.Equal(2L, Skalar(c, "SELECT MAX(\"ID\") FROM \"Tab_TwwTagesgangsatz_STAMM\""));
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"ID\" = 2");
+            Ausfuehren(c, neu, ("$b", "C"));
+            Assert.Equal(3L, Skalar(c, "SELECT \"ID\" FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"Bezeichner\" = 'C'"));
+        }
+
+        /// <summary>
+        /// Jede Spalte mit CHECK samt einem Wert außerhalb ihrer Wertemenge; einige Spalten
+        /// mit zwei Werten (unter und über dem Bereich). Die Liste muss jede CHECK-Spalte der
+        /// DDL führen — eine neue Prüfung ohne Probe fällt auf.
+        /// </summary>
+        private static readonly (string Tabelle, string Spalte, string Fremdwert)[] Fremdwerte =
+        {
+            (TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Tagtyp", "5"),
+            (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Tagtyp", "0"),
+            (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezugsart", "8"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezugsart", "0"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bedarf_Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bilanzgrenze", "4"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Kalenderart", "6"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Jahresgang_Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Wochengang_Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Quelle_Art", "1"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Quelle_Art", "6"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "Minute_Beginn", "-1"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "Minute_Beginn", "1440"),
+            (TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "Dauer_min", "0"),
+            (TwwSchema.TAB_TWW_PARAMETER_STAMM, "Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_PARAMETER_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_PARAMETER_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_DIN4708_WERT_STAMM, "Art", "'FREMD'"),
+            (TwwSchema.TAB_TWW_DIN4708_WERT_STAMM, "Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_DIN4708_WERT_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_DIN4708_WERT_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_ZONE, "Bezugsmenge", "0.0"),
+            (TwwSchema.TAB_TWW_ZONE, "Bezugsmenge", "-1.0"),
+            (TwwSchema.TAB_TWW_ZONE, "Niveau", "4"),
+            (TwwSchema.TAB_TWW_ZONE, "Topologie", "5"),
+            (TwwSchema.TAB_TWW_ZONE, "Zirkulation", "2"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienbeginn_1", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienbeginn_1", "-1"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienende_1", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienbeginn_2", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienende_2", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienbeginn_3", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienende_3", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienbeginn_4", "367"),
+            (TwwSchema.TAB_TWW_ZONE, "Ferienende_4", "-1"),
+            (TwwSchema.TAB_TWW_ZONE, "Jahresmesswert_Einheit", "3"),
+            (TwwSchema.TAB_TWW_ZONE, "Jahresmesswert_Bilanzgrenze", "4"),
+            (TwwSchema.TAB_TWW_ZONE, "Tagesbedarf_Auto", "2"),
+            (TwwSchema.TAB_TWW_WOHNUNGSTYP, "Anzahl", "0"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Weg", "'ANDERS'"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Jahresreihe_Stochastisch", "2"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Realisierungen", "0"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Realisierungen_Auslegung", "0"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Perzentil", "50"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Zirk_Auto", "2"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Zirk_Methode", "4"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Zirk_Lage", "3"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Lade_Auto", "2"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Speicherart", "3"),
+            (TwwSchema.TAB_TWW_PROJEKT, "Bedarfstag_Quelle", "6"),
+        };
+
+        [Fact]
+        public void Jede_Pruefung_weist_ihren_Fremdwert_ab()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+            Vollbelegen(c);
+
+            // Die Liste deckt jede CHECK-Spalte der DDL.
+            var geprueft = new HashSet<string>(Fremdwerte.Select(f => f.Tabelle + "." + f.Spalte), StringComparer.Ordinal);
+            var fehlend = new List<string>();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                foreach (System.Text.RegularExpressions.Match m in
+                         System.Text.RegularExpressions.Regex.Matches(a.Value, "CHECK \\(\"([A-Za-z0-9_]+)\""))
+                    if (!geprueft.Contains(a.Key + "." + m.Groups[1].Value)) fehlend.Add(a.Key + "." + m.Groups[1].Value);
+            Assert.True(fehlend.Count == 0, "CHECK ohne Probe: " + string.Join(", ", fehlend));
+
+            foreach (var f in Fremdwerte)
+            {
+                Assert.Contains(f.Spalte, Spalten(c, f.Tabelle));
+                string sql = "UPDATE \"" + f.Tabelle + "\" SET \"" + f.Spalte + "\" = " + f.Fremdwert;
+                Assert.True(Wirft(c, sql), f.Tabelle + "." + f.Spalte + " nimmt " + f.Fremdwert + " an.");
+            }
+
+            // Die Ereignisse: auch NULL ist ausgeschlossen, das ein CHECK allein durchliesse.
+            foreach (string spalte in new[] { "Minute_Beginn", "Dauer_min", "Reihenfolge" })
+                Assert.True(Wirft(c, "UPDATE \"Tab_TwwBedarfstagEreignis_STAMM\" SET \"" + spalte + "\" = NULL"), spalte + " nimmt NULL an.");
+
+            // Gegenprobe: die Grenzen selbst und NULL bei einer Ueberschreibung gehen durch.
+            Ausfuehren(c, "UPDATE \"Tab_TwwZone\" SET \"Ferienbeginn_1\" = 0, \"Ferienende_1\" = 366, \"Ferienbeginn_2\" = NULL");
+            Ausfuehren(c, "UPDATE \"Tab_TwwBedarfstagEreignis_STAMM\" SET \"Minute_Beginn\" = 1439");
+            Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Realisierungen\" = 1, \"Realisierungen_Auslegung\" = NULL");
+        }
+
+        [Fact]
+        public void Benutzte_Kataloge_sind_gesperrt_und_der_Bedarfstag_loest_sich()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+            Vollbelegen(c);
+
+            // Ein Tagesgangsatz, den nur eine Zone waehlt, ist ebenso gesperrt wie der der Nutzungsart.
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwTagesgangsatz_STAMM\" (\"Bezeichner\", \"Katalogversion\", \"Status\") VALUES ('Zweiter', 'V1', 'EIGEN')");
+            Ausfuehren(c, "UPDATE \"Tab_TwwZone\" SET \"ID_Tagesgangsatz\" = 2");
+            Assert.True(Wirft(c, "DELETE FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"ID\" = 2"));
+            Assert.True(Wirft(c, "DELETE FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"ID\" = 1"));
+
+            // Ein DIN-4708-Wert, auf den ein Wohnungstyp zeigt, bleibt.
+            Assert.True(Wirft(c, "DELETE FROM \"Tab_TwwDin4708Wert_STAMM\""));
+
+            // Der Bedarfstag geht: seine Ereignisse mit ihm, das Projekt verliert nur die Bindung.
+            Assert.Equal(1L, Skalar(c, "SELECT \"ID_Bedarfstag\" FROM \"Tab_TwwProjekt\""));
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwBedarfstag_STAMM\"");
+            Assert.Null(Skalar(c, "SELECT \"ID_Bedarfstag\" FROM \"Tab_TwwProjekt\""));
+            Assert.Equal(1L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwProjekt\""));
+            Assert.Equal(0L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwBedarfstagEreignis_STAMM\""));
+
+            // Ohne Wohnungstyp und Zone gehen DIN-4708-Wert und der zweite Satz.
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwZone\"");
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwDin4708Wert_STAMM\"");
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"ID\" = 2");
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
         }
 
         [Fact]
@@ -165,6 +328,28 @@ namespace EPOS.Kern.Tests
         private static void Anlegen(SqliteConnection c)
         {
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes) Ausfuehren(c, i.Value);
+        }
+
+        /// <summary>
+        /// Je Tabelle eine gültige Zeile mit erfundenen Werten, alle mit ID 1 und verkettet:
+        /// Satz → Tagesgang, Nutzungsart → Zone → Wohnungstyp (Ausstattung → DIN-4708-Wert),
+        /// Bedarfstag → Ereignis und Projekt.
+        /// </summary>
+        private static void Vollbelegen(SqliteConnection c)
+        {
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, Einfuegen(c, a.Key));
+            Ausfuehren(c, "UPDATE \"Tab_TwwWohnungstyp\" SET \"ID_Ausstattung\" = 1");
+            Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"ID_Bedarfstag\" = 1");
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>Ob die Anweisung mit einer <see cref="SqliteException"/> scheitert.</summary>
+        private static bool Wirft(SqliteConnection c, string sql)
+        {
+            try { Ausfuehren(c, sql); return false; }
+            catch (SqliteException) { return true; }
         }
 
         /// <summary>
@@ -198,10 +383,11 @@ namespace EPOS.Kern.Tests
         private static List<string> Spalten(SqliteConnection c, string tabelle)
             => Zeilen(c, "SELECT name FROM pragma_table_info($t)", ("$t", tabelle)).Select(z => (string)z[0]).ToList();
 
-        private static void Ausfuehren(SqliteConnection c, string sql)
+        private static void Ausfuehren(SqliteConnection c, string sql, params (string Name, object Wert)[] parameter)
         {
             using SqliteCommand k = c.CreateCommand();
             k.CommandText = sql;
+            foreach (var p in parameter) k.Parameters.AddWithValue(p.Name, p.Wert);
             k.ExecuteNonQuery();
         }
 

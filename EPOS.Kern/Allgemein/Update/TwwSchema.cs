@@ -19,6 +19,17 @@ namespace WindowsFormsApplication1
     /// CHECK der Wertemenge, und bei jeder Überschreibung heißt NULL „Vorgabe". Die
     /// Idempotenz trägt <c>IF NOT EXISTS</c>.</para>
     ///
+    /// <para><b>Stabile Kennungen.</b> Jede <c>ID</c> ist <c>INTEGER PRIMARY KEY
+    /// AUTOINCREMENT</c> wie bei <see cref="WechselrichterSchema"/>: Die ID einer gelöschten
+    /// Zeile wird nie wieder vergeben — auch nicht die höchste, etwa eine entfernte
+    /// <c>IMPORT</c>-Zeile. Die unveränderlichen Katalogversionen (Konzept 3.2) setzen das
+    /// voraus.</para>
+    ///
+    /// <para><b>Indizes auf den Kindspalten.</b> <see cref="Indizes"/> legt nach den Tabellen
+    /// je einen Index auf die Fremdschlüsselspalten, über die ein Löschen der Elternzeile
+    /// die Kinder sucht (CASCADE bzw. Sperre). Wer <see cref="Anweisungen"/> abarbeitet,
+    /// arbeitet danach <see cref="Indizes"/> ab.</para>
+    ///
     /// <para><b>Provenienzgruppen.</b> Die Kataloge tragen je Wertgruppe vier Spalten
     /// <c>Quelle</c>, <c>Ausgabe</c>, <c>Version</c> und <c>Herkunftsart</c> — in
     /// <c>Tab_TwwNutzungsart_STAMM</c> mit dem Präfix der Gruppe (<c>Bedarf_</c>,
@@ -119,7 +130,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwTagesgangsatz_STAMM</c> — 6 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_TAGESGANGSATZ =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwTagesgangsatz_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Bezeichner\" TEXT NOT NULL,\n" +
             "    \"Katalogversion\" TEXT NOT NULL,\n" +
             "    \"Status\" TEXT NOT NULL CHECK (\"Status\" IN ('AUSLIEFERUNG','EIGEN','IMPORT')),\n" +
@@ -131,7 +142,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwTagesgang_STAMM</c> — 31 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_TAGESGANG =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwTagesgang_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"ID_Tagesgangsatz\" INTEGER NOT NULL REFERENCES \"Tab_TwwTagesgangsatz_STAMM\" (\"ID\") ON DELETE CASCADE,\n" +
             "    \"Tagtyp\" INTEGER NOT NULL CHECK (\"Tagtyp\" IN (1,2,3,4)),\n" +
             "    \"Anteil_01\" REAL NOT NULL,\n" +
@@ -168,7 +179,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwNutzungsart_STAMM</c> — 55 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_NUTZUNGSART =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwNutzungsart_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Bezeichner\" TEXT NOT NULL,\n" +
             "    \"Katalogversion\" TEXT NOT NULL,\n" +
             "    \"Bezugsart\" INTEGER NOT NULL CHECK (\"Bezugsart\" IN (1,2,3,4,5,6,7)),\n" +
@@ -229,7 +240,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwBedarfstag_STAMM</c> — 12 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_BEDARFSTAG =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwBedarfstag_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Bezeichner\" TEXT NOT NULL,\n" +
             "    \"Katalogversion\" TEXT NOT NULL,\n" +
             "    \"Quelle_Art\" INTEGER NOT NULL CHECK (\"Quelle_Art\" IN (2,3,4,5)),\n" +
@@ -247,7 +258,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwBedarfstagEreignis_STAMM</c> — 6 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_BEDARFSTAG_EREIGNIS =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwBedarfstagEreignis_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"ID_Bedarfstag\" INTEGER NOT NULL REFERENCES \"Tab_TwwBedarfstag_STAMM\" (\"ID\") ON DELETE CASCADE,\n" +
             "    \"Minute_Beginn\" INTEGER NOT NULL CHECK (\"Minute_Beginn\" BETWEEN 0 AND 1439),\n" +
             "    \"Dauer_min\" INTEGER NOT NULL CHECK (\"Dauer_min\" >= 1),\n" +
@@ -258,7 +269,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwParameter_STAMM</c> — 12 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_PARAMETER =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwParameter_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Schluessel\" TEXT NOT NULL,\n" +
             "    \"Wert\" REAL NOT NULL,\n" +
             "    \"Einheit\" TEXT,\n" +
@@ -276,7 +287,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwDin4708Wert_STAMM</c> — 12 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_DIN4708_WERT =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwDin4708Wert_STAMM\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"Art\" TEXT NOT NULL CHECK (\"Art\" IN ('BELEGUNG','AUSSTATTUNG')),\n" +
             "    \"Schluessel\" TEXT NOT NULL,\n" +
             "    \"Wert\" REAL NOT NULL,\n" +
@@ -294,7 +305,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwZone</c> — 45 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_ZONE =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwZone\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"ID_Projekt\" INTEGER NOT NULL REFERENCES \"Tab_Projekt\" (\"ID\") ON DELETE CASCADE,\n" +
             "    \"ID_Nutzungsart\" INTEGER NOT NULL REFERENCES \"Tab_TwwNutzungsart_STAMM\" (\"ID\"),\n" +
             "    \"ID_Tagesgangsatz\" INTEGER REFERENCES \"Tab_TwwTagesgangsatz_STAMM\" (\"ID\"),\n" +
@@ -307,14 +318,14 @@ namespace WindowsFormsApplication1
             "    \"Wohnflaeche_je_WE\" REAL,\n" +
             "    \"Topologie\" INTEGER NOT NULL DEFAULT 1 CHECK (\"Topologie\" IN (1,2,3,4)),\n" +
             "    \"Zirkulation\" INTEGER NOT NULL DEFAULT 1 CHECK (\"Zirkulation\" IN (0,1)),\n" +
-            "    \"Ferienbeginn_1\" INTEGER,\n" +
-            "    \"Ferienende_1\" INTEGER,\n" +
-            "    \"Ferienbeginn_2\" INTEGER,\n" +
-            "    \"Ferienende_2\" INTEGER,\n" +
-            "    \"Ferienbeginn_3\" INTEGER,\n" +
-            "    \"Ferienende_3\" INTEGER,\n" +
-            "    \"Ferienbeginn_4\" INTEGER,\n" +
-            "    \"Ferienende_4\" INTEGER,\n" +
+            "    \"Ferienbeginn_1\" INTEGER CHECK (\"Ferienbeginn_1\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienende_1\" INTEGER CHECK (\"Ferienende_1\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienbeginn_2\" INTEGER CHECK (\"Ferienbeginn_2\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienende_2\" INTEGER CHECK (\"Ferienende_2\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienbeginn_3\" INTEGER CHECK (\"Ferienbeginn_3\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienende_3\" INTEGER CHECK (\"Ferienende_3\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienbeginn_4\" INTEGER CHECK (\"Ferienbeginn_4\" BETWEEN 0 AND 366),\n" +
+            "    \"Ferienende_4\" INTEGER CHECK (\"Ferienende_4\" BETWEEN 0 AND 366),\n" +
             "    \"Jahresmesswert\" REAL,\n" +
             "    \"Jahresmesswert_Einheit\" INTEGER CHECK (\"Jahresmesswert_Einheit\" IN (1,2)),\n" +
             "    \"Jahresmesswert_Bilanzgrenze\" INTEGER CHECK (\"Jahresmesswert_Bilanzgrenze\" IN (1,2,3)),\n" +
@@ -344,7 +355,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwWohnungstyp</c> — 7 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_WOHNUNGSTYP =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwWohnungstyp\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"ID_Zone\" INTEGER NOT NULL REFERENCES \"Tab_TwwZone\" (\"ID\") ON DELETE CASCADE,\n" +
             "    \"Anzahl\" INTEGER NOT NULL CHECK (\"Anzahl\" > 0),\n" +
             "    \"Raumzahl\" REAL,\n" +
@@ -356,13 +367,13 @@ namespace WindowsFormsApplication1
         /// <summary><c>CREATE TABLE IF NOT EXISTS Tab_TwwProjekt</c> — 40 Spalten (Konzept 3.1).</summary>
         public const string SQL_CREATE_PROJEKT =
             "CREATE TABLE IF NOT EXISTS \"Tab_TwwProjekt\" (\n" +
-            "    \"ID\" INTEGER PRIMARY KEY,\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "    \"ID_Projekt\" INTEGER NOT NULL UNIQUE REFERENCES \"Tab_Projekt\" (\"ID\") ON DELETE CASCADE,\n" +
             "    \"Weg\" TEXT NOT NULL DEFAULT 'BESTAND' CHECK (\"Weg\" IN ('BESTAND','GENERATOR')),\n" +
             "    \"Jahresreihe_Stochastisch\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Jahresreihe_Stochastisch\" IN (0,1)),\n" +
             "    \"Seed\" INTEGER NOT NULL DEFAULT 1,\n" +
-            "    \"Realisierungen\" INTEGER NOT NULL DEFAULT 10,\n" +
-            "    \"Realisierungen_Auslegung\" INTEGER,\n" +
+            "    \"Realisierungen\" INTEGER NOT NULL DEFAULT 10 CHECK (\"Realisierungen\" >= 1),\n" +
+            "    \"Realisierungen_Auslegung\" INTEGER CHECK (\"Realisierungen_Auslegung\" >= 1),\n" +
             "    \"Perzentil\" INTEGER NOT NULL DEFAULT 99 CHECK (\"Perzentil\" IN (95,99)),\n" +
             "    \"Zirk_Auto\" INTEGER NOT NULL DEFAULT 1 CHECK (\"Zirk_Auto\" IN (0,1)),\n" +
             "    \"Zirk_Methode\" INTEGER NOT NULL DEFAULT 3 CHECK (\"Zirk_Methode\" IN (1,2,3)),\n" +
@@ -420,6 +431,36 @@ namespace WindowsFormsApplication1
                 yield return new KeyValuePair<string, string>(TAB_TWW_WOHNUNGSTYP, SQL_CREATE_WOHNUNGSTYP);
                 yield return new KeyValuePair<string, string>(TAB_TWW_PROJEKT, SQL_CREATE_PROJEKT);
             }
+        }
+
+        /// <summary>
+        /// Die Indizes auf den Kindspalten, je Indexname — nach <see cref="Anweisungen"/>
+        /// abzuarbeiten, denn sie brauchen ihre Tabelle. Wiederholbar über
+        /// <c>IF NOT EXISTS</c>. Sie tragen die Suche, die SQLite beim Löschen einer
+        /// Elternzeile nach ihren Kindern anstellt: Projekt → Zone, Nutzungsart → Zone,
+        /// Zone → Wohnungstyp, Bedarfstag → Ereignis.
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> Indizes
+        {
+            get
+            {
+                yield return Index(TAB_TWW_ZONE, "ID_Projekt");
+                yield return Index(TAB_TWW_ZONE, "ID_Nutzungsart");
+                yield return Index(TAB_TWW_WOHNUNGSTYP, "ID_Zone");
+                yield return Index(TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "ID_Bedarfstag");
+            }
+        }
+
+        /// <summary>
+        /// Ein Index auf einer Spalte, benannt <c>Tabelle_Spalte</c>. Beide Namen sind
+        /// Konstanten dieser Klasse bzw. Spalten aus der DDL oben; <c>TwwSchemaTests</c>
+        /// legt jeden Index an und prüft, dass seine Spalte ein Fremdschlüssel ist.
+        /// </summary>
+        private static KeyValuePair<string, string> Index(string tabelle, string spalte)
+        {
+            string name = tabelle + "_" + spalte;
+            return new KeyValuePair<string, string>(name,
+                "CREATE INDEX IF NOT EXISTS \"" + name + "\" ON \"" + tabelle + "\" (\"" + spalte + "\")");
         }
     }
 }

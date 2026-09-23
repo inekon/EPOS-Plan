@@ -3605,7 +3605,8 @@ namespace WindowsFormsApplication1
         /// <c>Tab_TwwTagesgang_STAMM</c>, <c>Tab_TwwBedarfstag_STAMM</c>,
         /// <c>Tab_TwwBedarfstagEreignis_STAMM</c>, <c>Tab_TwwParameter_STAMM</c>,
         /// <c>Tab_TwwDin4708Wert_STAMM</c>) und drei Projekttabellen (<c>Tab_TwwZone</c>,
-        /// <c>Tab_TwwWohnungstyp</c>, <c>Tab_TwwProjekt</c>). Die DDL steht bei
+        /// <c>Tab_TwwWohnungstyp</c>, <c>Tab_TwwProjekt</c>), dazu vier Indizes auf
+        /// Kindspalten der Fremdschlüssel. Die DDL steht bei
         /// <see cref="TwwSchema"/> — EINE Quelle für Migration,
         /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
         /// <c>EPOS.Kern.Tests</c>.</para>
@@ -7567,7 +7568,7 @@ namespace WindowsFormsApplication1
         /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema"/>), dieselbe
         /// Schleife wie Schritt 65: <see cref="TwwSchema.Anweisungen"/> in
         /// Anlegereihenfolge, erst die Tabelle, auf die verwiesen wird, dann die
-        /// verweisende. <b>Nur <see cref="SqliteDdl"/> und
+        /// verweisende; danach <see cref="TwwSchema.Indizes"/>. <b>Nur <see cref="SqliteDdl"/> und
         /// <see cref="SqliteTabelleVorhanden"/></b> — <c>Lauf.Conn</c> ist im SQLite-Zweig
         /// <c>null</c>.</para>
         /// </summary>
@@ -7584,9 +7585,19 @@ namespace WindowsFormsApplication1
                 if (!vorher) angelegt++;
             }
 
+            // Danach die Indizes auf den Kindspalten - sie brauchen ihre Tabelle.
+            int indizes = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                if (!SqliteDdl(l, i.Value, i.Key)) return false;
+                indizes++;
+            }
+
             l.Notiz("101: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
                     gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) des " +
-                    "Zapfprofilgenerators angelegt (Katalog, Zonen, Projekt). KEIN DML: alle " +
+                    "Zapfprofilgenerators angelegt (Katalog, Zonen, Projekt), " +
+                    indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) " +
+                    "sichergestellt. KEIN DML: alle " +
                     "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
                     "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
                     "sich; der Referenzlauf bleibt byte-gleich.");
