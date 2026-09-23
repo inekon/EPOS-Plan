@@ -224,9 +224,11 @@ damit bei Z1 an.
   `SchemaStand.Zielversion` auf `origin/ios_migration_september` **und** auf allen lokalen Zweigen
   und Worktrees messen; die Nummer erst im Merge festschreiben. Dreimal wurde am 23.09. dieselbe
   Nummer 101 vergeben (Gebäudesimulation, Wirtschaftlichkeit, Zapfprofilgenerator).
-- **Neu offen (Kapitel 9 des Umsetzungskonzepts):** ZU16 Katalogpaket ersetzt vorhandene
-  Auslieferungszeilen, ZU17 namensgleiche eigene Katalogzeilen beim Import, ZU18 Testklassen mit
-  direktem Zugriff auf die Testdatenbank; dazu die Hilfeausgabe der Auslieferungsvorlage um
-  `--katalogpaket` ergänzen (Protokoll, offene Punkte).
+- **Entschieden am 23.09.2026 (Nachträge N5 und N6 des Umsetzungskonzepts):** Lizenz vorab zu
+  Testzwecken freigegeben (K8 und ZU15 laufen weiter); K1-Unterlagen liegen in der Ablage des
+  Anwenders (DIN 4708-2/-3, A100-Entwurf, weiter Entwurfsstand) und werden in Z2 als lokale
+  Testdaten erfasst; ZU16 ersetzen; ZU17 und ZU18 nach Empfehlung (Inhaltsvergleich im
+  Projektimport in Z1; Testklassen-Umstellung als Folgeposten). Dazu die Hilfeausgabe der
+  Auslieferungsvorlage um `--katalogpaket` ergänzen (Protokoll, offene Punkte).
 - **Nächster Auftrag:** Stufe Z1 (Bilanz deterministisch mit Weiche) nach Kapitel 7 des
   Umsetzungskonzepts; Voraussetzungen wie in Anhang A, Schemanummer für T2 erst in Z3.

@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N5 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N6 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1381,7 +1381,7 @@ Papier voraussetzt:
 
 | Nr. | Frage | Empfehlung | Entscheid |
 |---|---|---|---|
-| K1 | Beschaffung A100-Profildateien, Weißdruck-Status, DIN 4708-2/-3 | sofort anfragen; Verzicht auf Verwertungslizenz zur Mitauslieferung bestätigen | nach Empfehlung, 23.09.2026 (N1) |
+| K1 | Beschaffung A100-Profildateien, Weißdruck-Status, DIN 4708-2/-3 | sofort anfragen; Verzicht auf Verwertungslizenz zur Mitauslieferung bestätigen | nach Empfehlung, 23.09.2026 (N1); Unterlagen liegen vor, A100 weiter Entwurf (N6) |
 | K2 | Typenumfang v1.0 | rund 15 neue Typen neben dem Bestandskatalog; Ablösung erst mit K6 | Empfehlung vorausgesetzt |
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
@@ -1422,9 +1422,9 @@ Papier voraussetzt:
 | **ZU13** | Topologie je Zone oder je Gebäude? | je Zone wie im Konzept 2.2; die Auslegung rechnet je Topologiegruppe (4.5) | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU14** | Wie kommt der Auslieferungskatalog in Bestandsinstallationen? | Katalogpaket außerhalb des Repositoriums, eingespielt von der Auslieferungsvorlage (neue Installation) bzw. über einen Katalogimport in der Verwaltung (Z4); nie über den Schemaschritt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
-| **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | offen |
-| **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen | offen |
-| **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | offen |
+| **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | ersetzen, 23.09.2026 (N6) |
+| **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen | nach Empfehlung, 23.09.2026 (N6) |
+| **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 
 ---
 
@@ -1637,6 +1637,38 @@ ihrem Ergebnis.
 
 **Folgen:** Kapitel 9, Zeilen K8 und ZU15, tragen den Zusatz „vorab zu Testzwecken OK (N5)".
 Keine Änderung an Code, Wachen oder Testdatenbank.
+
+### N6 (23.09.2026) — K1 Unterlagen liegen vor; ZU16 bis ZU18 entschieden
+
+**Anwenderentscheid** (im Wortlaut: „K1: Dokumente liegen vor unter [Ablage des Anwenders,
+Ordner Wärmespeicher]; ZU16: ersetzen; ZU17: Empfehlung; ZU18: Empfehlung").
+
+**K1.** In der Ablage des Anwenders liegen (nur lesend, nie ins Repositorium): DIN 4708-2 und
+DIN 4708-3 (Ausgabe 1994), DIN EN 12831-3 samt den Entwürfen A1 und A100, DIN V 18599-10, VDI 4655,
+VDI 6002 Blatt 1 und 2. A100 ist weiterhin ein **Entwurf**; der Weißdruck-Status bleibt zu
+beobachten, das Auslegungsergebnis trägt den Vermerk „Entwurfsstand" (Konzept, Dreiergruppe).
+Die A100-Profildateien liegen nicht als Datenträger vor, sondern als Tabellen im Entwurf; sie
+werden wie die übrigen Normtabellen als **lokale Testdaten** unter `Referenzlaeufe/Normzahlen/`
+(gitignoriert, Muster U8, Freigabe zu Testzwecken nach N5) erfasst, nie im Repositorium. Der
+Verzicht auf eine Verwertungslizenz zur Mitauslieferung ist mit N1 bestätigt. K1 gilt damit als
+**erledigt für Z1 und Z2**; die Erfassung der A100-Bedarfstage und der DIN-4708-2-Tabellen als
+lokale Testdaten ist ein Posten der Stufe Z2 (Anhang-A-Muster: Skript, `QUELLE.txt`, keine Werte
+in Papieren).
+
+**ZU16 — ersetzen.** `--katalogpaket` ersetzt den gesamten Tww-Auslieferungskatalog der Quelle,
+auch vorhandene Zeilen mit `Status = 'AUSLIEFERUNG'`; das Werkzeug bleibt wie gebaut (N2 (j)).
+
+**ZU17 — nach Empfehlung.** Der Projektimport vergleicht in Stufe Z1 namensgleiche `EIGEN`-Zeilen
+über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie
+stilles Umhängen. Posten der Stufe Z1 (Kapitel 7).
+
+**ZU18 — nach Empfehlung.** Die Testklassen, die die Repo-Testdatenbank direkt öffnen, werden
+aufgespürt und auf Arbeitskopie oder `immutable` umgestellt; kleiner Folgeposten außerhalb der
+Z-Stufen.
+
+**Folgen:** Kapitel 9, Zeilen K1 und ZU16–ZU18, tragen den Entscheid mit Verweis „(N6)". Offen
+beim Anwender bleiben K8 (juristische Prüfung) und ZU15 (Lizenz der VDI-6002-Kopien), beide mit
+der Zwischenfreigabe aus N5.
 
 ---
 
