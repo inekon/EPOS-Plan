@@ -1,7 +1,7 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
-**Stand 22.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`3b71871c` · `SchemaStand.Zielversion` = **100**, Schemaschritte 90–100 vergeben, **nächster freier
+**Stand 23.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
+`57b15a7c` · `SchemaStand.Zielversion` = **100**, Schemaschritte 90–100 vergeben, **nächster freier
 Schritt 101** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md),
@@ -27,18 +27,17 @@ Zeilennummern und Messungen:
 > Empfehlung** dieses Papiers entschieden (§ 4) — ebenso Q1–Q25 der Mockup-Prüfung. **Gebaut:** E0
 > (#379), E1 (#380), E2 (#405) und E3 (#431, Merge `2cfee66b`) des Umsetzungsplans § 5, dazu DL‑2e
 > (#390) für die Knopfleisten der beiden Kostendialoge und KI‑F4 (#423) für die Freigabe der Kosten-
-> und Wirtschaftlichkeitsmasken an den Hilfe-Assistenten. **Nicht ausgeführt:** der Schnitt in drei
-> Papiere (A13) — E0 hat nur die Pflege gemacht. **Nächste Etappe:** E4 Erlösrubrik und Steuerzeilen.
-> Die **Schemaschritte 97–100** sind inzwischen anderweitig vergeben — § 6 ist entsprechend
-> umgeschrieben.
+> und Wirtschaftlichkeitsmasken an den Hilfe-Assistenten. E0 hat nur die Pflege gemacht; der Schnitt
+> in drei Papiere (A13) folgte mit #435. Die **Schemaschritte 97–100** sind inzwischen anderweitig
+> vergeben — § 6 ist entsprechend umgeschrieben.
 
-> **Nachtrag 22.09.2026 (#432, #434).** Gebaut sind inzwischen auch **E4** (#432) und **E5** (#434); die
-> nächste Etappe ist der **A13-Schnitt** (nach E5, vor E6), dann **E6** Verlauf mit drei Szenarien.
+> **Nachtrag 23.09.2026 (#432 bis #436).** Gebaut sind inzwischen auch **E4** (#432), **E5** (#434) und
+> **E6** (#436); der Schnitt **A13** ist mit #435 ausgeführt. **Nächste Etappe: E7** rechenwirksame
+> Lücken.
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
-> § 4 bleibt als Teil dieser Analyse mit ihrem Datum stehen. Der Schnitt A13 ist mit #435 ausgeführt;
-> die nächste Etappe ist E6.
+> § 4 bleibt als Teil dieser Analyse mit ihrem Datum stehen.
 
 ## 0 Das Ergebnis in acht Sätzen
 
@@ -276,9 +275,9 @@ sind die Schritte 1, 5 und 8 der Etappe E3 gelaufen (#431).
 
 | Nr | Befund | Beleg | Umfang |
 |---|---|---|---|
-| A1 | Der Stand der Seite kennt weder Bandbreite (U4) noch Empfehlungskarten je Version (U5, nur `Empfehlungszeile`), Gliederung, Brücke, die fünf ValERI-Blöcke oder den Szenario-Hinweistext (U10, `WIRT_SZEN_HINWEIS` repoweit 0 Treffer); statt des Umschalters (K8/V‑1) ein Aufklappblock mit einem Textfeld. **Stand 22.09.2026: gebaut #434** — Umschalter (K8/V‑1) mit vier Abschnitten, Bandbreite (U4), Empfehlungskarten je Version (U5), Hinweistext `WIRT_SZEN_HINWEIS` (U10), Gliederung ohne doppelte Kennzahlzeilen, die Blöcke 1, 3, 4 und 5 als Darstellung „ValERI-Bewertung"; **Rest:** Verlauf mit drei Szenarien (E6), Brückenbild, Block 2 und damit die fünf Blöcke vollständig (E8) | `04/§ 6` | U2, U10 S; U4, U5 M; Blöcke L |
+| A1 | Der Stand der Seite kennt weder Bandbreite (U4) noch Empfehlungskarten je Version (U5, nur `Empfehlungszeile`), Gliederung, Brücke, die fünf ValERI-Blöcke oder den Szenario-Hinweistext (U10, `WIRT_SZEN_HINWEIS` repoweit 0 Treffer); statt des Umschalters (K8/V‑1) ein Aufklappblock mit einem Textfeld. **Stand 22.09.2026: gebaut #434** — Umschalter (K8/V‑1) mit vier Abschnitten, Bandbreite (U4), Empfehlungskarten je Version (U5), Hinweistext `WIRT_SZEN_HINWEIS` (U10), Gliederung ohne doppelte Kennzahlzeilen, die Blöcke 1, 3, 4 und 5 als Darstellung „ValERI-Bewertung"; **Rest:** Brückenbild, Block 2 und damit die fünf Blöcke vollständig (E8); der Verlauf mit drei Szenarien ist **gebaut #436** (A3) | `04/§ 6` | U2, U10 S; U4, U5 M; Blöcke L |
 | A2 | V‑A: keine „nachrichtlich"-Kennzeichnung, keine Deklarationszeilen (nominal, Steuern, Restwert, Risiko), keine IZF-Mehrdeutigkeitswarnung (`InternerZinsfuss` bricht bei fehlendem Vorzeichenwechsel ab, zählt nicht), keine Steigungsspalte; `Referenzwahl.Deklarationszeile` ist die Benennung der Referenz, nicht die Normdeklaration — Verwechslungsfalle. **Stand 22.09.2026: gebaut #434** — „nachrichtlich" an Amortisation und Zinsfuß (E5‑Q3), Deklarationszeilen (`ValeriAusweis.Deklarationen()`), Zähler `KapitalwertRechner.Vorzeichenwechsel` mit Warnung und „kein Zinsfuß bestimmbar" statt Abbruch (Nachweisumschlag Fassung 7), Steigungsspalte auf der Seite und in beiden Berichten — V‑A ist damit vollständig; aus demselben Normumkreis bleiben offen die Sensitivität mit T-Variation, Endzahlungen und Diagramm (Konzept V‑G6) und die Formelmappe (V‑D, E8) | `05/§ 1.1, § 5.5` | M |
-| A3 | Verlauf: `BerechneVerlauf` rechnet ein Szenario je Lauf; `VerlaufsReihen` vergibt Farben nach laufendem Index, Namen ohne Szenario; `Reihe.Gestrichelt` ist ein `bool` — drei Szenarien brauchen eine **dritte Strichart** (im Konzept nicht genannt); Bildmaß 1240 × 620 trägt zwei Legendenzeilen; ChartProben und Gegenproben vorhanden, Bilder entstehen beim Lauf | `05/§ 4` | S–M je Schritt, ChartProben als Nachweis |
+| A3 | Verlauf: `BerechneVerlauf` rechnet ein Szenario je Lauf; `VerlaufsReihen` vergibt Farben nach laufendem Index, Namen ohne Szenario; `Reihe.Gestrichelt` ist ein `bool` — drei Szenarien brauchen eine **dritte Strichart** (im Konzept nicht genannt); Bildmaß 1240 × 620 trägt zwei Legendenzeilen; ChartProben und Gegenproben vorhanden, Bilder entstehen beim Lauf. **Stand 23.09.2026: gebaut #436** — Aufzählung `ChartRenderer.Strichart` mit der dritten Strichart (Vorgabe byte-gleich), `WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien` (drei Läufe ohne Speichern), Farbe = Variante und Strichart = Szenario in `VerlaufsReihenSzenarien`, zweigeteilte Legende, Bild je weitere Legendenzeile 30 px höher; der Verlauf steht als Abschnitt der Seite, „Verlauf…" ist entfallen; ChartProben 17 neue Bilder, die 91 bisherigen byte-gleich | `05/§ 4` | S–M je Schritt, ChartProben als Nachweis |
 | A4 | Formelbericht: Messung des Konzepts bestätigt — 0 Formeln, 167 `.Value`, fünf Parameterzugriffe, keine Zahl des Parametersatzes erreicht eine Zelle; 1 412 statt 1 380 Zeilen; **auch der Word-Generator ist ungedeckt**; vor Stufe 0 offen: ob ClosedXML 0.105.1 Formeln mit zwischengespeichertem Wert ablegt, ob `RecalculateAllFormulas` NBW/RMZ/IKV trägt, ob andere Tabellenkalkulationen dieselben Werte zeigen | `05/§ 3` | Wache M, Stufen 0–3 M/L/L/S |
 | A5 | Bandbreite G8 in Word und Excel ohne „Spanne" und Referenzzeile, auf der Seite gar nicht; G9-Ressource `WIRT_EMPF_KEINE` nennt „Stammprojekt", Maßstab ist seit #358 die gewählte Referenz; G7-Zeitraumhinweis fehlt im Excel-Blatt; Word druckt nur Erwartet, Excel drei Blöcke — nirgends als Entscheid vermerkt. **Stand 22.09.2026: gebaut #434** — die Bandbreite mit Spanne, Referenzzeile und Einstufung steht jetzt auch auf der Seite, beide Berichte lesen sie aus einem Modell (`BerichtsDaten.Bewertung`); G7, G8 in den Berichten und G9 kamen mit #405 | `05/§ 5, § 6.3` | S je Punkt |
 | A6 | Sichtbarkeitsregel hält (Seite, Word, Excel, BHKW-Vorschau ziehen `WirtschaftlichkeitZeilen.Sichtbare`); `Format`/`ExcelFormat` nur durch Disziplin gekoppelt, kein Wächter; „Nach #342" (vier gegen zwei Nachkommastellen der KWKG-Sätze) betrifft Rechner-Herleitung, Excel und Dialogzeile zugleich | `05/§ 6` | S |
@@ -420,7 +419,9 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 **Nicht** von diesem Entscheid gedeckt sind die drei Punkte, die erst mit E0 und E2 entstanden sind und
 keine Empfehlung tragen: **Hi/Ho am CO₂-Grenzwert (R11)**, die sieben Energieanlagen mit leerer
 `KWKG_Anlagenart` und `Nachweis_Json` in 0 von 78 Ergebniszeilen (Konzept § 6.3 Nr. 29, 30, 31). Sie
-brauchen je ein eigenes Wort des Anwenders, mit E7.
+brauchen je ein eigenes Wort des Anwenders, mit E7. **Stand 22.09.2026: alle drei entschieden**
+(→ Register R‑NR): Nr. 29 „es gilt immer der Brennwert" und Nr. 30 NULL statt leerer Zeichenkette,
+beide mit E7; Nr. 31 kein Nachziehlauf, die Kennzeichnung ist gebaut #434.
 
 ## 5 Umsetzungsplan
 
@@ -436,7 +437,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E3 Plattform** — **umgesetzt #431** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |
 | **E4 Erlösrubrik und Steuerzeilen** | U7 (zwei Beträge, zwei Zeilen, Umschlagfassung), 9d (Gründe je Position), dann U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit", Näherung ausgewiesen) | M + L | keine (Summen unverändert) | Anker; `ErloesrubrikTests`; Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a | — | Wirtschaftlichkeit `block-a`, `energiekosten-je-anlage`; U6 wesentlich | Opus | Q15, A12; E1 — **Q15 entschieden 22.09.2026: U6 ja, der Leistungsanteil der vermiedenen Stromkosten bleibt projektweit; Q11 „kein HT/NT" (22.09.2026) ist **nicht** Teil von E4: Die Rückführung der Strommatrix auf eine Zone ohne HT/NT ändert die Bezugskosten und damit den Rechenweg (Messung `Messung_Pflegewege_Tarifstruktur_Strom.md`, Nach #291 Weg 3) — sie gehört mit A/B-Nachweis und gegebenenfalls neuer Referenzbasis zu E7. Beauftragt 22.09.2026 („E4 starten mit Q15 ja")** — **umgesetzt #432** (Merge `1190622c`; Zweig `e4`: `1a4ec24d`, `ee3efacc`, `74aa192d`, `f9fe94a1`, `468ce047`; 10 451 Tests, Referenzlauf 13/13 mit 357 byte-gleichen CSV; Anwenderfragen U6‑Q1 bis Q3 und U7‑Q1/Q2 in Nach #432; U6‑Q1 als Konzept § 6.3 Nr. 32 zu E7) |
 | **E5 Ergebnisansicht und V‑A** — **umgesetzt #434** | U2 Umschalter, U10 Hinweistext (A14), U4 Bandbreite, U5 Empfehlungskarten, Kennzahl-Reihenfolge, Strich/Null (Q16), V‑A (Deklarationen, IZF-Warnung, Steigung, „nachrichtlich"), Hinweiszeile „k von n ohne Dauer" über den Kern (N1) | L | keine | bunit, Kern-Tests, Berichtsprobe, Sichtprüfung | — | Wirtschaftlichkeit, neue Anker; wesentlich | Opus | E3 (sonst nur Windows), Q8/Q9/Q13 für neue Rahmen — **umgesetzt #434** (Merge `deba5e57`; Zweig `e5`: neun Commits `e8ebef76` … `7724ffda` samt zwei Zusammenführungen des Arbeitszweigs; dazu U44 „Bericht erzeugen" und die Kennzeichnung Nr. 31; 10 624 Tests, Referenzlauf 13/13 mit 357 byte-gleichen CSV; vier offene Fragen in Nach #434) |
-| **E6 Verlauf mit drei Szenarien** | dritte Strichart (Aufzählung, Vorgabe byte-gleich), `VerlaufsReihen` Farbe = Variante / Strichart = Szenario, Dreierlauf, Legende und Bildmaß, Hülle nach `EPOS.UI.Daten`, Knopf „Verlauf…" entfällt (mit E5 bewusst stehen geblieben), Spaltengruppen je Szenario im Tabellenbericht, zweites Bild im Wortbericht; aus E5 nach Empfehlung zu Frage (4) in Nach #434: das Spannen-Balkenbild unter „Wie sicher ist das?" | M–L | keine | **ChartProben** (Bild und Gegenprobe), Berichtsprobe, bunit | — | Wirtschaftlichkeit `verlauf` neu; wesentlich | Opus | E5 (Umschalter), E1 (Wache) |
+| **E6 Verlauf mit drei Szenarien** — **umgesetzt #436** | dritte Strichart (Aufzählung, Vorgabe byte-gleich), `VerlaufsReihen` Farbe = Variante / Strichart = Szenario, Dreierlauf, Legende und Bildmaß, Hülle nach `EPOS.UI.Daten`, Knopf „Verlauf…" entfällt (mit E5 bewusst stehen geblieben), Spaltengruppen je Szenario im Tabellenbericht, zweites Bild im Wortbericht; aus E5 nach Empfehlung zu Frage (4) in Nach #434: das Spannen-Balkenbild unter „Wie sicher ist das?" | M–L | keine | **ChartProben** (Bild und Gegenprobe), Berichtsprobe, bunit | — | Wirtschaftlichkeit `verlauf` neu; wesentlich | Opus | E5 (Umschalter), E1 (Wache) — **umgesetzt #436** (Merge `57b15a7c`; Zweig `e6`: siebzehn Commits `ef84a3ec` … `fa80786a` samt den Zusammenführungen `67e56293` und `c54188c2`; dazu die Nachträge E5b‑2 und E5b‑3; im Wortbericht ersetzt das Dreierbild das Differenzbild „Erwartet", das Bild je Version bleibt; 10 758 Tests, Referenzlauf 13/13 gegen R11 mit 357 byte-gleichen CSV; zwei offene Fragen E6‑Q1/E6‑Q2 in Nach #436) |
 | **E7 Rechenwirksame Lücken** | K‑1 (Schritt **A**, Dialogfeld Gruppe 1b, Schreibweg), S‑2 (A3), V‑2/V‑1 (A4), Ersatz/Restwert-Kennzeichen (Schritt **E**), Preisbasis-Spalte (Schritt **F**), U‑1 (Schritt **G**), B‑4 Rest, B‑6, Hi/Ho-Leser (R11, entschieden 22.09.2026: Brennwert), Förderende (A20), **Q11 (22.09.2026): Zeitzonentarif HT/NT streichen (Weg 3 aus Nach #291, A/B-Nachweis, gegebenenfalls neue Basis) und die Leistungspreis-Staffel in die Kostenverwaltung neben die Energiepreisstruktur verlegen (Weg 2), danach Tarifstrukturdialog und Menüpunkt abkündigen**; U6‑Q1 aus E4 (entschieden 22.09.2026 nach Empfehlung: vermiedene Bezugsmenge ohne jede Eigenerzeugung, § 9b-Korrektur auf beide Anlagen, KWK-Split unverändert, Anker 316.159,6 €/a; Konzept § 6.3 Nr. 32) | L | **ja**, je Punkt mit A/B | Anker als Vorher/Nachher, Referenzlauf byte-gleich (Simulation unberührt), neue Testklassen aus E1 | A, E, F, G (Nummern ab 101) | Wirtschaftlichkeit `kwk-abwaermeabfuhr` neu; Kosten `ersatz-restwert` | Opus | A2, A3, A4, A6, A9; E1 |
 | **E8 V‑C und V‑D** | fünf ValERI-Blöcke hinter dem Umschalter (die Blöcke 1, 3, 4 und 5 mit E5 vorgezogen, offen Block 2); Formelbericht Stufe 0 (Parameterblock), 1 (Mehrjahrestabelle), 2 (NBW/RMZ/IKV über Differenzreihe), 3 (Betriebskostenblock); Anhang-E-Checkliste (U43); Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`; aus E5 nach Empfehlung zu Frage (4) in Nach #434: Nominalsummen, Differenzspalte und Brückenbild der Gliederung, Tafel „Was daraus im Lauf wird", Fußzeile „Drei Szenarien gerechnet…" | L | keine (Werte bleiben gleich) | Blattstruktur-Wache vorher/nachher, Kern-Fall mit Normsollwerten | — | Wirtschaftlichkeit `bericht`, je Stufe ein Logbuch-Satz | Opus; Fable für die Stufenauslegung und die ClosedXML-Fragen | E1, E5; ClosedXML-Fragen aus `05/§ 3.3` geklärt |
 | **E9 V‑E Szenarioabdeckung** | Schritte **B–D** (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt; **ohne Degradation** (A5) | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | B, C, D (Nummern ab 101) | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 entschieden; E5, E7 |
@@ -444,12 +445,12 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E11 Zahlenprobe A8/B9** — **entfällt** (Anwenderentscheid 22.09.2026: „BHKW-Plan-Mappen: nicht relevant") | ~~Referenzmappe festlegen (A17), Generation und Zelltafel einfrieren, Eingabespiegel, Neutralschaltung, fünf Teilproben (Annuität, Brennstoff, § 53, KWKG, Kapitalwert), erwartete Abweichungen vorab benennen (Grundlagen § 5)~~ — Nachweis der Wirtschaftlichkeitsgrößen über die Anker aus E1 und die A/B-Nachweise von E7, E9, E10 | — | keine | — | — | — | — | entfällt |
 | **E12 Wiki-Runden** | Sammel-Upload 28.09.2026: die 14+1 Sätze der Mockup-Prüfung, die fünf Lücken, U17/U23/U36, `help_mapping` (Tarifstruktur, BHKW, PV, acht Anker), Höfingen neutralisiert (A16), Hilfesystem 13.2 ergänzt; danach je Etappe die Sätze aus `06/§ 3` | S je Runde | — | Tabuwort-Regex, Produktdaten-Wache | — | — | Sonnet | A16, A18 |
 
-**Stand der Etappen am 22.09.2026.**
+**Stand der Etappen am 23.09.2026.**
 
 **E0 — umgesetzt #379.** Gebaut ist die Papierpflege ohne Entscheid: Konzept (2 427 → 2 632 Zeilen),
 Szenarienkonzept, Nutzungsdauer-Konzept, Rechenwege 04/05/08 und der Wegweiser des Ordners (E0a); das
-Hauptmockup an rund 90 Stellen, vier weitere Mockups und der Index (E0b). **Nicht ausgeführt: der
-Schnitt in drei Papiere (A13)** — er bleibt als eigene Aufgabe stehen. E0c hat die Papiere am
+Hauptmockup an rund 90 Stellen, vier weitere Mockups und der Index (E0b). Der Schnitt in drei Papiere
+(A13) gehörte nicht zu E0; er ist als eigene Aufgabe mit **#435** ausgeführt. E0c hat die Papiere am
 22.09.2026 auf den Stand nach #428 nachgezogen.
 
 **E1 — umgesetzt #380.** `WirtschaftlichkeitAnkerTests` (9), `SteuerGutschriftRechnerTests` (39),
@@ -483,9 +484,9 @@ sieben Commits):
 | (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog` | **umgesetzt #431** — BHKW-Tarif, Strombezug und PV-Tarif öffnen die Tarifstruktur als Überlagerung; **Abweichung:** die `MessageBox` war bereits mit Schritt 6 ersatzlos entfallen, keine Ablösung durch `Dienste.Dialog` |
 | (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern | **umgesetzt #431** — liefert jetzt alle vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht); **Abweichung:** zusätzlich `UebersichtSeiteGaben`, `BerichteKostenHuelle` und `BerichtSeiteGaben` → `EPOS.UI.Daten/Bericht/`; Whitelist jetzt 21 Schlüssel (`KOSTENVERWALTUNG`, `NUTZUNGSDAUER_VERWALTUNG`, `GESETZESKATALOG`), Umfang wie mit **A19** entschieden |
 
-**E4 — umgesetzt #432, E5 — umgesetzt #434** (Einzelheiten in der Tafel oben, in den Statuszeilen und
-ihren Protokollen). **Nächste Etappe:** der **A13-Schnitt** (nach E5, vor E6), dann **E6** Verlauf mit drei
-Szenarien. **E6 bis E12** bleiben offen.
+**E4 — umgesetzt #432, E5 — umgesetzt #434, E6 — umgesetzt #436** (Einzelheiten in der Tafel oben, in
+den Statuszeilen und ihren Protokollen); der **A13-Schnitt** ist mit #435 ausgeführt. **Nächste Etappe:**
+**E7** rechenwirksame Lücken. **E7 bis E12** bleiben offen, E11 entfällt.
 **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
 zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
 wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.

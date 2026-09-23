@@ -16,7 +16,7 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
-| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt | Statuszeilen #372, #405, #413 |
+| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig | Statuszeilen #372, #405, #413, #434, #436 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
@@ -115,6 +115,13 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die gewählte Vergleichsgruppe. (#434)
 - Seit 26.09.2026: Wort- und Tabellenbericht führen die Bandbreite mit Einstufung, den Hinweis zu den
   Szenarien und die Deklarationen nach DIN EN 17463. (#434)
+- Seit 26.09.2026: Die Wirtschaftlichkeitsseite zeigt den Kapitalwertverlauf aller drei Szenarien in einem
+  Bild — Farbe je Variante, Strichart je Szenario —; der Dialog „Verlauf…" ist nicht mehr vorhanden. (#436)
+- Seit 26.09.2026: Der Knopf „Verlauf nach Excel…" speichert den Verlauf als Excel-Mappe. (#436)
+- Seit 26.09.2026: Ein Balkenbild zeigt die Bandbreite der Kapitalwertdifferenz je Version, auf der Seite
+  und im Wortbericht. (#436)
+- Seit 26.09.2026: Wort- und Tabellenbericht führen den Verlauf aller drei Szenarien; ihre Szenarientafeln
+  nennen die Szenarien „Ungünstig", „Erwartet" und „Günstig". (#436)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
@@ -198,11 +205,12 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
 - Die drei Gerätemeldungen (Statuszeile #415: Klimaregionenliste, Auswahlfeld, sortiert)
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
 - Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
-  22.09.2026 wieder aufgenommen (E4 #432, E5 #434). Die Repo-Quelle
-  `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` beschreibt die Ergebnisseite
-  noch ohne die Änderungen aus #434 (Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte,
-  Szenarien „Ungünstig"/„Günstig" statt „Best"/„Worst", „Bericht erzeugen") und ist vor dem
-  Hochladen nachzuziehen; die Logbuch-Sätze zu #432 und #434 stehen oben.
+  22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436). Die Repo-Quelle
+  `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` ist mit den Papieren zu #436 auf
+  die Ergebnisseite nach E5 und E6 nachgezogen (Umschalter, vier Abschnitte, Empfehlungskarten,
+  Bandbreite mit Spannenbild, Verlauf mit drei Szenarien, „Bericht erzeugen", „Verlauf nach Excel…",
+  Szenarien „Ungünstig"/„Günstig"; Tabuwort-Regex 0 Treffer); die Logbuch-Sätze zu #432, #434 und
+  #436 stehen oben.
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,
   KI‑D‑Q5); je Welle wächst die Maskenliste der Seite Hilfe-Assistent, und ein Logbuch-Satz
   kommt dazu.

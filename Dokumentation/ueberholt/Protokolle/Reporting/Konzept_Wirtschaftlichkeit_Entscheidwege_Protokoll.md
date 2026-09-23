@@ -16,7 +16,9 @@ Analysepapiers
 > Konzept, der Entscheid im Register. Jeder eingerückte oder abgesetzte Block unten ist **Wortlaut des
 > Konzepts vor dem Schnitt** (Stand `f96b59db`, 2 818 Zeilen) mit seiner alten Fundstelle; geändert
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
-> Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll.
+> Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
+> das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
+> dort mit dem Wortlaut des Konzepts **vor #436**, jede Berichtigung mit einer Zeile.
 
 ---
 
@@ -217,7 +219,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 4–9 | erledigt mit B6 bzw. schon vorher | § 3.2 |
 | 9a–9d | erledigt mit E4, B7P, U17 (#346) | § 3.3 |
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
-| 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434); 9j offen | § 3.7 |
+| 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
 | 30–32 | 31 erledigt mit E5 (#434); 30 und 32 offen, hier im Wortlaut vor dem Schnitt | § 5.1 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
@@ -1263,3 +1265,97 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 | # | Frage | Entscheidung |
 |---|---|---|
 | **U-1** | Einheitenbruch `Tab_Brennstoff_Stamm.Einheit` ↔ `energy_conversion` (BK3 § 6 Nr. 4): die Identitätsregel-Ableitung liefert für 9 von 25 Brennstoffen `-1` | **entschieden 30.08.2026 — Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird „m³" → „Nm³" gezogen (Muster Schritt 26a; Leitentscheidung L4 auf die Stammseite fortgeschrieben). Die Wege (b) Identitätsregel-Saat und (c) `billing_unit`-Ableitung sind **nicht beauftragt** |
+
+---
+
+## 8 Nach dem Schnitt — Fortschreibung ab E6 (#436)
+
+*Was mit der Statuszeile #436 aus dem gültigen Stand des Konzepts hierher gewandert ist und welche
+Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts
+**vor #436** (Stand `fa80786a`), nicht vor dem Schnitt.*
+
+### 8.1 E6 — Verlauf mit drei Szenarien (#436)
+
+Protokoll [`E6_Verlauf_Szenarien_Protokoll.md`](E6_Verlauf_Szenarien_Protokoll.md); die Fragen E6‑Q1 und
+E6‑Q2 im Register (R‑E6), der Stand von E5b‑2, E5b‑3 und E5b‑4 in R‑E5.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E6 Verlauf mit drei Szenarien** (#436, Merge `57b15a7c`) | Aufzählung `ChartRenderer.Strichart` mit der dritten Strichart (Vorgabe byte-gleich); `WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien` — drei vollständige Läufe je Version ohne Speichern; `ChartRenderer.KapitalwertSzenarien` mit Farbe = Variante, Strichart = Szenario, zweigeteilter Legende und Marken der Nulldurchgänge; der Verlauf als Abschnitt in „Wie sicher ist das?" (`KapitalwertVerlaufAbschnitt`, Hülle `KapitalwertVerlaufHuelle`), Knopf „Verlauf…" und `KapitalwertVerlaufDialog` entfallen; „Verlauf nach Excel…" und Blatt „Verlauf" (`VerlaufExcel`); Wortbericht mit dem Dreierbild, Tabellenbericht mit einer Spaltengruppe je Szenario; Nachträge E5b: `WIRT_EMPF_SATZ_STAMM`, „Bericht erzeugen" ohne Merken, Spannenbild `ChartRenderer.KapitalwertSpanne`; 34 Ressourcenschlüssel neu, drei geändert, zehn gestrichen; kein Schemaschritt | **keine** — Referenzlauf gegen `2026-09-22_R11_Bestandsbefunde` 13/13 Projekte, 3 882 737 Werte, 357 CSV byte-gleich; Verlauf und Spannenbild rechnen ohne Speichern; Nachweis sind die ChartProben (17 neue Bilder, die 91 bisherigen byte-gleich) und die Kern- und bunit-Tests (10 758 grün) |
+
+*§ 2.13 (5), Z. 1022–1061 — die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung
+brauchte; im Konzept ersetzt durch den Stand-Vermerk „umgesetzt #436" mit den drei Kernaussagen
+Dreierreihe, Farbe/Strichart und Legende:*
+
+**(5) Der Verlauf mit allen drei Szenarien.** Gemessen: Der Knopf „Verlauf…" öffnet
+`KapitalwertVerlaufDialog`, der **ein** Szenario je Lauf rechnet, immer bei Erwartet beginnt (die
+Seite reicht ihre Szenariowahl nicht durch) und zwei Bilder zeigt (Differenz zur Referenz; kumulierte
+Barwerte je Projekt absolut). Der Renderer (`ChartRenderer.KapitalwertVerlauf`) kennt keine
+Szenarien, zeichnet aber beliebig viele Reihen auf eine Jahresachse und führt eine Legende mit
+Name, Farbe und **Strichart je Reihe** (`Reihe.Gestrichelt` wird gelesen, `Segment.Gestrichelt`
+zeichnet das Legendenfeld gestrichelt statt gefüllt); er kann **nicht**: ein Flächenband, mehr als
+etwa zwei Legendenzeilen im festen Maß 1240 × 620, mehr als acht unterscheidbare Farben. **Entscheid des Entwurfs:** eigener Abschnitt bei „Wie sicher
+ist das?" — die Bandbreite zeigt die Spanne am Ende, der Verlauf über die Zeit; der Knopf entfällt;
+**Farbe = Variante, Strichart = Szenario** (ein Band ist bei mehreren Varianten unlesbar und vom
+Renderer nicht zeichenbar); die Legende zweigeteilt (Varianten + 3 Einträge statt Varianten × 3);
+der Nulldurchgang je Szenario markiert. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der
+Seite: Alle Versionen liegen tief im Negativen und nahezu parallel, entschieden wird über den
+Abstand; der absolute Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der
+Mehrjahresübersicht des Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter
+dem Titel „Kumulierte Barwerte je Version", mit **Legende je Version** (Name und Farbe) und
+gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
+Schwarz-Weiß-Ausdruck davon zu trennen sein. Auf der Seite bleibt allein das Differenzbild.
+Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
+`kapitalwert_verlauf_gestrichelt_wirkt` und `kapitalwert_verlauf_legende_nennt_die_version`).
+**Was die Umsetzung braucht:**
+
+- einen Rechenaufruf für die Dreierreihe — `BerechneVerlauf` nimmt einen Szenario-String und
+  `WirtschaftlichkeitVerlauf` trägt genau einen: entweder drei Läufe der bestehenden Methode (die
+  Berichtsdaten werden ohnehin nur einmal gesammelt, der Mehraufwand ist die Zahlungsbildrechnung)
+  oder ein Sammelmodell mit drei Szenarien;
+- eine Reihenbildung, die Variante und Szenario zugleich unterscheidet — heute vergibt
+  `VerlaufsReihen` Farben nach laufendem Index, und die Reihennamen tragen nur den Projektnamen
+  (dasselbe Projekt in drei Szenarien bekäme drei beliebige Farben und dreimal denselben Namen).
+  Die Palette hat **acht** Farben (`ChartRenderer.cs:553–562`); mit „Farbe = Variante" reicht sie
+  bis acht Varianten;
+- Platz für die zweigeteilte Legende und ein passendes Bildmaß (das Lesen von `Gestrichelt` in
+  `KapitalwertVerlauf` steht). **`Reihe.Gestrichelt` ist ein `bool`** (`ChartRenderer.cs:106`) und
+  trägt damit **zwei** Stricharten — drei Szenarien brauchen eine dritte;
+- im Tabellenbericht je Szenario eine Spaltengruppe (die heutige Tabelle „Jahr, je Projekt eine
+  Spalte, dann die Δ-Spalten" ist dafür nicht vorbereitet), im Wortbericht ein zusätzliches Bild;
+- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten` — **Stand:
+  umgesetzt #431**, der Ordner `Wirtschaftlichkeit` besteht, `KapitalwertVerlaufHuelle` liegt darin
+  und sammelt, rechnet und zeichnet bereits plattformfrei über den Renderer des Kerns; offen bleibt
+  allein die Dreiszenarien-Erweiterung dieses Punkts (E6).
+
+*§ 6.3 Nr. 9j (Z. 2224–2226, Wortlaut in § 3.7):* **erledigt mit E6 (#436)** — die Dreierreihe steht
+in `WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien`, die Reihenbildung Variante × Szenario in
+`ChartRenderer.VerlaufsReihenSzenarien` mit der Aufzählung `ChartRenderer.Strichart` (das Lesen von
+`Gestrichelt` ist damit abgelöst), die Spaltengruppen je Szenario im Tabellenbericht samt Blatt
+„Verlauf", die Rechen- und Zeichenlogik plattformfrei in `KapitalwertVerlaufHuelle`. Im Konzept steht
+der Punkt als Einzeiler.
+
+### 8.2 Berichtigungen im gültigen Stand (#436)
+
+Nach #435 (a) nannte Sätze des Konzepts, die nach dem Grundsatz des Schnitts („verschoben, nicht
+umgeschrieben") stehen geblieben waren, obwohl sie nicht mehr stimmten; mit den E6-Papieren sind sie
+berichtigt. Dazu kommen die Stellen, die mit E6 selbst veraltet sind. Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Stand 22.09.2026, Codestand `deba5e57` | Stand 23.09.2026, Codestand des Merges #436 |
+| § 2.2, Gruppe 2 | nur die Verweiszeile „Vorschlag am Feld und Überlagerung „Sätze und Herkunft…" (U22): → Register R‑Q (Q2)" — der von Q2 verlangte Satz fehlte | der Satz nach Q2: Die Grundlagenzeile mit dem Knopf bleibt am Feld, die Überlagerung ergänzt je Größe Wahl und Herleitung |
+| § 2.6, Abweichungen | „Drei Abweichungen von der Tabelle unten"; „A4 und A5 stehen in einer Zeile …: `SteuerErgebnis.EnergiesteuerEur` ist eine Summe, ihre Trennung wäre … ein Umbau" | „Abweichungen und Klarstellungen"; A4 und A5 stehen wie in der Tabelle in zwei Zeilen (umgesetzt #432, U7), `EnergiesteuerEur` ist nur ihre Summe |
+| § 2.7, Hausstil | „Fehlerzeile Firebrick `#B22222`" | „Fehlerzeile `#B00020` (Token `--epos-stufe-fehler`)" — Q9 |
+| § 2.7, Fußleiste | „führt fünf Knöpfe — Photovoltaik, BHKW, Strombezug, Verlauf…, Berechnen —, nach dem Wegfall von „Verlauf…" vier"; „links die heutige Kennzahltafel, rechts die Abschnitte"; „Der Knopf „Verlauf…" entfällt mit der Ergebnisansicht" | höchstens vier Knöpfe; die Darstellung „Kennzahlen" mit den vier Abschnitten, „ValERI-Bewertung" mit den Blöcken der Norm (umgesetzt #434); einen Knopf „Verlauf…" gibt es nicht (umgesetzt #436) |
+| § 2.10, Andockvorschlag | „… **oder** als zweite Ansicht der Seite … — Entscheidung am Mockup"; „der vorhandene Verlauf-Dialog bleibt als Vollbild-Absprung" | V‑1 entschieden, umgesetzt #434; der Verlauf als Abschnitt in „Wie sicher ist das?" (umgesetzt #436), kein Verlaufsdialog; Block 4: Frage E6‑Q1 |
+| § 2.11.4 | V‑C „offen Block 2 … und das Cashflow-Bild"; „gebaut sind daraus E0 … und E5 (#434)" | das Cashflow-Bild als Verlauf gebaut #436 (Block 4: E6‑Q1); Etappenvermerk bis E6 (#436) |
+| § 2.13 (5) | Messung, Entwurfsentscheid und „Was die Umsetzung braucht" (§ 8.1 oben) | Stand-Vermerk „umgesetzt #436" mit Dreierreihe, Farbe/Strichart und Legende; Regel zum zweiten Bild unverändert |
+| § 3.6, K‑1 | „nächster freier Schemaschritt ist **97**" | „**101**" — 97 bis 100 außerhalb dieses Feldes (Kopf) |
+| § 3.9, Tafel | CO₂-Zeile „Warnung mit Betrag — Soll, nicht gebaut (Etappe E2)"; Strommix „Laufhinweis ohne Wertangabe, kein `KohaerenzHinweis`" | beide umgesetzt #405: Warnung mit dem gebuchten Jahresbetrag (`Co2DoppelansatzBehg`); Hinweis mit dem Strommix-Vorgabewert (`KOH_CO2_STROMMIX_RUECKFALL`) |
+| § 5, Einheitenbruch | „Die Umsetzung ist nicht freigegeben und gehört auf den Pufferspeicher-Strang." | freigegeben mit A9 (vor dem nächsten Vorlagenbau), DML-Schritt G mit E7 |
+| § 6.1 | Kurztafel bis A13 (#435) | Zeile E6 (#436) |
+| § 6.2, Tafel | Referenzbasis `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` | `Referenzlaeufe/2026-09-22_R11_Bestandsbefunde` mit Verweis auf `Referenzlaeufe/LIESMICH.md` |
+| § 6.3 Nr. 9j | offener Punkt (Wortlaut in § 3.7) | Einzeiler „erledigt mit E6 (#436)" |
+| § 6.5, Tafel | „Kennzahlenliste dreifach — aufgelöst mit E7" | „aufgelöst mit W4 E7 (vor #300; nicht E7 des Etappenplans)" — gemeint war die Etappe E7 der Ausbaustufe W4, Protokoll [`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md) |
+| § 7 und Anhang | „… und E5 (#434) … Als Nächstes kommt E6"; Kürzeltafel bis #434, „Mockup-Anhang U1…U45"; Etappenreihe „E6 … E12 — offen, nächste Etappe: E6" | bis E6 (#436), nächste Etappe E7; Kürzeltafel mit #436, U1…U49; Etappenzeile E6 = #436, „E7 … E12 — nächste Etappe: E7" |
