@@ -18,7 +18,7 @@
 
     Gaben ueber die Adresse:
       ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe|
-             stromganglinie|rahmen
+             stromganglinie|rahmen|gebaeude|gebaeudetyp|peak
       ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
       ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
                    Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
@@ -198,6 +198,48 @@
                     <button type="button" class="epos-knopf epos-knopf--primaer">Beenden</button>
                 </div>
             </div>
+            break;
+
+        case "gebaeude":
+            @* STUFE 5 (V16, A9): die Gebaeudeverwaltung im Geruest - Katalogliste mit
+               Profil statt eigener Tabelle, Stammblatt mit Kenndaten, Huelle und
+               "Alle Daten". "Gebaeudetypen..." oeffnet die Typen als Ueberlagerung. *@
+            <GebaeudeAdminDialog Katalogzeilen="@(() => GebaeudeZeilen)"
+                                 Katalogprofil="@Katalogfilterprofil.FuerGebaeude(Uebersetzt)"
+                                 Filterstandvorgabe="@_filterstand"
+                                 Satz="@GebaeudeSatz"
+                                 Gebaeudetypen="@(() => new[] { "Wohnblock", "Schule", "Hotel", "Verwaltung" })"
+                                 Gebaeudearten="@(() => new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" })"
+                                 Baualtersklassen="@GebaeudeStammklassen"
+                                 Speichern="@(d => new KatalogSpeicherErgebnis(true, "", d.Name))"
+                                 Loeschen="@(_ => true)"
+                                 Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
+                                 Exists="@(_ => false)"
+                                 GebaeudetypGaben="@(() => GebaeudetypGaben)"
+                                 Geschlossen="@(b => { })" />
+            break;
+
+        case "gebaeudetyp":
+            @* STUFE 5 (V16, A10): die Gebaeudetypen - Typliste als Katalogliste,
+               Tagesprofil im Stammblatt, "Stundenwerte..." als Ueberlagerung. *@
+            <GebaeudetypDialog @attributes="GebaeudetypGaben" Geschlossen="@(b => { })" />
+            break;
+
+        case "peak":
+            @* STUFE 5 (V16, A11): die Lastspitzenkappung - Liste der Lastgaenge,
+               Parameter und Ergebnis im Stammblatt, "Lastgang aus Datei..." als
+               Ueberlagerung. *@
+            <PeakShavingDialog Ganglinien="@PeakGanglinien" Lastgangzeilen="@PeakZeilen"
+                               Katalogprofil="@Katalogfilterprofil.FuerLastgang(Uebersetzt)"
+                               Filterstandvorgabe="@_filterstand"
+                               Werte="@(_ => Task.FromResult(PeakReihe))"
+                               DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                               Einlesen="@((_, _) => Task.FromResult(new GanglinienImportErgebnis()))"
+                               Rechnen="@PeakRechnen"
+                               CsvSpeichern="@(_ => Task.FromResult(true))"
+                               VarianteUebernehmen="@((_, _) => Task.FromResult(true))"
+                               VariantenBerechnungsart="@(() => Task.FromResult<string?>("PeakShaving"))"
+                               Geschlossen="@(b => { })" />
             break;
 
         default:
@@ -526,6 +568,125 @@
         }
         return liste;
     }
+
+    // ------------------------------------------- Stufe 5: die Sonderlisten
+    private IReadOnlyList<Katalogfilterzeile>? _gebaeudeZeilen;
+
+    private IReadOnlyList<Katalogfilterzeile> GebaeudeZeilen
+        => _gebaeudeZeilen ??= Zeilenbau.Voll(Katalogfilterprofil.FuerGebaeude(Uebersetzt), _anzahl);
+
+    private static readonly string[] GebaeudeStammklassen =
+    { "vor 1919", "1919 bis 1948", "Niedrigenergiebauweise", "Eff. 155 (EnEV 2016)" };
+
+    private GebaeudeStammblattDaten? GebaeudeSatz(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeZeilen.FirstOrDefault(x => x.Schluessel == name);
+        if (z is null) return null;
+        return new GebaeudeStammblattDaten
+        {
+            Id = z.Id,
+            Name = z.Bezeichner,
+            Typ = "Wohnblock",
+            Gebaeudeart = z.Text(Katalogfilterprofil.SpGebaeudeart),
+            Verwendung = z.Id % 2 == 0 ? "Nicht Wohngebaeude" : "Wohngebaeude",
+            Baualtersklasse = z.Id % 4,
+            Beschreibung = "Beschreibung des Gebaeudes " + z.Bezeichner,
+            Wohnflaeche = z.Zahl(Katalogfilterprofil.SpFlaecheM2),
+            HgesWK = 512.3,
+            Rechenweg = "VDI 6007",
+            Auslieferung = z.Geschuetzt,
+            Huelle = new[]
+            {
+                new Stammblattwert("Außenwand", "1.234,5 m² · U 0,35 W/(m²K)"),
+                new Stammblattwert("Fenster", "234,5 m² · U 1,10 W/(m²K)"),
+                new Stammblattwert("Dachfläche", "456,7 m² · U 0,20 W/(m²K)"),
+                new Stammblattwert("Grundfläche", "456,7 m² · U 0,30 W/(m²K)")
+            },
+            AlleDaten = new[]
+            {
+                Stammblattwert.Abschnitt("Kenngrößen"),
+                new Stammblattwert("Raumhöhe", "2,50", "m"),
+                new Stammblattwert("Luftwechselrate", "0,60", "1/h")
+            }
+        };
+    }
+
+    private IReadOnlyList<Katalogfilterzeile>? _typZeilen;
+
+    private IReadOnlyList<Katalogfilterzeile> TypZeilen
+        => _typZeilen ??= Zeilenbau.Voll(Katalogfilterprofil.FuerGebaeudetyp(Uebersetzt), _anzahl)
+                                   .Select(z => z.MitZahl(Katalogfilterprofil.SpKurven, z.Id % 3 == 0 ? 5 : 8, 0))
+                                   .ToList();
+
+    private GebaeudetypDaten? TypLesen(string name)
+    {
+        Katalogfilterzeile? z = TypZeilen.FirstOrDefault(x => x.Bezeichner == name);
+        if (z is null) return null;
+        int kurven = (int)(z.Zahl(Katalogfilterprofil.SpKurven) ?? 8);
+        var v = new double[kurven, 24];
+        for (int k = 0; k < kurven; k++)
+            for (int s = 0; s < 24; s++) v[k, s] = 2.0 + Math.Sin(Math.PI * s / 24.0) * (3 + k);
+        string[] lang = { "Winter-Wochentag", "Winter-Wochenende", "Übergang1-Wochentag", "Übergang1-Wochenende",
+                          "Sommer-Wochentag", "Sommer-Wochenende", "Übergang2-Wochentag", "Übergang2-Wochenende" };
+        string[] kurz = { "Winter-heiter", "Winter-trübe", "Übergang-heiter", "Übergang-trübe", "Sommertag" };
+        return new GebaeudetypDaten
+        {
+            Id = z.Id,
+            Name = z.Bezeichner,
+            Beschreibung = z.Text(Katalogfilterprofil.SpBeschreibung),
+            Aenderbar = !z.Geschuetzt,
+            Verteilung = v,
+            Kurvennamen = (kurven <= 5 ? kurz : lang).Take(kurven).ToList()
+        };
+    }
+
+    private Zeichenmodell? _tagesbild;
+
+    /// <summary>Der Parametersatz der Gebaeudetypen - fuer den eigenen Fall und die Ueberlagerung der Gebaeude.</summary>
+    private IReadOnlyDictionary<string, object> GebaeudetypGaben => new Dictionary<string, object>
+    {
+        ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(() => TypZeilen),
+        ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeudetyp(Uebersetzt),
+        ["Filterstandvorgabe"] = new Katalogfilterstand(),
+        ["Lies"] = new Func<string, GebaeudetypDaten?>(TypLesen),
+        ["Speichern"] = new Func<int, double[,], bool>((_, _) => true),
+        ["BeschreibungSpeichern"] = new Func<int, string, bool>((_, _) => true),
+        ["Anlegen"] = new Func<string, string, int, int>((_, _, _) => 99),
+        ["Loeschen"] = new Func<int, bool>(_ => true),
+        ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>((_, n) => new KatalogSpeicherErgebnis(true, "", n)),
+        ["Verwendung"] = new Func<IReadOnlyDictionary<string, int>>(() => new Dictionary<string, int>()),
+        ["Bild"] = new Func<double[], Zeichenmodell?>(w => _tagesbild ??=
+            ChartRenderer.StundenprofilModell("", w, 2, "Stunde des Tages", "Tagesverteilung"))
+    };
+
+    private static readonly IReadOnlyList<(int Id, string Text)> PeakGanglinien = new[]
+    {
+        (0, "Lastgang Buero A  [Stamm]"), (1, "Lastgang Gewerbe A  [Projekt]"), (2, "Lastgang Halle  [Stamm]"),
+        (3, "Lastgang Messung 2  [Projekt]"), (4, "Lastgang Werk Nord  [Stamm]")
+    };
+
+    private IReadOnlyList<Katalogfilterzeile>? _peakZeilen;
+
+    private IReadOnlyList<Katalogfilterzeile> PeakZeilen => _peakZeilen ??=
+        Zeilenbau.Voll(Katalogfilterprofil.FuerLastgang(Uebersetzt), Math.Min(_anzahl, 5))
+            .Select((z, i) =>
+            {
+                z.Geschuetzt = false;
+                z.Schluessel = "G" + i;
+                return z.MitText(Katalogfilterprofil.SpQuelle, i % 2 == 0 ? "Stamm" : "Projekt")
+                        .MitZahl(Katalogfilterprofil.SpIntervallMin, i % 2 == 0 ? 15 : 60, 0);
+            })
+            .ToList();
+
+    private double[]? _peakReihe;
+
+    private double[] PeakReihe => _peakReihe ??= Enumerable.Range(0, 35040)
+        .Select(i => 100.0 + 40.0 * Math.Sin(2.0 * Math.PI * i / 96.0) + (i >= 1000 && i < 1040 ? 260.0 : 0.0))
+        .ToArray();
+
+    private static Task<SpeicherEngine.PeakShavingErgebnis> PeakRechnen(double[] reihe, PeakShavingEingaben e)
+        => Task.FromResult(new SpeicherEngine.PeakShaving(e.AlsPeakShavingParameter(), e.Modus)
+                               .BerechnePeakShaving(reihe, e.AlsSpeicherParameter()));
 
     // -------------------------------------------------------- Waermepumpe
     private IReadOnlyList<Katalogfilterzeile> WaermepumpenZeilen()

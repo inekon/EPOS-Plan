@@ -8287,6 +8287,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
+/* Die TABELLEN EINER STAMMBLATTGRUPPE (Ergebnis der Lastspitzenkappung:
+   Kennzahlen, Monatsspitzen) stehen in 340 bis 440 px: Sie fuellen die Breite
+   der Gruppe und brechen ihre Texte um, statt quer zu rollen - die Hausregel
+   "Namen brechen nicht" (.epos-raster td) gilt fuer Listen, nicht fuer
+   eine Tabelle aus Beschriftung und Wert. Gemessen in der Katalogprobe (N18):
+   443 px Tabelle in 356 px Gruppe ohne diese Regel. */
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster {
+    width: 100%;
+}
+
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster th,
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 /* Die WERKZEUGLEISTE der Katalogliste traegt einen Schalter des Wirts (die
    Waermepumpe: "nur mit Kuehlfunktion", Stufe 4). Er steht neben dem
    Suchfeld und weicht nicht - die Leiste bricht um, wo es eng wird. */

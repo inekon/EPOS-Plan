@@ -522,6 +522,95 @@ async function stufe4probe(seite, f) {
   return e;
 }
 
+// ------------------------------------------------ STUFE 5 der Neuordnung
+//  (Konzept Administrationsdialoge, V16): die drei SONDERLISTEN im Geruest -
+//  Gebaeude (A9), Gebaeudetypen (A10), Lastspitzenkappung (A11). Gemessen:
+//    blatt  - das Stammblatt steht (breit rechts der Liste, schmal nach
+//             "Stammblatt ›" an ihrer Stelle), sein Inhalt rollt nicht quer,
+//             die Seite auch nicht;
+//    offen  - der Knopf f.oeffner oeffnet EINE Ueberlagerung mit Titel und
+//             genau einem Kreuz, ganz im Fenster, ohne Querrollen; darin
+//             f.felder Eingabefelder (die 24 Stundenwerte) bzw. die Felder des
+//             Einlesens. Liegt der Knopf im Stammblatt, wird es schmal zuerst
+//             geoeffnet;
+//    zu     - das Kreuz schliesst sie;
+//    rechnen- (nur f.rechnen) "Berechnen" fuellt das Ergebnis, das Blatt rollt
+//             danach nicht quer, und die Kennzahltabelle steht ganz im Blatt.
+async function stufe5probe(seite, f) {
+  const lies = () => seite.evaluate(() => {
+    const r = el => {
+      if (!el) return null;
+      const b = el.getBoundingClientRect();
+      return { links: +b.left.toFixed(1), oben: +b.top.toFixed(1), rechts: +b.right.toFixed(1),
+               unten: +b.bottom.toFixed(1), breite: +b.width.toFixed(1), hoehe: +b.height.toFixed(1) };
+    };
+    const blatt = document.querySelector('.epos-katalog-stammblatt');
+    const inhalt = document.querySelector('.epos-stammblatt-inhalt');
+    const liste = document.querySelector('.epos-katalog-liste');
+    const ueb = [...document.querySelectorAll('.epos-ueberlagerung')]
+      .find(e => e.getBoundingClientRect().width > 0.5);
+    const tabelle = document.querySelector('.epos-stammblatt .epos-stammblattgruppe .epos-raster');
+    return {
+      blatt: r(blatt), inhalt: r(inhalt), liste: r(liste), tabelle: r(tabelle),
+      inhaltQuer: inhalt ? inhalt.scrollWidth - inhalt.clientWidth : null,
+      seiteQuer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ergebnisZeilen: document.querySelectorAll('.epos-stammblatt .epos-stammblattgruppe .epos-raster tbody tr').length,
+      ueberlagerung: ueb ? {
+        ...r(ueb),
+        titel: ((ueb.querySelector('.epos-ueberlagerung-titel') || {}).textContent || '').trim(),
+        kreuze: ueb.querySelectorAll('.epos-ueberlagerung-zu, .epos-dialog-zu').length,
+        quer: ueb.scrollWidth - ueb.clientWidth,
+        felder: ueb.querySelectorAll('input.epos-eingabe').length,
+        einlesen: ueb.querySelectorAll('.epos-einlesen').length,
+        eingebettet: ueb.querySelectorAll('.epos-katalog-dialog').length
+      } : null
+    };
+  });
+
+  const e = {};
+  const schmal = f.breite < 900;
+  const blattAuf = async () => {
+    const auf = seite.locator('.epos-auswahlleiste button.epos-nur-schmal');
+    if (schmal && await auf.count()) { await auf.first().click(); await schlaf(700); }
+  };
+  const blattZu = async () => {
+    const zu = seite.locator('.epos-stammblatt-zurliste');
+    if (schmal && await zu.count()) { await zu.first().click(); await schlaf(500); }
+  };
+
+  await blattAuf();
+  await schlaf(400);
+  e.blatt = await lies();
+
+  if (f.rechnen) {
+    const rechnen = seite.locator('.epos-peakshaving-rechnen button');
+    if (await rechnen.count()) {
+      await rechnen.first().click();
+      await seite.waitForFunction(
+        () => document.querySelectorAll('.epos-stammblatt .epos-stammblattgruppe .epos-raster tbody tr').length > 5,
+        null, { timeout: 30000 }).catch(() => {});
+      await schlaf(600);
+      e.rechnen = await lies();
+    }
+  }
+  if (!f.oeffnerImBlatt) await blattZu();
+
+  const knopf = seite.locator(f.oeffner);
+  if (await knopf.count()) {
+    await knopf.first().click();
+    await schlaf(900);
+    e.offen = await lies();
+    const kreuz = seite.locator('.epos-ueberlagerung .epos-ueberlagerung-zu');
+    if (await kreuz.count()) {
+      await kreuz.first().click();
+      await schlaf(600);
+      e.zu = await lies();
+    }
+  }
+  if (f.oeffnerImBlatt) await blattZu();
+  return e;
+}
+
 // ---------------------------------------------------------------- Helfer
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
@@ -631,6 +720,7 @@ async function fall(browser, f) {
   }
   if (f.stufe3) k.stufe3 = await stufe3probe(seite, f);
   if (f.stufe4) k.stufe4 = await stufe4probe(seite, f);
+  if (f.stufe5) k.stufe5 = await stufe5probe(seite, f);
 
   if (FOTOS) {
     const marke = (f.vorher || VORHER) ? 'vorher' : 'nachher';
@@ -755,7 +845,10 @@ function pruefe(e) {
         if (s.blatt.links < s.liste.rechts - 0.5) m.push(`das Stammblatt (x ${s.blatt.links}) steht nicht rechts der Liste (bis ${s.liste.rechts})`);
         if (s.blatt.breite < 339.5 || s.blatt.breite > 440.5) m.push(`das Stammblatt ist ${s.blatt.breite} px breit (soll 340 … 440)`);
       }
-      if (s.auswahl && s.auswahl.links < s.liste.rechts - 0.5) m.push('die Auswahlleiste steht nicht ueber dem Stammblatt');
+      // Eine Auswahlleiste, die breit gar nicht steht (Lastspitzenkappung, Stufe 5:
+      // sie traegt keine Handlung und ist nur schmal da), steht auch nicht falsch.
+      if (s.auswahl && s.auswahl.breite > 0.5 && s.auswahl.links < s.liste.rechts - 0.5)
+        m.push('die Auswahlleiste steht nicht ueber dem Stammblatt');
     } else {
       if (s.blatt && s.blatt.hoehe > 0.5) m.push('schmal steht das Stammblatt schon beim Oeffnen ueber der Liste');
       if (!s.auswahl || s.auswahl.hoehe < 1) m.push('schmal fehlt die Auswahlleiste');
@@ -811,6 +904,44 @@ function pruefe(e) {
       if (o.seiteQuer > 0) m.push(`mit der Ueberlagerung rollt die Seite quer um ${o.seiteQuer} px`);
       if (o.einlesen !== 1) m.push('in der Ueberlagerung stehen die Felder des Einlesens nicht');
       if (!v.zu || v.zu.ueberlagerung || v.zu.einlesen) m.push('das Kreuz schliesst die Ueberlagerung nicht');
+    }
+  }
+
+  // STUFE 5 (V16): das Stammblatt der Sonderliste steht und rollt nicht quer, die
+  // Ueberlagerung (Stundenwerte, Gebaeudetypen, Lastgang aus Datei) traegt Titel
+  // und genau ein Kreuz, steht ganz im Fenster und schliesst mit dem Kreuz.
+  const w = e.stufe5;
+  if (w) {
+    const b = w.blatt;
+    if (!b || !b.blatt || b.blatt.hoehe < 100) m.push('kein Stammblatt');
+    else if (f3breit(e) && b.liste && b.blatt.links < b.liste.rechts - 0.5)
+      m.push(`das Stammblatt (x ${b.blatt.links}) steht nicht rechts der Liste (bis ${b.liste.rechts})`);
+    if (b && b.inhaltQuer > 1) m.push(`das Stammblatt rollt quer um ${b.inhaltQuer} px`);
+    if (b && b.seiteQuer > 0) m.push(`mit dem Blatt rollt die Seite quer um ${b.seiteQuer} px`);
+    if (e.fall.rechnen) {
+      const r = w.rechnen;
+      if (!r || r.ergebnisZeilen < 5) m.push('„Berechnen" fuellt kein Ergebnis im Stammblatt');
+      else {
+        if (r.inhaltQuer > 1) m.push(`mit dem Ergebnis rollt das Stammblatt quer um ${r.inhaltQuer} px`);
+        if (r.tabelle && r.inhalt && r.tabelle.rechts > r.inhalt.rechts + 0.5)
+          m.push(`die Kennzahltabelle ragt ueber das Stammblatt (${r.tabelle.rechts} > ${r.inhalt.rechts})`);
+      }
+    }
+    const o = w.offen;
+    if (!o || !o.ueberlagerung) m.push(`${e.fall.oeffner} oeffnet keine Ueberlagerung`);
+    else {
+      const u = o.ueberlagerung;
+      if (!u.titel) m.push('die Ueberlagerung traegt keinen Titel');
+      if (u.kreuze !== 1) m.push(`die Ueberlagerung traegt ${u.kreuze} Kreuze (soll 1)`);
+      if (u.links < -0.5 || u.oben < -0.5 || u.rechts > e.fenster.breite + 0.5 || u.unten > e.fenster.hoehe + 0.5)
+        m.push(`die Ueberlagerung ragt aus dem Fenster (${u.links},${u.oben})-(${u.rechts},${u.unten})`);
+      if (u.quer > 1) m.push(`die Ueberlagerung rollt quer um ${u.quer} px`);
+      if (o.seiteQuer > 0) m.push(`mit der Ueberlagerung rollt die Seite quer um ${o.seiteQuer} px`);
+      if (e.fall.felder && u.felder !== e.fall.felder)
+        m.push(`in der Ueberlagerung stehen ${u.felder} Felder (soll ${e.fall.felder})`);
+      if (e.fall.einlesen && u.einlesen !== 1) m.push('in der Ueberlagerung stehen die Felder des Einlesens nicht');
+      if (e.fall.eingebettet && u.eingebettet !== 1) m.push('in der Ueberlagerung steht keine eingebettete Verwaltung');
+      if (!w.zu || w.zu.ueberlagerung) m.push('das Kreuz schliesst die Ueberlagerung nicht');
     }
   }
 
@@ -886,6 +1017,17 @@ function zeige(e) {
       console.log(`  [Stufe 4] ${was.padEnd(6)} Blatt ${r(s4.blatt)}  Inhalt ${r(s4.inhalt)} quer ${s4.inhaltQuer}  ` +
                   `Bild ${r(s4.bild)}  SVG ${r(s4.svg)}  Seite quer ${s4.seiteQuer}` +
                   (u ? `  Ueberlagerung ${r(u)} „${u.titel}" Kreuze ${u.kreuze} quer ${u.quer}` : '  Ueberlagerung —'));
+    }
+  }
+  const v5 = e.stufe5;
+  if (v5) {
+    for (const [was, s5] of Object.entries(v5)) {
+      if (!s5) continue;
+      const u = s5.ueberlagerung;
+      console.log(`  [Stufe 5] ${was.padEnd(7)} Blatt ${r(s5.blatt)}  Inhalt ${r(s5.inhalt)} quer ${s5.inhaltQuer}  ` +
+                  `Seite quer ${s5.seiteQuer}` + (s5.tabelle ? `  Tabelle ${r(s5.tabelle)} (${s5.ergebnisZeilen} Zeilen)` : '') +
+                  (u ? `  Ueberlagerung ${r(u)} „${u.titel}" Kreuze ${u.kreuze} quer ${u.quer} Felder ${u.felder}` +
+                       ` Einlesen ${u.einlesen} eingebettet ${u.eingebettet}` : '  Ueberlagerung —'));
     }
   }
   const d = e.stufe3;
@@ -997,6 +1139,30 @@ for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
   FAELLE.push({ name: `${nr}b_${name}_400x624`, maske, art, zeilen, breite: 400, hoehe: 624,
                 voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
                 stufe3: s3, stufe4: s4 });
+}
+
+// STUFE 5 (V16): die drei SONDERLISTEN im Geruest - Gebaeude (277 Saetze der
+// Testdatenbank), Gebaeudetypen (12) und die Lastgaenge der Lastspitzenkappung
+// (5, wie im Mockup). Gemessen wird wie in Stufe 1 bis 3 (Rollbereiche, Zeilenmass,
+// Stammblatt rechts bzw. als Blatt) und dazu die Ueberlagerung des Dialogs:
+// "Gebaeudetypen..." (die eingebettete Typenverwaltung, ein Kreuz), "Stundenwerte..."
+// (24 Felder, ein Kreuz), "Lastgang aus Datei..." (die Felder des Einlesens) - und
+// bei der Lastspitzenkappung das Ergebnis nach "Berechnen" im Blatt. Die
+// Lastspitzenkappung traegt kein Schloss und keine Kaestchen.
+const STUFE5 = [
+  ['N16', 'gebaeude', 'gebaeude', 277, { schloss: true, oeffner: 'button.epos-gebaeude-typenknopf',
+                                         oeffnerImBlatt: true, eingebettet: true }],
+  ['N17', 'gebaeudetyp', 'gebaeudetyp', 12, { schloss: true, oeffner: 'button.epos-gebaeudetyp-stundenwerte',
+                                              oeffnerImBlatt: true, felder: 24 }],
+  ['N18', 'peak', 'peak', 5, { schloss: false, oeffner: 'button.epos-importknopf', einlesen: true,
+                               rechnen: true }]
+];
+for (const [nr, name, maske, zeilen, extra] of STUFE5) {
+  for (const [buchstabe, breite] of [['a', 1088], ['b', 400]]) {
+    FAELLE.push({ name: `${nr}${buchstabe}_${name}_${breite}x624`, maske, art: '', zeilen, breite, hoehe: 624,
+                  voll: true, stufe1: true, stufe2: true, zeile: 46, bezeichnerKurz: true,
+                  stufe3: true, stufe5: true, mindestZeilen: breite >= 900 && zeilen >= 8 ? 8 : 0, ...extra });
+  }
 }
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });

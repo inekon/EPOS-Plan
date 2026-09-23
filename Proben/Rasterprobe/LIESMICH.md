@@ -485,3 +485,44 @@ nicht an der Fassung):
 | K4 Rahmen mit Eingabeblock (1 180 × 780) | Listenhülle 372 px, Eingabeblock 222 px darunter, frei | — |
 | G1 Gegenprobe | Befund wie erwartet: Listenhülle über Eingabeblock, 116 471 px² Überschneidung | — |
 | Rückgabe | **Katalogprobe 0 (46 Fälle), Rasterprobe 0 (13 Fälle)** | |
+
+## Neuordnung der Administrationsdialoge, Stufe 5 (V16)
+
+Die drei **Sonderlisten** stehen im Gerüst der Verwaltungen: **Gebäude** (`GebaeudeAdminDialog`,
+Katalogliste mit Profil `FuerGebaeude` statt eigener Tabelle und vier Vorfiltern), **Gebäudetypen**
+(`GebaeudetypDialog`, Typliste als Katalogliste, Gruppe „Tagesprofil" mit Klappliste „Kurve",
+„Stundenwerte…" als Überlagerung) und **Lastspitzenkappung** (`PeakShavingDialog`, Liste der
+Lastgänge, Parameter und Ergebnis im Stammblatt, „Lastgang aus Datei…" als Überlagerung). Die
+Wirt-Seite kennt dafür die Masken `gebaeude`, `gebaeudetyp` und `peak`. Die Fälle N16 … N18 (Menge
+`STUFE5` in `katalogprobe.mjs`, je 1 088 × 624 und 400 × 624) laufen durch Stufe 1 bis 3 wie die
+übrigen Verwaltungen — die Lastspitzenkappung ohne Schloss und ohne Kästchen, ihre Auswahlleiste steht
+nur schmal — und bekommen dazu die Funktion `stufe5probe` (Sollwerte in `pruefe`):
+
+| | Größe | Sollwert |
+|---|---|---|
+| (w1) | das Stammblatt steht — breit rechts der Liste, schmal nach „Stammblatt ›" an ihrer Stelle | ja |
+| (w2) | der Inhalt des Stammblatts rollt nicht quer, die Seite auch nicht | 0 px |
+| (w3) | der Knopf des Falls öffnet **eine** Überlagerung mit Titel und genau einem Kreuz, ganz im Fenster, ohne Querrollen: „Gebäudetypen…" (N16, die eingebettete Typenverwaltung), „Stundenwerte…" (N17, 24 Felder), „Lastgang aus Datei…" (N18, die Felder des Einlesens) | ja |
+| (w4) | das Kreuz schließt sie | ja |
+| (w5) | N18: „Berechnen" füllt das Ergebnis im Blatt; die Kennzahltabelle steht ganz im Blatt, nichts rollt quer | ja |
+
+Die Prüfung (u1) der Stufe 3 („Auswahlleiste über dem Stammblatt") übergeht eine Auswahlleiste ohne
+Fläche — die der Lastspitzenkappung steht breit gar nicht. Die Tabellen einer Stammblattgruppe
+brechen ihre Texte um (`.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster`): ohne diese
+Regel war die Kennzahltabelle 443 px breit in 356 px Gruppe.
+
+**Ergebnis vom 23.09.2026** (Chromium headless 1208, Playwright 1.58.0 über das NuGet-Paket, Wirt auf
+Port 5317):
+
+| | 1 088 × 624 (`a`) | 400 × 624 (`b`) |
+|---|---|---|
+| Gebäude N16 (277 Sätze): Listenhülle | 426 px, 8 ganze Zeilen, quer 0 | 288 px, 5 ganze Zeilen, quer 0 |
+| N16: Stammblatt | 380 × 370 px rechts, Inhalt quer 0 | 368 × 364 px als Blatt, quer 0 |
+| N16: Überlagerung „Gebäudetypen…" | 900 × 562 px, 1 Kreuz, eingebettete Verwaltung, quer 0 | 368 × 562 px, 1 Kreuz, quer 0 |
+| Gebäudetypen N17 (12 Sätze): Listenhülle | 426 px, 8 ganze Zeilen | 232 px, 3 ganze Zeilen |
+| N17: Überlagerung „Stundenwerte…" | 900 × 507 px, 24 Felder, 1 Kreuz, quer 0 | 368 × 562 px, 24 Felder, 1 Kreuz, quer 0 |
+| Lastspitzenkappung N18 (5 Lastgänge): Listenhülle | 426 px, 5 Zeilen | 281 px, 4 ganze Zeilen |
+| N18: Stammblatt / nach „Berechnen" | 380 × 464 px (ohne Auswahlleiste), Kennzahltabelle 356 px breit, 21 Zeilen, quer 0 | 368 × 363 px, Tabelle 344 px breit, quer 0 |
+| N18: Überlagerung „Lastgang aus Datei…" | 900 × 224 px, 1 Kreuz, quer 0 | 368 × 242 px, 1 Kreuz, quer 0 |
+| Zeilenmaß, Schloss, Fußleiste | 46 px; Schloss in N16/N17; Fußleiste frei | 46 px; Fußleiste zweizeilig, frei |
+| Rückgabe | **Katalogprobe 0 (52 Fälle), Rasterprobe 0 (13 Fälle)** | |
