@@ -1474,6 +1474,17 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BhwHilfsName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BhwHilfsErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    // ETAPPE E7c (E7c1-Q7): der zweite Fall des § 2 Nr. 16 KWKG —
+                    // Kennzeichen und Stromkennzahl der Anlage (KWKG_Abwaermeabfuhr,
+                    // KWKG_Stromkennzahl), gepflegt in der Überlagerung „Sätze und Herkunft".
+                    new KiDialogFeld("anlage_abwaermeabfuhr",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageAbwaermeabfuhr",
+                                     KiDialogTexte.BhwAbwaermeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BhwAbwaermeErl),
+                    new KiDialogFeld("anlage_stromkennzahl",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageStromkennzahl",
+                                     KiDialogTexte.BhwSigmaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwSigmaErl, leerErlaubt: true),
 
                     // ---- Die projektweiten Vorgaben ---------------------------------
                     new KiDialogFeld("projekt_einspeisung_kwk",
@@ -2058,7 +2069,15 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.VopVonErl, leerErlaubt: true),
                     new KiDialogFeld("empfehlung_bis", "VorlagenPositionKiSicht.EmpfehlungBis",
                                      KiDialogTexte.VopBisName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.VopBisErl, leerErlaubt: true)
+                                     KiDialogTexte.VopBisErl, leerErlaubt: true),
+                    // ETAPPE E7c (Schritt E, Entscheid A6): Ersatz und Restwert je
+                    // Position — dreiwertig, leer = wie bisher.
+                    new KiDialogFeld("ersatz_fuehren", "VorlagenPositionKiSicht.ErsatzFuehren",
+                                     KiDialogTexte.VopErsatzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopErsatzErl, leerErlaubt: true),
+                    new KiDialogFeld("restwert_ansetzen", "VorlagenPositionKiSicht.RestwertAnsetzen",
+                                     KiDialogTexte.VopRestwertName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopRestwertErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {

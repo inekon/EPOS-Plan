@@ -4149,6 +4149,96 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE E7c — Ersatz und Restwert je Position entkoppelt (Schritt E, Schritt 111)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt E, Entscheid A6 vom 20.09.2026, Mockup U39) —
+        /// <b>Ersatzbeschaffung dieser Position führen?</b> Dreiwertig und nullbar:
+        /// <b>NULL = wie bisher</b> (ersetzt wird, sobald die Nutzungsdauer vor dem Ende
+        /// des Betrachtungszeitraums abläuft — der ganze Bestand), <b>1 = ja</b> (dasselbe,
+        /// ausdrücklich gewählt), <b>0 = nein</b> (die Position wird nie ersetzt; eine
+        /// Planungsleistung oder ein Erstausstattungsposten, der mit der Anlage endet).
+        /// Die Spalte steht an <see cref="TAB_PROJEKTWERTE"/> und — gleichnamig — an
+        /// <see cref="TAB_KOSTENVORLAGEPOSITION"/>; die Vorlagenübernahme trägt sie in die
+        /// Projektzeile.
+        /// </summary>
+        public const string SPALTE_PW_ERSATZ_FUEHREN = "ErsatzFuehren";
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt E) — <b>Restwert dieser Position am Ende des
+        /// Betrachtungszeitraums ansetzen?</b> NULL = wie bisher (linearer Restwert der
+        /// letzten Beschaffung), 1 = ja, 0 = nein (kein Restwert — eine Position ohne
+        /// Wiederverkaufswert). Entkoppelt vom Ersatz: Oft ist das eine ohne das andere
+        /// gewollt (Konzept § 2.13 (3)).
+        /// </summary>
+        public const string SPALTE_PW_RESTWERT_ANSETZEN = "RestwertAnsetzen";
+
+        /// <summary>Dieselbe Spalte an der Vorlagenposition — Name und Bedeutung wie
+        /// <see cref="SPALTE_PW_ERSATZ_FUEHREN"/>.</summary>
+        public const string SPALTE_KVP_ERSATZ_FUEHREN = SPALTE_PW_ERSATZ_FUEHREN;
+
+        /// <summary>Dieselbe Spalte an der Vorlagenposition — Name und Bedeutung wie
+        /// <see cref="SPALTE_PW_RESTWERT_ANSETZEN"/>.</summary>
+        public const string SPALTE_KVP_RESTWERT_ANSETZEN = SPALTE_PW_RESTWERT_ANSETZEN;
+
+        /// <summary>
+        /// Schritt 111 der Migration (Etappe E7c, Schritt E) — die zwei Kennzeichen
+        /// <see cref="SPALTE_PW_ERSATZ_FUEHREN"/> und <see cref="SPALTE_PW_RESTWERT_ANSETZEN"/>
+        /// an <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c>.
+        ///
+        /// <para><b>Nullbar mit <c>CHECK (… IN (0,1))</c></b> — Typangabe „YESNO_NULL",
+        /// übersetzt von <c>StilleDb.SqliteSpaltenTyp</c> in
+        /// <c>INTEGER CHECK (… IN (0,1))</c> ohne <c>NOT NULL</c> und ohne Vorgabe: NULL
+        /// trägt die dritte Aussage „wie bisher", und eine DDL-Vorgabe überschriebe sie.
+        /// Beide Tabellen sind STRICT; ein <c>ADD COLUMN</c> mit INTEGER-Typ ist dort
+        /// zulässig.</para>
+        ///
+        /// <para><b>KEIN DML und ergebnisNEUTRAL.</b> Alle Zeilen stehen nach dem Schritt
+        /// auf NULL, und NULL rechnet Zeichen für Zeichen den Weg vor dem Schritt
+        /// (<c>KapitalwertRechner.Ersatz</c>). Der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — Leser ist allein
+        /// die Kostenwelt, und jeder Leser prüft die Spalte vor dem Lesen
+        /// (<c>ErsatzRestwertKennzeichen.SpaltenVorhanden</c>), sodass eine nie migrierte
+        /// Datenbank den Weg vor dem Schritt rechnet.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt111_ErsatzRestwertKennzeichen =
+        {
+            new SchemaSpalte(TAB_PROJEKTWERTE,          SPALTE_PW_ERSATZ_FUEHREN,     "YESNO_NULL"),
+            new SchemaSpalte(TAB_PROJEKTWERTE,          SPALTE_PW_RESTWERT_ANSETZEN,  "YESNO_NULL"),
+            new SchemaSpalte(TAB_KOSTENVORLAGEPOSITION, SPALTE_KVP_ERSATZ_FUEHREN,    "YESNO_NULL"),
+            new SchemaSpalte(TAB_KOSTENVORLAGEPOSITION, SPALTE_KVP_RESTWERT_ANSETZEN, "YESNO_NULL"),
+        };
+
+        // ---------------------------------------------------------------------------
+        // ETAPPE E7c — die Preisbasis als eigener Kartenzustand (Schritt F, Schritt 112)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt F, Entscheid ET‑D‑3 Rest, Mockup U32) — die <b>Preisbasis
+        /// der Trägerkarte</b> je Projekt und Träger: der Einheitentext der gewählten
+        /// Basis („kWh" oder die Abrechnungseinheit). TEXT, nullbar; <b>NULL = die
+        /// Abrechnungseinheit</b> (die Vorgabe einer neu zugeordneten Zeile). Reiner
+        /// Kartenzustand — gespeichert und gerechnet wird der Basiswert je
+        /// Abrechnungseinheit; <c>ID_Umrechnung</c> bleibt die Regel der
+        /// Einheitenprüfung.
+        /// </summary>
+        public const string SPALTE_EPS_PREISBASIS = "Preisbasis";
+
+        /// <summary>
+        /// Schritt 112 der Migration (Etappe E7c, Schritt F) — die Spalte
+        /// <see cref="SPALTE_EPS_PREISBASIS"/> an <c>energy_project_settings</c>. Der
+        /// Datenteil steht bei <see cref="PreisbasisUebernahme"/> (einmalig aus
+        /// <c>ID_Umrechnung</c>: Regel nach kWh → „kWh", sonst die Abrechnungseinheit).
+        /// Ergebnisneutral; die Spalte steht BEWUSST NICHT in <see cref="Alle"/>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt112_Preisbasis =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREISBASIS, "TEXT"),
+        };
+
+        // ---------------------------------------------------------------------------
         // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierungsregeln je Projekt
         // ---------------------------------------------------------------------------
 

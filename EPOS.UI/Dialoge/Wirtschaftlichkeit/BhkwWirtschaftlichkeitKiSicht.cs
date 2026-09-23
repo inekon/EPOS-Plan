@@ -211,6 +211,26 @@ public sealed class BhkwWirtschaftlichkeitKiSicht
         set => Anlage(s => s.HilfsenergieAnteil = value ?? 0);
     }
 
+    /// <summary>
+    /// ETAPPE E7c (E7c1‑Q7): Verfügt die Anlage über eine Vorrichtung zur
+    /// Abwärmeabfuhr — der zweite Fall des § 2 Nr. 16 KWKG? (<c>KWKG_Abwaermeabfuhr</c>)
+    /// </summary>
+    public bool AnlageAbwaermeabfuhr
+    {
+        get => A?.Abwaermeabfuhr ?? false;
+        set => Anlage(s => s.Abwaermeabfuhr = value);
+    }
+
+    /// <summary>
+    /// ETAPPE E7c (E7c1‑Q7): die gepflegte Stromkennzahl σ (<c>KWKG_Stromkennzahl</c>);
+    /// leer oder ≤ 0 = berechnet aus P_el ÷ P_th der Gerätezeile.
+    /// </summary>
+    public double? AnlageStromkennzahl
+    {
+        get => A?.Stromkennzahl;
+        set => Anlage(s => s.Stromkennzahl = value.HasValue && value.Value > 0 ? value : null);
+    }
+
     // =====================================================================
     //  Die projektweiten Vorgaben
     // =====================================================================

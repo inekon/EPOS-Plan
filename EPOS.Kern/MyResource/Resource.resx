@@ -6720,6 +6720,21 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
     <value>Kontingent erschöpft ab Jahr</value>
   </data>
+  <data name="WIRT_KWKG_SP_FALL" xml:space="preserve">
+    <value>Fall § 2 Nr. 16</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SIGMA" xml:space="preserve">
+    <value>Stromkennzahl σ</value>
+  </data>
+  <data name="WIRT_KWKG_SP_NUTZWAERME" xml:space="preserve">
+    <value>Nutzwärme [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KWK_STROM" xml:space="preserve">
+    <value>KWK-Strom [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KUERZUNG" xml:space="preserve">
+    <value>Kürzung [MWh/a]</value>
+  </data>
   <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
     <value>Anlage</value>
   </data>
@@ -10025,8 +10040,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe.</value>
   </data>
-  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
-    <value>Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. Gerechnet wird unverändert je Anlage nach ihrer Wahl.</value>
+  <data name="KOH_FALL5_MISCHLAGE_SPERRE" xml:space="preserve">
+    <value>Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. Diese Mischlage ist gesperrt — der § 54-Betrag wird verworfen (0 €), gerechnet wird allein die Entlastung nach § 53 / § 53a Abs. 5. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a entlastet wurden; wer beide Entlastungen beantragen will, wählt für jede Anlage dieselbe Welt.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_MISCHLAGE" xml:space="preserve">
+    <value>§ 54 EnergieStG gesperrt: Im Projekt stehen § 53 / § 53a Abs. 5 ({0}) und § 54 ({1}) nebeneinander. Diese Mischlage ist nicht zulässig — der § 54-Betrag wird verworfen (0 €), die Entlastung nach § 53 / § 53a bleibt.</value>
   </data>
   <data name="KOH_NORM_53" xml:space="preserve">
     <value>§ 53</value>
@@ -22314,6 +22332,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
     <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
   </data>
+  <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
+    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom.</value>
+  </data>
+  <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
+    <value>Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat.</value>
+  </data>
   <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
     <value>Tarifstruktur</value>
   </data>
@@ -24186,6 +24210,138 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
+  <data name="BHW_UEB_ART" xml:space="preserve">
+    <value>Anlagenart (§ 8 KWKG)</value>
+  </data>
+  <data name="BHW_UEB_ART_HINWEIS" xml:space="preserve">
+    <value>Der Anteil an den Neuherstellungskosten ist das Feld im Formular; er zählt nur bei modernisiert und nachgerüstet.</value>
+  </data>
+  <data name="BHW_UEB_EIGENFALL" xml:space="preserve">
+    <value>Eigenstrom nach § 6 Abs. 3</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
+  <data name="BHW_UEB_VBH" xml:space="preserve">
+    <value>{0} Vbh</value>
+  </data>
+  <data name="BHW_UEB_CT_KWH" xml:space="preserve">
+    <value>{0} ct/kWh</value>
+  </data>
+  <data name="BHW_UEB_Z_EINSP" xml:space="preserve">
+    <value>Satz Einspeisung</value>
+  </data>
+  <data name="BHW_UEB_Z_EIGEN" xml:space="preserve">
+    <value>Satz Eigenstrom</value>
+  </data>
+  <data name="BHW_UEB_Z_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent</value>
+  </data>
+  <data name="BHW_UEB_Z_DECKEL" xml:space="preserve">
+    <value>Jahresdeckel</value>
+  </data>
+  <data name="BHW_UEB_STAFFEL" xml:space="preserve">
+    <value>Staffel</value>
+  </data>
+  <data name="BHW_UEB_GILT_STAFFEL" xml:space="preserve">
+    <value>Staffel — {0} h/a im Jahr {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_OHNE" xml:space="preserve">
+    <value>keiner — ohne Vorschlag kein Zuschlag</value>
+  </data>
+  <data name="BHW_UEB_INFO_SAETZE" xml:space="preserve">
+    <value>Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars geschrieben; Kontingent und Deckel bleiben dann leer, der Lauf leitet sie selbst ab (§ 8 Abs. 1 bis 3, Staffel des § 8 Abs. 4). Ein eigener Wert gilt dauerhaft, auch wenn der Katalog später einen anderen Vorschlag liefert. „Vorschlag übernehmen“ leert das Feld: der Weg zurück. Im Formular bleibt 0 „kein Zuschlag“.</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_JAHR1" xml:space="preserve">
+    <value>Wirkung Jahr 1 ({0})</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG" xml:space="preserve">
+    <value>vergütet {0} von {1} Vbh (Deckel {2} h/a) = {3} → {4} €</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG_FORMEL" xml:space="preserve">
+    <value>{0} MWh × {1} ct × {2} + {3} MWh × {4} ct × {2} = {5} + {6} € — Mengen aus dem gebuchten Lauf</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_OHNE_LAUF" xml:space="preserve">
+    <value>Ohne gebuchten Lauf keine Mengen — die Wirkung steht nach „Berechnen“ im Reiter Wirtschaftlichkeit.</value>
+  </data>
+  <data name="BHW_UEB_FUSS" xml:space="preserve">
+    <value>Übernehmen schreibt Sätze, Kontingent, Deckel, Wahl und Modus in die Felder des Formulars — gespeichert wird erst mit „Speichern“.</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_STEUERN" xml:space="preserve">
+    <value>Wahl und Herkunft…</value>
+  </data>
+  <data name="BHW_UEB_G_ENERGIEST" xml:space="preserve">
+    <value>Energiesteuer (EnergieStG)</value>
+  </data>
+  <data name="BHW_UEB_G_STROMST" xml:space="preserve">
+    <value>Stromsteuer (StromStG) — Projekt</value>
+  </data>
+  <data name="BHW_UEB_SCOPE" xml:space="preserve">
+    <value>Gilt für</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_PROJEKT" xml:space="preserve">
+    <value>Projektvorgabe für alle Anlagen</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_ANLAGE" xml:space="preserve">
+    <value>nur diese Anlage</value>
+  </data>
+  <data name="BHW_UEB_ES_WAHL" xml:space="preserve">
+    <value>Energiesteuerentlastung</value>
+  </data>
+  <data name="BHW_UEB_ES_AUFTEILUNG" xml:space="preserve">
+    <value>Brennstoff auf Strom/Wärme (nur § 53)</value>
+  </data>
+  <data name="BHW_UEB_ES_KEINE" xml:space="preserve">
+    <value>→ keine Entlastung, 0 €</value>
+  </data>
+  <data name="BHW_UEB_ES_53" xml:space="preserve">
+    <value>→ voller Steuersatz auf den Brennstoff der Stromerzeugung</value>
+  </data>
+  <data name="BHW_UEB_ES_53A" xml:space="preserve">
+    <value>→ Teilsatz für hocheffiziente KWK-Anlagen, Jahresnutzungsgrad mindestens 70 %</value>
+  </data>
+  <data name="BHW_UEB_ES_54" xml:space="preserve">
+    <value>→ Heizstoffe, nur produzierendes Gewerbe, abzüglich Sockelbetrag</value>
+  </data>
+  <data name="BHW_UEB_AUF_VOLL" xml:space="preserve">
+    <value>→ Vorgabe</value>
+  </data>
+  <data name="BHW_UEB_AUF_ENERGETISCH" xml:space="preserve">
+    <value>→ nur der elektrische Anteil des Brennstoffs — bewusste Untergrenze</value>
+  </data>
+  <data name="BHW_UEB_ES_GEBUCHT" xml:space="preserve">
+    <value>{0}: {1} × {2} {3} = {4} €</value>
+  </data>
+  <data name="BHW_UEB_ES_OHNE" xml:space="preserve">
+    <value>Der gebuchte Lauf führt für diese Anlage keine Energiesteuerentlastung.</value>
+  </data>
+  <data name="BHW_UEB_UA" xml:space="preserve">
+    <value>Unternehmensart</value>
+  </data>
+  <data name="BHW_UEB_UA_KEIN" xml:space="preserve">
+    <value>→ § 9b und § 54 entfallen</value>
+  </data>
+  <data name="BHW_UEB_UA_PROD" xml:space="preserve">
+    <value>→ § 9b-Entlastung auf den Netzbezug, § 54 möglich</value>
+  </data>
+  <data name="BHW_UEB_UA_LAND" xml:space="preserve">
+    <value>→ wie produzierendes Gewerbe</value>
+  </data>
+  <data name="BHW_UEB_BEFREIUNG" xml:space="preserve">
+    <value>Befreiung § 9 Abs. 1 Nr. 3</value>
+  </data>
+  <data name="BHW_UEB_MODUS" xml:space="preserve">
+    <value>Modus</value>
+  </data>
+  <data name="BHW_UEB_MODUS_AUSWEIS" xml:space="preserve">
+    <value>→ nur ausgewiesen, nicht im Kapitalwert</value>
+  </data>
+  <data name="BHW_UEB_MODUS_ERLOES" xml:space="preserve">
+    <value>→ Erlös im Kapitalwert (Block A), stets mit Kohärenzwarnung</value>
+  </data>
+  <data name="BHW_UEB_ST_GEBUCHT" xml:space="preserve">
+    <value>Entlastung Netzbezug (§ 9b) {0} € · Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) {1} € — {2}</value>
+  </data>
   <data name="BHW_A_KWK_FALL1" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung.</value>
   </data>
@@ -24194,6 +24350,63 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
+  </data>
+  <data name="ERK_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="ERK_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="ERK_LEER" xml:space="preserve">
+    <value>(leer — wie bisher)</value>
+  </data>
+  <data name="ERK_WIE_BISHER" xml:space="preserve">
+    <value>wie bisher</value>
+  </data>
+  <data name="ERK_HERLEITUNG" xml:space="preserve">
+    <value>Kennzeichen der Position — Ersatzbeschaffung: {0} · Restwert: {1}.</value>
+  </data>
+  <data name="ERK_LBL_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffung führen:</value>
+  </data>
+  <data name="ERK_LBL_RESTWERT" xml:space="preserve">
+    <value>Restwert ansetzen:</value>
+  </data>
+  <data name="ERK_INFO" xml:space="preserve">
+    <value>Leer rechnet wie bisher: Ersetzt wird, sobald die Nutzungsdauer vor dem Ende des Betrachtungszeitraums abläuft, und der Restwert steht linear im letzten Jahr. „nein“ schaltet das eine ohne das andere ab.</value>
+  </data>
+  <data name="ND_TAFEL_ERSATZ_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="ND_TAFEL_RESTWERT_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_NAME" xml:space="preserve">
+    <value>Ersatzbeschaffung führen</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_ERL" xml:space="preserve">
+    <value>Ob die Position nach Ablauf ihrer Nutzungsdauer ersetzt wird: leer = wie bisher, ja oder nein.</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_NAME" xml:space="preserve">
+    <value>Restwert ansetzen</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
+    <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
+    <value>Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG_KURZ" xml:space="preserve">
+    <value>(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
+    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Senken: {0}</value>

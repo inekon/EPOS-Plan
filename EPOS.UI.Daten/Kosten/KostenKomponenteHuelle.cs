@@ -568,7 +568,10 @@ namespace WindowsFormsApplication1
                     Nutzungsdauer = pos.Nutzungsdauer,
                     StartJahr = b.Projektzeile != null ? b.Projektzeile.StartJahr : 0,
                     IstErloes = pos.IstErloes,
-                    NutzungsdauerId = pos.NutzungsdauerId
+                    NutzungsdauerId = pos.NutzungsdauerId,
+                    // E7c (Schritt E): dieselben Kennzeichen wie im Kapitalwert.
+                    ErsatzFuehren = pos.ErsatzFuehren,
+                    RestwertAnsetzen = pos.RestwertAnsetzen
                 });
             }
             return liste;
@@ -1181,8 +1184,24 @@ namespace WindowsFormsApplication1
             foreach (NutzungsdauerZeile n in NutzungsdauerCtrl.Arten(KomponentenId))
                 arten.Add(new ValueTuple<int, string>(n.Id, n.Positionsart));
 
+            // ETAPPE E7c (Schritt E, Entscheid A6): die zwei Kennzeichen — nur auf der
+            // Investitionsseite und nur, wo die Tabelle der Zeile die Spalten fuehrt.
+            // Eintraege, Platzhalter und Herleitung kommen aus dem Kern.
+            bool mitKennzeichen = _invest && ErsatzRestwertKennzeichen.SpaltenVorhanden(
+                b.Projektzeile != null ? SchemaKatalog.TAB_PROJEKTWERTE
+                                       : SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
+
             return new Dictionary<string, object>
             {
+                ["MitKennzeichen"] = mitKennzeichen,
+                ["Kennzeichen"] = ErsatzRestwertKennzeichen.Eintraege(),
+                ["KennzeichenLeer"] = ErsatzRestwertKennzeichen.LeerText,
+                ["ErsatzAuswahl"] = ErsatzRestwertKennzeichen.AlsAuswahl(b.Position.ErsatzFuehren),
+                ["RestwertAuswahl"] = ErsatzRestwertKennzeichen.AlsAuswahl(b.Position.RestwertAnsetzen),
+                ["LabelErsatz"] = MyResource.Resource.ERK_LBL_ERSATZ,
+                ["LabelRestwert"] = MyResource.Resource.ERK_LBL_RESTWERT,
+                ["InfoKennzeichen"] = KennzeichenInfo(b.Position),
+
                 ["Kostenarten"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege,
                 ["Positionsarten"] = (IReadOnlyList<ValueTuple<int, string>>)arten,
                 ["PositionsartId"] = b.Position.NutzungsdauerId,
@@ -1252,6 +1271,40 @@ namespace WindowsFormsApplication1
             if (b.Projektzeile != null)
                 KostenProjektPositionenCtrl.NutzungsdauerArtZuordnen(
                     b.Projektzeile.Raster.Id, e.PositionsartId);
+
+            // ETAPPE E7c (Schritt E): die zwei Kennzeichen - SOFORT geschrieben wie die
+            // Positionsart (der Zeileneditor hat seine eigene Bestaetigung), ueber den
+            // EINEN Schreibweg des Kerns. Nur auf der Investitionsseite; eine Tabelle
+            // ohne die Spalten bleibt still auf dem Weg vor Schritt 111.
+            if (_invest)
+            {
+                bool? ersatz = ErsatzRestwertKennzeichen.AusAuswahl(e.ErsatzAuswahl);
+                bool? restwert = ErsatzRestwertKennzeichen.AusAuswahl(e.RestwertAuswahl);
+                bool geschrieben = b.Projektzeile != null
+                    ? ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_PROJEKTWERTE,
+                                                         b.Projektzeile.Raster.Id, ersatz, restwert)
+                    : ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION,
+                                                         p.Id, ersatz, restwert);
+                if (geschrieben)
+                {
+                    p.ErsatzFuehren = ersatz;
+                    p.RestwertAnsetzen = restwert;
+                }
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (Schritt E): die Herleitungszeile unter den zwei Kennzeichen — was
+        /// leer bedeutet, und, sobald eines gesetzt ist, was die Position trägt.
+        /// </summary>
+        private static string KennzeichenInfo(KostenVorlagenPosition p)
+        {
+            string stand = p == null ? ""
+                : ErsatzRestwertKennzeichen.Herleitung(p.ErsatzFuehren, p.RestwertAnsetzen,
+                                                       CultureInfo.CurrentCulture);
+            return stand.Length > 0
+                ? MyResource.Resource.ERK_INFO + " " + stand
+                : MyResource.Resource.ERK_INFO;
         }
 
         // =====================================================================
