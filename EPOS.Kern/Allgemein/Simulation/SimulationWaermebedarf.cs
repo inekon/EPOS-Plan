@@ -117,14 +117,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die NULL-Regel der Weiche — die eine, benannte Stelle.</b> Ein Gebäude ohne
-        /// Angabe (<c>Gebaeude_Modell</c> NULL) rechnet <b>in dieser Welle</b> auf dem
-        /// Tagesbilanz-Weg; so bleibt der Referenzlauf gegen die Basis byte-gleich, und allein
-        /// ausdrücklich auf <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> gestellte Gebäude
-        /// rechnen stündlich.
-        /// <para><b>Schlusswelle G1+G2 schaltet NULL auf VDI6007</b> (E1): dann steht hier
-        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/>, und die Basis wird neu eingefroren.</para>
+        /// Angabe (<c>Gebaeude_Modell</c> NULL) rechnet nach VDI 6007 (E1: das Stundenmodell
+        /// ist das Vorgabemodell für alle Gebäude). Auf dem Tagesbilanz-Weg rechnet nur, wer
+        /// ausdrücklich <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/> trägt — bis zur Stufe
+        /// GA, die den Altweg ablöst (ADR-006, Löschliste Umsetzungskonzept 6.1).
         /// </summary>
-        internal const string MODELL_OHNE_ANGABE = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+        internal const string MODELL_OHNE_ANGABE = DbWerte.GEBAEUDE_MODELL_VDI6007;
 
         /// <summary>
         /// Die Ergebnisse der Gebäude des VDI-Wegs in diesem Lauf, je Merkplatz (Reihen und
@@ -733,12 +731,10 @@ namespace WindowsFormsApplication1
         /// <b>Die Weiche</b> (E20): liest den Rechenweg des Gebäudes
         /// (<c>Tab_Gebaeude.Gebaeude_Modell</c>) und wählt genau ein Modul.
         ///
-        /// <para><b>Regel in dieser Welle (Stufe G1, Anbindung):</b>
-        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> führt auf den VDI-Weg,
-        /// <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/> auf den Tagesbilanz-Weg, und
-        /// <c>NULL</c> folgt <see cref="MODELL_OHNE_ANGABE"/> — bis zur Schlusswelle G1+G2 der
-        /// Tagesbilanz-Weg. Ein unbekannter Wert rechnet auf dem Tagesbilanz-Weg und wird als
-        /// Warnung benannt.</para>
+        /// <para><b>Regel:</b> <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> führt auf den
+        /// VDI-Weg, <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/> auf den Tagesbilanz-Weg,
+        /// und <c>NULL</c> folgt <see cref="MODELL_OHNE_ANGABE"/> — dem VDI-Weg. Ein unbekannter
+        /// Wert rechnet auf dem Tagesbilanz-Weg und wird als Warnung benannt.</para>
         /// </summary>
         internal IGebaeudeRechenweg RechenwegWaehlen(ProjektGebaeudeModel item)
         {

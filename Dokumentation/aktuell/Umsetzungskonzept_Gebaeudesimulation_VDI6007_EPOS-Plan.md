@@ -481,7 +481,11 @@ Vergleich alt/neu lebt — also **bis zur Stufe GA** (E23/E26; 2.7, Löschliste 
 `GebaeudeModellEingang` bekommt einen **`Pruefmodus`**-Schalter (UTC-Reihenfolge, isotrope `Sol_*`,
 θ_eq ohne Absorptionsterm); ein Test hält den Kern damit gegen die Prototypzahlen aus Konzept 5 auf
 1e-6 relativ, und der Unterschied zum Auslieferungsweg wird je Referenzprojekt ausgewiesen
-(Konzept 10.4 (2)).
+(Konzept 10.4 (2)). **Umgesetzt anders (Schlusswelle G1 + G2):** Der Prüfmodus ist ein
+Parametersatz im Test (`EPOS.Kern.Tests/GebaeudePruefmodusTests`), kein Schalter im Eingangsbauer —
+seine isotropen `Sol_*`-Spalten sind Altweg-Bezeichner, die die `Modultrennungswache` im Modul
+`Gebaeude/` verbietet. Geprüft wird der Löser gegen Rechenschritte 9.1–9.5 auf die Druckstelle;
+der Jahreswert gegen den Prototyp ist ohne dessen Klimaadapter nicht nachweisbar.
 
 **Das Ergebnisobjekt je Gebäude gehört nicht der Wärmefassade allein.** Es liegt in einem **je Lauf
 gehaltenen Träger neben dem Vorbereitungsergebnis**, und **beide** Fassaden lesen ihn:
@@ -496,7 +500,9 @@ im selben Merge `<InternalsVisibleTo Include="EPOS.Referenzlauf" />` und
 `<InternalsVisibleTo Include="Referenzlauf" />`; die Datei führt solche Einträge bereits für
 `EPOS_Plan`, `EPOS.Kern.Tests`, `EPOS.iOS`, `EPOS.UI.Daten` und die Werkzeuge
 (`EPOS.Kern/EPOS.Kern.csproj:67-93`). Ohne die beiden Einträge übersetzt `Ergebnisexport.cs` weder
-im plattformfreien noch im Windows-Werkzeug (F-S4).
+im plattformfreien noch im Windows-Werkzeug (F-S4). **Umgesetzt anders (G2, Welle 6):** Die Kernseite
+`GebaeudeErgebnisexport` ist öffentlich und liest den Träger intern; der Export braucht
+deshalb kein `InternalsVisibleTo`.
 
 ### 1.5 Stufe G1 — die Verzweigung, der Vorlauf und die Skalierung
 
@@ -870,8 +876,9 @@ Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Syste
   `Aussenbauteile_Strahlung` und die drei G2-Spalten) in
   [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) (nach `:100-121`) und im
   Abschnitt „Regressionsnetz" der [`CLAUDE.md`](../../CLAUDE.md).
-- **G1 + G2:** alle dreizehn Referenzprojekte rechnen stündlich (+7 bis +33 % Jahresheizwärme,
-  Konzept 5.5), dazu drei neue CSV je VDI-Gebäude. Basis vollständig neu — und **ein
+- **G1 + G2:** alle dreizehn Referenzprojekte rechnen stündlich (Konzept 5.5 erwartete +7 bis
+  +33 % Jahresheizwärme ohne den Abzug R_si/A; gemessen beim Einfrieren +25 bis +46 % je Gebäude,
+  Basis `2026-09-23_R12_Gebaeudemodell`), dazu drei neue CSV je VDI-Gebäude. Basis vollständig neu — und **ein
   Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` wird darin mit eingefroren** (F-Ü7). Das
   ist mit **E27** entschieden (A15, 22.09.2026,
   [Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): **genau ein** solches
@@ -2072,7 +2079,7 @@ Auftrag hier ein.**
 | **Quelltext** | Modul `Simulation/Altweg/` (`TagesbilanzRechenweg`, `TagesbilanzPhysik`, `Tagesbilanzzustand`, rund 435 Zeilen); die Weiche in `HeizwaermeEinesGebaeudes` (`RechenwegWaehlen`, die Felder `_altweg` und `_vdi6007`, der Testzugang `Tagesbilanzweg`, die NULL-Regel `MODELL_OHNE_ANGABE`) und `IGebaeudeRechenweg`; die NULL-Vorgabe von Ost/West aus dem Bestandsfeld (`GebaeudeVorbereitung.FensterflaechenOstWest`, nach dem Füllen der Spalten) — die Fassade wird zum geraden Aufruf des einen Moduls, die Verbrauchs-Rückrechnung zur reinen Nachmultiplikation; `Klimakalender.Altweg` (Klasse `KlimakalenderAltweg`: `Sol_*`, `A_Temp`, `TagTyp_W/NW`) samt dem Aufbau je Lauf in `KlimakalenderLesen` (1.5); das Feld `ProjektGebaeudeModel.Gebaeude_Modell` samt seiner Leserzeile in `ProjektGebaeudeCtrl.ReadAll`; `modellErzwungen` an `GebaeudeBedarfCtrl.Rechnen` samt `GebaeudeBedarfErgebnis.Modell`/`ModellErzwungen` (1.4); die Auskunft `Gebaeuderechenweg` (`OhneAngabe`, `Wirksam`, `IstVdi6007`; G1, Welle 5) und `Gebaeudehuellbilanz.TransmissionGewichtetWK` samt den Gewichtskonstanten; die `Modultrennungswache` (1.9) | Befund X 4.2; 1.1, 1.4, 1.5, 1.9 |
 | **Altweg-Sonderfälle der Schwesterstufen** | KU1: der Kältebedarf-0-Hinweis der Kältefassade samt Ressourcenschlüssel (Kühlkonzept F-K18); AK1/AK2: der Sonderfall „feste Last" in Verteilung und Deckung samt Meldungsschlüssel (Anlagenkopplung F-A18). Jede weitere Stufe trägt ihren Sonderfall hier nach (Regel oben) | Kühlkonzept, Anlagenkopplung |
 | **Oberfläche** | Schalter „Rechenweg" (Klappliste, Herleitungszeile, Ressourcenschlüssel; 2.3); Abschnitt „Tagesbilanz (Bestandsweg)" samt Aufklapplogik und die vierte Zeile der Wärmeleitwerte (2.3, 2.5); Spalte „Rechenweg" und der Rechenweg-Text im Wirt (2.7); Vergleich alt/neu im Bedarfsdialog samt `GebaeudeBedarfDaten.Vergleich` (2.7) — mit ihm die Tabelle `gebb-vergleich`, der zweite Aufruf von `GebaeudeBedarfCtrl.Rechnen` in `GebaeudeBedarfHuelle` und die Schlüssel `GEBB_GRP_VERGLEICH`, `GEBB_SP_KENNZAHL`, `GEBB_SP_TAGESBILANZ`, `GEBB_SP_VDI6007`, `GEBB_SP_ABWEICHUNG` (G2); das nur lesende KI-Feld `rechenweg` des Katalogeditors samt `GebaeudeKatalogKiSicht.Rechenweg` und `KI_DLG_GEBK_RECHENWEG_ERL` (G2); Ausweis „Tagesbilanz (Bestandsweg)" in Bericht und Bedarfsdialog — danach gilt allein der Produktausweis nach E10; die Schreibstellen der Flags `Wochenende`/`Ferien` (seit G1, Welle 5: `GebaeudeKatalogDialog.razor`, Methode `Ableiten`; Träger `GebaeudeKatalogDaten`; Hülle `EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`, `NachModell`); dazu die Ressourcenschlüssel des Übergangs `GEBK_LBL_RECHENWEG`, `GEBK_RECHENWEG_*`, `GEBK_ZEILE_RECHENWEG_*`, `GEBK_GRP_TAGESBILANZ`, `GEBK_LBL_HT_GEWICHTET`, `GEBK_HINWEIS_GEWICHTE`, `GEB_SP_RECHENWEG`, `GEB_LBL_RECHENWEG`, `GEB_RECHENWEG_*`, die Hüllenfunktion `GebaeudeHuelle.Rechenwegtext`, `GebaeudeProjektZeile.Rechenweg`, `GebaeudeStammDetail.Rechenweg` und `GebaeudeBedarfDaten.Modelltext` — sie bleiben bis dahin, damit ein Gebäude auf dem Altweg dieselben Werte behält (X1) | Befund X 4.3; 2.3, 2.4, 2.7 |
-| **Tests und Nachweise** | Rückweg-Test einstellen, mit ihm der eigene Modus des Referenzlaufs (F-Ü7); die Fälle zu `SolareGewinneC`, `SpezWaermeverlusteC`, `TaeglHeizlastWG` in `BhkwPlanRueckgabeTests`; die Altweg-Fälle in `GebaeudeBestandsbefundeTests` (Vortemperatur, Ferienmaske, Merkplatz über `Tagesbilanzweg`) und die Weichenfälle in `GebaeudeWeicheTests` (G1.0); `ModultrennungswacheTests`; der Datenbankfall „Tagesbilanz ergibt dieselbe Reihe wie der Lauf"; die bunit-Fälle des Abschnitts und des Schalters (2.10); das Referenzprojekt des Altwegs (A15) auf VDI 6007 umstellen; **Basis neu einfrieren** — GA ist ein eigener, begründeter Einfrierschritt (1.8), Begründung in `Referenzlaeufe/LIESMICH.md`, Logbuch-Eintrag im Wiki | Befund X 4.4; 1.8, 1.9 |
+| **Tests und Nachweise** | Rückweg-Test einstellen (`GebaeudeRueckwegTests`, dazu die Ausnahme der A15-Zelle in `GebaeudeSchemaTests.Die_Testdatenbank_steht_auf_dem_Schritt`), mit ihm der eigene Modus des Referenzlaufs (F-Ü7); die Fälle zu `SolareGewinneC`, `SpezWaermeverlusteC`, `TaeglHeizlastWG` in `BhkwPlanRueckgabeTests`; die Altweg-Fälle in `GebaeudeBestandsbefundeTests` (Vortemperatur, Ferienmaske, Merkplatz über `Tagesbilanzweg`) und die Weichenfälle in `GebaeudeWeicheTests` (G1.0); `ModultrennungswacheTests`; der Datenbankfall „Tagesbilanz ergibt dieselbe Reihe wie der Lauf"; die bunit-Fälle des Abschnitts und des Schalters (2.10); das Referenzprojekt des Altwegs (A15, Projekt 1040, Gebäude 10645) auf VDI 6007 umstellen — die Zelle `Gebaeude_Modell` zurück auf NULL, `Referenzlaeufe/Skripte/gebaeude_1040_tagesbilanz.py` entfällt; **Basis neu einfrieren** — GA ist ein eigener, begründeter Einfrierschritt (1.8), Begründung in `Referenzlaeufe/LIESMICH.md`, Logbuch-Eintrag im Wiki | Befund X 4.4; 1.8, 1.9 |
 | **Gate** | die **Ausbauprobe**: Ein Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der Referenzlauf **aller** Projekte ohne Altweg-Gebäude bleibt byte-gleich; ihr statischer Teil läuft ab G1 in der `Modultrennungswache` mit (1.9) | Konzept N1.31; Softwarearchitektur 1.7 |
 
 Der Schemaschritt mit den `DROP COLUMN` je Tabelle und dem Sichtneubau ist der aufwendigste Teil,

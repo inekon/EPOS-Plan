@@ -1,9 +1,9 @@
-# Die Protokolle der 28 entfernten Referenzbasen
+# Die Protokolle der 29 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **28 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **29 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026. **29 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 am 23.09.2026. **30 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-22_R11_Bestandsbefunde`](../../../Referenzlaeufe/2026-09-22_R11_Bestandsbefunde/);
+> [`Referenzlaeufe/2026-09-23_R12_Gebaeudemodell`](../../../Referenzlaeufe/2026-09-23_R12_Gebaeudemodell/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -56,6 +56,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-16_R8_Heizkessel_Kaskade` | 16.09.2026 | CI-Basis nach Anwenderentscheid HK‑E‑1 (ein Heizkessel im Projekt bekommt seinen Kaskadenplatz automatisch, nachrangig); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R9 am 18.09.2026 | [`2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt`](2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt) |
 | `2026-09-18_R9_Kesselbrennstoff` | 18.09.2026 | CI-Basis nach Befund `B-1` (der Brennstoffverbrauch des Heizkessels steht in der Modulzeile); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R10 am 19.09.2026 | [`2026-09-18_R9_Kesselbrennstoff/protokoll.txt`](2026-09-18_R9_Kesselbrennstoff/protokoll.txt) |
 | `2026-09-19_R10_BhkwWirkungsgrad` | 19.09.2026 | CI-Basis nach Anwenderentscheid BH1‑O1 (der BHKW-Wirkungsgrad ist ein Faktor, Katalog vereinheitlicht, Schemaschritt 98); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R11 am 22.09.2026 | [`2026-09-19_R10_BhkwWirkungsgrad/protokoll.txt`](2026-09-19_R10_BhkwWirkungsgrad/protokoll.txt) |
+| `2026-09-22_R11_Bestandsbefunde` | 22.09.2026 | CI-Basis nach der Stufe GB der Gebäudesimulation (Bestandsbefunde des Tagesbilanz-Wegs, `Bauweise` von Gebäude 10576); die letzte Basis allein auf dem Tagesbilanz-Weg; dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R12 am 23.09.2026 | [`2026-09-22_R11_Bestandsbefunde/protokoll.txt`](2026-09-22_R11_Bestandsbefunde/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -705,6 +706,176 @@ Orchestrierung zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Befund `B-1` und den Nachträgen
 > zu den Schemaständen 90 bis 97 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Referenzbasen/LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R11 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 22. bis zum 23.09.2026 die Basis R11 beschrieben —
+Anlass (Stufe GB), die Tabelle der Abweichungen von 1008 und die Nachträge zu den
+Schemaständen 101 bis 103, mit denen die unter Stand 100 eingefrorene Basis ergebnisneutral
+geblieben ist. Er steht hier im Wortlaut, weil diese Nachträge die Ergebnisneutralität der
+Schritte 101 bis 103 belegen; die Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R11 durch `2026-09-23_R12_Gebaeudemodell`** (Schlusswelle G1 + G2 der
+Gebäudesimulation, vom Anwender am 23.09.2026 beauftragt: VDI 6007 ist das Vorgabemodell
+aller Gebäude, Projekt 1040 bleibt als einziges Referenzprojekt auf dem Tagesbilanz-Weg).
+Elf der dreizehn Projekte verschieben sich, 1030 (ohne Gebäude) und 1040 bleiben
+byte-gleich; die Tabelle steht im Abschnitt „Aktuelle Basis“ von
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-22_R11_Bestandsbefunde/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
+1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
+dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite`
+(Schemastand **100**). Dass Windows hier dieselben Bytes liefert wie Linux, ist gemessen: Der
+Lauf des unveränderten Standes auf diesem Rechner war gegen die Vorgängerbasis R10 (auf Linux
+gerechnet) in allen 357 Dateien byte-gleich. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Die letzte reine Bestandsbasis.** Diese Basis rechnet alle Gebäude ausschließlich auf
+> dem Tagesbilanz-Weg. Mit der Stufe **G1 + G2** der Gebäudesimulation rechnen alle
+> dreizehn Projekte stündlich nach VDI 6007, und die Basis wird vollständig neu
+> eingefroren. Bis zu diesem Merge ist sie die aktuelle Basis: Jeder Schritt dazwischen
+> (M2, M3, die Trennung der Rechenwege G1.0) muss gegen sie `GESAMT: PASS` melden, G1.0
+> ausdrücklich **byte-gleich**, und die Rückweg-Probe des Tagesbilanz-Wegs
+> (Arbeitskopie mit `Gebaeude_Modell = 'TAGESBILANZ'`) rechnet gegen sie. Danach wandert sie
+> mit ihrem Protokoll nach `Dokumentation/ueberholt/Referenzbasen/` wie jede Basis vor ihr;
+> einen zweiten Basisordner gibt es nicht
+> ([Umsetzungskonzept Gebäudesimulation](../../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+> Kapitel 1.8 und 4).
+
+> **Anlass: die Stufe GB der Gebäudesimulation** — die Bestandsbefunde des Tagesbilanz-Wegs
+> **vor** G1 und vor der Verschiebung des Altwegs in sein eigenes Modul (Entscheide E4, E20
+> und E28; vom Anwender am 22.09.2026 freigegeben). Fünf Änderungen, eine davon an den Daten:
+>
+> 1. **Die Vortemperatur ist Instanzzustand.** `BhkwPlan._prevRoomTemp` war statisch und
+>    trug die Raumtemperatur über Gebäude, Projekte und Läufe eines Prozesses; sie lebt jetzt
+>    in einem `Tagesbilanzzustand` je `SimulationWaermebedarf`, je Gebäude zurückgesetzt.
+> 2. **Warnungen statt stiller Fehlgriffe in der Ferienmaske** (ein Zeitraum über Tag 365
+>    hinaus brach mit `IndexOutOfRangeException` ab; Zeitraum 1 mit Beginn vor Ende senkte das
+>    ganze Jahr ab; ein Zeitraum ohne Ferientag blieb still) — die Lesart bleibt, gemeldet wird
+>    über den Warnkanal des Laufs.
+> 3. **Die Ferienabsenkung wird im Jahreslauf je Tag nachgeführt.** Bis hierher galt der
+>    Wert des letzten Vorlauftags für alle 365 Tage (Befund X 3.4 Punkt 8).
+> 4. **Keine feste Grenze von 100 Gebäuden** (U9): `HeizwaermebedarfGeb` wächst mit der
+>    Gebäudezahl, das tote Feld `MaxP` ist gelöscht.
+> 5. **Testdatenbank:** `Tab_Gebaeude.Bauweise` von Gebäude **10576** (Projekt 1008, 304 m²)
+>    von **50** auf **15 200 Wh/K** (50 Wh/(m²K) × 304 m², Befund D) — genau diese eine Zelle,
+>    über [`Skripte/gebaeude_10576_bauweise.py`](../../../Referenzlaeufe/Skripte/gebaeude_10576_bauweise.py). Der
+>    Zellvergleich aller Tabellen vor und nach dem Lauf (11 959 209 Zellen) zeigt genau diese
+>    eine Abweichung; `integrity_check` ok, Schema und Schemastand unverändert.
+>
+> **Ein Projekt von dreizehn bewegt sich: 1008.** Erwartet waren nach Plan **1008 und 1039**;
+> **1039 bleibt byte-gleich**, und das ist erklärt: Der statische Zustand hat nie ein Ergebnis
+> erreicht. Der Jahreslauf beginnt mit Tag 1, und dort setzt `TaeglHeizlastWG` die
+> Vortemperatur ohnehin auf den Nachtsollwert; die Heizlasten des Vorlaufs (Tage 351–365),
+> in dem die Temperatur des Vorgängergebäudes nachwirkte, überschreibt der Jahreslauf. Belegt
+> ist das durch einen Zwischenlauf **mit allen Codeänderungen, aber noch ohne die Korrektur
+> der Testdatenbank: 13/13 Projekte, 357/357 Dateien byte-gleich** gegen R10. Die Änderungen
+> 2 bis 4 wirken in keinem Referenzprojekt, weil keines einen aktiven Ferienfahrplan führt
+> (`Ferien = 0`, `Ferienbeginn_1 = 366` in allen fünfzehn Gebäuden) und keines mehr als drei
+> Gebäude hat. Die ganze Abweichung kommt aus der Datenkorrektur:
+>
+> | Projekt 1008 | R10 | R11 |
+> |---|---:|---:|
+> | `Energiebedarf.Waermebedarf_Gesamt` [MWh/a] | 54,82 | **77,32** |
+> | `Energiebedarf.Waermelast_Max` [kW] | 37,82 | **51,37** |
+> | `Waermepumpe.Waermeproduktion_WP` [MWh/a] | 52,69 | **65,92** |
+> | `Waermepumpe.Stromverbrauch_WP` [MWh/a] | 12,19 | **15,63** |
+> | `Waermepumpe.Deckung_Heizung` [%] | 94,93 | **84,49** |
+> | `Waermepumpe.Bivalenzpunkt` [°C] | 6,48 | **10,1** |
+> | `Heizkessel.Waermeproduktion` [MWh/a] | 2,78 | **11,68** |
+> | `Heizkessel.Gasverbrauch` [MWh/a] | 12,02 | **21,28** |
+> | `Em.Kessel.Co2T` [t/a] | 2,885 | **5,107** |
+> | `Energiebedarf.Waermerestbedarf` [MWh/a] | 0 | **0,31** |
+>
+> Dazu die übrigen Kessel-, Wärmepumpen-, Puffer- und Emissionsskalare desselben Projekts:
+> **68 von 142 Skalaren** in 1008 und **15 der 24 Ganglinien- und Vektordateien**; der
+> Toleranzvergleich zählt 86 281 abweichende von 262 941 Werten in 1008. Die zwölf übrigen
+> Projekte sind **byte-gleich**. Keine Zeile kommt hinzu, keine fällt weg.
+>
+> **Die Gegenprobe:** Konzept Gebäudesimulation 5.11 hat das Gebäude 10576 allein im
+> Tagesmodell nachgerechnet — 43 267 kWh/a mit 50 Wh/K, 65 773 kWh/a mit 15 200 Wh/K, also
+> **+22 506 kWh/a**. Der Lauf weist für das ganze Projekt
+> `Vektor.waermebedarf.Summe` 54 817,8 → 77 324,1 kWh aus: **+22 506,3 kWh/a** — dieselbe
+> Differenz; das zweite Gebäude des Projekts (10577) ist unberührt. Neu ist ein
+> **Restwärmebedarf von 0,31 MWh/a**: Die Spitzenlast steigt auf 51,4 kW, und in 75 Stunden
+> (höchstens 10,4 kW) decken Wärmepumpe und Kessel sie nicht mehr ganz — eine Folge der
+> Daten, der Erzeugerweg ist nicht angefasst.
+>
+> **Einfrierregeln:** Die Regel „gesäte Gebäudedaten“ entsteht mit diesem Schritt und ist
+> sein Anlass; die drei älteren (Emissionsfaktoren, PV-Modulkoeffizienten, Flottenstand
+> 1046) sind nicht berührt.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich**,
+> Laufzeit 00:00:03.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+>   --ziel Referenzlaeufe/2026-09-22_R11_Bestandsbefunde
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+**Und inzwischen auf Schemastand 101** — reines Nachziehen: Schritt 101 ist der
+Gebäudespalten-Schritt M3 der Gebäudesimulation. `Wohnflaeche` heißt in `Tab_Gebaeude` und
+`Tab_Gebaeude_STAMM` jetzt `Nutzflaeche` (Werte 1:1), jede der beiden Tabellen hat fünfzehn
+neue Spalten (alle NULL, die zwei Schalter 0), und die Sicht `Abfrage_Projektgebaeude` ist aus
+`GebaeudeSchema.SQL_VIEW_NEU` neu gebaut (die 58 Bestandsspalten an ihren Stellen, die neuen
+dahinter). `integrity_check` ok, Zeilen- und Tabellenzahl unverändert, beide Tabellen weiter
+`STRICT`; die **Referenzbasis R11 bleibt**, der Lauf aller dreizehn Projekte gegen sie ist **PASS
+und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
+
+> **Nachtrag: Schemastand 102 (Auftrag #437, Etappe E7a; umnummeriert, 101 gehört der
+> Gebäudesimulation), die Basis bleibt.** Migrationsschritt
+> **102** (`SCHRITT_102_KWKG_ANLAGENART_LEER`, Quelle
+> `EPOS.Kern/Allgemein/Update/KwkgAnlagenartLeer.cs`; Konzept Wirtschaftlichkeit § 6.3 Nr. 30)
+> setzt die leere Zeichenkette in `Tab_Energieanlagen.KWKG_Anlagenart` auf NULL — **reines DML**,
+> genau sieben Zellen: Anlage 12310 (Projekt 1032) und die Anlagen 14819, 14842, 14843, 14844,
+> 14851, 14852 (Projekt 1043), Wärmepumpen, ein Kessel und Pufferspeicher, **kein BHKW und kein
+> Referenzprojekt**. `KWKG_Eigenstromfall` derselben Zeilen bleibt `''`. Der Zellvergleich aller
+> 119 Tabellen vor und nach dem Schritt zeigt genau diese sieben Zeilen und den Schemastand in
+> `Tab_Applikation`; Größe (67 624 960 Byte) und Schema bleiben. **Keine Einfrierregel ist
+> berührt**, und der Referenzlauf ist **13/13 byte-gleich** gegen diese Basis (357/357 CSV, vor
+> wie nach dem Schritt gerechnet). Nachgezogen mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+
+> **Nachtrag: Schemastand 103 (Zapfprofilgenerator, Stufe Z0; umnummeriert), die Basis bleibt.**
+> Migrationsschritt **103** (`SCHRITT_103_ZAPFPROFIL_KATALOG`, Quelle `EPOS.Kern/Allgemein/Update/TwwSchema.cs`;
+> [Umsetzungskonzept Zapfprofilgenerator](../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md)
+> 3.1/3.2, Schritt T1) legt die zehn Tabellen `Tab_Tww*` samt vier Indizes an — **reines DDL**,
+> nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+> Danach spielt [`Skripte/tww_testkatalog_fiktiv.py`](../../../Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py) den
+> **fiktiven Testkatalog** ein (Konzept Kapitel 6 (b)): ein Tagesgangsatz mit vier Tagesgängen,
+> drei Nutzungsarten, drei Parameter mit neutralen Schlüsseln `Test.*`, ein Bedarfstag mit drei
+> Ereignissen und vier DIN-4708-Werte — **19 Zeilen**, alle erfunden und rund, Katalogversion
+> `TEST-1`, Status `EIGEN`, Herkunftsart `FIKTIV`, Quelle „Testkatalog (fiktiv)"; **keine** Zeile
+> mit Status `AUSLIEFERUNG` oder `IMPORT`, keine Zone, keine Zeile in `Tab_TwwProjekt`. Das Skript
+> ist wiederholbar (ein zweiter Lauf legt nichts an). Der Zellvergleich aller 120 Tabellen vor und
+> nach dem Schritt zeigt nur den Schemastand in `Tab_Applikation`; `integrity_check` ok,
+> `foreign_key_check` ohne Befund. Kein Projekt steht auf dem Generator, **keine Einfrierregel ist
+> berührt**, und der Referenzlauf der fünf CI-Projekte (1007, 1017, 1030, 1045, 1046) ist
+> **byte-gleich** gegen diese Basis (143/143 CSV).
+> Die erfundene Kaltwasser-Bezugstemperatur der drei Nutzungsarten ist bewusst **kein** Wert,
+> der mit einer Normvorgabe zusammenfällt; das Skript führt vorhandene Zeilen auf seine Werte
+> nach (Zellvergleich: nur `Bezug_Kaltwasser` der drei Nutzungsarten, Schemastand unverändert).
+> **Umnummeriert:** Schritt 101 gehört der Gebäudesimulation, der KWKG-Schritt ist 102, T1 ist 103.
+> Die Testdatenbank ist aus der Fassung auf Schemastand 101 (Gebäudespalten) mit den Schritten 102
+> und 103 und dem Skript neu nachgezogen: Zellvergleich gegen die Fassung 101 nur Schemastand, die
+> sieben Anlagenzeilen und die zehn neuen Tabellen (19 Zeilen), gegen die frühere Fassung 102 nur
+> Schemastand und Gebäudespalten; `integrity_check` ok, `foreign_key_check` leer, 129 Tabellen
+> `STRICT`, 67 727 360 Byte.
+
+> **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
+> Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
+> Schemaständen 99 und 100 steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
