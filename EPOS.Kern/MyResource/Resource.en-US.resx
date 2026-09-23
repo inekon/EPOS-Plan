@@ -24173,4 +24173,46 @@ Do you want to allow this?</value>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, but no power-to-heat ratio ({0}) — no bonus under case 2.</value>
   </data>
+  <data name="ERK_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="ERK_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="ERK_LEER" xml:space="preserve">
+    <value>(blank — as before)</value>
+  </data>
+  <data name="ERK_WIE_BISHER" xml:space="preserve">
+    <value>as before</value>
+  </data>
+  <data name="ERK_HERLEITUNG" xml:space="preserve">
+    <value>Position flags — replacement investment: {0} · residual value: {1}.</value>
+  </data>
+  <data name="ERK_LBL_ERSATZ" xml:space="preserve">
+    <value>Carry replacement investment:</value>
+  </data>
+  <data name="ERK_LBL_RESTWERT" xml:space="preserve">
+    <value>Apply residual value:</value>
+  </data>
+  <data name="ERK_INFO" xml:space="preserve">
+    <value>Blank calculates as before: the item is replaced once its service life ends before the end of the evaluation period, and the residual value is linear in the final year. “no” switches one off without the other.</value>
+  </data>
+  <data name="ND_TAFEL_ERSATZ_AUS" xml:space="preserve">
+    <value>— no (position flag)</value>
+  </data>
+  <data name="ND_TAFEL_RESTWERT_AUS" xml:space="preserve">
+    <value>— no (position flag)</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_NAME" xml:space="preserve">
+    <value>Carry replacement investment</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_ERL" xml:space="preserve">
+    <value>Whether the position is replaced when its service life ends: blank = as before, yes or no.</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_NAME" xml:space="preserve">
+    <value>Apply residual value</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
+    <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
+  </data>
 </root>

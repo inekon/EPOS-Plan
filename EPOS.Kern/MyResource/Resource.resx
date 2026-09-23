@@ -24180,4 +24180,46 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
   </data>
+  <data name="ERK_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="ERK_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="ERK_LEER" xml:space="preserve">
+    <value>(leer — wie bisher)</value>
+  </data>
+  <data name="ERK_WIE_BISHER" xml:space="preserve">
+    <value>wie bisher</value>
+  </data>
+  <data name="ERK_HERLEITUNG" xml:space="preserve">
+    <value>Kennzeichen der Position — Ersatzbeschaffung: {0} · Restwert: {1}.</value>
+  </data>
+  <data name="ERK_LBL_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffung führen:</value>
+  </data>
+  <data name="ERK_LBL_RESTWERT" xml:space="preserve">
+    <value>Restwert ansetzen:</value>
+  </data>
+  <data name="ERK_INFO" xml:space="preserve">
+    <value>Leer rechnet wie bisher: Ersetzt wird, sobald die Nutzungsdauer vor dem Ende des Betrachtungszeitraums abläuft, und der Restwert steht linear im letzten Jahr. „nein“ schaltet das eine ohne das andere ab.</value>
+  </data>
+  <data name="ND_TAFEL_ERSATZ_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="ND_TAFEL_RESTWERT_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_NAME" xml:space="preserve">
+    <value>Ersatzbeschaffung führen</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_ERL" xml:space="preserve">
+    <value>Ob die Position nach Ablauf ihrer Nutzungsdauer ersetzt wird: leer = wie bisher, ja oder nein.</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_NAME" xml:space="preserve">
+    <value>Restwert ansetzen</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
+    <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
+  </data>
 </root>

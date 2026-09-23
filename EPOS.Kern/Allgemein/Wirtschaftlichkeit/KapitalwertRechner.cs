@@ -204,6 +204,21 @@ namespace WindowsFormsApplication1
             /// dem Abstand zum Startjahr: Preisstand des Rechenkerns ist immer t = 0.</para>
             /// </summary>
             public int StartJahr;
+
+            /// <summary>
+            /// ETAPPE E7c (Schritt E, Entscheid A6): Ersatzbeschaffung dieser Position
+            /// führen? <c>null</c> = wie bisher (ersetzt wird, sobald die Nutzungsdauer vor
+            /// T abläuft), <c>true</c> = dasselbe ausdrücklich, <c>false</c> = nie ersetzen.
+            /// Quelle: <c>Tab_ProjektWerte.ErsatzFuehren</c> (Schritt 107).
+            /// </summary>
+            public bool? ErsatzFuehren;
+
+            /// <summary>
+            /// ETAPPE E7c (Schritt E): Restwert dieser Position im Jahr T ansetzen?
+            /// <c>null</c> = wie bisher (linear), <c>true</c> = dasselbe ausdrücklich,
+            /// <c>false</c> = kein Restwert. Quelle: <c>Tab_ProjektWerte.RestwertAnsetzen</c>.
+            /// </summary>
+            public bool? RestwertAnsetzen;
         }
 
         /// <summary>Zahlungsstrombild eines Projekts über den Betrachtungszeitraum.</summary>
@@ -391,6 +406,15 @@ namespace WindowsFormsApplication1
             /// <summary>Linearer Restwert zum Zeitpunkt T [€], nominal auf der
             /// Preisbasis der letzten Beschaffung; 0 = keiner.</summary>
             public double Restwert;
+
+            /// <summary>ETAPPE E7c (Schritt E): Die Position trägt
+            /// <c>ErsatzFuehren = nein</c> — es gibt keine Ersatzbeschaffung, gleich
+            /// wie kurz die Nutzungsdauer ist.</summary>
+            public bool ErsatzAbgewaehlt;
+
+            /// <summary>ETAPPE E7c (Schritt E): Die Position trägt
+            /// <c>RestwertAnsetzen = nein</c> — der Restwert bleibt 0.</summary>
+            public bool RestwertAbgewaehlt;
         }
 
         /// <summary>
@@ -464,7 +488,13 @@ namespace WindowsFormsApplication1
             // ABSOLUTE Jahr, nicht der Abstand zum Startjahr — auch eine Position mit
             // Startjahr 5 wird 2041 zu den Preisen von 2041 ersetzt, nicht zu denen
             // von 2036. Ohne Satz läuft der Zweig von vorher, Zeichen für Zeichen.
-            for (double t = start + n; ; t += n)
+            //
+            // ETAPPE E7c (Schritt E, Entscheid A6): ErsatzFuehren = nein schaltet die
+            // Kette ab — die Position wird nie ersetzt, und die letzte Beschaffung bleibt
+            // die erste. Leer (null) und ja laufen die Schleife von vorher, Zeichen für
+            // Zeichen; der Bestand trägt überall null.
+            b.ErsatzAbgewaehlt = pos.ErsatzFuehren == false;
+            for (double t = start + n; !b.ErsatzAbgewaehlt; t += n)
             {
                 int tj = (int)Math.Round(t);
                 if (tj >= T) break;
@@ -491,7 +521,12 @@ namespace WindowsFormsApplication1
             // und der Ausdruck der von vorher — auch das der bitgleiche Regellauf.
             double alter = T - letzteBeschaffung;
             double rest = n - alter;
-            if (rest > 1e-9)
+            // ETAPPE E7c (Schritt E): RestwertAnsetzen = nein — kein Restwert, auch wo
+            // die Anlage am Ende von T noch Nutzungsdauer übrig hätte. Entkoppelt vom
+            // Ersatz: Eine nicht ersetzte Position trägt ihren Restwert aus der ersten
+            // Beschaffung weiter, solange sie nicht abgewählt ist.
+            b.RestwertAbgewaehlt = pos.RestwertAnsetzen == false;
+            if (rest > 1e-9 && !b.RestwertAbgewaehlt)
                 b.Restwert = letzterFaktor != 1.0
                     ? pos.Betrag * letzterFaktor * (rest / n)
                     : pos.Betrag * (rest / n);

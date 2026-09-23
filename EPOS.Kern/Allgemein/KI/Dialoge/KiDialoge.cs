@@ -2058,7 +2058,15 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.VopVonErl, leerErlaubt: true),
                     new KiDialogFeld("empfehlung_bis", "VorlagenPositionKiSicht.EmpfehlungBis",
                                      KiDialogTexte.VopBisName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.VopBisErl, leerErlaubt: true)
+                                     KiDialogTexte.VopBisErl, leerErlaubt: true),
+                    // ETAPPE E7c (Schritt E, Entscheid A6): Ersatz und Restwert je
+                    // Position — dreiwertig, leer = wie bisher.
+                    new KiDialogFeld("ersatz_fuehren", "VorlagenPositionKiSicht.ErsatzFuehren",
+                                     KiDialogTexte.VopErsatzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopErsatzErl, leerErlaubt: true),
+                    new KiDialogFeld("restwert_ansetzen", "VorlagenPositionKiSicht.RestwertAnsetzen",
+                                     KiDialogTexte.VopRestwertName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopRestwertErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {

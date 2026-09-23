@@ -24,10 +24,18 @@
 /// <c>Tab_Nutzungsdauer.ID</c>, wie der Aufrufer sie in <c>Positionsarten</c>
 /// hereingegeben hat. <c>null</c> = keine; dann gilt die Standardzeile der Technik.
 /// Der Aufrufer traegt sie ein und setzt die Nutzungsdauer neu.</param>
+/// <param name="ErsatzAuswahl">ETAPPE E7c (Schritt E): die Wahl der Klappliste
+/// „Ersatzbeschaffung führen" — die Id aus den hereingegebenen
+/// <c>Kennzeichen</c>-Eintraegen, <c>null</c> = leer (wie bisher). Die Uebersetzung
+/// in das Kennzeichen macht der Aufrufer.</param>
+/// <param name="RestwertAuswahl">ETAPPE E7c (Schritt E): dasselbe fuer
+/// „Restwert ansetzen".</param>
 public sealed record VorlagenPositionErgebnis(
     string Bezeichnung,
     int KostenartId,
     bool IstErloes,
     double? EmpfehlungVon,
     double? EmpfehlungBis,
-    int? PositionsartId = null);
+    int? PositionsartId = null,
+    int? ErsatzAuswahl = null,
+    int? RestwertAuswahl = null);

@@ -442,6 +442,15 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
                     SpalteSicherstellen(s);
 
+                // Schritt 106 ist einer Nachbarwelle vorbehalten (Luecke erlaubt).
+                //
+                // Schritt 107 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
+                // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
+                // Tab_KostenVorlagePosition. Wie in der Migration ueber ADD COLUMN, aus
+                // DERSELBEN Quelle; kein DML - NULL heisst "wie bisher".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

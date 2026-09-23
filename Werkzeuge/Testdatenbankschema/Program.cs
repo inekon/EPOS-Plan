@@ -1225,6 +1225,24 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
 
+            // ---- Schritt 106 ist einer Nachbarwelle vorbehalten; die Kette laeuft ueber
+            //      die Luecke.
+            //
+            // ---- Schritt 107: Ersatz und Restwert je Position entkoppelt (Schritt E des
+            //      Analysepapiers, Entscheid A6 vom 20.09.2026, Mockup U39). REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_107_ErsatzRestwertKennzeichen bedient
+            //      (SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen): die nullbaren
+            //      Kennzeichen ErsatzFuehren und RestwertAnsetzen (CHECK IN (0,1)) an
+            //      Tab_ProjektWerte und Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML, alle Zeilen stehen auf NULL, und
+            //      NULL heisst "wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 107, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -3722,6 +3722,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_105_KWKG_ABWAERMEABFUHR = 105;
 
+        /// <summary>
+        /// Schritt 107 — <b>Ersatz und Restwert je Position entkoppelt</b> (Schritt E des
+        /// Analysepapiers Wirtschaftlichkeit § 6, Entscheid A6 vom 20.09.2026, Mockup U39,
+        /// Konzept § 2.13 (3)). Schritt <b>106</b> ist einer Nachbarwelle vorbehalten; die
+        /// Kette läuft über die Lücke, er folgt auf
+        /// <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier Spalten: die nullbaren Kennzeichen
+        /// <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c> (<c>CHECK (… IN (0,1))</c>) an
+        /// <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste
+        /// steht bei <see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>, EINE
+        /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie bisher" — ersetzt wird bei
+        /// abgelaufener Nutzungsdauer, der Restwert steht linear; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN = 107;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5169,6 +5189,23 @@ namespace WindowsFormsApplication1
                         "der Geraetezeile). ERGEBNISNEUTRAL: Das Kennzeichen steht ueberall " +
                         "auf 0, und 0 heisst wie bisher Nettostromerzeugung.",
                         Schritt_105_KwkgAbwaermeabfuhr),
+
+            // Schritt 106 ist einer Nachbarwelle vorbehalten - die Kette laeuft ueber
+            // die Luecke (der Marker haelt die hoechste gelaufene Nummer).
+            //
+            // ENTSCHEID A6 (20.09.2026, Schritt E) - Ersatz und Restwert je Position
+            // entkoppelt. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen. Er steht NACH 105 ohne
+            // Reihenfolgebedingung - er legt allein vier neue Spalten an, die kein anderer
+            // Schritt liest oder schreibt.
+            new Schritt(SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN,
+                        "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die " +
+                        "Kennzeichen ErsatzFuehren und RestwertAnsetzen",
+                        "Ersatzbeschaffung und Restwert lassen sich je Kostenposition getrennt " +
+                        "fuehren: Jede Position (und jede Vorlagenposition) bekommt zwei " +
+                        "Kennzeichen - leer = wie bisher, ja, nein. ERGEBNISNEUTRAL: Alle " +
+                        "Zeilen stehen auf leer, und leer rechnet wie bisher.",
+                        Schritt_107_ErsatzRestwertKennzeichen),
         };
 
         /// <summary>
@@ -7981,6 +8018,45 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_ENERGIEANLAGEN + "." + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL +
                     " (nullbar). KEIN DML: Das Kennzeichen steht ueberall auf 0 - KWK-Strom " +
                     "bleibt die Nettostromerzeugung; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 107 - Ersatz und Restwert je Position entkoppelt (Schritt E, A6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 107 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>.
+        ///
+        /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 105: Spaltenliste aus
+        /// dem Kern, Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c> — „YESNO_NULL" wird
+        /// <c>INTEGER CHECK (… IN (0,1))</c> ohne <c>NOT NULL</c> und ohne Vorgabe, an der
+        /// STRICT-Tabelle per <c>ADD COLUMN</c> zulässig. <b>Wiederholbar</b>: Eine
+        /// vorhandene Spalte wird übergangen. Danach vergisst der Kern seinen gemerkten
+        /// Spaltenstand, damit derselbe Prozess die Kennzeichen sofort liest.</para>
+        /// </summary>
+        private static bool Schritt_107_ErsatzRestwertKennzeichen(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            ErsatzRestwertKennzeichen.SpaltenStandVergessen();
+
+            l.Notiz("107: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + " und " +
+                    SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + " (nullbar, 0/1) an " +
+                    SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                    ". KEIN DML: Alle Zeilen stehen auf leer - Ersatz und Restwert rechnen " +
+                    "wie bisher; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

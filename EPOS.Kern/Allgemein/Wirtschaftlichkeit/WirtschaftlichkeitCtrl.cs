@@ -5465,7 +5465,9 @@ namespace WindowsFormsApplication1
                 foreach (KapitalwertRechner.InvestPosition pos in e.Investitionen)
                     invest.Add(new KapitalwertRechner.InvestPosition
                     { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer,
-                      StartJahr = pos.StartJahr });   // KD6: Startjahr wandert mit (Sensitivität)
+                      StartJahr = pos.StartJahr,     // KD6: Startjahr wandert mit (Sensitivität)
+                      // E7c (Schritt E): die Kennzeichen der Position wandern mit.
+                      ErsatzFuehren = pos.ErsatzFuehren, RestwertAnsetzen = pos.RestwertAnsetzen });
 
                 // PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1): Der
                 // Ausschlag zieht die INVESTITIONSGEKOPPELTEN BETRIEBSKOSTEN mit —
@@ -6302,7 +6304,11 @@ namespace WindowsFormsApplication1
                 {
                     Betrag = betrag,
                     Nutzungsdauer = dauer,
-                    StartJahr = z.Start
+                    StartJahr = z.Start,
+                    // ETAPPE E7c (Schritt E, Entscheid A6): die zwei Kennzeichen der
+                    // Position; null (der ganze Bestand) rechnet wie bisher.
+                    ErsatzFuehren = z.ErsatzFuehren,
+                    RestwertAnsetzen = z.RestwertAnsetzen
                 });
             }
             return liste;

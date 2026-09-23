@@ -375,11 +375,21 @@ namespace WindowsFormsApplication1
         /// (<see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>). <b>Reines DDL,
         /// ergebnisneutral:</b> 0 heißt Fall 1, die Nettostromerzeugung — der Rechenweg
         /// vor dem Schritt; der Referenzlauf bleibt byte-gleich.
+        /// Schritt <b>106</b> ist einer Nachbarwelle vorbehalten; die Migration läuft über
+        /// die Lücke (ein fehlender Schritt ist kein Fehler, der Marker hält allein die
+        /// höchste gelaufene Nummer).
+        /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 107, Schritt E
+        /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>107</b>:
+        /// <c>Tab_ProjektWerte</c> und <c>Tab_KostenVorlagePosition</c> bekommen die
+        /// nullbaren Kennzeichen <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c>
+        /// (<see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>). <b>Reines
+        /// DDL, ergebnisneutral:</b> NULL heißt „wie bisher"; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 105;
+        public const int Zielversion = 107;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

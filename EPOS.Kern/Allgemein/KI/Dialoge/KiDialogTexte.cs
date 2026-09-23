@@ -1390,6 +1390,11 @@
         internal static string VopVonErl => MyResource.Resource.KI_DLG_VOP_VON_ERL;
         internal static string VopBisName => MyResource.Resource.KI_DLG_VOP_BIS_NAME;
         internal static string VopBisErl => MyResource.Resource.KI_DLG_VOP_BIS_ERL;
+        // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position.
+        internal static string VopErsatzName => MyResource.Resource.KI_DLG_VOP_ERSATZ_NAME;
+        internal static string VopErsatzErl => MyResource.Resource.KI_DLG_VOP_ERSATZ_ERL;
+        internal static string VopRestwertName => MyResource.Resource.KI_DLG_VOP_RESTWERT_NAME;
+        internal static string VopRestwertErl => MyResource.Resource.KI_DLG_VOP_RESTWERT_ERL;
 
         // ---- Form_CaseEingabe
         internal static string MaskeCaseEingabe => MyResource.Resource.KI_DLG_MASKE_CSE;

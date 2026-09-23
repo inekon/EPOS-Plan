@@ -9698,6 +9698,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzeichen der Position — Ersatzbeschaffung: {0} · Restwert: {1}. ähnelt.
+        /// </summary>
+        public static string ERK_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ERK_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer rechnet wie bisher: Ersetzt wird, sobald die Nutzungsdauer vor dem Ende des Betrachtungszeitraums abläuft, und der Restwert steht linear im letzten Jahr. „nein“ schaltet das eine ohne das andere ab. ähnelt.
+        /// </summary>
+        public static string ERK_INFO {
+            get {
+                return ResourceManager.GetString("ERK_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string ERK_JA {
+            get {
+                return ResourceManager.GetString("ERK_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffung führen: ähnelt.
+        /// </summary>
+        public static string ERK_LBL_ERSATZ {
+            get {
+                return ResourceManager.GetString("ERK_LBL_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert ansetzen: ähnelt.
+        /// </summary>
+        public static string ERK_LBL_RESTWERT {
+            get {
+                return ResourceManager.GetString("ERK_LBL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (leer — wie bisher) ähnelt.
+        /// </summary>
+        public static string ERK_LEER {
+            get {
+                return ResourceManager.GetString("ERK_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string ERK_NEIN {
+            get {
+                return ResourceManager.GetString("ERK_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie bisher ähnelt.
+        /// </summary>
+        public static string ERK_WIE_BISHER {
+            get {
+                return ResourceManager.GetString("ERK_WIE_BISHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgervariante erfolgreich angelegt. ähnelt.
         /// </summary>
         public static string ETVAR_MSG_ANGELEGT {
@@ -33956,6 +34028,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die Position nach Ablauf ihrer Nutzungsdauer ersetzt wird: leer = wie bisher, ja oder nein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_ERSATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_ERSATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffung führen ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_ERSATZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_ERSATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kostenart nach VDI 2067 — Kapital, Bedarf, Betrieb oder sonstige. Sie entscheidet, in welcher Kategorie die Position in der Auswertung erscheint. ähnelt.
         /// </summary>
         public static string KI_DLG_VOP_KOSTENART_ERL {
@@ -33988,6 +34078,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_VOP_POSART_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_VOP_POSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_RESTWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_RESTWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert ansetzen ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_RESTWERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_RESTWERT_NAME", resourceCulture);
             }
         }
         
@@ -43173,6 +43281,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — nein (Kennzeichen der Position) ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_ERSATZ_AUS {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_ERSATZ_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — deckungsgleich mit T ähnelt.
         /// </summary>
         public static string ND_TAFEL_GLEICH_T {
@@ -43232,6 +43349,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_TAFEL_OHNE_EINTRAG {
             get {
                 return ResourceManager.GetString("ND_TAFEL_OHNE_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — nein (Kennzeichen der Position) ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_RESTWERT_AUS {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_RESTWERT_AUS", resourceCulture);
             }
         }
         

@@ -95,6 +95,14 @@ namespace WindowsFormsApplication1
             /// <summary>Startjahr der Position (KD6 § 11); 0 = t0.</summary>
             public int Start;
 
+            /// <summary>ETAPPE E7c (Schritt E, Schritt 107): Ersatzbeschaffung führen?
+            /// <c>null</c> = wie bisher (auch: Spalte fehlt).</summary>
+            public bool? ErsatzFuehren;
+
+            /// <summary>ETAPPE E7c (Schritt E, Schritt 107): Restwert ansetzen?
+            /// <c>null</c> = wie bisher (auch: Spalte fehlt).</summary>
+            public bool? RestwertAnsetzen;
+
             /// <summary>Kostenart „Zuschuss" (K5).</summary>
             public bool Zuschuss;
 
@@ -159,6 +167,14 @@ namespace WindowsFormsApplication1
                     felder += ", w.[" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
                 if (WirtschaftlichkeitCtrl.AnlagenSpalteVorhanden())
                     felder += ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]";
+                // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position (Schritt 107) —
+                // wie das Startjahr nur ANGEFRAGT, wenn es die Spalten gibt; sonst kippte
+                // die ganze Abfrage.
+                bool mitKennzeichen = ErsatzRestwertKennzeichen.SpaltenVorhanden(
+                    SchemaKatalog.TAB_PROJEKTWERTE);
+                if (mitKennzeichen)
+                    felder += ", w.[" + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + "]" +
+                              ", w.[" + SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + "]";
 
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT " + felder +
@@ -190,6 +206,13 @@ namespace WindowsFormsApplication1
                         "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer",
                         out z.DauerGepflegt);
                     z.Start = WirtschaftlichkeitCtrl.StartJahrDerZeile(r);
+                    if (mitKennzeichen)
+                    {
+                        z.ErsatzFuehren = ErsatzRestwertKennzeichen.Wert(
+                            r, SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN);
+                        z.RestwertAnsetzen = ErsatzRestwertKennzeichen.Wert(
+                            r, SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN);
+                    }
                     z.Zuschuss = mitKostenart && WirtschaftlichkeitCtrl.IstZuschuss(r);
                     z.Haupt = WirtschaftlichkeitCtrl.B(r, "IsMainComponent");
                     WirtschaftlichkeitCtrl.KomponenteUndAnlage(r, out z.Komponente, out z.Anlage);

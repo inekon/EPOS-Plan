@@ -50,6 +50,15 @@ namespace WindowsFormsApplication1
         /// Standardzeile der Technik zurück; die Auflösung steht in
         /// <see cref="NutzungsdauerCtrl.Vorgabe"/>.</summary>
         public int? NutzungsdauerId;
+
+        /// <summary>ETAPPE E7c (Schritt E, Schritt 107): Ersatzbeschaffung führen?
+        /// <c>null</c> = wie bisher. Gelesen und geschrieben über
+        /// <see cref="ErsatzRestwertKennzeichen"/>; in der Projektzeile steht dieselbe
+        /// Spalte an <c>Tab_ProjektWerte</c>.</summary>
+        public bool? ErsatzFuehren;
+
+        /// <summary>ETAPPE E7c (Schritt E): Restwert ansetzen? <c>null</c> = wie bisher.</summary>
+        public bool? RestwertAnsetzen;
     }
 
     /// <summary>
@@ -210,6 +219,18 @@ namespace WindowsFormsApplication1
                     NutzungsdauerId = mitNutzungsdauerId
                         ? ZahlOderNull(r[mitPflicht ? 13 : 12]) : null,
                 });
+
+            // ETAPPE E7c (Schritt E): die zwei Kennzeichen je Position — eine eigene
+            // Abfrage statt zwei weiterer bedingter Spaltennummern; leer ohne Spalten.
+            Dictionary<int, ErsatzRestwertKennzeichen.Paar> kennzeichen =
+                ErsatzRestwertKennzeichen.LiesVorlage(vorlageId);
+            foreach (KostenVorlagenPosition p in liste)
+            {
+                ErsatzRestwertKennzeichen.Paar k;
+                if (!kennzeichen.TryGetValue(p.Id, out k)) continue;
+                p.ErsatzFuehren = k.ErsatzFuehren;
+                p.RestwertAnsetzen = k.RestwertAnsetzen;
+            }
             return liste;
         }
 
@@ -505,6 +526,10 @@ namespace WindowsFormsApplication1
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
                 (mitArt ? ", ?" : "") + ")",
                 parameter.ToArray());
+            // ETAPPE E7c (Schritt E): Die Kennzeichen wandern mit (Speichern unter).
+            if (n == 1 && (p.ErsatzFuehren.HasValue || p.RestwertAnsetzen.HasValue))
+                ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION, id,
+                                                   p.ErsatzFuehren, p.RestwertAnsetzen);
             return n == 1 ? id : 0;
         }
 
