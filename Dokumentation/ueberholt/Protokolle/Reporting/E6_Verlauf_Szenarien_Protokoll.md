@@ -180,7 +180,10 @@ er in Phase 2 gebaut:
   `kapitalwert_spanne_erwartet_wirkt`, `kapitalwert_spanne_spanne_wirkt`), dazu vier SVG-Proben. Die Repo-Messlatte
   `Proben/ChartProben/Messlatte_2026-09-20.sha256` (Linux, 91 Zeilen) bleibt; die Probe liest sie nicht, `kern.yml` ruft
   ohne `--hashes`. Die lokale Windows-Messlatte des Gates führt 108 Zeilen.
-- **Gate #436:** NACHTRAG-436-GATE.
+- **Gate #436** auf `57b15a7c`: Kern-Filter (Release) 0 Fehler, ChartProben alle grün, 108 Bilder, Hashes gleich der
+  Windows-Messlatte (91 alte unverändert, 17 neu), Tests 10 758 grün, 1 übersprungen (KiKern 524, SpeicherEngine 386,
+  SpeicherPlanung 27 und 1 übersprungen, EPOS.UI 5 230, EPOS.Kern 4 591), Dokumentationswachen 24/24, Designer 7 594
+  Einträge unverändert; Windows-Schale auf dem Merge-Stand 0 Fehler.
 - **Ressourcen:** 34 neue Schlüssel de/en — `WIRT_VERL_*` (25: `_TITEL`, `_BILD`, `_ERKLAERUNG`, `_FUSS`, `_WORT_HINWEIS`,
   `_LEG_VARIANTEN`, `_LEG_SZENARIEN`, `_NULLDURCHGANG`, `_NULLZEILE`, `_KEIN_NULL`, `_STATUS`, `_FEHLEND`, `_NOCH_NICHT`,
   `_ZU_VIELE`, `_KEINE_REIHE`, `_BLATT`, `_BLATT_TITEL`, `_ZEILE_NULL`, `_ZEILE_RESTWERT`, `_ZEILE_KW`, `_EXCEL_TITEL`,
