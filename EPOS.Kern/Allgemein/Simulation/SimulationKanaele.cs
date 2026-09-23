@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace WindowsFormsApplication1
@@ -409,19 +410,29 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Die Bedarfskanäle des Dreikanalmodells als INDIZES (Konzept 4.1, Leitentscheidung
-    /// L2 — Paket K1).
+    /// Die BEDARFSKANÄLE als INDIZES (Konzept 4.1, Leitentscheidung L2 — Paket K1; der
+    /// vierte Kanal <see cref="KUEHLUNG"/> mit Stufe KU1 der Kühlung, Kühlkonzept 4.1–4.3).
     ///
     /// Kanäle sind bewusst indiziert und nicht boolesch: Jede Kanalstruktur des
     /// Rechenkerns (Restbedarf, Entladeordnung, Durchsatzbudget, <c>SenkeAbziehen</c>)
-    /// läuft künftig über diesen Index. Damit ist der Rechenkern auf MEHRERE HEIZKREISE
-    /// vorbereitet — es wäre allein <see cref="ANZAHL"/> zu erhöhen; Persistenz und
-    /// Oberfläche kanalbezogener Parameter blieben ein eigener Ausbauschritt.
+    /// läuft über diesen Index.
+    ///
+    /// <para><b>Ein Kanalfeld, zwei Deckungswelten</b> (Kühlkonzept 4.1, K1 mit E21). Der
+    /// Kühlkanal teilt Vektorstruktur, Persistenz und Kennzahlenrechnung mit den drei
+    /// Wärmekanälen, aber NICHT die Erzeugerkaskade: Ein Heizkessel deckt keinen
+    /// Kältebedarf. Deshalb stehen hier ZWEI Kanallisten (Festlegung F-K4):
+    /// <see cref="KANAELE_WAERME"/> für Summe, Dauerlinie, Maximum, Netzverluste und die
+    /// Restbedarfsfelder der Wärmeerzeuger, <see cref="KANAELE_KAELTE"/> für die
+    /// Kälteseite (<c>SimulationKaeltebedarf</c>). Eine Schleife über
+    /// <see cref="ANZAHL"/> ist nur noch dort richtig, wo sie STRUKTUR bemisst (Felder
+    /// anlegen, kopieren, leeren) — wer über Kanäle SUMMIERT oder DECKT, nennt seine
+    /// Liste.</para>
     ///
     /// Die Reihenfolge der Indizes ist KEINE Rangfolge. Die Knappheitsreihenfolge des
-    /// Abzugs (Konzept 4.3: Brauchwasser → Prozess → Heizung) ist eine eigene Größe —
-    /// seit Paket K2 steht sie als <see cref="KnappheitsReihenfolge"/> daneben und wird
-    /// je Lauf aus der Projekteinstellung gebildet.
+    /// Abzugs (Konzept 4.3: Brauchwasser → Prozess → Heizung, Kühlung zuletzt, K4) ist
+    /// eine eigene Größe — seit Paket K2 steht sie als
+    /// <see cref="KnappheitsReihenfolge"/> daneben und wird je Lauf aus der
+    /// Projekteinstellung gebildet.
     /// </summary>
     public static class Kanal
     {
@@ -434,8 +445,59 @@ namespace WindowsFormsApplication1
         /// <summary>Prozesswärme: Prozessprofile und als Prozesswärme gekennzeichnete Lastgänge.</summary>
         public const int PROZESS = 2;
 
-        /// <summary>Zahl der Kanäle. Alle Kanalfelder werden über diese Konstante bemessen.</summary>
-        public const int ANZAHL = 3;
+        /// <summary>
+        /// KÜHLUNG — der Kältebedarf je Stunde [kWh], POSITIV geführt (K2): die Kühlreihe der
+        /// Gebäude auf dem VDI-Weg mit wirksamer Kühlung und die externen Lastgänge mit dem
+        /// Kanal „Kuehlung" (K3). Er gehört zur Kälteseite (<see cref="KANAELE_KAELTE"/>) und
+        /// geht in keine Summe, keine Dauerlinie, kein Maximum und keine Netzverluste der
+        /// Wärmeseite ein (F-K4). Gefüllt wird er allein von der Fassade
+        /// <c>SimulationKaeltebedarf</c>, und nur, wenn das Projekt Kälte rechnet
+        /// (<c>Tab_Einstellungen.Kuehlbetrieb</c>); sonst bleibt er 0.
+        /// </summary>
+        public const int KUEHLUNG = 3;
+
+        /// <summary>
+        /// Zahl der Kanäle. Alle Kanalfelder werden über diese Konstante BEMESSEN; wer über
+        /// Kanäle summiert oder deckt, läuft über <see cref="KANAELE_WAERME"/> bzw.
+        /// <see cref="KANAELE_KAELTE"/>.
+        /// </summary>
+        public const int ANZAHL = 4;
+
+        /// <summary>
+        /// Die Kanäle der WÄRMEseite (Festlegung F-K4): Summe, Dauerlinie, Maximum,
+        /// Netzverluste, Wärmeerzeugerkaskade samt ihren Restbedarfsfeldern und dem
+        /// Bivalenzpunkt. Reihenfolge = Indexreihenfolge; <see cref="Kanalsatz.Summe"/>
+        /// addiert in genau dieser Folge (Heizung → Brauchwasser → Prozess), wie vor dem
+        /// vierten Kanal.
+        ///
+        /// <para><b>Warum <c>KANAELE_WAERME</c> und nicht <c>WAERMEKANAELE</c>:</b> Der Name
+        /// <c>Waermekanaele</c> gehört der zweikanaligen Altklasse oben (Kühlkonzept 4.2).
+        /// Und unveränderlich statt <c>int[]</c>: ein öffentliches Feld wäre von jeder
+        /// Stelle im Haus beschreibbar — dieselbe Begründung wie bei
+        /// <see cref="KNAPPHEIT_STANDARD"/>.</para>
+        /// </summary>
+        public static readonly ImmutableArray<int> KANAELE_WAERME =
+            ImmutableArray.Create(HEIZUNG, BRAUCHWASSER, PROZESS);
+
+        /// <summary>
+        /// Die Kanäle der KÄLTEseite (Festlegung F-K4): eigene Summe
+        /// (<see cref="Kanalsatz.SummeKaelte"/>), eigenes Maximum, eigene Dauerlinie und —
+        /// ab KU2 — eigene Erzeugerkaskade. Heute genau ein Kanal.
+        /// </summary>
+        public static readonly ImmutableArray<int> KANAELE_KAELTE =
+            ImmutableArray.Create(KUEHLUNG);
+
+        /// <summary>Gehört der Kanal zur Wärmeseite (<see cref="KANAELE_WAERME"/>)?</summary>
+        public static bool IstWaerme(int kanal)
+        {
+            return KANAELE_WAERME.IndexOf(kanal) >= 0;
+        }
+
+        /// <summary>Gehört der Kanal zur Kälteseite (<see cref="KANAELE_KAELTE"/>)?</summary>
+        public static bool IstKaelte(int kanal)
+        {
+            return KANAELE_KAELTE.IndexOf(kanal) >= 0;
+        }
 
         /// <summary>
         /// Abbildung des PERSISTENZWERTES einer Kanalzuordnung auf den Kanalindex
@@ -444,7 +506,10 @@ namespace WindowsFormsApplication1
         ///
         /// LEER, <c>null</c> und JEDER UNBEKANNTE WERT ergeben den HEIZKANAL. Das ist die
         /// altverhaltenserhaltende Vorbelegung aus Konzept 4.2/F18: Bestandsganglinien
-        /// tragen keine Kanalangabe und sind bis heute im Heizbedarf mitgelaufen.
+        /// tragen keine Kanalangabe und sind bis heute im Heizbedarf mitgelaufen. Die
+        /// Vorbelegung bleibt Heizung, auch mit dem vierten Kanal (Kühlkonzept 4.3 #6): Ein
+        /// unbekannter Wert darf NIE in den Kühlkanal fallen — in den gelangt nur, wer
+        /// ausdrücklich <see cref="DbWerte.KANAL_KUEHLUNG"/> trägt.
         ///
         /// Der Vergleich ist bewusst toleranter als <see cref="Senkenzuordnung.SenkeAusZiel"/>
         /// (dort ordinal): Der Wert kommt aus einer NEUEN Spalte über Bestandsdaten, in
@@ -460,6 +525,8 @@ namespace WindowsFormsApplication1
                 return BRAUCHWASSER;
             if (string.Equals(wert, DbWerte.KANAL_PROZESS, StringComparison.OrdinalIgnoreCase))
                 return PROZESS;
+            if (string.Equals(wert, DbWerte.KANAL_KUEHLUNG, StringComparison.OrdinalIgnoreCase))
+                return KUEHLUNG;
             return HEIZUNG;
         }
 
@@ -470,6 +537,7 @@ namespace WindowsFormsApplication1
             {
                 case BRAUCHWASSER: return DbWerte.KANAL_BRAUCHWASSER;
                 case PROZESS: return DbWerte.KANAL_PROZESS;
+                case KUEHLUNG: return DbWerte.KANAL_KUEHLUNG;
                 default: return DbWerte.KANAL_HEIZUNG;
             }
         }
@@ -479,10 +547,14 @@ namespace WindowsFormsApplication1
         // ==============================================================
 
         /// <summary>
-        /// Vorbelegung der Knappheitsreihenfolge: BRAUCHWASSER → PROZESS → HEIZUNG
-        /// (Konzept 4.3). Warmwasser zuerst ist das Komfortkriterium der App
-        /// („Beides (Warmwasser zuerst)"), Prozess vor Heizung die Abwägung
-        /// Produktionsausfall gegen Raumkomfort.
+        /// Vorbelegung der Knappheitsreihenfolge: BRAUCHWASSER → PROZESS → HEIZUNG →
+        /// KÜHLUNG (Konzept 4.3; Kühlung zuletzt, K4 mit E31). Warmwasser zuerst ist das
+        /// Komfortkriterium der App („Beides (Warmwasser zuerst)"), Prozess vor Heizung die
+        /// Abwägung Produktionsausfall gegen Raumkomfort. Das vierte Glied ist ein
+        /// PLATZHALTER, damit die Folge vollständig ist: Die Knappheitsreihenfolge regelt,
+        /// welcher Kanal bei knapper WÄRME zuerst bedient wird, und daran ist die Kälteseite
+        /// unbeteiligt (Kühlkonzept 4.5). Ihr Rang wird deshalb nirgends zur Bearbeitung
+        /// angeboten.
         ///
         /// Das Feld ist <c>private</c> und wird NIE herausgegeben: Ein öffentliches
         /// <c>int[]</c> wäre veränderlich, und ein einziger Schreibzugriff irgendwo im
@@ -490,9 +562,9 @@ namespace WindowsFormsApplication1
         /// <see cref="KnappheitVorgabe"/>; die einzige Stelle, die das Feld direkt liest,
         /// ist <see cref="KnappheitsReihenfolge"/> selbst.
         /// </summary>
-        private static readonly int[] KNAPPHEIT_STANDARD = { BRAUCHWASSER, PROZESS, HEIZUNG };
+        private static readonly int[] KNAPPHEIT_STANDARD = { BRAUCHWASSER, PROZESS, HEIZUNG, KUEHLUNG };
 
-        /// <summary>Eine EIGENE Kopie der Vorbelegung {B, P, H} (siehe <see cref="KNAPPHEIT_STANDARD"/>).</summary>
+        /// <summary>Eine EIGENE Kopie der Vorbelegung {B, P, H, K} (siehe <see cref="KNAPPHEIT_STANDARD"/>).</summary>
         public static int[] KnappheitVorgabe()
         {
             return (int[])KNAPPHEIT_STANDARD.Clone();
@@ -501,23 +573,31 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Parst die projektweite Übersteuerung der Knappheitsreihenfolge
         /// (<c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>, Konzept 4.3/F10) in ein
-        /// Feld von Kanalindizes.
+        /// Feld von <see cref="ANZAHL"/> Kanalindizes.
         ///
         /// FORMAT: sprachneutrale ASCII-Schlüssel, getrennt durch Semikolon —
-        /// <c>BRAUCHWASSER;PROZESS;HEIZUNG</c>. Das sind KEINE Anzeigetexte und keine
+        /// <c>BRAUCHWASSER;PROZESS;HEIZUNG;KUEHLUNG</c>. Das sind KEINE Anzeigetexte und keine
         /// Persistenzwerte der Kanalspalte (die heißen deutsch „Brauchwasser" /
-        /// „Prozesswaerme" / „Heizung", <see cref="DbWerte.KANAL_HEIZUNG"/> &amp; Co.),
-        /// sondern Steuerwerte nach der zweiten Schicht der Drei-Schichten-Regel; sie
+        /// „Prozesswaerme" / „Heizung" / „Kuehlung", <see cref="DbWerte.KANAL_HEIZUNG"/> &amp;
+        /// Co.), sondern Steuerwerte nach der zweiten Schicht der Drei-Schichten-Regel; sie
         /// stehen als <c>DbWerte.KNAPPHEIT_*</c>. Komma wird als Trenner mitakzeptiert —
         /// die Spalte wird von Hand gepflegt, und ein Komma ist der wahrscheinlichste
         /// Tippfehler.
         ///
-        /// GÜLTIG ist ausschließlich eine Reihenfolge, die JEDEN Kanal GENAU EINMAL nennt.
-        /// Alles andere (leer, unbekannter Schlüssel, doppelter Kanal, fehlender Kanal)
-        /// ergibt die Vorbelegung {B, P, H} und EINE Protokollwarnung je Lauf. Eine
-        /// unvollständige Reihenfolge zu „ergänzen" wäre die schlechtere Wahl: Der
-        /// Anwender bekäme eine Ordnung, die er nicht eingestellt hat, und keine Meldung
-        /// darüber, dass seine Eingabe unbrauchbar war.
+        /// <para><b>Die Wärmekanäle müssen vollständig sein.</b> GÜLTIG ist eine Angabe, die
+        /// JEDEN Wärmekanal (<see cref="KANAELE_WAERME"/>) GENAU EINMAL nennt. Alles andere
+        /// (leer, unbekannter Schlüssel, doppelter Kanal, fehlender Wärmekanal) ergibt die
+        /// Vorbelegung {B, P, H, K} und EINE Protokollwarnung je Lauf — wie vor dem vierten
+        /// Kanal. Eine unvollständige Wärmeordnung zu „ergänzen" bliebe die schlechtere Wahl:
+        /// Der Anwender bekäme eine Rangfolge, die er nicht eingestellt hat.</para>
+        ///
+        /// <para><b>Die Kälteseite ist tolerant — und ihr Rang fest</b> (Kühlkonzept 4.5,
+        /// K14 und K4). Der Kühlschlüssel darf FEHLEN: Jede gespeicherte Dreierfolge aus der
+        /// Zeit vor dem vierten Kanal bleibt gültig, OHNE Warnung und ohne Datenmigration, und
+        /// ergibt dieselbe Rangfolge der Wärmekanäle wie bisher. Die Kältekanäle
+        /// (<see cref="KANAELE_KAELTE"/>) stehen immer ZULETZT, gleich, ob und wo die Angabe
+        /// sie nennt — ihr Rang ist ohne Bedeutung für die Wärme und wird deshalb nicht
+        /// eingestellt. Ein weiterer Kanal wäre damit ohne Migration zu haben.</para>
         /// </summary>
         /// <param name="spec">Rohtext der Projekteinstellung; <c>null</c>/leer = Vorbelegung.</param>
         public static int[] KnappheitsReihenfolge(string spec)
@@ -527,10 +607,9 @@ namespace WindowsFormsApplication1
             string[] teile = spec.Split(new char[] { ';', ',' },
                                         StringSplitOptions.RemoveEmptyEntries);
 
-            int[] ordnung = new int[ANZAHL];
+            List<int> waerme = new List<int>(ANZAHL);
             bool[] gesehen = new bool[ANZAHL];
-            int n = 0;
-            bool ok = teile.Length == ANZAHL;
+            bool ok = teile.Length > 0 && teile.Length <= ANZAHL;
 
             for (int i = 0; ok && i < teile.Length; i++)
             {
@@ -538,10 +617,13 @@ namespace WindowsFormsApplication1
                 if (kanal < 0 || gesehen[kanal]) { ok = false; break; }
 
                 gesehen[kanal] = true;
-                ordnung[n++] = kanal;
+                if (IstWaerme(kanal)) waerme.Add(kanal);
             }
 
-            if (!ok || n != ANZAHL)
+            // Die Wärmekanäle vollständig und jeder genau einmal - sonst Vorbelegung.
+            if (ok && waerme.Count != KANAELE_WAERME.Length) ok = false;
+
+            if (!ok)
             {
                 SimulationProtokoll.Aktuell.WarnungEinmal(
                     "knappheitsreihenfolge-ungueltig",
@@ -549,10 +631,16 @@ namespace WindowsFormsApplication1
                                   spec.Trim(),
                                   DbWerte.KNAPPHEIT_BRAUCHWASSER, DbWerte.KNAPPHEIT_PROZESS,
                                   DbWerte.KNAPPHEIT_HEIZUNG,
-                                  Name(BRAUCHWASSER), Name(PROZESS), Name(HEIZUNG)));
+                                  Name(BRAUCHWASSER), Name(PROZESS), Name(HEIZUNG),
+                                  DbWerte.KNAPPHEIT_KUEHLUNG, Name(KUEHLUNG)));
                 return KnappheitVorgabe();
             }
 
+            // Die Wärmeordnung, wie eingestellt; die Kälteseite fest dahinter (K4).
+            int[] ordnung = new int[ANZAHL];
+            int n = 0;
+            foreach (int k in waerme) ordnung[n++] = k;
+            foreach (int k in KANAELE_KAELTE) ordnung[n++] = k;
             return ordnung;
         }
 
@@ -575,6 +663,8 @@ namespace WindowsFormsApplication1
                 return PROZESS;
             if (string.Equals(wert, DbWerte.KNAPPHEIT_HEIZUNG, StringComparison.OrdinalIgnoreCase))
                 return HEIZUNG;
+            if (string.Equals(wert, DbWerte.KNAPPHEIT_KUEHLUNG, StringComparison.OrdinalIgnoreCase))
+                return KUEHLUNG;
             return -1;
         }
     }
@@ -625,10 +715,20 @@ namespace WindowsFormsApplication1
         /// <summary>Prozesskanal — Kurzform für <c>Bedarf[Kanal.PROZESS]</c>.</summary>
         public double[] Prozess { get { return Bedarf[Kanal.PROZESS]; } }
 
+        /// <summary>Kühlkanal — Kurzform für <c>Bedarf[Kanal.KUEHLUNG]</c> (Kühlkonzept 4.3 #2).</summary>
+        public double[] Kuehlung { get { return Bedarf[Kanal.KUEHLUNG]; } }
+
         /// <summary>
-        /// Summe aller Kanäle je Stunde — die Sicht, mit der die (noch) einkanaligen
-        /// Rechenwege und alle Altleser des Gesamtbedarfs arbeiten (Dauerlinie, Maximum,
-        /// Monatswerte).
+        /// Summe der WÄRMEkanäle je Stunde (<see cref="Kanal.KANAELE_WAERME"/>) — die Sicht,
+        /// mit der die (noch) einkanaligen Rechenwege und alle Altleser des Gesamtbedarfs
+        /// arbeiten (Dauerlinie, Maximum, Monatswerte, <c>Waermebedarf_Max</c>).
+        ///
+        /// <para><b>Der Kühlkanal geht NICHT ein</b> (Kühlkonzept 4.2 a, F-K4) — das ist die
+        /// erste der beiden Ausnahmen des vierten Kanals: Liefe er in diese Summe, stiege
+        /// die Jahreshöchstlast jedes Projekts mit Kühlung um den Kältebedarf der Stunde,
+        /// die Dauerlinie würde auf einen falschen Wert normiert, und jeder Wärmeerzeuger
+        /// würde gegen eine Last ausgelegt, die er nicht zu decken hat. Die Kälteseite hat
+        /// ihre eigene Summe: <see cref="SummeKaelte"/>.</para>
         ///
         /// Liefert bewusst einen NEUEN Vektor: Ein zurückgegebenes internes Array wäre in
         /// diesem Rechenkern eine Aliasing-Falle — die Module überschreiben ihre
@@ -637,19 +737,39 @@ namespace WindowsFormsApplication1
         ///
         /// GERUNDET WIRD NACH JEDEM SCHRITT auf <c>double</c> — dieselbe Konvention wie in
         /// <see cref="WPPlan.Core.BhkwPlan.VectorenAddieren"/>, mit der der Bestand seinen
-        /// Summenvektor aufgebaut hat. Die Addition läuft in Indexreihenfolge
-        /// (Heizung → Brauchwasser → Prozess); da double-Addition nicht assoziativ ist,
-        /// kann das Ergebnis um bis zu ein ULP neben einer anders geklammerten Summe
-        /// derselben Werte liegen (Konzept 4.2, Toleranz „1-ULP-Klasse").
+        /// Summenvektor aufgebaut hat. Die Addition läuft in der Folge der Liste
+        /// (Heizung → Brauchwasser → Prozess) — Anweisung für Anweisung dieselbe wie vor
+        /// dem vierten Kanal; da double-Addition nicht assoziativ ist, kann das Ergebnis um
+        /// bis zu ein ULP neben einer anders geklammerten Summe derselben Werte liegen
+        /// (Konzept 4.2, Toleranz „1-ULP-Klasse").
         /// </summary>
         public double[] Summe()
         {
+            return SummeUeber(Kanal.KANAELE_WAERME);
+        }
+
+        /// <summary>
+        /// Summe der KÄLTEkanäle je Stunde (<see cref="Kanal.KANAELE_KAELTE"/>) — der
+        /// wörtliche Zwilling von <see cref="Summe"/> auf der Kälteseite (Kühlkonzept 4.2,
+        /// E21): Quelle der Kältespitze <c>Kaeltebedarf_Max</c>, der eigenen Dauerlinie und
+        /// von <c>Kaeltebedarf_Gesamt</c>. Mit genau einem Kältekanal ist sie der Kühlkanal
+        /// selbst, als eigener Vektor.
+        /// </summary>
+        public double[] SummeKaelte()
+        {
+            return SummeUeber(Kanal.KANAELE_KAELTE);
+        }
+
+        /// <summary>Die Summe einer Kanalliste je Stunde, in Listenfolge, als NEUER Vektor.</summary>
+        private double[] SummeUeber(ImmutableArray<int> liste)
+        {
             double[] s = new double[STUNDEN_JAHR];
+            double[] erster = Bedarf[liste[0]];
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
-                double w = Bedarf[0][h];
-                for (int k = 1; k < Kanal.ANZAHL; k++)
-                    w = ((double)w + Bedarf[k][h]);
+                double w = erster[h];
+                for (int i = 1; i < liste.Length; i++)
+                    w = ((double)w + Bedarf[liste[i]][h]);
                 s[h] = w;
             }
             return s;
@@ -681,6 +801,13 @@ namespace WindowsFormsApplication1
         /// Altverhaltens-Zuordnung „Netzverluste vollständig auf Heizung". Für jedes
         /// Projekt MIT Brauchwasser- oder Prozessanteil ändert sich damit die
         /// Kanalaufteilung — die Jahressumme bleibt unverändert.
+        ///
+        /// <para><b>Nur die WÄRMEkanäle</b> (<see cref="Kanal.KANAELE_WAERME"/>, Kühlkonzept
+        /// 4.2 b, F-K4) — die zweite Ausnahme des vierten Kanals: Die Netzverluste des
+        /// WÄRMEnetzes haben in einem Kältekreis nichts zu suchen; über alle Kanäle verteilt
+        /// bekäme der Kühlkanal einen Anteil, der den Kältebedarf um genau den Betrag erhöht,
+        /// um den er den Wärmekanälen fehlt. Kältenetzverluste werden nicht gerechnet
+        /// (benannte Abweichung, Kühlkonzept 4.2, Kapitel 14).</para>
         /// </summary>
         /// <param name="betragJeStunde">Netzverlust je Stunde [kWh], konstant über das Jahr.</param>
         public void NetzverlusteVerteilen(double betragJeStunde)
@@ -691,13 +818,13 @@ namespace WindowsFormsApplication1
             {
                 // Zwischenrechnung in double - Konvention des Rechenkerns.
                 double summe = 0;
-                for (int k = 0; k < Kanal.ANZAHL; k++)
+                foreach (int k in Kanal.KANAELE_WAERME)
                     summe += Bedarf[k][h];
 
                 if (summe > 0)
                 {
                     double vergeben = 0;
-                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                    foreach (int k in Kanal.KANAELE_WAERME)
                     {
                         if (k == Kanal.HEIZUNG) continue;
                         double anteil = (double)(betragJeStunde * (Bedarf[k][h] / summe));
@@ -760,10 +887,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Rundungsschritte zwischen einer double-Referenzsumme und
-        /// <see cref="Summe"/>: je Kanal eine Speicherung des Kanalwertes, dazu die
-        /// Additionen der Summenbildung. Der Maßstab der Energieprobe (11.3).
+        /// <see cref="Summe"/>: je WÄRMEkanal eine Speicherung des Kanalwertes, dazu die
+        /// Additionen der Summenbildung. Der Maßstab der Energieprobe (11.3). Gebildet über
+        /// <see cref="Kanal.KANAELE_WAERME"/>, weil <see cref="Summe"/> über diese Liste
+        /// läuft — mit dem vierten Kanal bleibt es bei fünf Schritten.
         /// </summary>
-        public const int ERHALTUNG_SCHRITTE_SUMME = 2 * Kanal.ANZAHL - 1;
+        public static readonly int ERHALTUNG_SCHRITTE_SUMME = 2 * Kanal.KANAELE_WAERME.Length - 1;
+
+        /// <summary>
+        /// Dasselbe für <see cref="SummeKaelte"/> — der Maßstab der Bedarfsprobe Kälte
+        /// (Kühlkonzept 4.4, #30). Mit einem Kältekanal ein Schritt.
+        /// </summary>
+        public static readonly int ERHALTUNG_SCHRITTE_SUMME_KAELTE = 2 * Kanal.KANAELE_KAELTE.Length - 1;
 
 #if DEBUG
 
@@ -771,34 +906,55 @@ namespace WindowsFormsApplication1
         /// Selbsttest des Kanalsatzes — ausschließlich im Debug-Build, nach dem Muster
         /// von <see cref="Waermekanaele.Selbsttest"/> (kein Testcode im Release-Assembly).
         /// Wird nicht automatisch aufgerufen; das Ergebnis steht im Umsetzungsprotokoll
-        /// zu Paket K1.
+        /// zu Paket K1. Ein INVARIANTENTEST OHNE LAUFDATEN (Kühlkonzept 4.4): Er prüft, was
+        /// ohne einen Lauf wahr ist; die Laufaussagen der Kälteseite trägt die Bedarfsprobe
+        /// Kälte in <c>SimulationKaeltebedarf</c>.
         ///
         /// ZUGESICHERT wird (jede Verletzung setzt das Gesamtergebnis auf FEHLGESCHLAGEN):
+        ///   0. KANALLISTEN (Kühlkonzept 4.2, F-K4): <see cref="Kanal.KANAELE_WAERME"/> und
+        ///      <see cref="Kanal.KANAELE_KAELTE"/> sind disjunkt und decken zusammen jeden
+        ///      Kanal genau einmal — ein weiterer Kanal fiele sonst still in keine Liste
         ///   1. Konstruktion: <see cref="Kanal.ANZAHL"/> genullte Vektoren à 8760, alle
         ///      voneinander getrennt
-        ///   2. <see cref="Summe"/> = schrittweise double-Summe der Kanäle und liefert
-        ///      einen EIGENEN Vektor (Aliasing-Probe)
+        ///   2. <see cref="Summe"/> = schrittweise double-Summe der WÄRMEkanäle OHNE
+        ///      Kühlanteil, <see cref="SummeKaelte"/> = der Kühlkanal; beide liefern einen
+        ///      EIGENEN Vektor (Aliasing-Probe)
         ///   3. <see cref="Clone"/> kopiert alle Kanäle und trennt die Vektoren
         ///   4. <see cref="NetzverlusteVerteilen"/>: Proportionalität (60/30/10 bei
-        ///      Betrag 10 → 6/3/1) und Randfall „kein Bedarf" (alles auf Heizung)
+        ///      Betrag 10 → 6/3/1) auch mit Kältebedarf in derselben Stunde, der Kühlkanal
+        ///      bleibt unberührt; Randfall „kein Wärmebedarf" (alles auf Heizung)
         ///   5. ERHALTUNG über ein volles Jahr: nach der Verteilung gilt je Stunde
         ///      Kanalsumme == vorherige Kanalsumme + Betrag, im Maßstab
         ///      <see cref="ErhaltungOk"/> (1-ULP-Klasse) — dieselbe Zusage, die die
         ///      Energieprobe des Laufs prüft (Konzept 11.3)
-        ///   6. <see cref="Kanal.AusText"/>: die drei Persistenzwerte, dazu leer, null
-        ///      und Unfug → Heizkanal
-        ///   7. <see cref="Kanal.KnappheitsReihenfolge"/> (Paket K2): Vorbelegung
-        ///      {B, P, H} als EIGENER Vektor, gültige Übersteuerung, tolerante
-        ///      Schreibweise — und Rückfall auf die Vorbelegung bei jeder unbrauchbaren
-        ///      Eingabe (leer, Unfug, unvollständig, doppelt, zu viele)
+        ///   6. <see cref="Kanal.AusText"/>: die vier Persistenzwerte, dazu leer, null
+        ///      und Unfug → Heizkanal (nie der Kühlkanal)
+        ///   7. <see cref="Kanal.KnappheitsReihenfolge"/> (Paket K2, K14): Vorbelegung
+        ///      {B, P, H, K} als EIGENER Vektor, gültige Übersteuerung mit und ohne
+        ///      Kühlschlüssel (Kühlung immer zuletzt), tolerante Schreibweise — und
+        ///      Rückfall auf die Vorbelegung bei jeder unbrauchbaren Eingabe (leer, Unfug,
+        ///      unvollständige Wärmeordnung, doppelt, zu viele)
         /// </summary>
         public static string Selbsttest()
         {
             StringBuilder sb = new StringBuilder();
             bool allesOk = true;
 
-            sb.AppendLine("Selbsttest Kanalsatz (Konzept 4.1/4.2, Paket K1)");
+            sb.AppendLine("Selbsttest Kanalsatz (Konzept 4.1/4.2, Paket K1; Kühlkonzept 4.2)");
             sb.AppendLine();
+
+            // --- 0. Kanallisten --------------------------------------------
+            int[] zaehler = new int[Kanal.ANZAHL];
+            bool listenOk = true;
+            foreach (int k in Kanal.KANAELE_WAERME)
+                if (k < 0 || k >= Kanal.ANZAHL) listenOk = false; else zaehler[k]++;
+            foreach (int k in Kanal.KANAELE_KAELTE)
+                if (k < 0 || k >= Kanal.ANZAHL) listenOk = false; else zaehler[k]++;
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                if (zaehler[k] != 1) listenOk = false;
+            sb.AppendLine("0. Kanallisten Waerme/Kaelte vollstaendig und disjunkt = " +
+                          (listenOk ? "OK" : "FEHLER"));
+            if (!listenOk) allesOk = false;
 
             // --- 1. Konstruktion -------------------------------------------
             Kanalsatz neu = new Kanalsatz();
@@ -811,20 +967,23 @@ namespace WindowsFormsApplication1
             }
             // Vektoren getrennt? (ein gemeinsames Array waere die schlimmste Falle)
             neu.Bedarf[Kanal.BRAUCHWASSER][7] = 1.0;
-            bauOk &= neu.Bedarf[Kanal.HEIZUNG][7] == 0.0 && neu.Bedarf[Kanal.PROZESS][7] == 0.0;
+            bauOk &= neu.Bedarf[Kanal.HEIZUNG][7] == 0.0 && neu.Bedarf[Kanal.PROZESS][7] == 0.0 &&
+                     neu.Bedarf[Kanal.KUEHLUNG][7] == 0.0;
             sb.AppendLine("1. Konstruktion: " + Kanal.ANZAHL + " genullte, getrennte Vektoren = " +
                           (bauOk ? "OK" : "FEHLER"));
             if (!bauOk) allesOk = false;
 
-            // --- 2. Summe ---------------------------------------------------
+            // --- 2. Summe und SummeKaelte ------------------------------------
             Kanalsatz k2 = new Kanalsatz();
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
                 k2.Heizung[h] = h % 7;
                 k2.Brauchwasser[h] = (h % 3) * 0.5;
                 k2.Prozess[h] = (h % 5) * 0.25;
+                k2.Kuehlung[h] = (h % 11) * 0.75;
             }
             double[] summe = k2.Summe();
+            double[] kaelte = k2.SummeKaelte();
             bool summeOk = true;
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
@@ -832,11 +991,14 @@ namespace WindowsFormsApplication1
                 w = ((double)w + k2.Brauchwasser[h]);
                 w = ((double)w + k2.Prozess[h]);
                 if (summe[h] != w) { summeOk = false; break; }
+                if (kaelte[h] != k2.Kuehlung[h]) { summeOk = false; break; }
             }
             summe[0] = 999.0;                       // eigener Vektor? (Aliasing-Probe)
-            bool eigen = k2.Heizung[0] != 999.0 && k2.Brauchwasser[0] != 999.0 && k2.Prozess[0] != 999.0;
-            sb.AppendLine("2. Summe(): elementweise = " + (summeOk ? "OK" : "FEHLER") +
-                          ", eigener Vektor = " + (eigen ? "OK" : "FEHLER"));
+            kaelte[11] = 999.0;
+            bool eigen = k2.Heizung[0] != 999.0 && k2.Brauchwasser[0] != 999.0 && k2.Prozess[0] != 999.0 &&
+                         k2.Kuehlung[11] != 999.0;
+            sb.AppendLine("2. Summe() ohne Kuehlanteil, SummeKaelte() = Kuehlkanal: elementweise = " +
+                          (summeOk ? "OK" : "FEHLER") + ", eigene Vektoren = " + (eigen ? "OK" : "FEHLER"));
             if (!summeOk || !eigen) allesOk = false;
 
             // --- 3. Clone ---------------------------------------------------
@@ -846,7 +1008,8 @@ namespace WindowsFormsApplication1
                 for (int h = 0; h < STUNDEN_JAHR; h++)
                     if (kopie.Bedarf[k][h] != k2.Bedarf[k][h]) { gleich = false; break; }
             kopie.Prozess[500] = -77.0;
-            bool getrennt = k2.Prozess[500] != -77.0;
+            kopie.Kuehlung[500] = -77.0;
+            bool getrennt = k2.Prozess[500] != -77.0 && k2.Kuehlung[500] != -77.0;
             sb.AppendLine("3. Clone(): Werte gleich = " + (gleich ? "OK" : "FEHLER") +
                           ", Vektoren getrennt = " + (getrennt ? "OK" : "FEHLER"));
             if (!gleich || !getrennt) allesOk = false;
@@ -854,23 +1017,29 @@ namespace WindowsFormsApplication1
             // --- 4. Netzverluste: Proportionalitaet und Randfall ------------
             Kanalsatz nv = new Kanalsatz();
             nv.Heizung[100] = 60.0; nv.Brauchwasser[100] = 30.0; nv.Prozess[100] = 10.0;
+            nv.Kuehlung[100] = 50.0;                // Kaeltebedarf in derselben Stunde
+            nv.Kuehlung[200] = 5.0;                 // Kaelte ohne Waermebedarf
             nv.NetzverlusteVerteilen(10.0);
             bool proOk = Math.Abs(nv.Heizung[100] - 66.0) < 1e-3 &&
                          Math.Abs(nv.Brauchwasser[100] - 33.0) < 1e-3 &&
-                         Math.Abs(nv.Prozess[100] - 11.0) < 1e-3;
-            // Stunde 200 hat keinen Bedarf -> alles auf den Heizkanal
-            bool randOk = nv.Heizung[200] == 10.0 && nv.Brauchwasser[200] == 0.0 && nv.Prozess[200] == 0.0;
-            sb.AppendLine("4. Netzverluste 10 auf 60/30/10 -> " + nv.Heizung[100] + "/" +
-                          nv.Brauchwasser[100] + "/" + nv.Prozess[100] + "   " +
-                          (proOk ? "OK" : "FEHLER") + "; Randfall ohne Bedarf -> Heizung " +
-                          nv.Heizung[200] + "   " + (randOk ? "OK" : "FEHLER"));
+                         Math.Abs(nv.Prozess[100] - 11.0) < 1e-3 &&
+                         nv.Kuehlung[100] == 50.0;
+            // Stunde 200 hat keinen WAERMEbedarf -> alles auf den Heizkanal, Kuehlung unberuehrt
+            bool randOk = nv.Heizung[200] == 10.0 && nv.Brauchwasser[200] == 0.0 && nv.Prozess[200] == 0.0 &&
+                          nv.Kuehlung[200] == 5.0;
+            sb.AppendLine("4. Netzverluste 10 auf 60/30/10 (+50 Kaelte) -> " + nv.Heizung[100] + "/" +
+                          nv.Brauchwasser[100] + "/" + nv.Prozess[100] + " | " + nv.Kuehlung[100] + "   " +
+                          (proOk ? "OK" : "FEHLER") + "; Randfall ohne Waermebedarf -> Heizung " +
+                          nv.Heizung[200] + ", Kuehlung " + nv.Kuehlung[200] + "   " + (randOk ? "OK" : "FEHLER"));
             if (!proOk || !randOk) allesOk = false;
 
             // --- 5. Erhaltung ueber ein volles Jahr -------------------------
             // Gemischter Testfall: reine Heizstunden, reine Brauchwasserstunden,
-            // Prozessstunden, gemischte Stunden und Stunden ganz ohne Bedarf.
+            // Prozessstunden, gemischte Stunden und Stunden ganz ohne Bedarf - und in
+            // jeder dritten Stunde ein Kaeltebedarf, der die Waermebilanz nicht beruehren darf.
             Kanalsatz jahr = new Kanalsatz();
             double[] vorher = new double[STUNDEN_JAHR];
+            double[] kaelteVorher = new double[STUNDEN_JAHR];
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
                 switch (h % 5)
@@ -881,7 +1050,9 @@ namespace WindowsFormsApplication1
                     case 3: jahr.Heizung[h] = 8.1; jahr.Brauchwasser[h] = 2.9; jahr.Prozess[h] = 1.7; break;
                     default: break;                                  // kein Bedarf
                 }
+                if (h % 3 == 0) jahr.Kuehlung[h] = 4.4;
                 vorher[h] = (double)jahr.Heizung[h] + jahr.Brauchwasser[h] + jahr.Prozess[h];
+                kaelteVorher[h] = jahr.Kuehlung[h];
             }
             const double betrag = 0.4713;
             jahr.NetzverlusteVerteilen(betrag);
@@ -894,9 +1065,10 @@ namespace WindowsFormsApplication1
                 double abw = Math.Abs((double)nachher[h] - erwartet);
                 if (abw > groesste) groesste = abw;
                 if (!ErhaltungOk(erwartet, nachher[h], ERHALTUNG_SCHRITTE_SUMME)) verletzt++;
+                if (jahr.Kuehlung[h] != kaelteVorher[h]) verletzt++;
             }
             sb.AppendLine("5. Erhaltung Kanalsumme == vorher + Netzverlust (1-ULP-Klasse, " +
-                          ERHALTUNG_SCHRITTE_SUMME + " Rundungsschritte): " +
+                          ERHALTUNG_SCHRITTE_SUMME + " Rundungsschritte), Kuehlkanal unberuehrt: " +
                           (verletzt == 0 ? "OK" : "FEHLER in " + verletzt + " Stunden") +
                           ", groesste Abweichung " + groesste.ToString("G4") + " kWh");
             if (verletzt != 0) allesOk = false;
@@ -905,55 +1077,71 @@ namespace WindowsFormsApplication1
             bool textOk = Kanal.AusText(DbWerte.KANAL_HEIZUNG) == Kanal.HEIZUNG &&
                           Kanal.AusText(DbWerte.KANAL_BRAUCHWASSER) == Kanal.BRAUCHWASSER &&
                           Kanal.AusText(DbWerte.KANAL_PROZESS) == Kanal.PROZESS &&
+                          Kanal.AusText(DbWerte.KANAL_KUEHLUNG) == Kanal.KUEHLUNG &&
                           Kanal.AusText(null) == Kanal.HEIZUNG &&
                           Kanal.AusText("") == Kanal.HEIZUNG &&
                           Kanal.AusText("   ") == Kanal.HEIZUNG &&
                           Kanal.AusText("Unfug") == Kanal.HEIZUNG &&
+                          Kanal.AusText("Kühlung") == Kanal.HEIZUNG &&   // nur der ASCII-Persistenzwert
                           Kanal.AusText(" " + DbWerte.KANAL_PROZESS.ToUpperInvariant() + " ") == Kanal.PROZESS;
             sb.AppendLine("6. Kanal.AusText(): Persistenzwerte und Vorbelegung Heizung = " +
                           (textOk ? "OK" : "FEHLER"));
             if (!textOk) allesOk = false;
 
-            // --- 7. Kanal.KnappheitsReihenfolge (Paket K2, F10) -------------
-            // Zugesichert: die Vorbelegung, eine gültige Übersteuerung, und dass JEDE
-            // unbrauchbare Eingabe auf die Vorbelegung zurückfällt statt eine halbe
-            // Ordnung zu liefern (fehlender Kanal, doppelter Kanal, Unfug, leer).
+            // --- 7. Kanal.KnappheitsReihenfolge (Paket K2, F10; K14) ---------
+            // Zugesichert: die Vorbelegung, eine gültige Übersteuerung mit und ohne
+            // Kühlschlüssel (Kühlung immer zuletzt), und dass JEDE unbrauchbare Eingabe
+            // auf die Vorbelegung zurückfällt statt eine halbe Ordnung zu liefern
+            // (fehlender Wärmekanal, doppelter Kanal, Unfug, leer).
             int[] vorgabe = Kanal.KnappheitVorgabe();
             bool knappOk = vorgabe.Length == Kanal.ANZAHL &&
                            vorgabe[0] == Kanal.BRAUCHWASSER && vorgabe[1] == Kanal.PROZESS &&
-                           vorgabe[2] == Kanal.HEIZUNG;
+                           vorgabe[2] == Kanal.HEIZUNG && vorgabe[3] == Kanal.KUEHLUNG;
 
             // Eigener Vektor? (dieselbe Aliasing-Falle wie bei Summe())
             vorgabe[0] = -1;
             knappOk &= Kanal.KnappheitVorgabe()[0] == Kanal.BRAUCHWASSER;
 
+            // Die Dreierfolge aus der Zeit vor dem vierten Kanal - Kühlung dahinter.
             int[] uebersteuert = Kanal.KnappheitsReihenfolge(
                 DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" +
                 DbWerte.KNAPPHEIT_PROZESS);
             knappOk &= uebersteuert.Length == Kanal.ANZAHL && uebersteuert[0] == Kanal.HEIZUNG &&
-                       uebersteuert[1] == Kanal.BRAUCHWASSER && uebersteuert[2] == Kanal.PROZESS;
+                       uebersteuert[1] == Kanal.BRAUCHWASSER && uebersteuert[2] == Kanal.PROZESS &&
+                       uebersteuert[3] == Kanal.KUEHLUNG;
+
+            // Die Viererfolge mit dem Kühlschlüssel vorn - er rückt nach hinten (K4).
+            int[] vorn = Kanal.KnappheitsReihenfolge(
+                DbWerte.KNAPPHEIT_KUEHLUNG + ";" + DbWerte.KNAPPHEIT_PROZESS + ";" +
+                DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_BRAUCHWASSER);
+            knappOk &= vorn[0] == Kanal.PROZESS && vorn[1] == Kanal.HEIZUNG &&
+                       vorn[2] == Kanal.BRAUCHWASSER && vorn[3] == Kanal.KUEHLUNG;
 
             // Kleinschreibung und Leerzeichen sind zulässig, Komma als Trenner auch.
             int[] locker = Kanal.KnappheitsReihenfolge(
                 " " + DbWerte.KNAPPHEIT_PROZESS.ToLowerInvariant() + " , " +
                 DbWerte.KNAPPHEIT_HEIZUNG + " ; " + DbWerte.KNAPPHEIT_BRAUCHWASSER);
             knappOk &= locker[0] == Kanal.PROZESS && locker[1] == Kanal.HEIZUNG &&
-                       locker[2] == Kanal.BRAUCHWASSER;
+                       locker[2] == Kanal.BRAUCHWASSER && locker[3] == Kanal.KUEHLUNG;
 
             string[] unbrauchbar =
             {
                 null, "", "   ", "Unfug",
                 DbWerte.KNAPPHEIT_BRAUCHWASSER,                                  // unvollständig
+                DbWerte.KNAPPHEIT_KUEHLUNG,                                      // ohne Wärmekanal
+                DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_HEIZUNG + ";" +
+                    DbWerte.KNAPPHEIT_KUEHLUNG,                                  // Wärme unvollständig
                 DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_BRAUCHWASSER +
                     ";" + DbWerte.KNAPPHEIT_HEIZUNG,                             // doppelt
                 DbWerte.KNAPPHEIT_BRAUCHWASSER + ";" + DbWerte.KNAPPHEIT_PROZESS + ";" +
-                    DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_HEIZUNG  // zu viele
+                    DbWerte.KNAPPHEIT_HEIZUNG + ";" + DbWerte.KNAPPHEIT_KUEHLUNG + ";" +
+                    DbWerte.KNAPPHEIT_KUEHLUNG                                   // zu viele
             };
             foreach (string s in unbrauchbar)
             {
                 int[] r = Kanal.KnappheitsReihenfolge(s);
                 knappOk &= r.Length == Kanal.ANZAHL && r[0] == Kanal.BRAUCHWASSER &&
-                           r[1] == Kanal.PROZESS && r[2] == Kanal.HEIZUNG;
+                           r[1] == Kanal.PROZESS && r[2] == Kanal.HEIZUNG && r[3] == Kanal.KUEHLUNG;
             }
 
             sb.AppendLine("7. Kanal.KnappheitsReihenfolge(): Vorbelegung, Übersteuerung und " +

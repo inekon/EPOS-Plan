@@ -1269,10 +1269,11 @@ namespace WindowsFormsApplication1
         /// ein Kanal überhaupt erreicht (Konzept 7.4 Punkt 2) — und damit beim
         /// Kombispeicher, dass die Heizung die Brauchwasser-Bereitschaftszone oben nicht
         /// antastet (7.5). Vorbelegung oben; der Registry-Aufbau setzt die
-        /// Konzept-Vorgaben aus dem Klassen-Set.
+        /// Konzept-Vorgaben aus dem Klassen-Set. Der vierte Platz gehört dem Kühlkanal: Ein
+        /// Speicher entlädt keine Kälte (K7), die Vorbelegung dort ist reine Feldgröße.
         /// </summary>
         public readonly double[] Entnahmehoehe = new double[Kanal.ANZAHL]
-            { 1.0, 1.0, 1.0 };
+            { 1.0, 1.0, 1.0, 1.0 };
 
         /// <summary>
         /// EINSPEISEHÖHE des gerade laufenden Ladevorgangs, 0…1 (Konzept 7.4 Punkt 1),

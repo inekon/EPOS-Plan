@@ -1318,6 +1318,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KANAL_PROZESS = "Prozesswaerme";
 
+        /// <summary>
+        /// Kühlung — der vierte Kanal (Stufe KU1 der Kühlung, Kühlkonzept 4.3 #8, K3): eine
+        /// externe Ganglinie mit diesem Wert trägt KÄLTEbedarf und geht in den Kühlkanal,
+        /// nie in einen Wärmekanal. ASCII und eingefroren (B-K11) — „Kuehlung", nicht
+        /// „Kühlung", aus demselben Grund wie <see cref="KANAL_PROZESS"/>. Kein
+        /// Schemaschritt: Die Spalte ist TEXT, der Wert ist nur ein weiterer gültiger (K3).
+        /// </summary>
+        public const string KANAL_KUEHLUNG = "Kuehlung";
+
         // =====================================================================
         // Kanal-Knappheitsreihenfolge
         //   Tab_Einstellungen.Kanal_Knappheitsreihenfolge  (Migrationsschritt 49,
@@ -1332,15 +1341,17 @@ namespace WindowsFormsApplication1
         //   deutsche Schreibweisen wären dort nur eine weitere Fehlerquelle
         //   (Kodierungsschäden mit U+FFFD treffen genau solche Vergleiche).
         //
-        //   PERSISTENZFORMAT der Spalte: die drei Schlüssel, getrennt durch
-        //   Semikolon, in der gewünschten Rangfolge — z. B.
-        //   "BRAUCHWASSER;PROZESS;HEIZUNG". Der Leser ist tolerant: unbekannte
-        //   Glieder werden übergangen, fehlende Kanäle hinten in der Reihenfolge
-        //   des Vorgabewerts ergänzt, NULL/leer bedeutet den Vorgabewert.
+        //   PERSISTENZFORMAT der Spalte: die Schlüssel, getrennt durch Semikolon, in
+        //   der gewünschten Rangfolge — z. B. "BRAUCHWASSER;PROZESS;HEIZUNG;KUEHLUNG".
+        //   Der Leser (Kanal.KnappheitsReihenfolge) verlangt die drei WÄRMEschlüssel
+        //   vollständig und je genau einmal; der Kühlschlüssel darf fehlen und steht
+        //   immer zuletzt (Kühlkonzept 4.5, K14 und K4) — jede gespeicherte Dreierfolge
+        //   bleibt damit gültig, ohne Datenmigration. NULL/leer bedeutet den Vorgabewert.
         //
         //   FACHLICHE BEGRÜNDUNG der Vorbelegung (4.3): Warmwasser-Vorrang wie
         //   bisher (Komfortkriterium), Prozess vor Heizung (ein Produktionsausfall
-        //   wiegt schwerer als Raumkomfort).
+        //   wiegt schwerer als Raumkomfort). Die Kühlung steht als Platzhalter zuletzt:
+        //   Die Reihenfolge regelt knappe WÄRME, an der die Kälteseite unbeteiligt ist.
         // =====================================================================
 
         /// <summary>Steuerwert des Brauchwasserkanals in der Knappheitsreihenfolge.</summary>
@@ -1353,15 +1364,23 @@ namespace WindowsFormsApplication1
         public const string KNAPPHEIT_HEIZUNG = "HEIZUNG";
 
         /// <summary>
-        /// Vorbelegung der Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c>
-        /// (Migrationsschritt 49) und Rückfallwert bei NULL, Leerwert oder fehlender
-        /// Spalte: <c>BRAUCHWASSER;PROZESS;HEIZUNG</c> — die drei Schlüssel oben in
-        /// genau dieser Rangfolge. Bewusst als LITERAL geschrieben und nicht aus den
-        /// drei Konstanten zusammengesetzt: Der Wert steht so auch im
-        /// Migrationsskript und in der Datenbank, und er soll im Quelltext genauso
-        /// lesbar sein wie dort.
+        /// Steuerwert des Kühlkanals in der Knappheitsreihenfolge (Kühlkonzept 4.3 #12) —
+        /// sein Rang ist fest (zuletzt, K4) und wird nicht zur Bearbeitung angeboten.
         /// </summary>
-        public const string KNAPPHEIT_DEFAULT = "BRAUCHWASSER;PROZESS;HEIZUNG";
+        public const string KNAPPHEIT_KUEHLUNG = "KUEHLUNG";
+
+        /// <summary>
+        /// Vorbelegung der Spalte <c>Tab_Einstellungen.Kanal_Knappheitsreihenfolge</c> und
+        /// Rückfallwert bei NULL, Leerwert oder fehlender Spalte:
+        /// <c>BRAUCHWASSER;PROZESS;HEIZUNG;KUEHLUNG</c> — die vier Schlüssel oben in genau
+        /// dieser Rangfolge, damit ein neuer Einstellungssatz die vollständige Folge führt
+        /// (Kühlkonzept 4.5). Gespeicherte Dreierfolgen (Migrationsschritt 49 und alle
+        /// Sätze aus der Zeit vor dem vierten Kanal) liest der tolerante Parser
+        /// unverändert. Bewusst als LITERAL geschrieben und nicht aus den Konstanten
+        /// zusammengesetzt: Der Wert steht so in der Datenbank, und er soll im Quelltext
+        /// genauso lesbar sein wie dort.
+        /// </summary>
+        public const string KNAPPHEIT_DEFAULT = "BRAUCHWASSER;PROZESS;HEIZUNG;KUEHLUNG";
 
         // =====================================================================
         // Wärmequelle

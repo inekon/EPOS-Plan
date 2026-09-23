@@ -135,9 +135,42 @@ namespace WindowsFormsApplication1
         /// eine <c>double</c>-, keine <c>float</c>-Rundung mehr).</para>
         ///
         /// <para>Spalten <c>Waermebedarf_Heizung/_Brauchwasser/_Prozess</c>, angelegt in
-        /// Migrationsschritt 52.</para>
+        /// Migrationsschritt 52. Der vierte Eintrag (<see cref="Kanal.KUEHLUNG"/>) ist der
+        /// Kältebedarf des Kühlkanals [MWh] — Spalte <c>Waermebedarf_Kuehlung</c>
+        /// (Schemaschritt 110, KU-S4; Name nach dem Bestandsmuster, K13). Er geht NICHT in
+        /// <see cref="Waermebedarf_Gesamt"/> ein und wird nur geschrieben, wenn der Lauf Kälte
+        /// ERHOBEN hat (<see cref="KaelteErhoben"/>); sonst steht die Spalte auf NULL.</para>
         /// </summary>
         public double[] Waermebedarf_Kanal = new double[Kanal.ANZAHL];
+
+        // ---- Die Kälteseite (Schemaschritt 110, KU-S4; Kühlkonzept 7.4, E21) ----------
+        //
+        // null heißt „nicht erhoben" — das Projekt rechnet keine Kälte
+        // (Tab_Einstellungen.Kuehlbetrieb = 0). Ein Wert, auch 0, heißt „erhoben". Die
+        // Unterscheidung ist Pflicht, nicht Zier: Der Referenzlauf-Export nimmt eine NULL-
+        // Spalte nicht in die Kennzahlendatei auf, und ein Projekt ohne Kühlung bleibt so
+        // byte-gleich (Kühlkonzept 10.5).
+
+        /// <summary>
+        /// Jahreskältebedarf [MWh] — Gegenstück zu <see cref="Waermebedarf_Gesamt"/>, Summe von
+        /// <c>Kanalsatz.SummeKaelte()</c>; Nenner des Deckungsgrads der Kälteseite (6.4).
+        /// Solange nur ein Kältekanal besteht, wertgleich mit
+        /// <c>Waermebedarf_Kanal[Kanal.KUEHLUNG]</c>.
+        /// </summary>
+        public double? Kaeltebedarf_Gesamt;
+
+        /// <summary>Kältespitze [kW] — Gegenstück zu <see cref="Waermelast_Max"/>, gesetzt aus <c>SimulationKaeltebedarf.Kaeltebedarf_Max</c>.</summary>
+        public double? Kaeltelast_Max;
+
+        /// <summary>
+        /// Ungedeckte Kälte [MWh] — Gegenstück zu <see cref="Waermerestbedarf"/>. In KU1 deckt
+        /// niemand Kälte: Der Rest ist der ganze Bedarf, benannt als Warnung im Protokoll
+        /// (F-K12).
+        /// </summary>
+        public double? Kaelterestbedarf;
+
+        /// <summary>Hat der Lauf Kälte erhoben? Bestimmt, ob die Kältespalten Werte oder NULL tragen.</summary>
+        public bool KaelteErhoben => Kaeltebedarf_Gesamt.HasValue;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

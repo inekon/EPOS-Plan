@@ -809,11 +809,17 @@ namespace WindowsFormsApplication1
             // Bewusst VOR der Stundenschleife angelegt und je Stunde neu befüllt (dieselbe
             // Konvention wie beim Budget) — 8760 Feldanlagen wären reine Arbeit für den
             // Sammler.
+            //
+            // KÜHLKONZEPT 4.2 (F-K4): Befüllt und zurückgeschrieben werden allein die
+            // WÄRMEkanäle. Der Kühlkanal bleibt in rest[] 0 - kein Wärmeerzeuger sieht einen
+            // Kältebedarf, RestSumme(rest) trägt nur offene Wärme, und der Bivalenzpunkt
+            // bleibt die Größe, die er vor dem vierten Kanal war. Im Kanalsatz selbst bleibt
+            // der Kühlkanal unberührt stehen: Er gehört der Kälteseite.
             double[] rest = new double[Kanal.ANZAHL];
 
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
+                foreach (int k in Kanal.KANAELE_WAERME) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
                 ZeilenNullen(_entladungJeArtStunde);
@@ -946,8 +952,9 @@ namespace WindowsFormsApplication1
 
                     // Durchsatzbudget der Stunde festhalten — Stand NACH der
                     // Bedarfsdeckung. Genau diesen Rest kann Phase E aus den Speichern
-                    // ziehen; zwischen C und E verändert ihn nichts.
-                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                    // ziehen; zwischen C und E verändert ihn nichts. Nur Wärme: Ein
+                    // Speicher reicht keine Kälte durch (K7).
+                    foreach (int k in Kanal.KANAELE_WAERME)
                         absehbar[k] = rest[k] > 0 ? rest[k] : 0;
 
                     // --- C…) LADEPHASEN JE RANG (Paket S1, Konzept 5.2) -------------------
@@ -1005,8 +1012,9 @@ namespace WindowsFormsApplication1
                 if (MitKessel) Kessel.Stunde_Abschluss(stunde);
 
                 // Restbedarf in die Kanäle zurückschreiben — Eingang der nächsten Stufe
-                // der Kaskade.
-                for (int k = 0; k < Kanal.ANZAHL; k++)
+                // der Kaskade. Nur die Wärmekanäle: Der Kühlkanal des Kanalsatzes gehört
+                // der Kälteseite und bleibt, wie er ist (Kühlkonzept 4.2).
+                foreach (int k in Kanal.KANAELE_WAERME)
                 {
                     if (rest[k] < 0) rest[k] = 0;
                     kanaele.Bedarf[k][stunde] = (double)rest[k];
@@ -1101,9 +1109,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Offener Bedarf ÜBER ALLE KANÄLE [kWh] — der Stufeneingang bzw. der Restbedarf,
-        /// den die Erzeugermodule als EINE Zahl führen (Ganglinien, Maxima, Jahressummen).
-        /// Vor Paket K2 stand dafür überall <c>rest_heiz + rest_ww</c>.
+        /// Offener WÄRMEbedarf über die Wärmekanäle [kWh] — der Stufeneingang bzw. der
+        /// Restbedarf, den die Erzeugermodule als EINE Zahl führen (Ganglinien, Maxima,
+        /// Jahressummen). Vor Paket K2 stand dafür überall <c>rest_heiz + rest_ww</c>.
+        ///
+        /// <para><b>Über <see cref="Kanal.KANAELE_WAERME"/></b> (Kühlkonzept 4.2): Das
+        /// Restbedarfsfeld der Kaskade trägt den Kühlkanal ohnehin nicht (er bleibt 0);
+        /// die Liste macht die Aussage „offene WÄRME" an der Stelle wahr, an der auch der
+        /// Bivalenzpunkt sie auswertet. Summiert wird in derselben Folge wie vor dem
+        /// vierten Kanal — die Zahl ist Bit für Bit dieselbe.</para>
         ///
         /// <b>PUBLIC seit Paket S1 (K2-O1):</b> Bis dahin gab es dieselbe Schleife ein
         /// zweites Mal als <c>Kanalabzug.Summe</c> im Wärmepumpen-Modul. Zwei Fassungen
@@ -1116,7 +1130,8 @@ namespace WindowsFormsApplication1
             if (rest == null) return 0;
 
             double s = 0;
-            for (int k = 0; k < Kanal.ANZAHL && k < rest.Length; k++) s += rest[k];
+            foreach (int k in Kanal.KANAELE_WAERME)
+                if (k < rest.Length) s += rest[k];
             return s;
         }
 

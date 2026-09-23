@@ -1079,6 +1079,11 @@ namespace WindowsFormsApplication1
         /// der <c>Kanalsatz.Summe()</c> je Stunde addiert (Konzept 4.2, 1-ULP-Klasse) —
         /// bei den Größenordnungen des Rechenkerns liegt das um Zehnerpotenzen unter der
         /// kaufmännischen Rundung der Ergebniszeile.</para>
+        ///
+        /// <para><b>Der vierte Eintrag</b> (<see cref="Kanal.KUEHLUNG"/>) ist der Kältebedarf
+        /// des Kühlkanals [MWh] — 0, wenn das Projekt keine Kälte rechnet. Er gehört NICHT zu
+        /// <c>Waermebedarf_Gesamt</c>; ob er erhoben wurde, sagt
+        /// <c>SimulationKaeltebedarf.Gerechnet</c>.</para>
         /// </summary>
         public static double[] BedarfJeKanal(SimulationWaermebedarf bedarf)
         {
@@ -1139,12 +1144,17 @@ namespace WindowsFormsApplication1
         public static double[] DeckungJeKanal(double[] eigenanteilKanalKWh, double basisMWh,
                                               double deckungGesamt)
         {
+            // Kühlkonzept 6.4: die Aufschlüsselung der WÄRMEdeckung über die Wärmekanäle
+            // (KANAELE_WAERME, Nenner Waermebedarf_Gesamt). Der Kühlkanal bleibt 0 - ein
+            // Wärmeerzeuger deckt keine Kälte, und der Deckungsgrad der Kälteseite ist ein
+            // eigener Zweig mit eigenem Nenner (DeckungKanalKaelte, KU2).
             double[] k = new double[Kanal.ANZAHL];
             if (eigenanteilKanalKWh == null || basisMWh <= 0) return k;
 
             double summe = 0;
-            for (int i = 0; i < Kanal.ANZAHL && i < eigenanteilKanalKWh.Length; i++)
+            foreach (int i in Kanal.KANAELE_WAERME)
             {
+                if (i >= eigenanteilKanalKWh.Length) continue;
                 k[i] = eigenanteilKanalKWh[i] / 1000.0 / basisMWh * 100.0;
                 summe += k[i];
             }
@@ -1152,7 +1162,7 @@ namespace WindowsFormsApplication1
             if (summe > 0)
             {
                 double faktor = deckungGesamt / summe;
-                for (int i = 0; i < Kanal.ANZAHL; i++) k[i] *= faktor;
+                foreach (int i in Kanal.KANAELE_WAERME) k[i] *= faktor;
             }
             return k;
         }

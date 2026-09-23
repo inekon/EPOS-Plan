@@ -637,9 +637,11 @@ namespace WindowsFormsApplication1
             }
             if (zeilen.Count == 0) return "";
 
+            // Nur die Wärmekanäle: Solarwärme ist nie Abnehmer-los, weil die Kälteseite
+            // offen bleibt (Kühlkonzept 4.2) - der Kühlkanal ist keine Frage der Senken.
             double[] bedarf = SimulationRunner.BedarfJeKanal(wb);
             List<string> offen = new List<string>();
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            foreach (int k in Kanal.KANAELE_WAERME)
                 if (bedarf[k] >= Warnkriterien.KANAL_BEDARF_SCHWELLE_MWH && !bedient[k])
                     offen.Add(Warnkriterien.KanalAnzeige(k));
             if (offen.Count == 0) return "";

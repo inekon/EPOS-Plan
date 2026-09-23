@@ -27,8 +27,12 @@ namespace WindowsFormsApplication1
 
         private BedarfDaten BedarfDaten(SimulationErgebnisCtrl.BedarfErgebnis b)
         {
+            // Die Gruppe „Wärme" zeigt die WÄRMEkanäle (Kühlkonzept 4.3 #32, 8.4): Der
+            // Kühlkanal bekommt seinen eigenen Abschnitt „Kältebedarf" und gehört weder in
+            // die Kanalzeilen noch in das Wärmebild - sonst normierte der Kältewert die
+            // Wärmedauerlinie mit.
             var kanalDa = new bool[Kanal.ANZAHL];
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            foreach (int k in Kanal.KANAELE_WAERME)
                 kanalDa[k] = k < b.KanalMwh.Count && b.KanalMwh[k] > 0;
 
             return new BedarfDaten
@@ -43,12 +47,32 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static string[] KANALNAMEN => new[]
+        /// <summary>
+        /// Die Anzeigenamen JE KANALINDEX — ein Feld über alle <see cref="Kanal.ANZAHL"/>
+        /// Kanäle, über <see cref="Warnkriterien.KanalAnzeige"/> gebildet (Kühlkonzept 4.3
+        /// #32: bis dahin fest dreielementig, und der vierte Index lief ins Leere).
+        /// </summary>
+        private static string[] KANALNAMEN
         {
-            MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
-            MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
-            MyResource.Resource.KANAL_PROZESS_ANZEIGE
-        };
+            get
+            {
+                var namen = new string[Kanal.ANZAHL];
+                for (int k = 0; k < Kanal.ANZAHL; k++) namen[k] = Warnkriterien.KanalAnzeige(k);
+                return namen;
+            }
+        }
+
+        /// <summary>
+        /// Die Spaltenköpfe der WÄRMEerzeugertabelle — die drei Wärmekanäle
+        /// (<see cref="Kanal.KANAELE_WAERME"/>). Die Tabelle bleibt bei drei Kanälen; die
+        /// Kälte bekommt eine eigene Erzeugertabelle (Kühlkonzept 4.3 #32, 8.4).
+        /// </summary>
+        private static List<string> KanalnamenWaerme()
+        {
+            var namen = new List<string>();
+            foreach (int k in Kanal.KANAELE_WAERME) namen.Add(Warnkriterien.KanalAnzeige(k));
+            return namen;
+        }
 
         /// <summary>
         /// Präsenz, Ringmittelwerte und das Eigenanteilsraster — das, was
@@ -187,18 +211,21 @@ namespace WindowsFormsApplication1
                 new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGER),
                 new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGUNG, MWH_A)
             };
-            foreach (string kanal in KANALNAMEN) spalten.Add(new Tabellenkopf(kanal, MWH_A));
+            foreach (string kanal in KanalnamenWaerme()) spalten.Add(new Tabellenkopf(kanal, MWH_A));
 
+            // Summen- und Restzeile über die WÄRMEkanäle (Kühlkonzept 4.3 #32): Kopf und
+            // Wert stehen in derselben Spalte, auch mit dem vierten Kanal.
+            int kanaele = Kanal.KANAELE_WAERME.Length;
             HashSet<string> ohnePlatz = OhneKaskadenplatz(tool);
             var zeilen = new List<Erzeugerzeile>();
-            var summe = new double[1 + Kanal.ANZAHL];
+            var summe = new double[1 + kanaele];
 
             void Zeile(string name, string dbWert, double produktionMwh, double[] kanalKwh)
             {
                 double[] kanalMwh = SimulationErgebnisCtrl.KanalMwh(kanalKwh);
-                var werte = new double[1 + Kanal.ANZAHL];
+                var werte = new double[1 + kanaele];
                 werte[0] = produktionMwh;
-                for (int i = 0; i < Kanal.ANZAHL; i++) werte[1 + i] = kanalMwh[i];
+                for (int i = 0; i < kanaele; i++) werte[1 + i] = kanalMwh[Kanal.KANAELE_WAERME[i]];
                 for (int i = 0; i < werte.Length; i++) summe[i] += werte[i];
 
                 zeilen.Add(new Erzeugerzeile(name, Zahlen(werte), OhneBeitrag(werte),
@@ -231,9 +258,9 @@ namespace WindowsFormsApplication1
                       SimulationRunner.Summiere(sim.simulation_bhkw.Direktdeckung_Kanal,
                                                 sim.simulation_bhkw.Speicherentladung_Kanal));
 
-            var rest = new double[1 + Kanal.ANZAHL];
+            var rest = new double[1 + kanaele];
             rest[0] = k.RestwaermebedarfMwh;
-            for (int i = 0; i < Kanal.ANZAHL; i++) rest[1 + i] = double.NaN;   // nicht aufgeteilt
+            for (int i = 0; i < kanaele; i++) rest[1 + i] = double.NaN;   // nicht aufgeteilt
 
             return new Erzeugertabelle
             {
@@ -875,7 +902,9 @@ namespace WindowsFormsApplication1
         {
             var liste = new List<(int, string)> { (-1, MyResource.Resource.CHART_LEGENDE_GESAMT) };
 
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            // Die Wärmeganglinien: nur Wärmekanäle (Kühlkonzept 4.3 #32) - die Kälte bekommt
+            // ihre eigene Ansicht.
+            foreach (int k in Kanal.KANAELE_WAERME)
             {
                 double[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
                 if (werte == null || Jahressumme(werte) <= 0) continue;

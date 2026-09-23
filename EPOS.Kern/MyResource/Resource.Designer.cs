@@ -21657,6 +21657,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string KANAL_KUEHLUNG_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KANAL_KUEHLUNG_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kanal ähnelt.
         /// </summary>
         public static string KANAL_LABEL {
@@ -51731,7 +51740,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Knappheitsreihenfolge: Die Projekteinstellung „{0}&quot; ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knappheitsreihenfolge: Die Projekteinstellung „{0}&quot; ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal; {7} darf fehlen und steht immer zuletzt. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6} -&gt; {8}. ähnelt.
         /// </summary>
         public static string SIMENG_KNAPPHEIT_UNGUELTIG {
             get {
