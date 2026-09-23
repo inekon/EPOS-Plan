@@ -37,7 +37,18 @@
    des Hauses: Projektliste links, Katalog rechts, die zwei Knoepfe in einer
    schmalen Mittelspalte, auf schmalem Schirm untereinander. Die Knoepfe trugen
    bis hierher nur "◀" und "▶"; das Zeichen setzt jetzt der Baustein je nach
-   Anordnung, die Beschriftung sagt im Klartext, was sie tun. *@
+   Anordnung, die Beschriftung sagt im Klartext, was sie tun.
+
+   ZAPFPROFIL (Umsetzungskonzept Zapfprofilgenerator 5.2; ZU4, ZU6, ZU10). Nur bei der
+   Auspraegung Brauchwasser und nur, wo die Huelle den Weg reicht: der Knopf
+   "Zapfprofil erzeugen..." im Aktionsschlitz der SpeichernLeiste (nicht in der Leiste
+   "Simulation - monatlicher Verlauf", die sonst zum zweiten Fuss wuerde), die fuenfte
+   Ueberlagerung mit dem ZapfprofilDialog und die sichtbare Optionsgruppe "Rechenweg
+   Brauchwasser". Das OK des Zapfprofils stellt sie auf Zapfprofil; zurueckschalten
+   behaelt die Zonen. Geschrieben wird erst mit dem OK DIESES Dialogs, im selben
+   Vorgang wie die Profilzuordnungen (die Huelle). Reicht die Huelle nur einen Grund
+   (kein gespeichertes Projekt, Plattform), steht der Knopf WEICH gesperrt da und nennt
+   ihn. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -68,6 +79,21 @@
     @if (_meldung.Length > 0)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @if (MitRechenweg)
+    {
+        @* ZU4: die Weiche des Brauchwasserkanals, sichtbar und umschaltbar. *@
+        <div class="epos-zapfprofil-weg">
+            <Optionsgruppe Bezeichnung="@ZapfprofilEinstiegTexte.LabelRechenweg" Eintraege="@Rechenwege"
+                           Auswahl="@((int)_rechenweg)" AuswahlChanged="RechenwegWaehlen"
+                           WeichGesperrt="@RechenwegGesperrt" Verweigert="_ => Melden(ZapfprofilEinstiegTexte.HinweisOhneZonen, WarnStufe.Hinweis)" />
+            <Herleitungszeile Text="@ZapfprofilEinstiegTexte.HinweisRechenweg" />
+            @if (_rechenweg == ZapfprofilWeg.Generator)
+            {
+                <Herleitungszeile Text="@ZapfprofilEinstiegTexte.HinweisZapfprofilweg" />
+            }
+        </div>
     }
 
     <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
@@ -172,11 +198,16 @@
         <button type="button" class="epos-knopf" @onclick="BeiSimulation">@BtnSimulationText</button>
         <button type="button" class="epos-knopf" disabled="@(!_gerechnet)"
                 @onclick="BeiVerlauf">@BtnVerlaufText</button>
+        @if (Zapfprofilweg)
+        {
+            <span class="epos-leisezeile epos-zapfprofil-leiste">@ZapfprofilEinstiegTexte.LeisteZapfprofil</span>
+        }
     </div>
 
     @if (!Wizard)
     {
-        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis"
+                         Aktionen="@ZapfprofilAktionen" />
     }
 
     @* --- Ueberlagerung 1: der Ergebnisdialog (W8.2) ------------------------ *@
@@ -222,6 +253,18 @@
             <NamensDialog TitelText="" FrageText="@LabelName"
                           MeldungLeer="@MeldungNameFehlt" OkText="@OkText"
                           AbbrechenText="@AbbrechenText" Geschlossen="NamensfrageFertig" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 5: das Brauchwasser-Zapfprofil (5.2) ----------------- *@
+    <Ueberlagerung Offen="@(_zapfprofilGaben is not null)" Titel="@ZapfprofilEinstiegTexte.Titel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _zapfprofilGaben = null">
+        <KindInhalt>
+            @if (_zapfprofilGaben is not null)
+            {
+                <ZapfprofilDialog @attributes="_zapfprofilGaben" TitelAnzeigen="false"
+                                  Geschlossen="ZapfprofilGeschlossen" />
+            }
         </KindInhalt>
     </Ueberlagerung>
 
@@ -344,6 +387,41 @@
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Zapfprofil (Umsetzungskonzept Zapfprofilgenerator 5.2) ------------------
+
+    /// <summary>
+    /// Der Parametersatz des Dialogs „Brauchwasser-Zapfprofil", frisch je Öffnen. Kein
+    /// Delegat = kein aktiver Knopf (Muster <c>Katalogwege</c>); nur bei Brauchwasser.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? ZapfprofilGaben { get; set; }
+
+    /// <summary>Nimmt das OK des Zapfprofils in den Arbeitsstand der Hülle (nur DTO; geschrieben wird mit dem OK hier).</summary>
+    [Parameter] public Action<ZapfprofilErgebnisDaten>? ZapfprofilUebernommen { get; set; }
+
+    /// <summary>
+    /// Warum es den Weg nicht gibt (kein gespeichertes Projekt, ZU10; Plattform, A11). Ohne
+    /// <see cref="ZapfprofilGaben"/>, aber mit Grund steht der Knopf weich gesperrt da.
+    /// </summary>
+    [Parameter] public string ZapfprofilSperrgrund { get; set; } = "";
+
+    /// <summary>Der Weg des Brauchwasserkanals beim Öffnen (ZU4).</summary>
+    [Parameter] public ZapfprofilWeg RechenwegBrauchwasser { get; set; } = ZapfprofilWeg.Bestand;
+
+    /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" meldet ihre Wahl; kein Delegat = keine Optionsgruppe.</summary>
+    [Parameter] public Action<ZapfprofilWeg>? RechenwegGesetzt { get; set; }
+
+    /// <summary>Wie viele Zonen das Zapfprofil beim Öffnen trägt; ohne Zone ist „Zapfprofil" weich gesperrt.</summary>
+    [Parameter] public int ZapfprofilZonen { get; set; }
+
+    /// <summary>
+    /// Die Meldung des letzten Laufs der Leiste „Simulation" (Zapfprofilweg: der Grund eines
+    /// Abbruchs oder die Zonen, die 0 tragen); leer = keine.
+    /// </summary>
+    [Parameter] public Func<string>? SimulationMeldung { get; set; }
+
+    /// <summary>Die Beschriftungen des Zapfprofil-Einstiegs.</summary>
+    [Parameter] public ZapfprofilEinstiegTexte ZapfprofilEinstiegTexte { get; set; } = new();
 
     // --- Texte -----------------------------------------------------------------
 
@@ -473,6 +551,9 @@
     private IReadOnlyDictionary<string, object>? _typStammGaben;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private IReadOnlyDictionary<string, object>? _zapfprofilGaben;
+    private ZapfprofilWeg _rechenweg = ZapfprofilWeg.Bestand;
+    private int _zapfprofilZonen;
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public BedarfsProfilZeile? Gewaehlt => _gewaehlt;
@@ -507,6 +588,12 @@
 
     /// <summary>Steht das Wochen-Stundenprofil? Prüfhilfe für die Tests.</summary>
     public bool TypProfilOffen => _typProfilOffen;
+
+    /// <summary>Steht das Zapfprofil? Prüfhilfe für die Tests.</summary>
+    public bool ZapfprofilOffen => _zapfprofilGaben is not null;
+
+    /// <summary>Der gewählte Rechenweg des Brauchwassers — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilWeg Rechenweg => _rechenweg;
 
     private string Gesamtsumme => _einheit.Formatiere(_einheit.AusMWh(Summe()));
 
@@ -543,6 +630,8 @@
     protected override void OnInitialized()
     {
         _einheit = Einheit ?? Energieeinheit.Vorgabe;
+        _rechenweg = RechenwegBrauchwasser;
+        _zapfprofilZonen = ZapfprofilZonen;
 
         // S2.5/S3.1: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
         // Verwaltung desselben Bedarfs (Frage Q2).
@@ -815,7 +904,9 @@
         // Wegklicken weg. Ein Warnbanner bleibt stehen; also raeumt der naechste Lauf auf.
         _meldung = "";
 
-        if (_infoName.Length == 0)
+        // Auf dem Zapfprofilweg rechnet die Huelle den Arbeitsstand des Zapfprofils (5.2) -
+        // ein gewaehltes Bestandsprofil braucht es dann nicht.
+        if (_infoName.Length == 0 && !Zapfprofilweg)
         {
             Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
             return;
@@ -827,10 +918,15 @@
         // Prozess und Strom rechnen ALLE Zuordnungen, Brauchwasser NUR die gewaehlte
         // (btn_Simulation_Click:296-298 legt genau einen Namen in die Liste).
         var namen = new List<string>();
-        if (Art == BedarfsArt.Brauchwasser) namen.Add(_infoName);
+        if (Art == BedarfsArt.Brauchwasser) { if (_infoName.Length > 0) namen.Add(_infoName); }
         else foreach (BedarfsProfilZeile z in Zeilen) namen.Add(z.Name);
 
         IReadOnlyDictionary<string, object>? gaben = Simulieren(namen);
+
+        // Die Meldung des Laufs (Zapfprofilweg): ein Abbruch mit Grund oder Zonen, die 0
+        // tragen - benannt statt still, nach dem Bestandsmuster als Banner.
+        string meldung = SimulationMeldung?.Invoke() ?? "";
+        if (meldung.Length > 0) Melden(meldung, WarnStufe.Warnung);
         if (gaben is null) return;
 
         _gerechnet = true;
@@ -893,6 +989,86 @@
         _meldungStufe = stufe;
     }
 
+    // =================================================================================
+    // Zapfprofil (5.2)
+    // =================================================================================
+
+    /// <summary>Rechnet die Leiste „Simulation" den Zapfprofilweg?</summary>
+    private bool Zapfprofilweg => MitRechenweg && _rechenweg == ZapfprofilWeg.Generator;
+
+    /// <summary>Die Optionsgruppe steht nur bei Brauchwasser und nur mit Rückruf der Hülle.</summary>
+    private bool MitRechenweg => Art == BedarfsArt.Brauchwasser && RechenwegGesetzt is not null;
+
+    private IReadOnlyList<(int Id, string Text)> Rechenwege => new[]
+    {
+        ((int)ZapfprofilWeg.Bestand, ZapfprofilEinstiegTexte.OptionBestand),
+        ((int)ZapfprofilWeg.Generator, ZapfprofilEinstiegTexte.OptionZapfprofil)
+    };
+
+    /// <summary>Ohne Zone gibt es nichts zu rechnen: „Zapfprofil" ist dann weich gesperrt, mit Grund.</summary>
+    private IReadOnlyDictionary<int, string>? RechenwegGesperrt
+        => _zapfprofilZonen == 0 && _rechenweg != ZapfprofilWeg.Generator
+            ? new Dictionary<int, string> { [(int)ZapfprofilWeg.Generator] = ZapfprofilEinstiegTexte.HinweisOhneZonen }
+            : null;
+
+    /// <summary>Gibt es den Knopf — aktiv mit Delegat, weich gesperrt mit Grund, sonst nicht (A11)?</summary>
+    private bool MitZapfprofilKnopf
+        => Art == BedarfsArt.Brauchwasser && (ZapfprofilGaben is not null || ZapfprofilSperrgrund.Length > 0);
+
+    /// <summary>Der Aktionsschlitz der Fußleiste (ZU6); ohne Knopf bleibt er leer.</summary>
+    private RenderFragment? ZapfprofilAktionen => MitZapfprofilKnopf ? ZapfprofilKnopf : null;
+
+    private RenderFragment ZapfprofilKnopf => @<text>
+        @if (ZapfprofilGaben is not null)
+        {
+            <button type="button" class="epos-knopf epos-zapfprofil-knopf"
+                    @onclick="ZapfprofilOeffnen">@ZapfprofilEinstiegTexte.Knopf</button>
+        }
+        else
+        {
+            <button type="button" class="epos-knopf epos-zapfprofil-knopf" aria-disabled="true"
+                    title="@ZapfprofilSperrgrund"
+                    @onclick="ZapfprofilVerweigert">@ZapfprofilEinstiegTexte.Knopf</button>
+        }
+    </text>;
+
+    private void ZapfprofilOeffnen()
+    {
+        if (ZapfprofilGaben is null) return;
+        _meldung = "";
+        _zapfprofilGaben = ZapfprofilGaben();
+    }
+
+    /// <summary>Der Versuch am weich gesperrten Knopf meldet den Grund (ZU10, A11).</summary>
+    private void ZapfprofilVerweigert() => Melden(ZapfprofilSperrgrund, WarnStufe.Hinweis);
+
+    /// <summary>
+    /// Das Ergebnis des Zapfprofils: bei OK in den Arbeitsstand der Hülle, und die
+    /// Optionsgruppe steht auf Zapfprofil (ZU4). Abbrechen (<c>null</c>) lässt alles stehen.
+    /// </summary>
+    private void ZapfprofilGeschlossen(ZapfprofilErgebnisDaten? ergebnis)
+    {
+        _zapfprofilGaben = null;
+        if (ergebnis is null) return;
+
+        ZapfprofilUebernommen?.Invoke(ergebnis);
+        _rechenweg = ZapfprofilWeg.Generator;
+        _zapfprofilZonen = ergebnis.Eingabe.Zonen.Count;
+        _gerechnet = false;
+    }
+
+    /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
+    private void RechenwegWaehlen(int? id)
+    {
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilWeg), n)) return;
+        var weg = (ZapfprofilWeg)n;
+        if (weg == _rechenweg) return;
+
+        _rechenweg = weg;
+        _gerechnet = false;
+        RechenwegGesetzt?.Invoke(weg);
+    }
+
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
@@ -901,7 +1077,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _ergebnisGaben is not null || _typStammGaben is not null ||
-            _typProfilOffen || _namensfrage || _loeschfrage) return Task.CompletedTask;
+            _typProfilOffen || _namensfrage || _loeschfrage || _zapfprofilGaben is not null)
+            return Task.CompletedTask;
         return Abbrechen();
     }
 }
