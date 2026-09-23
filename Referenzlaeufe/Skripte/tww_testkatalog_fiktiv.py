@@ -25,8 +25,10 @@ VORAUSSETZUNG. Schemastand 102 (die zehn Tww-Tabellen), nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
 WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die
-Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Ein zweiter Lauf
-aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
+Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Eine vorhandene
+Nutzungsart dieses Katalogs, deren Bezugstemperaturen von BEZUG_ZAPF/BEZUG_KALT abweichen, wird
+auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank. Ein
+zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
 diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
@@ -68,8 +70,11 @@ NUTZUNGSARTEN = [
      [0.5, 0.5, 1.0, 1.0, 1.5, 1.5, 1.5, 1.5, 1.0, 1.0, 0.5, 0.5],
      [0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2]),
 ]
+# Bezugstemperaturen der Bedarfswerte (Grad C): erkennbar erfunden, KEIN normativer Wert - eine
+# Kaltwassertemperatur, die mit einer Normvorgabe zusammenfiele, waere keine erfundene Zahl
+# (Kapitel 6 (a), (b)). Ergebnisneutral: kein Referenzprojekt nutzt den Generator.
 BEZUG_ZAPF = 50.0
-BEZUG_KALT = 10.0
+BEZUG_KALT = 12.0
 
 # (Schluessel, Wert, Einheit) - neutrale Schluessel, runde erfundene Werte.
 PARAMETER = [
@@ -160,6 +165,7 @@ def main():
             return 2
 
         angelegt = 0
+        nachgefuehrt = 0
         with con:
             # --- Tagesgangsatz und seine vier Tagesgaenge -------------------------------
             if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
@@ -205,6 +211,14 @@ def main():
                             f'VALUES ({", ".join("?" for _ in namen)})', werte)
                 angelegt += 1
 
+            # --- Bezugstemperaturen vorhandener Zeilen nachfuehren -------------------------
+            for (name, *_rest) in NUTZUNGSARTEN:
+                cur = con.execute('UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezug_Zapftemperatur" = ?, '
+                                  '"Bezug_Kaltwasser" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
+                                  'AND ("Bezug_Zapftemperatur" <> ? OR "Bezug_Kaltwasser" <> ?)',
+                                  (BEZUG_ZAPF, BEZUG_KALT, name, VERSION, BEZUG_ZAPF, BEZUG_KALT))
+                nachgefuehrt += cur.rowcount
+
             # --- Parameter --------------------------------------------------------------
             for (schluessel, wert, einheit) in PARAMETER:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwParameter_STAMM" WHERE "Schluessel" = ? '
@@ -243,8 +257,8 @@ def main():
                             (art, schluessel, wert, VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
                 angelegt += 1
 
-        print(f"Schemastand {stand}: {angelegt} Zeile(n) angelegt"
-              + (" - der Testkatalog stand schon vollstaendig da." if angelegt == 0 else "."))
+        print(f"Schemastand {stand}: {angelegt} Zeile(n) angelegt, {nachgefuehrt} nachgefuehrt"
+              + (" - der Testkatalog stand schon vollstaendig da." if angelegt == 0 and nachgefuehrt == 0 else "."))
 
         ok = True
         for t, soll in ERWARTET.items():

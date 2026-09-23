@@ -26,7 +26,7 @@ namespace EPOS.Kern.Tests
             BedarfMin = new double?[] { 0.5, null, 3.0 },
             BedarfMax = new double?[] { 1.5, null, 5.0 },
             BedarfHerkunft = Fiktiv,
-            Bezugstemperaturen = new Temperaturbezug(50.0, 10.0),
+            Bezugstemperaturen = new Temperaturbezug(50.0, 12.0),
             Grenze = ZapfBilanzgrenze.MitVerteilung,
             Kalender = ZapfKalenderart.Betrieb,
             Ferienfaktor = 0.5,
@@ -62,7 +62,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Herkunftsart.Eigenkonstruktion, n.Herkunft.Jahresgang.Art);
             Assert.Null(n.Herkunft.Wochengang.Ausgabe);
             Assert.Equal(50.0, n.Bezugstemperaturen.ZapftemperaturC);
-            Assert.Equal(10.0, n.Bezugstemperaturen.KaltwasserC);
+            Assert.Equal(12.0, n.Bezugstemperaturen.KaltwasserC);
             Assert.Equal(ZapfBilanzgrenze.MitVerteilung, n.Grenze);
             Assert.Equal(ZapfKalenderart.Betrieb, n.Kalender);
             Assert.Equal(0.5, n.Ferienfaktor);
@@ -397,7 +397,7 @@ namespace EPOS.Kern.Tests
                 basis with
                 {
                     Katalogversion = "T3",
-                    Bezugstemperaturen = new Temperaturbezug(60.0, 20.0),
+                    Bezugstemperaturen = new Temperaturbezug(45.0, 15.0),
                     Wochenfaktoren = new[] { 0.1, 0.2, 0.2, 0.2, 0.2, 0.1, 0.0 }
                 }).Id);
             Assert.Equal(eigen with { Version = "T3" }, b.Herkunft.Bedarf);

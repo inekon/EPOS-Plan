@@ -314,6 +314,9 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `foreign_key_check` ohne Befund. Kein Projekt steht auf dem Generator, **keine Einfrierregel ist
 > berührt**, und der Referenzlauf der fünf CI-Projekte (1007, 1017, 1030, 1045, 1046) ist
 > **byte-gleich** gegen diese Basis (143/143 CSV).
+> Die erfundene Kaltwasser-Bezugstemperatur der drei Nutzungsarten ist bewusst **kein** Wert,
+> der mit einer Normvorgabe zusammenfällt; das Skript führt vorhandene Zeilen auf seine Werte
+> nach (Zellvergleich: nur `Bezug_Kaltwasser` der drei Nutzungsarten, Schemastand unverändert).
 
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den

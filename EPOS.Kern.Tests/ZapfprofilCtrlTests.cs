@@ -120,7 +120,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfBezugsart.Personen, na.Bezug);
             Assert.Equal(new[] { 1.0, 2.0, 3.0 }, na.BedarfJeNiveauKwhJeEinheitTag);
             Assert.Equal(50.0, na.Bezugstemperaturen.ZapftemperaturC);
-            Assert.Equal(10.0, na.Bezugstemperaturen.KaltwasserC);
+            Assert.Equal(12.0, na.Bezugstemperaturen.KaltwasserC);
             Assert.Equal(ZapfBilanzgrenze.Zapfstelle, na.Grenze);
             Assert.Equal(ZapfKalenderart.Wohnen, na.Kalender);
             Assert.Null(na.Ferienfaktor);

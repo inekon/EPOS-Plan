@@ -113,7 +113,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Eine Nutzungsart unmittelbar per SQL — auch mit Status und ReadOnly, die
         /// <c>TwwNutzungsartCtrl.Neu</c> nie vergibt. Erfundene Werte: Bedarf 1/2/3,
-        /// Bezugstemperaturen 50/10, Monatsfaktoren 1, Wochenfaktoren Mo–Fr 0,2.
+        /// Bezugstemperaturen 50/12, Monatsfaktoren 1, Wochenfaktoren Mo–Fr 0,2.
         /// </summary>
         internal static int NutzungsartAnlegen(string bezeichner, string version, int idTagesgangsatz,
                                                string status = TwwSchema.STATUS_EIGEN, bool readOnly = false,
@@ -134,7 +134,7 @@ namespace EPOS.Kern.Tests
                 bezeichner, version, 1, 1.0, 2.0, 3.0,
                 1.5, 2.5,
                 QUELLE, version, TwwSchema.HERKUNFT_FIKTIV,
-                50.0, 10.0, 1, 1,
+                50.0, 12.0, 1, 1,
                 QUELLE, version, TwwSchema.HERKUNFT_FIKTIV,
                 QUELLE, version, TwwSchema.HERKUNFT_FIKTIV,
                 idTagesgangsatz, status, beleg, readOnly ? 1 : 0
