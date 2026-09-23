@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
             var funde = new List<string>();
             foreach (string t in KOEPFE)
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 102).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 103).");
                 long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" = $w", TwwSchema.STATUS_AUSLIEFERUNG);
                 if (n > 0) funde.Add(t + ": " + n);
             }
@@ -163,7 +163,7 @@ namespace EPOS.Kern.Tests
             geprueft = 0;
             foreach (string t in KOEPFE.Concat(KINDER))
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 102).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 103).");
                 List<string> spalten = Spalten(c, t);
                 List<string> herkunft = spalten.Where(s => s == "Herkunftsart" ||
                                                            s.EndsWith("_Herkunftsart", StringComparison.Ordinal)).ToList();
@@ -199,7 +199,7 @@ namespace EPOS.Kern.Tests
             var funde = new List<string>();
             foreach (string t in KOEPFE)
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 102).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 103).");
                 long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Katalogversion\" IS NULL OR " +
                                  "trim(\"Katalogversion\") = ''", null);
                 if (n > 0) funde.Add(t + ": " + n);

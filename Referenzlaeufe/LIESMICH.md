@@ -285,8 +285,18 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Nachtrag: Schemastand 101 (Auftrag #437, Etappe E7a), die Basis bleibt.** Migrationsschritt
-> **101** (`SCHRITT_101_KWKG_ANLAGENART_LEER`, Quelle
+**Und inzwischen auf Schemastand 101** — reines Nachziehen: Schritt 101 ist der
+Gebäudespalten-Schritt M3 der Gebäudesimulation. `Wohnflaeche` heißt in `Tab_Gebaeude` und
+`Tab_Gebaeude_STAMM` jetzt `Nutzflaeche` (Werte 1:1), jede der beiden Tabellen hat fünfzehn
+neue Spalten (alle NULL, die zwei Schalter 0), und die Sicht `Abfrage_Projektgebaeude` ist aus
+`GebaeudeSchema.SQL_VIEW_NEU` neu gebaut (die 58 Bestandsspalten an ihren Stellen, die neuen
+dahinter). `integrity_check` ok, Zeilen- und Tabellenzahl unverändert, beide Tabellen weiter
+`STRICT`; die **Referenzbasis R11 bleibt**, der Lauf aller dreizehn Projekte gegen sie ist **PASS
+und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
+
+> **Nachtrag: Schemastand 102 (Auftrag #437, Etappe E7a; umnummeriert, 101 gehört der
+> Gebäudesimulation), die Basis bleibt.** Migrationsschritt
+> **102** (`SCHRITT_102_KWKG_ANLAGENART_LEER`, Quelle
 > `EPOS.Kern/Allgemein/Update/KwkgAnlagenartLeer.cs`; Konzept Wirtschaftlichkeit § 6.3 Nr. 30)
 > setzt die leere Zeichenkette in `Tab_Energieanlagen.KWKG_Anlagenart` auf NULL — **reines DML**,
 > genau sieben Zellen: Anlage 12310 (Projekt 1032) und die Anlagen 14819, 14842, 14843, 14844,
@@ -294,12 +304,12 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzprojekt**. `KWKG_Eigenstromfall` derselben Zeilen bleibt `''`. Der Zellvergleich aller
 > 119 Tabellen vor und nach dem Schritt zeigt genau diese sieben Zeilen und den Schemastand in
 > `Tab_Applikation`; Größe (67 624 960 Byte) und Schema bleiben. **Keine Einfrierregel ist
-> berührt**, und der Referenzlauf ist **13/13 byte-gleich** gegen diese Basis (357/357 CSV, auf
-> Schemastand 100 wie 101 gerechnet). Nachgezogen mit
+> berührt**, und der Referenzlauf ist **13/13 byte-gleich** gegen diese Basis (357/357 CSV, vor
+> wie nach dem Schritt gerechnet). Nachgezogen mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
 
-> **Nachtrag: Schemastand 102 (Zapfprofilgenerator, Stufe Z0), die Basis bleibt.** Migrationsschritt
-> **102** (`SCHRITT_102_ZAPFPROFIL_KATALOG`, Quelle `EPOS.Kern/Allgemein/Update/TwwSchema.cs`;
+> **Nachtrag: Schemastand 103 (Zapfprofilgenerator, Stufe Z0; umnummeriert), die Basis bleibt.**
+> Migrationsschritt **103** (`SCHRITT_103_ZAPFPROFIL_KATALOG`, Quelle `EPOS.Kern/Allgemein/Update/TwwSchema.cs`;
 > [Umsetzungskonzept Zapfprofilgenerator](../Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md)
 > 3.1/3.2, Schritt T1) legt die zehn Tabellen `Tab_Tww*` samt vier Indizes an — **reines DDL**,
 > nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
@@ -333,7 +343,7 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 102) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 103) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 

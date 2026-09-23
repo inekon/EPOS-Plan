@@ -400,12 +400,20 @@ namespace EPOS.Kern.Tests
                 // Steht keine Vorgabe mehr, tut der Aufruf nichts.
                 FremdschluesselVorgabe.Alle(null);
 
-                // Schritt 101 (Konzept Wirtschaftlichkeit § 6.3 Nr. 30, 22.09.2026): die
+                // Schritt 101 (Auftrag 23.09.2026, Stufe G1 der Gebaeudesimulation): der
+                // Gebaeudespalten-Schritt M3 - Wohnflaeche heisst Nutzflaeche, fuenfzehn
+                // neue Spalten je Gebaeudetabelle, die Sicht Abfrage_Projektgebaeude neu.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH 100, weil 100
+                // Tab_Gebaeude neu baut. Wiederholbar - steht alles, wird nur die Sicht
+                // neu gebaut.
+                GebaeudeSchema.Alle(null);
+
+                // Schritt 102 (Konzept Wirtschaftlichkeit § 6.3 Nr. 30, 22.09.2026): die
                 // leere Anlagenart wird NULL. Reines DML aus DERSELBEN Quelle wie in der
                 // Migration; wiederholbar, auf einer nachgezogenen Kopie ohne Treffer.
                 KwkgAnlagenartLeer.Ausfuehren();
 
-                // Schritt 102 (Umsetzungskonzept Zapfprofilgenerator 3.2, T1): die zehn
+                // Schritt 103 (Umsetzungskonzept Zapfprofilgenerator 3.2, T1): die zehn
                 // Tww-Tabellen und ihre Indizes. Reines DDL aus DERSELBEN Quelle wie in
                 // der Migration und im Werkzeug (TwwSchema); CREATE … IF NOT EXISTS ist
                 // selbst wiederholbar. Die Quelldatei fuehrt die Tabellen samt fiktivem

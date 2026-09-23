@@ -193,16 +193,18 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die sechs Erzeuger- und Speicherklassen des Laufs und
-        /// <c>SimulationControl</c>. Genau hier standen die <b>31 Jahressummen</b>, von
-        /// denen vor W8‑O‑5c keine einzige ihre Einheit im Namen trug, obwohl einige
-        /// kWh und andere MWh führten (Konzept 0.3 und U4).
+        /// Die sechs Erzeuger- und Speicherklassen des Laufs, <c>SimulationControl</c> und
+        /// das Ergebnis des Gebäudemodells (Stufe G1, Umsetzungskonzept Gebäudesimulation 1.4 —
+        /// mit Unterordner, sonst findet der Wächter die Datei nicht): acht Quelldateien.
+        /// Genau hier standen die <b>31 Jahressummen</b>, von denen vor W8‑O‑5c keine einzige
+        /// ihre Einheit im Namen trug, obwohl einige kWh und andere MWh führten (Konzept 0.3
+        /// und U4).
         /// </summary>
         private static readonly string[] Simulationsklassen =
         {
             "SimulationWaermepumpe.cs", "SimulationSPK.cs", "SimulationBHKW.cs",
             "SimulationSolarthermie.cs", "SimulationPV.cs", "SimulationPufferspeicher.cs",
-            "SimulationControl.cs",
+            "SimulationControl.cs", "Gebaeude/GebaeudeModellErgebnis.cs",
         };
 
         /// <summary>
@@ -278,7 +280,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Wächter 2.</b> Jedes <c>public</c>/<c>internal</c> Skalarfeld und jede
-        /// Property vom Typ <c>double</c>/<c>float</c> in den sieben Simulations- und
+        /// Property vom Typ <c>double</c>/<c>float</c> in den acht Simulations- und
         /// Ergebnisklassen, deren Name eine Energiemenge ankündigt
         /// (<c>Bedarf</c>, <c>Verbrauch</c>, <c>Produktion</c>, <c>Ertrag</c>,
         /// <c>Summe</c>, <c>gesamt</c>, <c>Rest</c>), endet auf <c>Kwh</c> oder
@@ -351,7 +353,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Gegenprobe zum Bestand:</b> Die sieben Klassen sind da, sie führen wirklich
+        /// <b>Gegenprobe zum Bestand:</b> Die acht Klassen sind da, sie führen wirklich
         /// benannte Jahressummen, und jede der 13 Ausnahmen zeigt auf ein Feld, das es
         /// noch gibt. Eine Ausnahmeliste, die ins Leere zeigt, ist eine stille Lücke.
         /// </summary>
@@ -444,7 +446,7 @@ namespace EPOS.Kern.Tests
             return dateien.Where(OhneBauordner).OrderBy(p => p, StringComparer.Ordinal).ToArray();
         }
 
-        /// <summary>Die sieben Quelldateien, über die Wächter 2 läuft.</summary>
+        /// <summary>Die acht Quelldateien, über die Wächter 2 läuft.</summary>
         private static string[] Simulationsdateien()
         {
             string ordner = Path.Combine(Arbeitsbaum(), "EPOS.Kern", "Allgemein", "Simulation");

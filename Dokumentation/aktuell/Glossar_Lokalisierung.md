@@ -270,4 +270,50 @@ der Registerkarten wäre eine sichtbare Änderung ohne fachlichen Gewinn:
 | `KONFIG_STROMSPEICHER` | Stromspeicher | Electricity storage | Glossar folgt dem Bestand |
 | `KONFIG_GESAMTSYSTEM` | Gesamtsystem | Overall system | — |
 
-Für **neue** Schlüssel gilt ausschließlich die Tabellenspalte „EN" der Kapitel 1–9.
+Für **neue** Schlüssel gilt ausschließlich die Tabellenspalte „EN" der Kapitel 1–9 und 13.
+
+## 13. Gebäudehülle und Gebäudemodell
+
+Die Begriffe des Gebäudedialogs in VDI-6007-Struktur und des Stundenmodells (Gebäudesimulation,
+Stufe G1). Sie stehen **vor** den englischen Ressourcenwerten fest (Entscheid E28 zu U4), damit
+derselbe Begriff nicht zwei Übersetzungen bekommt. Terminologiequellen: VDI 6007, EN 12831,
+EN ISO 13790, EN ISO 10211 / 14683, EN 410.
+
+| DE | EN | Anmerkung |
+|---|---|---|
+| Gebäudehülle | building envelope | Gruppe „Hülle" → „Envelope" |
+| Bauteil | building component | Spaltenkopf der U·A-Tabelle |
+| Außenwand | external wall | Bestand (`GEBK_LBL_U_AUSSENWAND`) |
+| Dach | roof | |
+| Bodenplatte | ground floor slab | Zeile der Grundfläche |
+| Keller (unbeheizt) | unheated basement | Randbedingung der Bodenplatte |
+| Randbedingung | boundary condition | Außenluft, Erdreich, Keller (§ 3 für Außenluft und Erdreich) |
+| U-Wert | U-value | Kurzform von „heat transfer coefficient" (§ 5) in Spalten und Meldungen |
+| Wärmebrücke | thermal bridge | EN ISO 10211 |
+| Wärmebrückenverlustkoeffizient (ψ) | linear thermal transmittance | EN ISO 14683 |
+| Wärmeleitwert (H) | heat loss coefficient | H_T, H_ve, H_ges in W/K; **nicht** „heat transfer coefficient" — das ist der U-Wert (§ 5) |
+| Transmission / Transmissionswärmeverlust | transmission / transmission heat loss | H_T; EN 12831 |
+| Lüftung / Lüftungswärmeverlust | ventilation / ventilation heat loss | H_ve; EN 12831 |
+| H_ges gesamt | H_total | Formelzeichen bleibt, Index übersetzt |
+| Luftwechselrate | air exchange rate | Bestand (`GEBK_LBL_LUFTWECHSEL`) |
+| Nutzfläche | usable area | beheizte Netto-Grundfläche, Bezugsfläche des Stundenmodells (E13, E19) |
+| Raumhöhe | room height | Bestand |
+| Fensterfläche | window area | je Orientierung: „window area east" usw. |
+| Fensterdurchlaßgrad (g-Wert) | window transmittance | Bestand (`GEBK_LBL_FENSTERDURCHLASS`); fachlich total solar energy transmittance (EN 410) |
+| Rahmenanteil | frame fraction | EN ISO 13790 |
+| Verschattungsfaktor | shading factor | EN ISO 13790 |
+| Masseanteil außen | external mass fraction | Modellparameter VDI 6007 |
+| Innenflächenfaktor | internal area factor | Modellparameter VDI 6007 |
+| Strahlungsanteil (der Heizung) | radiative fraction (of heating) | |
+| Heizleistungsgrenze | heating power limit | |
+| Bauart | construction type | Bestand: „Light construction" usw. |
+| Bauweise | thermal mass | Wh/K bzw. Wh/(m²K); EN ISO 13790 |
+| Raumtemperatur / Raumlufttemperatur | indoor temperature / indoor air temperature | |
+| operative Temperatur | operative temperature | VDI 6007, EN ISO 7726 |
+| Kühlbedarf | cooling demand | |
+| Rechenweg | calculation method | Schalter „Rechenweg" (E20) |
+| Rechenmodell | calculation model | |
+| Tagesbilanz | daily balance | der Altweg |
+| Bestandsweg | legacy method | „Tagesbilanz (Bestandsweg)" → „Daily balance (legacy method)" |
+| Vorgabe (eines leeren Felds) | default value | § 8; Platzhalter „Vorgabe 0,3" → „Default value 0.3" |
+| Skalierungsfaktor | scaling factor | Hochrechnung nach E8 |

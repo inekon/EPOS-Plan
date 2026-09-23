@@ -8,8 +8,9 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <para><b>EIN Katalogeintrag, ZWEI Stände — und deshalb ein Sichtmodell.</b> Das erste
 /// Reiterblatt (Kenngrößen, Flächen, U‑Werte) bindet unmittelbar an
 /// <c>GebaeudeKatalogDaten</c>; das zweite (Raumtemperaturen, Wärmebrücken,
-/// Anschlussmaße, Luftwechsel) führt einen EIGENEN Arbeitsstand in den Feldern der Maske
-/// und gibt ihn erst mit „Werte übernehmen" in den Satz. Ein Katalog, der beide Blätter
+/// Anschlussmaße, Luftwechsel) führte bis Stufe G1 einen EIGENEN Arbeitsstand in den Feldern
+/// der Maske; seit G1 greifen alle Wege auf den EINEN Arbeitsstand des Dialogs (E27/U1) —
+/// die Zugriffswege bleiben, damit die Feldliste des Kerns (<c>KiDialoge</c>) unverändert gilt. Ein Katalog, der beide Blätter
 /// an den Satz hängte, schriebe in Zahlen, die die Maske im selben Augenblick wieder
 /// überschreibt. Diese Klasse legt sich über BEIDE Stände unter einem Namen — dieselbe
 /// Bauart wie <c>KomponentenKonfigurationKiSicht</c>.</para>

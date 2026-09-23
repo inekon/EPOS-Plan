@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
         {
             "ID_Type", "ID_Stamm", "StammID", "KomponentenID", "KategorieID",
             "carrier_id", "ID_Energieträger", "ID_Umrechnung", "ID_Brennstoff",
-            // Zapfprofilgenerator (Schemaschritt 102, Konzept 3.2): Zone, Wohnungstyp und
+            // Zapfprofilgenerator (Schemaschritt 103, Konzept 3.2): Zone, Wohnungstyp und
             // Projektzeile zeigen auf UNVERAENDERLICHE Katalogversionen. Die Kopie zeigt auf
             // dieselbe Zeile; eine Projektkopie des Katalogs gibt es nicht. Die deklarierten
             // Beziehungen zielen ohnehin auf *_STAMM (nie im Plan) - der Eintrag haelt die
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
             // ohnehin; der Eintrag hier ist Guertel und Hosentraeger fuer Datenbanken, in
             // denen Schritt 66 (noch) nicht gelaufen ist.
             {"ID_Wechselrichter","Tab_Wechselrichter"},
-            // Zapfprofilgenerator (Schemaschritt 102): der Wohnungstyp haengt an der Zone.
+            // Zapfprofilgenerator (Schemaschritt 103): der Wohnungstyp haengt an der Zone.
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.
             {"ID_Zone","Tab_TwwZone"}
@@ -221,7 +221,7 @@ namespace WindowsFormsApplication1
             // Ohne den Eintrag faehrt eine Variantenkopie mit leerem Profil.
             {"Tab_QuellprofilDaten",   "ID_Quellprofil IN (SELECT ID FROM Tab_Quellprofil WHERE ID_Projekt = {0})"},
 
-            // Zapfprofilgenerator (Schemaschritt 102, Konzept 3.2): Die Wohnungstabelle
+            // Zapfprofilgenerator (Schemaschritt 103, Konzept 3.2): Die Wohnungstabelle
             // haengt an der ZONE und fuehrt kein eigenes ID_Projekt. Ausdruecklich statt
             // ueber die Auto-Erkennung - dasselbe Muster wie die Strangliste darueber: Die
             // Erkennung braucht die deklarierte Beziehung, und ohne sie fuehre eine

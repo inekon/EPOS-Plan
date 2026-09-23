@@ -35,4 +35,30 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>Die zwölf Monatssummen in <b>MWh</b>; leer = keine Monatsübersicht.</summary>
     public IReadOnlyList<double> MonatswerteMwh { get; init; } = new List<double>();
+
+    // ---- Stufe G1 (Umsetzungskonzept Gebaeudesimulation 1.4, 2.7) ----------------
+    //
+    // Alle nullbar: ohne Wert steht "—", nie eine erfundene Zahl. Die Darstellung der
+    // Kennzahlen und der Vergleich alt/neu folgen mit G2.
+
+    /// <summary>
+    /// Der Rechenweg als Anzeigetext — auf dem Altweg „Tagesbilanz (Bestandsweg)".
+    /// Leer = keine Zeile.
+    /// </summary>
+    public string Modelltext { get; init; } = "";
+
+    /// <summary>Größtes gleitendes Mittel über 24 Stunden in <b>kW</b>.</summary>
+    public double? SpitzeTagesmittelKw { get; init; }
+
+    /// <summary>95-%-Quantil der Stundenlast in <b>kW</b>.</summary>
+    public double? SpitzeQuantil95Kw { get; init; }
+
+    /// <summary>Kühlbedarf (informativ) in <b>MWh</b> — nur auf dem VDI-Weg.</summary>
+    public double? KuehlenergieMwh { get; init; }
+
+    /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
+    public int? KuehlstundenH { get; init; }
+
+    /// <summary>Mittlere Raumlufttemperatur in der Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
+    public double? MittlereRaumtemperaturC { get; init; }
 }

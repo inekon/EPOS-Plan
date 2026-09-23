@@ -6,7 +6,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // DIE LEERE ANLAGENART WIRD NULL - Migrationsschritt 101
+    // DIE LEERE ANLAGENART WIRD NULL - Migrationsschritt 102
     //
     // WOZU. Tab_Energieanlagen.KWKG_Anlagenart traegt die Anlagenart nach § 8 KWKG
     // (DbWerte.KWKG_ANLAGENART_NEU / _MODERNISIERT / _NACHGERUESTET). Sieben
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
 
     /// <summary>
-    /// Schemaschritt 101 — die leere Zeichenkette in
+    /// Schemaschritt 102 — die leere Zeichenkette in
     /// <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL („nicht gepflegt",
     /// Konzept Wirtschaftlichkeit § 6.3 Nr. 30). EINE Quelle für Migration, Werkzeug und
     /// Nachweis.

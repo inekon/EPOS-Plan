@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
         public double Interne_Waermegewinne;
         public double Bauweise;
         public double Fensterflaeche_Sued;
-        public double Fensterflaeche_Ost;
+        public double Fensterflaeche_OstWest;
         public double Fensterflaeche_Nord;
         public double Fensterdurchlassgrad;
         public double Raumsolltemperatur_Nachtabsenkung;
@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         public double Dachflaeche;
         public double Grundflaeche;
         public double Sonstige_Flaechen;
-        public double Wohnflaeche;
+        public double Nutzflaeche;
         public double Raumhoehe;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach;
@@ -66,7 +66,50 @@ namespace WindowsFormsApplication1
         public string Baualtersklasse;
         public string Gebaeudeart;
         public string Wohngebaeude_Nicht_Wohngebaeude;
-        
+
+        /// <summary>
+        /// Rechenweg des Gebäudes (<c>Gebaeude_Modell</c>); <c>null</c> = VDI 6007 (E1).
+        /// Gelesen von der Weiche <c>SimulationWaermebedarf.RechenwegWaehlen</c>; fällt mit
+        /// der Stufe GA.
+        /// </summary>
+        public string Gebaeude_Modell;
+
+        // =====================================================================
+        //  Die übrigen vierzehn Gebäudespalten des Schritts M3 (Schemaschritt 101,
+        //  Umsetzungskonzept 1.6/1.7) — NULL-ERHALTEND: null heißt „Vorgabe des
+        //  Eingangsbauers" (Rechenschritte 1.1), nie 0. Gelesen allein vom VDI-Weg
+        //  (GebaeudeModellEingang); der Tagesbilanz-Weg kennt sie nicht.
+        // =====================================================================
+
+        /// <summary>Fensterfläche Ost [m²]; null = ½ <see cref="Fensterflaeche_OstWest"/> (Vorbereitungsschritt).</summary>
+        public double? Fensterflaeche_Ost;
+        /// <summary>Fensterfläche West [m²]; null = ½ <see cref="Fensterflaeche_OstWest"/> (Vorbereitungsschritt).</summary>
+        public double? Fensterflaeche_West;
+        /// <summary>Rahmenanteil 1 − F_F [–]; null = Vorgabe.</summary>
+        public double? Rahmenanteil;
+        /// <summary>Verschattungsfaktor F_S [–]; null = Vorgabe.</summary>
+        public double? Verschattungsfaktor;
+        /// <summary>Randbedingung der Grundfläche (<c>DbWerte.GRUND_*</c>); null = Erdreich.</summary>
+        public string Grundflaeche_Randbedingung;
+        /// <summary>Kellertemperatur [°C] bei Randbedingung Keller; null = Vorgabe.</summary>
+        public double? Kellertemperatur;
+        /// <summary>Masseanteil der Außenbauteile a_AW [–]; null = Vorgabe.</summary>
+        public double? Masseanteil_Aussen;
+        /// <summary>Innenflächenfaktor f_IW [–]; null = Vorgabe.</summary>
+        public double? Innenflaechenfaktor;
+        /// <summary>Strahlungsanteil der Heizübergabe [–]; null = Vorgabe.</summary>
+        public double? Heizung_Strahlungsanteil;
+        /// <summary>Heizleistungsgrenze [kW]; null = unbegrenzt.</summary>
+        public double? Heizleistung_Max;
+        /// <summary>Strahlung auf Außenbauteile (Schalter, NOT NULL DEFAULT 0).</summary>
+        public bool Aussenbauteile_Strahlung;
+        /// <summary>Infiltration [1/h] (Stufe G2); null = Vorgabe.</summary>
+        public double? Luftwechsel_Infiltration;
+        /// <summary>Nutzerlüftung [1/h] (Stufe G2); null = Vorgabe.</summary>
+        public double? Luftwechsel_Nutzer;
+        /// <summary>Sommerlüftung (Schalter, Stufe G2, NOT NULL DEFAULT 0).</summary>
+        public bool Sommerlueftung;
+
         public ProjektGebaeudeModel()
         {
             items = null;
@@ -85,7 +128,7 @@ namespace WindowsFormsApplication1
             Interne_Waermegewinne = 0;
             Bauweise = 10000;
             Fensterflaeche_Sued = 0;
-            Fensterflaeche_Ost = 0;
+            Fensterflaeche_OstWest = 0;
             Fensterflaeche_Nord = 0;
             Fensterdurchlassgrad = 0;
             Raumsolltemperatur_Nachtabsenkung = 0;
@@ -103,7 +146,7 @@ namespace WindowsFormsApplication1
             Dachflaeche = 0;
             Grundflaeche = 0;
             Sonstige_Flaechen = 0;
-            Wohnflaeche = 0;
+            Nutzflaeche = 0;
             Raumhoehe = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = 0;

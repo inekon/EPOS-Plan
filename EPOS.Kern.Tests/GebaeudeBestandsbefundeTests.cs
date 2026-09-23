@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Altweg;
 using WPPlan.Core;
 using Xunit;
 
@@ -25,20 +26,24 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <see cref="BhkwPlan"/> trägt keinen veränderlichen statischen Zustand mehr —
-        /// nur Konstanten. Ein neues statisches Feld fiele hier auf, bevor es über
-        /// Gebäude, Projekte oder Fäden hinweg ein Ergebnis trägt.
+        /// <see cref="BhkwPlan"/> und die Physik des Tagesbilanz-Wegs
+        /// (<see cref="TagesbilanzPhysik"/>, seit Stufe G1.0 im Modul <c>Altweg/</c>) tragen
+        /// keinen veränderlichen statischen Zustand — nur Konstanten. Ein neues statisches
+        /// Feld fiele hier auf, bevor es über Gebäude, Projekte oder Fäden hinweg ein
+        /// Ergebnis trägt.
         /// </summary>
-        [Fact]
-        public void BhkwPlan_hat_kein_veraenderliches_statisches_Feld()
+        [Theory]
+        [InlineData(typeof(BhkwPlan))]
+        [InlineData(typeof(TagesbilanzPhysik))]
+        public void BhkwPlan_hat_kein_veraenderliches_statisches_Feld(Type typ)
         {
-            FieldInfo[] felder = typeof(BhkwPlan)
+            FieldInfo[] felder = typ
                 .GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(f => !f.IsLiteral)
                 .ToArray();
 
             Assert.True(felder.Length == 0,
-                "Statische Felder in BhkwPlan: " + string.Join(", ", felder.Select(f => f.Name)));
+                "Statische Felder in " + typ.Name + ": " + string.Join(", ", felder.Select(f => f.Name)));
         }
 
         /// <summary>
@@ -93,7 +98,7 @@ namespace EPOS.Kern.Tests
 
         private static double Tag(Tagesbilanzzustand zustand, int day, double aussenTemp)
         {
-            return BhkwPlan.TaeglHeizlastWG(
+            return TagesbilanzPhysik.TaeglHeizlastWG(
                 zustand, day, weAbsenkung: 0, weTemp: 20.0, ferienAbsenkung: 0, ferienTemp: 20.0,
                 raumsolltempTag: 20.0, raumsolltempNacht: 16.0,
                 innereGewinne: 200.0, solareGewinne: 50.0,
@@ -122,7 +127,7 @@ namespace EPOS.Kern.Tests
             var maske = new bool[365];
             for (int i = 0; i < maske.Length; i++) maske[i] = true; // wird vollständig überschrieben
             var warnungen = new List<KeyValuePair<string, string>>();
-            SimulationWaermebedarf.FerienmaskeBilden(item, maske,
+            TagesbilanzRechenweg.FerienmaskeBilden(item, maske,
                 (s, t) => warnungen.Add(new KeyValuePair<string, string>(s, t)));
             return (maske, warnungen);
         }
@@ -420,7 +425,7 @@ namespace EPOS.Kern.Tests
             double[] spaetes = Rechne(sim, Probe(), index: 150);
 
             Assert.Equal(erstes, spaetes);
-            Assert.True(sim.HeizwaermebedarfGeb.Length >= 151);
+            Assert.True(sim.Tagesbilanzweg.HeizwaermebedarfGeb.Length >= 151);
         }
 
         /// <summary>
@@ -436,7 +441,7 @@ namespace EPOS.Kern.Tests
             sim.Waermebedarf_berechnen(1039, Klimaregion(1039));
 
             Assert.Equal(3, sim.Anzahl_Gebaeude);
-            Assert.Equal(3, sim.HeizwaermebedarfGeb.Length);
+            Assert.Equal(3, sim.Tagesbilanzweg.HeizwaermebedarfGeb.Length);
             Assert.Null(typeof(SimulationWaermebedarf).GetField("MaxP",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
         }
