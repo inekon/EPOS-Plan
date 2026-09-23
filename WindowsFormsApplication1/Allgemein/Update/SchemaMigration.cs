@@ -3618,6 +3618,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_101_KWKG_ANLAGENART_LEER = 101;
 
+        /// <summary>
+        /// Schritt 102 — <b>Katalog, Zonen und Projekt des Zapfprofilgenerators</b>
+        /// (Papiername T1; <c>Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c> 3.1
+        /// und 3.2, Stufe Z0).
+        ///
+        /// <para><b>Was der Schritt herstellt.</b> Zehn leere Tabellen: sieben Kataloge
+        /// (<c>Tab_TwwNutzungsart_STAMM</c>, <c>Tab_TwwTagesgangsatz_STAMM</c>,
+        /// <c>Tab_TwwTagesgang_STAMM</c>, <c>Tab_TwwBedarfstag_STAMM</c>,
+        /// <c>Tab_TwwBedarfstagEreignis_STAMM</c>, <c>Tab_TwwParameter_STAMM</c>,
+        /// <c>Tab_TwwDin4708Wert_STAMM</c>) und drei Projekttabellen (<c>Tab_TwwZone</c>,
+        /// <c>Tab_TwwWohnungstyp</c>, <c>Tab_TwwProjekt</c>), dazu vier Indizes auf
+        /// Kindspalten der Fremdschlüssel. Die DDL steht bei
+        /// <see cref="TwwSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Kein Katalogwert kommt über den
+        /// Schritt herein — die Auslieferungswerte bringt ein Katalogpaket außerhalb des
+        /// Repositoriums (Konzept Kapitel 6 (b)). Nach dem Schritt sind alle zehn
+        /// Tabellen leer, kein Projekt steht auf dem Generator, und kein Rechenweg liest
+        /// sie: Der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Wiederholbar</b> über <c>IF NOT EXISTS</c> in jeder Anweisung.
+        /// <b>Nach Schritt 101</b>, und das ist unbedenklich: 101 fasst allein einen
+        /// Spaltenwert in <c>Tab_Energieanlagen</c> an; die neuen
+        /// Fremdschlüsselspalten tragen keine Vorgabe, 100 hat an ihnen nichts zu
+        /// tun.</para>
+        /// </summary>
+        public const int SCHRITT_102_ZAPFPROFIL_KATALOG = 102;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4996,6 +5026,19 @@ namespace WindowsFormsApplication1
                         "ERGEBNISNEUTRAL: Kein Rechenweg unterscheidet die leere " +
                         "Zeichenkette von NULL.",
                         Schritt_101_KwkgAnlagenartLeer),
+
+            // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z0 (Papiername T1) - zehn
+            // leere Tabellen fuer Katalog, Zonen und Projekt. REIN DDL; die Quelle ist
+            // TwwSchema. Er steht NACH 101 und 100: 101 fasst allein einen Spaltenwert
+            // an; seine Fremdschluesselspalten tragen keine Vorgabe, 100 hat an ihnen
+            // nichts zu tun.
+            new Schritt(SCHRITT_102_ZAPFPROFIL_KATALOG,
+                        "Zapfprofilgenerator: Katalog, Zonen und Projekt anlegen " +
+                        "(zehn Tabellen Tab_Tww*)",
+                        "Der Zapfprofilgenerator bleibt dann unerreichbar: Katalog, " +
+                        "Zonen und Weiche haetten keine Tabelle. Gerechnet wird " +
+                        "unveraendert auf dem Bestandsweg des Brauchwassers.",
+                        Schritt_102_ZapfprofilKatalog),
         };
 
         /// <summary>
@@ -7601,6 +7644,53 @@ namespace WindowsFormsApplication1
                     ". NULL heisst 'nicht gepflegt'; geraten wird kein Wert. Kein Rechenweg " +
                     "unterscheidet die leere Zeichenkette von NULL - der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 102 - Katalog, Zonen und Projekt des Zapfprofilgenerators (T1, Stufe Z0)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 102 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_102_ZAPFPROFIL_KATALOG"/>.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema"/>), dieselbe
+        /// Schleife wie Schritt 65: <see cref="TwwSchema.Anweisungen"/> in
+        /// Anlegereihenfolge, erst die Tabelle, auf die verwiesen wird, dann die
+        /// verweisende; danach <see cref="TwwSchema.Indizes"/>. <b>Nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/></b> — <c>Lauf.Conn</c> ist im SQLite-Zweig
+        /// <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_102_ZapfprofilKatalog(Lauf l)
+        {
+            int angelegt = 0;
+            int gesamt = 0;
+
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            {
+                gesamt++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            // Danach die Indizes auf den Kindspalten - sie brauchen ihre Tabelle.
+            int indizes = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            {
+                if (!SqliteDdl(l, i.Value, i.Key)) return false;
+                indizes++;
+            }
+
+            l.Notiz("102: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) des " +
+                    "Zapfprofilgenerators angelegt (Katalog, Zonen, Projekt), " +
+                    indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) " +
+                    "sichergestellt. KEIN DML: alle " +
+                    "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
+                    "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
+                    "sich; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
 
             return new Dictionary<string, object>
             {
-                ["Kataloge"] = (IReadOnlyList<(string, string)>)KatalogRegistry.Alle
+                ["Kataloge"] = (IReadOnlyList<(string, string)>)KatalogRegistry.Dublettendialog
                     .Select(k => (k.Schluessel, KatalogRegistry.Anzeige(k.Schluessel)))
                     .ToList(),
                 ["Scannen"] = new Func<string, IProgress<Scanmeldung>, Task<Scanergebnis>>(Scannen),
@@ -108,11 +108,11 @@ namespace WindowsFormsApplication1
             var ziele = new List<KatalogDefinition>();
             if (string.IsNullOrEmpty(schluessel))
             {
-                ziele.AddRange(KatalogRegistry.Alle);
+                ziele.AddRange(KatalogRegistry.Dublettendialog);
             }
             else
             {
-                KatalogDefinition k = KatalogRegistry.Finde(schluessel);
+                KatalogDefinition k = Katalog(schluessel);
                 if (k != null) ziele.Add(k);
             }
 
@@ -160,6 +160,17 @@ namespace WindowsFormsApplication1
         // Knotenschluessel aufloesen
         // =====================================================================
 
+        /// <summary>
+        /// Ein Katalog des Dialogs — nur einer mit <see cref="KatalogDefinition.ImDublettendialog"/>;
+        /// die Tww-Kataloge des Zapfprofilgenerators bleiben bis zu ihrer Oberflächenstufe
+        /// draußen (Umsetzungskonzept Zapfprofilgenerator 5.4).
+        /// </summary>
+        private static KatalogDefinition Katalog(string schluessel)
+        {
+            KatalogDefinition k = KatalogRegistry.Finde(schluessel);
+            return k != null && k.ImDublettendialog ? k : null;
+        }
+
         /// <summary>Ein aufgelöster Knoten: Katalog, Gruppe und Satz — wie <c>KnotenInfo</c>.</summary>
         private sealed class Knoten
         {
@@ -178,7 +189,7 @@ namespace WindowsFormsApplication1
                 return null;
 
             string[] teile = schluessel.Substring(2).Split('/');
-            KatalogDefinition k = KatalogRegistry.Finde(teile[0]);
+            KatalogDefinition k = Katalog(teile[0]);
             if (k == null) return null;
 
             var knoten = new Knoten { Katalog = k };
@@ -287,6 +298,11 @@ namespace WindowsFormsApplication1
             if (n.Satz.ReadOnly)
                 return Task.FromResult(new Loeschpruefung(true, false, "", "", n.Satz.Name, n.Satz.Id));
 
+            // Eine benutzte Zeile eines Katalogs mit VerwendungSperrt ist unveränderlich
+            // (Zapfprofilgenerator 3.2): gesperrt, keine Rückfrage „Trotzdem löschen?".
+            if (n.Katalog.VerwendungSperrt && KatalogBereinigung.Sperrgrund(n.Katalog, n.Satz.Id) != null)
+                return Task.FromResult(new Loeschpruefung(true, false, "", "", n.Satz.Name, n.Satz.Id));
+
             if (n.Katalog.VerwendungsPruefungen.Length == 0)
                 return Task.FromResult(new Loeschpruefung(false, true, "", "", n.Satz.Name, n.Satz.Id));
 
@@ -329,7 +345,12 @@ namespace WindowsFormsApplication1
         {
             Knoten n = Aufloesen(schluessel);
             if (n == null || n.Satz == null) return Task.FromResult(new Umbenennung(false, ""));
-            return Task.FromResult(new Umbenennung(n.Satz.ReadOnly, n.Satz.Name));
+
+            // Der Name einer benutzten Zeile eines Katalogs mit VerwendungSperrt ist Teil
+            // ihres natürlichen Schlüssels (Zapfprofilgenerator 3.2) - gesperrt wie ReadOnly.
+            bool gesperrt = n.Satz.ReadOnly
+                            || (n.Katalog.VerwendungSperrt && KatalogBereinigung.Sperrgrund(n.Katalog, n.Satz.Id) != null);
+            return Task.FromResult(new Umbenennung(gesperrt, n.Satz.Name));
         }
 
         /// <summary>

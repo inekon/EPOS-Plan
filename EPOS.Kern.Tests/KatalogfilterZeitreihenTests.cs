@@ -131,6 +131,9 @@ namespace EPOS.Kern.Tests
             foreach (Anlagenart art in Katalogfilterprofil.AlleArten)
                 alle.Add(Katalogfilterprofil.Finde(art).Schluessel);
 
+            // Zapfprofilgenerator (P8): der Katalog der Brauchwasser-Nutzungsarten.
+            alle.Add(Katalogfilterprofil.FuerTwwNutzungsart().Schluessel);
+
             Assert.Equal(alle.Count, alle.Distinct().Count());
         }
 

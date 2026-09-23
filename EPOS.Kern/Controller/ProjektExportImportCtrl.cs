@@ -89,6 +89,14 @@ namespace WindowsFormsApplication1
             { "ID_Brennstoff",    "Tab_Brennstoff_Stamm" },
             { "ID_Type",          "Tab_Typ_Energieanlagen" },
             { "KomponentenID",    "Tab_KostenKomponente" },
+            // Zapfprofilgenerator (Schemaschritt 102, Konzept 3.2): Zone, Wohnungstyp und
+            // Projektzeile zeigen auf unveränderliche Katalogversionen. Gefunden wird über
+            // den natürlichen Schlüssel; fehlt die Zeile am Ziel, reist sie mit
+            // (Status IMPORT, ProjektExportImportCtrl.Tww.cs).
+            { "ID_Nutzungsart",   TwwSchema.TAB_TWW_NUTZUNGSART_STAMM },
+            { "ID_Tagesgangsatz", TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM },
+            { "ID_Bedarfstag",    TwwSchema.TAB_TWW_BEDARFSTAG_STAMM },
+            { "ID_Ausstattung",   TwwSchema.TAB_TWW_DIN4708_WERT_STAMM },
             // TODO: bei Bedarf ID_Stamm / StammID / KategorieID ergänzen.
         };
 
@@ -100,6 +108,10 @@ namespace WindowsFormsApplication1
             { "Tab_Brennstoff_Stamm",   new[] { "Bezeichner" } },
             { "Tab_Typ_Energieanlagen", new[] { "Bezeichner" } },
             { "Tab_KostenKomponente",   new[] { "Komponente" } },
+            { TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,   new[] { "Bezeichner", "Katalogversion" } },
+            { TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, new[] { "Bezeichner", "Katalogversion" } },
+            { TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,    new[] { "Bezeichner", "Katalogversion" } },
+            { TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,  new[] { "Art", "Schluessel", "Katalogversion" } },
         };
         // -----------------------------------------------------------------------------------
 
@@ -247,6 +259,8 @@ namespace WindowsFormsApplication1
                                     foreach (var fk in tabFks)
                                     {
                                         if (copySet.Contains(fk.RefTab) || konfigurierteKataloge.Contains(fk.RefTab)) continue;
+                                        // Tww-Kataloge reisen nie über die Original-Id (Konzept 3.2).
+                                        if (IstTwwStamm(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -302,14 +316,19 @@ namespace WindowsFormsApplication1
 
                         var pvBeilagen = PvStammBeilagenSchreiben(zip, imPaket);
 
+                        // Zapfprofilgenerator: Eine Nutzungsart braucht am Ziel ihren
+                        // Tagesgangsatz — er reist mit und wird VOR ihr aufgelöst.
+                        TwwKatalogRefsErgaenzen(katalogRefs);
+
                         var katalogMeta = new List<KatMeta>();
-                        foreach (var kv in katalogRefs)
+                        foreach (var kv in TwwReihenfolge(katalogRefs))
                         {
                             if (kv.Value.Count == 0) continue;
                             string katTab = kv.Key, pk = "id";
                             DataTable dt = DataRepository.GetDataTable(
                                 "SELECT * FROM [" + katTab + "] WHERE [" + pk + "] IN (" + string.Join(",", kv.Value) + ")");
                             if (dt == null || dt.Rows.Count == 0) continue;
+                            TwwInterneSpaltenEntfernen(katTab, dt);   // Beleg, Freigabe: nie ins Paket
                             WriteEntry(zip, "catalogs/" + katTab + ".json", RowsToJson(dt));
                             katalogMeta.Add(new KatMeta
                             {
@@ -344,6 +363,7 @@ namespace WindowsFormsApplication1
                             tables = manifestTabellen,
                             catalogs = katalogMeta,
                             fill = fuellMeta,
+                            catalogChildren = TwwKinderSchreiben(zip, katalogRefs),
                             variants = varMetas,
                             variantLinks = links,
                             pvVerguetungStamm = pvBeilagen
@@ -512,6 +532,8 @@ namespace WindowsFormsApplication1
             var variantRows = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>();
             var catalogRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
             var fillRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
+            var kindRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
+            TwwZuruecksetzen();
             // § 2.16: je Manifesteintrag pvVerguetungStamm die Zeilen aus pvstamm/<i>.json.
             var pvStammZeilen = new List<List<Dictionary<string, JsonElement>>>();
 
@@ -547,6 +569,11 @@ namespace WindowsFormsApplication1
                     catalogRows[k.name] = LiesZeilen(ReadEntry(zip, "catalogs/" + k.name + ".json"));
                 foreach (var k in man.fill ?? new List<KatMeta>())
                     fillRows[k.name] = LiesZeilen(ReadEntry(zip, "fill/" + k.name + ".json"));
+                // Zapfprofilgenerator: Kindzeilen mitreisender Katalogköpfe (Tagesgänge,
+                // Ereignisse). Ein Paket ohne den Abschnitt bringt keine.
+                foreach (var k in man.catalogChildren ?? new List<KindMeta>())
+                    kindRows[k.name] = LiesZeilen(ReadEntry(zip, KINDER_PRAEFIX + k.name + ".json") ?? "[]");
+                TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
 
                 // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
                 // bleibt die Liste leer, und der Import läuft wie zuvor.
@@ -625,6 +652,9 @@ namespace WindowsFormsApplication1
                                 LoeseKatalogAuf(v, k, catalogRows[k.name], katMap);
                     }
 
+                    // 1a) Zapfprofilgenerator: die Kindzeilen der mitgenommenen Köpfe.
+                    TwwKinderEinspielen(v, man.catalogChildren, kindRows, katMap);
+
                     // 1b) Referenzierte Katalogzeilen mit Original-ID auffüllen (falls im Ziel fehlend).
                     //     Sichert die referenzielle Integrität für nicht kopierte Katalogtabellen
                     //     (z. B. Tab_KostenGruppenKatalog über KategorieID). Keine Umschlüsselung.
@@ -670,6 +700,7 @@ namespace WindowsFormsApplication1
                         }
                         berichte.Add("Projekt \u201E" + ziel + "\u201C importiert (" + man.tables.Count + " Tabellen).");
                     }
+                    berichte.AddRange(_twwBericht);
 
                     // T3: Varianten-Bäume — der gewählte Konfliktmodus gilt für alle (TF2).
                     for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
@@ -1121,7 +1152,13 @@ namespace WindowsFormsApplication1
             {
                 long v = Convert.ToInt64(raw);
                 if (v <= 0) return raw;
-                return katMap.TryGetValue(katTab + "||" + v, out long neu) ? neu : (object)v;
+                if (katMap.TryGetValue(katTab + "||" + v, out long neu)) return neu;
+                // Zapfprofilgenerator (Konzept 3.2): Eine Tww-Katalogzeile, die das Paket
+                // nicht führt, wird nie still über die Original-Id umgehängt — dort stünde am
+                // Ziel eine FREMDE Zeile gleicher Id. Die Ausnahme rollt den Vorgang zurück.
+                if (IstTwwKatalog(katTab))
+                    throw new Exception(TwwFehltImPaket(tab, col, v, katTab));
+                return v;
             }
 
             string ziel = _dup.ErmittleZieltabelle(tab, col, pk);
@@ -1149,6 +1186,12 @@ namespace WindowsFormsApplication1
         private void FuelleKatalog(DbVorgang v, KatMeta k,
             List<Dictionary<string, JsonElement>> rows)
         {
+            // Zapfprofilgenerator (Konzept 3.2): Tww-Kataloge reisen nur über den natürlichen
+            // Schlüssel (catalogs/). Über die Original-Id aufgefüllt, fände die Zone am Ziel
+            // eine fremde Zeile gleicher Id — ein solches Paket wird benannt abgelehnt.
+            if (IstTwwStamm(k.name))
+                throw new Exception("Das Paket führt " + k.name + " unter fill/ (Original-Id). Tww-Katalogzeilen " +
+                                    "reisen nur über ihren natürlichen Schlüssel - Import abgelehnt, nichts geändert.");
             Dictionary<string, Type> zielTypen = ZielTypen(k.name);
             if (zielTypen == null || !zielTypen.ContainsKey(k.pk)) return;
             foreach (var row in rows)
@@ -1208,6 +1251,14 @@ namespace WindowsFormsApplication1
                     }
                     catch (Exception ex) { throw new Exception(Diagnose("Katalog-Suche " + k.name, new List<string>(k.naturalKey), ps, zielTypen) + " :: " + ex.Message, ex); }
                     if (found != null && found != DBNull.Value) neuId = Convert.ToInt64(found);
+                    else if (IstTwwKatalog(k.name))
+                    {
+                        // Zapfprofilgenerator (Konzept 3.2): mitnehmen als Status IMPORT —
+                        // umgeschlüsselt, ohne Vorlage, beschreibbar, im Bericht genannt. Ein
+                        // Tagesgangsatz, der nur als Abhängigkeit reist, wartet auf Bedarf.
+                        if (TwwVormerken(k, row, zielTypen)) continue;
+                        neuId = TwwZeileMitnehmen(v, k, row, katMap, zielTypen);
+                    }
                     else
                     {
                         var cs = row.Keys.Where(x => !x.Equals(k.pk, StringComparison.OrdinalIgnoreCase)
@@ -1616,6 +1667,7 @@ namespace WindowsFormsApplication1
             public List<TabMeta> tables { get; set; }
             public List<KatMeta> catalogs { get; set; }
             public List<KatMeta> fill { get; set; }   // per Original-ID aufzufüllende Katalogzeilen
+            public List<KindMeta> catalogChildren { get; set; }   // Kindzeilen mitreisender Katalogköpfe (catalogchildren/)
             public List<VarMeta> variants { get; set; }        // T3: Varianten-Bäume (projects/<i>/data/)
             public List<LinkMeta> variantLinks { get; set; }   // T3: Stamm-Verknüpfungen (statt Tab_Variante-Zeilen)
             public List<PvStammMeta> pvVerguetungStamm { get; set; }   // § 2.16: Beilagen (pvstamm/<i>.json)

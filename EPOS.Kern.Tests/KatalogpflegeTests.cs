@@ -46,11 +46,12 @@ namespace EPOS.Kern.Tests
         public KatalogpflegeTests(TestDatenbank db) { _db = db; }
 
         // ==================================================================
-        //  1 — KatalogRegistry: neunzehn Kataloge, eingefroren
+        //  1 — KatalogRegistry: die Kataloge in fester Zahl, eingefroren
         // ==================================================================
 
         /// <summary>
-        /// Die Registry fuehrt <b>20</b> Kataloge — seit dem Anwenderentscheid
+        /// Die Registry fuehrt <b>23</b> Kataloge — die zwanzig des Bestands und die drei
+        /// Tww-Kataloge des Zapfprofilgenerators (P8). Seit dem Anwenderentscheid
         /// <b>W6-E-2</b> vom 06.09.2026 (Stufe S1 des
         /// Konzept_Wechselrichter_EPOS-Plan.md) gehoert der WECHSELRICHTER dazu, bis
         /// dahin die einzige Geraetefamilie ohne Katalog. Der Dublettendialog bildet
@@ -59,15 +60,16 @@ namespace EPOS.Kern.Tests
         /// messen lassen muessen.
         /// </summary>
         [Fact]
-        public void DieRegistryFuehrtNeunzehnKataloge()
+        public void DieRegistryFuehrtAlleKatalogeInFesterZahl()
         {
-            Assert.Equal(20, KatalogRegistry.Alle.Count);
+            // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
+            Assert.Equal(23, KatalogRegistry.Alle.Count);
         }
 
-        /// <summary>Die 20 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
+        /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
         /// zeichnet die Kataloge in genau dieser Folge (<c>BaumFuellen</c>).</summary>
         [Fact]
-        public void DieNeunzehnSchluesselStehenInDerRegistryreihenfolge()
+        public void DieSchluesselStehenInDerRegistryreihenfolge()
         {
             string[] erwartet =
             {
@@ -76,10 +78,70 @@ namespace EPOS.Kern.Tests
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
                 "WECHSELRICHTER", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE", "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
+                // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
+                "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
                 "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
             };
             Assert.Equal(erwartet, KatalogRegistry.Alle.Select(k => k.Schluessel).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Die drei Tww-Kataloge</b> (Umsetzungskonzept Zapfprofilgenerator 3.2, P8):
+        /// Verwendung ueber die ID statt ueber den Namen (keine Kopiersemantik), die
+        /// Datenbloecke der Tagesgaenge und Ereignisse, und die Katalogversion bleibt eine
+        /// Vergleichsspalte — zwei Versionen desselben Namens sind nie „leere Kopien".
+        /// </summary>
+        [Fact]
+        public void DieTwwKatalogeVerweisenUeberDieId()
+        {
+            KatalogDefinition n = KatalogRegistry.Finde("TWW_NUTZUNGSART");
+            Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, n.Tabelle);
+            VerwendungsPruefung zone = Assert.Single(n.VerwendungsPruefungen);
+            Assert.Equal((TwwSchema.TAB_TWW_ZONE, "ID_Nutzungsart", false), (zone.Tabelle, zone.Spalte, zone.UeberName));
+            Assert.Empty(n.Datenbloecke);
+            Assert.DoesNotContain("Katalogversion", n.AusschlussSpalten);
+            Assert.Contains("ID_Vorlage", n.AusschlussSpalten);
+
+            KatalogDefinition s = KatalogRegistry.Finde("TWW_TAGESGANGSATZ");
+            Assert.Equal(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, s.Tabelle);
+            Assert.All(s.VerwendungsPruefungen, v => Assert.False(v.UeberName));
+            Assert.Equal(new[] { TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, TwwSchema.TAB_TWW_ZONE },
+                         s.VerwendungsPruefungen.Select(v => v.Tabelle).ToArray());
+            KatalogDatenblock gang = Assert.Single(s.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_TAGESGANG_STAMM, "ID_Tagesgangsatz"), (gang.Tabelle, gang.FkSpalte));
+            Assert.Equal(25, gang.WertSpalten.Length);
+            Assert.Equal("Tagtyp", gang.WertSpalten[0]);
+            Assert.Equal("Anteil_01", gang.WertSpalten[1]);
+            Assert.Equal("Anteil_24", gang.WertSpalten[24]);
+
+            KatalogDefinition t = KatalogRegistry.Finde("TWW_BEDARFSTAG");
+            Assert.Equal(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, t.Tabelle);
+            VerwendungsPruefung projekt = Assert.Single(t.VerwendungsPruefungen);
+            Assert.Equal((TwwSchema.TAB_TWW_PROJEKT, "ID_Bedarfstag", false), (projekt.Tabelle, projekt.Spalte, projekt.UeberName));
+            KatalogDatenblock ereignis = Assert.Single(t.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "ID_Bedarfstag"), (ereignis.Tabelle, ereignis.FkSpalte));
+
+            // Die Tabellen der Registry sind genau die drei Koepfe aus TwwSchema.
+            Assert.Same(n, KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Null(KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM));
+
+            // Konzept 3.2: eine benutzte Zeile ist gesperrt, der natuerliche Schluessel ist
+            // (Bezeichner, Katalogversion), und der Dublettendialog zeigt die drei Kataloge
+            // erst mit ihrer Oberflaechenstufe (5.4).
+            foreach (KatalogDefinition tww in new[] { n, s, t })
+            {
+                Assert.True(tww.VerwendungSperrt);
+                Assert.False(tww.ImDublettendialog);
+                Assert.Equal(new[] { "Katalogversion" }, tww.SchluesselZusatzSpalten);
+            }
+            Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
+                         KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
+            Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal))
+                                             .Select(k => k.Schluessel).ToArray(),
+                         KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
+            Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)),
+                       k => Assert.Empty(k.SchluesselZusatzSpalten));
         }
 
         /// <summary>
@@ -100,15 +162,17 @@ namespace EPOS.Kern.Tests
             Assert.Contains(k.Datenbloecke, b => b.Tabelle == "Tab_Solar_STAMM" && b.FkSpalte == "ID_Klimaregion");
         }
 
-        /// <summary>Vier Kataloge fuehren eine Verwendungspruefung; die uebrigen sechzehn
-        /// nicht — der Dublettendialog sagt das dem Anwender ausdruecklich.</summary>
+        /// <summary>Sieben Kataloge fuehren eine Verwendungspruefung — die vier Typprofile und
+        /// die drei Tww-Kataloge (P8); die uebrigen sechzehn nicht — der Dublettendialog sagt
+        /// das dem Anwender ausdruecklich.</summary>
         [Fact]
-        public void VierKatalogeFuehrenEineVerwendungspruefung()
+        public void DieKatalogeMitVerwendungspruefung()
         {
             string[] mitPruefung = KatalogRegistry.Alle
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
                 .Select(k => k.Schluessel).ToArray();
-            Assert.Equal(new[] { "BRAUCHWASSERTYP", "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
+            Assert.Equal(new[] { "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
+                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
                          mitPruefung);
         }
 
@@ -140,6 +204,12 @@ namespace EPOS.Kern.Tests
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
+        // Zapfprofilgenerator (P4): der FIKTIVE Testkatalog aus
+        // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei Nutzungsarten, ein
+        // Tagesgangsatz, ein Bedarfstag, alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 3, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 1, 0, 0)]
+        [InlineData("TWW_BEDARFSTAG", 1, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
         [InlineData("PROZESSWAERME", 32, 0, 1)]

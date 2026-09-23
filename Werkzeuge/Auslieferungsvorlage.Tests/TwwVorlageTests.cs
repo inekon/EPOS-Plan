@@ -1,0 +1,381 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace Auslieferungsvorlage.Tests
+{
+    /// <summary>
+    /// <b>Die Tww-Kataloge des Zapfprofilgenerators in der Vorlage</b> (Umsetzungskonzept
+    /// Zapfprofilgenerator 3.2, 6 (b), (c); Stufe Z0, Posten P10): die eigene Regel
+    /// unabhängig von <c>--kataloge</c>, die Prüfposten und das Katalogpaket.
+    ///
+    /// <para>Quelle ist eine KOPIE der Testdatenbank; ihr fiktiver Testkatalog (Status
+    /// <c>EIGEN</c>, Herkunftsart <c>FIKTIV</c>) muss aus der Vorlage fallen. Wo eine Probe
+    /// Auslieferungszeilen braucht, legt sie sie in der Kopie bzw. im Katalogpaket mit
+    /// erfundenen, runden Werten an (Herkunftsart <c>EIGENKONSTRUKTION</c>) — nie in der
+    /// Testdatenbank selbst. Das Katalogpaket liegt im Temp-Ordner, außerhalb des
+    /// Repositorys, wie es die Option verlangt.</para>
+    /// </summary>
+    [Collection("Auslieferungsvorlage")]
+    public sealed class TwwVorlageTests
+    {
+        private const string QUELLE = "Katalogpaket (erfunden)";
+        private const string VERSION = "PAKET-1";
+
+        // =============================================================================
+        //  Die Regel
+        // =============================================================================
+        [Fact]
+        public void T1_Die_Tww_Regel_laesst_nur_AUSLIEFERUNG_auch_bei_Kataloge_readonly()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Bearbeiten(quelle, () =>
+            {
+                long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
+                // ReadOnly 0: Die ReadOnly-Regel darf sie trotzdem nicht treffen.
+                long nutzung = NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 0);
+                NutzungAnlegen("Probe Import", TwwSchema.STATUS_IMPORT, satz, readOnly: 0);
+
+                // Eine Zone samt Wohnungstyp in einem Projekt: Projektdaten, fallen in Schritt 2.
+                long projekt = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Projekt"));
+                long zone = DataRepository.ExecuteInsertAndGetId(
+                    "INSERT INTO Tab_TwwZone (ID_Projekt, ID_Nutzungsart, Reihenfolge, Name, Bezugsmenge) VALUES (?, ?, 1, 'Z', 10.0)",
+                    new[] { new DbParam("?", projekt), new DbParam("?", nutzung) });
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwWohnungstyp (ID_Zone, Anzahl, Reihenfolge) VALUES (?, 2, 1)", new DbParam("?", zone)));
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+
+            Assert.Contains("Schritt 3c — Zapfprofil-Kataloge (Tww)", e.Ausgabe);
+            Assert.Contains("ok      Fremdschluessel eingeschaltet", e.Ausgabe);
+            Assert.Contains("ok      keine Zeile mit Status IMPORT", e.Ausgabe);
+            Assert.Contains("ok      nur Status AUSLIEFERUNG", e.Ausgabe);
+            Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
+            Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
+            Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
+            Assert.Contains("ok      keine Eingabe aus den lokalen Normdaten (ZU11, Referenzlaeufe/Normzahlen/", e.Ausgabe);
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 2", e.Ausgabe);
+            // Die Nutzungsart kam mit ReadOnly 0 — die Vorlage sperrt sie (Auslieferung ist unveraenderlich).
+            Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
+            Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(new[] { "Probe Nutzung" }, Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ReadOnly FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = 'Probe Nutzung'")));
+                Assert.Equal(new[] { "Probe Satz" }, Namen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
+                Assert.Equal(4L, Zahl(TwwSchema.TAB_TWW_TAGESGANG_STAMM));
+                foreach (string t in new[]
+                         {
+                             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
+                             TwwSchema.TAB_TWW_PARAMETER_STAMM, TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
+                             TwwSchema.TAB_TWW_ZONE, TwwSchema.TAB_TWW_WOHNUNGSTYP, TwwSchema.TAB_TWW_PROJEKT
+                         })
+                    Assert.True(Zahl(t) == 0, t + " ist nicht leer.");
+            });
+        }
+
+        // =============================================================================
+        //  Das Katalogpaket
+        // =============================================================================
+        [Fact]
+        public void T2_Das_Katalogpaket_ersetzt_den_Tww_Katalog_der_Quelle()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
+                                          parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Tww-Paket   " + paket, e.Ausgabe);
+            Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  1 Zeile(n)", e.Ausgabe);
+            Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv  ->  4 Zeile(n)", e.Ausgabe);
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 3", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                // Genau das Paket, mit seinen Ids — der fiktive Testkatalog ist fort.
+                Assert.Equal(new[] { "Paketnutzung" }, Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal(40L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ID_Tagesgangsatz FROM Tab_TwwNutzungsart_STAMM WHERE ID = 60")));
+                Assert.Equal(4L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz = 40")));
+                Assert.Equal(QUELLE + "; Satz", Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT Quelle FROM Tab_TwwTagesgang_STAMM WHERE Tagtyp = 1")));
+                Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ReadOnly FROM Tab_TwwParameter_STAMM WHERE Schluessel = 'Paket.Probe'")));
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_TwwDin4708Wert_STAMM")));
+            });
+        }
+
+        [Fact]
+        public void T3_Ein_Katalogpaket_mit_Status_EIGEN_wird_benannt_abgelehnt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_EIGEN,
+                                          parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv Zeile 2: Status \"EIGEN\"", e.Fehlerausgabe);
+            Assert.False(File.Exists(ziel), "Bei einem Abbruch darf keine Zieldatei entstehen.");
+        }
+
+        [Fact]
+        public void T4_Ein_Katalogpaket_mit_Herkunftsart_FIKTIV_faellt_in_der_Pruefung()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
+                                          parameterHerkunft: TwwSchema.HERKUNFT_FIKTIV);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"),
+                                                           "--katalogpaket", paket, "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
+            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM + ".Herkunftsart: 1", e.Ausgabe);
+        }
+
+        [Fact]
+        public void T5_Ein_Katalogpaket_im_Repository_oder_mit_fremder_Datei_wird_verweigert()
+        {
+            string quelle = Werkzeuglauf.Testdatenbank ?? Path.Combine(Path.GetTempPath(), "gibt-es-nicht.sqlite");
+            string ziel = Path.Combine(Path.GetTempPath(), "vorlagenprobe-nie.sqlite");
+
+            Werkzeuglauf.Ergebnis imRepo = Werkzeuglauf.Starten(
+                quelle, ziel, "--katalogpaket", Path.Combine(Werkzeuglauf.Repowurzel, "Referenzlaeufe"), "--trocken");
+            Assert.True(imRepo.Code == 2, imRepo.Alles);
+            Assert.Contains("Das Katalogpaket liegt im Repository", imRepo.Fehlerausgabe);
+
+            using var o = new Arbeitsordner();
+            string fremd = Path.Combine(o.Pfad, "paket");
+            Directory.CreateDirectory(fremd);
+            File.WriteAllText(Path.Combine(fremd, "Tab_Gebaeude_STAMM.csv"), "ID\n1\n", new UTF8Encoding(false));
+            Werkzeuglauf.Ergebnis falsch = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", fremd, "--trocken");
+            Assert.True(falsch.Code == 2, falsch.Alles);
+            Assert.Contains("Tab_Gebaeude_STAMM.csv ist keine Tww-Katalogtabelle", falsch.Fehlerausgabe);
+        }
+
+        // =============================================================================
+        //  Beispielpakete und lokale Normdaten
+        // =============================================================================
+
+        /// <summary>
+        /// Ein Beispielpaket, dessen Zone eine Nutzungsart nutzt, die die Vorlage nicht führt
+        /// (hier: die fiktive des Testkatalogs, die die Tww-Regel entfernt): Der Import nimmt
+        /// sie mit Status IMPORT mit, die Pruefung faellt — und nennt das Paket.
+        /// </summary>
+        [Fact]
+        public void T6_Ein_Beispielpaket_mit_fehlender_Nutzungsart_faellt_und_wird_genannt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string werkbank = o.Datei("werkbank.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, werkbank);
+            string beispiel = o.Datei("tww-beispiel.wpx");
+
+            Bearbeiten(werkbank, () =>
+            {
+                long projekt = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname = ?", new DbParam("?", Vorlage.BEISPIELPROJEKT)));
+                long nutzung = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_TwwNutzungsart_STAMM WHERE Status = ?", new DbParam("?", TwwSchema.STATUS_EIGEN)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwZone (ID_Projekt, ID_Nutzungsart, Reihenfolge, Name, Bezugsmenge) VALUES (?, ?, 1, 'Z', 10.0)",
+                    new DbParam("?", projekt), new DbParam("?", nutzung)));
+                Assert.True(new ProjektExportImportCtrl().Exportieren(Vorlage.BEISPIELPROJEKT, beispiel),
+                            "Der Export des Beispielprojekts ist fehlgeschlagen.");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"),
+                                                           "--beispiele", beispiel, "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  keine Zeile mit Status IMPORT", e.Ausgabe);
+            Assert.Contains("mitgebracht von Beispielpaket tww-beispiel.wpx: Katalogzeile", e.Ausgabe);
+        }
+
+        /// <summary>
+        /// Eine Eingabe unter <c>Referenzlaeufe/Normzahlen/</c> (ZU11) laesst die Pruefung
+        /// fallen — hier die Quelle selbst, in einem Temp-Ordner mit diesem Pfadstueck.
+        /// </summary>
+        [Fact]
+        public void T7_Eine_Eingabe_aus_den_lokalen_Normdaten_faellt_in_der_Pruefung()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string ordner = Path.Combine(o.Pfad, "Referenzlaeufe", "Normzahlen");
+            Directory.CreateDirectory(ordner);
+            string quelle = Path.Combine(ordner, "quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  keine Eingabe aus den lokalen Normdaten (ZU11", e.Ausgabe);
+            Assert.Contains(quelle, e.Ausgabe);
+        }
+
+        // =============================================================================
+        //  Handwerkszeug
+        // =============================================================================
+
+        /// <summary>
+        /// Schreibt ein Katalogpaket mit erfundenen, runden Werten: ein Tagesgangsatz (Id 40,
+        /// Trenner ';') mit vier Tagesgängen (Trenner ',', Quelle mit Trenner in
+        /// Anführungszeichen), eine Nutzungsart (Id 60) und ein Parameter ohne Spalte
+        /// ReadOnly, dessen Status und Herkunftsart die Probe wählt.
+        /// </summary>
+        private static string PaketSchreiben(Arbeitsordner o, string parameterStatus, string parameterHerkunft)
+        {
+            string ordner = Path.Combine(o.Pfad, "katalogpaket");
+            Directory.CreateDirectory(ordner);
+            var utf8 = new UTF8Encoding(false);
+
+            File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + ".csv"),
+                "ID;Bezeichner;Katalogversion;Status;ReadOnly\n40;Paketsatz;" + VERSION + ";AUSLIEFERUNG;1\n", utf8);
+
+            var tg = new StringBuilder();
+            tg.Append("ID,ID_Tagesgangsatz,Tagtyp,")
+              .Append(string.Join(",", Enumerable.Range(1, 24).Select(h => "Anteil_" + h.ToString("00", CultureInfo.InvariantCulture))))
+              .Append(",Quelle,Version,Herkunftsart\n");
+            for (int t = 1; t <= 4; t++)
+                tg.Append(t + 40).Append(",40,").Append(t).Append(',')
+                  .Append(string.Join(",", Enumerable.Range(1, 24).Select(h => h == 12 ? "1.0" : "0")))
+                  .Append(",\"").Append(QUELLE).Append("; Satz\",").Append(VERSION).Append(",EIGENKONSTRUKTION\n");
+            File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv"), tg.ToString(), utf8);
+
+            var spalten = new List<string>
+            {
+                "ID", "Bezeichner", "Katalogversion", "Bezugsart", "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
+                "Bedarf_Quelle", "Bedarf_Version", "Bedarf_Herkunftsart", "Bezug_Zapftemperatur", "Bezug_Kaltwasser",
+                "Bilanzgrenze", "Kalenderart", "Jahresgang_Quelle", "Jahresgang_Version", "Jahresgang_Herkunftsart",
+                "Wochengang_Quelle", "Wochengang_Version", "Wochengang_Herkunftsart", "ID_Tagesgangsatz", "Status", "ReadOnly"
+            };
+            var werte = new List<string>
+            {
+                "60", "Paketnutzung", VERSION, "1", "1", "2", "3",
+                QUELLE, VERSION, "EIGENKONSTRUKTION", "50", "10",
+                "1", "1", QUELLE, VERSION, "EIGENKONSTRUKTION",
+                QUELLE, VERSION, "EIGENKONSTRUKTION", "40", "AUSLIEFERUNG", "1"
+            };
+            for (int m = 1; m <= 12; m++) { spalten.Add("Monat_" + m); werte.Add("1"); }
+            for (int w = 1; w <= 7; w++) { spalten.Add("Woche_" + w); werte.Add(w <= 5 ? "0.2" : "0"); }
+            File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"),
+                string.Join(";", spalten) + "\n" + string.Join(";", werte) + "\n", utf8);
+
+            File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"),
+                "Schluessel;Wert;Einheit;Katalogversion;Quelle;Version;Herkunftsart;Status\n" +
+                "Paket.Probe;1.0;-;" + VERSION + ";" + QUELLE + ";" + VERSION + ";" + parameterHerkunft + ";" +
+                parameterStatus + "\n", utf8);
+            return ordner;
+        }
+
+        private static long SatzAnlegen(string bezeichner, string status)
+        {
+            long id = DataRepository.ExecuteInsertAndGetId(
+                "INSERT INTO Tab_TwwTagesgangsatz_STAMM (Bezeichner, Katalogversion, Status, ReadOnly) VALUES (?, ?, ?, 1)",
+                new[] { new DbParam("?", bezeichner), new DbParam("?", VERSION), new DbParam("?", status) });
+            string spalten = string.Join(", ", Enumerable.Range(1, 24).Select(h => "Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)));
+            string werte = string.Join(", ", Enumerable.Range(1, 24).Select(h => h == 12 ? "1.0" : "0.0"));
+            for (int t = 1; t <= 4; t++)
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwTagesgang_STAMM (ID_Tagesgangsatz, Tagtyp, " + spalten + ", Quelle, Version, Herkunftsart) " +
+                    "VALUES (?, ?, " + werte + ", ?, ?, 'EIGENKONSTRUKTION')",
+                    new DbParam("?", id), new DbParam("?", t), new DbParam("?", QUELLE), new DbParam("?", VERSION)));
+            return id;
+        }
+
+        private static long NutzungAnlegen(string bezeichner, string status, long satz, int readOnly)
+        {
+            var spalten = new List<string>
+            {
+                "Bezeichner", "Katalogversion", "Bezugsart", "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
+                "Bedarf_Quelle", "Bedarf_Version", "Bedarf_Herkunftsart", "Bezug_Zapftemperatur", "Bezug_Kaltwasser",
+                "Bilanzgrenze", "Kalenderart", "Jahresgang_Quelle", "Jahresgang_Version", "Jahresgang_Herkunftsart",
+                "Wochengang_Quelle", "Wochengang_Version", "Wochengang_Herkunftsart", "ID_Tagesgangsatz", "Status", "ReadOnly"
+            };
+            var werte = new List<object>
+            {
+                bezeichner, VERSION, 1, 1.0, 2.0, 3.0,
+                QUELLE, VERSION, "EIGENKONSTRUKTION", 50.0, 10.0,
+                1, 1, QUELLE, VERSION, "EIGENKONSTRUKTION",
+                QUELLE, VERSION, "EIGENKONSTRUKTION", satz, status, readOnly
+            };
+            for (int m = 1; m <= 12; m++) { spalten.Add("Monat_" + m); werte.Add(1.0); }
+            for (int w = 1; w <= 7; w++) { spalten.Add("Woche_" + w); werte.Add(w <= 5 ? 0.2 : 0.0); }
+            return DataRepository.ExecuteInsertAndGetId(
+                "INSERT INTO Tab_TwwNutzungsart_STAMM (" + string.Join(", ", spalten) + ") VALUES (" +
+                string.Join(", ", spalten.Select(_ => "?")) + ")",
+                werte.Select(w => new DbParam("?", w)).ToArray());
+        }
+
+        private static string[] Namen(string tabelle)
+        {
+            DataTable dt = DataRepository.GetDataTable("SELECT Bezeichner FROM \"" + tabelle + "\" ORDER BY ID");
+            return dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0])).ToArray();
+        }
+
+        private static long Zahl(string tabelle) =>
+            Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""));
+
+        /// <summary>Ändert die QUELLkopie über die Zugriffsschicht (mit Werkzeugfreigabe).</summary>
+        private static void Bearbeiten(string datei, Action aktion)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Tww-Probe vorbereiten)");
+                aktion();
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        private static void Lesen(string datei, Action aktion)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                aktion();
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+    }
+}

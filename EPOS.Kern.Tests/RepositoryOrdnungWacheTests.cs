@@ -174,9 +174,131 @@ namespace EPOS.Kern.Tests
             Assert.False(LfsZeigerProbe.IstZeiger(pfad), LfsZeigerProbe.Meldung(pfad));
         }
 
+        /// <summary>
+        /// <b>Lokale Normdaten</b> (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6
+        /// „Lokale Testdaten", Frage ZU11). Unter <c>Referenzlaeufe/Normzahlen/</c> legt
+        /// der lizenzierte Anwender Normtabellen ab, die nur bei ihm liegen dürfen — im
+        /// Repository wären sie eine Vervielfältigung. Versioniert ist dort allein das
+        /// <c>LIESMICH.md</c>.
+        ///
+        /// <para>Drei Prüfungen: Die <c>.gitignore</c> trägt die Ausschlussregel; Git
+        /// wendet sie auf erfundene Pfade unter dem Ordner wirklich an und lässt das
+        /// <c>LIESMICH.md</c> frei; und weder der Index noch eine unversioniert
+        /// vorgemerkte Datei (<c>git ls-files --cached --others --exclude-standard</c>)
+        /// führt dort etwas anderes als das <c>LIESMICH.md</c>. Ohne Git schweigen die
+        /// zwei letzten Prüfungen, die erste läuft immer.</para>
+        /// </summary>
+        [Fact]
+        public void Normzahlen_stehen_im_gitignore()
+        {
+            string wurzel = Arbeitsbaum();
+            string[] zeilen = File.ReadAllLines(Path.Combine(wurzel, ".gitignore"));
+
+            Assert.True(zeilen.Any(z => NormzahlenRegeln.Contains(z.Trim(), StringComparer.Ordinal)),
+                "In .gitignore fehlt die Ausschlussregel fuer " + NormzahlenOrdner + "/ " +
+                "(erwartet eine der Zeilen: " + string.Join(", ", NormzahlenRegeln) + "). " +
+                "Lokale Normdaten gehoeren nie ins Repository (Umsetzungskonzept " +
+                "Zapfprofilgenerator, Kapitel 6, ZU11).");
+
+            foreach (string probe in NormzahlenProben)
+            {
+                int? ergebnis = GitAufruf(wurzel, out _, "check-ignore", "-q", "--no-index", "--", probe);
+                if (ergebnis == null) return;   // keine Git-Umgebung - die Zeile oben ist geprueft
+                Assert.True(ergebnis == 0,
+                    "Git schliesst " + probe + " NICHT aus - die Regel in .gitignore greift nicht " +
+                    "(etwa durch eine spaetere Gegenregel mit '!').");
+            }
+
+            int? liesmich = GitAufruf(wurzel, out _, "check-ignore", "-q", "--no-index", "--", NormzahlenLiesmich);
+            if (liesmich == null) return;
+            Assert.True(liesmich == 1,
+                NormzahlenLiesmich + " ist ausgeschlossen - es ist die EINE versionierte Datei " +
+                "des Ordners und sagt, woher die lokalen Daten kommen.");
+
+            int? liste = GitAufruf(wurzel, out string ausgabe,
+                "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", NormzahlenOrdner);
+            if (liste == null) return;
+
+            List<string> funde = FundeNormzahlen(ausgabe.Split('\0', StringSplitOptions.RemoveEmptyEntries));
+            Assert.True(funde.Count == 0,
+                "Unter " + NormzahlenOrdner + "/ stehen Dateien im Index oder sind zum " +
+                "Versionieren vorgemerkt - lokale Normdaten gehoeren nie ins Repository " +
+                "(Kapitel 6, ZU11). Mit 'git rm --cached' aus dem Index nehmen:\n" +
+                string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zum Normzahlenfall:</b> Die Regel meldet jede Datei unter dem
+        /// Ordner — auch in Unterordnern — außer dem <c>LIESMICH.md</c>, und nichts
+        /// außerhalb, auch keinen Ordner mit ähnlichem Namen.
+        /// </summary>
+        [Fact]
+        public void Der_Normzahlenfall_erkennt_eingeschmuggelte_Dateien()
+        {
+            List<string> funde = FundeNormzahlen(new[]
+            {
+                NormzahlenLiesmich,
+                "Referenzlaeufe/Normzahlen/vdi4655/probe.csv",
+                "Referenzlaeufe/Normzahlen/zapfprofil/probe.js",
+                "Referenzlaeufe/Normzahlen/probe.txt",
+                "Referenzlaeufe/NormzahlenAlt/probe.txt",
+                "Referenzlaeufe/LIESMICH.md",
+            });
+
+            Assert.Equal(new[]
+            {
+                "Referenzlaeufe/Normzahlen/vdi4655/probe.csv",
+                "Referenzlaeufe/Normzahlen/zapfprofil/probe.js",
+                "Referenzlaeufe/Normzahlen/probe.txt",
+            }, funde);
+        }
+
         // =====================================================================
         //  Die Regel als Funktion — dieselbe für den Bestand und die Gegenproben
         // =====================================================================
+
+        /// <summary>Der Ordner der lokalen Normdaten, repo-relativ (Kapitel 6, ZU11).</summary>
+        private const string NormzahlenOrdner = "Referenzlaeufe/Normzahlen";
+
+        /// <summary>Die eine versionierte Datei darin.</summary>
+        private const string NormzahlenLiesmich = NormzahlenOrdner + "/LIESMICH.md";
+
+        /// <summary>Die zulässigen Schreibweisen der Ausschlussregel in <c>.gitignore</c>.</summary>
+        private static readonly string[] NormzahlenRegeln =
+        {
+            NormzahlenOrdner + "/",
+            NormzahlenOrdner + "/*",
+            NormzahlenOrdner + "/**",
+        };
+
+        /// <summary>
+        /// Erfundene Pfade, die Git ausschließen muss — Ablageorte aus Kapitel 6, dazu
+        /// andere Endungen und ein <c>LIESMICH.md</c> in einem Unterordner: Eine spätere
+        /// Gegenregel mit <c>!</c> für eine Endung oder einen Dateinamen fällt so schon auf,
+        /// bevor eine solche Datei im Ordner liegt.
+        /// </summary>
+        private static readonly string[] NormzahlenProben =
+        {
+            NormzahlenOrdner + "/vdi4655/probe.csv",
+            NormzahlenOrdner + "/vdi6002/probe.csv",
+            NormzahlenOrdner + "/zapfprofil/probe.js",
+            NormzahlenOrdner + "/probe.xlsx",
+            NormzahlenOrdner + "/din4708/probe.xlsx",
+            NormzahlenOrdner + "/zapfprofil/LIESMICH.md",
+        };
+
+        /// <summary>Alle Pfade unter dem Normzahlenordner außer dem <c>LIESMICH.md</c>.</summary>
+        private static List<string> FundeNormzahlen(IEnumerable<string> pfade)
+        {
+            var funde = new List<string>();
+            foreach (string pfad in pfade)
+            {
+                if (!pfad.StartsWith(NormzahlenOrdner + "/", StringComparison.Ordinal)) continue;
+                if (pfad == NormzahlenLiesmich) continue;
+                funde.Add(pfad);
+            }
+            return funde;
+        }
 
         /// <summary>Die vier Muster, die seit #243 in Git LFS liegen.</summary>
         private static readonly string[] LfsMuster =
@@ -409,9 +531,25 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static string[] VersionierteDateien(string wurzel)
         {
+            int? ergebnis = GitAufruf(wurzel, out string ausgabe, "ls-files", "-z");
+            if (ergebnis != 0) return null;
+
+            string[] pfade = ausgabe.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+            return pfade.Length == 0 ? null : pfade;
+        }
+
+        /// <summary>
+        /// Ein Git-Aufruf im Arbeitsbaum; die Standardausgabe wird als UTF-8 gelesen
+        /// (siehe <see cref="VersionierteDateien"/>). Liefert den Rückgabewert von Git —
+        /// oder <c>null</c>, wenn Git nicht startet, nicht rechtzeitig endet oder mit
+        /// einem schweren Fehler (ab 128, etwa „kein Repository") abbricht.
+        /// </summary>
+        private static int? GitAufruf(string wurzel, out string ausgabe, params string[] argumente)
+        {
+            ausgabe = string.Empty;
             try
             {
-                var start = new ProcessStartInfo("git", "ls-files -z")
+                var start = new ProcessStartInfo("git")
                 {
                     WorkingDirectory = wurzel,
                     RedirectStandardOutput = true,
@@ -421,22 +559,20 @@ namespace EPOS.Kern.Tests
                     StandardOutputEncoding = new UTF8Encoding(false),
                     StandardErrorEncoding = new UTF8Encoding(false),
                 };
+                foreach (string a in argumente) start.ArgumentList.Add(a);
 
                 using Process p = Process.Start(start);
                 if (p == null) return null;
 
-                string ausgabe = p.StandardOutput.ReadToEnd();
+                ausgabe = p.StandardOutput.ReadToEnd();
                 p.StandardError.ReadToEnd();
                 if (!p.WaitForExit(120_000)) return null;
-                if (p.ExitCode != 0) return null;
-
-                string[] pfade = ausgabe.Split('\0', StringSplitOptions.RemoveEmptyEntries);
-                return pfade.Length == 0 ? null : pfade;
+                return p.ExitCode >= 128 ? null : p.ExitCode;
             }
             catch (Exception)
             {
                 // Kein Git in dieser Umgebung (entpacktes Archiv, schmales Abbild) -
-                // der Aufrufer nimmt den Dateisystemweg.
+                // der Aufrufer nimmt den Dateisystemweg bzw. schweigt.
                 return null;
             }
         }

@@ -183,7 +183,9 @@ namespace WindowsFormsApplication1
                 erg.Saetze.Add(s);
             }
 
-            erg.Namensgruppen = Gruppiere(erg.Saetze, s => s.NameNormalisiert);
+            // Der natuerliche Schluessel: Name, bei Katalogen mit Versionen (Tww) dazu die
+            // SchluesselZusatzSpalten - zwei Versionen eines Namens sind keine Dublette.
+            erg.Namensgruppen = Gruppiere(erg.Saetze, s => Namensschluessel(k, s));
             erg.Inhaltsgruppen = Gruppiere(erg.Saetze, s => s.InhaltsHash);
             return erg;
         }
@@ -440,6 +442,25 @@ namespace WindowsFormsApplication1
             IFormattable f = v as IFormattable;
             if (f != null) return f.ToString(null, CultureInfo.InvariantCulture);
             return v.ToString();
+        }
+
+        /// <summary>
+        /// Der Gruppierschluessel der Namensgruppen: der normalisierte Name, bei
+        /// <see cref="KatalogDefinition.SchluesselZusatzSpalten"/> dazu deren normalisierte
+        /// Werte (Trennzeichen U+001F, das in keinem Namen steht).
+        /// </summary>
+        private static string Namensschluessel(KatalogDefinition k, KatalogSatz s)
+        {
+            if (k.SchluesselZusatzSpalten == null || k.SchluesselZusatzSpalten.Length == 0 || s.Zeile == null)
+                return s.NameNormalisiert;
+
+            var sb = new StringBuilder(s.NameNormalisiert);
+            foreach (string spalte in k.SchluesselZusatzSpalten)
+            {
+                object v = s.Zeile.Table.Columns.Contains(spalte) ? s.Zeile[spalte] : null;
+                sb.Append('\u001F').Append(NormalisiereName(v == null || v is DBNull ? "" : Convert.ToString(v, CultureInfo.InvariantCulture)));
+            }
+            return sb.ToString();
         }
 
         private static List<DublettenGruppe> Gruppiere(List<KatalogSatz> saetze, Func<KatalogSatz, string> schluessel)

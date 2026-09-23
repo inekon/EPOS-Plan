@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using WindowsFormsApplication1;
 
@@ -125,6 +126,7 @@ namespace Auslieferungsvorlage
             bericht.Zeile("Quelle      " + arg.Quelle + "   (" + Vorlagenbau.Mb(new FileInfo(arg.Quelle).Length) + ")");
             bericht.Zeile("Ziel        " + (arg.Trocken ? "(--trocken: keine Datei)" : arg.Ziel));
             bericht.Zeile("Beispiele   " + (arg.Beispiele.Count == 0 ? "keine" : arg.Beispiele.Count + " Paket(e)"));
+            bericht.Zeile("Tww-Paket   " + (arg.Katalogpaket ?? "keines"));
             foreach (string b in arg.Beispiele) bericht.Zeile("            " + b);
 
             // ---- Schritt 1: Arbeitskopie ------------------------------------------
@@ -171,6 +173,20 @@ namespace Auslieferungsvorlage
 
             bau.PersonenbezugAbraeumen(sicht);
 
+            // ---- Schritt 3c: die Tww-Kataloge (eigene Regel, Katalogpaket) ----------
+            var tww = new TwwKataloge(bericht);
+            if (!tww.Bereinigen())
+            {
+                Console.Error.WriteLine("Abbruch: Die Fremdschluessel der Arbeitskopie sind nicht eingeschaltet — " +
+                                        "die Tww-Regel loescht nur mit Kaskade.");
+                return FACHLICH;
+            }
+            if (!tww.PaketEinspielen(arg.Katalogpaket, out string paketfehler))
+            {
+                Console.Error.WriteLine("Abbruch: " + paketfehler);
+                return FACHLICH;
+            }
+
             if (!bau.BeispieleEinspielen(arg.Beispiele, out string fehler))
             {
                 Console.Error.WriteLine("Abbruch: " + fehler);
@@ -180,7 +196,11 @@ namespace Auslieferungsvorlage
             // ---- Schritt 5: verdichten und pruefen ---------------------------------
             bau.Verdichten();
 
-            var pruefung = new Prueflauf(bericht, sicht);
+            var pruefung = new Prueflauf(bericht, sicht)
+            {
+                Eingaben = new[] { arg.Quelle, arg.Katalogpaket }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
+                TwwMitnahmen = bau.TwwMitnahmen
+            };
             bool abgenommen = pruefung.Ausfuehren(strictVorher);
 
             // Erst JETZT die Verbindungen schliessen: Solange die Zugriffsschicht die

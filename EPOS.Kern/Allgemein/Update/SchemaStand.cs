@@ -341,11 +341,18 @@ namespace WindowsFormsApplication1
         /// <see cref="KwkgAnlagenartLeer"/>. <b>Reines DML, ergebnisneutral:</b> Kein
         /// Rechenweg unterscheidet die leere Zeichenkette von NULL; der Referenzlauf
         /// bleibt byte-gleich.
+        /// Mit KATALOG, ZONEN UND PROJEKT DES ZAPFPROFILGENERATORS (Schritt 102,
+        /// Papiername T1, Umsetzungskonzept Zapfprofilgenerator Stufe Z0) steht das Ziel
+        /// auf <b>102</b>: zehn leere Tabellen <c>Tab_Tww*</c>, deren DDL bei
+        /// <see cref="TwwSchema"/> steht. <b>Reines DDL, kein Wert</b> — der Katalog kommt
+        /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
+        /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
+        /// byte-gleich</b>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 101;
+        public const int Zielversion = 102;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
