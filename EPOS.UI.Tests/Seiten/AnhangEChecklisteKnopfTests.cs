@@ -91,6 +91,38 @@ public class AnhangEChecklisteKnopfTests : EposBunitContext
         Assert.True(cut.Find("button.epos-wirt-checklistenknopf").HasAttribute("disabled"));
     }
 
+    /// <summary>Punkt 9 verlangt Ungünstig UND Günstig mit Zahl: Eine Bandbreite, deren
+    /// Zeilen nur „—" tragen, lässt ihn offen — dieselbe Bedingung wie im Bericht
+    /// (<see cref="ChecklistenLage.SzenarienGerechnet"/>). Die Tafel ist gebaut wie in der
+    /// Hülle: erste Spalte die Version, darunter zuerst die Referenzzeile.</summary>
+    [Fact]
+    public void Die_Szenarioanalyse_verlangt_Zahlen_in_Unguenstig_und_Guenstig()
+    {
+        static ErgebnisMatrix Tafel(string worst, string best) => new()
+        {
+            Spalten = new[] { Resource.WIRT_SZ_SP_VARIANTE, Resource.WIRT_SZEN_WORST, Resource.WIRT_SZEN_ERWARTET,
+                              Resource.WIRT_SZEN_BEST, Resource.WIRT_SZ_SP_SPANNE, Resource.WIRT_EMPF_SPALTE },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Stamm", Zellen = new[] { "Referenz", "Referenz", "Referenz", "—", "—" } },
+                new MatrixZeile { Titel = "Variante A", Zellen = new[] { worst, "1.000", best, "—", "—" } }
+            }
+        };
+
+        string Punkt9(ErgebnisMatrix tafel)
+        {
+            var stand = new WirtschaftlichkeitStand();
+            stand.Ansicht.Bandbreite = tafel;
+            var cut = Zeige(stand);
+            cut.Find("button.epos-wirt-checklistenknopf").Click();
+            return Punktzeile(cut, "9").QuerySelectorAll("td")[4].TextContent;
+        }
+
+        Assert.StartsWith(Resource.WIRT_AE_STAND_OFFEN, Punkt9(Tafel("—", "—")));
+        Assert.StartsWith(Resource.WIRT_AE_STAND_OFFEN, Punkt9(Tafel("-500", "—")));
+        Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punkt9(Tafel("-500", "2.500")));
+    }
+
     /// <summary>Der Knopf steht im Fuß des Bewertungsblocks — in beiden Darstellungen,
     /// vor „Bericht erzeugen" (Mockup-Folge), auch ohne Gaben.</summary>
     [Fact]

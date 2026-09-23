@@ -80,12 +80,13 @@ namespace EPOS.Kern.Tests
         {
             var leer = new ChecklistenLage();
 
-            Assert.Equal(new[] { "1", "2b", "3a", "3b", "7", "8", "9", "10" }, MitStand(leer, ChecklistenStand.Offen));
-            Assert.Equal(new[] { "0.2", "4", "5", "6" }, MitStand(leer, ChecklistenStand.Teilweise));
+            Assert.Equal(new[] { "1", "2b", "3a", "3b", "4", "7", "8", "9", "10" }, MitStand(leer, ChecklistenStand.Offen));
+            Assert.Equal(new[] { "0.2", "5", "6" }, MitStand(leer, ChecklistenStand.Teilweise));
             Assert.Equal(new[] { "0.1", "2a", "11" }, MitStand(leer, ChecklistenStand.Erfuellt));
 
             Assert.Equal(R.WIRT_AE_OHNE_RECHNUNG, Punkt(leer, "1").StandText);
             Assert.Equal(R.WIRT_AE_OHNE_RECHNUNG, Punkt(leer, "7").StandText);
+            Assert.Equal(R.WIRT_AE_OHNE_RECHNUNG, Punkt(leer, "4").StandText);   // Zahlungszeitpunkte zeigt erst ein Lauf
             Assert.Equal(R.WIRT_AE_NM_OFFEN, Punkt(leer, "2b").StandText);
             Assert.Equal(R.WIRT_AE_8_OFFEN, Punkt(leer, "8").StandText);
         }
@@ -126,6 +127,24 @@ namespace EPOS.Kern.Tests
             lage = VolleLage();
             lage.VorschlagVorhanden = false;
             Assert.Equal(ChecklistenStand.Offen, Punkt(lage, "10").Stand);
+        }
+
+        /// <summary>Die Szenarioanalyse (Punkt 9) verlangt Ungünstig UND Günstig mit Zahl —
+        /// eine Bandbreite, deren Zeilen nur „—" tragen, zählt nicht (sie entsteht je Stand,
+        /// auch ohne Rechnung).</summary>
+        [Fact]
+        public void Die_Lage_des_Berichts_verlangt_Unguenstig_und_Guenstig_mit_Zahl()
+        {
+            var bewertung = new WirtschaftlichkeitBewertung();
+            Assert.False(ChecklistenLage.AusBericht(null, null, bewertung).SzenarienGerechnet);
+
+            bewertung.Bandbreite.Zeilen.Add(new BandbreitenZeile { IdProjekt = 2, Erwartet = 1000.0 });
+            bewertung.Bandbreite.Zeilen.Add(new BandbreitenZeile { IdProjekt = 3, Worst = -500.0, Erwartet = 800.0 });
+            Assert.False(bewertung.Bandbreite.Leer);
+            Assert.False(ChecklistenLage.AusBericht(null, null, bewertung).SzenarienGerechnet);
+
+            bewertung.Bandbreite.Zeilen.Add(new BandbreitenZeile { IdProjekt = 4, Worst = -500.0, Erwartet = 800.0, Best = 2500.0 });
+            Assert.True(ChecklistenLage.AusBericht(null, null, bewertung).SzenarienGerechnet);
         }
 
         /// <summary>Die Zelle „Stand in EPOS" ist in allen drei Darstellungen dieselbe

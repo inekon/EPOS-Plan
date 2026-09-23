@@ -88,8 +88,34 @@
             ZeitraumBegruendet = !string.IsNullOrEmpty(s.Zeitraumzeile),
             PositionenOhneNutzungsdauer = s.Nutzungsdauerhinweise.Count > 0,
             SensitivitaetGerechnet = s.Ansicht.Sensitivitaet.Zeilen.Count > 0,
-            SzenarienGerechnet = s.Ansicht.Bandbreite.Zeilen.Count > 0,
+            SzenarienGerechnet = BeideSzenarien(s.Ansicht.Bandbreite),
             VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile)
         };
     }
+
+    /// <summary>
+    /// Ungünstig UND Günstig tragen in einer Zeile der Bandbreite eine Zahl — dieselbe
+    /// Bedingung wie im Bericht (<see cref="ChecklistenLage.SzenarienGerechnet"/>). Die Tafel
+    /// schreibt „—", wo ein Szenario fehlt, und in der Referenzzeile das Wort „Referenz";
+    /// die beiden Spalten werden über ihre Köpfe gefunden (die erste Spalte ist die Version).
+    /// </summary>
+    internal static bool BeideSzenarien(ErgebnisMatrix tafel)
+    {
+        int worst = IndexVon(tafel.Spalten, Resource.WIRT_SZEN_WORST) - 1;
+        int best = IndexVon(tafel.Spalten, Resource.WIRT_SZEN_BEST) - 1;
+        if (worst < 0 || best < 0) return false;
+        return tafel.Zeilen.Any(z => z is not null && z.Zellen.Count > Math.Max(worst, best)
+                                  && IstZahl(z.Zellen[worst]) && IstZahl(z.Zellen[best]));
+    }
+
+    private static int IndexVon(IReadOnlyList<string> liste, string wert)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i], wert, StringComparison.Ordinal)) return i;
+        return -1;
+    }
+
+    private static bool IstZahl(string zelle)
+        => double.TryParse(zelle, System.Globalization.NumberStyles.Number,
+                           System.Globalization.CultureInfo.CurrentCulture, out _);
 }

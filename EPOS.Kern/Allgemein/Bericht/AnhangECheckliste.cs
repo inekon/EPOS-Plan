@@ -83,7 +83,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Sensitivität ist gerechnet.</summary>
         public bool SensitivitaetGerechnet;
 
-        /// <summary>Die drei Szenarien sind gerechnet (Bandbreite).</summary>
+        /// <summary>Ungünstig UND Günstig tragen für mindestens einen Stand eine
+        /// Kapitalwertdifferenz (Zeile der Bandbreite mit beiden Werten) — eine Bandbreite
+        /// nur aus Zeilen ohne Zahl ist keine Szenarioanalyse.</summary>
         public bool SzenarienGerechnet;
 
         /// <summary>Es gibt einen Vorschlag zur Entscheidung.</summary>
@@ -106,7 +108,8 @@ namespace WindowsFormsApplication1
                 lage.ZeitraumBegruendet = nd != null && !string.IsNullOrEmpty(nd.Zeitraumzeile);
                 lage.PositionenOhneNutzungsdauer = nd != null && nd.Zeilen.Count > 0;
                 lage.SensitivitaetGerechnet = bewertung.Sensitivitaet != null && bewertung.Sensitivitaet.Count > 0;
-                lage.SzenarienGerechnet = bewertung.Bandbreite != null && !bewertung.Bandbreite.Leer;
+                lage.SzenarienGerechnet = bewertung.Bandbreite != null &&
+                    bewertung.Bandbreite.Zeilen.Any(z => z != null && z.Worst.HasValue && z.Best.HasValue);
                 lage.VorschlagVorhanden = !string.IsNullOrEmpty(bewertung.Vorschlagstext);
             }
             return lage;
@@ -171,11 +174,14 @@ namespace WindowsFormsApplication1
                       MyResource.Resource.WIRT_AE_2B_STELLE,
                       lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
                       lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE : MyResource.Resource.WIRT_AE_NM_OFFEN),
+                // Die Zeitpunkte der Zahlungen zeigt erst die Mehrjahrestabelle eines Laufs.
                 Punkt("4", gA, MyResource.Resource.WIRT_AE_4_THEMA, MyResource.Resource.WIRT_AE_4_ANF,
                       MyResource.Resource.WIRT_AE_4_STELLE,
-                      lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
+                      !lage.Gerechnet ? ChecklistenStand.Offen
+                      : lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
                           ? ChecklistenStand.Erfuellt : ChecklistenStand.Teilweise,
-                      lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
+                      !lage.Gerechnet ? ohneRechnung
+                      : lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
                           ? MyResource.Resource.WIRT_AE_4_ERFUELLT : MyResource.Resource.WIRT_AE_4_TEILWEISE),
                 Punkt("5", gA, MyResource.Resource.WIRT_AE_5_THEMA, MyResource.Resource.WIRT_AE_5_ANF,
                       MyResource.Resource.WIRT_AE_5_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
