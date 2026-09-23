@@ -271,12 +271,20 @@ namespace EPOS.Kern.Tests
             NormzahlenOrdner + "/**",
         };
 
-        /// <summary>Erfundene Pfade, die Git ausschließen muss — Ablageorte aus Kapitel 6.</summary>
+        /// <summary>
+        /// Erfundene Pfade, die Git ausschließen muss — Ablageorte aus Kapitel 6, dazu
+        /// andere Endungen und ein <c>LIESMICH.md</c> in einem Unterordner: Eine spätere
+        /// Gegenregel mit <c>!</c> für eine Endung oder einen Dateinamen fällt so schon auf,
+        /// bevor eine solche Datei im Ordner liegt.
+        /// </summary>
         private static readonly string[] NormzahlenProben =
         {
             NormzahlenOrdner + "/vdi4655/probe.csv",
             NormzahlenOrdner + "/vdi6002/probe.csv",
             NormzahlenOrdner + "/zapfprofil/probe.js",
+            NormzahlenOrdner + "/probe.xlsx",
+            NormzahlenOrdner + "/din4708/probe.xlsx",
+            NormzahlenOrdner + "/zapfprofil/LIESMICH.md",
         };
 
         /// <summary>Alle Pfade unter dem Normzahlenordner außer dem <c>LIESMICH.md</c>.</summary>
