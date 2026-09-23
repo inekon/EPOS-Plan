@@ -24486,4 +24486,40 @@ Möchten Sie das zulassen?</value>
   <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
     <value>Doppelzählung der Stromsteuerbefreiung</value>
   </data>
+  <data name="EMB_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="EMB_STUFE_KATALOG" xml:space="preserve">
+    <value>Katalog der Kraftwerksparks</value>
+  </data>
+  <data name="EMB_STUFE_ERGEBNIS" xml:space="preserve">
+    <value>Laden des Ergebnisses</value>
+  </data>
+  <data name="EMB_STUFE_BIOGEN" xml:space="preserve">
+    <value>biogene Einstufung eines Energieträgers</value>
+  </data>
+  <data name="EMB_STUFE_REFKESSEL" xml:space="preserve">
+    <value>Faktoren des Referenzkessels</value>
+  </data>
+  <data name="EMQ_NICHT_LESBAR" xml:space="preserve">
+    <value>{0} nicht lesbar: {1}</value>
+  </data>
+  <data name="EMQ_WAS_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffkatalog</value>
+  </data>
+  <data name="EMQ_WAS_STROMTRAEGER" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR" xml:space="preserve">
+    <value>Faktor des Stromträgers</value>
+  </data>
+  <data name="EMQ_WAS_KATALOGTRAEGER" xml:space="preserve">
+    <value>Auslieferungsträger Strom</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR_WAERME" xml:space="preserve">
+    <value>Faktor des Wärmeerzeugers</value>
+  </data>
+  <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
+    <value>Energieträger des Wärmeerzeugers</value>
+  </data>
 </root>

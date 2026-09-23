@@ -19,6 +19,13 @@ namespace EPOS.Kern.Tests
     /// eine, steht an ihrer Stelle eine WARNUNG mit Prüfungsname und Grund. Ihre
     /// Lesehelfer tragen kein eigenes <c>catch</c> mehr — ein Lesefehler erreicht die
     /// Teilprüfung.</para>
+    ///
+    /// <para><b>Gruppe 2 — Emissionsbilanz:</b> Katalog der Kraftwerksparks, Laden des
+    /// Ergebnisses, biogene Einstufung und Faktoren des Referenzkessels nennen ihr
+    /// Scheitern im Hinweis der Bilanz („Emissionsbilanz — Stufe „X“ nicht ausführbar").
+    /// <b>Gruppe 3 — Emissionsquelle:</b> Die benannten Rückfälle der Lesekette bleiben,
+    /// ein Lesefehler steht in <see cref="Emissionsfaktoren.Lesefehler"/> und an der
+    /// Herkunft.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class RobustheitB6Tests : IDisposable
@@ -126,6 +133,103 @@ namespace EPOS.Kern.Tests
 
             string dialog = KohaerenzPruefung.HilfsenergieDoppelpflege(1030, 14920);
             Assert.StartsWith("Prüfung „Doppelpflege der Hilfsenergie“ nicht ausführbar: ", dialog);
+        }
+
+        // =================================================================
+        //  Gruppe 2 — Emissionsbilanz
+        // =================================================================
+
+        /// <summary>
+        /// Gruppe 2: Lässt sich der Brennstoffstamm nicht lesen, nennt die Emissionsbilanz
+        /// die zwei Stufen, die daran hängen — die biogene Einstufung der BHKW-Träger und
+        /// die Faktoren des Referenzkessels —, statt still „kein Faktor" zu melden.
+        /// </summary>
+        [Fact]
+        public void Die_Emissionsbilanz_nennt_gescheiterte_Stufen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(1030);
+            p.IdKraftwerkspark = 1;
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Brennstoff_Stamm RENAME TO Tab_Brennstoff_Stamm_B6");
+
+            EmissionsBilanz b = EmissionsBilanzRechner.Berechne(1030, p);
+
+            Assert.NotNull(b);
+            Assert.Contains("Emissionsbilanz — Stufe „Faktoren des Referenzkessels“ nicht ausführbar: ", b.Hinweis);
+            Assert.Contains("Emissionsbilanz — Stufe „biogene Einstufung eines Energieträgers“ nicht ausführbar: ", b.Hinweis);
+            Assert.Contains("Tab_Brennstoff_Stamm", b.Hinweis);
+        }
+
+        /// <summary>Gruppe 2: Ist der Katalog der Kraftwerksparks nicht lesbar, liefert
+        /// die Bilanz eines Projekts mit gewähltem Park eine Zeile mit dem Grund statt
+        /// still keiner Bilanz.</summary>
+        [Fact]
+        public void Ein_unlesbarer_Parkkatalog_ist_keine_fehlende_Wahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(1030);
+            p.IdKraftwerkspark = 1;
+            EmissionsBilanzRechner.LadeKatalog();   // legt den Katalog an, falls er fehlt
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Kraftwerkspark RENAME COLUMN Bezeichner TO Bezeichner_B6");
+
+            EmissionsBilanz b = EmissionsBilanzRechner.Berechne(1030, p);
+
+            Assert.NotNull(b);
+            Assert.Null(b.CO2GekoppeltT);
+            Assert.StartsWith("Emissionsbilanz — Stufe „Katalog der Kraftwerksparks“ nicht ausführbar: ", b.Hinweis);
+            Assert.NotNull(EmissionsBilanzRechner.Katalogfehler);
+        }
+
+        // =================================================================
+        //  Gruppe 3 — Emissionsquelle
+        // =================================================================
+
+        /// <summary>
+        /// Gruppe 3: Der Rückfall der Lesekette bleibt, wie er war (Faktor 0, nicht
+        /// gepflegt, Vorgabewert Wärme 200 g/kWh), aber ein Lesefehler steht jetzt in
+        /// <see cref="Emissionsfaktoren.Lesefehler"/> und an der Herkunft — „nicht
+        /// lesbar" statt „nicht gepflegt".
+        /// </summary>
+        [Fact]
+        public void Die_Emissionsquelle_nennt_Lesefehler_an_der_Herkunft()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Brennstoff_Stamm RENAME TO Tab_Brennstoff_Stamm_B6");
+            Emissionsfaktoren f = Emissionsquelle.Fuer(1030, 0, 3, DbWerte.EMISSION_MODUS_CO2);
+            Assert.False(f.Co2Gepflegt);
+            Assert.Equal(0.0, f.Co2GKwh);
+            Assert.NotNull(f.Lesefehler);
+            Assert.Contains("Brennstoffkatalog nicht lesbar: ", f.Herkunft);
+
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Energieanlagen RENAME TO Tab_Energieanlagen_B6");
+            Emissionsfaktoren w = Emissionsquelle.Waerme(1030, DbWerte.EMISSION_MODUS_CO2);
+            Assert.Equal(Emissionsquelle.WAERME_RUECKFALL_G_JE_KWH, w.Co2GKwh);
+            Assert.NotNull(w.Lesefehler);
+            Assert.Contains("Energieträger des Wärmeerzeugers nicht lesbar: ", w.Herkunft);
+        }
+
+        /// <summary>Gruppe 3: Scheitern beide Abfragen des Stromträgers, bleibt es bei 0
+        /// und dem Vorgabewert Strommix — mit Grund an der Herkunft.</summary>
+        [Fact]
+        public void Ein_unlesbarer_Stromtraeger_steht_an_der_Herkunft_des_Netzstroms()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            DataRepository.ExecuteNonQuery("ALTER TABLE energy_project_settings RENAME TO energy_project_settings_B6");
+
+            Assert.Equal(0, Emissionsquelle.StromTraeger(1030, out string grund));
+            Assert.NotNull(grund);
+
+            Emissionsfaktoren f = Emissionsquelle.Netzstrom(1030, DbWerte.EMISSION_MODUS_CO2);
+            Assert.NotNull(f.Lesefehler);
+            Assert.Contains("Stromträger des Projekts nicht lesbar: ", f.Herkunft);
         }
     }
 }

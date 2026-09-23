@@ -9725,6 +9725,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die biogene Einstufung eines Energieträgers ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_BIOGEN {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_BIOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden des Ergebnisses ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Kraftwerksparks ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_KATALOG {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktoren des Referenzkessels ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_REFKESSEL {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_REFKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ◆ geltend ähnelt.
         /// </summary>
         public static string EMK_AKTIV {
@@ -10261,6 +10306,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EMK_WERT_VORLAGE {
             get {
                 return ResourceManager.GetString("EMK_WERT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string EMQ_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("EMQ_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkatalog ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor des Stromträgers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_FAKTOR {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor des Wärmeerzeugers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_FAKTOR_WAERME {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_FAKTOR_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsträger Strom ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_KATALOGTRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_KATALOGTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger des Wärmeerzeugers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_WAERMETRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_WAERMETRAEGER", resourceCulture);
             }
         }
         
