@@ -13,6 +13,10 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - ein Tagesgangsatz mit den vier Tagtypen (je 24 Stundenanteile, Summe 1);
   - drei Nutzungsarten, alle auf diesen Satz (Monatsfaktoren Mittel 1, Wochenfaktoren Summe 1);
   - drei Parameter mit neutralen Schluesseln "Test.*" (keine Normkonstante, kein Normname);
+  - die fuenfzehn Parameter des Bilanzrechenwegs (Schluessel wie ZapfParameter in
+    EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs) mit runden, ERFUNDENEN Werten - kein
+    Wert faellt mit einer Normvorgabe zusammen; sie machen den Generatorweg auf einer
+    Projektkopie der Testdatenbank rechenbar (Stufe Z1, Gruppe 2);
   - ein Bedarfstag (Konstruktor) mit drei Ereignissen;
   - vier DIN-4708-Werte (zwei Belegungen, zwei Ausstattungsklassen) mit erfundenen Zahlen.
 
@@ -81,6 +85,27 @@ PARAMETER = [
     ("Test.Faktor", 2.0, "-"),
     ("Test.Grenze", 100.0, "l"),
     ("Test.Dauer", 10.0, "min"),
+]
+
+# Die fuenfzehn Schluessel des Bilanzrechenwegs (ZapfParameter) - Werte rund und ERFUNDEN,
+# bewusst neben jeder Normvorgabe gewaehlt (Kapitel 6 (a)): kein Kaltwassermittel der Norm, keine
+# Laufzeit oder Kennwerte eines Regelwerks, keine Koeffizienten eines Verfahrens.
+PARAMETER += [
+    ("Kaltwasser.Bilanz.Mittel", 11.0, "°C"),
+    ("Kaltwasser.Bilanz.Amplitude", 3.0, "K"),
+    ("Kaltwasser.Bilanz.MonatMaximum", 9.0, "Monat"),
+    ("DIN18599.Wohnen.a", 20.0, "kWh/(m²·a)"),
+    ("DIN18599.Wohnen.b", 0.1, "kWh/(m⁴·a)"),
+    ("DIN18599.Wohnen.c", 5.0, "kWh/(m²·a)"),
+    ("Wohnen.FlaecheJeWe", 80.0, "m²"),
+    ("Zirkulation.Anteil", 0.2, "-"),
+    ("Zirkulation.Laufzeit", 20.0, "h"),
+    ("Zirkulation.Lage", 1.0, "-"),
+    ("Zirkulation.Kennwert.Lage1", 5.0, "kWh/(m²·a)"),
+    ("Zirkulation.Kennwert.Lage2", 10.0, "kWh/(m²·a)"),
+    ("Zirkulation.VerlustJeMeter", 8.0, "W/m"),
+    ("Zapfprofil.Messwert.Rueckfrageschwelle", 0.5, "-"),
+    ("Zapfprofil.Formvektor.Warnschwelle", 0.01, "-"),
 ]
 
 BEDARFSTAG = "Testbedarfstag (fiktiv)"
