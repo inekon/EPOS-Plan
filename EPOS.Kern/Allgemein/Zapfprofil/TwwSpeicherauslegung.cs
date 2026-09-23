@@ -170,6 +170,12 @@ namespace WindowsFormsApplication1
         public string LadeRechenweg { get; init; } = "";
         public Schaetzwert Zirkulation { get; init; }
 
+        /// <summary>Das Ladefenster der Stundenbilanz (für das Wochenbild der Oberfläche).</summary>
+        public Tagesfenster Ladefenster { get; init; }
+
+        /// <summary>Das Laufzeitfenster der Zirkulation in der Stundenbilanz.</summary>
+        public Tagesfenster ZirkulationLaufzeit { get; init; }
+
         /// <summary>D_max [kWh] über Woche 2.</summary>
         public double DmaxKwh { get; init; }
 
@@ -566,6 +572,8 @@ namespace WindowsFormsApplication1
                 LadeMindestKw = vorschlag,
                 LadeRechenweg = ladeWeg,
                 Zirkulation = e.Zirkulation,
+                Ladefenster = fenster,
+                ZirkulationLaufzeit = laufzeit,
                 DmaxKwh = dMax,
                 ProfilbasiertVorhanden = dMax > 0,
                 ZeitpunktStunde = dMax > 0 ? tMax : (int?)null,

@@ -84,7 +84,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Jede Zeichenmethode gibt ihr Modell an den Maler: 30 öffentliche
+        /// Jede Zeichenmethode gibt ihr Modell an den Maler: 31 öffentliche
         /// Bildmethoden, und keine eigene Zeichenfläche mehr.
         ///
         /// <para>ETAPPE E6 der Wirtschaftlichkeit brachte zwei dazu:
@@ -95,6 +95,9 @@ namespace EPOS.Kern.Tests
         ///
         /// <para>Der Zapfprofilgenerator (Stufe Z1) brachte <c>Stundenprofile</c> dazu — das
         /// Stundenprofil mit mehreren Reihen für Tagesgang und Wochenprofil.</para>
+        ///
+        /// <para>Die Auslegung (Stufe Z2) brachte <c>Summenlinie</c> dazu — Summenlinie des
+        /// Bedarfstags, Wertepaarkurve und maßgebende Woche der Stundenbilanz.</para>
         /// </summary>
         [Fact]
         public void JedeZeichenmethodeGibtIhrModellAnDenMaler()
@@ -102,7 +105,7 @@ namespace EPOS.Kern.Tests
             string text = RendererQuelle();
 
             int bildmethoden = Regex.Matches(text, @"public static byte\[\] ").Count;
-            Assert.Equal(30, bildmethoden);
+            Assert.Equal(31, bildmethoden);
 
             // Kein Bild entsteht mehr auf einer eigenen Flaeche; jedes geht durch
             // SkiaMaler.Png - auch die vier gemeinsamen Rumpfmethoden.
