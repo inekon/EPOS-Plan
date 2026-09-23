@@ -8746,3 +8746,129 @@ Kern 5 327, UI 5 664, KiKern 524, SpeicherEngine 386,
 SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; Windows-Schale
 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
 Basisprojekte PASS (4 145 687 Werte in Toleranz).
+
+**Nachzug im Hauptbaum.** Vor dem Merge von #459 lag im Hauptbaum
+bereits der Merge `c897aab0` von `origin/ios_migration_september`
+(KU2 Welle 2, Schema 114, E8b-Nachtrag; die `.resx` dreiseitig
+vereinigt). Darauf folgte der Wächter-Nachzug `76e62117`:
+`WirtschaftlichkeitSeite` meldet die zwei ValERI-Wahlen
+`zahlungsreihen_stand` und `zahlungsreihen_szenario` jetzt als
+Anzeigewahlen an die KI-Maskenbrücke, die Zählliste der Wachen
+wächst dadurch auf neun Wahlen. Beide Commits sind kein Teil der
+Welle #458, standen aber vor ihrem Merge im Hauptbaum und gehören
+deshalb an dieser Stelle vermerkt.
+
+## #459 — Administrationsdialoge: Auslieferungskennzeichen (Schloss) in den Verwaltungen umschaltbar, mit Rückfrage (AD-Q15) (24.09.2026)
+
+Anlass: Auftrag des Anwenders wörtlich (23.09.2026, zur
+„Administration Brauchwasser"): „1. Die Auslieferungssätze
+sollten auch auf änderbar (vom Nutzer) gesetzt werden können (ohne
+Schloss). 2. Es sollen Datensätze als Auslieferungssätze gesetzt
+werden können." Nachtrag: „Beim Ändern eines
+Auslieferungsdatensatzes sollte ein Hinweis erscheinen." Commits
+`37d50246` (Kern: Auslieferungskennzeichen umschaltbar, AD-Q15),
+`8ffc31c9` (Bausteine: Schloss setzen/aufheben in Auswahlleiste und
+Stammblatt), `5b2eec73` (Verwaltungen A1-A3, A5), `0a35945e`
+(Verwaltungen A4, A6-A10), `9b9c1864` (Auswahlleiste: breit zwei
+Zeilen mit vier Handlungen, Katalogprobe), `07cded05` (Papiere und
+Wiki zu AD-Q15); Zweig `worktree-agent-a91f9e845fae03873` von
+`cd2ac9ec`; Merge `80672c0d` (Konflikte: Konzept 7.1 (e)+(f),
+`GebaeudetypDialogTests.cs`, `KatalogBrowserDialogTests.cs` —
+jeweils beide Seiten übernommen; resx auto, 8 713 Schlüssel,
+Designer unverändert); Nachbesserung `23b50d29` (zwei beim
+Zusammenführen verlorene Methodenklammern in
+`GebaeudetypDialogTests.cs`/`KatalogBrowserDialogTests.cs`
+nachgetragen).
+
+**Befund.** Das Kennzeichen ist die Spalte `ReadOnly` der
+`Tab_*_STAMM`-Kopftabellen; sie steuert Schloss und Lesemodus,
+Speicher- und Löschsperre, das Duplizieren (Kopie ohne Schloss) und
+den KI-Schreibschutz — der Gebäudetyp führt zusätzlich
+`Veraenderbar`, die Tww-Kataloge `Status`. Programm-Update,
+`Erstbereitstellung` und `SchemaMigration` fassen Katalogsätze nie
+an, weder überschreibend noch nachsäend; die gegenteilige Aussage
+stand im Importhinweis (`IMP_KONFLIKT_HINWEIS_READONLY`), im
+`WPStammCtrl`-Kommentar, in `Brauchwasser.wiki` und in
+`KONTEXT_Brauchwassertypen_VDI6002.md` — ein Rest aus der
+Access-Zeit, falsch. Die Auslieferungsvorlage übernimmt mit der
+Vorgabe „alle" jede Zeile 1:1 samt Kennzeichen. Das Lizenzkonzept
+kennt keine Rolle und keinen Herstellermodus; einziges Gatter bleibt
+der Lizenz-Lesemodus.
+
+**Entscheide (AD-Q15, löst AD-Q11 ab).** Ein Kennzeichen, in beide
+Richtungen umschaltbar über die Auswahlleiste (Mehrfachauswahl) in
+allen zehn Verwaltungen, auch Zeitreihen und Klimadaten; die
+Beschriftung folgt der Auswahl („Schloss aufheben…" bei
+gesperrten Sätzen, sonst „Schloss setzen…"); eine Rückfrage in
+beide Richtungen nennt die echten Folgen; ein Band `ADM_SB_ENTSPERRT`
+im Stammblatt markiert die in dieser Sitzung entsperrten Sätze, ohne
+Schemaschritt; der Gebäudetyp schaltet beide Spalten zusammen;
+Tww-Kataloge und Tabellen ohne die Spalte lehnen benannt ab; das
+Typ-Schloss der Brauchwasser- und Stromverbrauchertypen bleibt
+eigenständig; Werte werden nie zurückgesetzt; kein Weg über den
+KI-Assistenten.
+
+**Umsetzung.** Kern-Klasse
+`EPOS.Kern/Allgemein/Katalog/Auslieferungskennzeichen.cs` (`Setzen`
+läuft in einer Transaktion, meldet je ID geändert oder
+unverändert, mit Rollback bei fehlendem Satz; lehnt Tww, Kataloge
+ohne Spalte, den Lizenz-Lesemodus und unbekannte Kataloge benannt
+ab); `KatalogRegistry` um `SchlossGegenspalte` (Gebäudetyp:
+`Veraenderbar`) und `SchlossAusStatus` (Tww) erweitert; ein Einzeiler
+in acht Gerätecontrollern, der Wärmepumpe, dem Gebäude, der
+Klimaregion, `BedarfStammCtrl` und `TagVCtrl`, für Zeitreihen
+zentral in `ZeitreihenKatalogCtrl`. Neuer Baustein
+`Schlossumschaltung` (Handlung, Rückfrage, Statuszeile, für alle
+zehn Wirte gleich) und `Auswahlhandlung` mit `Kurztext` und
+`Breitenvorlage` (der Knopf wird so breit wie seine längere
+Beschriftung); `Schlosswege.Aus(...)` trägt den Lesemodus in
+`EPOS.UI.Daten` über die Schreibnaht; das Stammblatt-Band sitzt
+daneben. Die Gebäudetyp-Handlung greift nur bei echten
+Katalogzeilen. Berichtigt: `IMP_KONFLIKT_HINWEIS_READONLY`,
+`WP_STAMM_UEBERNAHME_MSG_READONLY`, `…_OHNE_KOPIE`. Die
+Auswahlleiste steht in der Breite jetzt zweizeilig mit vier
+Handlungen (erstes Wort höchstens 10rem breit, der Hinweis
+„Kästchen: mehrere wählen" gekürzt, der volle Text im Kurztext).
+
+**Rasterprobe** (Playwright, wie vor jeder Änderung an der
+Auswahlleiste vorgeschrieben). Katalogprobe 60 Fälle, Rasterprobe 13
+Fälle, die Liste springt nicht. Bei 1 088 × 624: die Auswahlleiste
+94 px hoch in beiden Zuständen (Bedarfsprofile mit langem Löschtext
+118/94 px). Bei 400 × 624: die Auswahlleiste 150 statt 100 px
+(Klimadaten weiterhin 100 px), die Liste durchgehend 50 px niedriger.
+
+**Tests.** Im Worktree Kern 5 346, UI 5 620, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Kern-Filter und Windows-Schale 0 Fehler; neue Tests
+`SchlossumschaltungTests`/`AuswahlleisteTests` mit 32 Fällen auf
+Arbeitskopien, dazu je Wirt ein bunit-Fall. Testdatenbank
+unverändert; SqlDialektPruefer ohne Fundstelle.
+
+**Papiere.** Konzept Administrationsdialoge (AD-Q15 neu, AD-Q11
+abgelöst; Stand, 3.3, 3.4, V8, V13, 6.2, 7.1 (f));
+`EPOS.UI/CLAUDE.md` (die Regel „nie durch Überschreiben"
+angepasst, neue Regel zur Schlossumschaltung); Konzept Knopfleisten;
+Setup-Konzept 6.1; `KONTEXT_Brauchwassertypen_VDI6002.md`;
+Wiki-Quellen `Programm Dokumentation - Gerätekataloge.wiki` und `…
+- Klimadaten.wiki` (Spalte „Schreibschutz" entfernt),
+`EPOS.Kern/Allgemein/Hilfe/Berechnung/Brauchwasser.wiki` (die
+Update-Aussage berichtigt). Upload ausstehend.
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> In der Administration lässt sich das Schloss eines
+> Auslieferungssatzes aufheben und wieder setzen.
+
+**Was offen bleibt.** Das Band „Schloss aufgehoben" im Stammblatt
+kennt nur der offene Dialog — die Datenbank führt allein das
+Kennzeichen, ein Neustart oder ein zweiter Anwender sieht den Hinweis
+nicht mehr. Die vierte Handlung in der Auswahlleiste kostet Platz:
+schmal 50 px weniger Liste, breit ein Nachrücken beim
+Stromverbraucher-Katalog. Wiki-Upload (Gerätekataloge, Klimadaten,
+Brauchwasser) ausstehend.
+
+**Gate nach Merge auf `23b50d29`.** Kern-Filter 0 Fehler; Tests Kern
+5 448, UI 5 705, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
+Werte in Toleranz).
