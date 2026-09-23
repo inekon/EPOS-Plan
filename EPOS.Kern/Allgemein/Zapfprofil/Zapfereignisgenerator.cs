@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Rate λ_k [Ereignisse je Tag] der Kategorie bei der Tagesmenge der Einheit und der
         /// Spreizung Zapftemperatur − Kaltwasser des Tages. Eine Kategorie ohne Anteil hat die Rate 0
-        /// — auch wenn ihr gestutztes Mittel 0 ist (μ = σ = 0 oder μ ≤ −6σ), wo die Formel 0/0 wäre.
+        /// — auch wenn ihr gestutztes Mittel 0 ist (μ = σ = 0), wo die Formel 0/0 wäre.
         /// </summary>
         internal static double Rate(Zapfkategoriewert k, double tagesmengeKwh, double spreizungK)
         {

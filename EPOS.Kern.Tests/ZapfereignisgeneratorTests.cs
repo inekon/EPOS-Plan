@@ -262,12 +262,13 @@ namespace EPOS.Kern.Tests
             List<Zapfereignis>[] tage = Ziehen(38, s, Tageszeitdichte.Aus(Struktur(), ZapfTagtyp.Werktag), 500);
             Assert.DoesNotContain(tage.SelectMany(t => t), e => e.DauerMin == 3);
 
-            // Anteil 0 mit gestutztem Mittel 0 (μ = σ = 0 bzw. μ ≤ −6σ): Rate 0 statt 0/0, keine Ziehung,
-            // kein Abbruch — und der Zufallsstrom ist derselbe wie ohne die Kategorie.
+            // Anteil 0 mit gestutztem Mittel 0 (μ = σ = 0, mit und ohne Kappung — μ ≤ −6σ mit μ < 0 lehnt
+            // schon die Prüfung des Volumenstroms ab): Rate 0 statt 0/0, keine Ziehung, kein Abbruch —
+            // und der Zufallsstrom ist derselbe wie ohne die Kategorie.
             foreach (Zapfkategorie null_ in new[]
                      {
                          basis with { Name = "Null", Anteil = 0.0, VolumenstromLJeMin = 0.0, StreuungLJeMin = 0.0, DauerMin = 3 },
-                         basis with { Name = "Null", Anteil = 0.0, VolumenstromLJeMin = -13.0, StreuungLJeMin = 2.0, DauerMin = 3 }
+                         basis with { Name = "Null", Anteil = 0.0, VolumenstromLJeMin = 0.0, StreuungLJeMin = 0.0, DauerMin = 3, KappungLJeMin = 5.0 }
                      })
             {
                 Zapfkategoriensatz mitNull = Zapfkategoriensatz.Aus(new[] { basis, null_ }, 1, "Z");
