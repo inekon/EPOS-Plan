@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
 
         internal static IReadOnlyDictionary<string, object> Gaben(
             int projektId, string projektName,
-            List<Z_ProjGebModel> modelle, bool wizard, bool admin)
+            List<Z_ProjGebModel> modelle, bool wizard)
         {
             var zeilen = new List<GebaeudeProjektZeile>();
             foreach (Z_ProjGebModel m in modelle)
@@ -62,7 +62,6 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
-                ["Admin"] = admin,
                 ["Geaendert"] = geaendert,
 
                 ["Katalog"] = new Func<bool, string, int?, bool, IReadOnlyList<GebaeudeKatalogZeile>>(
@@ -89,9 +88,8 @@ namespace WindowsFormsApplication1
                 ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
 
                 // Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
-                // Gebaeudes. In der Katalogverwaltung gibt es kein Projekt; dort zeigt
-                // die Komponente den Knopf ohnehin nicht (Admin), und der Delegat
-                // antwortet mit null.
+                // Gebaeudes. Die Katalogverwaltung ist seit Stufe 5 der Neuordnung eine
+                // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     z => GebaeudeBedarfHuelle.Gaben(z, projektId)),
 
@@ -143,10 +141,6 @@ namespace WindowsFormsApplication1
                 ["BtnDbLoeschenText"] = Text_("GEB_BTN_DB_LOESCHEN", "Gebäude in DB löschen"),
                 ["BtnGebTypText"] = Text_("GEB_BTN_GEBTYP", "Gebäudetyp in DB ändern..."),
 
-                // DL-2, Schritt 7: Die KATALOGVERWALTUNG schliesst mit "Beenden" -
-                // jede ihrer Aktionen hat bereits geschrieben, OK und Abbrechen
-                // waeren eine Behauptung. Im Projektbetrieb bleibt es bei OK/Abbrechen.
-                ["BtnBeendenText"] = Text_("GEB_BTN_BEENDEN", "Beenden"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,

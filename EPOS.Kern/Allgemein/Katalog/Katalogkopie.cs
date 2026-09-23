@@ -89,6 +89,22 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static Ergebnis Duplizieren(string tabelle, int id, string neuerName,
                                            params Kindtabelle[] kinder)
+            => Duplizieren(tabelle, id, neuerName, null, kinder);
+
+        /// <summary>
+        /// Wie <see cref="Duplizieren(string, int, string, Kindtabelle[])"/> — dazu
+        /// <paramref name="feste"/>: Spalten, die die Kopie NICHT vom Original übernimmt,
+        /// sondern mit dem genannten Wert anlegt, in DERSELBEN Transaktion.
+        /// </summary>
+        /// <remarks>
+        /// <b>Wozu</b> (Stufe 5 der Neuordnung, Gebäudetypen): Ein Gebäudetyp der Auslieferung
+        /// ist nicht <c>Veraenderbar</c>; seine Kopie muss es sein, sonst wäre sie ebenso
+        /// gesperrt wie das Original. Ein zweiter Schreibschritt nach dem Kopieren ließe bei
+        /// einem Fehler eine gesperrte Kopie zurück.
+        /// </remarks>
+        public static Ergebnis Duplizieren(string tabelle, int id, string neuerName,
+                                           IReadOnlyDictionary<string, object> feste,
+                                           params Kindtabelle[] kinder)
         {
             string name = (neuerName ?? "").Trim();
             if (name.Length == 0)
@@ -115,16 +131,31 @@ namespace WindowsFormsApplication1
                     object mx = v.Skalar("SELECT MAX(ID) FROM [" + tabelle + "]");
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
-                    List<string> spalten = Spalten(v, tabelle, KOPFSPALTEN);
+                    var ohne = new HashSet<string>(KOPFSPALTEN, StringComparer.OrdinalIgnoreCase);
+                    var festeSpalten = new List<KeyValuePair<string, object>>();
+                    if (feste != null)
+                        foreach (KeyValuePair<string, object> f in feste)
+                            if (!KOPFSPALTEN.Contains(f.Key) && ohne.Add(f.Key)) festeSpalten.Add(f);
+
+                    List<string> spalten = Spalten(v, tabelle, ohne);
                     string liste = Liste(spalten);
                     string zusatz = liste.Length > 0 ? ", " + liste : "";
 
+                    // Die festen Spalten hinter den kopierten - je eine mit ihrem Wert.
+                    string festNamen = "", festWerte = "";
+                    var parameter = new List<DbParam> { new DbParam("@neu", neueId), new DbParam("@nam", name) };
+                    for (int i = 0; i < festeSpalten.Count; i++)
+                    {
+                        festNamen += ", [" + festeSpalten[i].Key + "]";
+                        festWerte += ", ?";
+                        parameter.Add(new DbParam("@fest" + i, festeSpalten[i].Value ?? DBNull.Value));
+                    }
+                    parameter.Add(new DbParam("@alt", id));
+
                     v.Ausfuehren(
-                        "INSERT INTO [" + tabelle + "] (ID, Bezeichner" + zusatz + ", ReadOnly) " +
-                        "SELECT ?, ?" + zusatz + ", 0 FROM [" + tabelle + "] WHERE ID = ?",
-                        new DbParam("@neu", neueId),
-                        new DbParam("@nam", name),
-                        new DbParam("@alt", id));
+                        "INSERT INTO [" + tabelle + "] (ID, Bezeichner" + zusatz + festNamen + ", ReadOnly) " +
+                        "SELECT ?, ?" + zusatz + festWerte + ", 0 FROM [" + tabelle + "] WHERE ID = ?",
+                        parameter.ToArray());
 
                     foreach (Kindtabelle kind in kinder ?? Array.Empty<Kindtabelle>())
                         KinderKopieren(v, kind, id, neueId);

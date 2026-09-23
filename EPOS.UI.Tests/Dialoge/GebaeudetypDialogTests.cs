@@ -3,8 +3,8 @@ using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
-using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -14,13 +14,19 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Gebäudetypen-Verwaltung (iU9-W8.4). Soll ist die Feldkarte von
-/// <c>Form_EingGebTyp</c>: 33 Zeilen — Typliste, Beschreibung, Kurvenliste, 24
-/// Stundenfelder, Bild und vier Knöpfe.
+/// Gebäudetypen-Verwaltung (iU9-W8.4) — seit Stufe 5 der Neuordnung der
+/// Administrationsdialoge (V16, Bestand A10) im Gerüst der Verwaltungen: Typliste als
+/// Katalogliste (Zeile ist Wahl, Schloss), Stammblatt mit der Gruppe „Tagesprofil"
+/// (Klappliste „Kurve", Tagesbild, „Stundenwerte…" als Überlagerung) und den Kenndaten,
+/// Auswahlleiste mit Vergleichen, Duplizieren… und Löschen, Fußleiste Speichern ·
+/// Verwerfen · Status · Neu… · Beenden.
+///
+/// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
+/// Beschriftungen.</para>
 /// </summary>
 public class GebaeudetypDialogTests : EposBunitContext
 {
-    private static readonly string[] TYPEN = { "Buerogebaeude", "Wohngebaeude VDI 2067" };
+    private static readonly string[] TYPEN = { "Buerogebaeude", "Hotel", "Wohngebaeude VDI 2067" };
 
     private static readonly string[] KURZ =
     { "Winter-heiter", "Winter-trübe", "Übergang-heiter", "Übergang-trübe", "Sommertag" };
@@ -29,20 +35,14 @@ public class GebaeudetypDialogTests : EposBunitContext
     { "Winter-Wochentag", "Winter-Wochenende", "Übergang1-Wochentag", "Übergang1-Wochenende",
       "Sommer-Wochentag", "Sommer-Wochenende", "Übergang2-Wochentag", "Übergang2-Wochenende" };
 
-    /// <summary>
-    /// Das Zeichenmodell des Tagesprofils — EINE Instanz, EINMAL gebaut: Der
-    /// Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je
-    /// Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
-    /// </summary>
+    /// <summary>Das Zeichenmodell des Tagesprofils — EINE Instanz (der Baustein vergleicht die Referenz).</summary>
     private static readonly Zeichenmodell MODELL = Stundenprofil();
 
     private static Zeichenmodell Stundenprofil()
     {
         var werte = new double[24];
         for (int s = 0; s < 24; s++) werte[s] = s + 1;
-
-        return ChartRenderer.StundenprofilModell("Stundenverteilung", werte, 1,
-                                                 "Stunde", "Anteil [%]");
+        return ChartRenderer.StundenprofilModell("Stundenverteilung", werte, 1, "Stunde", "Anteil [%]");
     }
 
     public GebaeudetypDialogTests()
@@ -50,6 +50,12 @@ public class GebaeudetypDialogTests : EposBunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
+
+    /// <summary>Wie viele Kurven ein Testtyp führt: der Wohntyp fünf, die übrigen acht.</summary>
+    private static int Kurven(string name) => name.StartsWith("Wohn") ? 5 : 8;
+
+    /// <summary>Ein Auslieferungstyp: der Wohntyp (nicht veränderbar).</summary>
+    private static bool Aenderbar(string name) => !name.StartsWith("Wohn");
 
     /// <summary>Ein Typ, dessen Werte die laufende Nummer 1…n × 24 SIND.</summary>
     private static GebaeudetypDaten Typ(string name, int kurven, bool aenderbar = true, int id = 7)
@@ -69,370 +75,475 @@ public class GebaeudetypDialogTests : EposBunitContext
         };
     }
 
+    private static IReadOnlyList<Katalogfilterzeile> Zeilen(IEnumerable<string> typen)
+        => typen.Select((t, i) => new Katalogfilterzeile(i + 1, t) { Geschuetzt = !Aenderbar(t) }
+                .MitText(Katalogfilterprofil.SpBezeichner, t)
+                .MitZahl(Katalogfilterprofil.SpKurven, Kurven(t), 0)
+                .MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung " + t))
+            .ToList();
+
+    /// <summary>Was die Wege gerufen haben.</summary>
+    private sealed class Protokoll
+    {
+        internal List<string> Typen = TYPEN.ToList();
+        internal readonly List<(int Id, double[,] Verteilung)> Verteilungen = new();
+        internal readonly List<(int Id, string Text)> Beschreibungen = new();
+        internal readonly List<(string Name, string Beschreibung, int Kurven)> Angelegt = new();
+        internal readonly List<int> Geloescht = new();
+        internal readonly List<(int Id, string Name)> Dupliziert = new();
+        internal readonly List<double[]> Bilder = new();
+        internal bool? Geschlossen;
+    }
+
     private IRenderedComponent<GebaeudetypDialog> Aufbauen(
-        Func<IReadOnlyList<string>>? typen = null,
-        Func<string, GebaeudetypDaten?>? lies = null,
-        Func<int, double[,], bool>? speichern = null,
-        Func<string, string, int>? anlegen = null,
-        Func<int, bool>? loeschen = null,
-        Func<double[], Zeichenmodell?>? bild = null,
-        Action<bool>? geschlossen = null,
-        string titel = "Gebäudetypen Verwaltung")
-        => Render<GebaeudetypDialog>(p => p
+        Protokoll? p = null,
+        string titel = "Gebäudetypen Verwaltung",
+        IReadOnlyDictionary<string, int>? verwendung = null,
+        bool mitBild = true)
+    {
+        Protokoll pr = p ?? new Protokoll();
+        return Render<GebaeudetypDialog>(b => b
             .Add(x => x.TitelText, titel)
-            .Add(x => x.Typen, typen ?? (() => TYPEN))
-            .Add(x => x.Lies, lies ?? (n => Typ(n, n.StartsWith("Wohn") ? 5 : 8)))
-            .Add(x => x.Speichern, speichern ?? ((_, _) => true))
-            .Add(x => x.Anlegen, anlegen ?? ((_, _) => 42))
-            .Add(x => x.Loeschen, loeschen ?? (_ => true))
-            .Add(x => x.Bild, bild ?? (_ => MODELL))
-            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+            .Add(x => x.Katalogzeilen, () => Zeilen(pr.Typen))
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeudetyp(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, n => pr.Typen.Contains(n) ? Typ(n, Kurven(n), Aenderbar(n), pr.Typen.IndexOf(n) + 1) : null)
+            .Add(x => x.Speichern, (id, v) => { pr.Verteilungen.Add((id, v)); return true; })
+            .Add(x => x.BeschreibungSpeichern, (id, t) => { pr.Beschreibungen.Add((id, t)); return true; })
+            .Add(x => x.Anlegen, (n, t, k) => { pr.Angelegt.Add((n, t, k)); pr.Typen.Add(n); return 42; })
+            .Add(x => x.Loeschen, id => { pr.Geloescht.Add(id); pr.Typen.RemoveAt(id - 1); return true; })
+            .Add(x => x.Duplizieren, (id, n) =>
+            {
+                pr.Dupliziert.Add((id, n));
+                pr.Typen.Add(n);
+                return new KatalogSpeicherErgebnis(true, "", n);
+            })
+            .Add(x => x.Verwendung, () => verwendung ?? new Dictionary<string, int>())
+            .Add(x => x.Bild, mitBild ? w => { pr.Bilder.Add(w); return MODELL; } : null)
+            .Add(x => x.Geschlossen, e => pr.Geschlossen = e));
+    }
 
     private static IElement Knopf(IRenderedComponent<GebaeudetypDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
-    // =================================================================================
-    // Feldbestand
-    // =================================================================================
+    private static IElement Handlung(IRenderedComponent<GebaeudetypDialog> cut, string text)
+        => cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == text);
 
-    [Fact]
-    public void Der_Feldbestand_der_Karte_steht()
-    {
-        var cut = Aufbauen();
+    private static IElement Fussleiste(IRenderedComponent<GebaeudetypDialog> cut)
+        => cut.FindAll(".epos-katalog-dialog > .epos-leiste").Last();
 
-        Assert.Equal(24, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlspalte .epos-raster").Count);
-        Assert.Single(cut.FindAll("textarea"));
-
-        Assert.Contains("Gebäudetypen Verwaltung", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Contains("Kurvenverlauf für den Tag:", cut.Markup);
-        Assert.Contains("Stundenwerteeingabe [kW, kWh oder %]", cut.Markup);
-
-        var knoepfe = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Typ speichern", "Typ hinzufügen", "Typ löschen", "Beenden" }, knoepfe);
-    }
+    private static IElement Kurvenwahl(IRenderedComponent<GebaeudetypDialog> cut)
+        => cut.Find(".epos-stammblatt select");
 
     // =================================================================================
-    // Die Fussleiste nach der Hausregel (DL-2 Nr. 2, Konzept Abschnitt 2 Zeile 2)
+    // Gerüst und Feldbestand
     // =================================================================================
 
     /// <summary>
-    /// Das Katalogmuster: <b>Typ speichern · Füller · Typ hinzufügen · Typ löschen ·
-    /// Beenden</b>. Speichern wirkt auf den Eingabeblock und steht links vom Füller,
-    /// die beiden Listenaktionen rechts, und „Beenden" ist der eine primäre
-    /// Schlussknopf — dieselbe Anordnung wie in <c>ModulKatalogDialog</c>.
+    /// <b>Das Gerüst</b>: Katalogliste mit drei Spalten statt der Typliste mit Wahlknopf,
+    /// Stammblatt mit Tagesprofil und Kenndaten, Fußleiste Speichern · Verwerfen · Neu… ·
+    /// Beenden (einziger primärer Knopf zuletzt).
     /// </summary>
     [Fact]
-    public void Die_Fussleiste_traegt_das_Katalogmuster()
+    public void Das_Geruest_steht_wie_bei_den_Verwaltungen()
     {
         var cut = Aufbauen();
-        var leiste = cut.Find(".epos-leiste");
 
-        var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Typ speichern", "Typ hinzufügen", "Typ löschen", "Beenden" }, knoepfe);
+        Assert.Contains("epos-katalog-dialog", cut.Find(".epos-dialog").ClassName);
+        Assert.Equal(new[] { "Name", "Tageskurven", "Beschreibung" },
+                     cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.Equal(3, cut.FindAll(".epos-katalogliste tbody tr").Count);
+        Assert.Empty(cut.FindAll(".epos-zeilenwahl"));
 
-        // Der Fueller steht zwischen "Typ speichern" und "Typ hinzufuegen".
-        var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
-        Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
-        Assert.Equal(1, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+        Assert.Equal(new[] { "Tagesprofil", "Kenndaten" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu…", "Beenden" },
+                     Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Single(Fussleiste(cut).QuerySelectorAll("button.epos-knopf--primaer"));
+        Assert.Same(Fussleiste(cut).QuerySelectorAll("button").Last(),
+                    Fussleiste(cut).QuerySelectorAll("button.epos-knopf--primaer")[0]);
+    }
 
-        // Genau ein primaerer Knopf, und er steht zuletzt.
-        var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
-        Assert.Single(primaer);
-        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    /// <summary>Ohne Gaben zeichnet der Dialog — leere Liste, Platzhalter, nur „Beenden".</summary>
+    [Fact]
+    public void Ohne_Gaben_zeichnet_der_Dialog()
+    {
+        var cut = Render<GebaeudetypDialog>();
+
+        Assert.Equal("Gebäudetypen Verwaltung", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(new[] { "Beenden" },
+                     Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
     }
 
     /// <summary>
-    /// Der Schlussknopf ruft denselben Weg wie Esc und das Schliesskreuz:
-    /// <c>Geschlossen(true)</c> — der Dialog kennt keinen Abbruchweg.
+    /// Ohne Katalogzeilen baut der Dialog die Liste aus der blossen Namensliste (<c>Typen</c>)
+    /// — der Weg eines Wirts, der das Profil noch nicht liefert.
     /// </summary>
     [Fact]
-    public void Beenden_schliesst_mit_true_wie_Esc_und_Kreuz()
+    public void Ohne_Katalogzeilen_traegt_die_Namensliste()
     {
-        bool? ergebnis = null;
-        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+        var cut = Render<GebaeudetypDialog>(b => b
+            .Add(x => x.Typen, () => TYPEN)
+            .Add(x => x.Lies, n => Typ(n, 8)));
 
-        Knopf(cut, "Beenden").Click();
-
-        Assert.True(ergebnis);
+        Assert.Equal(TYPEN, cut.Instance.Typliste);
+        Assert.Equal(TYPEN[0], cut.Instance.Gewaehlt);
     }
-
-    /// <summary>Die Beschreibung ist eine ANZEIGE — der Vorläufer setzte sie nur.</summary>
-    [Fact]
-    public void Die_Beschreibung_ist_nur_lesbar()
-    {
-        var cut = Aufbauen();
-        Assert.True(cut.Find("textarea").HasAttribute("readonly"));
-    }
-
-    // =================================================================================
-    // Kurvenzahl und Kurvennamen
-    // =================================================================================
 
     /// <summary>
-    /// Fünf Kurven nehmen die kurze Namensliste, acht die lange — entschieden über die
-    /// KURVENZAHL, nicht über die Listenposition.
+    /// <b>Fünf und acht Kurven tragen verschiedene Namen</b> — entschieden über die
+    /// KURVENZAHL; die Klappliste „Kurve" zeigt sie.
     /// </summary>
     [Fact]
-    public void Fuenf_und_acht_Kurven_tragen_verschiedene_Namen()
+    public void Fuenf_und_acht_Kurven_stehen_in_der_Klappliste()
     {
         var cut = Aufbauen();
 
-        // "Buerogebaeude" steht vorn und hat acht Kurven.
-        var namen = cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll("tbody tr td:last-child")
-                       .Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(8, namen.Count);
-        Assert.Equal("Winter-Wochentag", namen[0]);
-        Assert.Equal("Übergang2-Wochenende", namen[7]);
+        Assert.Equal(LANG, Kurvenwahl(cut).QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
 
-        // Umschalten auf "Wohngebaeude VDI 2067" (fuenf Kurven).
-        cut.FindAll(".epos-auswahlspalte")[0].QuerySelectorAll("button")[1].Click();
-        namen = cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll("tbody tr td:last-child")
-                   .Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(5, namen.Count);
-        Assert.Equal("Winter-heiter", namen[0]);
-        Assert.Equal("Sommertag", namen[4]);
+        Zeilenklick.Zeile(cut, 2);                               // Wohngebaeude, fuenf Kurven
+
+        Assert.Equal(KURZ, Kurvenwahl(cut).QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.Equal("5 Tageskurven · Auslieferungssatz", cut.Find(".epos-stammblatt-unter").TextContent);
     }
 
+    /// <summary>Die Kurvenwahl zeichnet das Bild der gewählten Kurve (24 Werte).</summary>
     [Fact]
-    public void Die_Kurvenwahl_zeigt_die_vierundzwanzig_Werte()
+    public void Die_Kurvenwahl_zeichnet_das_Bild_der_Kurve()
     {
-        var cut = Aufbauen();
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
 
-        Assert.Equal(0, cut.Instance.Kurvenwahl);
-        Assert.Equal(1.0, cut.Instance.Felder[0]);
+        Kurvenwahl(cut).Change("2");
 
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll("button")[2].Click();
         Assert.Equal(2, cut.Instance.Kurvenwahl);
-        Assert.Equal(49.0, cut.Instance.Felder[0]);      // 2 * 24 + 1
+        Assert.Equal(24, p.Bilder.Last().Length);
+        Assert.Equal(49, p.Bilder.Last()[0]);                    // 2 * 24 + 1
+        Assert.NotEmpty(cut.FindAll(".epos-stammblatt .epos-diagramm-svg"));
     }
 
-    /// <summary>
-    /// <c>RefreshArrayValues</c>: Der Kurvenwechsel überträgt STILL — ein ungültiges oder
-    /// leeres Feld lässt den bisherigen Wert stehen und meldet nicht.
-    /// </summary>
-    [Fact]
-    public void Der_Kurvenwechsel_uebertraegt_still_und_laesst_Leeres_stehen()
-    {
-        double[,] geschrieben = null!;
-        var cut = Aufbauen(speichern: (_, v) => { geschrieben = v; return true; });
-
-        cut.FindAll("input[inputmode=decimal]")[0].Input("111");
-        cut.FindAll("input[inputmode=decimal]")[1].Input("");        // leer bleibt leer
-
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll("button")[1].Click();
-        Assert.Equal("", cut.Instance.Meldung);
-
-        // Zurueck auf Kurve 0: 111 steht, der geleerte Wert ist der alte geblieben.
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll("button")[0].Click();
-        Assert.Equal(111.0, cut.Instance.Felder[0]);
-        Assert.Equal(2.0, cut.Instance.Felder[1]);
-    }
-
-    // =================================================================================
-    // Sperre des Auslieferungsbestands
-    // =================================================================================
-
-    [Fact]
-    public void Ein_Katalogtyp_sperrt_Speichern_und_nennt_den_Grund()
-    {
-        var cut = Aufbauen(lies: n => Typ(n, 8, aenderbar: false));
-
-        Assert.True(Knopf(cut, "Typ speichern").HasAttribute("disabled"));
-        Assert.Contains("vom Softwarehersteller gelieferten Gebäudetypen",
-                        cut.Find(".epos-herleitung").TextContent);
-    }
-
-    [Fact]
-    public void Ein_aenderbarer_Typ_hat_keinen_Sperrhinweis()
-    {
-        var cut = Aufbauen();
-
-        Assert.False(Knopf(cut, "Typ speichern").HasAttribute("disabled"));
-        Assert.Empty(cut.FindAll(".epos-herleitung"));
-    }
-
-    // =================================================================================
-    // Speichern
-    // =================================================================================
-
-    [Fact]
-    public void Speichern_mit_einem_leeren_Feld_meldet_die_Stunde()
-    {
-        bool geschrieben = false;
-        var cut = Aufbauen(speichern: (_, _) => { geschrieben = true; return true; });
-
-        cut.FindAll("input[inputmode=decimal]")[6].Input("");
-        Knopf(cut, "Typ speichern").Click();
-
-        Assert.False(geschrieben);
-        Assert.Contains("Stunde 7", cut.Find(".epos-warnbanner").TextContent);
-    }
-
-    [Fact]
-    public void Speichern_uebergibt_Id_und_Verteilung()
-    {
-        int id = 0;
-        double[,] verteilung = null!;
-        var cut = Aufbauen(speichern: (i, v) => { id = i; verteilung = v; return true; });
-
-        cut.FindAll("input[inputmode=decimal]")[3].Input("88");
-        Knopf(cut, "Typ speichern").Click();
-
-        Assert.Equal(7, id);
-        Assert.Equal(88.0, verteilung[0, 3]);
-        Assert.Contains("Daten gespeichert!", cut.Find(".epos-warnbanner").TextContent);
-    }
-
-    // =================================================================================
-    // Anlegen und Löschen
-    // =================================================================================
-
-    [Fact]
-    public void Typ_hinzufuegen_fragt_Name_UND_Beschreibung()
-    {
-        string angelegt = null!, beschreibung = null!;
-        var liste = new List<string>(TYPEN);
-
-        var cut = Aufbauen(typen: () => liste,
-            anlegen: (n, b) => { angelegt = n; beschreibung = b; liste.Add(n); return 99; },
-            lies: n => Typ(n, 8));
-
-        Knopf(cut, "Typ hinzufügen").Click();
-        Assert.True(cut.Instance.Namensfrage);
-
-        var felder = cut.FindAll(".epos-ueberlagerung input[type=text]");
-        Assert.Equal(2, felder.Count);                  // Name UND Beschreibung
-        felder[0].Input("Neuer Typ");
-        felder[1].Input("Ein Neuer");
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
-
-        Assert.Equal("Neuer Typ", angelegt);
-        Assert.Equal("Ein Neuer", beschreibung);
-        Assert.Contains("Neuer Typ", cut.Instance.Typliste);
-    }
-
-    [Fact]
-    public void Ein_belegter_Name_meldet_und_legt_nichts_an()
-    {
-        bool angelegt = false;
-        var cut = Aufbauen(anlegen: (_, _) => { angelegt = true; return 99; });
-
-        Knopf(cut, "Typ hinzufügen").Click();
-        cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input("Buerogebaeude");
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
-
-        Assert.False(angelegt);
-        Assert.Contains("Name existiert bereits!", cut.Find(".epos-warnbanner").TextContent);
-    }
-
-    /// <summary>Der Vorläufer löschte OHNE Rückfrage (A‑8).</summary>
-    [Fact]
-    public void Loeschen_fragt_erst_nach()
-    {
-        int geloescht = 0;
-        var liste = new List<string>(TYPEN);
-        var cut = Aufbauen(typen: () => liste,
-                           loeschen: _ => { geloescht++; liste.RemoveAt(0); return true; });
-
-        Knopf(cut, "Typ löschen").Click();
-        Assert.True(cut.Instance.Loeschfrage);
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Nein").Click();
-        Assert.Equal(0, geloescht);
-
-        Knopf(cut, "Typ löschen").Click();
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Ja").Click();
-        Assert.Equal(1, geloescht);
-    }
-
-    [Fact]
-    public void Ein_Katalogtyp_wird_nicht_geloescht()
-    {
-        bool geloescht = false;
-        var cut = Aufbauen(lies: n => Typ(n, 8, aenderbar: false),
-                           loeschen: _ => { geloescht = true; return true; });
-
-        Knopf(cut, "Typ löschen").Click();
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Ja").Click();
-
-        Assert.False(geloescht);
-        Assert.Contains("vom Softwarehersteller", cut.Find(".epos-warnbanner").TextContent);
-    }
-
-    // =================================================================================
-    // Bild und Tastatur
-    // =================================================================================
-
-    [Fact]
-    public void Das_Bild_bekommt_24_Werte()
-    {
-        int laenge = 0;
-        var cut = Aufbauen(bild: w => { laenge = w.Length; return MODELL; });
-
-        Assert.Equal(24, laenge);
-        Assert.Single(cut.FindAll("svg.epos-flaeche"));
-    }
-
-    /// <summary>
-    /// <b>Das Tagesprofil steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
-    /// unter der Kennung <c>gebaeudetyp</c>. Seine x-Achse zählt den INDEX der
-    /// Reihe, 1 … 24: keine Jahresstunde.
-    /// </summary>
-    [Fact]
-    public void Das_Tagesprofil_steht_als_DiagrammSvg()
-    {
-        var cut = Aufbauen();
-
-        Assert.Single(cut.FindComponents<DiagrammSvg>());
-        Assert.Equal("gebaeudetyp", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-    }
-
-    /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>
+    /// <summary>Ohne Bilddelegat steht der Platzhalter.</summary>
     [Fact]
     public void Ohne_Bilddelegat_steht_der_Platzhalter()
     {
-        var cut = Render<GebaeudetypDialog>(p => p
-            .Add(x => x.Typen, () => TYPEN)
-            .Add(x => x.Lies, (Func<string, GebaeudetypDaten?>)(n => Typ(n, 5))));
+        var cut = Aufbauen(mitBild: false);
 
-        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
-        Assert.Contains("Kein Diagramm vorhanden", cut.Markup);
+        Assert.Contains("Kein Diagramm vorhanden", cut.Find(".epos-stammblatt").TextContent);
     }
 
-    [Fact]
-    public void Esc_schliesst_Enter_nicht()
-    {
-        int gemeldet = 0;
-        var cut = Aufbauen(geschlossen: _ => gemeldet++);
+    // =================================================================================
+    // Die Stundenwerte als Überlagerung
+    // =================================================================================
 
-        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
-        Assert.Equal(0, gemeldet);
+    /// <summary>
+    /// <b>„Stundenwerte…"</b> öffnet die 24 Felder der gewählten Kurve als Überlagerung mit
+    /// Titel und GENAU einem Kreuz; „Übernehmen" legt sie in den Arbeitsstand — geschrieben
+    /// wird erst mit „Speichern".
+    /// </summary>
+    [Fact]
+    public void Stundenwerte_oeffnen_als_Ueberlagerung_und_gehen_in_den_Arbeitsstand()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Stundenwerte…").Click();
+
+        Assert.True(cut.Instance.StundenwerteOffen);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-zu"));
+        Assert.Equal("Stundenwerte – Winter-Wochentag", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        var felder = cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]");
+        Assert.Equal(24, felder.Count);
+        Assert.Equal(1.0, cut.Instance.Felder[0]);
+
+        felder[6].Input("99");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.False(cut.Instance.StundenwerteOffen);
+        Assert.True(cut.Instance.Geaendert);
+        Assert.Equal(99, cut.Instance.Kurvenwerte[6]);
+        Assert.Empty(p.Verteilungen);
+        Assert.Equal("1 Feld geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+    }
+
+    /// <summary>Ein leeres Stundenfeld hält „Übernehmen" an und nennt die Stunde.</summary>
+    [Fact]
+    public void Ein_leeres_Stundenfeld_nennt_die_Stunde()
+    {
+        var cut = Aufbauen();
+        Knopf(cut, "Stundenwerte…").Click();
+
+        cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]")[4].Input("");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.True(cut.Instance.StundenwerteOffen);
+        Assert.Contains("Stunde 5", cut.Find(".epos-ueberlagerung").TextContent);
+        Assert.False(cut.Instance.Geaendert);
+    }
+
+    /// <summary>Das Kreuz der Überlagerung verwirft — nichts geht in den Arbeitsstand.</summary>
+    [Fact]
+    public void Das_Kreuz_der_Stundenwerte_verwirft()
+    {
+        var cut = Aufbauen();
+        Knopf(cut, "Stundenwerte…").Click();
+        cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]")[0].Input("77");
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.StundenwerteOffen);
+        Assert.False(cut.Instance.Geaendert);
+        Assert.Equal(1, cut.Instance.Kurvenwerte[0]);
+    }
+
+    /// <summary>
+    /// <b>Ein Kurvenwechsel mit geänderten Werten hält an</b> wie ein Zeilenwechsel (Konzept
+    /// 3.6 Punkt 3) — der stille Übertrag des Vorläufers entfällt.
+    /// </summary>
+    [Fact]
+    public void Ein_Kurvenwechsel_mit_Aenderungen_haelt_an()
+    {
+        var cut = Aufbauen();
+        Knopf(cut, "Stundenwerte…").Click();
+        cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]")[0].Input("5");
+        Knopf(cut, "Übernehmen").Click();
+
+        Kurvenwahl(cut).Change("3");
+        Assert.Equal(0, cut.Instance.Kurvenwahl);
+
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal("Buerogebaeude", cut.Instance.Gewaehlt);
+
+        Assert.Contains("ungespeicherte", cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // Speichern, Verwerfen, Auslieferung
+    // =================================================================================
+
+    /// <summary>Speichern schreibt Verteilung und Beschreibung über ihre Wege; die Statuszeile meldet es.</summary>
+    [Fact]
+    public void Speichern_schreibt_Verteilung_und_Beschreibung()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Stundenwerte…").Click();
+        cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]")[23].Input("0,5");
+        Knopf(cut, "Übernehmen").Click();
+        cut.Find(".epos-stammblatt textarea").Input("neu");
+
+        Knopf(cut, "Speichern").Click();
+
+        var (id, v) = Assert.Single(p.Verteilungen);
+        Assert.Equal(1, id);
+        Assert.Equal(0.5, v[0, 23]);
+        Assert.Equal((1, "neu"), Assert.Single(p.Beschreibungen));
+        Assert.False(cut.Instance.Geaendert);
+        Assert.StartsWith("Gespeichert um", cut.Instance.Status);
+    }
+
+    /// <summary>Verwerfen nimmt Stundenwerte und Beschreibung zurück.</summary>
+    [Fact]
+    public void Verwerfen_nimmt_den_Arbeitsstand_zurueck()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt textarea").Input("anders");
+        Assert.True(cut.Instance.Geaendert);
+
+        Knopf(cut, "Verwerfen").Click();
+
+        Assert.False(cut.Instance.Geaendert);
+        Assert.Empty(p.Beschreibungen);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungstyp</b> (V13): das Schloss an der Zeile und im Kopf statt der
+    /// Herleitungszeile, die Kenndaten als Text, „Speichern" und „Löschen" weich gesperrt;
+    /// die Stundenwerte stehen nur lesend.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungstyp_ist_nur_lesbar()
+    {
+        var cut = Aufbauen();
+        Zeilenklick.Zeile(cut, 2);                               // Wohngebaeude, nicht veraenderbar
+
+        Assert.NotEmpty(cut.FindAll(".epos-katalogliste .epos-schloss"));
+        Assert.NotNull(cut.Find(".epos-stammblatt-kopf .epos-schloss"));
+        Assert.Empty(cut.FindAll(".epos-stammblatt textarea"));
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+        Assert.Equal("true", Handlung(cut, "Löschen").GetAttribute("aria-disabled"));
+
+        Knopf(cut, "Stundenwerte…").Click();
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]"));
+        Assert.Contains("nicht geändert werden", cut.Find(".epos-ueberlagerung").TextContent);
+    }
+
+    // =================================================================================
+    // Neu, Duplizieren, Löschen, Vergleichen
+    // =================================================================================
+
+    /// <summary>
+    /// <b>„Neu…"</b> fragt Name, Beschreibung und die Kurvenzahl (fünf oder acht); der neue
+    /// Typ ist danach gewählt, die Statuszeile nennt ihn.
+    /// </summary>
+    [Fact]
+    public void Neu_fragt_Name_Beschreibung_und_Kurvenzahl()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Neu…").Click();
+        Assert.True(cut.Instance.Namensfrage);
+        Assert.Equal(2, cut.FindAll(".epos-ueberlagerung input[type=radio]").Count);
+
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Kita");
+        cut.Find(".epos-ueberlagerung textarea").Input("Tagesstaette");
+        cut.FindAll(".epos-ueberlagerung input[type=radio]")[1].Change("5");   // fuenf
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(("Kita", "Tagesstaette", 5), Assert.Single(p.Angelegt));
+        Assert.Equal("Kita", cut.Instance.Gewaehlt);
+        Assert.Contains("Kita", cut.Instance.Status);
+    }
+
+    /// <summary>Ein belegter Name meldet in der Abfrage und legt nichts an.</summary>
+    [Fact]
+    public void Ein_belegter_Name_meldet_und_legt_nichts_an()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        Knopf(cut, "Neu…").Click();
+
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Hotel");
+        Knopf(cut, "OK").Click();
+
+        Assert.Empty(p.Angelegt);
+        Assert.True(cut.Instance.Namensfrage);
+        Assert.Contains("Name existiert bereits!", cut.Find(".epos-ueberlagerung").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Duplizieren…</b> (AD-Q11) — auch eines Auslieferungstyps: Namensabfrage mit
+    /// „… (Kopie)", danach ist die Kopie gewählt.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_legt_den_eigenen_Typ_an_und_waehlt_ihn()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        Zeilenklick.Zeile(cut, 2);
+
+        Handlung(cut, "Duplizieren...").Click();
+        Assert.True(cut.Instance.Duplizierfrage);
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal((3, "Wohngebaeude VDI 2067 (Kopie)"), Assert.Single(p.Dupliziert));
+        Assert.Equal("Wohngebaeude VDI 2067 (Kopie)", cut.Instance.Gewaehlt);
+        Assert.Contains("dupliziert", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Löschen fragt zurück</b> (der Vorläufer löschte ohne, A‑8) und schreibt nach dem
+    /// „Ja"; die Statuszeile nennt den Typ.
+    /// </summary>
+    [Fact]
+    public void Loeschen_fragt_zurueck_und_meldet()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Handlung(cut, "Löschen").Click();
+        Assert.True(cut.Instance.Loeschfrage);
+        Assert.Contains("Buerogebaeude", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Empty(p.Geloescht);
+
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { 1 }, p.Geloescht);
+        Assert.Contains("Buerogebaeude", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Die Verwendungssperre</b>: Ein Typ, den Gebäude des Katalogs führen, ist weich
+    /// gegen Löschen gesperrt; der Kurztext nennt die Zahl.
+    /// </summary>
+    [Fact]
+    public void Loeschen_ist_gesperrt_wenn_Gebaeude_den_Typ_fuehren()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p, verwendung: new Dictionary<string, int> { ["Buerogebaeude"] = 21 });
+
+        IElement loeschen = Handlung(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        Assert.Contains("21", loeschen.GetAttribute("title"));
+
+        loeschen.Click();
+        Assert.False(cut.Instance.Loeschfrage);
+        Assert.Empty(p.Geloescht);
+    }
+
+    /// <summary>Zwei Kästchen und „Vergleichen" legen dieselbe Kurve der Typen nebeneinander.</summary>
+    [Fact]
+    public void Vergleichen_legt_dieselbe_Kurve_nebeneinander()
+    {
+        var cut = Aufbauen();
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);
+
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.True(cut.Instance.Vergleicht);
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Stunde 1");
+        Assert.NotNull(cut.Find(".epos-stammblatt .epos-vergleichstabelle"));
+    }
+
+    // =================================================================================
+    // Schluss
+    // =================================================================================
+
+    /// <summary>Beenden, Esc und das Kreuz schließen mit <c>true</c>; Enter tut nichts.</summary>
+    [Fact]
+    public void Beenden_Esc_und_Kreuz_schliessen_Enter_nicht()
+    {
+        var p1 = new Protokoll();
+        Knopf(Aufbauen(p1), "Beenden").Click();
+        Assert.True(p1.Geschlossen);
+
+        var p2 = new Protokoll();
+        var cut2 = Aufbauen(p2);
+        cut2.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.Null(p2.Geschlossen);
+        cut2.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(p2.Geschlossen);
+
+        var p3 = new Protokoll();
+        Aufbauen(p3).Find(".epos-dialog-zu").Click();
+        Assert.True(p3.Geschlossen);
+    }
+
+    /// <summary>Esc schließt nicht, solange die Stundenwerte offen stehen.</summary>
+    [Fact]
+    public void Esc_schliesst_nicht_bei_offenen_Stundenwerten()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        Knopf(cut, "Stundenwerte…").Click();
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.Equal(1, gemeldet);
+
+        Assert.Null(p.Geschlossen);
     }
 
-    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„Beenden": schließt mit <c>true</c>.</summary>
-    [Fact]
-    public void Kreuz_schliesst_wie_Esc()
-    {
-        bool? ergebnis = null;
-        var cut = Aufbauen(geschlossen: b => ergebnis = b);
-
-        cut.Find(".epos-dialog-zu").Click();
-
-        Assert.True(ergebnis);
-    }
-
-    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    /// <summary>Titel-bedingter Kopf: ohne Titel (eingebettet) weder Titel noch Kreuz.</summary>
     [Fact]
     public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
     {
         var cut = Aufbauen(titel: "");
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
-        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
-        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.Empty(cut.FindAll(".epos-dialog-kopf .epos-dialog-zu"));
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
@@ -441,12 +552,12 @@ public class GebaeudetypDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
-    /// Sichtklasse <c>GebaeudetypKiSicht</c>: Der Typ ist eine WAHL, und ein Setzen
-    /// LÄDT seinen Satz samt Kurvennamen — derselbe Weg wie ein Klick in die Liste.
+    /// <b>Der Zeuge dieser Maske an der Maskenbrücke</b>: Der Typ ist eine WAHL, ein Setzen
+    /// wählt seine Zeile — derselbe Weg wie ein Klick in die Liste; die Kurve ist die zweite
+    /// Wahl.
     /// </summary>
     [Fact]
-    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_laedt_den_gewaehlten_Typ()
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_waehlt_den_Typ()
     {
         var cut = Aufbauen();
 
@@ -463,8 +574,8 @@ public class GebaeudetypDialogTests : EposBunitContext
         cut.Render();
 
         Assert.Equal(TYPEN[1], zugang.Lesen());
+        Assert.Equal(TYPEN[1], cut.Instance.Gewaehlt);
 
-        // Die KURVE ist die zweite Wahl - sie sagt, welche 24 Felder dastehen.
         WindowsFormsApplication1.KiFeldzugang kurve =
             KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDETYP, "kurve");
         Assert.NotNull(kurve);

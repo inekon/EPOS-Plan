@@ -31,7 +31,10 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer)
         {
             KatalogBrowserProfil profil = Profil();
-            return KatalogBrowserHuelle.Oeffnen(besitzer, profil, Gaben());
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
+            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs.
+            return KatalogBrowserHuelle.Oeffnen(besitzer, profil, KatalogBrowserHuelle.MitWegen(
+                Gaben(), Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Heizkessel))));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -56,13 +59,15 @@ namespace WindowsFormsApplication1
         /// Heizkesselsatz fuehrt und wie sie zurueckgeschrieben werden, ist EINE Frage
         /// mit EINER Antwort.
         /// </remarks>
-        internal static KatalogBrowserWege Wege()
+        internal static KatalogBrowserWege Wege(Func<IReadOnlyDictionary<string, object>> import = null)
         {
             KatalogBrowserProfil profil = Profil();
             var ctrl = new HeizkesselStammCtrl();
 
             return new KatalogBrowserWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                ImportGaben = import,
                 Katalogzeilen = () => ctrl.Katalogfilterzeilen(),
                 Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new HeizkesselStammCtrl().Exists(name),

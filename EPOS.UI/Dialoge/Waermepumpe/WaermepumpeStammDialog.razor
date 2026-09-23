@@ -258,9 +258,20 @@
                 @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        @* "IMPORT..." (Konzept 7.1 d, Zweitweg zu V14): der VDI-3805-Import Blatt 22
+           als Ueberlagerung - derselbe wie im Menue "Daten & Import". *@
+        @if (ImportGaben is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf"
+                    @onclick="ImportOeffnen">@BtnImportText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Beenden">@BtnBeendenText</button>
     </div>
+
+    @* --- Ueberlagerung "Import..." (7.1 d): Titel und Kreuz traegt der Importdialog. *@
+    <EPOS.UI.Dialoge.Import.ImportUeberlagerung KatalogGaben="@_importGaben"
+                                                Geschlossen="ImportFertig" />
 
     @* --- Ueberlagerung 1: der Kennlinieneditor ------------------------------- *@
     <Ueberlagerung Offen="@(_kennlinien is not null)"
@@ -1252,10 +1263,58 @@
         return Geschlossen.InvokeAsync(true);
     }
 
+    // =====================================================================
+    // "Import..." (Konzept Administrationsdialoge 7.1 d, Zweitweg zu V14)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz des <c>KatalogImportDialog</c> (VDI 3805 Blatt 22,
+    /// <c>KatalogImportHuelle.Gaben</c>). <c>null</c> = kein „Import…" — so in der
+    /// Überlagerung des Anlagendialogs.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? ImportGaben { get; set; }
+
+    /// <summary>„Import…" — <c>ADM_BTN_IMPORT</c>.</summary>
+    [Parameter] public string BtnImportText { get; set; } = Resource.ADM_BTN_IMPORT;
+
+    private IReadOnlyDictionary<string, object>? _importGaben;
+    private HashSet<string> _vorImport = new(StringComparer.Ordinal);
+
+    /// <summary>Steht der Import als Überlagerung? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _importGaben is not null;
+
+    /// <summary>„Import…" öffnet den Herstellerimport; geänderte Felder halten an (Konzept 3.3).</summary>
+    private void ImportOeffnen()
+    {
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+        _vorImport = new HashSet<string>(_liste.Select(z => z.Bezeichner), StringComparer.Ordinal);
+        _importGaben = ImportGaben?.Invoke();
+    }
+
+    /// <summary>
+    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, die erste neue
+    /// Wärmepumpe ist gewählt, und die Statuszeile nennt die Zahl der neuen Sätze (V14).
+    /// </summary>
+    private void ImportFertig(bool geschrieben)
+    {
+        _importGaben = null;
+        if (!geschrieben) return;
+
+        ListeNeuLaden();
+        List<Katalogfilterzeile> neu = _liste.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
+        if (neu.Count == 0) return;
+
+        ZeileWaehlen(neu[0]);
+        _status = neu.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_IMPORTIERT, neu.Count);
+    }
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage || _duplizierfrage)
+        if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage || _duplizierfrage
+            || ImportOffen)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).

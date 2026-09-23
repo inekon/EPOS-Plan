@@ -210,7 +210,7 @@ namespace EPOS.Kern.Tests
             Pruefe(typeof(GebaeudeKatalogDialog), GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu));
             Pruefe(typeof(GebaeudeWohnflaecheDialog), GebaeudeWohnflaecheHuelle.Gaben(new Z_ProjGebModel(), "vor 1919"));
             Pruefe(typeof(GebaeudeDialog), GebaeudeHuelle.Gaben(1045, "", Z_ProjGebCtrl.LiesProjekt(1045),
-                                                                 wizard: false, admin: false));
+                                                                 wizard: false));
 
             static void Pruefe(Type komponente, IReadOnlyDictionary<string, object> gaben)
             {
@@ -249,7 +249,7 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(modelle);
 
             IReadOnlyDictionary<string, object> gaben =
-                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false, admin: false);
+                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
             var zeilen = (List<GebaeudeProjektZeile>)gaben["Zeilen"];
 
             foreach (GebaeudeProjektZeile z in zeilen)

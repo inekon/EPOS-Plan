@@ -1408,4 +1408,101 @@ public class KatalogBrowserDialogTests : EposBunitContext
     private static AngleSharp.Dom.IElement Handlung(
         IRenderedComponent<KatalogBrowserDialog> cut, string text) =>
         cut.FindAll(".epos-auswahlleiste button").First(k => k.TextContent.Trim() == text);
+
+    // =================================================================================
+    // „Import…" als Zweitweg (Konzept Administrationsdialoge 7.1 d)
+    // =================================================================================
+
+    /// <summary>Der kleinste Parametersatz des <c>KatalogImportDialog</c>: Art, Profil, Texte.</summary>
+    private static IReadOnlyDictionary<string, object> ImportGaben(KatalogImportArt art)
+        => new Dictionary<string, object>
+        {
+            ["Art"] = art,
+            ["ProfilVorgabe"] = KatalogImportProfil.Finde(art, EPOS.UI.Dialoge.Import.Texte.Zu),
+            ["Meldungstext"] = new Func<SpeicherEngine.PruefMeldung, string>(EPOS.UI.Dialoge.Import.Texte.Zu),
+            ["Fortschrittstext"] = new Func<ImportFortschritt, string>(EPOS.UI.Dialoge.Import.Texte.Zu)
+        };
+
+    /// <summary>Wege mit „Import…" über einer veränderlichen Zeilenliste.</summary>
+    private static KatalogBrowserWege ImportWege(List<Katalogfilterzeile> zeilen, Action? gelesen = null)
+        => new KatalogBrowserWege
+        {
+            Katalogzeilen = () => { gelesen?.Invoke(); return zeilen.ToArray(); },
+            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
+            ImportGaben = () => ImportGaben(KatalogImportArt.Heizkessel)
+        };
+
+    [Fact]
+    public void Ohne_Importweg_steht_kein_Importknopf()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-importknopf"));
+    }
+
+    [Fact]
+    public void Import_oeffnet_den_Herstellerimport_als_Ueberlagerung_mit_dessen_Titel_und_Kreuz()
+    {
+        var cut = Aufbauen(wege: ImportWege(Zeilen(KatalogBrowserArt.Heizkessel).ToList()));
+
+        var knopf = cut.Find(".epos-importknopf");
+        Assert.Equal("Import…", knopf.TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+
+        knopf.Click();
+
+        Assert.True(cut.Instance.ImportOffen);
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        // DAS KREUZ STEHT BEIM TITEL: Titel und Kreuz traegt der Importdialog, die
+        // Ueberlagerung hat keinen Kopf - genau ein Kreuz im Bereich.
+        Assert.Null(ueberlagerung.QuerySelector(".epos-ueberlagerung-kopf"));
+        Assert.NotNull(ueberlagerung.QuerySelector(".epos-katalogimport .epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+    }
+
+    [Fact]
+    public async Task Nach_einem_Import_liest_die_Liste_neu_und_waehlt_den_ersten_neuen_Satz()
+    {
+        var zeilen = Zeilen(KatalogBrowserArt.Heizkessel).ToList();
+        var cut = Aufbauen(wege: ImportWege(zeilen));
+        cut.Find(".epos-importknopf").Click();
+
+        // Der Import schreibt zwei Saetze und schliesst mit "geschrieben".
+        zeilen.Add(new Katalogfilterzeile(7, "Kessel Neu 1")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 1"));
+        zeilen.Add(new Katalogfilterzeile(8, "Kessel Neu 2")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 2"));
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Equal(4, cut.Instance.Zeilen.Count);
+        Assert.Equal("Kessel Neu 1", cut.Instance.Gewaehlt);
+        Assert.Equal("2 Sätze eingelesen.", cut.Instance.Status);
+    }
+
+    [Fact]
+    public void Kreuz_und_Esc_des_Imports_schliessen_nur_die_Ueberlagerung()
+    {
+        int gelesen = 0;
+        bool zu = false;
+        var cut = Aufbauen(wege: ImportWege(Zeilen(KatalogBrowserArt.Heizkessel).ToList(), () => gelesen++),
+                           geschlossen: _ => zu = true);
+
+        cut.Find(".epos-importknopf").Click();
+        int vorher = gelesen;
+        cut.Find(".epos-ueberlagerung .epos-dialog-zu").Click();
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.False(zu);
+        Assert.Equal(vorher, gelesen);          // nichts geschrieben: kein Neulesen
+
+        // Esc im Import schliesst den Import - die Verwaltung bleibt offen.
+        cut.Find(".epos-importknopf").Click();
+        cut.Find(".epos-katalogimport").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.False(zu);
+    }
 }

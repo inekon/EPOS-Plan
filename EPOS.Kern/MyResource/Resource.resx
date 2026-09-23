@@ -25605,4 +25605,181 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
     <value>Für diesen Satz liegt keine brauchbare Reihe vor (weder 8 760 noch 35 040 Werte).</value>
   </data>
+  <data name="KFLT_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KFLT_SP_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="KFLT_SP_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="KFLT_SP_KURVEN" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="KFLT_SP_LASTGANG" xml:space="preserve">
+    <value>Lastgang</value>
+  </data>
+  <data name="KFLT_SP_INTERVALL" xml:space="preserve">
+    <value>Intervall</value>
+  </data>
+  <data name="KFLT_SP_JAHRESMAXIMUM" xml:space="preserve">
+    <value>Jahresmaximum</value>
+  </data>
+  <data name="ADM_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="GEBA_TITEL" xml:space="preserve">
+    <value>Verwaltung Gebäude</value>
+  </data>
+  <data name="GEBA_SB_HUELLE" xml:space="preserve">
+    <value>Hülle</value>
+  </data>
+  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
+    <value>Gebäudetypen…</value>
+  </data>
+  <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
+    <value>Flächen und U-Werte ändert „Bearbeiten…“; dort stehen auch Fenster je Himmelsrichtung, Raumtemperaturen, Ferien und Wärmebrücken.</value>
+  </data>
+  <data name="GEBA_HUELLE_WERT" xml:space="preserve">
+    <value>{0} m² · U {1} W/(m²K)</value>
+  </data>
+  <data name="GEBA_KZ_FLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="GEBA_KZ_HGES" xml:space="preserve">
+    <value>H_ges</value>
+  </data>
+  <data name="GEBA_KZ_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="GEBA_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDETYP" xml:space="preserve">
+    <value>Gebäudetyp</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="GEBA_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="GEBA_LBL_WOHNFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="GEBA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="GEBA_MSG_FEHLER" xml:space="preserve">
+    <value>Die Kenndaten konnten nicht geschrieben werden.</value>
+  </data>
+  <data name="GEBA_MSG_NEU" xml:space="preserve">
+    <value>„{0}“ angelegt.</value>
+  </data>
+  <data name="GTYP_SB_TAGESPROFIL" xml:space="preserve">
+    <value>Tagesprofil</value>
+  </data>
+  <data name="GTYP_LBL_KURVE_KURZ" xml:space="preserve">
+    <value>Kurve</value>
+  </data>
+  <data name="GTYP_BTN_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte…</value>
+  </data>
+  <data name="GTYP_TITEL_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte – {0}</value>
+  </data>
+  <data name="GTYP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GTYP_SB_KURVEN_HINWEIS" xml:space="preserve">
+    <value>{0} Tageskurven zu je 24 Stunden; „Stundenwerte…“ öffnet die 24 Felder der gewählten Kurve.</value>
+  </data>
+  <data name="GTYP_LBL_KURVENZAHL" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="GTYP_KURVEN_FUENF" xml:space="preserve">
+    <value>5 – Winter, Übergang und Sommer nach Witterung</value>
+  </data>
+  <data name="GTYP_KURVEN_ACHT" xml:space="preserve">
+    <value>8 – Wochentag und Wochenende je Jahreszeit</value>
+  </data>
+  <data name="GTYP_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Von {0} Gebäuden des Katalogs verwendet – Löschen gesperrt.</value>
+  </data>
+  <data name="GTYP_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Stehen bleiben (von Gebäuden verwendet): {0}</value>
+  </data>
+  <data name="GTYP_MSG_ANGELEGT" xml:space="preserve">
+    <value>„{0}“ angelegt: {1} Tageskurven.</value>
+  </data>
+  <data name="GTYP_KZ_KURVEN" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="GTYP_KZ_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="GTYP_KZ_SUMME" xml:space="preserve">
+    <value>Tagessumme</value>
+  </data>
+  <data name="GTYP_UHR" xml:space="preserve">
+    <value>{0} Uhr</value>
+  </data>
+  <data name="PEAK_QUELLE_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="PEAK_BTN_DATEI_LASTGANG" xml:space="preserve">
+    <value>Lastgang aus Datei…</value>
+  </data>
+  <data name="PEAK_TITEL_DATEI" xml:space="preserve">
+    <value>Lastgang aus Datei</value>
+  </data>
+  <data name="PEAK_HINWEIS_DATEI" xml:space="preserve">
+    <value>Die Datei wird eingelesen, aber nicht abgelegt: Sie erscheint als Zeile mit der Quelle „Datei“.</value>
+  </data>
+  <data name="PEAK_SB_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="PEAK_SB_SCHWELLE" xml:space="preserve">
+    <value>Schwelle</value>
+  </data>
+  <data name="PEAK_SB_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="PEAK_SB_WERTE" xml:space="preserve">
+    <value>{0} Werte</value>
+  </data>
+  <data name="PEAK_SB_BERECHNET" xml:space="preserve">
+    <value>berechnet</value>
+  </data>
+  <data name="PEAK_SB_OFFEN" xml:space="preserve">
+    <value>noch nicht berechnet</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ALT" xml:space="preserve">
+    <value>Spitze ohne Speicher</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_NEU" xml:space="preserve">
+    <value>Spitze mit Speicher</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ERTRAG" xml:space="preserve">
+    <value>Ertrag je Jahr</value>
+  </data>
+  <data name="PEAK_MSG_EINGELESEN" xml:space="preserve">
+    <value>„{0}“ eingelesen – nicht abgelegt.</value>
+  </data>
+  <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
+    <value>{0} Sätze eingelesen.</value>
+  </data>
 </root>

@@ -65,6 +65,12 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Ganglinien"] = (IReadOnlyList<(int Id, string Text)>)eintraege,
+
+                // Stufe 5 der Neuordnung (V16): die Liste der Lastgaenge - Quelle,
+                // Intervall und Jahresmaximum aus EINER Gruppenabfrage je Tabelle; der
+                // Schluessel ist "G" + Platz, derselbe Platz, ueber den Reihe() liest.
+                ["Lastgangzeilen"] = PeakShavingCtrl.Katalogfilterzeilen(_ganglinien, _projektId),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerLastgang(Uebersetzen),
                 ["Vorgaben"] = PeakShavingCtrl.LeseVorbelegung(_projektId),
                 ["Werte"] = new Func<int, Task<double[]>>(Reihe),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
@@ -92,6 +98,14 @@ namespace WindowsFormsApplication1
                             () => PeakShavingCtrl.AktiveBerechnungsart(_projektId)))
                     : null
             };
+        }
+
+        private static string Uebersetzen(string schluessel)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? schluessel : t;
         }
 
         // =====================================================================
