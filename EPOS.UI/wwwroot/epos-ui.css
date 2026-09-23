@@ -635,6 +635,15 @@ body {
     background: var(--epos-flaeche);
 }
 
+/* Etappe E8a (U46): die Nominalsumme unter dem Barwert eines Bestandteils - leise und
+   in eigener Zeile: Die erste Zahl entscheidet, die zweite sagt, wie viel Geld
+   tatsaechlich fliesst. */
+.epos-wirt-nominal {
+    display: block;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
 /* Etappe E8a: die Summenzeilen einer Tafel (Summe nominal und Barwert unter den
    Zahlungsreihen, der Nettobarwert der Gliederung) - halbfett und mit Linie darueber
    abgesetzt, damit sie nicht als weiteres Jahr gelesen werden. */

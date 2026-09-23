@@ -58,6 +58,133 @@ namespace WindowsFormsApplication1
             return tafeln;
         }
 
+        /// <summary>
+        /// U46 (Mockup „Woraus entsteht die Zahl?"): die <b>Gliederung des Kapitalwerts</b> in
+        /// einem Szenario — je Bestandteil und Stand der Barwert, darunter die Nominalsumme,
+        /// als letzte Spalte die Differenz Leitversion − Referenz, als letzte Zeile der
+        /// Nettobarwert. Die Differenzspalte ist Bestandteil für Bestandteil die Differenz der
+        /// Barwerte und geht in der Kapitalwertdifferenz auf.
+        /// </summary>
+        /// <param name="satz">Die Gliederungen des Laufs; <c>null</c> = leere Tafel.</param>
+        /// <param name="szenario">Der Persistenzwert des gezeigten Szenarios.</param>
+        /// <param name="staende">Die Spalten der Seite (Id, Name) in Gruppenreihenfolge.</param>
+        /// <param name="idReferenz">Die wirksame Referenz.</param>
+        /// <param name="leitversion">Die Leitversion (<see cref="Zahlungsgliederungen.Leitversion"/>).</param>
+        /// <param name="kultur">Die Kultur der Zahlen.</param>
+        internal static ErgebnisMatrix Bestandteile(Zahlungsgliederungen satz, string szenario,
+                                                    IList<KeyValuePair<int, string>> staende,
+                                                    int idReferenz, int leitversion, CultureInfo kultur)
+        {
+            var tafel = new ErgebnisMatrix();
+            if (satz == null || staende == null) return tafel;
+
+            var gliederungen = new List<Zahlungsgliederung>();
+            bool irgendeine = false;
+            foreach (KeyValuePair<int, string> s in staende)
+            {
+                Zahlungsgliederung g = satz.Von(s.Key, szenario);
+                gliederungen.Add(g);
+                if (g != null) irgendeine = true;
+            }
+            if (!irgendeine) return tafel;
+
+            // Die Differenzspalte: nur mit Leitversion UND Referenz, beide mit Gliederung.
+            Zahlungsgliederung differenz = leitversion != 0 && leitversion != idReferenz
+                ? Zahlungsgliederung.Differenz(satz.Von(leitversion, szenario), satz.Von(idReferenz, szenario))
+                : null;
+
+            var spalten = new List<string> { MyResource.Resource.WIRT_GL_BESTANDTEIL };
+            foreach (KeyValuePair<int, string> s in staende) spalten.Add(s.Value ?? "");
+            if (differenz != null)
+                spalten.Add(string.Format(kultur, MyResource.Resource.WIRT_GL_DIFFERENZ,
+                                          Name(staende, leitversion), Name(staende, idReferenz)));
+
+            var zeilen = new List<MatrixZeile>();
+            foreach (string schluessel in Zahlungsgliederung.Reihenfolge)
+            {
+                // Die Investition fließt im Jahr 0 — Barwert und Nominalsumme sind dieselbe
+                // Zahl, die zweite Zeile entfällt (Mockup).
+                bool mitNominal = !string.Equals(schluessel, Zahlungsgliederung.INVESTITION, StringComparison.Ordinal);
+                var zellen = new List<string>();
+                var unter = new List<string>();
+                foreach (Zahlungsgliederung g in gliederungen)
+                {
+                    Zahlungsbestandteil b = g == null ? null : g.Bestandteil(schluessel);
+                    zellen.Add(b == null ? "—" : b.Barwert.ToString(GELD, kultur));
+                    unter.Add(b == null || !mitNominal ? ""
+                              : string.Format(kultur, MyResource.Resource.WIRT_GL_NOMINAL,
+                                              Math.Abs(b.Nominal).ToString("N0", kultur)));
+                }
+                if (differenz != null)
+                {
+                    zellen.Add(differenz.Bestandteil(schluessel).Barwert.ToString(GELD, kultur));
+                    unter.Add("");
+                }
+                zeilen.Add(new MatrixZeile
+                {
+                    Titel = Zahlungsgliederung.Titel(schluessel),
+                    Kennzeichen = Unterschrift(schluessel),
+                    Zellen = zellen,
+                    Unterwerte = unter
+                });
+            }
+
+            // Der Nettobarwert — der Kapitalwert des Bildes, in der Differenzspalte die
+            // Kapitalwertdifferenz, in der die Spalte aufgeht.
+            var netto = new List<string>();
+            foreach (Zahlungsgliederung g in gliederungen) netto.Add(g == null ? "—" : g.Kapitalwert.ToString(GELD, kultur));
+            if (differenz != null) netto.Add(differenz.Kapitalwert.ToString(GELD, kultur));
+            zeilen.Add(new MatrixZeile
+            {
+                Titel = MyResource.Resource.WIRT_GL_NETTOBARWERT,
+                Zellen = netto,
+                IstSumme = true
+            });
+
+            tafel.Spalten = spalten;
+            tafel.Zeilen = zeilen;
+            return tafel;
+        }
+
+        /// <summary>
+        /// Die Zeile unter der Überschrift der Gliederung: Barwert und Nominalsumme, der Zins
+        /// DIESES Szenarios und der Zeitraum. <c>""</c> ohne Gliederung.
+        /// </summary>
+        internal static string Unterzeile(Zahlungsgliederungen satz, string szenario,
+                                          IList<KeyValuePair<int, string>> staende, CultureInfo kultur)
+        {
+            if (satz == null || staende == null) return "";
+            foreach (KeyValuePair<int, string> s in staende)
+            {
+                Zahlungsgliederung g = satz.Von(s.Key, szenario);
+                if (g != null)
+                    return string.Format(kultur, MyResource.Resource.WIRT_GL_UNTER,
+                                         g.ZinsProzent.ToString("N1", kultur),
+                                         g.Jahre.ToString(CultureInfo.InvariantCulture));
+            }
+            return "";
+        }
+
+        /// <summary>Die leise Zeile unter dem Namen eines Bestandteils; <c>""</c> = keine.</summary>
+        private static string Unterschrift(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case Zahlungsgliederung.INVESTITION: return MyResource.Resource.WIRT_GL_INVESTITION_UNTER;
+                case Zahlungsgliederung.ENERGIE: return MyResource.Resource.WIRT_GL_ENERGIE_UNTER;
+                case Zahlungsgliederung.ERLOESE: return MyResource.Resource.WIRT_GL_ERLOESE_UNTER;
+                default: return "";
+            }
+        }
+
+        /// <summary>Der Name eines Standes aus der Spaltenliste; <c>""</c>, wenn er dort fehlt.</summary>
+        private static string Name(IList<KeyValuePair<int, string>> staende, int id)
+        {
+            foreach (KeyValuePair<int, string> s in staende)
+                if (s.Key == id) return s.Value ?? "";
+            return "";
+        }
+
         /// <summary>Die Stände, für die es mindestens eine Tafel gibt — die Auswahl in Block 2.</summary>
         internal static List<(int Id, string Text)> Staende(IEnumerable<ZahlungsreihenTafel> tafeln,
                                                             IList<KeyValuePair<int, string>> staende)

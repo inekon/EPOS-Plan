@@ -16575,6 +16575,36 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_GL_RESTWERT" xml:space="preserve">
     <value>Restwert am Ende</value>
   </data>
+  <data name="WIRT_GL_NETTOBARWERT" xml:space="preserve">
+    <value>Nettobarwert</value>
+  </data>
+  <data name="WIRT_GL_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION_UNTER" xml:space="preserve">
+    <value>nach Zuschussabzug</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE_UNTER" xml:space="preserve">
+    <value>einschließlich CO₂-Abgabe</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE_UNTER" xml:space="preserve">
+    <value>zahlungswirksam — Block A</value>
+  </data>
+  <data name="WIRT_GL_TITEL" xml:space="preserve">
+    <value>Gliederung des Kapitalwerts — Szenario {0}</value>
+  </data>
+  <data name="WIRT_GL_UNTER" xml:space="preserve">
+    <value>Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a</value>
+  </data>
+  <data name="WIRT_GL_NOMINAL" xml:space="preserve">
+    <value>nominal {0}</value>
+  </data>
+  <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
+    <value>Differenz {0} − {1}</value>
+  </data>
+  <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
+    <value>Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen.</value>
+  </data>
   <data name="WIRT_ZR_STAND" xml:space="preserve">
     <value>Stand:</value>
   </data>

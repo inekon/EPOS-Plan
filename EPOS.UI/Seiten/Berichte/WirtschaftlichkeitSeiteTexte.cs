@@ -120,6 +120,12 @@ public sealed class WirtschaftlichkeitSeiteTexte
         "Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder "
         + "„Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine "
         + "Jahresreihen.");
+    /// <summary>WIRT_GL_NICHT_GERECHNET — an der Stelle der Gliederung des Kapitalwerts, solange
+    /// in dieser Sitzung kein Lauf Jahresreihen geliefert hat (ETAPPE E8a, U46).</summary>
+    public string GliederungNichtGerechnet { get; set; } = T("WIRT_GL_NICHT_GERECHNET",
+        "Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf "
+        + "(„Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine "
+        + "Jahresreihen.");
     /// <summary>WIRT_ZR_STAND — die Wahl des Standes in Block 2 (ETAPPE E8a).</summary>
     public string ZrStand { get; set; } = T("WIRT_ZR_STAND", "Stand:");
     /// <summary>WIRT_ZR_SZENARIO — die Wahl des Szenarios in Block 2 (ETAPPE E8a).</summary>

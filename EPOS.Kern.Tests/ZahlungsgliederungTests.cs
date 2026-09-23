@@ -329,6 +329,121 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  (4) U46 — Differenzspalte und Leitversion
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Differenz geht in der Kapitalwertdifferenz auf</b>: Bestandteil für
+        /// Bestandteil die Differenz der Barwerte und der Jahresbeträge; die Summe der
+        /// Barwertdifferenzen ist die Differenz der Kapitalwerte.
+        /// </summary>
+        [Fact]
+        public void Die_Differenz_geht_in_der_Kapitalwertdifferenz_auf()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            Zahlungsgliederung variante = satz.Von(901, ERWARTET), stamm = satz.Von(900, ERWARTET);
+
+            Zahlungsgliederung d = Zahlungsgliederung.Differenz(variante, stamm);
+
+            Assert.Equal(variante.Kapitalwert - stamm.Kapitalwert, d.Kapitalwert);
+            Assert.Equal(d.Kapitalwert, d.SummeBarwerte, 6);
+            Assert.True(d.Stimmig);
+            foreach (string s in Zahlungsgliederung.Reihenfolge)
+            {
+                Assert.Equal(variante.Bestandteil(s).Barwert - stamm.Bestandteil(s).Barwert, d.Bestandteil(s).Barwert);
+                for (int t = 0; t <= 20; t++)
+                    Assert.Equal(variante.Bestandteil(s).Wert(t) - stamm.Bestandteil(s).Wert(t), d.Bestandteil(s).Wert(t));
+            }
+            Assert.Null(Zahlungsgliederung.Differenz(variante, null));
+        }
+
+        /// <summary>
+        /// Die <b>Leitversion</b>: der Stand mit der größten Kapitalwertdifferenz im
+        /// Erwartungsfall — die anderen Szenarien zählen nicht, die Referenz nie; ohne
+        /// Differenz der erste Stand außer der Referenz. In Sicht 2 (Stände A, B, Referenz A)
+        /// ist es B.
+        /// </summary>
+        [Fact]
+        public void Die_Leitversion_ist_die_groesste_Differenz_im_Erwartungsfall()
+        {
+            var alle = new List<WirtschaftlichkeitErgebnis>
+            {
+                new WirtschaftlichkeitErgebnis { IdProjekt = 1, Szenario = ERWARTET, IstStamm = true },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 2, Szenario = ERWARTET, KapitalwertDiff = 500.0 },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 2, Szenario = BEST, KapitalwertDiff = 5000.0 },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 3, Szenario = ERWARTET, KapitalwertDiff = 900.0 },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 4, Szenario = ERWARTET, KapitalwertDiff = -100.0 }
+            };
+
+            Assert.Equal(3, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 2, 3, 4 }, 1));
+            Assert.Equal(2, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 2, 4 }, 1));
+            Assert.Equal(4, Zahlungsgliederungen.Leitversion(alle, new[] { 2, 4 }, 2));   // Sicht 2: A = 2, B = 4
+            Assert.Equal(5, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 5 }, 1));   // ohne Differenz: der erste
+            Assert.Equal(0, Zahlungsgliederungen.Leitversion(alle, new[] { 1 }, 1));
+            Assert.Equal(0, Zahlungsgliederungen.Leitversion(alle, null, 1));
+        }
+
+        /// <summary>
+        /// U46 in der Hülle: die Gliederung des Kapitalwerts — je Bestandteil und Stand der
+        /// Barwert und darunter die Nominalsumme (die Investition ohne, sie fließt im Jahr 0),
+        /// die Differenzspalte Leitversion − Referenz und der Nettobarwert. Die Differenzspalte
+        /// ergibt in der Summe die Kapitalwertdifferenz (bis auf die Rundung der Zellen).
+        /// </summary>
+        [Fact]
+        public void Die_Gliederung_der_Seite_traegt_Nominalsumme_und_Differenzspalte()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            var staende = new List<KeyValuePair<int, string>>
+            {
+                new KeyValuePair<int, string>(900, "Stamm"), new KeyValuePair<int, string>(901, "Variante")
+            };
+
+            ErgebnisMatrix m = ZahlungsreihenAnsicht.Bestandteile(satz, ERWARTET, staende, 900, 901, DE);
+
+            Assert.Equal(new[] { "Bestandteil", "Stamm", "Variante", "Differenz Variante − Stamm" }, m.Spalten.ToArray());
+            Assert.Equal(7, m.Zeilen.Count);
+            Assert.Equal("Investition I₀", m.Zeilen[0].Titel);
+            Assert.Equal("nach Zuschussabzug", m.Zeilen[0].Kennzeichen);
+            Assert.Equal("", m.Zeilen[0].Unterwert(1));                       // Investition ohne Nominalsumme
+            Zahlungsgliederung v = satz.Von(901, ERWARTET), s = satz.Von(900, ERWARTET);
+            for (int r = 1; r < 6; r++)
+            {
+                Zahlungsbestandteil b = v.Bestandteil(Zahlungsgliederung.Reihenfolge[r]);
+                Assert.Equal(b.Barwert.ToString(ZahlungsreihenAnsicht.GELD, DE), m.Zeilen[r].Zellen[1]);
+                Assert.Equal("nominal " + Math.Abs(b.Nominal).ToString("N0", DE), m.Zeilen[r].Unterwert(1));
+                Assert.StartsWith("nominal ", m.Zeilen[r].Unterwert(0));
+                Assert.Equal("", m.Zeilen[r].Unterwert(2));                   // die Differenzspalte ohne
+            }
+
+            MatrixZeile netto = m.Zeilen[6];
+            Assert.True(netto.IstSumme);
+            Assert.Equal("Nettobarwert", netto.Titel);
+            double dkw = v.Kapitalwert - s.Kapitalwert;
+            Assert.Equal(dkw.ToString(ZahlungsreihenAnsicht.GELD, DE), netto.Zellen[2]);
+
+            // Die Differenzspalte geht in der Kapitalwertdifferenz auf.
+            double summe = 0;
+            for (int r = 0; r < 6; r++) summe += Betrag(m.Zeilen[r].Zellen[2]);
+            Assert.True(Math.Abs(summe - Math.Round(dkw)) <= 3, "Summe " + summe + " statt " + dkw);
+
+            // Ohne Leitversion keine Differenzspalte; ein Stand ohne Gliederung trägt „—".
+            ErgebnisMatrix ohne = ZahlungsreihenAnsicht.Bestandteile(satz, ERWARTET, staende, 900, 0, DE);
+            Assert.Equal(3, ohne.Spalten.Count);
+            var mitFremdem = new List<KeyValuePair<int, string>>(staende) { new KeyValuePair<int, string>(999, "Fremd") };
+            ErgebnisMatrix fremd = ZahlungsreihenAnsicht.Bestandteile(satz, ERWARTET, mitFremdem, 900, 901, DE);
+            Assert.Equal("—", fremd.Zeilen[1].Zellen[2]);
+            Assert.Empty(ZahlungsreihenAnsicht.Bestandteile(null, ERWARTET, staende, 900, 901, DE).Zeilen);
+            Assert.Contains("i = 3,0 %", ZahlungsreihenAnsicht.Unterzeile(satz, ERWARTET, staende, DE));
+            Assert.Contains("i = 4,0 %", ZahlungsreihenAnsicht.Unterzeile(satz, WORST, staende, DE));
+        }
+
+        /// <summary>Ein Betrag der Seite („+1.234", „−567", „0") als Zahl.</summary>
+        private static double Betrag(string text)
+            => double.Parse(text.Replace("−", "-").Replace("+", ""), NumberStyles.Number, DE);
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

@@ -122,6 +122,18 @@ public sealed class MatrixZeile
     /// ab; gerechnet ist sie in der Hülle.
     /// </summary>
     public bool IstSumme { get; set; }
+
+    /// <summary>
+    /// ETAPPE E8a (U46): je Zelle eine leise zweite Zeile unter dem Wert — in der Gliederung
+    /// des Kapitalwerts die Nominalsumme unter dem Barwert („nominal 48.000"). Leer oder
+    /// kürzer als <see cref="Zellen"/> = keine.
+    /// </summary>
+    public IReadOnlyList<string> Unterwerte { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die zweite Zeile der Zelle <paramref name="spalte"/>; <c>""</c> = keine.</summary>
+    public string Unterwert(int spalte)
+        => Unterwerte is not null && spalte >= 0 && spalte < Unterwerte.Count
+           ? Unterwerte[spalte] ?? "" : "";
 }
 
 /// <summary>
@@ -341,8 +353,24 @@ public sealed class ErgebnisAnsicht
     public Zeichenmodell? Spannenbild { get; set; }
 
     // =====================================================================
-    // ETAPPE E8a — Zahlungsreihen (Block 2)
+    // ETAPPE E8a — Gliederung des Kapitalwerts (U46) und Zahlungsreihen (Block 2)
     // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E8a (U46, Mockup „Woraus entsteht die Zahl?"): die <b>Gliederung des
+    /// Kapitalwerts</b> im GEWÄHLTEN Szenario — je Bestandteil (Investition, Betriebskosten,
+    /// Energiekosten, Erlöse, Ersatzbeschaffungen, Restwert) und Stand der Barwert, darunter
+    /// die Nominalsumme (<see cref="MatrixZeile.Unterwerte"/>), als letzte Spalte
+    /// „Differenz ‹Leitversion› − Referenz", als letzte Zeile der Nettobarwert; die
+    /// Differenzspalte geht in der Kapitalwertdifferenz auf. Leer = keine Jahresreihen.
+    /// </summary>
+    public ErgebnisMatrix Bestandteile { get; set; } = new();
+
+    /// <summary>Die Überschrift der Gliederung („Gliederung des Kapitalwerts — Szenario Erwartet").</summary>
+    public string BestandteileTitel { get; set; } = "";
+
+    /// <summary>Die Zeile darunter: Barwert und Nominalsumme, Zins und Zeitraum.</summary>
+    public string BestandteileUnterzeile { get; set; } = "";
 
     /// <summary>
     /// ETAPPE E8a (ValERI-Block 2): die Zahlungsreihen je Stand und Szenario — aus den

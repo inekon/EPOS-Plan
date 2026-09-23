@@ -819,6 +819,19 @@ namespace WindowsFormsApplication1
             ansicht.Zahlungsstaende = ZahlungsreihenAnsicht.Staende(ansicht.Zahlungsreihen, staendeSpalten);
             ansicht.Zahlungshinweis = ZahlungsreihenAnsicht.Hinweis(gliederungen, staendeSpalten, kultur);
 
+            // ETAPPE E8a (U46): die Gliederung des Kapitalwerts im GEWÄHLTEN Szenario — Barwert
+            // und Nominalsumme je Bestandteil, die Differenzspalte Leitversion − Referenz. Sie
+            // steht unter der Szenario-Klappliste und folgt ihr (SzenarioTeileUebernehmen).
+            ansicht.Bestandteile = ZahlungsreihenAnsicht.Bestandteile(gliederungen, szenario, staendeSpalten,
+                                                                      idReferenz, ansicht.Leitversion, kultur);
+            if (ansicht.Bestandteile.Zeilen.Count > 0)
+            {
+                ansicht.BestandteileTitel = string.Format(kultur, MyResource.Resource.WIRT_GL_TITEL,
+                    SzenarioAnzeige(Math.Max(0, Array.IndexOf(SZENARIEN, szenario))));
+                ansicht.BestandteileUnterzeile = ZahlungsreihenAnsicht.Unterzeile(gliederungen, szenario,
+                                                                                  staendeSpalten, kultur);
+            }
+
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
             for (int i = 0; i < spaltenErg.Count; i++)
             {

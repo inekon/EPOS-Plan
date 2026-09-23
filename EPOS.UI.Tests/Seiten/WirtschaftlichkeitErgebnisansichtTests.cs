@@ -468,6 +468,136 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     // =====================================================================
+    //  U46 — die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E8a (U46): In „Woraus entsteht die Zahl?" steht ZUERST die Gliederung des
+    /// Kapitalwerts — <b>je Bestandteil Barwert und Nominalsumme</b> (die Investition ohne:
+    /// sie fließt im Jahr 0), als letzte Spalte die Differenz Leitversion − Referenz, als
+    /// letzte Zeile der Nettobarwert. <b>Die Differenzspalte ergibt in der Summe die
+    /// Kapitalwertdifferenz.</b>
+    /// </summary>
+    [Fact]
+    public void Die_Gliederung_traegt_je_Bestandteil_Barwert_und_Nominalsumme_und_die_Differenzspalte()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        stand.Ansicht.BestandteileTitel = "Gliederung des Kapitalwerts — Szenario Erwartet";
+        stand.Ansicht.BestandteileUnterzeile = "Barwert, darunter die Nominalsumme · i = 3,0 % · T = 20 a";
+        var cut = Zeige(stand);
+
+        IElement woraus = Abschnitt(cut, 2);
+        IElement tafel = woraus.QuerySelector(".epos-wirt-bestandteile")!;
+        Assert.Contains("Gliederung des Kapitalwerts — Szenario Erwartet", woraus.QuerySelector(".epos-untergruppe")!.TextContent);
+        // Sie steht VOR der Zeilentafel.
+        Assert.True(cut.Markup.IndexOf("epos-wirt-bestandteile", StringComparison.Ordinal) <
+                    cut.Markup.IndexOf("epos-wirt-gliederung", StringComparison.Ordinal));
+        Assert.Equal(new[] { "Bestandteil", "Stamm", "WP klein", "BHKW", "Differenz WP klein − Stamm" },
+                     tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray());
+
+        IReadOnlyList<IElement> zeilen = tafel.QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal(7, zeilen.Count);
+        for (int r = 0; r < 6; r++)
+        {
+            IReadOnlyList<IElement> zellen = zeilen[r].QuerySelectorAll("td").ToList();
+            for (int s = 0; s < 3; s++)                                          // je Stand
+            {
+                IElement? nominal = zellen[s].QuerySelector(".epos-wirt-nominal");
+                if (r == 0) Assert.Null(nominal);                               // Investition: Jahr 0
+                else Assert.StartsWith("nominal ", nominal!.TextContent);
+                Assert.False(string.IsNullOrWhiteSpace(Barwert(zellen[s])));
+            }
+            Assert.Null(zellen[3].QuerySelector(".epos-wirt-nominal"));         // Differenzspalte ohne
+        }
+        Assert.Contains("epos-wirt-summenzeile", zeilen[6].ClassList);
+        Assert.Equal("Nettobarwert", zeilen[6].QuerySelector("th")!.TextContent.Trim());
+
+        // Die Differenzspalte ergibt in der Summe die Kapitalwertdifferenz.
+        double summe = 0;
+        for (int r = 0; r < 6; r++) summe += Zahl(Barwert(zeilen[r].QuerySelectorAll("td")[3]));
+        Assert.Equal(Zahl(Barwert(zeilen[6].QuerySelectorAll("td")[3])), summe);
+        Assert.Equal(12300.0, summe);
+    }
+
+    /// <summary>
+    /// Die Gliederung folgt der Szenario-Klappliste wie die Tafel darunter; ohne Jahresreihen
+    /// steht an ihrer Stelle eine benannte Zeile, und die Zeilentafel bleibt.
+    /// </summary>
+    [Fact]
+    public void Die_Gliederung_folgt_der_Klappliste_und_nennt_ihr_Fehlen()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        var cut = Zeige(stand, p => p.Add(x => x.Anzeigen, (int id) =>
+        {
+            ErgebnisAnsicht neu = VolleAnsicht();
+            neu.Bestandteile = Bestandteile("−66.000");
+            neu.BestandteileTitel = "Gliederung des Kapitalwerts — Szenario Ungünstig";
+            return neu;
+        }));
+
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+
+        IElement woraus = Abschnitt(cut, 2);
+        Assert.Contains("Szenario Ungünstig", woraus.QuerySelector(".epos-untergruppe")!.TextContent);
+        Assert.Equal("−66.000", Barwert(woraus.QuerySelectorAll(".epos-wirt-bestandteile tbody tr")[0]
+                                              .QuerySelectorAll("td")[1]));
+
+        var ohne = Zeige();
+        IElement leer = Abschnitt(ohne, 2);
+        Assert.Empty(leer.QuerySelectorAll(".epos-wirt-bestandteile"));
+        Assert.Contains(leer.QuerySelectorAll(".epos-herleitung-text"),
+                        e => e.TextContent.StartsWith("Die Gliederung nach Barwert und Nominalsumme"));
+        Assert.NotNull(leer.QuerySelector(".epos-wirt-gliederung"));
+    }
+
+    /// <summary>
+    /// Eine Probegliederung: Stamm, WP klein und BHKW, die Differenz WP klein − Stamm geht in
+    /// +12.300 auf. <paramref name="investitionWp"/> ist der Barwert der Investition von WP klein.
+    /// </summary>
+    private static ErgebnisMatrix Bestandteile(string investitionWp) => new ErgebnisMatrix
+    {
+        Spalten = new[] { "Bestandteil", "Stamm", "WP klein", "BHKW", "Differenz WP klein − Stamm" },
+        Zeilen = new[]
+        {
+            new MatrixZeile { Titel = "Investition I₀", Kennzeichen = "nach Zuschussabzug",
+                              Zellen = new[] { "0", investitionWp, "−90.000", "−60.000" },
+                              Unterwerte = new[] { "", "", "", "" } },
+            new MatrixZeile { Titel = "Betriebskosten",
+                              Zellen = new[] { "−10.000", "−14.000", "−12.000", "−4.000" },
+                              Unterwerte = new[] { "nominal 12.000", "nominal 17.000", "nominal 15.000", "" } },
+            new MatrixZeile { Titel = "Energiekosten", Kennzeichen = "einschließlich CO₂-Abgabe",
+                              Zellen = new[] { "−150.000", "−80.000", "−100.000", "+70.000" },
+                              Unterwerte = new[] { "nominal 190.000", "nominal 100.000", "nominal 125.000", "" } },
+            new MatrixZeile { Titel = "Erlöse", Kennzeichen = "zahlungswirksam — Block A",
+                              Zellen = new[] { "0", "+3.000", "+20.000", "+3.000" },
+                              Unterwerte = new[] { "nominal 0", "nominal 4.000", "nominal 26.000", "" } },
+            new MatrixZeile { Titel = "Ersatzbeschaffungen",
+                              Zellen = new[] { "0", "−2.000", "−5.000", "−2.000" },
+                              Unterwerte = new[] { "nominal 0", "nominal 3.000", "nominal 8.000", "" } },
+            new MatrixZeile { Titel = "Restwert am Ende",
+                              Zellen = new[] { "0", "+5.300", "+4.000", "+5.300" },
+                              Unterwerte = new[] { "nominal 0", "nominal 9.600", "nominal 7.200", "" } },
+            new MatrixZeile { Titel = "Nettobarwert", IstSumme = true,
+                              Zellen = new[] { "−160.000", "−147.700", "−183.000", "+12.300" } }
+        }
+    };
+
+    /// <summary>Der Barwert einer Zelle — ihr Text ohne die Zeile „nominal …".</summary>
+    private static string Barwert(IElement zelle)
+    {
+        string text = zelle.TextContent;
+        IElement? nominal = zelle.QuerySelector(".epos-wirt-nominal");
+        if (nominal is not null) text = text.Replace(nominal.TextContent, "");
+        return text.Trim();
+    }
+
+    /// <summary>Ein Betrag der Seite („+1.234", „−567", „0") als Zahl.</summary>
+    private static double Zahl(string text)
+        => double.Parse(text.Replace("−", "-").Replace("+", ""), NumberStyles.Number, CultureInfo.GetCultureInfo("de-DE"));
+
+    // =====================================================================
     //  V‑A — Sensitivität mit Steigung
     // =====================================================================
 

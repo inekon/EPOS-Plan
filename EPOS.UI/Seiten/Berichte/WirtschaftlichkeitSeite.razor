@@ -302,6 +302,13 @@
         @* ------------------------------------- 3 · Woraus entsteht die Zahl? *@
         <Gruppenkopf Titel="@Texte.AbsWoraus">
             <KindInhalt>
+                @* ETAPPE E8a (U46, Mockup "Woraus entsteht die Zahl?"): ZUERST die
+                   Gliederung des Kapitalwerts - je Bestandteil der Barwert mit der
+                   Nominalsumme darunter und die Differenzspalte Leitversion - Referenz, die
+                   in der Kapitalwertdifferenz aufgeht. Sie folgt der Szenario-Klappliste
+                   wie die Tafel darunter. *@
+                @Bestandteilteil
+
                 @* Die Gliederungstafeln der Zeilendefinition (Investition, Betrieb,
                    Energie, Erloesrubrik, Ersatz und Restwert, Nettobarwert) im GEWAEHLTEN
                    Szenario - ohne die Kennzahlen, die in Abschnitt 1 stehen - und darunter
@@ -1216,6 +1223,10 @@
         if (neu is null) return;
         _stand.Ansicht.Matrix = neu.Matrix ?? new ErgebnisMatrix();
         _stand.Ansicht.Szenariozeile = neu.Szenariozeile ?? "";
+        // ETAPPE E8a (U46): die Gliederung des Kapitalwerts steht unter der Klappliste.
+        _stand.Ansicht.Bestandteile = neu.Bestandteile ?? new ErgebnisMatrix();
+        _stand.Ansicht.BestandteileTitel = neu.BestandteileTitel ?? "";
+        _stand.Ansicht.BestandteileUnterzeile = neu.BestandteileUnterzeile ?? "";
     }
 
     // =====================================================================
@@ -1410,6 +1421,70 @@
         {
             <p class="epos-untergruppe">@Texte.SensitivitaetTitel</p>
             @Tafel(_stand.Ansicht.Sensitivitaet, "epos-raster epos-wirt-tafel epos-wirt-sensitivitaet", false, 0)
+        }
+    </div>;
+
+    /// <summary>
+    /// ETAPPE E8a (U46, Mockup „Woraus entsteht die Zahl?"): die <b>Gliederung des
+    /// Kapitalwerts</b> — sechs Bestandteile und der Nettobarwert, je Stand der Barwert mit
+    /// der Nominalsumme darunter, als letzte Spalte die Differenz Leitversion − Referenz. Die
+    /// Zahlen stammen aus den Zahlungsbildern des Laufs dieser Sitzung; ohne sie steht eine
+    /// benannte Zeile, und die Zeilentafel darunter bleibt, wie sie ist.
+    /// </summary>
+    private RenderFragment Bestandteilteil => @<div class="epos-wirt-bestandteile-teil">
+        @if (_stand.Ansicht.Bestandteile.Zeilen.Count > 0)
+        {
+            ErgebnisMatrix m = _stand.Ansicht.Bestandteile;
+            <p class="epos-untergruppe">@_stand.Ansicht.BestandteileTitel</p>
+            @if (!string.IsNullOrEmpty(_stand.Ansicht.BestandteileUnterzeile))
+            {
+                <Herleitungszeile Text="@_stand.Ansicht.BestandteileUnterzeile" />
+            }
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-matrix epos-wirt-bestandteile">
+                    <thead>
+                        <tr>
+                            @foreach (string kopf in m.Spalten)
+                            {
+                                <th scope="col">@kopf</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (MatrixZeile z in m.Zeilen)
+                        {
+                            <tr class="@Zeilenklasse(z, false)">
+                                <th scope="row" class="epos-matrix-titel">
+                                    @z.Titel
+                                    @if (!string.IsNullOrEmpty(z.Kennzeichen))
+                                    {
+                                        <span class="epos-wirt-kennzeichen">@z.Kennzeichen</span>
+                                    }
+                                </th>
+                                @for (int i = 0; i < z.Zellen.Count; i++)
+                                {
+                                    string unter = z.Unterwert(i);
+                                    <td class="epos-matrix-zelle">
+                                        @z.Zellen[i]
+                                        @if (unter.Length > 0)
+                                        {
+                                            <span class="epos-wirt-nominal">@unter</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <Herleitungszeile Text="@Texte.GliederungNichtGerechnet" />
+        }
+        @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
+        {
+            <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
         }
     </div>;
 
