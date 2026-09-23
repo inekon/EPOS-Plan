@@ -220,6 +220,59 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Eine Regel, zwei Stellen</b> (Kühlkonzept 8.1, KU1 Welle 3): Der Gebäudedialog prüft
+        /// den Kühlsollwert gegen <see cref="Gebaeudemodellvorgaben.HoechsterHeizsollwert"/>, der
+        /// Löser gegen das Maximum des gerechneten Sollwertfahrplans. Für dieselben Eingaben sind
+        /// beide Zahlen gleich — Tag, Nacht, ein unwirksamer und ein wirksamer Wochenendsollwert,
+        /// Ferien mit und ohne Fahrplan —, und der Löser bricht genau dann ab, wenn der Dialog
+        /// meldet.
+        /// </summary>
+        [Theory]
+        [InlineData(20.0, 18.0, 0.0, 0.0, false)]
+        [InlineData(20.0, 18.0, 22.0, 0.0, false)]
+        [InlineData(19.0, 21.0, 4.0, 0.0, false)]
+        [InlineData(20.0, 18.0, 0.0, 23.0, true)]
+        [InlineData(20.0, 18.0, 0.0, 23.0, false)]
+        public void Der_Dialog_prueft_den_Kuehlsollwert_mit_der_Regel_des_Loesers(
+            double tag, double nacht, double wochenende, double ferien, bool mitFerien)
+        {
+            ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
+            g.Raumsolltemperatur_Tag = tag;
+            g.Raumsolltemperatur_Nachtabsenkung = nacht;
+            g.Raumsolltemperatur_Wochenende = wochenende;
+            g.Raumsolltemperatur_Ferien = ferien;
+            g.Maximaleraumtemperatur = 27.0;
+            if (mitFerien)
+            {
+                g.Ferien = 1.0;
+                g.Ferienbeginn_3 = 190.0;
+                g.Ferienende_3 = 230.0;
+            }
+
+            GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(
+                g, KLIMA, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
+                GebaeudeKlimaweg.ZEITBEZUG_VORGABE, false);
+            bool ferienAktiv = e.Ferientage.Any(t => t);
+            double fahrplan = e.ThetaSoll.Max();
+            double dialog = Gebaeudemodellvorgaben.HoechsterHeizsollwert(tag, nacht, wochenende, ferien, ferienAktiv);
+            Assert.Equal(fahrplan, dialog);
+            Assert.Equal(mitFerien, ferienAktiv);
+
+            // Genau an der Grenze: gerade erlaubt, knapp darunter ein benannter Abbruch.
+            double grenze = dialog + Gebaeudemodellvorgaben.KuehlsollwertAbstand;
+            Rechnen(Mit(g, grenze), true);
+            var ex = Assert.Throws<GebaeudeModellException>(() => Rechnen(Mit(g, grenze - 0.1), true));
+            Assert.Equal(GebaeudeModellFehler.KuehlsollwertUnterHeizsollwert, ex.Grund);
+
+            static ProjektGebaeudeModel Mit(ProjektGebaeudeModel quelle, double soll)
+            {
+                quelle.Kuehlung_Aktiv = true;
+                quelle.Kuehl_Sollwert = soll;
+                return quelle;
+            }
+        }
+
         /// <summary>3.2, 8.5: Die harte Prüfregel nennt beide Werte und bricht benannt ab.</summary>
         [Fact]
         public void Ein_Kuehlsollwert_unter_Heizsollwert_plus_1_K_bricht_benannt_ab()

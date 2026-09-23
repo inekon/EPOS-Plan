@@ -635,6 +635,7 @@ namespace WindowsFormsApplication1
                 Betriebsart = _bhkwBetriebsart,
                 UntersteLeistungsgrenze = _grenzleistungBhkw,
                 Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
         }
@@ -669,9 +670,14 @@ namespace WindowsFormsApplication1
                             ? "%" : m.m_szNetzverlusteEinheit,
                         Betriebsart = _bhkwBetriebsart,
                         UntersteLeistungsgrenze = _grenzleistungBhkw,
-                        Bereitschaft = m.m_Kessel_Betriebsbereitschaft
+                        Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                        Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt)
                     };
                 },
+                // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
+                // Projekteinstellung. Er liest die Programmeinstellung nicht; ohne
+                // Einstellungssatz legt „ein" den Vormerksatz an (KonfigurationCtrl).
+                KuehlbetriebSchreiben = an => KonfigurationCtrl.KuehlbetriebSetzen(m_ID_Projekt, an),
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;

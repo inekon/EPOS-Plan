@@ -1195,4 +1195,223 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Assert.Equal(TYPEN[1], cut.Instance.Arbeitsstand.Typ);
     }
+
+    // =================================================================================
+    // Stufe KU1 — die Gruppe „Kühlung" (Kühlkonzept 8.1, 8.6 Maske 2; E20, E31)
+    // =================================================================================
+
+    /// <summary>Die Herleitungszeilen der Gruppe „Kühlung" als Text.</summary>
+    private static string Kuehlgruppe(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.Find("div.gebk-kuehlung").TextContent;
+
+    /// <summary>
+    /// Die Gruppe steht im ersten Reiter UNTER dem Rechenweg; der Haken „Gebäude wird gekühlt"
+    /// steht immer da, Sollwert und Grenze erst mit dem Haken. Die Herleitungszeile nennt ohne
+    /// Haken die Maximalraumtemperatur, an der die Überhitzung informativ bleibt, und eine
+    /// zweite Zeile, dass die Projekteinstellung gilt.
+    /// </summary>
+    [Fact]
+    public void Die_Gruppe_Kuehlung_steht_unter_dem_Rechenweg_mit_dem_Haken()
+    {
+        var cut = Aufbauen();
+
+        string markup = cut.Markup;
+        int rechenweg = markup.IndexOf(">Rechenweg<", StringComparison.Ordinal);
+        int kuehlung = markup.IndexOf(">Kühlung<", StringComparison.Ordinal);
+        Assert.True(rechenweg > 0 && kuehlung > rechenweg, "Die Gruppe „Kühlung“ steht unter dem Rechenweg.");
+
+        IElement haken = Kaestchen(cut, "Gebäude wird gekühlt");
+        Assert.False(haken.HasAttribute("checked"));
+        Assert.False(haken.HasAttribute("disabled"));
+        Assert.DoesNotContain("Kühlsollwert :", markup);
+        Assert.DoesNotContain("Kühlleistungsgrenze :", markup);
+
+        Assert.Contains("Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur 24,0 °C.",
+                        Kuehlgruppe(cut));
+        Assert.Contains("Projekteinstellung „Kühlung rechnen“", Kuehlgruppe(cut));
+        Assert.Equal(cut.Instance.Kuehlungszeile, cut.FindAll("div.gebk-kuehlung .epos-herleitung")
+                                                     .Select(z => z.TextContent.Trim()).First());
+    }
+
+    /// <summary>
+    /// Mit Haken: Kühlsollwert und Kühlleistungsgrenze mit ihrer Vorgabe als Platzhalter
+    /// („Kühlung aus", „unbegrenzt") — und die Herleitungszeile nennt die Prüfregel mit dem
+    /// höchsten Heizsollwert des Satzes (Tag 20 °C, Nacht 17 °C).
+    /// </summary>
+    [Fact]
+    public void Mit_Haken_stehen_Sollwert_und_Grenze_mit_ihrer_Vorgabe()
+    {
+        var cut = Aufbauen();
+
+        Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
+
+        Assert.Equal("Vorgabe: Kühlung aus", Eingabe(cut, "Kühlsollwert :").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: unbegrenzt", Eingabe(cut, "Kühlleistungsgrenze :").GetAttribute("placeholder"));
+        Assert.Equal("", Eingabe(cut, "Kühlsollwert :").GetAttribute("value") ?? "");
+        Assert.Contains("mindestens 1 K über dem höchsten Heizsollwert liegen (20,0 °C)", Kuehlgruppe(cut));
+        Assert.Contains("Maximalraumtemperatur (24,0 °C)", Kuehlgruppe(cut));
+    }
+
+    /// <summary>
+    /// NULL-Verhalten: Leere Felder schreiben NULL, nicht die Vorgabe; gesetzte Felder ihren
+    /// Wert. Der Nachtwert (Stufe KU3) steht nicht in der Maske und reist unverändert mit.
+    /// </summary>
+    [Fact]
+    public void Leere_Kuehlfelder_speichern_NULL_und_der_Nachtwert_reist_mit()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        GebaeudeKatalogDaten daten = Satz();
+        daten.KuehlSollwertNacht = 28;
+        var cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        Assert.DoesNotContain("Nacht", Kuehlgruppe(cut));
+        Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
+        Ok(cut);
+
+        Assert.True(geschrieben.KuehlungAktiv);
+        Assert.Null(geschrieben.KuehlSollwert);
+        Assert.Null(geschrieben.KuehlleistungMax);
+        Assert.Equal(28.0, geschrieben.KuehlSollwertNacht);
+    }
+
+    [Fact]
+    public void Gesetzte_Kuehlfelder_speichern_ihren_Wert()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
+        Eingabe(cut, "Kühlsollwert :").Input("26");
+        Eingabe(cut, "Kühlleistungsgrenze :").Input("12,5");
+        Ok(cut);
+
+        Assert.True(geschrieben.KuehlungAktiv);
+        Assert.Equal(26.0, geschrieben.KuehlSollwert);
+        Assert.Equal(12.5, geschrieben.KuehlleistungMax);
+    }
+
+    /// <summary>
+    /// Die Prüfregel des Lösers, schon im OK-Weg: Der Kühlsollwert muss mindestens 1 K über dem
+    /// HÖCHSTEN Heizsollwert liegen — ein wirksamer Wochenendsollwert zählt mit (Fahrplan des
+    /// Stundenmodells). Die Meldung nennt beide Werte, geschrieben wird nichts.
+    /// </summary>
+    [Fact]
+    public void Ein_Kuehlsollwert_ohne_1_K_Abstand_zum_hoechsten_Heizsollwert_meldet_beim_OK()
+    {
+        bool geschrieben = false;
+        GebaeudeKatalogDaten daten = Satz();
+        daten.WochenendAbsenkung = 22;
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 22.5;
+        var cut = Aufbauen(daten, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        Ok(cut);
+
+        Assert.False(geschrieben);
+        Assert.Contains("Der Kühlsollwert 22,5 °C liegt nicht mindestens 1 K über dem höchsten Heizsollwert 22,0 °C",
+                        cut.Instance.Meldung);
+        Assert.Contains("(22,0 °C)", Kuehlgruppe(cut));
+
+        Eingabe(cut, "Kühlsollwert :").Input("23");
+        Ok(cut);
+        Assert.True(geschrieben);
+    }
+
+    /// <summary>
+    /// Die Plausibilitätsgrenzen 15 … 35 °C: Getippt färbt ein Wert außerhalb das Feld (und
+    /// wird nicht übernommen); ein gespeicherter Wert außerhalb meldet beim OK.
+    /// </summary>
+    [Fact]
+    public void Ein_Kuehlsollwert_ausserhalb_15_bis_35_faerbt_oder_meldet()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 40;
+        var cut = Aufbauen(daten);
+
+        Ok(cut);
+        Assert.Contains("zwischen 15 und 35 °C", cut.Instance.Meldung);
+
+        Eingabe(cut, "Kühlsollwert :").Input("36");
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Kühlsollwert :").ClassName);
+        Assert.Equal(40.0, cut.Instance.Arbeitsstand.KuehlSollwert);
+    }
+
+    /// <summary>
+    /// Wer den Haken wieder abnimmt, blendet Sollwert und Grenze aus — eine Fehleingabe darin
+    /// hält den OK-Weg dann nicht mehr an; die Werte selbst bleiben im Arbeitsstand.
+    /// </summary>
+    [Fact]
+    public void Ohne_Haken_haelt_eine_Fehleingabe_im_ausgeblendeten_Feld_nicht_an()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        GebaeudeKatalogDaten daten = Satz();
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 26;
+        var cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        Eingabe(cut, "Kühlleistungsgrenze :").Input("0");
+        Kaestchen(cut, "Gebäude wird gekühlt").Change(false);
+        Ok(cut);
+
+        Assert.NotNull(geschrieben);
+        Assert.False(geschrieben.KuehlungAktiv);
+        Assert.Equal(26.0, geschrieben.KuehlSollwert);
+    }
+
+    /// <summary>
+    /// <b>Bestandsweg-Gebäude (E20; 8.6, erster Zusatzfall)</b> — der Wächter gegen einen
+    /// Rückfall auf U2: Die Gruppe ist SICHTBAR und BEARBEITBAR, trägt die Herleitungszeile
+    /// „Tagesbilanz (Bestandsweg) liefert keine Kühllast", und KEIN Feld ist gesperrt. Auf
+    /// VDI 6007 fehlt die Zeile. Der Fall steht in der Löschliste der Stufe GA.
+    /// </summary>
+    [Fact]
+    public void Ein_Bestandsweg_Gebaeude_zeigt_die_Gruppe_bearbeitbar_mit_Hinweis()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 26;
+        var cut = Aufbauen(daten);
+
+        const string HINWEIS = "Tagesbilanz (Bestandsweg) liefert keine Kühllast";
+        Assert.Contains(HINWEIS, Kuehlgruppe(cut));
+        Assert.False(Kaestchen(cut, "Gebäude wird gekühlt").HasAttribute("disabled"));
+        Assert.False(Eingabe(cut, "Kühlsollwert :").HasAttribute("disabled"));
+        Assert.False(Eingabe(cut, "Kühlleistungsgrenze :").HasAttribute("disabled"));
+        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+
+        Klappliste(cut, "Rechenweg :").Change("0");       // VDI 6007
+        Assert.DoesNotContain(HINWEIS, Kuehlgruppe(cut));
+        Assert.NotNull(Eingabe(cut, "Kühlsollwert :"));
+    }
+
+    /// <summary>Der Assistent liest und setzt die drei Kühlfelder über den Arbeitsstand.</summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Kuehlfelder()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang aktiv =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "kuehlung_aktiv");
+        WindowsFormsApplication1.KiFeldzugang soll =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "kuehl_sollwert");
+        WindowsFormsApplication1.KiFeldzugang grenze =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "kuehlleistung_max");
+        Assert.NotNull(aktiv);
+        Assert.NotNull(soll);
+        Assert.NotNull(grenze);
+        Assert.Equal(false, aktiv.Lesen());
+        Assert.Null(soll.Lesen());
+
+        aktiv.Setzen(true);
+        soll.Setzen(26.0);
+        grenze.Setzen(8.0);
+        cut.Render();
+
+        Assert.True(cut.Instance.Arbeitsstand.KuehlungAktiv);
+        Assert.Equal(26.0, cut.Instance.Arbeitsstand.KuehlSollwert);
+        Assert.Equal(8.0, cut.Instance.Arbeitsstand.KuehlleistungMax);
+        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+    }
 }

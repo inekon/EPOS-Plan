@@ -379,6 +379,88 @@ namespace EPOS.Kern.Tests
             Assert.False(KonfigurationCtrl.KuehlbetriebLesen(kopieAus));
         }
 
+        // =============================================================================
+        //  6 — Der Projektschalter der Oberfläche (Kühlkonzept 8.3, KU1 Welle 3)
+        // =============================================================================
+
+        /// <summary>
+        /// „Kühlung rechnen" schaltet ein Projekt MIT Einstellungssatz in beide Richtungen —
+        /// und fragt die Programmeinstellung dabei kein einziges Mal (sie setzt nur den
+        /// Anfangswert eines NEUEN Projekts, 8.3).
+        /// </summary>
+        [Fact]
+        public void Der_Projektschalter_schaltet_ein_Projekt_mit_Satz_in_beide_Richtungen()
+        {
+            if (!_db.Vorhanden) return;
+            var ablage = new MitzaehlendeEinstellungen();
+            Dienste.Einstellungen = ablage;
+            ablage.SchreibZahl(EinstellungenCtrl.SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG, 1);
+            Assert.Equal(1L, Saetze(REFERENZ));
+            Assert.False(KonfigurationCtrl.KuehlbetriebLesen(REFERENZ));
+
+            Assert.True(KonfigurationCtrl.KuehlbetriebSetzen(REFERENZ, true));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(REFERENZ));
+            Assert.False(KonfigurationCtrl.IstVormerksatz(Satz(REFERENZ)));
+
+            Assert.True(KonfigurationCtrl.KuehlbetriebSetzen(REFERENZ, false));
+            Assert.False(KonfigurationCtrl.KuehlbetriebLesen(REFERENZ));
+            Assert.Equal(1L, Saetze(REFERENZ));
+
+            Assert.Equal(0, ablage.Lesezugriffe(EinstellungenCtrl.SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG));
+        }
+
+        /// <summary>
+        /// Ein neues Projekt ohne Einstellungssatz: „aus" ist ohne Satz schon wahr und schreibt
+        /// nichts; „ein" legt den VORMERKSATZ an — sechs NULL-Plätze, für die Leser der
+        /// Konfiguration „kein Satz" — und das Speichern der Kaskade macht daraus den
+        /// Einstellungssatz, ohne den Schalter zu verlieren.
+        /// </summary>
+        [Fact]
+        public void Der_Projektschalter_legt_ohne_Satz_den_Vormerksatz_an()
+        {
+            if (!_db.Vorhanden) return;
+            int id = PerAssistentAnlegen("Kuehlprobe Schalter");
+            Assert.Equal(0L, Saetze(id));
+
+            Assert.True(KonfigurationCtrl.KuehlbetriebSetzen(id, false));
+            Assert.Equal(0L, Saetze(id));
+            Assert.False(KonfigurationCtrl.KuehlbetriebLesen(id));
+
+            Assert.True(KonfigurationCtrl.KuehlbetriebSetzen(id, true));
+            Assert.Equal(1L, Saetze(id));
+            Assert.True(KonfigurationCtrl.IstVormerksatz(Satz(id)));
+            Assert.Null(KonfigurationCtrl.LiesProjekt(id));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(id));
+
+            Assert.True(Kaskadendienste(id).Speichern());
+            Assert.False(KonfigurationCtrl.IstVormerksatz(Satz(id)));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(id));
+
+            Assert.False(KonfigurationCtrl.KuehlbetriebSetzen(0, true));
+        }
+
+        /// <summary>
+        /// Die Naht der Oberfläche: Die Ergebnishülle liest den Schalter in die Laufparameter und
+        /// schreibt ihn über denselben Weg (<c>KuehlbetriebSetzen</c>) — der Abschnitt „Kühlung"
+        /// der Simulationskonfiguration zeigt also den Stand der Datenbank.
+        /// </summary>
+        [Fact]
+        public void Die_Ergebnishuelle_liest_und_schreibt_den_Projektschalter()
+        {
+            if (!_db.Vorhanden) return;
+            SimulationErgebnisHuelle huelle =
+                SimulationErgebnisHuelle.Erzeugen(null, REFERENZ, new BedarfsZustand());
+            SimulationParameterDienste wege = huelle.ParameterGaben();
+            Assert.NotNull(wege.KuehlbetriebSchreiben);
+
+            Assert.False(wege.Laden().Kuehlbetrieb);
+            Assert.True(wege.KuehlbetriebSchreiben(true));
+            Assert.True(KonfigurationCtrl.KuehlbetriebLesen(REFERENZ));
+            Assert.True(wege.Laden().Kuehlbetrieb);
+            Assert.True(wege.KuehlbetriebSchreiben(false));
+            Assert.False(wege.Laden().Kuehlbetrieb);
+        }
+
         // -----------------------------------------------------------------------------
         //  Handgriffe
         // -----------------------------------------------------------------------------

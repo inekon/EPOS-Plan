@@ -8825,6 +8825,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_KAELTELAST {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_LEISTUNG {
@@ -9379,6 +9388,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_DECKUNG_JE_BEDARFSART {
             get {
                 return ResourceManager.GetString("CHART_TITEL_DECKUNG_JE_BEDARFSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_KAELTELAST_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -16943,6 +16961,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string GEBB_GRP_KAELTE {
+            get {
+                return ResourceManager.GetString("GEBB_GRP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
         /// </summary>
         public static string GEBB_GRP_KENNZAHLEN {
@@ -16961,6 +16988,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KAELTE_NICHT_GEKUEHLT {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KAELTE_NICHT_GEKUEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KAELTE_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KAELTE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KAELTE_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KAELTE_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Heizen und Kühlen: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_HEIZEN_UND_KUEHLEN {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_HEIZEN_UND_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Heizung: ähnelt.
         /// </summary>
         public static string GEBB_LBL_HEIZWAERME {
@@ -16970,7 +17033,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbedarf (informativ): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Kältelast ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_KAELTELAST_MAX {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_KAELTELAST_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbedarf: ähnelt.
         /// </summary>
         public static string GEBB_LBL_KUEHLBEDARF {
             get {
@@ -17128,6 +17200,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_TITEL {
             get {
                 return ResourceManager.GetString("GEBB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbegrenzt ähnelt.
+        /// </summary>
+        public static string GEBB_UNBEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_UNBEGRENZT", resourceCulture);
             }
         }
         
@@ -17461,6 +17542,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_GRP_KENNGROESSEN {
             get {
                 return ResourceManager.GetString("GEBK_GRP_KENNGROESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_KUEHLUNG", resourceCulture);
             }
         }
         
@@ -17879,6 +17969,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistungsgrenze : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLLEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLLEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude wird gekühlt ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLUNG_AKTIV {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLUNG_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlsollwert : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate : ähnelt.
         /// </summary>
         public static string GEBK_LBL_LUFTWECHSEL {
@@ -18186,6 +18303,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlleistungsgrenze muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert muss zwischen {0} und {1} °C liegen. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHLSOLLWERT_BEREICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHLSOLLWERT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHLSOLLWERT_HEIZUNG {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHLSOLLWERT_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate muss größer als 0 sein. ähnelt.
         /// </summary>
         public static string GEBK_MSG_LUFTWECHSEL {
@@ -18429,6 +18573,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: Kühlung aus ähnelt.
+        /// </summary>
+        public static string GEBK_VORGABE_KUEHLUNG_AUS {
+            get {
+                return ResourceManager.GetString("GEBK_VORGABE_KUEHLUNG_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: unbegrenzt ähnelt.
         /// </summary>
         public static string GEBK_VORGABE_UNBEGRENZT {
@@ -18470,6 +18623,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_FENSTER {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUNG_AN {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUNG_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUNG_AUS {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUNG_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUNG_BESTANDSWEG {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUNG_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration). ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUNG_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUNG_PROJEKT", resourceCulture);
             }
         }
         
@@ -29254,6 +29443,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_KELLERTEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_KELLERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte Kühlleistung des Stundenmodells in kW; leer = unbegrenzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken bleibt die Überhitzung informativ. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_SOLLWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_SOLLWERT_ERL", resourceCulture);
             }
         }
         
@@ -54186,11 +54402,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_WAERMEBEDARF {
             get {
                 return ResourceManager.GetString("SIMKONF_GRP_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für das ganze Projekt. Aus: Der Lauf rechnet keinen Kältebedarf; die Kühleingaben der Gebäude und die Lastgänge im Kanal Kühlung bleiben stehen, wirken aber nicht. Ein: Gekühlt wird jedes Gebäude, bei dem „Gebäude wird gekühlt“ gesetzt ist und das einen Kühlsollwert trägt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_KUEHLBETRIEB", resourceCulture);
             }
         }
         
@@ -54227,6 +54461,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_KASKADE_GEPFLEGT {
             get {
                 return ResourceManager.GetString("SIMKONF_KASKADE_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung rechnen ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projekteinstellung „Kühlung rechnen“ ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string SIMKONF_MSG_KUEHLBETRIEB_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_MSG_KUEHLBETRIEB_FEHLER", resourceCulture);
             }
         }
         

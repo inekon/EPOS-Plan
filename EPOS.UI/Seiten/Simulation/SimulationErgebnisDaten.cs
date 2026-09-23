@@ -203,6 +203,14 @@ public sealed class ParameterDaten
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
 
+    // ---- Kühlung (Stufe KU1, Kühlkonzept 8.3; K10, E27) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Kühlung rechnen" (<c>Tab_Einstellungen.Kuehlbetrieb</c>):
+    /// <c>true</c> = der Lauf rechnet den Kühlkanal. Ohne Einstellungssatz „aus".
+    /// </summary>
+    public bool Kuehlbetrieb;
+
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
     /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
@@ -219,7 +227,8 @@ public sealed class ParameterDaten
         Betriebsart = Betriebsart,
         UntersteLeistungsgrenze = UntersteLeistungsgrenze,
         Speicher = Speicher,
-        Bereitschaft = Bereitschaft
+        Bereitschaft = Bereitschaft,
+        Kuehlbetrieb = Kuehlbetrieb
     };
 }
 

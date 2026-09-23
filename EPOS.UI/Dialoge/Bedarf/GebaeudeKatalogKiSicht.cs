@@ -488,6 +488,30 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Satz is GebaeudeKatalogDaten d) d.Kellertemperatur = value; }
     }
 
+    /// <summary>
+    /// Wird das Gebäude gekühlt? (Stufe KU1) Wirkt nur mit Kühlsollwert und in einem Projekt mit
+    /// der Projekteinstellung „Kühlung rechnen".
+    /// </summary>
+    public bool KuehlungAktiv
+    {
+        get => Satz?.KuehlungAktiv ?? false;
+        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlungAktiv = value; }
+    }
+
+    /// <summary>Kühlsollwert in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert.</summary>
+    public double? KuehlSollwert
+    {
+        get => Satz?.KuehlSollwert;
+        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlSollwert = value; }
+    }
+
+    /// <summary>Größte Kühlleistung in kW; leer = unbegrenzt.</summary>
+    public double? KuehlleistungMax
+    {
+        get => Satz?.KuehlleistungMax;
+        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlleistungMax = value; }
+    }
+
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Satz?.Modell);
 
