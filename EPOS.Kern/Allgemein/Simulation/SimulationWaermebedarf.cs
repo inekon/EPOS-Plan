@@ -1069,6 +1069,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Eine KOPIE der 365 Kennzeichen „Wochenende oder Feiertag" des Kalenders, mit dem der
+        /// Generatorweg gerechnet hat — für die Vorschau des Zapfprofils, die daraus die Tagtypen
+        /// ihres Tagesgangs bildet (<c>Zapfkalender.Bilden</c>), ohne den Klimakalender ein
+        /// zweites Mal zu lesen. Nur lesend; die Reihe des Laufs bleibt unberührt.
+        /// </summary>
+        internal bool[] WochenendkennzeichenKopie() => (bool[])WE.Clone();
+
+        /// <summary>
         /// Weist die gerechnete Stundenreihe <see cref="brauchwasserwerte"/> [kWh] als
         /// Energiemenge <see cref="Waermebedarf_Brauchwasser"/> aus — <b>in MWh</b>, der
         /// Einheit, die dieses Feld führt.

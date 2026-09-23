@@ -74,6 +74,10 @@
     <!-- Etappe E6, Nachtrag E5b: das Spannenbild (Bandbreite je Version als Balken) -
          Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Spanne.cs" />
+
+    <!-- Zapfprofilgenerator Z1: die Vorschaubilder Tagesgang, Wochenprofil und
+         Jahresgang - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Zapfprofil.cs" />
   </ItemGroup>
 
   <ItemGroup>

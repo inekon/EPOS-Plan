@@ -21,7 +21,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Der Geltungsbereich</b> ist alles, was ein Bild BESTELLT, aber nicht
     /// malt: die Hüllen (<c>EPOS.UI.Daten</c>), die Oberfläche (<c>EPOS.UI</c>), die
     /// Hüllen der Windows-Schale (<c>WindowsFormsApplication1/Views</c>), die
-    /// Fachcontroller (<c>EPOS.Kern/Controller</c>) und die zwei Bildbauer des Kerns,
+    /// Fachcontroller (<c>EPOS.Kern/Controller</c>) und die drei Bildbauer des Kerns,
     /// die ihre Reihen selbst zusammenstellen (<c>PeakShavingBild</c>,
     /// <c>SpeicherBetriebsbild</c>).</para>
     ///
@@ -52,11 +52,12 @@ namespace EPOS.Kern.Tests
             "EPOS.Kern/Controller"
         };
 
-        /// <summary>Die zwei Bildbauer des Kerns, die ihre Reihen selbst zusammenstellen.</summary>
+        /// <summary>Die drei Bildbauer des Kerns, die ihre Reihen selbst zusammenstellen.</summary>
         private static readonly string[] Einzeldateien =
         {
             "EPOS.Kern/Allgemein/Bericht/PeakShavingBild.cs",
-            "EPOS.Kern/Allgemein/Bericht/SpeicherBetriebsbild.cs"
+            "EPOS.Kern/Allgemein/Bericht/SpeicherBetriebsbild.cs",
+            "EPOS.Kern/Allgemein/Bericht/ZapfprofilBilder.cs"
         };
 
         /// <summary>Bauordner — dort steht erzeugter Quelltext, kein Bestand.</summary>
@@ -75,7 +76,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// In den Hüllen, in der Oberfläche, in den Views der Windows-Schale, in den
-        /// Fachcontrollern und in den zwei Bildbauern des Kerns steht keine feste
+        /// Fachcontrollern und in den drei Bildbauern des Kerns steht keine feste
         /// Skia-Farbe mehr — jede Reihe nennt ihre Farbrolle.
         /// </summary>
         [Fact]
