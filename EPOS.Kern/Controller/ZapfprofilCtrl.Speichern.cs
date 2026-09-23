@@ -85,6 +85,11 @@ namespace WindowsFormsApplication1
     /// <see cref="ZapfprofilStand.Projekt"/> entsteht eine neue Projektzeile mit den Vorgaben der
     /// DDL, eine vorhandene behält ihre Größen.</para>
     ///
+    /// <para><b>Veraltet.</b> Jedes erfolgreiche Speichern setzt im selben Vorgang
+    /// <c>Tab_Projekt.Aenderungsdatum</c> (<see cref="MerkmalUebernahmeCtrl.MarkiereProjektGeaendert"/>):
+    /// Ein vorhandenes Simulationsergebnis gilt damit als veraltet. Eine Ablehnung schreibt nichts,
+    /// ein Rollback des Aufrufers nimmt die Marke mit zurück.</para>
+    ///
     /// <para><b>Katalogverweise.</b> Nutzungsart, Tagesgangsatz, Ausstattungsklasse, Bedarfstag
     /// und Gebäude müssen am Ziel stehen — das Gebäude im selben Projekt —, sonst die benannte
     /// Ablehnung; ebenso eine Projektgröße außerhalb ihrer Wertemenge (N8). Eine Katalogzeile wird
@@ -204,6 +209,14 @@ namespace WindowsFormsApplication1
                     Wohnungen = WohnungenSchreiben(v, idZone, z)
                 });
             }
+
+            // --- 4. Das Projekt als geändert markieren -------------------------------------------
+            // Zonen, Projektgrößen und die Weiche sind Eingangsgrößen der Simulation: Ein
+            // gespeichertes Ergebnis ist ab hier veraltet (Tab_Projekt.Aenderungsdatum, derselbe
+            // Mechanismus wie in den übrigen Schreibwegen). Die Marke läuft über die
+            // Vorgangsklammer im SELBEN Vorgang — rollt der Aufrufer zurück, fällt sie mit.
+            using (Vorgangsklammer.Setzen(v))
+                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
 
             ProjektStand projekt = stand.Projekt == null ? null
                 : stand.Projekt with { Id = idZeile, Weg = stand.Weg, Aenderungsdatum = jetzt };
