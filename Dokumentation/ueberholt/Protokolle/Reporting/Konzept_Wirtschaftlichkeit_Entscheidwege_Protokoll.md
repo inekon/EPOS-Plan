@@ -18,7 +18,8 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor #436**, jede Berichtigung mit einer Zeile.
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437), jede Berichtigung
+> mit einer Zeile.
 
 ---
 
@@ -221,9 +222,9 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
 | 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
-| 30–32 | 31 erledigt mit E5 (#434); 30 und 32 offen, hier im Wortlaut vor dem Schnitt | § 5.1 |
+| 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.1, § 8.3 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
-| 25–29 | 25–28 erledigt mit E2 (#405); 29 offen, hier im Wortlaut vor dem Schnitt | § 5.4 |
+| 25–29 | 25–28 erledigt mit E2 (#405); 29 erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.4, § 8.3 |
 | 20 | entfällt (22.09.2026) | § 6.4 |
 | 12, 14, 17 | erledigt bzw. überholt | § 7.1 |
 
@@ -1270,9 +1271,10 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 
 ## 8 Nach dem Schnitt — Fortschreibung ab E6 (#436)
 
-*Was mit der Statuszeile #436 aus dem gültigen Stand des Konzepts hierher gewandert ist und welche
-Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts
-**vor #436** (Stand `fa80786a`), nicht vor dem Schnitt.*
+*Was mit den Statuszeilen ab #436 aus dem gültigen Stand des Konzepts hierher gewandert ist und welche
+Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts vor der
+jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
+#437** (Stand `befec9dc`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1359,3 +1361,101 @@ berichtigt. Dazu kommen die Stellen, die mit E6 selbst veraltet sind. Je Stelle 
 | § 6.3 Nr. 9j | offener Punkt (Wortlaut in § 3.7) | Einzeiler „erledigt mit E6 (#436)" |
 | § 6.5, Tafel | „Kennzahlenliste dreifach — aufgelöst mit E7" | „aufgelöst mit W4 E7 (vor #300; nicht E7 des Etappenplans)" — gemeint war die Etappe E7 der Ausbaustufe W4, Protokoll [`W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md`](W4_E7_Bericht_Mehrjahrestabelle_Protokoll.md) |
 | § 7 und Anhang | „… und E5 (#434) … Als Nächstes kommt E6"; Kürzeltafel bis #434, „Mockup-Anhang U1…U45"; Etappenreihe „E6 … E12 — offen, nächste Etappe: E6" | bis E6 (#436), nächste Etappe E7; Kürzeltafel mit #436, U1…U49; Etappenzeile E6 = #436, „E7 … E12 — nächste Etappe: E7" |
+
+### 8.3 E7a — rechenwirksame Lücken, Teil a (#437)
+
+Protokoll [`E7a_Rechenwirksame_Luecken_Protokoll.md`](E7a_Rechenwirksame_Luecken_Protokoll.md); der Stand von
+Nr. 29, 30 und 32 im Register (R‑NR), die drei offenen Fragen der Etappe unter R‑E7.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E7 Teil a** (#437, Merge `befec9dc`) | `SteuerGutschriftRechner.Co2JeEnergieertrag` prüft den CO₂-Grenzwert brennwertbezogen (Erdgas mit dem Katalogwert 181,4 g/kWh, die übrigen Träger über H_i/H_s, ohne Brennwert der Hi-Faktor mit Begründung; Herleitung je Anlage); Schemaschritt 101 setzt die leere `KWKG_Anlagenart` auf NULL (sieben Anlagen, kein BHKW), der BHKW-Dialog zeigt „(bitte wählen)"; `StromMatrix` bildet Bedarf und Lastbild vor Abzug der PV-Eigennutzung, beide Verteilschlüssel kommen brutto aus der Matrix, im Rollentarif ersetzt der PV-Anteil die Zeile „PV: vermiedener Bezug"; fünf Ressourcenschlüssel neu, vier geändert; Testdatenbank auf Schemastand 101 | **gewollt, im Bestand ohne Wirkung auf die Wirtschaftlichkeit** — die dreizehn Basisprojekte unverändert (kein Projekt erreicht die CO₂-Prüfung, kein Rollentarif im Bestand); der gespeicherte Strommatrix-Bedarf der Projekte mit Photovoltaik steigt um die PV-Eigennutzung (1007/1046, 1040, 1045); Referenzlauf gegen R11 13/13, 357 CSV byte-gleich; Anker 316.159,6 €/a über den Kernweg; 10 778 Tests grün |
+
+*§ 6.3 Nr. 29 (Z. 2267–2275):*
+
+29. **Hi/Ho am CO₂-Grenzwert** (R11) — **Es gilt immer der Brennwert** (→ Register R‑NR).
+    Der Katalog führt zum Erdgas einen heizwert- und einen brennwertbezogenen
+    EBeV-Faktor (200,9 bzw. 181,4 g/kWh) samt Umrechnung; gelesen wird heute der Schlüssel der
+    Anlage, die beiden Ho-Zeilen haben keinen Leser. Der Grenzwert 270 g/kWh des § 2 StromStG wird
+    **brennwertbezogen** geprüft: Der Zähler nimmt den Ho-Faktor (bei heizwertbezogenem Katalogwert
+    die Umrechnung Hi → Ho), sonst fiele er rund 10 % zu hoch aus und die Befreiung entfiele in
+    Grenzfällen zu Unrecht. Umsetzung mit **E7** (Rechenwirkung: der gebuchte Befreiungsbetrag und
+    damit der Kapitalwert ändern sich in Grenzfällen; A/B-Nachweis, die Pinnung in
+    `KleinkorrekturenE2Tests` wird auf den Brennwert umgestellt).
+
+**Erledigt mit E7a (#437):** Der Zähler nimmt den Ho-Faktor — zu Erdgas den Katalogwert
+`EF_BILANZ_EBEV_ERDGAS_HO` (181,4 g/kWh), zu den übrigen Trägern den heizwertbezogenen Wert × H_i/H_s des
+Trägers, ohne gepflegten Brennwert den Hi-Faktor mit Begründung; die Herleitung nennt den Wert je Anlage.
+Die Pinnung in `KleinkorrekturenE2Tests` steht auf dem Brennwert (Grenzfall 0,00 → 8.200,00 €/a). Kein
+Basisprojekt erreicht die Prüfung (Hocheffizienz und räumlicher Zusammenhang überall 0); an einer Probe von
+1024 mit beiden Angaben 278,6 → 262,2 g/kWh, Befreiung 0 → 1.680,07 €/a im Ausweis. Im Konzept steht der
+Punkt als Einzeiler, die Regel in § 3.8.
+
+*§ 6.3 Nr. 30 (Z. 2279–2286):*
+
+30. **Sieben Energieanlagen tragen `KWKG_Anlagenart = ''`** (leere Zeichenkette statt NULL oder
+    eines Steuerwerts). Die Anlagenart entscheidet über Kontingent und Satzstaffel; eine leere
+    Zeichenkette ist weder „nicht gepflegt" noch eine Wahl.
+    **Ein DML-Schritt setzt die leere Zeichenkette auf NULL; NULL heißt „nicht
+    gepflegt" — der Kern bucht dann keinen KWKG-Zuschlag und meldet es als Kohärenzzeile
+    „Anlagenart fehlt", der Dialog zeigt „bitte wählen". Ein geratener Wert würde Kontingent und
+    Satzstaffel setzen, die niemand eingegeben hat. Umsetzung mit E7** (Schemaschritt, Nummer bei
+    der Umsetzung; Projekte 1032 und 1043 der Testdatenbank, Live-Datenbank vorher prüfen). Entscheid: → Register R‑NR.
+
+**Zum Teil erledigt mit E7a (#437):** Schemaschritt 101 (`SCHRITT_101_KWKG_ANLAGENART_LEER`) setzt die sieben
+leeren Zeichenketten auf NULL (Anlage 12310 in 1032; 14819, 14842, 14843, 14844, 14851, 14852 in 1043 — kein
+BHKW), der Dialog zeigt „(bitte wählen)" statt „(nicht erfasst — gilt als Neuanlage)". Kern-Regel und
+Kohärenzzeile sind nicht gebaut: Wörtlich träfe die Regel jedes BHKW ohne Anlagenart, auch 1030 mit gepflegtem
+Kontingent (KWKG-Erlös Jahr 1 7.315,96 € → 0, Kapitalwert −59.438,48 €) — Frage E7‑Q1. Im Konzept steht der
+Punkt gekürzt mit dem offenen Teil.
+
+*§ 6.3 Nr. 32 (Z. 2288–2301):*
+
+32. **Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1).
+    `StromMatrix.Baue` bildet „Bedarf ohne Anlage" als Strombedarf abzüglich PV-Eigennutzung;
+    `VermiedenMengeMWh` ist damit allein der KWK-Eigenverbrauch, und der Verteilschlüssel der
+    Erlösrubrik (V‑4) bringt nur das Blockheizkraftwerk ein — der vermiedene Bezug der Photovoltaik
+    bleibt seine eigene Ausweiszeile im Block Photovoltaik. Das Mockup-Beispiel rechnet dagegen
+    „ohne jede Eigenerzeugung" (1.179,7 = 1.094,2 + 85,5 MWh). **Es gilt: ohne jede Eigenerzeugung** (U6‑Q1, → Register R‑NR).
+    Bezugsgröße des Ausweises ist der Strombedarf des Projekts ohne jede Eigenerzeugung; die
+    vermiedene Menge führt KWK- und PV-Eigenverbrauch, die § 9b-Korrektur greift auf beide, der
+    Verteilschlüssel der Erlösrubrik bringt beide Anlagen ein. Der KWK-Eigenanteil (min-Regel auf
+    den Bedarf nach Abzug der Photovoltaik) bleibt unverändert, ebenso der Kapitalwert (er rechnet
+    mit dem tatsächlichen Restbezug). Betroffen sind die gespeicherten Ausweisspalten
+    `VermiedenArbeit`, `VermiedenLeistung`, `VermiedenGesamt` und `VermiedenEntlastung9b` sowie der
+    projektweite Leistungsanteil (Lastbild ohne Photovoltaik). Umsetzung mit E7: A/B-Nachweis über
+    die dreizehn Basisprojekte, Anker 316.159,6 €/a am Beispielprojekt (293.245,6 + 22.914,0).
+
+**Erledigt mit E7a (#437):** `StromMatrix` bildet Bedarf und Lastbild vor Abzug der PV-Eigennutzung
+(`PvEigenGesamtMWh`), der KWK-Eigenanteil bleibt `min(BHKW, Bedarf nach PV)`; beide Verteilschlüssel kommen
+brutto aus der Strommatrix (Orchestrator 23.09.2026 nach dem Mockup, Kategorie 7), im Rollentarif ersetzt der
+PV-Anteil die Zeile „PV: vermiedener Bezug". Anker über den Kernweg 293.245,6 + 22.914,0 = 316.159,6 €/a; die
+dreizehn Basisprojekte sind wirtschaftlich unverändert (kein Rollentarif im Bestand), der Strommatrix-Bedarf
+steigt in 1007/1046 (19,10 → 24,00 MWh), 1040 (5,40 → 8,00) und 1045 (5,94 → 8,00). Im Konzept steht der
+Punkt als Einzeiler, die Regel in § 3.6.
+
+### 8.4 Berichtigungen im gültigen Stand (#437)
+
+Die Stellen, die mit E7a veraltet sind; „vorher" ist der Wortlaut vor #437 (Stand `befec9dc`). Je Stelle eine
+Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `57b15a7c`, `SchemaStand.Zielversion` = 100, „Schemaschritte 90–100 vergeben, neue ab **101**"; „Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** … **100**" | Codestand `befec9dc`, `Zielversion` = 101, 90–101 vergeben, 102 an den Zapfprofilgenerator, neue ab 103; 101 = leere Anlagenart (§ 6.3 Nr. 30), 102 = Zapfprofilgenerator (Zweig `z0`) |
+| § 2.2, Gruppe 1, Anlagenart | „(nicht erfasst = Neuanlage)" | „(bitte wählen) = nicht gepflegt, NULL"; ohne Anlagenart kein abgeleitetes Kontingent, die Kern-Regel ist Frage E7‑Q1 |
+| § 2.6, Tafel A7 | „CO₂ < 270 g/kWh" | „CO₂ < 270 g/kWh brennwertbezogen (§ 3.8)" |
+| § 2.6, Tafel B2 | „dito bzw. Mengenausweis" | dazu: im Rollentarif trägt der PV-Anteil an B1 den vermiedenen Bezug, die Zeile zum Flat-Preis steht nur ohne PV-Anteil |
+| § 2.6, Klarstellung (1) | „`StromErloesErgebnis.VermiedenMengeMWh` = Bedarf ohne Anlage − Restbezug" | „= Bedarf ohne jede Eigenerzeugung − Restbezug"; KWK- und PV-Eigenverbrauch, die Korrektur greift auf beide |
+| § 2.13 (4) | „der Kern verteilt heute nach dem Netto-Stromanteil"; „die Bezugsgröße der vermiedenen Menge wird mit E7 auf den Bedarf ohne jede Eigenerzeugung gestellt" | nach dem Eigenverbrauch je Anlage; mit #437 der Bedarf ohne jede Eigenerzeugung, der Schlüssel brutto aus der Strommatrix |
+| § 3.5, Emissionsfaktor-Kette | ohne Satz zur Bezugsgröße | Bilanz und BEHG-Reihe heizwertbezogen, die Grenzwertprüfung des § 9 Abs. 1 Nr. 3 StromStG brennwertbezogen |
+| § 3.6, KWKG-Prüfkette | „Realisierungsfrist 4 Jahre" ohne Vermerk | die Konstante `KWKG_REALISIERUNG_JAHRE = 4`; das Förderende 2030 als Frage E7‑Q3 |
+| § 3.6, K‑1 | „nächster freier Schemaschritt ist **101** (… 97–100 außerhalb dieses Feldes …)"; „ob modulscharf im Ergebnismodell, ist vor der Umsetzung zu prüfen" | „**103** (… 101 die leere Anlagenart, 102 der Zapfprofilgenerator …)"; gemessen mit E7a: der Wärmeüberschuss nur als Projektsumme, Aufteilung nach P_el, Teilfragen E7‑Q2 |
+| § 3.6, vermiedene Stromkosten | „Bezug = Rollenkosten(Bezugstarif, Bedarf OHNE Anlage)" | „Bedarf OHNE JEDE EIGENERZEUGUNG", dazu Menge und Schlüssel und der Absatz „Ohne jede Eigenerzeugung" |
+| § 3.7 | — | ein Satz: dieselbe Umrechnung H_i/H_s stellt den brennwertbezogenen CO₂-Faktor (§ 3.8) |
+| § 3.8 | „CO₂ < 270 g/kWh Energieertrag = Faktor_EBeV × Brennstoff/(Strom+Wärme)"; „Beleg: Heizöl 303,1 g/kWh → keine Befreiung ; Erdgas 228,6 → Befreiung" (heizwertbezogen) | `Faktor_Ho` mit den drei Wegen; Beleg brennwertbezogen: Beispielprojekt 218,6 g/kWh, Grenzfall 279,0 → 251,9 g/kWh (0,00 → 8.200,00 €/a), Heizöl EL auch brennwertbezogen über 270; Absatz „Der CO₂-Grenzwert ist brennwertbezogen" |
+| § 3.11, Hi/Ho-Falle | ohne Vermerk zum Leser | die Grenzwertprüfung liest den brennwertbezogenen Faktor; `EF_BILANZ_EBEV_UMRECHNUNG_HO` ohne Leser |
+| § 6.1 | Kurztafel bis E6 (#436) | Zeile E7a (#437) |
+| § 6.2, Tafel | — | Anker „Vermiedene Kosten des Beispielprojekts über den Kernweg" 316.159,6 €/a |
+| § 6.3 Nr. 29 und 32 | offene Punkte (Wortlaut in § 8.3) | Einzeiler „erledigt mit E7a (#437)" |
+| § 6.3 Nr. 30 | offener Punkt (Wortlaut in § 8.3) | „zum Teil erledigt mit E7a (#437)", offen die Kern-Regel (E7‑Q1) |
+| § 7 und Anhang | „… und E6 (#436) … Als Nächstes kommt **E7**"; B8 „in E7"; Etappenzeile „E7 … E12 — nächste Etappe: E7" | bis E7 Teil a (#437), nächste Etappen E7b und E7c; B8 in E7c; Kürzeltafel mit § 6.3 Nr. 29, 30, 32 = #437; Etappenzeilen „E7 Teil a" = #437 und „E7b, E7c … E12" |
