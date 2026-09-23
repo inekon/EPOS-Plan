@@ -885,6 +885,21 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I);
 
+                    // ETAPPE E9a (Schritte B und D, Schemaschritte 116 und 118) - die vier
+                    // Rahmen- und Erloesgroessen je Szenario. NULL (und 0) heisst hier "wie
+                    // Erwartet" (E9a-Q5 a); eine 0 wird deshalb schon beim Lesen leer, damit
+                    // NurVorgaben und die Herkunftszeile sie nicht als Pflege zaehlen.
+                    LiesRahmen(r, p.SatzBest,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE,
+                        SchemaKatalog.SPALTE_PW_VERGUETUNG_BEST,
+                        SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST);
+                    LiesRahmen(r, p.SatzWorst,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE,
+                        SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST,
+                        SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST);
+
                     // ETAPPE W5-B-12 - p_I und die nicht monetaeren Wirkungen. Auch hier
                     // bewusst KEIN "?? 0": NULL heisst bei p_I "wie p_B" und nicht
                     // "0 %/a", und ein leerer Freitext ist "nichts erfasst".
@@ -941,11 +956,42 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// ETAPPE E9a (Schritte B und D): die vier Rahmen- und Erlösgrößen eines Satzes aus
+        /// der Parameterzeile. Jedes Feld bleibt <c>null</c>, wenn die Spalte fehlt, NULL
+        /// oder 0 ist — und <c>null</c> heißt hier „wie Erwartet". Eine nie migrierte
+        /// Datenbank rechnet dadurch wie eine migrierte ohne Pflege.
+        /// </summary>
+        private static void LiesRahmen(DataRow r, SzenarioSatz satz, string sZeitraum,
+                                       string sMenge, string sVerguetung, string sVerguetungKwk)
+        {
+            if (satz == null) return;
+            double? zeitraum = OhneNull(D(r, sZeitraum));
+            satz.Zeitraum = zeitraum.HasValue ? (int?)(int)Math.Round(zeitraum.Value) : null;
+            satz.Menge = OhneNull(D(r, sMenge));
+            satz.Einspeiseverguetung = OhneNull(D(r, sVerguetung));
+            satz.EinspeiseverguetungKwk = OhneNull(D(r, sVerguetungKwk));
+        }
+
+        /// <summary>ETAPPE E9a: „NULL/0 heißt wie Erwartet" — eine 0 wird leer.</summary>
+        private static double? OhneNull(double? wert)
+        {
+            return wert.HasValue && wert.Value != 0 ? wert : null;
+        }
+
         /// <summary>ETAPPE W5‑B‑9: ein nullbarer Szenariowert als Parameter — <c>null</c>
         /// muss LEER in die Datenbank, sonst ginge die Aussage „Vorgabe“ verloren.</summary>
         private static DbParam SzenParam(double? wert)
         {
             return new DbParam("@sz", DbParamTyp.Double)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
+        }
+
+        /// <summary>ETAPPE E9a: dieselbe Nullregel für einen ganzzahligen Szenariowert (der
+        /// Betrachtungszeitraum je Szenario) — nicht gepflegt geht LEER in die Datenbank.</summary>
+        private static DbParam SzenParam(int? wert)
+        {
+            return new DbParam("@szg", DbParamTyp.Integer)
             { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
@@ -1159,6 +1205,16 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "] = ?, " +
                     // KONZEPT § 2.9 - die Referenz der Differenzrechnung (Schritt 92).
                     "[" + SchemaKatalog.SPALTE_PW_REFERENZPROJEKT + "] = ?, " +
+                    // ETAPPE E9a - Szenariorahmen (Schritt 116) und Erloessaetze der
+                    // Parametertabelle (Schritt 118), Reihenfolge wie in SchemaKatalog.
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_BEST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new DbParam("@z", p.Zinssatz),
                     new DbParam("@t", p.Betrachtungszeitraum),
@@ -1230,6 +1286,16 @@ namespace WindowsFormsApplication1
                     // LEER in die Datenbank - eine geschriebene 0 waere ein Verweis auf
                     // ein Projekt, das es nicht gibt.
                     RefParam(p.IdReferenzprojekt),
+                    // ETAPPE E9a: dieselbe Nullregel - nicht gepflegt heisst LEER, und
+                    // leer heisst hier "wie Erwartet".
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Zeitraum),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Zeitraum),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Menge),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Menge),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Einspeiseverguetung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Einspeiseverguetung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).EinspeiseverguetungKwk),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).EinspeiseverguetungKwk),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -1276,9 +1342,18 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     // KONZEPT § 2.9 - die Referenz der Differenzrechnung (Schritt 92).
                     "[" + SchemaKatalog.SPALTE_PW_REFERENZPROJEKT + "], " +
+                    // ETAPPE E9a - Schritte 116 und 118, Reihenfolge wie im UPDATE.
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_BEST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1346,6 +1421,16 @@ namespace WindowsFormsApplication1
                     // KONZEPT § 2.9 - Reihenfolge wie im UPDATE darueber; 0 heisst
                     // Stamm und geht als NULL in die Datenbank.
                     RefParam(p.IdReferenzprojekt),
+                    // ETAPPE E9a - Reihenfolge wie im UPDATE darueber; nicht gepflegt
+                    // heisst LEER ("wie Erwartet").
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Zeitraum),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Zeitraum),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Menge),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Menge),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Einspeiseverguetung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Einspeiseverguetung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).EinspeiseverguetungKwk),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).EinspeiseverguetungKwk),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch (Exception ex)
