@@ -2095,8 +2095,9 @@ namespace WindowsFormsApplication1
             // Einspeiseerlös mit den Vergütungssätzen der Parameter.
             //
             // KEIN STILLER RÜCKFALL: Ein Tarifsatz, der noch aktiv auf dem Zonenmodell
-            // steht (eine Datenbank vor Schemaschritt 103, der ihn abschaltet), rechnet
-            // nicht mehr — und das steht als Hinweis am Ergebnis.
+            // steht (eine Datenbank vor Schemaschritt 103, der ihn löscht), rechnet
+            // nicht mehr — und das steht als Hinweis am Ergebnis. Der Hinweis ist der
+            // Wächter für einen nicht migrierten Stand.
             if (!stromOhneVerwendung && tarif != null && tarif.Aktiv && !rollen)
                 Melde(e, T("WIRT_HINWEIS_ZEITZONENTARIF",
                     "Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch " +

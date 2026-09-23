@@ -667,7 +667,8 @@ namespace WindowsFormsApplication1
     /// Tabelle stehen), die Staffel steht seit Schemaschritt 103 am Stromträger der
     /// Kostenverwaltung (<see cref="LeistungspreisStaffel"/>). Ein Satz mit dem Modus
     /// <c>ZONEN</c> (oder leer — Bestand vor Schritt 21) ist ein Satz des alten
-    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>).</para>
+    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>); Schemaschritt 103 löscht
+    /// ihn samt der mit ihm gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4).</para>
     /// </summary>
     public class TarifParameter
     {

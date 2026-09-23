@@ -1139,7 +1139,8 @@ namespace Testdatenbankschema
             //      sich SchemaMigration.Schritt_103_ZeitzonentarifAbloesung bedient: erst
             //      die drei Spalten der Leistungspreis-Staffel an energy_project_settings
             //      (SchemaKatalog.Schritt103_LeistungspreisStaffel), dann der Datenteil
-            //      (ZeitzonentarifAbloesung) - Staffel uebernehmen, Zonensaetze abschalten,
+            //      (ZeitzonentarifAbloesung) - Staffel uebernehmen, Zonensaetze loeschen, mit
+            //      einem Zonentarif gerechnete Ergebnisse verwerfen (Entscheid E7b-Q4),
             //      Zonenzeilen der Strommatrix je Projekt zu einer Jahreszeile.
             //
             //      REFERENZLAUF BYTE-GLEICH: Die Wirtschaftlichkeit steht nicht im Export,
@@ -1148,7 +1149,7 @@ namespace Testdatenbankschema
             foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 103, trocken);
-            Console.WriteLine("Schritt 103 - aktive Tarifsaetze im Zonenmodell: " +
+            Console.WriteLine("Schritt 103 - Tarifsaetze im Zonenmodell: " +
                               ZeitzonentarifAbloesung.OffeneZonensaetze() + ", Zonenzeilen der Strommatrix: " +
                               ZeitzonentarifAbloesung.OffeneZonenzeilen() + ".");
             if (!trocken)

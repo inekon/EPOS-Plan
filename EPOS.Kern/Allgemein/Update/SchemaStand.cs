@@ -348,7 +348,8 @@ namespace WindowsFormsApplication1
         /// <c>energy_project_settings</c> bekommt die zweistufige Leistungspreis-Staffel
         /// des Stromträgers (<see cref="SchemaKatalog.Schritt103_LeistungspreisStaffel"/>),
         /// und der Datenteil (<see cref="ZeitzonentarifAbloesung"/>) übernimmt die Staffel
-        /// aus jedem Tarifsatz, in dem sie rechnete, schaltet die Sätze des Zonenmodells ab
+        /// aus jedem Tarifsatz, in dem sie rechnete, löscht die Sätze des Zonenmodells,
+        /// verwirft die mit ihnen gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4)
         /// und fasst die Zonenzeilen der gespeicherten Strommatrix zu je einer Jahreszeile
         /// zusammen. <b>Der Referenzlauf bleibt byte-gleich</b> — die Wirtschaftlichkeit
         /// steht nicht im Export; in der Testdatenbank trägt kein Projekt einen Tarifsatz.

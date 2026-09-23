@@ -566,7 +566,7 @@ namespace WindowsFormsApplication1
         /// <c>DOUBLE</c> (bleibt NULL ⇒ keine KWK-Vergütung). Die Leseseite behandelt
         /// einen leeren Modus genauso wie <c>ZONEN</c> — eine nicht migrierte Datenbank
         /// rechnet deshalb ebenfalls wie bisher. (Seit Q11 rechnet der Zonenmodus nicht
-        /// mehr; Schritt 103 schaltet seine aktiven Sätze ab.)
+        /// mehr; Schritt 103 löscht seine Sätze.)
         ///
         /// <b>Warum der Aufschlagsschalter überhaupt existiert.</b> Netzentgelt,
         /// Umlagen, Stromsteuer, Konzession und Vertrieb sind seit dem
@@ -3633,8 +3633,10 @@ namespace WindowsFormsApplication1
         /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
         /// <c>EPOS.Kern.Tests</c>: Die Staffel eines Tarifsatzes, in dem sie rechnete, geht
         /// an den Stromträger jeder Version der Gruppe; die Sätze des Zonenmodells werden
-        /// abgeschaltet; die Zonenzeilen der gespeicherten Strommatrix werden je Projekt
-        /// eine Jahreszeile.</para>
+        /// gelöscht und die mit ihnen gerechneten gespeicherten Ergebnisse verworfen
+        /// (Entscheid E7b‑Q4, Anwender 23.09.2026: „alte Tarife verwerfen, nicht mehr
+        /// relevant"; ein Rollensatz bleibt); die Zonenzeilen der gespeicherten Strommatrix
+        /// werden je Projekt eine Jahreszeile.</para>
         ///
         /// <para><b>Rechenwirkung nur, wo ein Zonentarif rechnete</b> — dann mit dem
         /// nächsten Lauf und benannt im Protokoll des Schrittes. In der Testdatenbank
@@ -5035,12 +5037,14 @@ namespace WindowsFormsApplication1
                         "Kostenverwaltung (Staffelgrenze, Preis bis und Preis ueber der " +
                         "Grenze) und wird an der Viertelstundenspitze des Netzbezugs " +
                         "bemessen. Uebernommen wird sie aus jedem Tarifsatz, in dem sie " +
-                        "rechnete, an den Stromtraeger jeder Version der Gruppe; die " +
-                        "Tarifsaetze des Zonenmodells werden abgeschaltet, und die " +
-                        "gespeicherte Strommatrix fuehrt je Projekt eine Jahreszeile statt " +
-                        "vier Zonenzeilen. Wo ein Zonentarif rechnete, rechnet der naechste " +
-                        "Lauf mit den Preisen des Stromtraegers - das Protokoll nennt jeden " +
-                        "Satz.",
+                        "rechnete, an den Stromtraeger jeder Version der Gruppe. Die " +
+                        "Tarifsaetze des Zonenmodells werden geloescht, gespeicherte " +
+                        "Ergebnisse, die mit einem Zonentarif gerechnet wurden, verworfen " +
+                        "(ein Satz im Rollenmodell bleibt), und die gespeicherte " +
+                        "Strommatrix fuehrt je Projekt eine Jahreszeile statt vier " +
+                        "Zonenzeilen. Wo ein Zonentarif rechnete, rechnet der naechste Lauf " +
+                        "mit den Preisen des Stromtraegers - das Protokoll nennt jeden Satz " +
+                        "und jedes Projekt.",
                         Schritt_103_ZeitzonentarifAbloesung),
         };
 
@@ -7663,11 +7667,12 @@ namespace WindowsFormsApplication1
         /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in Spalten, die
         /// derselbe Schritt eben angelegt hat, und zwar in EINER Transaktion
         /// (<see cref="ZeitzonentarifAbloesung.Ausfuehren"/>). <b>Die Nachprobe</b> fragt
-        /// dasselbe wie der Datenteil: Steht danach noch ein aktiver Satz im Zonenmodell
-        /// oder eine Zonenzeile der Strommatrix, ist der Schritt nicht gelaufen.</para>
+        /// dasselbe wie der Datenteil: Steht danach noch ein Satz im Zonenmodell oder eine
+        /// Zonenzeile der Strommatrix, ist der Schritt nicht gelaufen.</para>
         ///
         /// <para><b>Die Ausweisung gehört ins Protokoll</b>: jede übernommene und jede
-        /// nicht übernommene Staffel (mit Grund), jeder abgeschaltete Satz, jedes Projekt,
+        /// nicht übernommene Staffel (mit Grund), jeder gelöschte Satz, jedes Projekt,
+        /// dessen mit einem Zonentarif gerechneter Lauf verworfen wurde, jedes Projekt,
         /// dessen Matrix zusammengefasst wurde.</para>
         /// </summary>
         private static bool Schritt_103_ZeitzonentarifAbloesung(Lauf l)
@@ -7696,7 +7701,7 @@ namespace WindowsFormsApplication1
             if (saetze > 0 || zeilen > 0)
             {
                 l.LetzterFehler = saetze.ToString(CultureInfo.InvariantCulture) +
-                                  " Tarifsatz/-saetze stehen weiter aktiv im Zonenmodell, " +
+                                  " Tarifsatz/-saetze stehen weiter im Zonenmodell, " +
                                   zeilen.ToString(CultureInfo.InvariantCulture) +
                                   " Zeile(n) der Strommatrix tragen weiter einen Zonenschluessel.";
                 l.Notiz("103: FEHLER - " + l.LetzterFehler);
