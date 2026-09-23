@@ -81,7 +81,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(StromMatrix.ZEILE_JAHR, Convert.ToString(t.Rows[0]["Zone"]));
                 Assert.Equal(-summe, Convert.ToDouble(t.Rows[0]["BezugMWh"]), 6);
                 Assert.Equal(summe, Convert.ToDouble(t.Rows[0]["KwkEinspMWh"]), 6);
-                Assert.Equal("2026-08-21 13:06:32", Convert.ToString(t.Rows[0]["Zeitstempel"]));
+                Assert.Equal(new DateTime(2026, 8, 21, 13, 6, 32), Stempel(t.Rows[0]["Zeitstempel"]));
 
                 StromMatrix m = new WirtschaftlichkeitCtrl().LadeStromMatrix(new List<int> { projekt })[projekt];
                 Assert.Equal(-summe, m.BezugGesamtMWh, 6);
@@ -176,7 +176,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2.0, Convert.ToDouble(m.Rows[0]["EinspPvMWh"]), 6);
             Assert.Equal(8.4, Convert.ToDouble(m.Rows[0]["MaxBezugKW"]), 6);
             Assert.Equal(8.0, Convert.ToDouble(m.Rows[0]["BedarfMWh"]), 6);
-            Assert.Equal("2026-09-22 10:00:00", Convert.ToString(m.Rows[0]["Zeitstempel"]));
+            Assert.Equal(new DateTime(2026, 9, 22, 10, 0, 0), Stempel(m.Rows[0]["Zeitstempel"]));
             Assert.Contains(1040, b.MatrixProjekte);
             Assert.Equal(4, b.MatrixZeilenEntfallen);
 
@@ -247,6 +247,15 @@ namespace EPOS.Kern.Tests
                 "SELECT [Aktiv] FROM [Tab_ProjektTarif] WHERE [ID_Projekt] = ?", new DbParam("@p", projekt));
             return o != null && o != DBNull.Value && Convert.ToInt32(o) == 1;
         }
+
+        /// <summary>
+        /// Der Zeitstempel einer Matrixzeile als Zeitpunkt — die Datenschicht liefert ihn
+        /// als <see cref="DateTime"/>; eine Zeichenkette hinge an der Kultur des Läufers.
+        /// </summary>
+        private static DateTime Stempel(object wert)
+            => wert is DateTime d
+                ? d
+                : DateTime.Parse(Convert.ToString(wert, CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
 
         private static DataTable Matrixzeilen(int projekt)
         {

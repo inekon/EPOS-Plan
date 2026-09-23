@@ -152,7 +152,12 @@ public class TarifstrukturDialogTests : EposBunitContext
         Assert.DoesNotContain("HT von Stunde", markup);
         Assert.DoesNotContain("Winter HT", markup);
         Assert.DoesNotContain("Sommer NT", markup);
-        Assert.DoesNotContain("Staffelgrenze", markup);
+
+        // Die zweistufige Staffel des Zonenmodells — nicht zu verwechseln mit den
+        // vier Leistungsstufen des Rollenmodells, deren Hinweis „Staffelgrenzen" nennt.
+        Assert.DoesNotContain("Staffelgrenze [kW]", markup);
+        Assert.DoesNotContain("Preis bis Grenze", markup);
+        Assert.DoesNotContain("Leistungspreis-Staffel", markup);
     }
 
     [Fact]
