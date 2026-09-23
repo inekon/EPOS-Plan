@@ -80,6 +80,7 @@
         <Blatt>
             <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
                         Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_auslieferung && _schloss.Entsperrt(ZeileZu(_gewaehlt)))"
                         Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
@@ -242,6 +243,10 @@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText"
                 Frage="@_loeschfrageText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschfrage" />
+
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchlossAntwort" />
 </div>
 
 @code {
@@ -290,6 +295,14 @@
 
     /// <summary>„Duplizieren…" (<c>TagVCtrl.Duplizieren</c>); ohne ihn keine Handlung.</summary>
     [Parameter] public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>
+    /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): das
+    /// Auslieferungskennzeichen der gewählten Sätze umschalten — nur der Kopfsatz
+    /// (<c>TagVCtrl.SchlossSetzen</c>, das <c>ReadOnly</c> und <c>Veraenderbar</c> schaltet;
+    /// nur mit <c>Katalogzeilen</c>, deren IDs die des Katalogs sind über <c>Schlosswege.Aus</c>). Ohne ihn steht die Handlung nicht da.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
 
     /// <summary>
     /// Wie viele Gebäude des Katalogs jeden Typ führen (<c>TagVCtrl.Gebaeudeverwendung</c>)
@@ -398,7 +411,11 @@
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
     private EventCallback _loeschen;
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
+    private readonly Schlossumschaltung _schloss = new();
     private EventCallback _blattOeffnen;
     private EventCallback _blattSchliessen;
 
@@ -446,6 +463,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -875,6 +893,9 @@
                 Hoechstens = 1,
                 ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
             });
+        // AD-Q15: die Beschriftung folgt der Auswahl.
+        if (_schloss.Handlung(SchlossWeg, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
         if (Loeschen is not null)
             liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
         return liste;
@@ -1073,6 +1094,51 @@
                                 zeile.Bezeichner, ergebnis.Name);
     }
 
+    /// <summary>
+    /// Der Weg nur mit echten Katalogzeilen: Ohne <c>Katalogzeilen</c> baut der Dialog seine
+    /// Zeilen aus der Namensliste, ihre IDs sind dann laufende Nummern — kein Schloss.
+    /// </summary>
+    private Schlossweg? SchlossWeg => Katalogzeilen is not null ? Schloss : null;
+
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    /// <summary>Die Zeilen, auf die die Auswahlleiste gerade wirkt.</summary>
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _katalog);
+
+    /// <summary>
+    /// Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein". Geänderte Felder halten
+    /// sie auf.
+    /// </summary>
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(SchlossWeg, SchlossZiele, _geaendert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Nach dem „Ja": schalten, die Liste neu lesen — Schloss, Lesemodus und Speichern
+    /// folgen aus der Fokuszeile —, Erfolg in die Statuszeile.
+    /// </summary>
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, SchlossWeg);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
     // =====================================================================
     // Schluss
     // =====================================================================
@@ -1080,7 +1146,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Ueberlagerungen und Rueckfrage werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _stundenOffen || _duplizierfrage)
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _stundenOffen || _duplizierfrage
+            || _schloss.FrageOffen)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).

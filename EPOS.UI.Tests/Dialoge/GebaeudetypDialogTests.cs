@@ -99,16 +99,22 @@ public class GebaeudetypDialogTests : EposBunitContext
         Protokoll? p = null,
         string titel = "Gebäudetypen Verwaltung",
         IReadOnlyDictionary<string, int>? verwendung = null,
-        bool mitBild = true)
+        bool mitBild = true,
+        Schlosspruefung? schloss = null)
     {
         Protokoll pr = p ?? new Protokoll();
         return Render<GebaeudetypDialog>(b => b
             .Add(x => x.TitelText, titel)
-            .Add(x => x.Katalogzeilen, () => Zeilen(pr.Typen))
+            .Add(x => x.Katalogzeilen, () => schloss is null ? Zeilen(pr.Typen) : schloss.Markieren(Zeilen(pr.Typen)))
+            .Add(x => x.Schloss, schloss?.Weg())
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeudetyp(
                 s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
-            .Add(x => x.Lies, n => pr.Typen.Contains(n) ? Typ(n, Kurven(n), Aenderbar(n), pr.Typen.IndexOf(n) + 1) : null)
+            .Add(x => x.Lies, n => pr.Typen.Contains(n)
+                ? Typ(n, Kurven(n),
+                      schloss is null ? Aenderbar(n) : !schloss.Gesperrt.Contains(pr.Typen.IndexOf(n) + 1),
+                      pr.Typen.IndexOf(n) + 1)
+                : null)
             .Add(x => x.Speichern, (id, v) => { pr.Verteilungen.Add((id, v)); return true; })
             .Add(x => x.BeschreibungSpeichern, (id, t) => { pr.Beschreibungen.Add((id, t)); return true; })
             .Add(x => x.Anlegen, (n, t, k) => { pr.Angelegt.Add((n, t, k)); pr.Typen.Add(n); return 42; })
@@ -581,5 +587,40 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.NotNull(kurve);
         Assert.True(kurve.Setzbar);
         Assert.Equal(0, kurve.Lesen());
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss eines Gebäudetyps aufheben</b> (AD-Q15): Ein Auslieferungstyp (nicht
+    /// veränderbar) wird nach dem „Ja" ein eigener — Stundenwerte und Speichern sind frei, das
+    /// Stammblatt trägt das Band; wieder gesetzt ist er gesperrt wie zuvor.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_und_wieder_setzen()
+    {
+        var pr = new Protokoll();
+        int wohn = pr.Typen.FindIndex(t => !Aenderbar(t)) + 1;
+        var schloss = new Schlosspruefung(wohn);
+        var cut = Aufbauen(pr, schloss: schloss);
+
+        Zeilenklick.Zeile(cut, wohn - 1);
+        Assert.Equal("Schloss aufheben...", Schlosspruefung.Beschriftung(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Schlosspruefung.Ja(cut);
+
+        Assert.False(schloss.Aufrufe.Single().Gesperrt);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
+        Assert.Equal("Schloss setzen...", Schlosspruefung.Beschriftung(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Schlosspruefung.Ja(cut);
+
+        Assert.True(schloss.Aufrufe[^1].Gesperrt);
+        Assert.False(Schlosspruefung.Band(cut));
+        Assert.NotEmpty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
     }
 }

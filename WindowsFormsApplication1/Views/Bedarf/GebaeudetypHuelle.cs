@@ -78,6 +78,8 @@ namespace WindowsFormsApplication1
                 ["Anlegen"] = new Func<string, string, int, int>(TagVCtrl.Anlegen),
                 ["Loeschen"] = new Func<int, bool>(TagVCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
+                // AD-Q15: das Schloss (ReadOnly und Veraenderbar) nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus(TagVCtrl.SchlossSetzen),
                 ["Verwendung"] = new Func<IReadOnlyDictionary<string, int>>(() => TagVCtrl.Gebaeudeverwendung()),
                 ["Bild"] = new Func<double[], Zeichenmodell>(Tagesbild),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
