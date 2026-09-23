@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N6 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N9 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1052,8 +1052,8 @@ Aufbau nach dem Mockup:
   Überlagerung („ein Titel, eine Stelle"). **Kontextzeile**: Projekt, Klimaregion, Kalender,
   Bilanzgrenze; rechts der Stufenumschalter **Einfach · Erweitert · Experte** und der Zähler „n Werte
   überschrieben" — die Stufe blendet nur ein und aus, Überschreibungen bleiben.
-- **Links**: Zonenliste (`Raster`, Spalten Zone, Nutzungsart, Bezugsmenge, Topologie, MWh/a,
-  Summenzeile) mit eigener Listenleiste Zone hinzufügen… · Duplizieren · Entfernen; darunter der
+- **Links**: Zonenliste (`Raster` — in Z1 die Haustabelle `epos-raster` mit Summenfuß, N9 —,
+  Spalten Zone, Nutzungsart, Bezugsmenge, Topologie, MWh/a, Summenzeile) mit eigener Listenleiste Zone hinzufügen… · Duplizieren · Entfernen; darunter der
   Eingabeblock der gewählten Zone in Gruppen je Stufe, bei Wohnen ab Erweitert die Wohnungstabelle.
 - **Rechts**: Vorschau, live über den deterministischen Pfad, Kurzkennzahlen und fünf Reiter
   **Tagesgang · Wochenprofil · Jahresgang · Dauerlinie · Kennzahlen**; Auswahl „Anzeigen für" (Zone
@@ -1097,12 +1097,14 @@ untereinander. Wählt der Anwender die Bedarfstagquelle (1), fragt eine `Rueckfr
   **Zapfprofil-Behälter** (Arbeitsstand plus Weg), den der Dialog über `ZapfprofilUebernommen` und die
   Optionsgruppe füllt — auch wenn der Anwender nur die Optionsgruppe umschaltet. Das OK des Zapfprofils
   prüft (jede Zone mit Nutzungsart und Bezugsmenge) und übergibt; geschrieben wird erst mit dem OK des
-  Bedarfsprofil-Dialogs. Die Startseite (`StartseiteHuelle.Brauchwasser`, `:900-911`) schreibt
+  Bedarfsprofil-Dialogs — in dessen OK-Weg, **bevor er schließt** (Parameter `Speichern`,
+  `ZapfprofilHuelle.Schreibweg`); lehnt der Schreibweg ab, bleibt er mit dem Grund offen (N9). Die Startseite (`StartseiteHuelle.Brauchwasser`, `:900-911`) schreibt
   `Del/Add_Projekt_Brauchwasser` **und** `ZapfprofilCtrl.Speichern(idProjekt, stand, vorgang)` in
   **einem gemeinsamen `DbVorgang`** (`Add_Projekt_Brauchwasser` nimmt ihn an, `WizardCtrl.cs:2763`);
   der Gebäudekatalog ebenso in `GebaeudeKatalogHuelle.BrauchwasserSchreiben`. `Speichern` schreibt
   `Weg` immer. Ein Esc der vierten Überlagerung schließt nur sie.
-- **Ohne Projekt** (Gebäudekatalog aus der Verwaltung) reicht die Hülle keinen Delegaten; im Assistenten
+- **Ohne Projekt** (Gebäudekatalog aus der Verwaltung) reicht die Hülle keinen Delegaten (umgesetzt:
+  kein Zapfprofil-Behälter im Modus Admin, N9); im Assistenten
   mit noch ungespeichertem Projekt ebenso nicht (Frage ZU10).
 
 ### 5.3 Feldtabelle
@@ -1180,7 +1182,8 @@ Auf iOS benannt abgelehnt wie `BrauchwasserAdmin` (fehlt in der Positivliste von
 ### 5.5 Hülle und Naht
 
 **`EPOS.UI.Daten/Bedarf/ZapfprofilHuelle.cs`** (`internal static`, Muster `BedarfErgebnisHuelle.cs`)
-mit `Gaben(int idProjekt, ZapfprofilStand? arbeitsstand, Action<ZapfprofilStand> uebernommen)`,
+mit `Gaben(int idProjekt, ZapfprofilStand? arbeitsstand)`, dazu `Einstieg`/`Einhaengen` über die Naht
+`Zapfprofilwege` und den `ZapfprofilBehaelter` (N9),
 `AuslegungGaben(ZapfprofilStand)` und `KatalogGaben()`, jeweils `IReadOnlyDictionary<string,object>`:
 Katalogzeilen, Zonen und Vorschau als DTO aus `ZapfprofilDaten.cs`, Texte aus `MyResource.Resource`,
 Delegaten mit DTO-Signaturen auf `ZapfprofilRechner` und `ZapfprofilAuslegung`, Zeichenmodelle aus
@@ -1195,11 +1198,11 @@ der Katalogdialog bleibt dort geschlossen.
 ### 5.6 Diagramme
 
 Alle als `Zeichenmodell` aus dem Kern-Renderer `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs`, kein neuer
-Renderer: Tagesgang und Wochenprofil `StundenprofilModell` (`:1877`), Jahresgang gestapelt Zapfung +
+Renderer: Tagesgang und Wochenprofil `StundenprofileModell` (mehrere Reihen, neu in Z1, N9), Jahresgang gestapelt Zapfung +
 Zirkulation `MonatsStapelModell` (`:3048`, aus den getrennten Monatssummen, 2.2), Dauerlinie
 `JahresverlaufModell`-Familie bzw. `DauerlinieWaermeModell` (`:363`) mit Perzentillinien,
 Wertepaarkurve `KennlinienModell` (`:1467`), Wochendiagramm mit Füllstand `SpeicherbetriebModell`
-(`:3244`). **Neu** ist nur ein `SummenlinieModell` (kumulierter Bedarf und Versorgung über 1440
+(`:3244`). **Neu** sind `StundenprofileModell` (Z1, N9) und — mit Z2 — ein `SummenlinieModell` (kumulierter Bedarf und Versorgung über 1440
 Minuten mit markiertem Abstand); dafür ein Fall in `Proben/ChartProben` samt neuer Messlatte.
 `ZeichenmodellWacheTests` und `DiagrammfarbenWacheTests` gelten.
 
@@ -1832,6 +1835,116 @@ vom Papier abweicht oder es genauer fasst; der Hauptteil ist an den betroffenen 
 | (b) | Abbruchgrund der Wärmerechnung auf der Ergebnisseite sichtbar machen | Agent der Stufe Z1 | Z1, Gruppe 3 |
 | (e) 1 | Frage an den Anwender: Provenienz im Inhaltsvergleich mitvergleichen? Empfehlung: nein, wie umgesetzt | Anwender | vor Z2 |
 | (g) | Journalmodus der Testdatenbank im Skript auf DELETE, eigener LFS-Commit mit byte-gleichem Wiederholungsnachweis | Folgeposten mit ZU18 | außerhalb der Z-Stufen |
+
+### N9 (23.09.2026) — Umsetzungsbefunde Z1, Gruppe 3 (Oberfläche)
+
+**Anlass.** Dialog „Brauchwasser-Zapfprofil" (Stufe Einfach mit Vorschau), Einstieg im
+Bedarfsprofil-Dialog, Hüllen, Naht und Vorschaubilder sind auf dem Zweig `z1` umgesetzt und
+gegengeprüft; die Befunde der Gegenprüfung sind nachgebessert. Wo ein Befund dem Papier oder dem
+Mockup widersprach, gilt das Papier. Dieser Nachtrag hält fest, wo die Umsetzung vom Papier abweicht
+oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis „(N9)" berichtigt
+(5.1, 5.2, 5.5, 5.6). Er enthält **keinen Entscheid** des Anwenders.
+
+**Befunde und Festlegungen:**
+
+- **(a) Diagramme (5.6).** Tagesgang und Wochenprofil zeichnet das neue
+  `ChartRenderer.StundenprofileModell` (mehrere Reihen: die erste als Fläche, weitere als Linie in
+  ihrer Strichart, Legende oben) — `StundenprofilModell` trägt nur eine Reihe. Den Jahresgang stapelt
+  `MonatsStapelModell`. Die Bilder baut `ZapfprofilBilder` (Kern, `Allgemein/Bericht/`), die
+  Auswertung der Reihen — größter Monat und Tag, mittlerer Tagesgang je Tagtyp, Woche mit dem größten
+  Tagesbedarf — `Zapfauswertung` (Kern, `Allgemein/Zapfprofil/`); die Hülle rechnet keinen Bedarf.
+  `SummenlinieModell` kommt mit Z2. `Proben/ChartProben`: fünf Maß-, drei Gegen- und drei
+  SVG-Proben, elf Bilder neu, kein altes geändert; sie stehen noch nicht in der Messlatte (Folgen).
+- **(b) Textbündel und Titel (5.1, 5.3).** Drei Bündel: `ZapfprofilTexte` (Dialog),
+  `ZapfprofilEinstiegTexte` (Knopf, Titel der Überlagerung, Optionsgruppe, Hinweise und Vermerk der
+  Leiste im Bedarfsprofil-Dialog) und `ZapfprofilBildtexte` (Vorschaubilder). Der Dialog trägt den
+  Titel „Brauchwasser-Zapfprofil – ‹Projekt›"; eingebettet trägt ihn die Überlagerung allein. Auf dem
+  Zapfprofilweg hängt der Ergebnisdialog „Zapfprofilgenerator" statt eines Profilnamens an seinen
+  Titel (`BPF_TITEL_ZAPFPROFILGENERATOR`). 173 `ZPG_`- und neun neue `BPF_`-Schlüssel je Sprache.
+- **(c) Weich gesperrt (5.1).** Die Stufen Erweitert und Experte, der Reiter Dauerlinie und die
+  Knöpfe „Stochastisch rechnen" und „Auslegung…" stehen da, weich gesperrt mit Grund
+  (`ZPG_GRUND_NOCH_NICHT`); der Versuch meldet ihn als leise Zeile. Die leise Zeile unter dem
+  Eingabeblock verweist in Z1 nicht auf die gesperrte Stufe („Weitere Angaben stehen auf den Vorgaben
+  des Katalogs."); den Verweis auf Erweitert bringt Z4 zurück.
+- **(d) Naht und Behälter (5.2, 5.5).** Die Schale steuert über die Naht `Zapfprofilwege`
+  (Arbeitsstand, Übernehmen, Sperrgrund) bei; `ZapfprofilHuelle.Einstieg` liefert daraus einen
+  `ZapfprofilEinstieg` (Delegaten oder benannter Grund), `ZapfprofilHuelle.Einhaengen` setzt ihn samt
+  Optionsgruppe in den Parametersatz des Bedarfsprofil-Dialogs. Den Arbeitsstand bis zum OK hält ein
+  `ZapfprofilBehaelter` je Öffnen (unverändert = nichts schreiben; die Optionsgruppe stellt nur den
+  Weg um). Ohne Delegat, aber mit Grund (kein gespeichertes Projekt, ZU10; Plattform, A11) steht der
+  Knopf weich gesperrt da und nennt ihn; ganz ohne Behälter gibt es weder Knopf noch Optionsgruppe.
+- **(e) Schreibweg im OK (5.2).** Das OK des Bedarfsprofil-Dialogs schreibt, **bevor** er schließt:
+  Parameter `Speichern` (`Func<string>`, leer = geschrieben), belegt von `BedarfsProfileHuelle.Gaben`
+  bei Brauchwasser mit `ZapfprofilHuelle.Schreibweg` — die Projektzeilen des Dialogs als Zuordnungen
+  und der Behälter in EINEM `DbVorgang`. Lehnt `ZapfprofilCtrl.Speichern` ab oder scheitert
+  `Del/Add_Projekt_Brauchwasser`, rollt der Vorgang zurück, der Dialog nennt den Grund als Banner und
+  bleibt offen; Zuordnungen und Arbeitsstand bleiben, ein zweites OK schreibt erneut. Die
+  Datenbankmeldung der Zuordnungen wird dabei gesammelt (`DataRepository.EngineModus`) statt als
+  Plattformfenster aus dem Oberflächenereignis gezeigt (`ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT`).
+  Startseite und Gebäudekatalog schreiben nach dem Schließen nichts mehr; der Katalog setzt nur das
+  Änderungsdatum des Projekts.
+- **(f) Gebäudekatalog aus der Verwaltung (5.2).** Im Modus Admin reicht `GebaeudeKatalogHuelle`
+  keinen Behälter: Der Bedarfsprofil-Dialog zeigt weder Knopf noch Optionsgruppe, sein OK schreibt nur
+  die Zuordnungen des geöffneten Projekts, wie der Bestand.
+- **(g) ZU5 schon in Z1 (Kapitel 9, Risiko 8).** Der Hinweis `NETZVERLUST_UND_ZIRKULATION` steht im
+  Rechenweg (`ZapfprofilRechner`), nicht erst in der Warnlogik von Z4: bei Netzverlusten des Projekts
+  größer 0 (`Tab_Einstellungen`, über `ZapfprofilCtrl.Eingang` als
+  `Zapfprofileingang.NetzverlusteProjekt`), einer nicht abgelehnten Zone mit Zirkulation und einem
+  Zirkulationsverlust größer 0. Nicht blockierend; Laufprotokoll und Vorschau tragen ihn über den
+  vorhandenen Meldungsweg (`ZPG_HINW_NETZVERLUST_UND_ZIRKULATION`); die Netzverlustverteilung bleibt
+  unberührt. Die Warnliste von Z4 übernimmt ihn.
+- **(h) Kennzahlen (4.6, Mockup Abschnitt 3).** Der Reiter zeigt Zapfung, Zirkulation mit Vermerk,
+  Brauchwasser gesamt mit Zirkulationsanteil, Tagesmittel, je Zone den spezifischen Wert, für die
+  Summe Volllaststunden und den größten Stundenwert mit Vermerk, „Stunden über Schwelle" nur mit
+  Schwelle (`Zapfkennzahlen.SchwelleKw`), die Gleichzeitigkeit mit „—" und Vermerk in der **Bilanz** —
+  so im Mockup; der Befund der Gegenprüfung, sie unter die Stochastik zu stellen, widersprach ihm —
+  und die Gruppe Stochastik mit der Erklärzeile der Stufe Einfach (`ZPG_KZ_STOCHASTIK_ERKLAERUNG`).
+  Die drei Zeilen „nach dem Lauf" (P50 bis P99, Gleichzeitigkeit als Ergebnis, Konsistenzprobe) sind
+  im Mockup Zeilen der Stufe Experte und kommen mit Z3/Z4. Der Mengenvermerk „m³/a" am Jahresbedarf
+  entfällt: Der Kern weist kein Volumen je Jahr aus. Die Temperatur der Literanzeige (`θ_Anzeige`,
+  4.0) und die Schwelle der Stundenzählung setzt der Eingang in Z1 nicht — Literangabe und
+  Schwellenzeile erscheinen erst mit ihnen.
+- **(i) Vorschau je Zone (5.1).** Der Tagesgang einer Zone mittelt mit ihrem wirksamen Kalender
+  (`ZonenErgebnis.Kalender`, samt Ferien, auch denen eines gebundenen Gebäudes, N8 c); die Summe
+  mittelt über den Kalender der Klimaregion ohne die Ruhetage irgendeiner Zone
+  (`Zapfauswertung.OhneRuhetage`). Beide Monatsschichten des Ergebnisdialogs kommen aus dem Kern
+  (`SimulationWaermebedarf.Waermebedarf_Brauchwasser_Zapfung_Monat` neben `…_Zirkulation_Monat`); die
+  Hülle rechnet keine Schicht.
+- **(j) Zonennamen und Meldungen.** Das OK lehnt doppelte Zonennamen ab (`ZPG_MSG_ZONE_NAME_DOPPELT`) —
+  Protokoll und Meldungen nennen Zonen beim Namen. Die Vorschau gibt jeder Meldung die Position ihrer
+  Zone mit, wo der Name sie eindeutig bestimmt (`ZapfprofilMeldung.Position`); der Dialog ordnet
+  darüber zu, eine Meldung ohne eindeutige Zone steht bei den allgemeinen Meldungen.
+- **(k) Zonenliste (5.1).** Die Zonenliste ist die Haustabelle `<table class="epos-raster">` in
+  `.epos-raster-huelle` statt des Bausteins `Raster`: `Raster` (QuickGrid) führt weder einen
+  Tabellenfuß für die Summenzeile noch die Markierung der gewählten Zeile; dieselbe Bauform trägt die
+  Projektliste des Bedarfsprofil-Dialogs. Die Liste zieht auf `Raster` um, sobald der Baustein einen
+  Fuß führt (dann mit Rasterprobe). Das Zahlenfeld der Bezugsgröße trägt `epos-feld--kurz` schon durch
+  den Baustein `Zahlenfeld`.
+- **(l) Logbuch (5.8).** Der Logbuch-Satz der Stufe Z1 steht in 5.8 und geht mit der Statuszeile der
+  Stufe Z1 in deren Punkt „Logbuch"; eine eigene Datei unter `Projekte/Wiki/` gibt es dafür nicht.
+
+**Zu N8, Folgen (b) und (g) — erledigt:**
+
+- (g) Arbeitsstand als Delegat über den Behälter (d); die Meldung der Vorschau in der Leiste
+  „Simulation" (`ZapfprofilHuelle.Leistenmeldung`, Parameter `SimulationMeldung`); Titelzusatz
+  „Zapfprofilgenerator" (b); bunit-Fall
+  `BedarfsProfileDialogTests.Die_Leiste_rechnet_den_Zapfprofilweg_und_zeigt_seine_Meldung` (Zone, die
+  0 trägt, mit sichtbarem Grund), dazu
+  `ZapfprofilEinstiegTests.Die_Leiste_rechnet_den_Arbeitsstand_und_nennt_eine_Nullzone`.
+- (b) Der Abbruchgrund der Wärmerechnung steht als Banner im Bedarfsprofil-Dialog
+  (`BedarfsProfileDialogTests.Ein_Abbruch_des_Zapfprofilwegs_nennt_den_Grund`); Projektzusammenfassung
+  und Ergebnisvorabrechnung nennen ihn nach N8 (b).
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (a) | die elf Zapfprofilbilder beim nächsten Kern-Lauf auf ubuntu in die Linux-Messlatte `Proben/ChartProben/Messlatte_2026-09-20.sha256` aufnehmen (alle alten Zeilen gleich, elf neu, keine geändert; Verfahren in `Proben/ChartProben/LIESMICH.md`), bis dahin als offener Posten in der Statusdatei; Nachweis im Protokoll | Orchestrator | mit der Statuszeile Z1 |
+| (l) | Logbuch-Satz aus 5.8 (Z1) als Punkt „Logbuch" der Statuszeile Z1; Versionsnummer beim Anwender erfragen | Orchestrator | mit der Statuszeile Z1 |
+| (c) | Verweis der leisen Zeile auf die Stufe Erweitert zurückholen | Agent der Stufe Z4 | Z4 |
+| (g) | Hinweis ZU5 in die Warnliste übernehmen | Agent der Stufe Z4 | Z4 |
+| (h) | `θ_Anzeige` und Schwelle der Stundenzählung in den Eingang; Zeilen der Stochastik „nach dem Lauf" | Agenten der Stufen Z3 und Z4 | Z3, Z4 |
+| (k) | Zonenliste auf `Raster`, sobald der Baustein einen Tabellenfuß führt (mit Rasterprobe) | Oberfläche | offen |
 
 ---
 

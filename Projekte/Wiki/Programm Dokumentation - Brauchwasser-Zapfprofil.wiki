@@ -42,7 +42,7 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 * '''Wochenprofil''' – die 168 Stunden der Woche mit dem größten Tagesbedarf des Jahres.
 * '''Jahresgang''' – zwölf Monatssäulen, gestapelt aus Zapfung und Zirkulation, darunter der Anteil der Zirkulation.
 * '''Dauerlinie''' – gesperrt; der Hinweis am Reiter nennt den Grund.
-* {{Anker|kennzahlen}}'''Kennzahlen''' – Jahresbedarf der Zapfung, Zirkulation, Brauchwasser gesamt samt Zirkulationsanteil, Tagesmittel der Zapfung mit der Wassermenge in Litern, in der Ansicht einer Zone der spezifische Jahresbedarf je Bezugseinheit, dazu Volllaststunden und der größte Stundenwert. Der größte Stundenwert ist ein Bilanzwert aus der Jahresreihe und keine Größe für die Auslegung von Speicher oder Wärmeerzeuger; die Tabelle vermerkt das neben dem Wert. Die Gruppe ''Stochastik'' erklärt, was ''Stochastisch rechnen'' liefert.
+* {{Anker|kennzahlen}}'''Kennzahlen''' – Jahresbedarf der Zapfung, Zirkulation, Brauchwasser gesamt samt Zirkulationsanteil, Tagesmittel der Zapfung, in der Ansicht einer Zone der spezifische Jahresbedarf je Bezugseinheit, dazu Volllaststunden und der größte Stundenwert. Der größte Stundenwert ist ein Bilanzwert aus der Jahresreihe und keine Größe für die Auslegung von Speicher oder Wärmeerzeuger; die Tabelle vermerkt das neben dem Wert. Die Gruppe ''Stochastik'' erklärt, was ''Stochastisch rechnen'' liefert.
 
 == Hinweise und Prüfung ==
 
