@@ -7912,3 +7912,72 @@ exportiert nur Simulationsgrößen, der Simulationscode ist unberührt).
 > 22.09.2026 speichert „Simulation starten“ das Ergebnis sofort, und die
 > Wirtschaftlichkeit warnt, wenn das Simulationsergebnis älter als die letzte
 > Projektänderung ist.
+
+## #441 — Simulation: Solarthermie ohne Puffer, Bedarfskanal ohne Versorger, Ergebnis veraltet (23.09.2026)
+
+Anwendermeldung 23.09.2026 an den Projekten „Test: Prozesswärme+ST", „Test:
+Prozesswärme+ST+WP" und „Test: Wärmeganglinie+ST": Simulation ohne Solarergebnis;
+Überschuss 28,88 MWh/a bei Modulleistung 0; Prozesswärme wird nicht gedeckt, auch
+nicht mit Wärmepumpe; Diagramm mit konstanter Last. Frage: Kann Solarthermie ohne
+Puffer Prozesswärme decken? Entscheid: möglich, nicht sinnvoll, Warnung. Commits
+`5d00937b` (Warnungen und Hinweise), `898f110c` (Ergebnisansicht veraltet,
+Änderungsdatum).
+
+**Befund (Analyse auf einer Kopie der Anwenderdatenbank).** Keine Anlage dieser
+Projekte hatte eine Senkenzeile; die Vorbelegung „Heizkreis/Beides" bedient nur
+Heizung und Warmwasser, der Bedarf lag im Kanal Prozesswärme — kein Erzeuger durfte
+ihn decken, das gesamte Solarpotenzial (28,88 MWh/a) wurde als Überschuss geführt; mit
+Senke Prozesswärme deckt die Solarthermie 9,79 MWh/a (19,6 %), zwei Drittel werden
+ohne Puffer verworfen; mit Wärmepumpe und Prozesssenke Rest 0. Die konstante Last im
+Diagramm war ein alter Lauf (Projekt vorher mit Prozesswärme statt Ganglinie); die
+Ergebnisansicht wurde bei Bedarfs- oder Senkenänderung nicht als veraltet markiert.
+Kein Rechenfehler.
+
+**Umsetzung (kein Eingriff in den Rechenweg).** (1) Weiches Warnkriterium
+`SOLAR_DIREKT_OHNE_PUFFER` im Warnkatalog (Solarthermie mit Direktsenke Prozesswärme
+ohne Puffersenke) an Senkendialog, Erzeugerkarte und Laufprotokoll;
+Heizkreis-Gegenstück `SOLAR_HEIZKREIS_OHNE_PUFFER` vorbereitet, abgeschaltet
+(Anwenderentscheid offen). (2) Prüfung „Bedarfskanal ohne Versorger"
+(`Warnkriterien.KanaeleOhneVersorger`): Meldung im Lauf, Warnbanner der
+Ergebnisübersicht, Warnknoten des unversorgten Abnehmers in der Hydraulikübersicht;
+Protokollzeile zur fehlenden Senke in Anwendersprache; „Heizkreis (beides)" →
+„Heizkreis (Heizung + Warmwasser)". (3) Solarthermie-Reiter: Hinweiszeile „Ertrag x
+MWh/a ohne Abnehmer …", Etikett „Wärmeproduktion der Module". (4) Ergebnisansicht
+veraltet, wenn das Projekt-Änderungsdatum jünger als der Lauf ist (Anlass „Bedarf,
+Senken oder Anlagen wurden nach dem Lauf geändert"); Senken speichern, Pufferspeicher
+anlegen/ändern/entfernen und Jahressummen von Prozesswärme, Brauchwasser,
+Stromverbrauchern setzen das Änderungsdatum jetzt. Neue Schlüssel:
+`SIMWARN_SOLAR_DIREKT_OHNE_PUFFER`, `SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER`,
+`SIMWARN_KANAL_OHNE_VERSORGER`, `SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE`,
+`SIM_SCHEMA_WARNUNG_OHNE_VERSORGER`, `SIMERG_ZUSTAND_ANLASS_PROJEKT`,
+`SIMERG_ST_HINWEIS_OHNE_ABNEHMER`; geändert `SIMENG_SENKENLISTE_LEER`,
+`SIM_HEIZKREIS_BEIDES`, `BK_KOMP_HINW_SENKEN`, `SIMERG_LBL_GESAMTLEISTUNG_MODULE`.
+
+**Prüfung.** Kern-Filter 0 Fehler; EPOS.Kern.Tests 4801, EPOS.UI.Tests 5283, KiKern
+524, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge (der
+früher als fremd rot geführte Feinpunkt-Test ist grün); 25 neue Tests (20 Kern, 5
+Oberfläche; 21 vorher rot belegt); Windows-Schale 0 Fehler; SQL-Prüfer 1647 Texte, 0
+Fundstellen; Referenzlauf gegen `2026-09-22_R11_Bestandsbefunde`: 5 CI-Projekte und
+alle 13 Basisprojekte PASS (3 882 737 Werte); Anwenderkopie 1065–1067 alter gegen
+neuer Code PASS (587 117 Werte), neue Meldungen erscheinen (1065/1066: Senke fehlt,
+Kanal Prozesswärme ohne Versorger, Hinweis im Solarreiter, Warnknoten; 1067: nur
+„keine Senke zugeordnet").
+
+**Was offen bleibt.** (1) Heizkreis-Kriterium (Solarthermie ohne Puffer auf dem
+Heizkreis; in 1067 werden 86 % des Ertrags verworfen) aktivieren? Anwenderentscheid.
+(2) Der Senkendialog nennt die Bedarfsart weiter „beides", die Senkenanzeige „Heizung
++ Warmwasser". (3) Warnbanner ohne KI-Erklärung (Einträge im KI-Meldungsregister
+nötig). (4) Neue Anlagen bekommen generell keine Senkenzeile — Vorbelegung ist der
+Normalfall; Entscheid, ob der Anlagendialog die Senke beim Anlegen verlangt. (5)
+Nebenbefunde aus der Analyse: feste Speichertemperatur 50 °C im Kollektormodell; drei
+zusammengesetzte SQL-Texte (`SimulationWaermebedarf.cs:268`,
+`SimulationSolarthermie.cs:196/:219`); Wirtschaftlichkeitszeilen der Projekte
+1066/1067 verweisen auf das Ergebnis von 1065 (vermutlich Duplizieren) — gesondert
+prüfen.
+
+**Logbuch-Vorschlag** (Version 1.2.0.4):
+
+> Seit 23.09.2026 warnt die Simulation, wenn ein Bedarfskanal keinen Versorger hat
+> oder Solarthermie ohne Pufferspeicher Prozesswärme decken soll, und die
+> Ergebnisansicht meldet, wenn Bedarf, Senken oder Anlagen nach dem Lauf geändert
+> wurden.
