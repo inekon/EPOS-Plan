@@ -1705,9 +1705,10 @@ je Jahr:  Vergütet = min(Vbh, Deckel(Jahr), Restkontingent) × (1 − Abschlag)
 
 Deckelstaffel 5.000 (2021) … 3.300 (2026) … 2.500 (ab 2030). Vorgeschaltete Prüfkette: Stichtag
 ≤ 31.12.2026 · Realisierungsfrist 4 Jahre · Ausschreibung > 500 kW · Heizöl-Neuanlage ab 2025. Die
-Realisierungsfrist ist eine Konstante (`KWKG_REALISIERUNG_JAHRE = 4`); ob das Förderende 2030 (A20,
-R‑U5) sie als Katalogdatum ersetzt oder den Zuschlag nach 2030 beendet, ist Frage E7‑Q3 (→ Register
-R‑E7).
+Realisierungsfrist ist eine Konstante (`KWKG_REALISIERUNG_JAHRE = 4`); das Förderende 2030 (A20,
+R‑U5) ersetzt sie als Katalogdatum für das Ende der Frist zur Inbetriebnahme — der Zuschlag läuft
+danach bis zum Ende des Kontingents weiter, keine Höchstdauer in Kalenderjahren (entschieden
+E7‑Q3, Lesart b, 23.09.2026, → Register R‑E7 — Bau E7c).
 
 **Pauschale § 9** (≤ 2 kW): `0,04 × 60.000 × P_el`, einmalig in Index 0.
 
