@@ -1207,8 +1207,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     /// <summary>
     /// Die Gruppe steht im ersten Reiter UNTER dem Rechenweg; der Haken „Gebäude wird gekühlt"
     /// steht immer da, Sollwert und Grenze erst mit dem Haken. Die Herleitungszeile nennt ohne
-    /// Haken die Maximalraumtemperatur, an der die Überhitzung informativ bleibt, und eine
-    /// zweite Zeile, dass die Projekteinstellung gilt.
+    /// Haken den freien Lauf und die Maximalraumtemperatur, an der die Überhitzung gezählt wird
+    /// (Entscheid E32), und eine zweite Zeile, dass die Projekteinstellung gilt.
     /// </summary>
     [Fact]
     public void Die_Gruppe_Kuehlung_steht_unter_dem_Rechenweg_mit_dem_Haken()
@@ -1226,8 +1226,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.DoesNotContain("Kühlsollwert :", markup);
         Assert.DoesNotContain("Kühlleistungsgrenze :", markup);
 
-        Assert.Contains("Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur 24,0 °C.",
+        Assert.Contains("Ohne Haken wird das Gebäude nicht gekühlt: Es läuft frei, und die Überhitzung wird an der Maximalraumtemperatur (24,0 °C) gezählt.",
                         Kuehlgruppe(cut));
+        Assert.DoesNotContain("informativ", Kuehlgruppe(cut));
         Assert.Contains("Projekteinstellung „Kühlung rechnen“", Kuehlgruppe(cut));
         Assert.Equal(cut.Instance.Kuehlungszeile, cut.FindAll("div.gebk-kuehlung .epos-herleitung")
                                                      .Select(z => z.TextContent.Trim()).First());

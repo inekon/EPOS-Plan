@@ -16869,13 +16869,142 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>DIN EN 17463 · 7 · 9 · Annex E</value>
   </data>
   <data name="WIRT_VALERI_BLOCK_2_HINWEIS" xml:space="preserve">
-    <value>The cash flow series per year and the cash flow chart are not yet part of this view. The present values per component are shown in the “Key figures” view under “Where does the figure come from?”, the annual series in the spreadsheet report (multi-year overview).</value>
+    <value>The cash flow series per year are shown after the next calculation run (“Calculate”, or “Refresh” in the progression) — stored results carry totals only, no annual series.</value>
   </data>
   <data name="WIRT_VALERI_MASSNAHME" xml:space="preserve">
     <value>Measure</value>
   </data>
   <data name="WIRT_VALERI_KZ_HINWEIS" xml:space="preserve">
     <value>The only measure of profitability is the net present value — as a difference to the reference; the annuity spreads it over equal annual amounts. Dynamic payback and internal rate of return are for information only (Annex C).</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION" xml:space="preserve">
+    <value>Investment I₀</value>
+  </data>
+  <data name="WIRT_GL_BETRIEB" xml:space="preserve">
+    <value>Operating costs</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE" xml:space="preserve">
+    <value>Energy costs</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE" xml:space="preserve">
+    <value>Revenues</value>
+  </data>
+  <data name="WIRT_GL_ERSATZ" xml:space="preserve">
+    <value>Replacements</value>
+  </data>
+  <data name="WIRT_GL_RESTWERT" xml:space="preserve">
+    <value>Residual value at the end</value>
+  </data>
+  <data name="WIRT_GL_NETTOBARWERT" xml:space="preserve">
+    <value>Net present value</value>
+  </data>
+  <data name="WIRT_GL_BESTANDTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION_UNTER" xml:space="preserve">
+    <value>net of grants</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE_UNTER" xml:space="preserve">
+    <value>including CO₂ levy</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE_UNTER" xml:space="preserve">
+    <value>cash-effective — block A</value>
+  </data>
+  <data name="WIRT_GL_TITEL" xml:space="preserve">
+    <value>Breakdown of the net present value — scenario {0}</value>
+  </data>
+  <data name="WIRT_GL_UNTER" xml:space="preserve">
+    <value>Present value, below it the nominal sum · i = {0} % · T = {1} a</value>
+  </data>
+  <data name="WIRT_GL_NOMINAL" xml:space="preserve">
+    <value>nominal {0}</value>
+  </data>
+  <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
+    <value>Difference {0} − {1}</value>
+  </data>
+  <data name="WIRT_LW_TITEL" xml:space="preserve">
+    <value>What this means over the period</value>
+  </data>
+  <data name="WIRT_LW_KOPF" xml:space="preserve">
+    <value>Effect on {0}</value>
+  </data>
+  <data name="WIRT_LW_ERSATZJAHRE" xml:space="preserve">
+    <value>Replacements due in year</value>
+  </data>
+  <data name="WIRT_LW_RESTWERT" xml:space="preserve">
+    <value>Residual value at the end, nominal</value>
+  </data>
+  <data name="WIRT_LW_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_BR_TITEL" xml:space="preserve">
+    <value>From the investment to the net present value difference</value>
+  </data>
+  <data name="WIRT_BR_UNTER" xml:space="preserve">
+    <value>{0} compared with {1} · present values · scenario {2}</value>
+  </data>
+  <data name="WIRT_BR_FUSS" xml:space="preserve">
+    <value>Present values compared with {0}, scenario {1} — i = {2} %, T = {3} a</value>
+  </data>
+  <data name="WIRT_BR_ERGEBNIS" xml:space="preserve">
+    <value>ΔNPV</value>
+  </data>
+  <data name="WIRT_BR_LEG_MINDERT" xml:space="preserve">
+    <value>reduces the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_MEHRT" xml:space="preserve">
+    <value>increases the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="WIRT_BR_LEER" xml:space="preserve">
+    <value>No difference to draw — version or reference without a cash flow series.</value>
+  </data>
+  <data name="WIRT_ZS_TITEL" xml:space="preserve">
+    <value>Cash flow per year</value>
+  </data>
+  <data name="WIRT_ZS_UNTER" xml:space="preserve">
+    <value>{0} · scenario {1} · nominal per year, expenditure downwards, without residual value</value>
+  </data>
+  <data name="WIRT_ZS_ERSATZJAHR" xml:space="preserve">
+    <value>Replacement year</value>
+  </data>
+  <data name="WIRT_ZS_LEER" xml:space="preserve">
+    <value>No cash flow to draw — the version carries no annual series.</value>
+  </data>
+  <data name="WIRT_FUSS_DREI" xml:space="preserve">
+    <value>Three scenarios calculated</value>
+  </data>
+  <data name="WIRT_FUSS_TEIL" xml:space="preserve">
+    <value>{0} of three scenarios calculated</value>
+  </data>
+  <data name="WIRT_FUSS_KEINE" xml:space="preserve">
+    <value>No scenario calculated yet</value>
+  </data>
+  <data name="WIRT_FUSS_VORGABEN" xml:space="preserve">
+    <value>assumptions from defaults, nothing maintained</value>
+  </data>
+  <data name="WIRT_FUSS_GEPFLEGT" xml:space="preserve">
+    <value>assumptions maintained: {0}</value>
+  </data>
+  <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
+    <value>The breakdown by present value and nominal sum per component is shown after the next calculation run (“Calculate”, or “Refresh” in the progression) — stored results carry no annual series.</value>
+  </data>
+  <data name="WIRT_ZR_STAND" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="WIRT_ZR_SZENARIO" xml:space="preserve">
+    <value>Scenario:</value>
+  </data>
+  <data name="WIRT_ZR_SUMME" xml:space="preserve">
+    <value>Nominal sum</value>
+  </data>
+  <data name="WIRT_ZR_HINWEIS" xml:space="preserve">
+    <value>Nominal and undiscounted, expenses negative; year 0 carries the investment net of grants, the last year the residual value. The row “Present value” discounts every column at i = {0} % — the same figures as the breakdown under “Where does the figure come from?”; their sum is the net present value ({1} €).</value>
+  </data>
+  <data name="WIRT_ZR_ABWEICHEND" xml:space="preserve">
+    <value>{0}: no matching annual series for the stored results — “Calculate” recomputes them.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario. The capital cost escalation p_I indexes the replacement investments and the price basis of the residual value; if it is not maintained separately it follows the operating rate (p_B), in the scenario at the same distance of 1 percentage point as p_E and p_B.</value>
@@ -25740,7 +25869,7 @@ Do you want to allow this?</value>
     <value>The cooling set point must be at least {0} K above the highest heating set point ({1} °C). Without a cooling set point cooling stays off, and overheating is counted against the maximum room temperature ({2} °C).</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
-    <value>Without the tick, overheating remains informative: maximum room temperature {0} °C.</value>
+    <value>Without the tick the building is not cooled: it runs free, and overheating is counted against the maximum room temperature ({0} °C).</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
     <value>Cooling is only calculated in projects with the project setting “Calculate cooling” (simulation configuration).</value>
@@ -25758,7 +25887,7 @@ Do you want to allow this?</value>
     <value>The cooling power limit must be greater than 0.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
-    <value>Is the building cooled? Only effective with a cooling set point and in a project with the project setting “Calculate cooling”; without it, overheating remains informative.</value>
+    <value>Is the building cooled? Only effective with a cooling set point and in a project with the project setting “Calculate cooling”; without it, the building runs free and overheating is counted against the maximum room temperature.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
     <value>Cooling set point of the hourly model in °C; empty = cooling off. At least 1 K above the highest heating set point, between 15 and 35 °C.</value>
@@ -25782,10 +25911,10 @@ Do you want to allow this?</value>
     <value>Cooled to {0} °C, cooling power limit {1}. The cooling demand goes into the cooling channel; heat generators do not cover cooling.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
-    <value>The project calculates no cooling (project setting “Calculate cooling” off): the cooling demand is informative — the heat that would have to be removed to keep the room air from exceeding {0} °C; it goes into no channel.</value>
+    <value>The project calculates no cooling (project setting “Calculate cooling” off): the building is not cooled and runs free — the room air may rise above {0} °C, and the overheating hours count the hours above it. There is no cooling demand.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
-    <value>The building is not cooled: the cooling demand is informative — the heat that would have to be removed to keep the room air from exceeding {0} °C; it goes into no channel.</value>
+    <value>The building is not cooled and runs free: the room air may rise above {0} °C, and the overheating hours count the hours above it. There is no cooling demand.</value>
   </data>
   <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
     <value>Cooling load, annual load profile</value>
@@ -25906,5 +26035,182 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
     <value>No usable series is available for this record (neither 8,760 nor 35,040 values).</value>
+  </data>
+  <data name="KFLT_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KFLT_SP_GEBAEUDEART" xml:space="preserve">
+    <value>Building category</value>
+  </data>
+  <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
+    <value>Construction period</value>
+  </data>
+  <data name="KFLT_SP_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="KFLT_SP_KURVEN" xml:space="preserve">
+    <value>Daily curves</value>
+  </data>
+  <data name="KFLT_SP_LASTGANG" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="KFLT_SP_INTERVALL" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="KFLT_SP_JAHRESMAXIMUM" xml:space="preserve">
+    <value>Annual peak</value>
+  </data>
+  <data name="ADM_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="GEBA_TITEL" xml:space="preserve">
+    <value>Building administration</value>
+  </data>
+  <data name="GEBA_SB_HUELLE" xml:space="preserve">
+    <value>Envelope</value>
+  </data>
+  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
+    <value>Building types…</value>
+  </data>
+  <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
+    <value>Areas and U-values are changed via “Edit…”, together with windows per orientation, room temperatures, holidays and thermal bridges.</value>
+  </data>
+  <data name="GEBA_HUELLE_WERT" xml:space="preserve">
+    <value>{0} m² · U {1} W/(m²K)</value>
+  </data>
+  <data name="GEBA_KZ_FLAECHE" xml:space="preserve">
+    <value>Floor area</value>
+  </data>
+  <data name="GEBA_KZ_HGES" xml:space="preserve">
+    <value>H_tot</value>
+  </data>
+  <data name="GEBA_KZ_RECHENWEG" xml:space="preserve">
+    <value>Calculation method</value>
+  </data>
+  <data name="GEBA_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDETYP" xml:space="preserve">
+    <value>Building type</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Building category</value>
+  </data>
+  <data name="GEBA_LBL_BAUJAHR" xml:space="preserve">
+    <value>Construction period</value>
+  </data>
+  <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="GEBA_LBL_WOHNFLAECHE" xml:space="preserve">
+    <value>Floor area</value>
+  </data>
+  <data name="GEBA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="GEBA_MSG_FEHLER" xml:space="preserve">
+    <value>The key data could not be written.</value>
+  </data>
+  <data name="GEBA_MSG_NEU" xml:space="preserve">
+    <value>“{0}” created.</value>
+  </data>
+  <data name="GTYP_SB_TAGESPROFIL" xml:space="preserve">
+    <value>Daily profile</value>
+  </data>
+  <data name="GTYP_LBL_KURVE_KURZ" xml:space="preserve">
+    <value>Curve</value>
+  </data>
+  <data name="GTYP_BTN_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values…</value>
+  </data>
+  <data name="GTYP_TITEL_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values – {0}</value>
+  </data>
+  <data name="GTYP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GTYP_SB_KURVEN_HINWEIS" xml:space="preserve">
+    <value>{0} daily curves of 24 hours each; “Hourly values…” opens the 24 fields of the selected curve.</value>
+  </data>
+  <data name="GTYP_LBL_KURVENZAHL" xml:space="preserve">
+    <value>Daily curves</value>
+  </data>
+  <data name="GTYP_KURVEN_FUENF" xml:space="preserve">
+    <value>5 – winter, transition and summer by weather</value>
+  </data>
+  <data name="GTYP_KURVEN_ACHT" xml:space="preserve">
+    <value>8 – weekday and weekend per season</value>
+  </data>
+  <data name="GTYP_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Used by {0} buildings of the catalogue – deletion blocked.</value>
+  </data>
+  <data name="GTYP_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Remain (used by buildings): {0}</value>
+  </data>
+  <data name="GTYP_MSG_ANGELEGT" xml:space="preserve">
+    <value>“{0}” created: {1} daily curves.</value>
+  </data>
+  <data name="GTYP_KZ_KURVEN" xml:space="preserve">
+    <value>Daily curves</value>
+  </data>
+  <data name="GTYP_KZ_SPITZE" xml:space="preserve">
+    <value>Peak</value>
+  </data>
+  <data name="GTYP_KZ_SUMME" xml:space="preserve">
+    <value>Daily sum</value>
+  </data>
+  <data name="GTYP_UHR" xml:space="preserve">
+    <value>{0}:00</value>
+  </data>
+  <data name="PEAK_QUELLE_DATEI" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="PEAK_BTN_DATEI_LASTGANG" xml:space="preserve">
+    <value>Load profile from file…</value>
+  </data>
+  <data name="PEAK_TITEL_DATEI" xml:space="preserve">
+    <value>Load profile from file</value>
+  </data>
+  <data name="PEAK_HINWEIS_DATEI" xml:space="preserve">
+    <value>The file is read but not stored: it appears as a row with the source “File”.</value>
+  </data>
+  <data name="PEAK_SB_SPEICHER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="PEAK_SB_SCHWELLE" xml:space="preserve">
+    <value>Threshold</value>
+  </data>
+  <data name="PEAK_SB_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="PEAK_SB_WERTE" xml:space="preserve">
+    <value>{0} values</value>
+  </data>
+  <data name="PEAK_SB_BERECHNET" xml:space="preserve">
+    <value>calculated</value>
+  </data>
+  <data name="PEAK_SB_OFFEN" xml:space="preserve">
+    <value>not yet calculated</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ALT" xml:space="preserve">
+    <value>Peak without storage</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_NEU" xml:space="preserve">
+    <value>Peak with storage</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ERTRAG" xml:space="preserve">
+    <value>Yield per year</value>
+  </data>
+  <data name="PEAK_MSG_EINGELESEN" xml:space="preserve">
+    <value>“{0}” read – not stored.</value>
+  </data>
+  <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
+    <value>{0} records imported.</value>
   </data>
 </root>

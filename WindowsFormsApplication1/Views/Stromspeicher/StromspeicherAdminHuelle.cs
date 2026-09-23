@@ -30,7 +30,10 @@ namespace WindowsFormsApplication1
         /// <summary>Zeigt den Modulkatalog als eigenes Fenster (<c>Masken.StromspeicherAdmin</c>).</summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
-            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), Gaben());
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
+            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs.
+            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), KatalogBrowserHuelle.MitWegen(
+                Gaben(), Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Stromspeicher))));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -50,12 +53,14 @@ namespace WindowsFormsApplication1
         /// <c>Detail</c> und <c>Speichern</c> über die <see cref="ModulFeldwertBruecke"/>;
         /// eine zweite Feldliste daneben liefe beim ersten Fachwechsel auseinander.
         /// </remarks>
-        internal static ModulKatalogWege Wege()
+        internal static ModulKatalogWege Wege(Func<IReadOnlyDictionary<string, object>> import = null)
         {
             ModulKatalogProfil profil = Profil();
 
             return new ModulKatalogWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                KatalogImportGaben = import,
                 // W14a-E-10: acht Spalten statt der einen Namensspalte, darunter die
                 // abgeleitete C-Rate und der Hersteller aus dem Bezeichnerpraefix
                 // (Befund D-3). Auch dieser Katalog hatte bis hierher KEINEN Filter.

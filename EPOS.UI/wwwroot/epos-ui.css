@@ -635,6 +635,23 @@ body {
     background: var(--epos-flaeche);
 }
 
+/* Etappe E8a (U46): die Nominalsumme unter dem Barwert eines Bestandteils - leise und
+   in eigener Zeile: Die erste Zahl entscheidet, die zweite sagt, wie viel Geld
+   tatsaechlich fliesst. */
+.epos-wirt-nominal {
+    display: block;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
+/* Etappe E8a: die Summenzeilen einer Tafel (Summe nominal und Barwert unter den
+   Zahlungsreihen, der Nettobarwert der Gliederung) - halbfett und mit Linie darueber
+   abgesetzt, damit sie nicht als weiteres Jahr gelesen werden. */
+.epos-wirt-summenzeile {
+    font-weight: 600;
+    border-top: 2px solid var(--epos-rahmen);
+}
+
 /* Der Hinweistext unter der Annahmentafel (U10) und die Luecke an der Stelle von
    Block 2: je ein leiser Kasten, damit der Absatz als Hinweis lesbar bleibt. */
 .epos-wirt-szenariohinweis,
@@ -645,12 +662,20 @@ body {
     background: var(--epos-flaeche);
 }
 
-/* Der Fuss eines Abschnitts (U44 "Bericht erzeugen"): rechts, ohne Leiste - die
-   Seite traegt genau EINE Fussleiste. */
+/* Der Fuss eines Abschnitts (U44 "Bericht erzeugen", U43 "Anhang-E-Checkliste..."):
+   rechts, ohne Leiste - die Seite traegt genau EINE Fussleiste. E8a-Q4: Die leise
+   Fusszeile U48 steht links in derselben Reihe. */
 .epos-wirt-abschnitt-fuss {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-end;
+    gap: var(--epos-rand);
     margin-top: var(--epos-rand);
+}
+
+.epos-wirt-abschnitt-fuss .epos-wirt-szenariofuss {
+    margin: 0 auto 0 0;
 }
 
 @media (forced-colors: active) {
@@ -8275,6 +8300,43 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     flex-direction: column;
     gap: var(--epos-rand);
     min-width: 0;
+}
+
+/* --- Stufe 5 (V16): die Sonderlisten im Geruest ----------------------- */
+/* Die 24 STUNDENWERTE einer Tageskurve (Gebaeudetypen, "Stundenwerte...")
+   stehen in der Ueberlagerung als Raster aus schmalen Feldern - die
+   Beschriftung (die Stunde) ueber dem Feld, so viele Spalten, wie die Breite
+   traegt: bei 900 px Ueberlagerung sechs, bei 368 px zwei. Eine Liste von 24
+   Feldern untereinander waere 1 200 px hoch. */
+.epos-stundenwerte {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: 6px 12px;
+    min-width: 0;
+}
+
+.epos-stundenwerte-block,
+.epos-gebaeudetyp-neu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+/* Die TABELLEN EINER STAMMBLATTGRUPPE (Ergebnis der Lastspitzenkappung:
+   Kennzahlen, Monatsspitzen) stehen in 340 bis 440 px: Sie fuellen die Breite
+   der Gruppe und brechen ihre Texte um, statt quer zu rollen - die Hausregel
+   "Namen brechen nicht" (.epos-raster td) gilt fuer Listen, nicht fuer
+   eine Tabelle aus Beschriftung und Wert. Gemessen in der Katalogprobe (N18):
+   443 px Tabelle in 356 px Gruppe ohne diese Regel. */
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster {
+    width: 100%;
+}
+
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster th,
+.epos-stammblattgruppe .epos-raster-huelle > table.epos-raster td {
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 /* Die WERKZEUGLEISTE der Katalogliste traegt einen Schalter des Wirts (die

@@ -300,6 +300,13 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     //  Die Stelle auf der Seite
     // =====================================================================
 
+    /// <summary>
+    /// Das Markup ohne die Ereigniskennungen des Zeichenlaufs (<c>blazor:onpointerenter="6"</c>):
+    /// bunit zählt sie je Instanz fort, das Bild selbst tragen sie nicht.
+    /// </summary>
+    private static string OhneKennungen(string markup)
+        => System.Text.RegularExpressions.Regex.Replace(markup, @"\s+blazor:[A-Za-z:]+=""[^""]*""", "");
+
     private static WirtschaftlichkeitStand Stand() => new WirtschaftlichkeitStand
     {
         Varianten = new[]
@@ -400,6 +407,75 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         var ohne = Render<WirtschaftlichkeitSeite>(p => p.Add(x => x.Laden, () => Stand()));
         IElement sicherOhne = ohne.FindAll("section.epos-gruppenkopf")[1];
         Assert.Empty(sicherOhne.QuerySelector(".epos-wirt-spanne-teil")!.QuerySelectorAll(".epos-diagramm-svg"));
+    }
+
+    /// <summary>
+    /// ETAPPE E8a (Frage E6‑Q1, Anwender 23.09.2026: „ja — dieselben Bausteine wie unter
+    /// ‚Wie sicher ist das?'"; Mockup-Anhang U49): <b>Block 4 „Unsicherheit" der
+    /// ValERI-Ansicht zeigt Spannenbild und Verlauf</b> — das Spannenbild unter der
+    /// Bandbreite, der Verlauf vor der Sensitivität, wie in „Wie sicher ist das?".
+    ///
+    /// <para><b>Dieselben Bausteine, dieselben Daten:</b> Der Verlauf ist die eine
+    /// Komponente mit DERSELBEN Datenseite (ihr Zeichenweg wird gerufen), das Spannenbild
+    /// dasselbe Fragment mit dem Modell der Ansicht — sein Markup gleicht Zeichen für
+    /// Zeichen dem der Darstellung „Kennzahlen". Es steht immer nur eine Darstellung auf
+    /// der Seite, also genau ein Verlauf.</para>
+    /// </summary>
+    [Fact]
+    public void Block_4_zeigt_Spannenbild_und_Verlauf_mit_denselben_Bausteinen()
+    {
+        WirtschaftlichkeitStand stand = Stand();
+        stand.Ansicht.Spannenbild = ChartRenderer.KapitalwertSpanneModell(
+            new List<ChartRenderer.Spannenbalken>
+            {
+                new ChartRenderer.Spannenbalken { Name = "WP klein", Worst = 10100.0, Erwartet = 12300.0, Best = 14600.0 }
+            }, "Stamm", null);
+        int gezeichnet = 0;
+        var dienste = new VerlaufDienste { Zeichnen = _ => { gezeichnet++; return Ansicht(); } };
+
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () => stand)
+            .Add(x => x.Verlauf, dienste));
+        // Verglichen wird das gezeichnete SVG ohne die Ereigniskennungen des Zeichenlaufs:
+        // Rahmen und Datenelemente tragen je Instanz eigene Kennungen, die bunit fortzählt.
+        string spanneKennzahlen = OhneKennungen(cut.FindAll("section.epos-gruppenkopf")[1]
+                                     .QuerySelector(".epos-wirt-spanne-teil svg")!.OuterHtml);
+
+        int vorher = gezeichnet;
+        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[1].Click();   // ValERI-Bewertung
+
+        IElement block4 = cut.FindAll("section.epos-gruppenkopf")[3];
+        Assert.Equal("4 · Unsicherheit", block4.QuerySelector(".epos-gruppenkopf-titel")!.TextContent.Trim());
+
+        string[] teile = block4.QuerySelectorAll(
+                ".epos-wirt-bandbreite-teil, .epos-wirt-spanne-teil, .epos-wirt-verlauf-teil, .epos-wirt-sensitivitaet-teil")
+            .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(4, teile.Length);
+        Assert.Contains("epos-wirt-bandbreite-teil", teile[0]);
+        Assert.Contains("epos-wirt-spanne-teil", teile[1]);
+        Assert.Contains("epos-wirt-verlauf-teil", teile[2]);
+        Assert.Contains("epos-wirt-sensitivitaet-teil", teile[3]);
+
+        // Das Spannenbild: dasselbe Fragment, dasselbe Modell — dasselbe Markup.
+        IElement spanne = block4.QuerySelector(".epos-wirt-spanne-teil")!;
+        Assert.NotNull(spanne.QuerySelector("[data-marke='nulllinie']"));
+        Assert.NotNull(spanne.QuerySelector("[data-marke='reihe:WP klein']"));
+        Assert.Contains("data-wert=", spanneKennzahlen);
+        Assert.Equal(spanneKennzahlen, OhneKennungen(spanne.QuerySelector("svg")!.OuterHtml));
+
+        // Der Verlauf: dieselbe Komponente mit derselben Datenseite, Bild und Haken.
+        IRenderedComponent<KapitalwertVerlaufAbschnitt> verlauf = cut.FindComponent<KapitalwertVerlaufAbschnitt>();
+        Assert.Single(cut.FindComponents<KapitalwertVerlaufAbschnitt>());
+        Assert.Same(dienste, verlauf.Instance.Dienste);
+        Assert.True(gezeichnet > vorher, "Der Verlauf in Block 4 hat seinen Zeichenweg nicht gerufen.");
+        IElement verlaufTeil = block4.QuerySelector(".epos-wirt-verlauf-teil")!;
+        Assert.Single(verlaufTeil.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.Equal(5, verlaufTeil.QuerySelectorAll("input.epos-schalter-kasten").Length);
+
+        // Zurück zu „Kennzahlen": wieder genau EIN Verlauf, in „Wie sicher ist das?".
+        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[0].Click();
+        Assert.Single(cut.FindComponents<KapitalwertVerlaufAbschnitt>());
+        Assert.Single(cut.FindAll("section.epos-gruppenkopf")[1].QuerySelectorAll(".epos-wirt-verlauf-teil"));
     }
 
     /// <summary>

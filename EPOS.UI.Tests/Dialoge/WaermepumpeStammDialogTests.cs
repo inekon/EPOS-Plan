@@ -1133,4 +1133,62 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Herkunft" && z.Abweichend);
         Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name.StartsWith("Nennleistung", StringComparison.Ordinal) && z.Abweichend);
     }
+
+    // =================================================================================
+    // „Import…" als Zweitweg (Konzept Administrationsdialoge 7.1 d)
+    // =================================================================================
+
+    /// <summary>Der kleinste Parametersatz des Wärmepumpenimports (VDI 3805 Blatt 22).</summary>
+    private static IReadOnlyDictionary<string, object> WpImportGaben() => new Dictionary<string, object>
+    {
+        ["Art"] = KatalogImportArt.Waermepumpe,
+        ["ProfilVorgabe"] = KatalogImportProfil.Finde(KatalogImportArt.Waermepumpe,
+                                                      EPOS.UI.Dialoge.Import.Texte.Zu),
+        ["Meldungstext"] = new Func<SpeicherEngine.PruefMeldung, string>(EPOS.UI.Dialoge.Import.Texte.Zu),
+        ["Fortschrittstext"] = new Func<ImportFortschritt, string>(EPOS.UI.Dialoge.Import.Texte.Zu)
+    };
+
+    [Fact]
+    public void Ohne_Importweg_steht_kein_Importknopf()
+    {
+        // So in der Ueberlagerung des Anlagendialogs: dort reicht niemand den Weg herein.
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-importknopf"));
+    }
+
+    [Fact]
+    public async Task Import_oeffnet_den_Waermepumpenimport_und_waehlt_danach_die_neue_Waermepumpe()
+    {
+        bool zu = false;
+        var zeilen = Liste.ToList();
+        var cut = Aufbauen(liste: () => zeilen.ToArray(), geschlossen: _ => zu = true);
+        cut.Render(p => p.Add(x => x.ImportGaben, WpImportGaben));
+
+        var knopf = cut.Find(".epos-importknopf");
+        Assert.Equal("Import…", knopf.TextContent.Trim());
+        knopf.Click();
+
+        Assert.True(cut.Instance.ImportOffen);
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Null(ueberlagerung.QuerySelector(".epos-ueberlagerung-kopf"));
+        Assert.NotNull(ueberlagerung.QuerySelector(".epos-katalogimport .epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+
+        // Esc im Import: die Stammverwaltung bleibt offen.
+        cut.Find(".epos-katalogimport").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.False(zu);
+
+        // Zweiter Anlauf: eine Waermepumpe geschrieben.
+        cut.Find(".epos-importknopf").Click();
+        zeilen.Add(new Katalogfilterzeile(3, "WP Gamma")
+            .MitText(Katalogfilterprofil.SpBezeichner, "WP Gamma"));
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Equal(3, cut.Instance.GewaehlteId);
+        Assert.Equal("„WP Gamma“ eingelesen.", cut.Instance.Status);
+    }
 }

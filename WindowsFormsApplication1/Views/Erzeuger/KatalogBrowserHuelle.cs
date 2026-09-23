@@ -69,6 +69,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Parametersatz des EIGENEN Verwaltungsfensters: derselbe wie für die
+        /// Überlagerung, aber mit Wegen, die „Import…" tragen (Konzept
+        /// Administrationsdialoge 7.1 d). Die Katalogüberlagerung eines Projektdialogs
+        /// bekommt den Knopf nicht — dort schlägt der Anwender nur nach. Gilt für den
+        /// Katalogbrowser wie für den Modulkatalog.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> MitWegen(
+            IReadOnlyDictionary<string, object> gaben, object wege)
+        {
+            return new Dictionary<string, object>(gaben) { ["Wege"] = wege };
+        }
+
+        /// <summary>
         /// Der Parametersatz, den ALLE VIER Ausprägungen teilen — Profil, Texte und
         /// die beiden Rückfragen. Die aufrufende Hülle legt ihre
         /// <see cref="KatalogBrowserWege"/>, ihre Filterlisten und ihren Editor dazu.

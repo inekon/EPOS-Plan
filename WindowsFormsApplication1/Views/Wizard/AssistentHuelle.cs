@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
             {
                 case WizardItemClass.GEBAEUDE_ITEM:
                     return GebaeudeHuelle.Gaben(id, name, ctrl.Gebaeude,
-                                                wizard: true, admin: false);
+                                                wizard: true);
 
                 case WizardItemClass.WAERMEBEDARF_ITEM:
                     return WaermebedarfExternHuelle.Gaben(null, id, name, ctrl.Waermebedarf,

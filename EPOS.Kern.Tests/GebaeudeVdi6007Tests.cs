@@ -49,19 +49,25 @@ namespace EPOS.Kern.Tests
 
             Nahe(erwartet, r.HeizlastW[4000], 1e-9);
             Nahe(erwartet, r.HeizlastW[8759], 1e-9);
-            Assert.Equal(0.0, r.KuehlenergieMwh);
+            Assert.Null(r.KuehlbedarfKwh);                       // ungekühlt: keine Kühlreihe (E32)
+            Assert.Null(r.KuehlenergieMwh);
             _ausgabe.WriteLine("Stationär: wirksamer Leitwert {0:F2} W/K, Φ_h = {1:F1} W", leitwert, erwartet);
         }
 
         /// <summary>
         /// Energiebilanz des Jahres: Heizen − Kühlen + Lasten = Abfluss über R_Rest an θ_eq und
-        /// über R_ext an θ_out + Speicheränderung der beiden Massen — aus den Blockmitteln exakt.
+        /// über R_ext an θ_out + Speicheränderung der beiden Massen — aus den Blockmitteln exakt;
+        /// gekühlt (Heiz- und Kühlanteil) und im freien Lauf ohne Kühlung (E32).
         /// </summary>
-        [Fact]
-        public void Die_Energiebilanz_des_Jahres_ist_geschlossen()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Die_Energiebilanz_des_Jahres_ist_geschlossen(bool gekuehlt)
         {
-            ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
-            GebaeudeModellEingang e = Vdi6007Probe.Eingang(g, Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang));
+            SolardatenModel[] klima = Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang);
+            GebaeudeModellEingang e = gekuehlt
+                ? Vdi6007Probe.EingangGekuehlt(Vdi6007Probe.Gekuehlt(), klima)
+                : Vdi6007Probe.Eingang(Vdi6007Probe.Gebaeude(), klima);
             ErsatzparameterRC p = e.Parameter;
             var m = new Zonenmodell2K(p, "Bilanz");
             m.Zuruecksetzen(20.0);
@@ -81,7 +87,8 @@ namespace EPOS.Kern.Tests
             }
             double speicher = (p.C_AW_Jk * (m.ThetaMAw - aw0) + p.C_IW_Jk * (m.ThetaMIw - iw0)) / 3600.0;
 
-            Assert.True(heiz > 0.0 && kuehl > 0.0, "Die Probe soll heizen und kühlen.");
+            if (gekuehlt) Assert.True(heiz > 0.0 && kuehl > 0.0, "Die Probe soll heizen und kühlen.");
+            else Assert.True(heiz > 0.0 && kuehl == 0.0, "Der freie Lauf heizt und kühlt nie (E32).");
             Assert.True(Math.Abs(zu - ab - speicher) <= 1e-7 * Math.Abs(zu) + 1e-3,
                 "Bilanz offen: zu " + zu + " Wh, ab " + ab + " Wh, Speicher " + speicher + " Wh");
         }
@@ -121,7 +128,7 @@ namespace EPOS.Kern.Tests
         public void Die_Kennzahlen_folgen_8_2_und_die_Skalierung_multipliziert_nach()
         {
             GebaeudeModellErgebnis r = Vdi6007Rechenweg.Laufen(
-                Vdi6007Probe.Eingang(Vdi6007Probe.Gebaeude(), Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang)), 3, 4711);
+                Vdi6007Probe.EingangGekuehlt(Vdi6007Probe.Gekuehlt(), Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang)), 3, 4711);
 
             Assert.Equal(r.HeizlastW.Sum() / 1e6, r.JahresheizwaermeMwh, 12);
             Assert.Equal(r.VerbrauchAltKwh / 1000.0, r.JahresheizwaermeMwh, 9);
@@ -133,7 +140,7 @@ namespace EPOS.Kern.Tests
             GebaeudeModellErgebnis s = r.Skaliert(2.5);
             Assert.Equal(2.5 * r.JahresheizwaermeMwh, s.JahresheizwaermeMwh, 9);
             Assert.Equal(2.5 * r.SpitzeKw, s.SpitzeKw, 9);
-            Assert.Equal(2.5 * r.KuehlenergieMwh, s.KuehlenergieMwh, 9);
+            Assert.Equal(2.5 * r.KuehlenergieMwh.Value, s.KuehlenergieMwh.Value, 9);
             Assert.Equal(r.VerbrauchAltKwh, s.VerbrauchAltKwh);
             Assert.Equal(r.MittlereRaumtemperaturHeizzeit, s.MittlereRaumtemperaturHeizzeit);
             Assert.Equal(r.Ueberhitzungsstunden, s.Ueberhitzungsstunden);

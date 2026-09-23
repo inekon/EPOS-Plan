@@ -28,7 +28,9 @@ namespace WindowsFormsApplication1
         /// <summary>Zeigt die Verwaltung als eigenes Fenster (<c>Masken.WechselrichterAdmin</c>).</summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
-            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), Gaben());
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) nur im eigenen Fenster.
+            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(),
+                Gaben(() => ModulImportHuelle.Gaben(ModulImportArt.Wechselrichter, "CEC")));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -38,13 +40,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben()
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            Func<IReadOnlyDictionary<string, object>> import = null)
         {
             ModulKatalogProfil profil = Profil();
             Dictionary<string, object> gaben = ModulKatalogHuelle.GemeinsameGaben(profil);
 
             gaben["Wege"] = new ModulKatalogWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                ModulImportGaben = import,
                 // W14a-E-10: Die Herstellerklappliste faellt zugunsten der Spalte -
                 // "enthaelt SMA" trifft nebenbei die Schreibvarianten desselben
                 // Hauses (offener Punkt O-4), die eine Klappliste getrennt gefuehrt

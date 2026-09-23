@@ -917,7 +917,8 @@ namespace EPOS.Kern.Tests
                     {
                         "Kennzahlen im Szenario „Erwartet“",
                         "Kapitalwert-Verlauf über den Betrachtungszeitraum",
-                        "Mehrjahresübersicht der Zahlungsströme",
+                        "Von der Investition zur Kapitalwertdifferenz",   // E8a (U41), WIRT_BR_TITEL
+                        "Mehrjahresübersicht der Zahlungsströme",         // darin je Tafel das Zahlungsstrombild (U42), keine Tabelle
                         "Szenarien Ungünstig / Erwartet / Günstig",
                     },
                     AbschnitteDesKapitels(body, "Wirtschaftlichkeit").ToArray());

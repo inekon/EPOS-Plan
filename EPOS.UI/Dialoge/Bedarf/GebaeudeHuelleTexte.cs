@@ -249,7 +249,7 @@ public sealed class GebaeudeHuelleTexte
 
     /// <summary><c>GEBK_ZEILE_KUEHLUNG_AUS</c> — „{0}" Maximalraumtemperatur [°C].</summary>
     public string ZeileKuehlungAus { get; set; }
-        = "Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.";
+        = "Ohne Haken wird das Gebäude nicht gekühlt: Es läuft frei, und die Überhitzung wird an der Maximalraumtemperatur ({0} °C) gezählt.";
 
     /// <summary><c>GEBK_ZEILE_KUEHLUNG_PROJEKT</c></summary>
     public string ZeileKuehlungProjekt { get; set; }

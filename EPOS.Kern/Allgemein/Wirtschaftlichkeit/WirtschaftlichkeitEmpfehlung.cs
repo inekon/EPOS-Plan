@@ -591,7 +591,8 @@ namespace WindowsFormsApplication1
                 Erwartet = erwartet,
                 Guenstig = guenstig,
                 Herkunft = gepflegt ? MyResource.Resource.WIRT_ANN_GEPFLEGT
-                                    : MyResource.Resource.WIRT_ANN_VORGABE
+                                    : MyResource.Resource.WIRT_ANN_VORGABE,
+                Gepflegt = gepflegt
             };
         }
 
@@ -633,6 +634,33 @@ namespace WindowsFormsApplication1
                      : "±" + Math.Abs(unguenstig).ToString("0.#", kultur);
             return unguenstig.ToString("+0.#;−0.#;0", kultur) + " / " +
                    guenstig.ToString("+0.#;−0.#;0", kultur);
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U48, Mockup „Was ist angenommen?"): die <b>Fußzeile</b> des Abschnitts —
+        /// wie viele Szenarien gerechnet sind und woher ihre Annahmen kommen: „Drei Szenarien
+        /// gerechnet · Annahmen aus Vorgaben, nichts gepflegt". Ist ein Feld des
+        /// Szenario-Parametersatzes gepflegt, nennt die Zeile die gepflegten Größen — mit den
+        /// Namen und nach der Regel der Annahmentafel (<see cref="Annahmen"/>), damit Tafel
+        /// und Fußzeile dasselbe sagen.
+        /// </summary>
+        /// <param name="gerechnet">Die Zahl der Szenarien, für die ein Ergebnis vorliegt (0 … 3).</param>
+        /// <param name="p">Der Parametersatz der Gruppe; <c>null</c> = die Herkunft bleibt ungesagt.</param>
+        /// <param name="kultur">Zahlenformat; <c>null</c> = aktuelle Kultur.</param>
+        public static string Szenarienfuss(int gerechnet, WirtschaftlichkeitParameter p, CultureInfo kultur)
+        {
+            if (kultur == null) kultur = CultureInfo.CurrentCulture;
+            string lauf = gerechnet >= 3 ? MyResource.Resource.WIRT_FUSS_DREI
+                        : gerechnet <= 0 ? MyResource.Resource.WIRT_FUSS_KEINE
+                        : string.Format(kultur, MyResource.Resource.WIRT_FUSS_TEIL, gerechnet);
+            if (p == null) return lauf;
+
+            var gepflegt = new List<string>();
+            foreach (AnnahmeZeile z in Annahmen(p, kultur))
+                if (z.Gepflegt) gepflegt.Add(z.Groesse);
+            return lauf + " · " + (gepflegt.Count == 0
+                ? MyResource.Resource.WIRT_FUSS_VORGABEN
+                : string.Format(kultur, MyResource.Resource.WIRT_FUSS_GEPFLEGT, string.Join(", ", gepflegt.ToArray())));
         }
 
         /// <summary>
@@ -767,5 +795,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>„Vorgabe", „gepflegt" oder „Projektwert …".</summary>
         public string Herkunft = "";
+
+        /// <summary>ETAPPE E8a (U48): Trägt der Satz Ungünstig oder Günstig für diese Größe
+        /// einen gepflegten Wert? Der Betrachtungszeitraum ist Projektwert und nie gepflegt.</summary>
+        public bool Gepflegt;
     }
 }

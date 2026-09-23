@@ -6,11 +6,13 @@
    Pfeile, unten der Detailblock - dasselbe Muster wie die fuenf
    Erzeugerdialoge der Welle 6.
 
-   DREI BETRIEBSARTEN (Risiko R-W9-2):
+   ZWEI BETRIEBSARTEN (Risiko R-W9-2):
    * Projekt:    beide Listen, OK/Abbrechen.
    * Assistent:  beide Listen, KEINE Schlussleiste (der Rahmen hat sie).
-   * Verwaltung: NUR der Katalog - Projektliste, Pfeile und "Aendern" sind
-                 weg (Form_Gebaeude_Load:608-620, Masken.GebaeudeAdmin).
+   Die dritte, die Verwaltung (Masken.GebaeudeAdmin, nur der Katalog), ist seit
+   Stufe 5 der Neuordnung der Administrationsdialoge (V16) eine eigene
+   Komponente: GebaeudeAdminDialog. Projekt und Assistent behalten ihre
+   Anordnung.
 
    DIE ZEILE IST DER SCHLUESSEL, nicht ihr Index und nicht die Stamm-Id: Zwei
    gleiche Gebaeude im Projekt teilen sich eine Stamm-Id, und btn_Entfernen
@@ -57,12 +59,9 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* Die zwei Listen, die Pfeilspalte und - in der Verwaltung - der Katalog
-       allein: alles im Baustein (Anwenderentscheid #76). "Admin" ist genau die
-       Betriebsart Form_Gebaeude_Load:608-620, in der es keine Projektliste
-       gibt; sie wird zu NurRechts. *@
+    @* Die zwei Listen und die Pfeilspalte: alles im Baustein (Anwenderentscheid
+       #76). *@
     <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
-                        NurRechts="@Admin"
                         UebernehmenText="@BtnHinzuText" UebernehmenHinweis="@BtnHinzuHinweis"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
@@ -144,9 +143,8 @@
                zweite Fussleiste: kein primaerer, kein schliessender Knopf. Reihenfolge
                wie im Konzept: Neu... . Aendern... . Loeschen.
 
-               "Gebaeudetyp in DB aendern..." steht hier NUR in der Verwaltung
-               (Entscheid DL-Q1 b): Im Projektbetrieb traegt ihn die Fussleiste, in
-               der Verwaltung gibt es keine, die ihn tragen koennte. *@
+               "Gebaeudetyp in DB aendern..." traegt die Fussleiste (Entscheid
+               DL-Q1 b). *@
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogNeu">@BtnDbNeuText</button>
@@ -154,11 +152,6 @@
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
                         @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
-                @if (Admin && GebaeudetypGaben is not null)
-                {
-                    <button type="button" class="epos-knopf"
-                            @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
-                }
             </div>
         </Rechts>
 
@@ -198,53 +191,35 @@
 
     @if (!Wizard)
     {
-        @* ZWEI FUESSE FUER ZWEI BETRIEBSARTEN (DL-2, Schritt 7).
+        @* PROJEKT (DL-2, Schritt 7): Die Projektliste ist ein Arbeitsstand des Wirtes -
+           OK und Abbrechen behalten ihren Sinn. Die drei Aktionsknoepfe stehen links
+           vom Fueller im Aktionsschlitz der SpeichernLeiste, nicht in einer zweiten
+           Leiste. *@
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+            <Aktionen>
+                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                        @onclick="BeiAendern">@BtnAendernText</button>
 
-           VERWALTUNG: Jede Katalogaktion (Neu, Aendern, Loeschen, Gebaeudetyp) schreibt
-           SOFORT in die Datenbank. Ein "Abbrechen" naehme davon nichts zurueck - es war
-           eine Behauptung, die nicht stimmt. Deshalb steht hier der Schlussknopf
-           "Beenden" allein, wie in jedem Katalogdialog ohne Arbeitsstand (Konzept
-           Abschnitt 1, Satz 3; Vorbild ModulKatalogDialog).
-
-           PROJEKT: Die Projektliste ist ein Arbeitsstand des Wirtes - OK und Abbrechen
-           behalten ihren Sinn. Die drei Aktionsknoepfe stehen links vom Fueller im
-           Aktionsschlitz der SpeichernLeiste, nicht in einer zweiten Leiste. *@
-        @if (Admin)
-        {
-            <div class="epos-leiste">
-                <span class="epos-leiste-fueller"></span>
-                <button type="button" class="epos-knopf epos-knopf--primaer"
-                        @onclick="BeiBeenden">@BtnBeendenText</button>
-            </div>
-        }
-        else
-        {
-            <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
-                <Aktionen>
+                @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
+                   Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
+                   Delegat kein Knopf - in der Katalogverwaltung gibt es kein
+                   Projekt und damit auch nichts zu rechnen. *@
+                @if (BedarfGaben is not null)
+                {
                     <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            @onclick="BeiAendern">@BtnAendernText</button>
+                            title="@BtnSimulationHinweis"
+                            @onclick="BeiSimulation">@BtnSimulationText</button>
+                }
 
-                    @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
-                       Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
-                       Delegat kein Knopf - in der Katalogverwaltung gibt es kein
-                       Projekt und damit auch nichts zu rechnen. *@
-                    @if (BedarfGaben is not null)
-                    {
-                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                                title="@BtnSimulationHinweis"
-                                @onclick="BeiSimulation">@BtnSimulationText</button>
-                    }
-
-                    @* Der Zwilling des Menuepunkts "Gebaeudetypen" (Entscheid DL-Q1 b):
-                       der Weg aus der Gebaeudemaske heraus ist der kuerzere. *@
-                    @if (GebaeudetypGaben is not null)
-                    {
-                        <button type="button" class="epos-knopf"
-                                @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
-                    }
-                </Aktionen>
-            </SpeichernLeiste>
-        }
+                @* Der Zwilling des Menuepunkts "Gebaeudetypen" (Entscheid DL-Q1 b):
+                   der Weg aus der Gebaeudemaske heraus ist der kuerzere. *@
+                @if (GebaeudetypGaben is not null)
+                {
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
+                }
+            </Aktionen>
+        </SpeichernLeiste>
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W9.1) ------------------------- *@
@@ -376,9 +351,6 @@
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
-    /// <summary>Katalogverwaltung: kein Projektteil.</summary>
-    [Parameter] public bool Admin { get; set; }
-
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -457,13 +429,6 @@
     [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
     [Parameter] public string BtnDbLoeschenText { get; set; } = "Gebäude in DB löschen";
     [Parameter] public string BtnGebTypText { get; set; } = "Gebäudetyp in DB ändern...";
-
-    /// <summary>
-    /// Beschriftung des Schlussknopfes der KATALOGVERWALTUNG — <c>GEB_BTN_BEENDEN</c>.
-    /// Dort schreibt jede Aktion sofort; es gibt nichts zu bestätigen und nichts
-    /// zurückzunehmen (DL-2, Schritt 7).
-    /// </summary>
-    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
 
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
@@ -560,8 +525,7 @@
     {
         ArtenLaden();
         KatalogLaden(ausBaujahrwahl: false);
-        if (!Admin) ProjektauswahlNachziehen();
-        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+        ProjektauswahlNachziehen();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
     }
@@ -604,7 +568,8 @@
             BeschreibungLesen = () => _detailBeschreibung,
             WohnflaecheLesen = () => _detailWohnflaeche,
             AngabeartLesen = () => _detailEinheit,
-            VerwaltungLesen = () => Admin
+            // Die Verwaltung ist seit Stufe 5 der Neuordnung GebaeudeAdminDialog.
+            VerwaltungLesen = () => false
         };
     }
 
@@ -646,7 +611,7 @@
     /// </summary>
     protected override void OnParametersSet()
     {
-        if (!Admin) ProjektauswahlNachziehen();
+        ProjektauswahlNachziehen();
     }
 
     private void ProjektauswahlNachziehen()
@@ -951,13 +916,6 @@
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
-
-    /// <summary>
-    /// „Beenden" der Katalogverwaltung — derselbe Ausgang, den dort bis zum Umbau
-    /// „OK" trug: Der Katalog ist bereits geschrieben, die Hülle bekommt
-    /// <c>true</c> (DL-2, Schritt 7; Vorbild <c>ModulKatalogDialog.BeiBeenden</c>).
-    /// </summary>
-    private Task BeiBeenden() => Geschlossen.InvokeAsync(true);
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(false);

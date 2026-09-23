@@ -210,7 +210,7 @@ namespace EPOS.Kern.Tests
             Pruefe(typeof(GebaeudeKatalogDialog), GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu));
             Pruefe(typeof(GebaeudeWohnflaecheDialog), GebaeudeWohnflaecheHuelle.Gaben(new Z_ProjGebModel(), "vor 1919"));
             Pruefe(typeof(GebaeudeDialog), GebaeudeHuelle.Gaben(1045, "", Z_ProjGebCtrl.LiesProjekt(1045),
-                                                                 wizard: false, admin: false));
+                                                                 wizard: false));
 
             static void Pruefe(Type komponente, IReadOnlyDictionary<string, object> gaben)
             {
@@ -249,7 +249,7 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(modelle);
 
             IReadOnlyDictionary<string, object> gaben =
-                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false, admin: false);
+                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
             var zeilen = (List<GebaeudeProjektZeile>)gaben["Zeilen"];
 
             foreach (GebaeudeProjektZeile z in zeilen)
@@ -300,8 +300,12 @@ namespace EPOS.Kern.Tests
             Assert.True(tagesbilanz.SpitzeQuantil95Kw <= tagesbilanz.MaxLastKw + 1e-9);
             Assert.Null(tagesbilanz.KuehlenergieMwh);
             Assert.Null(tagesbilanz.MittlereRaumtemperaturC);
-            Assert.NotNull(vdi.KuehlenergieMwh);
-            Assert.NotNull(vdi.KuehlstundenH);
+            // E32: 1045 wird nicht gekühlt - das Gebäude läuft frei, ohne Kühlbedarf, mit
+            // Überhitzungsstunden.
+            Assert.Null(vdi.KuehlenergieMwh);
+            Assert.Null(vdi.KuehlstundenH);
+            Assert.Null(vdi.KuehlbedarfKwh);
+            Assert.NotNull(vdi.UeberhitzungsstundenH);
             Assert.InRange(vdi.MittlereRaumtemperaturC!.Value, 10.0, 35.0);
 
             // Der Zwang schreibt nichts.

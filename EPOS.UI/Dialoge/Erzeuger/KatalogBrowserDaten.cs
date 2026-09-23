@@ -94,4 +94,13 @@ public sealed class KatalogBrowserWege
     /// <c>…StammCtrl.Duplizieren</c>. Ohne ihn steht der Knopf nicht da.
     /// </summary>
     public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; init; }
+
+    /// <summary>
+    /// <b>„Import…"</b> (Konzept Administrationsdialoge 7.1 d, Zweitweg zu V14): der
+    /// Parametersatz des <c>KatalogImportDialog</c> dieses Katalogs
+    /// (<c>KatalogImportHuelle.Gaben</c>) — derselbe Import wie im Menü „Daten &amp;
+    /// Import", hier als Überlagerung. Ohne ihn steht der Knopf nicht da (das BHKW hat
+    /// keinen Herstellerimport).
+    /// </summary>
+    public Func<IReadOnlyDictionary<string, object>>? ImportGaben { get; init; }
 }

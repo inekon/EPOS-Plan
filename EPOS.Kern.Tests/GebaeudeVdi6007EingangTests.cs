@@ -98,6 +98,27 @@ namespace EPOS.Kern.Tests
                                                       Zeitbezug bezug = GebaeudeKlimaweg.ZEITBEZUG_VORGABE)
             => GebaeudeModellEingang.Bauen(g, klima, Wochenende(), LAENGE, BREITE, bezug);
 
+        /// <summary>
+        /// Das Probegebäude mit wirksamer Kühlung (Stufe KU1): Haken, Kühlsollwert und, wenn
+        /// gesetzt, Kühlleistungsgrenze — wirksam nur in einem Eingang mit Projektschalter
+        /// (<see cref="EingangGekuehlt"/>). Mit dem Kühlsollwert gleich der oberen Raumtemperatur
+        /// (24 °C) und ohne Grenze regelt der Löser genau dort, wo er vor Entscheid E32 jedes
+        /// Gebäude an θ_max hielt — die Proben, die Heiz- UND Kühlanteil brauchen, rechnen so.
+        /// </summary>
+        internal static ProjektGebaeudeModel Gekuehlt(double sollwert = 24.0, double? grenzeKw = null)
+        {
+            ProjektGebaeudeModel g = Gebaeude();
+            g.Kuehlung_Aktiv = true;
+            g.Kuehl_Sollwert = sollwert;
+            g.Kuehlleistung_Max = grenzeKw;
+            return g;
+        }
+
+        /// <summary>Wie <see cref="Eingang"/>, in einem Projekt mit Kühlbetrieb (Projektschalter ein).</summary>
+        internal static GebaeudeModellEingang EingangGekuehlt(ProjektGebaeudeModel g, SolardatenModel[] klima)
+            => GebaeudeModellEingang.Bauen(g, klima, Wochenende(), LAENGE, BREITE, GebaeudeKlimaweg.ZEITBEZUG_VORGABE,
+                                           kuehlbetrieb: true);
+
         internal static KlimakalenderGemeinsam Kalender(SolardatenModel[] klima)
         {
             var mo = new int[12];
@@ -328,7 +349,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(16.0, e.ThetaSoll[3 * 24 + 12]);
             Assert.Equal(12.0, e.ThetaSoll[99 * 24 + 12]);   // Ferien vor Wochenende
             Assert.Equal(12.0, e.ThetaSoll[100 * 24 + 2]);
-            Assert.Equal(24.0, e.ThetaMax[4000]);
+
+            // E32: Ohne wirksame Kühlung hat der Löser keine obere Grenze - das Gebäude läuft
+            // frei; die obere Raumtemperatur bleibt allein die Grenze der Überhitzungskennzahl.
+            Assert.True(double.IsPositiveInfinity(e.ThetaMax[4000]));
+            Assert.Equal(24.0, e.ThetaMaxWert);
         }
 
         [Fact]

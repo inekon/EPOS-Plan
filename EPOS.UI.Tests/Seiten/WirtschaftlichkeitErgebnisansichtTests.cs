@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -15,8 +16,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Klappliste, die nur die Tafeln darunter steuert, die Sensitivität mit Steigung, der
 /// Hinweistext unter der Annahmentafel (U10), die Deklarationen als Klappblock, die
 /// Nutzungsdauer- und die Nr.-31-Zeile, „— ‹Grund›" statt einer Null (Q16), der Knopf
-/// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den Blöcken 1, 3, 4, 5 und der
-/// benannten Lücke für Block 2 (E8).
+/// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den fünf Blöcken — Block 2 mit den
+/// Zahlungsreihen oder, ohne Lauf, seiner benannten Hinweiszeile (E8a).
 ///
 /// <para><b>Kulturpinnung</b>: Die Beschriftungen kommen aus dem Bündel
 /// <see cref="WirtschaftlichkeitSeiteTexte"/> und damit aus <c>MyResource</c>; die
@@ -467,6 +468,188 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     // =====================================================================
+    //  U46 — die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E8a (U46): In „Woraus entsteht die Zahl?" steht ZUERST die Gliederung des
+    /// Kapitalwerts — <b>je Bestandteil Barwert und Nominalsumme</b> (die Investition ohne:
+    /// sie fließt im Jahr 0), als letzte Spalte die Differenz Leitversion − Referenz, als
+    /// letzte Zeile der Nettobarwert. <b>Die Differenzspalte ergibt in der Summe die
+    /// Kapitalwertdifferenz.</b>
+    /// </summary>
+    [Fact]
+    public void Die_Gliederung_traegt_je_Bestandteil_Barwert_und_Nominalsumme_und_die_Differenzspalte()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        stand.Ansicht.BestandteileTitel = "Gliederung des Kapitalwerts — Szenario Erwartet";
+        stand.Ansicht.BestandteileUnterzeile = "Barwert, darunter die Nominalsumme · i = 3,0 % · T = 20 a";
+        var cut = Zeige(stand);
+
+        IElement woraus = Abschnitt(cut, 2);
+        IElement tafel = woraus.QuerySelector(".epos-wirt-bestandteile")!;
+        Assert.Contains("Gliederung des Kapitalwerts — Szenario Erwartet", woraus.QuerySelector(".epos-untergruppe")!.TextContent);
+        // Sie steht VOR der Zeilentafel.
+        Assert.True(cut.Markup.IndexOf("epos-wirt-bestandteile", StringComparison.Ordinal) <
+                    cut.Markup.IndexOf("epos-wirt-gliederung", StringComparison.Ordinal));
+        Assert.Equal(new[] { "Bestandteil", "Stamm", "WP klein", "BHKW", "Differenz WP klein − Stamm" },
+                     tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray());
+
+        IReadOnlyList<IElement> zeilen = tafel.QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal(7, zeilen.Count);
+        for (int r = 0; r < 6; r++)
+        {
+            IReadOnlyList<IElement> zellen = zeilen[r].QuerySelectorAll("td").ToList();
+            for (int s = 0; s < 3; s++)                                          // je Stand
+            {
+                IElement? nominal = zellen[s].QuerySelector(".epos-wirt-nominal");
+                if (r == 0) Assert.Null(nominal);                               // Investition: Jahr 0
+                else Assert.StartsWith("nominal ", nominal!.TextContent);
+                Assert.False(string.IsNullOrWhiteSpace(Barwert(zellen[s])));
+            }
+            Assert.Null(zellen[3].QuerySelector(".epos-wirt-nominal"));         // Differenzspalte ohne
+        }
+        Assert.Contains("epos-wirt-summenzeile", zeilen[6].ClassList);
+        Assert.Equal("Nettobarwert", zeilen[6].QuerySelector("th")!.TextContent.Trim());
+
+        // Die Differenzspalte ergibt in der Summe die Kapitalwertdifferenz.
+        double summe = 0;
+        for (int r = 0; r < 6; r++) summe += Zahl(Barwert(zeilen[r].QuerySelectorAll("td")[3]));
+        Assert.Equal(Zahl(Barwert(zeilen[6].QuerySelectorAll("td")[3])), summe);
+        Assert.Equal(12300.0, summe);
+    }
+
+    /// <summary>
+    /// Die Gliederung folgt der Szenario-Klappliste wie die Tafel darunter; ohne Jahresreihen
+    /// steht an ihrer Stelle eine benannte Zeile, und die Zeilentafel bleibt.
+    /// </summary>
+    [Fact]
+    public void Die_Gliederung_folgt_der_Klappliste_und_nennt_ihr_Fehlen()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        var cut = Zeige(stand, p => p.Add(x => x.Anzeigen, (int id) =>
+        {
+            ErgebnisAnsicht neu = VolleAnsicht();
+            neu.Bestandteile = Bestandteile("−66.000");
+            neu.BestandteileTitel = "Gliederung des Kapitalwerts — Szenario Ungünstig";
+            return neu;
+        }));
+
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+
+        IElement woraus = Abschnitt(cut, 2);
+        Assert.Contains("Szenario Ungünstig", woraus.QuerySelector(".epos-untergruppe")!.TextContent);
+        Assert.Equal("−66.000", Barwert(woraus.QuerySelectorAll(".epos-wirt-bestandteile tbody tr")[0]
+                                              .QuerySelectorAll("td")[1]));
+
+        var ohne = Zeige();
+        IElement leer = Abschnitt(ohne, 2);
+        Assert.Empty(leer.QuerySelectorAll(".epos-wirt-bestandteile"));
+        Assert.Contains(leer.QuerySelectorAll(".epos-herleitung-text"),
+                        e => e.TextContent.StartsWith("Die Gliederung nach Barwert und Nominalsumme"));
+        Assert.NotNull(leer.QuerySelector(".epos-wirt-gliederung"));
+    }
+
+    /// <summary>
+    /// ETAPPE E8a (U41): Das <b>Brückenbild</b> „Von der Investition zur Kapitalwertdifferenz"
+    /// steht unter der Gliederung und vor der Zeilentafel — ein SVG-Baustein ohne Zoom mit
+    /// den Säulen der Bestandteile, der Ergebnissäule und der Nulllinie. Es folgt der
+    /// Szenario-Klappliste; ohne Bild an der Ansicht steht keines.
+    /// </summary>
+    [Fact]
+    public void Das_Brueckenbild_steht_unter_der_Gliederung_und_folgt_der_Klappliste()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Bestandteile = Bestandteile("−60.000");
+        stand.Ansicht.Bruecke = Brueckenbild(70000.0);
+        var cut = Zeige(stand, p => p.Add(x => x.Anzeigen, (int id) =>
+        {
+            ErgebnisAnsicht neu = VolleAnsicht();
+            neu.Bestandteile = Bestandteile("−66.000");
+            neu.Bruecke = Brueckenbild(64000.0);
+            return neu;
+        }));
+
+        IElement woraus = Abschnitt(cut, 2);
+        IElement bruecke = woraus.QuerySelector(".epos-wirt-bruecke-teil")!;
+        Assert.Single(bruecke.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.NotNull(bruecke.QuerySelector("[data-marke='nulllinie']"));
+        Assert.NotNull(bruecke.QuerySelector("[data-marke='reihe:ΔKW']"));
+        Assert.Equal("Energiekosten: +70.000 €",
+                     bruecke.QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+        string[] folge = woraus.QuerySelectorAll(".epos-wirt-bestandteile, .epos-wirt-bruecke-teil, .epos-wirt-gliederung")
+                               .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(3, folge.Length);
+        Assert.Contains("epos-wirt-bestandteile", folge[0]);
+        Assert.Contains("epos-wirt-bruecke-teil", folge[1]);
+        Assert.Contains("epos-wirt-gliederung", folge[2]);
+
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+        Assert.Equal("Energiekosten: +64.000 €",
+                     Abschnitt(cut, 2).QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+
+        var ohne = Zeige();
+        Assert.Empty(Abschnitt(ohne, 2).QuerySelectorAll(".epos-wirt-bruecke-teil"));
+    }
+
+    /// <summary>Ein Probebild der Brücke: drei Schritte, die Energiekosten mit <paramref name="energie"/>.</summary>
+    private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Brueckenbild(double energie)
+        => WindowsFormsApplication1.ChartRenderer.KapitalwertBrueckeModell(
+            new List<WindowsFormsApplication1.ChartRenderer.Brueckenschritt>
+            {
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Investition I₀", Wert = -60000.0 },
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Energiekosten", Wert = energie },
+                new WindowsFormsApplication1.ChartRenderer.Brueckenschritt { Name = "Restwert am Ende", Wert = 2300.0 }
+            }, null);
+
+    /// <summary>
+    /// Eine Probegliederung: Stamm, WP klein und BHKW, die Differenz WP klein − Stamm geht in
+    /// +12.300 auf. <paramref name="investitionWp"/> ist der Barwert der Investition von WP klein.
+    /// </summary>
+    private static ErgebnisMatrix Bestandteile(string investitionWp) => new ErgebnisMatrix
+    {
+        Spalten = new[] { "Bestandteil", "Stamm", "WP klein", "BHKW", "Differenz WP klein − Stamm" },
+        Zeilen = new[]
+        {
+            new MatrixZeile { Titel = "Investition I₀", Kennzeichen = "nach Zuschussabzug",
+                              Zellen = new[] { "0", investitionWp, "−90.000", "−60.000" },
+                              Unterwerte = new[] { "", "", "", "" } },
+            new MatrixZeile { Titel = "Betriebskosten",
+                              Zellen = new[] { "−10.000", "−14.000", "−12.000", "−4.000" },
+                              Unterwerte = new[] { "nominal 12.000", "nominal 17.000", "nominal 15.000", "" } },
+            new MatrixZeile { Titel = "Energiekosten", Kennzeichen = "einschließlich CO₂-Abgabe",
+                              Zellen = new[] { "−150.000", "−80.000", "−100.000", "+70.000" },
+                              Unterwerte = new[] { "nominal 190.000", "nominal 100.000", "nominal 125.000", "" } },
+            new MatrixZeile { Titel = "Erlöse", Kennzeichen = "zahlungswirksam — Block A",
+                              Zellen = new[] { "0", "+3.000", "+20.000", "+3.000" },
+                              Unterwerte = new[] { "nominal 0", "nominal 4.000", "nominal 26.000", "" } },
+            new MatrixZeile { Titel = "Ersatzbeschaffungen",
+                              Zellen = new[] { "0", "−2.000", "−5.000", "−2.000" },
+                              Unterwerte = new[] { "nominal 0", "nominal 3.000", "nominal 8.000", "" } },
+            new MatrixZeile { Titel = "Restwert am Ende",
+                              Zellen = new[] { "0", "+5.300", "+4.000", "+5.300" },
+                              Unterwerte = new[] { "nominal 0", "nominal 9.600", "nominal 7.200", "" } },
+            new MatrixZeile { Titel = "Nettobarwert", IstSumme = true,
+                              Zellen = new[] { "−160.000", "−147.700", "−183.000", "+12.300" } }
+        }
+    };
+
+    /// <summary>Der Barwert einer Zelle — ihr Text ohne die Zeile „nominal …".</summary>
+    private static string Barwert(IElement zelle)
+    {
+        string text = zelle.TextContent;
+        IElement? nominal = zelle.QuerySelector(".epos-wirt-nominal");
+        if (nominal is not null) text = text.Replace(nominal.TextContent, "");
+        return text.Trim();
+    }
+
+    /// <summary>Ein Betrag der Seite („+1.234", „−567", „0") als Zahl.</summary>
+    private static double Zahl(string text)
+        => double.Parse(text.Replace("−", "-").Replace("+", ""), NumberStyles.Number, CultureInfo.GetCultureInfo("de-DE"));
+
+    // =====================================================================
     //  V‑A — Sensitivität mit Steigung
     // =====================================================================
 
@@ -509,6 +692,50 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.NotNull(danach);
         Assert.Contains("epos-wirt-szenariohinweis", danach!.ClassList);
         Assert.StartsWith("Was ein Szenario heute variiert", danach.TextContent.Trim());
+    }
+
+    /// <summary>
+    /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Hinweistext in
+    /// „Was ist angenommen?" — je Szenario in der Reihenfolge der Bandbreite (Ungünstig ·
+    /// Erwartet · Günstig) die Investition I₀, die fälligen Ersatzbeschaffungen und der
+    /// Restwert am Ende. Ohne Jahresreihen steht keine Tafel.
+    /// </summary>
+    [Fact]
+    public void Was_daraus_im_Lauf_wird_steht_unter_dem_Hinweistext()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Laufwirkung = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Wirkung auf WP klein", "Ungünstig", "Erwartet", "Günstig" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Investition I₀", Zellen = new[] { "44.000", "40.000", "36.000" } },
+                new MatrixZeile { Titel = "Ersatzbeschaffungen fällig im Jahr", Zellen = new[] { "10 · 13 · 18", "12 · 15", "14 · 17" } },
+                new MatrixZeile { Titel = "Restwert am Ende, nominal", Zellen = new[] { "8.700", "9.600", "9.700" } }
+            }
+        };
+        var cut = Zeige(stand);
+
+        IElement annahmen = Abschnitt(cut, 3);
+        IElement hinweis = annahmen.QuerySelector(".epos-wirt-szenariohinweis")!;
+        IElement? teil = hinweis.NextElementSibling;
+        Assert.NotNull(teil);
+        Assert.Contains("epos-wirt-laufwirkung-teil", teil!.ClassList);
+        Assert.Equal("Was daraus im Lauf wird", teil.QuerySelector(".epos-untergruppe")!.TextContent);
+
+        IElement tafel = teil.QuerySelector(".epos-wirt-laufwirkung")!;
+        string[] koepfe = tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Wirkung auf WP klein", "Ungünstig", "Erwartet", "Günstig" }, koepfe);
+        // Die Szenariospalten stehen in der Reihenfolge der Bandbreite.
+        string[] bandbreite = cut.Find(".epos-wirt-bandbreite").QuerySelectorAll("thead th")
+                                 .Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(bandbreite.Skip(1).Take(3), koepfe.Skip(1));
+        Assert.Equal(new[] { "12 · 15" }, new[] { Zellen(tafel.QuerySelectorAll("tbody tr")[1])[1] });
+
+        // Ohne Jahresreihen: keine Tafel, der Hinweistext bleibt.
+        var ohne = Zeige();
+        Assert.Empty(Abschnitt(ohne, 3).QuerySelectorAll(".epos-wirt-laufwirkung"));
+        Assert.NotNull(Abschnitt(ohne, 3).QuerySelector(".epos-wirt-szenariohinweis"));
     }
 
     /// <summary>
@@ -673,11 +900,14 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Contains(b3.QuerySelectorAll(".epos-herleitung-text"),
                         e => e.TextContent.StartsWith("Maß der Vorteilhaftigkeit ist allein der Kapitalwert"));
 
-        // Block 4: Bandbreite, Vorschlag, Hinweistext, Sensitivität.
+        // Block 4: Bandbreite, Vorschlag, Hinweistext, Sensitivität — und seit E8a (E6‑Q1)
+        // die Stellen von Spannenbild und Verlauf (ohne Datenseite mit Platzhalter).
         IElement b4 = Abschnitt(cut, 3);
         Assert.NotNull(b4.QuerySelector(".epos-wirt-bandbreite"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-sensitivitaet"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-szenariohinweis"));
+        Assert.NotNull(b4.QuerySelector(".epos-wirt-spanne-teil"));
+        Assert.NotNull(b4.QuerySelector(".epos-wirt-verlauf-teil .epos-chartbild-platzhalter"));
 
         // Block 5: Deklarationen, Nr. 31 und der Berichtsknopf in seinem Fuß.
         IElement b5 = Abschnitt(cut, 4);
@@ -691,6 +921,172 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         // Die Szenario-Klappliste gehört zur Kennzahlen-Darstellung.
         Assert.Empty(cut.FindAll(".epos-wirt-szenariozeile"));
     }
+
+    /// <summary>
+    /// ETAPPE E8a (ValERI-Block 2 „Zahlungsreihen", DIN EN 17463 6.1 bis 6.4): Mit
+    /// Jahresreihen des Laufs zeigt Block 2 die Tafel des gewählten Standes im gewählten
+    /// Szenario — Vorgabe die Leitversion im Erwartungsfall —, darunter ihre Zeile; die zwei
+    /// Summenzeilen sind abgesetzt, die Hinweiszeile an der Stelle des Blocks entfällt. Die
+    /// zwei Klapplisten wählen nur, was die Hülle geliefert hat.
+    /// </summary>
+    [Fact]
+    public void Block_2_zeigt_die_Zahlungsreihen_mit_Wahl_von_Stand_und_Szenario()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (STAMM, "Stamm"), (WP, "WP klein"), (BHKW, "BHKW") };
+        stand.Ansicht.Zahlungsreihen = new[]
+        {
+            Zahlungstafel(STAMM, 0, "S0"), Zahlungstafel(WP, 0, "W0"), Zahlungstafel(WP, 2, "W2"),
+            Zahlungstafel(BHKW, 0, "B0"), Zahlungstafel(BHKW, 2, "B2")
+        };
+        var cut = Zeige(stand);
+
+        IElement b2 = Abschnitt(cut, 1);
+        Assert.Empty(b2.QuerySelectorAll(".epos-wirt-block-luecke"));
+        IElement tafel = b2.QuerySelector(".epos-wirt-zahlungsreihen")!;
+        Assert.Equal(new[] { "Jahr", "Investition I₀", "Betriebskosten", "Energiekosten", "Erlöse",
+                             "Ersatzbeschaffungen", "Restwert am Ende", "Netto nominal", "Barwert" },
+                     tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.Equal("W0", Zellen(tafel.QuerySelectorAll("tbody tr")[0])[0]);            // Leitversion, Erwartet
+        IReadOnlyList<IElement> summen = tafel.QuerySelectorAll("tbody tr.epos-wirt-summenzeile").ToList();
+        Assert.Equal(new[] { "Summe nominal", "Barwert" },
+                     summen.Select(z => z.QuerySelector("th")!.TextContent.Trim()).ToArray());
+        Assert.Contains(b2.QuerySelectorAll(".epos-herleitung-text"), e => e.TextContent == "Zeile W0");
+        Assert.Equal(WP, cut.Instance.GezeigteZahlungsreihe!.IdStand);
+
+        // Die zwei Klapplisten: Stand, dann Szenario.
+        IReadOnlyList<IElement> listen = b2.QuerySelectorAll("select").ToList();
+        Assert.Equal(2, listen.Count);
+        listen[0].Change(BHKW.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("B0", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+
+        Abschnitt(cut, 1).QuerySelectorAll("select")[1].Change("2");
+        Assert.Equal("B2", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+        Assert.Equal(2, cut.Instance.GezeigteZahlungsreihe!.Szenario);
+
+        // Ein Szenario, das der Stand nicht trägt, fällt auf Erwartet zurück.
+        Abschnitt(cut, 1).QuerySelectorAll("select")[0].Change(STAMM.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("S0", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+    }
+
+    /// <summary>
+    /// ETAPPE E8a: Passen die Jahresreihen eines Standes nicht zu den gespeicherten
+    /// Ergebnissen, sagt Block 2 es — unter der Tafel, oder an der Stelle des Blocks, wenn
+    /// es gar keine Tafel gibt.
+    /// </summary>
+    [Fact]
+    public void Block_2_nennt_die_abweichenden_Staende()
+    {
+        const string abweichend = "BHKW: Die Jahresreihen passen nicht zu den gespeicherten Ergebnissen — „Berechnen“ rechnet sie neu.";
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Zahlungshinweis = abweichend;
+        var ohneTafel = Zeige(stand);
+
+        IElement luecke = Abschnitt(ohneTafel, 1).QuerySelector(".epos-wirt-block-luecke")!;
+        Assert.Equal(abweichend, luecke.TextContent.Trim());
+        Assert.Single(Abschnitt(ohneTafel, 1).QuerySelectorAll(".epos-herleitung-text"));
+
+        WirtschaftlichkeitStand mit = Voll();
+        mit.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        mit.Ansicht.Zahlungshinweis = abweichend;
+        mit.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein") };
+        mit.Ansicht.Zahlungsreihen = new[] { Zahlungstafel(WP, 0, "W0") };
+        var mitTafel = Zeige(mit);
+
+        Assert.Contains(Abschnitt(mitTafel, 1).QuerySelectorAll(".epos-herleitung-text"), e => e.TextContent == abweichend);
+        Assert.NotNull(Abschnitt(mitTafel, 1).QuerySelector(".epos-wirt-zahlungsreihen"));
+    }
+
+    /// <summary>
+    /// ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1, Lesart a): Unter der Jahrestafel von Block 2
+    /// steht das <b>Zahlungsstrombild</b> desselben Standes im selben Szenario — ein
+    /// SVG-Baustein ohne Zoom, dessen Schichten Jahr, Spalte und Betrag nennen. Es folgt den
+    /// zwei Klapplisten; eine Tafel ohne Bild zeigt keines.
+    /// </summary>
+    [Fact]
+    public void Block_2_zeigt_das_Zahlungsstrombild_unter_der_Tafel_und_folgt_der_Wahl()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein"), (BHKW, "BHKW") };
+        ZahlungsreihenTafel wp = Zahlungstafel(WP, 0, "W0");
+        wp.Bild = Zahlungsstrombild(-500.0);
+        ZahlungsreihenTafel bhkw = Zahlungstafel(BHKW, 0, "B0");
+        bhkw.Bild = Zahlungsstrombild(-700.0);
+        stand.Ansicht.Zahlungsreihen = new[] { wp, bhkw, Zahlungstafel(BHKW, 2, "B2") };
+        var cut = Zeige(stand);
+
+        IElement b2 = Abschnitt(cut, 1);
+        IElement bild = b2.QuerySelector(".epos-wirt-zahlungsstrom-teil")!;
+        Assert.Single(bild.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.NotNull(bild.QuerySelector("[data-marke='nulllinie']"));
+        Assert.Equal("Jahr 1 · Energiekosten: −500 €",
+                     bild.QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+        Assert.NotNull(bild.QuerySelector("[data-wert='Jahr 1: Ersatzjahr']"));
+        string[] folge = b2.QuerySelectorAll(".epos-wirt-zahlungsreihen, .epos-wirt-zahlungsstrom-teil")
+                           .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(2, folge.Length);
+        Assert.Contains("epos-wirt-zahlungsreihen", folge[0]);
+        Assert.Contains("epos-wirt-zahlungsstrom-teil", folge[1]);
+
+        // Die Wahl des Standes wechselt das Bild mit der Tafel.
+        b2.QuerySelectorAll("select")[0].Change(BHKW.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("Jahr 1 · Energiekosten: −700 €",
+                     Abschnitt(cut, 1).QuerySelector(".epos-wirt-zahlungsstrom-teil rect[data-marke='reihe:Energiekosten']")!
+                                      .GetAttribute("data-wert"));
+
+        // Eine Tafel ohne Bild zeigt keines.
+        Abschnitt(cut, 1).QuerySelectorAll("select")[1].Change("2");
+        Assert.Equal("B2", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+        Assert.Empty(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsstrom-teil"));
+    }
+
+    /// <summary>Ein Probebild des Zahlungsstroms: Investition im Jahr 0, Energiekosten
+    /// <paramref name="energie"/> im Jahr 1, Einspeisung, Ersatzjahr 1.</summary>
+    private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Zahlungsstrombild(double energie)
+        => WindowsFormsApplication1.ChartRenderer.ZahlungsstromModell(
+            new List<WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe>
+            {
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe.INVEST_ERSATZ,
+                    Name = "Investition und Ersatz", JeJahr = new[] { -1000.0, -200.0 }
+                },
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = "ENERGIE", Name = "Energiekosten", JeJahr = new[] { 0.0, energie }
+                },
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = "EINSPEISUNG", Name = "Einspeiseerlös", JeJahr = new[] { 0.0, 900.0 }
+                }
+            }, new[] { 1 }, null);
+
+    /// <summary>Eine Probetafel für Block 2: die erste Zelle nennt Stand und Szenario.</summary>
+    private static ZahlungsreihenTafel Zahlungstafel(int stand, int szenario, string kennung) => new ZahlungsreihenTafel
+    {
+        IdStand = stand,
+        Szenario = szenario,
+        Unterzeile = "Zeile " + kennung,
+        Tafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Jahr", "Investition I₀", "Betriebskosten", "Energiekosten", "Erlöse",
+                              "Ersatzbeschaffungen", "Restwert am Ende", "Netto nominal", "Barwert" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "0", Zellen = new[] { kennung, "—", "—", "—", "—", "—", "−1.000", "−1.000" } },
+                new MatrixZeile { Titel = "1", Zellen = new[] { "—", "−100", "−500", "+900", "—", "—", "300", "291" } },
+                new MatrixZeile { Titel = "Summe nominal", IstSumme = true,
+                                  Zellen = new[] { "−1.000", "−100", "−500", "+900", "0", "0", "−700", "" } },
+                new MatrixZeile { Titel = "Barwert", IstSumme = true,
+                                  Zellen = new[] { "−1.000", "−97", "−485", "+874", "0", "0", "", "−709" } }
+            }
+        }
+    };
 
     /// <summary>
     /// Block 5 nennt die nicht monetären Wirkungen, wenn ein Text gepflegt ist — mit der

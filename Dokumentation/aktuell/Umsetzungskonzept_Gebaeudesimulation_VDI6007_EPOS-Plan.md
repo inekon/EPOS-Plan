@@ -452,7 +452,9 @@ Energiereihe, Temperaturen sind keine Energiemengen) und **acht Kennzahlen**
 
 **Was die achte Kennzahl ist und was nicht zu den acht zählt** (F-S4). `Ueberhitzungsstunden` [h]
 zählt die Stunden der Nutzungszeit, in denen die operative Temperatur über
-`Maximaleraumtemperatur` liegt — ab KU1 über `Kuehl_Sollwert`; im Mehrzonenkonzept (M5) trägt
+`Maximaleraumtemperatur` liegt — auch mit Kühlung gegen diese Grenze, nicht gegen den
+Kühlsollwert, und ohne wirksame Kühlung im freien Lauf (Entscheid E32,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.37); im Mehrzonenkonzept (M5) trägt
 dieselbe Größe denselben Namen. `MittlereRaumtemperaturHeizzeit` wird über die **Nutzungszeit aller
 Stunden** gebildet. `JahresheizwaermeMwh` ist die Summe **nach** der Skalierung.
 **`VerbrauchAltKwh` gehört nicht zu den acht**: Es ist der **unskalierte** Jahreswert des ersten

@@ -1,0 +1,50 @@
+﻿@* "IMPORT..." AUS EINER GERAETEVERWALTUNG (Konzept Administrationsdialoge 7.1 d,
+   Zweitweg zu V14) - der Herstellerimport als Ueberlagerung im selben Fenster.
+
+   EINE STELLE FUER DREI WIRTE: Heizkessel, Solarkollektoren und Pufferspeicher
+   (KatalogBrowserDialog), PV-Module, Wechselrichter und Stromspeicher
+   (ModulKatalogDialog) und die Waermepumpen (WaermepumpeStammDialog) oeffnen
+   denselben Import wie das Menue "Daten & Import" - den KatalogImportDialog
+   (Heizkessel, Solarkollektoren, Pufferspeicher, Stromspeicher, Waermepumpe) oder
+   den ModulImportDialog (PV-Module, Wechselrichter). Der Wirt reicht den
+   Parametersatz der Import-Huelle herein; welcher der beiden gilt, sagt, welcher
+   Satz gesetzt ist.
+
+   DAS KREUZ STEHT BEIM TITEL: Der Importdialog traegt Titel und Kreuz selbst, die
+   Ueberlagerung deshalb keinen Titel und kein Kreuz. Das ist hier mehr als Ordnung:
+   Waehrend eines Laufs nimmt der Importdialog sein Kreuz weg und deutet Esc als
+   "Lauf abbrechen" - ein Kreuz der Ueberlagerung schloesse mitten im Lauf. Deshalb
+   traegt die Ueberlagerung auch keinen Schliessweg; geschlossen wird ueber den
+   Ausgang des Importdialogs (Geschlossen: true = es wurde geschrieben). *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using EPOS.UI.Dialoge.Photovoltaik
+
+<Ueberlagerung Offen="@Offen" Titel="" Schliessbar="false" Zusatzklasse="epos-ueberlagerung--breit">
+    <KindInhalt>
+        @if (KatalogGaben is not null)
+        {
+            <KatalogImportDialog @attributes="KatalogGaben" Geschlossen="BeiGeschlossen" />
+        }
+        else if (ModulGaben is not null)
+        {
+            <ModulImportDialog @attributes="ModulGaben" Geschlossen="BeiGeschlossen" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Der Parametersatz des <c>KatalogImportDialog</c> (<c>KatalogImportHuelle.Gaben</c>); <c>null</c> = keiner.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? KatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz des <c>ModulImportDialog</c> (<c>ModulImportHuelle.Gaben</c>); <c>null</c> = keiner.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? ModulGaben { get; set; }
+
+    /// <summary>Der Import ist zu — <c>true</c>, wenn er etwas geschrieben hat.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Steht die Überlagerung? Genau dann, wenn ein Parametersatz gesetzt ist.</summary>
+    public bool Offen => KatalogGaben is not null || ModulGaben is not null;
+
+    private Task BeiGeschlossen(bool geschrieben) => Geschlossen.InvokeAsync(geschrieben);
+}

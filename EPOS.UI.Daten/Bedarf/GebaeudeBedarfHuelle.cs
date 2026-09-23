@@ -56,7 +56,8 @@ namespace WindowsFormsApplication1
                 : null;
 
             // Das Bild der Kaeltelast (Stufe KU1) - nur mit Kuehlreihe; auf dem Bestandsweg gibt
-            // es keine Reihe, der Abschnitt steht dort mit 0 und Hinweis.
+            // es keine Reihe, der Abschnitt steht dort mit 0 und Hinweis, und ein Gebaeude ohne
+            // wirksame Kuehlung laeuft frei und hat keine Kuehlreihe (E32).
             Func<bool, Zeichenmodell> kaeltebild = ergebnis.KuehlbedarfKwh != null
                 ? sortiert => Kaeltemodell(ergebnis, sortiert)
                 : null;
@@ -149,8 +150,10 @@ namespace WindowsFormsApplication1
                 SommerlueftungsstundenH = ergebnis.SommerlueftungsstundenH,
                 Vergleich = vergleich,
 
-                // Stufe KU1 (Kuehlkonzept 8.4): der Abschnitt „Kaeltebedarf".
-                KaelteAbschnitt = ergebnis.KuehlbedarfKwh != null || ergebnis.KaelteBestandsweg,
+                // Stufe KU1 (Kuehlkonzept 8.4): der Abschnitt „Kaeltebedarf" - fuer jedes Gebaeude
+                // auf dem VDI-Weg, auch ungekuehlt: Dort stehen die Kaeltezahlen als „—" (K18, E32)
+                // und die Ueberhitzungsstunden des freien Laufs.
+                KaelteAbschnitt = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007 || ergebnis.KaelteBestandsweg,
                 KaeltelastMaxKw = ergebnis.KaelteBestandsweg ? 0.0 : ergebnis.KaeltelastMaxKw,
                 VollbenutzungsstundenKaelteH = ergebnis.VollbenutzungsstundenKaelteH,
                 StundenHeizenUndKuehlenH = ergebnis.StundenHeizenUndKuehlen,
@@ -164,10 +167,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Herleitungszeilen des Abschnitts „Kältebedarf" (Stufe KU1, Kühlkonzept 8.3, 8.4):
         /// wie der Kältebedarf dieses Gebäudes entsteht — Bestandsweg (0 mit Hinweis, F-K18),
-        /// wirksame Kühlung (Sollwert, Grenze, Kanal), eingeschaltet ohne Sollwert, oder
-        /// informativ (Projekt rechnet keine Kälte bzw. Gebäude nicht gekühlt) — und danach die
-        /// Grenze der Zahl (K5), die an jeder Kältezahl steht. Die Sätze des Laufs werden
-        /// wiederverwendet, wo es sie gibt: ein Text, eine Stelle.
+        /// wirksame Kühlung (Sollwert, Grenze, Kanal), eingeschaltet ohne Sollwert, oder freier
+        /// Lauf ohne Kühlbedarf (Projekt rechnet keine Kälte bzw. Gebäude nicht gekühlt, E32) —
+        /// und danach die Grenze der Zahl (K5), die an jeder Kältezahl steht. Die Sätze des Laufs
+        /// werden wiederverwendet, wo es sie gibt: ein Text, eine Stelle.
         /// </summary>
         internal static List<string> Kaelteherleitung(GebaeudeBedarfErgebnis e)
         {
@@ -188,13 +191,13 @@ namespace WindowsFormsApplication1
                                              : Text_("GEBB_UNBEGRENZT", "unbegrenzt")));
             else if (!e.KuehlbetriebProjekt)
                 zeilen.Add(string.Format(k, Text_("GEBB_HRL_KAELTE_PROJEKT_AUS",
-                                                  "Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal."),
+                                                  "Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Das Gebäude wird nicht gekühlt und läuft frei — die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht."),
                                          obere));
             else if (e.KuehlungAktiv)
                 zeilen.Add(string.Format(k, MyResource.Resource.SIMENG_KAELTE_OHNE_SOLLWERT, e.Name));
             else
                 zeilen.Add(string.Format(k, Text_("GEBB_HRL_KAELTE_NICHT_GEKUEHLT",
-                                                  "Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal."),
+                                                  "Das Gebäude wird nicht gekühlt und läuft frei: Die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht."),
                                          obere));
 
             zeilen.Add(SimulationKaeltebedarf.GrenzeFeuchte);

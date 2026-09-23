@@ -160,10 +160,15 @@ namespace EPOS.Kern.Tests
         //  3 — Bestandsprojekte bleiben aus; die Laufzeit fragt nie (10.3, zweiter Fall)
         // =============================================================================
 
+        /// <summary>Das Referenzprojekt mit Kühlung — ausdrücklich eingeschaltet (Einfrierregel „gesäte Kältedaten").</summary>
+        private const int REFERENZ_MIT_KUEHLUNG = 1017;
+
         /// <summary>
         /// Nach KU-S2 trägt jedes vorhandene Projekt 0 — auch wenn die Programmeinstellung an
         /// ist, auch ein Projekt ohne Einstellungssatz, und auch nach dem Lesen der
-        /// Konfiguration.
+        /// Konfiguration. Die eine Ausnahme ist das Referenzprojekt mit Kühlung (1017): Es ist
+        /// ausdrücklich eingeschaltet (`Referenzlaeufe/Skripte/kuehlung_1017_referenzprojekt.py`),
+        /// nicht von der Programmeinstellung.
         /// </summary>
         [Fact]
         public void Bestandsprojekte_bleiben_aus_auch_mit_eingeschalteter_Programmeinstellung()
@@ -176,13 +181,14 @@ namespace EPOS.Kern.Tests
             foreach (DataRow p in projekte.Rows)
             {
                 int id = Convert.ToInt32(p["ID"], CultureInfo.InvariantCulture);
-                Assert.False(KonfigurationCtrl.KuehlbetriebLesen(id), "Projekt " + id);
+                bool erwartet = id == REFERENZ_MIT_KUEHLUNG;
+                Assert.True(erwartet == KonfigurationCtrl.KuehlbetriebLesen(id), "Projekt " + id);
                 KonfigurationModel m = KonfigurationCtrl.LiesProjekt(id);
                 if (m == null) { ohneSatz++; continue; }
-                Assert.False(m.Kuehlbetrieb, "Projekt " + id);
+                Assert.True(erwartet == m.Kuehlbetrieb, "Projekt " + id);
             }
             Assert.True(ohneSatz > 0, "Die Testdatenbank fuehrt kein Projekt ohne Einstellungssatz mehr.");
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Kuehlbetrieb <> 0"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Kuehlbetrieb <> 0"));
         }
 
         /// <summary>
