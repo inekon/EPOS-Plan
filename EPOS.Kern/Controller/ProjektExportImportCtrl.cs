@@ -570,11 +570,18 @@ namespace WindowsFormsApplication1
                 foreach (var k in man.fill ?? new List<KatMeta>())
                     fillRows[k.name] = LiesZeilen(ReadEntry(zip, "fill/" + k.name + ".json"));
                 // Zapfprofilgenerator: Kindzeilen mitreisender Katalogköpfe (Tagesgänge,
-                // Ereignisse). Ein Paket ohne den Abschnitt bringt keine.
-                foreach (var k in man.catalogChildren ?? new List<KindMeta>())
+                // Ereignisse). Ein Paket ohne den Abschnitt bringt keine. Schlüssel und
+                // Kindtabellen der Tww-Kataloge kommen aus den festen Tabellen dieses
+                // Programms, nicht aus dem Manifest (ZU17, N8) — sonst benannte Ablehnung.
+                if (!TwwManifestPruefen(man.catalogs, man.catalogChildren, out List<KindMeta> twwKinder, out string twwFehler))
+                {
+                    fehler = twwFehler;
+                    return -1;
+                }
+                foreach (var k in twwKinder)
                     kindRows[k.name] = LiesZeilen(ReadEntry(zip, KINDER_PRAEFIX + k.name + ".json") ?? "[]");
                 // ZU17: Der Inhaltsvergleich namensgleicher Köpfe braucht ihre Kindzeilen.
-                _twwKinderMeta = man.catalogChildren ?? new List<KindMeta>();
+                _twwKinderMeta = twwKinder;
                 _twwKindRows = kindRows;
                 TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
 
@@ -656,7 +663,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // 1a) Zapfprofilgenerator: die Kindzeilen der mitgenommenen Köpfe.
-                    TwwKinderEinspielen(v, man.catalogChildren, kindRows, katMap);
+                    TwwKinderEinspielen(v, _twwKinderMeta, kindRows, katMap);
 
                     // 1b) Referenzierte Katalogzeilen mit Original-ID auffüllen (falls im Ziel fehlend).
                     //     Sichert die referenzielle Integrität für nicht kopierte Katalogtabellen

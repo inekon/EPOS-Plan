@@ -578,6 +578,58 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, io.LetzterBericht.Count(b => b.Contains("weicht vom namensgleichen Eintrag")));
         }
 
+        /// <summary>
+        /// Ein präpariertes Manifest (N8): Kindtabelle mit fremder Verweisspalte, Kindtabelle mit
+        /// fremdem Namen, Tww-Katalog mit anderem natürlichem Schlüssel oder Primärschlüssel. Die
+        /// Bezeichner gingen sonst in SQL-Texte ein — der Import lehnt benannt ab und ändert nichts.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_praepariertem_Manifest_wird_benannt_abgelehnt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Anlegen(quelle);
+            string original = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, original));
+            (int Projekte, int Zonen, int Katalog) vorher = Bestand();
+
+            var faelle = new (string Name, Action<JsonNode> Aendern, string Erwartet)[]
+            {
+                ("Verweisspalte", m => m["catalogChildren"][0]["parentColumn"] = "ID_Tagesgangsatz] = 0 OR [ID",
+                 "unbekannte Kindtabelle"),
+                ("Kindname", m => m["catalogChildren"][0]["name"] = "Tab_Projekt",
+                 "unbekannte Kindtabelle"),
+                ("Schluessel", m => m["catalogs"].AsArray()
+                     .Single(k => (string)k["name"] == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)["naturalKey"] =
+                         new JsonArray("Bezeichner] = '' OR [Bezeichner", "Katalogversion"),
+                 TwwSchema.TAB_TWW_NUTZUNGSART_STAMM),
+                ("Primaerschluessel", m => m["catalogs"].AsArray()
+                     .Single(k => (string)k["name"] == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)["pk"] = "Bezeichner",
+                 TwwSchema.TAB_TWW_NUTZUNGSART_STAMM),
+            };
+            foreach (var f in faelle)
+            {
+                string paket = ordner.Datei("tww-" + f.Name + ".wpx");
+                File.Copy(original, paket);
+                ManifestAendern(paket, f.Aendern);
+
+                int neu = io.Importieren(paket, "Tww Manifest " + f.Name, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu <= 0, f.Name + ": Der Import haette abgelehnt werden muessen.");
+                Assert.Contains(f.Erwartet, fehler);
+                Assert.Contains("Import abgelehnt, nichts geändert", fehler);
+                Assert.Equal(vorher, Bestand());
+            }
+
+            // Das unveränderte Paket geht weiter.
+            Assert.True(io.Importieren(original, "Tww Manifest echt", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                       null, out string ok) > 0, ok);
+        }
+
         // =============================================================================
         //  Handwerkszeug
         // =============================================================================
@@ -665,6 +717,19 @@ namespace EPOS.Kern.Tests
             (Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Projekt")),
              Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone")),
              Katalogzeilen());
+
+        /// <summary>Ändert das Manifest eines Pakets an Ort und Stelle.</summary>
+        private static void ManifestAendern(string paket, Action<JsonNode> aendern)
+        {
+            using ZipArchive zip = ZipFile.Open(paket, ZipArchiveMode.Update);
+            ZipArchiveEntry m = zip.GetEntry("manifest.json");
+            JsonNode manifest;
+            using (var r = new StreamReader(m.Open())) manifest = JsonNode.Parse(r.ReadToEnd());
+            aendern(manifest);
+            m.Delete();
+            using (var w = new StreamWriter(zip.CreateEntry("manifest.json").Open()))
+                w.Write(manifest.ToJsonString());
+        }
 
         /// <summary>
         /// Nimmt einen Katalog aus dem Paket: die Datei unter <c>catalogs/</c> und ihren

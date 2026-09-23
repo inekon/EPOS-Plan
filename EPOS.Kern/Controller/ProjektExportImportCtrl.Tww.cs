@@ -99,7 +99,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die internen Spalten der Tww-Kataloge, die nie in ein Paket gehen.</summary>
         private static readonly string[] TWW_INTERN = { "Beleg", "Freigabe" };
 
-        /// <summary>Die Kindtabellen des Pakets (Manifest) — für den Inhaltsvergleich (ZU17).</summary>
+        /// <summary>
+        /// Die Kindtabellen des Pakets für Inhaltsvergleich (ZU17) und Einspielen — nie die
+        /// Angaben des Manifests selbst, sondern die festen Einträge aus <see cref="TWW_KINDER"/>,
+        /// die das Manifest nennt (<see cref="TwwManifestPruefen"/>, N8).
+        /// </summary>
         private List<KindMeta> _twwKinderMeta = new List<KindMeta>();
 
         /// <summary>Die Kindzeilen des Pakets je Kindtabelle — für den Inhaltsvergleich (ZU17).</summary>
@@ -134,6 +138,50 @@ namespace WindowsFormsApplication1
         private static bool IstTwwStamm(string tabelle) =>
             tabelle != null && tabelle.StartsWith("Tab_Tww", StringComparison.OrdinalIgnoreCase) &&
             tabelle.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Prüft die Tww-Angaben des Manifests, bevor etwas geschrieben wird (ZU17, N8): Ein
+        /// Tww-Katalog muss Primärschlüssel <c>ID</c> und genau den natürlichen Schlüssel aus
+        /// <see cref="KATALOG_NATURALKEY"/> tragen, eine Kindtabelle muss mit Name, Kopf und
+        /// Verweisspalte in <see cref="TWW_KINDER"/> stehen. Die Bezeichner, die in SQL-Texte
+        /// eingesetzt werden, kommen damit aus diesen festen Tabellen, nie aus dem Paket.
+        /// <paramref name="kinder"/> sind die festen Einträge der genannten Kindtabellen.
+        /// </summary>
+        private static bool TwwManifestPruefen(List<KatMeta> kataloge, List<KindMeta> manifestKinder,
+                                               out List<KindMeta> kinder, out string fehler)
+        {
+            kinder = new List<KindMeta>();
+            fehler = null;
+            foreach (KatMeta k in kataloge ?? new List<KatMeta>())
+            {
+                if (k == null || !IstTwwKatalog(k.name)) continue;
+                string[] soll = KATALOG_NATURALKEY[k.name];
+                if (!string.Equals(k.pk, "ID", StringComparison.OrdinalIgnoreCase)
+                    || k.naturalKey == null || !k.naturalKey.SequenceEqual(soll, StringComparer.OrdinalIgnoreCase))
+                {
+                    fehler = "Das Paket beschreibt den Katalog " + k.name + " anders als dieses Programm (Schlüssel). " +
+                             "Import abgelehnt, nichts geändert.";
+                    return false;
+                }
+            }
+            foreach (KindMeta m in manifestKinder ?? new List<KindMeta>())
+            {
+                var fest = TWW_KINDER.Where(t => m != null
+                    && string.Equals(t.Kind, m.name, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(t.Kopf, m.parent, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(t.Spalte, m.parentColumn, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals("ID", m.pk, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (fest.Count != 1)
+                {
+                    fehler = "Das Paket führt eine unbekannte Kindtabelle " + (m?.name ?? "(ohne Namen)") +
+                             " der Tww-Kataloge. Import abgelehnt, nichts geändert.";
+                    return false;
+                }
+                if (kinder.Any(x => string.Equals(x.name, fest[0].Kind, StringComparison.OrdinalIgnoreCase))) continue;
+                kinder.Add(new KindMeta { name = fest[0].Kind, parent = fest[0].Kopf, parentColumn = fest[0].Spalte, pk = "ID" });
+            }
+            return true;
+        }
 
         private void TwwZuruecksetzen()
         {
