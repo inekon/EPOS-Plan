@@ -63,7 +63,7 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 ** ''Vorgaberegel'' – für Wohnen das Profil nach DIN 4708 aus der Bedarfskennzahl der Wohnungen, sonst ein konstruierter Tag. Gibt es noch keinen konstruierten Tag, öffnet sich der [[#konstruktor|Konstruktor]] von selbst.
 ** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
-** ''A100-Referenzprofil'' und ''Ecodesign-Zapfprofil'' – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
+** das ''Referenzprofil'' aus dem Katalog und das ''Ecodesign-Zapfprofil'' – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
