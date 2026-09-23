@@ -672,11 +672,14 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Contains(b3.QuerySelectorAll(".epos-herleitung-text"),
                         e => e.TextContent.StartsWith("Maß der Vorteilhaftigkeit ist allein der Kapitalwert"));
 
-        // Block 4: Bandbreite, Vorschlag, Hinweistext, Sensitivität.
+        // Block 4: Bandbreite, Vorschlag, Hinweistext, Sensitivität — und seit E8a (E6‑Q1)
+        // die Stellen von Spannenbild und Verlauf (ohne Datenseite mit Platzhalter).
         IElement b4 = Abschnitt(cut, 3);
         Assert.NotNull(b4.QuerySelector(".epos-wirt-bandbreite"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-sensitivitaet"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-szenariohinweis"));
+        Assert.NotNull(b4.QuerySelector(".epos-wirt-spanne-teil"));
+        Assert.NotNull(b4.QuerySelector(".epos-wirt-verlauf-teil .epos-chartbild-platzhalter"));
 
         // Block 5: Deklarationen, Nr. 31 und der Berichtsknopf in seinem Fuß.
         IElement b5 = Abschnitt(cut, 4);

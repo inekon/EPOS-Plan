@@ -403,6 +403,74 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E8a (Frage E6‑Q1, Anwender 23.09.2026: „ja — dieselben Bausteine wie unter
+    /// ‚Wie sicher ist das?'"; Mockup-Anhang U49): <b>Block 4 „Unsicherheit" der
+    /// ValERI-Ansicht zeigt Spannenbild und Verlauf</b> — das Spannenbild unter der
+    /// Bandbreite, der Verlauf vor der Sensitivität, wie in „Wie sicher ist das?".
+    ///
+    /// <para><b>Dieselben Bausteine, dieselben Daten:</b> Der Verlauf ist die eine
+    /// Komponente mit DERSELBEN Datenseite (ihr Zeichenweg wird gerufen), das Spannenbild
+    /// dasselbe Fragment mit dem Modell der Ansicht — sein Markup gleicht Zeichen für
+    /// Zeichen dem der Darstellung „Kennzahlen". Es steht immer nur eine Darstellung auf
+    /// der Seite, also genau ein Verlauf.</para>
+    /// </summary>
+    [Fact]
+    public void Block_4_zeigt_Spannenbild_und_Verlauf_mit_denselben_Bausteinen()
+    {
+        WirtschaftlichkeitStand stand = Stand();
+        stand.Ansicht.Spannenbild = ChartRenderer.KapitalwertSpanneModell(
+            new List<ChartRenderer.Spannenbalken>
+            {
+                new ChartRenderer.Spannenbalken { Name = "WP klein", Worst = 10100.0, Erwartet = 12300.0, Best = 14600.0 }
+            }, "Stamm", null);
+        int gezeichnet = 0;
+        var dienste = new VerlaufDienste { Zeichnen = _ => { gezeichnet++; return Ansicht(); } };
+
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () => stand)
+            .Add(x => x.Verlauf, dienste));
+        // Verglichen wird das gezeichnete SVG (der Rahmen des Bausteins trägt je Instanz
+        // eigene Element- und Ereigniskennungen).
+        string spanneKennzahlen = cut.FindAll("section.epos-gruppenkopf")[1]
+                                     .QuerySelector(".epos-wirt-spanne-teil svg")!.OuterHtml;
+
+        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[1].Click();   // ValERI-Bewertung
+        int vorher = gezeichnet;
+
+        IElement block4 = cut.FindAll("section.epos-gruppenkopf")[3];
+        Assert.Equal("4 · Unsicherheit", block4.QuerySelector(".epos-gruppenkopf-titel")!.TextContent.Trim());
+
+        string[] teile = block4.QuerySelectorAll(
+                ".epos-wirt-bandbreite-teil, .epos-wirt-spanne-teil, .epos-wirt-verlauf-teil, .epos-wirt-sensitivitaet-teil")
+            .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(4, teile.Length);
+        Assert.Contains("epos-wirt-bandbreite-teil", teile[0]);
+        Assert.Contains("epos-wirt-spanne-teil", teile[1]);
+        Assert.Contains("epos-wirt-verlauf-teil", teile[2]);
+        Assert.Contains("epos-wirt-sensitivitaet-teil", teile[3]);
+
+        // Das Spannenbild: dasselbe Fragment, dasselbe Modell — dasselbe Markup.
+        IElement spanne = block4.QuerySelector(".epos-wirt-spanne-teil")!;
+        Assert.NotNull(spanne.QuerySelector("[data-marke='nulllinie']"));
+        Assert.NotNull(spanne.QuerySelector("[data-marke='reihe:WP klein']"));
+        Assert.Equal(spanneKennzahlen, spanne.QuerySelector("svg")!.OuterHtml);
+
+        // Der Verlauf: dieselbe Komponente mit derselben Datenseite, Bild und Haken.
+        IRenderedComponent<KapitalwertVerlaufAbschnitt> verlauf = cut.FindComponent<KapitalwertVerlaufAbschnitt>();
+        Assert.Single(cut.FindComponents<KapitalwertVerlaufAbschnitt>());
+        Assert.Same(dienste, verlauf.Instance.Dienste);
+        Assert.True(gezeichnet > vorher, "Der Verlauf in Block 4 hat seinen Zeichenweg nicht gerufen.");
+        IElement verlaufTeil = block4.QuerySelector(".epos-wirt-verlauf-teil")!;
+        Assert.Single(verlaufTeil.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.Equal(5, verlaufTeil.QuerySelectorAll("input.epos-schalter-kasten").Length);
+
+        // Zurück zu „Kennzahlen": wieder genau EIN Verlauf, in „Wie sicher ist das?".
+        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[0].Click();
+        Assert.Single(cut.FindComponents<KapitalwertVerlaufAbschnitt>());
+        Assert.Single(cut.FindAll("section.epos-gruppenkopf")[1].QuerySelectorAll(".epos-wirt-verlauf-teil"));
+    }
+
+    /// <summary>
     /// K8 und der Rest von U2: Die Fußleiste trägt höchstens DREI Knöpfe — Photovoltaik,
     /// BHKW, Berechnen (Q11, E7b: „Strombezug…" ist entfallen) —, und einen
     /// Verlaufsdialog gibt es nicht mehr: kein Knopf „Verlauf…", kein Unterdialog „Verlauf".

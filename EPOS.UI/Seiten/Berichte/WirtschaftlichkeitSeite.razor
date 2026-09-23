@@ -19,7 +19,9 @@
      Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
      Deklarationen, Knopf "Bericht erzeugen").
    - "ValERI-Bewertung": die Bloecke 1, 3, 4, 5 der Norm; an der Stelle von
-     Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile.
+     Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile. Block 4 traegt seit
+     Etappe E8a (E6-Q1) auch Spannenbild und Verlauf - dieselben Bausteine wie
+     "Wie sicher ist das?".
    Die Fussleiste traegt die Sichten (Photovoltaik, BHKW - je nach
    Ausstattung) und "Berechnen" - in beiden Zustaenden dieselbe; der Umschalter
    wechselt nur den Leib. Den Knopf "Verlauf..." gibt es nicht mehr (Etappe E6,
@@ -444,7 +446,8 @@
         @* ============== Darstellung "ValERI-Bewertung" (V-1, V-C) ==============
 
            IN DIESER ETAPPE NUR, WAS DATEN HAT: Block 1 (Gegenstand und Rahmen aus
-           dem Parametersatz), Block 3 (Kennzahlen), Block 4 (Unsicherheit) und
+           dem Parametersatz), Block 3 (Kennzahlen), Block 4 (Unsicherheit, seit E8a
+           mit Spannenbild und Verlauf) und
            Block 5 (Deklarationen). Block 2 - die Zahlungsreihen je Jahr samt
            Zahlungsstrombild - kommt mit E8; an seiner Stelle steht EINE benannte
            Hinweiszeile, kein leerer Rahmen. Der Normbezug steht als Untertitel im
@@ -477,6 +480,20 @@
         <Gruppenkopf Titel="@Texte.Block4" Summe="@Texte.Norm4">
             <KindInhalt>
                 @Bandbreitenteil
+
+                @* ETAPPE E8a (Frage E6‑Q1, Anwender 23.09.2026: „ja — dieselben Bausteine
+                   wie unter ‚Wie sicher ist das?'", Mockup-Anhang U49): SPANNENBILD UND
+                   VERLAUF AUCH IN BLOCK 4 — die Tafel der fünf Blöcke nennt dort den
+                   Verlauf. Es sind DIESELBEN Bausteine: das Fragment Spannenteil mit dem
+                   Modell der Ansicht und die Komponente KapitalwertVerlaufAbschnitt mit
+                   derselben Datenseite und derselben Fassung - keine zweite Zeichenlogik,
+                   keine zweite Datenquelle. Es steht immer nur EINE der beiden
+                   Darstellungen auf der Seite; die Kennungen der Bilder bleiben damit je
+                   Blatt eindeutig. Reihenfolge wie in „Wie sicher ist das?": das
+                   Spannenbild unter der Bandbreitentafel, der Verlauf vor der
+                   Sensitivität; Vorschlag und Hinweistext bleiben bei der Bandbreite, aus
+                   der sie entstehen. *@
+                @Spannenteil
                 @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
                 {
                     <div class="epos-wirt-vorschlag">
@@ -489,6 +506,8 @@
                         <Herleitungszeile Text="@_stand.Szenariohinweis" />
                     </div>
                 }
+                <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                                             Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
                 @Sensitivitaetsteil
             </KindInhalt>
         </Gruppenkopf>
