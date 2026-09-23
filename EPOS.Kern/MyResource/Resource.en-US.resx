@@ -24554,4 +24554,25 @@ Do you want to allow this?</value>
   <data name="WIRT_STUFE_LADEN" xml:space="preserve">
     <value>loading the results</value>
   </data>
+  <data name="BHW_UEB_ES_VORSCHAU" xml:space="preserve">
+    <value>→ {0} {1} · {2} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_54" xml:space="preserve">
+    <value>→ {0} {1} − {2} € · {3} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE_SATZ" xml:space="preserve">
+    <value>→ {0} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_GRUND" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_VOLL" xml:space="preserve">
+    <value>→ default · {0} €/yr under § 53</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_ENERGETISCH" xml:space="preserve">
+    <value>× {0} → {1} €/yr under § 53 — a deliberate lower bound</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
+    <value>The next run shows rate and amount for each option — the booked state does not carry them yet.</value>
+  </data>
 </root>

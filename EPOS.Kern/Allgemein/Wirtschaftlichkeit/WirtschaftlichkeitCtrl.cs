@@ -2065,6 +2065,11 @@ namespace WindowsFormsApplication1
             public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
                 new List<EnergiesteuerNachweis>();
 
+            /// <summary>ETAPPE E7c3 (E7c2‑Q8 b) — die Vorschau je Anlage und Wahl, aus
+            /// dem ersten Jahr; reiner Ausweis.</summary>
+            public List<EnergiesteuerVorschauZeile> EnergiesteuerVorschau =
+                new List<EnergiesteuerVorschauZeile>();
+
             /// <summary>AUFTRAG 9d — die Begründung je Rubrikposition, aus dem
             /// Steuerrechner des ersten Jahres.</summary>
             public Dictionary<string, string> PositionsGruende =
@@ -4015,6 +4020,11 @@ namespace WindowsFormsApplication1
                 e.Energiesteuer54Jahr1 = r.Energiesteuer54Eur;
                 e.Energiesteuer54SockelJahr1 = r.Energiesteuer54SockelEur;
                 e.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>(r.EnergiesteuerNachweise);
+
+                // ETAPPE E7c3 (E7c2‑Q8 b) — die Vorschau je Wahl aus DEMSELBEN Jahr und
+                // derselben Eingabe; sie rechnet auf Kopien, der Lauf bleibt unberührt.
+                e.EnergiesteuerVorschau = SteuerGutschriftRechner.Vorschau(
+                    eingabe, jahr, s => _gesetze.WertMitHerkunft(s, jahr), kultur);
 
                 // AUFTRAG 9d — die Begründungen JE POSITION, ebenfalls aus dem ersten
                 // Jahr: Sie erklären die Jahr-1-Zahl, die die Rubrik zeigt.
@@ -6292,6 +6302,7 @@ namespace WindowsFormsApplication1
             erg.Energiesteuer54Jahr1 = eingabe.Energiesteuer54Jahr1;
             erg.Energiesteuer54SockelJahr1 = eingabe.Energiesteuer54SockelJahr1;
             erg.EnergiesteuerNachweise = eingabe.EnergiesteuerNachweise;
+            erg.EnergiesteuerVorschau = eingabe.EnergiesteuerVorschau;         // E7c3 (Q8 b)
             erg.PositionsGruende = eingabe.PositionsGruende;                 // 9d
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6

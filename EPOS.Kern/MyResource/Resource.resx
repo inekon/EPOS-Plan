@@ -24561,4 +24561,25 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_STUFE_LADEN" xml:space="preserve">
     <value>Laden der Ergebnisse</value>
   </data>
+  <data name="BHW_UEB_ES_VORSCHAU" xml:space="preserve">
+    <value>→ {0} {1} · {2} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_54" xml:space="preserve">
+    <value>→ {0} {1} − {2} € · {3} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE_SATZ" xml:space="preserve">
+    <value>→ {0} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_GRUND" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_VOLL" xml:space="preserve">
+    <value>→ Vorgabe · {0} €/a bei § 53</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_ENERGETISCH" xml:space="preserve">
+    <value>× {0} → {1} €/a bei § 53 — bewusste Untergrenze</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
+    <value>Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.</value>
+  </data>
 </root>

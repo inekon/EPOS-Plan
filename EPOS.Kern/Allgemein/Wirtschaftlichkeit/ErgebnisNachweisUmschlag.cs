@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 7;
+        public const int FASSUNG = 8;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -171,6 +171,16 @@ namespace WindowsFormsApplication1
         public int? IrrVorzeichenwechsel;
 
         /// <summary>
+        /// ETAPPE E7c3 (Fassung 8, E7c2‑Q8 b) — die Energiesteuer-Vorschau je Anlage und
+        /// Wahl. Einem Umschlag der Fassung 1 bis 7 fehlt sie; sie liest sich als leere
+        /// Liste, und die Überlagerung nennt die Wahlen dann ohne Satz und Betrag — genau
+        /// die Auskunft, die ein damals gebuchter Lauf trägt.
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.EnergiesteuerVorschau"/>
+        public List<EnergiesteuerVorschauZeile> EnergiesteuerVorschau =
+            new List<EnergiesteuerVorschauZeile>();
+
+        /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
         /// sie auch wieder ein, ohne zu klagen.
@@ -220,7 +230,9 @@ namespace WindowsFormsApplication1
                                      ?? new Dictionary<string, string>(StringComparer.Ordinal),
                     VermiedenJeAnlage = e.VermiedenJeAnlage
                                       ?? new List<VermiedenAnlageNachweis>(),
-                    IrrVorzeichenwechsel = e.IrrVorzeichenwechsel
+                    IrrVorzeichenwechsel = e.IrrVorzeichenwechsel,
+                    EnergiesteuerVorschau = e.EnergiesteuerVorschau
+                                          ?? new List<EnergiesteuerVorschauZeile>()
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -282,6 +294,8 @@ namespace WindowsFormsApplication1
                     u.PositionsGruende = new Dictionary<string, string>(StringComparer.Ordinal);
                 if (u.VermiedenJeAnlage == null)
                     u.VermiedenJeAnlage = new List<VermiedenAnlageNachweis>();
+                if (u.EnergiesteuerVorschau == null)
+                    u.EnergiesteuerVorschau = new List<EnergiesteuerVorschauZeile>();
                 return u;
             }
             catch { return null; }
@@ -326,6 +340,10 @@ namespace WindowsFormsApplication1
             // ETAPPE E5 — die Zählung gibt es erst ab Fassung 7; ein älterer Umschlag
             // trägt null („nicht gezählt"), und die Zinsfußzeile warnt dann nicht.
             e.IrrVorzeichenwechsel = IrrVorzeichenwechsel;
+
+            // ETAPPE E7c3 — die Vorschau je Wahl gibt es erst ab Fassung 8; ein älterer
+            // Umschlag trägt eine leere Liste.
+            e.EnergiesteuerVorschau = EnergiesteuerVorschau ?? new List<EnergiesteuerVorschauZeile>();
         }
     }
 }

@@ -4249,6 +4249,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die × {0} → {1} €/a bei § 53 — bewusste Untergrenze ähnelt.
+        /// </summary>
+        public static string BHW_UEB_AUF_VORSCHAU_ENERGETISCH {
+            get {
+                return ResourceManager.GetString("BHW_UEB_AUF_VORSCHAU_ENERGETISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → Vorgabe · {0} €/a bei § 53 ähnelt.
+        /// </summary>
+        public static string BHW_UEB_AUF_VORSCHAU_VOLL {
+            get {
+                return ResourceManager.GetString("BHW_UEB_AUF_VORSCHAU_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Befreiung § 9 Abs. 1 Nr. 3 ähnelt.
         /// </summary>
         public static string BHW_UEB_BEFREIUNG {
@@ -4335,6 +4353,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_UEB_ES_OHNE {
             get {
                 return ResourceManager.GetString("BHW_UEB_ES_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} {1} · {2} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} {1} − {2} € · {3} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_54 {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_GRUND {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht. ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_OHNE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_OHNE_SATZ", resourceCulture);
             }
         }
         

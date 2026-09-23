@@ -1010,6 +1010,15 @@ namespace WindowsFormsApplication1
             new List<EnergiesteuerNachweis>();
 
         /// <summary>
+        /// ETAPPE E7c3 (E7c2‑Q8 b) — die Energiesteuer-Vorschau je Anlage und Wahl
+        /// (<see cref="EnergiesteuerVorschauZeile"/>), aus dem ersten Jahr. Reiner Ausweis
+        /// für die Überlagerung; leer = gebuchter Stand vor E7c3 oder keine Anlage mit
+        /// Brennstoff. <b>Im Nachweisumschlag persistiert</b> (Fassung 8).
+        /// </summary>
+        public List<EnergiesteuerVorschauZeile> EnergiesteuerVorschau =
+            new List<EnergiesteuerVorschauZeile>();
+
+        /// <summary>
         /// AUFTRAG 9d (Konzept § 6.3, Punkt B7-4) — die Begründung JE POSITION der
         /// Erlösrubrik: Schlüssel ist eine Kennung aus <c>SteuerPosition</c>, Wert der
         /// Satz, mit dem der Steuerrechner die Null begründet hat.
@@ -1575,6 +1584,71 @@ namespace WindowsFormsApplication1
         public bool Ist54
         {
             get { return string.Equals(Paragraf, PARAGRAF_54, StringComparison.Ordinal); }
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E7c3 (E7c2‑Q8 b) — die <b>Energiesteuer-Vorschau je Wahl</b>: für EINE Anlage
+    /// und EINE wählbare Entlastung (keine, § 53 mit beiden Aufteilungen, § 53a Abs. 5,
+    /// § 54) Satz, Menge und Wirkung im ersten Jahr, als hätte diese Anlage diese Wahl.
+    ///
+    /// <para><b>Dieselbe Rechnung wie im Lauf.</b> Der Steuerrechner rechnet die
+    /// Energiesteuer auf einer Kopie der Steuereingabe, in der allein die Wahl dieser
+    /// einen Anlage geändert ist (<see cref="SteuerGutschriftRechner.Vorschau"/>); ihre
+    /// Bedingungen — Stromerzeugung, Nutzungsgrad, Unternehmensart, Sockelbetrag,
+    /// Mischlage — wirken also genau wie im Lauf. Gerechnet wird damit nichts: Die
+    /// Zeilen sind Ausweis für die Überlagerung „Sätze und Herkunft" und reisen im
+    /// Nachweisumschlag mit (Fassung 8).</para>
+    ///
+    /// <para><b>Die Wirkung ist ein Unterschied.</b> <see cref="BetragEur"/> ist die
+    /// Energiesteuer-Entlastung des Projekts mit dieser Wahl minus die mit „keine" für
+    /// diese Anlage — übrige Anlagen unverändert. Bei EINER Anlage ist das ihr Betrag
+    /// (bei § 54 nach dem Sockel); bei mehreren enthält er, was die Wahl an anderer
+    /// Stelle auslöst (Sockel schon abgezogen, Mischlage) — der Grund steht dann in
+    /// <see cref="Grund"/>.</para>
+    /// </summary>
+    public class EnergiesteuerVorschauZeile
+    {
+        /// <summary>Bezeichner der Anlage — derselbe Datenwert wie
+        /// <see cref="EnergiesteuerNachweis.Anlage"/>.</summary>
+        public string Anlage = "";
+
+        /// <summary>Die vorgeschaute Wahl, <c>DbWerte.ENERGIESTEUER_WAHL_*</c>.</summary>
+        public string Wahl = "";
+
+        /// <summary>Die Aufteilung (<c>DbWerte.AUFTEILUNG_*</c>) — nur bei § 53 gesetzt,
+        /// sonst leer: § 53a Abs. 5 und § 54 bemessen immer den ganzen Brennstoff.</summary>
+        public string Aufteilung = "";
+
+        /// <summary>Satz [€ je gesetzlicher Mengeneinheit]; <c>null</c> = der Rechner
+        /// setzt für diese Anlage mit dieser Wahl keine Position an (der Grund steht in
+        /// <see cref="Grund"/>).</summary>
+        public double? SatzEur;
+
+        /// <summary>Gesetzliche Einheit des Satzes (<c>DbWerte.GESETZ_EINHEIT_*</c>).</summary>
+        public string Einheit = "";
+
+        /// <summary>Menge in der gesetzlichen Einheit; <c>null</c> ohne Position.</summary>
+        public double? Menge;
+
+        /// <summary>Wirkung im ersten Jahr [€/a] — der Unterschied der Entlastung des
+        /// Projekts gegen „keine" für diese Anlage.</summary>
+        public double BetragEur;
+
+        /// <summary>Der Sockelbetrag des § 54, den DIESE Wahl auslöst [€/a] — 0, wenn ihn
+        /// schon eine andere Anlage trägt.</summary>
+        public double SockelEur;
+
+        /// <summary>Die Gründe, die erst diese Wahl hervorbringt (Bedingung nicht
+        /// erfüllt, Satz fehlt, Mischlage); <c>null</c> = keiner.</summary>
+        public string Grund;
+
+        /// <summary>Die Einheit des Satzes zum Anzeigen, etwa „€/MWh"; leer bei unbekannter
+        /// gesetzlicher Einheit. Eine Methode, kein Feld: Der Umschlag schreibt Felder.</summary>
+        public string SatzEinheit()
+        {
+            string menge = WirtschaftlichkeitZeilen.Mengeneinheit(Einheit);
+            return menge.Length == 0 ? "" : "€/" + menge;
         }
     }
 
