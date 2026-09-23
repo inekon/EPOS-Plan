@@ -227,7 +227,7 @@ leert das Feld, ohne P_th weich gesperrt), dazu Abbrechen und Übernehmen. Sie h
 Zwischenstand; „Übernehmen" legt ihn auf den Arbeitsstand der Anlage, geschrieben wird im OK-Weg des
 Dialogs (`KwkgAnlagenCtrl.Speichere`). Die übrigen Größen der Überlagerung — Anlagenart, Tatbestand,
 Satztafel, Energie- und Stromsteuer, „Wirkung Jahr 1", der Knopf „Wahl und Herkunft…" — stehen weiter
-im Formular (Mockup-Anhang U22; Frage E7c1‑Q7, → Register R‑E7c1).
+im Formular (Mockup-Anhang U22; entschieden E7c1‑Q7, nach Empfehlung, Bau E7c2 → Register R‑E7c1).
 
 Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
 `disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
@@ -1764,10 +1764,10 @@ Heizöl-Neuanlage ab 2025.
 **Das Ende der Frist zur Inbetriebnahme ist ein Katalogdatum** (A20, R‑U5; → Register R‑E7, E7‑Q3
 Lesart b; umgesetzt #440): `KWKG_INBETRIEBNAHME_FRISTENDE` = 2030, gemeint der 31.12.2030
 (Gesetzeskatalog, Generation 8, Quelle KWKG 2025 § 6), nachgeschlagen mit dem Inbetriebnahmejahr —
-geprüft je Anlage und im Projektblock, **auch ohne Stichtag** (Frage E7c1‑Q3). Eine Anlage mit
+geprüft je Anlage und im Projektblock, **auch ohne Stichtag** (entschieden E7c1‑Q3, nach Empfehlung). Eine Anlage mit
 Inbetriebnahme danach bekommt keinen Zuschlag; die Herleitung nennt Fristende und Herkunft. Fehlt der
 Katalogwert, rechnet der Zuschlag ohne die Frist, mit der Zeile „ungeprüft" — keine stille Vorgabe
-(Frage E7c1‑Q4). Die Zuschlagsreihe läuft danach bis zum Ende des Kontingents, **eine Höchstdauer in
+(entschieden E7c1‑Q4, nach Empfehlung). Die Zuschlagsreihe läuft danach bis zum Ende des Kontingents, **eine Höchstdauer in
 Kalenderjahren gibt es nicht** (Inbetriebnahme 01.10.2026: Jahr 12 = 2037).
 
 **Pauschale § 9** (≤ 2 kW): `0,04 × 60.000 × P_el`, einmalig in Index 0.
@@ -1858,10 +1858,11 @@ es. (5) Gepflegt wird in der Überlagerung „Sätze und Herkunft" (§ 2.2).
 
 Die Herleitung je Anlage nennt Fall, σ mit Herkunft, Nutzwärme (Wärmeproduktion − Anteil am Überschuss),
 KWK-Strom und Kürzung, davon Einspeisung und Eigenverbrauch; `KwkgModulNachweis` führt dazu sieben nullbare
-Felder, die Fassung des Nachweisumschlags bleibt 7 (Frage E7c1‑Q6). Vollbenutzungsstunden und
-Kontingentverbrauch zählen weiter nach dem Bruttostrom des Moduls, nur die bezahlte Menge sinkt (Frage
-E7c1‑Q2, → Register R‑E7c1). Kürzungen aus der Rundung auf 0,01 MWh stehen ohne Toleranz in der Herleitung
-(Frage E7c1‑Q1). Mit berechnetem σ und ohne Wärmeüberschuss trifft `Nutzwärme × σ` etwa die
+Felder, die Fassung des Nachweisumschlags bleibt 7 (entschieden E7c1‑Q6, nach Empfehlung). Vollbenutzungsstunden und
+Kontingentverbrauch zählen bis E7c2 weiter nach dem Bruttostrom des Moduls, nur die bezahlte Menge sinkt (Frage
+E7c1‑Q2, → Register R‑E7c1). Vollbenutzungsstunden in Fall 2 aus dem KWK-Strom (Vbh = KWK-Strom ÷ P_el; entschieden
+E7c1‑Q2, Lesart b, 23.09.2026; Bau E7c2). Kürzungen aus der Rundung auf 0,01 MWh stehen ohne Toleranz in der Herleitung
+(entschieden E7c1‑Q1, nach Empfehlung, mit Hinweis — Bau E7c2). Mit berechnetem σ und ohne Wärmeüberschuss trifft `Nutzwärme × σ` etwa die
 Bruttoerzeugung und liegt über der Nettostromerzeugung — Fall 2 wirkt dann erst mit Wärmeüberschuss oder
 einem gepflegten kleineren σ (Beispielprojekt: 1.953,9 × 0,845 = 1.651,2 > 1.563,2 MWh). Der Torwächter
 `BaueKwkgReihe` (`v.Ergebnis.BHKW.Stromproduktion` als Summe) bleibt. **Referenzprojekte:** Kein Projekt der
@@ -2031,8 +2032,8 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
 | **CO₂-Bestandteil im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv** | der Träger weist einen CO₂-Anteil im Arbeitspreis aus **und** die BEHG-Reihe rechnet denselben Brennstoff | Warnung **mit Betrag** — dem gebuchten Jahresbetrag der CO₂-Abgabe; der Rechenweg bleibt (Fall `Co2DoppelansatzBehg`, umgesetzt #405) |
 | Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis **mit Wert** — der Strommix-Vorgabewert in g CO₂/kWh, mit dem der Netzbezug gerechnet ist (`KOH_CO2_STROMMIX_RUECKFALL`, umgesetzt #405) |
-| **Stromkennzahl fehlt** | Kennzeichen „Vorrichtung zur Abwärmeabfuhr" gesetzt, aber weder eine gepflegte Stromkennzahl noch P_el und P_th der Gerätezeile — der Zuschlag der Anlage ist 0 (§ 3.6, zweiter Fall des § 2 Nr. 16) | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_STROMKENNZAHL_FEHLT`, umgesetzt #440; Schwere: Frage E7c1‑Q5) |
-| **Anlagenart fehlt** | weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 leitet kein Kontingent ab, der Zuschlag der Anlage ist 0 (§ 3.6, § 6.3 Nr. 30); ein gepflegtes Kontingent löst die Zeile nicht aus | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_ANLAGENART_FEHLT`, umgesetzt #440; Schwere: Frage E7c1‑Q5) |
+| **Stromkennzahl fehlt** | Kennzeichen „Vorrichtung zur Abwärmeabfuhr" gesetzt, aber weder eine gepflegte Stromkennzahl noch P_el und P_th der Gerätezeile — der Zuschlag der Anlage ist 0 (§ 3.6, zweiter Fall des § 2 Nr. 16) | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_STROMKENNZAHL_FEHLT`, umgesetzt #440; Schwere: entschieden E7c1‑Q5, nach Empfehlung) |
+| **Anlagenart fehlt** | weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 leitet kein Kontingent ab, der Zuschlag der Anlage ist 0 (§ 3.6, § 6.3 Nr. 30); ein gepflegtes Kontingent löst die Zeile nicht aus | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_ANLAGENART_FEHLT`, umgesetzt #440; Schwere: entschieden E7c1‑Q5, nach Empfehlung) |
 
 ## 3.10 Rechenreihenfolge
 
@@ -2462,8 +2463,9 @@ Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (
 (#436), E7 Teil a (#437), E7 Teil b (#439) und E7 Teil c1 (#440)**; der Schnitt dieses Papiers (A13) ist mit
 **#435** ausgeführt. Als Nächstes kommt **E7c2** (die übrigen rechenwirksamen Lücken — S‑2, V‑2/V‑1, die
 Schritte E, F, G, B‑4 Rest, B‑6, der Kapitalwert 1024 — und der Rest der Überlagerung „Sätze und Herkunft"
-samt KI-Feldkatalog und Berichtsspalten zu Fall 2; die acht Fragen aus E7c1 stehen beim Anwender, → Register
-R‑E7c1). Aus der früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen (es läuft in E7c2 mit); B9
+samt KI-Feldkatalog und Berichtsspalten zu Fall 2 (E7c1‑Q7), die Vollbenutzungsstunden aus dem KWK-Strom
+(E7c1‑Q2, Lesart b) und der Rundungshinweis der Herleitung (E7c1‑Q1); die acht Fragen aus E7c1 sind am
+23.09.2026 entschieden, → Register R‑E7c1). Aus der früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen (es läuft in E7c2 mit); B9
 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2530,7 +2532,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 102, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
 | **E7** Teil b — Q11 | kein Zeitzonentarif (Strommatrix mit einer Jahreszeile), Schemaschritt 104 (Staffelspalten, Zonensätze gelöscht, ihre Läufe verworfen), zweistufige Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell, Einstieg „Strombezug…" entfällt | **#439** (Merge `954d4dcc`) |
 | **E7** Teil c1 — K‑1, A20, Nr. 30 | Schemaschritt 105 und der zweite Fall des § 2 Nr. 16 KWKG (Regel- und Ersatzweg, Überlagerung „Sätze und Herkunft" mit den zwei Feldern), das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum (Generation 8), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt", Testdatenbank 105 mit der Anlagenart der 1030-BHKW | **#440** (Merge `ea8e2a12`) |
-| **E7c2** … **E12** | die übrigen rechenwirksamen Lücken (B8 = S‑2 und B‑6, V‑2/V‑1, die Schritte E, F, G, B‑4 Rest, Kapitalwert 1024) und der Rest von U22 samt KI-Feldkatalog und Berichtsspalten zu Fall 2 · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E7c2** (die acht Fragen aus E7c1 beim Anwender, → Register R‑E7c1) |
+| **E7c2** … **E12** | die übrigen rechenwirksamen Lücken (B8 = S‑2 und B‑6, V‑2/V‑1, die Schritte E, F, G, B‑4 Rest, Kapitalwert 1024), der Rest von U22 samt KI-Feldkatalog und Berichtsspalten zu Fall 2 (E7c1‑Q7), Vollbenutzungsstunden aus dem KWK-Strom (E7c1‑Q2 b) und der Rundungshinweis der Herleitung (E7c1‑Q1) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | **entschieden 23.09.2026** — **nächste Etappe: E7c2** (die acht Fragen aus E7c1, → Register R‑E7c1) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

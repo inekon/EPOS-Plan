@@ -47,7 +47,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E6 | E6‑Q1, E6‑Q2 — die Fragen aus E6 (entschieden 23.09.2026) | Protokoll E6; Statusdatei Nach #436 (a) | 2 |
 | R‑E7 | E7‑Q1…Q3 — die Fragen aus E7a (entschieden 23.09.2026, umgesetzt #440) | Protokoll E7a; Statusdatei Nach #437 (a) | 3 |
 | R‑E7b | E7b‑Q1…Q4 — die Fragen aus E7b (entschieden 23.09.2026) | Protokoll E7b; Statusdatei Nach #439 (a) | 4 |
-| R‑E7c1 | E7c1‑Q1…Q8 — die Fragen aus E7c1 (offen) | Protokoll E7c1; Statusdatei Nach #440 (a) | 8 |
+| R‑E7c1 | E7c1‑Q1…Q8 — die Fragen aus E7c1 (entschieden 23.09.2026) | Protokoll E7c1; Statusdatei Nach #440 (a) | 8 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -379,20 +379,21 @@ entschieden: E7b‑Q1 nach Empfehlung (Lesart b), E7b‑Q2 und E7b‑Q3 bestäti
 
 Quelle: Protokoll
 [`E7c1_KWKG_Fall2_Foerderende_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E7c1_KWKG_Fall2_Foerderende_Protokoll.md),
-„Fragen aus der Etappe", und die Statusdatei, Nach #440 (a). Alle acht Fragen sind **offen** — gestellt am
-23.09.2026 mit dem Zwischenbericht der Etappe. Gebaut ist mit #440 jeweils die Lesart a der Empfehlung; weicht
-ein Entscheid davon ab, folgt ein Umbau.
+„Fragen aus der Etappe", und die Statusdatei, Nach #440 (a). Alle acht Fragen hat der Anwender am 23.09.2026
+entschieden: E7c1‑Q1 nach Empfehlung (Lesart a, mit Hinweis), E7c1‑Q3…Q8 nach Empfehlung; E7c1‑Q2 abweichend
+von der Empfehlung (Lesart b, Vollbenutzungsstunden nur aus dem KWK-Strom). Gebaut ist mit #440 die Lesart a;
+der Hinweis zu Q1, die Lesart b zu Q2 und der Rest zu Q7 folgen mit E7c2.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E7c1‑Q1** | Winzige Kürzungen bei berechnetem σ: Aus der Rundung auf 0,01 MWh entsteht bei 1030 mit σ = 50 ÷ 81 eine Kürzung von 0,002 MWh (KWKG Jahr 1 7.315,96 → 7.315,92 €). (a) die Formel ohne Toleranz, die Kürzung steht in der Herleitungszeile; (b) Kürzungen unter 0,01 MWh als 0 werten | offen — **Empfehlung:** a | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut ist a (#440, E7c1/2) |
-| **E7c1‑Q2** | Kontingentverbrauch in Fall 2: (a) Vollbenutzungsstunden und Kontingent zählen weiter nach dem Bruttostrom des Moduls, nur die bezahlte Menge sinkt; (b) die Vollbenutzungsstunden aus dem KWK-Strom — das Kontingent reicht länger, die Reihe wird länger | offen — **Empfehlung:** vorerst a, mit Prüfauftrag: am Gesetzestext prüfen, ob die Definition der Vollbenutzungsstunden auf den KWK-Strom abstellt; wenn ja, b mit E7c2 | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut ist a (#440, E7c1/2); Prüfung gegen die Vbh-Definition offen |
-| **E7c1‑Q3** | Das Ende der Frist zur Inbetriebnahme auch ohne Stichtag prüfen? (a) ja, das Datum ist absolut; (b) nur, wenn ein Stichtag gepflegt ist | offen — **Empfehlung:** a | 23.09.2026 gestellt | § 3.6 (Prüfkette) | gebaut ist a (#440, E7c1/3); Probe 1030 mit Inbetriebnahme 03/2031 ohne Stichtag: KWKG Jahr 1 5.899,97 → 0 € |
-| **E7c1‑Q4** | Das Fristende fehlt im Gesetzeskatalog: (a) der Zuschlag bleibt, mit der Zeile „ungeprüft"; (b) dann kein Zuschlag | offen — **Empfehlung:** a | 23.09.2026 gestellt | § 3.6 (Prüfkette) | gebaut ist a (#440, E7c1/3, `WIRT_KWKG_FRISTENDE_FEHLT`) |
-| **E7c1‑Q5** | Schwere der zwei Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt": (a) Hinweis; (b) Warnung | offen — **Empfehlung:** a, weil die Folge (kein Zuschlag der Anlage) schon in der Herleitungszeile steht | 23.09.2026 gestellt | § 3.9 | gebaut ist a (#440, E7c1/2, E7c1/4) |
-| **E7c1‑Q6** | Nachweisfassung: `KwkgModulNachweis` bekommt sieben nullbare Felder zu Fall 2, die Fassung des Nachweisumschlags bleibt 7 (wie beim Vorgänger #351) | offen — **Empfehlung:** Fassung 7 bleibt | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut: Fassung 7 (#440, E7c1/2) |
-| **E7c1‑Q7** | Der Rest der Überlagerung „Sätze und Herkunft" (Anlagenart, Tatbestand, Satztafel, Energie- und Stromsteuer, „Wirkung Jahr 1", der Knopf „Wahl und Herkunft…"), der KI-Feldkatalog (die zwei neuen Felder) und die Berichtsspalten zu Fall 2 (Modultafeln in Word und Excel) — wann? | offen — **Empfehlung:** mit E7c2 | 23.09.2026 gestellt | § 2.2; Mockup-Anhang U22 | offen · E7c2 |
-| **E7c1‑Q8** | Katalogzeilen ohne Leser: `KWKG_REALISIERUNGSFRIST` und `KWKG_STICHTAG_DAUERBETRIEB` werden weiter gesät, aber von keinem Code mehr gelesen | offen — **Empfehlung:** in einer späteren Katalog-Generation kennzeichnen oder entfernen | 23.09.2026 gestellt | § 3.6 (Prüfkette); Grundlagen KWKG | offen · spätere Generation |
+| **E7c1‑Q1** | Winzige Kürzungen bei berechnetem σ: Aus der Rundung auf 0,01 MWh entsteht bei 1030 mit σ = 50 ÷ 81 eine Kürzung von 0,002 MWh (KWKG Jahr 1 7.315,96 → 7.315,92 €). (a) die Formel ohne Toleranz, die Kürzung steht in der Herleitungszeile; (b) Kürzungen unter 0,01 MWh als 0 werten | **entschieden 23.09.2026: Lesart a, nach Empfehlung, mit Hinweis** (Rundungsgrund in der Herleitung) — Bau des Hinweises E7c2 | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut ist a (#440, E7c1/2) |
+| **E7c1‑Q2** | Kontingentverbrauch in Fall 2: (a) Vollbenutzungsstunden und Kontingent zählen weiter nach dem Bruttostrom des Moduls, nur die bezahlte Menge sinkt; (b) die Vollbenutzungsstunden aus dem KWK-Strom — das Kontingent reicht länger, die Reihe wird länger | **entschieden 23.09.2026: Lesart b** — „Vollbenutzungsstunden betrifft nur den KWK erzeugten Strom …" (Anwender) — Bau E7c2 | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut ist a (#440, E7c1/2); Prüfung gegen die Vbh-Definition offen |
+| **E7c1‑Q3** | Das Ende der Frist zur Inbetriebnahme auch ohne Stichtag prüfen? (a) ja, das Datum ist absolut; (b) nur, wenn ein Stichtag gepflegt ist | **entschieden 23.09.2026, nach Empfehlung:** a | 23.09.2026 gestellt | § 3.6 (Prüfkette) | gebaut ist a (#440, E7c1/3); Probe 1030 mit Inbetriebnahme 03/2031 ohne Stichtag: KWKG Jahr 1 5.899,97 → 0 € |
+| **E7c1‑Q4** | Das Fristende fehlt im Gesetzeskatalog: (a) der Zuschlag bleibt, mit der Zeile „ungeprüft"; (b) dann kein Zuschlag | **entschieden 23.09.2026, nach Empfehlung:** a | 23.09.2026 gestellt | § 3.6 (Prüfkette) | gebaut ist a (#440, E7c1/3, `WIRT_KWKG_FRISTENDE_FEHLT`) |
+| **E7c1‑Q5** | Schwere der zwei Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt": (a) Hinweis; (b) Warnung | **entschieden 23.09.2026, nach Empfehlung:** a, weil die Folge (kein Zuschlag der Anlage) schon in der Herleitungszeile steht | 23.09.2026 gestellt | § 3.9 | gebaut ist a (#440, E7c1/2, E7c1/4) |
+| **E7c1‑Q6** | Nachweisfassung: `KwkgModulNachweis` bekommt sieben nullbare Felder zu Fall 2, die Fassung des Nachweisumschlags bleibt 7 (wie beim Vorgänger #351) | **entschieden 23.09.2026, nach Empfehlung:** Fassung 7 bleibt | 23.09.2026 gestellt | § 3.6 (Der zweite Fall des § 2 Nr. 16) | gebaut: Fassung 7 (#440, E7c1/2) |
+| **E7c1‑Q7** | Der Rest der Überlagerung „Sätze und Herkunft" (Anlagenart, Tatbestand, Satztafel, Energie- und Stromsteuer, „Wirkung Jahr 1", der Knopf „Wahl und Herkunft…"), der KI-Feldkatalog (die zwei neuen Felder) und die Berichtsspalten zu Fall 2 (Modultafeln in Word und Excel) — wann? | **entschieden 23.09.2026, nach Empfehlung:** mit E7c2 | 23.09.2026 gestellt | § 2.2; Mockup-Anhang U22 | offen · E7c2 |
+| **E7c1‑Q8** | Katalogzeilen ohne Leser: `KWKG_REALISIERUNGSFRIST` und `KWKG_STICHTAG_DAUERBETRIEB` werden weiter gesät, aber von keinem Code mehr gelesen | **entschieden 23.09.2026, nach Empfehlung:** in einer späteren Katalog-Generation kennzeichnen oder entfernen | 23.09.2026 gestellt | § 3.6 (Prüfkette); Grundlagen KWKG | offen · spätere Generation |
 
 ---
 
