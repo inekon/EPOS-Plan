@@ -159,5 +159,43 @@ namespace EPOS.Kern.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => Zapfauswertung.Tagesgang(Bilanzreihe.Null(), Bilanzreihe.Null(), 13, kalender));
             Assert.Throws<ArgumentOutOfRangeException>(() => Zapfauswertung.Woche(Bilanzreihe.Null(), Bilanzreihe.Null(), 7));
         }
+
+        /// <summary>
+        /// Befund 7 der Gegenprüfung Gruppe 3: Die Zone trägt ihren wirksamen Kalender aus dem Kern
+        /// (<see cref="ZonenErgebnis.Kalender"/>, samt Ferien). Mit ihm mittelt der Werktag nur
+        /// über die Werktage außerhalb der Ferien — mit dem Kalender der Klimaregion stünde er
+        /// zu niedrig. Die Summe klammert die Ruhetage jeder Zone aus.
+        /// </summary>
+        [Fact]
+        public void Die_Zone_traegt_ihren_Kalender_und_ihr_Werktag_zaehlt_keine_Ferientage()
+        {
+            Nutzungsart art = ZapfprofilTestbau.Art(2, ZapfBezugsart.Beschaeftigte, ferienfaktor: 0.5,
+                                                    woche: new[] { 0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0 });
+            ZonenStand zone = ZapfprofilTestbau.Zone("Zone F", 2, 10.0) with
+            {
+                Ferienbeginn = new int?[] { 10, null, null, null },
+                Ferienende = new int?[] { 20, null, null, null }
+            };
+            ZapfprofilErgebnis e = ZapfprofilRechner.Rechnen(
+                ZapfprofilTestbau.Eingang(ZapfprofilTestbau.Projekt(), ZapfprofilTestbau.Parameter(), zone), new[] { art });
+            ZonenErgebnis z = Assert.Single(e.JeZone);
+            Assert.False(z.Abgelehnt);
+            Assert.Equal(365, z.Kalender.Count);
+            Assert.Equal(ZapfTagtyp.Ruhetag, z.Kalender[14]);     // 15. Januar, in den Ferien
+            Assert.Equal(ZapfTagtyp.Werktag, z.Kalender[2]);      // 3. Januar, Mittwoch
+
+            ZapfTagtyp[] grund = Zapfkalender.Bilden(0, ZapfprofilTestbau.We(0), null);
+            Tagesgangmittel ohneFerien = Zapfauswertung.Tagesgang(z.Zapfung, z.Zirkulation, 1, grund);
+            Tagesgangmittel mitFerien = Zapfauswertung.Tagesgang(z.Zapfung, z.Zirkulation, 1, z.Kalender);
+            Assert.True(mitFerien.TageJeTagtyp[0] < ohneFerien.TageJeTagtyp[0]);
+            Assert.True(mitFerien.WerktagKw.Sum() > ohneFerien.WerktagKw.Sum() * 1.01,
+                        "Der Werktag der Zone darf die Ferientage nicht mitteln.");
+
+            // Die Summe: Ruhetag, wo irgendeine Zone ruht; eine Zone ohne Kalender zählt nicht.
+            ZapfTagtyp[] summe = Zapfauswertung.OhneRuhetage(grund, new[] { z.Kalender, null, grund });
+            Assert.Equal(z.Kalender.ToArray(), summe);
+            Assert.Equal(grund, Zapfauswertung.OhneRuhetage(grund, null));
+            Assert.Throws<ArgumentException>(() => Zapfauswertung.OhneRuhetage(grund, new[] { new ZapfTagtyp[3] }));
+        }
     }
 }

@@ -71235,7 +71235,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp, ohne Ferientage. ähnelt.
         /// </summary>
         public static string ZPG_UNTERSCHRIFT_TAGESGANG {
             get {

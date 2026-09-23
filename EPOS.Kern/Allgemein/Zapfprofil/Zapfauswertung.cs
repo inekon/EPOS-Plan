@@ -179,6 +179,33 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// Der Kalender der SUMME mehrerer Zonen für den Tagesgang (5.1): der Grundkalender der
+        /// Klimaregion, in dem jeder Tag Ruhetag ist, der in mindestens einer der
+        /// <paramref name="zonen"/> Ruhetag ist (ihre Ferien, auch die eines gebundenen
+        /// Gebäudes). So mittelt die Summe über Tage, an denen alle Zonen nach ihrem Tagtyp
+        /// zapfen — ein Ferientag einer Zone drückt den Werktag der Summe nicht. Eine Zone ohne
+        /// Kalender (<c>null</c>) zählt nicht.
+        /// </summary>
+        internal static ZapfTagtyp[] OhneRuhetage(IReadOnlyList<ZapfTagtyp> grund,
+                                                   IEnumerable<IReadOnlyList<ZapfTagtyp>> zonen)
+        {
+            if (grund == null || grund.Count != Zapfkalender.TAGE)
+                throw new ArgumentException("Der Kalender trägt nicht 365 Tagtypen.", nameof(grund));
+            var kalender = new ZapfTagtyp[Zapfkalender.TAGE];
+            for (int d = 0; d < kalender.Length; d++) kalender[d] = grund[d];
+            if (zonen == null) return kalender;
+            foreach (IReadOnlyList<ZapfTagtyp> z in zonen)
+            {
+                if (z == null) continue;
+                if (z.Count != Zapfkalender.TAGE)
+                    throw new ArgumentException("Ein Zonenkalender trägt nicht 365 Tagtypen.", nameof(zonen));
+                for (int d = 0; d < kalender.Length; d++)
+                    if (z[d] == ZapfTagtyp.Ruhetag) kalender[d] = ZapfTagtyp.Ruhetag;
+            }
+            return kalender;
+        }
+
         /// <summary>Der Index eines Tagtyps in den drei Tagesgängen; −1 für den Ruhetag.</summary>
         private static int Index(ZapfTagtyp typ)
         {

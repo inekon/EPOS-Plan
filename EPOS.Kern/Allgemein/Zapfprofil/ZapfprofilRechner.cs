@@ -196,7 +196,8 @@ namespace WindowsFormsApplication1
                     jeZone.Add(new ZonenErgebnis
                     {
                         IdZone = a.Stand?.Id ?? 0, Zone = a.Name, Abgelehnt = true,
-                        Zapfung = Bilanzreihe.Null(), Zirkulation = Bilanzreihe.Null()
+                        Zapfung = Bilanzreihe.Null(), Zirkulation = Bilanzreihe.Null(),
+                        Kalender = a.Kalender != null ? Array.AsReadOnly(a.Kalender) : null
                     });
                     continue;
                 }
@@ -217,7 +218,8 @@ namespace WindowsFormsApplication1
                     SpezifischKwhJeEinheitJahr = a.Zapfreihe.JahressummeKwh / a.Menge.Bezugsmenge,
                     ZapfungLiterJeTag = Liter(a.Zapfreihe.JahressummeKwh, a.Temperaturen, e.AnzeigetemperaturC, a.Name),
                     Temperaturfaktor = a.Menge.Temperaturfaktor,
-                    Kalibrierfaktor = a.Kalibrierfaktor
+                    Kalibrierfaktor = a.Kalibrierfaktor,
+                    Kalender = Array.AsReadOnly(a.Kalender)
                 });
             }
             if (rest != null) zirkreihen.Add(rest);

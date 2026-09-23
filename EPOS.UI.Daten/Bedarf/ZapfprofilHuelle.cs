@@ -367,14 +367,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Ergebnis des Generators als Vorschau-DTO: die Summe und je Zone eine Ansicht, die
-        /// Jahreswerte je Zone, die Meldungen und der Statustext. Die Tagtypen kommen aus dem
-        /// Kalender der Klimaregion (ohne Ferien der Zonen).
+        /// Jahreswerte je Zone, die Meldungen und der Statustext. Die Tagtypen einer Zone sind ihr
+        /// wirksamer Kalender aus dem Kern (<see cref="ZonenErgebnis.Kalender"/>, samt Ferien);
+        /// die Summe mittelt über den Kalender der Klimaregion ohne die Ruhetage irgendeiner Zone
+        /// (<see cref="Zapfauswertung.OhneRuhetage"/>). Ferientage gehen in keinen Tagesgang ein.
         /// </summary>
         internal static ZapfprofilVorschauDaten AlsVorschau(ZapfprofilErgebnis e, int wochentagJan1, bool[] we,
                                                             ZapfprofilEingabeDaten eingabe)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
-            ZapfTagtyp[] kalender = Zapfkalender.Bilden(wochentagJan1, we, null);
+            ZapfTagtyp[] grund = Zapfkalender.Bilden(wochentagJan1, we, null);
+            ZapfTagtyp[] kalender = Zapfauswertung.OhneRuhetage(grund, e.JeZone.Where(z => !z.Abgelehnt).Select(z => z.Kalender));
             ZapfprofilBildtexte bildtexte = Bildtexte();
             IReadOnlyDictionary<int, string> einheiten = Katalogeinheiten();
 
@@ -395,8 +398,8 @@ namespace WindowsFormsApplication1
                 ZapfprofilZoneDaten d = eingabe != null && i < eingabe.Zonen.Count ? eingabe.Zonen[i] : null;
                 string name = string.IsNullOrEmpty(z.Zone) ? d?.Name ?? "" : z.Zone;
 
-                ZapfprofilAnsichtDaten a = Ansicht(z.IdZone, name, z.Abgelehnt, z.Zapfung, z.Zirkulation, kalender,
-                                                   wochentagJan1, bildtexte);
+                ZapfprofilAnsichtDaten a = Ansicht(z.IdZone, name, z.Abgelehnt, z.Zapfung, z.Zirkulation,
+                                                   z.Kalender ?? grund, wochentagJan1, bildtexte);
                 a.Kennzahlen = Kennzahlen(z, d != null && einheiten.TryGetValue(d.IdNutzungsart, out string eh) ? eh : "");
                 vorschau.Ansichten.Add(a);
 
@@ -416,7 +419,7 @@ namespace WindowsFormsApplication1
         }
 
         private static ZapfprofilAnsichtDaten Ansicht(int idZone, string titel, bool abgelehnt, Bilanzreihe zapfung,
-                                                     Bilanzreihe zirkulation, ZapfTagtyp[] kalender, int wochentagJan1,
+                                                     Bilanzreihe zirkulation, IReadOnlyList<ZapfTagtyp> kalender, int wochentagJan1,
                                                      ZapfprofilBildtexte bildtexte)
         {
             int monat = Zapfauswertung.GroessterMonat(zapfung);
@@ -449,7 +452,7 @@ namespace WindowsFormsApplication1
                                                                    Energieeinheit.MWh.Text, bildtexte);
 
             a.UnterschriftTagesgang = Format(Text_("ZPG_UNTERSCHRIFT_TAGESGANG",
-                "Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp."), a.Titel, monatsname);
+                "Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp, ohne Ferientage."), a.Titel, monatsname);
             (int tagImMonat, int monatDerWoche) = TagUndMonat(woche.Starttag);
             a.UnterschriftWoche = Format(Text_("ZPG_UNTERSCHRIFT_WOCHE",
                 "168 Wochenstunden ab {0}, {1}. {2} — die Woche mit dem größten Tagesbedarf des Jahres."),

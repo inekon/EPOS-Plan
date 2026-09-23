@@ -23788,7 +23788,7 @@ Möchten Sie das zulassen?</value>
     <value>Leistung [kW]</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_TAGESGANG" xml:space="preserve">
-    <value>Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp.</value>
+    <value>Zapfung in kW (kWh je Stunde), {0}, {1}; Mittel der Tage je Tagtyp, ohne Ferientage.</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_WOCHE" xml:space="preserve">
     <value>168 Wochenstunden ab {0}, {1}. {2} — die Woche mit dem größten Tagesbedarf des Jahres.</value>

@@ -23781,7 +23781,7 @@ Do you want to allow this?</value>
     <value>Power [kW]</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_TAGESGANG" xml:space="preserve">
-    <value>Draw-off in kW (kWh per hour), {0}, {1}; mean of the days per day type.</value>
+    <value>Draw-off in kW (kWh per hour), {0}, {1}; mean of the days per day type, excluding holidays.</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_WOCHE" xml:space="preserve">
     <value>168 hours from {0}, {2} {1} — the week with the highest daily demand of the year.</value>

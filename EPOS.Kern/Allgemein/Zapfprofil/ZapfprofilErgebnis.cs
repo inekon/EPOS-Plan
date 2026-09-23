@@ -40,6 +40,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Faktor der Kalibrierung; <c>null</c> ohne Messwert.</summary>
         public double? Kalibrierfaktor { get; init; }
+
+        /// <summary>
+        /// Der wirksame Tagtypkalender der Zone (365 Tage), mit dem ihre Zapfreihe gerechnet ist —
+        /// samt ihren Ruhetagen (eigene Ferien oder die des gebundenen Gebäudes, N8 c). Die
+        /// Vorschau mittelt ihren Tagesgang damit (5.1). <c>null</c>, wenn die Zone abgelehnt
+        /// wurde, bevor ihr Kalender stand.
+        /// </summary>
+        public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
     }
 
     /// <summary>
