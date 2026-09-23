@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
                     if (row[11] != DBNull.Value) item.Interne_Waermegewinne = Convert.ToDouble(row[11]);
                     if (row[12] != DBNull.Value) item.Bauweise = Convert.ToDouble(row[12]);
                     if (row[13] != DBNull.Value) item.Fensterflaeche_Sued = Convert.ToDouble(row[13]);
-                    if (row[14] != DBNull.Value) item.Fensterflaeche_Ost = Convert.ToDouble(row[14]);
+                    if (row[14] != DBNull.Value) item.Fensterflaeche_OstWest = Convert.ToDouble(row[14]);
                     if (row[15] != DBNull.Value) item.Fensterflaeche_Nord = Convert.ToDouble(row[15]);
                     if (row[16] != DBNull.Value) item.Fensterdurchlassgrad = Convert.ToDouble(row[16]);
                     if (row[17] != DBNull.Value) item.Raumsolltemperatur_Nachtabsenkung = Convert.ToDouble(row[17]);

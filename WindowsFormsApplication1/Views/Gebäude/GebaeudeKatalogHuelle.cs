@@ -361,7 +361,7 @@ namespace WindowsFormsApplication1
 
                 FensterflaecheNord = m.Fensterflaeche_Nord,
                 FensterflaecheSued = m.Fensterflaeche_Sued,
-                FensterflaecheOstWest = m.Fensterflaeche_Ost,
+                FensterflaecheOstWest = m.Fensterflaeche_OstWest,
                 FlaecheAussenwand = m.Flaeche_Außenwand,
                 Dachflaeche = m.Dachflaeche,
                 Grundflaeche = m.Grundflaeche,
@@ -440,7 +440,7 @@ namespace WindowsFormsApplication1
             m.Bauweise = d.Bauweise;
 
             m.Fensterflaeche_Sued = d.FensterflaecheSued ?? 0;
-            m.Fensterflaeche_Ost = d.FensterflaecheOstWest ?? 0;
+            m.Fensterflaeche_OstWest = d.FensterflaecheOstWest ?? 0;
             m.Fensterflaeche_Nord = d.FensterflaecheNord ?? 0;
             m.Fensterdurchlassgrad = d.Fensterdurchlassgrad ?? 0;
 
@@ -450,7 +450,7 @@ namespace WindowsFormsApplication1
             m.k_Wert_Grundflaeche = d.UWertGrundflaeche ?? 0;
             m.k_Wert_Sonstiges = d.UWertSonstiges ?? 0;
             m.Flaeche_Außenwand = d.FlaecheAussenwand ?? 0;
-            m.gesamte_Fensterflaeche = m.Fensterflaeche_Sued + m.Fensterflaeche_Ost +
+            m.gesamte_Fensterflaeche = m.Fensterflaeche_Sued + m.Fensterflaeche_OstWest +
                                        m.Fensterflaeche_Nord;
             m.Dachflaeche = d.Dachflaeche ?? 0;
             m.Grundflaeche = d.Grundflaeche ?? 0;

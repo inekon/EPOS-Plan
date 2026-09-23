@@ -841,11 +841,11 @@ namespace WindowsFormsApplication1
             {
                 /*
                 Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
                         (double)item.Fensterdurchlassgrad) / (double)100;
                 */
                 Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
                         (double)item.Fensterdurchlassgrad) / 100.0;
 
                 /*
@@ -911,11 +911,11 @@ namespace WindowsFormsApplication1
             {
                 /*
                 Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
                         (double)item.Fensterdurchlassgrad) / 100;
                 */
                 Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                    (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                    (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
                     (double)item.Fensterdurchlassgrad) / 100.0;
                 /*
                 SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,

@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
         public double Interne_Waermegewinne;
         public double Bauweise;
         public double Fensterflaeche_Sued;
-        public double Fensterflaeche_Ost;
+        public double Fensterflaeche_OstWest;
         public double Fensterflaeche_Nord;
         public double Fensterdurchlassgrad;
         public double Raumsolltemperatur_Nachtabsenkung;
@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
             Interne_Waermegewinne = 0;
             Bauweise = 10000;
             Fensterflaeche_Sued = 0;
-            Fensterflaeche_Ost = 0;
+            Fensterflaeche_OstWest = 0;
             Fensterflaeche_Nord = 0;
             Fensterdurchlassgrad = 0;
             Raumsolltemperatur_Nachtabsenkung = 0;
