@@ -1852,7 +1852,11 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-info">Die Klappliste des Leistungspreises steht nur bei Trägern, die einen führen; die
           Saisonsätze sind zwölf Monatswerte und gehen dem konstanten Satz vor. Fehlt ein Preis, steht der
           Hinweis am Ort der Pflege, daneben der Knopf, der den Wert der Kategorie holt, und darunter die
-          Zeile, die die geliehene Herkunft nennt — gesetzt wird nichts von selbst.</div>
+          Zeile, die die geliehene Herkunft nennt — gesetzt wird nichts von selbst. Beim Stromträger im
+          Projektkontext steht in diesem Block zusätzlich die Gruppe „Leistungspreis-Staffel (auf die
+          Jahres-Bezugsspitze)" mit Staffelgrenze [kW], Preis bis zur Grenze und Preis über der Grenze
+          [€/(kW·a)] und einer Erklärzeile darunter; eine gepflegte Staffel ersetzt Leistungspreis und
+          saisonale Sätze dieses Stromträgers, leere Preise heißen „keine Staffel", der Katalog führt keine.</div>
         </div>
 
         <!-- Block B -->
@@ -1983,6 +1987,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
     <span class="norm gesetz">BEHG · EU-ETS 2</span>
     <span class="norm gesetz">GEG Anlage 4 und 9</span>
     <span class="norm code">StromMatrix</span>
+    <span class="norm code">LeistungspreisStaffel</span>
     <span class="norm code">Preisanteile.Paar</span>
   </div>
   <div class="formel"><pre>Arbeitspreis
@@ -1999,6 +2004,8 @@ Leistungspreis — die einzige η-Division der Kette
 Netzbezug Strom
   Kosten = Restbedarf × 1000 × Preis + Grundpreis + Leistungsanteil
   Leistungsanteil: Basis ist die gemessene BEZUGSSPITZE der Viertelstundenreihe
+  Staffel vor Saisonreihe vor Satz — genau einer rechnet, nie eine Summe
+  Staffel:    min(S, G) × P₁ + max(0, S − G) × P₂   <span class="kom">S Jahresspitze, G Staffelgrenze</span>
   Modus JAHR: Satz × Jahresspitze    Modus MONAT: Σ₁₂ (Monatssatz × Monatsspitze)
   <span class="hin">Kein Aufschlag: Die Preisanteile ZERLEGEN den Arbeitspreis, sie kommen
   nicht auf ihn — es gibt genau eine Preiswahrheit, den Arbeitspreis der Trägerkarte.</span>
@@ -2141,6 +2148,8 @@ Keine stillen Teilsummen
         <tr><td>Summenzeile „Summe der Bestandteile {0} {1} — deckungsgleich / weicht um {2} ab"</td><td class="rs">BB_KOHAERENZ_OK · BB_KOHAERENZ_AB</td><td>Block B, über den Knöpfen</td></tr>
         <tr><td>Fußnote und Summe des Emissionsblocks</td><td class="rs">KDLG_EM_FUSSNOTE · KDLG_EM_SUMME</td><td>Block C</td></tr>
         <tr><td>Hinweis „Diese Regeln prüfen die Einheitenkette…"</td><td class="rs">ETV_REGELN_HINWEIS</td><td>Block D, unter dem Regelblock</td></tr>
+        <tr><td>Gruppe „Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)": Staffelgrenze [kW], „Preis bis zur Grenze", „Preis über der Grenze" [€/(kW·a)], Erklärzeile, Speicherfehler; Erklärtexte der drei Felder für den Hilfe-Assistenten</td><td class="rs">ETV_STAFFEL_TITEL · ETV_STAFFEL_GRENZE · ETV_STAFFEL_PREIS1 · ETV_STAFFEL_PREIS2 · ETV_STAFFEL_HINWEIS · ETV_STAFFEL_SPEICHERFEHLER · KI_DLG_ET_STAFFEL_GRENZE_ERL · KI_DLG_ET_STAFFEL_PREIS1_ERL · KI_DLG_ET_STAFFEL_PREIS2_ERL</td><td>Block A, Stromträger im Projektkontext</td></tr>
+        <tr><td>Herkunft des Leistungspreises der Speicherauslegung „Leistungspreis-Staffel des Stromträgers: {0} €/(kW·a) — {1}" mit Stufe 1, Stufe 2 (Kappung zum Preis der oberen Stufe) und „Bezugsspitze nicht bekannt"</td><td class="rs">OPT_QUELLE_STAFFEL · OPT_QUELLE_STAFFEL_STUFE1 · OPT_QUELLE_STAFFEL_STUFE2 · OPT_QUELLE_STAFFEL_OHNE_SPITZE</td><td>Stromspeicher-Auslegung, Herkunftszeile</td></tr>
       </tbody>
     </table>
   </div>
@@ -2287,9 +2296,11 @@ Keine stillen Teilsummen
         <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Modus § 9 Abs. 1 Nr. 3">Ausweis (nicht im Kapitalwert)</span></div>
         <div class="f-herleitung">Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. Erlös: Sie wird als Erlös
         gebucht — nur, wenn der Bezugspreis die Stromsteuer enthält.</div>
-        <div class="f-knopfzeile"><span class="f-knopf">Strombezug…</span><span class="f-knopf">BHKW-Tarif…</span></div>
-        <div class="f-info">Beide Sprünge schreiben nur, wenn der Arbeitsstand vom geladenen Stand abweicht — dann steht darunter
-        „Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder."</div>
+        <div class="f-knopfzeile"><span class="f-knopf">BHKW-Tarif…</span></div>
+        <div class="f-info">Der Sprung öffnet die Tarifstruktur im Rollenmodell und schreibt nur, wenn der Arbeitsstand vom
+        geladenen Stand abweicht — dann steht darunter „Der Sprung speichert die Eingaben, schließt diesen Dialog und
+        öffnet ihn danach wieder." Einen Sprung „Strombezug…" gibt es nicht: Den Zeitzonentarif gibt es nicht, und die
+        Leistungspreis-Staffel steht beim Stromträger (Kategorie 4).</div>
       </div>
 
       <!-- Kohaerenzpruefung (BHW_G_KOHAERENZ) -->
@@ -2855,7 +2866,7 @@ Stromsteuer
         <tr><td>Wahllisten Anlagenart (Leereintrag „(bitte wählen)"), Tatbestand, Entlastung, Aufteilung, Unternehmensart, Modus</td><td class="rs">BHW_W_ART_* ·BHW_W_FALL_* · BHW_W_ES_* · BHW_W_AUF_* · BHW_W_UA_* · BHW_W_MODUS_* · BHW_W_PROJEKTWERT</td><td>Anzeigezeilen · Überlagerung</td></tr>
         <tr><td>Projektweite KWK-Angaben: fünf Felder und zwei Hinweiszeilen</td><td class="rs">WPAR_EINSP_KWK · BHW_P_ABSCHLAG · BHW_P_PAUSCHAL · BHW_P_STICHTAG · BHW_P_IBN · BHW_P_EINSP_KWK_HINWEIS · BHW_P_NUR_PROJEKTWEIT</td><td>Projektweite KWK-Angaben</td></tr>
         <tr><td>Energiesteuer: Wahl, Aufteilung, Nutzungsgrad, Herkunft aus dem Lauf</td><td class="rs">BHW_E_WAHL · BHW_E_AUFTEILUNG · BHW_E_NUTZUNGSGRAD · BHW_E_OHNE_HERKUNFT</td><td>Energiesteuer (Projektvorgabe)</td></tr>
-        <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, zwei Sprungknöpfe, Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_STROMBEZUG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
+        <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, Sprungknopf „BHKW-Tarif…", Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
         <tr><td>§ 9 Abs. 1 Nr. 3, CO₂-Grenzwert brennwertbezogen: Begründung „über dem CO₂-Grenzwert … (brennwertbezogen)" · Herleitung je Anlage „{0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen)", „… (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3})", „… heizwertbezogen — kein Brennwert gepflegt)" · Herkunftszeile „CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh" · Hinweis ohne gepflegten Brennwert</td><td class="rs">STEUER_STROMST_CO2 · STEUER_STROMST_CO2_FAKTOR_HO · STEUER_STROMST_CO2_FAKTOR_UMGERECHNET · STEUER_STROMST_CO2_FAKTOR_HI · STEUER_STROMST_CO2_HERLEITUNG · STEUER_STROMST_CO2_HEIZWERT</td><td>Begründung und Herkunft der Befreiungszeile · Vorschau</td></tr>
         <tr><td>Kohärenz: Leerzeile und Fallzeilen des Laufs · Doppelpflege Hilfsenergie</td><td class="rs">BHW_K_LEER · KOH_FALL1_ENERGIESTEUER … KOH_FALL5_MISCHLAGE · KOH_DOPPEL_STROMST_9_1_3 · KOH_HILFSENERGIE_DOPPELT</td><td>Kohärenzprüfung · Hilfsstrom</td></tr>
         <tr><td>Hilfsstrom: Basiszeile, Mengenkette, Kesselhinweis, ohne Lauf</td><td class="rs">BHW_H_BASIS · BHW_H_KETTE1 · BHW_H_KETTE2 · BHW_H_KESSEL · BHW_H_OHNE_LAUF</td><td>Hilfsstrom</td></tr>
@@ -3449,6 +3460,7 @@ Zuordnung der Zeilen
         <tr><td>Hinweis „Block B wird nicht summiert"</td><td class="rs">WIRT_ERL_KOPF_B</td><td>Fuß der Rubrik</td></tr>
         <tr><td>Textzeilen „Satz Einspeisung · Herkunft" und „Satz Eigenstrom · Herkunft" · Vermerk „eigener Wert {0} — Vorschlag {1}" · „Vorschlag"</td><td class="rs">WIRT_ERL_A1_SATZ · WIRT_ERL_A2_SATZ · WIRT_ERL_HERKUNFT_EIGEN · WIRT_ERL_HERKUNFT_VORSCHLAG</td><td>Erlösrubrik, Bericht, Vorschau</td></tr>
         <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil" · Herleitung je Anlage „{0} MWh vermiedener Bezug · Anteil {1} %" · „Näherung: verteilt nach dem Eigenverbrauch je Anlage"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG · WIRT_ERL_B1_ANTEIL · WIRT_ERL_B1_NAEHERUNG</td><td>Block B</td></tr>
+        <tr><td>Tafel „Strommengen" — eine Jahreszeile ohne Tarifzonen: Spalten „Zeitraum" … „Höchste Stundenlast", Zeile „Jahr", Herkunftszeile „Jahressummen aus den Stundenreihen … — dokumentierte Näherung", Zeile zur höchsten Stundenlast des Netzbezugs (Bemessungsgröße des Rollentarifs; der Leistungspreis des Stromträgers bemisst sich an der Viertelstundenspitze), Hinweis „Bedarf ohne Anlage" — die Bezugsgröße der vermiedenen Kosten</td><td class="rs">WIRT_MATRIX_TITEL · WIRT_MATRIX_ZEITRAUM · WIRT_MATRIX_JAHR · WIRT_MATRIX_STUNDENLAST · WIRT_MATRIX_HERKUNFT · WIRT_MATRIX_STUNDENSPITZE · WIRT_MATRIX_BEDARF_HINWEIS</td><td>Wort- und Excelbericht</td></tr>
       </tbody>
     </table>
   </div>
@@ -3512,9 +3524,9 @@ Zuordnung der Zeilen
 
   <div class="zone">Die Ergebnisseite — Kopf und Umschalter</div>
   <p class="eng">Der Kopf trägt einen Umschalter mit zwei Zuständen: links die Kennzahltafel, rechts die
-  Bewertung nach DIN EN 17463. Die Fußleiste führt vier Knöpfe — Photovoltaik, BHKW-Wirtschaftlichkeit,
-  Strombezug, Berechnen — und bleibt in beiden Zuständen dieselbe; der Verlauf steht als eigener Abschnitt
-  auf der Seite und braucht keinen Knopf.</p>
+  Bewertung nach DIN EN 17463. Die Fußleiste führt drei Knöpfe — Photovoltaik, BHKW-Wirtschaftlichkeit,
+  Berechnen — und bleibt in beiden Zuständen dieselbe; der Verlauf steht als eigener Abschnitt auf der Seite
+  und braucht keinen Knopf, und die Tarifstruktur im Rollenmodell öffnet sich aus dem BHKW- und dem PV-Dialog.</p>
 
   <div class="duo">
     <div class="seite">
@@ -3528,7 +3540,7 @@ Zuordnung der Zeilen
       <div class="s-fuss">
         <span class="s-status">Lauf abgeschlossen · drei Szenarien gerechnet</span>
         <span class="s-knopf">Photovoltaik…</span><span class="s-knopf">BHKW-Wirtschaftlichkeit…</span>
-        <span class="s-knopf">Strombezug…</span><span class="s-knopf primaer">Berechnen</span>
+        <span class="s-knopf primaer">Berechnen</span>
       </div>
     </div>
     <div class="seite">
@@ -4510,6 +4522,7 @@ Einstufung
         <tr><td>Annahmentafel: Titel „Annahmen und ihre Herkunft", Spalte „Herkunft", Zeile „Betrachtungszeitraum", Herkunft „Vorgabe" · „gepflegt" · „Projektwert — in allen drei Szenarien gleich"</td><td class="rs">WIRT_ANN_TITEL · WIRT_ANN_SP_HERKUNFT · WIRT_ANN_ZEITRAUM · WIRT_ANN_VORGABE · WIRT_ANN_GEPFLEGT · WIRT_ANN_PROJEKTWERT</td><td>„Was ist angenommen?"</td></tr>
         <tr><td>Hinweistext „Was ein Szenario variiert"</td><td class="rs">WIRT_SZEN_HINWEIS</td><td>unter der Annahmentafel, Block 4, Wort- und Tabellenbericht</td></tr>
         <tr><td>Kennzeichnung „Nachweis liegt mit der nächsten Rechnung vor"</td><td class="rs">WIRT_NACHWEIS_NAECHSTE_RECHNUNG</td><td>„Was ist angenommen?", Block 5, Wort- und Tabellenbericht</td></tr>
+        <tr><td>Hinweis „Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell …" und Tarifnachweis „Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung" — nur, wo ein Satz den Schemaschritt nicht durchlaufen hat</td><td class="rs">WIRT_HINWEIS_ZEITZONENTARIF · WIRT_TARIF_NACHWEIS_ZONEN</td><td>Hinweisband; Tarifnachweis im Nachweisblock und im Bericht</td></tr>
         <tr><td>Deklarationszeilen, ohne gepflegten Text „nicht monetäre Wirkungen: keine benannt"</td><td class="rs">WIRT_DEKL_NOMINAL · WIRT_DEKL_STEUERN · WIRT_DEKL_RESTWERT · WIRT_DEKL_RISIKO · WIRT_DEKL_RISIKO_OHNE_NM</td><td>Klappblock, Block 5, Wort- und Tabellenbericht</td></tr>
         <tr><td>Knopf „Bericht erzeugen"</td><td class="rs">WIRT_BTN_BERICHT</td><td>Fuß des Bewertungsblocks, Block 5</td></tr>
         <tr><td>Darstellung „ValERI-Bewertung": Blockköpfe „1 · Gegenstand und Rahmen" bis „5 · Deklarationen", Normbezug „DIN EN 17463 · …", Zeile „Maßnahme", Einordnung unter der Kennzahltafel, Hinweiszeile an der Stelle von Block 2</td><td class="rs">WIRT_VALERI_BLOCK_1 … WIRT_VALERI_BLOCK_5 · WIRT_VALERI_NORM_1 … WIRT_VALERI_NORM_5 · WIRT_VALERI_MASSNAHME · WIRT_VALERI_KZ_HINWEIS · WIRT_VALERI_BLOCK_2_HINWEIS</td><td>Darstellung „ValERI-Bewertung"</td></tr>
@@ -4558,9 +4571,14 @@ Einstufung
   die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die Etappe E3 Plattform (#431) hat den
   Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht. E7 Teil a (#437) erledigt
   keine Zeile dieser Tafel: U6 trägt den Nachtrag zu U6‑Q1 (Bedarf ohne jede Eigenerzeugung, Verteilschlüssel
-  brutto), U1 die Messung nach A2 — seine fünf Teilfragen sind entschieden 23.09.2026 (E7‑Q2). Die nächsten
-  Etappen sind <b>E7b</b> (Zeitzonentarif und Leistungspreis-Staffel) und <b>E7c</b> (die übrigen
-  rechenwirksamen Lücken).</p>
+  brutto), U1 die Messung nach A2 — seine fünf Teilfragen sind entschieden 23.09.2026 (E7‑Q2). Auch E7 Teil b
+  (#439, Q11) erledigt keine Zeile dieser Tafel — keine führte den Zeitzonentarif —, er ändert aber die
+  Zeichnung: Fußleiste der Ergebnisseite und Gruppe Stromsteuer des BHKW-Dialogs ohne „Strombezug…", die
+  Leistungspreis-Staffel beim Stromträger (Kategorie 4, Trägerkarte, Berechnungsgrundlage und Ressourcentafel),
+  die Strommengen-Tafel als Jahreszeile (Ressourcentafel der Kategorie 7). Die Schemaschritte sind am
+  23.09.2026 neu geordnet: 101 Gebäudesimulation, 102 die leere Anlagenart, 103 Zapfprofilgenerator, 104 die
+  Leistungspreis-Staffel, 105 K‑1 (U1). Die nächste Etappe ist <b>E7c</b> (die übrigen rechenwirksamen
+  Lücken).</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4569,8 +4587,9 @@ Einstufung
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U1</td><td class="num">5</td>
             <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
               (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
-              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–102 sind vergeben — 101 trägt die
-              leere Anlagenart, 102 den Zapfprofilgenerator —, der nächste freie ist <b>103</b>).
+              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–104 sind vergeben — 101 trägt die
+              Gebäudespalten, 102 die leere Anlagenart, 103 den Zapfprofilgenerator, 104 die
+              Leistungspreis-Staffel —, der nächste freie ist <b>105</b>).
               <b>Vorbedingung:</b> Die modulscharfe Nutzwärme (Wärmeproduktion abzüglich
               Wärmeüberschuss) liegt im Ergebnismodell je Modul nicht vor — ohne sie ist Fall 2 nicht
               rechenbar. Gemessen mit E7a (#437): Die Wärmeproduktion liegt je Modul vor, der
@@ -4649,8 +4668,8 @@ Einstufung
               gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
               nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
               Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
-              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–102 sind vergeben, der nächste freie ist
-              <b>103</b>). Kennung im Text: UR-1 Schritt 2</td>
+              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–104 sind vergeben, 105 bekommt K‑1 (U1),
+              der nächste freie ist <b>106</b>). Kennung im Text: UR-1 Schritt 2</td>
             <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
               <span class="mono">energy_project_settings</span></td>
             <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
