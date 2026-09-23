@@ -405,8 +405,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Alle vier Bedingungen erfüllt: 1.155,0 MWh × 20,50 €/MWh. Der
-        /// CO₂-Energieertrag ist 200,9 × 4.342,105 / (1.650 + 1.953,947) = 242,05
-        /// g/kWh und damit unter dem Grenzwert von 270.
+        /// CO₂-Energieertrag ist — brennwertbezogen, Konzept § 6.3 Nr. 29 —
+        /// 181,4 × 4.342,105 / (1.650 + 1.953,947) = 218,55 g/kWh und damit unter dem
+        /// Grenzwert von 270 (heizwertbezogen waren es 242,05 g/kWh; der Betrag bleibt).
         /// </summary>
         [Fact]
         public void Paragraf_9_Absatz_1_Nummer_3_befreit_den_KWK_Eigenverbrauch()
@@ -432,8 +433,9 @@ namespace EPOS.Kern.Tests
                 case "hocheffizienz": e.HocheffizienzNachweis = false; break;
                 case "raeumlich": e.RaeumlicherZusammenhang = false; break;
                 case "leistung": e.Anlagen[0].PelKW = 2500.0; break;   // über 2.000 kW
+                // 266,4 × H_i/H_s (10,5/11,6) × 1,2048 = 290,5 g/kWh (H_s) → über 270
                 case "co2": e.Anlagen[0].SchluesselCo2 =
-                                DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_EL; break;  // 266,4 → über 270
+                                DbWerte.GESETZ_EF_BILANZ_EBEV_HEIZOEL_EL; break;
             }
 
             SteuerErgebnis r = Rechne(e);

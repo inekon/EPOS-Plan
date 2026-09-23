@@ -6463,7 +6463,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über der elektrischen Nennleistung von {0} kW je Anlage und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>
   <data name="STEUER_STROMST_CO2" xml:space="preserve">
-    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag (brennwertbezogen) und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>
   <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
     <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: die direkten CO₂-Emissionen je kWh Energieertrag sind nicht bestimmbar ({0}) — Emissionsfaktor des Trägers im Katalog prüfen; für diese Anlagen keine Befreiung.</value>
@@ -6760,7 +6760,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Bedarf ohne Anlage [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>„Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
+    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>
@@ -10260,7 +10260,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>(Projektwert)</value>
   </data>
   <data name="BHW_W_ART_LEER" xml:space="preserve">
-    <value>(nicht erfasst — gilt als Neuanlage)</value>
+    <value>(bitte wählen)</value>
   </data>
   <data name="BHW_W_ART_NEU" xml:space="preserve">
     <value>neue Anlage (§ 8 Abs. 1)</value>
@@ -19897,7 +19897,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} MWh vermiedener Bezug · Anteil {1} %</value>
   </data>
   <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
-    <value>Näherung: verteilt nach dem Netto-Stromanteil je Anlage</value>
+    <value>Näherung: verteilt nach dem Eigenverbrauch je Anlage</value>
   </data>
   <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
     <value>vermiedene Kosten wirksam — {0} [€/a]</value>
@@ -23210,5 +23210,20 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_SPANNE_LEER" xml:space="preserve">
     <value>Keine Version mit Szenarienwerten.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HO" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_UMGERECHNET" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3})</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HI" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, heizwertbezogen — kein Brennwert gepflegt)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HERLEITUNG" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen geprüft; der CO₂-Wert je kWh Energieertrag fällt dadurch zu hoch aus (konservativ).</value>
   </data>
 </root>

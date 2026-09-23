@@ -187,20 +187,17 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  R11 — die Hi/Ho-Frage am CO₂-Grenzwert (GEPINNT, nicht geändert)
+        //  R11 — die Hi/Ho-Frage am CO₂-Grenzwert: es gilt immer der Brennwert
+        //  (Konzept § 6.3 Nr. 29, Register R‑NR Nr. 29, Anwender 22.09.2026;
+        //  umgesetzt mit E7 — Leser: SteuerGutschriftRechner.Co2JeEnergieertrag)
         // =====================================================================
 
         /// <summary>
-        /// <b>Befund R11, offener Entscheid.</b> Der Katalog führt zum Erdgas zwei
-        /// EBeV-Faktoren: heizwertbezogen (Hi) und brennwertbezogen (Ho). Gelesen wird
-        /// heute der Schlüssel, den die Anlage trägt — die beiden Ho-Zeilen haben keinen
-        /// Leser. Der Unterschied ist rund 10 % und entscheidet am Grenzwert des
-        /// § 2 StromStG über die Befreiung.
-        ///
-        /// <para><b>E2 ändert daran nichts:</b> Die Wahl der Bezugsgröße ändert den
-        /// gebuchten Befreiungsbetrag und damit den Kapitalwert; sie gehört als
-        /// Entscheid nach E7. Dieser Fall PINNT die Ausgangslage — Werte, Verhältnis und
-        /// Grenzwert —, damit eine spätere Korrektur als Änderung sichtbar wird.</para>
+        /// <b>Befund R11.</b> Der Katalog führt zum Erdgas zwei EBeV-Faktoren:
+        /// heizwertbezogen (Hi) und brennwertbezogen (Ho). Der Unterschied ist rund 10 %
+        /// und entscheidet am Grenzwert des § 2 StromStG über die Befreiung. Bis E7 las
+        /// die Prüfung den Hi-Schlüssel der Anlage; seit E7 nimmt der Zähler den
+        /// Ho-Faktor. Dieser Fall pinnt die drei Katalogwerte, auf denen die Regel steht.
         /// </summary>
         [Fact]
         public void Der_Hi_Ho_Unterschied_am_CO2_Grenzwert_ist_gepinnt()
@@ -224,16 +221,24 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Gegenprobe zur Pinnung: Bei einem Nutzungsgrad, der den Zähler genau
-        /// zwischen beide Faktoren legt, entscheidet die BEZUGSGRÖSSE über die
-        /// Befreiung. Gepinnt ist das heutige Verhalten (Hi-Faktor ⇒ verletzt).
+        /// <b>Der Vorher/Nachher-Fall der Etappe E7 (Nr. 29).</b> Bei einem Nutzungsgrad,
+        /// der den Zähler genau zwischen beide Faktoren legt, entscheidet die
+        /// BEZUGSGRÖSSE über die Befreiung:
+        /// <code>
+        /// Energieertrag = 72 % des Brennstoffs (1.000 MWh → 400 Strom + 320 Wärme)
+        /// Hi: 200,9 / 0,72 = 279,0 g/kWh  (über 270 ⇒ keine Befreiung)
+        /// Ho: 181,4 / 0,72 = 251,9 g/kWh  (unter 270 ⇒ Befreiung)
+        /// </code>
+        /// <para><b>ALT (E2, Hi-Faktor gepinnt):</b> Eine Erdgasanlage mit dem
+        /// Hi-Schlüssel bekam <b>0,00 €/a</b> — Begründung „über dem CO₂-Grenzwert von
+        /// 270". <b>NEU (E7):</b> Dieselbe Anlage bekommt <b>8.200,00 €/a</b> =
+        /// 400 MWh × 20,50 €/MWh, weil der Zähler den Ho-Faktor nimmt; der Hi-Schlüssel
+        /// der Anlage führt über <c>Co2SchluesselBrennwert</c> auf
+        /// <c>EF_BILANZ_EBEV_ERDGAS_HO</c>. Beide Schlüssel rechnen damit gleich.</para>
         /// </summary>
         [Fact]
         public void Am_Grenzfall_entscheidet_die_Bezugsgroesse_ueber_die_Befreiung()
         {
-            // Energieertrag = 72 % des Brennstoffs. Dann ist der spezifische Wert
-            // Hi: 200,9 / 0,72 = 279,0 g/kWh  (über 270 ⇒ keine Befreiung)
-            // Ho: 181,4 / 0,72 = 251,9 g/kWh  (unter 270 ⇒ Befreiung)
             const double brennstoff = 1000.0, strom = 400.0, waerme = 320.0;
 
             SteuerErgebnis mitHi = Befreiungsfall(DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HI,
@@ -241,9 +246,14 @@ namespace EPOS.Kern.Tests
             SteuerErgebnis mitHo = Befreiungsfall(DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HO,
                                                   brennstoff, strom, waerme);
 
-            Assert.Equal(0.0, mitHi.StromsteuerBefreiungEur, 6);
-            Assert.Contains(mitHi.Begruendungen, g => g.Contains("270", StringComparison.Ordinal));
-            Assert.True(mitHo.StromsteuerBefreiungEur > 0.0);
+            // NEU: 8.200,00 €/a statt 0,00 €/a — der Grenzwert ist brennwertbezogen.
+            Assert.Equal(8200.00, mitHi.StromsteuerBefreiungEur, 2);
+            Assert.Equal(8200.00, mitHo.StromsteuerBefreiungEur, 2);
+            Assert.DoesNotContain(mitHi.Begruendungen, g => g.Contains("270", StringComparison.Ordinal));
+
+            // Die Herleitung nennt den brennwertbezogenen Wert und den Faktor.
+            Assert.Contains(mitHi.Herkunft, h => h.Contains("251,9", StringComparison.Ordinal) &&
+                                                 h.Contains("181,4", StringComparison.Ordinal));
         }
 
         private static SteuerErgebnis Befreiungsfall(string schluesselCo2, double brennstoff,

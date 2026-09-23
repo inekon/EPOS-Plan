@@ -832,7 +832,48 @@ namespace EPOS.Kern.Tests
             string text = herleitung.Text(e);
             Assert.Contains("85,5", text);
             Assert.Contains("Näherung", text);
+            // E7 (Konzept § 6.3 Nr. 32): Der Schlüssel ist der Eigenverbrauch je Anlage,
+            // brutto aus der Strommatrix — ALT hieß es „nach dem Netto-Stromanteil".
+            Assert.Contains("verteilt nach dem Eigenverbrauch je Anlage", text);
             Assert.Null(herleitung.ExcelWert(e));       // keine Zahl in der Wertspalte
+        }
+
+        /// <summary>
+        /// <b>E7 (Konzept § 6.3 Nr. 32, Orchestrator-Entscheid 23.09.2026, Frage 6):</b>
+        /// Im Rollentarif trägt die Aufteilung einen PV-Anteil — er ERSETZT die Zeile
+        /// „PV: vermiedener Bezug" zum Flat-Preis. ALT standen beide untereinander
+        /// (22.914,0 wirksam aus dem Anteil und 24.624,0 aus dem Flat-Preis); NEU steht
+        /// nur der Anteil. Der Wert selbst bleibt am Ergebnis.
+        /// </summary>
+        [Fact]
+        public void Im_Rollentarif_ersetzt_der_PV_Anteil_die_Zeile_vermiedener_Bezug()
+        {
+            WirtschaftlichkeitErgebnis e = MitAufteilung();
+            e.PvVermiedenerBezug = 85.5 * 1000.0 * 0.2880;         // 24.624,0 €/a
+
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            Assert.NotNull(Zeile(zeilen, "VERMIEDEN_BRUTTO_PV"));
+            Assert.Null(Zeile(zeilen, "PV_VERMIEDEN"));
+            Assert.Equal(24624.0, e.PvVermiedenerBezug.Value, 6);    // gerechnet bleibt er
+        }
+
+        /// <summary>
+        /// Im Flat-Tarif gibt es keine Aufteilung der vermiedenen Kosten — die Zeile
+        /// „PV: vermiedener Bezug" bleibt der Ausweis der Photovoltaik.
+        /// </summary>
+        [Fact]
+        public void Im_Flat_Tarif_bleibt_die_Zeile_vermiedener_Bezug()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.PvVermiedenerBezug = 24624.0;
+            Assert.Empty(e.VermiedenJeAnlage);
+
+            WirtZeile z = Zeile(Rubrik(e), "PV_VERMIEDEN");
+
+            Assert.NotNull(z);
+            Assert.Equal(WirtZeile.KOMPONENTE_PV, z.Komponente);
+            Assert.Equal(24624.0, z.Wert(e).Value, 6);
         }
 
         /// <summary>

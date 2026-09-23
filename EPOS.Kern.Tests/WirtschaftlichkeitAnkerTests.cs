@@ -30,6 +30,15 @@ namespace EPOS.Kern.Tests
     /// stammen vom Stand der Testdatenbank am 19.09.2026 (Schemastand 96). Wo das
     /// Konzept (§ 6.2) eine andere Zahl nennt, steht die Abweichung am Fall; die
     /// Konzeptzahlen stammen von einem älteren Datenstand.</para>
+    ///
+    /// <para><b>ETAPPE E7, Teil a — gemessen, kein Anker bewegt sich</b> (alt = neu:
+    /// 1024 −2.896.359,13 €, 1030 −21.895.377,28 €, 99,00 €/a, Kaskade 13.000,00 €).
+    /// Die Gründe: Der Brennwert am CO₂-Grenzwert (Konzept § 6.3 Nr. 29) wirkt nur auf
+    /// die Stromsteuerbefreiung, und kein Ankerprojekt erreicht sie (Hocheffizienz und
+    /// räumlicher Zusammenhang ungepflegt); Schemaschritt 101 (Nr. 30) setzt allein die
+    /// leere Anlagenart von Nicht-BHKW-Anlagen auf NULL; die vermiedene Menge ohne jede
+    /// Eigenerzeugung (Nr. 32) ist Ausweis im Rollentarif, und diese Kette hat weder
+    /// Stundenreihen noch einen Tarif.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitAnkerTests : IDisposable

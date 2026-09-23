@@ -42,12 +42,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Katalogschlüssel des direkten CO₂-Faktors
         /// (<c>EF_BILANZ_EBEV_*</c>, g/kWh Brennstoff, heizwertbezogen); leer = kein
-        /// Faktor zugeordnet.</summary>
+        /// Faktor zugeordnet. Der Grenzwert des § 2 StromStG wird dennoch
+        /// BRENNWERTbezogen geprüft (Konzept § 6.3 Nr. 29) — den Ho-Faktor bildet
+        /// <see cref="SteuerGutschriftRechner.Co2JeEnergieertrag"/>.</summary>
         public string SchluesselCo2 = "";
 
         /// <summary>Heizwert je Abrechnungseinheit [kWh/Einheit] aus
         /// <c>Abfrage_Energietraeger_Effektiv</c> (Projektwert vor Katalogwert);
-        /// 0 = nicht gepflegt.</summary>
+        /// 0 = nicht gepflegt. Mit <see cref="EffHs"/> die Umrechnung Hi → Ho der
+        /// Energiesteuer und der CO₂-Grenzwertprüfung.</summary>
         public double EffHi;
 
         /// <summary>Brennwert je Abrechnungseinheit [kWh/Einheit], gleiche Quelle;
@@ -288,6 +291,84 @@ namespace WindowsFormsApplication1
         public double SummeEur
         {
             get { return EnergiesteuerEur + StromsteuerBefreiungEur + StromsteuerEntlastungEur; }
+        }
+    }
+
+    /// <summary>
+    /// KONZEPT § 6.3 Nr. 29 — worauf der CO₂-Faktor bezogen ist, mit dem der Grenzwert
+    /// des § 2 StromStG geprüft wird.
+    /// </summary>
+    internal enum Co2Bezug
+    {
+        /// <summary>Brennwertbezogener Katalogfaktor (Erdgas: EBeV 181,4 g/kWh H_s).</summary>
+        KatalogBrennwert,
+
+        /// <summary>Heizwertbezogener Katalogfaktor, über <c>H_i / H_s</c> des Trägers
+        /// auf den Brennwert umgerechnet.</summary>
+        Umgerechnet,
+
+        /// <summary>Rückfall ohne gepflegten Brennwert: der heizwertbezogene Faktor,
+        /// unverändert — konservativ.</summary>
+        Heizwert
+    }
+
+    /// <summary>
+    /// KONZEPT § 6.3 Nr. 29 — die CO₂-Emissionen einer Anlage je kWh Energieertrag
+    /// samt ihrer Herleitung. <b>Nur Rechenweg und Ausweis</b> der Grenzwertprüfung des
+    /// § 9 Abs. 1 Nr. 3 StromStG; die Bilanz- und BEHG-Rechnung liest diesen Wert nicht.
+    /// </summary>
+    internal sealed class Co2Energieertrag
+    {
+        /// <summary>Worauf der angesetzte Faktor bezogen ist.</summary>
+        public Co2Bezug Bezug { get; }
+
+        /// <summary>Der gelesene Katalogschlüssel (<c>EF_BILANZ_EBEV_*</c>).</summary>
+        public string Schluessel { get; }
+
+        /// <summary>Der Katalogwert des gelesenen Schlüssels [g CO₂ je kWh Brennstoff].</summary>
+        public double KatalogfaktorGJeKwh { get; }
+
+        /// <summary><c>H_i / H_s</c> des Trägers — nur bei <see cref="Co2Bezug.Umgerechnet"/>.</summary>
+        public double? QuotientHiHs { get; }
+
+        /// <summary>Der angesetzte Faktor [g CO₂ je kWh Brennstoff] — brennwertbezogen,
+        /// außer im Rückfall <see cref="Co2Bezug.Heizwert"/>.</summary>
+        public double FaktorGJeKwh { get; }
+
+        /// <summary>Brennstoff-CO₂ je kWh Energieertrag (Strom + Wärme) [g/kWh].</summary>
+        public double GrammJeKwh { get; }
+
+        public Co2Energieertrag(Co2Bezug bezug, string schluessel, double katalogfaktor,
+                                double? quotientHiHs, double faktor,
+                                double brennstoffMWh, double ertragMWh)
+        {
+            Bezug = bezug;
+            Schluessel = schluessel ?? "";
+            KatalogfaktorGJeKwh = katalogfaktor;
+            QuotientHiHs = quotientHiHs;
+            FaktorGJeKwh = faktor;
+            GrammJeKwh = ertragMWh > 0 ? faktor * brennstoffMWh / ertragMWh : 0;
+        }
+
+        /// <summary>Die Herleitung für Begründung und Herkunftszeile, etwa
+        /// „BHKW (300 kW): 218,6 g/kWh (EBeV 181,4 g/kWh, brennwertbezogen)".</summary>
+        public string Herleitung(string anlage, CultureInfo kultur)
+        {
+            if (kultur == null) kultur = CultureInfo.CurrentCulture;
+            string wert = GrammJeKwh.ToString("N1", kultur);
+            string katalog = KatalogfaktorGJeKwh.ToString("N1", kultur);
+            switch (Bezug)
+            {
+                case Co2Bezug.Umgerechnet:
+                    return string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_FAKTOR_UMGERECHNET,
+                        anlage, wert, katalog, (QuotientHiHs ?? 1.0).ToString("N4", kultur));
+                case Co2Bezug.Heizwert:
+                    return string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_FAKTOR_HI,
+                        anlage, wert, katalog);
+                default:
+                    return string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_FAKTOR_HO,
+                        anlage, wert, katalog);
+            }
         }
     }
 
@@ -869,6 +950,10 @@ namespace WindowsFormsApplication1
             var ueberGrenze = new List<string>();
             var ueberCo2 = new List<string>();
             var co2Unklar = new List<string>();
+            // KONZEPT § 6.3 Nr. 29 — die Herleitung des CO₂-Werts je Anlage (brennwert-
+            // bezogen) und die Anlagen, für die kein Brennwert gepflegt ist.
+            var co2Werte = new List<string>();
+            var co2Heizwert = new List<string>();
             double stromGesamt = 0, stromBefreit = 0, pelBefreit = 0;
 
             foreach (SteuerAnlage a in e.Anlagen)
@@ -878,16 +963,23 @@ namespace WindowsFormsApplication1
 
                 bool zuGross = a.PelKW > grenze.Wert.Value;
                 bool co2Verletzt = false, unklar = false;
+                string co2Text = null;
 
                 if (a.Fossil)
                 {
-                    double? spez = Co2JeEnergieertrag(a, satz);
-                    if (!spez.HasValue) unklar = true;
-                    else co2Verletzt = spez.Value >= co2Grenze.Wert.Value;
+                    Co2Energieertrag co2 = Co2JeEnergieertrag(a, satz);
+                    if (co2 == null) unklar = true;
+                    else
+                    {
+                        co2Verletzt = co2.GrammJeKwh >= co2Grenze.Wert.Value;
+                        co2Text = co2.Herleitung(a.Klartext(kultur), kultur);
+                        co2Werte.Add(co2Text);
+                        if (co2.Bezug == Co2Bezug.Heizwert) co2Heizwert.Add(a.Klartext(kultur));
+                    }
                 }
 
                 if (zuGross) ueberGrenze.Add(a.Klartext(kultur));
-                else if (co2Verletzt) ueberCo2.Add(a.Klartext(kultur));
+                else if (co2Verletzt) ueberCo2.Add(co2Text);
                 else if (unklar) co2Unklar.Add(a.Klartext(kultur));
 
                 if (!zuGross && !co2Verletzt && !unklar)
@@ -905,17 +997,31 @@ namespace WindowsFormsApplication1
             if (ueberCo2.Count > 0)
                 Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
                       MyResource.Resource.STEUER_STROMST_CO2,
-                    co2Grenze.Wert.Value.ToString("N0", kultur), string.Join(", ", ueberCo2.ToArray()), rest));
+                    co2Grenze.Wert.Value.ToString("N0", kultur), string.Join("; ", ueberCo2.ToArray()), rest));
             if (co2Unklar.Count > 0)
                 Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
                       MyResource.Resource.STEUER_STROMST_CO2_UNKLAR,
                     string.Join(", ", co2Unklar.ToArray())));
+
+            // Nr. 29: Ohne gepflegten Brennwert bleibt nur der heizwertbezogene Faktor —
+            // die KONSERVATIVE Richtung, wie bei der Brennwertmenge der Energiesteuer.
+            // Ein Hinweis, kein Grund einer Nullzeile: Er steht deshalb nur unter den
+            // Begründungen, nicht in PositionsGruende.
+            if (co2Heizwert.Count > 0)
+                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_HEIZWERT,
+                    string.Join(", ", co2Heizwert.ToArray())));
 
             double anteil = stromGesamt > 0 ? stromBefreit / stromGesamt : 0;
             if (anteil <= 0) return;   // Begründung steht bereits oben
 
             r.StromsteuerBefreiungEur = regelsatz.Wert.Value * e.KwkEigenMWh.Value * anteil;
             r.Herkunft.Add(Herkunft(regelsatz, kultur));
+
+            // Nr. 29: die Herleitung der CO₂-Prüfung — je fossiler Anlage der
+            // brennwertbezogene Wert und der Faktor, aus dem er entstand.
+            if (co2Werte.Count > 0)
+                r.Herkunft.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_HERLEITUNG,
+                    string.Join("; ", co2Werte.ToArray()), co2Grenze.Wert.Value.ToString("N0", kultur)));
         }
 
         /// <summary>
@@ -926,33 +1032,88 @@ namespace WindowsFormsApplication1
         /// die tatsächlichen direkten Emissionen, nicht ein Nachweiswert des
         /// Gebäuderechts. Genau dafür trennt Leitentscheidung L11 die Klassen
         /// <c>EF_BILANZ</c> und <c>EF_NACHWEIS</c>; verwendet wird
-        /// <c>EF_BILANZ_EBEV_*</c> (EBeV 2030, Anlage 2 Teil 4, heizwertbezogen — dieselbe
-        /// Bezugsgröße wie der Brennstoff des Rechenkerns).</para>
+        /// <c>EF_BILANZ_EBEV_*</c> (EBeV 2030, Anlage 2 Teil 4).</para>
+        ///
+        /// <para><b>ES GILT IMMER DER BRENNWERT</b> (Konzept § 6.3 Nr. 29, Register R‑NR
+        /// Nr. 29, Anwender 22.09.2026). Der Grenzwert <c>STROMST_CO2_GRENZWERT</c> =
+        /// 270 g/kWh wird brennwertbezogen geprüft: Der Zähler nimmt den Ho-Faktor —
+        /// den brennwertbezogenen Katalogwert, wo der Katalog einen führt (Erdgas:
+        /// <c>EF_BILANZ_EBEV_ERDGAS_HO</c>, 181,4 g/kWh, statt
+        /// <c>EF_BILANZ_EBEV_ERDGAS_HI</c>, 200,9 g/kWh), und sonst den heizwertbezogenen
+        /// Katalogwert, umgerechnet Hi → Ho über die gepflegten Werte des Energieträgers
+        /// (<c>H_i / H_s</c>, Projektwert vor Katalogwert) — dieselbe Umrechnung wie die
+        /// Brennwertmenge der Energiesteuer und wie dort nicht über einen pauschalen
+        /// Faktor. Der Brennstoff im Zähler bleibt die heizwertbezogene Menge des
+        /// Rechenkerns; der Faktor allein wechselt die Bezugsgröße. Ein heizwertbezogener
+        /// Zähler fiele rund 10 % zu hoch aus, und die Befreiung entfiele in Grenzfällen
+        /// zu Unrecht.</para>
+        ///
+        /// <para><b>Ohne gepflegten Brennwert</b> bleibt der heizwertbezogene Faktor
+        /// (<see cref="Co2Bezug.Heizwert"/>) — die konservative Richtung; die Befreiung
+        /// kann dadurch höchstens zu Unrecht entfallen, nie zu Unrecht gewährt werden.
+        /// Die Begründung nennt den Fall.</para>
         ///
         /// <para><c>null</c> = kein Faktor zugeordnet oder kein Energieertrag im Lauf.</para>
-        ///
-        /// <para><b>OFFEN (Befund R11, Etappe E2): die Hi/Ho-Frage am Grenzwert.</b> Der
-        /// Katalog führt zum Erdgas zwei EBeV-Faktoren — <c>EF_BILANZ_EBEV_ERDGAS_HI</c>
-        /// (200,9 g/kWh, heizwertbezogen) und <c>EF_BILANZ_EBEV_ERDGAS_HO</c>
-        /// (181,4 g/kWh, brennwertbezogen, die deutsche Abrechnungspraxis) — samt der
-        /// Umrechnung <c>EF_BILANZ_EBEV_UMRECHNUNG_HO</c>. Gelesen wird hier der
-        /// Schlüssel, den die Anlage trägt; die beiden Ho-Zeilen hat bis heute kein
-        /// Leser. Steht die Grenze <c>STROMST_CO2_GRENZWERT</c> = 270 g/kWh
-        /// brennwertbezogen, ist ein heizwertbezogener Zähler dagegen rund 10 % zu hoch
-        /// — die Befreiung fiele in Grenzfällen zu Unrecht weg.
-        /// <b>Hier wird nichts umgestellt:</b> Die Wahl der Bezugsgröße ändert den
-        /// gebuchten Befreiungsbetrag und damit den Kapitalwert. Sie gehört als
-        /// Entscheid nach E7, zusammen mit dem Beleg, auf welche Bezugsgröße § 2 StromStG
-        /// abstellt. Gepinnt ist das heutige Verhalten.</para>
         /// </summary>
-        private static double? Co2JeEnergieertrag(SteuerAnlage a, Func<string, GesetzParameter> satz)
+        internal static Co2Energieertrag Co2JeEnergieertrag(SteuerAnlage a,
+                                                             Func<string, GesetzParameter> satz)
         {
-            if (string.IsNullOrEmpty(a.SchluesselCo2)) return null;
+            if (a == null || satz == null || string.IsNullOrEmpty(a.SchluesselCo2)) return null;
             double ertrag = a.StromMWh + a.WaermeMWh;
             if (ertrag <= 0 || a.BrennstoffMWh <= 0) return null;
-            GesetzParameter f = satz(a.SchluesselCo2);
-            if (f == null || !f.Wert.HasValue) return null;
-            return f.Wert.Value * a.BrennstoffMWh / ertrag;
+
+            // (1) Der Schlüssel ist selbst brennwertbezogen, oder der Katalog führt zum
+            //     heizwertbezogenen Schlüssel einen brennwertbezogenen: der Ho-Faktor.
+            string schluesselHo = IstBrennwertbezogen(a.SchluesselCo2)
+                                ? a.SchluesselCo2
+                                : Co2SchluesselBrennwert(a.SchluesselCo2);
+            if (schluesselHo != null)
+            {
+                GesetzParameter ho = satz(schluesselHo);
+                if (ho != null && ho.Wert.HasValue)
+                    return new Co2Energieertrag(Co2Bezug.KatalogBrennwert, schluesselHo,
+                                                ho.Wert.Value, null, ho.Wert.Value,
+                                                a.BrennstoffMWh, ertrag);
+            }
+
+            // (2) Der heizwertbezogene Katalogwert …
+            GesetzParameter hi = satz(a.SchluesselCo2);
+            if (hi == null || !hi.Wert.HasValue) return null;
+
+            //     … umgerechnet Hi → Ho über die gepflegten Werte des Trägers,
+            if (a.EffHi > 0 && a.EffHs > 0)
+            {
+                double quotient = a.EffHi / a.EffHs;
+                return new Co2Energieertrag(Co2Bezug.Umgerechnet, a.SchluesselCo2,
+                                            hi.Wert.Value, quotient, hi.Wert.Value * quotient,
+                                            a.BrennstoffMWh, ertrag);
+            }
+
+            //     … oder, ohne gepflegten Brennwert, unverändert (konservativ).
+            return new Co2Energieertrag(Co2Bezug.Heizwert, a.SchluesselCo2,
+                                        hi.Wert.Value, null, hi.Wert.Value,
+                                        a.BrennstoffMWh, ertrag);
+        }
+
+        /// <summary>
+        /// Der Katalogschlüssel des <b>brennwertbezogenen</b> EBeV-Faktors zu einem
+        /// heizwertbezogenen — heute allein Erdgas (EBeV 2030, Anlage 2 Teil 4:
+        /// 181,4 g/kWh H_s). <c>null</c> = der Katalog führt keinen; dann wird über die
+        /// Heizwerte des Trägers umgerechnet (Konzept § 6.3 Nr. 29).
+        /// </summary>
+        internal static string Co2SchluesselBrennwert(string schluesselHeizwert)
+        {
+            return string.Equals(schluesselHeizwert, DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HI,
+                                 StringComparison.Ordinal)
+                 ? DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HO
+                 : null;
+        }
+
+        /// <summary>true, wenn der Schlüssel selbst schon brennwertbezogen ist.</summary>
+        private static bool IstBrennwertbezogen(string schluessel)
+        {
+            return string.Equals(schluessel, DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HO,
+                                 StringComparison.Ordinal);
         }
 
         // =====================================================================
