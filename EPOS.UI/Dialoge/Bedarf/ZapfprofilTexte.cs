@@ -43,6 +43,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_KONTEXT_UEBERSCHRIEBEN</c></summary>
     public string KontextUeberschrieben { get; set; } = "{0} Werte überschrieben";
 
+    /// <summary><c>ZPG_LBL_STUFE</c></summary>
+    public string LabelStufe { get; set; } = "Stufe";
+
     /// <summary><c>ZPG_STUFE_EINFACH</c></summary>
     public string StufeEinfach { get; set; } = "Einfach";
 

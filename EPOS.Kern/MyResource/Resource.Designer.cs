@@ -2384,6 +2384,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Zirkulation: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_DAVON_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("BERG_LBL_DAVON_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. Leistung: ähnelt.
         /// </summary>
         public static string BERG_LBL_MAX_LEISTUNG {
@@ -6755,11 +6764,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungszonen. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_RECHENWEG_BW {
+            get {
+                return ResourceManager.GetString("BPF_HINW_RECHENWEG_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bestandsprofile rechnen nicht mit, solange der Rechenweg auf Zapfprofil steht. ähnelt.
         /// </summary>
         public static string BPF_HINW_ZAPFPROFILWEG {
             get {
                 return ResourceManager.GetString("BPF_HINW_ZAPFPROFILWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt noch kein Zapfprofil – „Zapfprofil erzeugen…“ legt es an. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_ZAPFPROFIL_OHNE_ZONEN {
+            get {
+                return ResourceManager.GetString("BPF_HINW_ZAPFPROFIL_OHNE_ZONEN", resourceCulture);
             }
         }
         
@@ -70574,6 +70601,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_LBL_NUTZUNGSART {
             get {
                 return ResourceManager.GetString("ZPG_LBL_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_STUFE {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_STUFE", resourceCulture);
             }
         }
         

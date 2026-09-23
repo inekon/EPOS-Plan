@@ -1,0 +1,796 @@
+﻿@* Der Dialog "BRAUCHWASSER-ZAPFPROFIL" (Umsetzungskonzept Zapfprofilgenerator 5.1-5.3,
+   Stufe Z1) - Stufe EINFACH mit Vorschau.
+
+   WO ER STEHT. Als Ueberlagerung im Bedarfsprofil-Dialog der Auspraegung Brauchwasser
+   (5.2): Knopf "Zapfprofil erzeugen..." im Aktionsschlitz der Fussleiste. Eingebettet
+   traegt die Ueberlagerung Titel und Kreuz; der Wirt setzt TitelAnzeigen="false"
+   ("ein Titel, eine Stelle").
+
+   WAS ER TUT. Links die Nutzungszonen (Liste mit eigener Listenleiste, darunter der
+   Eingabeblock der gewaehlten Zone: Zonenname, Nutzungsart aus dem Katalog samt Herkunft
+   und Status, Bezugsgroesse, Bedarfsniveau), rechts die Vorschau ueber den Delegaten der
+   Huelle - derselbe Generatoraufruf wie der Lauf -, mit den Reitern Tagesgang,
+   Wochenprofil, Jahresgang und Kennzahlen. Der Dialog RECHNET NICHTS: Zahlen, Bilder und
+   Meldungen kommen fertig aus der Huelle (ZapfprofilHuelle.Vorschau).
+
+   WAS ER NICHT TUT. Er schreibt nicht. OK prueft (derselbe Delegat "Pruefen" wie jeder
+   Weg, der uebernimmt) und gibt den Arbeitsstand als ZapfprofilErgebnisDaten an den
+   Wirt zurueck; geschrieben wird mit dem OK des Bedarfsprofil-Dialogs. Abbrechen, Esc
+   und das Kreuz verwerfen ohne Pruefung (null).
+
+   BENANNT GESPERRT. Die Stufen Erweitert und Experte, der Reiter Dauerlinie und die
+   Knoepfe "Stochastisch rechnen" und "Auslegung..." kommen mit spaeteren Stufen: Sie
+   stehen da, sind WEICH gesperrt (aria-disabled + Grund als title), und der Versuch
+   meldet den Grund als leise Zeile.
+
+   ENTPRELLT. Die Vorschau liest Katalog und Kalender aus der Datenbank; sie laeuft deshalb
+   erst EntprellungMs nach der letzten Eingabe (Hausregel "Eine Pruefung je Tastendruck
+   fragt keine Datenbank"), sofort beim Oeffnen (die Huelle bringt sie mit) und bei 0
+   ohne Wartezeit (bunit).
+
+   TASTATUR. Esc schliesst wie Abbrechen; Enter bleibt unbelegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-zapfprofil" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.InfoBedienung"
+                   Dialogname="@Texte.Titel" />
+        <InfoKnopf Schluessel="@HilfeRechenweg" StandardKurztext="@Texte.InfoRechenweg"
+                   Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    <p class="epos-kontextzeile">@Kontexttext</p>
+
+    <div class="epos-auswahlpaar epos-zapfprofil-stufe">
+        <Optionsgruppe Bezeichnung="@Texte.LabelStufe" Eintraege="@Stufen"
+                       Auswahl="@((int)_stufe)" AuswahlChanged="StufeWaehlen"
+                       WeichGesperrt="@StufenGesperrt" Verweigert="_ => NochNicht()" />
+        @if (Ueberschrieben > 0)
+        {
+            <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, Ueberschrieben)</span>
+        }
+    </div>
+
+    @if (!Daten.Verfuegbar && Daten.Sperrgrund.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Sperrgrund" />
+    }
+
+    @if (_okMeldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_okMeldung" Kennung="@_okKennung" />
+    }
+
+    @if (_hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-hinweis" role="status">@_hinweis</p>
+    }
+
+    <div class="epos-blockspalten">
+
+        @* ------------------------------------------------ links: die Zonen ---- *@
+        <div class="epos-blockspalte">
+            <Gruppenkopf Titel="@Texte.GruppeZonen" Summe="@ZonensummeKopf">
+                <KindInhalt>
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster epos-zapfprofil-zonen">
+                            <thead>
+                                <tr>
+                                    <th>@Texte.SpalteZone</th>
+                                    <th>@Texte.SpalteNutzungsart</th>
+                                    <th>@Texte.SpalteBezugsgroesse</th>
+                                    <th>@Texte.SpalteJahresbedarf</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < _eingabe.Zonen.Count; i++)
+                                {
+                                    int index = i;
+                                    ZapfprofilZoneDaten z = _eingabe.Zonen[i];
+                                    <tr @key="index" class="@(index == _wahl ? "epos-zeile--markiert" : null)">
+                                        <td>
+                                            <Zeilenwahl Gewaehlt="@(index == _wahl)" Kurztext="@Texte.SpalteZone"
+                                                        Beschriftung="@z.Name" Gewaehltwerden="() => ZoneWaehlen(index)" />
+                                        </td>
+                                        <td>@NutzungsartName(z.IdNutzungsart)</td>
+                                        <td>@Bezugstext(z)</td>
+                                        <td class="epos-zahl">@Zonenwert(index)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            @if (_eingabe.Zonen.Count > 0)
+                            {
+                                <tfoot>
+                                    <tr>
+                                        <th scope="row" colspan="3">@Format(Texte.SummeZonen, _eingabe.Zonen.Count)</th>
+                                        <td class="epos-zahl">@Zonensumme</td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        </table>
+                    </div>
+                    <div class="epos-leiste epos-zapfprofil-zonenleiste">
+                        <button type="button" class="epos-knopf" @onclick="ZoneNeu">@Texte.KnopfZoneNeu</button>
+                        <button type="button" class="epos-knopf" disabled="@(Gewaehlte is null)"
+                                @onclick="ZoneDuplizieren">@Texte.KnopfZoneDuplizieren</button>
+                        <button type="button" class="epos-knopf" disabled="@(Gewaehlte is null)"
+                                @onclick="ZoneEntfernen">@Texte.KnopfZoneEntfernen</button>
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
+
+            @if (Gewaehlte is { } zone)
+            {
+                ZapfprofilNutzungsartDaten? art = Nutzungsart(zone.IdNutzungsart);
+                <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@Texte.StufeEinfach">
+                    <KindInhalt>
+                        <Formularraster>
+                            <KindInhalt>
+                                <Textfeld Bezeichnung="@Texte.LabelZonenname" Wert="@zone.Name"
+                                          WertChanged="NameSetzen" />
+                                <Auswahlfeld Bezeichnung="@Texte.LabelNutzungsart" Eintraege="@Nutzungsarten"
+                                             Auswahl="@(zone.IdNutzungsart > 0 ? zone.IdNutzungsart : (int?)null)"
+                                             AuswahlChanged="NutzungsartSetzen"
+                                             Platzhalter="@Texte.KatalogKeineAuswahl"
+                                             GesperrteEintraege="@GesperrteNutzungsarten"
+                                             GesperrtHinweis="@SperrhinweisNutzungsart" />
+                                @if (art is not null)
+                                {
+                                    <Herleitungszeile Text="@Format(Texte.HinweisNutzungsartKatalog, Herkunftstext(art))" />
+                                }
+                                <Zahlenfeld Bezeichnung="@Texte.LabelBezugsmenge" Feldname="@Texte.LabelBezugsmenge"
+                                            Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
+                                            WertChanged="BezugsmengeSetzen" />
+                                <Herleitungszeile Text="@Texte.HinweisBezugsmengeEinheit" />
+                                <Optionsgruppe Bezeichnung="@Texte.LabelNiveau" Eintraege="@Niveaus"
+                                               Auswahl="@((int)zone.Niveau)" AuswahlChanged="NiveauSetzen" />
+                                @if (art is not null)
+                                {
+                                    <Herleitungszeile Text="@NiveauHinweis(zone, art)" />
+                                }
+                            </KindInhalt>
+                        </Formularraster>
+
+                        @foreach (ZapfprofilMeldung m in ZonenMeldungen(zone))
+                        {
+                            if (m.Art == ZapfprofilMeldungsart.Hinweis)
+                            {
+                                <p class="epos-leisezeile epos-zapfprofil-feldhinweis" data-kennung="@m.Kennung">@m.Text</p>
+                            }
+                            else
+                            {
+                                <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
+                            }
+                        }
+
+                        <p class="epos-leisezeile">@Texte.HinweisWeitereVorgabe</p>
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
+        </div>
+
+        @* ------------------------------------------------ rechts: die Vorschau - *@
+        <div class="epos-blockspalte">
+            <Gruppenkopf Titel="@Texte.GruppeVorschau" Summe="@Texte.VorschauLive">
+                <KindInhalt>
+                    @if (Ansicht is not { } a)
+                    {
+                        <p class="epos-leisezeile epos-zapfprofil-ohnevorschau" role="status">@VorschauGrund</p>
+                    }
+                    else
+                    {
+                        <Formularraster>
+                            <KindInhalt>
+                                <Auswahlfeld Bezeichnung="@Texte.LabelAnzeigenFuer" Eintraege="@Ansichtswahl"
+                                             Auswahl="@_ansicht" AuswahlChanged="AnsichtWaehlen" />
+                            </KindInhalt>
+                        </Formularraster>
+
+                        <p class="epos-leisezeile epos-zapfprofil-kurzkennzahlen">@Kurzkennzahlen(a)</p>
+                        @if (a.Abgelehnt)
+                        {
+                            <p class="epos-leisezeile">@a.Titel · @Texte.KennzahlAbgelehnt</p>
+                        }
+
+                        <Reiter Aktiv="@_reiter" AktivChanged="r => _reiter = r" Bezeichnung="@Texte.GruppeVorschau"
+                                Verweigert="_ => NochNicht()">
+                            <KindInhalt>
+                                <Reiterblatt Schluessel="@REITER_TAG" Titel="@Texte.ReiterTagesgang">
+                                    <KindInhalt>
+                                        <DiagrammSvg Modell="@a.TagesgangModell" Kennung="@("zapf-tag-" + _ansicht)"
+                                                     Bezeichnung="@a.UnterschriftTagesgang" />
+                                        <p class="epos-leisezeile">@a.UnterschriftTagesgang</p>
+                                    </KindInhalt>
+                                </Reiterblatt>
+                                <Reiterblatt Schluessel="@REITER_WOCHE" Titel="@Texte.ReiterWochenprofil">
+                                    <KindInhalt>
+                                        <DiagrammSvg Modell="@a.WochenprofilModell" Kennung="@("zapf-woche-" + _ansicht)"
+                                                     Bezeichnung="@a.UnterschriftWoche" />
+                                        <p class="epos-leisezeile">@a.UnterschriftWoche</p>
+                                    </KindInhalt>
+                                </Reiterblatt>
+                                <Reiterblatt Schluessel="@REITER_JAHR" Titel="@Texte.ReiterJahresgang">
+                                    <KindInhalt>
+                                        <DiagrammSvg Modell="@a.JahresgangModell" Kennung="@("zapf-jahr-" + _ansicht)"
+                                                     Bezeichnung="@a.UnterschriftJahresgang" />
+                                        <p class="epos-leisezeile">@a.UnterschriftJahresgang</p>
+                                        <p class="epos-leisezeile epos-zapfprofil-zirkulationsanteil">@Texte.KennzahlZirkulationsanteil @Prozent(a.Kennzahlen.Zirkulationsanteil)</p>
+                                    </KindInhalt>
+                                </Reiterblatt>
+                                <Reiterblatt Schluessel="@REITER_DAUER" Titel="@Texte.ReiterDauerlinie"
+                                             Bedienbar="false" Sperrgrund="@Texte.GrundNochNicht" />
+                                <Reiterblatt Schluessel="@REITER_KENNZAHLEN" Titel="@Texte.ReiterKennzahlen">
+                                    <KindInhalt>
+                                        <table class="epos-raster epos-kennzahlen epos-zapfprofil-kennzahlen">
+                                            <thead>
+                                                <tr>
+                                                    <th>@Texte.SpalteKennzahl</th>
+                                                    <th>@Texte.SpalteWert</th>
+                                                    <th>@Texte.SpalteVermerk</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlBilanz</th></tr>
+                                                @foreach ((string Kennzahl, string Wert, string Vermerk) zeile in Kennzahlzeilen(a))
+                                                {
+                                                    <tr>
+                                                        <th scope="row">@zeile.Kennzahl</th>
+                                                        <td class="epos-zahl">@zeile.Wert</td>
+                                                        <td>@zeile.Vermerk</td>
+                                                    </tr>
+                                                }
+                                                <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlStochastik</th></tr>
+                                            </tbody>
+                                        </table>
+                                    </KindInhalt>
+                                </Reiterblatt>
+                            </KindInhalt>
+                        </Reiter>
+                    }
+
+                    @foreach (ZapfprofilMeldung m in AllgemeineMeldungen)
+                    {
+                        if (m.Art == ZapfprofilMeldungsart.Hinweis)
+                        {
+                            <p class="epos-leisezeile epos-zapfprofil-feldhinweis" data-kennung="@m.Kennung">@m.Text</p>
+                        }
+                        else
+                        {
+                            <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
+                        }
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+        </div>
+    </div>
+
+    <SpeichernLeiste @ref="_leiste" OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+        <Aktionen>
+            <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
+                    @onclick="NochNicht">@Texte.KnopfStochastik</button>
+            <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
+                    @onclick="NochNicht">@Texte.KnopfAuslegung</button>
+        </Aktionen>
+    </SpeichernLeiste>
+</div>
+
+@code {
+    private const string REITER_TAG = "tagesgang";
+    private const string REITER_WOCHE = "wochenprofil";
+    private const string REITER_JAHR = "jahresgang";
+    private const string REITER_DAUER = "dauerlinie";
+    private const string REITER_KENNZAHLEN = "kennzahlen";
+
+    // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
+
+    /// <summary>Der Stand beim Öffnen: Kontext, Katalog, Arbeitsstand, erste Vorschau, Verfügbarkeit.</summary>
+    [Parameter] public ZapfprofilDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen (Textbündel, 5.3).</summary>
+    [Parameter] public ZapfprofilTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Die Vorschau zu einem Arbeitsstand — der Delegat der Hülle, der denselben Generatorweg
+    /// nimmt wie der Lauf. Kein Delegat = die Vorschau bleibt beim Stand des Öffnens.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>? Vorschau { get; set; }
+
+    /// <summary>Die Pflichtprüfung des OK (jede Zone mit Name, Nutzungsart, Bezugsgröße); leer = in Ordnung.</summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>? Pruefen { get; set; }
+
+    /// <summary>Hilfeschlüssel der Bedienung (<c>Form_Zapfprofil.btn_Help</c>).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.btn_Help";
+
+    /// <summary>Hilfeschlüssel des Rechenwegs (<c>Form_Zapfprofil_Berechnung</c>).</summary>
+    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil_Berechnung";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c> (die Überlagerung trägt beides).</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Wartezeit der Vorschau nach der letzten Eingabe [ms]; 0 = sofort (bunit).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: der geprüfte Arbeitsstand bei OK, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<ZapfprofilErgebnisDaten?> Geschlossen { get; set; }
+
+    // --- Stand -----------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private SpeichernLeiste? _leiste;
+    private string _statusGezeigt = "\u0001";
+
+    private ZapfprofilEingabeDaten _eingabe = new();
+    private ZapfprofilVorschauDaten? _vorschau;
+    private bool _vorschauAktuell;
+    private ZapfprofilStufe _stufe = ZapfprofilStufe.Einfach;
+    private int _wahl = -1;
+    private int _ansicht;
+    private string _reiter = REITER_TAG;
+    private string _okMeldung = "";
+    private string? _okKennung;
+    private string _hinweis = "";
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Der Arbeitsstand — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilEingabeDaten Eingabe => _eingabe;
+
+    /// <summary>Die angezeigte Vorschau — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilVorschauDaten? AktuelleVorschau => _vorschau;
+
+    /// <summary>Die Meldung nach einem abgelehnten OK — Prüfhilfe für die Tests.</summary>
+    public string OkMeldung => _okMeldung;
+
+    /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
+    public string Hinweis => _hinweis;
+
+    /// <summary>Der sichtbare Reiter — Prüfhilfe für die Tests.</summary>
+    public string AktiverReiter => _reiter;
+
+    protected override void OnInitialized()
+    {
+        _eingabe = (Daten.Eingabe ?? new ZapfprofilEingabeDaten()).Kopie();
+        _stufe = ZapfprofilStufe.Einfach;
+        _vorschau = Daten.Vorschau;
+        _vorschauAktuell = _vorschau is not null;
+        _wahl = _eingabe.Zonen.Count > 0 ? 0 : -1;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        StatusNachziehen();
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => EntprellungAbbrechen();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    private string Titel => string.IsNullOrEmpty(Daten.Kontext?.Projekt)
+        ? Texte.Titel : Format(Texte.TitelProjekt, Daten.Kontext.Projekt);
+
+    /// <summary>Die Kontextzeile: Projekt · Klimaregion · Kalender · Bilanzgrenze (leere Teile fallen weg).</summary>
+    private string Kontexttext
+    {
+        get
+        {
+            ZapfprofilKontextDaten k = Daten.Kontext ?? new ZapfprofilKontextDaten();
+            var teile = new[] { k.Projekt, k.Klimaregion, k.Kalender, k.Bilanzgrenze }
+                .Where(t => !string.IsNullOrWhiteSpace(t));
+            return string.Join(" · ", teile);
+        }
+    }
+
+    private int Ueberschrieben => _eingabe.Zonen.Sum(z => z.Ueberschrieben);
+
+    private IReadOnlyList<(int Id, string Text)> Stufen => new[]
+    {
+        ((int)ZapfprofilStufe.Einfach, Texte.StufeEinfach),
+        ((int)ZapfprofilStufe.Erweitert, Texte.StufeErweitert),
+        ((int)ZapfprofilStufe.Experte, Texte.StufeExperte)
+    };
+
+    /// <summary>Erweitert und Experte kommen mit späteren Stufen — weich gesperrt, mit Grund.</summary>
+    private IReadOnlyDictionary<int, string> StufenGesperrt => new Dictionary<int, string>
+    {
+        [(int)ZapfprofilStufe.Erweitert] = Texte.GrundNochNicht,
+        [(int)ZapfprofilStufe.Experte] = Texte.GrundNochNicht
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Niveaus => new[]
+    {
+        ((int)ZapfprofilNiveau.Niedrig, Texte.NiveauNiedrig),
+        ((int)ZapfprofilNiveau.Mittel, Texte.NiveauMittel),
+        ((int)ZapfprofilNiveau.Hoch, Texte.NiveauHoch)
+    };
+
+    private ZapfprofilZoneDaten? Gewaehlte
+        => _wahl >= 0 && _wahl < _eingabe.Zonen.Count ? _eingabe.Zonen[_wahl] : null;
+
+    private ZapfprofilNutzungsartDaten? Nutzungsart(int id)
+        => id > 0 ? Daten.Katalog.FirstOrDefault(n => n.Id == id) : null;
+
+    /// <summary>
+    /// Die Einträge der Katalogauswahl: Name und Bezugsgröße. Eine Zone, deren Nutzungsart
+    /// nicht (mehr) im Katalog steht, behält ihre Id als Eintrag (Hausregel „den
+    /// gespeicherten Wert als Eintrag").
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Nutzungsarten
+    {
+        get
+        {
+            var liste = Daten.Katalog
+                .Select(n => (n.Id, string.IsNullOrEmpty(n.Bezugsgroesse) ? n.Name : n.Name + " · " + n.Bezugsgroesse))
+                .ToList();
+            ZapfprofilZoneDaten? z = Gewaehlte;
+            if (z is not null && z.IdNutzungsart > 0 && liste.All(e => e.Id != z.IdNutzungsart))
+                liste.Add((z.IdNutzungsart, "#" + z.IdNutzungsart.ToString(CultureInfo.InvariantCulture)));
+            return liste;
+        }
+    }
+
+    private IReadOnlyCollection<int> GesperrteNutzungsarten
+        => Daten.Katalog.Where(n => !n.Waehlbar).Select(n => n.Id).ToList();
+
+    private string SperrhinweisNutzungsart
+        => Daten.Katalog.FirstOrDefault(n => !n.Waehlbar && n.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
+
+    private string NutzungsartName(int id) => Nutzungsart(id)?.Name ?? "";
+
+    private string Bezugstext(ZapfprofilZoneDaten z)
+    {
+        if (z.Bezugsmenge is not double b) return "";
+        string einheit = Nutzungsart(z.IdNutzungsart)?.Bezugsgroesse ?? "";
+        string zahl = b.ToString("0.##", CultureInfo.CurrentCulture);
+        return einheit.Length == 0 ? zahl : zahl + " " + einheit;
+    }
+
+    /// <summary>Die Herkunft als Kurztext: Herkunft · Status · Katalogversion (nie ein Beleg).</summary>
+    private static string Herkunftstext(ZapfprofilNutzungsartDaten n)
+        => string.Join(" · ", new[] { n.Herkunft, n.Status, n.Katalogversion }.Where(t => !string.IsNullOrWhiteSpace(t)));
+
+    private string NiveauHinweis(ZapfprofilZoneDaten z, ZapfprofilNutzungsartDaten n)
+    {
+        int i = (int)z.Niveau - 1;
+        double[] werte = n.BedarfJeNiveauKwhJeEinheitTag ?? Array.Empty<double>();
+        if (i < 0 || i >= werte.Length) return "";
+        string niveau = Niveaus.FirstOrDefault(e => e.Id == (int)z.Niveau).Text ?? "";
+        return Format(Texte.HinweisNiveauVorgabe, niveau, werte[i].ToString("N1", CultureInfo.CurrentCulture), n.Einheit);
+    }
+
+    /// <summary>Der Jahreswert der Zone an Position <paramref name="index"/> in MWh/a — nur aus einer aktuellen Vorschau.</summary>
+    private string Zonenwert(int index)
+    {
+        if (!_vorschauAktuell || _vorschau is null) return "–";
+        ZapfprofilZonenwertDaten? w = _vorschau.Zonen.FirstOrDefault(z => z.Position == index);
+        if (w is null) return "–";
+        string zahl = Mwh(w.JahresbedarfZapfungKwh);
+        return w.Abgelehnt ? zahl + " · " + Texte.KennzahlAbgelehnt : zahl;
+    }
+
+    private string Zonensumme
+        => _vorschauAktuell && _vorschau?.Summe is { } s ? Mwh(s.Kennzahlen.JahresbedarfZapfungKwh) : "–";
+
+    private string ZonensummeKopf
+        => _vorschauAktuell && _vorschau?.Summe is { } s
+            ? Format(Texte.GruppeZonenSumme, Mwh(s.Kennzahlen.JahresbedarfZapfungKwh)) : "";
+
+    // --- Vorschau ----------------------------------------------------------------------
+
+    /// <summary>Die gewählte Ansicht „Anzeigen für"; <c>null</c> ohne gerechnete Vorschau (keine vorbelegten Zahlen).</summary>
+    private ZapfprofilAnsichtDaten? Ansicht
+    {
+        get
+        {
+            if (_vorschau is null || _vorschau.Zustand != ZapfprofilVorschauZustand.Gerechnet) return null;
+            if (_vorschau.Ansichten.Count == 0) return null;
+            int i = _ansicht >= 0 && _ansicht < _vorschau.Ansichten.Count ? _ansicht : 0;
+            return _vorschau.Ansichten[i];
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Ansichtswahl
+        => _vorschau is null
+            ? Array.Empty<(int Id, string Text)>()
+            : _vorschau.Ansichten.Select((a, i) => (Id: i, Text: a.Titel)).ToArray();
+
+    private string VorschauGrund
+    {
+        get
+        {
+            if (_vorschau is not null && _vorschau.Grund.Length > 0)
+                return Format(Texte.StatusOhneVorschau, _vorschau.Grund);
+            return Format(Texte.StatusOhneVorschau, Daten.Sperrgrund);
+        }
+    }
+
+    private string Kurzkennzahlen(ZapfprofilAnsichtDaten a)
+    {
+        ZapfprofilKennzahlenDaten k = a.Kennzahlen;
+        string mwh = " " + Energieeinheit.MWh.Text + "/a";
+        return string.Join(" · ",
+            Texte.ReiheZapfung + " " + Mwh(k.JahresbedarfZapfungKwh) + mwh,
+            Texte.ReiheZirkulation + " " + Mwh(k.JahresverlustZirkulationKwh) + mwh,
+            Texte.KennzahlGesamt + " " + Mwh(k.JahresbedarfGesamtKwh) + mwh,
+            Texte.KennzahlZirkulationsanteil + " " + Prozent(k.Zirkulationsanteil));
+    }
+
+    /// <summary>Die Zeilen des Reiters Kennzahlen (4.6) — nur, was der Kern für diese Ansicht ausweist.</summary>
+    private IEnumerable<(string Kennzahl, string Wert, string Vermerk)> Kennzahlzeilen(ZapfprofilAnsichtDaten a)
+    {
+        ZapfprofilKennzahlenDaten k = a.Kennzahlen;
+        string kwh = Energieeinheit.KWh.Text;
+        yield return (Texte.KennzahlZapfung, Zahl(k.JahresbedarfZapfungKwh, "N0") + " " + kwh + "/a", "");
+        yield return (Texte.KennzahlZirkulation, Zahl(k.JahresverlustZirkulationKwh, "N0") + " " + kwh + "/a",
+                      Texte.KennzahlZirkulationVermerk);
+        yield return (Texte.KennzahlGesamt, Zahl(k.JahresbedarfGesamtKwh, "N0") + " " + kwh + "/a",
+                      Texte.KennzahlZirkulationsanteil + " " + Prozent(k.Zirkulationsanteil));
+        yield return (Texte.KennzahlTagesmittel, Zahl(k.TagesmittelZapfungKwh, "N0") + " " + kwh + "/d",
+                      k.ZapfungLiterJeTag is double l ? Format(Texte.KennzahlLiterJeTag, Zahl(l, "N0")) : "");
+        if (k.SpezifischKwhJeEinheitJahr is double spez)
+            yield return (Format(Texte.KennzahlSpezifisch, a.Titel),
+                          Zahl(spez, "N0") + " " + kwh + "/(" + k.SpezifischEinheit + "·a)", "");
+        if (k.VolllaststundenH is double h)
+            yield return (Texte.KennzahlVolllast, Zahl(h, "N0") + " h/a", Texte.KennzahlVolllastVermerk);
+        if (k.GroessterStundenwertKw is double p)
+            yield return (Texte.KennzahlGroessterStundenwert, Zahl(p, "N1") + " kW", k.VermerkGroessterStundenwert);
+        yield return (Texte.KennzahlGleichzeitigkeit, "—", Texte.KennzahlGleichzeitigkeitVermerk);
+    }
+
+    /// <summary>Die Meldungen der Vorschau zu einer Zone (am Feld, nicht blockierend).</summary>
+    private IEnumerable<ZapfprofilMeldung> ZonenMeldungen(ZapfprofilZoneDaten zone)
+    {
+        if (!_vorschauAktuell || _vorschau is null) return Array.Empty<ZapfprofilMeldung>();
+        string name = (zone.Name ?? "").Trim();
+        return _vorschau.Meldungen.Where(m => m.Zone.Length > 0 && m.Zone == name);
+    }
+
+    /// <summary>
+    /// Die Meldungen ohne sichtbare Zone: Projekt und Zirkulation, der Grund einer nicht
+    /// gerechneten Vorschau und die Meldungen einer Zone, die gerade nicht gewählt ist, stehen
+    /// in der Vorschau — benannt statt still.
+    /// </summary>
+    private IEnumerable<ZapfprofilMeldung> AllgemeineMeldungen
+    {
+        get
+        {
+            if (_vorschau is null) return Array.Empty<ZapfprofilMeldung>();
+            string gewaehlt = (Gewaehlte?.Name ?? "").Trim();
+            return _vorschau.Meldungen.Where(m =>
+                m.Zone.Length == 0 ? _vorschau.Zustand == ZapfprofilVorschauZustand.Gerechnet
+                                   : !_vorschauAktuell || m.Zone != gewaehlt);
+        }
+    }
+
+    private string Status => _vorschau is null ? "" : _vorschau.Status;
+
+    private void StatusNachziehen()
+    {
+        if (_leiste is null || Status == _statusGezeigt) return;
+        _statusGezeigt = Status;
+        bool fehler = _vorschau is not null && _vorschau.Zustand == ZapfprofilVorschauZustand.Abgebrochen;
+        _leiste.Zeigen(Status, fehler);
+    }
+
+    private static string Mwh(double kwh)
+        => Energieeinheit.MWh.AusKWh(kwh).ToString("N1", CultureInfo.CurrentCulture);
+
+    private static string Zahl(double wert, string format) => wert.ToString(format, CultureInfo.CurrentCulture);
+
+    private static string Prozent(double anteil)
+        => (anteil * 100.0).ToString("N0", CultureInfo.CurrentCulture) + " %";
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    // =================================================================================
+    // Bedienung
+    // =================================================================================
+
+    private void StufeWaehlen(int? id)
+    {
+        // Nur Einfach ist in dieser Fassung waehlbar; die weich gesperrten melden ueber Verweigert.
+        if (id == (int)ZapfprofilStufe.Einfach) _stufe = ZapfprofilStufe.Einfach;
+    }
+
+    /// <summary>Ein gesperrter Versuch (Stufe, Reiter, Knopf): der Grund als leise Zeile.</summary>
+    private void NochNicht() => _hinweis = Texte.GrundNochNicht;
+
+    private void ZoneWaehlen(int index)
+    {
+        _wahl = index;
+        _hinweis = "";
+    }
+
+    private void ZoneNeu()
+    {
+        int n = _eingabe.Zonen.Count + 1;
+        string name = Format(Texte.ZoneNameVorgabe, n);
+        while (_eingabe.Zonen.Any(z => z.Name == name)) name = Format(Texte.ZoneNameVorgabe, ++n);
+
+        _eingabe.Zonen.Add(new ZapfprofilZoneDaten { Name = name });
+        _wahl = _eingabe.Zonen.Count - 1;
+        Geaendert(ansichtZuruecksetzen: true);
+    }
+
+    private void ZoneDuplizieren()
+    {
+        if (Gewaehlte is not { } z) return;
+        ZapfprofilZoneDaten kopie = z.Kopie();
+        kopie.Id = 0;
+        kopie.IdVorlage = z.Id != 0 ? z.Id : z.IdVorlage;
+        kopie.Name = Format(Texte.ZoneKopie, z.Name);
+        _eingabe.Zonen.Insert(_wahl + 1, kopie);
+        _wahl++;
+        Geaendert(ansichtZuruecksetzen: true);
+    }
+
+    private void ZoneEntfernen()
+    {
+        if (Gewaehlte is null) return;
+        _eingabe.Zonen.RemoveAt(_wahl);
+        if (_wahl >= _eingabe.Zonen.Count) _wahl = _eingabe.Zonen.Count - 1;
+        Geaendert(ansichtZuruecksetzen: true);
+    }
+
+    private void NameSetzen(string name)
+    {
+        if (Gewaehlte is not { } z) return;
+        z.Name = name ?? "";
+        Geaendert();
+    }
+
+    private void NutzungsartSetzen(int? id)
+    {
+        if (Gewaehlte is not { } z) return;
+        z.IdNutzungsart = id ?? 0;
+        Geaendert();
+    }
+
+    private void BezugsmengeSetzen(double? wert)
+    {
+        if (Gewaehlte is not { } z) return;
+        z.Bezugsmenge = wert;
+        Geaendert();
+    }
+
+    private void NiveauSetzen(int? id)
+    {
+        if (Gewaehlte is not { } z || id is not int n) return;
+        if (!Enum.IsDefined(typeof(ZapfprofilNiveau), n)) return;
+        z.Niveau = (ZapfprofilNiveau)n;
+        Geaendert();
+    }
+
+    private void AnsichtWaehlen(int? id) => _ansicht = id ?? 0;
+
+    /// <summary>Eine Eingabe hat den Arbeitsstand geändert: die Vorschau ist überholt und wird entprellt neu gerechnet.</summary>
+    private void Geaendert(bool ansichtZuruecksetzen = false)
+    {
+        _okMeldung = "";
+        _okKennung = null;
+        _hinweis = "";
+        _vorschauAktuell = false;
+        if (ansichtZuruecksetzen) _ansicht = 0;
+        VorschauEntprellen();
+    }
+
+    // =================================================================================
+    // Vorschau - entprellt (EPOS.UI/CLAUDE.md, "Zeichenlaeufe")
+    // =================================================================================
+
+    private void VorschauEntprellen()
+    {
+        EntprellungAbbrechen();
+        if (Vorschau is null) return;
+        if (EntprellungMs <= 0)
+        {
+            VorschauRechnen();
+            return;
+        }
+
+        var quelle = new CancellationTokenSource();
+        _entprellung = quelle;
+        _ = EntprellungAbwarten(quelle);
+    }
+
+    private async Task EntprellungAbwarten(CancellationTokenSource quelle)
+    {
+        try
+        {
+            await Task.Delay(EntprellungMs, quelle.Token);
+            if (quelle.IsCancellationRequested) return;
+            await InvokeAsync(() =>
+            {
+                if (quelle.IsCancellationRequested) return;
+                VorschauRechnen();
+                StateHasChanged();
+            });
+        }
+        catch (OperationCanceledException) { /* eine neue Eingabe war schneller */ }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+    }
+
+    private void EntprellungAbbrechen()
+    {
+        CancellationTokenSource? offen = _entprellung;
+        _entprellung = null;
+        if (offen is null) return;
+        try { offen.Cancel(); } catch (ObjectDisposedException) { }
+        offen.Dispose();
+    }
+
+    private void VorschauRechnen()
+    {
+        if (Vorschau is null) return;
+        _vorschau = Vorschau(_eingabe.Kopie());
+        _vorschauAktuell = _vorschau is not null;
+        if (_vorschau is not null && _ansicht >= _vorschau.Ansichten.Count) _ansicht = 0;
+    }
+
+    // =================================================================================
+    // Ergebnis
+    // =================================================================================
+
+    /// <summary>
+    /// OK prüft über den Delegaten der Hülle — dieselbe Regel für jeden Weg, der übernimmt
+    /// —, meldet eine Lücke als Banner und hält den Dialog offen; sonst geht der Arbeitsstand
+    /// mit dem Weg „Generator" zurück (ZU4: das OK stellt die Optionsgruppe um).
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+
+        IReadOnlyList<ZapfprofilMeldung> fehler = (Pruefen?.Invoke(_eingabe) ?? Array.Empty<ZapfprofilMeldung>())
+            .Where(m => m.Art == ZapfprofilMeldungsart.Fehler).ToList();
+        if (fehler.Count > 0)
+        {
+            _okMeldung = string.Join(" ", fehler.Select(m => m.Text));
+            _okKennung = fehler[0].Kennung;
+            return;
+        }
+
+        EntprellungAbbrechen();
+        ZapfprofilEingabeDaten ergebnis = _eingabe.Kopie();
+        ergebnis.Weg = ZapfprofilWeg.Generator;
+        await Geschlossen.InvokeAsync(new ZapfprofilErgebnisDaten(ergebnis));
+    }
+
+    /// <summary>Abbrechen — von Esc, vom Schliesskreuz und vom Knopf gleichermaßen gerufen; verwirft ohne Prüfung.</summary>
+    private Task Abbrechen()
+    {
+        EntprellungAbbrechen();
+        return Geschlossen.InvokeAsync(null);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+}
