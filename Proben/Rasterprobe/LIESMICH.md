@@ -552,3 +552,23 @@ wird bei ihr aus dem eingebetteten Dialog gelesen, geschlossen wird über dessen
 | N22 Wärmepumpe: Überlagerung | 1 044,5 × 586,5 px, „Wärmepumpen Einlesen", 1 Kreuz, quer 0 | 384 × 586,5 px, 1 Kreuz, quer 0 |
 | Kreuz des Imports | schließt die Überlagerung | schließt die Überlagerung |
 | Rückgabe | **Katalogprobe 0 (60 Fälle), Rasterprobe 0 (13 Fälle)** | |
+
+### „Schloss aufheben…" / „Schloss setzen…" in der Auswahlleiste (Entscheid AD-Q15)
+
+Alle zehn Verwaltungen tragen eine vierte Handlung zwischen „Duplizieren…" und „Löschen"; die
+Wirt-Seite reicht dafür in jeder Maske einen `Schlossweg` herein (`ProbeSchloss`). Die Beschriftung
+wechselt mit der Auswahl; der Knopf hält über die `Breitenvorlage` die Breite der längeren. Gemessen
+gegen denselben Wirt ohne den Weg (vorher = drei Handlungen), Chromium headless 1208, Playwright 1.58.0
+über das NuGet-Paket, Wirt auf Port 5359:
+
+| | 1 088 × 624 (`a`) | 400 × 624 (`b`) |
+|---|---|---|
+| Liste springt beim Setzen der Kästchen (u4) | nein | nein |
+| Auswahlleiste Fokuszeile / „3 gewählt" | 94 / 94 px wie vorher (A1 bis A4, A6 bis A10); Bedarfsprofile mit langem Löschtext 118 / 94 px | 150 / 150 px (vorher 100 / 100; Klimadaten 100 / 100 wie vorher) |
+| Listenhülle | unverändert (426 px, 8 ganze Zeilen) | 50 px weniger: N01 181,8 px (2 Zeilen, vorher 231,8), N10 237,8 px (4, vorher 287,8) |
+| Rückgabe | **Katalogprobe 0 (60 Fälle), Rasterprobe 0 (13 Fälle)** | |
+
+Damit breit zwei Zeilen reichen, ist das erste Wort der Leiste höchstens `10rem` breit (voller Name im
+Kurztext und im Kopf des Stammblatts), und der leise Hinweis „Kästchen: mehrere wählen" kürzt sich in
+seiner Zeile, statt eine dritte zu öffnen. Schmal brechen vier Handlungen in 368 px zwangsläufig in zwei
+Zeilen um — die Liste verliert dort eine Zeile; offen im Konzept Administrationsdialoge 7.1 (f).

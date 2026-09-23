@@ -7952,10 +7952,17 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
+/* BREIT haelt die Leiste mit vier Handlungen (AD-Q15) zwei Zeilen - in beiden
+   Zustaenden (Fokuszeile und "3 gewaehlt"): Das erste Wort ist so schmal, dass
+   zwei Handlungen neben ihm stehen (380 px Stammblattbreite), der leise
+   Hinweis kuerzt sich in seiner Zeile (voll im Kurztext), statt eine dritte
+   zu oeffnen. Sonst
+   rueckte das Stammblatt beim ersten Kaestchen um eine Zeile. Der volle Name
+   steht im Kurztext und gleich darunter im Kopf des Stammblatts. */
 .epos-auswahlleiste-was {
     flex: 0 1 auto;
     min-width: 3em;
-    max-width: 16rem;
+    max-width: 10rem;
     font-weight: 700;
     color: var(--epos-karte-titel);
     overflow: hidden;
@@ -7969,6 +7976,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-auswahlleiste-leise {
     color: var(--epos-text-leise);
+}
+
+.epos-auswahlleiste-fueller + .epos-auswahlleiste-leise {
+    flex: 100 1 4rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
 }
 
 /* AD-Q15: ein Knopf mit zwei Beschriftungen ("Schloss aufheben..." /
