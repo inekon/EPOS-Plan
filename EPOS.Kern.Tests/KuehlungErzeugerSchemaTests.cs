@@ -38,6 +38,20 @@ namespace EPOS.Kern.Tests
         /// <summary>Ein Stromträger des Katalogs (<c>pricing_model = 'ELECTRICITY'</c>).</summary>
         private const int STROMTRAEGER = 60;
 
+        /// <summary>
+        /// Seit KU2 Welle 2 lässt sich der Kühlbetrieb nur mit einer Kühlkennlinie IM PROJEKT setzen
+        /// (Sperrgrund, Kühlkonzept 5.0.1, 10.3). Die Fälle, die den Kühlbetrieb einschalten, säen
+        /// deshalb eine Phantasie-Kennlinie für die Projektkopie — eine Stützstelle mit runden Werten,
+        /// kein Produkt.
+        /// </summary>
+        private static void KennlinieSaeen()
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) " +
+                "VALUES ((SELECT COALESCE(MAX(ID), 0) + 1 FROM Tab_Kenndaten_Kuehlung), ?, 18, 30, 4.0, 10.0, 100)",
+                new DbParam("@wp", WP_KOPIE)));
+        }
+
         // =============================================================================
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
@@ -282,6 +296,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
+            KennlinieSaeen();
             WPCtrl.SpeicherErgebnis e = WPCtrl.KuehlkonfigurationSchreiben(WP_KOPIE, PROJEKT, true, 18, 0.1);
             Assert.True(e.Ok, e.Meldung);
             DataRow z = Zeile("SELECT Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " +
@@ -315,6 +330,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
+            KennlinieSaeen();
             Assert.True(WPCtrl.KuehlkonfigurationSchreiben(WP_KOPIE, PROJEKT, true, 7, null).Ok);
             WPStammCtrl.SpeicherErgebnis e = WPStammCtrl.UebernehmenAusProjekt(WP_KOPIE, PROJEKT, false);
             Assert.True(e.Ok, e.Meldung);
@@ -506,6 +522,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
+            KennlinieSaeen();
             Assert.True(WPCtrl.KuehlkonfigurationSchreiben(WP_KOPIE, PROJEKT, true, 18, 0.07).Ok);
             Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
                 new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: STROMTRAEGER)).Ok);

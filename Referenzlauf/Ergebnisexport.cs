@@ -341,6 +341,15 @@ namespace WindowsFormsApplication1.Referenzlauf
                 }
             }
 
+            // --- Kaeltedeckung (Stufe KU2; Kuehlkonzept 4.7, 7.4, 7.6 - K24/E27) ---------------
+            // Gedeckte Kaelte, Kaeltestrom samt Hilfsstrom, EER-Jahreswert, Deckungsgrad,
+            // Kuehltage und je Kaelteerzeuger Kaelte und Strom - Skalare, keine Ergebnisspalte.
+            // NUR mit gerechnetem Kaelteerzeuger (der Kern entscheidet, KaelteErgebnisexport):
+            // Jedes Projekt ohne Waermepumpe im Kuehlbetrieb - alle Referenzprojekte bis zum
+            // Einfrierschritt von KU2 - bekommt keinen neuen Schluessel.
+            foreach (var s in KaelteErgebnisexport.Skalare(runner.simulation_Kaeltebedarf))
+                skalare.Add(Neu(s.Key, Zahl(s.Value)));
+
             // --- Emissionsgroessen der Simulation (Anwenderentscheid Em-9.8, 07.09.2026) --
             // Kessel und BHKW fuehren je fuenf Jahressummen (Verbrauch [MWh] x Faktor
             // / 1000), gebildet ueber Emissionsquelle.Fuer - die Kette Projekt ->

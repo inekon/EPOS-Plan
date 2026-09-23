@@ -26282,4 +26282,85 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>There is nothing to save in “{0}” – no field has been changed.</value>
   </data>
+  <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
+    <value>Cooling circuit</value>
+  </data>
+  <data name="SIMENG_SENKE_KAELTEZIEL_ALTSPALTE" xml:space="preserve">
+    <value>Heat sink: System {0} carries the cooling target "cooling circuit" in the legacy column WS_Ziel. The legacy columns only know heat targets — there it is calculated on the heating circuit; a cooling sink belongs in the sink list only.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>There is no cooling characteristic for this unit — cooling mode remains locked.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_QUELLSPEICHER" xml:space="preserve">
+    <value>Cooling mode with a source storage is not calculated — cooling mode remains locked.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Heat pump "{0}": rated cooling capacity without a cooling characteristic — this unit only calculates heat.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode is set, but the project does not calculate cooling (project setting "Calculate cooling" off) — the unit only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode with a source storage is not calculated — the unit only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Heat pump "{0}": cooling mode without a cooling characteristic in the project — there is no cooling data for this unit; it only heats.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG" xml:space="preserve">
+    <value>The catalogue holds a cooling characteristic for this unit; it can be fetched from the catalogue.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HEIZLAGE" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling characteristic for the flow temperature {1} °C is a heating-mode block (evaporator capacity in heating mode, not an EER) — it is not read as a cooling characteristic; the unit does not cool.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_ACHSEN" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling characteristic for the flow temperature {1} °C carries the chilled-water temperature on the temperature axis instead of the outdoor or source temperature — it is not reinterpreted; the unit does not cool.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
+    <value>Heat pump "{0}": the cooling flow temperature {1} °C is not a data point of the cooling characteristic ({2} °C) — {3} °C is used; there is no interpolation across flow temperatures.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
+    <value>Heat pump "{0}": {1} data points of the cooling characteristic are stored twice with equal values — they have been merged.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND" xml:space="preserve">
+    <value>Heat pump "{0}": {1} data points of the cooling characteristic are stored more than once with differing values — the row stored first applies.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Heat pump "{0}": the auxiliary power share {1} is not between 0 and 1 — no auxiliary power surcharge is applied.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
+    <value>Heat pump "{0}": the electricity carrier chosen for cooling is not priced separately yet — the cooling electricity carries the project's tariff and emission factor.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
+    <value>Heat pump "{0}", cooling flow temperature {1} °C: in {2} hours with cooling demand the temperature was below the lowest data point ({3} °C, its values apply), in {4} hours above the highest ({5} °C, {6}).</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_VERLAENGERT" xml:space="preserve">
+    <value>linearly extended</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_GEKAPPT" xml:space="preserve">
+    <value>its values apply</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_EINZELPUNKT" xml:space="preserve">
+    <value>Heat pump "{0}", cooling flow temperature {1} °C: the cooling characteristic has only one data point ({2} °C) — cooling capacity and EER apply unchanged in every hour.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %), cooling electricity {3} MWh/a, seasonal EER {4}; {5} cooling days.</value>
+  </data>
+  <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
+    <value>Cooling demand partly uncovered: {0} MWh/a — of which {1} MWh/a on heating days (the operating mode of the day is heating), {2} MWh/a on cooling days (capacity too small, or the hour taken by domestic hot water or a lock-out period).</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+    <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
+    <value>Cooling coverage check: {0} heat bookings in the cooling channel, {1} hours with a changed cooling channel, {2} hours with a changed heat channel, {3} hours with an open cooling balance (largest deviation {4} kWh). The separation of heat and cooling does not hold; the run is not saved.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE" xml:space="preserve">
+    <value>Heat pump "{0}": {1} cooling blocks in heating position not imported (flow temperature {2} °C) — they describe the evaporator capacity in heating mode, not cooling mode.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
+    <value>Heat pump "{0}": {1} cooling blocks with swapped axes not imported (flow temperature {2} °C) — the temperature axis carries the chilled-water temperature instead of the outdoor or source temperature.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
+    <value>The heat pumps in cooling mode cover {0} MWh/a of the cooling demand ({1} %).</value>
+  </data>
 </root>

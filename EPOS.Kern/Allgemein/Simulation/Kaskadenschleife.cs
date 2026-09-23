@@ -233,6 +233,14 @@ namespace WindowsFormsApplication1
         /// <summary>Maske der Direktsenke „Prozesswaerme" = {PROZESS}.</summary>
         private static readonly bool[] MASKE_PROZESS = MaskeBauen(Kanal.PROZESS);
 
+        /// <summary>
+        /// Maske der Kältesenke „Kaeltekreis" in der WÄRMEkaskade = {} (Stufe KU2, Kühlkonzept
+        /// 4.3 #14-#16): Die Kälteseite hat hier keinen Kanal - gedeckt wird sie allein in der
+        /// <see cref="Kaeltekaskade"/>. Die leere Maske ist die zweite Sicherung hinter
+        /// <see cref="Senkenzeile.IstDirektsenke"/>, die für den Kältekreis falsch ist.
+        /// </summary>
+        private static readonly bool[] MASKE_KEINE = MaskeBauen();
+
         private static bool[] MaskeBauen(params int[] kanaele)
         {
             bool[] m = new bool[Kanal.ANZAHL];
@@ -285,6 +293,7 @@ namespace WindowsFormsApplication1
         {
             if (zeile == null) return MASKE_BEIDES;
             if (zeile.Ziel == Senke.Prozesswaerme) return MASKE_PROZESS;
+            if (zeile.IstKaeltesenke) return MASKE_KEINE;
             if (zeile.IstPuffersenke) return null;
             return DirektsenkeMaske(zeile.Bedarfsart);
         }

@@ -140,16 +140,81 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Gibt es zu diesem Stammgerät überhaupt Kühl-Kenndaten? Das entscheidet, ob
-        /// <c>Form_WP</c> den Umschalter „Wärme / Kühlung" zeigt
-        /// (<c>HatKuehlKenndaten</c>, Z. 177).
+        /// Gibt es zu diesem STAMMgerät überhaupt Kühl-Kenndaten
+        /// (<c>Tab_Kenndaten_Kuehlung_STAMM</c>)? Das entscheidet, ob der Stammdialog den
+        /// Umschalter „Wärme / Kühlung" zeigt und ob die Katalogliste ein Gerät „rechenbar
+        /// kühlfähig" nennt.
+        ///
+        /// <para><b>Zwei benannte Prüfungen nebeneinander</b> (Kühlkonzept 5.0.1, KU2): Diese hier
+        /// fragt den KATALOG — bis KU2 hieß sie <c>HatKenndaten</c>, der Name ist nur eindeutig
+        /// geworden. Ob ein PROJEKTgerät kühlen kann, sagt allein
+        /// <see cref="HatKenndatenProjekt"/>: Ein Gerät kann im Katalog eine Kennlinie haben und im
+        /// Projekt keine.</para>
         /// </summary>
-        public static bool HatKenndaten(int idWp)
+        public static bool HatKenndatenStamm(int idStammWp)
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ?",
-                new DbParam("@id", idWp));
+                new DbParam("@id", idStammWp));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+        }
+
+        /// <summary>
+        /// Gibt es zu diesem PROJEKTgerät Kühl-Kenndaten (<c>Tab_Kenndaten_Kuehlung</c>, deren
+        /// <c>ID_WP</c> auf die Projektkopie in <c>Tab_WP</c> zeigt)? Daran hängt der Sperrgrund des
+        /// Kühlbetriebs — im Schreibweg (<see cref="WPCtrl.KuehlkonfigurationSchreiben"/>), im
+        /// Erzeugerdialog und die Ablehnung im Lauf (Kühlkonzept 5.0.1, 8.2, 10.3).
+        /// </summary>
+        public static bool HatKenndatenProjekt(int idProjektWp)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?",
+                new DbParam("@id", idProjektWp));
+            return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+        }
+
+        /// <summary>
+        /// <b>Der projektseitige Kennlinienleser</b> (Kühlkonzept 5.1, Festlegung 1 (b)): alle
+        /// Zeilen der Kühlkennlinie eines PROJEKTgeräts aus <c>Tab_Kenndaten_Kuehlung</c>, nach
+        /// <c>ID</c> geordnet — die Grundlage von <see cref="Kuehlkennlinie.Bilden"/>, die Vorlauf,
+        /// Laststufe, Dubletten und Achsenlage entscheidet. Nicht die Stammtabelle: Gerechnet wird
+        /// mit der Kopie im Projekt, wie auf der Heizseite (<c>SimulationWaermepumpe.ModuleAufbauen</c>).
+        /// </summary>
+        public static List<KuehlkennlinienZeile> ZeilenProjekt(int idProjektWp)
+        {
+            return Zeilen("Tab_Kenndaten_Kuehlung", idProjektWp);
+        }
+
+        /// <summary>Dieselben Zeilen aus dem Katalog (<c>Tab_Kenndaten_Kuehlung_STAMM</c>) — für die Kennzeichnung eines Katalogsatzes.</summary>
+        public static List<KuehlkennlinienZeile> ZeilenStamm(int idStammWp)
+        {
+            return Zeilen(WPStammCtrl.CURVE_K, idStammWp);
+        }
+
+        /// <summary>Die Kühlkennlinie eines Projektgeräts für seinen Kühl-Vorlauf (NULL = kleinster Stützwert).</summary>
+        public static Kuehlkennlinie KennlinieProjekt(int idProjektWp, int? kuehlVorlauf)
+        {
+            return Kuehlkennlinie.Bilden(ZeilenProjekt(idProjektWp), kuehlVorlauf);
+        }
+
+        private static List<KuehlkennlinienZeile> Zeilen(string tabelle, int idWp)
+        {
+            var liste = new List<KuehlkennlinienZeile>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Vorlauf, Temperatur, COP, Pkuehl, [Last] FROM " + tabelle +
+                " WHERE ID_WP = ? ORDER BY ID",
+                new DbParam("@id", idWp));
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+                liste.Add(new KuehlkennlinienZeile(
+                    r["ID"] != DBNull.Value ? Convert.ToInt32(r["ID"]) : 0,
+                    r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0,
+                    r["Temperatur"] != DBNull.Value ? Convert.ToInt32(r["Temperatur"]) : 0,
+                    r["COP"] != DBNull.Value ? Convert.ToDouble(r["COP"]) : 0.0,
+                    r["Pkuehl"] != DBNull.Value ? Convert.ToDouble(r["Pkuehl"]) : 0.0,
+                    r["Last"] != DBNull.Value ? (int?)Convert.ToInt32(r["Last"]) : null));
+            return liste;
         }
 
         #endregion

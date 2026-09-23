@@ -26289,4 +26289,85 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
   </data>
+  <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
+    <value>Kältekreis</value>
+  </data>
+  <data name="SIMENG_SENKE_KAELTEZIEL_ALTSPALTE" xml:space="preserve">
+    <value>Wärmesenke: Die Anlage {0} trägt in der Altspalte WS_Ziel das Kälteziel „Kältekreis". Die Altspalten kennen nur Wärmeziele — dort rechnet sie auf dem Heizkreis; eine Kältesenke steht allein in der Senkenliste.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_QUELLSPEICHER" xml:space="preserve">
+    <value>Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb ohne Kühlkennlinie im Projekt — zu diesem Gerät liegen keine Kühlkenndaten vor; die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG" xml:space="preserve">
+    <value>Der Katalog führt zu diesem Gerät eine Kühlkennlinie; sie lässt sich aus dem Katalog nachholen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_ACHSEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen mehrfach mit abweichenden Werten — es gilt jeweils die zuerst gespeicherte Zeile.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}).</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_VERLAENGERT" xml:space="preserve">
+    <value>linear verlängert</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_GEKAPPT" xml:space="preserve">
+    <value>deren Werte gelten</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_EINZELPUNKT" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: Die Kühlkennlinie hat nur eine Stützstelle ({2} °C) — Kälteleistung und EER gelten in jeder Stunde unverändert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG" xml:space="preserve">
+    <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %), Kältestrom {3} MWh/a, EER-Jahreswert {4}; {5} Kühltage.</value>
+  </data>
+  <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
+    <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+    <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
+    <value>Deckungsprobe Kälte: {0} Wärmebuchungen im Kühlkanal, {1} Stunden mit verändertem Kühlkanal, {2} Stunden mit verändertem Wärmekanal, {3} Stunden mit offener Kältebilanz (größte Abweichung {4} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke in Heizlage nicht übernommen (Vorlauf {2} °C) — sie beschreiben die Kälteleistung am Verdampfer im Heizbetrieb, keinen Kühlbetrieb.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
+    <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
+  </data>
 </root>

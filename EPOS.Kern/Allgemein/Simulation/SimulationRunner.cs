@@ -527,6 +527,14 @@ namespace WindowsFormsApplication1
                     Summiere(wp.Direktdeckung_Kanal, wp.Speicherentladung_Kanal, wp.Heizstab_Kanal),
                     basis, w.Waermebedarfsdeckung);
 
+                // STUFE KU2 (Kühlkonzept 6.4, 7.4): die KÄLTEdeckung der Wärmepumpe im Kühlkanal -
+                // Anteil am Kältebedarf des Projekts [%], das Spiegelbild der Wärmespalten (dort
+                // Anteil am Wärmebedarf). Nenner ist Kaeltebedarf_Gesamt, gelesen wird sie über den
+                // eigenen Zweig KennzahlenKatalog.DeckungKanalKaelte. In KU2 ist die reversible
+                // Wärmepumpe der einzige Kälteerzeuger; ohne Kältekaskade bleibt die Spalte 0.
+                if (kaelte != null && kaelte.Gerechnet && kaelte.Kaskade != null)
+                    w.Deckung_Kanal[Kanal.KUEHLUNG] = DeckungKuehlkanalProzent(kaelte);
+
                 // Modulauflistung.
                 for (int i = 0; i < wp.wp_list.Count; i++)
                 {
@@ -1118,6 +1126,17 @@ namespace WindowsFormsApplication1
                 mwh[k] = summe / 1000.0;
             }
             return mwh;
+        }
+
+        /// <summary>
+        /// Die Kältedeckung der Kälteerzeuger [%] = gedeckte Kälte / Kältebedarf des Projekts
+        /// (Stufe KU2; Kühlkonzept 6.4) — dieselbe Klemmung wie jede Deckung (0 … 100). 0 ohne
+        /// Kältekaskade.
+        /// </summary>
+        public static double DeckungKuehlkanalProzent(SimulationKaeltebedarf kaelte)
+        {
+            if (kaelte == null || !kaelte.Gerechnet || kaelte.Kaskade == null) return 0.0;
+            return DeckungProzent(kaelte.Kaskade.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt);
         }
 
         /// <summary>

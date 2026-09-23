@@ -301,6 +301,11 @@ namespace WindowsFormsApplication1
             // bucht in der Gebäude- und der Lastgangschleife mit und schließt am Ende ab.
             Kaelteseite.Beginnen(_kanaele, KuehlbetriebProjekt);
 
+            // KU2 (Kühlkonzept 5.5): Hat das Projekt Kälteerzeuger angelegt, meldet erst die
+            // Kältekaskade die Unterdeckung - mit Menge und Grund -, nicht schon der Bedarfslauf.
+            if (KuehlbetriebProjekt)
+                Kaelteseite.KaelteerzeugerAngelegt = WPCtrl.AnlagenImKuehlbetrieb(ID_Projekt);
+
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
 

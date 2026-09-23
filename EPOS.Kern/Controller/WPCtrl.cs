@@ -348,10 +348,11 @@ namespace WindowsFormsApplication1
         /// <para><b>Adressiert ueber ID UND ID_Projekt</b>, nie ueber den Bezeichner — dieselbe
         /// Regel wie bei <see cref="ProjektgeraetSchreiben"/>.</para>
         ///
-        /// <para><b>Geprueft wird hier der Wertebereich des Hilfsstromanteils</b>
-        /// (0 ≤ x &lt; 1, Kuehlkonzept 8.2). Die Sperrgruende des Kuehlbetriebs — keine
-        /// Kuehlkennlinie im Projekt, ein Quellspeicher als Waermequelle (8.2) — kommen mit dem
-        /// Erzeugerdialog; bis dahin liest kein Rechenweg die Spalten.</para>
+        /// <para><b>Geprueft werden hier der Wertebereich des Hilfsstromanteils</b>
+        /// (0 ≤ x &lt; 1, Kuehlkonzept 8.2) <b>und die Sperrgruende des Kuehlbetriebs</b>
+        /// (<see cref="KuehlbetriebSperrgrund"/>): keine Kuehlkennlinie im Projekt, ein Quellspeicher
+        /// als Waermequelle (5.0.1, 5.1 Festlegung 6, 8.2, 10.3). Ein gesperrter Kuehlbetrieb laesst
+        /// sich nicht setzen — die Meldung nennt den Grund; ausschalten geht immer.</para>
         /// </remarks>
         /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
         /// <param name="idProjekt">Das Projekt (<c>Tab_WP.ID_Projekt</c>).</param>
@@ -370,6 +371,14 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, string.Format(
                     Text("KBROW_MSG_WERT_BEREICH", "„{0}“ muss zwischen {1} und {2} liegen."),
                     Text("WPS_LBL_KUEHL_HILFSSTROM", "Hilfsstromanteil Kühlung"), "0", "1"), "");
+
+            // KU2 (5.0.1, 8.2, 10.3): Der Kuehlbetrieb haengt an der Kennlinie IM PROJEKT, nicht an
+            // der Nennleistung - und nicht an einer Anlage mit Quellspeicher. Benannt abgelehnt.
+            if (kuehlbetrieb)
+            {
+                string sperrgrund = KuehlbetriebSperrgrund(idWp, idProjekt);
+                if (sperrgrund != null) return new SpeicherErgebnis(false, sperrgrund, "");
+            }
 
             try
             {
@@ -406,6 +415,61 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
                     "Die Projektdaten konnten nicht gespeichert werden."), "");
             }
+        }
+
+        /// <summary>
+        /// <b>Der Sperrgrund des Kuehlbetriebs</b> einer Projektkopie (Stufe KU2; Kuehlkonzept 5.0.1,
+        /// 5.1 Festlegung 6, 8.2, 8.5) — <c>null</c>, wenn der Kuehlbetrieb gesetzt werden darf.
+        /// Dieselben zwei Gruende lehnt der Lauf benannt ab (<c>SimulationControl</c>, Kaeltekaskade):
+        /// <list type="number">
+        /// <item>keine Kuehlkennlinie im PROJEKT (<see cref="KenndatenKuehlungCtrl.HatKenndatenProjekt"/>)
+        /// — eine Kennlinie im Katalog genuegt nicht, und die Nennkuehlleistung schon gar nicht;</item>
+        /// <item>eine Anlage des Projekts mit diesem Geraet bezieht ihre Waerme aus einem
+        /// Quellspeicher (<c>WQ_Typ = Pufferspeicher</c>, nicht Luft-Wasser): Die Kondensatorwaerme
+        /// muesste in den Speicher, und diesen Rechenweg baut KU2 nicht.</item>
+        /// </list>
+        /// </summary>
+        public static string KuehlbetriebSperrgrund(int idWp, int idProjekt)
+        {
+            if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp))
+                return Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
+                    "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
+
+            try
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_WP = ? AND a.WQ_Typ = ? " +
+                    "AND COALESCE(w.Typ, '') <> ?",
+                    new DbParam("@proj", idProjekt), new DbParam("@wp", idWp),
+                    new DbParam("@wq", WaermequelleClass.TYP_PUFFER),
+                    new DbParam("@luft", DbWerte.WP_BAUART_LUFT_WASSER));
+                if (n != null && n != DBNull.Value && Convert.ToInt32(n) > 0)
+                    return Text("WP_PROJ_MSG_KUEHL_QUELLSPEICHER",
+                        "Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Pruefung des Kuehlbetriebs: " + ex.Message);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Zahl der Waermepumpen-ANLAGEN eines Projekts, deren Geraet auf Kuehlbetrieb steht
+        /// (<c>Tab_WP.Kuehlbetrieb = 1</c>) — die angelegten Kaelteerzeuger (Stufe KU2). Der
+        /// Bedarfslauf gibt sie der Kaeltefassade, damit die Unterdeckung erst nach der
+        /// Kaeltekaskade gemeldet wird (Kuehlkonzept 5.5). Dialogfrei; 0 bei jedem Fehler.
+        /// </summary>
+        public static int AnlagenImKuehlbetrieb(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+            object n = StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            return StilleDb.Zahl(n);
         }
 
         /// <summary>
