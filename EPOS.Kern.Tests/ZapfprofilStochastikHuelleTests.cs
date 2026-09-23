@@ -276,56 +276,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Rechenweg „stochastisch": Die Vorschau nimmt denselben Weg wie der Lauf — in der Bilanz
-        /// das gezogene Jahr zum Seed, auf die Jahresmenge gebracht —, nennt Seed und Jahre im
-        /// Status und trägt je Zone die Konsistenzprobe (an der Zone und in der Summe). Die
-        /// Jahresmenge gleicht der deterministischen, die Stunden nicht.
+        /// 5.1: Die Vorschau rechnet live über den deterministischen Pfad — auch bei Rechenweg
+        /// „stochastisch" zieht sie kein Jahresensemble: dieselben Bits wie deterministisch, keine
+        /// Konsistenzprobe, der Status „deterministisch", und eine Zone ohne Zapfkategorien lehnt
+        /// in der Vorschau nicht ab (sie braucht die Kategorien erst im Lauf).
         /// </summary>
         [Fact]
-        public void Stochastisch_rechnet_die_Vorschau_das_Jahr_zum_Seed_samt_Konsistenzprobe()
-        {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
-
-            var eingabe = new ZapfprofilEingabeDaten
-            {
-                JahresreiheStochastisch = true, Seed = 3, Realisierungen = 4,
-                Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 20 } }
-            };
-            ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
-
-            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
-            Assert.DoesNotContain(v.Meldungen, x => x.Art != ZapfprofilMeldungsart.Hinweis);
-            Assert.True(v.Stochastisch);
-            Assert.Equal(3, v.Seed);
-            Assert.Equal(4, v.Realisierungen);
-            Assert.Equal("Vorschau aktuell · stochastisch · Seed 3 · 4 Jahre", v.Status);
-            ZapfprofilKonsistenzDaten k = Assert.Single(v.Summe.Konsistenzen);
-            Assert.Same(k, Assert.Single(v.Ansichten[1].Konsistenzen));
-            Assert.Equal("Wohnen", k.Zone);
-            Assert.Equal(0, k.Position);
-            Assert.Equal(4, k.Realisierungen);
-            Assert.True(k.ToleranzKwh > 0 && k.StandardabweichungKwh >= 0 && k.Faktor > 0);
-            Assert.NotNull(k.Abweichung);
-
-            eingabe.JahresreiheStochastisch = false;
-            ZapfprofilVorschauDaten d = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
-            Assert.False(d.Stochastisch);
-            Assert.Empty(d.Summe.Konsistenzen);
-            Assert.StartsWith("Vorschau aktuell · deterministisch", d.Status);
-            double det = d.Summe.Kennzahlen.JahresbedarfZapfungKwh;
-            Assert.InRange(Math.Abs(v.Summe.Kennzahlen.JahresbedarfZapfungKwh / det - 1.0), 0.0, 1e-9);
-            Assert.InRange(Math.Abs(k.DeterministischKwh / det - 1.0), 0.0, 1e-9);
-            Assert.NotEqual(d.Summe.WocheZapfungKw, v.Summe.WocheZapfungKw);
-        }
-
-        /// <summary>
-        /// Trägt die Nutzungsart einer stochastisch gerechneten Zone keine Zapfkategorien, lehnt die
-        /// Zone benannt ab — mit der Nutzungsart im Satz, am Ort der Zone, wie jede Ablehnung —; die
-        /// andere Zone rechnet weiter und trägt ihre Konsistenzprobe.
-        /// </summary>
-        [Fact]
-        public void Ohne_Zapfkategorien_lehnt_die_Zone_benannt_mit_ihrer_Nutzungsart_ab()
+        public void Die_Vorschau_bleibt_bei_stochastisch_deterministisch()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -334,7 +291,7 @@ namespace EPOS.Kern.Tests
 
             var eingabe = new ZapfprofilEingabeDaten
             {
-                JahresreiheStochastisch = true, Realisierungen = 2,
+                JahresreiheStochastisch = true, Seed = 3, Realisierungen = 4,
                 Zonen =
                 {
                     new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 20 },
@@ -342,23 +299,16 @@ namespace EPOS.Kern.Tests
                 }
             };
             ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
+            eingabe.JahresreiheStochastisch = false;
+            ZapfprofilVorschauDaten d = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
 
             Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
-            ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
-            Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
-            Assert.Equal("Probe", m.Zone);
-            Assert.Equal(1, m.Position);
-            Assert.Equal("Zone „Probe“ trägt 0: Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
-                         + ") stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", m.Text);
-            Assert.True(v.Zonen[1].Abgelehnt);
-            Assert.False(v.Zonen[0].Abgelehnt);
-            Assert.Equal("Wohnen", Assert.Single(v.Summe.Konsistenzen).Zone);
-            Assert.Empty(v.Ansichten[2].Konsistenzen);
-
-            // Deterministisch braucht die Zone keine Kategorien.
-            eingabe.JahresreiheStochastisch = false;
-            Assert.DoesNotContain(ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT)).Meldungen,
-                                  x => x.Art == ZapfprofilMeldungsart.Ablehnung);
+            Assert.False(v.Stochastisch);
+            Assert.StartsWith("Vorschau aktuell · deterministisch", v.Status);
+            Assert.All(v.Ansichten, a => Assert.Empty(a.Konsistenzen));
+            Assert.DoesNotContain(v.Meldungen, x => x.Art != ZapfprofilMeldungsart.Hinweis);
+            Assert.Equal(d.Summe.WocheZapfungKw, v.Summe.WocheZapfungKw);
+            Assert.Equal(d.Summe.Kennzahlen.JahresbedarfZapfungKwh, v.Summe.Kennzahlen.JahresbedarfZapfungKwh);
         }
 
         /// <summary>
@@ -403,11 +353,11 @@ namespace EPOS.Kern.Tests
             Assert.True(p.JahresreiheStochastisch);
             Assert.Equal(42, p.Seed);
             Assert.Equal(3, p.Realisierungen);
-            // Der nächste Öffnen-Stand trägt sie — und rechnet die Vorschau stochastisch.
+            // Der nächste Öffnen-Stand trägt sie — die Vorschau beim Öffnen bleibt deterministisch (5.1).
             var wieder = ZapfprofilHuelle.Laden(PROJEKT, null);
             Assert.True(wieder.Eingabe.JahresreiheStochastisch);
             Assert.Equal(42, wieder.Eingabe.Seed);
-            Assert.True(wieder.Vorschau.Stochastisch);
+            Assert.False(wieder.Vorschau.Stochastisch);
         }
 
         // =================================================================================

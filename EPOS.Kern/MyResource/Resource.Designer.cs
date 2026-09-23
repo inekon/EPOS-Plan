@@ -77544,6 +77544,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_VORSCHAU_DETERMINISTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_VORSCHAU_DETERMINISTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen auf den Vorgaben des Katalogs. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WEITERE_VORGABE {

@@ -26553,4 +26553,7 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
   </data>
+  <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
+    <value>Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.</value>
+  </data>
 </root>

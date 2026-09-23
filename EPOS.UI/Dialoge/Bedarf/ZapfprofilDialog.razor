@@ -31,7 +31,8 @@
    STOCHASTIK (Stufe Z3). Die Stufe Experte zeigt die Gruppe "Stochastik": den Rechenweg der
    Jahresreihe (deterministisch | stochastisch) und bei "stochastisch" Seed und Realisierungen
    (Ganzzahlfelder mit den Grenzen aus Schema und Kern; leer = Vorgabe der DDL). Die Vorschau
-   rechnet denselben Weg wie der Lauf; nach einem stochastischen Lauf zeigt der Reiter
+   bleibt deterministisch (5.1) - bei "stochastisch" sagt eine leise Zeile darunter, dass die
+   Jahresreihe erst im Lauf stochastisch entsteht; nach einem stochastischen Lauf zeigt der Reiter
    Kennzahlen in der Stufe Experte je Zone die Konsistenzprobe (Mittel der R Jahre gegen den
    deterministischen Pfad) als Zeile, gruen innerhalb, amber ausserhalb der Toleranz. Eine
    Zone ohne Zapfkategorien steht wie jede Ablehnung als Banner an ihr. "Stochastisch
@@ -342,6 +343,10 @@
                                 </Reiterblatt>
                             </KindInhalt>
                         </Reiter>
+                        @if (_eingabe.JahresreiheStochastisch)
+                        {
+                            <p class="epos-leisezeile epos-zapfprofil-vorschau-deterministisch">@Texte.HinweisVorschauDeterministisch</p>
+                        }
                     }
 
                     @foreach (ZapfprofilMeldung m in AllgemeineMeldungen)
@@ -821,7 +826,7 @@
         if (_stufe != ZapfprofilStufe.Experte) _fehlfelder.Clear();
     }
 
-    /// <summary>Die Optionsgruppe „Rechenweg der Jahresreihe": deterministisch oder stochastisch (Vorschau gleich Lauf).</summary>
+    /// <summary>Die Optionsgruppe „Rechenweg der Jahresreihe": deterministisch oder stochastisch (die Vorschau bleibt deterministisch).</summary>
     private void RechenwegSetzen(int? id)
     {
         bool stochastisch = id == RECHENWEG_STOCHASTISCH;

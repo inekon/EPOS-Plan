@@ -395,8 +395,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Vorschau zu einem Arbeitsstand (5.1: „live über den deterministischen Pfad"): immer
         /// über den Generatorweg, auch wenn die Weiche noch auf den Bestandsprofilen steht —
-        /// sie zeigt, was das Zapfprofil rechnen würde. Ohne Zone keine Rechnung; kann der
-        /// Generator für das Projekt nicht rechnen, der benannte Grund.
+        /// sie zeigt, was das Zapfprofil rechnen würde —, und immer deterministisch, auch bei
+        /// Rechenweg „stochastisch" (<see cref="BedarfsVorschauCtrl.ProjektVorschau"/> zieht kein
+        /// Jahresensemble; die stochastische Reihe entsteht erst im Lauf). Ohne Zone keine
+        /// Rechnung; kann der Generator für das Projekt nicht rechnen, der benannte Grund.
         /// </summary>
         internal static ZapfprofilVorschauDaten Vorschau(int idProjekt, ZapfprofilEingabeDaten eingabe,
                                                          ZapfprofilStand basis)
@@ -429,18 +431,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                ZapfprofilVorschauDaten d = AlsVorschau(v.Waerme.Zapfprofil, v.Waerme.WochentagJan1,
-                                                        v.Waerme.WochenendkennzeichenKopie(), eingabe);
-                if (d.Stochastisch)
-                {
-                    // Derselbe Seed und dieselbe Zahl der Jahre wie im Eingang des Laufs.
-                    ProjektStand p = stand.Projekt ?? ZapfprofilCtrl.ProjektVorgabe();
-                    d.Seed = p?.Seed ?? 0;
-                    d.Realisierungen = p?.Realisierungen ?? 0;
-                    d.Status = Format(Text_("ZPG_STATUS_VORSCHAU_STOCHASTISCH", "Vorschau aktuell · stochastisch · Seed {0} · {1} Jahre"),
-                                      d.Seed, d.Realisierungen);
-                }
-                return d;
+                return AlsVorschau(v.Waerme.Zapfprofil, v.Waerme.WochentagJan1, v.Waerme.WochenendkennzeichenKopie(), eingabe);
             }
             catch (Exception ex) { return Unerwartet(ex.Message); }
         }
@@ -1081,6 +1072,7 @@ namespace WindowsFormsApplication1
             t.EinheitJahre = Text_("ZPG_EINHEIT_JAHRE", t.EinheitJahre);
             t.HinweisRealisierungen = Text_("ZPG_HINW_REALISIERUNGEN", t.HinweisRealisierungen);
             t.HinweisKonsistenzOrt = Text_("ZPG_HINW_KONSISTENZ_ORT", t.HinweisKonsistenzOrt);
+            t.HinweisVorschauDeterministisch = Text_("ZPG_HINW_VORSCHAU_DETERMINISTISCH", t.HinweisVorschauDeterministisch);
             t.KennzahlStochastikGerechnet = Text_("ZPG_KZ_STOCHASTIK_GERECHNET", t.KennzahlStochastikGerechnet);
             t.KennzahlStochastikJahresreihe = Text_("ZPG_KZ_STOCHASTIK_JAHRESREIHE", t.KennzahlStochastikJahresreihe);
             t.KennzahlKonsistenz = Text_("ZPG_KZ_KONSISTENZ", t.KennzahlKonsistenz);

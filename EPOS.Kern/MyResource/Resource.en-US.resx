@@ -26546,4 +26546,7 @@ Do you want to allow this?</value>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>
+  <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
+    <value>The preview shows the deterministic path; the annual series is only drawn stochastically in the run — with the same annual amount.</value>
+  </data>
 </root>

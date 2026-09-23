@@ -298,6 +298,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_KONSISTENZ_ORT</c></summary>
     public string HinweisKonsistenzOrt { get; set; } = "Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.";
 
+    /// <summary><c>ZPG_HINW_VORSCHAU_DETERMINISTISCH</c></summary>
+    public string HinweisVorschauDeterministisch { get; set; } = "Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.";
+
     /// <summary><c>ZPG_KZ_STOCHASTIK_GERECHNET</c></summary>
     public string KennzahlStochastikGerechnet { get; set; } = "Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen";
 

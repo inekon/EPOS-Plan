@@ -207,7 +207,8 @@ public sealed class ZapfprofilEingabeDaten
     /// <summary>
     /// Der Rechenweg der Jahresreihe (Stufe Experte, 5.3; <c>Tab_TwwProjekt.Jahresreihe_Stochastisch</c>):
     /// <c>true</c> = in die Bilanz geht das gezogene Jahr zum Seed, auf die Jahresmenge gebracht
-    /// (4.4). Eine Größe des Projekts, nicht einer Zone; die Vorschau rechnet denselben Weg.
+    /// (4.4). Eine Größe des Projekts, nicht einer Zone; die Vorschau bleibt deterministisch (5.1),
+    /// das Jahr zum Seed zieht erst der Lauf.
     /// </summary>
     public bool JahresreiheStochastisch { get; set; }
 

@@ -341,10 +341,14 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Wählt nur, welche Reihe in die Bilanz geht", cut.Markup);
         Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
         Assert.False(HatFeld(cut, "Realisierungen"));
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschau-deterministisch"));
 
         Option(cut, "stochastisch").Change("1");
         Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
-        Assert.True(gesehen.Last().JahresreiheStochastisch);             // die Vorschau rechnet denselben Weg
+        Assert.True(gesehen.Last().JahresreiheStochastisch);             // der Arbeitsstand trägt ihn; die Hülle rechnet deterministisch
+        // 5.1: Die Vorschau bleibt deterministisch — eine leise Zeile sagt, wann die Jahresreihe entsteht.
+        Assert.Equal("Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — "
+                     + "mit derselben Jahresmenge.", cut.Find(".epos-zapfprofil-vorschau-deterministisch").TextContent);
         Assert.Equal("(1)", Feld(cut, "Zufallssaat (Seed)").GetAttribute("placeholder"));
         Assert.Equal("(10)", Feld(cut, "Realisierungen").GetAttribute("placeholder"));
         Assert.Contains("Ganze Zahl ab 0 · leer = Vorgabe 1; derselbe Seed zieht auf jeder Plattform dieselbe Reihe.", cut.Markup);
