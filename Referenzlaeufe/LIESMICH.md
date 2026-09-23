@@ -400,6 +400,20 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > [Protokoll der Schlusswelle KU1](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-23_Schlusswelle_KU1.md)
 > und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
 
+> **Nachtrag: Schemastand 114 (Kühlung, Stufe KU2, Welle 1), die Basis bleibt.** Migrationsschritt
+> **114** (`SCHRITT_114_KUEHLUNG_ERZEUGER`, KU-S3: `Kuehlbetrieb` (0/1, Vorgabe 0), `Kuehl_Vorlauf` und
+> `Kuehl_Hilfsstromanteil` an `Tab_WP` und `Tab_WP_STAMM`, dazu `Tab_Energieanlagen.Kuehl_ID_Carrier` mit
+> Beziehung auf `energy_carrier.id` und `ON DELETE SET NULL`; Quelle `KuehlungSchema`), **reines DDL**
+> (Kühlkonzept 7.3, Entscheide E15 und E33). Nachgezogen mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
+> Fassung 113; ein zweiter Lauf legt nichts an. Zellvergleich aller 130 Tabellen gegen die Fassung 113
+> (10 496 532 Zellen): `SchemaVersion` 113 → 114 und die sieben neuen Spalten — `Kuehlbetrieb` 0, die
+> übrigen NULL —, sonst nichts; die 14 Sichten unverändert. `integrity_check` ok, `foreign_key_check`
+> leer, 130 von 130 Tabellen STRICT, Größe unverändert 67 751 936 Byte. **Keine Einfrierregel ist
+> berührt:** Die neuen Spalten tragen keinen gesäten Wert, und kein Rechenweg liest sie. Referenzlauf
+> aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `8a3bebaf…`).
+
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
 > den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in

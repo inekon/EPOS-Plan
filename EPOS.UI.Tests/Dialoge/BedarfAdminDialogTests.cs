@@ -646,11 +646,12 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         Assert.Equal(KATALOG[2], cut.Instance.Gewaehlt);
 
-        // Der Infoblock zieht nach - er ist der Grund, warum diese Maske trotz
-        // KI-D-Q5 im Katalog steht.
+        // Das Stammblatt zieht nach - es ist der Grund, warum diese Maske trotz
+        // KI-D-Q5 im Katalog steht. Seit der Welle #456 ist der Typ eine EINGABE.
         WindowsFormsApplication1.KiFeldzugang typ = KiMaskenbruecke.Feldzugang(maske, "typ");
         Assert.NotNull(typ);
-        Assert.False(typ.Setzbar);
+        Assert.True(typ.Setzbar);
+        Assert.True(typ.IstWahl);
         Assert.Equal("Typ " + KATALOG[2], typ.Lesen());
 
         WindowsFormsApplication1.KiFeldzugang bedarfsart =
@@ -811,6 +812,102 @@ public class BedarfAdminDialogTests : EposBunitContext
         Assert.Empty(geschrieben);
         Assert.Contains("Monat 5", cut.Instance.Meldung);
         Assert.True(cut.Instance.Geaendert);
+    }
+
+    // =====================================================================
+    // Welle #456: die Kenndaten über den Hilfe-Assistenten
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Assistent setzt einen Monatswert und den Typ und speichert</b> — über
+    /// denselben Arbeitsstand wie die Felder des Stammblatts und denselben Schreibweg wie
+    /// der Knopf; die Prüfung ist die des Knopfes.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_Monatswert_und_Typ_und_speichert_ueber_den_Knopfweg()
+    {
+        var geschrieben = new List<(string Name, string Typ, string Beschreibung, double[] Monate)>();
+        var cut = MitKenndaten(geschrieben);
+        const string maske = KiMaskennamen.STROMVERBRAUCHER_ADMIN;
+
+        WindowsFormsApplication1.KiFeldzugang maerz = KiMaskenbruecke.Feldzugang(maske, "maerz")!;
+        Assert.True(maerz.Setzbar);
+        Assert.Equal(1.0, maerz.Lesen());
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(maerz, "3,5");
+        Assert.True(u.Ok, u.Grund);
+        maerz.Setzen(u.Wert);
+        cut.Render();
+        Assert.True(cut.Instance.Geaendert);
+
+        WindowsFormsApplication1.KiFeldzugang typ = KiMaskenbruecke.Feldzugang(maske, "typ")!;
+        Assert.Equal(2, typ.Wahleintraege().Count);
+        KiFeldumsetzung ut = KiFeldwandler.Wandle(typ, "werkstatt");
+        Assert.True(ut.Ok, ut.Grund);
+        typ.Setzen(ut.Wert);
+        cut.Render();
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+        Assert.False(haken.IstSchreibgeschuetzt());
+        Assert.Equal("", haken.Befund());
+
+        KiKern.KiErgebnis ok = await haken.Speichern();
+
+        Assert.Equal(KiKern.KiStatus.Ausgefuehrt, ok.Status);
+        var satz = Assert.Single(geschrieben);
+        Assert.Equal("Alpha", satz.Name);
+        Assert.Equal("Werkstatt", satz.Typ);
+        Assert.Equal(3.5, satz.Monate[2]);
+        Assert.Equal(1.0, satz.Monate[0]);
+        Assert.False(cut.Instance.Geaendert);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz ist für den Assistenten geschützt</b> — der Grund nennt
+    /// „Duplizieren…"; die Wahl eines anderen Satzes bleibt frei (Satzwahl).
+    /// </summary>
+    [Fact]
+    public async Task Ein_Auslieferungssatz_ist_fuer_den_Assistenten_geschuetzt()
+    {
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben, geschuetzt: true);
+        const string maske = KiMaskennamen.STROMVERBRAUCHER_ADMIN;
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Contains("Duplizieren", haken.Schutzgrund());
+
+        KiKern.KiErgebnis abgelehnt = await haken.Speichern();
+        Assert.Equal(KiKern.KiStatus.Abgelehnt, abgelehnt.Status);
+        Assert.Empty(geschrieben);
+
+        WindowsFormsApplication1.KiFeldzugang satz = KiMaskenbruecke.Feldzugang(maske, "satz")!;
+        Assert.True(satz.Feld.Satzwahl);
+        satz.Setzen("Beta");
+        cut.Render();
+        Assert.Equal("Beta", cut.Instance.Gewaehlt);
+    }
+
+    /// <summary>
+    /// <b>Ungespeicherte Änderungen halten den Satzwechsel an</b> — auch über den
+    /// Assistenten, und zwar BENANNT: Der Setzer wirft mit dem Text des Warnbands, statt
+    /// still stehen zu bleiben.
+    /// </summary>
+    [Fact]
+    public void Der_Satzwechsel_mit_ungespeicherten_Aenderungen_wird_benannt_abgelehnt()
+    {
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben);
+        const string maske = KiMaskennamen.STROMVERBRAUCHER_ADMIN;
+
+        KiMaskenbruecke.Feldzugang(maske, "beschreibung")!.Setzen("von Hand geaendert");
+        cut.Render();
+        Assert.True(cut.Instance.Geaendert);
+
+        var fehler = Assert.Throws<InvalidOperationException>(
+            () => KiMaskenbruecke.Feldzugang(maske, "satz")!.Setzen("Beta"));
+        Assert.Contains("Speichern", fehler.Message);
+        Assert.Equal("Alpha", cut.Instance.Gewaehlt);
     }
 
     /// <summary>

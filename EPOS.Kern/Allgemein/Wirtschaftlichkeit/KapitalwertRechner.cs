@@ -355,6 +355,37 @@ namespace WindowsFormsApplication1
                             if (r.JeJahr[t] != 0) return true;
                 return false;
             }
+
+            // ---- ETAPPE E8b — der Ausweis für die Formelmappe (Stufe 1) ----
+            //
+            // Die Mehrjahrestabelle des Tabellenberichts rechnet seit E8b in Zellformeln:
+            // Betrieb_t = Basis_pB,t × (1+p_B)^(t−1) + Basis_pE,t × (1+p_E)^(t−1). Dafür
+            // braucht sie die BASIS jedes Topfes je Jahr — den Jahr-1-Betrag samt der Stufen
+            // der Positionen mit späterem Startjahr (KD6). Die Summen oben tragen sie nur
+            // schon fortgeschrieben. REIN ADDITIV wie der Kanal aus E7: nur befüllt, nie
+            // gelesen; der Rechenweg der Summen bleibt Zeichen für Zeichen der von vorher.
+
+            /// <summary>
+            /// ETAPPE E8b — die Basis des Betriebs-Topfes (p_B) je Jahr [€/a], Preisstand
+            /// Jahr 1, samt Startjahr-Stufen (Index 1…T; Index 0 bleibt 0). Mit ihr ist
+            /// <see cref="BetriebJeJahr"/>[t] − <see cref="EndenergieAnteilJeJahr"/>[t] =
+            /// Basis × (1+p_B)^(t−1).
+            /// </summary>
+            public double[] BetriebBasisJeJahr;
+
+            /// <summary>
+            /// ETAPPE E8b — die Basis des Endenergie-Topfes (p_E) je Jahr [€/a], ebenso;
+            /// 0 in jedem Jahr = kein solcher Topf.
+            /// </summary>
+            public double[] EndenergieBasisJeJahr;
+
+            /// <summary>
+            /// ETAPPE E8b — <c>true</c>, wenn die CO₂-Abgabe im RÜCKFALLZWEIG gerechnet ist
+            /// (Jahr-1-Betrag × (1+p_E)^(t−1)); <c>false</c>, wenn eine jahresscharfe Reihe
+            /// hereingereicht wurde (zugelieferter Preispfad, K6). Die Formelmappe schreibt
+            /// die Fortschreibung nur im ersten Fall als Formel (Konzept § 2.11.6, Stufe 1).
+            /// </summary>
+            public bool BehgFortgeschrieben;
         }
 
         /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
@@ -642,7 +673,11 @@ namespace WindowsFormsApplication1
                 EnergieJeJahr = new double[T + 1],
                 BehgJeJahr = new double[T + 1],
                 EinspeiseerloesJeJahr = new double[T + 1],
-                ErloesReihen = zusatzErloesReihen
+                ErloesReihen = zusatzErloesReihen,
+                // ETAPPE E8b — Ausweis für die Formelmappe (rein additiv).
+                BetriebBasisJeJahr = new double[T + 1],
+                EndenergieBasisJeJahr = new double[T + 1],
+                BehgFortgeschrieben = behgJeJahr == null
             };
 
             // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
@@ -783,6 +818,9 @@ namespace WindowsFormsApplication1
                 z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
                 z.BehgJeJahr[t] = behgJeJahr == null ? behgJahr * Math.Pow(1.0 + pE, t - 1) : behgT;
                 z.EinspeiseerloesJeJahr[t] = erloesJahr;
+                // ETAPPE E8b — die Basis beider Töpfe dieses Jahres (Ausweis, nie gelesen).
+                z.BetriebBasisJeJahr[t] = betriebT;
+                z.EndenergieBasisJeJahr[t] = endenergieT;
 
                 z.BarwertAusgaben += ausgaben * faktor;
                 z.BarwertEinnahmen += einnahmen * faktor;

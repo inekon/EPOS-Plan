@@ -162,12 +162,22 @@ public sealed class EnergietraegerStand
     /// <summary>Die Abrechnungseinheit des Trägers (Anzeige neben „Basiseinheit:").</summary>
     public string Basiseinheit { get; set; } = "";
 
-    /// <summary>Die wählbaren Preisbasen (<c>cmbUnit</c>) — Id = Index.</summary>
+    /// <summary>
+    /// Die wählbaren Preisbasen — Id = Index, Text die Einheit des Arbeitspreises
+    /// („€/Nm³", „€/kWh"). Die Karte zeigt die Klappliste direkt unter dem
+    /// Arbeitspreis, sobald es mehr als einen Eintrag gibt (ET-D-4).
+    /// </summary>
     public IReadOnlyList<(int Id, string Text)> Preisbasen { get; set; }
         = Array.Empty<(int, string)>();
 
     /// <summary>Die gewählte Preisbasis.</summary>
     public int? PreisbasisId { get; set; }
+
+    /// <summary>
+    /// Die leise Zeile unter dem Arbeitspreis, solange „€/kWh" fehlt, weil der
+    /// Träger einen Heizwert führt, aber keinen gepflegt hat; leer = keine Zeile.
+    /// </summary>
+    public string PreisbasisHinweis { get; set; } = "";
 
     /// <summary>
     /// ETAPPE E7c (Schritt F, Mockup U32): die Herleitungszeile unter der Preisbasis —
@@ -208,7 +218,11 @@ public sealed class EnergietraegerStand
     /// <summary>„0,0812 €" — der Preis je Kilowattstunde.</summary>
     public string PreisJeKwh { get; set; } = "";
 
-    /// <summary>„0,65 € ÷ 8,00 kWh = 0,0812 €/kWh" bzw. „Direktabrechnung nach kWh".</summary>
+    /// <summary>
+    /// „0,6500 €/kg ÷ 8,00 kWh/kg = 0,0812 €/kWh", bei der Preisbasis kWh
+    /// „0,0812 €/kWh × 8,00 kWh/kg = 0,6500 €/kg (gespeichert je kg)", ohne
+    /// Heizwert „Direktabrechnung nach kWh".
+    /// </summary>
     public string FormelText { get; set; } = "";
 
     /// <summary>

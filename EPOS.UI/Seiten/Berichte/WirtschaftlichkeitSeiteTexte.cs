@@ -75,6 +75,8 @@ public sealed class WirtschaftlichkeitSeiteTexte
 
     /// <summary>WIRT_ANN_TITEL</summary>
     public string AnnahmenTitel { get; set; } = T("WIRT_ANN_TITEL", "Annahmen und ihre Herkunft");
+    /// <summary>WIRT_LW_TITEL — die Tafel unter dem Hinweistext (ETAPPE E8a, U47).</summary>
+    public string LaufwirkungTitel { get; set; } = T("WIRT_LW_TITEL", "Was daraus im Lauf wird");
 
     // ---- „Bericht erzeugen" (U44) ------------------------------------------------
 
@@ -114,11 +116,28 @@ public sealed class WirtschaftlichkeitSeiteTexte
     /// <summary>WIRT_VALERI_NORM_5</summary>
     public string Norm5 { get; set; } = T("WIRT_VALERI_NORM_5", "DIN EN 17463 · 7 · 9 · Anhang E");
 
-    /// <summary>WIRT_VALERI_BLOCK_2_HINWEIS — die EINE Zeile an der Stelle der Zahlungsreihen.</summary>
+    /// <summary>WIRT_VALERI_BLOCK_2_HINWEIS — die EINE Zeile an der Stelle der Zahlungsreihen,
+    /// solange in dieser Sitzung kein Lauf Jahresreihen geliefert hat (ETAPPE E8a).</summary>
     public string Block2Hinweis { get; set; } = T("WIRT_VALERI_BLOCK_2_HINWEIS",
-        "Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. "
-        + "Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die "
-        + "Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht).");
+        "Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder "
+        + "„Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine "
+        + "Jahresreihen.");
+    /// <summary>WIRT_GL_NICHT_GERECHNET — an der Stelle der Gliederung des Kapitalwerts, solange
+    /// in dieser Sitzung kein Lauf Jahresreihen geliefert hat (ETAPPE E8a, U46).</summary>
+    public string GliederungNichtGerechnet { get; set; } = T("WIRT_GL_NICHT_GERECHNET",
+        "Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf "
+        + "(„Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine "
+        + "Jahresreihen.");
+    /// <summary>WIRT_BR_TITEL — die Bezeichnung des Brückenbilds für die Sprachausgabe (ETAPPE
+    /// E8a, U41).</summary>
+    public string BrueckeBild { get; set; } = T("WIRT_BR_TITEL", "Von der Investition zur Kapitalwertdifferenz");
+    /// <summary>WIRT_ZR_STAND — die Wahl des Standes in Block 2 (ETAPPE E8a).</summary>
+    public string ZrStand { get; set; } = T("WIRT_ZR_STAND", "Stand:");
+    /// <summary>WIRT_ZR_SZENARIO — die Wahl des Szenarios in Block 2 (ETAPPE E8a).</summary>
+    public string ZrSzenario { get; set; } = T("WIRT_ZR_SZENARIO", "Szenario:");
+    /// <summary>WIRT_ZS_TITEL — die Bezeichnung des Zahlungsstrombilds in Block 2 für die
+    /// Sprachausgabe (ETAPPE E8a, U42).</summary>
+    public string ZahlungsstromBild { get; set; } = T("WIRT_ZS_TITEL", "Zahlungsstrom je Jahr");
     /// <summary>WIRT_VALERI_KZ_HINWEIS — die Einordnung der Kennzahlen in Block 3.</summary>
     public string KennzahlHinweis { get; set; } = T("WIRT_VALERI_KZ_HINWEIS",
         "Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die "

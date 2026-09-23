@@ -122,8 +122,9 @@ namespace WindowsFormsApplication1
 
             int projekte = Zaehle(
                 "SELECT COUNT(*) FROM energy_project_settings WHERE [ID_Energieträger] = ?", carrierId);
+            // KU-S3 (Schemaschritt 114): Auch der Stromtraeger der Kuehlung haelt den Traeger.
             int anlagen = Zaehle(
-                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Carrier = ?", carrierId);
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ? IN (ID_Carrier, Kuehl_ID_Carrier)", carrierId);
             if (projekte > 0 || anlagen > 0)
             {
                 grund = string.Format(
@@ -261,7 +262,7 @@ namespace WindowsFormsApplication1
             grund = "";
             object a = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen " +
-                "WHERE ID_Projekt = ? AND ID_Carrier = ?",
+                "WHERE ID_Projekt = ? AND ? IN (ID_Carrier, Kuehl_ID_Carrier)",
                 new DbParam("@p", projektId),
                 new DbParam("@c", carrierId));
             int anlagen = (a == null || a == DBNull.Value) ? 0 : Convert.ToInt32(a);

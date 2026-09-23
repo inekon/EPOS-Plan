@@ -692,7 +692,10 @@
                 Gruppen, z => z.Id, z => z.Text),
 
             StandLesen = () => _ansicht.Stand,
-            Nachziehen = Nachziehen
+            Nachziehen = Nachziehen,
+            // Die Preisbasis geht den Weg der Klappliste, nicht den eines Feldes -
+            // sonst verschoebe sich der gespeicherte Preis um den Heizwert.
+            PreisbasisSetzen = id => _ = PreisbasisWechseln(id)
         };
     }
 

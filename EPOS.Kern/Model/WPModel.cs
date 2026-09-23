@@ -23,6 +23,33 @@
         public int MinVorlauf;
         public string Bauart;
         public bool m_bReadOnly;
+
+        // =============================================================================
+        // KU-S3 - der Kuehlbetrieb am Erzeuger (Schemaschritt 114; Kuehlkonzept 7.3; E15, E33)
+        // =============================================================================
+        //
+        // Dieselben drei Spalten an Tab_WP und Tab_WP_STAMM. Gelesen und geschrieben werden
+        // sie NULL-treu (WPCtrl.KuehlfelderLesen, WPCtrl.Insert/CopyFromStamm,
+        // WPStammCtrl.Insert/UebernehmenAusProjekt): NULL traegt bei Vorlauf und
+        // Hilfsstromanteil eine eigene Aussage. KEIN Rechenweg liest sie vor KU2 Welle 2.
+
+        /// <summary>
+        /// <c>Kuehlbetrieb</c> - „diese Maschine wird im Projekt auch zum Kuehlen benutzt".
+        /// 0/1 in der Datenbank, nie NULL; Vorgabe <c>false</c>.
+        /// </summary>
+        public bool Kuehlbetrieb;
+
+        /// <summary>
+        /// <c>Kuehl_Vorlauf</c> [Grad C] - der Kaltwasser-Vorlauf, der die Kuehlkennlinie waehlt
+        /// (aus deren Stuetzstellen, K21). <b><c>null</c> = kleinster Stuetzwert</b> der Kennlinie.
+        /// </summary>
+        public int? KuehlVorlauf;
+
+        /// <summary>
+        /// <c>Kuehl_Hilfsstromanteil</c> [-] - Anteil Hilfsstrom an der Verdichterarbeit des
+        /// Kuehlbetriebs, je Anlage (K23). <b><c>null</c> = kein Zuschlag.</b>
+        /// </summary>
+        public double? KuehlHilfsstromanteil;
         
         public WPModel()
         {
@@ -46,6 +73,9 @@
             MinVorlauf = 0;
             Bauart = "";
             m_bReadOnly = false;
+            Kuehlbetrieb = false;
+            KuehlVorlauf = null;
+            KuehlHilfsstromanteil = null;
         } 
     }
 

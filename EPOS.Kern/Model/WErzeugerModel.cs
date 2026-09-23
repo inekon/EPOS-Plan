@@ -74,6 +74,20 @@
             set { ID_CarrierRoh = value; }
         }
 
+        /// <summary>
+        /// <c>Kuehl_ID_Carrier</c> - der Stromtraeger des Kaeltestroms dieser Anlage (KU-S3,
+        /// Schemaschritt 114; K9, Entscheid E33): ein Verweis auf <c>energy_carrier.id</c>.
+        /// <b><c>null</c> = wie Heizbetrieb</b> - der Stromtraeger, mit dem die Anlage im
+        /// Heizbetrieb rechnet (<see cref="ID_Carrier"/>, sonst der des Projekts).
+        ///
+        /// <para>NULL-treu wie <see cref="ID_CarrierRoh"/>, aber ohne die 0: Die Spalte steht
+        /// unter einer Beziehung, und der Schreibweg (<c>AnlagenSql.AnlagenParameter</c>) schreibt
+        /// fuer alles, was kein vorhandener Traeger ist, NULL. Eine MODELLspalte wie
+        /// <c>ID_Carrier</c> - sie reist mit dem Speicherweg Loeschen + Neuanlegen. Kein
+        /// Rechenweg liest sie vor KU2 Welle 2.</para>
+        /// </summary>
+        public int? Kuehl_ID_Carrier;
+
         // =============================================================================
         // Quellen-/Senken-Konfiguration (Paket 1, Konzept 5.3) - 27 Spalten
         // =============================================================================

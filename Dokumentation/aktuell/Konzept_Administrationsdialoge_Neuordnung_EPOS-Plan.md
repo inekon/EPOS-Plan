@@ -552,8 +552,14 @@ Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; ob CSV-Export un
 übernehmen" in der Fußleiste zu „Statuszeile · Beenden" passen, ist eine offene Frage; die
 Auswahlleiste steht nur im schmalen Fenster, kein Vergleich. (d) Import: Nach der Übernahme steht der
 erste neue Satz im Fokus statt „neue Zeilen gewählt"; der Stromspeicherimport ist im 860 px breiten
-Modulkatalog-Fenster schmaler als vorgesehen. (e) Die KI-Maske GEBAEUDE teilen sich Projekt- und
-Verwaltungsdialog.
+Modulkatalog-Fenster schmaler als vorgesehen. (e) Hilfe-Assistent (Entscheid KI‑D‑Q11, #456): Die
+Verwaltungen sind steuerbar wie die Projektdialoge — erledigt für A1 (die vier Erzeugerkataloge: Satz
+wählen, jedes editierbare Feld des Stammblatts setzen, Speichern über den Weg des Knopfes) und A5 (Typ,
+Beschreibung und Monatswerte); A2, A3, A4, A8, A10 und A11 waren es schon. Auslieferungssätze bleiben
+geschützt, die Absage nennt „Duplizieren…"; Neu…, Duplizieren…, Löschen und Import… gehen nie über den
+Assistenten, A6 und A7 führen keine Einstellwerte. Offen bleibt die Gebäude-Verwaltung (A9): Die
+KI-Maske GEBAEUDE teilen sich Projekt- und Verwaltungsdialog, und die Verwaltung bleibt für den
+Assistenten offen, solange ihre Hülle nur liest.
 
 
 ## 8 Außerhalb des Geltungsbereichs (Entscheid 22.09.2026)

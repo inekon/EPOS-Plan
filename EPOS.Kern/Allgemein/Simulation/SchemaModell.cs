@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -44,6 +46,15 @@ namespace WindowsFormsApplication1
         /// die Prozess-Ziele dort gar nicht ausdrückbar sind.
         /// </summary>
         public const string ABNEHMER_PROZESS = "ABNEHMER_PROZESS";
+
+        /// <summary>
+        /// STUFE KU2 der Kühlung (Kühlkonzept 4.3 #33) — der vierte Abnehmerknoten: der
+        /// KÄLTEKREIS. Bedient wird er von den Wärmepumpen im Kühlbetrieb eines Projekts, das
+        /// Kälte rechnet; ohne sie und mit Kältebedarf steht er mit Warnzeichen da wie jeder
+        /// Abnehmer ohne Versorger. Kein Speicher bedient ihn — einen Kältespeicher gibt es erst
+        /// mit KU3 (K7).
+        /// </summary>
+        public const string ABNEHMER_KAELTEKREIS = "ABNEHMER_KAELTEKREIS";
 
         /// <summary>Spalte des Schemas — die vier Rubriken des Mockups.</summary>
         public enum Knotenart
@@ -227,6 +238,10 @@ namespace WindowsFormsApplication1
             PufferSpCtrl.KlassenSet set;
             if (idPuffer <= 0 || !_sets.TryGetValue(idPuffer, out set) || set == null) return false;
 
+            // Kühlkonzept 4.3 #26: Kein Speicher bedient den Kühlkanal (Kältespeicher erst mit
+            // KU3, K7) - ausdrücklich, nicht über den Rückfall auf Heizung darunter.
+            if (Kanal.IstKaelte(kanal)) return false;
+
             switch (kanal)
             {
                 case Kanal.BRAUCHWASSER: return set.Brauchwasser;
@@ -245,6 +260,12 @@ namespace WindowsFormsApplication1
         private static bool DirektsenkeBedient(Z_AnlageSenkeModel z, int kanal)
         {
             if (z == null || WaermesenkeClass.IstPufferZiel(z.Ziel)) return false;
+
+            // Kühlkonzept 4.3 #26: Der Kältekreis bedient allein die Kälte, und eine
+            // Wärmesenke bedient nie einen Kältekanal - ausdrücklich, nicht über das
+            // abschließende „return true" (Beides).
+            if (WaermesenkeClass.IstKaelteZiel(z.Ziel)) return Kanal.IstKaelte(kanal);
+            if (Kanal.IstKaelte(kanal)) return false;
 
             if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
                 return kanal == Kanal.PROZESS;
@@ -358,6 +379,7 @@ namespace WindowsFormsApplication1
             // PAKET S2: Senkenlisten (alle Ränge, beide Prozess-Ziele) und Klassen-Sets.
             m.SenkenlistenLesen(idProjekt, anlagen);
             m.KlassenSetsLesen(idProjekt);
+            m.KaelteerzeugerLesen(idProjekt, anlagen);
 
             // Quellpuffer je Anlage in der ANZEIGE-Auflösung (Karte und Schema gleich).
             //
@@ -570,6 +592,48 @@ namespace WindowsFormsApplication1
             else if (!prozessBedient)
                 OhneVersorgerAnlegen(ABNEHMER_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE,
                                      Kanal.PROZESS, hatProzess, kanalBedarfMwh);
+
+            // KU2 (Kühlkonzept 4.3 #33): der Kältekreis - bedient von den Wärmepumpen im
+            // Kühlbetrieb (KantenAnlegen), sonst mit Warnzeichen, wenn der Lauf Kältebedarf kennt.
+            if (_kaelteerzeuger.Count > 0)
+                Knotenliste.Add(new Knoten
+                {
+                    Schluessel = ABNEHMER_KAELTEKREIS,
+                    Art = Knotenart.Abnehmer,
+                    Titel = MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+                });
+            else
+                OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                                     Kanal.KUEHLUNG, false, kanalBedarfMwh);
+        }
+
+        /// <summary>
+        /// Anlagen, die im Schema die Kälte bedienen (Stufe KU2): die Wärmepumpen des Projekts,
+        /// deren Gerät auf Kühlbetrieb steht — nur, wenn das Projekt Kälte rechnet
+        /// (<c>Tab_Einstellungen.Kuehlbetrieb</c>). Dieselbe Auswahl, mit der der Lauf seine
+        /// Kälteerzeuger beginnt; die Sperrgründe prüft erst der Lauf.
+        /// </summary>
+        private readonly HashSet<int> _kaelteerzeuger = new HashSet<int>();
+
+        private void KaelteerzeugerLesen(int idProjekt, List<Hydraulikbild.AnlagenEintrag> anlagen)
+        {
+            _kaelteerzeuger.Clear();
+            if (!KonfigurationCtrl.KuehlbetriebLesen(idProjekt)) return;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT a.ID FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            if (dt == null) return;
+
+            HashSet<int> gezeichnet = new HashSet<int>(anlagen.Select(a => a.ID));
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (gezeichnet.Contains(id)) _kaelteerzeuger.Add(id);
+            }
         }
 
         /// <summary>
@@ -799,6 +863,10 @@ namespace WindowsFormsApplication1
                         DirektkanteAnlegen(erzeuger, z, hatBrauchwasser, hatProzess);
                 }
             }
+
+            // KU2 (4.3 #33): die Wärmepumpen im Kühlbetrieb versorgen den Kältekreis.
+            foreach (int idAnlage in _kaelteerzeuger)
+                Verbinden(PRAEFIX_ERZEUGER + idAnlage, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
 
             // Versorgung: jeder Speicher bedient die Kanäle seines KLASSEN-SETS.
             foreach (Knoten k in Knotenliste)

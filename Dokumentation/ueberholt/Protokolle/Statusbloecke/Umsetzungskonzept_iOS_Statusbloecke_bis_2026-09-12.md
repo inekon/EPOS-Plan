@@ -8499,3 +8499,150 @@ Referenzlauf 13/13 PASS gegen R13 (4 145 687 Werte in Toleranz); Push von
 versehentlich auf `main` (Hauptbaum stand auf `main`); `ios_migration_september`
 wurde per Fast-Forward darauf gezogen und `main` auf `origin/main`
 (`591229e1`) zurückgesetzt.
+
+## #457 — Energieträgerverwaltung: Arbeitspreis wahlweise in €/kWh, Preisbasis direkt am Feld (ET-D-4) (23.09.2026)
+
+Auftrag des Anwenders wörtlich: „Der Arbeitspreis soll immer zusätzlich
+in €/kWh wählbar sein (außer €/Mengeneinheit)." Commits `2cd92e16`
+(Energieträger: Preisbasis €/kWh direkt am Arbeitspreis), `a71f2260`
+(KI-Sicht Energieträger: Preisbasis über den Weg der Klappliste), `1421701c`
+(Tests zu ET-D-4), `47a45cef` (Papiere zu ET-D-4); Merge `48717545`.
+
+**Befund.** Die Klappliste „Preisbasis" (Mengeneinheit ↔ kWh, seit
+#446 in `energy_project_settings.Preisbasis` gemerkt) existierte, lag
+aber im standardmäßig zugeklappten Block D „Einheiten und Umrechnung"
+(Entscheid ET‑D‑3). Gespeichert wird weiterhin je Mengeneinheit; kein
+Schemaschritt, Rechenkern unverändert.
+
+**Entscheide.** ET‑D‑4 (neu): Die Preisbasis steht künftig direkt am
+Arbeitspreis im Block „Preis und Heizwert", nicht mehr verborgen im Block D
+„Einheiten und Umrechnung"; die Anordnung aus ET‑D‑3 gilt als abgelöst.
+
+**Umsetzung.** Klappliste steht im Block „Preis und Heizwert" direkt unter
+dem Arbeitspreis („€/Nm³" / „€/kWh", ohne eigene Beschriftung,
+Sprachausgabe „Einheit des Arbeitspreises"); bei nur einer Einheit (Strom,
+Fernwärme, Sonstige) keine Liste; die Liste wird bei jedem Nachziehen neu
+gebaut — ein erst im Dialog eingetragener Heizwert macht €/kWh sofort
+wählbar, ohne Heizwert eine leise Hinweiszeile; fällt der Heizwert bei
+gewählter €/kWh auf 0, geht die Wahl auf die Mengeneinheit zurück und
+zeigt den zuletzt gespeicherten Preis; Formelzeile bei €/kWh „0,0700
+€/kWh × 4,80 kWh/Nm³ = 0,3360 €/Nm³ (gespeichert je Nm³)",
+`ETV_FORMEL_DIREKT_BASIS` entfernt; „Katalogwerte übernehmen" behält
+die Preisbasis; KI-Sicht `EnergietraegerKiSicht` setzt die Preisbasis über
+den Weg der Klappliste (vorher verschob sich der gespeicherte Preis um den
+Faktor Hi). Neue Ressourcen `ETV_FORMEL_JE_KWH`, `ETV_PREISBASIS_ARIA`,
+`ETV_PREISBASIS_OHNE_HEIZWERT` (beide Sprachen), `KI_DLG_ET_PREISBASIS_ERL`.
+
+**Tests.** Voller Lauf 11 845 bestanden, 1 übersprungen, 0 rot (Kern 5 314,
+UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27); Doku-Wachen
+26 grün; Windows-Schale 0 Fehler; Referenzlauf 1030 PASS. Neue Tests:
+`EnergietraegerHuelleTests` (Umschalten und Speichern je Nm³, nachgetragener
+Heizwert, Heizwert auf 0, Katalogübernahme behält Preisbasis, KI ohne
+Wertverschiebung), `EnergietraegerDialogTests` (Lage und aria-label, eine
+Einheit samt Hinweis, Assistent über die Klappliste), Preiskarte de/en.
+
+**Papiere.** Entscheidungsregister Wirtschaftlichkeit
+(`Dokumentation/aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md`):
+ET‑D‑4 neu, ET‑D‑3 Anordnung als abgelöst vermerkt;
+`Rechenweg/04_Energiekosten.md` Block A/D; konsolidiertes Konzept §
+2.5 (drei Sätze berichtigt); Mockup `Dialog_Formel_Zahlenprobe.html`
+zwei Stellen; Wiki-Quelle `Projekte/Wiki/Programm Dokumentation -
+Kosten.wiki` (Anker `preisbasis`, `umrechnungsregeln`, `preis-je-kwh`,
+`katalogwerte-uebernehmen`).
+
+**Logbuch-Vorschlag** (Version wie #452, beim Anwender erfragen):
+
+> Der Arbeitspreis eines Energieträgers lässt sich direkt am Feld wahlweise
+> je Mengeneinheit oder in €/kWh eingeben.
+
+**Was offen bleibt.** Katalogkontext merkt die Preisbasis bewusst nicht
+(nur Eingabehilfe, im Entscheidungsregister vermerkt). Nebenbefund:
+`EnergietraegerKiSicht.LeistungspreisMonatlich` setzt nur das Kartenfeld,
+die Oberfläche schreibt den Modus sofort in den Katalog — über den
+Assistenten wird er nie gespeichert (wandert in Welle #458, KI-Maskensteuerung
+der übrigen Masken).
+
+**Gate nach Merge auf `48717545`.** Kern-Filter 0 Fehler; Tests Kern
+5 314, UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
+Toleranz).
+
+## #456 — KI-Assistent: Maskensteuerung für die Katalogbrowser-Verwaltungen und die Bedarfsverwaltung (KI‑D‑Q11) (23.09.2026)
+
+Auftrag des Anwenders wörtlich: „KI Assistent: Parameter sollen gesetzt
+werden können (wie auch schon in anderen Dialogen)." Anlass: In
+„Administration Heizkessel" antwortete „setze die Vorlauftemperatur auf
+55°C" mit „Aktion nicht ausgeführt: feld_setzen … Es ist keine
+steuerbare Maske geöffnet. Steuerbar sind: … (44)"; Nachtrag des
+Anwenders: „alle Masken außer den nicht sinnvoll steuerbaren sollen
+steuerbar sein". Commits `60a11eec` (KI-Kern: Feldtafel, Satzwahl,
+Schutzgrund, Absage je Ziel), `189db4a5` (Katalogbrowser: vier
+Erzeugerverwaltungen für den Assistenten), `7fbef566` (Bedarfsverwaltung:
+Typ, Beschreibung, Monatswerte setzbar), `44f0dd0e` (Papiere zu #456); Merge
+`ee84fce5`.
+
+**Befund.** `EPOS.UI/Dialoge/Erzeuger/KatalogBrowserDialog.razor`
+(Administration Heizkessel/BHKW/Solarkollektoren/Pufferspeicher) meldete sich
+nie bei der `KiMaskenbruecke` an (Ausnahme aus KI‑F5, als der Browser nur
+las); `BedarfAdminDialog` war im Katalog veraltet (Typ/Beschreibung
+`nurLesen`, Monatswerte fehlten). Die „(44)" der Absage ist der Rest der
+Liste hinter den ersten 20 von 64 Masken. Zwei weitere Fehler beim Testen:
+Satzwahl aus einem geschützten Auslieferungssatz heraus wäre mit
+Schreibschutz auf Maskenebene unmöglich gewesen (neues Kennzeichen
+`KiDialogFeld.Satzwahl`, Schutz je Feld); Absagen zeigten nur „Exception
+has been thrown by the target of an invocation" (`KiMaskenanmeldung` gibt den
+Grund des Dialogs jetzt weiter).
+
+**Entscheide.** KI‑D‑Q11 (neu): Steuerbar ist jede Maske mit
+Einstellwerten; Ausnahmen: reine Anzeigen, Verwaltungen ohne Einstellwerte,
+Auslieferungssätze, Neu/Duplizieren/Löschen/Import/Export, Dateidialoge,
+Rückfragen, Lizenz-/Schlüsseleingaben, der Assistent selbst; die
+Gebäude-Verwaltung bleibt offen, solange ihre Hülle nur liest.
+
+**Umsetzung.** Anmeldeart „Sichtklasse als Feldtafel" (`IKiFeldtafel`,
+`KatalogBrowserKiSicht`; `KiMaskenanmeldung.Fuer` fragt erst per Reflection,
+dann die Tafel); die Feldkarte erzeugt der Kern aus `KatalogBrowserProfil`
+(`KiDialoge.ErzeugerVerwaltung`, keine zweite Feldliste); Haken
+`KiMaskenhaken.Schreibschutzgrund` (die Absage nennt „Duplizieren…" oder
+den Lesemodus); Katalog jetzt 68 Masken, neu `Form_Heizkessel_Admin`,
+`Form_BHKWAdmin`, `Form_SolarKollektorenAdmin`, `Form_PufferSp_Admin` mit
+Öffnungszielen in `KiMaskenziele`; iOS unverändert (die Wurzel lehnt
+Katalogverwaltungen benannt ab, KI‑D‑Q10). Bedarfsverwaltung: Typ (Wahl),
+Beschreibung und zwölf Monatswerte setzbar, Schutz/Prüfen/Speichern über
+die Wege der Knöpfe; eine Absage ohne offene Maske nennt bei gleichem
+Öffnungsziel die Verwaltung; Anleitungstext in beiden Sprachen
+umgeschrieben; 18 neue Ressourcenschlüssel; Ausnahmeliste als Daten
+`KiDialogAusnahmen.Alle` (`KiAusnahmegrund`, 9 erste Einträge, Wächter
+folgt in #458).
+
+**Tests.** Voller Lauf UI 5 622, Kern 5 311, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen), 0 rot, Doku-Wachen eingeschlossen;
+Kern-Filter und Windows-Schale 0 Fehler; kein Referenzlauf (kein Rechenweg).
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(KI‑D‑Q11, Stufenzeile S5 „Folgewelle: übrige Masken nach Inventar");
+`Konzept_KI-Assistent_Aufgabensteuerung.md` 11.7 als Ausnahmeliste;
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md` 7.1 (e);
+`EPOS.UI/CLAUDE.md` (Anmelderegel: Feldtafel, Satzwahl, Schutzgrund);
+Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`
+(Verwaltungen in der Aufzählung, Absatz zu gewähltem Satz und
+„Duplizieren…").
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent setzt Werte auch in den Verwaltungen der
+> Gerätekataloge und der Bedarfsprofile.
+
+**Was offen bleibt.** Die Gebäude-Verwaltung, solange ihre Hülle nur liest.
+Folgewelle #458 (Inventar: 5 Kandidaten, 4 Grenzfälle, 4 veraltete
+Feldkarten, 7 Masken mit Zahlenfolgen, Wächter über `KiDialogAusnahmen`).
+Ein Satzwechsel bei ungespeicherten Änderungen wird erst nach der
+Bestätigung abgelehnt (Setzer statt Vorbedingung); Wiki-Upload
+Hilfe-Assistent ausstehend.
+
+**Gate nach Merge auf `ee84fce5`.** Kern-Filter 0 Fehler; Tests Kern 5 317,
+UI 5 625, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf
+gegen `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte
+in Toleranz).

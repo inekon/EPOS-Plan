@@ -131,6 +131,15 @@ angelsächsischen Anlagenbau übliche Begriff.
 | Starts / Taktungen | starts | Anzahl der Einschaltvorgänge |
 | Jahresarbeitszahl (JAZ) | seasonal performance factor (SPF) | EN 15316-4-2 |
 | Leistungszahl (COP) | coefficient of performance (COP) | EN 14511; COP bleibt COP |
+| Kälteverhältnis (EER) | energy efficiency ratio (EER) | EN 14511; Kälteleistung durch elektrische Leistungsaufnahme im Kühlbetrieb, auch „Kälteleistungszahl"; im Schema die Spalte `COP` der Kühlkennlinie (Hinweis unter der Tabelle); EER bleibt EER |
+| Kälteleistung | cooling capacity | EN 14511; die Spalte `Pkuehl` der Kühlkennlinie |
+| Kühlbetrieb | cooling mode | Betriebsart einer reversiblen Wärmepumpe; Heizbetrieb = heating mode |
+| Tagesbetriebsart | daily operating mode | Umschaltregel der reversiblen Wärmepumpe (K8a): je Tag Heizen oder Kühlen |
+| Kühltag / Heiztag | cooling day / heating day | Tag, dessen Kältebedarf den Heizbedarf übersteigt bzw. nicht |
+| Kältekreis | cooling circuit | Senke der Kälteseite (Persistenzwert `Kaeltekreis`) |
+| Kältestrom | cooling electricity | Strom des Kühlbetriebs einschließlich Hilfsstrom |
+| Hilfsstromanteil | auxiliary power share | Pumpen und Ventilatoren des Kältekreises, Anteil an der Verdichterarbeit |
+| Jahresarbeitszahl Kälte (EER-Jahreswert) | seasonal EER | Kälte durch Kältestrom über das Jahr |
 | Wirkungsgrad | efficiency | |
 | Nutzungsgrad | utilisation ratio | über einen Zeitraum, im Unterschied zum momentanen Wirkungsgrad |
 | Auslastung | utilisation | |
@@ -147,6 +156,35 @@ angelsächsischen Anlagenbau übliche Begriff.
 | Überschuss | surplus | PV-Überschuss = PV surplus |
 | Bilanz | balance | |
 | Emissionen | emissions | |
+
+**Die Spalte `COP` der Kühlkennlinie führt das Kälteverhältnis (EER)** — Prüfung K22 vom
+23.09.2026 (Entscheid E27). Die Spalte in `Tab_Kenndaten_Kuehlung` und
+`Tab_Kenndaten_Kuehlung_STAMM` wird nicht umbenannt, aber in Kern, Dialog und Bericht als **EER**
+geführt und beschriftet — der eine Fall, in dem Spaltenname und Anzeigename bewusst
+auseinandergehen ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.1,
+Festlegung 4). Geprüft wurde an drei Stellen:
+
+- **Importweg** (VDI 3805 Blatt 22, `WaermepumpenImport.KennlinienZu`): Ein Kennlinienkopf
+  `710.09` mit Betriebsart 2 liefert je Wertzeile `710.91` die Temperatur (Feld 2), die
+  Kälteleistung (Feld 3), die elektrische Leistungsaufnahme (Feld 4) und die Kennzahl (Feld 5); der
+  Import schreibt Feld 5 in `COP` und Feld 3 in `Pkuehl`. In den Herstellerdateien unter
+  `VDI-3805-Daten/WP-Daten/` ist Feld 5 in 14 067 von 14 198 Wertzeilen dieser Blöcke (99,1 %) auf
+  10 % genau der Quotient **Kälteleistung durch Leistungsaufnahme**; in keiner Datei führt es das
+  Wärmeverhältnis (Kälteleistung plus Leistungsaufnahme, geteilt durch die Leistungsaufnahme). Der
+  Rest sind Rundungen bei kleiner Leistungsaufnahme und Einzelfehler. Die Richtlinie selbst liegt
+  nicht im Repositorium; die Feldbedeutung ist aus den Daten erschlossen.
+- **Testdatenbank:** Die sieben Katalogsätze mit Kühlkennlinie (174 Zeilen, jede Stützstelle
+  zweimal gespeichert) liegen in Kaltwasserlage (Vorlauf 7 und 18 °C); die Kennzahl ist bei 18 °C
+  größer als bei 7 °C und stimmt mit den Quellzeilen überein (Kälteleistung durch
+  Leistungsaufnahme). Ein Satz trägt auf der Temperaturachse die Kaltwassertemperatur statt der
+  Außentemperatur.
+- **Befund am Importweg:** Nicht jeder Block mit Betriebsart 2 beschreibt einen Kühlbetrieb. 826
+  von 2 641 solchen Blöcken der Herstellerdateien liegen in **Heizlage** (Vorlauf 35 bis 75 °C bei
+  Quellentemperaturen bis 25 °C): Sie führen die Kälteleistung am Verdampfer **im Heizbetrieb**;
+  ihre Kennzahl ist ebenfalls Kälteleistung durch Leistungsaufnahme, aber des Heizbetriebs — kein
+  EER. Einzelne Datensätze vertauschen die Achsen. Der Import übernimmt heute jeden Block in die
+  Kühltabelle; nach E27 (K22, Option (a)) wird eine solche Lage beim Import **benannt abgelehnt**,
+  nie still als EER gelesen — eine Aufgabe der Stufe KU2.
 
 ## 7. Zeit, Profile und Daten
 

@@ -81,9 +81,10 @@ namespace WindowsFormsApplication1
                                             (
                                                 Bezeichner, ID_Projekt, Firma, Beschreibung, Typ, 
                                                 Baujahr, Aufstellung, Nennleistung, maxPTherm, 
-                                                Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung
+                                                Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung,
+                                                Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil
                                             ) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                         DbParam[] ps = {
                             new DbParam("@nam", WPName ?? (object)DBNull.Value),
@@ -99,7 +100,11 @@ namespace WindowsFormsApplication1
                             new DbParam("@reg", Regelung ?? (object)DBNull.Value),
                             new DbParam("@mod", Modulkosten),
                             new DbParam("@bart", Bauart ?? (object)DBNull.Value),
-                            new DbParam("@kuehl", Kuehlleistung)
+                            new DbParam("@kuehl", Kuehlleistung),
+                            // KU-S3 (Schemaschritt 114): NULL-treu, nie 0 fuer ein leeres Feld
+                            new DbParam("@kbet", Kuehlbetrieb),
+                            ProjektPuffer.Par("@kvor", DbParamTyp.Integer, Wert(KuehlVorlauf)),
+                            ProjektPuffer.Par("@khs", DbParamTyp.Double, Wert(KuehlHilfsstromanteil))
                         };
 
                         // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
@@ -167,6 +172,7 @@ namespace WindowsFormsApplication1
                 if (row["Modulkosten"] != DBNull.Value) Modulkosten = Convert.ToInt32(row["Modulkosten"]);
                 if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
                 if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) Bauart = row["Bauart"].ToString();
+                KuehlfelderLesen(dt, row, this);
 
                 // Bei ReadSingle fügen wir diese Instanz (this) als Kopie hinzu, damit rows auf 1 springt
                 _internalList.Add(this);
@@ -326,6 +332,144 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
                     "Die Projektdaten konnten nicht gespeichert werden."), "");
             }
+        }
+
+        /// <summary>
+        /// Schreibt die <b>Kuehlkonfiguration</b> der Projektkopie einer Waermepumpe — die drei
+        /// Spalten von KU-S3 (Schemaschritt 114; Kuehlkonzept 5.0.5, 7.3; E15, E33).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Anders als bei <see cref="ProjektgeraetSchreiben"/> heisst <c>null</c> hier
+        /// NULL</b> und nicht „unveraendert": Bei <c>Kuehl_Vorlauf</c> ist NULL die Aussage
+        /// „kleinster Stuetzwert der Kennlinie" (K21), bei <c>Kuehl_Hilfsstromanteil</c> „kein
+        /// Zuschlag" (K23) — beides Werte, die der Anwender waehlen koennen muss. Geschrieben werden
+        /// deshalb immer alle drei, genau wie uebergeben.</para>
+        ///
+        /// <para><b>Adressiert ueber ID UND ID_Projekt</b>, nie ueber den Bezeichner — dieselbe
+        /// Regel wie bei <see cref="ProjektgeraetSchreiben"/>.</para>
+        ///
+        /// <para><b>Geprueft werden hier der Wertebereich des Hilfsstromanteils</b>
+        /// (0 ≤ x &lt; 1, Kuehlkonzept 8.2) <b>und die Sperrgruende des Kuehlbetriebs</b>
+        /// (<see cref="KuehlbetriebSperrgrund"/>): keine Kuehlkennlinie im Projekt, ein Quellspeicher
+        /// als Waermequelle (5.0.1, 5.1 Festlegung 6, 8.2, 10.3). Ein gesperrter Kuehlbetrieb laesst
+        /// sich nicht setzen — die Meldung nennt den Grund; ausschalten geht immer.</para>
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="idProjekt">Das Projekt (<c>Tab_WP.ID_Projekt</c>).</param>
+        /// <param name="kuehlbetrieb">Die Maschine auch zum Kuehlen benutzen?</param>
+        /// <param name="kuehlVorlauf">Kaltwasser-Vorlauf [Grad C]; <c>null</c> = kleinster Stuetzwert.</param>
+        /// <param name="hilfsstromanteil">Hilfsstromanteil [-]; <c>null</c> = kein Zuschlag.</param>
+        public static SpeicherErgebnis KuehlkonfigurationSchreiben(int idWp, int idProjekt, bool kuehlbetrieb,
+                                                                   int? kuehlVorlauf, double? hilfsstromanteil)
+        {
+            if (idWp <= 0 || idProjekt <= 0)
+                return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                    "Die Projektdaten konnten nicht gespeichert werden."), "");
+
+            if (hilfsstromanteil.HasValue &&
+                (double.IsNaN(hilfsstromanteil.Value) || hilfsstromanteil.Value < 0 || hilfsstromanteil.Value >= 1))
+                return new SpeicherErgebnis(false, string.Format(
+                    Text("KBROW_MSG_WERT_BEREICH", "„{0}“ muss zwischen {1} und {2} liegen."),
+                    Text("WPS_LBL_KUEHL_HILFSSTROM", "Hilfsstromanteil Kühlung"), "0", "1"), "");
+
+            // KU2 (5.0.1, 8.2, 10.3): Der Kuehlbetrieb haengt an der Kennlinie IM PROJEKT, nicht an
+            // der Nennleistung - und nicht an einer Anlage mit Quellspeicher. Benannt abgelehnt.
+            if (kuehlbetrieb)
+            {
+                string sperrgrund = KuehlbetriebSperrgrund(idWp, idProjekt);
+                if (sperrgrund != null) return new SpeicherErgebnis(false, sperrgrund, "");
+            }
+
+            try
+            {
+                object bez = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
+                if (bez == null || bez == DBNull.Value)
+                    return new SpeicherErgebnis(false, NichtGefunden(idWp), "");
+                string bezeichner = bez.ToString();
+
+                bool ok = DataRepository.ExecuteSQL(
+                    "UPDATE Tab_WP SET Kuehlbetrieb = ?, Kuehl_Vorlauf = ?, Kuehl_Hilfsstromanteil = ? " +
+                    "WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@kbet", kuehlbetrieb),
+                    ProjektPuffer.Par("@kvor", DbParamTyp.Integer, Wert(kuehlVorlauf)),
+                    ProjektPuffer.Par("@khs", DbParamTyp.Double, Wert(hilfsstromanteil)),
+                    new DbParam("@id", idWp),
+                    new DbParam("@proj", idProjekt));
+
+                if (!ok)
+                    return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                        "Die Projektdaten konnten nicht gespeichert werden."), bezeichner);
+
+                // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Der Kuehlbetrieb ist eine
+                // Eingangsgroesse der Simulation - das Projekt gilt danach als geaendert.
+                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+
+                return new SpeicherErgebnis(true, Text("WP_PROJ_MSG_GESPEICHERT",
+                    "Projektgerät gespeichert"), bezeichner);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Schreiben der Kuehlkonfiguration: " + ex.Message);
+                return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                    "Die Projektdaten konnten nicht gespeichert werden."), "");
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Sperrgrund des Kuehlbetriebs</b> einer Projektkopie (Stufe KU2; Kuehlkonzept 5.0.1,
+        /// 5.1 Festlegung 6, 8.2, 8.5) — <c>null</c>, wenn der Kuehlbetrieb gesetzt werden darf.
+        /// Dieselben zwei Gruende lehnt der Lauf benannt ab (<c>SimulationControl</c>, Kaeltekaskade):
+        /// <list type="number">
+        /// <item>keine Kuehlkennlinie im PROJEKT (<see cref="KenndatenKuehlungCtrl.HatKenndatenProjekt"/>)
+        /// — eine Kennlinie im Katalog genuegt nicht, und die Nennkuehlleistung schon gar nicht;</item>
+        /// <item>eine Anlage des Projekts mit diesem Geraet bezieht ihre Waerme aus einem
+        /// Quellspeicher (<c>WQ_Typ = Pufferspeicher</c>, nicht Luft-Wasser): Die Kondensatorwaerme
+        /// muesste in den Speicher, und diesen Rechenweg baut KU2 nicht.</item>
+        /// </list>
+        /// </summary>
+        public static string KuehlbetriebSperrgrund(int idWp, int idProjekt)
+        {
+            if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp))
+                return Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
+                    "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
+
+            try
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_WP = ? AND a.WQ_Typ = ? " +
+                    "AND COALESCE(w.Typ, '') <> ?",
+                    new DbParam("@proj", idProjekt), new DbParam("@wp", idWp),
+                    new DbParam("@wq", WaermequelleClass.TYP_PUFFER),
+                    new DbParam("@luft", DbWerte.WP_BAUART_LUFT_WASSER));
+                if (n != null && n != DBNull.Value && Convert.ToInt32(n) > 0)
+                    return Text("WP_PROJ_MSG_KUEHL_QUELLSPEICHER",
+                        "Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Pruefung des Kuehlbetriebs: " + ex.Message);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Zahl der Waermepumpen-ANLAGEN eines Projekts, deren Geraet auf Kuehlbetrieb steht
+        /// (<c>Tab_WP.Kuehlbetrieb = 1</c>) — die angelegten Kaelteerzeuger (Stufe KU2). Der
+        /// Bedarfslauf gibt sie der Kaeltefassade, damit die Unterdeckung erst nach der
+        /// Kaeltekaskade gemeldet wird (Kuehlkonzept 5.5). Dialogfrei; 0 bei jedem Fehler.
+        /// </summary>
+        public static int AnlagenImKuehlbetrieb(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+            object n = StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            return StilleDb.Zahl(n);
         }
 
         /// <summary>
@@ -556,8 +700,9 @@ namespace WindowsFormsApplication1
                         string hsql = @"INSERT INTO Tab_WP
                         (ID, ID_Projekt, ID_Stamm, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung,
                          Nennleistung, maxPtherm, Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe,
-                         Gewicht, Raum, Kuehlleistung, Bauart)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                         Gewicht, Raum, Kuehlleistung, Bauart,
+                         Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", neueId));
@@ -581,6 +726,11 @@ namespace WindowsFormsApplication1
                             p.Add(P(sHead, "Raum"));
                             p.Add(P(sHead, "Kuehlleistung"));
                             p.Add(P(sHead, "Bauart"));
+                            // KU-S3 (Schemaschritt 114): Die Kuehlkonfiguration des Katalogsatzes
+                            // reist mit - NULL bleibt NULL (Kuehlkonzept 7.3).
+                            p.Add(P(sHead, KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB));
+                            p.Add(P(sHead, KuehlungSchema.SPALTE_KUEHL_VORLAUF));
+                            p.Add(P(sHead, KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL));
                             v.Ausfuehren(hsql, p.ToArray());
                         }
 
@@ -806,6 +956,40 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        /// <summary>
+        /// Die drei Spalten von KU-S3 (Schemaschritt 114; Kuehlkonzept 7.3) aus einer Zeile von
+        /// <c>Tab_WP</c> oder <c>Tab_WP_STAMM</c> — EINE Leseabbildung fuer Projektkopie und
+        /// Katalog (<see cref="WPStammCtrl"/>).
+        ///
+        /// <para><b>Ausdruecklich auch mit <c>null</c>:</b> NULL heisst bei <c>Kuehl_Vorlauf</c>
+        /// „kleinster Stuetzwert", bei <c>Kuehl_Hilfsstromanteil</c> „kein Zuschlag" und darf beim
+        /// Zurueckschreiben nicht zur 0 werden. Eine fehlende Spalte (eine Datenbank vor Schritt
+        /// 114) gilt wie NULL bzw. „aus".</para>
+        /// </summary>
+        internal static void KuehlfelderLesen(DataTable dt, DataRow row, WPModel ziel)
+        {
+            ziel.Kuehlbetrieb = Belegt(dt, row, KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB)
+                                && Convert.ToBoolean(row[KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB]);
+            ziel.KuehlVorlauf = Belegt(dt, row, KuehlungSchema.SPALTE_KUEHL_VORLAUF)
+                ? (int?)Convert.ToInt32(row[KuehlungSchema.SPALTE_KUEHL_VORLAUF])
+                : null;
+            ziel.KuehlHilfsstromanteil = Belegt(dt, row, KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL)
+                ? (double?)Convert.ToDouble(row[KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL])
+                : null;
+        }
+
+        /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>
+        private static bool Belegt(DataTable dt, DataRow row, string spalte)
+        {
+            return dt != null && dt.Columns.Contains(spalte) && row[spalte] != DBNull.Value;
+        }
+
+        /// <summary>Nullbare Zahl als Parameterwert: <c>null</c> bleibt <c>null</c> (DBNull), nie 0.</summary>
+        private static object Wert(int? v) => v.HasValue ? (object)v.Value : null;
+
+        /// <summary>Nullbare Kommazahl als Parameterwert: <c>null</c> bleibt <c>null</c> (DBNull), nie 0.</summary>
+        private static object Wert(double? v) => v.HasValue ? (object)v.Value : null;
+
         // Mappt die DataTable direkt in die dynamische Liste
         private void MapDataTableToItems(DataTable dt)
         {
@@ -832,6 +1016,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.Modulkosten = Convert.ToInt32(row["Modulkosten"]);
                 if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) item.Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
                 if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
+                KuehlfelderLesen(dt, row, item);
 
                 // Für erweiterte Abfragen (ReadAll_MitMinMaxVorlauf)
                 if (dt.Columns.Contains("Max") && row["Max"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["Max"]);

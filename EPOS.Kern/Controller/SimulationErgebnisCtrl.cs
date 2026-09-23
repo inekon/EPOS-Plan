@@ -948,6 +948,12 @@ namespace WindowsFormsApplication1
             /// <summary>Ungedeckte Kälte [MWh] (<c>Kaelterestbedarf</c>) — ohne Kälteerzeuger der ganze Bedarf.</summary>
             public double KaelterestbedarfMwh;
 
+            /// <summary>Gedeckte Kälte [MWh] — die Kältekaskade (Stufe KU2); 0 ohne Kälteerzeuger.</summary>
+            public double KaeltedeckungMwh;
+
+            /// <summary>Hat ein Kälteerzeuger gerechnet (Wärmepumpe im Kühlbetrieb, Stufe KU2)?</summary>
+            public bool MitKaelteerzeuger;
+
             /// <summary>Davon aus den Gebäuden [MWh].</summary>
             public double GebaeudeMwh;
 
@@ -983,6 +989,8 @@ namespace WindowsFormsApplication1
                 StundenMitKuehlbedarf = k.StundenMitKuehlbedarf,
                 VollbenutzungsstundenH = k.Kaeltebedarf_Max > 0 ? k.VollbenutzungsstundenKaelte : (double?)null,
                 KaelterestbedarfMwh = k.Kaelterestbedarf,
+                KaeltedeckungMwh = k.Kaskade != null ? k.Kaskade.DeckungGesamtKwh / 1000.0 : 0.0,
+                MitKaelteerzeuger = k.Kaskade != null && k.Kaskade.Erzeuger.Count > 0,
                 GebaeudeMwh = k.Kaeltebedarf_Gebaeude_Gesamt,
                 ExternMwh = k.Kaeltebedarf_Extern_Gesamt,
                 GekuehlteGebaeude = k.GekuehlteGebaeude,

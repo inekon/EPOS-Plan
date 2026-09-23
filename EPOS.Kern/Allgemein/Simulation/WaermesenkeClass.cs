@@ -49,6 +49,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ZIEL_PUFFER_PROZESS = DbWerte.WS_ZIEL_PUFFER_PROZESS;
 
+        /// <summary>
+        /// Die Senke der KÄLTEseite (Stufe KU2, Kühlkonzept 4.3 #15, 4.6): Erzeuger → Kältekreis →
+        /// Kühlkanal. Weder Puffer-Ziel noch Wärmesenke; sie fällt nie auf den Heizkreis zurück.
+        /// </summary>
+        public const string ZIEL_KAELTEKREIS = DbWerte.WS_ZIEL_KAELTEKREIS;
+
+        /// <summary>true, wenn das Ziel die Senke der Kälteseite meint (<see cref="ZIEL_KAELTEKREIS"/>).</summary>
+        public static bool IstKaelteZiel(string ziel)
+        {
+            return string.Equals(ziel, ZIEL_KAELTEKREIS, StringComparison.Ordinal);
+        }
+
         // --- Verwendung eines Projekt-Puffers (Konzept 5.1) ---------------------------
 
         public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
@@ -72,6 +84,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool IstPufferZiel(string ziel)
         {
+            // KU2 (4.3 #15): Das Kälteziel ist ausdrücklich KEIN Puffer-Ziel - einen
+            // Kältespeicher gibt es erst mit KU3 (K7).
+            if (IstKaelteZiel(ziel)) return false;
             return string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal) ||
@@ -93,6 +108,9 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_BRAUCHWASSER;
             if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
                 return VERWENDUNG_KOMBI;
+            // KU2 (4.3 #15): Das Kälteziel verlangt keinen Puffer - es gibt keine
+            // Pufferverwendung „Kälte", solange kein Kältespeicher rechnet (K7, 7.6).
+            if (IstKaelteZiel(ziel)) return null;
             return null;
         }
 
@@ -126,6 +144,8 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
             if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
                 return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_PROZESS;
+            if (IstKaelteZiel(ziel))
+                return MyResource.Resource.SIM_ZIEL_KAELTEKREIS;
             return ZielAnzeige(ziel);
         }
 
@@ -136,6 +156,14 @@ namespace WindowsFormsApplication1
         {
             /// <summary>WS_Ziel — Hauptsenke.</summary>
             public string Ziel = ZIEL_HEIZKREIS;
+
+            /// <summary>
+            /// true, wenn die Altspalte das Kälteziel trug (<see cref="ZIEL_KAELTEKREIS"/>) und
+            /// <see cref="Normalisieren"/> es verworfen hat (Kühlkonzept 4.3 #16): Die Altspalten
+            /// kennen nur Wärmeziele, die Kältesenke steht allein in <c>Z_AnlageSenke</c>. Der
+            /// Leser meldet es benannt, statt still auf den Heizkreis zu fallen.
+            /// </summary>
+            public bool KaeltezielVerworfen;
 
             /// <summary>WS_ID_Puffer — 0 = keiner (in der Datenbank NULL, nie 0: FK!).</summary>
             public int ID_Puffer;
@@ -340,6 +368,10 @@ namespace WindowsFormsApplication1
         public static void Normalisieren(SenkeDaten d)
         {
             if (d == null) return;
+
+            // KU2 (Kühlkonzept 4.3 #16): Das Kälteziel hat einen EIGENEN Zweig - es wird
+            // vermerkt, nicht still verschluckt; die Altspalte selbst kann es nicht tragen.
+            if (IstKaelteZiel(d.Ziel)) d.KaeltezielVerworfen = true;
 
             if (!IstPufferZiel(d.Ziel))
             {
@@ -764,6 +796,10 @@ namespace WindowsFormsApplication1
                 // Je Anlage nur einmal: SenkenLaden läuft je Lauf einmal, der Schlüssel
                 // schützt gegen einen zweiten Aufruf im selben Lauf.
                 string rohZiel = StilleDb.Text(StilleDb.Feld(r, "WS_Ziel"));
+                if (d.KaeltezielVerworfen)
+                    SimulationProtokoll.Aktuell.WarnungEinmal(
+                        "senke-haupt-kaelteziel-" + z.AnlagenID,
+                        string.Format(MyResource.Resource.SIMENG_SENKE_KAELTEZIEL_ALTSPALTE, z.AnlagenID));
                 if (IstPufferZiel(rohZiel) && !IstPufferZiel(d.Ziel))
                     SimulationProtokoll.Aktuell.WarnungEinmal(
                         "senke-haupt-ohne-puffer-" + z.AnlagenID,

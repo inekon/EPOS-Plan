@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 23.09.2026** · Codestand `387c2d9f` · `SchemaStand.Zielversion` = 113 · Schemaschritte 90–113 vergeben, neue ab **114** · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 23.09.2026** · Codestand `704356a4` · `SchemaStand.Zielversion` = 113 · Schemaschritte 90–113 vergeben, neue ab **114** · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103 und 107 bis 110 gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -361,9 +361,11 @@ der Preisbasis umgerechnet — ein Brennstoff hat seinen Heizwert, gleichgültig
 abrechnet. Gespeichert werden `custom_hi`/`custom_hs` bzw. `hi_kwh_per_unit`/`hs_kwh_per_unit`
 immer in dieser Einheit.
 
-**Nur der Arbeitspreis folgt der Preisbasis.** Die Klappliste „Preisbasis" sagt, in welcher
-Einheit der Anwender ihn eingeben will; angezeigt wird `Basiswert ÷ Faktor`, gespeichert wird der
-Basiswert je Abrechnungseinheit. **Die gewählte Basis ist ein eigener Kartenzustand** (ET‑D‑3, Mockup-Anhang
+**Nur der Arbeitspreis folgt der Preisbasis.** Die Klappliste „Preisbasis" steht direkt unter dem
+Arbeitspreis und bietet „€/‹Abrechnungseinheit›" und — sobald ein Heizwert im Feld steht — „€/kWh"
+(ET‑D‑4, → Register R‑D); sie sagt, in welcher Einheit der Anwender ihn eingeben will. Angezeigt wird
+`Basiswert ÷ Faktor`, gespeichert wird der Basiswert je Abrechnungseinheit. Ohne Heizwert nennt eine leise
+Zeile, warum „€/kWh" fehlt; rechnet der Träger ohnehin nach kWh ab, gibt es keine Liste. **Die gewählte Basis ist ein eigener Kartenzustand** (ET‑D‑3, Mockup-Anhang
 U32; umgesetzt #446): Sie steht als Einheitentext („kWh" oder die Abrechnungseinheit) in
 `energy_project_settings.Preisbasis` (Schemaschritt 112), und beim Öffnen wird die Anzeige in dieser Basis
 umgerechnet — auch wenn der Brennstoff keine Umrechnungsregel nach kWh führt. `ID_Umrechnung` geht weiter mit,
@@ -376,8 +378,8 @@ Versionskopie trägt die Basis mit. Der **Leistungspreis** bleibt in
 
 **Formelzeile und Effektivprüfung rechnen über die Basiswerte** — Arbeitspreis je
 Abrechnungseinheit ÷ Heizwert je Abrechnungseinheit — und nennen die Einheiten:
-„0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh"; bei Preisbasis kWh kommt „Direktabrechnung:
-0,0476 €/kWh" dazu. Rechnet der Träger unmittelbar nach kWh ab (Strom, Fernwärme), steht
+„0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh"; bei Preisbasis kWh läuft die Zeile in Eingaberichtung:
+„0,0476 €/kWh × 10,50 kWh/Nm³ = 0,5000 €/Nm³ (gespeichert je Nm³)". Rechnet der Träger unmittelbar nach kWh ab (Strom, Fernwärme), steht
 „Direktabrechnung nach kWh". Die Rechnung selbst liegt einmal im Kern
 (`EnergietraegerPreiskarte`); der Riegel `EnergieEinheitenPruefung.ErreichtKwh` fragt über
 derselben Abrechnungseinheit.
@@ -393,8 +395,8 @@ unter der Tabelle, geschrieben wird dort die Katalogzeile selbst.
 
 **Die Katalogübernahme ist eine einmalige Kopie.** Der Knopf „Katalogwerte übernehmen" steht nur
 im Projektkontext und holt Arbeits-, Grund- und Leistungspreis, Heiz- und Brennwert sowie die drei
-Emissionswerte aus der Katalogzeile in die Felder; die Preisbasis geht dabei auf die
-Abrechnungseinheit zurück. Die Karte meldet „Katalogwerte übernommen — noch nicht gespeichert";
+Emissionswerte aus der Katalogzeile in die Felder; die gewählte Preisbasis bleibt stehen, und der
+Katalogpreis je Abrechnungseinheit erscheint in ihr. Die Karte meldet „Katalogwerte übernommen — noch nicht gespeichert";
 geschrieben wird erst mit „Speichern" bzw. „OK", und dabei entsteht die Historienzeile. Das
 Projekt folgt dem Katalog danach **nicht** — eine spätere Änderung im Katalog lässt die
 Projektwerte, wo sie sind.
@@ -706,9 +708,9 @@ Kennzahl-Kacheln, Vergleichstabelle (Zeilen × Projekte, `<table class="epos-ras
 | Element | Ort auf der Seite |
 |---|---|
 | Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste, ein Optionsfeld je Zeile; die gewählte Referenz ist nicht abwählbar |
-| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | als zweite Ansicht der Seite hinter dem Umschalter „Kennzahlen / ValERI-Bewertung" — **V‑1 entschieden** (→ Register R‑V), umgesetzt #434 mit den Blöcken 1, 3, 4 und 5 |
-| Kumulierter diskontierter Cashflow | als Abschnitt „Verlauf" in „Wie sicher ist das?" der Darstellung „Kennzahlen", mit allen drei Szenarien (§ 2.13 (5), umgesetzt #436); einen eigenen Verlaufsdialog gibt es nicht. Ob Block 4 der Darstellung „ValERI-Bewertung" ihn ebenfalls zeigt, ist Frage E6‑Q1 (→ Register R‑E6) |
-| ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition |
+| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | als zweite Ansicht der Seite hinter dem Umschalter „Kennzahlen / ValERI-Bewertung" — **V‑1 entschieden** (→ Register R‑V), umgesetzt #434 mit den Blöcken 1, 3, 4 und 5, vollständig #454 mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild und Block 4 mit Spannenbild und Verlauf (die Nummerierung der Blöcke: Fußnote in § 2.11.3) |
+| Kumulierter diskontierter Cashflow | als Abschnitt „Verlauf" in „Wie sicher ist das?" der Darstellung „Kennzahlen", mit allen drei Szenarien (§ 2.13 (5), umgesetzt #436); einen eigenen Verlaufsdialog gibt es nicht. Block 4 der Darstellung „ValERI-Bewertung" zeigt denselben Abschnitt samt Spannenbild (E6‑Q1, → Register R‑E6; umgesetzt #454) |
+| ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition; die **Anhang-E-Checkliste** als Abschlussseite des Wortberichts, als letztes Blatt der Mappe und hinter dem Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks (V‑G12, U43; umgesetzt #455) |
 
 Damit bleibt die Regel „eine Wahrheit je Größe": Die ValERI-Ansicht **rendert** die vorhandenen
 Ergebnisse (`WirtschaftlichkeitErgebnis`, `WirtschaftlichkeitZeilen`, Verlaufsreihe) — sie rechnet
@@ -770,14 +772,25 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
 | V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme. **Stand: gebaut #434** (V‑A) — Label an Amortisation und Zinsfuß, die Annuität ohne (E5‑Q3, Statusdatei „Nach #434"); Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
 | V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt". **Stand: gebaut #434** (V‑A) — `WIRT_DEKL_STEUERN` in der Deklarationsliste auf Seite und in beiden Berichten |
-| V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 |
+| V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1. **Stand: gebaut #455** (V‑D, E8 Teil b) — die Stufen 0 bis 3 nach § 2.11.6: Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und die Kennzahlen des Szenarios Erwartet in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt zu jeder Formel den Wert ein, Excel rechnet beim Öffnen neu |
 | V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
-| V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe |
+| V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe. **Stand: gebaut #455** (V‑D, U43) — 15 Punkte in fünf Gruppen mit Anforderung, Stelle im Bericht und Stand aus dem Lauf (`AnhangECheckliste`); Abschlussseite des Wortberichts, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" auf der Ergebnisseite |
 
 **Anhang D der Norm ist eine BHKW-Fallstudie** (90 kW_th, 18 Jahre, NPV 64.480 €, Worst −202.802 €,
 Best +598.320 €) — sie dient der Etappe als **externe Gegenprobe**: EPOS muss mit denselben
 Eingaben dieselben Zahlen treffen. *(Vorsicht: Zwei Zeilen der Sensitivitätstabelle D.6 tragen im
 Normtext versehentlich Werte des Pumpenbeispiels — als Prüfreferenz ungeeignet, dokumentiert.)*
+**Die Gegenprobe steht als Kern-Fall** (`AnhangDFallstudieTests`, umgesetzt #455) — gegen `KapitalwertRechner.Rechne`,
+nicht gegen die volle Kette, weil die Norm Jahresmengen liefert und keinen Stundenlauf. Der Kapitalwert als Differenz
+zweier Zahlungsbilder (BHKW gegen Kessel und Strombezug) trifft **64.479,51 €, −202.801,57 € und 598.319,65 €**
+(Toleranz ±1 €, die Norm rundet auf ganze Euro); die Jahreswerte der Tafel D.5 stimmen, sechs Zeilen der Tafel D.6
+treffen auf ±0,5 € samt Steigung (Energiepreisschwankung 472, Preisschwankung nicht energetisch −57, Laufzeit 1.121,
+Kalkulationszins −889, CAPEX −900, OPEX −354 € je Prozent der Änderung). Die Norm schreibt einen Basiswert zu Preisen
+des Jahres 0 mit (1 + p)^t fort, der Rechenkern den Betrag des Jahres 1 mit (1 + p)^(t−1); übergeben wird deshalb
+Basis × (1 + p). **Ausgenommen** sind neben den zwei Zeilen des Pumpenbeispiels die D.6-Zeile „Gasverbrauch BHKW" —
+sie trifft die Änderung des ganzen Energie-Nettostroms, nicht die des Gasverbrauchs —; Tafel D.7 nennt im
+wahrscheinlichsten Fall 348.583 statt 349.583 kWh/a Strom, ein Tippfehler (nur die zweite Menge ergibt die 64.480 €).
+Der Rechenweg ist unverändert.
 
 ### 2.11.3 Die fünf Darstellungsblöcke
 
@@ -793,6 +806,15 @@ gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortis
 | **Energiekosten** | je Träger, Anlage gegen Referenz, BEHG mit Preispfad, Preisraten-Ausweis | 6.3.2 |
 | **Wirtschaftlichkeit über Nutzungsdauer** | kumulierter diskontierter Cashflow (drei Szenarien), NPV-Regel, Kennzahlen mit „nachrichtlich"-Kennzeichnung, Sensitivitätstafel mit Steigung €/%, Deklarationszeilen (nominal · Steuern · Restwert · Risiko) | 7, 8, Anhang A |
 
+*Zur Nummerierung: Die Tafel ordnet den Inhalt nach den Kostenarten der Norm; die Seite, das Mockup und § 2.11.4
+zählen dieselben fünf Blöcke nach dem Aufbau der Bewertung (`WIRT_VALERI_BLOCK_1` … `_5`): **1 · Gegenstand und
+Rahmen** (Maßnahme, Referenz nach § 2.9, Betrachtungszeitraum, Kalkulationszins, Rechnung nominal), **2 ·
+Zahlungsreihen** (die Zeilen Investitionskosten, Betriebskosten, Erlöse und Energiekosten der Tafel, dazu Ersatz und
+Restwert — je Jahr und als Barwert, mit dem Zahlungsstrombild), **3 · Kennzahlen**, **4 · Unsicherheit** und **5 ·
+Deklarationen** (zusammen die Zeile „Wirtschaftlichkeit über Nutzungsdauer": Kennzahlen und NPV-Regel in Block 3,
+drei Szenarien, Bandbreite, Spannenbild, Verlauf und Sensitivität in Block 4, die Deklarationszeilen in Block 5).
+Es sind zwei Ordnungen desselben Inhalts, nicht zwei Blocksätze; gebaut ist die Nummerierung 1 bis 5 (#434, #454).*
+
 ### 2.11.4 Etappen und Entscheidungen
 
 Die Spalte „entspricht / bereits geliefert durch" löst die zweite Etappenreihe des
@@ -803,13 +825,14 @@ Arbeit.
 |---|---|---|---|---|
 | **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | gebaut **#434** (Merge `deba5e57`): `WirtschaftlichkeitZeilen.IstNachrichtlich` (Amortisation und Zinsfuß, E5‑Q3), `KapitalwertRechner.Vorzeichenwechsel` mit Nachweisumschlag Fassung 7, `ValeriAusweis.Deklarationen()`, `SensitivitaetZeile.Steigung` — auf der Seite und in beiden Berichten | keine | **E5** (mit der Ergebnisansicht) — gebaut |
 | **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
-| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | teilweise vorgezogen mit **#434**: die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5; das Cashflow-Bild steht mit **#436** als Verlauf mit drei Szenarien unter „Wie sicher ist das?" der Darstellung „Kennzahlen" (ob auch in Block 4: Frage E6‑Q1, → Register R‑E6); offen Block 2 (Zahlungsreihen, an seiner Stelle eine Hinweiszeile) | Ausweis | **E8** |
-| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe | **E8** |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | vorgezogen mit **#434** (die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5) und **#436** (das Cashflow-Bild als Verlauf mit drei Szenarien unter „Wie sicher ist das?"); **vollständig mit #454** (E8 Teil a): **Block 2 „Zahlungsreihen"** je Stand und Szenario — Jahrestafel der sechs Bestandteile Investition, Betriebskosten, Energiekosten, Erlöse, Ersatzbeschaffungen und Restwert mit Netto, Barwert und „Summe nominal", darunter das **Zahlungsstrombild** (gestapelte Jahresbalken der Positionsspalten der Mehrjahrestafel, Ausgaben nach unten, Ersatzjahre markiert, ohne Restwert; E8a‑Q1, → Register R‑E8a), Vorgabe die Leitversion im Erwartungsfall (größte Kapitalwertdifferenz, in Sicht 2 der Stand B; E8a‑Q2); **Block 4** mit Spannenbild und Verlauf aus denselben Bausteinen wie „Wie sicher ist das?" (E6‑Q1, → Register R‑E6); in „Woraus entsteht die Zahl?" die **Gliederung des Kapitalwerts** mit Barwert und Nominalsumme je Bestandteil und der Spalte „Differenz ‹Leitversion› − ‹Referenz›", die in der Kapitalwertdifferenz aufgeht (U46), darunter das **Brückenbild** „Von der Investition zur Kapitalwertdifferenz" (U41, auch im Wortbericht); in „Was ist angenommen?" die Tafel **„Was daraus im Lauf wird"** (je Szenario I₀, die Jahre der fälligen Ersatzbeschaffungen und der Restwert am Ende, nominal — U47) und die **Fußzeile** „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" (U48; mit #455 links in der Reihe der Knöpfe „Anhang-E-Checkliste…" und „Bericht erzeugen", E8a‑Q4). Alles ist Ausgabe: `Zahlungsgliederung` ordnet das Zahlungsbild des Laufs, die sechs Barwerte ergeben den Kapitalwert, gezeigt wird nur, was zum gespeicherten Ergebnis passt; die Jahresreihen stehen nach einem Lauf in der Sitzung, gespeicherte Ergebnisse tragen keine (E8a‑Q3) | Ausweis | **E8** Teil a — gebaut |
+| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6); **gebaut mit #455** (E8 Teil b): die **Formelmappe** in den Stufen 0 bis 3 (§ 2.11.6) samt der Blattstruktur-Wache über Excel- und Wortbericht und der Wache über den ClosedXML-Befund; die **Anhang-E-Checkliste** als Abschlussseite beider Berichte und hinter dem Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks (V‑G12, U43); die **Gegenprobe an der Anhang-D-Fallstudie** (§ 2.11.2). Alles ist Ausgabe: die Werte der Mappe gleich denen der Wertfassung (13 Prüfgruppen), die Anker unverändert; die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → Register R‑E8b) | Ausgabe | **E8** Teil b — gebaut |
 | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** |
 
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
-gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434) und E6 (#436).*
+gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7 (#437, #439,
+#440, #446, #452) und E8 (#454, #455).*
 
 *Entscheid A5 (Degradation) und die Entscheidungsfragen V-1 bis V-4: → Register R‑A (A5) und R‑V;
 der Entscheidweg zu A5: → Protokoll § 5.5.*
@@ -860,7 +883,8 @@ Preise, Laufzeit und Zins — genau die stehen oben.
 
 **Der ganze Bericht wird formelbasiert, nicht nur das ValERI-Blatt** (V-G10, das kippt V-2 —
 → Register R‑V). Die Grenze ist am Generator gemessen und gegengelesen; die Messung steht im
-Protokoll § 3.11 und begrenzt den Stufenplan unten.
+Protokoll § 3.11 und begrenzt den Stufenplan unten. **Gebaut sind alle vier Stufen mit #455** (E8 Teil b, V‑D; die
+Klasse `ExcelFormelmappe` im Tabellenbericht) — was die Mappe trägt, steht unter der Tafel.
 
 **Stufenplan** — jede Stufe ein eigener Schritt mit Gegenprobe (die Mappe muss vor und nach der
 Stufe dieselben Werte zeigen; die Formelfassung wird gegen die Wertfassung gehalten):
@@ -871,6 +895,35 @@ Stufe dieselben Werte zeigen; die Formelfassung wird gegen die Wertfassung gehal
 | **1** | **Mehrjahrestabelle** des Wirtschaftlichkeitsblatts (das Raster steht: Jahre als Zeilen, Zahlungspositionen als Spalten): *Energie* als Fortschreibung Jahr 1 × (1+p_E)^(t−1); *Netto* als Zeilensumme; *Barwert* als Netto × (1+i)^−t; *Kumuliert* als Laufsumme; *Betrieb* als zwei Terme (Betriebs-Topf mit p_B, Endenergie-Topf mit p_E) mit Stufenlogik oder Hilfsspalte für Positionen mit späterem Startjahr; *BEHG* nur im Rückfallzweig als Fortschreibung, mit jahresscharfer CO₂-Reihe bleibt sie zugelieferter Preispfad | größter Nutzen: genau diese Größen variiert der Anwender im Gespräch, und die Tabelle zieht mit |
 | **2** | **Ergebniskennzahlen**: Nettobarwert und Annuität über NBW/RMZ auf die Spalten der Stufe 1; interner Zinsfuß und Amortisation über eine **Differenzreihe Variante − Referenz** (samt Restwert-Nominaldifferenz im letzten Jahr), die das Blatt heute nicht führt und je Variante bekommt; benannter Leerwert bei fehlendem Vorzeichenwechsel als Text, nicht als Zellfehler | die Kennzahlen hängen an Stufe 1 und an einer Reihe, die erst entstehen muss |
 | **3** | **Betriebskostenblock**: Menge und Satz in eigene Spalten, Betrag als Produkt — nur für bemessene Positionen; die Spalte Herleitung bleibt für feste, szenariogepflegte und unvollständige Positionen. **Delta-Block** des Vergleichsblatts als Zellbezug (Wert − Referenz) / |Referenz| | kleine Blöcke gleicher Mechanik; kosmetisch |
+
+**Was die Mappe trägt** (umgesetzt #455):
+
+- **Stufe 0** — unter der Prosazeile des Parameternachweises der Block „Parameter der Rechnung (je Szenario)" mit den
+  Spalten Erwartet, Günstig und Ungünstig: Kalkulationszins, Betrachtungszeitraum und die Preissteigerungen p_E, p_B,
+  p_I als Dezimalzahl (derselbe Ausdruck Prozent ÷ 100, mit dem der Rechenkern sie liest), dazu die Änderungen an
+  Investition, Erträgen und Nutzungsdauer (Norm 9 c). Die Spalte Erwartet trägt die Namen `Zins_i`, `Zeitraum_T`,
+  `p_E`, `p_B`, `p_I`, die beiden anderen dieselben mit `_Guenstig` bzw. `_Unguenstig`; darunter ein Hinweis und die
+  drei Sätze der Grenze. Die Formeln rechnen mit der Spalte Erwartet: Wer dort einen Satz ändert, sieht
+  Mehrjahrestabellen und Kennzahlen des Erwartungsfalls mitziehen; die Jahreszeilen stehen fest — ein anderer
+  Betrachtungszeitraum verlangt einen neuen Bericht.
+- **Stufe 1** — die Mehrjahrestabellen wie in der Tafel; die Hilfsspalten „Basis Betrieb mit p_B" und „Basis Betrieb
+  mit p_E" tragen die Basis beider Töpfe je Jahr samt den Stufen der Positionen mit späterem Startjahr (aus den
+  Ausweisfeldern `BetriebBasisJeJahr` und `EndenergieBasisJeJahr` des Zahlungsbilds); die CO₂-Abgabe ist nur im
+  Rückfallzweig eine Formel (`BehgFortgeschrieben`); die Abschlusszeile trägt den nominalen Restwert, seinen Barwert
+  und den Nettobarwert.
+- **Stufe 2** — im Block „Erwartet" der Nettobarwert je Stand über `NPV` (dazu Jahr 0 und der Barwert des
+  Restwerts), die Kapitalwertdifferenz als Zellbezug, die Annuität über `PMT`; rechts neben jeder Tabelle einer
+  Variante die Differenzreihe Variante − Referenz (nominal, im Jahr T samt Restwert-Nominaldifferenz, Barwert,
+  kumuliert, Nulldurchgang je Jahr); der Zinsfuß über `IRR` nur bei genau einem Vorzeichenwechsel, die Amortisation
+  über die Hilfsspalte, ohne Wechsel bzw. Nulldurchgang der Satz der Seite als Text. Ein mehrdeutiger Zinsfuß und die
+  Kennzahlen der Blöcke Günstig und Ungünstig bleiben Werte — für sie gibt es keine Mehrjahrestabelle (E8b‑Q1,
+  → Register R‑E8b).
+- **Stufe 3** — Menge und Satz einer bemessenen Position rechts des Betrags, der Betrag ihr Produkt (bei
+  Prozentbemessung ÷ 100, ein Erlös negativ; welche Rechnung gilt, sagt die Bemessung selbst,
+  `BetriebskostenCtrl.Betrag`); die Summe als Spaltensumme; der Δ%-Block als (Wert − Stamm) / |Stamm| · 100.
+- **Keine Formel ohne Gegenrechnung:** Jede Formel wird vor dem Schreiben in C# nachgerechnet; weicht ihr Ergebnis
+  vom Wert ab, bleibt die Zelle ein Wert (`Formelregister`). Die Mappe zeigt damit nie eine Formel, die etwas anderes
+  rechnet als der Bericht sagt; in allen 13 Prüfgruppen gleicht die Formelfassung der Wertfassung.
 
 **Dauerhaft Werte bleiben**, weil sie am Stundenlauf, an Katalog- und Datenbankzugriff oder an
 Text hängen:
@@ -895,10 +948,16 @@ Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, 
 Gültigkeit geben, sind nicht abbildbar. Und was der Anwender in der Mappe umstellt, kommt nie ins
 Projekt zurück: Die Formelmappe ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.
 
-Vor Stufe 0 zu klären: ob die eingesetzte ClosedXML-Fassung Formeln mit zwischengespeichertem
-Ergebnis ablegt oder Excel beim Öffnen rechnen muss, und ob eine Formelmappe in anderen
-Tabellenkalkulationen dieselben Werte zeigt. Im Bestand deckt kein Test den Excel- und den Word-Generator ab —
-die Stufen brauchen zuerst eine Wache über beide Blattstrukturen.
+**EPOS trägt die Werte ein, Excel rechnet neu.** Die eingesetzte Fassung ClosedXML 0.105.1 legt eine Formel ohne
+ihr Ergebnis ab — auch nach `RecalculateAllFormulas` —, und ihre Rechenmaschine kennt `NPV` und `IRR` nicht (`PMT`
+rechnet sie; eine Annuität, deren `PMT` auf den Nettobarwert zeigt, erbt dessen Fehler). Deshalb schreibt ClosedXML
+nur die Formeln; nach dem Speichern trägt EPOS zu jeder Formelzelle die Zahl des Rechenkerns als Ergebnis ein, in
+voller Stellenzahl, und die Mappe verlangt die volle Neuberechnung beim Öffnen (`fullCalcOnLoad`). Excel (gemessen:
+Microsoft 365, Version 16) rechnet damit jede Formelzelle auf den eingetragenen Wert; ein Betrachter ohne eigene
+Rechenmaschine zeigt die eingetragenen Zahlen statt leerer Zellen. Andere Tabellenkalkulationen sind nicht gemessen;
+Formel und Wert stehen in jeder Zelle der Datei. Zwei Wachen halten das fest: `FormelmappeClosedXmlBefundTests` wird
+rot, sobald eine neue ClosedXML-Fassung eines der beiden Verhalten ändert — dann ist die Regel neu zu prüfen —, und
+`BerichtBlattstrukturWacheTests` hält die Blattstruktur des Excel- und des Wortberichts samt jeder Stufe fest.
 
 ### 2.11.7 Hinweistext bis zur vollständigen Szenarioabdeckung
 
@@ -1151,8 +1210,11 @@ Schwarz-Weiß-Ausdruck davon zu trennen sein. Nachweis: `Proben/ChartProben` (Bi
 `kapitalwert_szenarien…` und `kapitalwert_absolut_legende`, Gegenproben `strichart_gepunktet_wirkt`,
 `kapitalwert_szenarien_legende_zweigeteilt_wirkt`, `kapitalwert_szenarien_nulldurchgang_wirkt`,
 `kapitalwert_verlauf_gestrichelt_wirkt` und `kapitalwert_verlauf_legende_nennt_die_version`),
-`VerlaufSzenarienTests`, `KapitalwertVerlaufAbschnittTests`. Offen ist Frage E6‑Q1 — Verlauf und
-Spannenbild auch in Block 4 der Darstellung „ValERI-Bewertung" (→ Register R‑E6).
+`VerlaufSzenarienTests`, `KapitalwertVerlaufAbschnittTests`. **Block 4 der Darstellung „ValERI-Bewertung"**
+zeigt Spannenbild und Verlauf mit denselben Bausteinen — dem Fragment des Spannenbilds und
+`KapitalwertVerlaufAbschnitt` mit derselben Datenseite und Fassung — in der Folge Bandbreite, Spannenbild,
+Vorschlag, Hinweistext, Verlauf, Sensitivität; je Darstellung steht genau ein Verlauf (E6‑Q1, → Register R‑E6;
+umgesetzt #454).
 
 *Die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung brauchte: → Protokoll § 8.1.*
 
@@ -2431,6 +2493,8 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E7c1 K‑1 Fall 2, Förderende 2030, Anlagenart-Kohärenz** | Schemaschritt 105 (Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl je Anlage) und der zweite Fall des § 2 Nr. 16 KWKG — `min(Netto, Nutzwärme × σ)` auf Regel- und Ersatzweg, σ gepflegt oder P_el ÷ P_th, Kürzung zuerst an der Einspeisung, gepflegt in der Überlagerung „Sätze und Herkunft"; das Ende der Frist zur Inbetriebnahme als Katalogdatum 31.12.2030 statt der festen vier Jahre, die Reihe bis zum Kontingentende; die Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt" — die dreizehn Basisprojekte unverändert (kein Kennzeichen im Bestand, 1030 vor dem Fristende). | #440 |
 | **E7c2 Schritte E, F, G, S‑2, V‑1/V‑2, B‑4 und die E7c1-Reste** | Schemaschritt 111 (Ersatz und Restwert je Position, entkoppelt, im Zeileneditor gepflegt), 112 (die Preisbasis als eigener Kartenzustand) und 113 (der Stammtext der Gase auf Nm³, Brennstoff 24 auf kWh); die Mischlage § 53/§ 53a neben § 54 gesperrt, mit Warnung; der EV-Mix ungerundet und § 51a bei fester Vergütung mit der Einspeisevergütung; die zwei Prozentarten der Brennstoff- und Stromkosten frisch aus dem Lauf; in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom (mit E7c3 zurückgebaut) und der Rundungsgrund in der Herleitung; die Überlagerung „Sätze und Herkunft" vollständig, KI-Feldkatalog und Berichtsspalten zu Fall 2 — die dreizehn Basisprojekte unverändert (9.195 von 9.195 Werten). | #446 |
 | **E7c3 Vbh nach Definition, B‑6, Kapitalwert 1024, Vorschau** | Die Vollbenutzungsstunden als erzeugte Arbeit ÷ Nennleistung in beiden Fällen des § 2 Nr. 16 (E7c2/7 zurückgebaut); B‑6 in den fünf Prioritätsdateien mit strengem Leseweg und Warnzeilen; der Kapitalwert 1024 als Datenstand nachgerechnet, der Anker bleibt; die Energiesteuer-Vorschau je Wahl im Kern (Nachweisfassung 8) und die Wahlen der Überlagerung als Anzeigezeilen; `VpvCtKwh` ungerundet; Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt) — die dreizehn Basisprojekte unverändert (9.519 von 9.519 Werten). | #452 |
+| **E8a ValERI-Ansicht vollständig** (V‑C) | Die fünf Blöcke der Darstellung „ValERI-Bewertung" vollständig: Block 2 „Zahlungsreihen" je Stand und Szenario mit dem Zahlungsstrombild, Block 4 mit Spannenbild und Verlauf (E6‑Q1); in „Woraus entsteht die Zahl?" die Gliederung mit Nominalsumme und Differenzspalte und das Brückenbild zur Kapitalwertdifferenz, Brücke und Zahlungsstrom auch im Wortbericht; in „Was ist angenommen?" die Tafel „Was daraus im Lauf wird" und die Fußzeile zur Herkunft der Annahmen — keine Rechenwirkung, kein Schemaschritt. | #454 |
+| **E8b Formelmappe, Anhang E und Anhang D** (V‑D) | Der Tabellenbericht als Formelmappe in den Stufen 0 bis 3 — Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und Kennzahlen des Erwartungsfalls in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu; die Anhang-E-Checkliste als Abschlussseite beider Berichte und hinter einem Knopf der Ergebnisseite; die Gegenprobe an der Fallstudie des Anhangs D gegen den Rechenkern; die Fußzeile in der Knopfreihe — keine Rechenwirkung, kein Schemaschritt; E8 ist damit abgeschlossen. | #455 |
 
 ## 6.2 Regressionsanker
 
@@ -2440,7 +2504,10 @@ WirtschaftlichkeitCtrl.Berechne` und hält damit die Größen dieses Papiers fes
 Berichtssammler (`BerichtsDatenSammler`, seit E3 in `EPOS.Kern/Allgemein/Bericht/`, umgesetzt #431)
 nachzubauen. Dazu kommen die Rechnerklassen
 `SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23), die
-Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFormatWacheTests` (4).
+Blattwache `BerichtBlattstrukturWacheTests` (13, über Excel- und Wortbericht samt den Stufen der Formelmappe), die
+Formatwache `WirtZeileFormatWacheTests` (4), die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe an
+der Norm `AnhangDFallstudieTests` (10: die drei Sollwerte der Fallstudie, die Tafel D.5 und sechs Zeilen der Tafel
+D.6 gegen `KapitalwertRechner.Rechne`, § 2.11.2).
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2451,6 +2518,7 @@ Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFo
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
+| Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
 | Referenzbasis | `Referenzlaeufe/2026-09-23_R13_Kuehlung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
@@ -2630,14 +2698,18 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
-(#436), E7 Teil a (#437), E7 Teil b (#439), E7 Teil c1 (#440), E7 Teil c2 (#446) und E7 Teil c3 (#452)** —
-E7 ist damit abgeschlossen; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt
-**E8**: die fünf ValERI-Blöcke vollständig (dazu Block 2 und das Zahlungsstrombild U42), der Formelbericht in den
-Stufen 0 bis 3 (§ 2.11.6), die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe, Nominalsummen, Differenzspalte
-und Brückenbild der Gliederung, „Was daraus im Lauf wird" und die Fußzeile (U41, U46 bis U48) und E6‑Q1 (Verlauf
-und Spannenbild in Block 4); vorab die ClosedXML-Fragen aus dem Prüfprotokoll `05/§ 3.3` des Analysepapiers. Die
-acht Fragen aus E7c3 sind offen (→ Register R‑E7c3); nach ihrem Entscheid kommen der Rest von B‑6 (E7c3‑Q5) und die
-Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6) dazu. Aus der
+(#436), E7 Teil a (#437), E7 Teil b (#439), E7 Teil c1 (#440), E7 Teil c2 (#446), E7 Teil c3 (#452), E8 Teil
+a (#454) und E8 Teil b (#455)** — **E7 und E8 sind damit abgeschlossen**: von E8 die ValERI-Ansicht (V‑C) mit allen
+fünf Blöcken samt Block 2 und dem Zahlungsstrombild U42, der Gliederung mit Nominalsumme und Differenzspalte, dem
+Brückenbild, „Was daraus im Lauf wird", der Fußzeile und E6‑Q1 (§ 2.11.4), und V‑D — die Formelmappe in den Stufen 0
+bis 3 (§ 2.11.6), die Anhang-E-Checkliste (U43) und die Anhang-D-Gegenprobe (§ 2.11.2), dazu die Fußzeile in der
+Knopfreihe (E8a‑Q4); der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt **E9** (V‑E, die
+Szenarioabdeckung nach § 2.11.5): die Schemaschritte B (Betrachtungszeitraum und Mengenfaktor je Szenario), C
+(Trägerpreise best/worst) und D (Erlössätze best/worst) mit ihren Nummern bei der Umsetzung, der ±-Knopf an den neuen
+Orten, der Kern liest die Paare, der Hinweistext (§ 2.11.7) entfällt; ohne Degradation (A5), rechenwirksam je Pflege.
+Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3) und die sechs aus E8b (→ Register R‑E8b); nach ihrem
+Entscheid kommen der Rest von B‑6 (E7c3‑Q5), die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`,
+`Vorsorgewarnung` (E7c3‑Q6) und die zwei kleinen Aufträge zu E8b‑Q2 und E8b‑Q3 dazu. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2681,16 +2753,18 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
 | **B8** | — | — | S-2 **#446**, B-6 **#452** (fünf Dateien; der Rest offen, E7c3‑Q5) | Befunde S-2 (≡ A3, erledigt) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
 | **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
-| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, sonst keine im Bereich #300–#434 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 der ValERI-Ansicht mit #434 vorgezogen), V-E = **E9** |
-| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild |
+| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, V-C = **#454**, V-D = **#455** | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C = **E8** Teil a (gebaut #454; die Blöcke 1, 3, 4, 5 mit #434 vorgezogen), V-D = **E8** Teil b (gebaut #455), V-E = **E9** |
+| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436**, **#454** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild; mit #454 beide auch in Block 4 (E6‑Q1) |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile), **#446** (Entkopplung, Schritt 111), **#452** (gemessen) | Nutzungsdauer, Ersatz, Restwert; der Rest mit ND‑S3 |
 | § 6.3 Nr. 29, 30, 32 | — | — | **#437** (Nr. 30 zum Teil, der Rest **#440**) | E7 Teil a: CO₂-Grenzwert brennwertbezogen, Schemaschritt 102 und „(bitte wählen)", vermiedene Menge ohne jede Eigenerzeugung |
 | Q11 (§ 3.5, § 2.5) | — | — | **#439** | E7 Teil b: kein Zeitzonentarif, Schemaschritt 104, Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell |
 | Befund **K‑1** (§ 3.6) · A20 · § 6.3 Nr. 30 Kern-Regel | — | — | **#440** | E7 Teil c1: Schemaschritt 105 und der zweite Fall des § 2 Nr. 16, das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum, die Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt" |
 | Befunde **S‑2**, **V‑1**, **V‑2**, **B‑4** (§ 4) · Schritte **E**, **F**, **G** (A6, ET‑D‑3/U32, U‑1/A9) · E7c1‑Q1, Q2 b, Q7 | — | — | **#446** | E7 Teil c2: Schemaschritte 111, 112, 113, die Sperre der Mischlage, EV-Mix und § 51a, die Prozentarten frisch, Vbh aus dem KWK-Strom (zurückgebaut #452), die Überlagerung „Sätze und Herkunft" vollständig |
 | Befund **B‑6** (§ 4) und § 6.2 Kapitalwert 1024 · E7c2‑Q5 b, Q8 b, Q4-Rest · E7c1‑Q2 b präzisiert, E7c1‑Q8 · U22 Anzeigezeilen · § 6.3 Nr. 9h gemessen | — | — | **#452** | E7 Teil c3: Vbh = W_a ÷ P_Nenn in beiden Fällen, B‑6 in den fünf Prioritätsdateien, Kapitalwert 1024 als Datenstand, die Energiesteuer-Vorschau je Wahl, die Wahlen als Anzeigezeilen, `VpvCtKwh` ungerundet, Katalog-Generation 9 |
+| **V-C** (§ 2.11.4) · E6‑Q1 · E5b‑4 (U41, U46–U48) · U42 (E8a‑Q1) | — | — | **#454** | E8 Teil a: Block 2 mit Zahlungsstrombild, Block 4 mit Spannenbild und Verlauf, Gliederung mit Nominalsumme und Differenzspalte, Brückenbild, „Was daraus im Lauf wird", Fußzeile |
+| **V-D** (§ 2.11.4) · V‑G10 · V‑G12 · Anhang D (§ 2.11.2) · Q18 (U43) · U12 · E8a‑Q4 | — | — | **#455** | E8 Teil b: Formelmappe Stufen 0 bis 3 mit Blattstruktur- und ClosedXML-Wache, Anhang-E-Checkliste in beiden Berichten und hinter dem Knopf der Ergebnisseite, Anhang-D-Gegenprobe, Fußzeile in der Knopfreihe |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3) |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2708,7 +2782,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E7** Teil c1 — K‑1, A20, Nr. 30 | Schemaschritt 105 und der zweite Fall des § 2 Nr. 16 KWKG (Regel- und Ersatzweg, Überlagerung „Sätze und Herkunft" mit den zwei Feldern), das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum (Generation 8), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt", Testdatenbank 105 mit der Anlagenart der 1030-BHKW | **#440** (Merge `ea8e2a12`) |
 | **E7** Teil c2 — Schritte E, F, G, S‑2, V‑1/V‑2, B‑4, E7c1-Reste | Schemaschritte 111 (Ersatz und Restwert je Position), 112 (Preisbasis als Kartenzustand) und 113 (Gase Nm³, Brennstoff 24 kWh), die Sperre der Mischlage § 53/§ 53a neben § 54 mit Warnung, EV-Mix ungerundet und § 51a mit der Einspeisevergütung, die Prozentarten der Brennstoff- und Stromkosten frisch, in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom (zurückgebaut #452) und der Rundungsgrund, der Rest der Überlagerung „Sätze und Herkunft" (U22), KI-Feldkatalog und Berichtsspalten zu Fall 2, Testdatenbank 113 | **#446** (Merge `41764ab0`) |
 | **E7** Teil c3 — Reste | Vbh = W_a ÷ P_Nenn in Fall 1 und Fall 2 (Rückbau von E7c2/7), `VpvCtKwh` ungerundet (E7c2‑Q5 b), Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt, E7c1‑Q8), Kapitalwert 1024 als Datenstand, B‑6 in den fünf Prioritätsdateien, die Energiesteuer-Vorschau je Wahl (E7c2‑Q8 b, Nachweisfassung 8), die Wahlen der Überlagerung als Anzeigezeilen (U22), Nr. 9h gemessen, Testdatenbank auf Generation 9 | **#452** (Merge `9c7a0023`, Nachtrag `387c2d9f`) |
-| **E8** … **E12** | V-C/V-D (die fünf Blöcke samt Block 2 und U42, Formelbericht Stufen 0–3, U41, U43, U46–U48, Anhang-D-Gegenprobe, E6‑Q1) · V-E · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E8** (die acht Fragen aus E7c3 offen, → Register R‑E7c3) |
+| **E8** Teil a — V‑C | die fünf Blöcke vollständig: Block 2 mit dem Zahlungsstrombild (U42), Block 4 mit Spannenbild und Verlauf (E6‑Q1, U49); die Gliederung mit Nominalsumme und Differenzspalte (U46), das Brückenbild (U41), „Was daraus im Lauf wird" (U47), die Fußzeile (U48) | **#454** (Merge `485052c6`) |
+| **E8** Teil b — V‑D | die Formelmappe Stufen 0 bis 3 (U12) samt Blattstruktur- und ClosedXML-Wache, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`, die Fußzeile in der Knopfreihe (E8a‑Q4) — E8 abgeschlossen | **#455** (Merge `704356a4`) |
+| **E9** … **E12** | V-E (Schritte B, C, D) · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E9** (offen die acht Fragen aus E7c3 und die sechs aus E8b, → Register R‑E7c3, R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

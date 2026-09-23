@@ -6603,6 +6603,315 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_MJ_PROBE" xml:space="preserve">
     <value>Probe: kumulierter Barwert in T ({0}) + Restwert-Barwert ({1}) = Nettobarwert ({2}).</value>
   </data>
+  <data name="WIRT_FM_PARAM_TITEL" xml:space="preserve">
+    <value>Parameter der Rechnung (je Szenario)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_NAME" xml:space="preserve">
+    <value>Name in den Formeln</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS" xml:space="preserve">
+    <value>Kalkulationszins i</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum T [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
+    <value>Preissteigerung Energie p_E (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_B" xml:space="preserve">
+    <value>Preissteigerung Betrieb p_B (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_I" xml:space="preserve">
+    <value>Preissteigerung Investition/Ersatz p_I (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_INVEST" xml:space="preserve">
+    <value>Investition — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ERTRAG" xml:space="preserve">
+    <value>Erträge — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_DAUER" xml:space="preserve">
+    <value>Nutzungsdauer — Änderung gegenüber Erwartet [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
+    <value>Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte.</value>
+  </data>
+  <data name="WIRT_FM_GRENZE" xml:space="preserve">
+    <value>Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.</value>
+  </data>
+  <data name="WIRT_FM_MJ_BASIS_PB" xml:space="preserve">
+    <value>Basis Betrieb mit p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_BASIS_PE" xml:space="preserve">
+    <value>Basis Betrieb mit p_E [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_NOMINAL" xml:space="preserve">
+    <value>Δ nominal gegenüber {0} (in T mit Restwert)</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_BARWERT" xml:space="preserve">
+    <value>Δ Barwert gegenüber {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_KUMULIERT" xml:space="preserve">
+    <value>Δ kumuliert gegenüber {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_AMORT_HILFE" xml:space="preserve">
+    <value>Nulldurchgang in diesem Jahr [a]</value>
+  </data>
+  <data name="WIRT_FM_BK_MENGE" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="WIRT_AE_TITEL" xml:space="preserve">
+    <value>Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)</value>
+  </data>
+  <data name="WIRT_AE_BLATT" xml:space="preserve">
+    <value>Checkliste Anhang E</value>
+  </data>
+  <data name="WIRT_AE_KNOPF" xml:space="preserve">
+    <value>Anhang-E-Checkliste…</value>
+  </data>
+  <data name="WIRT_AE_HINWEIS" xml:space="preserve">
+    <value>Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.</value>
+  </data>
+  <data name="WIRT_AE_SP_NR" xml:space="preserve">
+    <value>Nr.</value>
+  </data>
+  <data name="WIRT_AE_SP_THEMA" xml:space="preserve">
+    <value>Thema</value>
+  </data>
+  <data name="WIRT_AE_SP_ANFORDERUNG" xml:space="preserve">
+    <value>Anforderung</value>
+  </data>
+  <data name="WIRT_AE_SP_STELLE" xml:space="preserve">
+    <value>Stelle im Bericht</value>
+  </data>
+  <data name="WIRT_AE_SP_STAND" xml:space="preserve">
+    <value>Stand in EPOS</value>
+  </data>
+  <data name="WIRT_AE_SP_NOTE" xml:space="preserve">
+    <value>Beurteilung 1–5</value>
+  </data>
+  <data name="WIRT_AE_NOTE_FEHLER" xml:space="preserve">
+    <value>Bitte eine ganze Zahl von 1 (sehr gut) bis 5 eintragen.</value>
+  </data>
+  <data name="WIRT_AE_STAND_ERFUELLT" xml:space="preserve">
+    <value>erfüllt</value>
+  </data>
+  <data name="WIRT_AE_STAND_TEILWEISE" xml:space="preserve">
+    <value>teilweise</value>
+  </data>
+  <data name="WIRT_AE_STAND_OFFEN" xml:space="preserve">
+    <value>offen</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_0" xml:space="preserve">
+    <value>Gegenstand der Bewertung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_A" xml:space="preserve">
+    <value>A · Aufbau des Modells</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_B" xml:space="preserve">
+    <value>B · Berechnung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_C" xml:space="preserve">
+    <value>C · Auswertung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_D" xml:space="preserve">
+    <value>D · Berichterstattung</value>
+  </data>
+  <data name="WIRT_AE_OHNE_RECHNUNG" xml:space="preserve">
+    <value>keine Wirtschaftlichkeit gerechnet — erst berechnen.</value>
+  </data>
+  <data name="WIRT_AE_01_THEMA" xml:space="preserve">
+    <value>Bezeichnung und Datum</value>
+  </data>
+  <data name="WIRT_AE_01_ANF" xml:space="preserve">
+    <value>Die Maßnahme ist benannt, das Datum der Bewertung steht fest.</value>
+  </data>
+  <data name="WIRT_AE_01_STELLE" xml:space="preserve">
+    <value>Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“</value>
+  </data>
+  <data name="WIRT_AE_01_STAND" xml:space="preserve">
+    <value>Projekt, Varianten und Berichtsdatum stehen im Bericht.</value>
+  </data>
+  <data name="WIRT_AE_02_THEMA" xml:space="preserve">
+    <value>Beschreibung der Maßnahme</value>
+  </data>
+  <data name="WIRT_AE_02_ANF" xml:space="preserve">
+    <value>Die Maßnahme ist so beschrieben, dass ein Dritter versteht, worum es geht.</value>
+  </data>
+  <data name="WIRT_AE_02_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Projektbeschreibung“, „Komponenten &amp; Varianten“ · Tabellenbericht: Blatt „Übersicht“</value>
+  </data>
+  <data name="WIRT_AE_02_STAND" xml:space="preserve">
+    <value>Anlagen und Abweichungen je Variante aus den Projektdaten; eine Kurzbeschreibung der Maßnahme in Worten erfasst EPOS nicht.</value>
+  </data>
+  <data name="WIRT_AE_1_THEMA" xml:space="preserve">
+    <value>Nutzen und Lasten</value>
+  </data>
+  <data name="WIRT_AE_1_ANF" xml:space="preserve">
+    <value>Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst.</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
+  </data>
+  <data name="WIRT_AE_1_STAND" xml:space="preserve">
+    <value>Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand.</value>
+  </data>
+  <data name="WIRT_AE_2A_THEMA" xml:space="preserve">
+    <value>Quantifizierung</value>
+  </data>
+  <data name="WIRT_AE_2A_ANF" xml:space="preserve">
+    <value>Jede messbare Wirkung ist als Menge angegeben.</value>
+  </data>
+  <data name="WIRT_AE_2A_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten</value>
+  </data>
+  <data name="WIRT_AE_2A_STAND" xml:space="preserve">
+    <value>Energiemengen aus der Stundensimulation je Stand.</value>
+  </data>
+  <data name="WIRT_AE_2B_THEMA" xml:space="preserve">
+    <value>Nicht quantifizierbare Wirkungen</value>
+  </data>
+  <data name="WIRT_AE_2B_ANF" xml:space="preserve">
+    <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
+  </data>
+  <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“</value>
+  </data>
+  <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
+    <value>als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen.</value>
+  </data>
+  <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
+    <value>nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen.</value>
+  </data>
+  <data name="WIRT_AE_3A_THEMA" xml:space="preserve">
+    <value>Monetarisierung</value>
+  </data>
+  <data name="WIRT_AE_3A_ANF" xml:space="preserve">
+    <value>Die Zahlungen sind vollständig, nur echte Zahlungen fließen ein, und jede ist erklärt.</value>
+  </data>
+  <data name="WIRT_AE_3A_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“</value>
+  </data>
+  <data name="WIRT_AE_3A_STAND" xml:space="preserve">
+    <value>Zahlungen je Jahr und Position; vermiedene Kosten nur als Nachweis, keine Abschreibung als Zahlung.</value>
+  </data>
+  <data name="WIRT_AE_3B_THEMA" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen</value>
+  </data>
+  <data name="WIRT_AE_3B_ANF" xml:space="preserve">
+    <value>Wirkungen ohne Geldwert sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
+  </data>
+  <data name="WIRT_AE_4_THEMA" xml:space="preserve">
+    <value>Laufzeit und Zahlungszeitpunkte</value>
+  </data>
+  <data name="WIRT_AE_4_ANF" xml:space="preserve">
+    <value>Der Betrachtungszeitraum ist angemessen gewählt, die Zeitpunkte der Zahlungen sind bestimmt.</value>
+  </data>
+  <data name="WIRT_AE_4_STELLE" xml:space="preserve">
+    <value>Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen</value>
+  </data>
+  <data name="WIRT_AE_4_ERFUELLT" xml:space="preserve">
+    <value>Zeitraum gegen die Nutzungsdauern abgeglichen; Ersatz und Restwert je Jahr.</value>
+  </data>
+  <data name="WIRT_AE_4_TEILWEISE" xml:space="preserve">
+    <value>Zeitraum angegeben; der Abgleich meldet Positionen ohne Nutzungsdauer oder fehlt.</value>
+  </data>
+  <data name="WIRT_AE_5_THEMA" xml:space="preserve">
+    <value>Kalkulationszins</value>
+  </data>
+  <data name="WIRT_AE_5_ANF" xml:space="preserve">
+    <value>Der Zins ist aus Eigen- und Fremdkapital nachvollziehbar hergeleitet und erläutert.</value>
+  </data>
+  <data name="WIRT_AE_5_STELLE" xml:space="preserve">
+    <value>Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i)</value>
+  </data>
+  <data name="WIRT_AE_5_STAND" xml:space="preserve">
+    <value>Zins angegeben und je Szenario variiert; seine Herleitung erfasst EPOS nicht.</value>
+  </data>
+  <data name="WIRT_AE_6_THEMA" xml:space="preserve">
+    <value>Risiko, Preisänderung, Degradation</value>
+  </data>
+  <data name="WIRT_AE_6_ANF" xml:space="preserve">
+    <value>Risiken sind angesetzt oder beschrieben, unterschiedliche Preisänderungen berücksichtigt, Leistungsminderungen bedacht.</value>
+  </data>
+  <data name="WIRT_AE_6_STELLE" xml:space="preserve">
+    <value>Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“</value>
+  </data>
+  <data name="WIRT_AE_6_STAND" xml:space="preserve">
+    <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risikozuschlag nicht angesetzt und Degradation nicht gerechnet — beides deklariert.</value>
+  </data>
+  <data name="WIRT_AE_7_THEMA" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="WIRT_AE_7_ANF" xml:space="preserve">
+    <value>Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert.</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
+  </data>
+  <data name="WIRT_AE_7_STAND" xml:space="preserve">
+    <value>Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich.</value>
+  </data>
+  <data name="WIRT_AE_8_THEMA" xml:space="preserve">
+    <value>Sensitivitätsanalyse</value>
+  </data>
+  <data name="WIRT_AE_8_ANF" xml:space="preserve">
+    <value>Die Einflussgrößen sind einzeln verändert, ihre Wirkung auf den Kapitalwert ist ausgewiesen.</value>
+  </data>
+  <data name="WIRT_AE_8_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse</value>
+  </data>
+  <data name="WIRT_AE_8_TEILWEISE" xml:space="preserve">
+    <value>Zins, Energiepreissteigerung, Investition, Energiekosten und KWK-Zuschlag mit Steigung; Laufzeit, Endzahlungen und Diagramm fehlen.</value>
+  </data>
+  <data name="WIRT_AE_8_OFFEN" xml:space="preserve">
+    <value>nicht gerechnet — sie braucht eine Variante mit Referenz.</value>
+  </data>
+  <data name="WIRT_AE_9_THEMA" xml:space="preserve">
+    <value>Szenarioanalyse</value>
+  </data>
+  <data name="WIRT_AE_9_ANF" xml:space="preserve">
+    <value>Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet.</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
+  </data>
+  <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
+    <value>drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert.</value>
+  </data>
+  <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
+    <value>keine Bandbreite gerechnet.</value>
+  </data>
+  <data name="WIRT_AE_10_THEMA" xml:space="preserve">
+    <value>Auswertung</value>
+  </data>
+  <data name="WIRT_AE_10_ANF" xml:space="preserve">
+    <value>Eine Schlussfolgerung mit Entscheidungsvorschlag liegt vor und bezieht Szenarien und Sensitivität ein.</value>
+  </data>
+  <data name="WIRT_AE_10_STELLE" xml:space="preserve">
+    <value>Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite</value>
+  </data>
+  <data name="WIRT_AE_10_ERFUELLT" xml:space="preserve">
+    <value>Vorschlag mit Bandbreite und Einstufung je Variante.</value>
+  </data>
+  <data name="WIRT_AE_10_OFFEN" xml:space="preserve">
+    <value>kein Vorschlag — es fehlt eine Variante mit Kapitalwert gegenüber der Referenz.</value>
+  </data>
+  <data name="WIRT_AE_11_THEMA" xml:space="preserve">
+    <value>Transparente Darstellung</value>
+  </data>
+  <data name="WIRT_AE_11_ANF" xml:space="preserve">
+    <value>Rechnung und Ergebnisse sind so dargestellt, dass ein Dritter sie nachvollziehen kann.</value>
+  </data>
+  <data name="WIRT_AE_11_STELLE" xml:space="preserve">
+    <value>Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)</value>
+  </data>
+  <data name="WIRT_AE_11_STAND" xml:space="preserve">
+    <value>Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock.</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>
@@ -8308,7 +8617,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
   </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
-    <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen.</value>
+    <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern.</value>
   </data>
   <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
     <value>Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich.</value>
@@ -11798,6 +12107,15 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WPS_LBL_KUEHLLEISTUNG" xml:space="preserve">
     <value>Kühlleistung</value>
+  </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil Kühlung</value>
   </data>
   <data name="WPS_LBL_KENNLINIEN" xml:space="preserve">
     <value>Kenndaten Kennlinien:</value>
@@ -16549,13 +16867,142 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>DIN EN 17463 · 7 · 9 · Anhang E</value>
   </data>
   <data name="WIRT_VALERI_BLOCK_2_HINWEIS" xml:space="preserve">
-    <value>Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht).</value>
+    <value>Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine Jahresreihen.</value>
   </data>
   <data name="WIRT_VALERI_MASSNAHME" xml:space="preserve">
     <value>Maßnahme</value>
   </data>
   <data name="WIRT_VALERI_KZ_HINWEIS" xml:space="preserve">
     <value>Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die Annuität legt ihn auf gleiche Jahresbeträge um. Dynamische Amortisation und interner Zinsfuß stehen nachrichtlich (Anhang C).</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION" xml:space="preserve">
+    <value>Investition I₀</value>
+  </data>
+  <data name="WIRT_GL_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE" xml:space="preserve">
+    <value>Energiekosten</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE" xml:space="preserve">
+    <value>Erlöse</value>
+  </data>
+  <data name="WIRT_GL_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffungen</value>
+  </data>
+  <data name="WIRT_GL_RESTWERT" xml:space="preserve">
+    <value>Restwert am Ende</value>
+  </data>
+  <data name="WIRT_GL_NETTOBARWERT" xml:space="preserve">
+    <value>Nettobarwert</value>
+  </data>
+  <data name="WIRT_GL_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION_UNTER" xml:space="preserve">
+    <value>nach Zuschussabzug</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE_UNTER" xml:space="preserve">
+    <value>einschließlich CO₂-Abgabe</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE_UNTER" xml:space="preserve">
+    <value>zahlungswirksam — Block A</value>
+  </data>
+  <data name="WIRT_GL_TITEL" xml:space="preserve">
+    <value>Gliederung des Kapitalwerts — Szenario {0}</value>
+  </data>
+  <data name="WIRT_GL_UNTER" xml:space="preserve">
+    <value>Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a</value>
+  </data>
+  <data name="WIRT_GL_NOMINAL" xml:space="preserve">
+    <value>nominal {0}</value>
+  </data>
+  <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
+    <value>Differenz {0} − {1}</value>
+  </data>
+  <data name="WIRT_LW_TITEL" xml:space="preserve">
+    <value>Was daraus im Lauf wird</value>
+  </data>
+  <data name="WIRT_LW_KOPF" xml:space="preserve">
+    <value>Wirkung auf {0}</value>
+  </data>
+  <data name="WIRT_LW_ERSATZJAHRE" xml:space="preserve">
+    <value>Ersatzbeschaffungen fällig im Jahr</value>
+  </data>
+  <data name="WIRT_LW_RESTWERT" xml:space="preserve">
+    <value>Restwert am Ende, nominal</value>
+  </data>
+  <data name="WIRT_LW_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_BR_TITEL" xml:space="preserve">
+    <value>Von der Investition zur Kapitalwertdifferenz</value>
+  </data>
+  <data name="WIRT_BR_UNTER" xml:space="preserve">
+    <value>{0} gegenüber {1} · Barwerte · Szenario {2}</value>
+  </data>
+  <data name="WIRT_BR_FUSS" xml:space="preserve">
+    <value>Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a</value>
+  </data>
+  <data name="WIRT_BR_ERGEBNIS" xml:space="preserve">
+    <value>ΔKW</value>
+  </data>
+  <data name="WIRT_BR_LEG_MINDERT" xml:space="preserve">
+    <value>mindert die Differenz</value>
+  </data>
+  <data name="WIRT_BR_LEG_MEHRT" xml:space="preserve">
+    <value>mehrt die Differenz</value>
+  </data>
+  <data name="WIRT_BR_LEG_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="WIRT_BR_LEER" xml:space="preserve">
+    <value>Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe.</value>
+  </data>
+  <data name="WIRT_ZS_TITEL" xml:space="preserve">
+    <value>Zahlungsstrom je Jahr</value>
+  </data>
+  <data name="WIRT_ZS_UNTER" xml:space="preserve">
+    <value>{0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert</value>
+  </data>
+  <data name="WIRT_ZS_ERSATZJAHR" xml:space="preserve">
+    <value>Ersatzjahr</value>
+  </data>
+  <data name="WIRT_ZS_LEER" xml:space="preserve">
+    <value>Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe.</value>
+  </data>
+  <data name="WIRT_FUSS_DREI" xml:space="preserve">
+    <value>Drei Szenarien gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_TEIL" xml:space="preserve">
+    <value>{0} von drei Szenarien gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_KEINE" xml:space="preserve">
+    <value>Noch kein Szenario gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_VORGABEN" xml:space="preserve">
+    <value>Annahmen aus Vorgaben, nichts gepflegt</value>
+  </data>
+  <data name="WIRT_FUSS_GEPFLEGT" xml:space="preserve">
+    <value>Annahmen gepflegt: {0}</value>
+  </data>
+  <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
+    <value>Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen.</value>
+  </data>
+  <data name="WIRT_ZR_STAND" xml:space="preserve">
+    <value>Stand:</value>
+  </data>
+  <data name="WIRT_ZR_SZENARIO" xml:space="preserve">
+    <value>Szenario:</value>
+  </data>
+  <data name="WIRT_ZR_SUMME" xml:space="preserve">
+    <value>Summe nominal</value>
+  </data>
+  <data name="WIRT_ZR_HINWEIS" xml:space="preserve">
+    <value>Nominal und unabgezinst, Ausgaben negativ; das Jahr 0 trägt die Investition nach Zuschussabzug, das letzte Jahr den Restwert. Die Zeile „Barwert“ zinst jede Spalte mit i = {0} % ab — dieselben Zahlen wie die Gliederung unter „Woraus entsteht die Zahl?“; ihre Summe ist der Nettobarwert ({1} €).</value>
+  </data>
+  <data name="WIRT_ZR_ABWEICHEND" xml:space="preserve">
+    <value>{0}: Zu den gespeicherten Ergebnissen liegen keine passenden Jahresreihen vor — „Berechnen“ rechnet sie neu.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.</value>
@@ -19482,8 +19929,8 @@ Möchten Sie das zulassen?</value>
   <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
     <value>Direktabrechnung nach kWh</value>
   </data>
-  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
-    <value>Direktabrechnung: {0} €/kWh</value>
+  <data name="ETV_FORMEL_JE_KWH" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh/{2} = {3} €/{2} (gespeichert je {2})</value>
   </data>
   <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
     <value>Heizwert [{0}]</value>
@@ -21751,13 +22198,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
-    <value>Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach.</value>
+    <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
   </data>
   <data name="KI_DLG_BADM_TYP_ERL" xml:space="preserve">
-    <value>Der Typ des markierten Satzes aus seinem Kopfsatz.</value>
+    <value>Der Typ des markierten Satzes, gewählt aus der Typliste; er bestimmt das Wochenprofil.</value>
   </data>
   <data name="KI_DLG_BADM_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>Die Beschreibung des markierten Satzes.</value>
+    <value>Die Beschreibung des markierten Satzes als freier Text.</value>
   </data>
   <data name="KI_DLG_BADM_JAHRESSUMME_NAME" xml:space="preserve">
     <value>Jahressumme</value>
@@ -21886,7 +22333,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Brennwert des Brennstoffs. Er wird für Brennwertgeräte gebraucht und steht nur an Trägern, die ihn führen.</value>
   </data>
   <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
-    <value>Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird.</value>
+    <value>Die Einheit, in der der Arbeitspreis eingegeben wird: die Mengeneinheit des Trägers (etwa Liter, Kubikmeter oder Kilogramm) oder die Kilowattstunde, sobald ein Heizwert gepflegt ist. Gespeichert wird immer der Preis je Mengeneinheit; ein Wechsel rechnet nur die Anzeige über den Heizwert um.</value>
   </data>
   <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit, in der die Preiskette rechnet — Anzeige. Sie folgt der Preisbasis und den aktiven Umrechnungsregeln.</value>
@@ -24438,6 +24885,12 @@ Möchten Sie das zulassen?</value>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.</value>
   </data>
+  <data name="ETV_PREISBASIS_ARIA" xml:space="preserve">
+    <value>Einheit des Arbeitspreises</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_HEIZWERT" xml:space="preserve">
+    <value>€/kWh ist wählbar, sobald ein Heizwert gepflegt ist.</value>
+  </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Senken: {0}</value>
   </data>
@@ -25961,5 +26414,140 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
     <value>{0} Sätze eingelesen.</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_NAME" xml:space="preserve">
+    <value>Gewählter Satz</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_ERL" xml:space="preserve">
+    <value>Der Katalogsatz, dessen Werte das Stammblatt zeigt. Ihn zu setzen wählt die Zeile in der Liste – wie ein Klick; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des gewählten Katalogsatzes; er ist der Schlüssel des Satzes und hier nur lesbar – einen anderen Namen bekommt ein Satz über „Duplizieren…“.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
+    <value>Die Investitionskosten des Geräts laut Katalog in Euro.</value>
+  </data>
+  <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
+    <value>Der Platzbedarf des Geräts im Aufstellraum in Kubikmetern.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
+    <value>Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text).</value>
+  </data>
+  <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Die erwartete Nutzungsdauer des Geräts in Jahren.</value>
+  </data>
+  <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
+    <value>Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers.</value>
+  </data>
+  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
+    <value>Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
+    <value>Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
+    <value>Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro.</value>
+  </data>
+  <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
+    <value>Der Katalogwert „{0}“ des gewählten Satzes.</value>
+  </data>
+  <data name="KI_DLG_KBROW_NURLESEN" xml:space="preserve">
+    <value>Diese Verwaltung ist nur zum Ansehen geöffnet; Werte lassen sich hier nicht ändern.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT_WEG" xml:space="preserve">
+    <value>In „{0}“ lässt sich gerade nichts setzen: {1}</value>
+  </data>
+  <data name="KI_DLG_BADM_MONAT_ERL" xml:space="preserve">
+    <value>Der Bedarf des gewählten Satzes im {0}; alle zwölf Monatswerte sind Pflicht, die Jahressumme ergibt sich aus ihnen.</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_SATZ" xml:space="preserve">
+    <value>In „{0}“ ist kein Satz gewählt; erst den Satz wählen (Feld „satz“).</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
+  </data>
+  <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
+    <value>Kältekreis</value>
+  </data>
+  <data name="SIMENG_SENKE_KAELTEZIEL_ALTSPALTE" xml:space="preserve">
+    <value>Wärmesenke: Die Anlage {0} trägt in der Altspalte WS_Ziel das Kälteziel „Kältekreis". Die Altspalten kennen nur Wärmeziele — dort rechnet sie auf dem Heizkreis; eine Kältesenke steht allein in der Senkenliste.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KUEHL_QUELLSPEICHER" xml:space="preserve">
+    <value>Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_PROJEKT_AUS" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen" aus) — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_QUELLSPEICHER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Kühlbetrieb ohne Kühlkennlinie im Projekt — zu diesem Gerät liegen keine Kühlkenndaten vor; die Maschine heizt nur.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG" xml:space="preserve">
+    <value>Der Katalog führt zu diesem Gerät eine Kühlkennlinie; sie lässt sich aus dem Katalog nachholen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_ACHSEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen mehrfach mit abweichenden Werten — es gilt jeweils die zuerst gespeicherte Zeile.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts.</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}).</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_VERLAENGERT" xml:space="preserve">
+    <value>linear verlängert</value>
+  </data>
+  <data name="SIMENG_KAELTE_KENNLINIE_GEKAPPT" xml:space="preserve">
+    <value>deren Werte gelten</value>
+  </data>
+  <data name="SIMENG_KAELTE_WP_EINZELPUNKT" xml:space="preserve">
+    <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: Die Kühlkennlinie hat nur eine Stützstelle ({2} °C) — Kälteleistung und EER gelten in jeder Stunde unverändert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG" xml:space="preserve">
+    <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %), Kältestrom {3} MWh/a, EER-Jahreswert {4}; {5} Kühltage.</value>
+  </data>
+  <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
+    <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+    <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
+    <value>Deckungsprobe Kälte: {0} Wärmebuchungen im Kühlkanal, {1} Stunden mit verändertem Kühlkanal, {2} Stunden mit verändertem Wärmekanal, {3} Stunden mit offener Kältebilanz (größte Abweichung {4} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke in Heizlage nicht übernommen (Vorlauf {2} °C) — sie beschreiben die Kälteleistung am Verdampfer im Heizbetrieb, keinen Kühlbetrieb.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
+    <value>Wärmepumpe „{0}": {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
+    <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>
 </root>
