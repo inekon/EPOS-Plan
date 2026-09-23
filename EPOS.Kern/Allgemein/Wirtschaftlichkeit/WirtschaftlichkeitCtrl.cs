@@ -5696,8 +5696,9 @@ namespace WindowsFormsApplication1
             // zieht die PV-Eigennutzung nicht mehr vorab ab. Die Menge traegt damit KWK-
             // UND PV-Eigenverbrauch, die § 9b-Korrektur oben greift auf beide, und der
             // Schluessel bringt beide Anlagen ein — beide brutto aus der Strommatrix.
-            // Die Ausweiszeile PvVermiedenerBezug (Flat-Preis, auch ohne Rollentarif)
-            // bleibt daneben stehen.
+            // Die Ausweiszeile PvVermiedenerBezug (Flat-Preis) wird weiter gerechnet und
+            // gespeichert; die RUBRIK zeigt sie nur, wo die Aufteilung keinen PV-Anteil
+            // traegt (WirtschaftlichkeitZeilen.PvVermiedenFlat).
             erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
 
             erg.Hinweis = eingabe.Hinweis;

@@ -796,7 +796,7 @@ namespace WindowsFormsApplication1
                                                       e.VermiedenArbeitJahr != 0);
             bool hatBefreiungAusweis = Irgendein(menge, e => e.StromsteuerBefreiungJahr1 > 0) &&
                                        !befreiungAlsErloes;
-            bool hatPvAusweis = Irgendein(menge, e => e.PvVermiedenerBezug.HasValue ||
+            bool hatPvAusweis = Irgendein(menge, e => PvVermiedenFlat(e).HasValue ||
                                                       e.PvKappungsverlustKwh > 0 ||
                                                       e.PvVerguetungsausfallKwh > 0);
             if (hatVermieden || hatBefreiungAusweis || hatPvAusweis)
@@ -893,9 +893,14 @@ namespace WindowsFormsApplication1
                 }
 
                 // B2 — PV-Ausweis: vermiedener Bezug sowie Kappungs- und Ausfallmengen.
-                if (Irgendein(menge, e => e.PvVermiedenerBezug.HasValue))
+                // Der vermiedene Bezug zum Flat-Preis steht nur, wo die Aufteilung der
+                // vermiedenen Kosten KEINEN PV-Anteil trägt (Flat-Tarif, Stand vor E7):
+                // Im Rollentarif ersetzt der PV-Anteil die Zeile (Orchestrator-Entscheid
+                // 23.09.2026, Frage 6 der Etappe E7a) — sonst stünden zwei Beträge für
+                // denselben vermiedenen Bezug untereinander.
+                if (Irgendein(menge, e => PvVermiedenFlat(e).HasValue))
                     Zu(bZeilen, Ausweis("PV_VERMIEDEN", MyResource.Resource.WIRT_ZEILE_PV_VERMIEDEN,
-                                        e => e.PvVermiedenerBezug), WirtZeile.KOMPONENTE_PV);
+                                        e => PvVermiedenFlat(e)), WirtZeile.KOMPONENTE_PV);
                 if (Irgendein(menge, e => e.PvVerguetungsausfallKwh > 0))
                 {
                     Zu(bZeilen, Ausweis("PV_AUSFALL_KWH",
@@ -1313,6 +1318,18 @@ namespace WindowsFormsApplication1
                     if (Vermiedenzeile(e, k) != null) { gefunden.Add(k); break; }
             }
             return gefunden;
+        }
+
+        /// <summary>
+        /// Der vermiedene Bezug der Photovoltaik zum Flat-Preis [€/a] — <c>null</c>, wo die
+        /// Aufteilung der vermiedenen Kosten einen PV-Anteil trägt: Dann ersetzt der
+        /// Anteil (Rollentarif, Konzept § 6.3 Nr. 32) die Zeile. Der Wert selbst bleibt
+        /// gerechnet und gespeichert; nur die Rubrik zeigt ihn dann nicht.
+        /// </summary>
+        private static double? PvVermiedenFlat(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null) return null;
+            return Vermiedenzeile(e, WirtZeile.KOMPONENTE_PV) != null ? null : e.PvVermiedenerBezug;
         }
 
         /// <summary>Die Aufteilungszeile EINER Komponente; <c>null</c> = dieses Ergebnis
