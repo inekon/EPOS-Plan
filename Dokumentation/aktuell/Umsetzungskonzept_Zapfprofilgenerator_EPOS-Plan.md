@@ -1330,10 +1330,12 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 (N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
 dem Merge-Stand grün), Abweichungen und Festlegungen in N7 bis N9; die Sichtabnahme unter Windows
 steht aus. Z2 Gruppe 1 (Rechenweg der Auslegung) ist auf dem Zweig `z2` umgesetzt, gegengeprüft und
-nachgebessert; Abweichungen und Festlegungen in N10, der Nachzug der Testdatenbank steht mit dem Merge
-aus. Z2 Gruppe 2 (Oberfläche der Auslegung: DTO, Hülle, Überlagerung „Auslegung" samt Konstruktor,
-`SummenlinieModell` und die Bilder der Auslegung) ist auf demselben Zweig umgesetzt, gegengeprüft und
-nachgebessert; Abweichungen und Festlegungen in N11. Stand je Stufe in der Statusdatei (#438, #443).
+nachgebessert; Abweichungen und Festlegungen in N10. Z2 Gruppe 2 (Oberfläche der Auslegung: DTO, Hülle,
+Überlagerung „Auslegung" samt Konstruktor, `SummenlinieModell` und die Bilder der Auslegung) ist auf
+demselben Zweig umgesetzt, gegengeprüft und nachgebessert; Abweichungen und Festlegungen in N11. Z2 ist
+mit dem Stand von `ios_migration_september` zusammengeführt, die Testdatenbank nachgezogen und das Gate
+auf dem Merge-Stand grün; die Sichtabnahme unter Windows steht aus. Stand je Stufe in der Statusdatei
+(#438, #443, #450).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:

@@ -350,6 +350,10 @@ Terminologiequellen: EN 12831-3, EN 15316-3, EN 806.
 | Bilanzgrenze | balance boundary | |
 | Auslegung | design | „Auslegung…" → „Design…" |
 | Summenlinie | cumulative curve | Summenlinienverfahren der Speicherauslegung |
+| Bedarfstag | design day | Zapftag der Auslegung (Konstruktor, Referenztag, Normtag); **nicht** „demand day" |
+| Wertepaarkurve | pairs curve | Speichervolumen über Erzeugerleistung, Erweiterung des Nachweisverfahrens |
+| Verfahrensvergleich | method comparison | Speicherauslegung nach mehreren Verfahren, Regel „größtes Volumen" |
+| Konstruktor | constructor | „Bedarfstag konstruieren…" → „Construct design day…" |
 | Bedarfskennzahl | demand index | Kennzahl der Wohnungstabelle |
 | Nenninhalt | nominal capacity | Speicher; **nicht** „nominal volume" (das ist Nennvolumen) |
 | Katalogversion | catalogue version | Schreibweise „catalogue" wie im Bestand |
