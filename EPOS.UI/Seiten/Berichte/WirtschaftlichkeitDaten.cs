@@ -157,6 +157,13 @@ public sealed class ZahlungsreihenTafel
 
     /// <summary>Die Zeile unter der Tafel: nominal, Vorzeichen, Zins und Nettobarwert.</summary>
     public string Unterzeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E8a (U42) — das <b>Zahlungsstrombild</b> desselben Standes im selben Szenario
+    /// (<c>ChartRenderer.ZahlungsstromModell</c>): die Spalten der Mehrjahrestafel als
+    /// gestapelte Jahresbalken, Ausgaben nach unten, Ersatzjahre markiert. <c>null</c> = keines.
+    /// </summary>
+    public Zeichenmodell? Bild { get; set; }
 }
 
 /// <summary>

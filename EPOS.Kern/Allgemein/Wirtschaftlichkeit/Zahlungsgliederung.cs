@@ -332,6 +332,11 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<string, Dictionary<int, Zahlungsgliederung>> _je =
             new Dictionary<string, Dictionary<int, Zahlungsgliederung>>(StringComparer.Ordinal);
 
+        /// <summary>Die Verlaufslinie hinter jeder aufgenommenen Gliederung — die Quelle der
+        /// Positionen (<see cref="Posten"/>).</summary>
+        private readonly Dictionary<string, Dictionary<int, VerlaufSerie>> _serien =
+            new Dictionary<string, Dictionary<int, VerlaufSerie>>(StringComparer.Ordinal);
+
         /// <summary>Der Betrachtungszeitraum der Läufe [a].</summary>
         public int Jahre;
 
@@ -347,6 +352,21 @@ namespace WindowsFormsApplication1
             Zahlungsgliederung g;
             return szenario != null && _je.TryGetValue(szenario, out je) && je.TryGetValue(idProjekt, out g)
                  ? g : null;
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U42) — die <b>Positionen des Zahlungsstroms</b> eines Standes in einem
+        /// Szenario: die Mehrjahrestafel (<see cref="Mehrjahresbild"/>) aus DERSELBEN
+        /// Verlaufslinie wie die Gliederung, mit denselben Spalten wie im Bericht. Es gibt sie
+        /// genau dort, wo es die Gliederung gibt — also nur, wenn die Reihen zum gespeicherten
+        /// Lauf passen; <c>null</c> = keine.
+        /// </summary>
+        public Mehrjahresbild Posten(int idProjekt, string szenario)
+        {
+            Dictionary<int, VerlaufSerie> je;
+            VerlaufSerie serie;
+            return szenario != null && _serien.TryGetValue(szenario, out je) && je.TryGetValue(idProjekt, out serie)
+                 ? Mehrjahresbild.Baue(serie) : null;
         }
 
         /// <summary>Trägt der Stand in ALLEN drei Szenarien eine Gliederung?</summary>
@@ -394,6 +414,7 @@ namespace WindowsFormsApplication1
                 if (lauf == null) continue;
                 double zins = p.FuerSzenario(s).Zinssatz;
                 var je = new Dictionary<int, Zahlungsgliederung>();
+                var serien = new Dictionary<int, VerlaufSerie>();
                 foreach (VerlaufSerie serie in lauf.Absolut)
                 {
                     if (serie == null || serie.Bild == null) continue;
@@ -405,10 +426,15 @@ namespace WindowsFormsApplication1
                         WirtschaftlichkeitErgebnis e = Finde(ergebnisse, serie.IdProjekt, s);
                         passt = e != null && Zahlungsgliederung.Passt(g, e.Kapitalwert);
                     }
-                    if (passt) je[serie.IdProjekt] = g;
+                    if (passt)
+                    {
+                        je[serie.IdProjekt] = g;
+                        serien[serie.IdProjekt] = serie;
+                    }
                     else satz.Abweichend.Add(serie.IdProjekt);
                 }
                 satz._je[s] = je;
+                satz._serien[s] = serien;
             }
 
             // Ein Stand mit gerechnetem Ergebnis, zu dem der Verlauf gar keine Reihe trägt

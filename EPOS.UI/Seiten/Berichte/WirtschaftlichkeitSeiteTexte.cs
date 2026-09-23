@@ -135,6 +135,9 @@ public sealed class WirtschaftlichkeitSeiteTexte
     public string ZrStand { get; set; } = T("WIRT_ZR_STAND", "Stand:");
     /// <summary>WIRT_ZR_SZENARIO — die Wahl des Szenarios in Block 2 (ETAPPE E8a).</summary>
     public string ZrSzenario { get; set; } = T("WIRT_ZR_SZENARIO", "Szenario:");
+    /// <summary>WIRT_ZS_TITEL — die Bezeichnung des Zahlungsstrombilds in Block 2 für die
+    /// Sprachausgabe (ETAPPE E8a, U42).</summary>
+    public string ZahlungsstromBild { get; set; } = T("WIRT_ZS_TITEL", "Zahlungsstrom je Jahr");
     /// <summary>WIRT_VALERI_KZ_HINWEIS — die Einordnung der Kennzahlen in Block 3.</summary>
     public string KennzahlHinweis { get; set; } = T("WIRT_VALERI_KZ_HINWEIS",
         "Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die "

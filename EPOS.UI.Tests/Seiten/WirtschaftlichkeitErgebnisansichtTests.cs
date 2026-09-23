@@ -999,6 +999,72 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.NotNull(Abschnitt(mitTafel, 1).QuerySelector(".epos-wirt-zahlungsreihen"));
     }
 
+    /// <summary>
+    /// ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1, Lesart a): Unter der Jahrestafel von Block 2
+    /// steht das <b>Zahlungsstrombild</b> desselben Standes im selben Szenario — ein
+    /// SVG-Baustein ohne Zoom, dessen Schichten Jahr, Spalte und Betrag nennen. Es folgt den
+    /// zwei Klapplisten; eine Tafel ohne Bild zeigt keines.
+    /// </summary>
+    [Fact]
+    public void Block_2_zeigt_das_Zahlungsstrombild_unter_der_Tafel_und_folgt_der_Wahl()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein"), (BHKW, "BHKW") };
+        ZahlungsreihenTafel wp = Zahlungstafel(WP, 0, "W0");
+        wp.Bild = Zahlungsstrombild(-500.0);
+        ZahlungsreihenTafel bhkw = Zahlungstafel(BHKW, 0, "B0");
+        bhkw.Bild = Zahlungsstrombild(-700.0);
+        stand.Ansicht.Zahlungsreihen = new[] { wp, bhkw, Zahlungstafel(BHKW, 2, "B2") };
+        var cut = Zeige(stand);
+
+        IElement b2 = Abschnitt(cut, 1);
+        IElement bild = b2.QuerySelector(".epos-wirt-zahlungsstrom-teil")!;
+        Assert.Single(bild.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.NotNull(bild.QuerySelector("[data-marke='nulllinie']"));
+        Assert.Equal("Jahr 1 · Energiekosten: −500 €",
+                     bild.QuerySelector("rect[data-marke='reihe:Energiekosten']")!.GetAttribute("data-wert"));
+        Assert.NotNull(bild.QuerySelector("[data-wert='Jahr 1: Ersatzjahr']"));
+        string[] folge = b2.QuerySelectorAll(".epos-wirt-zahlungsreihen, .epos-wirt-zahlungsstrom-teil")
+                           .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(2, folge.Length);
+        Assert.Contains("epos-wirt-zahlungsreihen", folge[0]);
+        Assert.Contains("epos-wirt-zahlungsstrom-teil", folge[1]);
+
+        // Die Wahl des Standes wechselt das Bild mit der Tafel.
+        b2.QuerySelectorAll("select")[0].Change(BHKW.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("Jahr 1 · Energiekosten: −700 €",
+                     Abschnitt(cut, 1).QuerySelector(".epos-wirt-zahlungsstrom-teil rect[data-marke='reihe:Energiekosten']")!
+                                      .GetAttribute("data-wert"));
+
+        // Eine Tafel ohne Bild zeigt keines.
+        Abschnitt(cut, 1).QuerySelectorAll("select")[1].Change("2");
+        Assert.Equal("B2", Zellen(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsreihen tbody tr")[0])[0]);
+        Assert.Empty(Abschnitt(cut, 1).QuerySelectorAll(".epos-wirt-zahlungsstrom-teil"));
+    }
+
+    /// <summary>Ein Probebild des Zahlungsstroms: Investition im Jahr 0, Energiekosten
+    /// <paramref name="energie"/> im Jahr 1, Einspeisung, Ersatzjahr 1.</summary>
+    private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Zahlungsstrombild(double energie)
+        => WindowsFormsApplication1.ChartRenderer.ZahlungsstromModell(
+            new List<WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe>
+            {
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe.INVEST_ERSATZ,
+                    Name = "Investition und Ersatz", JeJahr = new[] { -1000.0, -200.0 }
+                },
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = "ENERGIE", Name = "Energiekosten", JeJahr = new[] { 0.0, energie }
+                },
+                new WindowsFormsApplication1.ChartRenderer.Zahlungsstromreihe
+                {
+                    Schluessel = "EINSPEISUNG", Name = "Einspeiseerlös", JeJahr = new[] { 0.0, 900.0 }
+                }
+            }, new[] { 1 }, null);
+
     /// <summary>Eine Probetafel für Block 2: die erste Zelle nennt Stand und Szenario.</summary>
     private static ZahlungsreihenTafel Zahlungstafel(int stand, int szenario, string kennung) => new ZahlungsreihenTafel
     {

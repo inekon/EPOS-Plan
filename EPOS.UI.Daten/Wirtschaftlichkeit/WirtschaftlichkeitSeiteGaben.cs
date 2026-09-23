@@ -810,12 +810,15 @@ namespace WindowsFormsApplication1
             // gezeigten Stände (ValERI-Block 2) — aus den Zahlungsbildern des Laufs dieser
             // Sitzung (der Verlauf rechnet sie mit „Berechnen" ohnehin mit), nur wo sie zum
             // gespeicherten Ergebnis passen. Gerechnet wird hier nichts; die Leitversion ist
-            // die Regel des Kerns.
+            // die Regel des Kerns. U42: Jede Tafel trägt ihr Zahlungsstrombild.
             var staendeSpalten = new List<KeyValuePair<int, string>>();
             foreach (int id in spaltenIds) staendeSpalten.Add(new KeyValuePair<int, string>(id, Name(id)));
             Zahlungsgliederungen gliederungen = Gliederungen();
             ansicht.Leitversion = Zahlungsgliederungen.Leitversion(_ergebnisse, spaltenIds, idReferenz);
-            ansicht.Zahlungsreihen = ZahlungsreihenAnsicht.Jahrestafeln(gliederungen, staendeSpalten, SZENARIEN, kultur);
+            var szenarionamen = new List<string>();
+            for (int i = 0; i < SZENARIEN.Length; i++) szenarionamen.Add(SzenarioAnzeige(i));
+            ansicht.Zahlungsreihen = ZahlungsreihenAnsicht.Jahrestafeln(gliederungen, staendeSpalten, SZENARIEN, kultur,
+                                                                        szenarionamen);
             ansicht.Zahlungsstaende = ZahlungsreihenAnsicht.Staende(ansicht.Zahlungsreihen, staendeSpalten);
             ansicht.Zahlungshinweis = ZahlungsreihenAnsicht.Hinweis(gliederungen, staendeSpalten, kultur);
 

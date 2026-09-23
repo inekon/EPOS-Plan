@@ -79,6 +79,9 @@
          Kapitalwertdifferenz - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Bruecke.cs" />
 
+    <!-- Etappe E8a (U42): das Zahlungsstrombild je Jahr - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Zahlungsstrom.cs" />
+
     <!-- Zapfprofilgenerator Z1: die Vorschaubilder Tagesgang, Wochenprofil und
          Jahresgang - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Zapfprofil.cs" />

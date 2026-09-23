@@ -10,9 +10,9 @@ namespace WindowsFormsApplication1
     /// ETAPPE E8a (Konzept Wirtschaftlichkeit § 2.11.4 V‑C, Mockup Kategorie 8) — die
     /// <b>Tafeln der Zahlungsreihen</b> der Wirtschaftlichkeitsseite, fertig formatiert aus
     /// den Gliederungen des Kerns (<see cref="Zahlungsgliederungen"/>): ValERI-Block 2
-    /// „Zahlungsreihen" je Stand und Szenario, die Gliederung des Kapitalwerts mit
-    /// Nominalsumme und Differenzspalte (U46), das Brückenbild (U41) und die Tafel „Was
-    /// daraus im Lauf wird" (U47).
+    /// „Zahlungsreihen" je Stand und Szenario samt Zahlungsstrombild (U42), die Gliederung
+    /// des Kapitalwerts mit Nominalsumme und Differenzspalte (U46), das Brückenbild (U41) und
+    /// die Tafel „Was daraus im Lauf wird" (U47).
     ///
     /// <para><b>Gerechnet wird hier nichts.</b> Jede Zahl ist ein Bestandteil, ein Barwert
     /// oder eine Nominalsumme der Gliederung — die Hülle ordnet und formatiert nur, die
@@ -37,9 +37,13 @@ namespace WindowsFormsApplication1
         /// <param name="szenarien">Die Persistenzwerte der Szenarien; der Index ist die Nummer
         /// der Szenario-Klappliste.</param>
         /// <param name="kultur">Die Kultur der Zahlen.</param>
+        /// <param name="szenarionamen">U42: die Anzeigenamen der Szenarien in derselben
+        /// Reihenfolge — sie stehen in der Unterzeile des Zahlungsstrombilds; <c>null</c> = die
+        /// Persistenzwerte.</param>
         internal static List<ZahlungsreihenTafel> Jahrestafeln(Zahlungsgliederungen satz,
                                                                IList<KeyValuePair<int, string>> staende,
-                                                               IList<string> szenarien, CultureInfo kultur)
+                                                               IList<string> szenarien, CultureInfo kultur,
+                                                               IList<string> szenarionamen = null)
         {
             var tafeln = new List<ZahlungsreihenTafel>();
             if (satz == null || staende == null || szenarien == null) return tafeln;
@@ -48,6 +52,8 @@ namespace WindowsFormsApplication1
                 {
                     Zahlungsgliederung g = satz.Von(stand.Key, szenarien[nummer]);
                     if (g == null) continue;
+                    string szenarioname = szenarionamen != null && nummer < szenarionamen.Count
+                        ? szenarionamen[nummer] : szenarien[nummer];
                     tafeln.Add(new ZahlungsreihenTafel
                     {
                         IdStand = stand.Key,
@@ -55,10 +61,32 @@ namespace WindowsFormsApplication1
                         Tafel = Jahrestafel(g, kultur),
                         Unterzeile = string.Format(kultur, MyResource.Resource.WIRT_ZR_HINWEIS,
                                                    g.ZinsProzent.ToString("N2", kultur),
-                                                   g.SummeBarwerte.ToString(GELD, kultur))
+                                                   g.SummeBarwerte.ToString(GELD, kultur)),
+                        Bild = Zahlungsstrom(satz, stand.Key, szenarien[nummer], stand.Value, szenarioname, kultur)
                     });
                 }
             return tafeln;
+        }
+
+        /// <summary>
+        /// U42 (Anwenderentscheid E8a‑Q1, Lesart a): das <b>Zahlungsstrombild</b> eines Standes
+        /// in einem Szenario — die Positionen der Mehrjahrestafel aus demselben Lauf wie die
+        /// Tafel darüber, gezeichnet vom Renderer des Kerns. <c>null</c> ohne Positionen; ein
+        /// Zeichenfehler lässt das Bild aus, nie die Tafel.
+        /// </summary>
+        internal static Zeichenmodell Zahlungsstrom(Zahlungsgliederungen satz, int idStand, string szenario,
+                                                    string name, string szenarioname, CultureInfo kultur)
+        {
+            Mehrjahresbild posten = satz == null ? null : satz.Posten(idStand, szenario);
+            if (posten == null) return null;
+            try
+            {
+                return ChartRenderer.ZahlungsstromModell(
+                    ChartRenderer.Zahlungsstromreihe.Aus(posten),
+                    ChartRenderer.Zahlungsstromreihe.Ersatzjahre(posten),
+                    ChartRenderer.ZahlungsstromTexte.Fuer(name ?? "", szenarioname ?? "", kultur));
+            }
+            catch { return null; }
         }
 
         /// <summary>

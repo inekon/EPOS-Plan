@@ -69712,6 +69712,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_ERSATZJAHR {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_ERSATZJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsstrom je Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). Angesetzt wurde höchstens die Investitionssumme; die Anfangsauszahlung steht damit auf 0 €. ähnelt.
         /// </summary>
         public static string WIRT_ZUSCHUSS_UEBERHANG {

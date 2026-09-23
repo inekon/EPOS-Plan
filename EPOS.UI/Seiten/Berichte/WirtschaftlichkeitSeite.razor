@@ -1534,7 +1534,8 @@
     /// Summe nominal und die Barwerte — dieselben Zahlen wie die Gliederung unter „Woraus
     /// entsteht die Zahl?". Zwei Klapplisten wählen Stand und Szenario (Vorgabe: die
     /// Leitversion im Erwartungsfall); sie wählen nur, was die Hülle schon geliefert hat.
-    /// Ohne Jahresreihen (kein Lauf in dieser Sitzung) steht EINE benannte Zeile.
+    /// Unter der Tafel steht das Zahlungsstrombild (U42) desselben Standes im selben
+    /// Szenario. Ohne Jahresreihen (kein Lauf in dieser Sitzung) steht EINE benannte Zeile.
     /// </summary>
     private RenderFragment Zahlungsreihenteil => @<div class="epos-wirt-zahlungsreihen-teil">
         @if (Zahlungsreihe is ZahlungsreihenTafel tafel)
@@ -1549,6 +1550,17 @@
             @if (!string.IsNullOrEmpty(tafel.Unterzeile))
             {
                 <Herleitungszeile Text="@tafel.Unterzeile" />
+            }
+            @* ETAPPE E8a (U42, E8a-Q1 Lesart a): das ZAHLUNGSSTROMBILD unter der Jahrestafel -
+               derselbe Stand im selben Szenario, die Spalten der Mehrjahrestafel als gestapelte
+               Jahresbalken, Ausgaben nach unten, Ersatzjahre markiert. Ein reines Pixelbild:
+               ohne Zoom, die Legende schaltet nichts; die Kennung traegt Stand und Szenario. *@
+            @if (tafel.Bild is not null)
+            {
+                <div class="epos-wirt-zahlungsstrom-teil">
+                    <DiagrammSvg Modell="@tafel.Bild" Kennung="@($"zahlungsstrom-{tafel.IdStand}-{tafel.Szenario}")"
+                                 Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false" />
+                </div>
             }
             @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
             {

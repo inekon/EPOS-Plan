@@ -377,6 +377,9 @@ namespace WindowsFormsApplication1
         /// passen 21 Jahresspalten nicht auf A4. Spalten ohne einen einzigen Betrag
         /// entfallen (dieselbe Konvention wie bei den Kennzahlzeilen), die Schrift ist
         /// schmaler als in den übrigen Tabellen.</para>
+        ///
+        /// <para><b>ETAPPE E8a (U42):</b> Über jeder Tafel steht ihr Zahlungsstrombild — die
+        /// Positionsspalten als gestapelte Jahresbalken (<see cref="ChartRenderer.ZahlungsstromModell"/>).</para>
         /// </summary>
         private static void SchreibeMehrjahres(WordKontext k, BerichtsDaten daten,
                                                WirtschaftlichkeitVerlauf verlauf,
@@ -400,6 +403,14 @@ namespace WindowsFormsApplication1
                                   ? " (" + serie.Fehlgrund + ")" : ""));
                     continue;
                 }
+
+                // ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1, Lesart a): das Zahlungsstrombild
+                // über der Tafel — dieselben Spalten als gestapelte Jahresbalken, Ausgaben nach
+                // unten, Ersatzjahre markiert; dasselbe Bild wie in Block 2 der Seite.
+                Zeichnung.Zeichenmodell strom = Sicher(() => ChartRenderer.ZahlungsstromModell(
+                    ChartRenderer.Zahlungsstromreihe.Aus(bild), ChartRenderer.Zahlungsstromreihe.Ersatzjahre(bild),
+                    ChartRenderer.ZahlungsstromTexte.Fuer(v.Anzeige, MyResource.Resource.WIRT_SZEN_ERWARTET, k.Kultur)));
+                if (strom != null) k.Bild(strom, 620, strom.Hoehe / 2);
 
                 int wJahr = 620;
                 int wCol = (WordBerichtGenerator.INHALT_B - wJahr) / bild.Spalten.Count;

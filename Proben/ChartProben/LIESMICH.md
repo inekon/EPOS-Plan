@@ -304,7 +304,9 @@ wie die Bilder der Etappe E6: alle alten Zeilen gleich, zehn neu, keines geände
 
 ---
 
-## Etappe E8a der Wirtschaftlichkeit: das Brückenbild
+## Etappe E8a der Wirtschaftlichkeit: Brückenbild und Zahlungsstrombild
+
+### Das Brückenbild
 
 `ChartRenderer.KapitalwertBruecke` zeichnet „Von der Investition zur Kapitalwertdifferenz" als
 Wasserfall: je Bestandteil (Investition, Betriebskosten, Energiekosten, Erlöse,
@@ -323,8 +325,33 @@ Proben stehen in `Program.Bruecke.cs`; ihre Texte sind die deutsche Vorgabe (`Br
 | SVG-Probe | `svg_c_kapitalwert_bruecke` | Pixelbildprobe der Gruppe (c): jede Säule mit ihrem Wert |
 | SVG-Probe | `svg_kapitalwert_bruecke_treppe`, `…_treppe_unter_referenz` | die Säulen bilden eine Treppe: jede beginnt auf der Höhe, auf der die vorige endet, die Ergebnissäule reicht von der Nulllinie bis zum letzten Stand |
 
-Das sind drei Maßproben und zwei Gegenproben — **7 neue Bilder** — und drei SVG-Proben. Kein Bild
-von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Etappe gemessen,
-alle 132 Hashes des Vorstands gleich, 7 neu (139 Zeilen). Die sieben Bilder stehen noch nicht in der
-Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
-wie die Bilder der Etappe E6: alle alten Zeilen gleich, sieben neu, keines geändert.
+Das sind drei Maßproben und zwei Gegenproben — **7 neue Bilder** — und drei SVG-Proben.
+
+### Das Zahlungsstrombild
+
+`ChartRenderer.Zahlungsstrom` zeichnet den „Zahlungsstrom je Jahr" EINER Version in einem Szenario
+als gestapelte Jahresbalken: je Jahr 0…T die Positionsspalten der Mehrjahrestafel (Investition und
+Ersatz, Betrieb, Energie, CO₂-Abgabe, Einspeisung, KWK-Zuschlag, Steuergutschriften, PV-Vergütung,
+Pauschale), die Einnahmen von der Nulllinie nach oben, die Ausgaben nach unten, in der Reihenfolge
+der Tafel; die Ersatzjahre tragen ein Band hinter ihrem Balken und ein Dreieck am oberen Rand. Eine
+Differenz zu einer Referenz zeigt es nicht. Ein reines Pixelbild, 1240 × 620. Die Proben stehen in
+`Program.Zahlungsstrom.cs`; ihre Texte sind die deutsche Vorgabe (`ZahlungsstromTexte`), die Beträge
+wachsen durch fortgesetzte Multiplikation (auf jedem Rechner bitgleich).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `zahlungsstrom` | ein BHKW-Stand über 20 Jahre mit allen Spaltenarten und drei Ersatzjahren, 1240 × 620, die Farben `STAMM`, Energie, KWK-Zuschlag und das Dreieck der Ersatzjahre |
+| Maßprobe | `zahlungsstrom_ohne_ersatz` | eine PV-Anlage über 10 Jahre ohne Ersatz, dasselbe Maß |
+| Maßprobe | `zahlungsstrom_leer` | kein zeichenbarer Betrag: der Leerhinweis, 1240 × 200 |
+| Gegenprobe | `zahlungsstrom_ersatzjahr_wirkt` | dieselben Reihen, eines der drei Ersatzjahre fehlt |
+| Gegenprobe | `zahlungsstrom_vorzeichen_wirkt` | dieselben Beträge, die CO₂-Abgabe als Einnahme statt als Ausgabe |
+| SVG-Probe | `svg_c_zahlungsstrom` | Pixelbildprobe der Gruppe (c): jede Schicht mit ihrem Wert |
+| SVG-Probe | `svg_zahlungsstrom_stapel`, `…_stapel_ohne_ersatz` | je Jahr schließen die Einnahmen über, die Ausgaben unter der Nulllinie lückenlos aneinander an, in der Reihenfolge der Tafel; genau die Ersatzjahre tragen eine Marke |
+
+Das sind wieder drei Maßproben und zwei Gegenproben — **7 neue Bilder** — und drei SVG-Proben.
+
+Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Etappe
+gemessen, alle 132 Hashes des Vorstands gleich, 14 neu (146 Zeilen). Die vierzehn Bilder stehen noch
+nicht in der Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach
+derselben Regel wie die Bilder der Etappe E6: alle alten Zeilen gleich, vierzehn neu, keines
+geändert.

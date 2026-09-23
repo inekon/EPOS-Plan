@@ -16641,6 +16641,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_BR_LEER" xml:space="preserve">
     <value>Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe.</value>
   </data>
+  <data name="WIRT_ZS_TITEL" xml:space="preserve">
+    <value>Zahlungsstrom je Jahr</value>
+  </data>
+  <data name="WIRT_ZS_UNTER" xml:space="preserve">
+    <value>{0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert</value>
+  </data>
+  <data name="WIRT_ZS_ERSATZJAHR" xml:space="preserve">
+    <value>Ersatzjahr</value>
+  </data>
+  <data name="WIRT_ZS_LEER" xml:space="preserve">
+    <value>Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe.</value>
+  </data>
   <data name="WIRT_FUSS_DREI" xml:space="preserve">
     <value>Drei Szenarien gerechnet</value>
   </data>

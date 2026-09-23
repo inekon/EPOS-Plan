@@ -524,6 +524,183 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  (4b) U42 — das Zahlungsstrombild
+        // =====================================================================
+
+        /// <summary>
+        /// U42 (Anwenderentscheid E8a‑Q1, Lesart a): Die Positionen eines Standes sind die
+        /// Mehrjahrestafel DERSELBEN Verlaufslinie wie seine Gliederung — dieselben Spalten,
+        /// Namen und Beträge wie im Bericht, ohne die Summenspalten; die Ersatzjahre sind die der
+        /// Gliederung. Einen Stand, dessen Reihen nicht zum gespeicherten Lauf passen, trägt der
+        /// Satz auch hier nicht.
+        /// </summary>
+        [Fact]
+        public void Die_Positionen_sind_die_Spalten_der_Mehrjahrestafel()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            WirtschaftlichkeitVerlaufSzenarien verlauf = Probeverlauf(p);
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, null);
+
+            Mehrjahresbild posten = satz.Posten(901, ERWARTET);
+            Assert.NotNull(posten);
+            Mehrjahresbild tafel = Mehrjahresbild.Baue(verlauf.Lauf(ERWARTET).Absolut.Single(s => s.IdProjekt == 901));
+            List<MehrjahresSpalte> spalten = tafel.Spalten.Where(s => !s.IstSumme).ToList();
+
+            List<ChartRenderer.Zahlungsstromreihe> reihen = ChartRenderer.Zahlungsstromreihe.Aus(posten);
+            Assert.Equal(spalten.Select(s => s.Schluessel), reihen.Select(r => r.Schluessel));
+            Assert.Equal(spalten.Select(s => s.Titel), reihen.Select(r => r.Name));
+            for (int i = 0; i < spalten.Count; i++) Assert.Equal(spalten[i].JeJahr, reihen[i].JeJahr);
+            Assert.Contains("Investition und Ersatz", reihen.Select(r => r.Name));
+            Assert.Contains("CO₂-Abgabe", reihen.Select(r => r.Name));
+            Assert.Contains("KWK-Zuschlag", reihen.Select(r => r.Name));
+            Assert.DoesNotContain(reihen, r => r.Name == "Netto nominal" || r.Name == "Barwert");
+
+            List<int> ersatz = ChartRenderer.Zahlungsstromreihe.Ersatzjahre(posten);
+            Assert.Equal(new[] { 3, 8, 13, 15, 16 }, ersatz.ToArray());
+            Assert.Equal(satz.Von(901, ERWARTET).Bestandteil(Zahlungsgliederung.ERSATZ).Jahre(), ersatz);
+
+            // Der Stamm trägt nur Energiekosten — und keine Ersatzjahre.
+            Assert.Equal(new[] { "Energiekosten" },
+                         ChartRenderer.Zahlungsstromreihe.Aus(satz.Posten(900, BEST)).Select(r => r.Name).ToArray());
+            Assert.Empty(ChartRenderer.Zahlungsstromreihe.Ersatzjahre(satz.Posten(900, BEST)));
+
+            // Ohne Stand, ohne Szenario, ohne Tafel: nichts.
+            Assert.Null(satz.Posten(777, ERWARTET));
+            Assert.Null(satz.Posten(901, null));
+            Assert.Empty(ChartRenderer.Zahlungsstromreihe.Aus(null));
+            Assert.Empty(ChartRenderer.Zahlungsstromreihe.Ersatzjahre(null));
+
+            // GEGENPROBE: Passt der gespeicherte Kapitalwert nicht, fehlt mit der Gliederung
+            // auch der Zahlungsstrom.
+            var gespeichert = new List<WirtschaftlichkeitErgebnis>();
+            foreach (string s in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+                foreach (VerlaufSerie a in verlauf.Lauf(s).Absolut)
+                    gespeichert.Add(new WirtschaftlichkeitErgebnis
+                    {
+                        IdProjekt = a.IdProjekt, Szenario = s,
+                        Kapitalwert = a.Bild.Kapitalwert + (a.IdProjekt == 901 && s == ERWARTET ? 250.0 : 0.0)
+                    });
+            Zahlungsgliederungen abgeglichen = Zahlungsgliederungen.Aus(verlauf, p, gespeichert);
+            Assert.Null(abgeglichen.Posten(901, ERWARTET));
+            Assert.NotNull(abgeglichen.Posten(901, WORST));
+        }
+
+        /// <summary>
+        /// U42: Das Bild STAPELT die Positionen — je Jahr die Einnahmen von der Nulllinie nach
+        /// oben, die Ausgaben nach unten, in der Reihenfolge der Tafel; jede Schicht nennt Jahr,
+        /// Spalte und Betrag, jedes Ersatzjahr trägt seine Marke. Dasselbe Modell zweimal
+        /// erzeugt ist gleich; ohne zeichenbaren Betrag steht der Leerhinweis.
+        /// </summary>
+        [Fact]
+        public void Das_Zahlungsstrombild_stapelt_Einnahmen_nach_oben_und_Ausgaben_nach_unten()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            Mehrjahresbild posten = satz.Posten(901, ERWARTET);
+            List<ChartRenderer.Zahlungsstromreihe> reihen = ChartRenderer.Zahlungsstromreihe.Aus(posten);
+            List<int> ersatz = ChartRenderer.Zahlungsstromreihe.Ersatzjahre(posten);
+
+            ChartRenderer.ZahlungsstromTexte texte = ChartRenderer.ZahlungsstromTexte.Fuer("Variante", "Erwartet", DE);
+            Assert.Equal("Zahlungsstrom je Jahr", texte.Titel);
+            Assert.Equal("Variante · Szenario Erwartet · nominal je Jahr, Ausgaben nach unten, ohne Restwert",
+                         texte.Unterzeile);
+            Assert.Equal("Ersatzjahr", texte.Ersatzjahr);
+
+            WindowsFormsApplication1.Zeichnung.Zeichenmodell m = ChartRenderer.ZahlungsstromModell(reihen, ersatz, texte);
+            Assert.Equal(ChartRenderer.ZAHLUNGSSTROM_BREITE, m.Breite);
+            Assert.Equal(ChartRenderer.ZAHLUNGSSTROM_HOEHE, m.Hoehe);
+            Assert.Null(m.Flaeche);
+            Assert.Empty(m.Reihen);
+            Assert.True(m.Gleicht(ChartRenderer.ZahlungsstromModell(reihen, ersatz, texte)));
+
+            var null0 = (WindowsFormsApplication1.Zeichnung.Linie)m.Befehle.Single(b => b.Marke == "nulllinie");
+            double y0 = null0.Y1;
+
+            // Jede Schicht: genau ein Element je Betrag ungleich 0, mit Jahr, Spalte und Betrag;
+            // je Jahr schließen die Schichten lückenlos an die Nulllinie und aneinander an.
+            for (int t = 0; t <= 20; t++)
+            {
+                double oben = y0, unten = y0;
+                foreach (ChartRenderer.Zahlungsstromreihe r in reihen)
+                {
+                    double w = r.JeJahr[t];
+                    if (w == 0.0) continue;
+                    string wert = "Jahr " + t + " · " + r.Name + ": " + w.ToString("#,##0;−#,##0;0", DE) + " €";
+                    var schicht = (WindowsFormsApplication1.Zeichnung.Rechteck)Assert.Single(
+                        m.Befehle, b => b.Marke == "reihe:" + r.Name && b.Wert == wert);
+                    if (w > 0.0)
+                    {
+                        Assert.Equal(oben, schicht.Y + schicht.Hoehe, 2);   // steht auf der vorigen
+                        oben = schicht.Y;
+                    }
+                    else
+                    {
+                        Assert.Equal(unten, schicht.Y, 2);                  // hängt an der vorigen
+                        unten = schicht.Y + schicht.Hoehe;
+                    }
+                }
+                Assert.True(oben <= y0 && unten >= y0);
+            }
+
+            // Die Investition im Jahr 0 hängt unter der Nulllinie, die Pauschale steht darüber.
+            var investition = (WindowsFormsApplication1.Zeichnung.Rechteck)m.Befehle.First(
+                b => b.Marke == "reihe:Investition und Ersatz" && b.Wert.StartsWith("Jahr 0 · ", StringComparison.Ordinal));
+            Assert.Equal(y0, investition.Y, 2);
+            var pauschale = (WindowsFormsApplication1.Zeichnung.Rechteck)m.Befehle.First(
+                b => b.Marke == "reihe:KWKG-Pauschale (Jahr 0)");
+            Assert.Equal(y0, pauschale.Y + pauschale.Hoehe, 2);
+
+            // Die Ersatzjahre tragen ihre Marke — und nur sie.
+            foreach (int t in ersatz)
+                Assert.Contains(m.Befehle, b => b.Marke == "marke" && b.Wert == "Jahr " + t + ": Ersatzjahr");
+            Assert.DoesNotContain(m.Befehle, b => b.Marke == "marke" && b.Wert == "Jahr 5: Ersatzjahr");
+            Assert.Contains(m.Befehle, b => b.Marke == "legende:Energiekosten");
+            Assert.DoesNotContain(m.Befehle, b => b.Marke == "legende:Ersatzjahr");
+
+            // GEGENPROBE: ohne Ersatzjahre keine Marke; ohne zeichenbaren Betrag der Leerhinweis.
+            Assert.DoesNotContain(ChartRenderer.ZahlungsstromModell(reihen, null, texte).Befehle, b => b.Marke == "marke");
+            WindowsFormsApplication1.Zeichnung.Zeichenmodell leer = ChartRenderer.ZahlungsstromModell(
+                new List<ChartRenderer.Zahlungsstromreihe>
+                {
+                    new ChartRenderer.Zahlungsstromreihe { Name = "x", JeJahr = new[] { 0.0, double.NaN } }
+                }, new[] { 1 }, texte);
+            Assert.Equal(200, leer.Hoehe);
+            Assert.Contains(leer.Befehle, b => b.Marke == "leerhinweis");
+        }
+
+        /// <summary>
+        /// U42 in der Hülle: Jede Tafel von Block 2 trägt ihr Zahlungsstrombild — derselbe Stand
+        /// im selben Szenario, der Name des Szenarios in der Unterzeile.
+        /// </summary>
+        [Fact]
+        public void Jede_Tafel_von_Block_2_traegt_ihr_Zahlungsstrombild()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+            var staende = new List<KeyValuePair<int, string>>
+            {
+                new KeyValuePair<int, string>(900, "Stamm"), new KeyValuePair<int, string>(901, "Variante")
+            };
+            string[] szenarien = { ERWARTET, BEST, WORST };
+            string[] namen = { "Erwartet", "Günstig", "Ungünstig" };
+
+            List<ZahlungsreihenTafel> tafeln = ZahlungsreihenAnsicht.Jahrestafeln(satz, staende, szenarien, DE, namen);
+
+            Assert.Equal(6, tafeln.Count);
+            Assert.All(tafeln, t => Assert.NotNull(t.Bild));
+            ZahlungsreihenTafel guenstig = tafeln.Single(x => x.IdStand == 901 && x.Szenario == 1);
+            Assert.Contains(guenstig.Bild.Befehle, b => b.Marke == "reihe:Energiekosten");
+            Assert.Contains(guenstig.Bild.Befehle, b => b.Marke == "marke" && b.Wert == "Jahr 8: Ersatzjahr");
+            Assert.True(guenstig.Bild.Gleicht(ZahlungsreihenAnsicht.Zahlungsstrom(satz, 901, BEST, "Variante", "Günstig", DE)));
+            Assert.False(guenstig.Bild.Gleicht(ZahlungsreihenAnsicht.Zahlungsstrom(satz, 901, BEST, "Variante", "Erwartet", DE)));
+
+            // Ohne Namen stehen die Persistenzwerte; ohne Positionen kein Bild.
+            Assert.All(ZahlungsreihenAnsicht.Jahrestafeln(satz, staende, szenarien, DE), t => Assert.NotNull(t.Bild));
+            Assert.Null(ZahlungsreihenAnsicht.Zahlungsstrom(satz, 777, ERWARTET, "x", "Erwartet", DE));
+            Assert.Null(ZahlungsreihenAnsicht.Zahlungsstrom(null, 901, ERWARTET, "Variante", "Erwartet", DE));
+        }
+
+        // =====================================================================
         //  (5) U47 — „Was daraus im Lauf wird"
         // =====================================================================
 
