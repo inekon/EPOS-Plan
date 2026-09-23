@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 23.09.2026, nach den Entscheiden E16–E33 und der Prüfung vom 17.09.2026.**
+**Stand 23.09.2026, nach den Entscheiden E16–E34 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -44,7 +44,8 @@ Kapiteln (Kapitel 9).
 Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
 **E33** (23.09.2026) hat die vier vor KU2 fälligen Kühlpunkte **K8, K21 und K23** nach Empfehlung
 und **K9 abweichend von der Empfehlung** entschieden; vor KU2 ist damit kein Anwenderentscheid mehr
-offen.
+offen. **E34** (23.09.2026) ergänzt K9 um die Regel für einen abweichenden Kühlträger (anteilig am
+Netzbezug oder eigener Zähler, je Anlage wählbar) und lässt die Zählung unverändert.
 **E31** (23.09.2026) hat die fünf vor KU1 fälligen Kühlpunkte **K4, K5, K6, K7 und K12** nach
 Empfehlung entschieden; vor KU1 ist damit kein Anwenderentscheid mehr offen.
 **E27** hat 44 der bisher 66 Punkte entschieden — 3 im Konzept (Q24, Q25, Q26), 9 im
@@ -1591,6 +1592,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 ### K9 — Tarif und Stromträger des Kältestroms
 
 **Entschieden: E33 (23.09.2026, Konzept N1.38)** — **abweichend von der Empfehlung.** Der Kältestrom läuft per Vorgabe über denselben Stromträger und Tarif wie die Wärmepumpe im Heizbetrieb; wahlweise kann je Anlage ein anderer Stromträger des Projekts gewählt werden; ein leeres Feld (NULL) heißt „wie Heizbetrieb". Die Wahl steht an der Anlagenzeile neben dem Stromträger des Heizbetriebs (`Tab_Energieanlagen.Kuehl_ID_Carrier`, Verweis über die Kennung des Trägers) — dort, wo die Wärmepumpe ihren Stromträger im Bestand wählt (ET-5). Gegenüber der Empfehlung (a) kommt die Wahl je Anlage hinzu; wie ein abweichender Kühlträger bepreist und in den Emissionen bewertet wird, legt die Welle fest, die den Kältestrom in Kosten und Emissionen bringt (der Netzbezug wird heute einmal, mit dem Stromträger des Projekts, bepreist).
+
+**Ergänzt: E34 (23.09.2026, Konzept N1.39)** — die Regel für einen abweichenden Kühlträger, je Anlage wählbar: **(1) anteilig am Netzbezug (Vorgabe)** — ein Netzanschluss, der Netzbezug jedes Zeitschritts wird nach dem Anteil des Kältestroms am Stromverbrauch aufgeteilt, dieser Anteil trägt Arbeitspreis und CO₂-Faktor des Kühlträgers; PV-Eigenverbrauch bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts; **(2) eigener Zähler** — der Kältestrom wird vollständig mit dem Kühlträger bepreist und bewertet und nicht aus PV-Eigenstrom gedeckt. Umgesetzt mit der dritten Welle von KU2; E34 öffnet und schließt keinen Punkt.
 
 - **Frage:** Trägt der Kältestrom denselben Tarif und denselben Stromträger wie der
   Wärmepumpenstrom?

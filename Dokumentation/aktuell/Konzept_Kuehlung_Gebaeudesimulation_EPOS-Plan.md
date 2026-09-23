@@ -66,6 +66,13 @@
 > Stromträgerwahl `Tab_Energieanlagen.Kuehl_ID_Carrier` (K9, E33); `Last` steht in Modell, Leser
 > und Schreiber der Kühlkennlinie. Ergebnisneutral: Kein Rechenweg liest die Spalten (5.1, 7,
 > 7.3, 11.1).
+>
+> **Nachzug 23.09.2026 — E34 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.39):** Ergänzung zu
+> K9 — wählt eine Wärmepumpe für den Kühlbetrieb einen anderen Stromträger als das Projekt, ist je
+> Anlage wählbar, wie ihr Kältestrom in Kosten und Emissionen eingeht: **anteilig am Netzbezug**
+> (Vorgabe; PV-Eigenverbrauch gemeinsam, Leistungspreis beim Projektträger) oder über einen **eigenen
+> Zähler** (ganz mit dem Kühlträger, ohne PV-Eigenstrom). Umgesetzt mit der dritten Welle von KU2;
+> bis dahin trägt der Kältestrom Tarif und Faktor des Projekts (6.1, 6.3, 12.1).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -110,7 +117,7 @@ Strom und Wirtschaftlichkeit, Datenmodell, Dialogführung, Import und Export, Na
 Regressionsnetz, eine Stufung KU0–KU3 und die Fragen K1–K23 mit Empfehlung. **Es entscheidet
 nichts, was der Anwender zu entscheiden hat** — Kapitel 12 trennt „jetzt zu entscheiden" von
 „technische Festlegung zur Kenntnis"; was E20, E21, E23, E26, E27, E31 und E33 bereits entschieden haben,
-trägt dort den Vermerk und wird nicht erneut vorgelegt.
+trägt dort den Vermerk und wird nicht erneut vorgelegt; E34 ergänzt K9 (6.1).
 
 **Es steht neben, nicht über den Schwesterpapieren:**
 
@@ -1444,6 +1451,23 @@ dieselbe Umrechnung in den Rest — eine Zeile je Größe, kein zweiter Weg. Die
 (5.1, Festlegung 5) bleibt dabei erhalten: Addiert wird im Rest, nicht in der Reihe der
 Wärmepumpe.
 
+**Ein abweichender Kühlträger — die Rechenregel aus E34** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.39, 23.09.2026). Trägt eine Anlage einen anderen Stromträger für die Kühlung als das Projekt
+(`Kuehl_ID_Carrier`, 6.3, 7.3), ist je Anlage wählbar, wie ihr Kältestrom in die Stufenrechnung
+eingeht:
+
+| Wahl | Stufenrechnung | Kosten und Emissionen |
+|---|---|---|
+| **(1) anteilig am Netzbezug — Vorgabe** | der Kältestrom läuft wie oben durch den Rest: Eigenverbrauch aus Photovoltaik und Stromspeicher bleiben **gemeinsam** | der Netzbezug jedes Zeitschritts wird nach dem Anteil des Kältestroms am Stromverbrauch geteilt: `Netzbezug_Kaelte(t) = Netzbezug(t) · Kaeltestrom(t) / Stromverbrauch(t)` trägt Arbeitspreis und CO₂-Faktor des Kühlträgers, der Rest die des Projektträgers; der **Leistungspreis** bleibt beim Projektträger |
+| **(2) eigener Zähler** | der Kältestrom läuft **neben** der Stufenrechnung — er wird nicht aus PV-Eigenstrom oder Stromspeicher gedeckt | der ganze Kältestrom mit Arbeitspreis und CO₂-Faktor des Kühlträgers |
+
+Ohne abweichenden Kühlträger (NULL oder gleich dem Projektträger) gilt allein die Zeile „wie oben" —
+die Wahl wirkt dann nicht. **Umgesetzt wird die Regel mit der dritten Welle von KU2**, zusammen mit
+Wirtschaftlichkeit und Emissionen der Kälteseite (6.2, 6.3); die Wahl bekommt dort ihre Spalte an der
+Anlagenzeile. **Bis dahin — Übergang, benannt:** Der Kältestrom läuft durch die Stufenrechnung, der
+Netzbezug wird einmal mit dem Stromträger des Projekts bepreist, und ein gesetzter Kühlträger steht als
+Hinweis im Protokoll des Laufs.
+
 ### 6.2 Wirtschaftlichkeit
 
 Die Wirtschaftlichkeit hat **keinen** Kanalbegriff; sie rechnet je **Komponente**
@@ -1482,8 +1506,9 @@ liest ihn die anlagenscharfe Bewertung (`ProjektEnergietraegerCtrl.EigeneStromTr
 dem Stromträger des Projekts, und `Emissionsquelle.Netzstrom` bewertet ihn mit dessen Faktor. Für
 den Vorgabefall ändert das nichts; trägt eine Anlage einen anderen Kühlträger, braucht ihr
 Kältestrom eine eigene Bepreisung und Emissionszuordnung für seinen Anteil am Netzbezug. Die Regel
-dafür legt die Welle fest, die den Kältestrom in Kosten und Emissionen bringt
-([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38).
+dafür ist mit **E34** festgelegt ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.39):
+je Anlage wählbar **anteilig am Netzbezug** (Vorgabe) oder über einen **eigenen Zähler** — die
+Rechenregel steht in 6.1; umgesetzt mit der dritten Welle von KU2.
 
 **Kältemittel-Emissionen (F-Gase) sind ausgeschlossen.** Die direkte Treibhauswirkung eines
 Kältemittelverlusts ist ein eigenes Thema mit eigener Datenlage; EPOS-Plan rechnet die
@@ -2635,7 +2660,8 @@ nicht Gegenstand von E27. **E31 (23.09.2026, [Konzept](Konzept_Gebaeudesimulatio
 K6, K7 und K12** nach Empfehlung — die Zeilen tragen den Vermerk. **E33 (23.09.2026,
 [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38)** entscheidet **K8, K21 und K23**
 nach Empfehlung und **K9 abweichend von der Empfehlung** (6.3); auch diese Zeilen tragen den
-Vermerk. Vor KU2 ist keine Frage mehr offen.
+Vermerk. **E34 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.39)**
+ergänzt K9 um die Rechenregel für einen abweichenden Kühlträger (6.1). Vor KU2 ist keine Frage mehr offen.
 
 ### 12.1 Jetzt zu entscheiden
 
@@ -2647,7 +2673,7 @@ Vermerk. Vor KU2 ist keine Frage mehr offen.
 | **K6** | Wie werden mehrere Zonen auf einen Kanalwert geführt, wenn Zonen gleichzeitig heizen und kühlen? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Nicht saldieren**: beide Kanäle tragen ihren Betrag, eine Kennzahl weist den Fall aus (3.5) | eine Saldierung erfindet eine Wärmerückgewinnung |
 | **K7** | Kältespeicher ja oder nein? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Vertagen nach KU3**, gemeinsam mit der Kältemaschine — und bis dahin kein Persistenzwert ohne Rechenweg (4.6) | 3–5 PT, ein Pufferverwendungswert, ein Klassen-Set-Eintrag |
 | **K8** | Freie Kühlung und Rückkühlung — bauen oder benannt ablehnen? | **Entschieden mit E33 (23.09.2026) nach Empfehlung: bauen, aber keine als eigener Erzeuger**: Nachtlüftung in G2, freie Kühlung als Betriebsfall (KU3), Rückkühlung als Bestandteil der Kältemaschine — bei der reversiblen Wärmepumpe in Maschine und Kennlinie (5.1, 5.4) | ohne Rückkühlung ist die Kältemaschine energetisch unvollständig |
-| **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Entschieden mit E33 (23.09.2026), abweichend von der Empfehlung:** per Vorgabe derselbe Stromträger und Tarif wie im Heizbetrieb, wahlweise je Anlage ein anderer Stromträger des Projekts (`Tab_Energieanlagen.Kuehl_ID_Carrier`, NULL = wie Heizbetrieb; 6.3, 7.3). Die Empfehlung lautete: **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose | eine zweite Tarifzeile oder keine |
+| **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Entschieden mit E33 (23.09.2026), abweichend von der Empfehlung:** per Vorgabe derselbe Stromträger und Tarif wie im Heizbetrieb, wahlweise je Anlage ein anderer Stromträger des Projekts (`Tab_Energieanlagen.Kuehl_ID_Carrier`, NULL = wie Heizbetrieb; 6.3, 7.3). **Ergänzt mit E34 (23.09.2026, N1.39):** Ein abweichender Kühlträger geht je Anlage wählbar **anteilig am Netzbezug** (Vorgabe; PV-Eigenverbrauch gemeinsam, Leistungspreis beim Projektträger) oder über einen **eigenen Zähler** in Kosten und Emissionen ein (6.1); umgesetzt mit der dritten Welle von KU2. Die Empfehlung lautete: **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose | eine zweite Tarifzeile oder keine |
 | **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | **Entschieden mit E27 (22.09.2026), abweichend von der Empfehlung:** Eine **Programmeinstellung** (über `Dienste.Einstellungen`) legt fest, ob **neue** Projekte mit Kühlung angelegt werden, Vorgabe aus; Bestands- und Referenzprojekte bleiben aus, bis ihre Projekteinstellung `Tab_Einstellungen.Kuehlbetrieb` ausdrücklich eingeschaltet wird; die Projekteinstellung bleibt je Projekt schaltbar; fällig mit KU1 (7.2, 8.3, 10.3, 10.5). Die Empfehlung lautete: Ja, Vorgabe 0 — nicht, um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Projekte zu schützen | Rückwärtsverträglichkeit aller Bestandsprojekte |
 | **K11** | Eigener Kühlsollwert mit Zeitprofil und `Kuehlleistung_Max` — oder bleibt `Maximaleraumtemperatur` die einzige Kühleingabe? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Sollwert und eigene Grenze in KU1; Zeitprofil erst in KU3** (Nachtwert), die übrigen drei erst bei Bedarf (7.1) | Schemaumfang und Dialogumfang |
 | **K12** | Gilt Kühlung auf iOS? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Ja** — der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel, und ein iOS-Lauf ist für KU1/KU2 nicht begründet (8.6, 10.6) | Rückfragepflicht und Laufzeitkontingent |

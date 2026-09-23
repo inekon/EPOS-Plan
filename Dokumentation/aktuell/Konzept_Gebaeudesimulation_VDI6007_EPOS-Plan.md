@@ -42,6 +42,11 @@ Nachgezogen am 23.09.2026 mit **E33** (N1.38): K8, K21 und K23 der Kühlung sind
 entschieden, **K9 abweichend** — der Kältestrom läuft per Vorgabe über den Stromträger und Tarif
 des Heizbetriebs, wahlweise je Anlage über einen anderen Stromträger des Projekts, gewählt an der
 Anlagenzeile; vor KU2 ist kein Anwenderentscheid mehr offen, das Register zählt 11 offene Punkte.
+Nachgezogen am 23.09.2026 mit **E34** (N1.39), Ergänzung zu K9: Wählt eine Wärmepumpe für den
+Kühlbetrieb einen anderen Stromträger als das Projekt, ist je Anlage wählbar, wie der Kältestrom in
+Kosten und Emissionen eingeht — **anteilig am Netzbezug** (Vorgabe; PV-Eigenverbrauch gemeinsam,
+Leistungspreis beim Projektträger) oder über einen **eigenen Zähler**; umgesetzt mit der dritten
+Welle von KU2, das Register zählt weiter 11 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3420,3 +3425,54 @@ Abschnitte 1 und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md
 K8, K9, K21 und K23, Kopf, Kapitel 0, 6 und 9, Zählung 11);
 [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 5.0.5, 5.1, 5.4, 6.1, 6.2,
 6.3, 7.3, 8.2, 11.1 und 12; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.39 Entscheid E34 — Kältestrom eines abweichenden Kühlträgers: anteilig am Netzbezug oder eigener Zähler
+
+**Entscheid E34 (Anwender, 23.09.2026).** Ergänzung zu **K9** und **E33** (N1.38): Wählt eine
+Wärmepumpe für den Kühlbetrieb einen **anderen Stromträger als das Projekt**
+(`Tab_Energieanlagen.Kuehl_ID_Carrier`), ist **je Anlage wählbar**, wie ihr Kältestrom in Kosten und
+Emissionen eingeht:
+
+1. **Anteilig am Netzbezug — Vorgabe.** Es gibt **einen** Netzanschluss. Der Netzbezug jedes
+   Zeitschritts der Stufenrechnung wird nach dem **Anteil des Kältestroms am Stromverbrauch** dieses
+   Zeitschritts aufgeteilt; der Anteil des Kältestroms trägt Arbeitspreis und CO₂-Faktor des
+   **Kühlträgers**, der Rest die des Projektträgers. Der **Eigenverbrauch aus Photovoltaik** (und
+   Stromspeicher) bleibt **gemeinsam** — er deckt Kältestrom und übrigen Strom in der Reihenfolge der
+   Stufenrechnung, ohne Vorrang —, und der **Leistungspreis** bleibt beim Stromträger des Projekts.
+2. **Eigener Zähler.** Der Kältestrom wird **vollständig** mit dem Kühlträger bepreist und bewertet
+   und **nicht** aus PV-Eigenstrom oder Stromspeicher gedeckt: Er läuft neben der Stufenrechnung,
+   nicht durch sie.
+
+Beauftragt als Dokumentation mit der zweiten Welle von KU2; **umgesetzt (Schema und Rechnung) wird
+er in der dritten Welle**, zusammen mit Wirtschaftlichkeit und Emissionen der Kälteseite.
+
+**Was damit gilt.**
+
+| Fall | Regel |
+|---|---|
+| `Kuehl_ID_Carrier` leer (NULL) oder gleich dem Stromträger des Projekts | keine Wahl nötig: Der Kältestrom läuft wie der Wärmepumpenstrom durch die Stufenrechnung und trägt Tarif und Faktor des Projekts (K9, Vorgabe aus E33) |
+| anderer Kühlträger, Wahl (1) — **Vorgabe** | Netzbezug(t) = Netzbezug der Stufenrechnung im Zeitschritt t; Anteil(t) = Kältestrom(t) / Stromverbrauch(t); der Kühlträger trägt Netzbezug(t) · Anteil(t) — Arbeitspreis und CO₂-Faktor aus `KostenEmissionRechner.ArbeitspreisJeKwh` bzw. `Emissionsquelle.Fuer` mit seiner Kennung; PV-Eigenverbrauch gemeinsam, Leistungspreis beim Projektträger. Mehrere Anlagen mit eigenem Kühlträger teilen den Netzbezug nach ihren Anteilen |
+| anderer Kühlträger, Wahl (2) | der ganze Kältestrom dieser Anlage mit dem Kühlträger bepreist und bewertet; er geht nicht in die Stufenrechnung aus Eigenverbrauch, Speicher und Netzbezug ein |
+
+**Wo die Wahl steht.** Je Anlage an der Anlagenzeile neben `Kuehl_ID_Carrier` — dort, wo die
+Wärmepumpe ihre beiden Stromträger wählt (K9, E33); Name, Typangabe und Schemaschritt vergibt die
+dritte Welle bei ihrer Beauftragung (Umsetzungskonzept 1.6, ADR-001). Ohne abweichenden Kühlträger
+ist die Wahl wirkungslos und wird im Dialog nicht angeboten.
+
+**Was bis zur dritten Welle gilt (Übergang, benannt).** Die zweite Welle bringt den Kältestrom als
+eigene Stundenreihe in die Stufenrechnung — an derselben Stelle wie den Wärmepumpenstrom
+([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.1) — und bepreist den Netzbezug
+weiter **einmal**, mit dem Stromträger des Projekts. Ein gesetzter Kühlträger wirkt bis zur dritten
+Welle nicht; der Lauf sagt es als Hinweis, statt still anders zu rechnen.
+
+**Was offen bleibt.** Das Register zählt weiter **11 offene Punkte**; E34 schließt keine Frage und
+öffnet keine. Die Regel, die N1.38 der Welle mit Kältestrom in Kosten und Emissionen aufgetragen
+hat, ist damit festgelegt.
+
+**Betroffene Stufen:** KU2 (Welle 3: Schema der Wahl, Aufteilung des Netzbezugs, Wirtschaftlichkeit,
+Emissionen, Erzeugerdialog; Welle 2: nur der benannte Übergang).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitt 1 (E34) und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk
+unter K9, Kopf); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 6.1, 6.3 und
+12.1; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
