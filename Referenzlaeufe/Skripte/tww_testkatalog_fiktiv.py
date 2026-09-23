@@ -31,8 +31,9 @@ VORAUSSETZUNG. Schemastand 103 (die zehn Tww-Tabellen), nachgezogen mit
 WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die
 Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Eine vorhandene
 Nutzungsart dieses Katalogs, deren Bezugstemperaturen von BEZUG_ZAPF/BEZUG_KALT abweichen, wird
-auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank. Ein
-zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
+auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank; ebenso
+ein vorhandener Parameter mit anderem Wert oder anderer Einheit und ein vorhandener DIN-4708-Wert
+mit anderem Wert. Ein zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
 diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
@@ -248,6 +249,12 @@ def main():
             for (schluessel, wert, einheit) in PARAMETER:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwParameter_STAMM" WHERE "Schluessel" = ? '
                              'AND "Katalogversion" = ?', schluessel, VERSION) > 0:
+                    # Vorhanden: Wert und Einheit nachfuehren, wenn sie abweichen.
+                    cur = con.execute('UPDATE "Tab_TwwParameter_STAMM" SET "Wert" = ?, "Einheit" = ? '
+                                      'WHERE "Schluessel" = ? AND "Katalogversion" = ? '
+                                      'AND ("Wert" <> ? OR "Einheit" IS NOT ?)',
+                                      (wert, einheit, schluessel, VERSION, wert, einheit))
+                    nachgefuehrt += cur.rowcount
                     continue
                 con.execute('INSERT INTO "Tab_TwwParameter_STAMM" ("Schluessel", "Wert", "Einheit", "Katalogversion", '
                             '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '
@@ -275,6 +282,11 @@ def main():
             for (art, schluessel, wert) in DIN4708_WERTE:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwDin4708Wert_STAMM" WHERE "Art" = ? AND "Schluessel" = ? '
                              'AND "Katalogversion" = ?', art, schluessel, VERSION) > 0:
+                    # Vorhanden: den Wert nachfuehren, wenn er abweicht.
+                    cur = con.execute('UPDATE "Tab_TwwDin4708Wert_STAMM" SET "Wert" = ? WHERE "Art" = ? '
+                                      'AND "Schluessel" = ? AND "Katalogversion" = ? AND "Wert" <> ?',
+                                      (wert, art, schluessel, VERSION, wert))
+                    nachgefuehrt += cur.rowcount
                     continue
                 con.execute('INSERT INTO "Tab_TwwDin4708Wert_STAMM" ("Art", "Schluessel", "Wert", "Katalogversion", '
                             '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '
