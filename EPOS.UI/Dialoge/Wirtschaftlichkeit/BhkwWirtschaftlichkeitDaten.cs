@@ -72,12 +72,16 @@ public static class BhkwWahlen
     /// <param name="mitOffen">true = der erste Eintrag heisst „(nicht angegeben)";
     /// der Steuerwert ist in beiden Faellen LEER — das ist der Zustand jeder
     /// Bestandszeile.</param>
+    /// <remarks>An der Anlage heisst der Leereintrag „(bitte wählen)": Eine fehlende
+    /// Anlagenart ist NICHT gepflegt und gilt nicht als Neuanlage — § 8 KWKG leitet ohne
+    /// sie kein Kontingent ab (Konzept Wirtschaftlichkeit § 6.3 Nr. 30, Register R‑NR
+    /// Nr. 30: „der Dialog zeigt ‚bitte wählen'").</remarks>
     public static IReadOnlyList<Steuerwahl> Anlagenart(bool mitOffen) => Nummeriere(
         new (string Wert, string Text)[]
         {
             ("", mitOffen
                 ? BhwTexte.T("BHW_W_OFFEN", "(nicht angegeben)")
-                : BhwTexte.T("BHW_W_ART_LEER", "(nicht erfasst — gilt als Neuanlage)")),
+                : BhwTexte.T("BHW_W_ART_LEER", "(bitte wählen)")),
             (DbWerte.KWKG_ANLAGENART_NEU,
                 BhwTexte.T("BHW_W_ART_NEU", "neue Anlage (§ 8 Abs. 1)")),
             (DbWerte.KWKG_ANLAGENART_MODERNISIERT,

@@ -10253,7 +10253,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>(project value)</value>
   </data>
   <data name="BHW_W_ART_LEER" xml:space="preserve">
-    <value>(not recorded — treated as a new unit)</value>
+    <value>(please select)</value>
   </data>
   <data name="BHW_W_ART_NEU" xml:space="preserve">
     <value>new unit (sec. 8 (1))</value>

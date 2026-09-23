@@ -4024,7 +4024,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht erfasst — gilt als Neuanlage) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (bitte wählen) ähnelt.
         /// </summary>
         public static string BHW_W_ART_LEER {
             get {
