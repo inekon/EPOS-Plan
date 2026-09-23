@@ -341,11 +341,22 @@ namespace WindowsFormsApplication1
         /// <see cref="KwkgAnlagenartLeer"/>. <b>Reines DML, ergebnisneutral:</b> Kein
         /// Rechenweg unterscheidet die leere Zeichenkette von NULL; der Referenzlauf
         /// bleibt byte-gleich.
+        /// Schritt <b>102</b> gehört dem Zapfprofilgenerator (eigener Zweig, wird vor
+        /// diesem zusammengeführt).
+        /// Mit der ABLÖSUNG DES ZEITZONENTARIFS (Schritt 103, Entscheid Q11 vom
+        /// 22.09.2026: „kein HT/NT") steht das Ziel auf <b>103</b>:
+        /// <c>energy_project_settings</c> bekommt die zweistufige Leistungspreis-Staffel
+        /// des Stromträgers (<see cref="SchemaKatalog.Schritt103_LeistungspreisStaffel"/>),
+        /// und der Datenteil (<see cref="ZeitzonentarifAbloesung"/>) übernimmt die Staffel
+        /// aus jedem Tarifsatz, in dem sie rechnete, schaltet die Sätze des Zonenmodells ab
+        /// und fasst die Zonenzeilen der gespeicherten Strommatrix zu je einer Jahreszeile
+        /// zusammen. <b>Der Referenzlauf bleibt byte-gleich</b> — die Wirtschaftlichkeit
+        /// steht nicht im Export; in der Testdatenbank trägt kein Projekt einen Tarifsatz.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 101;
+        public const int Zielversion = 103;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

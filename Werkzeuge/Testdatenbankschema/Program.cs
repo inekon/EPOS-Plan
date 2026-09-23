@@ -1132,6 +1132,39 @@ namespace Testdatenbankschema
                                   KwkgAnlagenartLeer.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 102 gehoert dem Zapfprofilgenerator (eigener Zweig).
+            //
+            // ---- Schritt 103: der Zeitzonentarif wird abgeloest (Entscheid Q11,
+            //      22.09.2026: "kein HT/NT"). DDL UND DML aus DENSELBEN Quellen, aus denen
+            //      sich SchemaMigration.Schritt_103_ZeitzonentarifAbloesung bedient: erst
+            //      die drei Spalten der Leistungspreis-Staffel an energy_project_settings
+            //      (SchemaKatalog.Schritt103_LeistungspreisStaffel), dann der Datenteil
+            //      (ZeitzonentarifAbloesung) - Staffel uebernehmen, Zonensaetze abschalten,
+            //      Zonenzeilen der Strommatrix je Projekt zu einer Jahreszeile.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Wirtschaftlichkeit steht nicht im Export,
+            //      und kein Referenzprojekt traegt einen Tarifsatz.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 103, trocken);
+            Console.WriteLine("Schritt 103 - aktive Tarifsaetze im Zonenmodell: " +
+                              ZeitzonentarifAbloesung.OffeneZonensaetze() + ", Zonenzeilen der Strommatrix: " +
+                              ZeitzonentarifAbloesung.OffeneZonenzeilen() + ".");
+            if (!trocken)
+            {
+                ZeitzonentarifAbloesung.Bericht bericht103 = ZeitzonentarifAbloesung.Ausfuehren();
+                Console.WriteLine("Schritt 103 - " + bericht103.Text() + ".");
+                Console.WriteLine("Schritt 103 - offen: " + ZeitzonentarifAbloesung.OffeneZonensaetze() +
+                                  " Zonensatz/-saetze, " + ZeitzonentarifAbloesung.OffeneZonenzeilen() +
+                                  " Zonenzeile(n) (erwartet 0 / 0).");
+            }
+            else
+            {
+                foreach (ZeitzonentarifAbloesung.Uebernahme u in ZeitzonentarifAbloesung.Uebernahmen())
+                    Console.WriteLine("Schritt 103 - " + u + ".");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

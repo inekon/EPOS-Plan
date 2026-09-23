@@ -405,6 +405,16 @@ namespace EPOS.Kern.Tests
                 // Migration; wiederholbar, auf einer nachgezogenen Kopie ohne Treffer.
                 KwkgAnlagenartLeer.Ausfuehren();
 
+                // Schritt 103 (Entscheid Q11, 22.09.2026): der Zeitzonentarif wird
+                // abgeloest - erst die drei Spalten der Leistungspreis-Staffel an
+                // energy_project_settings, dann der Datenteil aus DERSELBEN Quelle wie in
+                // der Migration und im Werkzeug (Staffel uebernehmen, Zonensaetze
+                // abschalten, Zonenzeilen der Strommatrix zusammenfassen). Wiederholbar -
+                // auf einer nachgezogenen Kopie findet der Datenteil nichts mehr.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
+                    SpalteSicherstellen(s);
+                ZeitzonentarifAbloesung.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
