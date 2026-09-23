@@ -104,7 +104,7 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>
     /// Die Herleitungszeilen des Abschnitts, fertig formuliert: wie der Kältebedarf entsteht
-    /// (wirksame Kühlung, informativ, Bestandsweg) und die Grenze der Zahl (K5, sensible Kälte
+    /// (wirksame Kühlung, freier Lauf ohne Kühlbedarf, Bestandsweg) und die Grenze der Zahl (K5, sensible Kälte
     /// ohne Entfeuchtung) — sie steht an JEDER Kältezahl.
     /// </summary>
     public IReadOnlyList<string> KaelteHerleitung { get; init; } = new List<string>();

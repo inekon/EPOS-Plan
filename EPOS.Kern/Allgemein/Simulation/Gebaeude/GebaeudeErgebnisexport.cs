@@ -5,7 +5,8 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Ein Gebäude auf dem VDI-Weg, so wie der Ergebnisexport es schreibt (Stufe G2;
-    /// Umsetzungskonzept 1.8): drei Reihen und die acht Kennzahlen samt Kennung und Rechenweg.
+    /// Umsetzungskonzept 1.8): drei Reihen und die acht Kennzahlen samt Kennung und Rechenweg —
+    /// ohne wirksame Kühlung zwei Reihen und sechs Kennzahlen (Entscheid E32).
     /// </summary>
     public sealed class GebaeudeExportsatz
     {
@@ -25,8 +26,8 @@ namespace WindowsFormsApplication1
         public int Index { get; }
 
         /// <summary>
-        /// Die drei Reihen je Stunde in fester Reihenfolge: Dateiname → Werte. Temperaturen in
-        /// °C, der Kühlbedarf in kWh (Einheitenregel 1 des Kerns).
+        /// Die Reihen je Stunde in fester Reihenfolge: Dateiname → Werte. Temperaturen in °C, der
+        /// Kühlbedarf in kWh (Einheitenregel 1 des Kerns) — ihn nur bei wirksamer Kühlung (E32).
         /// </summary>
         public IReadOnlyList<KeyValuePair<string, double[]>> Reihen { get; }
 
@@ -47,6 +48,11 @@ namespace WindowsFormsApplication1
     /// <para><b>Nur für Gebäude des VDI-Wegs.</b> Ein Gebäude auf dem Tagesbilanz-Weg hat
     /// keinen Eintrag im Ergebnisträger und erzeugt deshalb keinen einzigen Satz — so bleibt
     /// ein Bestandsordner byte-gleich (Muster Erdreichblock, Umsetzungskonzept 1.8).</para>
+    ///
+    /// <para><b>Die Kühlreihe nur bei wirksamer Kühlung (Entscheid E32).</b> Ein Gebäude ohne
+    /// wirksame Kühlung läuft frei und hat keine Kühlreihe; es schreibt weder
+    /// <c>kuehlbedarf_&lt;n&gt;.csv</c> noch <c>Geb[n].KuehlenergieMwh</c> und
+    /// <c>Geb[n].StundenMitKuehlbedarf</c> — nicht mit Nullen gefüllt (Befund W 3).</para>
     ///
     /// <para><b>Wer schreibt.</b> Die CSV-Dateien und die Skalare in <c>aggregate.csv</c>
     /// schreibt <c>Referenzlauf/Ergebnisexport.cs</c> (beide Referenzlauf-Werkzeuge und die
@@ -76,8 +82,9 @@ namespace WindowsFormsApplication1
             {
                 new KeyValuePair<string, double[]>("raumtemperatur_" + n + ".csv", e.Raumtemperatur),
                 new KeyValuePair<string, double[]>("operative_temperatur_" + n + ".csv", e.OperativeTemperatur),
-                new KeyValuePair<string, double[]>("kuehlbedarf_" + n + ".csv", e.KuehlbedarfKwh),
             };
+            if (e.KuehlbedarfKwh != null)
+                reihen.Add(new KeyValuePair<string, double[]>("kuehlbedarf_" + n + ".csv", e.KuehlbedarfKwh));
 
             string p = "Geb[" + n + "].";
             var skalare = new List<KeyValuePair<string, double>>
@@ -87,11 +94,11 @@ namespace WindowsFormsApplication1
                 Paar(p + "SpitzeKw", e.SpitzeKw),
                 Paar(p + "SpitzeTagesmittelKw", e.SpitzeTagesmittelKw),
                 Paar(p + "Spitze95Kw", e.Spitze95Kw),
-                Paar(p + "KuehlenergieMwh", e.KuehlenergieMwh),
-                Paar(p + "StundenMitKuehlbedarf", e.StundenMitKuehlbedarf),
-                Paar(p + "MittlereRaumtemperaturHeizzeit", e.MittlereRaumtemperaturHeizzeit),
-                Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden),
             };
+            if (e.KuehlenergieMwh is double kuehlMwh) skalare.Add(Paar(p + "KuehlenergieMwh", kuehlMwh));
+            if (e.StundenMitKuehlbedarf is int kuehlStunden) skalare.Add(Paar(p + "StundenMitKuehlbedarf", kuehlStunden));
+            skalare.Add(Paar(p + "MittlereRaumtemperaturHeizzeit", e.MittlereRaumtemperaturHeizzeit));
+            skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
             return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare);
         }
 

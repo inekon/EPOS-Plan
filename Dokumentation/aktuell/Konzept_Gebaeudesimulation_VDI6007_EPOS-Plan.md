@@ -33,6 +33,11 @@ Bedienelement, gerechnet wird sensible Kälte ohne Entfeuchtung mit der Grenze a
 gleichzeitiges Heizen und Kühlen wird nicht saldiert, der Kältespeicher ist nach KU3 vertagt, und
 die Kühlung gilt auch auf iOS ohne eigenen Lauf; vor KU1 ist kein Anwenderentscheid mehr offen,
 das Register zählt 15 offene Punkte.
+Nachgezogen am 23.09.2026 mit **E32** (N1.37): Ein Gebäude ohne wirksame Kühlung läuft frei — der
+Löser kappt nicht mehr an `Maximaleraumtemperatur`, die Raumtemperatur darf darüber steigen, und
+die Überhitzungsstunden zählen die Stunden darüber im freien Lauf; einen „informativen"
+Kühlbedarf gibt es nicht mehr, Kühlreihe und Kühlkennzahlen nur bei wirksamer Kühlung. Kapitel 4.5
+und 4.6 folgen.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -760,10 +765,16 @@ Schichten und überschreibt `k_Wert_*` in der Anzeige mit Herkunftskennzeichen.
   (`SimulationWaermebedarf.cs:401`), damit Dauerlinie, Deckung und Anzeige eine Basis
   behalten; das Modell führt **zusätzlich je Gebäude** drei Kennzahlen: Spitze (Stunde),
   Spitze als gleitendes Tagesmittel, 95-%-Quantil der Stundenlast (Q7).
-- **Kappung an `Maximaleraumtemperatur`** als ideale Kühlung: die dafür nötige Leistung wird
-  als Reihe `Kuehlbedarf` geführt — **informativ**, kein vierter Kanal (es gibt keinen:
-  `DbWerte.cs:1260-1271`). Sie ist das Maß für sommerliche Überhitzung.
-- Kein Totband, keine Reglerdynamik: das Modell liefert den Bedarf, die Deckung rechnet
+- **Kühlung nur, wo sie wirksam ist (E12, KU1; E32, N1.37):** Mit Projektschalter „Kühlung
+  rechnen", `Kuehlung_Aktiv` und Kühlsollwert regelt der Löser zusätzlich auf den Kühlsollwert,
+  optional bis `Kuehlleistung_Max`; die dafür nötige Leistung ist die Reihe `Kuehlbedarf`, und sie
+  geht in den vierten Kanal `KUEHLUNG` ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.2).
+  **Ohne wirksame Kühlung läuft das Gebäude frei:** keine obere Grenze, keine abgeführte Wärme,
+  keine Kühlreihe — die Raumtemperatur darf über `Maximaleraumtemperatur` steigen.
+  `Maximaleraumtemperatur` ist allein die Grenze der Überhitzungskennzahl: Sie zählt, was ohne
+  Anlage geschieht. Eine Kappung an ihr als „informativer" Kühlbedarf ist mit E32 entfallen.
+- Zwischen Heiz- und Kühlsollwert liegt ein Totband (der Abstand zweier Sollwerte, keine
+  Hysterese); keine Reglerdynamik: das Modell liefert den Bedarf, die Deckung rechnet
   `SimulationControl` wie heute.
 
 ### 4.6 Zeitraster, Vorlauf, Ergebnisreihen
@@ -778,9 +789,10 @@ unter 0,1 K liegt ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EP
 Vorlauf verlängern, bis der Zustandsunterschied zweier aufeinanderfolgender Vorlaufwochen
 unter 0,01 K liegt, höchstens zwölf Wochen, danach benannter Fehler. Für Projektläufe bleiben
 die 30 Tage fest. Ergebnis je Gebäude: `Heizlast[8760]` (W → kW, in `Kanal.HEIZUNG`),
-`Raumtemperatur[8760]`, `OperativeTemperatur[8760]`, `Kuehlbedarf[8760]`; Kennzahlen:
-Jahresheizwärme, die drei Spitzenwerte (4.5), Kühlenergie, Stunden mit Kühlbedarf, mittlere
-Raumtemperatur in der Heizzeit.
+`Raumtemperatur[8760]`, `OperativeTemperatur[8760]`, `Kuehlbedarf[8760]` (nur bei wirksamer
+Kühlung, E32); Kennzahlen: Jahresheizwärme, die drei Spitzenwerte (4.5), Kühlenergie und Stunden
+mit Kühlbedarf (nur bei wirksamer Kühlung), mittlere Raumtemperatur in der Heizzeit,
+Überhitzungsstunden.
 
 ### 4.7 Skalierung und Verbrauchs-Rückrechnung
 
@@ -1864,7 +1876,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-23_R12_Gebaeudemodell`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-23_R13_Kuehlung`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -3271,3 +3283,69 @@ Abschnitte 1 und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md
 K4, K5, K6, K7 und K12, Kopf, Kapitel 0, 6 und 9, Zählung 15);
 [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 3.5, 4.5, 4.6, 8.6, 10.6,
 11.1 und 12; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.37 Entscheid E32 — Gebäude ohne wirksame Kühlung laufen frei
+
+**Entscheid E32 (Anwender, 23.09.2026).** Ein Gebäude **ohne wirksame Kühlung** — der
+Projektschalter „Kühlung rechnen" (`Tab_Einstellungen.Kuehlbetrieb`) ist aus, der Haken
+`Kuehlung_Aktiv` fehlt oder es gibt keinen Kühlsollwert — wird im Löser **nicht mehr** an
+`Maximaleraumtemperatur` gekappt. Bis dahin hielt der Löser jedes solche Gebäude mit einer idealen
+Kühlung ohne Leistungsgrenze auf θ_max, und die dabei abgeführte Energie erschien als
+„informativer" Kühlbedarf (Kapitel 4.5 alter Fassung). Das Gebäude **läuft jetzt frei**: Es wird
+keine Wärme abgeführt, die Raumtemperatur darf über θ_max steigen, und die
+**Überhitzungsstunden** zählen die Stunden darüber im freien Lauf — sie messen, was **ohne**
+Anlage geschieht ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.4, 7.1). Mit
+wirksamer Kühlung bleibt alles, wie es mit KU1 gebaut ist: Regelung auf den Kühlsollwert,
+Kühlleistungsgrenze, Kühlreihe im Kühlkanal. Beauftragt mit der vierten Welle von KU1.
+
+**Was damit gilt.**
+
+| Gegenstand | Regel |
+|---|---|
+| **Löser** | Ohne wirksame Kühlung ist die obere Regelgrenze +∞ (`GebaeudeModellEingang.KuehlSollwert`, `Stundenrand` „keine Kühlung"); die Betriebsfälle „Kühlen geregelt" und „Kühlgrenze" treten nicht ein, das Totband ist nach oben offen ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 7.1). Kühlt der Löser trotzdem in einer Stunde, ist das ein benannter Fehler (`ErgebnisUnplausibel`), keine Zahl |
+| **Raumtemperatur** | darf über `Maximaleraumtemperatur` steigen; die Sommerlüftung eines ungekühlten Gebäudes schaltet weiter ab 23 °C |
+| **Überhitzungsstunden** | Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur` — ohne wirksame Kühlung im freien Lauf; mit wirksamer Kühlung dieselbe Grenze, nicht der Kühlsollwert |
+| **Kühlreihe und Kühlkennzahlen** | gibt es nur bei wirksamer Kühlung: ohne sie sind `KuehlbedarfKwh`, `KuehlenergieMwh` und `StundenMitKuehlbedarf` `null` („nicht verfügbar", keine 0); der Bedarfsdialog zeigt „—" (K18) und die Überhitzungsstunden, `Tab_ErgebnisGebaeude.Kuehlenergie_Mwh` und `Kuehlstunden_H` bleiben NULL, der Bericht zeigt „—", und der Referenzlauf schreibt weder `kuehlbedarf_<n>.csv` noch `Geb[n].KuehlenergieMwh` und `Geb[n].StundenMitKuehlbedarf` |
+| **Normfälle** | unberührt: Sie setzen ihre Ränder selbst (`NormfallLeser`, AixLib-Modelle) und gehen nicht über den Eingangsbauer — lokal gemessen wie in G0, elf der zwölf im Band |
+| **Tagesbilanz-Weg** | unberührt (1040 byte-gleich) |
+
+**Was es ablöst.** Die Kappung als „informativer" Kühlbedarf (4.5 und 4.6 alter Fassung;
+Kühlkonzept 3.1, 3.2 und die Skizze in 8.1; Rechenschritte 7.1 „Vor KU1 …"), die Dialogsätze „Ohne
+Haken bleibt die Überhitzung informativ" und „Der Kühlbedarf ist informativ — die Wärme, die
+abgeführt werden müsste …" in beiden Sprachen, und die Lesart „ab KU1 über `Kuehl_Sollwert`" der
+Überhitzungskennzahl (Rechenschritte 8.2, Umsetzungskonzept 1.4, Register F-S4): Die Grenze ist
+`Maximaleraumtemperatur`, wie im Kühlkonzept 7.1 festgelegt und in KU1 gebaut.
+
+**Wirkung — gemessen vor dem Einfrieren** (Referenzlauf aller dreizehn Projekte gegen die Basis
+`2026-09-23_R12_Gebaeudemodell`, Testdatenbank unverändert; Jahresheizwärme je Gebäude
+`Geb[n].JahresheizwaermeMwh`, Überhitzungsstunden `Geb[n].Ueberhitzungsstunden`):
+
+| Gebäude (Projekte) | Heizwärme R12 → E32 [MWh/a] | relativ | Überhitzungsstunden R12 → E32 [h] | höchste Raumluft E32 [°C] |
+|---|---:|---:|---:|---:|
+| 10614, 10577, 10652 (1007, 1008, 1046) | 69,07 → 68,97; 15,03 → 15,01 | −0,145 % | 469 → 600 | 33,2 |
+| 10576 (1008) | 89,17 → 89,13 | −0,044 % | 295 → 440 | 30,4 |
+| 10599 (1017) | 90,19 → 90,15 | −0,045 % | 305 → 455 | 30,3 |
+| 10632 (1018) | 68,27 → 68,25 | −0,032 % | 154 → 233 | 29,1 |
+| 10628, 10629, 10644 (1023, 1024, 1039) | 450,56 → 449,90 | −0,145 % | 628 → 840 | 33,4 |
+| 10642 (1039) | 48,02 → 48,02 | −0,009 % | 72 → 102 | 27,5 |
+| 10643 (1039) | 99,14 → 99,10 | −0,041 % | 264 → 308 | 32,2 |
+| 10646, 10647, 10651 (1041, 1042, 1045) | 75,98 → 75,94 | −0,050 % | 277 → 331 | 32,0 |
+
+Die **Heizwärme sinkt um höchstens 0,15 %** — die Wärme, die die Kappung im Sommer abführte,
+bleibt jetzt in den Speichermassen und senkt den Heizbedarf der Übergangszeit ein wenig; die
+Schwelle des Auftrags (3 %) ist weit unterschritten. Die Wärmelast (Winterspitze) bleibt gleich.
+Die **Überhitzungsstunden steigen um 17 bis 51 %**: θ_op liegt im freien Lauf in mehr Stunden
+über θ_max als unter der Kappung, die nur die Raumluft hielt. Die Raumluft erreicht bis
+33,4 °C — die Referenzgebäude führen keine Sommerlüftung. Projekte ohne VDI-Gebäude (1030) und auf
+dem Tagesbilanz-Weg (1040) bleiben byte-gleich. Die Basis wird im selben Auftrag neu eingefroren
+(`Referenzlaeufe/LIESMICH.md`).
+
+**Betroffene Stufen:** KU1 (Welle 4, Einfrierschritt mit dem Referenzprojekt mit Kühlung), KU2
+(die Kältedeckung setzt auf demselben Rechenweg auf).
+
+**Nachgezogen:** Kopf dieses Papiers, 4.5 und 4.6; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitt 1 (E32); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 3.1,
+3.2, 3.4, 4.7, 6.4, 7.1, 8.1 und 8.4; [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+Kopf, 7.1, 8.1, 8.2 und 9; [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+1.4; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) F-S4; die Wiki-Quellen „Kühlung"
+und „Gebäudemodell VDI 6007"; die Dialogsätze in beiden Sprachen.

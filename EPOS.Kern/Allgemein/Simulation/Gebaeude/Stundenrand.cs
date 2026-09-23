@@ -5,13 +5,14 @@
     /// (Umsetzungskonzept 1.3). Alle Größen gelten über die ganze Stunde konstant.
     ///
     /// <para><b>Temperaturen</b> in °C: Außenluft (masseloser Zweig), äquivalente
-    /// Außentemperatur am Außenwandpfad, Heizsollwert, obere Grenze der Raumluft (Kappung
-    /// als ideale Kühlung). <b>Lasten</b> in W, positiv = Wärme in den Raum: der
+    /// Außentemperatur am Außenwandpfad, Heizsollwert, obere Grenze der Raumluft (der
+    /// Kühlsollwert der idealen Kühlung). <b>Lasten</b> in W, positiv = Wärme in den Raum: der
     /// Strahlungsanteil je Oberflächenknoten und der konvektive Anteil an der Luft —
     /// verteilt hat sie bereits der Aufrufer (Schritt E).</para>
     ///
     /// <para><b>Abschalten über NaN.</b> <see cref="ThetaSoll"/> = NaN heißt „keine
-    /// Heizung", <see cref="ThetaMax"/> = NaN oder +∞ heißt „keine Kappung, keine Kühlung",
+    /// Heizung", <see cref="ThetaMax"/> = NaN oder +∞ heißt „keine Kühlung, die Raumluft läuft
+    /// nach oben frei" (so rechnet jedes Gebäude ohne wirksame Kühlung, Entscheid E32),
     /// <see cref="HeizleistungMaxW"/> bzw. <see cref="KuehlleistungMaxW"/> = NaN heißt
     /// „unbegrenzt". Die übrigen Größen müssen endlich sein.</para>
     ///
@@ -60,7 +61,7 @@
         /// <summary>Heizsollwert der Raumluft [°C]; NaN = keine Heizung.</summary>
         internal double ThetaSoll { get; }
 
-        /// <summary>Obere Grenze der Raumluft, Kühlsollwert [°C]; NaN oder +∞ = keine Kappung.</summary>
+        /// <summary>Obere Grenze der Raumluft, Kühlsollwert [°C]; NaN oder +∞ = keine Kühlung.</summary>
         internal double ThetaMax { get; }
 
         /// <summary>Strahlungslast auf die Außenbauteiloberfläche [W].</summary>
@@ -93,8 +94,8 @@
         /// <summary>Ist eine Heizung vorhanden?</summary>
         internal bool MitHeizung => !double.IsNaN(ThetaSoll);
 
-        /// <summary>Ist eine Kappung (ideale Kühlung) vorhanden?</summary>
-        internal bool MitKappung => !double.IsNaN(ThetaMax) && !double.IsPositiveInfinity(ThetaMax);
+        /// <summary>Ist eine Kühlung (obere Regelgrenze der idealen Regelung) vorhanden?</summary>
+        internal bool MitKuehlung => !double.IsNaN(ThetaMax) && !double.IsPositiveInfinity(ThetaMax);
     }
 
     /// <summary>

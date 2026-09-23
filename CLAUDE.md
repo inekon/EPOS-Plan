@@ -142,9 +142,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-23_R12_Gebaeudemodell`, dreizehn Projekte; die Gebäude rechnen nach VDI 6007, allein
-Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von
-`EPOS.Kern.Tests/GebaeudeRueckwegTests`; Aufbau, Herleitung und Schemastand in
+`2026-09-23_R13_Kuehlung`, dreizehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen ohne
+wirksame Kühlung frei, Projekt 1017 rechnet Kälte, allein Projekt 1040 bis zur Stufe GA auf dem
+Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`; Aufbau, Herleitung und
+Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045 und 1046; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
@@ -162,7 +163,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - gesäte Gebäudedaten: `Tab_Gebaeude(_STAMM)` mit `Bauweise`, U-Werten, Flächen, Sollwerten,
   `Luftwechselrate`, `Fensterdurchlassgrad`, `Gebaeude_Modell` und den übrigen Spalten des
   Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte und
-  das Anlegen oder Entfernen eines ihrer Gebäude.
+  das Anlegen oder Entfernen eines ihrer Gebäude;
+- gesäte Kältedaten: der Projektschalter `Tab_Einstellungen.Kuehlbetrieb` eines Referenzprojekts,
+  die Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht`,
+  `Kuehlleistung_Max`), der Kanal „Kühlung“ eines seiner Lastgänge und, sobald ein Kälteerzeuger
+  rechnet, dessen gesäte Kühlleistung, Kühlkennlinie samt Vorlauf-Stützstellen und `Kuehl_Vorlauf`.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

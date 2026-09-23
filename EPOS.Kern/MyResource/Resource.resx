@@ -25438,7 +25438,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt.</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
-    <value>Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.</value>
+    <value>Ohne Haken wird das Gebäude nicht gekühlt: Es läuft frei, und die Überhitzung wird an der Maximalraumtemperatur ({0} °C) gezählt.</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
     <value>Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
@@ -25456,7 +25456,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Kühlleistungsgrenze muss größer als 0 sein.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
-    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken bleibt die Überhitzung informativ.</value>
+    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken läuft das Gebäude frei, und die Überhitzung wird an der Maximalraumtemperatur gezählt.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
     <value>Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C.</value>
@@ -25480,10 +25480,10 @@ Möchten Sie das zulassen?</value>
     <value>Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
-    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Das Gebäude wird nicht gekühlt und läuft frei — die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
-    <value>Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+    <value>Das Gebäude wird nicht gekühlt und läuft frei: Die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht.</value>
   </data>
   <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
     <value>Kältelast Jahresganglinie</value>

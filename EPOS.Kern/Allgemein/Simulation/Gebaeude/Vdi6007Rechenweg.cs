@@ -60,8 +60,9 @@ namespace WindowsFormsApplication1
         /// Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>, K10)? Gesetzt von
         /// der Fassade vor jedem Aufruf (<c>SimulationWaermebedarf.HeizwaermeEinesGebaeudes</c>).
         /// Nur mit ihm gelten Kühlsollwert und Kühlleistungsgrenze eines Gebäudes
-        /// (<see cref="GebaeudeModellEingang.KuehlungWirksam"/>); ohne ihn rechnet jedes Gebäude
-        /// wie vor der Kühlung — Kappung an der oberen Raumtemperatur, ohne Grenze.
+        /// (<see cref="GebaeudeModellEingang.KuehlungWirksam"/>); ohne ihn wird kein Gebäude
+        /// gekühlt — jedes läuft frei, und die Raumluft darf über die obere Raumtemperatur
+        /// steigen (Entscheid E32).
         /// </summary>
         internal bool Kuehlbetrieb { get; set; }
 
@@ -174,6 +175,19 @@ namespace WindowsFormsApplication1
                     throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
                         eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
                         " liefert eine nicht endliche oder negative Größe.");
+            }
+
+            // E32: Ohne wirksame Kühlung läuft das Gebäude frei - der Löser hat keine obere
+            // Grenze und darf nie kühlen. Eine Kühlleistung wäre ein Fehler des Lösers, keine
+            // Zahl, die still verschwinden darf; und eine Kühlreihe gibt es dann nicht.
+            if (!eingang.KuehlungWirksam)
+            {
+                for (int h = 0; h < 8760; h++)
+                    if (kuehl[h] != 0.0)
+                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
+                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
+                            " kühlt, obwohl die Kühlung nicht wirksam ist (freier Lauf, E32).");
+                kuehl = null;
             }
 
             double verbrauchAltKwh = summeW / 1000.0;

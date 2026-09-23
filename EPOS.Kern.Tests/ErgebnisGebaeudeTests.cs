@@ -153,8 +153,13 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(m.SpitzeKw, (double)r["Spitze_Kw"]);
                 Assert.Equal(m.SpitzeTagesmittelKw, (double)r["SpitzeTagesmittel_Kw"]);
                 Assert.Equal(m.Spitze95Kw, (double)r["Spitze95_Kw"]);
-                Assert.Equal(vdi.KuehlenergieMwh, (double)r["Kuehlenergie_Mwh"]);
-                Assert.Equal(vdi.StundenMitKuehlbedarf, Convert.ToInt32(r["Kuehlstunden_H"]));
+                // E32: Die Gebäude von 1039 werden nicht gekühlt und laufen frei - Kühlenergie
+                // und Kühlstunden gibt es nicht, die Zellen bleiben NULL („nicht verfügbar").
+                Assert.False(vdi.KuehlungWirksam);
+                Assert.Null(vdi.KuehlenergieMwh);
+                Assert.Null(m.KuehlenergieMwh);
+                Assert.Equal(DBNull.Value, r["Kuehlenergie_Mwh"]);
+                Assert.Equal(DBNull.Value, r["Kuehlstunden_H"]);
                 Assert.Equal(vdi.MittlereRaumtemperaturHeizzeit, (double)r["MittlereRaumtemperatur_C"]);
                 Assert.Equal(vdi.Ueberhitzungsstunden, Convert.ToInt32(r["Ueberhitzungsstunden_H"]));
                 Assert.Equal(vdi.StundenMitSommerlueftung, Convert.ToInt32(r["Sommerlueftungsstunden_H"]));

@@ -2451,7 +2451,7 @@ Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFo
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
-| Referenzbasis | `Referenzlaeufe/2026-09-23_R12_Gebaeudemodell` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-23_R13_Kuehlung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2579,7 +2579,7 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-23_R12_Gebaeudemodell`); **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-23_R13_Kuehlung`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
