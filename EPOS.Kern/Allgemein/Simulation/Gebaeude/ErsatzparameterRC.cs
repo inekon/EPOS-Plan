@@ -324,6 +324,135 @@ namespace WindowsFormsApplication1
         /// <summary>U·A der Fenster [W/K] — Gewicht der äquivalenten Außentemperatur.</summary>
         internal double UA_Fenster_WK { get; }
 
+        // =====================================================================
+        //  Fabrikweg 1: der Klassenweg (Stufe G1, Rechenschritte Schritt A)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Klassenweg</b> (Rechenschritte A1–A7a, EPOS-Klassenweg nach Konzept 4.3):
+        /// die RC-Größen aus dem, was die Gebäudezeile führt — U-Wert-/Flächenpaare, Bauweise,
+        /// Nutzung. Er läuft einmal je Gebäude und Lauf.
+        ///
+        /// <list type="bullet">
+        /// <item>A1: C_ges = Bauweise · 3 600, aufgeteilt nach a_AW.</item>
+        /// <item>A2: A_AW,opak = Wand + Dach + Grund + Sonstiges; A_AW,ges mit Fenstern;
+        /// A_IW = f_IW · A_f; A_rad = min(A_AW,ges, A_IW).</item>
+        /// <item>A3: U·A je Gruppe ungewichtet (E2); Σψ·L.</item>
+        /// <item>A4: R_1,AW = 1/(h_ms·A_AW,opak), R_Rest,AW = 1/Σ(U·A)_opak − R_1,AW − R_si/A_AW,opak.</item>
+        /// <item>A5, A6: R_1,IW, R_conv,AW (mit Fenstern), R_conv,IW, R_rad.</item>
+        /// <item>A7: R_ext = 1/(n·A_f·H·c·ρ + Σψ·L); unendlich ohne Zweig.</item>
+        /// <item>A7a: Fensterzweig R_AF = (1/U_w − R_si − 1/α_A)/A_w, R_1,AF = R_AF/6,
+        /// R_Rest,AF = 1/(U_w·A_w) − R_1,AF − R_α,i·A_AW,ges/A_w; die Zusammenfassung nach
+        /// (27)–(28c) leistet der Erbauer.</item>
+        /// </list>
+        ///
+        /// <para><b>Plausibilitätsgrenzen</b> (Konzept 4.8) mit benanntem Fehler: A_f, H und n
+        /// größer null; 5 ≤ Bauweise/A_f ≤ 200 Wh/(m²K); U-Werte 0,1 … 6 W/(m²K) für jede
+        /// Gruppe mit Fläche; 0 &lt; g ≤ 1, wenn Fenster da sind; Flächen nicht negativ.
+        /// R_AF ≤ 0 bricht ab — (26) hat dafür keinen Wert.</para>
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Grenze.</exception>
+        internal static ErsatzparameterRC AusKlassenweg(GebaeudeModellEingang e)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            string wer = e.Bezeichnung + ": ";
+
+            double af = e.Nutzflaeche_M2;
+            if (!IstPositivEndlich(af))
+                throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt, wer + "Die Nutzfläche A_f = " + Text(af) + " m² ist nicht größer null.");
+            if (!IstPositivEndlich(e.Raumhoehe_M))
+                throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt, wer + "Die Raumhöhe H = " + Text(e.Raumhoehe_M) + " m ist nicht größer null.");
+            if (!IstPositivEndlich(e.Luftwechselrate_h))
+                throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt, wer + "Die Luftwechselrate n = " + Text(e.Luftwechselrate_h) + " 1/h ist nicht größer null.");
+
+            double bauweiseJeM2 = e.Bauweise_WhK / af;
+            if (!(bauweiseJeM2 >= GebaeudeFestwerte.BAUWEISE_JE_M2_MIN && bauweiseJeM2 <= GebaeudeFestwerte.BAUWEISE_JE_M2_MAX))
+                throw new GebaeudeModellException(GebaeudeModellFehler.BauweiseUnplausibel,
+                    wer + "Die Speichermasse je Nutzfläche " + Text(bauweiseJeM2) + " Wh/(m²K) (Bauweise " + Text(e.Bauweise_WhK) +
+                    " Wh/K, Nutzfläche " + Text(af) + " m²) liegt nicht in " + Text(GebaeudeFestwerte.BAUWEISE_JE_M2_MIN) +
+                    " … " + Text(GebaeudeFestwerte.BAUWEISE_JE_M2_MAX) + " Wh/(m²K).");
+
+            double aWand = e.A_Aussenwand_M2, aDach = e.A_Dach_M2, aGrund = e.A_Grund_M2, aSonst = e.A_Sonstige_M2, aFenster = e.A_Fenster_M2;
+            foreach (double a in new[] { aWand, aDach, aGrund, aSonst, aFenster })
+                if (double.IsNaN(a) || double.IsInfinity(a) || a < 0.0)
+                    throw new GebaeudeModellException(GebaeudeModellFehler.FlaecheUngueltig, wer + "Eine Bauteilfläche ist negativ oder nicht endlich (" + Text(a) + " m²).");
+
+            UWert(wer, "Außenwand", e.U_Aussenwand, aWand);
+            UWert(wer, "Fenster", e.U_Fenster, aFenster);
+            UWert(wer, "Dach", e.U_Dach, aDach);
+            UWert(wer, "Grundfläche", e.U_Grund, aGrund);
+            UWert(wer, "Sonstiges", e.U_Sonstige, aSonst);
+            if (aFenster > 0.0 && !(e.GWert > 0.0 && e.GWert <= 1.0))
+                throw new GebaeudeModellException(GebaeudeModellFehler.GWertUnplausibel, wer + "Der Gesamtenergiedurchlassgrad g = " + Text(e.GWert) + " liegt nicht in (0, 1].");
+
+            // A1 — Speichermasse
+            double cGes = e.Bauweise_WhK * GebaeudeFestwerte.SEKUNDEN_JE_STUNDE;
+            double cAw = e.MasseanteilAussen * cGes;
+            double cIw = (1.0 - e.MasseanteilAussen) * cGes;
+
+            // A2 — Bezugsflächen
+            double aOpak = aWand + aDach + aGrund + aSonst;
+            if (!(aOpak > 0.0))
+                throw new GebaeudeModellException(GebaeudeModellFehler.FlaecheUngueltig, wer + "Die opake Außenbauteilfläche ist null; der Klassenweg braucht Wand, Dach, Grund oder Sonstiges.");
+            double aGes = aOpak + aFenster;
+            double aIw = e.Innenflaechenfaktor * af;
+            double aRad = Math.Min(aGes, aIw);
+
+            // A3 — Transmissionsleitwerte (ungewichtet, E2)
+            double uaOpak = e.U_Aussenwand * aWand + e.U_Dach * aDach + e.U_Grund * aGrund + e.U_Sonstige * aSonst;
+            double uaFenster = aFenster > 0.0 ? e.U_Fenster * aFenster : 0.0;
+
+            // A4 — Außenwandpfad (mit R_si-Abzug)
+            double r1Aw = 1.0 / (GebaeudeFestwerte.H_MS * aOpak);
+            double rRestAw = 1.0 / uaOpak - r1Aw - GebaeudeFestwerte.R_SI / aOpak;
+
+            // A5, A6
+            double r1Iw = 1.0 / (GebaeudeFestwerte.H_MS * aIw);
+            double rConvAw = 1.0 / (GebaeudeFestwerte.ALPHA_KON_INNEN * aGes);
+            double rConvIw = 1.0 / (GebaeudeFestwerte.ALPHA_KON_INNEN * aIw);
+            double rRad = 1.0 / (GebaeudeFestwerte.ALPHA_STR_INNEN * aRad);
+
+            // A7 — Lüftung und Wärmebrücken
+            double hVe = e.Luftwechselrate_h * af * e.Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT;
+            double hExt = hVe + e.SummePsiL_WK;
+            double rExt = hExt > 0.0 ? 1.0 / hExt : double.PositiveInfinity;
+
+            // A7a — Fensterzweig
+            double r1Af = double.PositiveInfinity, rRestAf = double.PositiveInfinity;
+            double alphaA = GebaeudeFestwerte.ALPHA_AUSSEN;
+            if (aFenster > 0.0)
+            {
+                double rAf = (1.0 / e.U_Fenster - GebaeudeFestwerte.R_SI - 1.0 / alphaA) / aFenster;
+                if (!(rAf > 0.0))
+                    throw new GebaeudeModellException(GebaeudeModellFehler.FensterzweigUngueltig,
+                        wer + "Der Fensterwiderstand R_AF = " + Text(rAf) + " K/W nach Gl. (26) ist nicht positiv (U_w = " +
+                        Text(e.U_Fenster) + " W/(m²K)); dafür setzt EPOS keinen Wert.");
+                r1Af = rAf / 6.0;
+                double rAlphaI = 1.0 / (1.0 / rConvAw + 1.0 / rRad);
+                rRestAf = 1.0 / uaFenster - r1Af - rAlphaI * aGes / aFenster;
+            }
+            double rAlphaAussen = 1.0 / (alphaA * aGes);
+
+            try
+            {
+                return new ErsatzparameterRC(cAw, cIw, r1Aw, rRestAw, r1Iw, rConvAw, rConvIw, rRad, rExt,
+                                             aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen);
+            }
+            catch (GebaeudeModellException ex)
+            {
+                throw new GebaeudeModellException(ex.Grund, wer + ex.Message);
+            }
+        }
+
+        private static void UWert(string wer, string gruppe, double u, double flaeche)
+        {
+            if (!(flaeche > 0.0)) return;
+            if (!(u >= GebaeudeFestwerte.U_MIN && u <= GebaeudeFestwerte.U_MAX))
+                throw new GebaeudeModellException(GebaeudeModellFehler.UWertUnplausibel,
+                    wer + "Der U-Wert " + gruppe + " " + Text(u) + " W/(m²K) liegt nicht in " +
+                    Text(GebaeudeFestwerte.U_MIN) + " … " + Text(GebaeudeFestwerte.U_MAX) + " W/(m²K).");
+        }
+
         private static bool IstPositivEndlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w) && w > 0.0;
 
         private static void Kapazitaet(double w, string name)

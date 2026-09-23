@@ -48,6 +48,21 @@
         internal bool IstFlaeche => Einheit == EINHEIT_FLAECHE;
 
         /// <summary>
+        /// Die Fensterflächen Ost und West eines Gebäudes [m²] — mit der NULL-Vorgabe aus dem
+        /// Bestandsfeld: Fehlt eine der beiden neuen Spalten, trägt sie die Hälfte von
+        /// <c>Fensterflaeche_OstWest</c> (Rechenschritte 1.1; Softwarearchitektur 1.3: „eine
+        /// benannte Abhängigkeit vom Bestandsfeld, nur für den Übergang" — sie steht hier und
+        /// nicht im VDI-Modul). Die Stufe GA füllt beide Spalten einmalig und entfernt das
+        /// Bestandsfeld; dann entfällt diese Vorgabe.
+        /// </summary>
+        internal static void FensterflaechenOstWest(ProjektGebaeudeModel item, out double ost, out double west)
+        {
+            double haelfte = 0.5 * item.Fensterflaeche_OstWest;
+            ost = item.Fensterflaeche_Ost ?? haelfte;
+            west = item.Fensterflaeche_West ?? haelfte;
+        }
+
+        /// <summary>
         /// Bildet die Vorbereitung einer Gebäudezeile. Liest die Zeile, schreibt sie nicht.
         /// Die Umrechnung des Verbrauchs ist Anweisung für Anweisung die des Bestands
         /// (früher <c>Bewohner_und_Flaeche_berechnen</c>).

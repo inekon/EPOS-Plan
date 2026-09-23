@@ -1,4 +1,7 @@
-﻿namespace WindowsFormsApplication1
+﻿using System;
+using System.Collections.Generic;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Der Klimakalender eines Laufs, in zwei Teilen</b> (Umsetzungskonzept
@@ -56,6 +59,68 @@
 
         /// <summary>Letzte Stunde je Monat, einschließlich (12).</summary>
         internal int[] MoEnde { get; }
+
+        // =====================================================================
+        //  Stufe G1 — was der VDI-Weg zusätzlich liest (Umsetzungskonzept 1.2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die ganze Solarreihe der Klimaregion in Ortszeit, wie sie
+        /// <c>SolardatenCtrl.ReadOrtszeit</c> liefert — mit der UTC-Herkunft an jeder Zeile
+        /// (Umsetzungskonzept 1.2 Zeile 2). <c>null</c>, solange nicht gelesen.
+        /// </summary>
+        internal IReadOnlyList<SolardatenModel> SolarOrtszeit { get; set; }
+
+        /// <summary>Längengrad der Klimaregion [°]; NaN = nicht gelesen.</summary>
+        internal double Laengengrad { get; set; } = double.NaN;
+
+        /// <summary>Breitengrad der Klimaregion [°]; NaN = nicht gelesen.</summary>
+        internal double Breitengrad { get; set; } = double.NaN;
+
+        /// <summary>Referenzjahr der Zeitbasis (<c>SolardatenCtrl.Referenzjahr</c>); 0 = nicht gelesen.</summary>
+        internal int Referenzjahr { get; set; }
+
+        /// <summary>
+        /// Die Wochenendmaske auf dem <b>Ortszeit-Kalender</b> (Entscheid U7, E27; F-Ü8):
+        /// Samstag und Sonntag ab dem 1. Januar des <see cref="Referenzjahr"/>es, 365 Tage.
+        /// Sie gehört dem VDI-Weg; der Tagesbilanz-Weg liest weiter <see cref="WE"/> aus
+        /// <c>Tab_Klimadaten</c>. <c>null</c>, solange nicht gebildet.
+        /// </summary>
+        internal bool[] WochenendeOrtszeit { get; set; }
+
+        /// <summary>
+        /// Die Probe der Wochenendmaske gegen <see cref="WE"/> (<c>Tab_Klimadaten.WE</c>
+        /// derselben Klimaregion): Zahl der Tage, an denen beide verschieden sind. Eine
+        /// Abweichung ist ein Befund der Probe, kein Rechenfehler (Umsetzungskonzept 1.2).
+        /// </summary>
+        internal int WochenendProbeAbweichungen { get; set; }
+
+        /// <summary>
+        /// Bildet die Wochenendmaske eines Jahres: Tag d (0 … 364) ist Wochenende, wenn der
+        /// d-te Tag nach dem 1. Januar von <paramref name="jahr"/> ein Samstag oder Sonntag
+        /// ist. Ohne Datenbank, ohne Uhr.
+        /// </summary>
+        internal static bool[] WochenendmaskeBilden(int jahr)
+        {
+            if (jahr < 1 || jahr > 9998) throw new ArgumentOutOfRangeException(nameof(jahr));
+            var maske = new bool[365];
+            DateTime jan1 = new DateTime(jahr, 1, 1);
+            for (int d = 0; d < 365; d++)
+            {
+                DayOfWeek w = jan1.AddDays(d).DayOfWeek;
+                maske[d] = w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
+            }
+            return maske;
+        }
+
+        /// <summary>Zahl der Tage, an denen zwei Wochenendmasken verschieden sind.</summary>
+        internal static int Abweichungen(bool[] a, bool[] b)
+        {
+            if (a == null || b == null) return -1;
+            int n = Math.Min(a.Length, b.Length), k = 0;
+            for (int d = 0; d < n; d++) if (a[d] != b[d]) k++;
+            return k;
+        }
     }
 
     /// <summary>

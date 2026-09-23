@@ -107,9 +107,49 @@ namespace WindowsFormsApplication1
                     if (row["ID"] != DBNull.Value) item.ID_Gebaeude = Convert.ToInt32(row["ID"]);
                     if (mitRechenweg && row[GebaeudeSchema.SPALTE_GEBAEUDE_MODELL] != DBNull.Value) item.Gebaeude_Modell = row[GebaeudeSchema.SPALTE_GEBAEUDE_MODELL].ToString();
 
+                    // Die uebrigen vierzehn neuen Spalten (Stufe G1, Anbindung des VDI-Wegs):
+                    // NULL-ERHALTEND gelesen - null heisst "Vorgabe des Eingangsbauers",
+                    // nicht 0. Auf einer Sicht ohne die Spalten bleibt alles null.
+                    if (mitRechenweg)
+                    {
+                        item.Fensterflaeche_Ost = ZahlOderNull(row, GebaeudeSchema.SPALTE_FENSTERFLAECHE_OST);
+                        item.Fensterflaeche_West = ZahlOderNull(row, GebaeudeSchema.SPALTE_FENSTERFLAECHE_WEST);
+                        item.Rahmenanteil = ZahlOderNull(row, GebaeudeSchema.SPALTE_RAHMENANTEIL);
+                        item.Verschattungsfaktor = ZahlOderNull(row, GebaeudeSchema.SPALTE_VERSCHATTUNGSFAKTOR);
+                        item.Grundflaeche_Randbedingung = TextOderNull(row, GebaeudeSchema.SPALTE_GRUNDFLAECHE_RANDBEDINGUNG);
+                        item.Kellertemperatur = ZahlOderNull(row, GebaeudeSchema.SPALTE_KELLERTEMPERATUR);
+                        item.Masseanteil_Aussen = ZahlOderNull(row, GebaeudeSchema.SPALTE_MASSEANTEIL_AUSSEN);
+                        item.Innenflaechenfaktor = ZahlOderNull(row, GebaeudeSchema.SPALTE_INNENFLAECHENFAKTOR);
+                        item.Heizung_Strahlungsanteil = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZUNG_STRAHLUNGSANTEIL);
+                        item.Heizleistung_Max = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZLEISTUNG_MAX);
+                        item.Aussenbauteile_Strahlung = Schalter(row, GebaeudeSchema.SPALTE_AUSSENBAUTEILE_STRAHLUNG);
+                        item.Luftwechsel_Infiltration = ZahlOderNull(row, GebaeudeSchema.SPALTE_LUFTWECHSEL_INFILTRATION);
+                        item.Luftwechsel_Nutzer = ZahlOderNull(row, GebaeudeSchema.SPALTE_LUFTWECHSEL_NUTZER);
+                        item.Sommerlueftung = Schalter(row, GebaeudeSchema.SPALTE_SOMMERLUEFTUNG);
+                    }
+
                     _internalList.Add(item);
                 }
             }
+        }
+
+        private static double? ZahlOderNull(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            return Convert.ToDouble(row[spalte]);
+        }
+
+        private static string TextOderNull(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            string text = row[spalte].ToString();
+            return text.Length == 0 ? null : text;
+        }
+
+        private static bool Schalter(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return false;
+            return Convert.ToInt64(row[spalte]) != 0;
         }
 
         #endregion

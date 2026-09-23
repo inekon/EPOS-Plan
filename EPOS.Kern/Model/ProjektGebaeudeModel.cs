@@ -74,6 +74,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Gebaeude_Modell;
 
+        // =====================================================================
+        //  Die übrigen vierzehn Gebäudespalten des Schritts M3 (Schemaschritt 101,
+        //  Umsetzungskonzept 1.6/1.7) — NULL-ERHALTEND: null heißt „Vorgabe des
+        //  Eingangsbauers" (Rechenschritte 1.1), nie 0. Gelesen allein vom VDI-Weg
+        //  (GebaeudeModellEingang); der Tagesbilanz-Weg kennt sie nicht.
+        // =====================================================================
+
+        /// <summary>Fensterfläche Ost [m²]; null = ½ <see cref="Fensterflaeche_OstWest"/> (Vorbereitungsschritt).</summary>
+        public double? Fensterflaeche_Ost;
+        /// <summary>Fensterfläche West [m²]; null = ½ <see cref="Fensterflaeche_OstWest"/> (Vorbereitungsschritt).</summary>
+        public double? Fensterflaeche_West;
+        /// <summary>Rahmenanteil 1 − F_F [–]; null = Vorgabe.</summary>
+        public double? Rahmenanteil;
+        /// <summary>Verschattungsfaktor F_S [–]; null = Vorgabe.</summary>
+        public double? Verschattungsfaktor;
+        /// <summary>Randbedingung der Grundfläche (<c>DbWerte.GRUND_*</c>); null = Erdreich.</summary>
+        public string Grundflaeche_Randbedingung;
+        /// <summary>Kellertemperatur [°C] bei Randbedingung Keller; null = Vorgabe.</summary>
+        public double? Kellertemperatur;
+        /// <summary>Masseanteil der Außenbauteile a_AW [–]; null = Vorgabe.</summary>
+        public double? Masseanteil_Aussen;
+        /// <summary>Innenflächenfaktor f_IW [–]; null = Vorgabe.</summary>
+        public double? Innenflaechenfaktor;
+        /// <summary>Strahlungsanteil der Heizübergabe [–]; null = Vorgabe.</summary>
+        public double? Heizung_Strahlungsanteil;
+        /// <summary>Heizleistungsgrenze [kW]; null = unbegrenzt.</summary>
+        public double? Heizleistung_Max;
+        /// <summary>Strahlung auf Außenbauteile (Schalter, NOT NULL DEFAULT 0).</summary>
+        public bool Aussenbauteile_Strahlung;
+        /// <summary>Infiltration [1/h] (Stufe G2); null = Vorgabe.</summary>
+        public double? Luftwechsel_Infiltration;
+        /// <summary>Nutzerlüftung [1/h] (Stufe G2); null = Vorgabe.</summary>
+        public double? Luftwechsel_Nutzer;
+        /// <summary>Sommerlüftung (Schalter, Stufe G2, NOT NULL DEFAULT 0).</summary>
+        public bool Sommerlueftung;
+
         public ProjektGebaeudeModel()
         {
             items = null;
