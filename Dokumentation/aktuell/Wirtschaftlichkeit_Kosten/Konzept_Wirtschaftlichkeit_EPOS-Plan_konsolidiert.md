@@ -1,14 +1,17 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 23.09.2026** · Codestand `befec9dc` · `SchemaStand.Zielversion` = 101 · Schemaschritte 90–101 vergeben, **102** an den Zapfprofilgenerator, neue ab **103** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 23.09.2026** · Codestand `954d4dcc` · `SchemaStand.Zielversion` = 104 · Schemaschritte 90–104 vergeben, **105** an K‑1 (E7c), neue ab **106** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
-Die Schritte 97 bis 100 gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
+Die Schritte 97 bis 101 und 103 gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
 BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
-Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426). **101** setzt die leere `KWKG_Anlagenart` auf NULL
-(`SCHRITT_101_KWKG_ANLAGENART_LEER`, § 6.3 Nr. 30, #437); **102** führt die Sitzung des
-Zapfprofilgenerators für ihre Tabellen (Zweig `z0`, noch nicht zusammengeführt). Wer hier einen Schritt
-plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten der Gebäudesimulation
+(`SCHRITT_101_GEBAEUDESPALTEN`), **103** Katalog, Zonen und Projekt des Zapfprofilgenerators
+(`SCHRITT_103_ZAPFPROFIL_KATALOG`, #438). Diesem Feld gehören **102** — die leere `KWKG_Anlagenart` wird
+NULL (`SCHRITT_102_KWKG_ANLAGENART_LEER`, § 6.3 Nr. 30, #437) — und **104** — der Zeitzonentarif wird
+abgelöst, die Leistungspreis-Staffel zieht an den Stromträger (`SCHRITT_104_ZEITZONENTARIF_ABLOESUNG`,
+§ 3.5, #439); **105** bekommt K‑1 (§ 3.6, E7c). Wer hier einen Schritt plant, nimmt die nächste freie
+Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -161,7 +164,7 @@ eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 |---|---|---|---|---|
 | Stichtag (Bestellung/Genehmigung) | Datumsfeld mit Kontrollkästchen | Haken aus = Projektwert | `KWKG_Stichtag` | Bestand |
 | Inbetriebnahme | Datumsfeld mit Kontrollkästchen | dito | `KWKG_Inbetriebnahme` | Bestand |
-| Anlagenart | Baustein `Auswahlfeld` | (bitte wählen) = nicht gepflegt, NULL · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3; ohne Anlagenart leitet § 8 kein Kontingent ab (0 h mit Grund) — der Zuschlag entfällt und die Kohärenzzeile „Anlagenart fehlt" erscheint nur dort, wo das Kontingent aus der Anlagenart abzuleiten ist (entschieden E7‑Q1, Lesart b, 23.09.2026, § 6.3 Nr. 30 — Bau E7c) | `KWKG_Anlagenart` | Bestand; „(bitte wählen)" und Schritt 101 #437 |
+| Anlagenart | Baustein `Auswahlfeld` | (bitte wählen) = nicht gepflegt, NULL · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3; ohne Anlagenart leitet § 8 kein Kontingent ab (0 h mit Grund) — der Zuschlag entfällt und die Kohärenzzeile „Anlagenart fehlt" erscheint nur dort, wo das Kontingent aus der Anlagenart abzuleiten ist (entschieden E7‑Q1, Lesart b, 23.09.2026, § 6.3 Nr. 30 — Bau E7c) | `KWKG_Anlagenart` | Bestand; „(bitte wählen)" und Schritt 102 #437 |
 | Eigenstrom nach § 6 Abs. 3 | Baustein `Auswahlfeld` | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
 | Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf „Vorschlag übernehmen" am Feld** | `KWKG_Satz_Einspeisung` | Bestand, Knopf BK1 |
 | Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
@@ -226,10 +229,11 @@ Kohärenzzeile in Firebrick, wenn der erfasste Brennstoffpreis die Energiesteuer
 ### Gruppe 4 — Stromsteuer
 
 Unternehmensart (führend, BW4) · Räumlicher Zusammenhang 4,5 km · Hocheffizienz nachgewiesen ·
-**zwei Sprungknöpfe „Strombezug…" und „BHKW-Tarif…"** · **Feld „Modus § 9 Abs. 1 Nr. 3"**
+**Sprungknopf „BHKW-Tarif…"** (in die Tarifstruktur, Rollenmodell; § 3.5) · **Feld „Modus § 9 Abs. 1 Nr. 3"**
 (ERLOES/AUSWEIS, Vorgabe AUSWEIS) — Spalte `Stromst_Befreiung_Modus`, Schemaschritt 88
-(K3, → Register R‑K). Beide Sprünge speichern nur, wenn der Arbeitsstand vom
-geladenen Stand abweicht.
+(K3, → Register R‑K). Der Sprung speichert nur, wenn der Arbeitsstand vom
+geladenen Stand abweicht. Einen Sprung „Strombezug…" gibt es nicht (Q11, → Register R‑Q): Den
+Zeitzonentarif gibt es nicht, die Leistungspreis-Staffel steht beim Stromträger (§ 2.5).
 
 ### Gruppe 5 — Hilfsstrom
 
@@ -332,6 +336,15 @@ Abrechnungseinheit zurück. Die Karte meldet „Katalogwerte übernommen — noc
 geschrieben wird erst mit „Speichern" bzw. „OK", und dabei entsteht die Historienzeile. Das
 Projekt folgt dem Katalog danach **nicht** — eine spätere Änderung im Katalog lässt die
 Projektwerte, wo sie sind.
+
+**Die Leistungspreis-Staffel steht beim Stromträger** (Q11, → Register R‑Q, R‑E7b; umgesetzt #439). Im
+Projektkontext führt die Trägerkarte des Stromträgers im Block „Preis und Heizwert" die Gruppe
+„Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)": Staffelgrenze [kW], Preis bis zur Grenze und Preis über
+der Grenze [€/(kW·a)], darunter eine Erklärzeile. Gespeichert wird an der Projektübersteuerung
+(`energy_project_settings.Leistungspreis_Staffelgrenze`, `…_Staffel1`, `…_Staffel2`, Schemaschritt 104),
+geschrieben über `EnergietraegerPreisCtrl`; der Katalog führt keine Staffel. Ein geleertes Feld heißt „nicht
+gepflegt" (NULL) — anders als die Preise darüber lässt sich die Staffel so wieder abschalten. Gepflegt ist sie,
+sobald einer der beiden Preise größer als 0 ist; gerechnet wird sie im Leistungsanteil des Netzbezugs (§ 3.5).
 
 ### Emissionsanzeige der Energieträgertabelle
 
@@ -504,8 +517,9 @@ Designer**: Texte kommen über `[Parameter]`-Vorgaben und die `*Texte`-Bündel u
 Hülle mit `Resource.*` bzw. `T(schlüssel, rückfall)` belegt.
 
 **Die Fußleiste der Wirtschaftlichkeitsseite** (`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`)
-führt **höchstens vier Knöpfe** — Photovoltaik, BHKW und Strombezug je nach Ausstattung der Gruppe,
-dazu Berechnen; „Parameter…" steht in der Zeile der Szenariowahl. **Lücke K8 („kein Platz für einen
+führt **höchstens drei Knöpfe** — Photovoltaik und BHKW je nach Ausstattung der Gruppe, dazu
+Berechnen; „Parameter…" steht in der Zeile der Szenariowahl. Einen Knopf „Strombezug…" gibt es nicht (Q11,
+umgesetzt #439); die Tarifstruktur im Rollenmodell öffnet sich aus dem BHKW- und dem PV-Dialog. **Lücke K8 („kein Platz für einen
 achten Knopf") ist damit gegenstandslos.** **Entscheid K8 (→ Register R‑K):** kein weiterer Knopf,
 sondern ein Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite (umgesetzt #434) — die
 Darstellung „Kennzahlen" mit den vier Abschnitten der Ergebnisansicht (§ 2.13), die Darstellung
@@ -805,8 +819,8 @@ Text hängen:
   Viertelstunden-Bezugsspitze;
 - alle **Detailblätter** samt Monatswerten (Aggregat der Stundenreihen; die Brennstoffmenge wird
   dort heute als Text geschrieben);
-- die **Strommengen-Matrix** nach Tarifzonen (Zonenzuordnung je Stunde, stundenweises Minimum für
-  den KWK-Eigenstrom), die Bezugsspitze, die **Emissionsbilanz**, der **KWK-Modulblock**;
+- die **Strommengen-Matrix** als Jahreszeile ohne Tarifzonen (Jahressummen aus den Stundenreihen,
+  stundenweises Minimum für den KWK-Eigenstrom, höchste Stundenlast), die Bezugsspitze, die **Emissionsbilanz**, der **KWK-Modulblock**;
 - die **Sensitivitätstafel** (fünf Zeilen, jede eine Differenz zweier Zahlungsbilder);
 - die Textbausteine (Parameter- und Tarifnachweis, Bilanzkonvention, Veraltet-Warnungen,
   Empfehlungssatz, nicht monetäre Wirkungen) und die Gesetzeslogik mit Katalogzugriff
@@ -1021,8 +1035,8 @@ nicht summiert, weil sich seine Beträge überschneiden (die Befreiung steckt im
 vermiedenen Kosten). Für die Umsetzung: Die Zeilen des Katalogs brauchen einen Anlagenbezug
 (Schlüssel je Anlage wie bei den Energiekosten-Unterzeilen), und die vermiedenen Stromkosten sind
 heute **projektweit** aus `VermiedenMengeMWh` gebildet — eine Aufteilung je Anlage braucht einen
-**Verteilschlüssel je Anlage**: die Strommatrix trennt nur nach **Tarifzone** (`StromMatrix.Zone`),
-nicht nach Anlage, und der Kern verteilt nach dem Eigenverbrauch je Anlage (Befund V-4); der
+**Verteilschlüssel je Anlage**: die Strommatrix führt je Projekt Jahressummen (eine Jahreszeile, keine
+Tarifzonen), nicht Mengen je Anlage, und der Kern verteilt nach dem Eigenverbrauch je Anlage (Befund V-4); der
 Leistungsanteil bleibt projektweit. **Stand: umgesetzt #432** — Anlagenbezug `WirtZeile.Komponente`,
 Verteilschlüssel `VermiedenAnlageNachweis.Verteile()` (Näherung ausgewiesen), Leistungsanteil projektweit
 (Q15); **mit #437** ist die Bezugsgröße der vermiedenen Menge der Bedarf ohne jede Eigenerzeugung
@@ -1566,15 +1580,32 @@ registrierten Leistung abgerechnet:
 
 ```
 Spitze = Maximum der VIERTELSTUNDENreihe des Netzbezugs (dieselbe Reihe, die der Speicher
-         kappt); das Stundenmittel (StromMatrix.MaxBezugKW) glättet die Spitze und bleibt
-         der Tarifstruktur vorbehalten
-Modus JAHR:  Satz × Jahresspitze       Modus MONAT:  Σ₁₂ (Monatsspitze × Satz)
-Saisonreihe vor konstantem Satz:       Σ₁₂ (Monatssatz × Monatsspitze)
+         kappt); das Stundenmittel (StromMatrix.MaxBezugKW) glättet die Spitze und bemisst
+         allein die Leistungspreismodelle des Rollentarifs
+Staffel vor Saisonreihe vor konstantem Satz — genau einer rechnet, nie eine Summe:
+  Staffel:     min(S, G) × P₁ + max(0, S − G) × P₂    S = Jahresspitze, G = max(0, Grenze),
+               P₁, P₂ in €/(kW·a) — gleich welcher Modus am Träger steht
+  Modus JAHR:  Satz × Jahresspitze       Modus MONAT:  Σ₁₂ (Monatsspitze × Satz)
+  Saisonreihe:                           Σ₁₂ (Monatssatz × Monatsspitze)
 Satz 0 / nicht gepflegt ⇒ kein Anteil; ohne Zeitreihen ⇒ kein Anteil, der Träger wird benannt
 ```
 
-Im Tarifmodus ersetzt der Zonen- oder Rollenbetrag den **ganzen** Flat-Anteil samt
-Leistungsanteil.
+**Die zweistufige Leistungspreis-Staffel** (Q11, → Register R‑Q, R‑E7b; umgesetzt #439) steht beim
+Stromträger in der Kostenverwaltung (§ 2.5) — an der Projektübersteuerung, nicht im Katalog; gepflegt ist sie,
+sobald einer der beiden Preise größer als 0 ist. Eine gepflegte Staffel **ersetzt** Leistungspreis und
+Saisonreihe des Trägers, sie addiert sich nicht (E7b‑Q3); bemessen wird sie an der Viertelstundenspitze des
+Jahres wie jeder Leistungspreis des Stromträgers (E7b‑Q2). Probe an 1030 mit 1.500 kW / 60 / 90 €/(kW·a) bei
+2.011 kW Spitze: 1.500 × 60 + 511 × 90 = 135.990 €/a. Die Speicherauslegung bewertet eine Kappung mit dem Preis
+der Stufe, in der die Spitze liegt.
+
+**Kein Zeitzonentarif** (Q11, „kein HT/NT"). Einen Tarif nach Hoch- und Niedertarif, Winter und Sommer gibt es
+nicht: Den Netzbezug bepreist der Stromträger. Die Strommatrix (`StromMatrix`) führt nur Mengen und Lasten —
+je Projekt eine Jahreszeile in `Tab_ErgebnisStromMatrix` (Spalte `Zone` = „Jahr"). Im **Rollentarif**
+(Tarifmodus `ROLLEN`, die Differenzmethode § 3.6) ersetzt der Reststrombetrag den **ganzen** Flat-Anteil samt
+Leistungsanteil — auch eine Staffel des Trägers; das Rollenmodell bleibt (E7b‑Q1). Ein Tarifsatz, der nicht im
+Rollenmodell steht, rechnet nicht: Schemaschritt 104 löscht ihn samt der mit ihm gespeicherten Läufe (E7b‑Q4),
+und steht er noch in einer Datenbank vor dem Schritt, nennt ein Hinweis am Ergebnis den Wegfall
+(`WIRT_HINWEIS_ZEITZONENTARIF`).
 
 **Kein Aufschlag — die Anteile zerlegen den Arbeitspreis.** Die Preisanteile der
 Trägerkarte („Strompreis Details": Beschaffung, Vertrieb, Netzentgelt, Stromsteuer,
@@ -1778,9 +1809,9 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entscheid K-1 (→ Register R‑EZ, EZ‑5): Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **104** (90 BK1a,
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **105** (90 BK1a,
 > 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel,
-> 97–100 außerhalb dieses Feldes, 101 die leere Anlagenart (§ 6.3 Nr. 30), 102 der Zapfprofilgenerator, 103 die Leistungspreis-Staffel (E7b), siehe Kopf;
+> 97–101 und 103 außerhalb dieses Feldes, 102 die leere Anlagenart (§ 6.3 Nr. 30), 104 die Leistungspreis-Staffel (§ 3.5), siehe Kopf;
 > die Nummer wird bei der Umsetzung vergeben). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
@@ -1803,7 +1834,8 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 ### Einspeiseerlös
 
 `PV_Überschuss × 10 × EV + KWK_Einspeisung × 10 × EV_KWK` (KWK-Teil nur bei gepflegtem Satz) →
-Zonentarif → Rollentarif → PV-Dialog ersetzt den PV-Anteil durch seine Reihe. **Nominal konstant.**
+Rollentarif (ein Einspeisepreis für beide Mengen) → PV-Dialog ersetzt den PV-Anteil durch seine Reihe.
+**Nominal konstant.**
 
 ### Photovoltaik / EEG
 
@@ -2122,7 +2154,7 @@ wohl aber den gemeinsamen Schema-Nummernraum:
 
 **Der Schemaschritt ist noch nicht vergeben.** Der einst genannte **Schritt 62 ist anderweitig
 belegt** (`Schritt_62_KlimaWaisen`); U-1 steht aus und bekommt seine Nummer **bei der Umsetzung**
-(nächster freier Schritt am 22.09.2026: **101** — 90–100 sind vergeben). Gemessen am
+(nächster freier Schritt heute **106** — 90–104 sind vergeben, 105 gehört K‑1; siehe Kopf). Gemessen am
 19.09.2026: Die fünf Gase führen in `Tab_Brennstoff_Stamm.Einheit` unverändert `m³`;
 `energy_carrier.billing_unit` steht dagegen seit Schritt 26a auf `Nm³`. **Die Umsetzung ist
 freigegeben** (A9, → Register R‑A: vor dem nächsten Vorlagenbau) und läuft als DML-Schritt G mit E7
@@ -2199,7 +2231,8 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E5 Ergebnisansicht und V‑A** | Umschalter „Kennzahlen / ValERI-Bewertung" mit vier Abschnitten, Bandbreite, Empfehlungskarten, V‑A im Kern. | #434 |
 | **A13 Konzeptschnitt** | Dieses Konzept in drei Papiere geschnitten: gültiger Stand, Entscheidungsregister, Protokoll der Entscheidwege. | #435 |
 | **E6 Verlauf mit drei Szenarien** | Der Kapitalwertverlauf aller drei Szenarien als Abschnitt der Seite (Farbe = Variante, Strichart = Szenario), „Verlauf nach Excel…", Berichte mit einer Spaltengruppe je Szenario, Spannenbild der Bandbreite; der Knopf „Verlauf…" entfällt. | #436 |
-| **E7a Rechenwirksame Lücken, Teil a** | CO₂-Grenzwert des § 9 Abs. 1 Nr. 3 StromStG brennwertbezogen mit Herleitung je Anlage (Nr. 29), Schemaschritt 101 und „(bitte wählen)" für die leere Anlagenart (Nr. 30, ohne die Kern-Regel), vermiedene Menge ohne jede Eigenerzeugung mit beiden Anlagen im Schlüssel (Nr. 32) — die dreizehn Basisprojekte wirtschaftlich unverändert. | #437 |
+| **E7a Rechenwirksame Lücken, Teil a** | CO₂-Grenzwert des § 9 Abs. 1 Nr. 3 StromStG brennwertbezogen mit Herleitung je Anlage (Nr. 29), Schemaschritt 102 und „(bitte wählen)" für die leere Anlagenart (Nr. 30, ohne die Kern-Regel), vermiedene Menge ohne jede Eigenerzeugung mit beiden Anlagen im Schlüssel (Nr. 32) — die dreizehn Basisprojekte wirtschaftlich unverändert. | #437 |
+| **E7b Zeitzonentarif und Leistungspreis-Staffel** (Q11) | Kein Zeitzonentarif: die Strommatrix ohne Tarifzonen mit einer Jahreszeile je Projekt; Schemaschritt 104 übernimmt die Staffel an den Stromträger, löscht die Zonensätze und verwirft ihre gespeicherten Läufe; die zweistufige Leistungspreis-Staffel in der Kostenverwaltung, bemessen an der Viertelstundenspitze, mit Vorrang vor Leistungspreis und Saisonreihe; der Tarifdialog nur noch im Rollenmodell, der Knopf „Strombezug…" entfällt — die dreizehn Basisprojekte unverändert (kein Tarifsatz im Bestand). | #439 |
 
 ## 6.2 Regressionsanker
 
@@ -2319,10 +2352,15 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     Referenz).~~ — alle drei erledigt mit E2, siehe Protokoll
 29. ~~**Hi/Ho am CO₂-Grenzwert** (R11)~~ — erledigt mit E7a (#437), siehe Protokoll; die Regel steht in § 3.8, der Entscheid („es gilt immer der Brennwert"): → Register R‑NR
 
+**Aus der Mockup-Prüfung (Q11) — geschlossen**
+
+*Ohne eigene Nummer:* ~~**Q11 — Zeitzonentarif HT/NT und Leistungspreis-Staffel**~~ — erledigt mit E7b (#439), siehe
+Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R‑Q (Q11) und R‑E7b.
+
 **Aus der Papierpflege E0 (#379) — Sachpunkte der Datenaufnahme**
 
 30. **Sieben Energieanlagen trugen `KWKG_Anlagenart = ''`** — **zum Teil erledigt mit E7a (#437),
-    siehe Protokoll:** Schemaschritt 101 setzt die leere Zeichenkette auf NULL (NULL heißt „nicht
+    siehe Protokoll:** Schemaschritt 102 setzt die leere Zeichenkette auf NULL (NULL heißt „nicht
     gepflegt"; die sieben Anlagen der Projekte 1032 und 1043 sind kein BHKW), der Dialog zeigt
     „(bitte wählen)". Ein geratener Wert würde Kontingent und Satzstaffel setzen, die niemand
     eingegeben hat. **Entschieden** (E7‑Q1, Lesart b, 23.09.2026, → Register R‑E7): Die Kern-Regel
@@ -2388,9 +2426,9 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
-(#436) und E7 Teil a (#437)**; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als
-Nächstes kommen **E7b** (Zeitzonentarif HT/NT und Leistungspreis-Staffel, Q11) und **E7c** (die übrigen
-rechenwirksamen Lücken, E7‑Q2 entschieden 23.09.2026). Aus der früheren Etappenreihe B5–B9
+(#436), E7 Teil a (#437) und E7 Teil b (#439)**; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt.
+Als Nächstes kommt **E7c** (die übrigen rechenwirksamen Lücken; alle Fragen aus E7a und E7b sind entschieden,
+K‑1 mit Schemaschritt 105). Aus der früheren Etappenreihe B5–B9
 dieses Papiers ist nur noch B8 offen (es läuft in E7c mit); B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2437,7 +2475,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, sonst keine im Bereich #300–#434 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 der ValERI-Ansicht mit #434 vorgezogen), V-E = **E9** |
 | § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile) | Nutzungsdauer, Ersatz, Restwert |
-| § 6.3 Nr. 29, 30, 32 | — | — | **#437** (Nr. 30 zum Teil) | E7 Teil a: CO₂-Grenzwert brennwertbezogen, Schemaschritt 101 und „(bitte wählen)", vermiedene Menge ohne jede Eigenerzeugung |
+| § 6.3 Nr. 29, 30, 32 | — | — | **#437** (Nr. 30 zum Teil) | E7 Teil a: CO₂-Grenzwert brennwertbezogen, Schemaschritt 102 und „(bitte wählen)", vermiedene Menge ohne jede Eigenerzeugung |
+| Q11 (§ 3.5, § 2.5) | — | — | **#439** | E7 Teil b: kein Zeitzonentarif, Schemaschritt 104, Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
 
@@ -2452,8 +2491,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | **#432** |
 | **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
 | **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge `57b15a7c`) |
-| **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 101, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
-| **E7b**, **E7c** … **E12** | Q11 (HT/NT, Leistungspreis-Staffel) · die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappen: E7b und E7c** (E7‑Q2 entschieden 23.09.2026 — E7c kann beginnen) |
+| **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 102, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
+| **E7** Teil b — Q11 | kein Zeitzonentarif (Strommatrix mit einer Jahreszeile), Schemaschritt 104 (Staffelspalten, Zonensätze gelöscht, ihre Läufe verworfen), zweistufige Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell, Einstieg „Strombezug…" entfällt | **#439** (Merge `954d4dcc`) |
+| **E7c** … **E12** | die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E7c** (alle Fragen aus E7a und E7b entschieden; K‑1 mit Schemaschritt 105) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

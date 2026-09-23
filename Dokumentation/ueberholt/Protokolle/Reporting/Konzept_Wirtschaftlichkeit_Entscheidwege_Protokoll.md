@@ -18,8 +18,8 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437), jede Berichtigung
-> mit einer Zeile.
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439), jede
+> Berichtigung mit einer Zeile.
 
 ---
 
@@ -227,6 +227,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 25–29 | 25–28 erledigt mit E2 (#405); 29 erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.4, § 8.3 |
 | 20 | entfällt (22.09.2026) | § 6.4 |
 | 12, 14, 17 | erledigt bzw. überholt | § 7.1 |
+| Q11 (ohne Nummer) | erledigt mit E7b (#439); stand vorher nicht in § 6.3, der Grund in § 8.5 | § 8.5 |
 
 ### 0.6 Umgebogene Verweise
 
@@ -1274,7 +1275,7 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 *Was mit den Statuszeilen ab #436 aus dem gültigen Stand des Konzepts hierher gewandert ist und welche
 Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts vor der
 jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
-#437** (Stand `befec9dc`) —, nicht vor dem Schnitt.*
+#437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1459,3 +1460,45 @@ Zeile:
 | § 6.3 Nr. 29 und 32 | offene Punkte (Wortlaut in § 8.3) | Einzeiler „erledigt mit E7a (#437)" |
 | § 6.3 Nr. 30 | offener Punkt (Wortlaut in § 8.3) | „zum Teil erledigt mit E7a (#437)", offen die Kern-Regel (E7‑Q1) |
 | § 7 und Anhang | „… und E6 (#436) … Als Nächstes kommt **E7**"; B8 „in E7"; Etappenzeile „E7 … E12 — nächste Etappe: E7" | bis E7 Teil a (#437), nächste Etappen E7b und E7c; B8 in E7c; Kürzeltafel mit § 6.3 Nr. 29, 30, 32 = #437; Etappenzeilen „E7 Teil a" = #437 und „E7b, E7c … E12" |
+
+### 8.5 E7b — Zeitzonentarif und Leistungspreis-Staffel (#439)
+
+Protokoll [`E7b_Zeitzonentarif_Staffel_Protokoll.md`](E7b_Zeitzonentarif_Staffel_Protokoll.md); der Stand von Q11 im
+Register (R‑Q), die vier Fragen der Etappe unter R‑E7b.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E7 Teil b** (#439, Merge `954d4dcc`) | `StromMatrix` ohne Tarifzonen (Jahressummen und Lastbilder, eine Jahreszeile je Projekt in `Tab_ErgebnisStromMatrix`); ein aktiver Zonensatz rechnet nicht mehr (Hinweis `WIRT_HINWEIS_ZEITZONENTARIF`); `LeistungspreisStaffel` am Stromträger im `KostenEmissionRechner` (Viertelstundenspitze, Vorrang vor Saisonreihe und Satz), gepflegt auf der Trägerkarte (`EnergietraegerPreisCtrl`, Hülle, KI-Felder); der Tarifdialog nur noch im Rollenmodell, Knopf und Sprung „Strombezug…" entfallen; Schemaschritt 104 (drei Staffelspalten an `energy_project_settings`, die Staffel der Zonensätze an den Stromträger, Zonensätze gelöscht und ihre gespeicherten Läufe verworfen, die Zonenzeilen der Matrix zu einer Jahreszeile); 21 Ressourcenschlüssel neu, 5 geändert, 38 gestrichen; Testdatenbank auf Schemastand 104 | **gewollt, im Bestand ohne Wirkung** — die dreizehn Basisprojekte unverändert (kein Tarifsatz im Bestand), im frischen Lauf 1030 um 1·10⁻⁸ € (Matrixsumme in einem Durchlauf); die gespeicherte Matrix eine Jahreszeile statt vier Zonenzeilen (±0,001 MWh Rundung); Probe 1030 mit Zonensatz: Energiekosten 1.832.155,35 → 1.760.606,20 €/a, Kapitalwert −34.819.801,17 → −33.551.896,03 €; Referenzlauf gegen R11 13/13, 3 882 737 Werte byte-gleich; Gate 10 996 Tests grün |
+
+*Konzept § 6.3, Q11 (ohne Nummer, neu als Einzeiler):* Q11 stand vor #439 nicht als offener Punkt in § 6.3; sein
+Stand stand im Register (R‑Q, „offen — E7") und im Etappenplan (§ 7, Anhang).
+
+**Erledigt mit E7b (#439):** Den Zeitzonentarif gibt es nicht mehr — die Strommatrix führt keine Tarifzonen,
+Schemaschritt 104 übernimmt die Staffel an den Stromträger, löscht die Zonensätze und verwirft ihre gespeicherten
+Läufe (E7b‑Q4), ein Satz vor dem Schritt bekommt einen Hinweis am Ergebnis; die zweistufige Staffel steht beim
+Stromträger der Kostenverwaltung, bemessen an der Viertelstundenspitze (E7b‑Q2), mit Vorrang vor Leistungspreis
+und Saisonreihe (E7b‑Q3); der Tarifdialog ist auf das Rollenmodell reduziert (E7b‑Q1 = b), der Einstieg
+„Strombezug…" entfällt, einen Menüpunkt gab es nicht. Im Konzept steht der Punkt als Einzeiler, die Regel in
+§ 3.5 und § 2.5.
+
+### 8.6 Berichtigungen im gültigen Stand (#439)
+
+Die Stellen, die mit E7b veraltet sind, und die Schrittnummern nach der Umnummerierung vom 23.09.2026 (#438);
+„vorher" ist der Wortlaut vor #439 (Stand `954d4dcc`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `befec9dc`, `SchemaStand.Zielversion` = 101, „Schemaschritte 90–101 vergeben, **102** an den Zapfprofilgenerator, neue ab **103**"; „Die Schritte 97 bis 100 gehören nicht diesem Feld …; **101** setzt die leere `KWKG_Anlagenart` auf NULL (`SCHRITT_101_KWKG_ANLAGENART_LEER` …); **102** führt die Sitzung des Zapfprofilgenerators …" | Codestand `954d4dcc`, `Zielversion` = 104, 90–104 vergeben, 105 an K‑1, neue ab 106; nicht diesem Feld 97–101 und 103 (101 Gebäudespalten, 103 Zapfprofilgenerator), diesem Feld 102 (leere Anlagenart, `SCHRITT_102_KWKG_ANLAGENART_LEER`) und 104 (Zeitzonentarif abgelöst, Staffel am Stromträger) |
+| § 2.2, Gruppe 1, Anlagenart | „„(bitte wählen)" und Schritt 101 #437" | Schritt 102 |
+| § 2.2, Gruppe 4 | „**zwei Sprungknöpfe „Strombezug…" und „BHKW-Tarif…"**"; „Beide Sprünge speichern nur …" | ein Sprungknopf „BHKW-Tarif…" (Tarifstruktur im Rollenmodell); einen Sprung „Strombezug…" gibt es nicht, die Staffel steht beim Stromträger (§ 2.5) |
+| § 2.5, Trägerkarte | — | Absatz „Die Leistungspreis-Staffel steht beim Stromträger": Gruppe im Block „Preis und Heizwert", drei Spalten an `energy_project_settings` (Schritt 104), NULL = nicht gepflegt, kein Katalog |
+| § 2.7, Fußleiste | „führt **höchstens vier Knöpfe** — Photovoltaik, BHKW und Strombezug je nach Ausstattung der Gruppe, dazu Berechnen" | höchstens drei Knöpfe — Photovoltaik und BHKW, dazu Berechnen; kein „Strombezug…", die Tarifstruktur öffnet sich aus BHKW- und PV-Dialog |
+| § 2.11.6, was dauerhaft Werte bleibt | „die **Strommengen-Matrix** nach Tarifzonen (Zonenzuordnung je Stunde, stundenweises Minimum für den KWK-Eigenstrom)" | als Jahreszeile ohne Tarifzonen (Jahressummen, stundenweises Minimum, höchste Stundenlast) |
+| § 2.13 (4) | „die Strommatrix trennt nur nach **Tarifzone** (`StromMatrix.Zone`), nicht nach Anlage" | sie führt je Projekt Jahressummen (eine Jahreszeile, keine Tarifzonen), nicht Mengen je Anlage |
+| § 3.5, Netzbezug Strom | „das Stundenmittel (StromMatrix.MaxBezugKW) glättet die Spitze und bleibt der Tarifstruktur vorbehalten"; Satz und Saisonreihe, keine Staffel; „Im Tarifmodus ersetzt der Zonen- oder Rollenbetrag den **ganzen** Flat-Anteil samt Leistungsanteil." | das Stundenmittel bemisst allein die Leistungspreismodelle des Rollentarifs; Staffel vor Saisonreihe vor Satz, mit der Formel der Staffel; die Absätze „Die zweistufige Leistungspreis-Staffel" (Vorrang, Viertelstundenspitze, Probe 1030 mit 135.990 €/a) und „Kein Zeitzonentarif" (Jahreszeile, der Rollentarif ersetzt den Flat-Anteil samt Staffel, Schritt 104, Hinweis vor dem Schritt) |
+| § 3.6, K‑1 | „nächster freier Schemaschritt ist **104** (… 97–100 außerhalb dieses Feldes, 101 die leere Anlagenart (§ 6.3 Nr. 30), 102 der Zapfprofilgenerator, 103 die Leistungspreis-Staffel (E7b) …)" | „**105** (… 97–101 und 103 außerhalb dieses Feldes, 102 die leere Anlagenart (§ 6.3 Nr. 30), 104 die Leistungspreis-Staffel (§ 3.5) …)" |
+| § 3.6, Einspeiseerlös | „→ Zonentarif → Rollentarif → PV-Dialog …" | „→ Rollentarif (ein Einspeisepreis für beide Mengen) → PV-Dialog …" |
+| § 5, Einheitenbruch | „(nächster freier Schritt am 22.09.2026: **101** — 90–100 sind vergeben)" | heute **106** — 90–104 vergeben, 105 gehört K‑1 |
+| § 6.1 | Kurztafel bis E7a (#437), dort „Schemaschritt 101" | E7a mit Schemaschritt 102; Zeile E7b (#439) |
+| § 6.3 | Nr. 30 „Schemaschritt 101 setzt die leere Zeichenkette auf NULL"; Q11 ohne Zeile | Schemaschritt 102; die Gruppe „Aus der Mockup-Prüfung (Q11) — geschlossen" mit dem Einzeiler Q11 (Grund in § 8.5) |
+| § 7 und Anhang | „… und E7 Teil a (#437) … Als Nächstes kommen **E7b** (…) und **E7c** (…)"; Kürzeltafel „Schemaschritt 101"; Etappenzeilen „E7 Teil a" (Schemaschritt 101) und „E7b, E7c … E12 — nächste Etappen: E7b und E7c" | bis E7 Teil b (#439), als Nächstes E7c mit K‑1 als Schritt 105; Kürzeltafel mit Schritt 102 und der Zeile Q11 = #439; Etappenzeilen „E7 Teil a" (Schritt 102), „E7 Teil b — Q11" = #439 und „E7c … E12 — nächste Etappe: E7c" |
