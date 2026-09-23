@@ -29,9 +29,22 @@ namespace WindowsFormsApplication1
     /// still darauf (gemessen vor diesem Posten). Eine mitgenommene Zeile löscht die
     /// Auslieferungsvorlage wieder (<c>Werkzeuge/Auslieferungsvorlage</c>, Konzept 6 (b)).</para>
     ///
+    /// <para><b>Mitnahme nur bei Bedarf.</b> Ein Tagesgangsatz, der nur als Abhängigkeit
+    /// einer Nutzungsart reist (keine Zone verweist direkt auf ihn), wird am Ziel nicht auf
+    /// Vorrat angelegt: Er wird vorgemerkt und erst mitgenommen, wenn eine mitgenommene
+    /// Nutzungsart ihn braucht. Findet der Import die Nutzungsart am Ziel, bleibt er
+    /// liegen.</para>
+    ///
     /// <para><b>Benannte Ablehnung.</b> Lässt sich eine fehlende Nutzungsart nicht
     /// mitnehmen, weil ihr Tagesgangsatz nicht im Paket steht (ein Paket, das nicht dieser
-    /// Weg geschrieben hat), bricht der Import mit Namen ab und ändert nichts.</para>
+    /// Weg geschrieben hat), bricht der Import mit Namen ab und ändert nichts. Ebenso, wenn
+    /// eine Zone, ein Wohnungstyp oder die Projektzeile auf eine Tww-Katalogzeile zeigt, die
+    /// das Paket gar nicht führt, oder das Paket einen Tww-Katalog unter <c>fill/</c>
+    /// (Original-Id) trägt.</para>
+    ///
+    /// <para><b>Interne Spalten reisen nicht.</b> <c>Beleg</c> (interne Sekundärquelle,
+    /// Konzept 6 (e)) und <c>Freigabe</c> (Vier-Augen-Vermerk der Katalogpflege) bleiben im
+    /// Paket leer; eine mitgenommene Zeile trägt beide leer.</para>
     /// </summary>
     public partial class ProjektExportImportCtrl
     {
@@ -59,6 +72,16 @@ namespace WindowsFormsApplication1
         /// <summary>Berichtszeilen der Mitnahme; <see cref="ImportierenIntern"/> hängt sie an.</summary>
         private List<string> _twwBericht = new List<string>();
 
+        /// <summary>„Tabelle||Id“ jeder Tww-Katalogzeile, auf die eine Projektzeile des Pakets DIREKT zeigt.</summary>
+        private HashSet<string> _twwDirekt = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Am Ziel fehlende Tagesgangsätze, die nur als Abhängigkeit reisen (alte Id → Zeile).</summary>
+        private Dictionary<long, (KatMeta Meta, Dictionary<string, JsonElement> Zeile, Dictionary<string, Type> Typen)>
+            _twwVorgemerkt = new Dictionary<long, (KatMeta, Dictionary<string, JsonElement>, Dictionary<string, Type>)>();
+
+        /// <summary>Die internen Spalten der Tww-Kataloge, die nie in ein Paket gehen.</summary>
+        private static readonly string[] TWW_INTERN = { "Beleg", "Freigabe" };
+
         private class KindMeta
         {
             public string name { get; set; }
@@ -69,10 +92,60 @@ namespace WindowsFormsApplication1
 
         private static bool IstTwwKatalog(string tabelle) => tabelle != null && TWW_KATALOGE.Contains(tabelle);
 
+        /// <summary>Jede Katalogtabelle des Zapfprofilgenerators (<c>Tab_Tww*_STAMM</c>), auch Kinder und Parameter.</summary>
+        private static bool IstTwwStamm(string tabelle) =>
+            tabelle != null && tabelle.StartsWith("Tab_Tww", StringComparison.OrdinalIgnoreCase) &&
+            tabelle.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase);
+
         private void TwwZuruecksetzen()
         {
             _twwMitgenommen = new Dictionary<string, Dictionary<long, long>>(StringComparer.OrdinalIgnoreCase);
             _twwBericht = new List<string>();
+            _twwDirekt = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _twwVorgemerkt = new Dictionary<long, (KatMeta, Dictionary<string, JsonElement>, Dictionary<string, Type>)>();
+        }
+
+        /// <summary>Die benannte Ablehnung einer Tww-Katalogzeile, die das Paket nicht führt.</summary>
+        private static string TwwFehltImPaket(string tabelle, string spalte, long id, string katalog) =>
+            "Eine Zeile aus " + tabelle + " verweist über " + spalte + " auf die Katalogzeile Id " + id + " aus " +
+            katalog + ", die das Paket nicht führt - Import abgelehnt, nichts geändert.";
+
+        /// <summary>Entfernt die internen Spalten (<see cref="TWW_INTERN"/>) aus einer Tww-Katalogtabelle vor dem Schreiben.</summary>
+        private static void TwwInterneSpaltenEntfernen(string tabelle, DataTable dt)
+        {
+            if (dt == null || !IstTwwStamm(tabelle)) return;
+            foreach (string s in TWW_INTERN)
+                if (dt.Columns.Contains(s)) dt.Columns.Remove(s);
+        }
+
+        /// <summary>
+        /// Merkt sich, auf welche Tww-Katalogzeilen die Projektzeilen des Pakets DIREKT zeigen
+        /// (Zone, Wohnungstyp, Projektzeile) — nur diese werden ohne Bedarf mitgenommen.
+        /// </summary>
+        private void TwwDirekteVerweiseSammeln(IEnumerable<Dictionary<string, List<Dictionary<string, JsonElement>>>> baeume)
+        {
+            foreach (var baum in baeume)
+                foreach (var zeilen in baum.Values)
+                    foreach (var row in zeilen)
+                        foreach (var kv in row)
+                        {
+                            if (!KATALOG_SPALTE_ZU_TABELLE.TryGetValue(kv.Key, out string katTab) || !IstTwwKatalog(katTab)) continue;
+                            if (kv.Value.ValueKind != JsonValueKind.Number || !kv.Value.TryGetInt64(out long id) || id <= 0) continue;
+                            _twwDirekt.Add(katTab + "||" + id);
+                        }
+        }
+
+        /// <summary>
+        /// Ein am Ziel fehlender Tagesgangsatz, auf den keine Projektzeile direkt zeigt, wird
+        /// nur vorgemerkt (<c>true</c>) — eine mitgenommene Nutzungsart holt ihn bei Bedarf.
+        /// </summary>
+        private bool TwwVormerken(KatMeta k, Dictionary<string, JsonElement> row, Dictionary<string, Type> zielTypen)
+        {
+            if (!string.Equals(k.name, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, StringComparison.OrdinalIgnoreCase)) return false;
+            long altId = row[k.pk].GetInt64();
+            if (_twwDirekt.Contains(k.name + "||" + altId)) return false;
+            _twwVorgemerkt[altId] = (k, row, zielTypen);
+            return true;
         }
 
         // =================================================================================
@@ -133,6 +206,7 @@ namespace WindowsFormsApplication1
                 }
                 if (alle == null || alle.Rows.Count == 0) continue;
 
+                TwwInterneSpaltenEntfernen(k.Kind, alle);
                 WriteEntry(zip, KINDER_PRAEFIX + k.Kind + ".json", RowsToJson(alle));
                 meta.Add(new KindMeta { name = k.Kind, parent = k.Kopf, parentColumn = k.Spalte, pk = "ID" });
             }
@@ -163,13 +237,22 @@ namespace WindowsFormsApplication1
                 if (spalte.Equals("Status", StringComparison.OrdinalIgnoreCase)) wert = TwwSchema.STATUS_IMPORT;
                 else if (spalte.Equals("ReadOnly", StringComparison.OrdinalIgnoreCase)) wert = 0L;
                 else if (spalte.Equals("ID_Vorlage", StringComparison.OrdinalIgnoreCase)) wert = null;
+                else if (TWW_INTERN.Contains(spalte, StringComparer.OrdinalIgnoreCase)) wert = null;
                 else if (spalte.Equals("ID_Tagesgangsatz", StringComparison.OrdinalIgnoreCase) && wert != null)
                 {
-                    string schluessel = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + "||" + Convert.ToInt64(wert);
+                    long altSatz = Convert.ToInt64(wert);
+                    string schluessel = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + "||" + altSatz;
                     if (!katMap.TryGetValue(schluessel, out long satz))
-                        throw new Exception(
-                            "Die Katalogzeile " + name + " aus " + k.name + " fehlt am Ziel und kann nicht " +
-                            "mitgenommen werden: ihr Tagesgangsatz steht nicht im Paket. Import abgelehnt, nichts geändert.");
+                    {
+                        // Nur als Abhängigkeit gereist und am Ziel fehlend: jetzt gebraucht.
+                        if (!_twwVorgemerkt.TryGetValue(altSatz, out var vm))
+                            throw new Exception(
+                                "Die Katalogzeile " + name + " aus " + k.name + " fehlt am Ziel und kann nicht " +
+                                "mitgenommen werden: ihr Tagesgangsatz steht nicht im Paket. Import abgelehnt, nichts geändert.");
+                        _twwVorgemerkt.Remove(altSatz);
+                        satz = TwwZeileMitnehmen(v, vm.Meta, vm.Zeile, katMap, vm.Typen);
+                        katMap[schluessel] = satz;
+                    }
                     wert = satz;
                 }
                 cps.Add(MacheParam("@c" + n, wert, TypVon(zielTypen, spalte)));

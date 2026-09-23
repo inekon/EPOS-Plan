@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text.Json.Nodes;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -228,6 +230,191 @@ namespace EPOS.Kern.Tests
             Assert.Equal(nutzung, Convert.ToInt64(z2["ID_Nutzungsart"]));
         }
 
+        /// <summary>
+        /// Die benannte Ablehnung: Die Nutzungsart fehlt am Ziel, ihr Tagesgangsatz steht nicht
+        /// im Paket (ein Paket, das nicht dieser Weg geschrieben hat). Der Import bricht mit
+        /// Namen ab und ändert nichts — kein Projekt, keine Zone, keine Katalogzeile.
+        /// </summary>
+        [Fact]
+        public void Transfer_ohne_Tagesgangsatz_im_Paket_wird_benannt_abgelehnt_und_aendert_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+            KatalogAusPaketEntfernen(paket, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM);
+
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+            (int Projekte, int Zonen, int Katalog) vorher = Bestand();
+
+            int neu = io.Importieren(paket, "Tww Ablehnung", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu <= 0, "Der Import haette abgelehnt werden muessen.");
+            Assert.Contains(NUTZUNG, fehler);
+            Assert.Contains("Import abgelehnt", fehler);
+            Assert.Equal(vorher, Bestand());
+            Assert.Equal(0, ImportZeilen());
+        }
+
+        /// <summary>
+        /// Der Mischfall: Nur die Nutzungsart fehlt am Ziel, ihr Tagesgangsatz steht dort. Die
+        /// mitgenommene Nutzungsart zeigt auf den GEFUNDENEN Satz; kein neuer Satz, kein neuer
+        /// Tagesgang.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_fehlender_Nutzungsart_und_vorhandenem_Satz_zeigt_auf_den_Satz()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Mischfall", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            long nutzung = Convert.ToInt64(z["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            Assert.Equal(q.Tagesgangsatz, Convert.ToInt64(z["ID_Tagesgangsatz"]));
+            Assert.Equal(q.Tagesgangsatz, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT ID_Tagesgangsatz FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung))));
+
+            Assert.Equal(vorher + 1, Katalogzeilen());
+            Assert.Equal(1, ImportZeilen());
+            Assert.Equal(1, io.LetzterBericht.Count(b => b.Contains("Status IMPORT")));
+        }
+
+        /// <summary>
+        /// Mitnahme nur bei Bedarf: Die Zone zeigt NICHT direkt auf einen Tagesgangsatz. Fehlt
+        /// am Ziel nur der Satz, die Nutzungsart aber steht dort, bleibt der Satz liegen — er
+        /// verwiese auf nichts. Fehlen beide, holt die mitgenommene Nutzungsart ihn nach.
+        /// </summary>
+        [Fact]
+        public void Transfer_nimmt_einen_nur_abhaengigen_Tagesgangsatz_nur_bei_Bedarf_mit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwZone SET ID_Tagesgangsatz = NULL WHERE ID = ?", new DbParam("@id", q.Zone)));
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // --- Nur der Satz fehlt: nichts wird mitgenommen ----------------------------
+            Umversionieren(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, q.Tagesgangsatz);
+            int vorher = Katalogzeilen();
+            int neu = io.Importieren(paket, "Tww ohne Bedarf", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            Assert.Equal(q.Nutzungsart, Convert.ToInt64(z["ID_Nutzungsart"]));
+            Assert.Equal(DBNull.Value, z["ID_Tagesgangsatz"]);
+            Assert.Equal(vorher, Katalogzeilen());
+            Assert.Equal(0, ImportZeilen());
+            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Status IMPORT"));
+
+            // --- Beide fehlen: die Nutzungsart holt ihren Satz samt Tagesgängen ----------
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+            int zweit = io.Importieren(paket, "Tww mit Bedarf", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                       null, out fehler);
+            Assert.True(zweit > 0, "Import fehlgeschlagen: " + fehler);
+            long nutzung = Convert.ToInt64(Assert.Single(Zonen(zweit).Rows.Cast<DataRow>())["ID_Nutzungsart"]);
+            long satz = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT ID_Tagesgangsatz FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung)));
+            Assert.NotEqual(q.Tagesgangsatz, satz);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Status FROM Tab_TwwTagesgangsatz_STAMM WHERE ID = ?", new DbParam("@id", satz))));
+            Assert.Equal(4L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz = ?", new DbParam("@id", satz))));
+            Assert.Equal(vorher + 1 + 1 + 4, Katalogzeilen());
+            Assert.Equal(2, ImportZeilen());
+        }
+
+        /// <summary>
+        /// Eine Zone zeigt auf eine Tww-Katalogzeile, die das Paket nicht führt: Der Import
+        /// hängt sie nicht still über die Original-Id um, sondern lehnt benannt ab.
+        /// </summary>
+        [Fact]
+        public void Transfer_ohne_Katalogzeile_im_Paket_wird_benannt_abgelehnt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Anlegen(quelle);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+            KatalogAusPaketEntfernen(paket, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM);
+            (int Projekte, int Zonen, int Katalog) vorher = Bestand();
+
+            int neu = io.Importieren(paket, "Tww Fremdverweis", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu <= 0, "Der Import haette abgelehnt werden muessen.");
+            Assert.Contains("ID_Nutzungsart", fehler);
+            Assert.Contains(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ", die das Paket nicht führt", fehler);
+            Assert.Equal(vorher, Bestand());
+        }
+
+        /// <summary>
+        /// <c>Beleg</c> (interne Sekundärquelle, Konzept 6 (e)) und <c>Freigabe</c> reisen nicht
+        /// ins Paket — es geht an Dritte.
+        /// </summary>
+        [Fact]
+        public void Das_Paket_fuehrt_weder_Beleg_noch_Freigabe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwNutzungsart_STAMM SET Beleg = 'intern (Probe)', Freigabe = 'Probe' WHERE ID = ?",
+                new DbParam("@id", q.Nutzungsart)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwDin4708Wert_STAMM SET Beleg = 'intern (Probe)' WHERE ID = ?", new DbParam("@id", q.KlasseA)));
+
+            string paket = ordner.Datei("tww.wpx");
+            Assert.True(new ProjektExportImportCtrl().Exportieren(PROJEKT, paket));
+
+            using ZipArchive zip = ZipFile.OpenRead(paket);
+            var tww = zip.Entries.Where(e => e.FullName.StartsWith("catalog", StringComparison.Ordinal) &&
+                                             e.FullName.Contains("Tab_Tww")).ToList();
+            Assert.Contains(tww, e => e.FullName == "catalogs/" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".json");
+            foreach (ZipArchiveEntry e in tww)
+            {
+                using var r = new StreamReader(e.Open());
+                string json = r.ReadToEnd();
+                Assert.DoesNotContain("\"Beleg\"", json);
+                Assert.DoesNotContain("\"Freigabe\"", json);
+                Assert.DoesNotContain("intern (Probe)", json);
+            }
+        }
+
         // =============================================================================
         //  Handwerkszeug
         // =============================================================================
@@ -309,6 +496,34 @@ namespace EPOS.Kern.Tests
 
         private static int Katalogzeilen() =>
             KATALOGE.Sum(t => Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + t + "\"")));
+
+        /// <summary>Projekte, Zonen und Tww-Katalogzeilen am Ziel — für „nichts geändert“.</summary>
+        private static (int Projekte, int Zonen, int Katalog) Bestand() =>
+            (Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Projekt")),
+             Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone")),
+             Katalogzeilen());
+
+        /// <summary>
+        /// Nimmt einen Katalog aus dem Paket: die Datei unter <c>catalogs/</c> und ihren
+        /// Manifesteintrag — so sähe ein Paket aus, das nicht dieser Weg geschrieben hat.
+        /// </summary>
+        private static void KatalogAusPaketEntfernen(string paket, string tabelle)
+        {
+            using ZipArchive zip = ZipFile.Open(paket, ZipArchiveMode.Update);
+            ZipArchiveEntry datei = zip.GetEntry("catalogs/" + tabelle + ".json");
+            Assert.NotNull(datei);
+            datei.Delete();
+
+            ZipArchiveEntry m = zip.GetEntry("manifest.json");
+            JsonNode manifest;
+            using (var r = new StreamReader(m.Open())) manifest = JsonNode.Parse(r.ReadToEnd());
+            JsonArray kataloge = manifest["catalogs"].AsArray();
+            JsonNode eintrag = kataloge.Single(k => (string)k["name"] == tabelle);
+            kataloge.Remove(eintrag);
+            m.Delete();
+            using (var w = new StreamWriter(zip.CreateEntry("manifest.json").Open()))
+                w.Write(manifest.ToJsonString());
+        }
 
         private static int ImportZeilen()
         {

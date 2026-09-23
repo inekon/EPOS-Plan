@@ -259,6 +259,8 @@ namespace WindowsFormsApplication1
                                     foreach (var fk in tabFks)
                                     {
                                         if (copySet.Contains(fk.RefTab) || konfigurierteKataloge.Contains(fk.RefTab)) continue;
+                                        // Tww-Kataloge reisen nie über die Original-Id (Konzept 3.2).
+                                        if (IstTwwStamm(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -326,6 +328,7 @@ namespace WindowsFormsApplication1
                             DataTable dt = DataRepository.GetDataTable(
                                 "SELECT * FROM [" + katTab + "] WHERE [" + pk + "] IN (" + string.Join(",", kv.Value) + ")");
                             if (dt == null || dt.Rows.Count == 0) continue;
+                            TwwInterneSpaltenEntfernen(katTab, dt);   // Beleg, Freigabe: nie ins Paket
                             WriteEntry(zip, "catalogs/" + katTab + ".json", RowsToJson(dt));
                             katalogMeta.Add(new KatMeta
                             {
@@ -570,6 +573,7 @@ namespace WindowsFormsApplication1
                 // Ereignisse). Ein Paket ohne den Abschnitt bringt keine.
                 foreach (var k in man.catalogChildren ?? new List<KindMeta>())
                     kindRows[k.name] = LiesZeilen(ReadEntry(zip, KINDER_PRAEFIX + k.name + ".json") ?? "[]");
+                TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
 
                 // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
                 // bleibt die Liste leer, und der Import läuft wie zuvor.
@@ -1148,7 +1152,13 @@ namespace WindowsFormsApplication1
             {
                 long v = Convert.ToInt64(raw);
                 if (v <= 0) return raw;
-                return katMap.TryGetValue(katTab + "||" + v, out long neu) ? neu : (object)v;
+                if (katMap.TryGetValue(katTab + "||" + v, out long neu)) return neu;
+                // Zapfprofilgenerator (Konzept 3.2): Eine Tww-Katalogzeile, die das Paket
+                // nicht führt, wird nie still über die Original-Id umgehängt — dort stünde am
+                // Ziel eine FREMDE Zeile gleicher Id. Die Ausnahme rollt den Vorgang zurück.
+                if (IstTwwKatalog(katTab))
+                    throw new Exception(TwwFehltImPaket(tab, col, v, katTab));
+                return v;
             }
 
             string ziel = _dup.ErmittleZieltabelle(tab, col, pk);
@@ -1176,6 +1186,12 @@ namespace WindowsFormsApplication1
         private void FuelleKatalog(DbVorgang v, KatMeta k,
             List<Dictionary<string, JsonElement>> rows)
         {
+            // Zapfprofilgenerator (Konzept 3.2): Tww-Kataloge reisen nur über den natürlichen
+            // Schlüssel (catalogs/). Über die Original-Id aufgefüllt, fände die Zone am Ziel
+            // eine fremde Zeile gleicher Id — ein solches Paket wird benannt abgelehnt.
+            if (IstTwwStamm(k.name))
+                throw new Exception("Das Paket führt " + k.name + " unter fill/ (Original-Id). Tww-Katalogzeilen " +
+                                    "reisen nur über ihren natürlichen Schlüssel - Import abgelehnt, nichts geändert.");
             Dictionary<string, Type> zielTypen = ZielTypen(k.name);
             if (zielTypen == null || !zielTypen.ContainsKey(k.pk)) return;
             foreach (var row in rows)
@@ -1236,9 +1252,13 @@ namespace WindowsFormsApplication1
                     catch (Exception ex) { throw new Exception(Diagnose("Katalog-Suche " + k.name, new List<string>(k.naturalKey), ps, zielTypen) + " :: " + ex.Message, ex); }
                     if (found != null && found != DBNull.Value) neuId = Convert.ToInt64(found);
                     else if (IstTwwKatalog(k.name))
+                    {
                         // Zapfprofilgenerator (Konzept 3.2): mitnehmen als Status IMPORT —
-                        // umgeschlüsselt, ohne Vorlage, beschreibbar, im Bericht genannt.
+                        // umgeschlüsselt, ohne Vorlage, beschreibbar, im Bericht genannt. Ein
+                        // Tagesgangsatz, der nur als Abhängigkeit reist, wartet auf Bedarf.
+                        if (TwwVormerken(k, row, zielTypen)) continue;
                         neuId = TwwZeileMitnehmen(v, k, row, katMap, zielTypen);
+                    }
                     else
                     {
                         var cs = row.Keys.Where(x => !x.Equals(k.pk, StringComparison.OrdinalIgnoreCase)
