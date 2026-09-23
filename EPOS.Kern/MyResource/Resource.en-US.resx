@@ -24227,4 +24227,655 @@ Do you want to allow this?</value>
   <data name="ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT" xml:space="preserve">
     <value>the name of the constructed design day is already used in this catalogue version.</value>
   </data>
+  <data name="ZPG_AUS_TITEL" xml:space="preserve">
+    <value>Domestic hot water design</value>
+  </data>
+  <data name="ZPG_AUS_INFO_BEDIENUNG" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="ZPG_AUS_INFO_RECHENWEG" xml:space="preserve">
+    <value>Calculation method</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NOCH_NICHT" xml:space="preserve">
+    <value>Not yet available in this version.</value>
+  </data>
+  <data name="ZPG_AUS_GRP_EINGABEN" xml:space="preserve">
+    <value>Inputs of the cumulative curve</value>
+  </data>
+  <data name="ZPG_AUS_LBL_BEDARFSTAG" xml:space="preserve">
+    <value>Design day</value>
+  </data>
+  <data name="ZPG_AUS_OPT_VORGABEREGEL" xml:space="preserve">
+    <value>Default rule (residential: DIN 4708 profile, otherwise constructor)</value>
+  </data>
+  <data name="ZPG_AUS_OPT_STUNDENPROFIL" xml:space="preserve">
+    <value>Hourly profile of the zones (peaks underestimated)</value>
+  </data>
+  <data name="ZPG_AUS_OPT_DIN4708" xml:space="preserve">
+    <value>DIN 4708 profile from the dwelling table</value>
+  </data>
+  <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="ZPG_AUS_OPT_ENTWURF" xml:space="preserve">
+    <value>{0} (constructed, saved with the project)</value>
+  </data>
+  <data name="ZPG_AUS_BTN_KONSTRUIEREN" xml:space="preserve">
+    <value>Construct design day…</value>
+  </data>
+  <data name="ZPG_AUS_HINW_KONSTRUKTOR" xml:space="preserve">
+    <value>Constructor according to A100 NA.5.2.3; the day applies at the design cold water temperature of the catalogue.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperature</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ERZEUGERLEISTUNG" xml:space="preserve">
+    <value>Generator output</value>
+  </data>
+  <data name="ZPG_AUS_LBL_UEBERTRAGERLEISTUNG" xml:space="preserve">
+    <value>Heat exchanger output</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SPEICHERART" xml:space="preserve">
+    <value>Storage type</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERART_LADESPEICHER" xml:space="preserve">
+    <value>Charging storage</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERART_GEMISCHT" xml:space="preserve">
+    <value>mixed storage</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SENSORHOEHE" xml:space="preserve">
+    <value>Sensor height h_sensor/h_sto</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ERZEUGERART" xml:space="preserve">
+    <value>Generator type at the storage</value>
+  </data>
+  <data name="ZPG_AUS_LBL_WERKSTOFF" xml:space="preserve">
+    <value>Heat exchanger material</value>
+  </data>
+  <data name="ZPG_AUS_KEINE_ANGABE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGER_KESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGER_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="ZPG_AUS_WERKSTOFF_STAHL" xml:space="preserve">
+    <value>Steel</value>
+  </data>
+  <data name="ZPG_AUS_WERKSTOFF_EDELSTAHL" xml:space="preserve">
+    <value>Stainless steel</value>
+  </data>
+  <data name="ZPG_AUS_HERL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>applied {0} °C · {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_ERZEUGER" xml:space="preserve">
+    <value>empty = applied charging power of the storage sizing; verification output Φ_N = min(generator, heat exchanger)</value>
+  </data>
+  <data name="ZPG_AUS_HERL_UEBERTRAGER" xml:space="preserve">
+    <value>empty = from U·A, area or the estimation formula of the generator type</value>
+  </data>
+  <data name="ZPG_AUS_HERL_SENSORHOEHE" xml:space="preserve">
+    <value>empty = catalogue default</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LAUFANGABE" xml:space="preserve">
+    <value>run input — not saved; {0}</value>
+  </data>
+  <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
+    <value>{0} · zones: {1}</value>
+  </data>
+  <data name="ZPG_AUS_BEDARFSTAG_GRUPPE" xml:space="preserve">
+    <value>Design day: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_SUMMENLINIE" xml:space="preserve">
+    <value>(a) Cumulative curve</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_SUMMENLINIE_UNTER" xml:space="preserve">
+    <value>Method according to EN 12831-3 with the calculation rules of A100/A1, minute steps</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_MINUTENSPITZE" xml:space="preserve">
+    <value>(a) Minute peak</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_MINUTENSPITZE_UNTER" xml:space="preserve">
+    <value>Largest minute output of the design day (largest hourly output for information)</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_PERZENTIL" xml:space="preserve">
+    <value>(b) Percentile</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_PERZENTIL_UNTER" xml:space="preserve">
+    <value>Stochastically superposed minute load</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
+    <value>not yet calculated — stochastics come with a later version; the recommendation relies on (a) and (c).</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
+    <value>(c) Standard comparison</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_NORM_UNTER" xml:space="preserve">
+    <value>DIN 4708 only for residential use with storage, with validity check</value>
+  </data>
+  <data name="ZPG_AUS_GEWAEHLTER_PUNKT" xml:space="preserve">
+    <value>Selected point</value>
+  </data>
+  <data name="ZPG_AUS_LADEZEIT" xml:space="preserve">
+    <value>Charging time per day (Σ t_power,on)</value>
+  </data>
+  <data name="ZPG_AUS_ZEITKONSTANTE" xml:space="preserve">
+    <value>Time constant τ (informative)</value>
+  </data>
+  <data name="ZPG_AUS_WERTEPAARE_OHNE" xml:space="preserve">
+    <value>The pairs curve is omitted (fewer than two pairs).</value>
+  </data>
+  <data name="ZPG_AUS_BEDARFSKENNZAHL" xml:space="preserve">
+    <value>Demand index N</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICHSPUNKT" xml:space="preserve">
+    <value>Comparison point V_DIN</value>
+  </data>
+  <data name="ZPG_AUS_ZONEN_AUSSERHALB" xml:space="preserve">
+    <value>Outside the scope: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HINW_WAERMEPUMPE" xml:space="preserve">
+    <value>The index N is hardly meaningful for the flow temperatures of a heat pump.</value>
+  </data>
+  <data name="ZPG_AUS_STAND_NICHT_RECHENBAR" xml:space="preserve">
+    <value>not calculable</value>
+  </data>
+  <data name="ZPG_AUS_STAND_AUSSERHALB" xml:space="preserve">
+    <value>outside the scope</value>
+  </data>
+  <data name="ZPG_AUS_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommended design point: {0}</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_SPEICHER" xml:space="preserve">
+    <value>Storage {0} l · output {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_NENNINHALT" xml:space="preserve">
+    <value>next nominal capacity {0} l</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_MINUTENSPITZE" xml:space="preserve">
+    <value>Minute peak {0} kW</value>
+  </data>
+  <data name="ZPG_AUS_EMPFEHLUNG_KEINE" xml:space="preserve">
+    <value>No design point — {0}</value>
+  </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
+    <value>Quick design</value>
+  </data>
+  <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
+    <value>Draft status — A100/A1 are drafts; application to be agreed separately.</value>
+  </data>
+  <data name="ZPG_AUS_NACHRICHTLICH" xml:space="preserve">
+    <value>for information</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_BLEIBT" xml:space="preserve">
+    <value>The design point of the draw-off profile remains the point of the cumulative curve; the method comparison is a comparison only, OK takes over only the point.</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH" xml:space="preserve">
+    <value>Storage sizing — method comparison (rule: largest volume)</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_MARKE" xml:space="preserve">
+    <value>Proposal</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_UNTER" xml:space="preserve">
+    <value>Proposal to the storage sizing, separate from the triple above; all methods read the same quantity basis, never the annual series.</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Charging power {0} kW ({1}) · persons {2} · index N {3} · usable share {4} · surcharge {5}</value>
+  </data>
+  <data name="ZPG_AUS_AUTO" xml:space="preserve">
+    <value>auto</value>
+  </data>
+  <data name="ZPG_AUS_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="ZPG_AUS_SP_VERFAHREN" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="ZPG_AUS_SP_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="ZPG_AUS_SP_KENNWERT" xml:space="preserve">
+    <value>Characteristic</value>
+  </data>
+  <data name="ZPG_AUS_SP_RECHENWEG" xml:space="preserve">
+    <value>Calculation</value>
+  </data>
+  <data name="ZPG_AUS_GROESSTER_WERT" xml:space="preserve">
+    <value>largest value</value>
+  </data>
+  <data name="ZPG_AUS_NUR_NACHRICHTLICH" xml:space="preserve">
+    <value>for information only</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_GROESSTER" xml:space="preserve">
+    <value>Largest value</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_LISTE" xml:space="preserve">
+    <value>List size (proposal)</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_KRITERIUM" xml:space="preserve">
+    <value>Criterion</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_FUELLSTAND" xml:space="preserve">
+    <value>State of charge</value>
+  </data>
+  <data name="ZPG_AUS_NENNINHALT" xml:space="preserve">
+    <value>Nominal capacity {0} l</value>
+  </data>
+  <data name="ZPG_AUS_MEHRSPEICHER" xml:space="preserve">
+    <value>Check multi-storage system</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_LISTE" xml:space="preserve">
+    <value>not rounded without a list of nominal capacities</value>
+  </data>
+  <data name="ZPG_AUS_KRITERIUM_NL" xml:space="preserve">
+    <value>Storage with N_L ≥ {0}</value>
+  </data>
+  <data name="ZPG_AUS_KRITERIUM_OHNE" xml:space="preserve">
+    <value>no criterion without index N</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND" xml:space="preserve">
+    <value>min. {0} of {1} kWh, {2} remaining reserve ({3})</value>
+  </data>
+  <data name="ZPG_AUS_ZEITPUNKT" xml:space="preserve">
+    <value>Governing time of the hourly balance: {0}, day {1} of 14 (counted in week 2), {2}–{3} h.</value>
+  </data>
+  <data name="ZPG_AUS_DMAX_NULL" xml:space="preserve">
+    <value>D_max = 0: the charging power covers every hourly load; “profile-based” shows “–” instead of 0 l — the largest value is then given by DIN 4708.</value>
+  </data>
+  <data name="ZPG_AUS_WOCHENBILD" xml:space="preserve">
+    <value>Governing week = week with the largest daily demand of the year; week 2 of the two-week balance from quantity basis, daily profile and weekly factors — not from the annual series.</value>
+  </data>
+  <data name="ZPG_AUS_BTN_UEBERGEBEN" xml:space="preserve">
+    <value>Hand over to storage sizing…</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_UEBERGEBEN" xml:space="preserve">
+    <value>Handing over to the storage sizing comes with a later version.</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE" xml:space="preserve">
+    <value>Notes and warnings of the design</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE_UNTER" xml:space="preserve">
+    <value>Plain text with inserted numbers; none of it blocks OK.</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE_LEER" xml:space="preserve">
+    <value>No notes.</value>
+  </data>
+  <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="ZPG_AUS_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_PUNKT" xml:space="preserve">
+    <value>Point selected: {0}</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_OHNE_PUNKT" xml:space="preserve">
+    <value>No design point — OK takes over the inputs only.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_OHNE" xml:space="preserve">
+    <value>No design — {0}</value>
+  </data>
+  <data name="ZPG_AUS_RUECKFRAGE_TITEL" xml:space="preserve">
+    <value>Design day from the hourly profile</value>
+  </data>
+  <data name="ZPG_AUS_RUECKFRAGE_STUNDENPROFIL" xml:space="preserve">
+    <value>The design day comes from the hourly profile — peaks below one hour are underestimated. Take over the point anyway?</value>
+  </data>
+  <data name="ZPG_AUS_JA" xml:space="preserve">
+    <value>Take over</value>
+  </data>
+  <data name="ZPG_AUS_NEIN" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ZPG_AUS_KON_TITEL" xml:space="preserve">
+    <value>Construct design day</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_NAME" xml:space="preserve">
+    <value>Name of the design day</value>
+  </data>
+  <data name="ZPG_AUS_KON_HINWEIS" xml:space="preserve">
+    <value>Rows according to the A100 method (NA.5.2.3): time window in hours, volume per draw-off rule and count or directly with draw-off temperature. The energy applies at the design cold water temperature of the catalogue.</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_BEGINN" xml:space="preserve">
+    <value>Start [h]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_ENDE" xml:space="preserve">
+    <value>End [h]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_REGEL" xml:space="preserve">
+    <value>Draw-off rule</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_ANZAHL" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_VOLUMEN" xml:space="preserve">
+    <value>Volume [l]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_TEMPERATUR" xml:space="preserve">
+    <value>Draw-off temperature [°C]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_VERBRAUCHER" xml:space="preserve">
+    <value>Consumer</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL_FREI" xml:space="preserve">
+    <value>Volume directly</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL" xml:space="preserve">
+    <value>{0} · {1} l per event at {2} °C</value>
+  </data>
+  <data name="ZPG_AUS_KON_BTN_ZEILE_NEU" xml:space="preserve">
+    <value>Add row</value>
+  </data>
+  <data name="ZPG_AUS_KON_BTN_ZEILE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGELN_OHNE" xml:space="preserve">
+    <value>The catalogue contains no draw-off rule — only rows with a direct volume.</value>
+  </data>
+  <data name="ZPG_AUS_KON_SUMME" xml:space="preserve">
+    <value>{0} rows</value>
+  </data>
+  <data name="ZPG_AUSBILD_SUMMENLINIE" xml:space="preserve">
+    <value>Cumulative curve of the design day</value>
+  </data>
+  <data name="ZPG_AUSBILD_BEDARF" xml:space="preserve">
+    <value>Demand, cumulative</value>
+  </data>
+  <data name="ZPG_AUSBILD_VERSORGUNG" xml:space="preserve">
+    <value>Supply, cumulative</value>
+  </data>
+  <data name="ZPG_AUSBILD_SPEICHERINHALT" xml:space="preserve">
+    <value>Storage content</value>
+  </data>
+  <data name="ZPG_AUSBILD_BERUEHRUNG" xml:space="preserve">
+    <value>smallest distance</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_MINUTENTAKT" xml:space="preserve">
+    <value>Hour (minute steps)</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_ENERGIE" xml:space="preserve">
+    <value>Energy [kWh]</value>
+  </data>
+  <data name="ZPG_AUSBILD_WERTEPAARE" xml:space="preserve">
+    <value>Pairs curve storage volume over output</value>
+  </data>
+  <data name="ZPG_AUSBILD_REIHE_WERTEPAARE" xml:space="preserve">
+    <value>Pairs (extension of the verification method)</value>
+  </data>
+  <data name="ZPG_AUSBILD_GEWAEHLT" xml:space="preserve">
+    <value>selected</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_VOLUMEN" xml:space="preserve">
+    <value>Storage volume [l]</value>
+  </data>
+  <data name="ZPG_AUSBILD_WOCHE" xml:space="preserve">
+    <value>Governing week of the hourly balance</value>
+  </data>
+  <data name="ZPG_AUSBILD_LADUNG" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="ZPG_AUSBILD_DEFIZIT" xml:space="preserve">
+    <value>Deficit, cumulative</value>
+  </data>
+  <data name="ZPG_AUSBILD_FUELLSTAND" xml:space="preserve">
+    <value>State of charge at {0} l</value>
+  </data>
+  <data name="ZPG_AUSBILD_MASSGEBEND" xml:space="preserve">
+    <value>governing</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_SPEICHER" xml:space="preserve">
+    <value>Storage [kWh]</value>
+  </data>
+  <data name="ZPG_AUS_KONTEXT" xml:space="preserve">
+    <value>Sum of all zones · {0} zones · level {1}</value>
+  </data>
+  <data name="ZPG_AUS_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>Zone “{0}” is missing from the design: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_SPEICHER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_FRISCHWASSERSTATION" xml:space="preserve">
+    <value>Fresh water station</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_DURCHFLUSS" xml:space="preserve">
+    <value>Instantaneous</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_WOHNUNGSSTATION" xml:space="preserve">
+    <value>Apartment station</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_PROFILBASIERT" xml:space="preserve">
+    <value>profile-based</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_DIN4708" xml:space="preserve">
+    <value>DIN 4708</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_GLEICHZEITIGKEIT" xml:space="preserve">
+    <value>Rule of thumb with simultaneity</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_KLASSISCH" xml:space="preserve">
+    <value>classic rule of thumb</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_STUNDENPROFIL" xml:space="preserve">
+    <value>Hourly profile</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_A100_REFERENZ" xml:space="preserve">
+    <value>Reference profile</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_DIN4708_PROFIL" xml:space="preserve">
+    <value>Standard day</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_KONSTRUKTOR" xml:space="preserve">
+    <value>Constructor</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_ECODESIGN" xml:space="preserve">
+    <value>Ecodesign draw-off profile</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_PROJEKT" xml:space="preserve">
+    <value>input</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_GROSSANLAGE" xml:space="preserve">
+    <value>default · large system according to DVGW W 551</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_SCHNELLPFAD" xml:space="preserve">
+    <value>default · simplified method of A100</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_VORGABE" xml:space="preserve">
+    <value>catalogue default</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_EINGABE" xml:space="preserve">
+    <value>input</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_BESTAND" xml:space="preserve">
+    <value>proposal from the plant inventory: {0}</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_MEHRDEUTIG" xml:space="preserve">
+    <value>The plant inventory contains boiler and heat pump — please choose.</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_OHNE" xml:space="preserve">
+    <value>The plant inventory names no generator.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
+    <value>Design calculated · deterministic · percentile not yet calculated</value>
+  </data>
+  <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
+    <value>No zone has been created — no design without a zone.</value>
+  </data>
+  <data name="ZPG_AUS_MSG_UNERWARTET" xml:space="preserve">
+    <value>The design could not be calculated: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_ZEILE" xml:space="preserve">
+    <value>Row {0}: {1}</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLT_FENSTER" xml:space="preserve">
+    <value>Start and end are missing or outside the day (0 ≤ start &lt; end ≤ 24 h).</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLT_MENGE" xml:space="preserve">
+    <value>Count or volume and draw-off temperature are missing.</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
+    <value>The draw-off rule “{0}” is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
+    <value>Enter at least one row.</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_NAME" xml:space="preserve">
+    <value>Please enter a name for the design day.</value>
+  </data>
+  <data name="ZPG_AUS_KON_NAME_STAMM" xml:space="preserve">
+    <value>Own design day</value>
+  </data>
+  <data name="ZPG_AUS_KON_NICHT_GEBAUT" xml:space="preserve">
+    <value>The design day was not built — {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGELN_UNGUELTIG" xml:space="preserve">
+    <value>The draw-off rules of the catalogue are invalid — only rows with a direct volume: {0}</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSTRUKTOR_OEFFNEN" xml:space="preserve">
+    <value>Design day missing</value>
+  </data>
+  <data name="ZPG_AUSHINW_BEDARFSTAG_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Design day not calculable</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPITZEN_UNTERSCHAETZT" xml:space="preserve">
+    <value>Peaks underestimated</value>
+  </data>
+  <data name="ZPG_AUSHINW_ZIRKULATION_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERAUSLEGUNG_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Storage sizing</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Large system</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE" xml:space="preserve">
+    <value>Large system</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE_OHNE_ZIRKULATION" xml:space="preserve">
+    <value>Large system without circulation</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_GROSSANLAGE" xml:space="preserve">
+    <value>Storage temperature</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_UNTER_MINDEST" xml:space="preserve">
+    <value>Storage temperature</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERVERLUST_NULL" xml:space="preserve">
+    <value>Storage loss</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENLINIE_NICHT_MONOTON" xml:space="preserve">
+    <value>Cumulative curve</value>
+  </data>
+  <data name="ZPG_AUSHINW_UEBERTRAGER_UNPLAUSIBEL" xml:space="preserve">
+    <value>Heat exchanger</value>
+  </data>
+  <data name="ZPG_AUSHINW_WERTEPAARKURVE" xml:space="preserve">
+    <value>Pairs curve</value>
+  </data>
+  <data name="ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT" xml:space="preserve">
+    <value>Apartment station</value>
+  </data>
+  <data name="ZPG_AUSHINW_REIHENFOLGE" xml:space="preserve">
+    <value>Order of the methods</value>
+  </data>
+  <data name="ZPG_AUSHINW_DIN4708_WAERMEPUMPE" xml:space="preserve">
+    <value>DIN 4708 and heat pump</value>
+  </data>
+  <data name="ZPG_AUSHINW_DIN4708_TEILGUELTIG" xml:space="preserve">
+    <value>Validity per method</value>
+  </data>
+  <data name="ZPG_AUSHINW_GUELTIGKEIT_DIN_GLF" xml:space="preserve">
+    <value>Validity per method</value>
+  </data>
+  <data name="ZPG_AUSHINW_GUELTIGKEIT_GLF_WANNEN" xml:space="preserve">
+    <value>Validity per method</value>
+  </data>
+  <data name="ZPG_AUSHINW_GLF_GUELTIGKEITSGRENZE" xml:space="preserve">
+    <value>Validity per method</value>
+  </data>
+  <data name="ZPG_AUSHINW_LADELEISTUNG_ZU_KLEIN" xml:space="preserve">
+    <value>Charging power × charging time</value>
+  </data>
+  <data name="ZPG_AUSHINW_MASSGEBEND_WOCHENENDE" xml:space="preserve">
+    <value>Governing day</value>
+  </data>
+  <data name="ZPG_AUSHINW_DEFIZIT_WAECHST" xml:space="preserve">
+    <value>Deficit grows</value>
+  </data>
+  <data name="ZPG_AUSHINW_DMAX_NULL" xml:space="preserve">
+    <value>Hourly balance without deficit</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENKONTROLLE" xml:space="preserve">
+    <value>Sum check</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENLINIE_AUSSERHALB_BAND" xml:space="preserve">
+    <value>Cumulative curve outside the band</value>
+  </data>
+  <data name="ZPG_AUSHINW_KLASSISCH_WEIT_UEBER_BAND" xml:space="preserve">
+    <value>Classic rule of thumb</value>
+  </data>
+  <data name="ZPG_AUSHINW_MEHRSPEICHER" xml:space="preserve">
+    <value>Multi-storage system</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_FEHLEN" xml:space="preserve">
+    <value>Nominal capacities</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Nominal capacities</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_PARAMETER_UNGUELTIG" xml:space="preserve">
+    <value>Nominal capacities</value>
+  </data>
+  <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
+    <value>Criterion N_L</value>
+  </data>
+  <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Catalogue parameter</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
+    <value>The design day is empty or contains an event outside the day.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOCHENREIHE_UNGUELTIG" xml:space="preserve">
+    <value>The weekly series is missing or does not have 168 hours.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_TEMPERATUR_UNGUELTIG" xml:space="preserve">
+    <value>A temperature difference is not positive.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_GROESSE_UNGUELTIG" xml:space="preserve">
+    <value>A quantity is negative, not finite or outside its range.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOHNUNGSTABELLE_FEHLT" xml:space="preserve">
+    <value>The dwelling table is missing — the index N cannot be calculated.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
+    <value>Occupancy or equipment of a dwelling type cannot be determined.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
+    <value>Neither generator nor heat exchanger output can be determined.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
+    <value>The verification finds no volume.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_PARAMETER_FEHLT" xml:space="preserve">
+    <value>A catalogue parameter is missing.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_NICHT_GUELTIG" xml:space="preserve">
+    <value>The method does not apply to this zone or topology.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_UEBERTRAGER_UNBESTIMMT" xml:space="preserve">
+    <value>The heat exchanger cannot be determined — please specify material or generator type, or the heat exchanger output.</value>
+  </data>
+  <data name="ZPG_STATUS_AUSLEGUNG" xml:space="preserve">
+    <value>Design taken over: {0}</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_OHNE_PUNKT" xml:space="preserve">
+    <value>inputs without point</value>
+  </data>
 </root>

@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
     /// <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
     /// <c>ZapfprofilDialog.razor</c>.</para>
     /// </summary>
-    internal static class ZapfprofilHuelle
+    internal static partial class ZapfprofilHuelle
     {
         /// <summary>Der Hilfeschlüssel des Dialogs (5.8).</summary>
         internal const string HILFE_DIALOG = "Form_Zapfprofil.btn_Help";
@@ -199,7 +199,17 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), basis?.Projekt);
+            // Die Auslegung (Z2): Mit OK der Überlagerung trägt der Arbeitsstand ihre Eingaben samt
+            // Punkt — sie gehen in die Projektgrößen, ein konstruierter Tag als Entwurf mit; ohne
+            // sie bleiben Projektgrößen und Entwurf der Basis, wie sie sind.
+            ProjektStand projekt = basis?.Projekt;
+            BedarfstagKatalogzeile entwurf = basis?.BedarfstagEntwurf;
+            if (eingabe.Auslegung != null)
+            {
+                projekt = MitAuslegung(projekt ?? ZapfprofilCtrl.ProjektVorgabe(), eingabe.Auslegung);
+                entwurf = EntwurfAus(eingabe.Auslegung);
+            }
+            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), projekt) { BedarfstagEntwurf = entwurf };
         }
 
         /// <summary>
@@ -949,6 +959,8 @@ namespace WindowsFormsApplication1
 
             t.KnopfStochastik = Text_("ZPG_BTN_STOCHASTIK", t.KnopfStochastik);
             t.KnopfAuslegung = Text_("ZPG_BTN_AUSLEGUNG", t.KnopfAuslegung);
+            t.StatusAuslegung = Text_("ZPG_STATUS_AUSLEGUNG", t.StatusAuslegung);
+            t.AuslegungOhnePunkt = Text_("ZPG_AUSLEGUNG_OHNE_PUNKT", t.AuslegungOhnePunkt);
             t.StatusVorschau = Text_("ZPG_STATUS_VORSCHAU", t.StatusVorschau);
             t.StatusOhneVorschau = Text_("ZPG_STATUS_OHNE_VORSCHAU", t.StatusOhneVorschau);
             return t;

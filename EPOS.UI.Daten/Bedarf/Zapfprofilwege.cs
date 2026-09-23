@@ -120,7 +120,8 @@ namespace WindowsFormsApplication1
         internal ZapfprofilSpeicherergebnis Schreiben(DbVorgang v)
         {
             if (!Geaendert) return new ZapfprofilSpeicherergebnis(true, null, null);
-            ZapfprofilSpeicherergebnis e = ZapfprofilHuelle.Speichern(IdProjekt, Arbeitsstand, v);
+            // Zonen, Projektgrößen samt Auslegung und ein konstruierter Bedarfstag (Z2) in DEMSELBEN Vorgang.
+            ZapfprofilSpeicherergebnis e = ZapfprofilHuelle.AuslegungSpeichern(IdProjekt, Arbeitsstand, v);
             return e;
         }
 
