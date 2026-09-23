@@ -155,10 +155,13 @@ namespace WindowsFormsApplication1
         /// <see cref="KATALOG_NATURALKEY"/> tragen, eine Kindtabelle muss mit Name, Kopf und
         /// Verweisspalte in <see cref="TWW_KINDER"/> stehen. Die Bezeichner, die in SQL-Texte
         /// eingesetzt werden, kommen damit aus diesen festen Tabellen, nie aus dem Paket.
-        /// <paramref name="kinder"/> sind die festen Einträge der genannten Kindtabellen.
+        /// <paramref name="kinder"/> sind die festen Einträge der genannten Kindtabellen;
+        /// <paramref name="uebergangen"/> nimmt je Kindtabelle des Pakets, die diese Datenbank nicht
+        /// führt (die Zapfkategorien vor Schritt 115), eine Berichtszeile auf — der Import übergeht
+        /// sie benannt.
         /// </summary>
         private static bool TwwManifestPruefen(List<KatMeta> kataloge, List<KindMeta> manifestKinder,
-                                               out List<KindMeta> kinder, out string fehler)
+                                               out List<KindMeta> kinder, out string fehler, List<string> uebergangen)
         {
             kinder = new List<KindMeta>();
             fehler = null;
@@ -189,8 +192,14 @@ namespace WindowsFormsApplication1
                 }
                 if (kinder.Any(x => string.Equals(x.name, fest[0].Kind, StringComparison.OrdinalIgnoreCase))) continue;
                 // Eine Kindtabelle, die diese Datenbank noch nicht führt (die Zapfkategorien vor
-                // Schritt 115), kann weder verglichen noch eingespielt werden — sie bleibt liegen.
-                if (!DataRepository.TabelleVorhanden(fest[0].Kind)) continue;
+                // Schritt 115), kann weder verglichen noch eingespielt werden — sie bleibt liegen,
+                // und der Bericht nennt sie.
+                if (!DataRepository.TabelleVorhanden(fest[0].Kind))
+                {
+                    uebergangen?.Add("Die Kindzeilen " + fest[0].Kind + " des Pakets sind übergangen — diese Datenbank " +
+                                     "führt die Tabelle nicht (älterer Schemastand); das Projekt ist ohne sie importiert.");
+                    continue;
+                }
                 kinder.Add(new KindMeta { name = fest[0].Kind, parent = fest[0].Kopf, parentColumn = fest[0].Spalte, pk = "ID" });
             }
             return true;

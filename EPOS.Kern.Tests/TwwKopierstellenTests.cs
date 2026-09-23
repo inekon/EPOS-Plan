@@ -267,6 +267,50 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Ein Paket mit Zapfkategorien in eine Datenbank VOR Schritt 115 (Stand 114, ohne
+        /// <c>Tab_TwwZapfkategorie_STAMM</c>): Der Import läuft durch — die Nutzungsart kommt als
+        /// <c>IMPORT</c> mit, Zone, Wohnungstypen und Projektzeile stehen —, und der Bericht nennt
+        /// die übergangenen Kategorien; die Tabelle entsteht nicht.
+        /// </summary>
+        [Fact]
+        public void Transfer_in_eine_Datenbank_vor_115_uebergeht_die_Zapfkategorien_benannt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            KategorienSicherstellen(q.Nutzungsart);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Das Ziel steht auf Stand 114: die Tabelle der Zapfkategorien gibt es dort nicht.
+            DataRepository.ExecuteNonQuery("DROP TABLE " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = 114");
+            Assert.False(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+
+            int neu = io.Importieren(paket, "Tww vor 115", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            DataRow zone = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            long nutzung = Convert.ToInt64(zone["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Status FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung))));
+            Assert.Equal(q.Wohnungstypen.Count, Wohnungstypen(Convert.ToInt64(zone["ID"])).Rows.Count);
+            Assert.Equal(1, Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu))));
+
+            Assert.False(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            Assert.Contains(io.LetzterBericht, b => b.Contains(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, StringComparison.Ordinal)
+                                                    && b.Contains("übergangen", StringComparison.Ordinal));
+        }
+
+        /// <summary>
         /// ZU17 mit Kategorien: Steht die Nutzungsart unter ihrem Schlüssel am Ziel, aber mit
         /// ANDEREN Kategorien, zeigt die Zone nicht still darauf — sie kommt als neue Version
         /// „(Import 1)“ mit den Kategorien des Pakets; die Zielzeile bleibt unberührt.

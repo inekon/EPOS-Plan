@@ -573,7 +573,8 @@ namespace WindowsFormsApplication1
                 // Ereignisse). Ein Paket ohne den Abschnitt bringt keine. Schlüssel und
                 // Kindtabellen der Tww-Kataloge kommen aus den festen Tabellen dieses
                 // Programms, nicht aus dem Manifest (ZU17, N8) — sonst benannte Ablehnung.
-                if (!TwwManifestPruefen(man.catalogs, man.catalogChildren, out List<KindMeta> twwKinder, out string twwFehler))
+                if (!TwwManifestPruefen(man.catalogs, man.catalogChildren, out List<KindMeta> twwKinder, out string twwFehler,
+                                        _twwBericht))
                 {
                     fehler = twwFehler;
                     return -1;
