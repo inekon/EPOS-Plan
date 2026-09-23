@@ -564,7 +564,7 @@ namespace WindowsFormsApplication1
                     // v.StromkostenNetz heraus) — dieser Anteil ist deshalb
                     // ausdrücklich TEIL von StromkostenNetz und fällt dort mit heraus.
                     //
-                    // DIE ZWEISTUFIGE STAFFEL (Q11, Schemaschritt 103): Sie stand im
+                    // DIE ZWEISTUFIGE STAFFEL (Q11, Schemaschritt 104): Sie stand im
                     // Tarifsatz und rechnete nur im Zonenmodell; jetzt steht sie am
                     // Stromträger und geht dessen Leistungspreis und Saisonreihe VOR —
                     // dieselbe Rangfolge wie damals, als der Tarif den ganzen
@@ -816,7 +816,7 @@ namespace WindowsFormsApplication1
             public double[] ReiheJeKW;
 
             /// <summary>
-            /// Q11 (Schemaschritt 103) — die zweistufige Leistungspreis-Staffel der
+            /// Q11 (Schemaschritt 104) — die zweistufige Leistungspreis-Staffel der
             /// Projektübersteuerung; gelesen nur im STROMzweig. Gepflegt geht sie dem
             /// konstanten Satz und der Saisonreihe vor. Leer, wenn nicht gepflegt — nie
             /// <c>null</c>.
@@ -1117,7 +1117,7 @@ namespace WindowsFormsApplication1
             if (sLeistung.HasValue && sLeistung.Value > 0) info.PreisLeistung = sLeistung;
             else if (kLeistung.HasValue && kLeistung.Value > 0) info.PreisLeistung = kLeistung;
 
-            // Q11 (Schemaschritt 103): die zweistufige Leistungspreis-Staffel der
+            // Q11 (Schemaschritt 104): die zweistufige Leistungspreis-Staffel der
             // Projektübersteuerung — eigene Abfrage über den Controller der Trägerkarte,
             // damit eine Datenbank ohne die Spalten die Preise oben nicht verliert.
             info.Staffel = EnergietraegerPreisCtrl.StaffelLesen(idProjekt, carrierId);

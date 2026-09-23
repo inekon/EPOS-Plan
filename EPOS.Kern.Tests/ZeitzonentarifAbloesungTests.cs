@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E7b — Schemaschritt <b>103</b>: Der Zeitzonentarif HT/NT wird abgelöst
+    /// ETAPPE E7b — Schemaschritt <b>104</b>: Der Zeitzonentarif HT/NT wird abgelöst
     /// (Entscheid Q11, Anwender 22.09.2026: „kein HT/NT"; der Rest nach Empfehlung: die
     /// zweistufige Leistungspreis-Staffel zieht in die Kostenverwaltung) und die alten
     /// Tarife werden verworfen (Entscheid E7b‑Q4, Anwender 23.09.2026: „alte Tarife
@@ -50,19 +50,19 @@ namespace EPOS.Kern.Tests
         private const string TAB_MATRIX = "Tab_ErgebnisStromMatrix";
 
         [Fact]
-        public void Der_Zielstand_ist_103_und_die_Staffel_hat_drei_Spalten_am_Stromtraeger()
+        public void Der_Zielstand_ist_104_und_die_Staffel_hat_drei_Spalten_am_Stromtraeger()
         {
-            Assert.True(SchemaStand.Zielversion >= 103,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 103.");
+            Assert.True(SchemaStand.Zielversion >= 104,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 104.");
 
-            Assert.Equal(3, SchemaKatalog.Schritt103_LeistungspreisStaffel.Length);
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
+            Assert.Equal(3, SchemaKatalog.Schritt104_LeistungspreisStaffel.Length);
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
             {
                 Assert.Equal("energy_project_settings", s.Tabelle);
                 Assert.Equal("DOUBLE", s.TypDefinition);
             }
             Assert.Equal(new[] { "Leistungspreis_Staffelgrenze", "Leistungspreis_Staffel1", "Leistungspreis_Staffel2" },
-                         SchemaKatalog.Schritt103_LeistungspreisStaffel.Select(s => s.Name).ToArray());
+                         SchemaKatalog.Schritt104_LeistungspreisStaffel.Select(s => s.Name).ToArray());
 
             // Die Übernahme schreibt nur in leere Spalten — eine gepflegte Staffel bleibt.
             Assert.Contains("[Leistungspreis_Staffelgrenze] IS NULL", ZeitzonentarifAbloesung.SQL_STAFFEL_SETZEN,

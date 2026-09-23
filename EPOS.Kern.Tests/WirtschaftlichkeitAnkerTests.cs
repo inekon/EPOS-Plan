@@ -43,9 +43,9 @@ namespace EPOS.Kern.Tests
     /// <para><b>ETAPPE E7b (Q11, „kein HT/NT") — gemessen, kein Anker bewegt sich</b>
     /// (alt = neu: 1024 −2.896.359,13 € mit Energiekosten 188.167,18 €/a, 1030
     /// −21.895.377,28 € mit Energiekosten 1.176.906,60 €/a, 99,00 €/a, Kaskade
-    /// 13.000,00 €; Messung auf der nach Schritt 103 migrierten Kopie, alle Größen der
+    /// 13.000,00 €; Messung auf der nach Schritt 104 migrierten Kopie, alle Größen der
     /// Kette bitgleich). Die Gründe: Die Testdatenbank führt keinen Tarifsatz — kein
-    /// Anker rechnete je mit Zonenpreisen oder der Staffel des Tarifsatzes; Schritt 103
+    /// Anker rechnete je mit Zonenpreisen oder der Staffel des Tarifsatzes; Schritt 104
     /// übernimmt deshalb keine Staffel, und die drei Staffelspalten am Stromträger
     /// bleiben leer; und diese Kette hat keine Stundenreihen, also keine Strommatrix,
     /// deren Summen jetzt in einer statt in vier Teilsummen entstehen.</para>

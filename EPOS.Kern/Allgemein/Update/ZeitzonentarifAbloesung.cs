@@ -6,7 +6,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // DER ZEITZONENTARIF WIRD ABGELÖST - Migrationsschritt 103
+    // DER ZEITZONENTARIF WIRD ABGELÖST - Migrationsschritt 104
     //
     // WOZU. Entscheid Q11 (Anwender 22.09.2026, "kein HT/NT"; Register R-Q, Q11): Der
     // Zeitzonentarif Winter/Sommer x HT/NT wird nicht mehr gefuehrt. Die zweistufige
@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     // nur im Zonenmodell rechnete, zieht in die Kostenverwaltung neben die
     // Energiepreisstruktur (Weg 2 aus Nach #291) - an die Projektuebersteuerung des
     // Stromtraegers (energy_project_settings, Spalten aus
-    // SchemaKatalog.Schritt103_LeistungspreisStaffel). Entscheid E7b-Q4 (Anwender
+    // SchemaKatalog.Schritt104_LeistungspreisStaffel). Entscheid E7b-Q4 (Anwender
     // 23.09.2026, "alte Tarife verwerfen, nicht mehr relevant"): Die Saetze des
     // Zonenmodells und die mit ihnen gerechneten Ergebnisse werden verworfen.
     //
@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
 
     /// <summary>
-    /// Schemaschritt 103 — der Zeitzonentarif HT/NT wird abgelöst (Entscheide Q11 und
+    /// Schemaschritt 104 — der Zeitzonentarif HT/NT wird abgelöst (Entscheide Q11 und
     /// E7b‑Q4): die Leistungspreis-Staffel zieht an den Stromträger der Kostenverwaltung,
     /// die Tarifsätze des Zonenmodells und die mit ihnen gerechneten gespeicherten
     /// Ergebnisse werden verworfen, die Zonenzeilen der Strommatrix werden eine
@@ -248,7 +248,7 @@ namespace WindowsFormsApplication1
         /// <summary>Stehen die drei Staffelspalten (DDL-Teil des Schrittes)?</summary>
         public static bool StaffelspaltenVorhanden()
         {
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
                 if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
             return true;
         }

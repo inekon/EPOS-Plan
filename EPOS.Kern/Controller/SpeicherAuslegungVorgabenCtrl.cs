@@ -60,7 +60,7 @@ namespace WindowsFormsApplication1
     /// Vorbelegung — die drei Werte sind fachlich verschieden (die Variante trägt den
     /// für den Speicher gültigen, die Staffel des Stromträgers den Preis der Stufe an
     /// der Spitze, der Energieträger seinen konstanten Satz), und welcher gilt,
-    /// entscheidet der Anwender. Die Staffel stand bis Schemaschritt 103 in der
+    /// entscheidet der Anwender. Die Staffel stand bis Schemaschritt 104 in der
     /// Tarifstruktur der Wirtschaftlichkeit; sie steht seither am Stromträger der
     /// Kostenverwaltung (Entscheid Q11).
     /// </remarks>
@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <para><b>(1) Leistungspreis-Staffel des Stromträgers</b> — die
         /// Projektübersteuerung des Stromträgers führt eine zweistufige Staffel
-        /// (Schemaschritt 103, Entscheid Q11; bis dahin stand sie im Tarifsatz des
+        /// (Schemaschritt 104, Entscheid Q11; bis dahin stand sie im Tarifsatz des
         /// Stammprojekts): bis zur Staffelgrenze gilt der erste, darüber der zweite Preis
         /// [€/(kW·a)]. Angeboten wird der Preis der Stufe, in der
         /// die BEZUGSSPITZE liegt, und zwar aus einem fachlichen Grund: Eine Kappung
@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
                         EnergietraegerPreisCtrl.ProjektpreisLesen(idProjekt, idTraeger);
 
                     // (1) Die Staffel des Stromträgers — dieses Projekts, nicht des Stammes:
-                    // Seit Schemaschritt 103 steht sie je Version an ihrem Stromträger.
+                    // Seit Schemaschritt 104 steht sie je Version an ihrem Stromträger.
                     SpeicherOptimierungLeistungspreisQuelle ausStaffel =
                         StaffelQuelle(projekt != null ? projekt.Staffel : null, bezugsspitzeKw);
                     if (ausStaffel != null) quellen.Add(ausStaffel);
@@ -283,7 +283,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Leistungspreis-Quelle „Staffel des Stromträgers" aus einer Staffel;
         /// <c>null</c>, wenn keine gepflegt ist (W11b‑E‑3, 10.09.2026; seit
-        /// Schemaschritt 103 am Stromträger statt im Tarifsatz).
+        /// Schemaschritt 104 am Stromträger statt im Tarifsatz).
         /// </summary>
         /// <remarks>
         /// <b>Ohne Datenbank prüfbar</b> — deshalb steht die Stufenwahl hier und nicht

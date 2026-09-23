@@ -289,10 +289,10 @@ namespace WindowsFormsApplication1
             {
                 if (!HatProjektZeilen("energy_project_settings", nachProjekt))
                 {
-                    // Q11 (Schemaschritt 103): Die Leistungspreis-Staffel des Stromträgers
+                    // Q11 (Schemaschritt 104): Die Leistungspreis-Staffel des Stromträgers
                     // wandert mit — sie stand im Tarifsatz des Stammes und galt für die
                     // ganze Gruppe; eine neue Version erbt sie deshalb wie den
-                    // Leistungspreis. Ohne die Spalten (Datenbank vor 103) bleibt die
+                    // Leistungspreis. Ohne die Spalten (Datenbank vor 104) bleibt die
                     // Kopie, wie sie war.
                     string staffel =
                         DataRepository.SpalteVorhanden("energy_project_settings", SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE)

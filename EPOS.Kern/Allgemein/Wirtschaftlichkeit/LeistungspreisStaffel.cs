@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Wo sie steht.</b> In der Kostenverwaltung neben der
     /// Energiepreisstruktur: an der Projektübersteuerung des Stromträgers
     /// (<c>energy_project_settings</c>, Spalten aus
-    /// <see cref="SchemaKatalog.Schritt103_LeistungspreisStaffel"/>), gepflegt auf der
+    /// <see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/>), gepflegt auf der
     /// Trägerkarte, geschrieben über <see cref="EnergietraegerPreisCtrl.StaffelSchreiben"/>.
     /// Bis dahin stand sie im Tarifsatz (<c>Tab_ProjektTarif</c>) und rechnete nur im
     /// Zonenmodell, das mit demselben Entscheid entfällt.</para>

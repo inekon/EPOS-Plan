@@ -3728,7 +3728,7 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
-        // ETAPPE E7b — die zweistufige Leistungspreis-Staffel des Stromträgers (Schritt 103)
+        // ETAPPE E7b — die zweistufige Leistungspreis-Staffel des Stromträgers (Schritt 104)
         // ---------------------------------------------------------------------------
 
         /// <summary>
@@ -3749,7 +3749,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_LP_STAFFEL_PREIS2 = "Leistungspreis_Staffel2";
 
         /// <summary>
-        /// Schritt 103 der Migration: die <b>zweistufige Leistungspreis-Staffel</b> an
+        /// Schritt 104 der Migration: die <b>zweistufige Leistungspreis-Staffel</b> an
         /// <c>energy_project_settings</c> — der Stromträger der Kostenverwaltung pflegt
         /// sie neben der Energiepreisstruktur (Entscheid Q11, Anwender 22.09.2026, Weg 2
         /// aus Nach #291). Bis dahin stand sie im Tarifsatz (<c>Tab_ProjektTarif.Staffel_*</c>)
@@ -3769,7 +3769,7 @@ namespace WindowsFormsApplication1
         /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe Grund
         /// wie bei Schritt 95, 97 und 99: Die Simulation liest sie nicht.</para>
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt103_LeistungspreisStaffel =
+        public static readonly SchemaSpalte[] Schritt104_LeistungspreisStaffel =
         {
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_LP_STAFFEL_GRENZE, "DOUBLE"),
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_LP_STAFFEL_PREIS1, "DOUBLE"),
@@ -3792,7 +3792,7 @@ namespace WindowsFormsApplication1
         /// leer/NULL genauso — ohne ausdrückliche Wahl rechnete die Anwendung weiter mit
         /// dem Zonenmodell aus Phase 8.
         ///
-        /// <b>Q11 (E7b):</b> Der Zonenmodus rechnet nicht mehr. Schritt 103 löscht jeden
+        /// <b>Q11 (E7b):</b> Der Zonenmodus rechnet nicht mehr. Schritt 104 löscht jeden
         /// Satz, der nicht <c>ROLLEN</c> führt; leer, NULL und <c>ZONEN</c> gelten der
         /// Leseseite als nicht wirksam (<c>TarifParameter.Wirksam</c>), nur <c>ROLLEN</c>
         /// rechnet.

@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         /// Schlüssel — der Leser summiert alle Zeilen eines Projekts
         /// (<c>WirtschaftlichkeitCtrl.LadeStromMatrix</c>), damit ein gespeicherter
         /// Stand mit vier Zonenzeilen dieselben Jahressummen liefert, bis der
-        /// Schemaschritt 103 ihn zu einer Zeile zusammenfasst oder ein neuer Lauf ihn
+        /// Schemaschritt 104 ihn zu einer Zeile zusammenfasst oder ein neuer Lauf ihn
         /// ersetzt.</para>
         /// </summary>
         public const string ZEILE_JAHR = "Jahr";

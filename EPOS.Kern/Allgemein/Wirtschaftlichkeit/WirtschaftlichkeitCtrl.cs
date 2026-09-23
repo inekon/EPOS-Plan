@@ -1302,7 +1302,7 @@ namespace WindowsFormsApplication1
                     // Q11 (E7b, „kein HT/NT"): Die Spalten des Zonenmodells — HT-Fenster,
                     // vier Zonen-Bezugs- und vier Zonen-Einspeisepreise, die zweistufige
                     // Staffel — liest der Kern nicht mehr. Die Staffel steht seit
-                    // Schemaschritt 103 am Stromträger (LeistungspreisStaffel).
+                    // Schemaschritt 104 am Stromträger (LeistungspreisStaffel).
 
                     // ETAPPE E5 — Rollenmodell. Ein LEERER Modus heißt dasselbe wie ZONEN:
                     // ein Satz des entfallenen Zonenmodells, der nicht rechnet.
@@ -2095,7 +2095,7 @@ namespace WindowsFormsApplication1
             // Einspeiseerlös mit den Vergütungssätzen der Parameter.
             //
             // KEIN STILLER RÜCKFALL: Ein Tarifsatz, der noch aktiv auf dem Zonenmodell
-            // steht (eine Datenbank vor Schemaschritt 103, der ihn löscht), rechnet
+            // steht (eine Datenbank vor Schemaschritt 104, der ihn löscht), rechnet
             // nicht mehr — und das steht als Hinweis am Ergebnis. Der Hinweis ist der
             // Wächter für einen nicht migrierten Stand.
             if (!stromOhneVerwendung && tarif != null && tarif.Aktiv && !rollen)
@@ -7519,7 +7519,7 @@ namespace WindowsFormsApplication1
         /// eine Jahreszeile (<see cref="StromMatrix.ZEILE_JAHR"/>); ein Stand von vor E7b
         /// trägt vier Zeilen, je Tarifzone eine. Beide ergeben so dieselben
         /// Jahressummen — ein alter Stand wird weder falsch gelesen noch als Zone
-        /// gezeigt, bis Schemaschritt 103 ihn zusammenfasst oder ein neuer Lauf ihn
+        /// gezeigt, bis Schemaschritt 104 ihn zusammenfasst oder ein neuer Lauf ihn
         /// ersetzt. Die höchste Stundenlast ist das Maximum der Zeilen.</para>
         /// </summary>
         public Dictionary<int, StromMatrix> LadeStromMatrix(List<int> projektIds)

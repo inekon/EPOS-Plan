@@ -885,7 +885,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Q11 (E7b, Anwender 22.09.2026: „kein HT/NT"): Dieser Modus rechnet nicht
-        /// mehr. Schemaschritt 103 loescht die Saetze in ihm; der Wert bleibt der
+        /// mehr. Schemaschritt 104 loescht die Saetze in ihm; der Wert bleibt der
         /// Rueckfall eines leeren Modus (Altzeilen) und das Merkmal, an dem Kern und
         /// Migration einen Satz des entfallenen Modells erkennen.
         /// </remarks>

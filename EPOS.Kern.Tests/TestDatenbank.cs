@@ -423,13 +423,15 @@ namespace EPOS.Kern.Tests
                 foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.Indizes)
                     DataRepository.ExecuteNonQuery(a.Value);
 
-                // Schritt 103 (Entscheid Q11, 22.09.2026): der Zeitzonentarif wird
+                // Schritt 104 (Entscheid Q11, 22.09.2026): der Zeitzonentarif wird
                 // abgeloest - erst die drei Spalten der Leistungspreis-Staffel an
                 // energy_project_settings, dann der Datenteil aus DERSELBEN Quelle wie in
                 // der Migration und im Werkzeug (Staffel uebernehmen, Zonensaetze
-                // abschalten, Zonenzeilen der Strommatrix zusammenfassen). Wiederholbar -
-                // auf einer nachgezogenen Kopie findet der Datenteil nichts mehr.
-                foreach (SchemaSpalte s in SchemaKatalog.Schritt103_LeistungspreisStaffel)
+                // loeschen, mit Zonentarif gerechnete Ergebnisse verwerfen, Zonenzeilen der
+                // Strommatrix zusammenfassen). NACH 103 ohne Reihenfolgebedingung.
+                // Wiederholbar - auf einer nachgezogenen Kopie findet der Datenteil nichts
+                // mehr.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
                     SpalteSicherstellen(s);
                 ZeitzonentarifAbloesung.Ausfuehren();
 

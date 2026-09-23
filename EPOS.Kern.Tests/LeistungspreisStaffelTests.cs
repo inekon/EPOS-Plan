@@ -14,7 +14,7 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Bis E7b stand die Staffel im Tarifsatz und rechnete allein im Zonenmodell,
     /// bemessen an der höchsten STUNDENlast der Strommatrix. Jetzt steht sie an der
-    /// Projektübersteuerung des Stromträgers (Schemaschritt 103), der
+    /// Projektübersteuerung des Stromträgers (Schemaschritt 104), der
     /// <see cref="KostenEmissionRechner"/> liest sie dort und bemisst sie an der
     /// VIERTELSTUNDENspitze — wie jeden Leistungspreis des Stromträgers. Eine gepflegte
     /// Staffel geht dem konstanten Satz und der Saisonreihe vor.</para>
