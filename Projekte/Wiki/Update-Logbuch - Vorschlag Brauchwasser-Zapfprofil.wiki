@@ -1,0 +1,7 @@
+<!-- EPOS-Plan Logbuch-Vorschlag | Ziel: Wikiseite Update-Logbuch, Abschnitt der Version <VERSION>
+     Repo-Quelle dieses Vorschlags: Projekte/Wiki/Update-Logbuch - Vorschlag Brauchwasser-Zapfprofil.wiki
+     Nicht als eigene Seite hochladen. Die Versionsnummer und das Datum setzt der Anwender;
+     der Satz wird mit dem Sammel-Upload in die Seite Update-Logbuch uebernommen. -->
+=== Version <VERSION> ===
+
+* Seit <DATUM>: Brauchwasser-Zapfprofile lassen sich je Nutzungszone erzeugen und als Brauchwasserbedarf rechnen.
