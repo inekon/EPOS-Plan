@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -220,7 +220,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 4–9 | erledigt mit B6 bzw. schon vorher | § 3.2 |
 | 9a–9d | erledigt mit E4, B7P, U17 (#346) | § 3.3 |
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
-| 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9 |
+| 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9; mit E7c3 (#452) gemessen, der Wortlaut vor #452 in § 8.11); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9, § 8.11 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
 | 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3; 30 ganz erledigt mit E7c1 (#440), der Wortlaut vor #440 und der Grund in § 8.7 | § 5.1, § 8.3, § 8.7 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
@@ -1276,7 +1276,8 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts vor der
 jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
 #437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`), in § 8.7 und § 8.8 **vor
-#440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`) —, nicht vor dem Schnitt.*
+#440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`), in § 8.11 und § 8.12 **vor #452**
+(Stand `9c7a0023`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1736,3 +1737,89 @@ Zeile:
 | § 6.2 | „… und gehört zu **E7**. Bis dahin gilt der **gemessene** Wert als Anker." | „… gehört zu **E7c3**"; dazu: E7c1 (#440) und E7c2 (#446) haben keinen Anker bewegt |
 | § 6.3 Nr. 9h | Wortlaut in § 8.9 | „zwei fehlende Stücke …, vorgesehen mit E7c3; A7 und A8 binden beides an ND‑S3"; die Entkopplung unter den erledigten Stücken |
 | § 7 und Anhang | „… und E7 Teil c1 (#440) … Als Nächstes kommt **E7c2** (…)"; B8 „es läuft in E7c2 mit", „Beide Punkte laufen in **E7c2**"; Kürzeltafel B8 „offen (in **E7c2**)", 9h „#357, #434"; Etappenzeile „E7c2 … E12 — nächste Etappe: E7c2" | bis E7 Teil c2 (#446), als Nächstes E7c3, danach E8; B8: S‑2 erledigt #446, B‑6 in E7c3; Kürzeltafel mit „S-2 **#446**, B-6 offen (in **E7c3**)", 9h mit „#446 (Entkopplung)", der Zeile S‑2 · V‑1 · V‑2 · B‑4 · Schritte E, F, G = #446 und „U22 und U32 erledigt #446, U39 teilweise"; Etappenzeilen „E7 Teil c2" = #446 und „E7c3 … E12 — nächste Etappe: E7c3" |
+
+### 8.11 E7c3 — Vollbenutzungsstunden nach Definition, B‑6, Kapitalwert 1024 und die Energiesteuer-Vorschau (#452)
+
+Protokoll [`E7c3_Reste_B6_Kapitalwert_Protokoll.md`](E7c3_Reste_B6_Kapitalwert_Protokoll.md); der Stand von E7c1‑Q2
+(präzisiert), E7c1‑Q6, E7c1‑Q8, E7c2‑Q4, Q5, Q7 und Q8, A7, A8 und Q2 im Register (R‑E7c1, R‑E7c2, R‑A, R‑Q), die acht
+Fragen der Etappe — offen — unter R‑E7c3. Mit diesem Teil ist E7 abgeschlossen.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E7 Teil c3** (#452, Merge `9c7a0023`, Nachtrags-Merge `387c2d9f`) | Vbh = W_a ÷ P_Nenn (Definition des Anwenders vom 23.09.2026) in Fall 1 und Fall 2 — E7c2/7 zurückgebaut, E7c1‑Q2 b präzisiert, E7c2‑Q7 erledigt; `VpvCtKwh` ungerundet (E7c2‑Q5 b); Katalog-Generation 9 als Nachpflege — Brennstoff 24 H_i = H_s = 1,0, `KWKG_REALISIERUNGSFRIST` und `KWKG_STICHTAG_DAUERBETRIEB` mit dem vierten Status ABGEKUENDIGT (E7c1‑Q8); Kapitalwert 1024 nachgerechnet (Datenstand, der Anker bleibt); B‑6 in den fünf Prioritätsdateien (100 leere Fänge benannt, strenger Leseweg an 26 Stellen, Warnzeilen, Gründe in Eigenschaften); die Energiesteuer-Vorschau je Wahl im Kern (E7c2‑Q8 b, Nachweisfassung 8); die Wahlen der Überlagerung als Anzeigezeilen (U22); § 6.3 Nr. 9h gemessen; 43 Ressourcenschlüssel neu, drei geändert; Testdatenbank auf Katalog-Generation 9 | **gewollt, im Bestand ohne Wirkung** — die dreizehn Basisprojekte 9.519 von 9.519 Werten gleich, die vier Anker unverändert; Proben im Protokoll E7c3 (1030 mit σ 0,5: Vbh 6.055,2 → 7.475,69 h/a, KWKG Jahr 1 7.316,03 → 6.137,94 € — die Werte vor E7c2/7); Referenzlauf gegen R12 13/13, 4 250 839 Werte, 399/399 byte-gleich; Gate #452 grün |
+
+*§ 3.6, der zweite Fall des § 2 Nr. 16, die Vollbenutzungsstunden (Z. 1925–1944):*
+
+> **Die Vollbenutzungsstunden in Fall 2 zählen aus dem KWK-Strom** (entschieden E7c1‑Q2, Lesart b, → Register
+> R‑E7c1; umgesetzt #446): Vbh(A) = KWK-Strom(A) ÷ P_el(A), auf dem Ersatzweg der KWK-Strom der Gesamtanlage ÷ Σ P_el;
+> Kontingentverbrauch und Jahresdeckel laufen über diese Stunden, je eine Hinweiszeile nennt sie
+> (`WIRT_KWKG_FALL2_VBH`, `WIRT_KWKG_FALL2_VBH_ERSATZ`), und der Nachweis führt sie in `VbhElektrisch`. Ohne
+> Kennzeichen (Fall 1) bleiben die Vollbenutzungsstunden brutto. Bindet der Jahresdeckel, entfällt die Kürzung bis
+> auf den Mischsatz: Bezahlt werden Deckel × P_el zum Satz der gekürzten Mengen, bei gleichen Sätzen ist das der
+> Zuschlag ohne Kürzung (Deckel × P_el × Satz); die Reihe bleibt bei zwölf Jahren (entschieden E7c2‑Q7, nach
+> Empfehlung, → Register R‑E7c2). Bindet der Deckel nicht, reicht das Kontingent länger, und die Reihe wird länger.
+> …
+> Die Vollbenutzungsstunden zählen dagegen schon ohne Kürzung aus dem KWK-Strom, also nach dem Hilfsstromabzug; bei
+> bindendem Deckel steigt damit der Jahresbetrag (Beispielprojekt, von Hand gerechnet: Jahr 1 32.022,2 € in Fall 1,
+> 33.800,2 € in Fall 2 ohne Kürzung — Rechenweg 05). …
+
+**Berichtigt mit E7c3 (#452):** Der Anwender hat am 23.09.2026 (17:10, mit Anlage) die Vollbenutzungsstunden
+definiert — „Vollbenutzungsstunden (siehe Anlage) — gehe nach dieser Definition": Vbh = W_a ÷ P_Nenn, die erzeugte
+Arbeit brutto durch die Nennleistung, in Fall 1 und Fall 2 gleich. E7c2/7 ist zurückgebaut (E7c3/5): Kontingent und
+Deckel zählen wieder die Bruttostunden, der KWK-Strom bestimmt allein die bezahlte Menge; E7c2‑Q7 hat sich erledigt,
+und die Folge „bei bindendem Deckel steigt der Jahresbetrag" (33.800,2 statt 32.022,2 €) gibt es nicht mehr. Im
+Konzept steht der Absatz „Die Vollbenutzungsstunden zählen in beiden Fällen brutto: Vbh = W_a ÷ P_Nenn".
+
+*§ 6.2, der Kapitalwert 1024 (Z. 2407–2413):*
+
+> **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
+> Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
+> heutigen Datenstand keinen Einheitpreis. Der Kapitalwert 1024 liegt mit −2.896.359,13 € um
+> **−676.036,81 €** unter dem Konzeptwert; die Abweichung ist eingegrenzt, aber nicht nachgerechnet
+> (Kandidaten: Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366, Schemaschritte 93–96) und gehört zu
+> **E7c3**. Bis dahin gilt der **gemessene** Wert als Anker; die Etappen E7c1 (#440) und E7c2 (#446) haben keinen
+> Anker bewegt.
+
+**Erledigt mit E7c3 (#452):** nachgerechnet — −676.495,37 € aus Schemaschritt 83 (#313; 11,746 ct/kWh
+Strompreisanteile des Stromträgers 60 in den Arbeitspreis gefaltet, 35,000 → 46,746 ct/kWh), +458,56 € aus der
+Übernahme Access → SQLite am 02.09.2026; die drei Kandidaten tragen 0,00 € bei, mit 35,000 ct/kWh rechnet der Kern
+bitgleich −2.219.863,76 €. Der Anker bleibt (E7c3‑Q1 offen, gebaut ist Lesart a). Im Konzept stehen der Befund im
+Absatz und in der Ankertafel, dazu die Zeile „mit dem Strompreis vor Schritt 83".
+
+*§ 6.3 Nr. 9h (Z. 2462–2467):*
+
+> 9h. **Nutzungsdauer, Ersatz, Restwert — zwei fehlende Stücke (Mockup-Anhang U39):** die ungelesenen
+>     geräteeigenen Nutzungsdauer-Spalten und der Anschluss der Speicherflotte — offen (vorgesehen mit
+>     E7c3; A7 und A8 binden beides an ND‑S3, E10). Erledigt sind die Nachpflege des Bestands und der
+>     Pflegeort der Positionsart (#357), der Hinweis „T über Vorgabe, Position ohne Dauer" und die
+>     Zeitraumzeile auf Seite und Bericht (E5, #434) sowie die Entkopplung von Ersatz und Restwert
+>     (E7c2, #446, Schemaschritt 111, § 2.13 (3)) — siehe Protokoll.
+
+**Gemessen mit E7c3 (#452), nicht gebaut:** Nr. 9h bleibt offen mit ND‑S3 (E10). Im Konzept stehen die Messung
+(`Tab_BHKW` 3 von 6, Stamm 44 von 79; `Tab_Heizkessel` 1 von 22, Stamm 0 von 63 — beide ohne Leser;
+`Tab_StromspeicherVariante` 13 von 13; die Nutzungsdauer-Tabelle mit BHKW-Modul 15 a und Batterie 10 a; die Flotte
+von 1046 mit Ersatzintervall 10 a und Restwert 500 bzw. 300 €) und der Vorschlag für ND‑S3.
+
+### 8.12 Berichtigungen im gültigen Stand (#452)
+
+Die Stellen, die mit E7c3 veraltet sind; „vorher" ist der Wortlaut vor #452 (Stand `9c7a0023`). Je Stelle eine
+Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `41764ab0` | Codestand `387c2d9f`; dazu „Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6)" |
+| § 2.2, Gruppe 2 | „(… umgesetzt #440 und #446)"; die Energiesteuer „je mit ihrer Wirkung"; „Satz und Betrag der Energiesteuer zeigt die Überlagerung für die gebuchte Wahl, die übrigen Wahlen als Text; eine Vorschau je Wahl aus dem Kern ist entschieden (E7c2‑Q8, Lesart b, → Register R‑E7c2) und folgt mit E7c3." | „umgesetzt #440, #446 und #452"; jede Wahl als eine Zeile mit ihrer Wirkung (U22); Satz und Betrag im ersten Jahr für jede Wahl aus der Vorschau des Laufs (§ 3.7), ohne Vorschau der Text der Vorschrift; die Klapplisten des Formulars bleiben (E7c3‑Q7, offen) |
+| § 3.6, Jahresreihe | „Vbh(A) = Bruttostrom(A) ÷ P_el(A) ;  Fall 2(A): KWK-Strom(A) ÷ P_el(A) (E7c1‑Q2 b, unten)" | „Vbh(A) = W_a ÷ P_Nenn = erzeugte Arbeit brutto(A) ÷ P_el,Nenn(A) in Fall 1 und Fall 2 (unten)" |
+| § 3.6, Prüfkette | — | Absatz „Die zwei Katalogzeilen der alten Frist sind abgekündigt" mit der Katalog-Generation 9 (E7c3‑Q2, E7c3‑Q3 offen) |
+| § 3.6, Hilfsstrom | „… bleiben **brutto** — ausgenommen die Vollbenutzungsstunden einer Anlage im zweiten Fall des § 2 Nr. 16: Sie zählen aus ihrem KWK-Strom (unten)." | „… bleiben **brutto** — auch bei einer Anlage im zweiten Fall des § 2 Nr. 16 (Vbh = W_a ÷ P_Nenn, unten)." |
+| § 3.6, der zweite Fall | „… sieben nullbare Felder, die Fassung des Nachweisumschlags bleibt 7 (entschieden E7c1‑Q6, nach Empfehlung)."; Wortlaut in § 8.11 | „… sieben nullbare Felder ohne eigene Fassung …; die Fassung des Nachweisumschlags ist 8, seit er die Energiesteuer-Vorschau trägt (§ 3.7)"; Absatz „Die Vollbenutzungsstunden zählen in beiden Fällen brutto: Vbh = W_a ÷ P_Nenn" |
+| § 3.6, Photovoltaik / EEG | „Der Satz der Speicherbewertung (`VpvCtKwh`) nimmt noch den gerundeten Mix; ungerundet folgt er mit E7c3 (E7c2‑Q5, Lesart b, → Register R‑E7c2)." | denselben ungerundeten Satz wie die Erlösreihe (umgesetzt #452), mit den Proben 100 kWp und 750 kWp |
+| § 3.7 | Formelblock und Absatz „Die Mischlage ist gesperrt" | dazu Absatz „Die Vorschau je Wahl" mit der Handprobe des Rechenwegs 05 |
+| § 3.9 | Tafel bis „Anlagenart fehlt" | Zeilen „Prüfung nicht ausführbar" und „Rechenstufe nicht ausführbar" (Warnung), Absatz „Der Grund statt der stillen Null" |
+| § 3.10 | Schritt 9 „… Jahresreihe mit Vbh (Fall 2: aus dem KWK-Strom)/Deckel/Restkontingent"; Schritte 10 und 12 ohne Vorschau und Warnzeile | Schritt 9 „… Vbh (brutto, W_a ÷ P_Nenn) …", Schritt 10 mit der Vorschau je Anlage und Wahl, Schritt 12 mit den Warnzeilen gescheiterter Stufen (B‑6) |
+| § 4, B-6 | „B-6 \| Fehler werden geschluckt (`catch {}` ⇒ still 0)." | „**B-6** … Für die fünf Prioritätsdateien erledigt mit E7c3 (#452) … Offen: 29 leere `catch` in 13 weiteren Dateien und fünf stille Lesestellen im Engine-Modus (E7c3‑Q5 …)" |
+| § 5 | „… sein Stamm trägt H_i = H_s = 0, eine Preisumrechnung gibt es deshalb nicht …"; Randfrage „offen bleibt H_i = H_s = 1,0 wie bei Strom und Fernwärme, E7c3"; R‑U5 ohne die abgekündigten Zeilen | H_i = H_s = 1,0 mit der Katalog-Generation 9 (#452); R‑U5 mit „die zwei Katalogzeilen der alten Frist tragen den Status ABGEKUENDIGT" |
+| § 6.1 | Kurztafel bis E7c2 (#446) | Zeile E7c3 (#452); in der Zeile E7c2 „(mit E7c3 zurückgebaut)" |
+| § 6.2 | „`WirtschaftlichkeitAnkerTests` (9 Fälle)"; Zeile Kapitalwert 1024 „gemessen (#380) — das Konzept führte **−2.220.322,32 €**"; Wortlaut in § 8.11 | 10 Fälle; die Zeile mit dem Befund, dazu die Zeile „mit dem Strompreis vor Schritt 83 −2.219.863,76 €"; der Absatz mit dem nachgerechneten Befund |
+| § 6.3 Nr. 9h | Wortlaut in § 8.11 | „offen mit ND‑S3"; die Messung und der Vorschlag für ND‑S3 |
+| § 7 und Anhang | „… und E7 Teil c2 (#446) … Als Nächstes kommt **E7c3** (…) … Danach **E8**. … B‑6 (es läuft in E7c3 mit)"; B8 „B‑6 läuft in **E7c3** des Etappenplans mit"; Kürzeltafel B8 „B-6 offen (in **E7c3**)", 9h bis „#446 (Entkopplung, Schritt 111)", „U22 und U32 erledigt #446, U39 teilweise"; Etappenzeile „E7c3 … E12 — nächste Etappe: E7c3" | bis E7 Teil c3 (#452), E7 abgeschlossen, als Nächstes E8 mit seinem Inhalt, danach der B‑6-Rest und Q6 nach Entscheid; B8 „B‑6 … erledigt mit E7c3 (#452) …, der Rest ist offen (E7c3‑Q5)"; Kürzeltafel „B-6 **#452** (fünf Dateien …)", 9h mit „#452 (gemessen)", neue Zeile = #452, „U22 erledigt #446 und #452 (Anzeigezeilen)"; in den Zeilen zu #446 „Vbh aus dem KWK-Strom (zurückgebaut #452)"; Etappenzeilen „E7 Teil c3 — Reste" = #452 und „E8 … E12 — nächste Etappe: E8" |
