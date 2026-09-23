@@ -24948,4 +24948,7 @@ Möchten Sie das zulassen?</value>
   <data name="PEAK_MSG_EINGELESEN" xml:space="preserve">
     <value>„{0}“ eingelesen – nicht abgelegt.</value>
   </data>
+  <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
+    <value>{0} Sätze eingelesen.</value>
+  </data>
 </root>

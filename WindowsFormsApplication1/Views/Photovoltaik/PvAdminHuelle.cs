@@ -26,7 +26,10 @@ namespace WindowsFormsApplication1
         /// <summary>Zeigt den Modulkatalog als eigenes Fenster (<c>Masken.PvAdmin</c>).</summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
-            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), Gaben());
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
+            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs.
+            return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), KatalogBrowserHuelle.MitWegen(
+                Gaben(), Wege(() => ModulImportHuelle.Gaben(ModulImportArt.Photovoltaik, "CEC"))));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>
@@ -46,12 +49,14 @@ namespace WindowsFormsApplication1
         /// <c>Detail</c> und <c>Speichern</c> über die <see cref="ModulFeldwertBruecke"/>;
         /// eine zweite Feldliste daneben liefe beim ersten Fachwechsel auseinander.
         /// </remarks>
-        internal static ModulKatalogWege Wege()
+        internal static ModulKatalogWege Wege(Func<IReadOnlyDictionary<string, object>> import = null)
         {
             ModulKatalogProfil profil = Profil();
 
             return new ModulKatalogWege
             {
+                // "Import..." (7.1 d) - nur, wenn das eigene Fenster ihn hereinreicht.
+                ModulImportGaben = import,
                 // W14a-E-10: sieben Spalten statt der einen Namensspalte - und der
                 // ERSTE Filter dieses Katalogs, der nach dem CEC-Import 20 749 Zeilen
                 // fuehrt (Konzept Befund 1.2/3).

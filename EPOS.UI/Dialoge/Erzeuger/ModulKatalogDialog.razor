@@ -171,9 +171,22 @@
                 @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        @* "IMPORT..." (Konzept 7.1 d, Zweitweg zu V14): der Herstellerimport - CEC,
+           PAN/OND bzw. der Stromspeicherimport - als Ueberlagerung. *@
+        @if (Wege.ModulImportGaben is not null || Wege.KatalogImportGaben is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf"
+                    @onclick="ImportOeffnen">@BtnImportText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
+
+    @* --- "Import..." als Ueberlagerung (7.1 d): Titel und Kreuz traegt der
+           Importdialog selbst - waehrend eines Laufs steht es nicht. *@
+    <EPOS.UI.Dialoge.Import.ImportUeberlagerung KatalogGaben="@_katalogImportGaben"
+                                                ModulGaben="@_modulImportGaben"
+                                                Geschlossen="ImportFertig" />
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
@@ -1158,10 +1171,55 @@
         return Geschlossen.InvokeAsync(new ModulErgebnis(true, _gewaehlt));
     }
 
+    // =====================================================================
+    // "Import..." (Konzept Administrationsdialoge 7.1 d, Zweitweg zu V14)
+    // =====================================================================
+
+    /// <summary>„Import…" — <c>ADM_BTN_IMPORT</c>.</summary>
+    [Parameter] public string BtnImportText { get; set; } = Resource.ADM_BTN_IMPORT;
+
+    private IReadOnlyDictionary<string, object>? _modulImportGaben;
+    private IReadOnlyDictionary<string, object>? _katalogImportGaben;
+    private HashSet<string> _vorImport = new(StringComparer.Ordinal);
+
+    /// <summary>Steht der Import als Überlagerung? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _modulImportGaben is not null || _katalogImportGaben is not null;
+
+    /// <summary>„Import…" öffnet den Herstellerimport; geänderte Felder halten an (Konzept 3.3).</summary>
+    private void ImportOeffnen()
+    {
+        if (Ungespeichert) { Warnen(MeldungUngespeichert); return; }
+        _vorImport = new HashSet<string>(_zeilen.Select(z => z.Bezeichner), StringComparer.Ordinal);
+        _modulImportGaben = Wege.ModulImportGaben?.Invoke();
+        _katalogImportGaben = _modulImportGaben is null ? Wege.KatalogImportGaben?.Invoke() : null;
+    }
+
+    /// <summary>
+    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, der erste neue Satz ist
+    /// gewählt, und die Statuszeile nennt die Zahl der neuen Sätze (V14).
+    /// </summary>
+    private void ImportFertig(bool geschrieben)
+    {
+        _modulImportGaben = null;
+        _katalogImportGaben = null;
+        if (!geschrieben) return;
+
+        ListeAufbauen();
+        List<Katalogfilterzeile> neu = _zeilen.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
+        if (neu.Count == 0) return;
+
+        _gewaehlt = neu[0].Bezeichner;
+        DetailLaden();
+        _meldung = "";
+        _status = neu.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_IMPORTIERT, neu.Count);
+    }
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
+        if (_namensfrage || _duplizierfrage || _loeschfrage || ImportOffen) return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
         if (_auswahl.BlattOffen)

@@ -24941,4 +24941,7 @@ Do you want to allow this?</value>
   <data name="PEAK_MSG_EINGELESEN" xml:space="preserve">
     <value>“{0}” read – not stored.</value>
   </data>
+  <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
+    <value>{0} records imported.</value>
+  </data>
 </root>

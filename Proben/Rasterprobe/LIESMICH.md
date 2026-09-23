@@ -526,3 +526,29 @@ Port 5317):
 | N18: Überlagerung „Lastgang aus Datei…" | 900 × 224 px, 1 Kreuz, quer 0 | 368 × 242 px, 1 Kreuz, quer 0 |
 | Zeilenmaß, Schloss, Fußleiste | 46 px; Schloss in N16/N17; Fußleiste frei | 46 px; Fußleiste zweizeilig, frei |
 | Rückgabe | **Katalogprobe 0 (52 Fälle), Rasterprobe 0 (13 Fälle)** | |
+
+### „Import…" als Zweitweg in den Gerätekatalogen (Konzept 7.1 d)
+
+Die Gerätekataloge A1 bis A3 tragen „Import…" in der Fußleiste (ohne BHKW, für das es keinen
+Herstellerimport gibt). Er öffnet den vorhandenen Import — `KatalogImportDialog` (Heizkessel,
+Solarkollektoren, Pufferspeicher, Stromspeicher, Wärmepumpe) bzw. `ModulImportDialog` (PV-Module,
+Wechselrichter) — über den Baustein `ImportUeberlagerung` als Überlagerung **ohne eigenen Kopf**: Titel
+und Kreuz trägt der Importdialog selbst, weil er sein Kreuz während eines Laufs wegnimmt und Esc dann
+als „Lauf abbrechen" deutet. Die Wirt-Seite reicht den Import in den Masken `browser`, `modul` und
+`waermepumpe` herein; damit tragen N01 und N03 bis N08 ihre volle Fußleiste. Die Fälle N19 … N22
+(Menge `IMPORT`, je 1 088 × 624 und 400 × 624) laufen wie N01/N05/N07/N08 durch Stufe 1 bis 3 und
+dazu durch `stufe5probe` mit dem Öffner `button.epos-importknopf`. Neu in `pruefe`: (w6) in der
+Überlagerung steht genau ein Importdialog, (w7) die Überlagerung hat keinen eigenen Kopf; der Titel
+wird bei ihr aus dem eingebetteten Dialog gelesen, geschlossen wird über dessen Kreuz.
+
+**Ergebnis vom 23.09.2026:**
+
+| | 1 088 × 624 (`a`) | 400 × 624 (`b`) |
+|---|---|---|
+| Fußleiste mit „Import…" | eine Zeile, alle Knöpfe frei („Import…" 88 × 44 px bei x 884) | zweizeilig, alle Knöpfe frei |
+| N19 Heizkessel: Überlagerung | 1 044,5 × 586,5 px, „Heizkessel Einlesen", 1 Kreuz, quer 0 | 384 × 586,5 px, 1 Kreuz, quer 0 |
+| N20 PV-Module: Überlagerung | 1 044,5 × 586,5 px, „Photovoltaik Module Import", 1 Kreuz, quer 0 | 384 × 586,5 px, 1 Kreuz, quer 0 |
+| N21 Stromspeicher: Überlagerung | 1 044,5 × 586,5 px, „Stromspeicher Einlesen", 1 Kreuz, quer 0 | 384 × 586,5 px, 1 Kreuz, quer 0 |
+| N22 Wärmepumpe: Überlagerung | 1 044,5 × 586,5 px, „Wärmepumpen Einlesen", 1 Kreuz, quer 0 | 384 × 586,5 px, 1 Kreuz, quer 0 |
+| Kreuz des Imports | schließt die Überlagerung | schließt die Überlagerung |
+| Rückgabe | **Katalogprobe 0 (60 Fälle), Rasterprobe 0 (13 Fälle)** | |

@@ -810,6 +810,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze eingelesen. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_IMPORTIERT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_IMPORTIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz konnte nicht dupliziert werden. ähnelt.
         /// </summary>
         public static string ADM_MSG_KOPIE_FEHLER {

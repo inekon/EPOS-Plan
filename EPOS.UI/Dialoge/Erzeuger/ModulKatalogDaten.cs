@@ -96,4 +96,18 @@ public sealed class ModulKatalogWege
     /// <c>…StammCtrl.Duplizieren</c>. Ohne ihn steht der Knopf nicht da.
     /// </summary>
     public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; init; }
+
+    /// <summary>
+    /// <b>„Import…"</b> der PV-Module und Wechselrichter (Konzept Administrationsdialoge
+    /// 7.1 d): der Parametersatz des <c>ModulImportDialog</c> (<c>ModulImportHuelle.Gaben</c>,
+    /// CEC, PAN/OND) — derselbe Import wie im Menü „Daten &amp; Import".
+    /// </summary>
+    public Func<IReadOnlyDictionary<string, object>>? ModulImportGaben { get; init; }
+
+    /// <summary>
+    /// <b>„Import…"</b> der Stromspeicher (7.1 d): der Parametersatz des
+    /// <c>KatalogImportDialog</c> (<c>KatalogImportHuelle.Gaben</c>). Ohne beide Wege
+    /// steht der Knopf nicht da.
+    /// </summary>
+    public Func<IReadOnlyDictionary<string, object>>? KatalogImportGaben { get; init; }
 }

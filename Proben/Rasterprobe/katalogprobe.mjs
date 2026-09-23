@@ -557,8 +557,11 @@ async function stufe5probe(seite, f) {
       ergebnisZeilen: document.querySelectorAll('.epos-stammblatt .epos-stammblattgruppe .epos-raster tbody tr').length,
       ueberlagerung: ueb ? {
         ...r(ueb),
-        titel: ((ueb.querySelector('.epos-ueberlagerung-titel') || {}).textContent || '').trim(),
+        titel: ((ueb.querySelector('.epos-ueberlagerung-titel') || ueb.querySelector('.epos-dialog-titel')
+                 || {}).textContent || '').trim(),
         kreuze: ueb.querySelectorAll('.epos-ueberlagerung-zu, .epos-dialog-zu').length,
+        kopf: ueb.querySelectorAll('.epos-ueberlagerung-kopf').length,
+        importdialog: ueb.querySelectorAll('.epos-katalogimport, .epos-pvimport').length,
         quer: ueb.scrollWidth - ueb.clientWidth,
         felder: ueb.querySelectorAll('input.epos-eingabe').length,
         einlesen: ueb.querySelectorAll('.epos-einlesen').length,
@@ -600,7 +603,7 @@ async function stufe5probe(seite, f) {
     await knopf.first().click();
     await schlaf(900);
     e.offen = await lies();
-    const kreuz = seite.locator('.epos-ueberlagerung .epos-ueberlagerung-zu');
+    const kreuz = seite.locator('.epos-ueberlagerung :is(.epos-ueberlagerung-zu, .epos-dialog-zu)');
     if (await kreuz.count()) {
       await kreuz.first().click();
       await schlaf(600);
@@ -941,6 +944,9 @@ function pruefe(e) {
         m.push(`in der Ueberlagerung stehen ${u.felder} Felder (soll ${e.fall.felder})`);
       if (e.fall.einlesen && u.einlesen !== 1) m.push('in der Ueberlagerung stehen die Felder des Einlesens nicht');
       if (e.fall.eingebettet && u.eingebettet !== 1) m.push('in der Ueberlagerung steht keine eingebettete Verwaltung');
+      if (e.fall.importiert && u.importdialog !== 1) m.push('in der Ueberlagerung steht kein Importdialog');
+      if (e.fall.importiert && u.kopf !== 0)
+        m.push('die Import-Ueberlagerung traegt einen eigenen Kopf (Titel und Kreuz gehoeren dem Importdialog)');
       if (!w.zu || w.zu.ueberlagerung) m.push('das Kreuz schliesst die Ueberlagerung nicht');
     }
   }
@@ -1162,6 +1168,26 @@ for (const [nr, name, maske, zeilen, extra] of STUFE5) {
     FAELLE.push({ name: `${nr}${buchstabe}_${name}_${breite}x624`, maske, art: '', zeilen, breite, hoehe: 624,
                   voll: true, stufe1: true, stufe2: true, zeile: 46, bezeichnerKurz: true,
                   stufe3: true, stufe5: true, mindestZeilen: breite >= 900 && zeilen >= 8 ? 8 : 0, ...extra });
+  }
+}
+
+// BLOCK 4 (Konzept 7.1 d): "Import..." als Zweitweg in den Geraetekatalogen. Den
+// Knopf traegt die Fussleiste schon in N01 und N03-N08 (volle Belegung, auch bei
+// 400 px); hier wird dazu die Ueberlagerung gemessen: der Importdialog mit SEINEM
+// Titel und Kreuz (die Ueberlagerung hat keinen Kopf), ganz im Fenster, ohne
+// Querrollen - und sein Kreuz schliesst sie.
+const IMPORT = [
+  ['N19', 'heizkessel_import',    'browser',     'heizkessel',    63],
+  ['N20', 'pv_import',            'modul',       'photovoltaik',  35],
+  ['N21', 'stromspeicher_import', 'modul',       'stromspeicher', 35],
+  ['N22', 'waermepumpe_import',   'waermepumpe', '',              51]
+];
+for (const [nr, name, maske, art, zeilen] of IMPORT) {
+  for (const [buchstabe, breite] of [['a', 1088], ['b', 400]]) {
+    FAELLE.push({ name: `${nr}${buchstabe}_${name}_${breite}x624`, maske, art, zeilen, breite, hoehe: 624,
+                  voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
+                  stufe3: true, stufe5: true, mindestZeilen: breite >= 900 ? 8 : 0,
+                  oeffner: 'button.epos-importknopf', importiert: true });
   }
 }
 
