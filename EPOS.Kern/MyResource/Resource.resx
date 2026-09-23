@@ -25887,4 +25887,70 @@ Möchten Sie das zulassen?</value>
   <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
     <value>Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt.</value>
   </data>
+  <data name="KI_DLG_SIM_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>An = der Lauf rechnet die Kühlung der Gebäude mit, aus = ohne Kühlung. Projekteinstellung; der Schalter schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_NAME" xml:space="preserve">
+    <value>Anlage (Wärmequelle)</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_ERL" xml:space="preserve">
+    <value>Die Wärmepumpe oder der Heizkessel, auf den sich Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus beziehen. Setzen wählt die Karte in der Konfiguration.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_NAME" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_ERL" xml:space="preserve">
+    <value>Die Wärmequelle der gewählten Anlage. Systemrücklauf, Außenluft und Konstant schreiben sofort; Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog, der erst mit OK übernimmt; eine CSV-Datei wählt der Anwender selbst.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_NAME" xml:space="preserve">
+    <value>Konstante Quelltemperatur</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_ERL" xml:space="preserve">
+    <value>Die Temperatur der Quelle „Konstant“ der gewählten Anlage; setzbar, wenn diese Quelle gewählt ist. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_NAME" xml:space="preserve">
+    <value>WP-Priorität</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_ERL" xml:space="preserve">
+    <value>Die Einsatzreihenfolge der gewählten Wärmepumpe, eine ganze Zahl ab 1; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_NAME" xml:space="preserve">
+    <value>Betriebsmodus</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_ERL" xml:space="preserve">
+    <value>Die Leistungssteuerung der gewählten Wärmepumpe: laufzeit-, leistungs- oder PV-optimiert; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_UNBEKANNT" xml:space="preserve">
+    <value>Die Anlage {0} steht nicht unter den Wärmepumpen und Heizkesseln der Konfiguration.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>Es ist keine Wärmepumpe und kein Heizkessel gewählt — zuerst das Feld „quellanlage“ setzen.</value>
+  </data>
+  <data name="KI_SIM_NUR_WP" xml:space="preserve">
+    <value>Dieser Wert gilt nur für Wärmepumpen; „{0}“ ist keine.</value>
+  </data>
+  <data name="KI_SIM_UEBERLAGERUNG_OFFEN" xml:space="preserve">
+    <value>Auf der Konfiguration steht ein Dialog offen; der Wert wird dort gewählt oder nach dem Schließen gesetzt.</value>
+  </data>
+  <data name="KI_SIM_WERT_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“ steht nicht in der Auswahl der gewählten Anlage.</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DATEI" xml:space="preserve">
+    <value>Die Quelle „{0}“ liest ein Profil aus einer Datei; die Datei wählt der Anwender an der Karte (Chip „Quelle“).</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DIALOG" xml:space="preserve">
+    <value>Die Quelle „{0}“ braucht ihre Angaben im Dialog „{1}“; er steht jetzt offen — die Werte dort setzen, übernommen wird erst mit OK.</value>
+  </data>
+  <data name="KI_SIM_QUELLTEMP_NUR_KONSTANT" xml:space="preserve">
+    <value>Die Quelltemperatur gilt nur für die Quelle „{0}“; zuerst die Wärmequelle umstellen.</value>
+  </data>
+  <data name="KI_SIM_PRIORITAET_POSITIV" xml:space="preserve">
+    <value>Die WP-Priorität ist eine ganze Zahl ab 1.</value>
+  </data>
+  <data name="KI_SIM_KEIN_SCHREIBWEG" xml:space="preserve">
+    <value>Diesen Wert schreibt die Plattform hier nicht.</value>
+  </data>
+  <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
+    <value>Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen.</value>
+  </data>
 </root>

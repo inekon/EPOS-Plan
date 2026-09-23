@@ -5756,7 +5756,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
-        /// „Simulation" — achtunddreissig Felder aus
+        /// „Simulation" — sechsundvierzig Felder aus
         /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -5802,9 +5802,18 @@ namespace WindowsFormsApplication1
         /// <c>dialog_speichern</c> druecken koennte, fehlt hier weiterhin.
         /// </para>
         /// <para>
-        /// <b>Die PREISREIHE bleibt draussen</b> — ein Verweis in eine
-        /// kontextabhaengige Liste (rohe Id, deren Inhalt mit der Preisquelle
-        /// wechselt); dieselbe Regel wie bei der Brennstoffvariante.
+        /// <b>Die PREISREIHE ist eine Wahl</b> (KI‑F1b): Ihre Einträge hängen an der
+        /// Preisquelle und kommen bei jedem Zugriff frisch aus dem Stand
+        /// (<c>SpeicherPreisreiheWahl</c>); eine Id, die die Liste gerade nicht führt,
+        /// weist die Sichtklasse ab.
+        /// </para>
+        /// <para>
+        /// <b>Welle #458: der Kühlschalter und die Werte JE ANLAGE</b> — die
+        /// Projekteinstellung „Kühlung rechnen" und, für die gewählte Karte
+        /// (<c>quellanlage</c>), Wärmequelle, konstante Quelltemperatur, WP-Priorität und
+        /// Betriebsmodus. Sie gehen dieselben Wege wie die Überlagerungen der Karte; eine
+        /// offene Überlagerung hält die Setzung benannt an, weil sie ihren Stand von
+        /// vorhin mit OK zurückschriebe.
         /// </para>
         /// </remarks>
         private static KiDialog Simulation()
@@ -5851,6 +5860,43 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+
+                    // ---- Der Kuehlschalter von Schritt ① (Welle #458) ---------------
+                    //
+                    // Die Projekteinstellung „Kuehlung rechnen" steht neben den
+                    // Netzverlusten und schreibt wie sie SOFORT - ueber denselben
+                    // Delegaten wie der Schalter (KuehlbetriebSchreiben).
+                    new KiDialogFeld("kuehlbetrieb", "SimulationKiSicht.Kuehlbetrieb",
+                                     KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimKuehlbetriebErl),
+
+                    // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
+                    //
+                    // Quelle, konstante Quelltemperatur, WP-Prioritaet und Betriebsmodus
+                    // setzt der Anwender ueber die Ueberlagerungen der Karte
+                    // (Quellenwahl, WertAbfrage, BetriebsmodusDialog). Hier stehen sie
+                    // als Felder der Ansicht - fuer die GEWAEHLTE Karte (quellanlage,
+                    // eine Satzwahl) und mit denselben Schreibwegen und Vorpruefungen
+                    // wie die Ueberlagerungen (SimulationKonfigSeite.Ki*Setzen). Die
+                    // Ueberlagerung „Betriebsmodus" steht deshalb mit dem Grund
+                    // FeldDesWirts auf der Ausnahmeliste und bekommt keine eigene Maske.
+                    new KiDialogFeld("quellanlage", "SimulationKiSicht.Quellanlage",
+                                     KiDialogTexte.SimAnlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAnlageErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("waermequelle", "SimulationKiSicht.Waermequelle",
+                                     KiDialogTexte.SimQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("quelltemperatur_konstant",
+                                     "SimulationKiSicht.QuelltemperaturKonstant",
+                                     KiDialogTexte.SimQuelltempName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimQuelltempErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C),
+                    new KiDialogFeld("wp_prioritaet", "SimulationKiSicht.WpPrioritaet",
+                                     KiDialogTexte.SimPrioritaetName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimPrioritaetErl),
+                    new KiDialogFeld("wp_betriebsmodus", "SimulationKiSicht.WpBetriebsmodus",
+                                     KiDialogTexte.SimBetriebsmodusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimBetriebsmodusErl, leerErlaubt: true),
 
                     // ---- Schritt ③ : die Kennzahlen des Laufs (nur lesend) ----------
                     new KiDialogFeld("waermebedarf", "SimulationKiSicht.WaermebedarfMwh",
