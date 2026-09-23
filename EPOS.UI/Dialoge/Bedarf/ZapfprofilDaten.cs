@@ -204,13 +204,32 @@ public sealed class ZapfprofilEingabeDaten
     /// </summary>
     public bool PunktUeberholt { get; set; }
 
+    /// <summary>
+    /// Der Rechenweg der Jahresreihe (Stufe Experte, 5.3; <c>Tab_TwwProjekt.Jahresreihe_Stochastisch</c>):
+    /// <c>true</c> = in die Bilanz geht das gezogene Jahr zum Seed, auf die Jahresmenge gebracht
+    /// (4.4). Eine Größe des Projekts, nicht einer Zone; die Vorschau rechnet denselben Weg.
+    /// </summary>
+    public bool JahresreiheStochastisch { get; set; }
+
+    /// <summary>Der Seed des Zufalls (ganze Zahl ≥ 0, <c>Tab_TwwProjekt.Seed</c>); <c>null</c> = der Stand bleibt, wie er ist.</summary>
+    public int? Seed { get; set; }
+
+    /// <summary>
+    /// Die Realisierungen der Jahresreihe — die R Jahre der Konsistenzprobe
+    /// (<c>Tab_TwwProjekt.Realisierungen</c>); <c>null</c> = der Stand bleibt, wie er ist.
+    /// </summary>
+    public int? Realisierungen { get; set; }
+
     /// <summary>Eine unabhängige Kopie samt Zonen und Auslegung.</summary>
     public ZapfprofilEingabeDaten Kopie() => new()
     {
         Weg = Weg,
         Zonen = Zonen.Select(z => z.Kopie()).ToList(),
         Auslegung = Auslegung?.Kopie(),
-        PunktUeberholt = PunktUeberholt
+        PunktUeberholt = PunktUeberholt,
+        JahresreiheStochastisch = JahresreiheStochastisch,
+        Seed = Seed,
+        Realisierungen = Realisierungen
     };
 }
 
@@ -331,6 +350,52 @@ public sealed class ZapfprofilAnsichtDaten
 
     /// <summary>Die Bildunterschrift des Jahresgangs.</summary>
     public string UnterschriftJahresgang { get; set; } = "";
+
+    /// <summary>
+    /// Die Konsistenzproben der stochastischen Jahresreihe (4.4) — in der Summe je gerechneter
+    /// Zone eine, in der Ansicht einer Zone ihre eigene; leer auf dem deterministischen Weg und bei
+    /// einer abgelehnten Zone.
+    /// </summary>
+    public List<ZapfprofilKonsistenzDaten> Konsistenzen { get; set; } = new();
+}
+
+/// <summary>
+/// Die KONSISTENZPROBE der stochastischen Jahresreihe einer Zone (4.4), wie der Kern sie
+/// ausweist: Jahresenergie deterministisch und im Mittel der R gezogenen Jahre, deren Streuung
+/// s_R, die Toleranz <c>max(1 %, 3 · s_R / √R)</c>, erfüllt ja/nein und der Faktor, der das Jahr
+/// zum Seed auf die Jahresmenge bringt. Zahlen in ihrer Quelleneinheit; der Dialog formatiert.
+/// </summary>
+public sealed class ZapfprofilKonsistenzDaten
+{
+    /// <summary>Die Zone.</summary>
+    public string Zone { get; set; } = "";
+
+    /// <summary>Die Position der Zone in der Eingabe (0-basiert).</summary>
+    public int Position { get; set; }
+
+    /// <summary>Die Jahresenergie des deterministischen Pfads [kWh/a].</summary>
+    public double DeterministischKwh { get; set; }
+
+    /// <summary>Das Mittel der Jahresenergie über die R gezogenen Jahre [kWh/a].</summary>
+    public double MittelKwh { get; set; }
+
+    /// <summary>Die Standardabweichung s_R der Jahresenergie über die R Jahre [kWh/a].</summary>
+    public double StandardabweichungKwh { get; set; }
+
+    /// <summary>Die Zahl der gezogenen Jahre R.</summary>
+    public int Realisierungen { get; set; }
+
+    /// <summary>Die Toleranz der Probe [kWh/a].</summary>
+    public double ToleranzKwh { get; set; }
+
+    /// <summary>Liegt das Mittel innerhalb der Toleranz?</summary>
+    public bool Erfuellt { get; set; }
+
+    /// <summary>Der Faktor der Energieprobe, der das Jahr zum Seed auf die Jahresmenge bringt [-].</summary>
+    public double Faktor { get; set; }
+
+    /// <summary>Die relative Abweichung des Mittels vom deterministischen Pfad [-]; <c>null</c> ohne Jahresmenge.</summary>
+    public double? Abweichung => DeterministischKwh != 0 ? MittelKwh / DeterministischKwh - 1.0 : null;
 }
 
 /// <summary>Der Jahreswert einer Zone für die Spalte „MWh/a" der Zonenliste.</summary>
@@ -375,6 +440,15 @@ public sealed class ZapfprofilVorschauDaten
 
     /// <summary>Der Statustext der Fußleiste.</summary>
     public string Status { get; set; } = "";
+
+    /// <summary>Ist die Jahresreihe stochastisch gerechnet (Rechenweg „stochastisch", 4.4)?</summary>
+    public bool Stochastisch { get; set; }
+
+    /// <summary>Der Seed des Laufs — nur bei <see cref="Stochastisch"/>.</summary>
+    public int Seed { get; set; }
+
+    /// <summary>Die Zahl der gezogenen Jahre — nur bei <see cref="Stochastisch"/>.</summary>
+    public int Realisierungen { get; set; }
 
     /// <summary>Die Ansicht der Summe; <c>null</c> ohne Rechnung.</summary>
     public ZapfprofilAnsichtDaten? Summe => Ansichten.Count > 0 ? Ansichten[0] : null;
@@ -422,6 +496,18 @@ public sealed class ZapfprofilDaten
 
     /// <summary>Der benannte Grund, warum der Generator nicht verfügbar ist; leer, wenn er es ist.</summary>
     public string Sperrgrund { get; set; } = "";
+
+    /// <summary>Die Vorgabe des Seeds (DDL von <c>Tab_TwwProjekt.Seed</c>); <c>null</c> = unbekannt.</summary>
+    public int? SeedVorgabe { get; set; }
+
+    /// <summary>Die Vorgabe der Realisierungen der Jahresreihe (DDL); <c>null</c> = unbekannt.</summary>
+    public int? RealisierungenVorgabe { get; set; }
+
+    /// <summary>Die Untergrenze der Realisierungen (Schema); <c>null</c> = keine bekannt.</summary>
+    public int? RealisierungenMindestens { get; set; }
+
+    /// <summary>Die Obergrenze der Realisierungen der Jahresreihe (Kern); <c>null</c> = keine bekannt.</summary>
+    public int? RealisierungenHoechstens { get; set; }
 
     /// <summary>Wie viele Größen der höheren Stufen der Arbeitsstand überschreibt (Summe der Zonen).</summary>
     public int Ueberschrieben => Eingabe.Zonen.Sum(z => z.Ueberschrieben);
@@ -667,9 +753,27 @@ public sealed class ZapfprofilAuslegungEingabeDaten
     /// <summary>Die Leistung des übernommenen Punkts [kW]; <c>null</c> = keiner.</summary>
     public double? PunktLeistungKw { get; set; }
 
+    /// <summary>
+    /// „Stochastisch rechnen" (4.5 b): zieht je Topologiegruppe das Ensemble des Bedarfstags für
+    /// Perzentil, Streuband und Gleichzeitigkeit — eine Laufangabe, nicht gespeichert.
+    /// </summary>
+    public bool Stochastisch { get; set; }
+
+    /// <summary>Das Auslegungsperzentil (95 oder 99, K3; <c>Tab_TwwProjekt.Perzentil</c>); <c>null</c> = Vorgabe.</summary>
+    public int? Perzentil { get; set; }
+
+    /// <summary>
+    /// Die Realisierungen des Bedarfstags (<c>Tab_TwwProjekt.Realisierungen_Auslegung</c>);
+    /// <c>null</c> = Vorgabe ⌈Vielfaches · 1/(1 − p)⌉ aus dem Parametersatz (4.4).
+    /// </summary>
+    public int? RealisierungenAuslegung { get; set; }
+
     /// <summary>Eine unabhängige Kopie samt Entwurf.</summary>
     public ZapfprofilAuslegungEingabeDaten Kopie() => new()
     {
+        Stochastisch = Stochastisch,
+        Perzentil = Perzentil,
+        RealisierungenAuslegung = RealisierungenAuslegung,
         Quelle = Quelle,
         IdBedarfstag = IdBedarfstag,
         Entwurf = Entwurf?.Kopie(),
@@ -816,6 +920,13 @@ public sealed class ZapfprofilAuslegungsgruppeDaten
     public ZapfprofilKarteDaten Perzentil { get; set; } = new();
     public ZapfprofilKarteDaten Normvergleich { get; set; } = new();
 
+    /// <summary>
+    /// Das Perzentil aus dem Ensemble des Bedarfstags (4.5 b) samt Streuband, Gleichzeitigkeit
+    /// und Konsistenzhinweis; <c>null</c>, solange nicht „stochastisch" gerechnet ist oder das
+    /// Ensemble nicht rechenbar war (dann nennt <see cref="Perzentil"/> den Grund).
+    /// </summary>
+    public ZapfprofilPerzentilDaten? PerzentilErgebnis { get; set; }
+
     public ZapfprofilEmpfehlungDaten Empfehlung { get; set; } = new();
 
     /// <summary>Summenlinie: Ladezeit [h/d], Zeitkonstante [min], Zahl der Wertepaare, Vermerk.</summary>
@@ -838,10 +949,85 @@ public sealed class ZapfprofilAuslegungsgruppeDaten
     public List<ZapfprofilWarnDaten> Warnliste { get; set; } = new();
 }
 
+/// <summary>Ein Perzentil des Streubands: die Stufe (50, 90, 95, 99) und ihr Wert (+∞ = ohne Nachweis).</summary>
+public sealed record ZapfprofilPerzentilZeileDaten(int Perzentil, double Wert);
+
+/// <summary>
+/// <b>Das Perzentil einer Topologiegruppe</b> (4.4, 4.5 b), wie der Kern es ausweist: p, Seed,
+/// die Zahl der gezogenen Tage und ob sie für ein empirisches p-Perzentil genügt (R ≥ 1/(1 − p)),
+/// der maßgebende Jahrestag, das Streuband der Auslegungsgröße (Speicher: erforderliches Volumen
+/// beim Φ_N des Summenlinienpunkts in Litern; sonst Minutenspitze in kW), die Gleichzeitigkeit
+/// als ERGEBNIS (GLF_V bzw. GLF_P) mit der Zahl der Einheiten, nachrichtlich Minuten- und
+/// Stundenspitze, der Vergleich μ + z·σ/√N und der Konsistenzhinweis.
+/// </summary>
+public sealed class ZapfprofilPerzentilDaten
+{
+    /// <summary>Das Auslegungsperzentil p (95 oder 99).</summary>
+    public int Perzentil { get; set; }
+
+    public long Seed { get; set; }
+
+    /// <summary>Die Zahl der gezogenen Tage R.</summary>
+    public int Realisierungen { get; set; }
+
+    /// <summary>Die Mindestzahl ⌈1/(1 − p)⌉ für ein empirisches p-Perzentil.</summary>
+    public int Mindestzahl { get; set; }
+
+    /// <summary>Genügt R für ein empirisches p-Perzentil? Sonst trägt der Wert den Vermerk „nicht belastbar".</summary>
+    public bool Belastbar { get; set; }
+
+    /// <summary>Der maßgebende Jahrestag (1 … 365).</summary>
+    public int Tag { get; set; }
+
+    /// <summary>Speicher: Die Werte sind erforderliche Volumina [l] beim Φ_N; sonst Minutenspitzen [kW].</summary>
+    public bool Volumen { get; set; }
+
+    /// <summary>Φ_N des Summenlinienpunkts, bei dem die Volumina gelten [kW] (nur Speicher).</summary>
+    public double? LeistungKw { get; set; }
+
+    /// <summary>Das Streuband: P50, P90, P95 und P99 der Auslegungsgröße.</summary>
+    public List<ZapfprofilPerzentilZeileDaten> Streuband { get; set; } = new();
+
+    /// <summary>Kleinster und größter Wert über die Realisierungen (+∞ = ohne Nachweis).</summary>
+    public double Minimum { get; set; }
+    public double Maximum { get; set; }
+
+    /// <summary>Realisierungen ohne Nachweis beim Φ_N (Volumen ∞, nur Speicher).</summary>
+    public int OhneNachweis { get; set; }
+
+    /// <summary>Minutenspitze und größte Stundenleistung der Gruppe beim Perzentil p [kW] — nachrichtlich.</summary>
+    public double MinutenspitzeKw { get; set; }
+    public double StundenspitzeKw { get; set; }
+
+    /// <summary>Die Gleichzeitigkeit als Ergebnis: GLF_V bei Speicher, sonst GLF_P; <c>null</c> ohne Last.</summary>
+    public double? Gleichzeitigkeit { get; set; }
+
+    /// <summary>Die Einheiten Σ n_E der Gruppe — der Bezug der Gleichzeitigkeit.</summary>
+    public int Einheiten { get; set; }
+
+    /// <summary>Der Vergleich μ + z·σ/√N [kW]; <c>null</c> ohne Quantil im Parametersatz.</summary>
+    public double? WurzelNKw { get; set; }
+
+    /// <summary>Ist der Konsistenzhinweis geprüft (nur Speicher, mit Schwelle im Parametersatz)?</summary>
+    public bool KonsistenzGeprueft { get; set; }
+
+    /// <summary>Liegt die stochastische Spitze über der Schwelle zur Leistung des Summenlinienpunkts?</summary>
+    public bool KonsistenzAuffaellig { get; set; }
+
+    /// <summary>Der Satz des Kerns zum auffälligen Konsistenzhinweis; leer sonst.</summary>
+    public string KonsistenzText { get; set; } = "";
+
+    /// <summary>Der Wert des gewählten Perzentils; +∞ = ohne Nachweis, NaN ohne Streuband.</summary>
+    public double Wert => Streuband.FirstOrDefault(z => z.Perzentil == Perzentil)?.Wert ?? double.NaN;
+}
+
 /// <summary>Das Ergebnis des Rechen-Delegaten der Überlagerung.</summary>
 public sealed class ZapfprofilAuslegungDaten
 {
     public ZapfprofilAuslegungZustand Zustand { get; set; }
+
+    /// <summary>Ist mit „Stochastisch rechnen" gerechnet (das Perzentil gezogen)?</summary>
+    public bool Stochastisch { get; set; }
 
     /// <summary>Warum nicht gerechnet wurde; leer bei <see cref="ZapfprofilAuslegungZustand.Gerechnet"/>.</summary>
     public string Grund { get; set; } = "";
@@ -898,5 +1084,26 @@ public sealed class ZapfprofilAuslegungStartDaten
 
     /// <summary>Das Ergebnis zu <see cref="Eingabe"/>; <c>null</c>, wenn nicht gerechnet wurde.</summary>
     public ZapfprofilAuslegungDaten? Ergebnis { get; set; }
+
+    /// <summary>Die Wertemenge des Auslegungsperzentils (Schema, K3); leer = keine Wahl.</summary>
+    public List<int> Perzentile { get; set; } = new();
+
+    /// <summary>Die Vorgabe des Perzentils (DDL); <c>null</c> = unbekannt.</summary>
+    public int? PerzentilVorgabe { get; set; }
+
+    /// <summary>Die Untergrenze der Realisierungen des Bedarfstags (Schema); <c>null</c> = keine bekannt.</summary>
+    public int? RealisierungenMindestens { get; set; }
+
+    /// <summary>Die Obergrenze der Realisierungen des Bedarfstags (Kern); <c>null</c> = keine bekannt.</summary>
+    public int? RealisierungenHoechstens { get; set; }
+
+    /// <summary>Je Perzentil die Vorgabe der Realisierungen ⌈Vielfaches · 1/(1 − p)⌉ (Kern, Parametersatz).</summary>
+    public Dictionary<int, int> RealisierungenVorgabe { get; set; } = new();
+
+    /// <summary>Warum die Vorgabe der Realisierungen nicht bestimmbar ist; leer, wenn sie es ist.</summary>
+    public string RealisierungenVorgabeGrund { get; set; } = "";
+
+    /// <summary>Je Perzentil die Mindestzahl ⌈1/(1 − p)⌉ — darunter ist das Perzentil „nicht belastbar".</summary>
+    public Dictionary<int, int> Mindestzahl { get; set; } = new();
 }
 

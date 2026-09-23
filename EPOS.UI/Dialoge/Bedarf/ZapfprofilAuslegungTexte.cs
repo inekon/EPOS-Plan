@@ -131,6 +131,35 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HERL_LAUFANGABE</c></summary>
     public string HerleitungLaufangabe { get; set; } = "Laufangabe — wird nicht gespeichert; {0}";
 
+    // ------------------------------------------------------------ Stochastik (Z3)
+
+    /// <summary><c>ZPG_AUS_LBL_STOCHASTISCH</c></summary>
+    public string LabelStochastisch { get; set; } = "Stochastisch rechnen";
+
+    /// <summary><c>ZPG_AUS_HERL_STOCHASTISCH</c></summary>
+    public string HerleitungStochastisch { get; set; } = "Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit — eine Laufangabe, sie wird nicht gespeichert.";
+
+    /// <summary><c>ZPG_AUS_LBL_PERZENTIL</c></summary>
+    public string LabelPerzentil { get; set; } = "Auslegungsperzentil";
+
+    /// <summary><c>ZPG_AUS_HERL_PERZENTIL</c></summary>
+    public string HerleitungPerzentil { get; set; } = "P95 oder P99 (K3) · Vorgabe P{0}";
+
+    /// <summary><c>ZPG_AUS_LBL_REALISIERUNGEN</c></summary>
+    public string LabelRealisierungen { get; set; } = "Realisierungen des Bedarfstags";
+
+    /// <summary><c>ZPG_AUS_EINHEIT_TAGE</c></summary>
+    public string EinheitTage { get; set; } = "Tage";
+
+    /// <summary><c>ZPG_AUS_HERL_REALISIERUNGEN</c></summary>
+    public string HerleitungRealisierungen { get; set; } = "Ganze Zahl von {0} bis {1} · leer = Vorgabe {2} (Vielfaches der Mindestzahl); unter {3} ist P{4} nicht belastbar.";
+
+    /// <summary><c>ZPG_AUS_HERL_REALISIERUNGEN_OHNE</c></summary>
+    public string HerleitungRealisierungenOhne { get; set; } = "Ganze Zahl von {0} bis {1} · leer = Vorgabe, hier nicht bestimmbar: {2}";
+
+    /// <summary><c>ZPG_AUS_MSG_FEHLEINGABE</c></summary>
+    public string MeldungFehleingabe { get; set; } = "Bitte die markierten Felder berichtigen: {0}.";
+
     // ------------------------------------------------------------ Gruppen und Karten
 
     /// <summary><c>ZPG_AUS_GRP_TOPOLOGIE</c></summary>
@@ -158,7 +187,58 @@ public sealed class ZapfprofilAuslegungTexte
     public string KartePerzentilUnter { get; set; } = "Stochastisch superponierte Minutenlast";
 
     /// <summary><c>ZPG_AUS_PERZENTIL_OFFEN</c></summary>
-    public string PerzentilOffen { get; set; } = "noch nicht gerechnet — die Stochastik kommt mit einer späteren Fassung; die Empfehlung stützt sich auf (a) und (c).";
+    public string PerzentilOffen { get; set; } = "noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung stützt sich auf (a) und (c).";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_LAUF</c></summary>
+    public string PerzentilLauf { get; set; } = "nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2}";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_VOLUMEN</c></summary>
+    public string PerzentilVolumen { get; set; } = "Volumen P{0}";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_VOLUMEN_WERT</c></summary>
+    public string PerzentilVolumenWert { get; set; } = "{0} l bei {1} kW";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_MINUTENSPITZE</c></summary>
+    public string PerzentilMinutenspitze { get; set; } = "Minutenspitze P{0}";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_NACHRICHTLICH</c></summary>
+    public string PerzentilNachrichtlich { get; set; } = "nachrichtlich: Minutenspitze P{0} {1} kW · größte Stundenleistung P{0} {2} kW";
+
+    /// <summary><c>ZPG_AUS_NICHT_BELASTBAR</c></summary>
+    public string NichtBelastbar { get; set; } = "nicht belastbar";
+
+    /// <summary><c>ZPG_AUS_GRUND_NICHT_BELASTBAR</c></summary>
+    public string GrundNichtBelastbar { get; set; } = "{0} Realisierungen; ein empirisches P{1} braucht mindestens {2} = 1/(1 − p).";
+
+    /// <summary><c>ZPG_AUS_STREUBAND</c></summary>
+    public string Streuband { get; set; } = "Streuband über {0} Realisierungen";
+
+    /// <summary><c>ZPG_AUS_SP_PERZENTIL</c></summary>
+    public string SpaltePerzentil { get; set; } = "Perzentil";
+
+    /// <summary><c>ZPG_AUS_SP_WERT</c></summary>
+    public string SpalteWert { get; set; } = "Wert";
+
+    /// <summary><c>ZPG_AUS_SPANNWEITE</c></summary>
+    public string Spannweite { get; set; } = "Spannweite (min – max)";
+
+    /// <summary><c>ZPG_AUS_OHNE_NACHWEIS</c></summary>
+    public string OhneNachweis { get; set; } = "{0} von {1} Realisierungen ohne Nachweis beim Φ_N (Volumen ∞)";
+
+    /// <summary><c>ZPG_AUS_GLF_V</c></summary>
+    public string GlfV { get; set; } = "Gleichzeitigkeit GLF_V";
+
+    /// <summary><c>ZPG_AUS_GLF_V_BEZUG</c></summary>
+    public string GlfVBezug { get; set; } = "Ergebnis, kein Eingabefaktor: P{0} des Volumens der Gruppe ÷ Σ P{0} der Volumina je Einheit (Σ n_E = {1})";
+
+    /// <summary><c>ZPG_AUS_GLF_P</c></summary>
+    public string GlfP { get; set; } = "Gleichzeitigkeit GLF_P";
+
+    /// <summary><c>ZPG_AUS_GLF_P_BEZUG</c></summary>
+    public string GlfPBezug { get; set; } = "Ergebnis, kein Eingabefaktor: P{0} der Minutenspitze der Gruppe ÷ Σ P{0} der Minutenspitze je Einheit (Σ n_E = {1})";
+
+    /// <summary><c>ZPG_AUS_WURZEL_N</c></summary>
+    public string WurzelN { get; set; } = "Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)";
 
     /// <summary><c>ZPG_AUS_KARTE_NORM</c></summary>
     public string KarteNorm { get; set; } = "(c) Normvergleich";
@@ -329,7 +409,16 @@ public sealed class ZapfprofilAuslegungTexte
     public string Konsistenz { get; set; } = "Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft";
 
     /// <summary><c>ZPG_AUS_GRUND_KONSISTENZ</c></summary>
-    public string GrundKonsistenz { get; set; } = "Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.";
+    public string GrundKonsistenz { get; set; } = "Der Konsistenzhinweis braucht das Perzentil — „Stochastisch rechnen“ einschalten.";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ_OK</c></summary>
+    public string KonsistenzOk { get; set; } = "Konsistenzhinweis geprüft: Die stochastische Spitze liegt nicht über der Schwelle zur Leistung des Summenlinienpunkts.";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ_AUFFAELLIG</c></summary>
+    public string KonsistenzAuffaellig { get; set; } = "Konsistenzhinweis: {0}";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE</c></summary>
+    public string KonsistenzOhneSchwelle { get; set; } = "Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.";
 
     /// <summary><c>ZPG_AUS_STUFE_HINWEIS</c></summary>
     public string StufeHinweis { get; set; } = "Hinweis";

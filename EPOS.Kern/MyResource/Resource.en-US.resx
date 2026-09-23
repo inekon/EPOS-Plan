@@ -24750,7 +24750,7 @@ Do you want to allow this?</value>
     <value>Stochastically superposed minute load</value>
   </data>
   <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
-    <value>not yet calculated — stochastics come with a later version; the recommendation relies on (a) and (c).</value>
+    <value>not yet calculated — “Calculate stochastically” in the inputs draws the ensemble; the recommendation relies on (a) and (c).</value>
   </data>
   <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
     <value>(c) Standard comparison</value>
@@ -24915,7 +24915,7 @@ Do you want to allow this?</value>
     <value>Consistency note (stochastic peak against the output of the cumulative-curve point): not yet checked</value>
   </data>
   <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
-    <value>The consistency note needs the percentile — both come with a later version.</value>
+    <value>The consistency note needs the percentile — switch on “Calculate stochastically”.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Note</value>
@@ -25128,7 +25128,7 @@ Do you want to allow this?</value>
     <value>The plant inventory names no generator.</value>
   </data>
   <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
-    <value>Design calculated · deterministic · percentile not yet calculated</value>
+    <value>Design calculated · deterministic · percentile only with “Calculate stochastically”</value>
   </data>
   <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
     <value>No zone has been created — no design without a zone.</value>
@@ -25318,6 +25318,162 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
     <value>The zones have changed — the design point is outdated and will be discarded on saving. Open “Design…” and take it over again.</value>
+  </data>
+  <data name="ZPG_GRP_STOCHASTIK" xml:space="preserve">
+    <value>Stochastics · annual series</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Method of the annual series</value>
+  </data>
+  <data name="ZPG_OPT_DETERMINISTISCH" xml:space="preserve">
+    <value>deterministic</value>
+  </data>
+  <data name="ZPG_OPT_STOCHASTISCH" xml:space="preserve">
+    <value>stochastic</value>
+  </data>
+  <data name="ZPG_HINW_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Only selects which series enters the balance: with “stochastic” the drawn year for the seed, scaled to the annual amount. The percentile of the design does not depend on it.</value>
+  </data>
+  <data name="ZPG_LBL_SEED" xml:space="preserve">
+    <value>Random seed</value>
+  </data>
+  <data name="ZPG_HINW_SEED" xml:space="preserve">
+    <value>Whole number from 0 · empty = default {0}; the same seed draws the same series on every platform.</value>
+  </data>
+  <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisations</value>
+  </data>
+  <data name="ZPG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="ZPG_HINW_REALISIERUNGEN" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default {2}; the drawn years only check consistency.</value>
+  </data>
+  <data name="ZPG_HINW_KONSISTENZ_ORT" xml:space="preserve">
+    <value>After the run, the consistency check is shown on the Key figures tab.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_GERECHNET" xml:space="preserve">
+    <value>Stochastics · annual series for seed {0}, {1} years drawn</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_JAHRESREIHE" xml:space="preserve">
+    <value>The balance series is the drawn year for the seed, scaled to the annual amount. The Expert level shows the consistency check.</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ" xml:space="preserve">
+    <value>Energy consistency check · {0}</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_VERMERK" xml:space="preserve">
+    <value>Mean of the {0} years {1} kWh/a against {2} kWh/a deterministic · s_R {3} kWh/a · tolerance ±{4} kWh/a</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ERFUELLT" xml:space="preserve">
+    <value>within tolerance</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ABWEICHEND" xml:space="preserve">
+    <value>outside tolerance — the year for the seed is scaled to the annual amount</value>
+  </data>
+  <data name="ZPG_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Please correct the marked fields: {0}.</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK_TITEL" xml:space="preserve">
+    <value>Opens the design and draws the design-day ensemble for percentile and simultaneity; the method of the annual series selects the balance series.</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU_STOCHASTISCH" xml:space="preserve">
+    <value>Preview up to date · stochastic · seed {0} · {1} years</value>
+  </data>
+  <data name="ZPG_MSG_SEED_UNGUELTIG" xml:space="preserve">
+    <value>The seed must be a whole number from 0.</value>
+  </data>
+  <data name="ZPG_MSG_REALISIERUNGEN_UNGUELTIG" xml:space="preserve">
+    <value>The number of realisations must lie between {0} and {1}.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_STOCHASTISCH" xml:space="preserve">
+    <value>Calculate stochastically</value>
+  </data>
+  <data name="ZPG_AUS_HERL_STOCHASTISCH" xml:space="preserve">
+    <value>Draws the design-day ensemble per topology group for percentile, spread and simultaneity — a run input, not saved.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERZENTIL" xml:space="preserve">
+    <value>Design percentile</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERZENTIL" xml:space="preserve">
+    <value>P95 or P99 (K3) · default P{0}</value>
+  </data>
+  <data name="ZPG_AUS_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisations of the design day</value>
+  </data>
+  <data name="ZPG_AUS_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Please correct the marked fields: {0}.</value>
+  </data>
+  <data name="ZPG_AUS_EINHEIT_TAGE" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default {2} (multiple of the minimum count); below {3}, P{4} is not reliable.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN_OHNE" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default, not determinable here: {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAUF" xml:space="preserve">
+    <value>after “Calculate stochastically”: seed {0} · {1} days drawn · governing day {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN" xml:space="preserve">
+    <value>Volume P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN_WERT" xml:space="preserve">
+    <value>{0} l at {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_MINUTENSPITZE" xml:space="preserve">
+    <value>Minute peak P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_NACHRICHTLICH" xml:space="preserve">
+    <value>for information: minute peak P{0} {1} kW · largest hourly output P{0} {2} kW</value>
+  </data>
+  <data name="ZPG_AUS_NICHT_BELASTBAR" xml:space="preserve">
+    <value>not reliable</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NICHT_BELASTBAR" xml:space="preserve">
+    <value>{0} realisations; an empirical P{1} needs at least {2} = 1/(1 − p).</value>
+  </data>
+  <data name="ZPG_AUS_STREUBAND" xml:space="preserve">
+    <value>Spread over {0} realisations</value>
+  </data>
+  <data name="ZPG_AUS_SP_PERZENTIL" xml:space="preserve">
+    <value>Percentile</value>
+  </data>
+  <data name="ZPG_AUS_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_AUS_SPANNWEITE" xml:space="preserve">
+    <value>Range (min – max)</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_NACHWEIS" xml:space="preserve">
+    <value>{0} of {1} realisations without proof at Φ_N (volume ∞)</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V" xml:space="preserve">
+    <value>Simultaneity GLF_V</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V_BEZUG" xml:space="preserve">
+    <value>Result, not an input factor: P{0} of the group volume ÷ Σ P{0} of the volumes per unit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P" xml:space="preserve">
+    <value>Simultaneity GLF_P</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P_BEZUG" xml:space="preserve">
+    <value>Result, not an input factor: P{0} of the group minute peak ÷ Σ P{0} of the minute peak per unit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_WURZEL_N" xml:space="preserve">
+    <value>Single statistics μ + z·σ/√N: {0} kW (note)</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OK" xml:space="preserve">
+    <value>Consistency note checked: the stochastic peak does not exceed the threshold relative to the output of the cumulative-curve point.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_AUFFAELLIG" xml:space="preserve">
+    <value>Consistency note: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE" xml:space="preserve">
+    <value>Consistency note omitted — the threshold is missing from the parameter set.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH" xml:space="preserve">
+    <value>Design calculated · stochastic · percentile P{0} · seed {1}</value>
   </data>
   <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
     <value>{0} selected</value>

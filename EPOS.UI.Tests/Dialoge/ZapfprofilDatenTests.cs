@@ -85,6 +85,34 @@ public sealed class ZapfprofilDatenTests : IDisposable
         Assert.Equal(ZapfprofilNiveau.Hoch, e.Zonen[0].Kopie().Niveau);
     }
 
+    /// <summary>
+    /// Stufe Z3: Rechenweg, Seed und Realisierungen der Jahresreihe gehören zum Arbeitsstand und
+    /// gehen mit der Kopie; ohne Angabe steht der Stand des Kerns (<c>null</c>). Die
+    /// Konsistenzprobe nennt ihre relative Abweichung, ohne Jahresmenge keine.
+    /// </summary>
+    [Fact]
+    public void Die_Stochastik_des_Arbeitsstands_geht_mit_der_Kopie_und_die_Probe_nennt_ihre_Abweichung()
+    {
+        var leer = new ZapfprofilEingabeDaten();
+        Assert.False(leer.JahresreiheStochastisch);
+        Assert.Null(leer.Seed);
+        Assert.Null(leer.Realisierungen);
+        Assert.False(new ZapfprofilVorschauDaten().Stochastisch);
+        Assert.Empty(new ZapfprofilAnsichtDaten().Konsistenzen);
+
+        var e = new ZapfprofilEingabeDaten { JahresreiheStochastisch = true, Seed = 7, Realisierungen = 20 };
+        ZapfprofilEingabeDaten k = e.Kopie();
+        Assert.True(k.JahresreiheStochastisch);
+        Assert.Equal(7, k.Seed);
+        Assert.Equal(20, k.Realisierungen);
+        k.Seed = 8;
+        Assert.Equal(7, e.Seed);
+
+        var probe = new ZapfprofilKonsistenzDaten { DeterministischKwh = 1000, MittelKwh = 990 };
+        Assert.Equal(-0.01, probe.Abweichung!.Value, 12);
+        Assert.Null(new ZapfprofilKonsistenzDaten { MittelKwh = 5 }.Abweichung);
+    }
+
     [Fact]
     public void Das_Ergebnis_nimmt_den_Weg_aus_dem_Arbeitsstand_und_der_Zaehler_summiert_die_Zonen()
     {
