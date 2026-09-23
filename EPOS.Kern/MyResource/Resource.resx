@@ -25956,4 +25956,10 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
     <value>An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort.</value>
   </data>
+  <data name="KI_PEAK_KEINE_DATEI" xml:space="preserve">
+    <value>Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
+    <value>Die Liste der Lastgänge führt keine Ganglinie.</value>
+  </data>
 </root>

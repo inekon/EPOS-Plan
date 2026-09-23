@@ -25949,4 +25949,10 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
     <value>On = the simulation may extend the heat pump characteristic beyond its support points. Project setting for all heat pumps; the switch is written immediately.</value>
   </data>
+  <data name="KI_PEAK_KEINE_DATEI" xml:space="preserve">
+    <value>No file has been read in yet. “Load profile from file…” reads one in; choosing the file remains the user's task.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
+    <value>The list of load profiles contains no stored profile.</value>
+  </data>
 </root>

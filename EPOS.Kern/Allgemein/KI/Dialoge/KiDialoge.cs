@@ -987,9 +987,11 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Die DATEIWAHL bleibt draussen</b> (KI-D-Q6): Eine Datei einzulesen ist
-        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist ein
-        /// Optionsfeld der Maske, und auf „Datei importieren" umzustellen ist dasselbe
-        /// wie ein Klick darauf. Der Pfad selbst laedt nichts.
+        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist die Spalte
+        /// „Quelle" der Lastgangliste (Stufe 5 der Neuordnung): „Ganglinie" waehlt die
+        /// erste Ganglinienzeile, „Datei" die zuletzt eingelesene Datei, wie ein Klick;
+        /// ohne eingelesene Datei lehnt die Setzung benannt ab. Die GANGLINIE waehlt
+        /// ihre Zeile. Der Pfad selbst laedt nichts.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Berechnen", „Minimale Schwelle" und „In Variante
@@ -4537,11 +4539,11 @@ namespace WindowsFormsApplication1
         /// mit siebenundzwanzig Feldern.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht.</b> Er steht als Wahl ueber Gruppe
-        /// und Art auf der Maske, im Daten-Objekt aber allein als Id
-        /// (<c>ErzeugerZeile.CarrierId</c>); gelesen waere er eine nackte Zahl,
-        /// gesetzt eine geratene — dieselbe Regel wie bei der Brennstoffvariante der
-        /// Kessel- und BHKW-Maske.
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b, KI-D-Q6): Auf der Maske
+        /// steht er ueber Gruppe und Art, im Daten-Objekt als Id
+        /// (<c>ErzeugerZeile.CarrierId</c>); die Eintraege reicht der Dialog als
+        /// Wahlquelle herein, gesetzt wird ueber den angezeigten Text — dieselbe Regel
+        /// wie bei der Traegervariante der Kessel- und BHKW-Maske.
         /// </para>
         /// </remarks>
         private static KiDialog StromspeicherProjekt()
@@ -4583,12 +4585,12 @@ namespace WindowsFormsApplication1
         /// Zustand, den der Anwender auf der Maske sieht.
         /// </para>
         /// <para>
-        /// <b>Die BRENNSTOFFVARIANTE fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus den
-        /// Varianten der Traegergruppe); sie ueber ihre rohe Id setzen zu lassen hiesse,
-        /// das Modell eine Zahl raten zu lassen, deren Bedeutung nur die Maske kennt —
-        /// dieselbe Regel wie bei der Bemessung der Kostenverwaltung. Sie kommt in den
-        /// Katalog, sobald es dafuer eine benannte Auswahl gibt.
+        /// <b>Die TRAEGERVARIANTE ist eine Wahl</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus
+        /// den Varianten der Traegergruppe). Die Eintraege reicht der Dialog als
+        /// Wahlquelle herein; der Assistent setzt sie ueber den angezeigten Text und
+        /// raet keine rohe Id — dieselbe Regel wie bei der Bemessung der
+        /// Kostenverwaltung.
         /// </para>
         /// <para>
         /// <b>Der Aufklapper „Alle Daten" bleibt draussen.</b> Er zeigt die Spalten des
@@ -4640,8 +4642,7 @@ namespace WindowsFormsApplication1
         /// <b>Die untere GRENZLEISTUNG ist der Unterschied zum Heizkessel.</b> Sie sagt,
         /// bis wohin das Modul moduliert; 0 heisst „Projektvorgabe"
         /// (<c>Tab_Einstellungen.Leistungsgrenze</c>), und genau das steht in ihrer
-        /// Erlaeuterung. Die Brennstoffvariante fehlt aus demselben Grund wie beim
-        /// Heizkessel.
+        /// Erlaeuterung. Die Traegervariante ist eine Wahl wie beim Heizkessel.
         /// </remarks>
         private static KiDialog BhkwProjekt()
         {
@@ -4712,12 +4713,11 @@ namespace WindowsFormsApplication1
         /// setzen - und die naechste Neuberechnung ueberschriebe es wortlos.
         /// </para>
         /// <para>
-        /// <b>Die Bemessung fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>); sie ueber
-        /// ihre rohe Id setzen zu lassen hiesse, das Modell eine Zahl raten zu lassen,
-        /// deren Bedeutung nur die Maske kennt. Sie kommt in den Katalog, sobald es
-        /// dafuer eine benannte Auswahl gibt - dieselbe Regel wie ueberall:
-        /// Aufzaehlungswerte stammen aus dem Bestand, nie aus Modelltext.
+        /// <b>Die Bemessung ist eine Wahl je Zeile</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>),
+        /// gesetzt ueber den angezeigten Text statt ueber die rohe Id — dieselbe Regel
+        /// wie ueberall: Aufzaehlungswerte stammen aus dem Bestand, nie aus
+        /// Modelltext.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Speichern" und „OK" sind datenbankwirksam und laufen

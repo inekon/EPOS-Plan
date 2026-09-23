@@ -27,6 +27,12 @@ namespace EPOS.UI.Dialoge.Strom;
 /// <para><b>Die DATEIWAHL bleibt draußen.</b> Eine Datei einzulesen ist ein
 /// Ladevorgang und kein Feldwert (KI‑D‑Q6); der Pfad allein setzt nichts, und
 /// die Maske liest erst nach dem Import.</para>
+///
+/// <para><b>Quelle und Ganglinie sind ZEILEN der Lastgangliste</b> (Stufe 5 der
+/// Neuordnung der Verwaltungen): Links steht die Liste der Lastgänge (Katalogliste,
+/// Spalte „Quelle"), die Zeile ist die Wahl. „Ganglinie" wählt die erste
+/// Ganglinienzeile, „Datei" die zuletzt eingelesene Datei, eine Ganglinie ihre
+/// Zeile — derselbe Weg wie ein Klick (<c>BeiZeile</c>).</para>
 /// </summary>
 public sealed class PeakShavingKiSicht
 {
@@ -35,10 +41,14 @@ public sealed class PeakShavingKiSicht
     /// <summary>Liest die gewählte Quelle (0 = Ganglinie, 1 = Datei).</summary>
     public Func<int?>? QuelleLesen { get; init; }
 
-    /// <summary>Setzt die Quelle — denselben Weg wie ein Griff in die Optionsgruppe.</summary>
-    public Action<int?>? QuelleSetzen { get; init; }
+    /// <summary>
+    /// Setzt die Quelle — wählt die passende Zeile der Lastgangliste, derselbe Weg wie
+    /// ein Klick. Rückgabe: der Grund, warum es keine solche Zeile gibt, sonst
+    /// <c>null</c>.
+    /// </summary>
+    public Func<int?, string?>? QuelleSetzen { get; init; }
 
-    /// <summary>Die zwei Einträge der Optionsgruppe.</summary>
+    /// <summary>Die zwei Quellen (Ganglinie, Datei) — die Werte der Spalte „Quelle".</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? QuelleEintraege { get; init; }
 
     /// <summary>Liest die gewählte Katalogganglinie.</summary>
@@ -47,7 +57,7 @@ public sealed class PeakShavingKiSicht
     /// <summary>Setzt die Katalogganglinie und lädt sie nach.</summary>
     public Action<int?>? GanglinieSetzen { get; init; }
 
-    /// <summary>Die Ganglinien des Projekts, wie die Klappliste sie zeigt.</summary>
+    /// <summary>Die Ganglinien, wie die Lastgangliste sie führt.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? GanglinieEintraege { get; init; }
 
     /// <summary>Die Reihenzeile über dem Diagramm — Anzeige.</summary>
@@ -136,11 +146,18 @@ public sealed class PeakShavingKiSicht
     public IReadOnlyList<KiWahleintrag> QuelleWahl
         => QuelleEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
-    /// <summary>Woher der Lastgang kommt — vorhandene Ganglinie oder Datei.</summary>
+    /// <summary>
+    /// Woher der Lastgang kommt — vorhandene Ganglinie oder Datei. Gibt es keine Zeile
+    /// dieser Quelle (noch keine Datei eingelesen), kommt der Grund als benannte Absage.
+    /// </summary>
     public int? Quelle
     {
         get => QuelleLesen?.Invoke();
-        set => QuelleSetzen?.Invoke(value);
+        set
+        {
+            string? grund = QuelleSetzen?.Invoke(value);
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
     }
 
     /// <summary>Die wählbaren Ganglinien des Projekts.</summary>

@@ -38585,6 +38585,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste der Lastgänge führt keine Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_GANGLINIE {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Änderungsdatum von Projekt {0} konnte nicht gesetzt werden. ähnelt.
         /// </summary>
         public static string KI_REG_AENDERUNGSDATUM_FEHLT {

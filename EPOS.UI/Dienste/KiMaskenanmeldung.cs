@@ -35,7 +35,7 @@ namespace EPOS.UI.Dienste;
 /// <para><b>Was nicht auflöst, wird nicht angemeldet</b> — und fällt im Wächter auf, nicht
 /// beim Anwender: <see cref="Pruefe"/> nennt jeden Eigenschaftspfad des Katalogs, den es am
 /// Daten-Objekt nicht gibt, und <c>EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests</c>
-/// hält die Liste für alle fünf Masken leer. Ein Dialog soll an einem Tippfehler im Katalog
+/// hält die Liste für jede Maske des Katalogs leer. Ein Dialog soll an einem Tippfehler im Katalog
 /// nicht aufgehen können.</para>
 /// </summary>
 public sealed class KiMaskenanmeldung : IDisposable
