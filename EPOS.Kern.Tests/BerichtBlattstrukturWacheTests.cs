@@ -167,12 +167,18 @@ namespace EPOS.Kern.Tests
                 Zeile(ue, 13, "Gewerk", "Stamm", "Variante A");
 
                 // ---- Vergleich ------------------------------------------------
-                Zeile(wb.Worksheet("Vergleich"), 1, "Gruppe", "Kennzahl", "Einheit");
+                // ETAPPE E8b (Vorarbeit der Formelmappe): der GANZE Kopf, samt Wertspalten
+                // und Δ%-Block — Stufe 3 macht den Δ%-Block zum Zellbezug auf diese Spalten.
+                Zeile(wb.Worksheet("Vergleich"), 1, "Gruppe", "Kennzahl", "Einheit",
+                      "Stamm", "Variante A", "Δ% Variante A");
 
                 // ---- Wirtschaftlichkeit ---------------------------------------
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
                 Assert.Equal("Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)",
                              w.Cell(1, 1).GetString());
+                // ETAPPE E8b (Vorarbeit): der Parameternachweis steht als Prosa in Zeile 2 —
+                // er bleibt; Stufe 0 stellt den Parameterblock aus echten Zellen darunter.
+                Assert.StartsWith("i = 3,0 % · T = 20 a", w.Cell(2, 1).GetString());
 
                 // ETAPPE E2 (VALERI-Lücke G7): der Zeitraumhinweis steht seither auch im
                 // Excel-Blatt — er stand nur in Word und auf der Seite.
@@ -228,7 +234,19 @@ namespace EPOS.Kern.Tests
                       "Stamm", "Variante A", "Δ Variante A − Stamm");
                 Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(99, 1).GetString());
                 Assert.Equal("Stamm", w.Cell(102, 1).GetString());
-                Zeile(w, 103, "Jahr", "Energiekosten", "Netto nominal");
+                // ETAPPE E8b (Vorarbeit): der ganze Kopf der Mehrjahrestabelle, ihre Jahre
+                // 0 und T, die Abschlusszeile und die Probezeile — und der Kopf der zweiten
+                // Tabelle. Genau dieses Raster rechnet die Formelmappe ab Stufe 1 in Formeln.
+                Zeile(w, 103, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(0.0, w.Cell(104, 1).GetDouble());
+                Assert.Equal(20.0, w.Cell(124, 1).GetDouble());
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
+                             w.Cell(125, 1).GetString());
+                Assert.StartsWith("Probe:", w.Cell(126, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(128, 1).GetString());
+                Zeile(w, 129, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
+                             w.Cell(151, 1).GetString());
 
                 // ---- Verlauf (ETAPPE E6, U13) ---------------------------------
                 // Je Jahr eine Zeile, je Variante und Szenario eine Spalte in der
@@ -333,6 +351,21 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(-12000.00, w.Cell(105, 2).GetDouble(), 2);
                 Assert.Equal(-12000.00, w.Cell(105, 3).GetDouble(), 2);
 
+                // ETAPPE E8b (Vorarbeit der Formelmappe): Barwert und Kumuliert des ersten
+                // Jahres, das Jahr T und die Abschlusszeile — sie schließt die kumulierte
+                // Spalte auf den Nettobarwert der Kennzahltafel auf (Restwert 0). Dieselben
+                // Zahlen der zweiten Tabelle (Variante A). Die Stufen 1 und 2 rechnen genau
+                // diese Zellen in Formeln; ihre Werte dürfen sich dabei nicht bewegen.
+                Assert.Equal(-11650.49, w.Cell(105, 4).GetDouble(), 2);
+                Assert.Equal(-11650.49, w.Cell(105, 5).GetDouble(), 2);
+                Assert.Equal(-6644.11, w.Cell(124, 4).GetDouble(), 2);
+                Assert.Equal(-178529.70, w.Cell(124, 5).GetDouble(), 2);
+                Assert.Equal(0.0, w.Cell(125, 4).GetDouble(), 6);
+                Assert.Equal(w.Cell(24, 2).GetDouble(), w.Cell(125, 5).GetDouble(), 6);
+                Assert.Equal(-9000.00, w.Cell(131, 2).GetDouble(), 2);
+                Assert.Equal(-8737.86, w.Cell(131, 4).GetDouble(), 2);
+                Assert.Equal(w.Cell(24, 3).GetDouble(), w.Cell(151, 5).GetDouble(), 6);
+
                 // ETAPPE E2 (G8): die Spanne der Bandbreitentafel — seit E5 (Q4) der Betrag
                 // aus größtem und kleinstem Szenariowert; hier liegt Erwartet zwischen Worst
                 // und Best, der Wert ist derselbe wie Best − Worst.
@@ -382,6 +415,50 @@ namespace EPOS.Kern.Tests
             finally { Aufraeumen(ordner); }
         }
 
+        /// <summary>
+        /// ETAPPE E8b (Vorarbeit der Formelmappe) — der <b>Δ%-Block des Vergleichsblatts</b>:
+        /// je Kennzahl mit Abweichungsausweis die Abweichung der Variante vom Stamm in
+        /// Prozent, (Wert − Stamm) / |Stamm| · 100. Die Prüfgruppe führt dafür eine
+        /// Kennzahl mit Abweichungsausweis (Wärmebedarf, 100 gegen 80 MWh/a → −20 %) und
+        /// eine ohne (Vollbenutzungsstunden der Wärmepumpe: keine Δ-Zelle).
+        ///
+        /// <para>Stufe 3 der Formelmappe macht die Δ-Zelle zum Zellbezug auf die beiden
+        /// Wertspalten — ihr WERT bleibt, und genau den hält dieser Fall fest.</para>
+        /// </summary>
+        [Fact]
+        public void Excel_Vergleich_Deltablock_rechnet_gegen_den_Stamm()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = Gruppendaten();
+                daten.Varianten[0].Kennzahlen["energie.waermebedarf"] = 100.0;
+                daten.Varianten[1].Kennzahlen["energie.waermebedarf"] = 80.0;
+                daten.Varianten[0].Kennzahlen["eff.wp_vbh"] = 2000.0;
+                daten.Varianten[1].Kennzahlen["eff.wp_vbh"] = 2500.0;
+
+                string ziel = Path.Combine(ordner, "vergleich.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet v = wb.Worksheet("Vergleich");
+                Zeile(v, 1, "Gruppe", "Kennzahl", "Einheit", "Stamm", "Variante A", "Δ% Variante A");
+
+                Zeile(v, 2, "Energiebilanz", "Wärmebedarf gesamt", "MWh/a");
+                Assert.Equal(100.0, v.Cell(2, 4).GetDouble(), 6);
+                Assert.Equal(80.0, v.Cell(2, 5).GetDouble(), 6);
+                Assert.Equal(-20.0, v.Cell(2, 6).GetDouble(), 6);
+
+                Zeile(v, 3, "Effizienz", "Vollbenutzungsstunden WP", "h/a");
+                Assert.Equal(2500.0, v.Cell(3, 5).GetDouble(), 6);
+                Assert.True(v.Cell(3, 6).IsEmpty(), "Eine Kennzahl ohne Abweichungsausweis trägt keine Δ-Zelle.");
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
         // =====================================================================
         //  Word
         // =====================================================================
@@ -424,6 +501,41 @@ namespace EPOS.Kern.Tests
                         "Anhang",
                     },
                     MitStil(body, "Heading1").ToArray());
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E8b (Vorarbeit) — die <b>Abschnitte des Kapitels „Wirtschaftlichkeit"</b>
+        /// in ihrer Reihenfolge (Überschriften der Ebene 2 zwischen dem Kapitel und dem
+        /// nächsten Kapitel). Auf genau diese Abschnitte verweist die Anhang-E-Checkliste
+        /// mit ihrer Spalte „Stelle im Bericht" — ein umbenannter oder verschobener
+        /// Abschnitt fiele sonst erst dem Prüfer auf.
+        /// </summary>
+        [Fact]
+        public void Word_traegt_die_Abschnitte_der_Wirtschaftlichkeit_in_fester_Reihenfolge()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "abschnitte.docx");
+                new WordBerichtGenerator().Erzeuge(Gruppendaten(), VolleKonfiguration(), ziel);
+
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                Body body = doc.MainDocumentPart.Document.Body;
+
+                Assert.Equal(
+                    new[]
+                    {
+                        "Kennzahlen im Szenario „Erwartet“",
+                        "Kapitalwert-Verlauf über den Betrachtungszeitraum",
+                        "Mehrjahresübersicht der Zahlungsströme",
+                        "Szenarien Ungünstig / Erwartet / Günstig",
+                    },
+                    AbschnitteDesKapitels(body, "Wirtschaftlichkeit").ToArray());
             }
             finally { Aufraeumen(ordner); }
         }
@@ -486,6 +598,24 @@ namespace EPOS.Kern.Tests
         private static string ErsterMitStil(Body body, string stil)
         {
             return MitStil(body, stil).FirstOrDefault();
+        }
+
+        /// <summary>Die Überschriften der Ebene 2 zwischen dem Kapitel <paramref name="kapitel"/>
+        /// (Ebene 1) und dem nächsten Kapitel, in ihrer Reihenfolge.</summary>
+        private static IEnumerable<string> AbschnitteDesKapitels(Body body, string kapitel)
+        {
+            bool drin = false;
+            foreach (Paragraph p in body.Descendants<Paragraph>())
+            {
+                string stil = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                if (stil == "Heading1")
+                {
+                    if (drin) yield break;
+                    drin = p.InnerText == kapitel;
+                }
+                else if (drin && stil == "Heading2" && !string.IsNullOrWhiteSpace(p.InnerText))
+                    yield return p.InnerText;
+            }
         }
 
         private static string[] Kopf(Table t)
