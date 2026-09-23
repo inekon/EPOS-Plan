@@ -70,6 +70,25 @@ namespace WindowsFormsApplication1
             Auslegungspruefung.Positiv(rasterL, "das Raster über dem Ende der Nenninhalte");
             return Math.Ceiling(volumenL / rasterL) * rasterL;
         }
+
+        /// <summary>Der größte Nenninhalt [l] — das Listenende.</summary>
+        internal double GroessterL => _werteL[_werteL.Length - 1];
+
+        /// <summary>
+        /// Der Nenninhalt zu V (N10): bis zum Listenende der kleinste Listenwert ≥ V; darüber
+        /// <paramref name="ueberEnde"/> = true — Mehrspeicheranlage prüfen — und V gerundet auf
+        /// das Raster <c>Speicherauslegung.Nenninhalt.Raster</c>. Den Parameter liest die Liste
+        /// nur dann: Fehlt er, nennt ein Hinweis den Schlüssel einmal und der Nenninhalt bleibt
+        /// offen (<c>null</c>); <paramref name="ueberEnde"/> gilt trotzdem.
+        /// </summary>
+        internal double? Runden(double volumenL, Parametersatz ps, ICollection<Auslegungshinweis> hinweise, out bool ueberEnde)
+        {
+            ueberEnde = volumenL > GroessterL;
+            if (!ueberEnde) return Naechster(volumenL, GroessterL, out _);
+            double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
+                "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", hinweise);
+            return raster.HasValue ? Naechster(volumenL, raster.Value, out _) : (double?)null;
+        }
     }
 
     /// <summary>
@@ -171,13 +190,22 @@ namespace WindowsFormsApplication1
         /// <summary>V_max liegt über dem Ende der Nenninhaltsliste — Mehrspeicheranlage prüfen.</summary>
         public bool Mehrspeicher { get; init; }
 
-        /// <summary>Speicherkapazität C_sp [kWh] beim Bezugsvolumen (Nenninhalt, sonst V_max).</summary>
+        /// <summary>
+        /// Das Bezugsvolumen des Füllstands [l] (N10): der Nenninhalt des empfohlenen
+        /// Summenlinienpunkts, sonst der Punkt; ohne Punkt der Nenninhalt des Bands, sonst V_max.
+        /// </summary>
+        public double? FuellstandBezugL { get; init; }
+
+        /// <summary>Welches Volumen <see cref="FuellstandBezugL"/> ist — die Beschriftung der Anzeige.</summary>
+        public string FuellstandBezug { get; init; } = "";
+
+        /// <summary>Speicherkapazität C_sp [kWh] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? KapazitaetKwh { get; init; }
 
-        /// <summary>Kleinster Füllstand der Woche 2 [kWh] beim Bezugsvolumen.</summary>
+        /// <summary>Kleinster Füllstand der Woche 2 [kWh] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? MinFuellstandKwh { get; init; }
 
-        /// <summary>Restreserve = kleinster Füllstand / C_sp [-].</summary>
+        /// <summary>Restreserve = kleinster Füllstand / C_sp [-] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? ReserveAnteil { get; init; }
 
         /// <summary>Die Warnliste (nie blockierend).</summary>
@@ -202,6 +230,7 @@ namespace WindowsFormsApplication1
     /// Band           [V_min ; V_max] über Profil, DIN 4708 (Gruppe ganz im Gültigkeitsbereich), GLF (N ≤ N_GLF)
     /// Nenninhalt     kleinster Listenwert ≥ V_max, darüber auf das Raster gerundet (Mehrspeicheranlage prüfen)
     /// Füllstand      C_sp = V · f_nutz · c_w · Δθ / 1000;  SOC(t) = max(0, C_sp − D(t));  Reserve = min SOC / C_sp
+    ///                V = Nenninhalt des empfohlenen Punkts (sonst Punkt); ohne Punkt Nenninhalt des Bands (sonst V_max)
     /// Ladung         P_lade · t_F ≥ Q_d,max + P_zirk · t_Lauf, sonst Mindestleistung nennen
     /// </code>
     /// </summary>
@@ -209,6 +238,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Kennung: D_max = 0 — Anzeige „–" und Satz statt 0 l.</summary>
         internal const string DMAX_NULL = "DMAX_NULL";
+
+        /// <summary>Kennung des Gültigkeitshinweises: das GLF-Verfahren ohne Wannen (4.7).</summary>
+        internal const string HINWEIS_GLF_WANNEN = "GUELTIGKEIT_GLF_WANNEN";
 
         /// <summary>Stunden der doppelten Woche.</summary>
         internal const int STUNDEN_ZWEI_WOCHEN = 2 * Wochenreihe.STUNDEN;
@@ -401,6 +433,10 @@ namespace WindowsFormsApplication1
                         + Auslegungstext.Z(n) + " steht es außerhalb des Bands."));
                 glfWeg = "GLF(" + Auslegungstext.Z(n) + ") = " + Auslegungstext.Z(glf.Value) + ", " + Auslegungstext.Z(e.Personen.Value)
                          + " Personen → " + Auslegungstext.G(vGlf.Value) + " l (setzt die Wannen-Zapfperiode an)";
+                // Gültigkeitshinweis (4.7): ohne Wannen ist das Verfahren eingeschränkt.
+                hinweise.Add(new Auslegungshinweis(HINWEIS_GLF_WANNEN,
+                    "Das Gleichzeitigkeitsverfahren setzt die Wannen-Zapfperiode an; für Wohnungen ohne Badewanne ist es nur "
+                    + "eingeschränkt gültig."));
             }
 
             double? vKlass = e.Personen.HasValue ? VolumenKlassischL(e.Personen.Value, dT, zS, ps) : (double?)null;
@@ -425,14 +461,12 @@ namespace WindowsFormsApplication1
             bool mehr = false;
             if (bandMax.HasValue && e.Nenninhalte != null)
             {
-                double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
-                    "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", hinweise);
-                IReadOnlyList<double> liste = e.Nenninhalte.WerteL;
-                if (bandMax.Value <= liste[liste.Count - 1] || raster.HasValue)
-                    nenn = e.Nenninhalte.Naechster(bandMax.Value, raster ?? 1.0, out mehr);
+                // Über dem Listenende: Mehrspeicheranlage prüfen — auch ohne Raster-Parameter (N10).
+                nenn = e.Nenninhalte.Runden(bandMax.Value, ps, hinweise, out mehr);
                 if (mehr)
                     hinweise.Add(new Auslegungshinweis("MEHRSPEICHER",
-                        "Das Band endet über dem größten Nenninhalt — Mehrspeicheranlage prüfen.", true));
+                        "Das Band endet mit " + Auslegungstext.G(bandMax.Value) + " l über dem größten Nenninhalt "
+                        + Auslegungstext.G(e.Nenninhalte.GroessterL) + " l — Mehrspeicheranlage prüfen.", true));
             }
             else if (bandMax.HasValue)
                 hinweise.Add(new Auslegungshinweis("NENNINHALTE_FEHLEN", "Ohne Liste der Nenninhalte wird nicht gerundet."));
@@ -440,8 +474,22 @@ namespace WindowsFormsApplication1
                 hinweise.Add(new Auslegungshinweis("NL_KRITERIUM",
                     "Speicher mit Leistungskennzahl N_L ≥ " + Auslegungstext.Z(e.Din.KennzahlN.Value) + " wählen."));
 
+            // Füllstand beim empfohlenen Volumen (N10): Nenninhalt des Summenlinienpunkts, sonst der
+            // Punkt; ohne Punkt beim Nenninhalt des Bands, sonst bei V_max — die Größe steht im Ergebnis.
             double? kap = null, minSoc = null, reserve = null;
-            double? bezug = nenn ?? bandMax;
+            double? bezug;
+            string bezugText;
+            if (e.SummenlinienpunktL.HasValue)
+            {
+                double? nennPunkt = e.Nenninhalte?.Runden(e.SummenlinienpunktL.Value, ps, hinweise, out _);
+                bezug = nennPunkt ?? e.SummenlinienpunktL.Value;
+                bezugText = nennPunkt.HasValue ? "Nenninhalt des empfohlenen Punkts" : "empfohlener Punkt der Summenlinie";
+            }
+            else
+            {
+                bezug = nenn ?? bandMax;
+                bezugText = nenn.HasValue ? "Nenninhalt des Bands" : bandMax.HasValue ? "V_max des Bands" : "";
+            }
             if (bezug.HasValue)
             {
                 var f = FuellstandAus(d, bezug.Value, fNutz, dT);
@@ -513,6 +561,8 @@ namespace WindowsFormsApplication1
                 BandMaxL = bandMax,
                 NenninhaltL = nenn,
                 Mehrspeicher = mehr,
+                FuellstandBezugL = bezug,
+                FuellstandBezug = bezugText,
                 KapazitaetKwh = kap,
                 MinFuellstandKwh = minSoc,
                 ReserveAnteil = reserve,

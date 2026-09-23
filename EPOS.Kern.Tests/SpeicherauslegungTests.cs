@@ -99,6 +99,41 @@ namespace EPOS.Kern.Tests
             Assert.Contains(r.Hinweise, h => h.Code == "KLASSISCH_WEIT_UEBER_BAND");
             Assert.Contains(r.Hinweise, h => h.Code == "NL_KRITERIUM");
             Assert.Equal(4, r.Verfahren.Count);
+            // Das GLF-Verfahren trägt seinen Gültigkeitshinweis (ohne Wannen eingeschränkt).
+            Assert.Contains(r.Hinweise, h => h.Code == TwwSpeicherauslegung.HINWEIS_GLF_WANNEN && !h.Warnung);
+            // Ohne Summenlinienpunkt bezieht sich der Füllstand auf den Nenninhalt des Bands.
+            Assert.Equal(500.0, r.FuellstandBezugL);
+            Assert.Equal("Nenninhalt des Bands", r.FuellstandBezug);
+        }
+
+        [Fact]
+        public void Der_Fuellstand_bezieht_sich_auf_das_empfohlene_Volumen()
+        {
+            Parametersatz ps = Auslegungssatz();
+            // Empfohlener Punkt 250 l: Nenninhalt 300 l der Liste — dort steht der Füllstand, nicht beim Band.
+            Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(Eingang(ps) with { SummenlinienpunktL = 250.0 }, ps);
+            Assert.Equal(300.0, r.FuellstandBezugL);
+            Assert.Equal("Nenninhalt des empfohlenen Punkts", r.FuellstandBezug);
+            double csp = 300.0 * FNUTZ * CW * DT / 1000.0;
+            Assert.True(Relativ(r.KapazitaetKwh.Value, csp) < 1e-12);
+            Assert.True(Relativ(r.MinFuellstandKwh.Value, Math.Max(0.0, csp - 18.0)) < 1e-12);
+            Assert.Equal(500.0, r.NenninhaltL);   // der Nenninhalt des Bands bleibt daneben stehen
+            // Ohne Liste: beim Punkt selbst.
+            r = TwwSpeicherauslegung.Rechnen(Eingang(ps) with { SummenlinienpunktL = 250.0, Nenninhalte = null }, ps);
+            Assert.Equal(250.0, r.FuellstandBezugL);
+            Assert.Equal("empfohlener Punkt der Summenlinie", r.FuellstandBezug);
+        }
+
+        [Fact]
+        public void Auslegungstext_hat_eine_feste_Kultur()
+        {
+            // Die Kulturvorrichtung pinnt de-DE (Komma); der Rechenweg-Satz bleibt beim Punkt.
+            Assert.Equal("1.5", Auslegungstext.Z(1.5));
+            Assert.Equal("0.123", Auslegungstext.Z(0.12345));
+            Assert.Equal("1235", Auslegungstext.G(1234.6));
+            Parametersatz ps = Auslegungssatz();
+            Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(Eingang(ps, null), ps);
+            Assert.Contains("1.25 kW", r.LadeRechenweg);
         }
 
         [Fact]
@@ -273,6 +308,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Math.Ceiling(r.BandMaxL.Value / 500.0) * 500.0, r.NenninhaltL);
             Assert.True(r.Mehrspeicher);
             Assert.Contains(r.Hinweise, h => h.Code == "MEHRSPEICHER");
+            // Ohne Raster-Parameter bleibt die Warnung Mehrspeicher; der Nenninhalt ist offen, der Schlüssel genannt.
+            Parametersatz ohneRaster = Auslegungssatz(null, ZapfAuslegungParameter.NENNINHALT_RASTER);
+            r = TwwSpeicherauslegung.Rechnen(e, ohneRaster);
+            Assert.True(r.Mehrspeicher);
+            Assert.Null(r.NenninhaltL);
+            Assert.Contains(r.Hinweise, h => h.Code == "MEHRSPEICHER" && h.Warnung);
+            Assert.Contains(r.Hinweise, h => h.Code == ZapfHinweis.PARAMETER_FEHLT && h.Text.Contains(ZapfAuslegungParameter.NENNINHALT_RASTER));
+            // Innerhalb der Liste wird das Raster nicht gebraucht — kein „Parameter fehlt".
+            r = TwwSpeicherauslegung.Rechnen(Eingang(ps), ohneRaster);
+            Assert.Equal(500.0, r.NenninhaltL);
+            Assert.False(r.Mehrspeicher);
+            Assert.DoesNotContain(r.Hinweise, h => h.Code == ZapfHinweis.PARAMETER_FEHLT);
             // Summenlinienpunkt außerhalb des Bands; Speichertemperatur unter der Mindesttemperatur.
             r = TwwSpeicherauslegung.Rechnen(Eingang(ps) with { SummenlinienpunktL = 100.0, SpeicherC = 55.0 }, ps);
             Assert.Contains(r.Hinweise, h => h.Code == "SUMMENLINIE_AUSSERHALB_BAND");
@@ -286,6 +333,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(r.VolumenDinL);
             Assert.Null(r.VolumenGlfL);
             Assert.Contains(r.Hinweise, h => h.Code == "GUELTIGKEIT_DIN_GLF");
+            Assert.DoesNotContain(r.Hinweise, h => h.Code == TwwSpeicherauslegung.HINWEIS_GLF_WANNEN);
             Assert.Equal(r.VolumenProfilL.Value, r.BandMaxL.Value);
             // Nur die Topologie Speicher.
             Assert.Equal(ZapfAuslegungsfehler.NichtGueltig, Assert.Throws<ZapfAuslegungException>(() =>

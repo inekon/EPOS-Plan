@@ -43,17 +43,36 @@ namespace WindowsFormsApplication1
         /// <summary>Zeitverzögerung t_lag des Erzeugers und der Verteilung [min].</summary>
         internal const string VERZOEGERUNG = "A100.Verzoegerung";
 
-        /// <summary>Wärmedurchgangskoeffizient U des Übertragers [W/(m²·K)], wenn das Projekt nur eine Fläche nennt.</summary>
-        internal const string UEBERTRAGER_U = "A100.Uebertrager.U";
+        /// <summary>Wärmedurchgangskoeffizient U eines Übertragers aus Stahl [W/(m²·K)], wenn das Projekt kein U·A nennt.</summary>
+        internal const string UEBERTRAGER_U_STAHL = "A100.Uebertrager.U.Stahl";
+
+        /// <summary>Wärmedurchgangskoeffizient U eines Übertragers aus Edelstahl [W/(m²·K)].</summary>
+        internal const string UEBERTRAGER_U_EDELSTAHL = "A100.Uebertrager.U.Edelstahl";
 
         /// <summary>Heizmittelübertemperatur Δθ_Ü des Übertragers [K].</summary>
         internal const string UEBERTRAGER_UEBERTEMPERATUR = "A100.Uebertrager.Uebertemperatur";
 
-        /// <summary>Schätzformel der Übertragerfläche A_HE = Steigung · V + Achsabschnitt: Steigung [m²/l].</summary>
-        internal const string UEBERTRAGERFLAECHE_STEIGUNG = "A100.Uebertragerflaeche.Steigung";
+        /// <summary>Schätzformel der Übertragerfläche am Kessel (NA.1), A_HE = Steigung · V + Achsabschnitt: Steigung [m²/l].</summary>
+        internal const string UEBERTRAGERFLAECHE_KESSEL_STEIGUNG = "A100.Uebertragerflaeche.Kessel.Steigung";
 
-        /// <summary>Schätzformel der Übertragerfläche: Achsabschnitt [m²].</summary>
-        internal const string UEBERTRAGERFLAECHE_ACHSABSCHNITT = "A100.Uebertragerflaeche.Achsabschnitt";
+        /// <summary>Schätzformel der Übertragerfläche am Kessel (NA.1): Achsabschnitt [m²].</summary>
+        internal const string UEBERTRAGERFLAECHE_KESSEL_ACHSABSCHNITT = "A100.Uebertragerflaeche.Kessel.Achsabschnitt";
+
+        /// <summary>Schätzformel der Übertragerfläche an der Wärmepumpe (NA.2): Steigung [m²/l].</summary>
+        internal const string UEBERTRAGERFLAECHE_WAERMEPUMPE_STEIGUNG = "A100.Uebertragerflaeche.Waermepumpe.Steigung";
+
+        /// <summary>Schätzformel der Übertragerfläche an der Wärmepumpe (NA.2): Achsabschnitt [m²].</summary>
+        internal const string UEBERTRAGERFLAECHE_WAERMEPUMPE_ACHSABSCHNITT = "A100.Uebertragerflaeche.Waermepumpe.Achsabschnitt";
+
+        /// <summary>Der Schlüssel des U-Werts zum Werkstoff des Übertragers.</summary>
+        internal static string UebertragerU(ZapfUebertragerwerkstoff werkstoff)
+            => werkstoff == ZapfUebertragerwerkstoff.Edelstahl ? UEBERTRAGER_U_EDELSTAHL : UEBERTRAGER_U_STAHL;
+
+        /// <summary>Die Schlüssel der Schätzformel (Steigung, Achsabschnitt) zur Erzeugerart: Kessel NA.1, Wärmepumpe NA.2.</summary>
+        internal static (string Steigung, string Achsabschnitt) Uebertragerflaeche(ZapfErzeugerart art)
+            => art == ZapfErzeugerart.Waermepumpe
+                ? (UEBERTRAGERFLAECHE_WAERMEPUMPE_STEIGUNG, UEBERTRAGERFLAECHE_WAERMEPUMPE_ACHSABSCHNITT)
+                : (UEBERTRAGERFLAECHE_KESSEL_STEIGUNG, UEBERTRAGERFLAECHE_KESSEL_ACHSABSCHNITT);
 
         /// <summary>
         /// Koeffizient k_τ der Zeitkonstante nach A1 [min·W/kJ]: <c>τ = m · c_w / (U·A) · k_τ</c> mit
@@ -180,6 +199,29 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>
+    /// Die Erzeugerart am Speicher — wählt die Schätzformel der Übertragerfläche (A100: Kessel
+    /// NA.1, Wärmepumpe NA.2). Eine Laufangabe des Auslegungseingangs (N10), keine Spalte.
+    /// </summary>
+    internal enum ZapfErzeugerart
+    {
+        /// <summary>Kessel (Schätzformel NA.1).</summary>
+        Kessel = 1,
+
+        /// <summary>Wärmepumpe (Schätzformel NA.2).</summary>
+        Waermepumpe = 2
+    }
+
+    /// <summary>Der Werkstoff des Übertragers — wählt den U-Wert (N10). Eine Laufangabe des Auslegungseingangs.</summary>
+    internal enum ZapfUebertragerwerkstoff
+    {
+        /// <summary>Stahl.</summary>
+        Stahl = 1,
+
+        /// <summary>Edelstahl.</summary>
+        Edelstahl = 2
+    }
+
     /// <summary>Warum die Auslegung eine Eingabe nicht annimmt (Konzept 2.2: kein stiller Rückfall).</summary>
     internal enum ZapfAuslegungsfehler
     {
@@ -211,7 +253,10 @@ namespace WindowsFormsApplication1
         ParameterFehlt = 9,
 
         /// <summary>Das Verfahren ist für diese Zone oder Topologie nicht gültig.</summary>
-        NichtGueltig = 10
+        NichtGueltig = 10,
+
+        /// <summary>Der Übertrager ist nicht bestimmbar: Werkstoff (U) oder Erzeugerart (Schätzformel) fehlt.</summary>
+        UebertragerUnbestimmt = 11
     }
 
     /// <summary>Die benannte Ablehnung einer Auslegungseingabe: Grund und Klartext.</summary>
@@ -375,13 +420,17 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>Zahlformat der Rechenweg-Sätze und Hinweise (feste Kultur, damit Tests sie lesen können).</summary>
+    /// <summary>
+    /// Zahlformat der Rechenweg-Sätze und Hinweise — feste Kultur (invariant, Punkt als
+    /// Dezimalzeichen) wie die Vermerke des Mengengerüsts: derselbe Satz auf jedem Rechner und in
+    /// jeder Oberflächensprache, damit Tests und Vergleich ihn lesen können.
+    /// </summary>
     internal static class Auslegungstext
     {
-        /// <summary>Eine Zahl mit höchstens drei Nachkommastellen, Kultur der Oberfläche.</summary>
-        internal static string Z(double wert) => wert.ToString("0.###", CultureInfo.CurrentCulture);
+        /// <summary>Eine Zahl mit höchstens drei Nachkommastellen.</summary>
+        internal static string Z(double wert) => wert.ToString("0.###", CultureInfo.InvariantCulture);
 
         /// <summary>Eine Zahl ohne Nachkommastellen.</summary>
-        internal static string G(double wert) => wert.ToString("0", CultureInfo.CurrentCulture);
+        internal static string G(double wert) => wert.ToString("0", CultureInfo.InvariantCulture);
     }
 }

@@ -275,7 +275,7 @@ namespace WindowsFormsApplication1
             };
             if (ausserhalb.Count > 0)
                 hinweise.Add(new Auslegungshinweis(HINWEIS_TEILGUELTIG,
-                    "Die Kennzahl N = " + n.ToString("0.##", CultureInfo.CurrentCulture) + " deckt nur die Wohnzonen mit Speicher; "
+                    "Die Kennzahl N = " + n.ToString("0.##", CultureInfo.InvariantCulture) + " deckt nur die Wohnzonen mit Speicher; "
                     + AUSSERHALB + ": " + string.Join(", ", ausserhalb) + "."));
             return new Din4708Ergebnis
             {

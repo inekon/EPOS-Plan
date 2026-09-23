@@ -283,13 +283,41 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Der_Uebertrager_waehlt_Schaetzformel_und_U_nach_Erzeugerart_und_Werkstoff()
+        {
+            Parametersatz ps = Auslegungssatz();
+            // Erfundene Schlüsselpaare: Kessel (NA.1) 0,02 m²/l · V − 1,0 m², Wärmepumpe (NA.2) 0,01 · V − 0,5;
+            // U Stahl 400, Edelstahl 500 W/(m²·K).
+            Uebertrager kessel = Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, null, null,
+                ZapfErzeugerart.Kessel, ZapfUebertragerwerkstoff.Stahl).Uebertrager;
+            Assert.Equal((0.02, -1.0, 400.0), (kessel.FlaecheSteigungM2JeL.Value, kessel.FlaecheAchsabschnittM2.Value, kessel.UWJeM2K.Value));
+            Uebertrager wp = Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, null, null,
+                ZapfErzeugerart.Waermepumpe, ZapfUebertragerwerkstoff.Edelstahl).Uebertrager;
+            Assert.Equal((0.01, -0.5, 500.0), (wp.FlaecheSteigungM2JeL.Value, wp.FlaecheAchsabschnittM2.Value, wp.UWJeM2K.Value));
+
+            // Ohne Erzeugerart keine Schätzformel, ohne Werkstoff kein U — benannt, nie geraten.
+            Assert.Equal(ZapfAuslegungsfehler.UebertragerUnbestimmt, Assert.Throws<ZapfAuslegungException>(() =>
+                Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, null, null, null, ZapfUebertragerwerkstoff.Stahl)).Fehler);
+            Assert.Equal(ZapfAuslegungsfehler.UebertragerUnbestimmt, Assert.Throws<ZapfAuslegungException>(() =>
+                Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, null, null, ZapfErzeugerart.Kessel, null)).Fehler);
+            Assert.Equal(ZapfAuslegungsfehler.UebertragerUnbestimmt, Assert.Throws<ZapfAuslegungException>(() =>
+                Summenlinie.Parameter(Projekt() with { UebertragerFlaecheM2 = 2.0 }, ps, 57.0, 7.0, null, null, null)).Fehler);
+            // Eine Fläche im Projekt braucht nur den Werkstoff, U·A im Projekt keines von beiden.
+            Assert.Equal(400.0, Summenlinie.Parameter(Projekt() with { UebertragerFlaecheM2 = 2.0 }, ps, 57.0, 7.0, null, null, null,
+                null, ZapfUebertragerwerkstoff.Stahl).Uebertrager.UWJeM2K);
+            Assert.Equal(900.0, Summenlinie.Parameter(Projekt() with { UebertragerUaWJeK = 900.0 }, ps, 57.0, 7.0, null, null, null)
+                .Uebertrager.UaWJeK);
+        }
+
+        [Fact]
         public void Die_Groessen_kommen_aus_Projekt_und_Parametersatz()
         {
             Parametersatz ps = Auslegungssatz();
             var hinweise = new List<Auslegungshinweis>();
             var prot = new Herkunftsprotokoll();
             // Die Speichertemperatur wählt die Fassade EINMAL je Gruppe (Speichertemperaturwahl); die Summenlinie übernimmt sie.
-            Summenlinienparameter p = Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, prot, hinweise);
+            Summenlinienparameter p = Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, prot, hinweise,
+                                                            ZapfErzeugerart.Waermepumpe, ZapfUebertragerwerkstoff.Edelstahl);
             Assert.Equal(12.0, p.KaltwasserAuslegungC);
             Assert.Equal(57.0, p.SpeicherC);
             Assert.Equal(0.8, p.Ladungsfaktor);
@@ -317,11 +345,12 @@ namespace EPOS.Kern.Tests
 
             // Ein fehlender Pflichtparameter ist eine benannte Ablehnung, kein Rückfall.
             Assert.Throws<ParametersatzException>(() => Summenlinie.Parameter(Projekt(),
-                Auslegungssatz(null, ZapfAuslegungParameter.LADUNGSFAKTOR), 57.0, 7.0, null, null, null));
+                Auslegungssatz(null, ZapfAuslegungParameter.LADUNGSFAKTOR), 57.0, 7.0, null, null, null,
+                ZapfErzeugerart.Waermepumpe, ZapfUebertragerwerkstoff.Edelstahl));
             // Die Zeitkonstante entscheidet nichts: fehlt k_τ, nur ein Hinweis.
             var h2 = new List<Auslegungshinweis>();
             p = Summenlinie.Parameter(Projekt(), Auslegungssatz(null, ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT),
-                                      57.0, 7.0, null, null, h2);
+                                      57.0, 7.0, null, null, h2, ZapfErzeugerart.Kessel, ZapfUebertragerwerkstoff.Stahl);
             Assert.Null(p.ZeitkonstanteKoeffizient);
             Assert.Contains(h2, h => h.Code == ZapfHinweis.PARAMETER_FEHLT);
         }

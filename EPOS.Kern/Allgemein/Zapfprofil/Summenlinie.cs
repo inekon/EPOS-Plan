@@ -250,11 +250,17 @@ namespace WindowsFormsApplication1
         /// <paramref name="speicherC"/> ist die EINE Speichertemperatur der Gruppe
         /// (<see cref="Speichertemperaturwahl"/>), dieselbe für V_DIN und den Verfahrensvergleich.
         /// <paramref name="erzeugerRueckfallKw"/> gilt, wenn das Projekt keine Erzeugerleistung
-        /// trägt (die Fassade reicht die angesetzte Ladeleistung, 4.7).
+        /// trägt (die Fassade reicht die angesetzte Ladeleistung, 4.7). Nennt das Projekt kein U·A,
+        /// wählt <paramref name="werkstoff"/> den U-Wert (Stahl, Edelstahl); ohne jede
+        /// Übertragerangabe wählt <paramref name="erzeugerart"/> die Schätzformel der Fläche (Kessel
+        /// NA.1, Wärmepumpe NA.2) — fehlt die gebrauchte Angabe, lehnt die Summenlinie benannt ab
+        /// (<see cref="ZapfAuslegungsfehler.UebertragerUnbestimmt"/>), statt ein Paar zu raten (N10).
         /// </summary>
         internal static Summenlinienparameter Parameter(ProjektStand p, Parametersatz ps, double speicherC,
                                                         double? erzeugerRueckfallKw, Zirkulationslast zirkulation,
-                                                        Herkunftsprotokoll prot, ICollection<Auslegungshinweis> hinweise)
+                                                        Herkunftsprotokoll prot, ICollection<Auslegungshinweis> hinweise,
+                                                        ZapfErzeugerart? erzeugerart = null,
+                                                        ZapfUebertragerwerkstoff? werkstoff = null)
         {
             if (p == null)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
@@ -284,13 +290,21 @@ namespace WindowsFormsApplication1
                                      null, null, ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR), null, null);
             else if (p.UebertragerFlaecheM2.HasValue)
                 ue = new Uebertrager(null, null, Auslegungspruefung.NichtNegativ(p.UebertragerFlaecheM2.Value, "die Übertragerfläche"),
-                                     ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_U),
+                                     UWert(ps, werkstoff, "die Übertragerfläche des Projekts", prot),
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR), null, null);
             else
-                ue = new Uebertrager(null, null, null, ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_U),
+            {
+                if (!erzeugerart.HasValue)
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.UebertragerUnbestimmt,
+                        "Nicht rechenbar — ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel "
+                        + "hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben.");
+                var (steigung, achsabschnitt) = ZapfAuslegungParameter.Uebertragerflaeche(erzeugerart.Value);
+                ue = new Uebertrager(null, null, null, UWert(ps, werkstoff, "die Schätzformel der Übertragerfläche", prot),
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR),
-                                     ps.Wert(ZapfAuslegungParameter.UEBERTRAGERFLAECHE_STEIGUNG),
-                                     ps.Wert(ZapfAuslegungParameter.UEBERTRAGERFLAECHE_ACHSABSCHNITT));
+                                     ps.Wert(steigung), ps.Wert(achsabschnitt));
+                prot?.Vermerken("", "Auslegung.Uebertragerflaeche", null, "m²", Wertstatus.Vorgabe, ps.Lies(steigung).Herkunft,
+                                "Schätzformel " + (erzeugerart.Value == ZapfErzeugerart.Waermepumpe ? "NA.2 (Wärmepumpe)" : "NA.1 (Kessel)"));
+            }
 
             double? erzeuger = p.ErzeugerKw ?? erzeugerRueckfallKw;
             if (p.ErzeugerKw.HasValue)
@@ -315,6 +329,19 @@ namespace WindowsFormsApplication1
                 ZeitkonstanteKoeffizient = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT,
                     "Die Zeitkonstante des Speichers wird nicht angezeigt.", hinweise)
             });
+        }
+
+        /// <summary>Der U-Wert [W/(m²·K)] zum Werkstoff des Übertragers; ohne Werkstoff benannte Ablehnung.</summary>
+        private static double UWert(Parametersatz ps, ZapfUebertragerwerkstoff? werkstoff, string wozu, Herkunftsprotokoll prot)
+        {
+            if (!werkstoff.HasValue)
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.UebertragerUnbestimmt,
+                    "Nicht rechenbar — " + wozu + " braucht den U-Wert des Übertragers, und der hängt am Werkstoff "
+                    + "(Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben.");
+            ZapfParameterwert pw = ps.Lies(ZapfAuslegungParameter.UebertragerU(werkstoff.Value));
+            prot?.Vermerken("", "Auslegung.UebertragerU", pw.Wert, "W/(m²·K)", Wertstatus.Vorgabe, pw.Herkunft,
+                            "Werkstoff " + werkstoff.Value);
+            return pw.Wert;
         }
 
         /// <summary>Prüft die Größen; jede Verletzung ist eine benannte Ablehnung.</summary>

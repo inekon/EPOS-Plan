@@ -16,6 +16,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Nenninhalte; <c>null</c> = keine Rundung.</summary>
         public Nenninhaltsliste Nenninhalte { get; init; }
+
+        /// <summary>
+        /// Die Erzeugerart am Speicher — wählt die Schätzformel der Übertragerfläche (Kessel NA.1,
+        /// Wärmepumpe NA.2); <c>null</c> = unbekannt, dann ohne Übertrager im Projekt nicht
+        /// rechenbar. Eine Laufangabe (N10), gespeichert wird sie erst mit der Oberfläche (Z4).
+        /// </summary>
+        public ZapfErzeugerart? Erzeugerart { get; init; }
+
+        /// <summary>Der Werkstoff des Übertragers — wählt den U-Wert; <c>null</c> = unbekannt (N10, Laufangabe).</summary>
+        public ZapfUebertragerwerkstoff? Uebertragerwerkstoff { get; init; }
     }
 
     /// <summary>
@@ -245,7 +255,8 @@ namespace WindowsFormsApplication1
             var namen = new List<string>();
             var paare = new List<(ZonenStand, Nutzungsart)>();
             bool wohnen = true, allePersonen = true;
-            double bezugsmenge = 0.0, personenBezug = 0.0;
+            double personenBezug = 0.0;
+            var bezugsmengen = new SortedDictionary<ZapfBezugsart, double>();
             foreach (Zonenarbeit w in zonen)
             {
                 bausteine.Add(w.Baustein);
@@ -253,7 +264,8 @@ namespace WindowsFormsApplication1
                 paare.Add((w.Stand, w.Art));
                 wohnen &= w.Art.Kalender == ZapfKalenderart.Wohnen;
                 allePersonen &= w.Art.Bezug == ZapfBezugsart.Personen;
-                bezugsmenge += w.Menge.Bezugsmenge;
+                bezugsmengen.TryGetValue(w.Art.Bezug, out double m);
+                bezugsmengen[w.Art.Bezug] = m + w.Menge.Bezugsmenge;
                 if (w.Art.Bezug == ZapfBezugsart.Personen) personenBezug += w.Menge.Bezugsmenge;
             }
             Wochenreihe woche = Wochenreihe.Bilden(bausteine, wochentagJan1, region);
@@ -345,7 +357,7 @@ namespace WindowsFormsApplication1
                         tag = Bedarfstag.Din4708(din.WzKwh.Value, Zapfblock.AusParametern(ps), din.KennzahlN.Value);
                         break;
                     default:
-                        tag = Bedarfstag.AusKatalog(gewaehlt, Bedarfstag.Skalierung(gewaehlt, bezugsmenge));
+                        tag = Katalogtag(gewaehlt, bezugsmengen, zonen, ps, kwAuslegung, prot);
                         break;
                 }
             }
@@ -568,7 +580,7 @@ namespace WindowsFormsApplication1
             try
             {
                 Summenlinienparameter slp = Summenlinie.Parameter(p, ps, temperatur.SpeicherC, vorlage?.Ladeleistung.Angesetzt,
-                    new Zirkulationslast(zirk.Angesetzt, laufzeit), prot, lauf.Hinweise);
+                    new Zirkulationslast(zirk.Angesetzt, laufzeit), prot, lauf.Hinweise, a.Erzeugerart, a.Uebertragerwerkstoff);
                 if (temperatur.Schnellpfad) slp = Summenlinie.Schnellpfad(slp, ps);
                 double? n = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.WERTEPAARE,
                     "Die Wertepaarkurve der Summenlinie entfällt.", lauf.Hinweise);
@@ -580,12 +592,13 @@ namespace WindowsFormsApplication1
 
             if (lauf.Summenlinie != null && a.Nenninhalte != null)
             {
+                // Über dem Listenende: Mehrspeicheranlage prüfen — auch ohne Raster-Parameter (N10).
                 double v = lauf.Summenlinie.Punkt.VolumenL;
-                double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
-                    "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", lauf.Hinweise);
-                IReadOnlyList<double> liste = a.Nenninhalte.WerteL;
-                if (v <= liste[liste.Count - 1] || raster.HasValue)
-                    lauf.NenninhaltL = a.Nenninhalte.Naechster(v, raster ?? 1.0, out _);
+                lauf.NenninhaltL = a.Nenninhalte.Runden(v, ps, lauf.Hinweise, out bool ueberEnde);
+                if (ueberEnde)
+                    lauf.Hinweise.Add(new Auslegungshinweis("MEHRSPEICHER",
+                        "Der empfohlene Punkt " + Auslegungstext.G(v) + " l liegt über dem größten Nenninhalt "
+                        + Auslegungstext.G(a.Nenninhalte.GroessterL) + " l — Mehrspeicheranlage prüfen.", true));
             }
             return lauf;
         }
@@ -593,6 +606,57 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Hilfen
         // =================================================================================
+
+        /// <summary>
+        /// Ein Katalogtag der Gruppe (Quellen 2, 4, 5 und gespeicherte Tage, 4.5; N10): skaliert auf
+        /// die Bezugsmenge der Gruppe, wenn der Tag eine trägt — nur, wenn alle Zonen DIESELBE
+        /// Bezugsart haben (Mengen verschiedener Bezugsarten werden nie summiert, sonst benannte
+        /// Ablehnung) — und auf θ_KW,Auslegung des Projekts umgerechnet. Ein Katalogtag gilt bei
+        /// θ_KW,A des Parametersatzes (<c>A100.Kaltwasser.Auslegung</c>):
+        /// <c>f = (θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog)</c> mit der Zapftemperatur der
+        /// Zonen; tragen die Zonen verschiedene Zapftemperaturen, ist die Umrechnung nicht eindeutig
+        /// und wird benannt abgelehnt. Ohne abweichendes θ_KW,A ist f = 1.
+        /// </summary>
+        private static Bedarfstag Katalogtag(BedarfstagKatalogzeile zeile, SortedDictionary<ZapfBezugsart, double> bezugsmengen,
+                                             List<Zonenarbeit> zonen, Parametersatz ps, double kwAuslegung,
+                                             Herkunftsprotokoll prot)
+        {
+            double? ziel = null;
+            if (zeile?.Bezugsmenge != null && zeile.Bezugsmenge.Value > 0)
+            {
+                if (bezugsmengen.Count != 1)
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
+                        "Nicht rechenbar — der Katalogtag „" + zeile.Bezeichner + "“ wird auf die Bezugsmenge skaliert, die Zonen "
+                        + "der Gruppe tragen aber verschiedene Bezugsarten (" + string.Join(", ", bezugsmengen.Keys)
+                        + "); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren.");
+                foreach (double m in bezugsmengen.Values) ziel = m;
+            }
+            double faktor = Bedarfstag.Skalierung(zeile, ziel);
+
+            double kwKatalog = ps.Wert(ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG);
+            if (kwAuslegung != kwKatalog)
+            {
+                double? zapf = null;
+                foreach (Zonenarbeit w in zonen)
+                {
+                    if (zapf.HasValue && zapf.Value != w.Temperaturen.ZapfC)
+                        throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
+                            "Nicht rechenbar — der Katalogtag „" + zeile?.Bezeichner + "“ gilt bei θ_KW,A "
+                            + Auslegungstext.Z(kwKatalog) + " °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, "
+                            + "die Umrechnung auf " + Auslegungstext.Z(kwAuslegung) + " °C ist nicht eindeutig.");
+                    zapf = w.Temperaturen.ZapfC;
+                }
+                double oben = Auslegungspruefung.Spreizung(zapf.Value, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung");
+                double unten = Auslegungspruefung.Spreizung(zapf.Value, kwKatalog, "Zapftemperatur − Kaltwasser des Katalogtags");
+                double f = oben / unten;
+                prot?.Vermerken("", "Auslegung.Bedarfstagfaktor", f, "-", Wertstatus.Umgerechnet, zeile?.Herkunft,
+                                "(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = (" + Auslegungstext.Z(zapf.Value) + " − "
+                                + Auslegungstext.Z(kwAuslegung) + ") / (" + Auslegungstext.Z(zapf.Value) + " − "
+                                + Auslegungstext.Z(kwKatalog) + ")");
+                faktor *= f;
+            }
+            return Bedarfstag.AusKatalog(zeile, faktor);
+        }
 
         /// <summary>
         /// Die Tagesmitte der Zapfung [h] wie in der Bilanz (Zirkulationskanal.Tagesmitte, N7 (g)):

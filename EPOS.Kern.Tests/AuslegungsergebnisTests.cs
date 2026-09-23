@@ -42,7 +42,9 @@ namespace EPOS.Kern.Tests
         private static Auslegungseingang Zusatz() => new Auslegungseingang
         {
             Bedarfstage = new[] { Konstruiert },
-            Nenninhalte = Nenninhaltsliste.Aus(new[] { 100.0, 200.0, 300.0, 500.0, 800.0, 1000.0 })
+            Nenninhalte = Nenninhaltsliste.Aus(new[] { 100.0, 200.0, 300.0, 500.0, 800.0, 1000.0 }),
+            Erzeugerart = ZapfErzeugerart.Waermepumpe,
+            Uebertragerwerkstoff = ZapfUebertragerwerkstoff.Edelstahl
         };
 
         [Fact]
@@ -270,6 +272,68 @@ namespace EPOS.Kern.Tests
             Assert.True(g.Grossanlage.DurchSpeicher);
             Assert.Equal(n, g.Grossanlage.VolumenL);
             Assert.False(Grossanlage.Erkennen(v, null, Auslegungssatz(zwischen)).Gross);
+        }
+
+        /// <summary>Ein Referenztag des Katalogs mit Bezugsmenge 15 (erfunden).</summary>
+        private static readonly BedarfstagKatalogzeile Referenztag = new BedarfstagKatalogzeile(6, "Referenztag (fiktiv)",
+            "TEST-Z2", ZapfBedarfstagquelle.A100Referenz, 15.0, Fiktiv,
+            new[] { new Zapfereignis(420, 10, 3.0), new Zapfereignis(1080, 30, 6.0) });
+
+        private static Auslegungsgruppe Durchflussgruppe(ProjektStand projekt, params ZonenStand[] zonen)
+        {
+            Zapfprofileingang e = ZapfprofilTestbau.Eingang(projekt, Auslegungssatz(), zonen);
+            Auslegungseingang a = Zusatz() with { Bedarfstage = new[] { Konstruiert, Referenztag } };
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen, Buero, Art(3, bezug: ZapfBezugsart.Wohneinheiten) }, a);
+            Assert.Empty(r.Ablehnungen);
+            return Assert.Single(r.Gruppen);
+        }
+
+        [Fact]
+        public void Ein_Katalogtag_skaliert_je_Bezugsart_und_gilt_bei_theta_KW_A()
+        {
+            ProjektStand p = Projekt() with { BedarfstagQuelle = ZapfBedarfstagquelle.A100Referenz, IdBedarfstag = 6 };
+            ZonenStand buero = Zone("Büro", 2, 30.0, 1) with { Topologie = ZapfTopologie.Durchfluss };
+
+            // Eine Bezugsart (Personen): Tag mal 30 / 15.
+            Auslegungsgruppe g = Durchflussgruppe(p, buero);
+            Assert.True(Relativ(g.Bedarfstag.TagessummeKwh, 9.0 * 2.0) < 1e-12);
+
+            // Zwei Bezugsarten (Personen und Wohneinheiten): nicht summiert, benannt abgelehnt.
+            ZonenStand weitere = Zone("Wohnungen", 3, 4.0, 2) with { Topologie = ZapfTopologie.Durchfluss };
+            g = Durchflussgruppe(p, buero, weitere);
+            Assert.Null(g.Bedarfstag);
+            Assert.False(g.Empfehlung.Rechenbar);
+            Assert.Contains("verschiedene Bezugsarten", g.Empfehlung.Grund);
+            Assert.Contains(g.Hinweise, h => h.Code == "BEDARFSTAG_NICHT_RECHENBAR");
+
+            // θ_KW,A des Projekts 10 °C statt 12 °C des Katalogs: Faktor (50 − 10) / (50 − 12) bei θ_Zapf 50 °C.
+            g = Durchflussgruppe(p with { KaltwasserAuslegungC = 10.0 }, buero);
+            Assert.True(Relativ(g.Bedarfstag.TagessummeKwh, 9.0 * 2.0 * 40.0 / 38.0) < 1e-12);
+
+            // Verschiedene Zapftemperaturen: die Umrechnung ist nicht eindeutig — benannt abgelehnt.
+            ZonenStand heiss = Zone("Büro 2", 2, 10.0, 2) with { Topologie = ZapfTopologie.Durchfluss, ZapftemperaturC = 55.0 };
+            g = Durchflussgruppe(p with { KaltwasserAuslegungC = 10.0 }, buero, heiss);
+            Assert.Null(g.Bedarfstag);
+            Assert.Contains("nicht eindeutig", g.Empfehlung.Grund);
+            // Ohne abweichendes θ_KW,A stört die Zapftemperatur nicht.
+            Assert.NotNull(Durchflussgruppe(p, buero, heiss).Bedarfstag);
+        }
+
+        [Fact]
+        public void Der_empfohlene_Punkt_ueber_dem_Listenende_warnt_auch_ohne_Raster()
+        {
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 40.0, 1) with
+            {
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
+            };
+            Zapfprofileingang e = ZapfprofilTestbau.Eingang(Projekt(),
+                Auslegungssatz(null, ZapfAuslegungParameter.NENNINHALT_RASTER), wohnhaus);
+            Auslegungseingang a = Zusatz() with { Nenninhalte = Nenninhaltsliste.Aus(new[] { 10.0, 20.0 }) };
+            Auslegungsgruppe g = Assert.Single(ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen }, a).Gruppen);
+            Assert.True(g.Empfehlung.VolumenL > 20.0);
+            Assert.Null(g.Empfehlung.NenninhaltL);
+            Assert.Contains(g.Hinweise, h => h.Code == "MEHRSPEICHER" && h.Text.StartsWith("Der empfohlene Punkt", StringComparison.Ordinal));
+            Assert.Contains(g.Hinweise, h => h.Code == ZapfHinweis.PARAMETER_FEHLT && h.Text.Contains(ZapfAuslegungParameter.NENNINHALT_RASTER));
         }
 
         [Fact]
