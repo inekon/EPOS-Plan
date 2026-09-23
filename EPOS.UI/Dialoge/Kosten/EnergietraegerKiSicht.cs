@@ -148,6 +148,40 @@ public sealed class EnergietraegerKiSicht
         set => Setze(s => s.LeistungsModusMonat = value);
     }
 
+    /// <summary>
+    /// Q11 — die Staffelgrenze der zweistufigen Leistungspreis-Staffel [kW]; leer =
+    /// nicht gepflegt. Nur beim Stromträger im Projektkontext
+    /// (<see cref="EnergietraegerStand.MitStaffel"/>) auf der Maske; sonst bleibt
+    /// ein Setzen folgenlos.
+    /// </summary>
+    public double? StaffelGrenze
+    {
+        get => Stand is { MitStaffel: true } ? Stand.StaffelGrenze : null;
+        set => SetzeStaffel(s => s.StaffelGrenze = value);
+    }
+
+    /// <summary>Q11 — Leistungspreis bis zur Staffelgrenze [€/(kW·a)].</summary>
+    public double? StaffelPreis1
+    {
+        get => Stand is { MitStaffel: true } ? Stand.StaffelPreis1 : null;
+        set => SetzeStaffel(s => s.StaffelPreis1 = value);
+    }
+
+    /// <summary>Q11 — Leistungspreis über der Staffelgrenze [€/(kW·a)].</summary>
+    public double? StaffelPreis2
+    {
+        get => Stand is { MitStaffel: true } ? Stand.StaffelPreis2 : null;
+        set => SetzeStaffel(s => s.StaffelPreis2 = value);
+    }
+
+    /// <summary>Wie <see cref="Setze"/>, aber nur, wo die Karte die Staffel zeigt —
+    /// ein Feld, das nicht auf der Maske steht, schreibt der Assistent nicht.</summary>
+    private void SetzeStaffel(Action<EnergietraegerStand> schritt)
+    {
+        if (Stand is not { MitStaffel: true }) return;
+        Setze(schritt);
+    }
+
     /// <summary>Der Heizwert des Trägers.</summary>
     public double Heizwert
     {

@@ -1191,6 +1191,13 @@
         internal static string EtLeistungspreisErl => MyResource.Resource.KI_DLG_ET_LEISTUNGSPREIS_ERL;
         internal static string EtLpModusName => MyResource.Resource.KI_DLG_ET_LPMODUS_NAME;
         internal static string EtLpModusErl => MyResource.Resource.KI_DLG_ET_LPMODUS_ERL;
+        // Q11: die zweistufige Leistungspreis-Staffel des Stromträgers
+        internal static string EtStaffelGrenzeName => MyResource.Resource.ETV_STAFFEL_GRENZE;
+        internal static string EtStaffelGrenzeErl => MyResource.Resource.KI_DLG_ET_STAFFEL_GRENZE_ERL;
+        internal static string EtStaffelPreis1Name => MyResource.Resource.ETV_STAFFEL_PREIS1;
+        internal static string EtStaffelPreis1Erl => MyResource.Resource.KI_DLG_ET_STAFFEL_PREIS1_ERL;
+        internal static string EtStaffelPreis2Name => MyResource.Resource.ETV_STAFFEL_PREIS2;
+        internal static string EtStaffelPreis2Erl => MyResource.Resource.KI_DLG_ET_STAFFEL_PREIS2_ERL;
         internal static string EtHeizwertName => MyResource.Resource.ETV_LBL_HEIZWERT;
         internal static string EtHeizwertErl => MyResource.Resource.KI_DLG_ET_HEIZWERT_ERL;
         internal static string EtBrennwertName => MyResource.Resource.ETV_LBL_BRENNWERT;

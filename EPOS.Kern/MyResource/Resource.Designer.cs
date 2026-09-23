@@ -9923,6 +9923,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staffelgrenze ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_GRENZE {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen „keine Staffel“. ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_HINWEIS {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis bis zur Grenze ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_PREIS1 {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_PREIS1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis über der Grenze ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_PREIS2 {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_PREIS2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungspreis-Staffel ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis-Staffel (auf die Jahres-Bezugsspitze) ähnelt.
+        /// </summary>
+        public static string ETV_STAFFEL_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_STAFFEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Treffer. ähnelt.
         /// </summary>
         public static string ETV_SUCHE_LEER {
@@ -26419,6 +26473,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ET_SO2_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ET_SO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Grenze der zweistufigen Leistungspreis-Staffel in kW: bis zu ihr gilt der erste, darüber der zweite Preis — bemessen an der Viertelstundenspitze des Netzbezugs im Jahr. Nur beim Stromträger im Projekt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STAFFEL_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STAFFEL_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis bis zur Staffelgrenze in €/(kW·a). Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze des Stromträgers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STAFFEL_PREIS1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STAFFEL_PREIS1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis über der Staffelgrenze in €/(kW·a). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STAFFEL_PREIS2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STAFFEL_PREIS2_ERL", resourceCulture);
             }
         }
         

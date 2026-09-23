@@ -23250,4 +23250,31 @@ Möchten Sie das zulassen?</value>
   <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
     <value>Stufe 1, Bezugsspitze nicht bekannt</value>
   </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Staffelgrenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Preis bis zur Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Preis über der Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen „keine Staffel“.</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Leistungspreis-Staffel ließ sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>Die Grenze der zweistufigen Leistungspreis-Staffel in kW: bis zu ihr gilt der erste, darüber der zweite Preis — bemessen an der Viertelstundenspitze des Netzbezugs im Jahr. Nur beim Stromträger im Projekt.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>Der Leistungspreis bis zur Staffelgrenze in €/(kW·a). Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze des Stromträgers.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>Der Leistungspreis über der Staffelgrenze in €/(kW·a).</value>
+  </data>
 </root>

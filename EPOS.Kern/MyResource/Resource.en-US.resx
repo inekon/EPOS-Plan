@@ -23243,4 +23243,31 @@ Do you want to allow this?</value>
   <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
     <value>Tier 1, peak demand unknown</value>
   </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Demand charge tiers (on the annual peak demand)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Tier limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Price up to the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Price above the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Based on the annual 15-minute peak of the grid import: the first price applies up to the limit, the second above it. Maintained tiers replace the demand charge and the seasonal rates of this electricity carrier; empty prices mean "no tiers".</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>The demand charge tiers could not be saved.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>The limit of the two-tier demand charge in kW: the first price applies up to it, the second above it — based on the annual 15-minute peak of the grid import. Electricity carrier in a project only.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>The demand charge up to the tier limit in €/(kW·a). Maintained tiers replace the demand charge and the seasonal rates of the electricity carrier.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>The demand charge above the tier limit in €/(kW·a).</value>
+  </data>
 </root>
