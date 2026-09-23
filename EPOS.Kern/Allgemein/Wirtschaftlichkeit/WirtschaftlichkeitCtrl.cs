@@ -2938,15 +2938,16 @@ namespace WindowsFormsApplication1
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
             //  - B3b: beide Mengen sind NETTO (Erzeugung minus Hilfsstrom, § 4.3);
             //    ohne gepflegten Anteil sind sie zeilengleich den Bruttomengen.
+            //  - E7c2: Betrag und Stunden aus KwkgJahresbetrag — derselbe Ausdruck wie im
+            //    Weg je Anlage und in der Überlagerung (ohne Einspeisung + 0,0: bitgleich).
             double bonusVoll;
             if (mitMatrix)
-                bonusVoll = eigenNettoMWh * 1000.0 * (satzEigen / 100.0)
-                          + einspNettoMWh * 1000.0 * (satzEinsp / 100.0);
+                bonusVoll = KwkgJahresbetrag.Voll(eigenNettoMWh, satzEigen, einspNettoMWh, satzEinsp);
             else
-                bonusVoll = stromNettoMWh * 1000.0 * (satzEigen / 100.0);
+                bonusVoll = KwkgJahresbetrag.Voll(stromNettoMWh, satzEigen, 0, 0);
             if (bonusVoll <= 0) return null;
 
-            double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
+            double abschlag = KwkgJahresbetrag.Abschlag(p.KwkgAbschlagNegativ);
 
             int jahre = Math.Max(1, p.Betrachtungszeitraum);
             double[] reihe = new double[jahre + 1];
@@ -2964,7 +2965,7 @@ namespace WindowsFormsApplication1
                                           : StaffelDeckel(staffel, beginnJeAnlage[i] + t - 1));
                 deckel /= gewichtSumme;
 
-                double verguetet = Math.Min(vbh, Math.Min(deckel, rest)) * (1.0 - abschlag);
+                double verguetet = KwkgJahresbetrag.VerguetetH(vbh, deckel, rest, abschlag);
                 reihe[t] = bonusVoll * (verguetet / vbh);
                 rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
             }
@@ -3048,7 +3049,10 @@ namespace WindowsFormsApplication1
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
             List<KeyValuePair<int, double>> staffel = _staffelCache;
-            double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
+            // ETAPPE E7c2 (E7c1-Q7): Abschlag, voller Jahresbetrag und vergütete Stunden
+            // stehen in KwkgJahresbetrag — die Überlagerung „Sätze und Herkunft" ruft
+            // dieselben Ausdrücke für ihre „Wirkung Jahr 1".
+            double abschlag = KwkgJahresbetrag.Abschlag(p.KwkgAbschlagNegativ);
             int T = Math.Max(1, p.Betrachtungszeitraum);
 
             // ETAPPE E7c (Befund K-1): die zwei Projektgrößen, die Fall 2 braucht — der
@@ -3129,8 +3133,7 @@ namespace WindowsFormsApplication1
                 // einmalig in jede leere Anlagenzelle geschrieben hat.
                 double satzEigen = SatzEigenDerAnlage(a, hinweise);
                 double satzEinsp = a.SatzEinspCt ?? 0;
-                double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
-                                 + einspMWh * 1000.0 * (satzEinsp / 100.0);
+                double bonusVoll = KwkgJahresbetrag.Voll(eigenMWh, satzEigen, einspMWh, satzEinsp);
                 if (bonusVoll <= 0) continue;
 
                 double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
@@ -3180,7 +3183,7 @@ namespace WindowsFormsApplication1
                     if (rest <= 0) { if (erschoepftAb == 0) erschoepftAb = t; break; }
                     double deckel = deckelFest > 0 ? deckelFest
                                                    : StaffelDeckel(staffel, beginn + t - 1);
-                    double verguetet = Math.Min(vbhAnlage, Math.Min(deckel, rest)) * (1.0 - abschlag);
+                    double verguetet = KwkgJahresbetrag.VerguetetH(vbhAnlage, deckel, rest, abschlag);
                     reihe[t] += bonusVoll * (verguetet / vbhAnlage);
                     if (t == 1) jahr1Modul = bonusVoll * (verguetet / vbhAnlage);
                     rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
@@ -3469,7 +3472,8 @@ namespace WindowsFormsApplication1
                     "KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — " +
                     "der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2)."),
                     a.Bezeichner));
-                return 0;
+                // ETAPPE E7c2: dieselbe Regel, die die Überlagerung für „Wirkung Jahr 1" ruft.
+                return KwkgJahresbetrag.SatzEigenWirksam(satz, fall);
             }
             return satz;
         }
@@ -4451,23 +4455,17 @@ namespace WindowsFormsApplication1
         private static List<KeyValuePair<int, double>> LadeKwkgStaffel()
         {
             var liste = new GesetzKatalog().Reihe(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL);
-            if (liste.Count == 0)
-            {
-                int[,] f = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 }, { 2026, 3300 },
-                             { 2027, 3100 }, { 2028, 2900 }, { 2029, 2700 }, { 2030, 2500 } };
-                for (int i = 0; i < f.GetLength(0); i++)
-                    liste.Add(new KeyValuePair<int, double>(f[i, 0], f[i, 1]));
-            }
+            // ETAPPE E7c2: die Rückfallstaffel steht einmal, in KwkgJahresbetrag — der
+            // Dialog fällt auf dieselben Zahlen zurück.
+            if (liste.Count == 0) liste.AddRange(KwkgJahresbetrag.STAFFEL_RUECKFALL);
             return liste;
         }
 
-        /// <summary>Deckel des Kalenderjahres: letzte Staffelzeile mit JahrVon ≤ Jahr.</summary>
+        /// <summary>Deckel des Kalenderjahres: letzte Staffelzeile mit JahrVon ≤ Jahr
+        /// (<see cref="KwkgJahresbetrag.StaffelDeckel(IReadOnlyList{KeyValuePair{int, double}}, int)"/>).</summary>
         private static double StaffelDeckel(List<KeyValuePair<int, double>> staffel, int jahr)
         {
-            double deckel = staffel.Count > 0 ? staffel[0].Value : 3500;
-            foreach (KeyValuePair<int, double> z in staffel)
-                if (z.Key <= jahr) deckel = z.Value; else break;
-            return deckel;
+            return KwkgJahresbetrag.StaffelDeckel(staffel, jahr);
         }
 
         /// <summary>

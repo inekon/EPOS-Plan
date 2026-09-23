@@ -24188,6 +24188,138 @@ Do you want to allow this?</value>
   <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
   </data>
+  <data name="BHW_UEB_ART" xml:space="preserve">
+    <value>Type of plant (sec. 8 CHP Act)</value>
+  </data>
+  <data name="BHW_UEB_ART_HINWEIS" xml:space="preserve">
+    <value>The share of the new-build costs is the field in the form; it only counts for modernised and retrofitted.</value>
+  </data>
+  <data name="BHW_UEB_EIGENFALL" xml:space="preserve">
+    <value>Self-supply under sec. 6(3)</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
+  <data name="BHW_UEB_VBH" xml:space="preserve">
+    <value>{0} full-load hours</value>
+  </data>
+  <data name="BHW_UEB_CT_KWH" xml:space="preserve">
+    <value>{0} ct/kWh</value>
+  </data>
+  <data name="BHW_UEB_Z_EINSP" xml:space="preserve">
+    <value>Rate, export</value>
+  </data>
+  <data name="BHW_UEB_Z_EIGEN" xml:space="preserve">
+    <value>Rate, self-consumption</value>
+  </data>
+  <data name="BHW_UEB_Z_KONTINGENT" xml:space="preserve">
+    <value>Full-load hour quota</value>
+  </data>
+  <data name="BHW_UEB_Z_DECKEL" xml:space="preserve">
+    <value>Annual cap</value>
+  </data>
+  <data name="BHW_UEB_STAFFEL" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="BHW_UEB_GILT_STAFFEL" xml:space="preserve">
+    <value>Scale — {0} h/a in {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_OHNE" xml:space="preserve">
+    <value>none — no suggestion, no bonus</value>
+  </data>
+  <data name="BHW_UEB_INFO_SAETZE" xml:space="preserve">
+    <value>Empty means: the suggestion applies and is written into the form field on Apply; quota and cap then stay empty and the calculation derives them itself (sec. 8(1) to (3), scale of sec. 8(4)). An own value applies permanently, even if the catalogue later supplies a different suggestion. "Apply suggestion" clears the field: the way back. In the form, 0 remains "no bonus".</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_JAHR1" xml:space="preserve">
+    <value>Effect in year 1 ({0})</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG" xml:space="preserve">
+    <value>paid {0} of {1} full-load hours (cap {2} h/a) = {3} → {4} €</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG_FORMEL" xml:space="preserve">
+    <value>{0} MWh × {1} ct × {2} + {3} MWh × {4} ct × {2} = {5} + {6} € — quantities from the booked run</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_OHNE_LAUF" xml:space="preserve">
+    <value>No quantities without a booked run — the effect appears after "Calculate" in the economic efficiency tab.</value>
+  </data>
+  <data name="BHW_UEB_FUSS" xml:space="preserve">
+    <value>Apply writes rates, quota, cap, choices and mode into the form fields — nothing is saved until "Save".</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_STEUERN" xml:space="preserve">
+    <value>Choice and origin…</value>
+  </data>
+  <data name="BHW_UEB_G_ENERGIEST" xml:space="preserve">
+    <value>Energy tax (EnergieStG)</value>
+  </data>
+  <data name="BHW_UEB_G_STROMST" xml:space="preserve">
+    <value>Electricity tax (StromStG) — project</value>
+  </data>
+  <data name="BHW_UEB_SCOPE" xml:space="preserve">
+    <value>Applies to</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_PROJEKT" xml:space="preserve">
+    <value>Project default for all plants</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_ANLAGE" xml:space="preserve">
+    <value>this plant only</value>
+  </data>
+  <data name="BHW_UEB_ES_WAHL" xml:space="preserve">
+    <value>Energy tax relief</value>
+  </data>
+  <data name="BHW_UEB_ES_AUFTEILUNG" xml:space="preserve">
+    <value>Fuel split electricity/heat (sec. 53 only)</value>
+  </data>
+  <data name="BHW_UEB_ES_KEINE" xml:space="preserve">
+    <value>→ no relief, 0 €</value>
+  </data>
+  <data name="BHW_UEB_ES_53" xml:space="preserve">
+    <value>→ full tax rate on the fuel used for electricity generation</value>
+  </data>
+  <data name="BHW_UEB_ES_53A" xml:space="preserve">
+    <value>→ partial rate for high-efficiency CHP plants, annual efficiency at least 70 %</value>
+  </data>
+  <data name="BHW_UEB_ES_54" xml:space="preserve">
+    <value>→ heating fuels, manufacturing only, less the base amount</value>
+  </data>
+  <data name="BHW_UEB_AUF_VOLL" xml:space="preserve">
+    <value>→ default</value>
+  </data>
+  <data name="BHW_UEB_AUF_ENERGETISCH" xml:space="preserve">
+    <value>→ only the electrical share of the fuel — a deliberate lower bound</value>
+  </data>
+  <data name="BHW_UEB_ES_GEBUCHT" xml:space="preserve">
+    <value>{0}: {1} × {2} {3} = {4} €</value>
+  </data>
+  <data name="BHW_UEB_ES_OHNE" xml:space="preserve">
+    <value>The booked run shows no energy tax relief for this plant.</value>
+  </data>
+  <data name="BHW_UEB_UA" xml:space="preserve">
+    <value>Type of business</value>
+  </data>
+  <data name="BHW_UEB_UA_KEIN" xml:space="preserve">
+    <value>→ sec. 9b and sec. 54 do not apply</value>
+  </data>
+  <data name="BHW_UEB_UA_PROD" xml:space="preserve">
+    <value>→ sec. 9b relief on grid purchases, sec. 54 possible</value>
+  </data>
+  <data name="BHW_UEB_UA_LAND" xml:space="preserve">
+    <value>→ as manufacturing</value>
+  </data>
+  <data name="BHW_UEB_BEFREIUNG" xml:space="preserve">
+    <value>Exemption sec. 9(1) no. 3</value>
+  </data>
+  <data name="BHW_UEB_MODUS" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="BHW_UEB_MODUS_AUSWEIS" xml:space="preserve">
+    <value>→ shown only, not in the net present value</value>
+  </data>
+  <data name="BHW_UEB_MODUS_ERLOES" xml:space="preserve">
+    <value>→ revenue in the net present value (block A), always with a coherence warning</value>
+  </data>
+  <data name="BHW_UEB_ST_GEBUCHT" xml:space="preserve">
+    <value>Relief on grid purchases (sec. 9b) {0} € · exemption of self-consumption (sec. 9(1) no. 3) {1} € — {2}</value>
+  </data>
   <data name="BHW_A_KWK_FALL1" xml:space="preserve">
     <value>CHP electricity (sec. 2 no. 16 CHP Act): case 1 — net electricity generation.</value>
   </data>
