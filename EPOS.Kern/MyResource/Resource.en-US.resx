@@ -8610,7 +8610,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>No controllable form is open. Controllable are: {0}.</value>
   </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
-    <value>The named fields belong to the form "{0}". It is not open right now — the action dialog_oeffnen ({1}) opens it; then select the row and the values can be set.</value>
+    <value>The named fields belong to the form “{0}”. It is not open right now — the action dialog_oeffnen ({1}) leads there. In an administration the field “satz” selects the catalogue record; then the values can be set and saved with dialog_speichern.</value>
   </data>
   <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
     <value>Several controllable forms are open ({0}). Please name the form explicitly.</value>
@@ -19913,8 +19913,8 @@ Do you want to allow this?</value>
   <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
     <value>billed directly in kWh</value>
   </data>
-  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
-    <value>Direct billing: {0} €/kWh</value>
+  <data name="ETV_FORMEL_JE_KWH" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh/{2} = {3} €/{2} (stored per {2})</value>
   </data>
   <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
     <value>Calorific value [{0}]</value>
@@ -22182,13 +22182,13 @@ Do you want to allow this?</value>
     <value>The total over all profiles assigned to this project.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
-    <value>The marked catalogue record. Setting it marks it in the list; the information block follows.</value>
+    <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
   </data>
   <data name="KI_DLG_BADM_TYP_ERL" xml:space="preserve">
-    <value>The type of the marked record from its header record.</value>
+    <value>The type of the marked record, chosen from the type list; it determines the weekly profile.</value>
   </data>
   <data name="KI_DLG_BADM_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>The description of the marked record.</value>
+    <value>The description of the marked record as free text.</value>
   </data>
   <data name="KI_DLG_BADM_JAHRESSUMME_NAME" xml:space="preserve">
     <value>Annual total</value>
@@ -22317,7 +22317,7 @@ Do you want to allow this?</value>
     <value>Gross calorific value of the fuel. Needed for condensing appliances; shown only on carriers that carry it.</value>
   </data>
   <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
-    <value>The unit the energy price refers to (kilowatt hour, litre, cubic metre, tonne). It determines how the price is converted into kilowatt hours.</value>
+    <value>The unit in which the energy price is entered: the quantity unit of the carrier (such as litre, cubic metre or kilogram) or the kilowatt hour once a net calorific value is maintained. The price is always stored per quantity unit; switching only converts the display via the net calorific value.</value>
   </data>
   <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
     <value>The unit the price chain calculates in — display only. It follows the price basis and the active conversion rules.</value>
@@ -24857,6 +24857,12 @@ Do you want to allow this?</value>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>This database cannot store the selected price basis yet (schema version before 112) — the card shows the billing unit.</value>
   </data>
+  <data name="ETV_PREISBASIS_ARIA" xml:space="preserve">
+    <value>Unit of the energy price</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_HEIZWERT" xml:space="preserve">
+    <value>€/kWh can be selected once a net calorific value is maintained.</value>
+  </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Heat sinks: {0}</value>
   </data>
@@ -26212,5 +26218,59 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
     <value>{0} records imported.</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_NAME" xml:space="preserve">
+    <value>Selected record</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_ERL" xml:space="preserve">
+    <value>The catalogue record whose values the record sheet shows. Setting it selects the row in the list – like a click; with unsaved changes, save or discard first.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of the selected catalogue record; it is the key of the record and read-only here – a record gets a different name via “Duplicate…”.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
+    <value>The investment cost of the unit according to the catalogue, in euros.</value>
+  </data>
+  <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
+    <value>The space the unit needs in the installation room, in cubic metres.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
+    <value>The maintenance costs of the boiler; the field “Unit” states what they refer to.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
+    <value>What the maintenance costs refer to, as stated in the catalogue (free text).</value>
+  </data>
+  <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>The expected service life of the unit in years.</value>
+  </data>
+  <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
+    <value>The manufacturer’s figure for the emission of {0} per MWh; it is maintained here, calculations use the emission catalogue of the energy carrier.</value>
+  </data>
+  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
+    <value>The cost item “{0}” of the module in euros; the five items together make up the investment from which the investment per kWel is calculated.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
+    <value>The investment per kilowatt of electrical output; it is calculated from the five cost items and is therefore read-only.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
+    <value>The maintenance costs per kilowatt-hour of electricity generated, in euros.</value>
+  </data>
+  <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
+    <value>The catalogue value “{0}” of the selected record.</value>
+  </data>
+  <data name="KI_DLG_KBROW_NURLESEN" xml:space="preserve">
+    <value>This administration is open for viewing only; values cannot be changed here.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT_WEG" xml:space="preserve">
+    <value>Nothing can be set in “{0}” right now: {1}</value>
+  </data>
+  <data name="KI_DLG_BADM_MONAT_ERL" xml:space="preserve">
+    <value>The demand of the selected record in {0}; all twelve monthly values are required, the annual total results from them.</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_SATZ" xml:space="preserve">
+    <value>No record is selected in “{0}”; select the record first (field “satz”).</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
+    <value>There is nothing to save in “{0}” – no field has been changed.</value>
   </data>
 </root>

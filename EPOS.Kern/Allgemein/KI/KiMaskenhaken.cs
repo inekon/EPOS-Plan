@@ -90,6 +90,19 @@ namespace WindowsFormsApplication1
         public Func<bool> Schreibgeschuetzt { get; set; }
 
         /// <summary>
+        /// WARUM der Satz geschuetzt ist, in den Worten des Dialogs — und welcher Weg
+        /// bleibt (Welle #456). <c>null</c> oder leer = die allgemeine Absage
+        /// „gehoert zur Auslieferung".
+        /// </summary>
+        /// <remarks>
+        /// Eine Verwaltung kennt ZWEI Schutzgruende, und der Anwender braucht den
+        /// richtigen: Ein Auslieferungssatz wird ueber „Duplizieren…" zum eigenen Satz,
+        /// eine nur zum Ansehen geoeffnete Verwaltung gar nicht. Die allgemeine Absage
+        /// des Kerns kennt keinen der beiden Wege.
+        /// </remarks>
+        public Func<string> Schreibschutzgrund { get; set; }
+
+        /// <summary>
         /// Der Speicherweg des Dialogs — sein OK-/Speichern-Knopf (Anwenderentscheid
         /// KI‑D‑Q4). <c>null</c> = diese Maske speichert nicht ueber den Assistenten.
         /// </summary>
@@ -157,6 +170,18 @@ namespace WindowsFormsApplication1
             if (haken == null) return false;
             try { return haken(); }
             catch (Exception) { return false; }
+        }
+
+        /// <summary>
+        /// Der Schutzgrund des Dialogs; leer = keiner angemeldet (dann gilt die
+        /// allgemeine Absage). Ein werfender Haken zaehlt als leer.
+        /// </summary>
+        public string Schutzgrund()
+        {
+            Func<string> haken = Schreibschutzgrund;
+            if (haken == null) return "";
+            try { return haken() ?? ""; }
+            catch (Exception) { return ""; }
         }
     }
 }

@@ -11102,15 +11102,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung: {0} €/kWh ähnelt.
-        /// </summary>
-        public static string ETV_FORMEL_DIREKT_BASIS {
-            get {
-                return ResourceManager.GetString("ETV_FORMEL_DIREKT_BASIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung nach kWh ähnelt.
         /// </summary>
         public static string ETV_FORMEL_DIREKT_KWH {
@@ -11125,6 +11116,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_FORMEL_JE_EINHEIT {
             get {
                 return ResourceManager.GetString("ETV_FORMEL_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/kWh × {1} kWh/{2} = {3} €/{2} (gespeichert je {2}) ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_JE_KWH {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_JE_KWH", resourceCulture);
             }
         }
         
@@ -11503,6 +11503,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_LUECKE_TITEL {
             get {
                 return ResourceManager.GetString("ETV_LUECKE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit des Arbeitspreises ähnelt.
+        /// </summary>
+        public static string ETV_PREISBASIS_ARIA {
+            get {
+                return ResourceManager.GetString("ETV_PREISBASIS_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWh ist wählbar, sobald ein Heizwert gepflegt ist. ähnelt.
+        /// </summary>
+        public static string ETV_PREISBASIS_OHNE_HEIZWERT {
+            get {
+                return ResourceManager.GetString("ETV_PREISBASIS_OHNE_HEIZWERT", resourceCulture);
             }
         }
         
@@ -28169,6 +28187,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMIN_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMIN_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ ist kein Satz gewählt; erst den Satz wählen (Feld „satz“). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMIN_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMIN_OHNE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
@@ -28187,7 +28223,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes als freier Text. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_BESCHREIBUNG_ERL {
             get {
@@ -28214,7 +28250,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarf des gewählten Satzes im {0}; alle zwölf Monatswerte sind Pflicht, die Jahressumme ergibt sich aus ihnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_SATZ_ERL {
             get {
@@ -28223,7 +28268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes aus seinem Kopfsatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes, gewählt aus der Typliste; er bestimmt das Wochenprofil. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_TYP_ERL {
             get {
@@ -29474,7 +29519,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der der Arbeitspreis eingegeben wird: die Mengeneinheit des Trägers (etwa Liter, Kubikmeter oder Kilogramm) oder die Kilowattstunde, sobald ein Heizwert gepflegt ist. Gespeichert wird immer der Preis je Mengeneinheit; ein Wechsel rechnet nur die Anzeige über den Heizwert um. ähnelt.
         /// </summary>
         public static string KI_DLG_ET_PREISBASIS_ERL {
             get {
@@ -30941,6 +30986,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des gewählten Katalogsatzes; er ist der Schlüssel des Satzes und hier nur lesbar – einen anderen Namen bekommt ein Satz über „Duplizieren…“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_EMISSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_EMISSION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogwert „{0}“ des gewählten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_FELD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_FELD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investitionskosten des Geräts laut Katalog in Euro. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_INVEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_INVEST_KWEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_KWEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_KOSTENPOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_KOSTENPOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Verwaltung ist nur zum Ansehen geöffnet; Werte lassen sich hier nicht ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_NURLESEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_NURLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die erwartete Nutzungsdauer des Geräts in Jahren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Platzbedarf des Geräts im Aufstellraum in Kubikmetern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_RAUMBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_RAUMBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz, dessen Werte das Stammblatt zeigt. Ihn zu setzen wählt die Zeile in der Liste – wie ein Klick; bei ungespeicherten Änderungen erst speichern oder verwerfen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_SATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Satz ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_SATZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_SATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text). ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_KWHEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_KWHEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}. ähnelt.
         /// </summary>
         public static string KI_DLG_KEINE_OFFEN {
@@ -31796,7 +31967,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_NICHT_OFFEN {
             get {
@@ -37003,6 +37174,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_SATZ_GESCHUETZT {
             get {
                 return ResourceManager.GetString("KI_FELD_SATZ_GESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ lässt sich gerade nichts setzen: {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_SATZ_GESCHUETZT_WEG {
+            get {
+                return ResourceManager.GetString("KI_FELD_SATZ_GESCHUETZT_WEG", resourceCulture);
             }
         }
         

@@ -58,7 +58,7 @@ public class EnergietraegerDialogTests : EposBunitContext
             EinheitBrennwert = "kWh/Nm³",
             EinheitLeistungspreis = "€/(kW·a)",
             Basiseinheit = "Nm³",
-            Preisbasen = new[] { (0, "Nm³"), (1, "kWh") },
+            Preisbasen = new[] { (0, "€/Nm³"), (1, "€/kWh") },
             PreisbasisId = 0,
             PreisJeKwh = "0,0644 €",
             FormelText = "0,65 € ÷ 10,10 kWh = 0,0644 €/kWh",
@@ -394,8 +394,10 @@ public class EnergietraegerDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Block D ist zugeklappt und geht mit dem Hausknopf auf — die Preisbasis, die
-    /// Regeln und der Verstoßhinweis stehen darin.
+    /// Block D ist zugeklappt und geht mit dem Hausknopf auf — die Basiseinheit,
+    /// die Regeln und der Verstoßhinweis stehen darin. Die Preisbasis steht NICHT
+    /// mehr darin, sondern am Arbeitspreis (ET-D-4): Sie ist auch bei zugeklapptem
+    /// Block wählbar.
     /// </summary>
     [Fact]
     public void Block_Einheiten_steht_zu_und_geht_mit_dem_Hausknopf_auf()
@@ -404,15 +406,25 @@ public class EnergietraegerDialogTests : EposBunitContext
 
         var knopf = cut.Find(".epos-traegerkarte .epos-modulparameter-knopf");
         Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
-        Assert.DoesNotContain("Preisbasis", cut.Markup);
+        Assert.DoesNotContain("Basiseinheit:", cut.Markup);
+        Assert.DoesNotContain("prüfen die Einheitenkette", cut.Markup);
+        Assert.NotNull(PreisbasisListe(cut));
 
         knopf.Click();
 
+        var block = cut.Find(".epos-traegerkarte .epos-modulparameter");
         Assert.Equal("true", cut.Find(".epos-traegerkarte .epos-modulparameter-knopf")
                                 .GetAttribute("aria-expanded"));
-        Assert.Contains("Preisbasis", cut.Markup);
-        Assert.Contains("prüfen die Einheitenkette", cut.Markup);
+        Assert.Contains("Basiseinheit: Nm³", block.TextContent);
+        Assert.Contains("prüfen die Einheitenkette", block.TextContent);
+        Assert.Empty(block.QuerySelectorAll("select"));
     }
+
+    /// <summary>Die Klappliste der Preisbasis — erkannt an ihrer Option „€/Nm³".</summary>
+    private static IElement? PreisbasisListe(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll("select")
+              .FirstOrDefault(s => s.QuerySelectorAll("option")
+                                    .Any(o => o.TextContent.Trim() == "€/Nm³"));
 
     /// <summary>Klappt Block D „Einheiten und Umrechnung" auf.</summary>
     private static void ZeigeEinheiten(IRenderedComponent<EnergietraegerDialog> cut)
@@ -873,14 +885,11 @@ public class EnergietraegerDialogTests : EposBunitContext
     {
         int? gemeldet = null;
         var cut = Zeige(p => p.Add(x => x.PreisbasisGewechselt, (int id) => gemeldet = id));
-        ZeigeEinheiten(cut);
 
-        var feld = cut.FindAll("select")
-                      .First(s => s.QuerySelectorAll("option")
-                                   .Any(o => o.TextContent.Trim() == "Nm³"));
+        var feld = PreisbasisListe(cut)!;
 
         var texte = feld.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Nm³", "kWh" }, texte);
+        Assert.Equal(new[] { "€/Nm³", "€/kWh" }, texte);
         Assert.Equal(texte.Length, texte.Distinct().Count());
 
         // Der Wert der Option ist die Id des Standes, nicht ihr Listenplatz.
@@ -888,6 +897,75 @@ public class EnergietraegerDialogTests : EposBunitContext
                      feld.QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToArray());
 
         feld.Change("1");
+        Assert.Equal(1, gemeldet);
+    }
+
+    /// <summary>
+    /// <b>ET-D-4 (Anwenderwunsch):</b> Die Preisbasis steht in Block A DIREKT unter
+    /// dem Arbeitspreis — ohne eigene Beschriftung, wie der Leistungspreis-Modus;
+    /// die Sprachausgabe hört „Einheit des Arbeitspreises".
+    /// </summary>
+    [Fact]
+    public void Die_Preisbasis_steht_direkt_unter_dem_Arbeitspreis()
+    {
+        var cut = Zeige();
+
+        IElement blockA = cut.FindAll(".epos-blockspalte")[0];
+        var felder = blockA.QuerySelectorAll(".epos-formularraster > .epos-feld");
+
+        Assert.Contains("Arbeitspreis", felder[0].TextContent);
+        IElement? liste = felder[1].QuerySelector("select");
+        Assert.NotNull(liste);
+        Assert.Equal(new[] { "€/Nm³", "€/kWh" },
+                     liste!.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.Equal("Einheit des Arbeitspreises", liste.GetAttribute("aria-label"));
+        Assert.Null(felder[1].QuerySelector(".epos-feld-text"));
+    }
+
+    /// <summary>
+    /// Führt ein Träger nur EINE Einheit (Strom, Fernwärme), steht keine Liste da —
+    /// die Einheit am Feld genügt. Fehlt „€/kWh" nur, weil kein Heizwert gepflegt
+    /// ist, sagt es die leise Zeile der Hülle.
+    /// </summary>
+    [Fact]
+    public void Mit_einer_Einheit_steht_keine_Liste_und_die_Luecke_wird_genannt()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.Preisbasen = new[] { (0, "€/Nm³") };
+        stand.PreisbasisHinweis = "€/kWh ist wählbar, sobald ein Heizwert gepflegt ist.";
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        Assert.Null(PreisbasisListe(cut));
+        string blockA = cut.FindAll(".epos-blockspalte")[0].TextContent;
+        Assert.Contains("€/kWh ist wählbar, sobald ein Heizwert gepflegt ist.", blockA);
+
+        EnergietraegerStand strom = Stand();
+        strom.Preisbasen = new[] { (0, "€/kWh") };
+        var zweite = Zeige(ansicht: new EnergietraegerAnsicht { Stand = strom });
+        Assert.Empty(zweite.FindAll(".epos-blockspalte")[0]
+                           .QuerySelectorAll(".epos-formularraster option")
+                           .Where(o => o.TextContent.Trim() == "€/kWh"));
+    }
+
+    /// <summary>
+    /// Der Assistent setzt die Preisbasis über DENSELBEN Weg wie die Klappliste
+    /// (<c>PreisbasisGewechselt</c>) — die Hülle rechnet dort um, der gespeicherte
+    /// Preis bleibt. Ein bloßes Setzen der Id verschöbe ihn um den Heizwert.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Preisbasis_ueber_den_Weg_der_Klappliste()
+    {
+        int? gemeldet = null;
+        Zeige(p => p.Add(x => x.PreisbasisGewechselt, (int id) => gemeldet = id));
+
+        KiFeldzugang basis = KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "preisbasis");
+        Assert.NotNull(basis);
+        Assert.True(basis.Setzbar);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(basis, "€/kWh");
+        Assert.True(wahl.Ok, wahl.Grund);
+        basis.Setzen(wahl.Wert);
+
         Assert.Equal(1, gemeldet);
     }
 

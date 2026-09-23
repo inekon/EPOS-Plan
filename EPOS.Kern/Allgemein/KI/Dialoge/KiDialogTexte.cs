@@ -2154,5 +2154,201 @@
         // ---- Welle KI-F6, Schritt 3: die Ansicht „Simulation"
         internal static string SimAutarkieName => MyResource.Resource.SIM_DASH_SPEICHER_INFO;
         internal static string SimAutarkieErl => MyResource.Resource.KI_DLG_SIM_AUTARKIE_ERL;
+
+        // ============================================== Welle #456: die VERWALTUNGEN
+        //
+        // Die Feldkarte der vier Erzeugerverwaltungen entsteht aus dem PROFIL
+        // (KiDialoge.ErzeugerVerwaltung); Anzeigenamen und Einheiten kommen von dort.
+        // Hier steht nur, was das Profil nicht fuehrt: die ERLAEUTERUNG je Feld. Wo
+        // ein Katalogeditor dasselbe Feld schon erklaert, wird sein Satz genommen -
+        // es ist derselbe Wert derselben Stammtabelle; die uebrigen Felder bekommen
+        // eigene Saetze.
+
+        /// <summary>Der Uebersetzer des Profils — Schluessel → Text der laufenden Sprache.</summary>
+        internal static string Profiltext(string schluessel)
+        {
+            string text = null;
+            try
+            {
+                text = MyResource.Resource.ResourceManager.GetString(schluessel,
+                                                                     MyResource.Resource.Culture);
+            }
+            catch (System.Exception) { }
+            return string.IsNullOrEmpty(text) ? schluessel : text;
+        }
+
+        internal static string KbrowSatzName => MyResource.Resource.KI_DLG_KBROW_SATZ_NAME;
+        internal static string KbrowSatzErl => MyResource.Resource.KI_DLG_KBROW_SATZ_ERL;
+
+        /// <summary>„Verwerfen" der Verwaltungen (AD-Q6).</summary>
+        internal static string KnopfVerwerfen => MyResource.Resource.ADM_BTN_VERWERFEN;
+
+        /// <summary>
+        /// Die Absage einer nur zum Ansehen geoeffneten Verwaltung — der Schutzgrund,
+        /// den der Katalogbrowser im Lesemodus anmeldet.
+        /// </summary>
+        internal static string KbrowNurLesen => MyResource.Resource.KI_DLG_KBROW_NURLESEN;
+
+        /// <summary>
+        /// Der RUECKFALL eines Profilfeldes ohne eigenen Satz. Er haelt den Katalog am
+        /// Leben, wenn dem Profil ein Feld zuwaechst; der Waechter
+        /// (<c>KiDialogkatalogTests</c>) verlangt, dass ihn kein Feld traegt.
+        /// </summary>
+        internal static string KbrowRueckfall(string feldname)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_KBROW_FELD_ERL, feldname ?? "");
+
+        /// <summary>
+        /// Die Erlaeuterung eines Profilfeldes der Verwaltung <paramref name="art"/>.
+        /// </summary>
+        /// <param name="feldname">Die Beschriftung ohne Doppelpunkt — fuer die Saetze mit Platzhalter.</param>
+        internal static string KbrowErlaeuterung(KatalogBrowserArt art, string schluessel, string feldname)
+        {
+            string text = Eigener(art, schluessel) ?? Gemeinsam(schluessel, feldname);
+            return string.IsNullOrWhiteSpace(text) ? KbrowRueckfall(feldname) : text;
+        }
+
+        /// <summary>Der Satz des Katalogeditors derselben Familie; <c>null</c> = keiner.</summary>
+        private static string Eigener(KatalogBrowserArt art, string schluessel)
+        {
+            switch (art)
+            {
+                case KatalogBrowserArt.Heizkessel:
+                    switch (schluessel)
+                    {
+                        case KatalogBrowserProfil.FeldBeschreibung: return HkBeschreibungErl;
+                        case KatalogBrowserProfil.FeldFirma: return HkFirmaErl;
+                        case KatalogBrowserProfil.FeldBrennstoff: return HkTraegerErl;
+                        case KatalogBrowserProfil.FeldPtherm: return HkLeistungErl;
+                        case KatalogBrowserProfil.FeldBrennwert: return HkBrennwertErl;
+                        case KatalogBrowserProfil.FeldVorlauf: return HkVorlaufErl;
+                        case KatalogBrowserProfil.FeldRuecklauf: return HkRuecklaufErl;
+                        case KatalogBrowserProfil.FeldWirkungsgradGas: return HkWgGasErl;
+                        case KatalogBrowserProfil.FeldWirkungsgradOel: return HkWgOelErl;
+                        case KatalogBrowserProfil.FeldBBVerlust: return HkBbVerlustErl;
+                        case KatalogBrowserProfil.FeldWartungskosten:
+                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_ERL;
+                        case KatalogBrowserProfil.FeldWartungEinheit:
+                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_EINHEIT_ERL;
+                    }
+                    return null;
+
+                case KatalogBrowserArt.Bhkw:
+                    switch (schluessel)
+                    {
+                        case KatalogBrowserProfil.FeldBeschreibung: return BhkkBeschreibungErl;
+                        case KatalogBrowserProfil.FeldFirma: return BhkkFirmaErl;
+                        case KatalogBrowserProfil.FeldMotortyp: return BhkkMotortypErl;
+                        case KatalogBrowserProfil.FeldPtherm: return BhkkPthermErl;
+                        case KatalogBrowserProfil.FeldPel: return BhkkPelErl;
+                        case KatalogBrowserProfil.FeldGrenzleistung: return BhkkGrenzleistungErl;
+                        case KatalogBrowserProfil.FeldVorlauf: return BhkkVorlaufErl;
+                        case KatalogBrowserProfil.FeldRuecklauf: return BhkkRuecklaufErl;
+                        case KatalogBrowserProfil.FeldBrennstoff: return BhkkTraegerErl;
+                        case KatalogBrowserProfil.FeldWirkungsgradEl: return BhkkWgElErl;
+                        case KatalogBrowserProfil.FeldWirkungsgradTh: return BhkkWgThErl;
+                        case KatalogBrowserProfil.FeldWirkungsgrad: return BhkkWgGesamtErl;
+                        case KatalogBrowserProfil.FeldInvestitionJeKwel:
+                            return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
+                        case KatalogBrowserProfil.FeldWartungJeKwhel:
+                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_KWHEL_ERL;
+                    }
+                    return null;
+
+                case KatalogBrowserArt.Solarkollektoren:
+                    switch (schluessel)
+                    {
+                        case KatalogBrowserProfil.FeldBeschreibung: return SkkBeschreibungErl;
+                        case KatalogBrowserProfil.FeldFirma: return SkkFirmaErl;
+                        case KatalogBrowserProfil.FeldKollektortyp: return SkkTypErl;
+                        case KatalogBrowserProfil.FeldModulflaeche: return SkkModulflaecheErl;
+                        case KatalogBrowserProfil.FeldAperturflaeche: return SkkAperturflaecheErl;
+                        case KatalogBrowserProfil.FeldVorlauf: return SkkVorlaufErl;
+                        case KatalogBrowserProfil.FeldRuecklauf: return SkkRuecklaufErl;
+                        case KatalogBrowserProfil.FeldH0: return SkkH0Erl;
+                        case KatalogBrowserProfil.FeldK1: return SkkK1Erl;
+                        case KatalogBrowserProfil.FeldK2: return SkkK2Erl;
+                        case KatalogBrowserProfil.FeldKdir: return SkkKdirErl;
+                        case KatalogBrowserProfil.FeldKdiff: return SkkKdiffErl;
+                    }
+                    return null;
+
+                case KatalogBrowserArt.Pufferspeicher:
+                    switch (schluessel)
+                    {
+                        case KatalogBrowserProfil.FeldFirma: return PspFirmaErl;
+                        case KatalogBrowserProfil.FeldSpeichertyp: return PspSpeichertypErl;
+                        case KatalogBrowserProfil.FeldVerluste: return PspVerlusteErl;
+                        case KatalogBrowserProfil.FeldVolumen: return PspVolumenErl;
+                    }
+                    return null;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Die Saetze, die fuer alle vier Verwaltungen gleich lauten; <c>null</c> = keiner.
+        /// </summary>
+        private static string Gemeinsam(string schluessel, string feldname)
+        {
+            switch (schluessel)
+            {
+                case KatalogBrowserProfil.FeldBezeichner:
+                    return MyResource.Resource.KI_DLG_KBROW_BEZEICHNER_ERL;
+                case KatalogBrowserProfil.FeldBeschreibung:
+                    return HkBeschreibungErl;
+                case KatalogBrowserProfil.FeldInvestitionskosten:
+                    return MyResource.Resource.KI_DLG_KBROW_INVEST_ERL;
+                case KatalogBrowserProfil.FeldRaumbedarf:
+                    return MyResource.Resource.KI_DLG_KBROW_RAUMBEDARF_ERL;
+                case KatalogBrowserProfil.FeldNutzungsdauer:
+                    return MyResource.Resource.KI_DLG_KBROW_NUTZUNGSDAUER_ERL;
+
+                case KatalogBrowserProfil.FeldCo2:
+                case KatalogBrowserProfil.FeldSo2:
+                case KatalogBrowserProfil.FeldNox:
+                case KatalogBrowserProfil.FeldCo:
+                case KatalogBrowserProfil.FeldStaub:
+                    return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                         MyResource.Resource.KI_DLG_KBROW_EMISSION_ERL, feldname ?? "");
+
+                case KatalogBrowserProfil.FeldKostenModul:
+                case KatalogBrowserProfil.FeldKostenMontage:
+                case KatalogBrowserProfil.FeldKostenLieferung:
+                case KatalogBrowserProfil.FeldKostenSchallschutz:
+                case KatalogBrowserProfil.FeldKostenAbgasreinigung:
+                    return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                         MyResource.Resource.KI_DLG_KBROW_KOSTENPOSTEN_ERL, feldname ?? "");
+            }
+
+            return null;
+        }
+
+        // ---- Die Bedarfsverwaltungen: Monatswerte (Welle #456)
+
+        /// <summary>Einheit der Monatswerte eines Bedarfskatalogs.</summary>
+        internal const string EINHEIT_MWH = "MWh";
+
+        /// <summary>Der Monatsname 1–12, wie ihn die Monatsfelder der Maske tragen.</summary>
+        internal static string Monat(int monat)
+        {
+            string text = null;
+            try
+            {
+                text = MyResource.Resource.ResourceManager.GetString(
+                    "ALLG_MONAT_" + monat.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    MyResource.Resource.Culture);
+            }
+            catch (System.Exception) { }
+            return string.IsNullOrEmpty(text)
+                ? monat.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                : text;
+        }
+
+        /// <summary>Die Erlaeuterung des Monatswertes <paramref name="monat"/> (1–12).</summary>
+        internal static string BadmMonatErl(int monat)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_BADM_MONAT_ERL, Monat(monat));
     }
 }

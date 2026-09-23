@@ -440,6 +440,22 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.BHKW,           Masken.BhkwAdmin },
                 { KiMaskennamen.SOLARKOLLEKTOR, Masken.SolarkollektorenAdmin },
 
+                // ---- Welle #456: die VERWALTUNGEN der vier Erzeugerkataloge ----
+                //
+                // Der Katalogbrowser in seinen vier Auspraegungen IST die Maske
+                // hinter diesen Navigationsschluesseln - Katalog- und
+                // Navigationsschluessel fallen zusammen wie bei der
+                // Waermepumpenverwaltung. Die Katalogeditoren darueber fuehren auf
+                // dasselbe Ziel; die Absage nennt deshalb die Verwaltung
+                // (KiAktionenDialog.Gemeint). WinFormsNavigation kennt die vier
+                // Schluessel; auf iOS laufen sie unuebersetzt an die Wurzel, die
+                // Katalogverwaltungen dort benannt ablehnt (KI-D-Q10) - dieselbe Lage
+                // wie fuer die Katalogeditoren, es braucht nichts Neues.
+                { KiMaskennamen.HEIZKESSEL_ADMIN,        Masken.HeizkesselAdmin },
+                { KiMaskennamen.BHKW_ADMIN,              Masken.BhkwAdmin },
+                { KiMaskennamen.SOLARKOLLEKTOREN_ADMIN,  Masken.SolarkollektorenAdmin },
+                { KiMaskennamen.PUFFERSPEICHER_ADMIN,    Masken.PufferSpAdmin },
+
                 // DIE DREI MODULKATALOGE sind selbst die Verwaltung (Browser und
                 // Editor in einem) und haben deshalb je einen EIGENEN Weg im Menue
                 // „Administration"; ihre Navigationsschluessel sind zugleich ihre

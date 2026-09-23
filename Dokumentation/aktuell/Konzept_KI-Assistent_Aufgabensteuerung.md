@@ -1311,13 +1311,32 @@ DB-Aktionen bleibt nachweislich bestehen; jede Feldsetzung erzeugt eine Protokol
 einen ungültigen Wert und löst den Knopf aus — der `DialogWaechter` (`Referenzlauf\DialogWaechter.cs`) wertet
 unerwartete MessageBoxen als Fehler, die **erwartete** Prüfmeldung des ungültigen Werts ist der Positivnachweis.
 
-### 11.7 Grenzen — vom Auftraggeber bestätigt am 20.08.2026
+### 11.7 Grenzen — die Ausnahmeliste (Entscheid KI‑D‑Q11 vom 23.09.2026)
 
-Nicht steuerbar bleiben: Einstellungs-, Lizenz- und Katalogpflege-Masken (`_STAMM`-Pflege), Löschknöpfe jeder
-Art, Dateidialoge (`SaveFileDialog`/`OpenFileDialog` — die Pfadwahl bleibt Anwendersache, 1.2) sowie jede Maske
-und jeder Knopf ohne Katalogeintrag. Masken, deren Eingabeprüfung noch nicht auf das Knopfmuster umgestellt ist,
-kommen erst nach ihrer Umstellung in den Katalog — die Umstellung selbst ist Bestandspflege außerhalb dieses
-Konzepts.
+**Steuerbar ist jede Maske mit Einstellwerten, Projekt- wie Administrationsdialoge.** Die Grenze vom 20.08.2026
+nahm die Katalogpflege-Masken (`_STAMM`-Pflege) als Ganzes aus; seit der Neuordnung der Administrationsdialoge sind
+sie Pflegemasken mit editierbarem Stammblatt, und der Entscheid KI‑D‑Q11
+([Dialogintegration, Abschnitt 7](Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)) fasst die Grenze deshalb
+als Ausnahmeliste. Nicht steuerbar bleiben:
+
+- **reine Anzeigen** ohne Einstellwerte (Ergebnis-, Berichts- und Übersichtsseiten);
+- **Verwaltungen ohne Einstellwerte** — sie führen nur Zeitreihen und ihre Herkunft;
+- **Auslieferungssätze** (`ReadOnly` der `_STAMM`-Tabellen, das Schloss): Schon `feld_setzen` lehnt ab und nennt
+  den Weg „Duplizieren…" (`KiMaskenhaken.Schreibschutzgrund`); die Wahl eines anderen Satzes bleibt frei
+  (`KiDialogFeld.Satzwahl`);
+- **die Aktionen Neu…, Duplizieren…, Löschen, Import… und Export** — sie legen Sätze an oder nehmen sie weg;
+  Löschknöpfe jeder Art sperrt zusätzlich die Bauart des Katalogs (`KiDialogKatalog`);
+- **Dateidialoge** (`SaveFileDialog`/`OpenFileDialog` — die Pfadwahl bleibt Anwendersache, 1.2) und **Rückfragen**;
+- **Lizenz- und Schlüsseleingaben**;
+- **der Hilfe-Assistent selbst**;
+- jede Maske und jeder Knopf ohne Katalogeintrag.
+
+Die **Gebäude-Verwaltung** bleibt offen, solange ihre Hülle nur liest. Die Liste steht als Daten neben dem Katalog
+(`KiDialogAusnahmen.Alle` mit den Gruppen `KiAusnahmegrund`); welche Masken mit Einstellwerten noch nicht
+angemeldet sind, klärt eine Folgewelle nach Inventar, die auch den Wächter „jede Razor-Maske mit Eingabefeldern
+ist angemeldet oder steht auf der Ausnahmeliste" bringt. Masken, deren Eingabeprüfung noch nicht auf das
+Knopfmuster umgestellt ist, kommen erst nach ihrer Umstellung in den Katalog — die Umstellung selbst ist
+Bestandspflege außerhalb dieses Konzepts.
 
 ### 11.8 Der Aufrufknopf — dezenter Einstieg aus jeder Maske (Auftrag vom 20.08.2026)
 
