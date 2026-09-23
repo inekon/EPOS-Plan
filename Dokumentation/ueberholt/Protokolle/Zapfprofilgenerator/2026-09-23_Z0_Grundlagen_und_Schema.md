@@ -33,7 +33,7 @@ im Worktree `z0`, ohne Push und ohne CI-Lauf.
 | P11 | Wache `TwwKatalogWacheTests` | `57e63591`, `b0055988` |
 | P12 | `SqlDialektPruefer` nach jedem neuen SQL-Text | in den Posten |
 | P13 | Quellendossier samt Indexzeile | `a606be0c` |
-| — | Abschlusspapiere: Setup-Konzept 6.1; N2, Kapitel 7, 9 und Anhang A im Umsetzungskonzept; dieses Protokoll; Statuszeile | `5422f3c1`, `9d7678ed`, `f9f695d9`, `d5af9c7a`, `20394b2b` |
+| — | Abschlusspapiere: Setup-Konzept 6.1; N2, Kapitel 7, 9 und Anhang A im Umsetzungskonzept; dieses Protokoll; Statuszeile | `5422f3c1`, `9d7678ed`, `f9f695d9`, `d5af9c7a`, `20394b2b`; nach der Papierprüfung `2ece06e8` (N3) |
 
 Alle Commits tragen den Trailer des arbeitenden Modells. Die Schemanummer war zu Beginn auf `z0`,
 `main`, `origin/ios_migration_september` und allen Worktrees 100; T1 lief zuerst als 101 und wurde nach
@@ -53,6 +53,17 @@ Im Worktree `z0` auf `4ddebed9`:
   129 STRICT-Tabellen, alle 19 Zeilen des fiktiven Katalogs fallen, Fremdschlüssel eingeschaltet.
 - Referenzlauf 1030, 1007, 1017, 1045, 1046 gegen `2026-09-22_R11_Bestandsbefunde`: PASS,
   byte-gleich. Kein Referenzprojekt setzt die Weiche; die Basis bleibt.
+
+Papierstand im Worktree `z0` auf `2ece06e8` (nach dem Merge `97109834` und der Papierprüfung; seit
+`4ddebed9` nur Papiere):
+
+- `dotnet build WP-Plan.Kern.slnf -c Release`: 0 Fehler.
+- Wachen (`FullyQualifiedName~Wache`, darin `DokumentationLinkWacheTests` samt Indexzeilen und
+  `RepositoryOrdnungWacheTests`): 150/150 grün.
+- `ChartProben`: 122 Bilder, 0 Verstöße (kein Renderer berührt; der Lauf ergänzt das Gate).
+- Linkprobe über `Dokumentation/`: keine Fehler unter `aktuell/`; Markdown ohne BOM, CR = LF.
+
+Das Gate auf dem Merge-Stand in `ios_migration_september` gehört zum Merge und steht noch aus.
 
 ## Gegenprüfungen
 
