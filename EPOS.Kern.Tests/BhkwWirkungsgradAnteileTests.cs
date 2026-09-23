@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -25,9 +26,11 @@ namespace EPOS.Kern.Tests
     /// Referenzlauf bleibt byte-gleich — die Basis R10 gilt weiter.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class BhkwWirkungsgradAnteileTests
+    public class BhkwWirkungsgradAnteileTests : IDisposable
     {
         private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         /// <summary>Das Modul, dessen Datenblattwerte die Aufteilung bestätigen.</summary>
         private const string XRGI15 = "EC-POWER XRGI 15";

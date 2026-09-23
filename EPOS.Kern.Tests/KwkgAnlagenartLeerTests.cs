@@ -18,9 +18,11 @@ namespace EPOS.Kern.Tests
     /// trifft genau die leere Zeichenkette und ist wiederholbar.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class KwkgAnlagenartLeerTests
+    public class KwkgAnlagenartLeerTests : IDisposable
     {
         private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         /// <summary>
         /// Die sieben Anlagen der Testdatenbank mit leerer Anlagenart (Stand
