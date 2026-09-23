@@ -253,6 +253,7 @@
                                                     </tr>
                                                 }
                                                 <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlStochastik</th></tr>
+                                                <tr class="epos-zapfprofil-stochastik"><td colspan="3">@Texte.KennzahlStochastikErklaerung</td></tr>
                                             </tbody>
                                         </table>
                                     </KindInhalt>
@@ -555,6 +556,11 @@
             yield return (Texte.KennzahlVolllast, Zahl(h, "N0") + " h/a", Texte.KennzahlVolllastVermerk);
         if (k.GroessterStundenwertKw is double p)
             yield return (Texte.KennzahlGroessterStundenwert, Zahl(p, "N1") + " kW", k.VermerkGroessterStundenwert);
+        if (k.StundenUeberSchwelle is int n && k.SchwelleKw is double schwelle)
+            yield return (Format(Texte.KennzahlStundenUeberSchwelle, Zahl(schwelle, "N1")),
+                          n.ToString("N0", CultureInfo.CurrentCulture) + " h/a", "");
+        // Mockup Abschnitt 3: Die Gleichzeitigkeit steht in der Bilanz mit „—" und Vermerk; ihr
+        // Ergebniswert nach dem Lauf gehört zur Stochastik der Stufe Experte.
         yield return (Texte.KennzahlGleichzeitigkeit, "—", Texte.KennzahlGleichzeitigkeitVermerk);
     }
 

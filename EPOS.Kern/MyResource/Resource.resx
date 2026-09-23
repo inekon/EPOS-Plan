@@ -23802,6 +23802,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_KZ_STOCHASTIK" xml:space="preserve">
     <value>Stochastik · noch nicht gerechnet</value>
   </data>
+  <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
+    <value>„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte.</value>
+  </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
   </data>

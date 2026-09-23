@@ -217,6 +217,41 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Zirkulationsanteil", cut.Find(".epos-zapfprofil-zirkulationsanteil").TextContent);
     }
 
+    /// <summary>
+    /// Befund 3, Mockup Abschnitt 3: Der Reiter Kennzahlen zeigt „Stunden über Schwelle", wenn
+    /// der Kern sie ausweist (sonst nicht); die Gleichzeitigkeit steht mit „—" in der Bilanz, die
+    /// Gruppe Stochastik trägt in der Stufe Einfach ihre Erklärzeile.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahlen_zeigen_Schwelle_Bilanz_und_Stochastik_nach_dem_Mockup()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        ZapfprofilVorschauDaten v = Vorschau(e);
+        v.Ansichten[0].Kennzahlen.StundenUeberSchwelle = 600;
+        v.Ansichten[0].Kennzahlen.SchwelleKw = 10;
+        var cut = Aufbauen(Daten(e, v));
+
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        IElement[] zeilen = cut.FindAll("table.epos-zapfprofil-kennzahlen tbody tr").ToArray();
+        string[] texte = zeilen.Select(z => z.TextContent.Trim()).ToArray();
+
+        int bilanz = Array.FindIndex(texte, t => t.StartsWith("Bilanz"));
+        int schwelle = Array.FindIndex(texte, t => t.StartsWith("Stunden über Schwelle 10,0 kW"));
+        int gleichzeitigkeit = Array.FindIndex(texte, t => t.StartsWith("Gleichzeitigkeit"));
+        int stochastik = Array.FindIndex(texte, t => t.StartsWith("Stochastik"));
+        Assert.True(bilanz >= 0 && schwelle > bilanz && gleichzeitigkeit > schwelle && stochastik > gleichzeitigkeit,
+                    string.Join(" | ", texte));
+        Assert.Contains("600 h/a", texte[schwelle]);
+        Assert.Contains("—", texte[gleichzeitigkeit]);
+        Assert.StartsWith("„Stochastisch rechnen“ in der Fußleiste", texte[stochastik + 1]);
+        Assert.Equal(stochastik + 2, texte.Length);
+
+        // Ohne Schwelle keine Zeile.
+        cut = Aufbauen();
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Assert.DoesNotContain("Stunden über Schwelle", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+    }
+
     [Fact]
     public void Anzeigen_fuer_waehlt_die_Ansicht_einer_Zone()
     {

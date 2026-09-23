@@ -102,6 +102,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Bilanzwert, keine Auslegungsgröße", k.VermerkGroessterStundenwert);
             Assert.Equal(Enumerable.Range(0, 8760).Count(h => e.Zapfung.StundenKwh[h] + e.Zirkulation.StundenKwh[h] > 1.0),
                          k.StundenUeberSchwelle);
+            Assert.Equal(1.0, k.SchwelleKw);
             double liter = zapf / 365.0 * 1000.0 / (Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * (42.0 - 11.0));
             Assert.Equal(liter, k.ZapfungLiterJeTag.Value, 9);
             Assert.Equal(zapf / 10.0, e.JeZone[0].SpezifischKwhJeEinheitJahr, 9);
@@ -109,6 +110,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilErgebnis ohneAnzeige = Rechnen(Projekt(), a);
             Assert.Null(ohneAnzeige.Kennzahlen.ZapfungLiterJeTag);
             Assert.Null(ohneAnzeige.Kennzahlen.StundenUeberSchwelle);
+            Assert.Null(ohneAnzeige.Kennzahlen.SchwelleKw);
         }
 
         [Fact]

@@ -203,6 +203,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_KZ_STOCHASTIK</c></summary>
     public string KennzahlStochastik { get; set; } = "Stochastik · noch nicht gerechnet";
 
+    /// <summary><c>ZPG_KZ_STOCHASTIK_ERKLAERUNG</c></summary>
+    public string KennzahlStochastikErklaerung { get; set; } = "„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte.";
+
     /// <summary><c>ZPG_SP_KENNZAHL</c></summary>
     public string SpalteKennzahl { get; set; } = "Kennzahl";
 

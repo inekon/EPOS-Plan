@@ -284,7 +284,8 @@ namespace WindowsFormsApplication1
                 ZapfungLiterJeTag = liter,
                 GroessterStundenwertKw = max,
                 VolllaststundenH = max > 0 ? gesamt / max : 0.0,
-                StundenUeberSchwelle = schwelleKw.HasValue ? gesamtreihe.StundenUeber(schwelleKw.Value) : (int?)null
+                StundenUeberSchwelle = schwelleKw.HasValue ? gesamtreihe.StundenUeber(schwelleKw.Value) : (int?)null,
+                SchwelleKw = schwelleKw
             };
         }
 

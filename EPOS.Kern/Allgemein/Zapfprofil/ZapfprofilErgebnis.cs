@@ -88,6 +88,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden von Zapfung + Zirkulation über der Schwelle; <c>null</c> ohne Schwelle.</summary>
         public int? StundenUeberSchwelle { get; init; }
+
+        /// <summary>Die Schwelle dieser Zählung [kW]; <c>null</c> ohne Schwelle.</summary>
+        public double? SchwelleKw { get; init; }
     }
 
     /// <summary>

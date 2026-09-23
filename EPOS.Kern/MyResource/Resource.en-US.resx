@@ -23795,6 +23795,9 @@ Do you want to allow this?</value>
   <data name="ZPG_KZ_STOCHASTIK" xml:space="preserve">
     <value>Stochastics · not yet calculated</value>
   </data>
+  <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
+    <value>“Calculate stochastically” in the footer draws the ensemble for percentiles and sizing; the balance series stays deterministic. The Expert level shows the individual values.</value>
+  </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Key figure</value>
   </data>

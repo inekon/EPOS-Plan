@@ -70497,6 +70497,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte. ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_STOCHASTIK_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden über Schwelle {0} kW ähnelt.
         /// </summary>
         public static string ZPG_KZ_STUNDEN_UEBER_SCHWELLE {

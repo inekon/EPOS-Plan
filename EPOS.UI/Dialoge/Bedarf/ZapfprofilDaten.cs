@@ -241,6 +241,9 @@ public sealed class ZapfprofilKennzahlenDaten
 
     /// <summary>Stunden über der Schwelle; <c>null</c> ohne Schwelle.</summary>
     public int? StundenUeberSchwelle { get; set; }
+
+    /// <summary>Die Schwelle der Zählung [kW]; <c>null</c> ohne Schwelle.</summary>
+    public double? SchwelleKw { get; set; }
 }
 
 /// <summary>

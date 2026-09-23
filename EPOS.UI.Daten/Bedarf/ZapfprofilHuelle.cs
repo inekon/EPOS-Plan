@@ -500,7 +500,8 @@ namespace WindowsFormsApplication1
                 GroessterStundenwertKw = k.GroessterStundenwertKw,
                 VermerkGroessterStundenwert = Text_("ZPG_KZ_VERMERK_STUNDENWERT", "Bilanzwert, keine Auslegungsgröße"),
                 VolllaststundenH = k.VolllaststundenH,
-                StundenUeberSchwelle = k.StundenUeberSchwelle
+                StundenUeberSchwelle = k.StundenUeberSchwelle,
+                SchwelleKw = k.SchwelleKw
             };
         }
 
@@ -925,6 +926,7 @@ namespace WindowsFormsApplication1
 
             t.KennzahlBilanz = Text_("ZPG_KZ_BILANZ", t.KennzahlBilanz);
             t.KennzahlStochastik = Text_("ZPG_KZ_STOCHASTIK", t.KennzahlStochastik);
+            t.KennzahlStochastikErklaerung = Text_("ZPG_KZ_STOCHASTIK_ERKLAERUNG", t.KennzahlStochastikErklaerung);
             t.SpalteKennzahl = Text_("ZPG_SP_KENNZAHL", t.SpalteKennzahl);
             t.SpalteWert = Text_("ZPG_SP_WERT", t.SpalteWert);
             t.SpalteVermerk = Text_("ZPG_SP_VERMERK", t.SpalteVermerk);
