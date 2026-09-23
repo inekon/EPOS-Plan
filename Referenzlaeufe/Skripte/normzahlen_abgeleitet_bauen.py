@@ -41,6 +41,17 @@ Abweichungsband der Werte, nie einen Originalwert.
 
 VDI 4655 folgt erst mit Stufe Z4b unter derselben Regel; die Sperren fuer A100-Referenzprofil und
 DIN-4708-Profil bleiben (DIN, nicht VDI).
+
+VERWENDUNG IM TESTKATALOG (tww_testkatalog_fiktiv.py; die JSON-Datei bleibt vollstaendig):
+  - Niedrig/mittel/hoch einer Nutzungsart sind Minimum/Mittel/Maximum aus bedarfskennwerte.csv.
+    Die Extrema der Quelle sind Monatsextrema; zusammen mit den Monatsfaktoren zaehlt der
+    Jahresgang auf den Stufen niedrig und hoch damit doppelt - fuer Testdaten tragbar, fuer einen
+    Auslieferungskatalog zu pruefen.
+  - Die Montags- und Freitagsprofile des Studentenwohnheims bleiben ungenutzt: Der Katalog kennt
+    die Tagtypen Werktag, Samstag, Sonn-/Feiertag und Ruhetag.
+  - Campingplatz, die beiden Hallenbaeder und das Ein- und Zweifamilienhaus stehen nicht im
+    Katalog (Bezug, den das Schema nicht kennt, keine Profile oder kein Mittelwert); ihre
+    abgeleiteten Werte bleiben in der Datei, ungenutzt.
 """
 
 import csv
