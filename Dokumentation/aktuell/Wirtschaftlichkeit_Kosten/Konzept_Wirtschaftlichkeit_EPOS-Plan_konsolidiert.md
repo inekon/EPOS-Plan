@@ -161,7 +161,7 @@ eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 |---|---|---|---|---|
 | Stichtag (Bestellung/Genehmigung) | Datumsfeld mit Kontrollkästchen | Haken aus = Projektwert | `KWKG_Stichtag` | Bestand |
 | Inbetriebnahme | Datumsfeld mit Kontrollkästchen | dito | `KWKG_Inbetriebnahme` | Bestand |
-| Anlagenart | Baustein `Auswahlfeld` | (bitte wählen) = nicht gepflegt, NULL · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3; ohne Anlagenart leitet § 8 kein Kontingent ab (0 h mit Grund) — ob der Kern darüber hinaus den Zuschlag streicht und die Kohärenzzeile „Anlagenart fehlt" führt, ist Frage E7‑Q1 (§ 6.3 Nr. 30) | `KWKG_Anlagenart` | Bestand; „(bitte wählen)" und Schritt 101 #437 |
+| Anlagenart | Baustein `Auswahlfeld` | (bitte wählen) = nicht gepflegt, NULL · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3; ohne Anlagenart leitet § 8 kein Kontingent ab (0 h mit Grund) — der Zuschlag entfällt und die Kohärenzzeile „Anlagenart fehlt" erscheint nur dort, wo das Kontingent aus der Anlagenart abzuleiten ist (entschieden E7‑Q1, Lesart b, 23.09.2026, § 6.3 Nr. 30 — Bau E7c) | `KWKG_Anlagenart` | Bestand; „(bitte wählen)" und Schritt 101 #437 |
 | Eigenstrom nach § 6 Abs. 3 | Baustein `Auswahlfeld` | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
 | Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf „Vorschlag übernehmen" am Feld** | `KWKG_Satz_Einspeisung` | Bestand, Knopf BK1 |
 | Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
@@ -1705,9 +1705,10 @@ je Jahr:  Vergütet = min(Vbh, Deckel(Jahr), Restkontingent) × (1 − Abschlag)
 
 Deckelstaffel 5.000 (2021) … 3.300 (2026) … 2.500 (ab 2030). Vorgeschaltete Prüfkette: Stichtag
 ≤ 31.12.2026 · Realisierungsfrist 4 Jahre · Ausschreibung > 500 kW · Heizöl-Neuanlage ab 2025. Die
-Realisierungsfrist ist eine Konstante (`KWKG_REALISIERUNG_JAHRE = 4`); ob das Förderende 2030 (A20,
-R‑U5) sie als Katalogdatum ersetzt oder den Zuschlag nach 2030 beendet, ist Frage E7‑Q3 (→ Register
-R‑E7).
+Realisierungsfrist ist eine Konstante (`KWKG_REALISIERUNG_JAHRE = 4`); das Förderende 2030 (A20,
+R‑U5) ersetzt sie als Katalogdatum für das Ende der Frist zur Inbetriebnahme — der Zuschlag läuft
+danach bis zum Ende des Kontingents weiter, keine Höchstdauer in Kalenderjahren (entschieden
+E7‑Q3, Lesart b, 23.09.2026, → Register R‑E7 — Bau E7c).
 
 **Pauschale § 9** (≤ 2 kW): `0,04 × 60.000 × P_el`, einmalig in Index 0.
 
@@ -2324,11 +2325,12 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     siehe Protokoll:** Schemaschritt 101 setzt die leere Zeichenkette auf NULL (NULL heißt „nicht
     gepflegt"; die sieben Anlagen der Projekte 1032 und 1043 sind kein BHKW), der Dialog zeigt
     „(bitte wählen)". Ein geratener Wert würde Kontingent und Satzstaffel setzen, die niemand
-    eingegeben hat. **Offen** sind die Kern-Regel „NULL ⇒ kein KWKG-Zuschlag" und die Kohärenzzeile
-    „Anlagenart fehlt": Wörtlich verlöre jedes BHKW ohne Anlagenart den Zuschlag, auch das BHKW von
-    1030 mit gepflegtem Kontingent (Kapitalwert −59.438,48 €); ob die Regel nur dort greift, wo das
-    Kontingent nach § 8 abzuleiten ist, ist Frage **E7‑Q1** (→ Register R‑E7). Die Live-Datenbank ist
-    vor dem Ausrollen zu prüfen (der Schritt trifft jede leere Zeichenkette). Entscheid: → Register R‑NR.
+    eingegeben hat. **Entschieden** (E7‑Q1, Lesart b, 23.09.2026, → Register R‑E7): Die Kern-Regel
+    „NULL ⇒ kein KWKG-Zuschlag" und die Kohärenzzeile „Anlagenart fehlt" greifen nur dort, wo das
+    Kontingent nach § 8 abzuleiten ist — nicht wörtlich bei jedem BHKW ohne Anlagenart; das BHKW von
+    1030 behält mit gepflegtem Kontingent (30.000 h) seinen Zuschlag, seine Anlagenart wird in der
+    Testdatenbank gepflegt. Die Live-Datenbank ist vor dem Ausrollen zu prüfen (der Schritt trifft
+    jede leere Zeichenkette). Entscheid: → Register R‑NR. Bau in E7c.
 31. ~~**`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.**~~ — erledigt mit E5 (#434), siehe Protokoll; Entscheid (kein Nachziehlauf): → Register R‑NR
 32. ~~**Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1)~~ — erledigt mit E7a (#437), siehe Protokoll; die Regel („ohne jede Eigenerzeugung") steht in § 3.6, der Entscheid: → Register R‑NR
 
@@ -2388,7 +2390,7 @@ Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepap
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
 (#436) und E7 Teil a (#437)**; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als
 Nächstes kommen **E7b** (Zeitzonentarif HT/NT und Leistungspreis-Staffel, Q11) und **E7c** (die übrigen
-rechenwirksamen Lücken, nach den Entscheiden E7‑Q1 bis E7‑Q3). Aus der früheren Etappenreihe B5–B9
+rechenwirksamen Lücken, nach dem Entscheid E7‑Q2). Aus der früheren Etappenreihe B5–B9
 dieses Papiers ist nur noch B8 offen (es läuft in E7c mit); B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2451,7 +2453,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
 | **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge `57b15a7c`) |
 | **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 101, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
-| **E7b**, **E7c** … **E12** | Q11 (HT/NT, Leistungspreis-Staffel) · die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappen: E7b und E7c** (E7c nach den Entscheiden E7‑Q1 bis E7‑Q3) |
+| **E7b**, **E7c** … **E12** | Q11 (HT/NT, Leistungspreis-Staffel) · die übrigen rechenwirksamen Lücken (B8, K‑1, A20, Nr. 30 Kern-Regel) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappen: E7b und E7c** (E7c nach dem Entscheid E7‑Q2) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
