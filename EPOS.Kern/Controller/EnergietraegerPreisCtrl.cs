@@ -89,9 +89,9 @@ namespace WindowsFormsApplication1
                 IdUmrechnung = row["ID_Umrechnung"] != DBNull.Value
                     ? (int?)Convert.ToInt32(row["ID_Umrechnung"]) : null,
                 Staffel = StaffelAus(row),
-                // ETAPPE E7c (Schritt F, Schemaschritt 109): der Kartenzustand „Preisbasis"
+                // ETAPPE E7c (Schritt F, Schemaschritt 112): der Kartenzustand „Preisbasis"
                 // aus seiner eigenen Spalte — NICHT mehr aus ID_Umrechnung abgeleitet.
-                // Fehlt die Spalte (Datenbank vor 109), wird das benannt, nicht still
+                // Fehlt die Spalte (Datenbank vor 112), wird das benannt, nicht still
                 // auf die Abrechnungseinheit zurückgefallen.
                 PreisbasisSpalteFehlt = !row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS),
                 Preisbasis = row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS) &&
@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E7c (Schritt F): Führt <c>energy_project_settings</c> die Spalte
-        /// <c>Preisbasis</c> (Schemaschritt 109)? Ohne sie schreibt
+        /// <c>Preisbasis</c> (Schemaschritt 112)? Ohne sie schreibt
         /// <see cref="Projektwerte"/> die übrigen Felder wie bisher.
         /// </summary>
         public static bool PreisbasisSpalteVorhanden()
@@ -601,7 +601,7 @@ namespace WindowsFormsApplication1
 
             /// <summary>Gewählte Umrechnung; −1 = keine (dann wird NULL geschrieben).
             /// Sie ist die REGEL der Einheitenprüfung, nicht mehr der Kartenzustand —
-            /// den trägt seit Schemaschritt 109 <see cref="Preisbasis"/>.</summary>
+            /// den trägt seit Schemaschritt 112 <see cref="Preisbasis"/>.</summary>
             public int IdUmrechnung = -1;
 
             /// <summary>Anzeigetext der Basiseinheit — geht in die Historie.</summary>
@@ -744,8 +744,8 @@ namespace WindowsFormsApplication1
             object idUmrechnung = stand.IdUmrechnung != -1
                 ? (object)stand.IdUmrechnung : DBNull.Value;
 
-            // ETAPPE E7c (Schritt F, Schemaschritt 109): Der Kartenzustand „Preisbasis"
-            // wandert mit, wo die Spalte steht; eine Datenbank vor 109 schreibt die
+            // ETAPPE E7c (Schritt F, Schemaschritt 112): Der Kartenzustand „Preisbasis"
+            // wandert mit, wo die Spalte steht; eine Datenbank vor 112 schreibt die
             // übrigen Felder wie bisher. Kein −1-Rückfall mehr für die Karte: Die
             // Basis steht als Einheitentext da, unabhängig davon, ob der Brennstoff eine
             // Regel nach kWh führt.
@@ -826,13 +826,13 @@ namespace WindowsFormsApplication1
             /// nicht gepflegt oder die Spalten fehlen — nie <c>null</c>.</summary>
             public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
 
-            /// <summary>ETAPPE E7c (Schritt F, Schritt 109): die gemerkte Preisbasis der
+            /// <summary>ETAPPE E7c (Schritt F, Schritt 112): die gemerkte Preisbasis der
             /// Karte (Einheitentext); <c>null</c> = nicht gepflegt, also die
             /// Abrechnungseinheit.</summary>
             public string Preisbasis;
 
             /// <summary>ETAPPE E7c: Die Datenbank führt die Spalte noch nicht (vor
-            /// Schemaschritt 109) — die Karte nennt das, statt still zurückzufallen.</summary>
+            /// Schemaschritt 112) — die Karte nennt das, statt still zurückzufallen.</summary>
             public bool PreisbasisSpalteFehlt;
         }
 

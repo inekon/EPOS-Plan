@@ -66,11 +66,11 @@ namespace EPOS.Kern.Tests
     /// <para><b>ETAPPE E7c2 (Schritte E/F/G, S‑2, B‑4 Rest, V‑1/V‑2, E7c1‑Q1/Q2 b/Q7) —
     /// gemessen, kein Anker bewegt sich</b> (alt = neu: 1024 −2.896.359,13 € mit
     /// Energiekosten 188.167,18 €/a, 1030 −21.895.377,28 € mit Energiekosten
-    /// 1.176.906,60 €/a; Messung auf der nach Schritt 110 migrierten Kopie, alle
+    /// 1.176.906,60 €/a; Messung auf der nach Schritt 113 migrierten Kopie, alle
     /// dreizehn Basisprojekte 9.195 von 9.195 Werten gleich, nach jedem der neun
-    /// Punkte). Die Gründe: Schritt 108 legt die Kennzeichen Ersatz/Restwert leer an
-    /// (leer = wie bisher), Schritt 109 füllt die Preisbasis aus der Umrechnungsregel,
-    /// Schritt 110 ändert nur Stammtexte; keine Mischlage § 53/53a neben § 54, keine
+    /// Punkte). Die Gründe: Schritt 111 legt die Kennzeichen Ersatz/Restwert leer an
+    /// (leer = wie bisher), Schritt 112 füllt die Preisbasis aus der Umrechnungsregel,
+    /// Schritt 113 ändert nur Stammtexte; keine Mischlage § 53/53a neben § 54, keine
     /// Prozent-Position auf Brennstoff- oder Stromkosten, kein Basisprojekt mit
     /// Kennzeichen Abwärmeabfuhr; V‑1/V‑2 wirken nur mit einer Eigenverbrauchsvergütung,
     /// die kein Basisprojekt trägt (Proben an 1040, 1045, 1046 mit eingesetzter

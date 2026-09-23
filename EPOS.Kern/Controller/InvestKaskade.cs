@@ -95,11 +95,11 @@ namespace WindowsFormsApplication1
             /// <summary>Startjahr der Position (KD6 § 11); 0 = t0.</summary>
             public int Start;
 
-            /// <summary>ETAPPE E7c (Schritt E, Schritt 108): Ersatzbeschaffung führen?
+            /// <summary>ETAPPE E7c (Schritt E, Schritt 111): Ersatzbeschaffung führen?
             /// <c>null</c> = wie bisher (auch: Spalte fehlt).</summary>
             public bool? ErsatzFuehren;
 
-            /// <summary>ETAPPE E7c (Schritt E, Schritt 108): Restwert ansetzen?
+            /// <summary>ETAPPE E7c (Schritt E, Schritt 111): Restwert ansetzen?
             /// <c>null</c> = wie bisher (auch: Spalte fehlt).</summary>
             public bool? RestwertAnsetzen;
 
@@ -167,7 +167,7 @@ namespace WindowsFormsApplication1
                     felder += ", w.[" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
                 if (WirtschaftlichkeitCtrl.AnlagenSpalteVorhanden())
                     felder += ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]";
-                // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position (Schritt 108) —
+                // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position (Schritt 111) —
                 // wie das Startjahr nur ANGEFRAGT, wenn es die Spalten gibt; sonst kippte
                 // die ganze Abfrage.
                 bool mitKennzeichen = ErsatzRestwertKennzeichen.SpaltenVorhanden(

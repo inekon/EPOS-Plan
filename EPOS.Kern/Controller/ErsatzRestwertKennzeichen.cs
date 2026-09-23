@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>ETAPPE E7c — Schritt E: Ersatz und Restwert je Position entkoppelt</b>
     /// (Entscheid A6 vom 20.09.2026, Mockup U39, Konzept Wirtschaftlichkeit § 2.13 (3),
-    /// Schemaschritt 108).
+    /// Schemaschritt 111).
     ///
     /// <para><b>Was die zwei Kennzeichen sagen.</b> Jede Investitionsposition
     /// (<c>Tab_ProjektWerte</c>) und jede Vorlagenposition
@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Tolerant gegen eine nie migrierte Datenbank.</b> Jeder Leser fragt
     /// <see cref="SpaltenVorhanden"/>; fehlen die Spalten, liest er nichts und rechnet
-    /// den Weg vor Schritt 108 — Zeichen für Zeichen. Der gemerkte Spaltenstand gilt je
+    /// den Weg vor Schritt 111 — Zeichen für Zeichen. Der gemerkte Spaltenstand gilt je
     /// Datenbankpfad; die Migration vergisst ihn nach dem Anlegen
     /// (<see cref="SpaltenStandVergessen"/>).</para>
     /// </summary>
@@ -88,7 +88,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Vergisst den gemerkten Spaltenstand — gerufen von Schritt 108
+        /// <summary>Vergisst den gemerkten Spaltenstand — gerufen von Schritt 111
         /// der Migration, nachdem er die Spalten angelegt hat.</summary>
         internal static void SpaltenStandVergessen()
         {
@@ -172,7 +172,7 @@ namespace WindowsFormsApplication1
         /// Schreibt die zwei Kennzeichen EINER Zeile — <c>null</c> schreibt NULL
         /// („wie bisher"). Rückgabe <c>false</c>, wenn die Spalten fehlen oder keine
         /// Zeile getroffen wurde; eine nie migrierte Datenbank bleibt so still auf dem
-        /// Weg vor Schritt 108.
+        /// Weg vor Schritt 111.
         /// </summary>
         /// <param name="tabelle"><see cref="SchemaKatalog.TAB_PROJEKTWERTE"/> oder
         /// <see cref="SchemaKatalog.TAB_KOSTENVORLAGEPOSITION"/>.</param>

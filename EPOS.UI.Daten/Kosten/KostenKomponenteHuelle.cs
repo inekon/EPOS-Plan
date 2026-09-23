@@ -1275,7 +1275,7 @@ namespace WindowsFormsApplication1
             // ETAPPE E7c (Schritt E): die zwei Kennzeichen - SOFORT geschrieben wie die
             // Positionsart (der Zeileneditor hat seine eigene Bestaetigung), ueber den
             // EINEN Schreibweg des Kerns. Nur auf der Investitionsseite; eine Tabelle
-            // ohne die Spalten bleibt still auf dem Weg vor Schritt 108.
+            // ohne die Spalten bleibt still auf dem Weg vor Schritt 111.
             if (_invest)
             {
                 bool? ersatz = ErsatzRestwertKennzeichen.AusAuswahl(e.ErsatzAuswahl);

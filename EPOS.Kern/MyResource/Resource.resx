@@ -24406,7 +24406,7 @@ Möchten Sie das zulassen?</value>
     <value>(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
-    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit.</value>
+    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Senken: {0}</value>

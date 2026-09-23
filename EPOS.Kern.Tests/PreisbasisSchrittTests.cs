@@ -7,7 +7,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E7c — <b>Schritt F (Schemaschritt 109): die Preisbasis der Trägerkarte als
+    /// ETAPPE E7c — <b>Schritt F (Schemaschritt 112): die Preisbasis der Trägerkarte als
     /// eigener Kartenzustand</b> (Entscheid ET‑D‑3 Rest, Mockup U32).
     ///
     /// <para>Geprüft wird: Zielstand, Spalte (TEXT, nullbar), der einmalige Datenteil
@@ -21,12 +21,12 @@ namespace EPOS.Kern.Tests
     public class PreisbasisSchrittTests
     {
         [Fact]
-        public void Der_Zielstand_ist_109_und_der_Schritt_hat_eine_Textspalte()
+        public void Der_Zielstand_ist_112_und_der_Schritt_hat_eine_Textspalte()
         {
-            Assert.True(SchemaStand.Zielversion >= 109,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 109.");
+            Assert.True(SchemaStand.Zielversion >= 112,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 112.");
 
-            SchemaSpalte[] spalten = SchemaKatalog.Schritt109_Preisbasis;
+            SchemaSpalte[] spalten = SchemaKatalog.Schritt112_Preisbasis;
             Assert.Single(spalten);
             Assert.Equal("energy_project_settings", spalten[0].Tabelle);
             Assert.Equal("Preisbasis", spalten[0].Name);
@@ -83,7 +83,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Die Abnahme von U32 am Controller:</b> Speichern mit der Basis „kWh" OHNE
         /// Regel nach kWh (ID_Umrechnung −1 → NULL) und wieder lesen — die Basis steht
-        /// weiter auf kWh; vor Schritt 109 fiel sie auf die Abrechnungseinheit zurück.
+        /// weiter auf kWh; vor Schritt 112 fiel sie auf die Abrechnungseinheit zurück.
         /// </summary>
         [Fact]
         public void Die_Basis_kWh_bleibt_ohne_Regel_nach_kWh_stehen()

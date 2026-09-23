@@ -24399,7 +24399,7 @@ Do you want to allow this?</value>
     <value>(from rounding σ or the quantities to 0.01 MWh)</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
-    <value>This database cannot store the selected price basis yet (schema version before 109) — the card shows the billing unit.</value>
+    <value>This database cannot store the selected price basis yet (schema version before 112) — the card shows the billing unit.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Heat sinks: {0}</value>

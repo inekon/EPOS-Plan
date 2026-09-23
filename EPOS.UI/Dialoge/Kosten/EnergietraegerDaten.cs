@@ -172,7 +172,7 @@ public sealed class EnergietraegerStand
     /// <summary>
     /// ETAPPE E7c (Schritt F, Mockup U32): die Herleitungszeile unter der Preisbasis —
     /// gesetzt, wenn die Datenbank den Kartenzustand noch nicht speichern kann
-    /// (Schemastand vor 109); leer = keine Zeile.
+    /// (Schemastand vor 112); leer = keine Zeile.
     /// </summary>
     public string PreisbasisHerleitung { get; set; } = "";
 

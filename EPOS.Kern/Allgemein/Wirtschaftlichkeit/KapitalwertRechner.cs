@@ -209,7 +209,7 @@ namespace WindowsFormsApplication1
             /// ETAPPE E7c (Schritt E, Entscheid A6): Ersatzbeschaffung dieser Position
             /// führen? <c>null</c> = wie bisher (ersetzt wird, sobald die Nutzungsdauer vor
             /// T abläuft), <c>true</c> = dasselbe ausdrücklich, <c>false</c> = nie ersetzen.
-            /// Quelle: <c>Tab_ProjektWerte.ErsatzFuehren</c> (Schritt 108).
+            /// Quelle: <c>Tab_ProjektWerte.ErsatzFuehren</c> (Schritt 111).
             /// </summary>
             public bool? ErsatzFuehren;
 

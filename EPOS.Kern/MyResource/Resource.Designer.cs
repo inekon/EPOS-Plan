@@ -10832,7 +10832,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit. ähnelt.
         /// </summary>
         public static string ETV_PREISBASIS_OHNE_SPALTE {
             get {
