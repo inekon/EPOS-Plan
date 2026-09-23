@@ -24024,6 +24024,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_MESSWERT_ABWEICHUNG" xml:space="preserve">
     <value>Zone „{0}“: Der Messwert weicht um mehr als die Rückfrageschwelle vom Katalogwert ab.</value>
   </data>
+  <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
+  </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>
   </data>

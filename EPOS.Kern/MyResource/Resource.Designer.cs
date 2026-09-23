@@ -70236,6 +70236,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_NETZVERLUST_UND_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_NETZVERLUST_UND_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog ähnelt.
         /// </summary>
         public static string ZPG_HINW_NIVEAU_VORGABE {

@@ -70,8 +70,19 @@ namespace WindowsFormsApplication1
                 We = we,
                 Parameter = ps,
                 Tagesgangsaetze = EigeneSaetze(zonen),
-                BelegungJeRaumzahl = Belegung(ps.Katalogversion)
+                BelegungJeRaumzahl = Belegung(ps.Katalogversion),
+                NetzverlusteProjekt = Netzverluste(idProjekt)
             };
+        }
+
+        /// <summary>
+        /// Die Netzverluste des Projekts aus <c>Tab_Einstellungen</c> (dieselbe Zeile wie der
+        /// Lauf, <c>KonfigurationCtrl.ProjektLesen</c>) — nur für den Hinweis ZU5; ohne Zeile 0.
+        /// </summary>
+        private static double Netzverluste(int idProjekt)
+        {
+            var konfig = new KonfigurationCtrl();
+            return konfig.ProjektLesen(idProjekt) ? konfig.model.m_Netzverluste : 0.0;
         }
 
         /// <summary>

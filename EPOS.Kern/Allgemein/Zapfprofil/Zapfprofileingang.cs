@@ -191,6 +191,14 @@ namespace WindowsFormsApplication1
         /// <summary>Schwelle für „Stunden über" [kW]; <c>null</c> = keine Zählung.</summary>
         public double? SchwelleKw { get; init; }
 
+        /// <summary>
+        /// Die Netzverluste des Projekts (Einstellungen, in % oder kWh/a — hier zählt nur, ob sie
+        /// gesetzt sind): Größer 0 und zugleich eine gerechnete Zirkulation ergibt den Hinweis
+        /// <c>NETZVERLUST_UND_ZIRKULATION</c> (Konzept 9, ZU5). Die Netzverlustverteilung selbst
+        /// bleibt unberührt. 0 = keine Netzverluste oder unbekannt.
+        /// </summary>
+        public double NetzverlusteProjekt { get; init; }
+
         /// <summary>Der Eingang aus einem Arbeitsstand, dem Kalender und dem Parametersatz.</summary>
         internal static Zapfprofileingang Aus(ZapfprofilStand stand, int wochentagJan1, bool[] we, Parametersatz ps)
         {

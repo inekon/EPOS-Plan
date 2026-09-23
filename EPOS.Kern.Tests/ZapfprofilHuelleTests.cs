@@ -392,6 +392,39 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith("Zone „Zone leer“ trägt 0: ", m.Text);
         }
 
+        /// <summary>
+        /// ZU5: Trägt das Projekt Netzverluste (<c>Tab_Einstellungen</c>) und rechnet eine Zone
+        /// Zirkulation, nennt die Vorschau den Hinweis in der Oberflächensprache — nicht blockierend,
+        /// die Vorschau ist gerechnet. Ohne Netzverluste steht er nicht da.
+        /// </summary>
+        [Fact]
+        public void Netzverluste_und_Zirkulation_ergeben_in_der_Vorschau_den_Hinweis()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var eingabe = new ZapfprofilEingabeDaten
+            {
+                Zonen = { new ZapfprofilZoneDaten { Name = "Zone Probe", IdNutzungsart = Nutzungsart(), Bezugsmenge = 10 } }
+            };
+            const string KENNUNG = "ZPG_HINW_NETZVERLUST_UND_ZIRKULATION";
+
+            ZapfprofilVorschauDaten ohne = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
+            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, ohne.Zustand);
+            Assert.True(ohne.Summe.Kennzahlen.JahresverlustZirkulationKwh > 0);
+            Assert.DoesNotContain(ohne.Meldungen, x => x.Kennung == KENNUNG);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Einstellungen SET Netzverluste = 5 WHERE ID_Projekt = ?",
+                                           new DbParam("?", PROJEKT));
+            ZapfprofilVorschauDaten mit = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
+
+            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, mit.Zustand);
+            ZapfprofilMeldung h = Assert.Single(mit.Meldungen, x => x.Kennung == KENNUNG);
+            Assert.Equal(ZapfprofilMeldungsart.Hinweis, h.Art);
+            Assert.Equal("", h.Zone);
+            Assert.StartsWith("Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation.", h.Text);
+        }
+
         [Fact]
         public void Der_Behaelter_schreibt_im_Vorgang_des_Aufrufers_und_die_Optionsgruppe_behaelt_die_Zonen()
         {

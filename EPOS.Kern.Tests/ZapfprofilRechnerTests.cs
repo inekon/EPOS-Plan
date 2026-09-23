@@ -349,5 +349,37 @@ namespace EPOS.Kern.Tests
             Assert.Throws<ArgumentException>(() => new Bilanzreihe(nan));
             Assert.Equal(2.0 * r.JahressummeKwh, Bilanzreihe.Summe(new[] { r, r }).JahressummeKwh, 9);
         }
+
+        /// <summary>
+        /// ZU5 (Konzept 9, Risiko 8): Netzverluste des Projekts und eine gerechnete Zirkulation
+        /// zugleich ergeben den nicht blockierenden Hinweis NETZVERLUST_UND_ZIRKULATION — ohne
+        /// Netzverluste, ohne Zone mit Zirkulation oder ohne Zirkulationsverlust nicht. Die Reihen
+        /// bleiben gleich (die Netzverlustverteilung ist nicht Sache des Generators).
+        /// </summary>
+        [Fact]
+        public void Netzverluste_und_Zirkulation_zugleich_ergeben_den_Hinweis_ZU5()
+        {
+            const string KENNUNG = "NETZVERLUST_UND_ZIRKULATION";
+            ProjektStand p = Projekt() with { ZirkFlaecheM2 = 200.0 };
+            Zapfprofileingang ohne = Eingang(p, Parameter(), Zone());
+            Zapfprofileingang mit = ohne with { NetzverlusteProjekt = 5.0 };
+
+            ZapfprofilErgebnis a = ZapfprofilRechner.Rechnen(ohne, Katalog);
+            ZapfprofilErgebnis b = ZapfprofilRechner.Rechnen(mit, Katalog);
+
+            Assert.DoesNotContain(a.Hinweise, h => h.Code == KENNUNG);
+            ZapfHinweis h = Assert.Single(b.Hinweise, x => x.Code == KENNUNG);
+            Assert.Equal("", h.Zone);
+            Assert.True(b.Vollstaendig);
+            Assert.Equal(a.Zapfung.StundenKwh, b.Zapfung.StundenKwh);
+            Assert.Equal(a.Zirkulation.StundenKwh, b.Zirkulation.StundenKwh);
+
+            // Keine Zone mit Zirkulation, bzw. kein Zirkulationsverlust: kein Hinweis.
+            Zapfprofileingang ohneZone = Eingang(p, Parameter(), Zone() with { Zirkulation = false }) with { NetzverlusteProjekt = 5.0 };
+            Assert.DoesNotContain(ZapfprofilRechner.Rechnen(ohneZone, Katalog).Hinweise, x => x.Code == KENNUNG);
+            Zapfprofileingang ohneVerlust = Eingang(Projekt() with { ZirkAuto = false, ZirkManuellKw = 0.0 }, Parameter(), Zone())
+                                            with { NetzverlusteProjekt = 5.0 };
+            Assert.DoesNotContain(ZapfprofilRechner.Rechnen(ohneVerlust, Katalog).Hinweise, x => x.Code == KENNUNG);
+        }
     }
 }

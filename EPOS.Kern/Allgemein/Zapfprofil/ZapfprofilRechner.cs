@@ -225,6 +225,15 @@ namespace WindowsFormsApplication1
             Bilanzreihe zapfung = Bilanzreihe.Summe(zapfreihen);
             Bilanzreihe zirkulation = Bilanzreihe.Summe(zirkreihen);
 
+            // --- 5. ZU5: Netzverluste und Zirkulation zugleich (Konzept 9, Risiko 8) ---------
+            // Die Netzverlustverteilung bleibt unberührt; der Hinweis nennt nur, dass beide
+            // gesetzt sind und derselbe Verlust doppelt zählen kann. Nicht blockierend.
+            if (e.NetzverlusteProjekt > 0.0 && zirkulation.JahressummeKwh > 0.0
+                && arbeit.Exists(a => !a.Abgelehnt && a.Stand.Zirkulation))
+                hinweise.Add(new ZapfHinweis("", "NETZVERLUST_UND_ZIRKULATION",
+                    "Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation — " +
+                    "sind die Verluste der Zirkulation in den Netzverlusten enthalten, zählen sie doppelt."));
+
             return new ZapfprofilErgebnis
             {
                 Zapfung = zapfung,
