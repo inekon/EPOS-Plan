@@ -1165,6 +1165,22 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt 103 - " + u + ".");
             }
 
+            // ---- Schritt 104 kommt mit dem Nachzug des Arbeitszweigs.
+            //
+            // ---- Schritt 105: der zweite Fall des Paragraf 2 Nr. 16 KWKG (Befund K-1,
+            //      Entscheide EZ-5 und E7-Q2, 23.09.2026). REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_105_KwkgAbwaermeabfuhr bedient
+            //      (SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr): das Kennzeichen
+            //      KWKG_Abwaermeabfuhr (0/1, Vorgabe 0) und die nullbare Stromkennzahl an
+            //      Tab_Energieanlagen.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML, das Kennzeichen steht ueberall auf 0
+            //      (Fall 1), und die Wirtschaftlichkeit steht nicht im Export.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

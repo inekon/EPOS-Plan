@@ -352,11 +352,20 @@ namespace WindowsFormsApplication1
         /// und fasst die Zonenzeilen der gespeicherten Strommatrix zu je einer Jahreszeile
         /// zusammen. <b>Der Referenzlauf bleibt byte-gleich</b> — die Wirtschaftlichkeit
         /// steht nicht im Export; in der Testdatenbank trägt kein Projekt einen Tarifsatz.
+        /// Schritt <b>104</b> ist anderweitig vergeben (er kommt mit dem Nachzug des
+        /// Arbeitszweigs).
+        /// Mit dem ZWEITEN FALL DES § 2 Nr. 16 KWKG (Schritt 105, Befund K‑1, Entscheide
+        /// EZ‑5 und E7‑Q2 vom 23.09.2026) steht das Ziel auf <b>105</b>:
+        /// <c>Tab_Energieanlagen</c> bekommt das Kennzeichen „Vorrichtung zur
+        /// Abwärmeabfuhr" (0/1 mit <c>CHECK</c>, Vorgabe 0) und die nullbare Stromkennzahl
+        /// (<see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>). <b>Reines DDL,
+        /// ergebnisneutral:</b> 0 heißt Fall 1, die Nettostromerzeugung — der Rechenweg
+        /// vor dem Schritt; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 103;
+        public const int Zielversion = 105;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

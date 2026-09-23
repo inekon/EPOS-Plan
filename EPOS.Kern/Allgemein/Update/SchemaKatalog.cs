@@ -4090,6 +4090,63 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE E7c — der zweite Fall des § 2 Nr. 16 KWKG (Befund K‑1, Schritt 105)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E7c — <b>Kennzeichen „Vorrichtung zur Abwärmeabfuhr"</b> dieser Anlage
+        /// (§ 2 Nr. 16 KWKG, Befund K‑1, Entscheid EZ‑5 und E7‑Q2). <b>0 = keine</b>
+        /// (die Vorgabe, der ganze Bestand): KWK-Strom ist die Nettostromerzeugung (Fall 1).
+        /// <b>1 = vorhanden</b> (beim Notkühler größerer BHKW der Regelfall): KWK-Strom ist
+        /// <c>min(Nettostromerzeugung, Nutzwärme × Stromkennzahl)</c> (Fall 2,
+        /// <c>KwkStromRechner</c>).
+        ///
+        /// <para><b>0/1 mit <c>CHECK</c></b> nach der Hausregel aus BETRIEB_SQLITE.md
+        /// Abschnitt 6; die Typdefinition kommt aus <c>StilleDb.SqliteSpaltenTyp</c>
+        /// („YESNO" → <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>).
+        /// <c>Tab_Energieanlagen</c> ist STRICT, und ein <c>ALTER TABLE … ADD COLUMN</c> mit
+        /// INTEGER-Typ und <c>DEFAULT 0</c> ist dort zulässig — ein Tabellenneubau ist nicht
+        /// nötig. <b>Ordinalposition und _STAMM:</b> wortgleiche Begründung wie bei
+        /// <see cref="Schritt22_KwkgJeAnlage"/>.</para>
+        /// </summary>
+        public const string SPALTE_EA_KWKG_ABWAERMEABFUHR = "KWKG_Abwaermeabfuhr";
+
+        /// <summary>
+        /// ETAPPE E7c — die <b>Stromkennzahl σ</b> dieser Anlage (§ 2 Nr. 16 KWKG), eine
+        /// Geräteeigenschaft; gelesen nur bei gesetztem
+        /// <see cref="SPALTE_EA_KWKG_ABWAERMEABFUHR"/>. <b>NULL (oder ≤ 0) heißt „nicht
+        /// gepflegt"</b> — dann gilt die aus <c>P_el ÷ P_th</c> der Gerätezeile
+        /// (<c>Tab_BHKW</c>) berechnete Kennzahl; ist auch die nicht bestimmbar, gibt es
+        /// keinen Ersatzwert und keine Vorgabe, sondern keinen KWK-Strom nach Fall 2 und
+        /// eine Kohärenzzeile „Stromkennzahl fehlt" (Entscheid E7‑Q2 (2) mit Auflage).
+        /// </summary>
+        public const string SPALTE_EA_KWKG_STROMKENNZAHL = "KWKG_Stromkennzahl";
+
+        /// <summary>
+        /// Schritt 105 der Migration (Etappe E7c, Befund K‑1) — die zwei Spalten
+        /// <see cref="SPALTE_EA_KWKG_ABWAERMEABFUHR"/> und
+        /// <see cref="SPALTE_EA_KWKG_STROMKENNZAHL"/> an <c>Tab_Energieanlagen</c>, neben den
+        /// übrigen KWKG-Angaben der Anlage (der Zuschlag gehört seit Schritt 89 der
+        /// Anlage).
+        ///
+        /// <para><b>KEIN DML und ergebnisNEUTRAL.</b> Das Kennzeichen steht im ganzen
+        /// Bestand auf 0, die Kennzahl auf NULL — und 0 heißt Fall 1, die
+        /// Nettostromerzeugung, also genau der Rechenweg vor dem Schritt. Der Referenzlauf
+        /// bleibt byte-gleich; die Simulation liest keine der beiden Spalten.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe Grund
+        /// wie bei <see cref="Schritt22_KwkgJeAnlage"/>: Der Leser ist allein die
+        /// Wirtschaftlichkeit, deren eigene Rückfallebene
+        /// (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>) sie vorsorglich
+        /// anlegt.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt105_KwkgAbwaermeabfuhr =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_ABWAERMEABFUHR, "YESNO"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_STROMKENNZAHL,  "DOUBLE"),
+        };
+
+        // ---------------------------------------------------------------------------
         // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierungsregeln je Projekt
         // ---------------------------------------------------------------------------
 

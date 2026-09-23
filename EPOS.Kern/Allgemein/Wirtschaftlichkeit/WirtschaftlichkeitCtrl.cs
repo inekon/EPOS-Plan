@@ -564,6 +564,14 @@ namespace WindowsFormsApplication1
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
+                    // ETAPPE E7c (Befund K-1) — Kennzeichen „Vorrichtung zur
+                    // Abwärmeabfuhr" und Stromkennzahl JE ANLAGE. Sie entstehen regulär
+                    // über Migrationsschritt 105; das hier ist die tolerante VORSORGE
+                    // unmittelbar vor dem Zugriff. Kein DML: Das Kennzeichen steht nach
+                    // dem ADD COLUMN auf 0 (Fall 1), die Kennzahl auf NULL.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
                     // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
                     // entstehen regulär über Migrationsschritt 23; das hier ist die
                     // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
