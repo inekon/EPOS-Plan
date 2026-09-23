@@ -313,6 +313,12 @@ namespace WindowsFormsApplication1
             // ImDublettendialog = false: Anzeigenamen und Texte kommen erst mit der
             // Oberflaechenstufe (Konzept 5.4); bis dahin zeigt die Verwaltung die
             // Kataloge nicht.
+            //
+            // Die Zapfkategorien (Schemaschritt T2, Stufe Z3) sind ein Datenblock der
+            // Nutzungsart: Sie gehoeren zu ihrer Katalogversion, gehen mit ihr (Kaskade)
+            // und zaehlen zum Inhalt. Eine Kategorie mit ReadOnly sperrt ihre Nutzungsart
+            // wie deren eigenes ReadOnly (KatalogBereinigung.Sperrgrund). Einer Datenbank
+            // ohne die Tabelle (Stand vor 114) fehlt der Block nur.
             // ------------------------------------------------------------------------
             new KatalogDefinition
             {
@@ -326,6 +332,19 @@ namespace WindowsFormsApplication1
                 {
                     // Tab_TwwZone.ID_Nutzungsart - Fremdschluessel ohne ON DELETE (Konzept 3.1).
                     new VerwendungsPruefung { Tabelle = TwwSchema.TAB_TWW_ZONE, Spalte = "ID_Nutzungsart", UeberName = false }
+                },
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
+                        FkSpalte = "ID_Nutzungsart",
+                        Sortierung = "Reihenfolge, ID",
+                        WertSpalten = new[]
+                        {
+                            "Kategorie", "Reihenfolge", "Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min"
+                        }
+                    }
                 }
             },
             new KatalogDefinition

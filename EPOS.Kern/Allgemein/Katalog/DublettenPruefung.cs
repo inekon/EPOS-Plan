@@ -148,8 +148,12 @@ namespace WindowsFormsApplication1
             foreach (KatalogDatenblock b in k.Datenbloecke)
             {
                 var jeFk = new Dictionary<int, List<DataRow>>();
-                DataTable bt = DataRepository.GetDataTable(
-                    "SELECT * FROM [" + b.Tabelle + "] ORDER BY [" + b.FkSpalte + "], " + b.Sortierung);
+                // Eine Blocktabelle, die diese Datenbank noch nicht fuehrt (die Zapfkategorien
+                // vor Schritt 114), ist ein leerer Block - kein Lesefehler.
+                DataTable bt = DataRepository.TabelleVorhanden(b.Tabelle)
+                    ? DataRepository.GetDataTable(
+                        "SELECT * FROM [" + b.Tabelle + "] ORDER BY [" + b.FkSpalte + "], " + b.Sortierung)
+                    : null;
                 if (bt != null)
                 {
                     foreach (DataRow r in bt.Rows)
@@ -307,9 +311,11 @@ namespace WindowsFormsApplication1
             var hashes = new List<string>();
             foreach (KatalogDatenblock b in k.Datenbloecke)
             {
-                DataTable bt = DataRepository.GetDataTable(
-                    "SELECT * FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ? ORDER BY " + b.Sortierung,
-                    new DbParam("@fk", id));
+                DataTable bt = DataRepository.TabelleVorhanden(b.Tabelle)
+                    ? DataRepository.GetDataTable(
+                        "SELECT * FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ? ORDER BY " + b.Sortierung,
+                        new DbParam("@fk", id))
+                    : null;
                 if (bt == null || bt.Rows.Count == 0)
                 {
                     hashes.Add("");

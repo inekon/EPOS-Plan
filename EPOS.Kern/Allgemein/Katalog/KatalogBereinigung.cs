@@ -161,9 +161,14 @@ namespace WindowsFormsApplication1
                     }
 
                     foreach (KatalogDatenblock b in k.Datenbloecke)
+                    {
+                        // Ein Block, dessen Tabelle diese Datenbank noch nicht fuehrt (etwa die
+                        // Zapfkategorien vor Schritt 114), hat nichts zu loeschen.
+                        if (!BlocktabelleDa(v, b)) continue;
                         v.Ausfuehren(
                             "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
                             new DbParam("@fk", id));
+                    }
 
                     int kopf = v.Ausfuehren(
                         "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
@@ -291,6 +296,21 @@ namespace WindowsFormsApplication1
             if (ro != null && Convert.ToInt64(ro, CultureInfo.InvariantCulture) != 0)
                 return "schreibgeschuetzt (ReadOnly)";
 
+            // Ein Datenblock mit eigener Spalte ReadOnly (die Zapfkategorien einer Nutzungsart):
+            // Eine ausgelieferte Blockzeile ist ebenso unveraenderlich wie ein ausgelieferter Kopf.
+            foreach (KatalogDatenblock b in k.Datenbloecke)
+            {
+                if (!BlocktabelleDa(v, b)) continue;
+                object mitSpalte = v.Skalar("SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = 'ReadOnly'",
+                                            new DbParam("@tabelle", b.Tabelle));
+                if (mitSpalte == null || Convert.ToInt64(mitSpalte, CultureInfo.InvariantCulture) == 0) continue;
+                object n = v.Skalar("SELECT COUNT(*) FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ? AND [ReadOnly] <> 0",
+                                    new DbParam("@fk", id));
+                if (n == null) return "Verwendungspruefung " + b.Tabelle + " nicht lesbar";
+                if (Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0)
+                    return "schreibgeschuetzt (ReadOnly in " + b.Tabelle + ")";
+            }
+
             object name = null;
             var treffer = new List<string>();
             foreach (VerwendungsPruefung vp in k.VerwendungsPruefungen)
@@ -311,6 +331,14 @@ namespace WindowsFormsApplication1
                 if (n > 0) treffer.Add(vp.Tabelle + " (" + n.ToString(CultureInfo.InvariantCulture) + ")");
             }
             return treffer.Count > 0 ? "verwendet: " + string.Join(", ", treffer) : null;
+        }
+
+        /// <summary>Fuehrt die Datenbank die Tabelle des Blocks? (Im laufenden Vorgang gefragt.)</summary>
+        private static bool BlocktabelleDa(DbVorgang v, KatalogDatenblock b)
+        {
+            object n = v.Skalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                new DbParam("@tabelle", b.Tabelle));
+            return n != null && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0;
         }
 
         /// <summary>

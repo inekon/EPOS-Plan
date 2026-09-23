@@ -50,13 +50,19 @@ namespace EPOS.Kern.Tests
             if (mitTwwSchema) SchemaAnlegen();
         }
 
-        /// <summary>Die zehn Tabellen und ihre Indizes — genau wie Schemaschritt T1.</summary>
-        public static void SchemaAnlegen()
+        /// <summary>
+        /// Die zehn Tabellen und ihre Indizes — genau wie Schemaschritt T1 —, mit
+        /// <paramref name="mitT2"/> dazu die Zapfkategorien (Schemaschritt T2, Schritt 114).
+        /// </summary>
+        public static void SchemaAnlegen(bool mitT2 = true)
         {
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
                 DataRepository.ExecuteNonQuery(a.Value);
             foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
                 DataRepository.ExecuteNonQuery(i.Value);
+            if (!mitT2) return;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                DataRepository.ExecuteNonQuery(a.Value);
         }
 
         public void Dispose()
@@ -147,6 +153,29 @@ namespace EPOS.Kern.Tests
                          string.Join(", ", spalten.Select(_ => "?")) + ")";
             return DataRepository.ExecuteInsertAndGetId(sql,
                 werte.Select((w, i) => new DbParam("@p" + i, w)).ToArray());
+        }
+
+        /// <summary>
+        /// Eine Zapfkategorie einer Nutzungsart (Schemaschritt T2) mit erfundenen Werten; Status,
+        /// ReadOnly und Kappung wählt der Fall.
+        /// </summary>
+        internal static int KategorieAnlegen(int idNutzungsart, string kategorie, int reihenfolge,
+                                             double volumenstrom, int dauer, double anteil, double sigma,
+                                             double? kappung = null, string status = TwwSchema.STATUS_EIGEN,
+                                             bool readOnly = false)
+        {
+            return DataRepository.ExecuteInsertAndGetId(
+                "INSERT INTO \"Tab_TwwZapfkategorie_STAMM\" (\"ID_Nutzungsart\", \"Kategorie\", \"Reihenfolge\", " +
+                "\"Volumenstrom_l_min\", \"Dauer_min\", \"Anteil\", \"Sigma\", \"Kappung_l_min\", \"Quelle\", " +
+                "\"Ausgabe\", \"Version\", \"Herkunftsart\", \"Status\", \"Beleg\", \"ReadOnly\") " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'T1', 'FIKTIV', ?, NULL, ?)",
+                new[]
+                {
+                    new DbParam("@n", idNutzungsart), new DbParam("@k", kategorie), new DbParam("@r", reihenfolge),
+                    new DbParam("@v", volumenstrom), new DbParam("@d", dauer), new DbParam("@a", anteil),
+                    new DbParam("@s", sigma), new DbParam("@kap", kappung.HasValue ? (object)kappung.Value : null),
+                    new DbParam("@q", QUELLE), new DbParam("@st", status), new DbParam("@ro", readOnly ? 1 : 0)
+                });
         }
 
         /// <summary>Eine Zone eines Projekts auf eine Nutzungsart.</summary>

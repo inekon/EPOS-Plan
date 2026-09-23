@@ -21,8 +21,10 @@ namespace Auslieferungsvorlage
     /// Herkunftsart <c>FIKTIV</c> oder <c>IMPORT</c> (Normimport, nie in der Auslieferung).
     /// Die ReadOnly-Regel von <c>--kataloge readonly</c> rührt diese Tabellen deshalb nicht
     /// an (<see cref="IstTww"/>). Gelöscht wird bei eingeschalteten Fremdschlüsseln — die
-    /// Kaskaden nehmen Tagesgänge und Ereignisse mit; die Reihenfolge Nutzungsart vor
-    /// Tagesgangsatz folgt dem Verweis <c>ID_Tagesgangsatz</c> (ohne Kaskade). Was bleibt,
+    /// Kaskaden nehmen Tagesgänge, Ereignisse und die Zapfkategorien einer fallenden
+    /// Nutzungsart mit; die Reihenfolge Nutzungsart vor Tagesgangsatz folgt dem Verweis
+    /// <c>ID_Tagesgangsatz</c> (ohne Kaskade). Die Zapfkategorien (Schemaschritt T2) tragen
+    /// eigenen Status und eigene Herkunft und folgen der Regel wie ein Kopf. Was bleibt,
     /// bekommt <c>ReadOnly = 1</c>: Eine Auslieferungszeile ist unveränderlich (Konzept 3.1,
     /// K7), und die Prüfung verlangt es für jede Zeile mit Status <c>AUSLIEFERUNG</c>.</para>
     ///
@@ -44,6 +46,7 @@ namespace Auslieferungsvorlage
         /// <summary>Die Kopftabellen in LÖSCHreihenfolge (Verweisende vor Verwiesenen).</summary>
         internal static readonly string[] KOEPFE =
         {
+            TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
@@ -58,12 +61,22 @@ namespace Auslieferungsvorlage
             (TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "ID_Bedarfstag")
         };
 
+        /// <summary>
+        /// Köpfe mit eigenem Status, die an einem anderen Kopf hängen (Kaskade): Tabelle,
+        /// Kopftabelle, Verweisspalte — für die Waisenprüfung wie <see cref="KINDER"/>.
+        /// </summary>
+        internal static readonly (string Kind, string Kopf, string Spalte)[] ABHAENGIGE =
+        {
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "ID_Nutzungsart")
+        };
+
         /// <summary>Die Tabellen in EINSPIELreihenfolge des Katalogpakets (Verwiesene zuerst).</summary>
         internal static readonly string[] PAKETREIHENFOLGE =
         {
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_TAGESGANG_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
+            TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
             TwwSchema.TAB_TWW_PARAMETER_STAMM,
@@ -150,7 +163,7 @@ namespace Auslieferungsvorlage
             }
 
             // Waisen aus einem Altbestand (die Kaskade raeumt nur, was sie selbst loest).
-            foreach (var k in KINDER)
+            foreach (var k in KINDER.Concat(ABHAENGIGE))
                 if (DataRepository.TabelleVorhanden(k.Kind) && DataRepository.TabelleVorhanden(k.Kopf))
                     anweisungen.Add(("DELETE FROM \"" + k.Kind + "\" WHERE \"" + k.Spalte + "\" NOT IN (SELECT \"ID\" FROM \"" +
                                      k.Kopf + "\")", new DbParam[0]));
@@ -426,7 +439,8 @@ namespace Auslieferungsvorlage
 
             // (3) verwaiste Zeilen
             var waisen = new List<string>();
-            foreach (var k in KINDER.Where(k => DataRepository.TabelleVorhanden(k.Kind) && DataRepository.TabelleVorhanden(k.Kopf)))
+            foreach (var k in KINDER.Concat(ABHAENGIGE)
+                                    .Where(k => DataRepository.TabelleVorhanden(k.Kind) && DataRepository.TabelleVorhanden(k.Kopf)))
             {
                 long w = Zahl("SELECT COUNT(*) FROM \"" + k.Kind + "\" WHERE \"" + k.Spalte + "\" NOT IN (SELECT \"ID\" FROM \"" +
                               k.Kopf + "\" WHERE \"Status\" <> ?)", TwwSchema.STATUS_IMPORT);
@@ -439,8 +453,9 @@ namespace Auslieferungsvorlage
                               TwwSchema.STATUS_IMPORT);
                 if (w > 0) waisen.Add(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " ohne Tagesgangsatz: " + w);
             }
-            ok &= Posten(waisen, "keine verwaiste Zeile in " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " und " +
-                                 TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + " (Kopf fehlt oder traegt IMPORT)");
+            ok &= Posten(waisen, "keine verwaiste Zeile in " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ", " +
+                                 TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + " und " +
+                                 TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " (Kopf fehlt oder traegt IMPORT)");
 
             // (4) Herkunftsart FIKTIV und (5) Herkunftsart IMPORT (Normimport)
             var fiktiv = new List<string>();

@@ -124,6 +124,90 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // Zapfkategorien (Schemaschritt T2): Datenblock der Nutzungsart
+        // =================================================================================
+
+        [Fact]
+        public void Eine_freie_Nutzungsart_geht_samt_ihren_Zapfkategorien()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int frei = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            int andere = TwwTestdatenbank.NutzungsartAnlegen("Nutzung B", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(frei, "Kurz", 1, 4.0, 1, 0.5, 1.0);
+            TwwTestdatenbank.KategorieAnlegen(frei, "Lang", 2, 8.0, 5, 0.5, 2.0, kappung: 12.0);
+            TwwTestdatenbank.KategorieAnlegen(andere, "Kurz", 1, 4.0, 1, 1.0, 1.0);
+            KatalogDefinition k = Katalog("TWW_NUTZUNGSART");
+
+            Assert.Null(KatalogBereinigung.Sperrgrund(k, frei));
+            Assert.True(KatalogBereinigung.SatzLoeschen(k, frei));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_TwwZapfkategorie_STAMM\" WHERE \"ID_Nutzungsart\" = ?", new DbParam("@id", frei)));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM \"Tab_TwwZapfkategorie_STAMM\""));
+        }
+
+        /// <summary>
+        /// Eine ausgelieferte Kategorie (ReadOnly) ist unveränderlich wie ein ausgelieferter
+        /// Kopf: Sie sperrt ihre Nutzungsart, auch wenn deren eigene Zeile beschreibbar ist.
+        /// </summary>
+        [Fact]
+        public void Eine_ausgelieferte_Zapfkategorie_sperrt_ihre_Nutzungsart()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int nutzung = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(nutzung, "Kurz", 1, 4.0, 1, 1.0, 1.0,
+                                              status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            KatalogDefinition k = Katalog("TWW_NUTZUNGSART");
+
+            Assert.Equal("schreibgeschuetzt (ReadOnly in Tab_TwwZapfkategorie_STAMM)", KatalogBereinigung.Sperrgrund(k, nutzung));
+            Assert.False(KatalogBereinigung.SatzLoeschen(k, nutzung));
+            Assert.False(KatalogBereinigung.SatzUmbenennen(k, nutzung, "Neu A"));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM \"Tab_TwwZapfkategorie_STAMM\""));
+            Assert.NotNull(TwwNutzungsartCtrl.Lies(nutzung));
+        }
+
+        /// <summary>
+        /// Eine Datenbank vor Schritt 114 führt die Kategorien nicht: Löschen und Dublettenscan
+        /// laufen ohne den Block, statt an der fehlenden Tabelle zu scheitern.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kategorientabelle_laufen_Loeschen_und_Scan_wie_zuvor()
+        {
+            using var db = new TwwTestdatenbank(mitTwwSchema: false);
+            TwwTestdatenbank.SchemaAnlegen(mitT2: false);
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int frei = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.NutzungsartAnlegen("Nutzung B", "T1", satz);
+            KatalogDefinition k = Katalog("TWW_NUTZUNGSART");
+
+            ScanErgebnis scan = DublettenPruefung.ScanKatalog(k);
+            Assert.Null(scan.Fehler);
+            Assert.Equal(2, scan.Saetze.Count);
+            Assert.Equal(new[] { "" }, DublettenPruefung.BlockHashes(k, frei));
+            Assert.True(KatalogBereinigung.SatzLoeschen(k, frei));
+            Assert.Null(TwwNutzungsartCtrl.Lies(frei));
+        }
+
+        /// <summary>Die Kategorien zählen zum Inhalt: Zwei sonst gleiche Nutzungsarten mit anderen Kategorien sind keine Inhaltsdublette.</summary>
+        [Fact]
+        public void Die_Zapfkategorien_zaehlen_zum_Inhalt_der_Nutzungsart()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int a = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            int b = TwwTestdatenbank.NutzungsartAnlegen("Nutzung B", "T1", satz);
+            int c = TwwTestdatenbank.NutzungsartAnlegen("Nutzung C", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(a, "Kurz", 1, 4.0, 1, 1.0, 1.0);
+            TwwTestdatenbank.KategorieAnlegen(b, "Kurz", 1, 4.0, 1, 1.0, 1.0);
+            TwwTestdatenbank.KategorieAnlegen(c, "Kurz", 1, 4.0, 1, 1.0, 2.0);
+
+            ScanErgebnis scan = DublettenPruefung.ScanKatalog(Katalog("TWW_NUTZUNGSART"));
+            string Hash(int id) => scan.Saetze.Single(s => s.Id == id).InhaltsHash;
+            Assert.Equal(Hash(a), Hash(b));
+            Assert.NotEqual(Hash(a), Hash(c));
+        }
+
+        // =================================================================================
         // Umbenennen
         // =================================================================================
 

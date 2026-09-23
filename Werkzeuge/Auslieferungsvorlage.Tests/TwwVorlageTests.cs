@@ -108,7 +108,8 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("Tww-Paket   " + paket, e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  1 Zeile(n)", e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv  ->  4 Zeile(n)", e.Ausgabe);
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 3", e.Ausgabe);
+            Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ".csv  ->  2 Zeile(n)", e.Ausgabe);
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 5", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
@@ -124,6 +125,58 @@ namespace Auslieferungsvorlage.Tests
                     "SELECT ReadOnly FROM Tab_TwwParameter_STAMM WHERE Schluessel = 'Paket.Probe'")));
                 Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_TwwDin4708Wert_STAMM")));
+                // Die Zapfkategorien des Pakets hängen an der Nutzungsart 60 und sind gesperrt.
+                Assert.Equal(2L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = 60 AND ReadOnly = 1")));
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart <> 60")));
+            });
+        }
+
+        /// <summary>
+        /// Die Zapfkategorien (Schemaschritt T2) folgen der Tww-Regel wie ein Kopf: Es bleibt die
+        /// Kategorie mit Status AUSLIEFERUNG an einer bleibenden Nutzungsart, und sie bekommt
+        /// ReadOnly = 1; eine EIGENE und eine FIKTIVE fallen, die einer fallenden Nutzungsart
+        /// (IMPORT) gehen mit ihr (Kaskade). Keine verwaiste Kategorie.
+        /// </summary>
+        [Fact]
+        public void T8_Die_Zapfkategorien_folgen_der_Tww_Regel()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Bearbeiten(quelle, () =>
+            {
+                long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
+                long nutzung = NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
+                long import = NutzungAnlegen("Probe Import", TwwSchema.STATUS_IMPORT, satz, readOnly: 0);
+                KategorieAnlegen(nutzung, "Bleibt", TwwSchema.STATUS_AUSLIEFERUNG, TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+                KategorieAnlegen(nutzung, "Eigen", TwwSchema.STATUS_EIGEN, TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+                KategorieAnlegen(nutzung, "Fiktiv", TwwSchema.STATUS_AUSLIEFERUNG, TwwSchema.HERKUNFT_FIKTIV);
+                KategorieAnlegen(import, "Mit Import", TwwSchema.STATUS_AUSLIEFERUNG, TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
+            Assert.Contains("ok      nur Status AUSLIEFERUNG", e.Ausgabe);
+            Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
+            // Satz, Nutzungsart und die eine Kategorie; sie kam mit ReadOnly 0.
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 3", e.Ausgabe);
+            Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT k.Kategorie, k.ReadOnly, n.Bezeichner FROM Tab_TwwZapfkategorie_STAMM k " +
+                    "JOIN Tab_TwwNutzungsart_STAMM n ON n.ID = k.ID_Nutzungsart");
+                DataRow r = Assert.Single(dt.Rows.Cast<DataRow>());
+                Assert.Equal("Bleibt", Convert.ToString(r["Kategorie"]));
+                Assert.Equal(1L, Convert.ToInt64(r["ReadOnly"]));
+                Assert.Equal("Probe Nutzung", Convert.ToString(r["Bezeichner"]));
             });
         }
 
@@ -289,6 +342,13 @@ namespace Auslieferungsvorlage.Tests
             File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"),
                 string.Join(";", spalten) + "\n" + string.Join(";", werte) + "\n", utf8);
 
+            // Zwei Zapfkategorien der Nutzungsart 60, ohne Spalte ReadOnly (dann 1).
+            File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ".csv"),
+                "ID_Nutzungsart;Kategorie;Reihenfolge;Volumenstrom_l_min;Dauer_min;Anteil;Sigma;Kappung_l_min;" +
+                "Quelle;Version;Herkunftsart;Status\n" +
+                "60;Paket kurz;1;4;1;0.5;1;;" + QUELLE + ";" + VERSION + ";EIGENKONSTRUKTION;AUSLIEFERUNG\n" +
+                "60;Paket lang;2;8;5;0.5;2;12;" + QUELLE + ";" + VERSION + ";EIGENKONSTRUKTION;AUSLIEFERUNG\n", utf8);
+
             File.WriteAllText(Path.Combine(ordner, TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"),
                 "Schluessel;Wert;Einheit;Katalogversion;Quelle;Version;Herkunftsart;Status\n" +
                 "Paket.Probe;1.0;-;" + VERSION + ";" + QUELLE + ";" + VERSION + ";" + parameterHerkunft + ";" +
@@ -333,6 +393,16 @@ namespace Auslieferungsvorlage.Tests
                 "INSERT INTO Tab_TwwNutzungsart_STAMM (" + string.Join(", ", spalten) + ") VALUES (" +
                 string.Join(", ", spalten.Select(_ => "?")) + ")",
                 werte.Select(w => new DbParam("?", w)).ToArray());
+        }
+
+        private static void KategorieAnlegen(long nutzung, string kategorie, string status, string herkunft)
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_TwwZapfkategorie_STAMM (ID_Nutzungsart, Kategorie, Reihenfolge, Volumenstrom_l_min, " +
+                "Dauer_min, Anteil, Sigma, Quelle, Version, Herkunftsart, Status, ReadOnly) " +
+                "VALUES (?, ?, 1, 4.0, 1, 1.0, 1.0, ?, ?, ?, ?, 0)",
+                new DbParam("?", nutzung), new DbParam("?", kategorie), new DbParam("?", QUELLE),
+                new DbParam("?", VERSION), new DbParam("?", herkunft), new DbParam("?", status)));
         }
 
         private static string[] Namen(string tabelle)
