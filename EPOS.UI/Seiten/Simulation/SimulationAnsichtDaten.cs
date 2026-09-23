@@ -319,6 +319,14 @@ public sealed class SimulationParameterDienste
     /// <summary>Die Betriebsbereitschaft des Heizkessels [h/a].</summary>
     public Action<double>? BereitschaftSchreiben;
 
+    /// <summary>
+    /// Die Projekteinstellung „Kühlung rechnen" (Stufe KU1, Kühlkonzept 8.3) — schreibt
+    /// SOFORT, wie die Netzverluste, und meldet, ob danach der gewünschte Wert steht
+    /// (<c>KonfigurationCtrl.KuehlbetriebSetzen</c>). <c>null</c> = die Plattform bietet
+    /// den Schalter nicht an; dann steht der Abschnitt „Kühlung" nicht da.
+    /// </summary>
+    public Func<bool, bool>? KuehlbetriebSchreiben;
+
     // =====================================================================
     //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)
     // =====================================================================

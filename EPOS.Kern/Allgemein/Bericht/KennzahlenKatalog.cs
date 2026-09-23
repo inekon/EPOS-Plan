@@ -106,6 +106,40 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        // STUFE KU1 (Kühlkonzept 6.4) — die Kanalkennzahlen der Kälte
+        // ------------------------------------------------------------------
+
+        /// <summary>Jahreskälte = Summe des Kühlkanals [MWh/a] — Katalogschlüssel der Softwarearchitektur 4.3.</summary>
+        public const string SCHLUESSEL_KAELTE_JAHRESBEDARF = "kaelte.jahresbedarf";
+
+        /// <summary>Kältespitze [kW] (<c>Kaeltelast_Max</c>).</summary>
+        public const string SCHLUESSEL_KAELTE_SPITZE = "kaelte.spitze";
+
+        /// <summary>Stunden mit Kühlbedarf [h/a], gezählt am Kanalvektor.</summary>
+        public const string SCHLUESSEL_KAELTE_STUNDEN = "kaelte.stunden";
+
+        /// <summary>
+        /// Stunden mit Kühlbedarf [h/a] (<c>kaelte.stunden</c>) — gezählt am KANALVEKTOR, nicht als
+        /// Summe der Gebäudewerte (Kühlkonzept 6.4). Die Ergebnistabellen führen die Zahl nicht;
+        /// sie entsteht aus der Kanalreihe eines für den Bericht gerechneten Laufs
+        /// (<see cref="ZeitreihenSatz"/>, nur Kanäle mit Bedarf tragen eine Reihe). <c>null</c> ohne
+        /// erhobene Kälte oder ohne Reihe; 0, wenn die erhobene Jahreskälte 0 ist.
+        /// </summary>
+        private static double? KaelteStunden(VariantenDaten v)
+        {
+            double? jahr = E(v)?.Kaeltebedarf_Gesamt;
+            if (!jahr.HasValue) return null;
+            if (jahr.Value <= 0) return 0.0;
+
+            double[] reihe = v.Zeitreihen?.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG));
+            if (reihe == null) return null;
+
+            int stunden = 0;
+            for (int h = 0; h < reihe.Length; h++) if (reihe[h] > 0.0) stunden++;
+            return stunden;
+        }
+
+        // ------------------------------------------------------------------
         // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells
         // ------------------------------------------------------------------
 
@@ -215,6 +249,21 @@ namespace WindowsFormsApplication1
 
             l.Add(new Kennzahl("energie.waermelast", "Wärmelast max.", "Peak heat load", "kW", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermelast_Max));
+
+            // STUFE KU1 (Kühlkonzept 6.4, K15; E21, K5, K18): die Kanalkennzahlen der Kälte, in
+            // derselben Gruppe wie die drei Wärmekanäle, unmittelbar nach der Wärmelast. null —
+            // also keine Zeile, kein „—" —, wenn der Lauf keine Kälte ERHOBEN hat: Ein Projekt
+            // ohne Kühlung zeigt keine Kühlnullen. Die Beschriftung trägt die Grenze der Zahl
+            // (sensible Kälte ohne Entfeuchtung) in jede Tabelle, in der sie erscheint.
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_JAHRESBEDARF, "Kältebedarf gesamt (sensibel)",
+                "Total cooling demand (sensible)", "MWh/a", GR_ENERGIE, "N1", true,
+                v => E(v)?.Kaeltebedarf_Gesamt));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_SPITZE, "Kältelast max. (sensibel)",
+                "Peak cooling load (sensible)", "kW", GR_ENERGIE, "N1", true,
+                v => E(v)?.Kaeltelast_Max));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_STUNDEN, "Stunden mit Kühlbedarf (sensibel)",
+                "Hours with cooling demand (sensible)", "h/a", GR_ENERGIE, "N0", false,
+                KaelteStunden));
             l.Add(new Kennzahl("energie.strombedarf", "Strombedarf gesamt", "Total electricity demand", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Strombedarf_Gesamt));
             l.Add(new Kennzahl("energie.strommax", "Strombedarf max.", "Peak electric load", "kW", GR_ENERGIE, "N0", true,

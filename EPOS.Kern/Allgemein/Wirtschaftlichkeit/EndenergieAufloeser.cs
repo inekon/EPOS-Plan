@@ -811,6 +811,75 @@ namespace WindowsFormsApplication1
             get { return _ergebnis != null; }
         }
 
+        // =====================================================================
+        // ETAPPE E7c — B‑4 Rest: die zwei projektweiten Alt-Arten frisch aus dem Lauf
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest) — die Bezugsgröße von
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c>: die <b>projektweiten Brennstoffkosten</b>
+        /// [€/a] des jüngsten Laufs — Σ Verbrauch × Arbeitspreis über alle
+        /// Brennstoffmodule (BHKW und Brennstoffkessel; Elektrokessel bleiben in der
+        /// Stromwelt). Es ist Weg A („% der Endenergiekosten"), nur projektweit statt
+        /// anlagenscharf — und damit derselbe Rechenweg wie dort (<c>Brennstoffsumme</c>).
+        /// <c>null</c> = kein Lauf, kein Brennstoff oder ein Träger ohne Arbeitspreis;
+        /// dann bleibt die gepflegte Menge (Konserve).
+        /// </summary>
+        internal double? BrennstoffkostenProjektEuro()
+        {
+            if (_ergebnis == null) return null;
+            var alle = new List<Brennstoffzeile>(BhkwModule());
+            alle.AddRange(KesselModule(false));
+            Groesse g = Brennstoffsumme(alle, null, MyResource.Resource.AUFLOESER_KOMP_BHKW);
+            return g != null ? g.KostenEuro : null;
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest) — die Bezugsgröße von <c>PROZENT_STROMKOSTEN</c>: die
+        /// <b>projektweiten Stromkosten</b> [€/a] des jüngsten Laufs — der Netzbezug
+        /// (<c>Stromrestbedarf</c>, darin Wärmepumpe, Heizstab und Elektrokessel) × dem
+        /// Arbeitspreis des Projekt-Stromträgers; dieselbe Bewertung wie Weg A an einer
+        /// Stromanlage ohne eigenen Träger. <c>null</c> = kein Lauf, kein Netzbezug oder
+        /// kein Strompreis.
+        /// </summary>
+        internal double? StromkostenProjektEuro()
+        {
+            double mwh = NetzbezugMWh();
+            if (mwh <= 0) return null;
+            double? preis = StrompreisJeKwh;
+            if (!preis.HasValue) return null;
+            return mwh * 1000.0 * preis.Value;
+        }
+
+        /// <summary>Der Netzbezug des Laufs [MWh/a] (<c>Energiebedarf.Stromrestbedarf</c>);
+        /// 0 ohne Lauf oder ohne Energiebedarfszeile.</summary>
+        private double NetzbezugMWh()
+        {
+            return _ergebnis != null && _ergebnis.Energiebedarf != null
+                ? _ergebnis.Energiebedarf.Stromrestbedarf : 0.0;
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest): WARUM eine der zwei projektweiten Arten keine
+        /// Bezugsgröße hat — kein Lauf, keine Menge (kein Brennstoff bzw. kein
+        /// Netzbezug) oder kein Arbeitspreis. Leer = sie hat eine. Die Steuerwerte sind
+        /// dieselben wie bei <see cref="GrundOhneBasis"/>.
+        /// </summary>
+        internal string GrundOhneProjektkosten(string bem)
+        {
+            if (_ergebnis == null) return WirtschaftlichkeitCtrl.BASISGRUND_LAUF;
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal))
+            {
+                if (NetzbezugMWh() <= 0) return WirtschaftlichkeitCtrl.BASISGRUND_MENGE;
+                return StrompreisJeKwh.HasValue ? "" : WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS;
+            }
+            if (BrennstoffkostenProjektEuro().HasValue) return "";
+            double menge = 0;
+            foreach (Brennstoffzeile m in BhkwModule()) if (m.VerbrauchMWh > 0) menge += m.VerbrauchMWh;
+            foreach (Brennstoffzeile m in KesselModule(false)) if (m.VerbrauchMWh > 0) menge += m.VerbrauchMWh;
+            return menge > 0 ? WirtschaftlichkeitCtrl.BASISGRUND_PREIS : WirtschaftlichkeitCtrl.BASISGRUND_MENGE;
+        }
+
         /// <summary>
         /// Warum trägt diese Position keine Laufgröße? Rückgabe ist einer der
         /// <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>-Steuerwerte.

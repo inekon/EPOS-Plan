@@ -895,6 +895,7 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Klimadaten` | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` |
 | `Programm Dokumentation/Gerätekataloge` | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` |
 | `Programm Dokumentation/Gebäudemodell VDI 6007` | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` (noch nicht hochgeladen) |
+| `Programm Dokumentation/Kühlung` | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` (noch nicht hochgeladen) |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,

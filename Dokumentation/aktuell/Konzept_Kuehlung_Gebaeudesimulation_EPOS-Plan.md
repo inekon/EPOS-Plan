@@ -30,6 +30,14 @@
 > Projekt schaltbar (F-K20, 7.2, 8.3, 10.3, 10.5, 11.1, 12.1). Mit E27 ist auch **Q24** entschieden:
 > Die Stufe GA wird fällig, sobald ihre vier Bedingungen erfüllt sind — eine davon ist die Abnahme
 > von KU1 (10.5, 11.2).
+>
+> **Nachzug 23.09.2026 — E31 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.36):** Der Anwender hat die fünf vor
+> KU1 fälligen Kühlfragen nach Empfehlung entschieden: **K4** (Kühlung zuletzt in der
+> Knappheitsreihenfolge, ihr Rang ohne Bedienelement), **K5** (sensible Kälte ohne Entfeuchtung, die
+> Grenze an jeder Kältezahl), **K6** (gleichzeitiges Heizen und Kühlen wird nicht saldiert), **K7**
+> (Kältespeicher nach KU3 vertagt, bis dahin kein Persistenzwert ohne Rechenweg) und **K12** (Kühlung
+> auch auf iOS, ohne eigenen iOS-Lauf für KU1 und KU2). Vor KU1 ist damit keine Frage mehr offen
+> (3.5, 4.5, 4.6, 8.6, 10.6, 11.1, 12).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -64,7 +72,7 @@ Bedarf wird durch Kälteerzeuger gedeckt
   anlegt, in die Löschliste der Stufe GA einzutragen (10.5, 11.2;
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31).
 
-**Stand:** 22.09.2026 (Nachzug E27). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
+**Stand:** 23.09.2026 (Nachzug E31). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
 Rev. 3 trug E20, E21 und E23, Rev. 2 war aus drei Blickwinkeln gegengelesen (Bestand, Konsistenz,
 Entscheid E15).
 
@@ -73,7 +81,7 @@ Kühlkanal vom Gebäudemodell bis zum Wiki bedeutet: Rechenweg, Kanalarchitektur
 Strom und Wirtschaftlichkeit, Datenmodell, Dialogführung, Import und Export, Nachweis und
 Regressionsnetz, eine Stufung KU0–KU3 und die Fragen K1–K23 mit Empfehlung. **Es entscheidet
 nichts, was der Anwender zu entscheiden hat** — Kapitel 12 trennt „jetzt zu entscheiden" von
-„technische Festlegung zur Kenntnis"; was E20, E21, E23, E26 und E27 bereits entschieden haben,
+„technische Festlegung zur Kenntnis"; was E20, E21, E23, E26, E27 und E31 bereits entschieden haben,
 trägt dort den Vermerk und wird nicht erneut vorgelegt.
 
 **Es steht neben, nicht über den Schwesterpapieren:**
@@ -215,7 +223,7 @@ hier **bestätigt** (Kapitel 14 führt sie vollständig):
 - **Feuchte und Entfeuchtung.** Die latente Last ist nicht Gegenstand der VDI 6007 Blatt 1; das
   Modell rechnet **sensible** Kälte. Ein Kühlkanal ohne Entfeuchtung ist eine Teilmenge des
   anlagentechnischen Kältebedarfs, und das gehört im Bericht und im Wiki als Grenze benannt
-  (**K5**).
+  (**K5**, entschieden mit E31: die Grenze steht an jeder Kältezahl).
 - **Bauteilaktivierung** (Kühldecke, Flächenkühlung) als Funktion. Testbeispiel 11 ist ein
   **Prüffall**, kein Produktmerkmal (Ausblick in 3.6).
 - Sommerlicher Wärmeschutz als Nachweis nach DIN 4108-2, Nachweise nach GEG oder DIN V 18599.
@@ -500,7 +508,8 @@ Das Mehrzonenmodell rechnet Kühlbedarf **je Zone**
 Gebäudesumme. Für die Kühlung ist „Summe" aber zweideutig, sobald eine Südzone kühlt, während
 eine Nordzone heizt.
 
-**Empfehlung: nicht saldieren, beides führen, den Fall ausweisen.**
+**Empfehlung: nicht saldieren, beides führen, den Fall ausweisen** — so entschieden mit **E31**
+(23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.36; K6).
 
 ```
 Kanal HEIZUNG [h]   = Summe ueber Zonen von max( Phi_h,z(h) , 0 )
@@ -799,6 +808,14 @@ Kühlkanal entlädt. Jede der vier Stellen bekommt deshalb einen **ausdrücklich
 wo die Kühlung dort (noch) nicht gilt, eine benannte Ablehnung statt eines Rückfalls
 (Kapitel 13).
 
+**So umgesetzt — KU1, zweite Welle (23.09.2026).** Die KU1-Stellen #1 bis #13, #19 bis #24, #29,
+#30, #32 und #34 stehen; #22 kam mit der ersten Welle (Schritt 110), #19 steht als statische
+Zusicherung samt Probe (`KuehlkanalTests`), #28 war die Vorbedingung aus G1. #25 ist vorgezogen:
+`Warnkriterien.Set_BedientKanal` lehnt den Kühlkanal ausdrücklich ab, statt auf Heizung zu fallen,
+und die Versorgerprüfung der Warnkriterien sieht nur die Wärmekanäle. Bei ihrer Stufe bleiben #14
+bis #18, #26, #27, #31 und #33: In KU1 bucht kein Erzeuger, keine Senke und kein Speicher in den
+Kühlkanal — der Kältebedarf bleibt ungedeckt und wird benannt (5.5).
+
 ### 4.4 Wie die Trennung der Deckungswelten erzwungen wird
 
 Eine Verabredung, die nur im Papier steht, hält einen Rechenkern nicht. Vier Vorrichtungen machen
@@ -898,7 +915,7 @@ Vorgabetext wird gleichwohl auf vier Glieder gestellt
 (`KNAPPHEIT_DEFAULT = "BRAUCHWASSER;PROZESS;HEIZUNG;KUEHLUNG"`), damit eine neue Datenbank die
 vollständige Folge führt.
 
-**Wo Kühlung steht (K4): zuletzt.** Die Begründung ist nicht Rangfolge, sondern Bedeutungslosigkeit
+**Wo Kühlung steht (K4, entschieden mit E31 nach Empfehlung): zuletzt.** Die Begründung ist nicht Rangfolge, sondern Bedeutungslosigkeit
 — die Knappheitsreihenfolge regelt, welcher Kanal bei knapper **Wärme**erzeugung zuerst bedient
 wird, und daran ist die Kälteseite unbeteiligt. Das vierte Glied ist ein Platzhalter, damit die
 Folge vollständig ist. Es steht hinten, weil es dort am wenigsten stört, und sein Rang wird in der
@@ -917,7 +934,8 @@ Der Bestand kennt `Senke` mit Heizkreis, drei Pufferzielen und Prozesswärme
   Persistenzwert ohne Rechenweg, und ein Persistenzwert ohne Rechenweg ist eine Zusage, die die
   Oberfläche nicht halten kann.
 
-**Empfehlung zu K7: Kältespeicher benannt vertagen, nicht benannt ablehnen.** Er spart bei
+**K7 ist entschieden (E31, 23.09.2026), nach Empfehlung: Kältespeicher benannt vertagen, nicht
+benannt ablehnen.** Er spart bei
 Lastspitzen und bei Nachtstromnutzung real Geld, aber er kostet 3–5 PT, einen
 Pufferverwendungswert, einen Klassen-Set-Eintrag und eine Warnkriterienprüfung — und er ist ohne
 Kältemaschine (KU3) selten sinnvoll. Er gehört deshalb **mit** der Kältemaschine in KU3 oder gar
@@ -1498,6 +1516,12 @@ Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigrati
 und das Umsetzungskonzept 1.6 verlangen. Wer hier eine Nummer einträgt, erzeugt eine Kollision mit
 den Gebäude- und Zonenschritten, die parallel entstehen.
 
+**Vergeben mit der ersten Welle von KU1 (23.09.2026):** `KU-S1` ist Schemaschritt **108**, `KU-S2`
+**109**, `KU-S4` **110** — drei Schritte, nicht verschmolzen: Jeder trägt seinen Papiernamen und
+seine Nummer, und die drei treffen verschiedene Tabellenfamilien mit verschiedenem Risiko (Gebäude
+samt Sichtneubau, Projekteinstellung, Ergebnistabellen). Die Definitionen stehen bei
+`GebaeudeSchema` (`KU-S1`) und `KuehlungSchema` (`KU-S2`, `KU-S4`). `KU-S3` bekommt seine Nummer mit KU2.
+
 Für alle neuen Tabellen gilt ohne Ausnahme: **`STRICT`**, Schlüssel
 `INTEGER PRIMARY KEY AUTOINCREMENT`, `CREATE TABLE`/`CREATE INDEX` mit **`IF NOT EXISTS`**
 (wiederholbar), Textlänge als `CHECK (length(...) ≤ n)`, Boolean als `INTEGER NOT NULL DEFAULT 0
@@ -1617,6 +1641,18 @@ Bauvorschriften für KU1:
 
 Ein **Projektduplikat** übernimmt den Wert seiner Quelle, nicht die Programmeinstellung: Es ist
 ein kopiertes, kein neu angelegtes Projekt (Festlegung dieses Papiers; Datenbankfall 10.3).
+
+**So umgesetzt — der Vormerksatz (KU1, 23.09.2026).** Bei eingeschalteter Programmeinstellung legt
+die Projektanlage einen **Vormerksatz** an: dieselben Vorbelegungen wie beim ersten Speichern der
+Kaskade und `Kuehlbetrieb = 1`, aber **ohne Kaskade** — die sechs Plätze `Tool_1..6` bleiben NULL
+(`KonfigurationCtrl.KuehlbetriebAnfangswertSetzen`, `KonfigurationCtrl.IstVormerksatz`). Für jeden
+Leser der Konfiguration ist er „kein Satz": Der Lauf meldet „keine Konfiguration" wie ohne Satz, die
+Konfigurationsseite wählt die verbauten Anlagen in derselben Reihenfolge vor, und das Nachziehen des
+Heizkessels greift nicht vor der Vorwahl ein; allein `KuehlbetriebLesen` sieht den Schalter. Beim
+ersten Speichern der Kaskade wird er zum Einstellungssatz — jeder Speicherweg schreibt die Plätze als
+Text. Ein früher Satz mit leerer Kaskade hätte beides verschoben, Meldung und Vorwahl. Probe:
+`KuehlbetriebProgrammeinstellungTests` — ein neues Projekt mit und ohne Programmeinstellung ergibt
+dieselbe Meldung, dieselbe Vorwahl und nach dem Speichern denselben Satz bis auf den Schalter.
 
 ### 7.3 `KU-S3` — Kühlbetrieb am Erzeuger
 
@@ -1947,7 +1983,7 @@ die Masken zu bauen sind:
 **je Maske eine iOS-Zeile** — erreichbar oder **benannt** abgelehnt, nie ein stummes `false`
 (N-K4). Da kein neuer Maskenschlüssel entsteht, ist die iOS-Erreichbarkeit der Kühlfelder
 identisch mit der des Gebäude- und Erzeugerdialogs; sie wird also nicht besser und nicht
-schlechter (**K12**).
+schlechter (**K12**, entschieden mit E31).
 
 **Drei Fälle kommen mit E20 und E21 hinzu:**
 
@@ -1969,6 +2005,42 @@ schlechter (**K12**).
   anlegen" steht auf aus, wenn nichts hinterlegt ist, und schreibt über `Dienste.Einstellungen`,
   nicht über `Properties.Settings` (7.2); der Fall setzt die Ablage über
   `FluechtigeEinstellungen` und liest zurück (F-K20).
+
+**So umgesetzt — KU1, dritte Welle (23.09.2026).** Die Masken 1 bis 3 und 6 stehen; 4 und 5 (Katalog
+und Erzeugerdialog der Wärmepumpe) gehören zu KU2.
+
+- **Projekteinstellung (8.3):** Abschnitt „Kühlung" der Simulationskonfiguration neben dem
+  Abschnitt „Wärmebedarf" — der Schalter parametriert wie die Netzverluste den Bedarf des Laufs und
+  schreibt wie diese sofort (`KonfigurationCtrl.KuehlbetriebSetzen`: mit Einstellungssatz nur der
+  Schalter; ohne Satz schreibt „aus" nichts, „ein" legt den Vormerksatz aus 7.2 an; die
+  Programmeinstellung wird nicht gelesen).
+- **Gebäudedialog (8.1):** Gruppe „Kühlung" im Reiter „Gebäude und Hülle" unter dem Rechenweg,
+  immer sichtbar und bearbeitbar; Kühlsollwert und Kühlleistungsgrenze mit dem Haken, Platzhalter
+  „Vorgabe: Kühlung aus" bzw. „Vorgabe: unbegrenzt", NULL bleibt NULL, der Nachtwert reist
+  unsichtbar mit. Die Prüfregel „≥ höchster Heizsollwert + 1 K" rechnet der Dialog über
+  `Gebaeudemodellvorgaben.HoechsterHeizsollwert` — dieselbe Zahl wie der Löser, belegt durch eine
+  Probe gegen den gerechneten Sollwertfahrplan. Hilfe über den Hilfeknopf des Dialogs; die drei
+  Felder sind beim Hilfe-Assistenten angemeldet.
+- **Bedarfsdialog Gebäude (8.4):** Abschnitt „Kältebedarf" mit denselben Bausteinen wie die
+  Wärmeseite — Kennzahltabelle statt Kachel, weil auch die Wärmeseite dieses Dialogs eine Tabelle
+  führt; eigenes Bild der Kältelast; die Monatswerte als Spalte „Kühlung" neben „Heizung" statt
+  eines Stapelbilds in zwei Richtungen (dafür bräuchte der Renderer ein neues Bild — offen).
+- **Bedarfsdialog Projekt und Ergebnisdialog (8.4):** Im Reiter „Wärme-/Strombedarf" der Block
+  „Kälte" mit der vierten Kanalzeile, eigenem Bild und CSV-Export; in der Übersicht der Block
+  „Kältedeckung" unter den zwei Spalten, nur bei Kältebedarf > 0 — ohne Deckungsring und ohne
+  Kälteerzeugertabelle, weil es in KU1 keinen Kälteerzeuger gibt (beide kommen mit KU2). Die
+  Wärmeerzeugertabelle bleibt bei drei Kanälen.
+- **Kanalwahl (K3):** Der Dialog „Wärmebedarf Extern" führt den Kanal „Kühlung" mit einer Zeile,
+  was ein solcher Lastgang ist.
+- **Grenze der Zahl (K5):** Die Herleitungszeilen der Dialoge, der Bericht, die Kennzahlen des
+  Katalogs (Beschriftung „(sensibel)") und der CSV-Export tragen sie; Wächter
+  `KuehlungOberflaecheTests.Waechter_jede_Kaeltekennzahl_traegt_die_Grenze`.
+- **Tests je Maske (8.6):** `SimulationKonfigSeiteTests`, `GebaeudeKatalogDialogTests`,
+  `GebaeudeBedarfDialogTests`, `BedarfReiterTests`, `UebersichtReiterTests`,
+  `WaermebedarfExternDialogTests`, dazu `KuehlungOberflaecheTests` im Kern; die beiden
+  Bestandsweg-Fälle aus 8.6 stehen in der Löschliste der Stufe GA
+  ([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 6.1). Die
+  iOS-Erreichbarkeit ist die der Gebäude-, Bedarfs- und Ergebnismasken (K12).
 
 ---
 
@@ -2033,6 +2105,14 @@ nicht doppelt zu leisten.
 **Und die Grenze reist mit.** Ein exportierter Kältebedarf ohne den Hinweis „sensibel, ohne
 Entfeuchtung" ist in fremder Hand eine falsche Zahl. Der Hinweis gehört in die Beschreibung der
 Eigenschaft, nicht nur in den Bericht (K5).
+
+**So umgesetzt — KU1, dritte Welle (23.09.2026).** Der CSV-Export der Ergebnisseite schreibt die
+Kältelast des Projekts mit der Grenze als erster Zeile vor den Spaltenköpfen
+(`CsvExportClass`, Parameter `kopfzeilen`); jeder andere Export beginnt unverändert mit der
+Spaltenzeile. Die Kanalreihe des Referenzlaufs (4.7) legt der Kern fest
+(`KaelteErgebnisexport`): `waermebedarf_kuehlung.csv` nur, wenn der Lauf Kälte erhoben hat und
+einen Kältebedarf > 0 führt; die Vektordatei bleibt „Index;Wert", die Grenze steht im
+Laufprotokoll. IFC und gbXML bleiben bei KU3.
 
 ---
 
@@ -2103,6 +2183,15 @@ verlangt keinen zweiten.
 | **Bestandsweg-Gebäude liefert Kältebedarf 0 mit Hinweis** | Ein Gebäude mit Rechenweg „Tagesbilanz", `Kuehlung_Aktiv = 1` und gesetztem Kühlsollwert ergibt einen Kühlkanal, der **überall 0** ist, **und genau einen Hinweis** je Gebäude und Lauf. **Gegenprobe:** dasselbe Gebäude auf VDI 6007 ergibt einen Kühlkanal > 0 und **keinen** Hinweis (E20, F-K18) |
 | **Symmetrie der Kennzahlen** | Zu jeder Kennzahl der Wärmeseite aus der Gegenüberstellung in 6.4 liegt das benannte Gegenstück der Kälteseite vor — oder die Abweichung steht in der Abweichungsliste (4.2, 5.5, 6.4). Die Probe läuft über die **Liste**, nicht über Zahlen: Sie fällt, sobald eine Größe auf einer Seite hinzukommt und auf der anderen weder gebaut noch benannt abgelehnt wird (E21, F-K19) |
 | **Ein Lauf, zwei Reihen** | Das Gebäudemodell wird je Gebäude und Lauf **einmal** gerufen; Heiz- und Kühlreihe stammen aus demselben Ergebnis. Die Probe zählt die Aufrufe des Moduls `Gebaeude/` — sie fällt, sobald eine zweite Gebäuderechnung für die Kälte entsteht (E21, 3.7) |
+
+**Umgesetzt mit KU1 (23.09.2026)** in `KaeltebedarfTests` und `KuehlkanalTests`: Paritätsprobe
+(dazu bitgleich, wenn der Kühlsollwert auf der oberen Raumtemperatur steht), Winter,
+Kühlleistungsgrenze, Vorzeichen — der scharfe Teil als benannter Fehler `AbschnittsregelVerletzt`
+im Löser, der Hinweisteil als Kennzahl K6 mit Herkunft —, Kanallisten, Netzverluste,
+Knappheitsparser, Kanalsumme der Kälteseite und die drei Proben „Bestandsweg-Gebäude liefert
+Kältebedarf 0 mit Hinweis", „Symmetrie der Kennzahlen" und „Ein Lauf, zwei Reihen"; dazu die
+Energiebilanz mit Kühlung. Die Umschaltstunde ist als Kennzahl gezählt; in den gemessenen Läufen
+trat keine auf. Deckung, Tagesbetriebsart, zwei Nenner, EER und Kühl-Vorlauf kommen mit KU2.
 
 ### 10.3 Datenbankfälle
 
@@ -2201,6 +2290,27 @@ GB-Basis **byte-gleich nachweisen**, ohne Neu-Einfrieren. Genau so ist die Zeile
 byte-gleich" unten zu lesen: byte-gleich **in den alten Schlüsseln**, mit benanntem Ausschluss
 der neun neuen. Der Nachweis ist zu **führen**, nicht zu behaupten.
 
+**So umgesetzt — ohne Ausschluss (23.09.2026, Schritte 108 bis 110):** Der Export nimmt die neun
+Spalten erst in `aggregate.csv` auf, wenn ein Lauf sie **erhebt**; eine NULL-Zelle heißt „nicht
+erhoben" und trägt keine Aussage, die der Vergleich prüfen könnte (`Referenzlauf/Ergebnisexport.cs`).
+Damit ist die Schemastufe **byte-gleich in allen Dateien** nachgewiesen (dreizehn Projekte gegen
+`2026-09-23_R12_Gebaeudemodell`, außer `protokoll.txt`), und die CI vergleicht weiter ohne `--ohne`.
+Sobald der Kanal die Spalten schreibt, erscheinen die Schlüssel von selbst — mit dem Einfrierschritt,
+der für KU1 ohnehin fällig ist.
+
+**Nach der zweiten Welle (23.09.2026):** Der Kanal schreibt die Spalten, aber nur für ein Projekt mit
+`Kuehlbetrieb = 1`. Alle dreizehn Referenzprojekte stehen auf 0 — kein Gebäude rechnet anders, der
+Kühlkanal bleibt leer, die Spalten bleiben NULL, und es entsteht keine neue Datei: dreizehn Projekte
+gegen `2026-09-23_R12_Gebaeudemodell` **byte-gleich in allen Dateien** (außer `protokoll.txt`), ohne
+Schemaschritt und ohne Änderung der Testdatenbank. Die Schlüssel erscheinen mit dem Referenzprojekt
+mit Kühlung (10.4) und dessen Einfrierschritt.
+
+**Nach der dritten Welle (23.09.2026):** Oberfläche, Bericht und Export ändern keinen Rechenweg; die
+Kanaldatei `waermebedarf_kuehlung.csv` entsteht nur für ein Projekt, das Kälte erhebt und einen
+Kältebedarf > 0 führt. Dreizehn Projekte gegen `2026-09-23_R12_Gebaeudemodell` wieder
+**byte-gleich in allen Dateien** (außer `protokoll.txt`). Datei und Schlüssel erscheinen mit dem
+Referenzprojekt mit Kühlung (10.4) — Welle 4.
+
 **Was das Einfrieren erzwingt, ist allein die Datei.** Und weil KU1 sie erzeugt, während G1 + G2
 ohnehin alle dreizehn Projekte bewegen: **Getrennt gefahren kostet dasselbe Ergebnis zwei
 Neu-Einfrierungen, zwei Begründungen und zwei Runden CI.** Deshalb:
@@ -2256,7 +2366,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
   Nachweis für KU0 bis KU3.
 - **Ein iOS-Lauf ist für die Kühlung nicht begründet**, solange keine `Dienste.*`-Schnittstelle,
   kein Prüfmodus und keine Seed-Kopie betroffen ist — und das ist bei KU1 und KU2 nicht der Fall
-  (**K12**). Käme mit KU3 ein eigener Katalogweg für die Kältemaschine, ist die Lage neu zu
+  (**K12**, entschieden mit E31 nach Empfehlung). Käme mit KU3 ein eigener Katalogweg für die Kältemaschine, ist die Lage neu zu
   bewerten. **Vor jedem macOS-, iOS- und Setup-Lauf wird beim Anwender nachgefragt, jedes Mal**
   (B-K10).
 - **ChartProben** bekommt die Gegenprobe für jedes neue Bild (Maße, Farben, Determinismus); ein
@@ -2270,7 +2380,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K22 bleibt Prüfaufgabe vor KU2) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
+| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K22 bleibt Prüfaufgabe vor KU2) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
 | **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
 | **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6); Kühlsollwert Nacht; Export nach IFC und gbXML | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
@@ -2299,7 +2409,7 @@ groß:
 frühe Stufe, wo er billiger ist, weil dort noch nichts nachzuziehen ist. **Die Summe bleibt
 unverändert.**
 
-**Summe: 47–74 PT**, ohne Kältespeicher **44–69 PT** (K7 ist noch offen). Das ist rund das
+**Summe: 47–74 PT**, ohne Kältespeicher **44–69 PT** (K7 ist mit E31 nach KU3 vertagt). Das ist rund das
 **Dreifache** dessen, was das [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4
 für **G1 + G2 zusammen** ansetzt (dort 16–22 PT in einer Zeile, ohne die 3–5 PT der
 Trennung der Rechenwege G1.0) — die Kühlung ist kein Anbau an
@@ -2358,6 +2468,14 @@ ist eine der vier Bedingungen, unter denen GA fällig wird (Q24, E27).
   Seite genommen. Die Einführung des zweiten Rechenwegs selbst gehört in die Seite
   „Update-Logbuch", mit Datum und Version (E20).
 
+**Stand nach der dritten Welle von KU1 (23.09.2026):** Die Repo-Quelle der Seite „Kühlung" ist neu
+(`Projekte/Wiki/Programm Dokumentation - Kühlung.wiki`: Einschalten, Eingaben, Rechenweg, Deckung,
+Ergebnisse, Export, Grenzen), die Seite „Gebäudemodell VDI 6007" ist um den Abschnitt „Kältebedarf",
+die Sommerlüftung gekühlter Gebäude und die Grenzen ergänzt; beide sind gegen das Verbotsmuster
+gegengelesen und nicht hochgeladen. Die Ergänzungen der Seiten „Gebäude", „Simulation" und
+„Simulationsergebnisse" stehen aus; der Logbuch-Satz ist entworfen, die Versionsnummer beim
+Anwender zu erfragen.
+
 ---
 
 ## 12. Fragen mit Empfehlung
@@ -2379,23 +2497,25 @@ ihren Sonderfall in die Löschliste ein (10.5, 11.2). Eine neue Frage entsteht n
 (abweichend von der Empfehlung, 7.2), **K11** und **K19** nach Empfehlung, **K2** bestätigt
 (12.2), den Kältestrom als Skalar bis zu einem Berichtsbedarf je Anlage (**K18a**, im Register
 **K24**, nach Empfehlung; 12.2, 7.4, 7.6); **K22** bleibt als Prüfaufgabe vor KU2 stehen. Die entschiedenen Zeilen tragen den Vermerk in
-der Spalte „Empfehlung"; die Fragen stehen als Begründung weiter da. K4–K9, K12, K21 und K23 sind
-nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
+der Spalte „Empfehlung"; die Fragen stehen als Begründung weiter da. K4–K9, K12, K21 und K23 waren
+nicht Gegenstand von E27. **E31 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.36)** entscheidet **K4, K5,
+K6, K7 und K12** nach Empfehlung — die Zeilen tragen den Vermerk —; **K8, K9, K21 und K23** bleiben
+mit ihrer Stufe zu entscheiden.
 
 ### 12.1 Jetzt zu entscheiden
 
 | Nr. | Frage | Empfehlung | Was daran hängt |
 |---|---|---|---|
 | **K1** | Vierter Kanal in `Kanalsatz` — oder eine eigene Struktur `Kaeltekanaele`? | **Entschieden mit E21 (16.09.2026): vierter Kanal** in `Kanalsatz`, mit getrennter Deckungsseite und zwei Kanallisten (4.1), dazu die eigene Fassade `SimulationKaeltebedarf` als Gegenstück zu `SimulationWaermebedarf` (4.2). Die Zeile bleibt K1 und wird nicht neu nummeriert | der gesamte Zuschnitt; eine parallele Struktur verdoppelt Persistenz, Kennzahlen, Export und Wächter |
-| **K4** | Wo steht Kühlung in der Knappheitsreihenfolge? | **Zuletzt**, und in der Oberfläche nicht zur Bearbeitung angeboten (4.5) | ein Rang, der nichts steuert, darf nicht aussehen, als täte er es |
-| **K5** | Bleibt Feuchte ausgeschlossen — sensible Kälte ohne Entfeuchtung? | **Ja**, und die Grenze steht an jeder Zahl: Bericht, Dialog, Wiki, Export (1.3, 9.2) | welche Aussage das Ergebnis trägt |
-| **K6** | Wie werden mehrere Zonen auf einen Kanalwert geführt, wenn Zonen gleichzeitig heizen und kühlen? | **Nicht saldieren**: beide Kanäle tragen ihren Betrag, eine Kennzahl weist den Fall aus (3.5) | eine Saldierung erfindet eine Wärmerückgewinnung |
-| **K7** | Kältespeicher ja oder nein? | **Vertagen nach KU3**, gemeinsam mit der Kältemaschine — und bis dahin kein Persistenzwert ohne Rechenweg (4.6) | 3–5 PT, ein Pufferverwendungswert, ein Klassen-Set-Eintrag |
+| **K4** | Wo steht Kühlung in der Knappheitsreihenfolge? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Zuletzt**, und in der Oberfläche nicht zur Bearbeitung angeboten (4.5) | ein Rang, der nichts steuert, darf nicht aussehen, als täte er es |
+| **K5** | Bleibt Feuchte ausgeschlossen — sensible Kälte ohne Entfeuchtung? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Ja**, und die Grenze steht an jeder Zahl: Bericht, Dialog, Wiki, Export (1.3, 9.2) | welche Aussage das Ergebnis trägt |
+| **K6** | Wie werden mehrere Zonen auf einen Kanalwert geführt, wenn Zonen gleichzeitig heizen und kühlen? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Nicht saldieren**: beide Kanäle tragen ihren Betrag, eine Kennzahl weist den Fall aus (3.5) | eine Saldierung erfindet eine Wärmerückgewinnung |
+| **K7** | Kältespeicher ja oder nein? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Vertagen nach KU3**, gemeinsam mit der Kältemaschine — und bis dahin kein Persistenzwert ohne Rechenweg (4.6) | 3–5 PT, ein Pufferverwendungswert, ein Klassen-Set-Eintrag |
 | **K8** | Freie Kühlung und Rückkühlung — bauen oder benannt ablehnen? | **Bauen, aber keine als eigener Erzeuger**: Nachtlüftung in G2, freie Kühlung als Betriebsfall, Rückkühlung als Bestandteil der Kältemaschine (5.4) | ohne Rückkühlung ist die Kältemaschine energetisch unvollständig |
 | **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose (6.3) | eine zweite Tarifzeile oder keine |
 | **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | **Entschieden mit E27 (22.09.2026), abweichend von der Empfehlung:** Eine **Programmeinstellung** (über `Dienste.Einstellungen`) legt fest, ob **neue** Projekte mit Kühlung angelegt werden, Vorgabe aus; Bestands- und Referenzprojekte bleiben aus, bis ihre Projekteinstellung `Tab_Einstellungen.Kuehlbetrieb` ausdrücklich eingeschaltet wird; die Projekteinstellung bleibt je Projekt schaltbar; fällig mit KU1 (7.2, 8.3, 10.3, 10.5). Die Empfehlung lautete: Ja, Vorgabe 0 — nicht, um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Projekte zu schützen | Rückwärtsverträglichkeit aller Bestandsprojekte |
 | **K11** | Eigener Kühlsollwert mit Zeitprofil und `Kuehlleistung_Max` — oder bleibt `Maximaleraumtemperatur` die einzige Kühleingabe? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Sollwert und eigene Grenze in KU1; Zeitprofil erst in KU3** (Nachtwert), die übrigen drei erst bei Bedarf (7.1) | Schemaumfang und Dialogumfang |
-| **K12** | Gilt Kühlung auf iOS? | **Ja** — der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel, und ein iOS-Lauf ist für KU1/KU2 nicht begründet (8.6, 10.6) | Rückfragepflicht und Laufzeitkontingent |
+| **K12** | Gilt Kühlung auf iOS? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Ja** — der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel, und ein iOS-Lauf ist für KU1/KU2 nicht begründet (8.6, 10.6) | Rückfragepflicht und Laufzeitkontingent |
 | **K19** | Wird KU2 mit einem eigenen, kleinen Einfrierschritt abgenommen (ein Projekt bewegt sich) — oder bleibt die Kältedeckung im Regressionsnetz unsichtbar? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Einfrierschritt** (10.5) | ob die Kältedeckung je regressionsgeprüft wird |
 | **K20** | **Katalogfilter „nur mit Kühlfunktion" (E15):** benannte Ausnahme von der Regel „Kennzeichenspalten sind nicht filterbar" (`Katalogfilterprofil.cs:79`, [Katalogfilter](Konzept_Katalogfilter_EPOS-Plan.md) 5.6.2) — oder eine eigene Filterart? | **Durch die Umsetzung erledigt, auf einem dritten Weg:** Die Ja/Nein-Spalte „Kühlen" ist durch die Zahlenspalte „Kühlleistung [kW]" mit Trichter ersetzt (`SpKuehlleistung`, `:353`), der Schalter „nur mit Kühlfunktion" schreibt `AUSDRUCK_MIT_KUEHLUNG` (`:360`) in den Trichter; die Regel in `:79` steht unverändert (5.0.3, 8.2). Kein Entscheid mehr offen, kein Personentag in KU2 | die Bedienbarkeit von E15 — 15 von 51 Katalogsätzen sind kühlfähig, und der Filter findet sie |
 | **K21** | **Kühl-Vorlauf:** **Auswahl** aus den Stützstellen der Kennlinie — oder **freie Eingabe** mit Interpolation zwischen zwei Vorläufen? | **Auswahl** (5.1, Festlegung 2; 8.2). In der Testdatenbank stehen zwei Stützstellen; eine Interpolation über den Vorlauf hat die Heizseite ebenfalls nicht, und **eine** Regel für beide Seiten ist mehr wert als ein Sonderweg | Dialogumfang, Extrapolationsregel, und ob Kühl- und Heizseite denselben Kennlinienleser teilen |

@@ -8222,3 +8222,113 @@ V9).
 > endet mit „Beenden". Seit 23.09.2026 tragen Auslieferungssätze ein Schloss,
 > werden nicht mehr überschrieben und lassen sich mit „Duplizieren…" als
 > eigener Satz kopieren.
+
+## #447 — Administrationsdialoge Stufe 3: Stammblatt neben der Liste, Auswahlleiste, Mehrfachwahl, Vergleich (23.09.2026)
+
+Anwenderzuruf „fahre fort Stufe 3“ nach dem Konzept
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`. Commits `d0660247`
+(Umsetzung), `d8660fde` (Katalogprobe), Merge `f3957840` (Kühlungswelle von
+origin mit den Schemaschritten 108–110, keine Konflikte).
+
+**Umsetzung.** Neue Bausteine `Auswahlleiste` (Handlungen als Daten, weich
+gesperrt mit Grund, „Auswahl aufheben“ nur bei gesetzten Kästchen),
+`Stammblatt` mit `Stammblattgruppe` (steckbare Gruppen Kenndaten, Kosten, Alle
+Daten, dialogspezifisch Kennlinie/Wochenprofil), `Vergleichstabelle` (bei zwei
+oder drei Sätzen im Blatt, ab vier in der breiten Überlagerung),
+`Zeilenauswahl`; `Katalograhmen` mit zweiter Anordnung Stammblatt neben der
+Liste ab 900 px Rahmenbreite (Container-Query), schmal als Blatt über der
+Liste; `Katalogliste` mit Kästchenspalte (Leertaste, Strg-Klick, Kopfkästchen,
+ohne Obergrenze). Abweichung vom Konzept: Die Auswahlleiste steht im breiten
+Fenster über dem Stammblatt, nicht über der Liste, damit die Liste bei 1 088 ×
+624 acht Zeilen behält (Suchzeile 44 px, Spaltenkopf 53 px); die Überschrift
+über der Liste entfällt, bei der Wärmepumpe wird die Kopfzeile zum Kurztext am
+Titel. Pilot Heizkessel: Stammblatt mit Kenndaten, Kosten
+(`KatalogBrowserProfil.IstKostenfeld`) und Alle Daten, Fuß zählt geänderte
+Felder; Löschen mehrerer Zeilen mit Rückfrage, die nennt, was stehen bleibt;
+Auslieferungssatz weich gesperrt mit Text im Stammblattkopf; Fußleiste
+Speichern · Verwerfen · Statuszeile · Neu… · Beenden, Duplizieren… und Löschen
+in der Auswahlleiste. BHKW, Solarkollektoren, Pufferspeicher über dieselbe
+Komponente; Wärmepumpe mit Gruppe Kennlinie („Kennliniendaten…“),
+Änderungserkennung und „Verwerfen“, Löschen gesperrt bei Projektzuordnung mit
+Projektnamen; PV-Module, Wechselrichter, Stromspeicher mit Profilgruppen unter
+den Kenndaten (`ModulKatalogProfil.IstKostenfeld`); Bedarfsprofile mit Gruppe
+Wochenprofil (Grafik…, Typ ändern…), Kenndaten mit „Ändern…“ und neu
+`BedarfStammCtrl.Duplizieren`. Aufgeräumt: `KBROW_BTN_BEARBEITEN`,
+`KLIMA_SP_SCHREIBSCHUTZ`, `KFLT_SP_AUSLIEFERUNG`,
+`KatalogBrowserWege.IstGeschuetzt`, `KatalogBrowserProfil.ZeigtSchreibschutz`
+(`ADM_SCHUTZ_FRAGE/TITEL` bleiben für den BHKW-Projektdialog). 35 neue
+Schlüssel `ADM_AW_*`, `ADM_SB_*`, `ADM_VG_*`, `ADM_LOESCHEN_*`,
+`ADM_MSG_GELOESCHT*`, `ADM_KAESTCHEN_ZEILE`.
+
+**Messung (Katalogprobe, Vergleich gegen Prüfwirt aus HEAD).** Listenhülle 1
+088 × 624 vorher 209 px (3 Zeilen), nachher 424 px (8 ganze Zeilen); 400 × 624
+vorher 118/110 px, nachher 230/286 px; Stammblatt 380 × 370 px rechts; Querlauf
+0, Vergleichstabelle 0; Kästchen verschieben die Liste nicht;
+Heizkessel-Projektdialog unverändert (91 px bei 400 px wie vorher). Rasterprobe
+13/13.
+
+**Prüfung (vor dem Merge, Stand `d8660fde`).** Kern-Filter 0 Fehler;
+EPOS.UI.Tests 5 450, EPOS.Kern.Tests 5 007, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; 27 Fälle nach dem Umbau
+rot und angepasst; Windows-Schale 0 Fehler; SQL-Prüfer 0 Fundstellen.
+
+**Gate auf dem Merge-Stand `f3957840`.** Kern-Filter 0 Fehler; EPOS.Kern.Tests
+5 045, EPOS.UI.Tests 5 453, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R12_Gebaeudemodell`: alle 13 Basisprojekte PASS (4 250 839 Werte).
+
+**Was offen bleibt.** (1) Rest von Stufe 3: Klimadaten und die drei Zeitreihen
+ohne Stammblatt (hängen am Einlesen als Überlagerung, Stufe 4); Schalter „nur
+mit Kühlfunktion“ in der Wärmepumpenverwaltung, „Import…“ in der Fußleiste,
+direkt bedienbare Bedarfsfelder, eigene Kostengruppe bei der Wärmepumpe,
+Auslieferungssätze als Text statt gesperrter Felder. (2) `field-sizing:
+content` kennt WebKit nicht — auf iOS kann ein Rollbereich im Rollbereich
+entstehen. (3) Die Anlagen-Überlagerung der Wärmepumpe im Projektdialog bettet
+die Verwaltung ein und zeigt jetzt deren Stammblatt-Anordnung. (4)
+`BhkwDialog.razor:477` nennt in einem Kommentar das entfernte Glied. (5)
+`Lokalisierung_Katalog.md`: prüfen, ob die 35 neuen Schlüssel Einträge
+brauchen.
+
+**Logbuch-Vorschlag** (Version wie #445, beim Anwender erfragen):
+
+> Seit 23.09.2026 zeigen die Verwaltungsdialoge den gewählten Satz in einem
+> Stammblatt neben der Liste; mehrere Sätze lassen sich ankreuzen, vergleichen,
+> duplizieren oder löschen.
+
+## #448 — Duplizieren und Varianten ohne Ergebnistabellen (23.09.2026)
+
+Anwenderentscheid 23.09.2026: „Ergebnistabellen nicht mitkopieren — umsetzen“.
+Merge `7eb189b3` (Worktree-Commit `a9efeb71`).
+
+**Umsetzung.** `ProjektDuplizierenCtrl` bekommt eine Regelstelle
+`IstErgebnisTabelle` (Namensanfang `Tab_Ergebnis` und Detailtabellen per
+Fremdschlüssel; Feld `Spec.Ergebnis`); von 76 Tabellen des Kopierplans werden
+18 Ergebnistabellen (`Tab_Ergebnis` mit 14 Detailtabellen einschließlich
+`Tab_ErgebnisGebaeude`, Wirtschaftlichkeit, Sensitivität, Strommatrix) bei
+Kopie und Variante nicht mehr kopiert, die 58 Eingabetabellen vollständig;
+Export/Import nehmen Ergebnisse weiter mit; `ERGEBNISVERWEISE_LEEREN` (#444)
+entfällt zugunsten eines allgemeinen Sicherheitsnetzes (Verweis einer
+Eingabetabelle auf eine Ergebnistabelle wird in der Kopie leer). Kopie ohne
+Lauf: Simulation „nicht gerechnet“, Wirtschaftlichkeit „Noch keine
+Wirtschaftlichkeitsberechnung gespeichert“ (Berechnen rechnet den Lauf vor),
+Bericht simuliert frisch, Übersicht markiert die Variante als fehlend und
+rechnet sie mit „Simulation starten“ mit (rechnet Stamm und markierte Zeile).
+Kein Schemaschritt, Bestand unverändert.
+
+**Prüfung (Worktree).** EPOS.Kern.Tests 5 009, EPOS.UI.Tests 5 389, alle grün;
+9 neue Fälle in `ErgebnisverweisKopieTests` (Kopie aus 1024/1018, Variante aus
+1018: keine Ergebniszeilen, Eingabetabellen zählen wie die Quelle, Quelle
+unverändert), P7 in `ProjektpflegeTests` angepasst; 10 Fälle vorher rot;
+SQL-Prüfer 1 693 Texte, 0 Fundstellen.
+
+**Was offen bleibt.** (1) Eine künftige Detailtabelle ohne Namensanfang, deren
+erste Beziehung auf eine Eingabetabelle zeigt, gälte als Eingabe (das
+Sicherheitsnetz leert nur den Verweis). (2) Der Text „— (fehlt) ⚠“ in
+`BerichtsDatenSammler.VariantenStatus.SimStandText` steht fest im Code, nicht
+in `MyResource`. (3) Nach #444 Punkt (c) ist damit erledigt.
+
+**Logbuch-Vorschlag** (Version wie #445, beim Anwender erfragen):
+
+> Seit 23.09.2026 übernehmen Projektkopien und neue Varianten keine
+> Simulations- und Wirtschaftlichkeitsergebnisse mehr; sie werden nach dem
+> Anlegen neu gerechnet.

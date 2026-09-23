@@ -1,0 +1,73 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Kühlung
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Kühlung.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Kühlung''' rechnet den Kältebedarf gekühlter Gebäude Stunde für Stunde mit dem [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell nach VDI 6007]] und führt ihn als eigenen Bedarfskanal ''Kühlung'' neben Heizung, Brauchwasser und Prozesswärme. Wärme und Kälte werden nicht gegeneinander verrechnet: Der Kältebedarf hat eigene Kennzahlen, ein eigenes Bild und eine eigene Zeile in der Kanalübersicht.
+
+'''Der Kältebedarf ist sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.''' Dieser Satz steht in EPOS-Plan neben jeder Kältezahl, im Bericht und im Export.
+
+== Kühlung einschalten ==
+{{Anker|einschalten}}
+
+Gerechnet wird die Kälte, wenn zwei Schalter stehen:
+
+# '''Projekt''' – In der Simulationskonfiguration steht neben dem Abschnitt ''Wärmebedarf'' der Abschnitt ''Kühlung'' mit dem Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
+# '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt''' und tragen einen '''Kühlsollwert''' ein.
+
+Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.
+
+== Eingaben im Gebäudedialog ==
+{{Anker|eingaben}}
+
+Die Gruppe ''Kühlung'' steht unter dem Rechenweg und ist immer sichtbar und bearbeitbar. Kühlsollwert und Kühlleistungsgrenze erscheinen mit dem Haken. Ein leeres Feld zeigt seine Vorgabe als grauen Text; gespeichert wird dann kein Wert, sondern „leer".
+
+{| class="wikitable"
+! Feld !! Vorgabe !! Bedeutung
+|-
+| Gebäude wird gekühlt || aus || schaltet die Kühlung dieses Gebäudes ein; ohne den Projektschalter wirkt der Haken nicht
+|-
+| Kühlsollwert || Kühlung aus || Raumlufttemperatur, über die das Modell den Raum nicht steigen lässt, solange die Kühlleistung reicht; zwischen 15 und 35 °C und mindestens 1 K über dem höchsten Heizsollwert (Tag, Nacht, Wochenende und Ferien). Ohne Kühlsollwert bleibt die Kühlung aus, auch mit Haken
+|-
+| Kühlleistungsgrenze || unbegrenzt || größte Kühlleistung in kW; reicht sie nicht, steigt die Raumtemperatur über den Kühlsollwert
+|}
+
+Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne Haken die Maximalraumtemperatur, an der die Überhitzung gezählt wird. Einen Kühlsollwert, der nicht mindestens 1 K über dem höchsten Heizsollwert liegt, nimmt der Dialog nicht an – Heizung und Kühlung arbeiteten sonst gegeneinander.
+
+Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
+
+== Wie gerechnet wird ==
+{{Anker|rechenweg}}
+
+* '''Totband''' – Zwischen Heiz- und Kühlsollwert schwingt die Raumtemperatur frei; geheizt wird unterhalb des Heizsollwerts, gekühlt oberhalb des Kühlsollwerts. Eine Stunde, in der das Modell von Heizen auf Kühlen umschaltet, trägt beides; solche Stunden zählt EPOS-Plan als '''Stunden mit Heizen und Kühlen''' und verrechnet sie nicht.
+* '''Sommerlüftung''' – Ist bei einem gekühlten Gebäude die [[Programm Dokumentation/Gebäudemodell VDI 6007#sommerlueftung|Sommerlüftung]] eingeschaltet, öffnen die Nutzer die Fenster ab 3 K unter dem Kühlsollwert; die Lüftung senkt die Kühllast, bevor gekühlt wird.
+* '''Ohne Kühlung''' – Ein Gebäude ohne Haken oder ohne Kühlsollwert wird nicht gekühlt. Der Kühlbedarf, den der Bedarfsdialog dann zeigt, ist eine Auskunft: die Wärme, die abgeführt werden müsste, damit die Raumluft die Maximalraumtemperatur nicht überschreitet. Er geht in keinen Kanal.
+* '''Lastgänge''' – Im Dialog ''Wärmebedarf Extern'' können Sie einer eingelesenen Ganglinie den Kanal ''Kühlung'' geben. Sie ist dann Kältebedarf ohne Gebäudemodell, geht in keinen Wärmekanal und wirkt nur mit dem Projektschalter.
+* '''Rechenweg Tagesbilanz''' – Ein Gebäude auf diesem Rechenweg hat keinen Kältebedarf; der Lauf trägt 0 ein und nennt den Grund im Protokoll.
+
+== Deckung ==
+{{Anker|deckung}}
+
+Wärmeerzeuger decken keine Kälte. Einen Kälteerzeuger rechnet EPOS-Plan nicht: Der Kältebedarf wird ausgewiesen und bleibt ungedeckt, und das Laufprotokoll nennt Menge und Spitze. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
+
+== Ergebnisse ==
+{{Anker|ergebnisse}}
+
+* '''Wärmebedarf Gebäude''' (Knopf ''Simulation…'' im Gebäudedialog) – der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite: Kühlbedarf, höchste Kältelast, Vollbenutzungsstunden, dazu Stunden mit Kühlbedarf, Überhitzungsstunden und Stunden mit Heizen und Kühlen; ein eigenes Bild der Kältelast (mit ''sortiert'' als Dauerlinie) und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''. Die Zeilen darunter sagen, wie der Kältebedarf entsteht, und nennen die Grenze der Zahl. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund.
+* '''Simulationsergebnis, Reiter Wärme-/Strombedarf''' – der Block '''Kälte''': Kältebedarf, höchste Kältelast, Stunden mit Kühlbedarf, Vollbenutzungsstunden, die Kanalzeile ''Kühlung'', ein eigenes Bild der Kältelast und der Knopf ''CSV Export''.
+* '''Simulationsergebnis, Übersicht''' – unter den Spalten ''Wärme'' und ''Strom'' der Block '''Kältedeckung''' mit Kältebedarf, höchster Kältelast und dem ungedeckten Kältebedarf. Er steht nur, wenn ein Kältebedarf besteht.
+* '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest; im Variantenvergleich die Kennzahlen ''Kältebedarf gesamt (sensibel)'', ''Kältelast max. (sensibel)'' und ''Stunden mit Kühlbedarf (sensibel)''; je Gebäude die Kühlenergie.
+
+Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Kältegruppe und keine Nullen. Der Wärmebedarf eines Gebäudes zeigt den Abschnitt ''Kältebedarf'' dagegen immer – dort sagt die Zeile darunter, dass der Kühlbedarf ohne Projektschalter eine Auskunft ist.
+
+== Export ==
+{{Anker|export}}
+
+Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekts je Stunde in kW. Die erste Zeile der Datei ist der Satz zur Grenze der Zahl, danach folgen die Spaltenköpfe und die 8.760 Stunden.
+
+== Grenzen ==
+{{Anker|grenzen}}
+
+* Die Kälte ist '''sensibel''': Feuchte, Entfeuchtung und latente Last sind nicht enthalten.
+* '''Keine Kältemittelemissionen''': Die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
+* '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
+* Das Gebäude ist '''eine Zone''' mit '''einem''' Kühlsollwert für alle Stunden.
+* Verluste eines Kältenetzes werden nicht gerechnet.

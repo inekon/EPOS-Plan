@@ -235,10 +235,22 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// Legt die Projektzeile an - der zweite Anlageweg neben
+        /// <c>WizardCtrl.Add_Projekt</c>.
+        ///
+        /// <para><b>Die Kennung kommt von der Datenbank</b> (<c>last_insert_rowid()</c> auf
+        /// derselben Verbindung) und steht danach in <c>m_ID</c>. Vorher stand dort
+        /// <c>MAX(ID) + 1</c> - eine Vermutung, die nach einem geloeschten Projekt neben der
+        /// Kennung lag, die <c>AUTOINCREMENT</c> tatsaechlich vergibt.</para>
+        ///
+        /// <para><b>Anfangswert der Projekteinstellung „Kuehlbetrieb"</b> (E27, K10): Wie der
+        /// Assistent uebergibt dieser Weg die Programmeinstellung „Neue Projekte mit Kuehlung
+        /// anlegen" ueber <see cref="KonfigurationCtrl.KuehlbetriebAnfangswertSetzen"/> -
+        /// dieselbe Stelle im Kern fuer beide Anlagewege (Kuehlkonzept 7.2).</para>
+        /// </summary>
         public bool Insert()
         {
-            m_ID = GetMaxID() + 1;
-
             string sql = @"INSERT INTO Tab_Projekt 
                            (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) 
                            VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -253,7 +265,12 @@ namespace WindowsFormsApplication1
                 new DbParam("@edate", DbParamTyp.Date) { Wert = ValidateDate(m_Erstelldatum) }
             };
 
-            return DataRepository.ExecuteSQL(sql, ps);
+            int neueId = DataRepository.ExecuteInsertAndGetId(sql, ps);
+            if (neueId <= 0) return false;
+
+            m_ID = neueId;
+            KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(neueId);
+            return true;
         }
 
         public bool Update()

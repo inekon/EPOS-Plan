@@ -136,10 +136,12 @@ public class WechselrichterDialogTests : EposBunitContext
     public void Die_Verwaltung_gliedert_ihre_Felder_in_drei_Gruppen()
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
-        List<string> titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
+        // Seit Stufe 3 (Konzept Administrationsdialoge, V9) stehen die drei Gruppen als
+        // leise Zwischenueberschriften in den Kenndaten des Stammblatts.
+        List<string> titel = cut.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent).ToList();
 
-        // Liste + Geraet + Eingang + Wirkungsgrad
-        Assert.Equal(4, titel.Count);
+        // Geraet + Eingang + Wirkungsgrad
+        Assert.Equal(3, titel.Count);
         Assert.Contains(Profil().GruppeBestand, titel);
         Assert.Contains(Profil().GruppeZwei, titel);
         Assert.Contains(Profil().GruppeDrei, titel);
@@ -294,7 +296,8 @@ public class WechselrichterDialogTests : EposBunitContext
             Loeschen = n => { geloescht = n; return new KatalogSpeicherErgebnis(true, "", n); }
         });
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();       // Loeschen (nach Verwerfen, Neu)
+        // Loeschen steht seit Stufe 3 in der Auswahlleiste (V8).
+        cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Löschen").Click();
         Assert.True(cut.Instance.Loeschfrage);
         Assert.Null(geloescht);
 

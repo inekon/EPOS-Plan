@@ -88,4 +88,36 @@ public sealed class VorlagenPositionKiSicht
         get => BisLesen?.Invoke();
         set => BisSetzen?.Invoke(value);
     }
+
+    // ---- ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position -------------
+
+    public Func<int?>? ErsatzLesen { get; init; }
+    public Action<int?>? ErsatzSetzen { get; init; }
+    public Func<int?>? RestwertLesen { get; init; }
+    public Action<int?>? RestwertSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? KennzeichenEintraege { get; init; }
+
+    /// <summary>Die Einträge des Kennzeichens „Ersatzbeschaffung führen" („ja",
+    /// „nein"; leer = wie bisher) — die Begleiteigenschaft des Wahlfeldes. Leer, wenn
+    /// der Dialog die Kennzeichen nicht zeigt.</summary>
+    public IReadOnlyList<KiWahleintrag> ErsatzFuehrenWahl
+        => KennzeichenEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Dieselben Einträge für „Restwert ansetzen".</summary>
+    public IReadOnlyList<KiWahleintrag> RestwertAnsetzenWahl
+        => KennzeichenEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Ersatzbeschaffung führen? <c>null</c> = leer (wie bisher).</summary>
+    public int? ErsatzFuehren
+    {
+        get => ErsatzLesen?.Invoke();
+        set => ErsatzSetzen?.Invoke(value);
+    }
+
+    /// <summary>Restwert ansetzen? <c>null</c> = leer (wie bisher).</summary>
+    public int? RestwertAnsetzen
+    {
+        get => RestwertLesen?.Invoke();
+        set => RestwertSetzen?.Invoke(value);
+    }
 }

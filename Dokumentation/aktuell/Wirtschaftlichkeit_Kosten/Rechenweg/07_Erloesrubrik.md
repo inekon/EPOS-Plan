@@ -24,7 +24,8 @@ dieselbe Ersparnis zweimal.
 | **Summe Block A** | | | | **91.727,0** | |
 
 Nicht im Beispiel, aber Teil der Rubrik: KWKG-Pauschale § 9 (≤ 2 kW_el, einmalig, schließt A1/A2
-aus) · Energiesteuer Kesselbrennstoff § 54 (nur produzierendes Gewerbe, Sockel 250 €/a) · Restwert
+aus) · Energiesteuer Kesselbrennstoff § 54 (nur produzierendes Gewerbe, Sockel 250 €/a; neben § 53/§ 53a
+eines Blockheizkraftwerks gesperrt — die Zeile steht dann auf 0 € mit Begründung, `05`) · Restwert
 (DIN EN 17463, Ende des Betrachtungszeitraums).
 
 **Block B — Ausweis, nicht addieren**
@@ -145,4 +146,5 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 | — | Die Vorschau des BHKW-Dialogs führte eine Summe „zahlungswirksam" (80.934,2 €), die weder der Variante 1 (84.435,6 €, § 9b auf 335,5 MWh) noch der Variante 3 (91.727,0 €, mit Photovoltaik) entsprach | Vorschau zeigt den Block Blockheizkraftwerk (77.975,6 €) und die projektweite § 9b-Zeile des Laufs „Beide Anlagen" getrennt — Mockup Abschnitt 5, `05` |
 | — | Spalte „Satz · Herkunft" je Zeile, Vermerk „eigener Wert — Vorschlag" | Mockup Abschnitt 7; Umsetzungsstand U23 (Vergleich Satz gegen Vorschlag im Nachweis) |
 | ✔ S-1 | Hilfsstrom-Netting des Beispiels gegen die Kernregel „Eigen zuerst" — Zuschlag- und Einspeisezeile betroffen | erledigt (U24): Zuschlag 32.022,2 €, Einspeiseerlös 24.750,0 €, Block A der Variante 3 91.727,0 €/a; Einzelheiten in `05` |
+| ✔ S-2 | § 53/§ 53a beim Blockheizkraftwerk und § 54 beim Kessel desselben Standes standen beide in Block A | **umgesetzt #446** (E7c2, A3): Die Mischlage ist gesperrt — die Zeile „Energiesteuer-Entlastung Heizstoff" steht auf 0 € und nennt den Grund, die Kohärenzprüfung warnt (`05`). Das Beispiel ist nicht betroffen: In den Varianten mit Blockheizkraftwerk führt der Kessel keinen Brennstoff |
 | ✔ Nr. 32 | Die vermiedene Menge führte keinen PV-Eigenverbrauch: `StromMatrix` zog die PV-Eigennutzung vorab ab, der Schlüssel brachte nur das Blockheizkraftwerk ein (netto aus dem Modulnachweis), die Photovoltaik stand als eigene Zeile zum Flat-Preis (Frage U6‑Q1) | **umgesetzt #437**: Bedarf und Lastbild vor Abzug der PV-Eigennutzung, beide Schlüssel brutto aus der Strommatrix, im Rollentarif ersetzt der PV-Anteil die Zeile „PV: vermiedener Bezug"; der Kernweg rechnet das Beispiel dieses Papiers — 316.159,6 = 293.245,6 + 22.914,0 €/a (vorher 293.245,6, allein das Blockheizkraftwerk); Konzept § 3.6 |

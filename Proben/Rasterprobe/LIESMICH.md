@@ -411,3 +411,34 @@ Die erste Zelle kann in einer schmalen Liste weichen.
 | virtualisiert im Dialog (J, K) | Zeile 53 px | Zeile **46 px**, Platzhalter 46 px, 4 Melder nach dem Rollen; Ende → Zeile 6 653 gezeichnet im Bild, 4 Melder in 3 s, Pos1 → Rollstand 0 |
 | Nachbar Heizkessel-Projektdialog (P2a/P2b) | Wahlspalte, 53 px | unverändert: Wahlspalte, quer 0 px bei 1 088 |
 | Rückgabe | Katalogprobe 0 (45), Rasterprobe 0 (13) | **Katalogprobe 0 (45), Rasterprobe 0 (13)** |
+
+## Neuordnung der Administrationsdialoge, Stufe 3 (V3, V6, V8, V12)
+
+Das **Stammblatt steht neben der Liste** (`Katalograhmen` mit `Blatt`, ab 900 px Rahmenbreite
+rechts, `clamp(340px, 36 %, 440px)`; schmal als Blatt über der Liste), darüber die
+**Auswahlleiste**; die Liste hat eine **Kästchenspalte** (Mehrfachwahl). Die Fälle N01 … N08 und
+N10 … N12 (die Verwaltungen mit Stammblatt, Menge `STUFE3` in `katalogprobe.mjs`) messen dazu
+(Funktion `stufe3probe`, Sollwerte in `pruefe`):
+
+| | Größe | Sollwert |
+|---|---|---|
+| (u1) | breit: Stammblatt rechts der Liste, 340 … 440 px breit, Auswahlleiste über ihm | ja |
+| (u2) | breit: ganze Zeilen der Liste unter dem Kopf (ab 8 Sätzen im Katalog) | ≥ 8 |
+| (u3) | schmal: Stammblatt beim Öffnen verborgen, Auswahlleiste über der Liste | ja |
+| (u4) | drei Kästchen gesetzt: die Leiste nennt „3 gewählt", die Liste springt nicht | ja |
+| (u5) | breit, „Vergleichen": Vergleichstabelle im Stammblatt, quer 0 px, nicht über dessen Rand | ja |
+| (u6) | schmal, „Stammblatt ›": das Blatt an der Stelle der Liste, Auswahlleiste bleibt; „‹ Liste" zurück | ja |
+| (u7) | die Seite rollt nie quer | 0 px |
+
+**Ergebnis vom 23.09.2026** (Chromium headless, Playwright 1.58.0; „vorher" = Stand vor Stufe 3,
+derselbe Wirt aus `HEAD` gebaut):
+
+| | vorher (Stufe 2) | nachher (Stufe 3) |
+|---|---|---|
+| Listenhülle 1 088 × 624 (N01, N05, N10, N12) | 209 px innen (drei Zeilen) | **424 px** innen, **8 ganze Zeilen** (N03: alle 7 Sätze) |
+| Listenhülle 400 × 624 (N01 / N10) | 118 / 110 px innen | **230 / 286 px** innen (3 / 5 ganze Zeilen) |
+| Stammblatt 1 088 × 624 | — (Eingabeblock darunter, 160 px) | 380 × 370 px rechts, Auswahlleiste 380 × 94 px darüber |
+| Querüberlauf 1 088 / 400 px | 0 px | 0 px; Vergleichstabelle quer 0 px |
+| Kästchen gesetzt | — | Liste springt nicht (auch schmal: feste Ordnung der Leiste) |
+| Nachbar Heizkessel-Projektdialog | P2a quer 0 px, P2b quer 91 px | unverändert (P2a 0 px, P2b 91 px) |
+| Rückgabe | Katalogprobe 0 (45), Rasterprobe 0 (13) | **Katalogprobe 0 (45), Rasterprobe 0 (13)** |

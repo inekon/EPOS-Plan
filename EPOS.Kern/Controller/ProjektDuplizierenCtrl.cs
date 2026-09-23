@@ -21,6 +21,11 @@ namespace WindowsFormsApplication1
     ///    damit ohne Code-Aenderung mitkopiert.
     ///  - Neu hinzugefuegte Projekt-Tabellen werden damit automatisch beruecksichtigt.
     ///
+    /// ERGEBNISTABELLEN (Anwenderentscheid 23.09.2026, siehe <see cref="IstErgebnisTabelle"/>):
+    ///  - Rechenergebnisse stehen im Plan (Spec.Ergebnis), werden aber NICHT kopiert: Die Kopie
+    ///    hat keinen Lauf und keine gespeicherte Wirtschaftlichkeit, wie ein neu angelegtes
+    ///    Projekt. Der Projekttransfer (ProjektExportImportCtrl) nimmt sie weiter mit.
+    ///
     /// FESTE AUSNAHMEN (bewusst hart kodiert):
     ///  - KATALOG_TABELLEN : globale Kataloge, die nie dupliziert werden.
     ///  - KATALOG_SPALTEN  : ID-Spalten, die auf Kataloge zeigen und NICHT versetzt werden.
@@ -230,44 +235,44 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// ERGEBNISVERWEISE, DIE NICHT MITKOPIERT WERDEN (Anwenderentscheid 23.09.2026):
-        /// Tabelle → Spalten, die in der Kopie NULL werden, statt den Wert der Quelle zu
-        /// tragen.
-        ///
-        /// <para><b>Der Befund.</b> <c>Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis</c> nennt
-        /// den Simulationslauf (<c>Tab_Ergebnis.ID</c>), auf dem die gespeicherte
-        /// Wirtschaftlichkeit beruht. Die Spalte hat keine deklarierte Beziehung und steht in
-        /// keiner der Zuordnungen oben — der Kopierlauf übernahm sie deshalb UNVERSETZT: Jede
-        /// Kopie und jede Variante zeigte auf den Lauf des QUELLprojekts (Anwenderdatenbank:
-        /// 1066/1067 auf den Lauf 234 von 1065; Testdatenbank: 21 Zeilen in sechs Projekten).
-        /// </para>
-        ///
-        /// <para><b>Die Regel.</b> Die Kopie hat noch kein eigenes Wirtschaftlichkeitsergebnis:
-        /// Die kopierten Zeilen bleiben stehen, ihr Verweis wird leer — damit gelten sie als
-        /// „passt nicht zum Simulationsstand" (<c>WirtschaftlichkeitCtrl.ErgebnisAktuell</c>),
-        /// und die Wirtschaftlichkeit rechnet nach dem ersten Lauf der Kopie neu. Die Verweise
-        /// der Ergebnis-Detailtabellen (<c>Tab_ErgebnisBHKW.ID_Ergebnis</c> &amp; Co.) sind
-        /// deklarierte Beziehungen, werden versetzt und zeigen auf die Kopie — sie stehen
-        /// hier nicht.</para>
-        ///
-        /// <para>Dieselbe Liste bereinigt der Schemaschritt 106 den Bestand
-        /// (<see cref="WirtschaftlichkeitFremdverweis"/>).</para>
+        /// Der Namensanfang aller Ergebnistabellen: der Kopf eines Simulationslaufs
+        /// (<see cref="ErgebnisCtrl.TAB_KOPF"/>) samt seiner Detailtabellen und die
+        /// gespeicherte Wirtschaftlichkeit samt Sensitivität und Strommatrix
+        /// (<see cref="WirtschaftlichkeitCtrl.TAB_ERGEBNIS"/>, <c>TAB_SENS</c>, <c>TAB_MATRIX</c>).
+        /// Keine Eingabetabelle trägt ihn.
         /// </summary>
-        internal static readonly Dictionary<string, string[]> ERGEBNISVERWEISE_LEEREN =
-            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
-            {
-                { WirtschaftlichkeitFremdverweis.TABELLE, new[] { WirtschaftlichkeitFremdverweis.SPALTE } }
-            };
+        private const string ERGEBNIS_PRAEFIX = "Tab_Ergebnis";
 
-        /// <summary>Steht (<paramref name="tabelle"/>, <paramref name="spalte"/>) in <see cref="ERGEBNISVERWEISE_LEEREN"/>?</summary>
-        internal static bool ErgebnisverweisLeeren(string tabelle, string spalte)
+        /// <summary>
+        /// ERGEBNISTABELLEN WERDEN NICHT MITKOPIERT (Anwenderentscheid 23.09.2026:
+        /// „Ergebnistabellen nicht mitkopieren").
+        ///
+        /// <para><b>Der Befund.</b> Der Kopierlauf nahm jede Tabelle mit Projektbezug mit,
+        /// auch die Rechenergebnisse: <c>Tab_Ergebnis</c> samt Detailtabellen (Stundenreihen,
+        /// Kennzahlen je Erzeuger und Modul, Energiebedarf, Gebäudekennzahlen) und die
+        /// gespeicherte Wirtschaftlichkeit. Die Kopie — und jede Variante, die denselben Weg
+        /// geht — zeigte damit sofort Ergebnisse, die zum Quellprojekt gehören; deren
+        /// Wirtschaftlichkeit zeigte obendrein über ihr unversetztes <c>ID_Ergebnis</c> auf
+        /// den Lauf der Quelle.</para>
+        ///
+        /// <para><b>Die Regel.</b> Rechenergebnis ist, was ein Simulationslauf oder die
+        /// Wirtschaftlichkeitsrechnung schreibt: jede Tabelle mit dem Namensanfang
+        /// <see cref="ERGEBNIS_PRAEFIX"/> und — in <see cref="ErmittlePlan"/> — jede
+        /// Detailtabelle, die über ihren Fremdschlüssel an einer Ergebnistabelle hängt, auch
+        /// ohne den Namensanfang. Die Kopie hat danach keinen Lauf, wie ein neu angelegtes
+        /// Projekt; Simulation, Übersicht, Wirtschaftlichkeit und Bericht behandeln sie als
+        /// „noch nicht gerechnet". Eingaben (Anlagen, Senken, Kostenpositionen, Einstellungen,
+        /// Wirtschaftlichkeitsparameter, Zuordnungen, Variantenmerkmale, Speicherauslegung,
+        /// Klimareihe) kommen vollständig mit.</para>
+        ///
+        /// <para><b>Nur der Kopierlauf.</b> Die Ergebnistabellen bleiben im Plan
+        /// (<see cref="Spec.Ergebnis"/>): Der Projekttransfer nimmt sie mit — ein
+        /// übertragenes Projekt ist dasselbe Projekt, eine Kopie ein neues —, und
+        /// <see cref="FreieProjektId"/> fragt sie weiter nach der freien Projekt-ID.</para>
+        /// </summary>
+        internal static bool IstErgebnisTabelle(string name)
         {
-            string[] spalten;
-            if (tabelle == null || spalte == null ||
-                !ERGEBNISVERWEISE_LEEREN.TryGetValue(tabelle, out spalten)) return false;
-            foreach (string s in spalten)
-                if (string.Equals(s, spalte, StringComparison.OrdinalIgnoreCase)) return true;
-            return false;
+            return name != null && name.StartsWith(ERGEBNIS_PRAEFIX, StringComparison.OrdinalIgnoreCase);
         }
 
         // Echte, in Access deklarierte Fremdschluessel: Key "Tabelle||Spalte" -> referenzierte Tabelle.
@@ -284,6 +289,12 @@ namespace WindowsFormsApplication1
             public string Filter;      // {0} = Quell-Projekt-ID
             public string NameSpalte;  // nur Tab_Projekt
             public List<string> Cols;  // Spalten (einmalig gelesen, fuer Sortierung + INSERT)
+
+            /// <summary>
+            /// Rechenergebnis (<see cref="IstErgebnisTabelle"/> oder Detailtabelle einer
+            /// Ergebnistabelle): Der Kopierlauf laesst die Tabelle aus, der Transfer nimmt sie mit.
+            /// </summary>
+            public bool Ergebnis;
         }
 
         public int GetProjektId(string projektname)
@@ -369,15 +380,19 @@ namespace WindowsFormsApplication1
             {
                 v = DataRepository.Vorgang();
 
-                // 1) Tabellen generisch ermitteln.
+                // 1) Tabellen generisch ermitteln. Rechenergebnisse (Spec.Ergebnis) bleiben im
+                //    Plan - FreieProjektId fragt sie mit -, werden aber nicht kopiert: Sie
+                //    bekommen keinen Versatz und stehen nicht im copySet.
                 List<Spec> specs = ErmittlePlan();
                 var copySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (Spec s in specs) copySet.Add(s.Tabelle);
+                var ergebnisSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (Spec s in specs) (s.Ergebnis ? ergebnisSet : copySet).Add(s.Tabelle);
 
                 // 2) Offsets bestimmen (MAX ueber alle / MIN ueber Quellzeilen).
                 var offset = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
                 foreach (Spec s in specs)
                 {
+                    if (s.Ergebnis) continue;
                     long o;
                     if (BerechneOffset(v, s, srcId, out o)) offset[s.Tabelle] = o;
                 }
@@ -431,7 +446,7 @@ namespace WindowsFormsApplication1
                     if (fortschritt != null)
                         fortschritt.Report(new Fortschritt { Aktuell = i, Gesamt = gesamt, Tabelle = s.Tabelle });
 
-                    string sql = BaueInsertSql(s, srcId, offset, copySet);
+                    string sql = BaueInsertSql(s, srcId, offset, copySet, ergebnisSet);
                     if (sql == null) continue;
                     if (s.NameSpalte != null)
                         v.Ausfuehren(sql, new DbParam("@name", neuerName));
@@ -586,17 +601,18 @@ namespace WindowsFormsApplication1
                 List<string> cols = Spalten(name);
                 if (cols == null || cols.Count == 0) continue;
 
+                bool ergebnis = IstErgebnisTabelle(name);
                 if (KINDER.ContainsKey(name))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = KINDER[name], Cols = cols };
+                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = KINDER[name], Cols = cols, Ergebnis = ergebnis };
                 }
                 else if (Enthaelt(cols, "ID_Projekt"))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ID_Projekt] = {0}", Cols = cols };
+                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ID_Projekt] = {0}", Cols = cols, Ergebnis = ergebnis };
                 }
                 else if (Enthaelt(cols, "ProjektID"))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ProjektID] = {0}", Cols = cols };
+                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ProjektID] = {0}", Cols = cols, Ergebnis = ergebnis };
                 }
                 else
                 {
@@ -633,7 +649,10 @@ namespace WindowsFormsApplication1
 
                     Spec pSpec = plan[eltern];
                     string filter = "[" + fkCol + "] IN (SELECT [" + pSpec.Pk + "] FROM [" + eltern + "] WHERE " + pSpec.Filter + ")";
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = filter, Cols = cols };
+                    // Die Detailtabelle eines Rechenergebnisses ist selbst Rechenergebnis -
+                    // auch ohne den Namensanfang (IstErgebnisTabelle).
+                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = filter, Cols = cols,
+                                            Ergebnis = pSpec.Ergebnis || IstErgebnisTabelle(name) };
                     uebrig.Remove(name);
                     neuHinzugefuegt = true;
                 }
@@ -955,8 +974,10 @@ namespace WindowsFormsApplication1
             return hoechste + 1;
         }
 
-        // Baut das generische INSERT ... SELECT.
-        private string BaueInsertSql(Spec s, int srcId, Dictionary<string, long> offset, HashSet<string> copySet)
+        // Baut das generische INSERT ... SELECT. 'ergebnisse' = die nicht kopierten
+        // Ergebnistabellen des Plans (Spec.Ergebnis).
+        private string BaueInsertSql(Spec s, int srcId, Dictionary<string, long> offset, HashSet<string> copySet,
+                                     HashSet<string> ergebnisse)
         {
             List<string> cols = s.Cols ?? Spalten(s.Tabelle);
             if (cols == null || cols.Count == 0) return null;
@@ -973,15 +994,19 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // Ergebnisverweise der Quelle kommen nicht mit (ERGEBNISVERWEISE_LEEREN):
-                // Die Kopie hat noch kein eigenes Ergebnis.
-                if (ErgebnisverweisLeeren(s.Tabelle, col))
+                string ziel = ErmittleZieltabelle(s.Tabelle, col, s.Pk);
+
+                // SICHERHEITSNETZ: Ein Verweis auf eine Ergebnistabelle zeigte in der Kopie
+                // auf den Lauf der QUELLE - die Ergebnisse kommen nicht mit (IstErgebnisTabelle).
+                // Er wird leer, wie in einem nie gerechneten Projekt. Die Eingabetabellen des
+                // Bestands fuehren keinen solchen Verweis; die Stelle haelt die Regel fuer
+                // eine kuenftige Spalte mit Beziehung (deklariert oder FK_MAP) auf einen Lauf.
+                if (ziel != null && ergebnisse != null && ergebnisse.Contains(ziel))
                 {
                     exprs.Add("NULL");
                     continue;
                 }
 
-                string ziel = ErmittleZieltabelle(s.Tabelle, col, s.Pk);
                 if (ziel != null && offset.ContainsKey(ziel) && copySet.Contains(ziel))
                     exprs.Add("IIF([" + col + "] > 0, [" + col + "] + " + offset[ziel] + ", [" + col + "])");
                 else

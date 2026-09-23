@@ -123,11 +123,15 @@ namespace EPOS.Kern.Tests
                 Assert.True(DataRepository.SpalteVorhanden(t, "Wohnflaeche_gesamt"), t);
             }
 
-            // Die Sicht in der Datei ist wortgleich die aus SQL_VIEW_NEU.
+            // Die Sicht in der Datei ist wortgleich die GELTENDE: seit Schritt 108 (KU-S1) die
+            // aus SQL_VIEW_KUEHLUNG, die die von M3 (SQL_VIEW_NEU) um die vier Kuehlspalten
+            // verlaengert - die 73 Spalten des Schritts 101 stehen weiter an 0..72.
             string gespeichert = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_NEU, gespeichert);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, gespeichert);
+            Assert.Equal(GebaeudeSchema.SICHT_ALLE,
+                         GebaeudeSchema.SichtSpalten().Take(GebaeudeSchema.SICHT_ALLE.Length));
 
             // Die Sicht meldet die acht Umlautbezeichner buchstabengetreu.
             List<string> sicht = GebaeudeSchema.SichtSpalten();

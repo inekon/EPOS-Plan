@@ -244,7 +244,11 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Haus B", text);
             Assert.Contains(WindowsFormsApplication1.MyResource.Resource.GEB_RECHENWEG_VDI6007, text);
             Assert.Contains(WindowsFormsApplication1.MyResource.Resource.GEB_RECHENWEG_TAGESBILANZ, text);
-            Assert.Contains("Kühlenergie (informativ)", text);
+            // Stufe KU1 (Kuehlkonzept 6.4): ohne „(informativ)", und die Grenze der Zahl (K5)
+            // steht neben den Kuehlzahlen der Gebaeude.
+            Assert.Contains("Kühlenergie", text);
+            Assert.DoesNotContain("(informativ)", text);
+            Assert.Contains(WindowsFormsApplication1.SimulationKaeltebedarf.GrenzeFeuchte, text);
             Assert.Contains("12,5 MWh/a", text);
 
             Assert.True(DeckblattBaustein.ProduktausweisNoetig(daten));

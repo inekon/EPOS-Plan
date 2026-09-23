@@ -232,6 +232,19 @@ namespace WindowsFormsApplication1
         public double Energiesteuer54SockelEur;
 
         /// <summary>
+        /// ETAPPE E7c — S‑2 (Entscheid A3): Die Mischlage § 53 / § 53a Abs. 5 neben § 54
+        /// ist gesperrt, der § 54-Betrag wurde verworfen (<see cref="Energiesteuer54Eur"/>
+        /// = 0; die Begründung steht unter <see cref="SteuerPosition.ENERGIEST_54"/>).
+        /// </summary>
+        public bool Energiesteuer54Gesperrt;
+
+        /// <summary>
+        /// ETAPPE E7c — S‑2: der verworfene § 54-Betrag VOR dem Sockel [€/a] — reine
+        /// Auskunft (was die Sperre kostet); 0 ohne Sperre.
+        /// </summary>
+        public double Energiesteuer54VerworfenEur;
+
+        /// <summary>
         /// Energiesteuer-Entlastung GESAMT [€/a] — die Summe der beiden
         /// Paragrafenbeträge.
         ///
@@ -615,6 +628,39 @@ namespace WindowsFormsApplication1
                 r.Herkunft.Add(Herkunft(p, kultur));
             }
 
+            // ETAPPE E7c — S‑2 (Entscheid A3 vom 20.09.2026, ausdrücklich bestätigt):
+            // DIE MISCHLAGE IST GESPERRT. Stehen im Projekt § 53 / § 53a Abs. 5 und § 54
+            // nebeneinander, wird der § 54-Betrag VERWORFEN (0) — solange die Abgrenzung
+            // der Mengen zwischen den Verfahren (R‑U1) offen ist, ist die Kombination nie
+            // zulässig. Angesetzt wird an der WAHL (dieselbe Prüfung wie die
+            // Kohärenzzeile, Mischlage()); die § 54-Posten verlassen den Nachweis, und
+            // die § 54-Zeile trägt die Begründung statt einer Herleitung. Der § 53-Teil
+            // bleibt unberührt. Ohne Mischlage wird der Zweig nicht betreten — der
+            // Rechenweg ist Zeichen für Zeichen der von vorher.
+            List<SteuerAnlage> seiteStrom, seiteGewerbe;
+            if (Mischlage(e, out seiteStrom, out seiteGewerbe))
+            {
+                r.Energiesteuer54Gesperrt = true;
+                r.Energiesteuer54VerworfenEur = summe54;
+                summe54 = 0;
+                r.EnergiesteuerNachweise.RemoveAll(n => n != null && n.Ist54);
+
+                var strom = new List<string>();
+                foreach (SteuerAnlage a in seiteStrom) strom.Add(a.Klartext(kultur));
+                var gewerbe = new List<string>();
+                foreach (SteuerAnlage a in seiteGewerbe) gewerbe.Add(a.Klartext(kultur));
+                string text = string.Format(kultur,
+                    T("STEUER_ENERGIEST_54_MISCHLAGE",
+                      "§ 54 EnergieStG gesperrt: Im Projekt stehen § 53 / § 53a Abs. 5 ({0}) und " +
+                      "§ 54 ({1}) nebeneinander. Diese Mischlage ist nicht zulässig — der " +
+                      "§ 54-Betrag wird verworfen (0 €), die Entlastung nach § 53 / § 53a bleibt."),
+                    string.Join(", ", strom.ToArray()), string.Join(", ", gewerbe.ToArray()));
+                r.Begruendungen.Add(text);
+                // Die Sperre ist DER Grund der § 54-Zeile — sie schlägt einen früheren
+                // (etwa die Unternehmensart), weil ohne sie gar nichts zu rechnen wäre.
+                r.PositionsGruende[SteuerPosition.ENERGIEST_54] = text;
+            }
+
             // ETAPPE K6 — Sockelbetrag. Nur § 54 hat einen (250 €/Kalenderjahr);
             // § 53 und § 53a haben keinen (Grundlagen, Abschnitt 4). Er wird VOR dem
             // Ausweis abgezogen — dieselbe Mechanik wie bei § 9b StromStG.
@@ -647,6 +693,42 @@ namespace WindowsFormsApplication1
 
             r.Energiesteuer53Eur = summe53;
             r.Energiesteuer54Eur = summe54;
+        }
+
+        /// <summary>
+        /// ETAPPE E7c — S‑2 (Entscheid A3): <b>die Mischlage § 53 / § 53a Abs. 5 neben
+        /// § 54</b>, EINE Prüfung für die Sperre in <see cref="Energiesteuer"/> und die
+        /// Kohärenzzeile (Fall 5, <c>KohaerenzPruefung.MischlageEnergiesteuer</c>).
+        ///
+        /// <para>Angesetzt wird an der WIRKSAMEN WAHL je Anlage (Anlagenwert, sonst
+        /// Projektwert) mit Brennstoffeinsatz — nicht am gebuchten Betrag: Eine
+        /// Mischlage besteht, sobald beide Welten gewählt sind. Auf der § 53-Seite zählt
+        /// nur eine Anlage MIT Stromerzeugung: § 53 und § 53a kommen für einen Heizkessel
+        /// nie in Betracht (B3) — seine § 53-Wahl rechnet 0 mit Begründung und begründet
+        /// keine zweite Entlastungswelt.</para>
+        /// </summary>
+        /// <param name="seiteStrom">Die Anlagen nach § 53 / § 53a Abs. 5.</param>
+        /// <param name="seiteGewerbe">Die Anlagen nach § 54.</param>
+        /// <returns><c>true</c>, wenn beide Seiten besetzt sind.</returns>
+        public static bool Mischlage(SteuerEingabe e, out List<SteuerAnlage> seiteStrom,
+                                     out List<SteuerAnlage> seiteGewerbe)
+        {
+            seiteStrom = new List<SteuerAnlage>();
+            seiteGewerbe = new List<SteuerAnlage>();
+            if (e == null || e.Anlagen == null) return false;
+
+            foreach (SteuerAnlage a in e.Anlagen)
+            {
+                if (a == null || a.BrennstoffMWh <= 0) continue;
+                string wahl = Wahl(a, e);
+                if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal))
+                    seiteGewerbe.Add(a);
+                else if (a.Stromerzeuger &&
+                         (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal) ||
+                          string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal)))
+                    seiteStrom.Add(a);
+            }
+            return seiteStrom.Count > 0 && seiteGewerbe.Count > 0;
         }
 
         /// <summary>

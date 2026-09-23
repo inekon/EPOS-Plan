@@ -129,6 +129,11 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     private static IElement Knopf(IRenderedComponent<WaermepumpeStammDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
+    /// <summary>Die Gruppe „Kenndaten" des Stammblatts (Stufe 3) — dort stehen die Stammfelder.</summary>
+    private static IElement Kenndaten(IRenderedComponent<WaermepumpeStammDialog> cut)
+        => cut.FindAll(".epos-stammblattgruppe")
+              .First(g => g.QuerySelector(".epos-stammblattgruppe-titel")?.TextContent == "Kenndaten");
+
     // =================================================================================
     // Feldbestand
     // =================================================================================
@@ -138,14 +143,17 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        var gruppe = cut.Find(".epos-gruppenkopf-koerper");
+        var gruppe = Kenndaten(cut);
         // Name, Hersteller (Text), Nennleistung, Heizstab (Ganzzahl), Kuehlleistung (Zahl).
         Assert.Equal(5, gruppe.QuerySelectorAll("input").Length);
         Assert.Single(gruppe.QuerySelectorAll("textarea"));
         // Vier Klapplisten: Typ, Leistungsstufen, Aufstellung, Baujahr.
         Assert.Equal(4, gruppe.QuerySelectorAll("select").Length);
 
-        var knopftexte = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
+        // Stufe 3: Die Knoepfe stehen an drei Orten - Fussleiste (Speichern,
+        // Verwerfen, Neu, Beenden), Auswahlleiste (Vergleichen, Duplizieren...,
+        // Loeschen) und der Kopf der Gruppe Kennlinie (Kennliniendaten...).
+        var knopftexte = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         // W14a-E-10 / S2.2: Der Knopf "Modul-Katalog..." ist GEFALLEN - siehe
         // Der_Modulkatalog_ist_mit_S2_2_gefallen.
         Assert.DoesNotContain("📋  Modul-Katalog...", knopftexte);
@@ -154,6 +162,8 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.Contains("Neu", knopftexte);
         Assert.Contains("Löschen", knopftexte);
         Assert.Contains("Beenden", knopftexte);
+        Assert.Contains("Kennliniendaten...",
+                        cut.Find(".epos-stammblattgruppe-kopf").TextContent);
     }
 
     // =================================================================================
@@ -178,7 +188,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         // Zwischen Rahmen und Fussleiste steht kein weiterer Block.
         var kinder = cut.Find(".epos-katalog-dialog").Children
             .Select(e => e.ClassName ?? "").ToList();
-        int rahmen = kinder.FindIndex(k => k.Contains("epos-katalog-paar"));
+        int rahmen = kinder.FindIndex(k => k.Contains("epos-katalograhmen"));
         int fuss = kinder.FindIndex(k => k.Contains("epos-leiste"));
         Assert.True(rahmen >= 0 && fuss == rahmen + 1, string.Join(" | ", kinder));
     }
@@ -188,10 +198,10 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// Das Katalogmuster: <b>Speichern · Kennliniendaten… · Füller · Neu · Löschen ·
-    /// Beenden</b>. „Speichern" und der Kennlinieneditor wirken auf den markierten
-    /// Satz und stehen links vom Füller, „Neu" und „Löschen" auf die Liste und stehen
-    /// rechts; „Beenden" ist der einzige primäre Knopf und steht zuletzt.
+    /// Die Fußleiste der Verwaltung (Stufe 3): <b>Speichern · Verwerfen · Füller · Neu ·
+    /// Beenden</b>. „Kennliniendaten…" steht im Kopf der Gruppe Kennlinie, Duplizieren…
+    /// und Löschen in der Auswahlleiste (V8: keine Handlung an zwei Orten); „Beenden"
+    /// ist der einzige primäre Knopf und steht zuletzt.
     /// </summary>
     [Fact]
     public void Die_Fussleiste_traegt_das_Katalogmuster()
@@ -200,10 +210,9 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var leiste = cut.FindAll(".epos-leiste").Last();
 
         var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Speichern", "Kennliniendaten...", "Neu", "Löschen", "Beenden" },
-                     knoepfe);
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu", "Beenden" }, knoepfe);
 
-        // Der Fueller steht zwischen "Kennliniendaten..." und "Neu".
+        // Der Fueller steht zwischen "Verwerfen" und "Neu".
         var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
         Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
         Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
@@ -242,8 +251,10 @@ public class WaermepumpeStammDialogTests : EposBunitContext
                  })
             Assert.Contains(soll, texte);
 
+        // Das Kopfband steht seit Stufe 3 als Kurztext am Titel (Zone 1 des Schemas).
         Assert.Equal("Verwaltung Daten zu Wärmepumpen und deren Kennlinien",
-                     cut.Find(".epos-kontextzeile").TextContent.Trim());
+                     cut.Find(".epos-dialog-titel").GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-kontextzeile"));
     }
 
     [Fact]
@@ -302,7 +313,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
         Assert.Equal(1, cut.Instance.GewaehlteId);
-        Assert.Equal("WP Alpha", cut.Find(".epos-gruppenkopf-koerper input").GetAttribute("value"));
+        Assert.Equal("WP Alpha", Kenndaten(cut).QuerySelector("input")!.GetAttribute("value"));
     }
 
     /// <summary>
@@ -367,7 +378,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);
 
         Assert.Equal(2, cut.Instance.GewaehlteId);
-        Assert.Equal("WP Ausliefer", cut.Find(".epos-gruppenkopf-koerper input").GetAttribute("value"));
+        Assert.Equal("WP Ausliefer", Kenndaten(cut).QuerySelector("input")!.GetAttribute("value"));
     }
 
     // =================================================================================
@@ -449,7 +460,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var speichern = Knopf(cut, "Speichern");
         Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
         Assert.Contains("Duplizieren", speichern.GetAttribute("title") ?? "");
-        Assert.True(cut.Find(".epos-gruppenkopf-koerper input").HasAttribute("readonly"));
+        Assert.True(Kenndaten(cut).QuerySelector("input")!.HasAttribute("readonly"));
 
         speichern.Click();
 
@@ -505,7 +516,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         Knopf(cut, "Neu").Click();
         Assert.Equal(0, cut.Instance.GewaehlteId);
-        Assert.Equal("", cut.Find(".epos-gruppenkopf-koerper input").GetAttribute("value"));
+        Assert.Equal("", Kenndaten(cut).QuerySelector("input")!.GetAttribute("value"));
         Assert.Empty(cut.FindAll(".epos-optionsgruppe"));        // keine Kuehlung ohne Geraet
 
         Knopf(cut, "Speichern").Click();
@@ -544,10 +555,14 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen(gesperrtDurch: _ => "Musterprojekt",
                            loeschen: _ => { geloescht = true; return true; });
 
-        Knopf(cut, "Löschen").Click();
-        cut.Find(".epos-rueckfrage").QuerySelectorAll("button")
-           .First(b => b.TextContent.Trim() == "Ja").Click();
+        // Stufe 3: Die Projektsperre steht schon am Knopf - weich gesperrt, der Kurztext
+        // nennt das Projekt (Konzept 3.4); ein Klick meldet es, ohne Rueckfrage.
+        var loeschen = Knopf(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        Assert.Contains("Musterprojekt", loeschen.GetAttribute("title") ?? "");
+        loeschen.Click();
 
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
         Assert.False(geloescht);
         Assert.Contains("Musterprojekt", cut.Find(".epos-warnbanner").TextContent);
     }
@@ -559,12 +574,15 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen(loeschen: _ => { geloescht = true; return true; });
 
         Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
-        Knopf(cut, "Löschen").Click();
-        cut.Find(".epos-rueckfrage").QuerySelectorAll("button")
-           .First(b => b.TextContent.Trim() == "Ja").Click();
 
+        // V13: weich gesperrt mit Grund, keine Rueckfrage.
+        var loeschen = Knopf(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        loeschen.Click();
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
         Assert.False(geloescht);
-        Assert.Contains("schreibgeschützt", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("Löschen gesperrt", cut.Find(".epos-warnbanner").TextContent);
     }
 
     // =================================================================================
@@ -673,7 +691,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
                 Id = 9, Name = "Sonder", Typ = "Abwasser-Wasser", Regelung = "stetig"
             }));
 
-        var typen = cut.Find(".epos-gruppenkopf-koerper").QuerySelectorAll("select")[0]
+        var typen = Kenndaten(cut).QuerySelectorAll("select")[0]
                        .QuerySelectorAll("option").Select(o => o.TextContent).ToList();
         Assert.Equal("Abwasser-Wasser", typen[0]);
         Assert.Equal(5, typen.Count);                            // 4 feste + der Bestandswert
@@ -684,7 +702,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     {
         // A-15 / Befund W7-O-2: Der Vorlaeufer trug "2024" zweimal und "2022" nie.
         var cut = Aufbauen();
-        var jahre = cut.Find(".epos-gruppenkopf-koerper").QuerySelectorAll("select")[3]
+        var jahre = Kenndaten(cut).QuerySelectorAll("select")[3]
                        .QuerySelectorAll("option").Select(o => o.TextContent).ToList();
 
         Assert.Equal(new[] { "2025", "2024", "2023", "2022", "2021",
@@ -817,7 +835,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Assert.Equal(5, cut.Find(".epos-gruppenkopf-koerper").QuerySelectorAll("input").Length);
+        Assert.Equal(5, Kenndaten(cut).QuerySelectorAll("input").Length);
 
         var feld = Modulkostenfeld(cut);
         Assert.Empty(feld.QuerySelectorAll("input"));
@@ -965,5 +983,115 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     public void Ohne_Schreibweg_traegt_die_Kennlinie_kein_Farbfeld()
     {
         Assert.Empty(Aufbauen().FindAll("rect.epos-legende-farbfeld"));
+    }
+
+    // =================================================================================
+    //  Stufe 3 (Konzept Administrationsdialoge): Stammblatt mit der Gruppe Kennlinie,
+    //  Aenderungserkennung, Auswahlleiste, Vergleich (V3 V6 V8 V9 V12 V13)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Stammblatt der Wärmepumpe</b> (V9): vorn die dialogspezifische Gruppe
+    /// „Kennlinie" mit „Kennliniendaten…" im Kopf und den zwei Reiterblättern, dann die
+    /// Kenndaten; Herkunft und Kennzahlen im Kopf kommen aus der Zeile der Liste.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_traegt_Kennlinie_und_Kenndaten()
+    {
+        var cut = Aufbauen();
+
+        var titel = cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToList();
+        Assert.Equal(new[] { "Kennlinie", "Kenndaten" }, titel);
+        var kennlinie = cut.FindAll(".epos-stammblattgruppe")[0];
+        Assert.NotNull(kennlinie.QuerySelector(".epos-reiter"));
+        Assert.Contains("Kennliniendaten...", kennlinie.QuerySelector(".epos-stammblattgruppe-kopf")!.TextContent);
+
+        Assert.Equal("WP Alpha", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal("Alpha · Luft-Wasser · eigener Satz", cut.Find(".epos-stammblatt-unter").TextContent);
+        Assert.Equal(3, cut.FindAll(".epos-stammblatt-kennzahl").Count);
+    }
+
+    /// <summary>
+    /// <b>Die Änderungserkennung</b> (zurückgestellt aus „Nach #445"): Ein geändertes
+    /// Feld hält den Zeilenwechsel und Beenden an — „Speichern oder Verwerfen" im
+    /// Warnband —, der Fuß des Stammblatts sagt es, und „Verwerfen" lädt den Satz neu.
+    /// Bis Stufe 3 verwarf ein Zeilenwechsel die Eingabe still.
+    /// </summary>
+    [Fact]
+    public void Ein_geaendertes_Feld_haelt_Zeilenwechsel_und_Beenden_an()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+        Assert.True(Knopf(cut, "Verwerfen").HasAttribute("disabled"));
+
+        Kenndaten(cut).QuerySelectorAll("input")[1].Input("Neuer Hersteller");
+        Assert.True(cut.Instance.Geaendert);
+        Assert.False(Knopf(cut, "Verwerfen").HasAttribute("disabled"));
+        Assert.Contains("Speichern oder Verwerfen", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal(1, cut.Instance.GewaehlteId);
+        Assert.Contains("Verwerfen", cut.Instance.Meldung);
+
+        Knopf(cut, "Beenden").Click();
+        Assert.Null(ergebnis);
+
+        Knopf(cut, "Verwerfen").Click();
+        Assert.False(cut.Instance.Geaendert);
+        Assert.Equal("Alpha", Kenndaten(cut).QuerySelectorAll("input")[1].GetAttribute("value"));
+
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal(2, cut.Instance.GewaehlteId);
+
+        Knopf(cut, "Beenden").Click();
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Löschen mehrerer Wärmepumpen</b> (AD-Q9): Der Auslieferungssatz bleibt stehen
+    /// (V13), eine einem Projekt zugeordnete bleibt stehen und nennt ihr Projekt; die
+    /// Statuszeile nennt beide Zahlen.
+    /// </summary>
+    [Fact]
+    public void Loeschen_mehrerer_laesst_Auslieferung_und_Projektgeraete_stehen()
+    {
+        var liste = Liste.Append(new Katalogfilterzeile(3, "WP Gamma")
+                                     .MitText(Katalogfilterprofil.SpBezeichner, "WP Gamma")).ToList();
+        var geloescht = new List<string>();
+        var cut = Aufbauen(liste: () => liste,
+                           gesperrtDurch: n => n == "WP Gamma" ? "Musterprojekt" : null,
+                           loeschen: n => { geloescht.Add(n); liste.RemoveAll(z => z.Bezeichner == n); return true; });
+
+        foreach (int i in new[] { 0, 1, 2 })
+            cut.FindAll("td.epos-spalte-kaestchen input")[i].Change(true);
+        Assert.Equal(3, cut.Instance.Kaestchen.Count);
+
+        Knopf(cut, "Löschen").Click();
+        Assert.Contains("Stehen bleiben (Auslieferungssatz): WP Ausliefer", cut.Find(".epos-rueckfrage").TextContent);
+        cut.Find(".epos-rueckfrage").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Assert.Equal(new[] { "WP Alpha" }, geloescht);
+        Assert.Contains("Musterprojekt", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Equal("1 gelöscht, 2 stehen geblieben", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Vergleichen</b> (V12): zwei Kästchen, der Vergleich im Stammblatt über die
+    /// Felder des Stammsatzes samt Herkunft — die Herkunft weicht hier ab.
+    /// </summary>
+    [Fact]
+    public void Zwei_Waermepumpen_vergleichen_im_Stammblatt()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll("td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll("td.epos-spalte-kaestchen input")[1].Change(true);
+        Knopf(cut, "Vergleichen").Click();
+
+        Assert.True(cut.Instance.Vergleicht);
+        Assert.Equal(new[] { "Parameter", "WP Alpha", "WP Ausliefer" },
+                     cut.FindAll(".epos-stammblatt .epos-vergleich thead th").Select(th => th.TextContent.Trim()));
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Herkunft" && z.Abweichend);
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name.StartsWith("Nennleistung", StringComparison.Ordinal) && z.Abweichend);
     }
 }

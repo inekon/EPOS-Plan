@@ -44,8 +44,10 @@ namespace WindowsFormsApplication1
             };
 
             // Je Kanal mit Jahressumme > 0 eine Spalte - der kWh-Vektor, NICHT die
-            // normierte Prozentkurve des Diagramms (Begründung :2714-2721).
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            // normierte Prozentkurve des Diagramms (Begründung :2714-2721). Die Spalten
+            // tragen „Wärmelast …" und gehören den Wärmekanälen; die Kältereihe exportiert
+            // die Kälteseite selbst (Kühlkonzept 4.3 #32, 9.2).
+            foreach (int k in Kanal.KANAELE_WAERME)
             {
                 double[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
                 if (werte == null || Jahressumme(werte) <= 0) continue;
@@ -59,6 +61,30 @@ namespace WindowsFormsApplication1
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.CHART_DATEI_ENERGIEBEDARF, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur, spalten, false);
+        }
+
+        /// <summary>
+        /// <b>Die Kälteseite als CSV</b> (Stufe KU1; Kühlkonzept 4.3 #32, 9.2; K5): die Kältelast
+        /// des Projekts je Stunde [kW] — nur wenn der Lauf Kälte erhoben hat, und mit der Grenze
+        /// der Zahl als KOPFZEILE vor der Spaltenzeile: Ein exportierter Kältebedarf ohne den
+        /// Hinweis „sensibel, ohne Entfeuchtung" wäre in fremder Hand eine falsche Zahl.
+        /// </summary>
+        private void CsvKaelte()
+        {
+            SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
+            if (k == null)
+            {
+                WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SIM_MSG_KEINE_DATEN_KAELTE,
+                                       MyResource.Resource.SIM_BTN_CSV_EXPORT);
+                return;
+            }
+
+            CsvExportClass.Export(
+                string.Format(MyResource.Resource.CHART_DATEI_KAELTEBEDARF, m_ID_Projekt),
+                _waermebedarf.Stundentemperatur,
+                new List<CsvSpalte> { new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST, k.KaeltebedarfKwh) },
+                false,
+                new[] { SimulationKaeltebedarf.GrenzeFeuchte });
         }
 
         /// <summary>

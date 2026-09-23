@@ -316,6 +316,112 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(seite.FindAll("div.epos-erzeugerkachel-parameter"));
     }
 
+    // =====================================================================
+    //  Stufe KU1 (Kühlkonzept 8.3, 8.6 Maske 1) — die Projekteinstellung
+    //  „Kühlung rechnen"
+    // =====================================================================
+
+    /// <summary>Was der Kühlschalter geschrieben hat; die Antwort der Naht steht in <see cref="_kuehlAntwort"/>.</summary>
+    private readonly List<bool> _kuehlGeschrieben = new();
+
+    private bool _kuehlAntwort = true;
+
+    private SimulationParameterDienste KuehlParameterdienste(bool kuehlbetrieb)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Kuehlbetrieb = kuehlbetrieb;
+            return p;
+        };
+        wege.KuehlbetriebSchreiben = an =>
+        {
+            _kuehlGeschrieben.Add(an);
+            return _kuehlAntwort;
+        };
+        return wege;
+    }
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitKuehlung(bool kuehlbetrieb)
+        => Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste())
+            .Add(x => x.Parameter, KuehlParameterdienste(kuehlbetrieb))
+            .Add(x => x.StartProjekt, 1030));
+
+    /// <summary>
+    /// Der Abschnitt „Kühlung" steht neben dem Wärmebedarf: der Schalter „Kühlung rechnen"
+    /// mit dem Stand der Datenbank und der Herleitungszeile, die sagt, dass er für das ganze
+    /// Projekt gilt. Er schreibt SOFORT, wie die Netzverluste.
+    /// </summary>
+    [Fact]
+    public void Der_Kuehlschalter_zeigt_den_Stand_und_schreibt_sofort()
+    {
+        var seite = SeiteMitKuehlung(kuehlbetrieb: false);
+
+        IElement abschnitt = seite.Find("section.epos-simkonfig-kuehlung");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_KUEHLUNG, abschnitt.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB, abschnitt.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_KUEHLBETRIEB, abschnitt.TextContent);
+
+        IElement schalter = abschnitt.QuerySelector("input[type=checkbox]")!;
+        Assert.False(schalter.HasAttribute("checked"));
+
+        schalter.Change(true);
+        Assert.Equal(new[] { true }, _kuehlGeschrieben);
+        Assert.True(seite.Instance.Laufparameter.Kuehlbetrieb);
+
+        // Der Wärmebedarfsabschnitt bleibt der erste - und unverändert.
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
+                        seite.Find("section.epos-simkonfig-bedarf").TextContent);
+    }
+
+    /// <summary>Ein eingeschaltetes Projekt zeigt den Schalter gesetzt; „aus" schreibt ebenso sofort.</summary>
+    [Fact]
+    public void Der_Kuehlschalter_schaltet_auch_aus()
+    {
+        var seite = SeiteMitKuehlung(kuehlbetrieb: true);
+
+        IElement schalter = seite.Find("section.epos-simkonfig-kuehlung input[type=checkbox]");
+        Assert.True(schalter.HasAttribute("checked"));
+
+        schalter.Change(false);
+        Assert.Equal(new[] { false }, _kuehlGeschrieben);
+        Assert.False(seite.Instance.Laufparameter.Kuehlbetrieb);
+    }
+
+    /// <summary>
+    /// Scheitert das Schreiben, springt der Schalter nicht still zurück: Der Stand bleibt der
+    /// gespeicherte, und die Fußzeile meldet es.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_des_Kuehlschalters_wird_gemeldet()
+    {
+        _kuehlAntwort = false;
+        var seite = SeiteMitKuehlung(kuehlbetrieb: false);
+
+        seite.Find("section.epos-simkonfig-kuehlung input[type=checkbox]").Change(true);
+
+        Assert.Equal(new[] { true }, _kuehlGeschrieben);
+        Assert.False(seite.Instance.Laufparameter.Kuehlbetrieb);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KUEHLBETRIEB_FEHLER, seite.Markup);
+        Assert.False(seite.Find("section.epos-simkonfig-kuehlung input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// Ohne Schreibweg (eine Plattform, die den Schalter nicht anbietet) steht der Abschnitt
+    /// nicht da — benannt über die fehlende Naht, nicht als gesperrter Schalter ohne Grund.
+    /// </summary>
+    [Fact]
+    public void Ohne_Schreibweg_steht_kein_Kuehlabschnitt()
+    {
+        var seite = SeiteMitParametern();
+
+        Assert.NotEmpty(seite.FindAll("section.epos-simkonfig-bedarf"));
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-kuehlung"));
+    }
+
     /// <summary>
     /// <b>Anwenderwunsch 16.09.2026</b> (Screenshots „Simulation → Konfiguration"):
     /// „Erstelle dort einen Knopf anstelle des blauen Balkens ‚Parameter für die

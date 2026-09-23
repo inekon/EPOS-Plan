@@ -81,6 +81,17 @@ namespace WindowsFormsApplication1
         public double? Luftwechsel_Infiltration;
         public double? Luftwechsel_Nutzer;
         public bool Sommerlueftung;
+
+        // ---- KU-S1, die Kuehleingaben (Schemaschritt 108, Kuehlkonzept 7.1) --------------
+        // NULL-ERHALTEND wie der Block darueber: Kuehl_Sollwert NULL heisst "Kuehlung aus",
+        // Kuehlleistung_Max NULL "unbegrenzt", Kuehl_Sollwert_Nacht NULL "wie der Tagwert";
+        // der Schalter kennt kein NULL. Der Rechenweg liest die Projektkopie
+        // (ProjektGebaeudeModel), nicht dieses Modell.
+        // Namen: GebaeudeSchema.SPALTE_KUEHL*.
+        public double? Kuehl_Sollwert;
+        public double? Kuehlleistung_Max;
+        public bool Kuehlung_Aktiv;
+        public double? Kuehl_Sollwert_Nacht;
  
         public GebaeudeModel()
         {

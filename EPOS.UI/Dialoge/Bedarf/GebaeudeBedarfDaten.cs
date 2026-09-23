@@ -52,7 +52,10 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>95-%-Quantil der Stundenlast in <b>kW</b>.</summary>
     public double? SpitzeQuantil95Kw { get; init; }
 
-    /// <summary>Kühlbedarf (informativ) in <b>MWh</b> — nur auf dem VDI-Weg.</summary>
+    /// <summary>
+    /// Kühlbedarf in <b>MWh</b> — auf dem VDI-Weg die Kühlreihe des Modells, auf dem
+    /// Bestandsweg 0 (F-K18); sonst <c>null</c>.
+    /// </summary>
     public double? KuehlenergieMwh { get; init; }
 
     /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
@@ -77,4 +80,32 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>Rechnet dieser Satz auf dem VDI-Weg? Nur dann gibt es das Bild „Raumtemperatur".</summary>
     public bool IstVdi6007 { get; init; }
+
+    // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) --------
+    //
+    // Dieselben Bausteine wie die Wärmeseite: Kennzahltabelle, eigenes Bild, Monatswerte.
+    // Auf dem Bestandsweg steht der Abschnitt mit 0 und Hinweis — nicht „—", keine leere
+    // Gruppe (8.6); ohne Satz (kein Gebäude, keine Gaben) steht er nicht da.
+
+    /// <summary>Steht der Abschnitt „Kältebedarf"?</summary>
+    public bool KaelteAbschnitt { get; init; }
+
+    /// <summary>Die höchste Stundenkühllast in <b>kW</b>.</summary>
+    public double? KaeltelastMaxKw { get; init; }
+
+    /// <summary>Vollbenutzungsstunden der Kälte [h/a]; <c>null</c> = keine Kältelast.</summary>
+    public double? VollbenutzungsstundenKaelteH { get; init; }
+
+    /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen [h] (K6, nicht saldiert).</summary>
+    public int? StundenHeizenUndKuehlenH { get; init; }
+
+    /// <summary>Die zwölf Monatssummen der Kühlreihe in <b>MWh</b>; leer = keine Kühlspalte.</summary>
+    public IReadOnlyList<double> KuehlMonatswerteMwh { get; init; } = new List<double>();
+
+    /// <summary>
+    /// Die Herleitungszeilen des Abschnitts, fertig formuliert: wie der Kältebedarf entsteht
+    /// (wirksame Kühlung, informativ, Bestandsweg) und die Grenze der Zahl (K5, sensible Kälte
+    /// ohne Entfeuchtung) — sie steht an JEDER Kältezahl.
+    /// </summary>
+    public IReadOnlyList<string> KaelteHerleitung { get; init; } = new List<string>();
 }

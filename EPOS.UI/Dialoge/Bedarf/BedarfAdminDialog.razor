@@ -42,10 +42,20 @@
    eine Anwenderfrage (offener Punkt W14b-O-1).
 
    TASTATUR: Esc schliesst wie "Beenden", aber erst, wenn keine Ueberlagerung
-   offen ist. Enter ist nicht belegt. *@
+   offen ist. Enter ist nicht belegt.
+
+   STUFE 3 DER NEUORDNUNG (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13):
+   Stammblatt neben der Liste mit den Gruppen Wochenprofil und Kenndaten,
+   Kaestchen und Auswahlleiste (Vergleichen, Duplizieren..., Loeschen - auch
+   mehrere Zeilen, Auslieferungssaetze bleiben stehen), das Schloss statt der
+   Spalte "Auslieferung". DUPLIZIEREN ist neu: Es legt den eigenen Satz samt
+   Typ und Monatswerten an (Kern Katalogkopie ueber BedarfStammCtrl.Duplizieren)
+   - der Weg, einen Auslieferungssatz abzuwandeln. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+@using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -63,70 +73,117 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Liste OBEN, Anzeigeblock UNTEN (Anwenderwunsch 05.09.2026) ------
-           Gestapelt wie das Vorbild: Form_Stromverbraucher_Admin (542 x 489)
-           hatte die Liste (288 x 174) oben links, die vier Knoepfe rechts
-           daneben und die Anzeigefelder darunter (ab y 239). Neu ist nur,
-           dass die Liste die verbleibende Hoehe nimmt. *@
-    <Katalograhmen Gestapelt="true">
+    @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste
+           links ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT. Bis
+           Stufe 2 standen Liste und Anzeigeblock gestapelt wie im Vorbild
+           (Form_Stromverbraucher_Admin 542 x 489); die Ueberschrift ueber der
+           Liste entfaellt, sie nahm ihr eine Zeile. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Gruppenkopf Titel="@LabelKatalog" />
-
             @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.1):
-               Suche ueber alle Spalten, Trefferzahl, und der Filter sitzt im
-               Spaltenkopf. Bis hierher zeigte die Liste EINE Spalte - den
-               Bezeichner -, und Typ, Jahressumme und Beschreibung standen erst
-               im Detailblock des angeklickten Satzes (Konzept Befund 1.2/2).
-               Wer die 41 Stromverbraucher vergleichen wollte, klickte sie
-               einzeln durch. *@
+               Suche ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf; seit
+               Stufe 3 mit Kaestchen (V6). *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Vergleichsparameter" ZeileIstWahl="true" />
+                          Vergleichsparameter="@Vergleichsparameter" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            @* --- Der Anzeigeblock: Jahressumme, Name, Beschreibung, Typ ---
-               Die Einheit steht RECHTS neben dem Feld, wie Label11 im Designer.
-               Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
-               zwei Feldpaare je Zeile, die Beschreibung ueber beide Spalten. *@
-            <Formularraster>
-                <KindInhalt>
-                    <div class="epos-feldpaar">
-                        <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
-                        <span class="epos-einheit">@EinheitText</span>
-                    </div>
+        <Auswahl>
+            @* Zone 4 (V8): Vergleichen, Duplizieren... (neu fuer die Bedarfsprofile -
+               zurueckgestellt aus Stufe 2), Loeschen. *@
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
 
-                    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-                              Mehrzeilig="true" Zeilen="3" />
-                    <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
-                </KindInhalt>
-            </Formularraster>
-        </Eingabe>
+        <Blatt>
+            @* DAS STAMMBLATT (V9) mit zwei Gruppen:
+                 * WOCHENPROFIL (dialogspezifisch): Es gehoert zum TYP, nicht zum
+                   Profil - die Gruppe sagt es, und "Grafik..." und "Typ aendern..."
+                   stehen in ihrem Kopf (Konzept 3.5, A5).
+                 * KENNDATEN: Jahressumme, Name, Beschreibung, Typ - lesend wie
+                   bisher; "Aendern..." (der Stammkopf als Ueberlagerung) steht im
+                   Kopf der Gruppe. Die Felder direkt bedienbar zu machen (Konzept
+                   A5) bleibt offen. *@
+            <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    <Stammblattgruppe Titel="@Resource.ADM_SB_WOCHENPROFIL">
+                        <Kopf>
+                            <button type="button" class="epos-textknopf" disabled="@(!ZeileGewaehlt)"
+                                    @onclick="BeiGrafik">@BtnGrafikText</button>
+                            <button type="button" class="epos-textknopf"
+                                    @onclick="BeiTypAendern">@BtnTypAendernText</button>
+                        </Kopf>
+                        <KindInhalt>
+                            <p class="epos-stammblatt-erklaerung">@Wochenprofiltext</p>
+                        </KindInhalt>
+                    </Stammblattgruppe>
+                    <Stammblattgruppe Titel="@Resource.ADM_SB_KENNDATEN">
+                        <Kopf>
+                            <button type="button" class="epos-textknopf" disabled="@(!ZeileGewaehlt)"
+                                    @onclick="BeiAendern">@BtnAendernText</button>
+                        </Kopf>
+                        <KindInhalt>
+                            @* Beschriftung neben dem Feld, die Einheit rechts daneben wie
+                               Label11 im Designer. *@
+                            <Formularraster>
+                                <KindInhalt>
+                                    <div class="epos-feldpaar">
+                                        <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
+                                        <span class="epos-einheit">@EinheitText</span>
+                                    </div>
+
+                                    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
+                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                                              Mehrzeilig="true" Zeilen="3" />
+                                    <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Stammblattgruppe>
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
-    @* EINE LEISTE, KATALOGMUSTER (DL-2 Nr. 3). Stammkopf, Wochenprofil und Loeschen
-       schreiben SOFORT in den Katalog - "OK" und "Abbrechen" nahmen nichts zurueck
-       und sind deshalb entfallen; der Dialog schliesst mit "Beenden", und Esc wie
-       das Schliesskreuz tun dasselbe.
-
-       Nach der Leseregel stehen links vom Fueller die Knoepfe, die auf eine ANSICHT
-       oder einen Nachbarkatalog wirken (Grafik, Typ aendern), rechts die
-       Zeilenaktionen (Neu, Aendern, Loeschen), und ganz rechts der eine primaere
-       Schlussknopf. *@
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15, Stufe 3): Fueller (Statuszeile) - Neu... -
+       Beenden. Grafik... und Typ aendern... stehen im Kopf der Gruppe Wochenprofil,
+       Aendern... im Kopf der Kenndaten, Duplizieren... und Loeschen in der
+       Auswahlleiste (V8: keine Handlung an zwei Orten). Stammkopf, Wochenprofil
+       und Loeschen schreiben SOFORT - es gibt nichts zu speichern; der Dialog
+       schliesst mit "Beenden", Esc und Kreuz tun dasselbe. Gelungenes steht in der
+       Statuszeile, Gescheitertes im Warnband (V11). *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
-                @onclick="BeiGrafik">@BtnGrafikText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiTypAendern">@BtnTypAendernText</button>
-        <span class="epos-leiste-fueller"></span>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
-        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
-                @onclick="BeiAendern">@BtnAendernText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Beenden">@BtnBeendenText</button>
     </div>
+
+    @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -- *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@LabelName"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@MeldungNameFehlt" Pruefung="NameBelegt"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Ueberlagerung 1: der Stammkopf (W8.1), Modi Bearbeiten und Neu --- *@
     <Ueberlagerung Offen="@(_typStammGaben is not null)"
@@ -243,6 +300,19 @@
     [Parameter] public Func<string, bool>? Exists { get; set; }
 
     /// <summary>
+    /// <b>„Duplizieren…"</b> (Stufe 3, zurückgestellt aus Stufe 2): kopiert den Satz mit
+    /// der ID als EIGENEN Satz (<c>ReadOnly = 0</c>) unter dem Namen —
+    /// <c>BedarfStammCtrl.Duplizieren</c>. Ohne ihn steht die Handlung nicht da.
+    /// </summary>
+    [Parameter] public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>„Duplizieren…" — <c>ADM_BTN_DUPLIZIEREN</c>.</summary>
+    [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
+
+    /// <summary>Die Statuszeile nach „Duplizieren…"; <c>{0}</c> = Original, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string MeldungDupliziert { get; set; } = Resource.ADM_MSG_DUPLIZIERT;
+
+    /// <summary>
     /// Der Parametersatz des Stammkopfes (<c>TypStammHuelle.Gaben</c>) — Name,
     /// Beschreibung, Typ und ob es der Modus „Neu" ist.
     /// </summary>
@@ -330,6 +400,174 @@
 
     private bool ZeileGewaehlt => _gewaehlt.Length > 0;
 
+    // =====================================================================
+    // Stufe 3: Auswahlleiste, Stammblatt, Vergleich (V3 V6 V8 V9 V12 V13)
+    // =====================================================================
+
+    private readonly Zeilenauswahl _auswahl = new();
+    private Katalogfilterzeile? _fokuszeile;
+    private bool _auslieferung;
+    private HashSet<string> _geschuetzt = new(StringComparer.Ordinal);
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+    private string _duplizierQuelle = "";
+
+    /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
+    private string _status = "";
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _loeschen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    private const string HERKUNFT = "__HERKUNFT";
+
+    /// <summary>Die über das Kästchen gewählten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen
+        => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+
+    /// <summary>„Typ X · eigener Satz" — der Typ trägt das Wochenprofil.</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            string herkunft = _auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ;
+            return _typ.Length > 0 ? _typ + " · " + herkunft : herkunft;
+        }
+    }
+
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+        => Stammblattkopf.Kennzahlen(Katalogprofil, _fokuszeile);
+
+    /// <summary>Der Satz der Gruppe Wochenprofil: Es gehört zum Typ (Konzept 3.5, A5).</summary>
+    private string Wochenprofiltext
+        => string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_WOCHENPROFIL_TYP, _typ);
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>
+    /// <b>Die Handlungen der Auswahlleiste</b> (V8): Vergleichen ab zwei Kästchen,
+    /// Duplizieren… für genau eine Zeile, Löschen — weich gesperrt, wenn jede Zielzeile
+    /// ein Auslieferungssatz ist (V13).
+    /// </summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(3)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(BtnDuplizierenText, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!_geschuetzt.Contains(z)) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void Warnen(string text) => Melden(text, WarnStufe.Warnung);
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich</b> (V12) über die Vergleichszeilen des Kerns
+    /// (<c>BedarfStammCtrl.Vergleichszeilen</c>: Typ, Beschreibung, Jahressumme und die
+    /// zwölf Monatswerte — der Monatsgang ist der Grund, warum zwei Profile mit derselben
+    /// Jahressumme verschieden rechnen), dazu die Herkunft. Ohne den Weg die Spalten der
+    /// Liste.
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+
+        if (Vergleichsparameter is null)
+        {
+            var zeilen = namen.Select(n => _katalog.FirstOrDefault(x => x.Schluessel == n))
+                              .Where(x => x is not null).Select(x => x!).ToList();
+            _vergleichszeilen = Katalogprofil is null
+                ? Array.Empty<Vergleichszeile>()
+                : Vergleichsbau.AusSpalten(Katalogprofil, zeilen);
+            return;
+        }
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(namen.Count);
+        foreach (string name in namen)
+        {
+            var felder = new List<Vergleichsfeld>();
+            foreach (Parameterwert p in Vergleichsparameter(name) ?? Array.Empty<Parameterwert>())
+            {
+                string titel = p.Eintrag.Einheit.Length > 0
+                    ? p.Eintrag.Anzeigetext + " [" + p.Eintrag.Einheit + "]"
+                    : p.Eintrag.Anzeigetext;
+                felder.Add(new Vergleichsfeld(p.Eintrag.Spalte, titel, p.Wert));
+            }
+            felder.Add(new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
+                _geschuetzt.Contains(name) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
     /// <summary>Die Zeilen des Katalogs (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
 
@@ -364,6 +602,12 @@
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
         // S2.5/S3.1: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
         // Projektdialog desselben Bedarfs (Frage Q2).
         _filterstand = Filterstandvorgabe
@@ -447,6 +691,14 @@
 
         _katalog = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
 
+        _geschuetzt = new HashSet<string>(_katalog.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
+                                          StringComparer.Ordinal);
+
+        // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
         if (_katalog.Count == 0) { Leeren(); return; }
         if (_katalog.All(z => z.Bezeichner != _gewaehlt)) Waehlen(_katalog[0].Bezeichner);
         else Waehlen(_gewaehlt);
@@ -462,6 +714,8 @@
     {
         _gewaehlt = bezeichner ?? "";
         _meldung = "";
+        _fokuszeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        _auslieferung = _fokuszeile?.Geschuetzt == true;
 
         _jahressumme = Jahressumme is not null ? Jahressumme(_gewaehlt) ?? "" : "";
 
@@ -477,6 +731,8 @@
 
     private void Leeren()
     {
+        _fokuszeile = null;
+        _auslieferung = false;
         _gewaehlt = "";
         _beschreibung = "";
         _typ = "";
@@ -536,45 +792,124 @@
     // "Profil löschen"
     // =====================================================================
 
+    /// <summary>
+    /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten
+    /// Zeilen, sonst auf die Fokuszeile; Auslieferungssätze bleiben stehen (V13).
+    /// </summary>
     private void BeiLoeschen()
     {
         if (Loeschen is null) return;
 
         // A-1: Das Brauchwasser prüfte NICHT und fragte bei leerer Liste
         // "Soll  wirklich gelöscht werden ?" (Befund W14-B51).
-        if (!ZeileGewaehlt)
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0)
         {
             Melden(MeldungKeineWahl, WarnStufe.Hinweis);
             return;
         }
 
+        var loeschbar = ziele.Where(z => !_geschuetzt.Contains(z)).ToList();
+        var bleiben = ziele.Where(z => _geschuetzt.Contains(z)).ToList();
+        if (loeschbar.Count == 0) { Warnen(Resource.ADM_AW_LOESCHEN_GESPERRT); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = bleiben.Count;
+
         // A-2: EIN Satz mit Platzhalter statt dreier Schreibweisen (Befund W14-B64).
-        _loeschfrageText = string.Format(VorlageLoeschfrage, _gewaehlt);
+        string frage = loeschbar.Count == 1
+            ? string.Format(VorlageLoeschfrage, loeschbar[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            loeschbar.Count, string.Join(", ", loeschbar));
+        if (bleiben.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", bleiben));
+        _loeschfrageText = frage;
         _loeschfrage = true;
     }
 
+    /// <summary>
+    /// Nach dem „Ja": je Zeile ein Schritt. A-3: Ein Fehlschlag ist eine Meldung IM
+    /// Dialog — der Vorläufer ließ den Stammcontroller die ReadOnly-Sperre als modalen
+    /// Kasten melden (Befund W14-B59). Gelungenes nennt die Statuszeile (V11).
+    /// </summary>
     private void LoeschenBeantwortet(bool? antwort)
     {
         _loeschfrage = false;
         if (antwort != true || Loeschen is null) return;
 
-        string name = _gewaehlt;
-        BedarfLoeschAusgang ausgang = Loeschen(name);
-
-        if (ausgang == BedarfLoeschAusgang.Geloescht)
+        int geloescht = 0;
+        string? fehler = null;
+        foreach (string name in _loeschziele)
         {
-            KatalogLaden();
-            Melden(string.Format(MeldungGeloescht, name), WarnStufe.Erfolg);
+            BedarfLoeschAusgang ausgang = Loeschen(name);
+            if (ausgang == BedarfLoeschAusgang.Geloescht) { geloescht++; continue; }
+            fehler ??= ausgang == BedarfLoeschAusgang.Schreibgeschuetzt
+                ? MeldungSchreibgeschuetzt : MeldungLoeschfehler;
+        }
+
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        string einzeln = _loeschziele.Count == 1 ? _loeschziele[0] : "";
+        _loeschziele = new List<string>();
+
+        if (geloescht > 0) KatalogLaden();
+        if (fehler is not null) Warnen(fehler);
+
+        if (geloescht == 0) return;
+        _status = ziele == 1
+            ? string.Format(MeldungGeloescht, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
+    }
+
+    // =====================================================================
+    // „Duplizieren…" (Stufe 3; Entscheid AD-Q11)
+    // =====================================================================
+
+    /// <summary>
+    /// „Duplizieren…": Namensabfrage, vorbelegt mit „Name (Kopie)", dann der eigene Satz
+    /// mit Typ, Beschreibung und Monatswerten des gewählten.
+    /// </summary>
+    private void BeiDuplizieren()
+    {
+        if (Duplizieren is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+
+        _duplizierQuelle = ziele[0];
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_duplizierQuelle, NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name)
+        => _katalog.Any(z => z.Bezeichner == name) || Exists?.Invoke(name) == true;
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _duplizierQuelle);
+        if (zeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = Duplizieren(zeile.Id, name);
+        if (!ergebnis.Ok)
+        {
+            Warnen(ergebnis.Meldung);
             return;
         }
 
-        // A-3: Der Fehlschlag ist eine Meldung IM Dialog. Der Vorläufer liess den
-        // Stammcontroller die ReadOnly-Sperre selbst melden - ein modaler Kasten -,
-        // und die Prozesswaerme faerbte jede Ausnahme als "Fehler beim Löschvorgang!"
-        // ein (Befund W14-B59, fünf MessageBox in einem Handler).
-        Melden(ausgang == BedarfLoeschAusgang.Schreibgeschuetzt
-                   ? MeldungSchreibgeschuetzt : MeldungLoeschfehler,
-               WarnStufe.Warnung);
+        // Die Kopie ist gewaehlt, die Kaestchen fallen: Die naechste Handlung gilt ihr.
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        _gewaehlt = ergebnis.Name;
+        KatalogLaden();
+        _status = string.Format(MeldungDupliziert, _duplizierQuelle, ergebnis.Name);
     }
 
     // =====================================================================
@@ -608,8 +943,15 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_loeschfrage || _namensfrage || _typProfilOffen
+        if (_loeschfrage || _namensfrage || _typProfilOffen || _duplizierfrage
             || _typStammGaben is not null || _ergebnisGaben is not null) return Task.CompletedTask;
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return Beenden();
     }
 }

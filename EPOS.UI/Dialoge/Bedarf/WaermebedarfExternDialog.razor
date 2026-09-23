@@ -167,6 +167,13 @@
                                  Aktiv="@(_gewaehlt is not null)" />
                 </KindInhalt>
             </Formularraster>
+            @* Stufe KU1 (Kuehlkonzept 4.3 #6, K3): Ein Lastgang im Kanal Kuehlung ist KAELTE -
+               er geht nicht in einen Waermekanal, und er wirkt nur mit der Projekteinstellung
+               „Kuehlung rechnen". Das sagt die Zeile unter der Wahl, nicht erst der Lauf. *@
+            @if (IstKuehlkanal)
+            {
+                <Herleitungszeile Text="@HinweisKanalKuehlung" />
+            }
         </Links>
 
         <Rechts>
@@ -495,13 +502,25 @@
     [Parameter] public string TextKopieFehler { get; set; } = Resource.STROMGL_MSG_KOPIE_FEHLER;
 
     /// <summary>
-    /// Die drei Kanaleinträge: Steuerwert und Anzeigetext, in dieser Reihenfolge
-    /// (<c>KanalControlsAufbauen</c>:87-104).
+    /// Die Kanaleinträge: Steuerwert und Anzeigetext, in dieser Reihenfolge
+    /// (<c>KanalControlsAufbauen</c>:87-104) — die drei Wärmekanäle und, seit der Stufe KU1,
+    /// der Kanal „Kühlung" (Kältebedarf ohne Gebäudemodell, K3).
     /// </summary>
     [Parameter]
     public IReadOnlyList<(string Wert, string Text)> Kanaele { get; set; }
         = new[] { ("HEIZUNG", "Heizung"), ("BRAUCHWASSER", "Brauchwasser"),
-                  ("PROZESS", "Prozesswärme") };
+                  ("PROZESS", "Prozesswärme"), ("KUEHLUNG", "Kühlung") };
+
+    /// <summary>
+    /// Die Zeile unter der Kanalwahl, wenn der Kanal „Kühlung" gewählt ist
+    /// (<c>WBX_HRL_KANAL_KUEHLUNG</c>).
+    /// </summary>
+    [Parameter] public string HinweisKanalKuehlung { get; set; } = Resource.WBX_HRL_KANAL_KUEHLUNG;
+
+    /// <summary>Steht die markierte Zuordnung auf dem Kanal „Kühlung"? Prüfhilfe für die Tests.</summary>
+    public bool IstKuehlkanal
+        => _gewaehlt is not null
+           && string.Equals(_gewaehlt.Kanal, DbWerte.KANAL_KUEHLUNG, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Waermebedarf.btn_Help";

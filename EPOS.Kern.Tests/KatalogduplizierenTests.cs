@@ -37,6 +37,10 @@ namespace EPOS.Kern.Tests
             WechselrichterStammCtrl.TABLE => WechselrichterStammCtrl.Duplizieren(id, name),
             StromspeicherStammCtrl.TABLE => StromspeicherStammCtrl.Duplizieren(id, name),
             WPStammCtrl.TABLE => WPStammCtrl.Duplizieren(id, name),
+            // Stufe 3: die drei Bedarfskataloge (zurueckgestellt aus Stufe 2).
+            BrauchwasserStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Brauchwasser, id, name),
+            ProzesswaermeStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Prozesswaerme, id, name),
+            StromverbraucherStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Stromverbraucher, id, name),
             _ => throw new ArgumentOutOfRangeException(nameof(tabelle))
         };
 
@@ -78,6 +82,9 @@ namespace EPOS.Kern.Tests
         [InlineData(WechselrichterStammCtrl.TABLE)]
         [InlineData(StromspeicherStammCtrl.TABLE)]
         [InlineData(WPStammCtrl.TABLE)]
+        [InlineData(BrauchwasserStammCtrl.TABLE)]
+        [InlineData(ProzesswaermeStammCtrl.TABLE)]
+        [InlineData(StromverbraucherStammCtrl.TABLE)]
         public void Duplizieren_legt_einen_eigenen_Satz_mit_allen_Spalten_an(string tabelle)
         {
             using (var db = new TestDatenbank())

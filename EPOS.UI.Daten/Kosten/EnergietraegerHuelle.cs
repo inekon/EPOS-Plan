@@ -861,9 +861,18 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = projekt.SO2 ?? _gewaehlt.SO2;
                 stand.AltNOx = projekt.NOx ?? _gewaehlt.NOx;
 
-                int idUmrechnung = projekt.IdUmrechnung ?? -1;
-                gemerkteBasis = idUmrechnung > 0
-                    ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
+                // ETAPPE E7c (Schritt F, Schemaschritt 112, Mockup U32): Die Preisbasis
+                // ist ein EIGENER Kartenzustand und kommt aus ihrer Spalte - nicht mehr
+                // aus der Regelkennung ID_Umrechnung, die ohne Regel nach kWh auf -1
+                // fiel und die Wahl „kWh" beim naechsten Oeffnen still verlor. Leer heisst
+                // Abrechnungseinheit (die Vorgabe einer neu zugeordneten Zeile); fehlt
+                // die Spalte (Datenbank vor 112), sagt es die Herleitungszeile.
+                gemerkteBasis = string.IsNullOrWhiteSpace(projekt.Preisbasis)
+                    ? null : projekt.Preisbasis.Trim();
+                if (projekt.PreisbasisSpalteFehlt)
+                    stand.PreisbasisHerleitung = T("ETV_PREISBASIS_OHNE_SPALTE",
+                        "Die gewählte Preisbasis kann diese Datenbank noch nicht speichern " +
+                        "(Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.");
 
                 // Q11: die zweistufige Leistungspreis-Staffel (Schemaschritt 104) —
                 // leer bleibt leer, sie hat keinen Katalogwert.
@@ -1544,7 +1553,10 @@ namespace WindowsFormsApplication1
                 SO2 = _stand.AltSO2,
                 NOx = _stand.AltNOx,
                 IdUmrechnung = EnergietraegerPreisCtrl.UmrechnungsId(AktuelleUmrechnung()),
-                Basiseinheit = _stand.Basiseinheit
+                Basiseinheit = _stand.Basiseinheit,
+                // ETAPPE E7c (Schritt F): der Kartenzustand als Einheitentext — auch
+                // dann, wenn der Brennstoff keine Regel nach kWh fuehrt (U32).
+                Preisbasis = _projektId > 0 ? AktuelleEinheit() : null
             };
 
             if (_projektId <= 0)

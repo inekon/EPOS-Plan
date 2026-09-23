@@ -28,6 +28,30 @@ namespace WindowsFormsApplication1.Referenzlauf
         };
 
         /// <summary>
+        /// Die neun Ergebnisspalten des Kuehlkanals (Schemaschritt 110, KU-S4; Kuehlkonzept
+        /// 7.4) - sie gehen erst in <c>aggregate.csv</c>, wenn ein Lauf sie ERHEBT.
+        ///
+        /// <para><b>Warum.</b> Der Export liest die Ergebniszeilen mit <c>SELECT *</c>; eine
+        /// neue Spalte verlaengerte die Schluesselliste jedes Projekts, und der Vergleich gegen
+        /// die eingefrorene Basis meldete sie als „Eintrag nur im Vergleichslauf" - die CI
+        /// vergleicht ohne <c>--ohne</c>. Rechnet ein Projekt keine Kaelte (Projektschalter
+        /// <c>Kuehlbetrieb</c> aus - jedes Referenzprojekt), sind die Spalten NULL, und NULL
+        /// heisst hier „nicht erhoben", nicht „0": Eine solche Zelle traegt keine Aussage, die
+        /// der Vergleich pruefen koennte. Rechnet es Kaelte, schreibt der Kanal sie, und sie
+        /// erscheinen von selbst - fuer ein Referenzprojekt mit dem Einfrierschritt, der dann
+        /// faellig ist (Kuehlkonzept 10.4, 10.5). Alle uebrigen Spalten gehen unveraendert
+        /// mit, auch leer.</para>
+        /// </summary>
+        private static readonly HashSet<string> SpaltenNurMitWert = KuehlspaltenDesExports();
+
+        private static HashSet<string> KuehlspaltenDesExports()
+        {
+            var namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten) namen.Add(s.Name);
+            return namen;
+        }
+
+        /// <summary>
         /// Rechnet das Projekt und schreibt alle CSVs nach <paramref name="zielOrdner"/>.
         /// Rueckgabe: Anzahl geschriebener Dateien, 0 bei Fehler.
         /// </summary>
@@ -62,6 +86,20 @@ namespace WindowsFormsApplication1.Referenzlauf
             dateien += Vektor(zielOrdner, "waermebedarf_extern.csv", wb.Waermebedarf_Extern, summen);
             dateien += Vektor(zielOrdner, "waermebedarf_dauerlinie.csv", wb.Dauerlinie, summen);
             dateien += Vektor(zielOrdner, "stundentemperatur.csv", wb.Stundentemperatur, summen);
+
+            // --- Kuehlkanal (Stufe KU1; Kuehlkonzept 4.7, 9.2; K17) -------------------------
+            // Die Kanalreihe in kWh, Name nach dem Muster der Kanaldateien - aber NUR, wenn der
+            // Lauf Kaelte ERHOBEN hat und einen Kaeltebedarf > 0 fuehrt, nicht „mit Nullen
+            // gefuellt" (Muster: der Erdreichblock). Jedes Projekt ohne Kuehlung - alle
+            // Referenzprojekte - bekommt damit keine neue Datei und keinen neuen Summenschluessel;
+            // die Basis bleibt byte-gleich. Das Format bleibt „Index;Wert" wie jede Vektordatei;
+            // die Grenze der Zahl (K5) reist im Protokoll des Laufs mit.
+            // Was geschrieben wird, entscheidet der Kern (KaelteErgebnisexport).
+            foreach (var reihe in KaelteErgebnisexport.Reihen(runner.simulation_Kaeltebedarf))
+            {
+                dateien += Vektor(zielOrdner, reihe.Key, reihe.Value, summen);
+                log.Zeile("Projekt " + idProjekt + ": " + reihe.Key + " - " + KaelteErgebnisexport.Grenze);
+            }
 
             // --- Gebaeudesimulation VDI 6007 (Stufe G1 + G2, Umsetzungskonzept 1.8) --------
             // Je Gebaeude des VDI-Wegs drei Reihen: raumtemperatur_<n>.csv und
@@ -551,6 +589,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             foreach (DataColumn c in dt.Columns)
             {
                 if (FluechtigeSpalten.Contains(c.ColumnName)) continue;
+                if (zeile[c] == DBNull.Value && SpaltenNurMitWert.Contains(c.ColumnName)) continue;
                 werte.Add(Neu(praefix + "." + c.ColumnName, DbWert(zeile[c])));
             }
         }

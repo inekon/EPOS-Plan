@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 23.09.2026, nach den Entscheiden E16–E29 und der Prüfung vom 17.09.2026.**
+**Stand 23.09.2026, nach den Entscheiden E16–E31 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -12,19 +12,21 @@ weiterhin im Konzept-Nachtrag und in der Statusdatei**: der ausführliche Entsch
 N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
-Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026) entschiedenen Punkte
-stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
+Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026) und die mit
+**E31** (23.09.2026) entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren
+Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
 - **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 20 Punkte, die
-  noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 15 Punkte, die
+  noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
+  auch vor KU1 keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
-  immer im selben Aufbau; die mit E27 oder E28 entschiedenen tragen unter der Überschrift den Vermerk
-  „**Entschieden: E27 (22.09.2026, Konzept N1.32)**" bzw. „**Entschieden: E28 (22.09.2026, Konzept
-  N1.33)**"; **Kapitel 7** hält
+  immer im selben Aufbau; die mit E27, E28 oder E31 entschiedenen tragen unter der Überschrift den
+  Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026, Konzept
+  N1.33)**" bzw. „**Entschieden: E31 (23.09.2026, Konzept N1.36)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
@@ -36,9 +38,11 @@ stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **20 offene Punkte** (Stand E28, 22.09.2026): 3 im Umsetzungskonzept
-(U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 9 im Kühlkonzept (K4–K9, K12,
-K21, K23); Konzept, Datenaustauschkonzept und Softwarearchitektur haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **15 offene Punkte** (Stand E31, 23.09.2026): 3 im Umsetzungskonzept
+(U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 4 im Kühlkonzept (K8, K9, K21,
+K23); Konzept, Datenaustauschkonzept und Softwarearchitektur haben keinen offenen Punkt mehr.
+**E31** (23.09.2026) hat die fünf vor KU1 fälligen Kühlpunkte **K4, K5, K6, K7 und K12** nach
+Empfehlung entschieden; vor KU1 ist damit kein Anwenderentscheid mehr offen.
 **E27** hat 44 der bisher 66 Punkte entschieden — 3 im Konzept (Q24, Q25, Q26), 9 im
 Umsetzungskonzept (U1, U3, U5–U8, U10, U12, U17), 4 im Mehrzonenkonzept (M2, M9, M10, M14), 8 im
 Datenaustauschkonzept (D1, D2, D4, D5, D6, D11, D16, D17), 15 in der Softwarearchitektur (A1–A6,
@@ -112,10 +116,12 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 20 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 15 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
-ist damit kein Anwenderentscheid mehr offen. Nach Fälligkeit: **G4** U13, U14, U15; **G6b** M3,
-M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11; **KU1** K4, K5, K6, K7, K12; **KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
+ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
+(23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. Nach
+Fälligkeit: **G4** U13, U14, U15; **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11;
+**KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -1465,8 +1471,9 @@ Kühlkonzept selbst vergibt K24 in 12.2 für die Festlegung der Symmetrie (E21),
 dieses Registers steht.
 
 Mit **E27** (22.09.2026, N1.32) sind **K10, K11, K19, K22 und K24** entschieden — **K10
-abweichend von der Empfehlung** —, und die Festlegung **K2** (Kapitel 0 und 8.2) ist bestätigt;
-offen bleiben K4–K9, K12, K21 und K23.
+abweichend von der Empfehlung** —, und die Festlegung **K2** (Kapitel 0 und 8.2) ist bestätigt.
+Mit **E31** (23.09.2026, N1.36) sind **K4, K5, K6, K7 und K12** nach Empfehlung entschieden;
+offen bleiben K8, K9, K21 und K23.
 
 ### K1 — vierter Kanal oder eigene Kältestruktur
 
@@ -1476,6 +1483,8 @@ gebaut (Fassade `SimulationKaeltebedarf`, Kanal `KUEHLUNG`, Kennzahlen, Bedarfsd
 Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei Abschnitt 1; hier gekürzt.
 
 ### K4 — Stellung der Kühlung in der Knappheitsreihenfolge
+
+**Entschieden: E31 (23.09.2026, Konzept N1.36)** — nach Empfehlung (a): Die Kühlung steht zuletzt in der Knappheitsreihenfolge, und ihr Rang wird in der Oberfläche nicht zur Bearbeitung angeboten.
 
 - **Frage:** Wo steht die Kühlung in der Reihenfolge, nach der bei Knappheit gedeckt wird?
 - **Hintergrund:** Die Kälteseite hat eigene Erzeuger und eine eigene Deckungswelt; ein Rang in der
@@ -1493,6 +1502,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 - **Quelle:** [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.5 und 12.1 (K4).
 
 ### K5 — bleibt Feuchte ausgeschlossen?
+
+**Entschieden: E31 (23.09.2026, Konzept N1.36)** — nach Empfehlung (a): Die Feuchte bleibt ausgeschlossen, gerechnet wird sensible Kälte ohne Entfeuchtung, und die Grenze steht an jeder Kältezahl — Dialog, Bericht, Wiki und Export.
 
 - **Frage:** Bleibt die Feuchte ausgeschlossen — also **sensible Kälte ohne Entfeuchtung**?
 - **Hintergrund:** Entfeuchtung ist ein eigener Rechenweg mit eigener Datenlage. Ohne sie ist der
@@ -1512,6 +1523,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 
 ### K6 — Zonen, die gleichzeitig heizen und kühlen
 
+**Entschieden: E31 (23.09.2026, Konzept N1.36)** — nach Empfehlung (a): nicht saldieren; Heiz- und Kühlkanal tragen je ihren Betrag, und eine Kennzahl weist den Fall aus.
+
 - **Frage:** Wie werden mehrere Zonen auf **einen** Kanalwert geführt, wenn Zonen in derselben
   Stunde heizen und kühlen?
 - **Hintergrund:** Eine Saldierung („Heizen minus Kühlen") **erfindet eine Wärmerückgewinnung**,
@@ -1529,6 +1542,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 - **Quelle:** [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5 und 12.1 (K6).
 
 ### K7 — Kältespeicher ja oder nein?
+
+**Entschieden: E31 (23.09.2026, Konzept N1.36)** — nach Empfehlung (a): Der Kältespeicher wird nach KU3 vertagt, gemeinsam mit der Kältemaschine; bis dahin gibt es keinen Persistenzwert ohne Rechenweg (kein `VERWENDUNG_KAELTE`, keine Eingabe eines Kältespeichers). Die Ergebnisspalte `Entladung_Kuehlung` aus `KU-S4` bleibt leer, bis ein Kältespeicher rechnet.
 
 - **Frage:** Bekommt die Kälteseite einen **Kältespeicher**?
 - **Hintergrund:** Ein Speicher ohne Rechenweg wäre ein Persistenzwert, der nichts tut — genau das,
@@ -1624,6 +1639,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 - **Quelle:** [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1 und 12.1 (K11).
 
 ### K12 — gilt Kühlung auf iOS?
+
+**Entschieden: E31 (23.09.2026, Konzept N1.36)** — nach Empfehlung (a): Die Kühlung gilt auch auf iOS; einen eigenen iOS-Lauf gibt es für KU1 und KU2 nicht, der Nachweis ist der Kern-Lauf.
 
 - **Frage:** Gilt die Kühlung auch auf der iOS-Schale?
 - **Hintergrund:** Der Rechenkern ist plattformfrei, und es entsteht **kein neuer
@@ -1948,9 +1965,10 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
-entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026) entschiedenen
-Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept N1.32)" bzw. „Entschieden: E28
-(22.09.2026, Konzept N1.33)" weiter in ihren Kapiteln, weil ihre
+entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026) und die mit
+**E31** (23.09.2026) entschiedenen Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept
+N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)" bzw. „Entschieden: E31 (23.09.2026,
+Konzept N1.36)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
 (U6 — mit E29 erledigt —, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer

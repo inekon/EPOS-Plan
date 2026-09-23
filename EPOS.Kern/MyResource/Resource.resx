@@ -606,9 +606,6 @@
   <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
     <value>Format Fehler in Zeile {0}: Die Zeile endet auf „{1}“. Werte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';' am Zeilenende.</value>
   </data>
-  <data name="KBROW_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Bearbeiten...</value>
-  </data>
   <data name="KBROW_BTN_LOESCHEN" xml:space="preserve">
     <value>Löschen</value>
   </data>
@@ -821,9 +818,6 @@
   </data>
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
-  </data>
-  <data name="KFLT_SP_AUSLIEFERUNG" xml:space="preserve">
-    <value>Auslieferung</value>
   </data>
   <data name="KFLT_SP_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung</value>
@@ -6720,6 +6714,21 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
     <value>Kontingent erschöpft ab Jahr</value>
   </data>
+  <data name="WIRT_KWKG_SP_FALL" xml:space="preserve">
+    <value>Fall § 2 Nr. 16</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SIGMA" xml:space="preserve">
+    <value>Stromkennzahl σ</value>
+  </data>
+  <data name="WIRT_KWKG_SP_NUTZWAERME" xml:space="preserve">
+    <value>Nutzwärme [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KWK_STROM" xml:space="preserve">
+    <value>KWK-Strom [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KUERZUNG" xml:space="preserve">
+    <value>Kürzung [MWh/a]</value>
+  </data>
   <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
     <value>Anlage</value>
   </data>
@@ -9333,6 +9342,12 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Prozesswärme</value>
   </data>
+  <data name="KANAL_KUEHLUNG_ANZEIGE" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="KAELTE_GRENZE_FEUCHTE" xml:space="preserve">
+    <value>Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.</value>
+  </data>
   <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
     <value>Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — was mit diesem Zweck geladen wird, entlädt der Speicher nie.</value>
   </data>
@@ -9565,7 +9580,28 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.</value>
   </data>
   <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
-    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}.</value>
+    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal; {7} darf fehlen und steht immer zuletzt. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6} -&gt; {8}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Kältebedarf ohne Kälteerzeuger: {0} MWh/a, Spitze {1} kW. Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BESTANDSWEG" xml:space="preserve">
+    <value>Gebäude „{0}": Tagesbilanz (Bestandsweg) liefert keine Kühllast — Kältebedarf 0. Die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Gebäude „{0}": Die Kühlung ist eingeschaltet, aber ohne Kühlsollwert — ein leerer Kühlsollwert heißt „Kühlung aus"; das Gebäude trägt keinen Kältebedarf.</value>
+  </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus). {0} Gebäude mit eingeschalteter Kühlung und {1} Lastgänge mit dem Kanal Kühlung bleiben ohne Wirkung.</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}") — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BEDARFSPROBE" xml:space="preserve">
+    <value>Bedarfsprobe Kälte: Der Kühlkanal weicht in {0} Stunden von den gebuchten Kältebeiträgen ab (größte Abweichung {1} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
+    <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
@@ -10025,8 +10061,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe.</value>
   </data>
-  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
-    <value>Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. Gerechnet wird unverändert je Anlage nach ihrer Wahl.</value>
+  <data name="KOH_FALL5_MISCHLAGE_SPERRE" xml:space="preserve">
+    <value>Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. Diese Mischlage ist gesperrt — der § 54-Betrag wird verworfen (0 €), gerechnet wird allein die Entlastung nach § 53 / § 53a Abs. 5. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a entlastet wurden; wer beide Entlastungen beantragen will, wählt für jede Anlage dieselbe Welt.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_MISCHLAGE" xml:space="preserve">
+    <value>§ 54 EnergieStG gesperrt: Im Projekt stehen § 53 / § 53a Abs. 5 ({0}) und § 54 ({1}) nebeneinander. Diese Mischlage ist nicht zulässig — der § 54-Betrag wird verworfen (0 €), die Entlastung nach § 53 / § 53a bleibt.</value>
   </data>
   <data name="KOH_NORM_53" xml:space="preserve">
     <value>§ 53</value>
@@ -13298,7 +13337,7 @@ Alle Eingaben überprüfen!</value>
     <value>95-%-Wert der Stundenlast:</value>
   </data>
   <data name="GEBB_LBL_KUEHLBEDARF" xml:space="preserve">
-    <value>Kühlbedarf (informativ):</value>
+    <value>Kühlbedarf:</value>
   </data>
   <data name="GEBB_LBL_KUEHLSTUNDEN" xml:space="preserve">
     <value>Stunden mit Kühlbedarf:</value>
@@ -13792,9 +13831,6 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Importdatum</value>
-  </data>
-  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>Schreibschutz</value>
   </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Daten einlesen</value>
@@ -20889,6 +20925,18 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>„{0}“ ist keine Farbe in der Schreibweise #RRGGBB.</value>
   </data>
+  <data name="ADM_SET_GRUPPE_NEUE_PROJEKTE" xml:space="preserve">
+    <value>Neue Projekte</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Neue Projekte mit Kühlung anlegen</value>
+  </data>
+  <data name="ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage.</value>
+  </data>
+  <data name="ADM_SET_MSG_KUEHLUNG_FEHLER" xml:space="preserve">
+    <value>Die Einstellung „Neue Projekte mit Kühlung anlegen“ konnte nicht gespeichert werden. Fehler: {0}</value>
+  </data>
   <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
     <value>Verwaltung Heizkessel</value>
   </data>
@@ -22301,6 +22349,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
     <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
+  </data>
+  <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
+    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom.</value>
+  </data>
+  <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
+    <value>Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat.</value>
   </data>
   <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
     <value>Tarifstruktur</value>
@@ -24174,6 +24228,138 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
+  <data name="BHW_UEB_ART" xml:space="preserve">
+    <value>Anlagenart (§ 8 KWKG)</value>
+  </data>
+  <data name="BHW_UEB_ART_HINWEIS" xml:space="preserve">
+    <value>Der Anteil an den Neuherstellungskosten ist das Feld im Formular; er zählt nur bei modernisiert und nachgerüstet.</value>
+  </data>
+  <data name="BHW_UEB_EIGENFALL" xml:space="preserve">
+    <value>Eigenstrom nach § 6 Abs. 3</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
+  <data name="BHW_UEB_VBH" xml:space="preserve">
+    <value>{0} Vbh</value>
+  </data>
+  <data name="BHW_UEB_CT_KWH" xml:space="preserve">
+    <value>{0} ct/kWh</value>
+  </data>
+  <data name="BHW_UEB_Z_EINSP" xml:space="preserve">
+    <value>Satz Einspeisung</value>
+  </data>
+  <data name="BHW_UEB_Z_EIGEN" xml:space="preserve">
+    <value>Satz Eigenstrom</value>
+  </data>
+  <data name="BHW_UEB_Z_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent</value>
+  </data>
+  <data name="BHW_UEB_Z_DECKEL" xml:space="preserve">
+    <value>Jahresdeckel</value>
+  </data>
+  <data name="BHW_UEB_STAFFEL" xml:space="preserve">
+    <value>Staffel</value>
+  </data>
+  <data name="BHW_UEB_GILT_STAFFEL" xml:space="preserve">
+    <value>Staffel — {0} h/a im Jahr {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_OHNE" xml:space="preserve">
+    <value>keiner — ohne Vorschlag kein Zuschlag</value>
+  </data>
+  <data name="BHW_UEB_INFO_SAETZE" xml:space="preserve">
+    <value>Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars geschrieben; Kontingent und Deckel bleiben dann leer, der Lauf leitet sie selbst ab (§ 8 Abs. 1 bis 3, Staffel des § 8 Abs. 4). Ein eigener Wert gilt dauerhaft, auch wenn der Katalog später einen anderen Vorschlag liefert. „Vorschlag übernehmen“ leert das Feld: der Weg zurück. Im Formular bleibt 0 „kein Zuschlag“.</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_JAHR1" xml:space="preserve">
+    <value>Wirkung Jahr 1 ({0})</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG" xml:space="preserve">
+    <value>vergütet {0} von {1} Vbh (Deckel {2} h/a) = {3} → {4} €</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG_FORMEL" xml:space="preserve">
+    <value>{0} MWh × {1} ct × {2} + {3} MWh × {4} ct × {2} = {5} + {6} € — Mengen aus dem gebuchten Lauf</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_OHNE_LAUF" xml:space="preserve">
+    <value>Ohne gebuchten Lauf keine Mengen — die Wirkung steht nach „Berechnen“ im Reiter Wirtschaftlichkeit.</value>
+  </data>
+  <data name="BHW_UEB_FUSS" xml:space="preserve">
+    <value>Übernehmen schreibt Sätze, Kontingent, Deckel, Wahl und Modus in die Felder des Formulars — gespeichert wird erst mit „Speichern“.</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_STEUERN" xml:space="preserve">
+    <value>Wahl und Herkunft…</value>
+  </data>
+  <data name="BHW_UEB_G_ENERGIEST" xml:space="preserve">
+    <value>Energiesteuer (EnergieStG)</value>
+  </data>
+  <data name="BHW_UEB_G_STROMST" xml:space="preserve">
+    <value>Stromsteuer (StromStG) — Projekt</value>
+  </data>
+  <data name="BHW_UEB_SCOPE" xml:space="preserve">
+    <value>Gilt für</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_PROJEKT" xml:space="preserve">
+    <value>Projektvorgabe für alle Anlagen</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_ANLAGE" xml:space="preserve">
+    <value>nur diese Anlage</value>
+  </data>
+  <data name="BHW_UEB_ES_WAHL" xml:space="preserve">
+    <value>Energiesteuerentlastung</value>
+  </data>
+  <data name="BHW_UEB_ES_AUFTEILUNG" xml:space="preserve">
+    <value>Brennstoff auf Strom/Wärme (nur § 53)</value>
+  </data>
+  <data name="BHW_UEB_ES_KEINE" xml:space="preserve">
+    <value>→ keine Entlastung, 0 €</value>
+  </data>
+  <data name="BHW_UEB_ES_53" xml:space="preserve">
+    <value>→ voller Steuersatz auf den Brennstoff der Stromerzeugung</value>
+  </data>
+  <data name="BHW_UEB_ES_53A" xml:space="preserve">
+    <value>→ Teilsatz für hocheffiziente KWK-Anlagen, Jahresnutzungsgrad mindestens 70 %</value>
+  </data>
+  <data name="BHW_UEB_ES_54" xml:space="preserve">
+    <value>→ Heizstoffe, nur produzierendes Gewerbe, abzüglich Sockelbetrag</value>
+  </data>
+  <data name="BHW_UEB_AUF_VOLL" xml:space="preserve">
+    <value>→ Vorgabe</value>
+  </data>
+  <data name="BHW_UEB_AUF_ENERGETISCH" xml:space="preserve">
+    <value>→ nur der elektrische Anteil des Brennstoffs — bewusste Untergrenze</value>
+  </data>
+  <data name="BHW_UEB_ES_GEBUCHT" xml:space="preserve">
+    <value>{0}: {1} × {2} {3} = {4} €</value>
+  </data>
+  <data name="BHW_UEB_ES_OHNE" xml:space="preserve">
+    <value>Der gebuchte Lauf führt für diese Anlage keine Energiesteuerentlastung.</value>
+  </data>
+  <data name="BHW_UEB_UA" xml:space="preserve">
+    <value>Unternehmensart</value>
+  </data>
+  <data name="BHW_UEB_UA_KEIN" xml:space="preserve">
+    <value>→ § 9b und § 54 entfallen</value>
+  </data>
+  <data name="BHW_UEB_UA_PROD" xml:space="preserve">
+    <value>→ § 9b-Entlastung auf den Netzbezug, § 54 möglich</value>
+  </data>
+  <data name="BHW_UEB_UA_LAND" xml:space="preserve">
+    <value>→ wie produzierendes Gewerbe</value>
+  </data>
+  <data name="BHW_UEB_BEFREIUNG" xml:space="preserve">
+    <value>Befreiung § 9 Abs. 1 Nr. 3</value>
+  </data>
+  <data name="BHW_UEB_MODUS" xml:space="preserve">
+    <value>Modus</value>
+  </data>
+  <data name="BHW_UEB_MODUS_AUSWEIS" xml:space="preserve">
+    <value>→ nur ausgewiesen, nicht im Kapitalwert</value>
+  </data>
+  <data name="BHW_UEB_MODUS_ERLOES" xml:space="preserve">
+    <value>→ Erlös im Kapitalwert (Block A), stets mit Kohärenzwarnung</value>
+  </data>
+  <data name="BHW_UEB_ST_GEBUCHT" xml:space="preserve">
+    <value>Entlastung Netzbezug (§ 9b) {0} € · Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) {1} € — {2}</value>
+  </data>
   <data name="BHW_A_KWK_FALL1" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung.</value>
   </data>
@@ -24182,6 +24368,63 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
+  </data>
+  <data name="ERK_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="ERK_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="ERK_LEER" xml:space="preserve">
+    <value>(leer — wie bisher)</value>
+  </data>
+  <data name="ERK_WIE_BISHER" xml:space="preserve">
+    <value>wie bisher</value>
+  </data>
+  <data name="ERK_HERLEITUNG" xml:space="preserve">
+    <value>Kennzeichen der Position — Ersatzbeschaffung: {0} · Restwert: {1}.</value>
+  </data>
+  <data name="ERK_LBL_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffung führen:</value>
+  </data>
+  <data name="ERK_LBL_RESTWERT" xml:space="preserve">
+    <value>Restwert ansetzen:</value>
+  </data>
+  <data name="ERK_INFO" xml:space="preserve">
+    <value>Leer rechnet wie bisher: Ersetzt wird, sobald die Nutzungsdauer vor dem Ende des Betrachtungszeitraums abläuft, und der Restwert steht linear im letzten Jahr. „nein“ schaltet das eine ohne das andere ab.</value>
+  </data>
+  <data name="ND_TAFEL_ERSATZ_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="ND_TAFEL_RESTWERT_AUS" xml:space="preserve">
+    <value>— nein (Kennzeichen der Position)</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_NAME" xml:space="preserve">
+    <value>Ersatzbeschaffung führen</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_ERL" xml:space="preserve">
+    <value>Ob die Position nach Ablauf ihrer Nutzungsdauer ersetzt wird: leer = wie bisher, ja oder nein.</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_NAME" xml:space="preserve">
+    <value>Restwert ansetzen</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
+    <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
+    <value>Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG_KURZ" xml:space="preserve">
+    <value>(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
+    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Senken: {0}</value>
@@ -24929,5 +25172,248 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
     <value>Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.</value>
+  </data>
+  <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
+    <value>{0} gewählt</value>
+  </data>
+  <data name="ADM_AW_AUFHEBEN" xml:space="preserve">
+    <value>Auswahl aufheben</value>
+  </data>
+  <data name="ADM_AW_HINWEIS" xml:space="preserve">
+    <value>Kästchen: mehrere wählen</value>
+  </data>
+  <data name="ADM_AW_LEER" xml:space="preserve">
+    <value>Keine Zeile gewählt</value>
+  </data>
+  <data name="ADM_AW_STAMMBLATT" xml:space="preserve">
+    <value>Stammblatt ›</value>
+  </data>
+  <data name="ADM_AW_BESCHRIFTUNG" xml:space="preserve">
+    <value>Auswahl</value>
+  </data>
+  <data name="ADM_AW_VERGLEICHEN_GRUND" xml:space="preserve">
+    <value>Zum Vergleichen mindestens zwei Zeilen über das Kästchen wählen.</value>
+  </data>
+  <data name="ADM_AW_DUPLIZIEREN_GRUND" xml:space="preserve">
+    <value>Duplizieren gilt für genau eine Zeile.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“.</value>
+  </data>
+  <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Sollen diese {0} Sätze gelöscht werden? {1}</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN" xml:space="preserve">
+    <value>Stehen bleiben (Auslieferungssatz): {0}</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} gelöscht</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT_BLEIBEN" xml:space="preserve">
+    <value>{0} gelöscht, {1} stehen geblieben</value>
+  </data>
+  <data name="ADM_KAESTCHEN_ZEILE" xml:space="preserve">
+    <value>{0} wählen</value>
+  </data>
+  <data name="ADM_SB_TITEL" xml:space="preserve">
+    <value>Stammblatt</value>
+  </data>
+  <data name="ADM_SB_LEER" xml:space="preserve">
+    <value>Keine Zeile gewählt.</value>
+  </data>
+  <data name="ADM_SB_LISTE" xml:space="preserve">
+    <value>‹ Liste</value>
+  </data>
+  <data name="ADM_SB_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten</value>
+  </data>
+  <data name="ADM_SB_KOSTEN" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="ADM_SB_ALLE_DATEN" xml:space="preserve">
+    <value>Alle Daten</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.</value>
+  </data>
+  <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferungssatz</value>
+  </data>
+  <data name="ADM_SB_EIGENER_SATZ" xml:space="preserve">
+    <value>eigener Satz</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT" xml:space="preserve">
+    <value>{0} Felder geändert</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_EINS" xml:space="preserve">
+    <value>1 Feld geändert</value>
+  </data>
+  <data name="ADM_VG_SAETZE" xml:space="preserve">
+    <value>{0} Sätze</value>
+  </data>
+  <data name="ADM_VG_NUR_LESEN" xml:space="preserve">
+    <value>Der Vergleich ist nur lesbar; geändert wird im Stammblatt einer Zeile.</value>
+  </data>
+  <data name="ADM_VG_ZURUECK" xml:space="preserve">
+    <value>‹ Stammblatt von {0}</value>
+  </data>
+  <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
+    <value>nur abweichende Werte</value>
+  </data>
+  <data name="ADM_VG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>Die gewählten Sätze stimmen in jedem Wert überein.</value>
+  </data>
+  <data name="ADM_VG_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ADM_SB_KENNLINIE" xml:space="preserve">
+    <value>Kennlinie</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_OFFEN" xml:space="preserve">
+    <value>Geänderte Felder – Speichern oder Verwerfen</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
+    <value>Das Wochenprofil gehört zum Typ „{0}“ und gilt für jedes Profil dieses Typs.</value>
+  </data>
+  <data name="SIMKONF_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="SIMKONF_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlung rechnen</value>
+  </data>
+  <data name="SIMKONF_HRL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Gilt für das ganze Projekt. Aus: Der Lauf rechnet keinen Kältebedarf; die Kühleingaben der Gebäude und die Lastgänge im Kanal Kühlung bleiben stehen, wirken aber nicht. Ein: Gekühlt wird jedes Gebäude, bei dem „Gebäude wird gekühlt“ gesetzt ist und das einen Kühlsollwert trägt.</value>
+  </data>
+  <data name="SIMKONF_MSG_KUEHLBETRIEB_FEHLER" xml:space="preserve">
+    <value>Die Projekteinstellung „Kühlung rechnen“ ließ sich nicht speichern.</value>
+  </data>
+  <data name="GEBK_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Gebäude wird gekühlt</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_SOLLWERT" xml:space="preserve">
+    <value>Kühlsollwert :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Kühlleistungsgrenze :</value>
+  </data>
+  <data name="GEBK_VORGABE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Vorgabe: Kühlung aus</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AN" xml:space="preserve">
+    <value>Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
+    <value>Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_BESTANDSWEG" xml:space="preserve">
+    <value>Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_BEREICH" xml:space="preserve">
+    <value>Der Kühlsollwert muss zwischen {0} und {1} °C liegen.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_HEIZUNG" xml:space="preserve">
+    <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Die Kühlleistungsgrenze muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken bleibt die Überhitzung informativ.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
+    <value>Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL" xml:space="preserve">
+    <value>Größte Kühlleistung des Stundenmodells in kW; leer = unbegrenzt.</value>
+  </data>
+  <data name="GEBB_GRP_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="GEBB_LBL_KAELTELAST_MAX" xml:space="preserve">
+    <value>max. Kältelast</value>
+  </data>
+  <data name="GEBB_LBL_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Stunden mit Heizen und Kühlen:</value>
+  </data>
+  <data name="GEBB_UNBEGRENZT" xml:space="preserve">
+    <value>unbegrenzt</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_WIRKSAM" xml:space="preserve">
+    <value>Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
+    <value>Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+  </data>
+  <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Kältelast Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_KAELTELAST" xml:space="preserve">
+    <value>Kältelast</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. Kältelast:</value>
+  </data>
+  <data name="SIMERG_LBL_STUNDEN_KUEHLBEDARF" xml:space="preserve">
+    <value>Stunden mit Kühlbedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNG_KAELTE" xml:space="preserve">
+    <value>Vollbenutzungsstunden Kälte:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_KAELTEBEDARF" xml:space="preserve">
+    <value>Gesamter Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_JE_KANAL" xml:space="preserve">
+    <value>Kältebedarf je Bedarfsart</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kein Kälteerzeuger im Projekt: Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_LEER" xml:space="preserve">
+    <value>Kein Gebäude wird gekühlt und kein Lastgang trägt den Kanal Kühlung — der Kältebedarf ist 0.</value>
+  </data>
+  <data name="SIMUEB_GRP_KAELTE" xml:space="preserve">
+    <value>Kältedeckung</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTELAST" xml:space="preserve">
+    <value>Kältelast max.</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kältebedarf ungedeckt</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_KAELTE" xml:space="preserve">
+    <value>Kältelast des Projekts als CSV exportieren (sensible Kälte ohne Entfeuchtung)</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_KAELTE" xml:space="preserve">
+    <value>Keine Kältedaten vorhanden — das Projekt rechnet keine Kälte.</value>
+  </data>
+  <data name="CHART_DATEI_KAELTEBEDARF" xml:space="preserve">
+    <value>Kaeltebedarf_Projekt_{0}.csv</value>
+  </data>
+  <data name="CHART_CSV_KAELTELAST" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
+    <value>Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt.</value>
   </data>
 </root>

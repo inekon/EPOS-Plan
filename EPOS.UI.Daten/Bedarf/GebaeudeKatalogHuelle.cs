@@ -225,6 +225,20 @@ namespace WindowsFormsApplication1
             t.ZeileRechenwegTagesbilanz = Text_("GEBK_ZEILE_RECHENWEG_TAGESBILANZ", t.ZeileRechenwegTagesbilanz);
             t.ZeileRechenwegVorgabe = Text_("GEBK_ZEILE_RECHENWEG_VORGABE", t.ZeileRechenwegVorgabe);
 
+            // Stufe KU1 (Kuehlkonzept 8.1): die Gruppe „Kuehlung".
+            t.GruppeKuehlung = Text_("GEBK_GRP_KUEHLUNG", t.GruppeKuehlung);
+            t.LabelKuehlungAktiv = Text_("GEBK_LBL_KUEHLUNG_AKTIV", t.LabelKuehlungAktiv);
+            t.LabelKuehlSollwert = Text_("GEBK_LBL_KUEHL_SOLLWERT", t.LabelKuehlSollwert);
+            t.LabelKuehlleistungMax = Text_("GEBK_LBL_KUEHLLEISTUNG_MAX", t.LabelKuehlleistungMax);
+            t.VorgabeKuehlungAus = Text_("GEBK_VORGABE_KUEHLUNG_AUS", t.VorgabeKuehlungAus);
+            t.ZeileKuehlungAn = Text_("GEBK_ZEILE_KUEHLUNG_AN", t.ZeileKuehlungAn);
+            t.ZeileKuehlungAus = Text_("GEBK_ZEILE_KUEHLUNG_AUS", t.ZeileKuehlungAus);
+            t.ZeileKuehlungProjekt = Text_("GEBK_ZEILE_KUEHLUNG_PROJEKT", t.ZeileKuehlungProjekt);
+            t.ZeileKuehlungBestandsweg = Text_("GEBK_ZEILE_KUEHLUNG_BESTANDSWEG", t.ZeileKuehlungBestandsweg);
+            t.MeldungKuehlsollwertBereich = Text_("GEBK_MSG_KUEHLSOLLWERT_BEREICH", t.MeldungKuehlsollwertBereich);
+            t.MeldungKuehlsollwertHeizung = Text_("GEBK_MSG_KUEHLSOLLWERT_HEIZUNG", t.MeldungKuehlsollwertHeizung);
+            t.MeldungKuehlleistung = Text_("GEBK_MSG_KUEHLLEISTUNG", t.MeldungKuehlleistung);
+
             t.HinweisSpeichernUnter = Text_("GEBK_HINWEIS_SPEICHERN_UNTER", t.HinweisSpeichernUnter);
 
             t.MeldungUngueltig = Text_("GEBK_MSG_UNGUELTIG", t.MeldungUngueltig);
@@ -409,7 +423,13 @@ namespace WindowsFormsApplication1
                 AussenbauteileStrahlung = m.Aussenbauteile_Strahlung,
                 LuftwechselInfiltration = m.Luftwechsel_Infiltration,
                 LuftwechselNutzer = m.Luftwechsel_Nutzer,
-                Sommerlueftung = m.Sommerlueftung
+                Sommerlueftung = m.Sommerlueftung,
+
+                // Stufe KU1 (KU-S1, Kuehlkonzept 8.1): die vier Kuehleingaben - NULL bleibt null.
+                KuehlungAktiv = m.Kuehlung_Aktiv,
+                KuehlSollwert = m.Kuehl_Sollwert,
+                KuehlleistungMax = m.Kuehlleistung_Max,
+                KuehlSollwertNacht = m.Kuehl_Sollwert_Nacht
             };
 
             d.Ferienbeginn = new[]
@@ -525,6 +545,13 @@ namespace WindowsFormsApplication1
             m.Luftwechsel_Infiltration = d.LuftwechselInfiltration;
             m.Luftwechsel_Nutzer = d.LuftwechselNutzer;
             m.Sommerlueftung = d.Sommerlueftung;
+
+            // Stufe KU1 (KU-S1): die vier Kuehleingaben, NULL-erhaltend - auch der Nachtwert,
+            // den der Dialog nicht zeigt, reist mit (sonst verloere ihn „Speichern unter").
+            m.Kuehlung_Aktiv = d.KuehlungAktiv;
+            m.Kuehl_Sollwert = d.KuehlSollwert;
+            m.Kuehlleistung_Max = d.KuehlleistungMax;
+            m.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
 
             return m;
         }

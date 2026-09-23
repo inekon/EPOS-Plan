@@ -1268,6 +1268,104 @@ namespace Testdatenbankschema
                 if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 
+            // ---- Schritt 108: KU-S1, die vier Kuehleingaben an Tab_Gebaeude(_STAMM)
+            //      (Kuehlkonzept 7.1, Stufe KU1). REIN DDL: Sicht verwerfen, acht Spalten,
+            //      Sicht Abfrage_Projektgebaeude neu - DIESELBE Quelle (GebaeudeSchema), aus
+            //      der sich SchemaMigration.Schritt_108_KuehlungGebaeude bedient.
+            //
+            //      ER STEHT NACH 101, dessen Sicht er erweitert; GebaeudeSchema.Alle oben baut
+            //      die Sicht von M3, dieser Durchgang die mit den Kuehlspalten.
+            //
+            //      ERGEBNISNEUTRAL: Die Spalten bleiben NULL (der Schalter 0), kein Rechenweg
+            //      liest sie.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 108 - Kuehlspalten der Gebaeudetabellen: " +
+                              (GebaeudeSchema.KuehlspaltenVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht108 = new List<string>();
+                int angelegt108 = GebaeudeSchema.KuehlspaltenAlle(bericht108);
+                angelegt += angelegt108;
+                foreach (string zeile in bericht108)
+                    Console.WriteLine("Schritt 108 - " + zeile + ".");
+                Console.WriteLine("Schritt 108 - vollstaendig: " + GebaeudeSchema.KuehlspaltenVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 109: KU-S2, die Projekteinstellung Kuehlbetrieb (Kuehlkonzept 7.2,
+            //      K10, E27). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_109_KuehlungProjekteinstellung bedient
+            //      (KuehlungSchema.Projekteinstellung): 0/1, Vorgabe 0 - jedes Projekt der
+            //      Testdatenbank steht danach auf "aus".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in KuehlungSchema.Projekteinstellung)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 109, trocken);
+
+            // ---- Schritt 110: KU-S4, die neun Ergebnisspalten des Kuehlkanals (Kuehlkonzept
+            //      7.4). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_110_KuehlungErgebnis bedient
+            //      (KuehlungSchema.Ergebnisspalten): nullbares REAL, ohne Nachtrag.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 110, trocken);
+
+            // ---- Schritt 111: Ersatz und Restwert je Position entkoppelt (Schritt E des
+            //      Analysepapiers, Entscheid A6 vom 20.09.2026, Mockup U39). REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_111_ErsatzRestwertKennzeichen bedient
+            //      (SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen): die nullbaren
+            //      Kennzeichen ErsatzFuehren und RestwertAnsetzen (CHECK IN (0,1)) an
+            //      Tab_ProjektWerte und Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML, alle Zeilen stehen auf NULL, und
+            //      NULL heisst "wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 111, trocken);
+
+            // ---- Schritt 112: die Preisbasis der Traegerkarte als eigener Kartenzustand
+            //      (Schritt F, Entscheid ET-D-3 Rest, Mockup U32). DDL UND DML aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_112_Preisbasis: die
+            //      nullbare Textspalte Preisbasis an energy_project_settings
+            //      (SchemaKatalog.Schritt112_Preisbasis), dann der Datenteil
+            //      (PreisbasisUebernahme): ID_Umrechnung nach kWh -> "kWh", sonst die
+            //      Abrechnungseinheit des Traegers - genau die Basis, die die Karte bis
+            //      hierher beim Oeffnen zeigte.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Spalte.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt112_Preisbasis)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 112, trocken);
+            if (!trocken)
+            {
+                PreisbasisUebernahme.Bericht bericht112 = PreisbasisUebernahme.Ausfuehren();
+                Console.WriteLine("Schritt 112 - " + bericht112.Text() + "; offen: " +
+                                  PreisbasisUebernahme.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 113: der Stammtext der fuenf Gase auf Nm3 (Schritt G,
+            //      Entscheid U-1 Weg (a), Freigabe A9 - vor dem naechsten Vorlagenbau).
+            //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_113_GaseNm3
+            //      (GaseNormkubikmeter): Einheit m3 -> Nm3 und PreisEinheit -> EUR/Nm3 an
+            //      den Brennstoffen 1, 2, 3, 14, 25, dazu jede Preiszeile ihrer Traeger,
+            //      die noch m3 fuehrt; der Brennstoff 24 (Sonstige) auf kWh und EUR/kWh
+            //      (E7c2-Q4, reiner Stammtext).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: kein Zahlenwert; kein Rechenweg liest den
+            //      Stammtext, die Einfrierliste nennt am Brennstoffstamm nur CO2/SO2/NOx/Staub.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 113 - offen vorher: " + GaseNormkubikmeter.Offen() + ".");
+            if (!trocken)
+            {
+                GaseNormkubikmeter.Bericht bericht113 = GaseNormkubikmeter.Ausfuehren();
+                Console.WriteLine("Schritt 113 - " + bericht113.Text() + "; offen: " +
+                                  GaseNormkubikmeter.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -451,11 +451,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Sprachneutrale Kanalnamen in der Reihenfolge von <c>Kanal.HEIZUNG</c>,
-        /// <c>BRAUCHWASSER</c>, <c>PROZESS</c> — die eine Stelle, an der aus dem
-        /// Kanalindex ein Schlüsselbestandteil wird.
+        /// <c>BRAUCHWASSER</c>, <c>PROZESS</c>, <c>KUEHLUNG</c> — die eine Stelle, an der
+        /// aus dem Kanalindex ein Schlüsselbestandteil wird. Der vierte Eintrag gehört zum
+        /// Kühlkanal (Kühlkonzept 4.3 #34): Ohne ihn lieferten beide Schlüsselmethoden für
+        /// ihn die leere Zeichenkette, und seine Reihe fehlte still in Bericht und Diagramm.
+        /// Die Länge des Feldes ist <c>Kanal.ANZAHL</c> (Wächter
+        /// <c>KuehlkanalTests</c>).
         /// </summary>
         public static readonly string[] KANAL_SCHLUESSEL =
-        { "HEIZUNG", "BRAUCHWASSER", "PROZESS" };
+        { "HEIZUNG", "BRAUCHWASSER", "PROZESS", "KUEHLUNG" };
 
         /// <summary>Schlüssel der Bedarfsreihe eines Kanals; "" außerhalb des Bereichs.</summary>
         public static string BedarfSchluessel(int kanal)

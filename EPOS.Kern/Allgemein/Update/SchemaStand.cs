@@ -388,11 +388,44 @@ namespace WindowsFormsApplication1
         /// <see cref="ErgebnisGebaeudeSchema"/> steht. <b>Reines DDL</b> — der Lauf schreibt
         /// sie, kein Rechenweg liest sie, und der Referenzlauf exportiert sie nicht;
         /// <b>der Referenzlauf bleibt byte-gleich</b>.
+        /// Mit den DREI SCHEMASCHRITTEN DER KÜHLUNG, Stufe KU1 (Kühlkonzept Kapitel 7,
+        /// Entscheide E27 und E31 vom 22./23.09.2026) steht das Ziel auf <b>110</b>:
+        /// Schritt 108 (KU-S1) legt die vier Kühleingaben an <c>Tab_Gebaeude</c> und
+        /// <c>Tab_Gebaeude_STAMM</c> und baut die Sicht <c>Abfrage_Projektgebaeude</c> ein
+        /// zweites Mal neu (<see cref="GebaeudeSchema.Kuehlspalten"/>), Schritt 109 (KU-S2)
+        /// die Projekteinstellung <c>Tab_Einstellungen.Kuehlbetrieb</c> (0/1, Vorgabe 0),
+        /// Schritt 110 (KU-S4) die neun Ergebnisspalten des Kühlkanals — beide bei
+        /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Die Eingaben
+        /// bleiben NULL (der Schalter 0), jedes vorhandene Projekt rechnet ohne Kühlung, die
+        /// Ergebnisspalten bleiben NULL, und kein Rechenweg liest sie; <b>der Referenzlauf
+        /// bleibt byte-gleich</b>.
+        /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 111, Schritt E
+        /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>111</b>:
+        /// <c>Tab_ProjektWerte</c> und <c>Tab_KostenVorlagePosition</c> bekommen die
+        /// nullbaren Kennzeichen <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c>
+        /// (<see cref="SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen"/>). <b>Reines
+        /// DDL, ergebnisneutral:</b> NULL heißt „wie bisher"; der Referenzlauf bleibt
+        /// byte-gleich.
+        /// Mit der PREISBASIS ALS EIGENEM KARTENZUSTAND (Schritt 112, Schritt F,
+        /// Entscheid ET‑D‑3 Rest, Mockup U32) steht das Ziel auf <b>112</b>:
+        /// <c>energy_project_settings</c> bekommt die nullbare Textspalte
+        /// <c>Preisbasis</c> (<see cref="SchemaKatalog.Schritt112_Preisbasis"/>), und der
+        /// Datenteil (<see cref="PreisbasisUebernahme"/>) setzt sie einmalig aus
+        /// <c>ID_Umrechnung</c> — Regel nach kWh → „kWh", sonst die Abrechnungseinheit,
+        /// also genau die Basis, die die Karte bis dahin beim Öffnen zeigte.
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte.
+        /// Mit dem STAMMTEXT DER FÜNF GASE AUF Nm³ (Schritt 113, Schritt G, Entscheid
+        /// U‑1 Weg (a), Freigabe A9) steht das Ziel auf <b>113</b>: <c>Einheit</c> und
+        /// <c>PreisEinheit</c> der Brennstoffe 1, 2, 3, 14 und 25 in
+        /// <c>Tab_Brennstoff_Stamm</c> und jede Preiszeile ihrer Träger, die noch „m³"
+        /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
+        /// kein Zahlenwert, kein Rechenweg liest den Stammtext; dazu der Brennstoff 24
+        /// „Sonstige" auf kWh (Entscheid E7c2‑Q4).
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 107;
+        public const int Zielversion = 113;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

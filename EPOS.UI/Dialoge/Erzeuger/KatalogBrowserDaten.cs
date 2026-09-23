@@ -89,13 +89,6 @@ public sealed class KatalogBrowserWege
     public Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>? Speichern { get; init; }
 
     /// <summary>
-    /// Trägt der Eintrag den Schreibschutz der Auslieferung? Nur beim BHKW belegt — der
-    /// Projektdialog fragt es für seinen Aufklapper. Die Verwaltung liest den Schutz aus
-    /// der Zeile (<c>Katalogfilterzeile.Geschuetzt</c>), für alle vier Ausprägungen.
-    /// </summary>
-    public Func<string, bool>? IstGeschuetzt { get; init; }
-
-    /// <summary>
     /// <b>„Duplizieren…"</b> (Konzept Administrationsdialoge, Entscheid AD-Q11): kopiert
     /// den Satz mit der ID als EIGENEN Satz (<c>ReadOnly = 0</c>) unter dem Namen —
     /// <c>…StammCtrl.Duplizieren</c>. Ohne ihn steht der Knopf nicht da.

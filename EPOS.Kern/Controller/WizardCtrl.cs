@@ -2652,6 +2652,13 @@ namespace WindowsFormsApplication1
                 // Tab_Projekt.ID_Klimaregion auf die Projekt-Kopie setzen (gefuehrt wird nur der Name).
                 KlimaregionStammCtrl.ApplyRegionByNameToProjekt(model.m_szKlimaregion, projektID);
 
+                // ANFANGSWERT DER PROJEKTEINSTELLUNG „Kuehlbetrieb" (E27, K10; Kuehlkonzept
+                // 7.2): Die Programmeinstellung „Neue Projekte mit Kuehlung anlegen" geht
+                // HIER einmal in das neue Projekt ueber - an derselben Stelle im Kern wie beim
+                // zweiten Anlageweg (ProjektCtrl.Insert). Innerhalb der Klammer des Laufs:
+                // Ein Rollback nimmt den Einstellungssatz mit.
+                KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
+
                 return true;
             }
             else

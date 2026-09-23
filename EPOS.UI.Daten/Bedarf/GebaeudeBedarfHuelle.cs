@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
@@ -54,12 +55,25 @@ namespace WindowsFormsApplication1
                 ? () => Raumtemperaturmodell(ergebnis)
                 : null;
 
+            // Das Bild der Kaeltelast (Stufe KU1) - nur mit Kuehlreihe; auf dem Bestandsweg gibt
+            // es keine Reihe, der Abschnitt steht dort mit 0 und Hinweis.
+            Func<bool, Zeichenmodell> kaeltebild = ergebnis.KuehlbedarfKwh != null
+                ? sortiert => Kaeltemodell(ergebnis, sortiert)
+                : null;
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
                     sortiert => Bedarfsmodell(ergebnis, sortiert)),
                 ["BildauftragRaumtemperatur"] = raumbild,
+                ["BildauftragKaelte"] = kaeltebild,
+                ["GruppeKaelte"] = Text_("GEBB_GRP_KAELTE", "Kältebedarf"),
+                ["LabelKaeltelastMax"] = Text_("GEBB_LBL_KAELTELAST_MAX", "max. Kältelast"),
+                ["LabelHeizenUndKuehlen"] = Text_("GEBB_LBL_HEIZEN_UND_KUEHLEN", "Stunden mit Heizen und Kühlen:"),
+                ["BildtextKaelte"] = Text_("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", "Kältelast Jahresganglinie"),
+                ["SpalteHeizung"] = MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
+                ["SpalteKuehlung"] = MyResource.Resource.KANAL_KUEHLUNG_ANZEIGE,
                 ["BildtextRaumtemperatur"] = Text_("GEBB_BILD_RAUMTEMPERATUR", "Raumtemperatur"),
                 ["GruppeVergleich"] = Text_("GEBB_GRP_VERGLEICH", "Vergleich der Rechenwege"),
                 ["SpalteKennzahl"] = Text_("GEBB_SP_KENNZAHL", "Kennzahl"),
@@ -69,7 +83,7 @@ namespace WindowsFormsApplication1
                 ["LabelSpitzeStunde"] = Text_("GEBB_LBL_SPITZE_STUNDE", "Spitzenlast (Stunde):"),
                 ["LabelSpitzeTagesmittel"] = Text_("GEBB_LBL_SPITZE_TAGESMITTEL", "Spitzenlast (Tagesmittel):"),
                 ["LabelSpitzeQuantil95"] = Text_("GEBB_LBL_SPITZE_QUANTIL95", "95-%-Wert der Stundenlast:"),
-                ["LabelKuehlbedarf"] = Text_("GEBB_LBL_KUEHLBEDARF", "Kühlbedarf (informativ):"),
+                ["LabelKuehlbedarf"] = Text_("GEBB_LBL_KUEHLBEDARF", "Kühlbedarf:"),
                 ["LabelKuehlstunden"] = Text_("GEBB_LBL_KUEHLSTUNDEN", "Stunden mit Kühlbedarf:"),
                 ["LabelMittlereRaumtemperatur"] =
                     Text_("GEBB_LBL_MITTLERE_RAUMTEMPERATUR", "mittlere Raumtemperatur (Nutzungszeit):"),
@@ -126,13 +140,87 @@ namespace WindowsFormsApplication1
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
                 SpitzeTagesmittelKw = ergebnis.SpitzeTagesmittelKw,
                 SpitzeQuantil95Kw = ergebnis.SpitzeQuantil95Kw,
-                KuehlenergieMwh = ergebnis.KuehlenergieMwh,
-                KuehlstundenH = ergebnis.KuehlstundenH,
+                // Stufe KU1 (F-K18): Auf dem Bestandsweg bucht der Lauf Kaeltebedarf 0 mit
+                // Hinweis - die Auskunft zeigt dieselbe 0, nicht „—" (bis Stufe GA).
+                KuehlenergieMwh = ergebnis.KaelteBestandsweg ? 0.0 : ergebnis.KuehlenergieMwh,
+                KuehlstundenH = ergebnis.KaelteBestandsweg ? 0 : ergebnis.KuehlstundenH,
                 MittlereRaumtemperaturC = ergebnis.MittlereRaumtemperaturC,
                 UeberhitzungsstundenH = ergebnis.UeberhitzungsstundenH,
                 SommerlueftungsstundenH = ergebnis.SommerlueftungsstundenH,
-                Vergleich = vergleich
+                Vergleich = vergleich,
+
+                // Stufe KU1 (Kuehlkonzept 8.4): der Abschnitt „Kaeltebedarf".
+                KaelteAbschnitt = ergebnis.KuehlbedarfKwh != null || ergebnis.KaelteBestandsweg,
+                KaeltelastMaxKw = ergebnis.KaelteBestandsweg ? 0.0 : ergebnis.KaeltelastMaxKw,
+                VollbenutzungsstundenKaelteH = ergebnis.VollbenutzungsstundenKaelteH,
+                StundenHeizenUndKuehlenH = ergebnis.StundenHeizenUndKuehlen,
+                KuehlMonatswerteMwh = ergebnis.KuehlMonatswerteMwh != null
+                    ? (IReadOnlyList<double>)(double[])ergebnis.KuehlMonatswerteMwh.Clone()
+                    : ergebnis.KaelteBestandsweg ? new double[12] : new List<double>(),
+                KaelteHerleitung = Kaelteherleitung(ergebnis)
             };
+        }
+
+        /// <summary>
+        /// Die Herleitungszeilen des Abschnitts „Kältebedarf" (Stufe KU1, Kühlkonzept 8.3, 8.4):
+        /// wie der Kältebedarf dieses Gebäudes entsteht — Bestandsweg (0 mit Hinweis, F-K18),
+        /// wirksame Kühlung (Sollwert, Grenze, Kanal), eingeschaltet ohne Sollwert, oder
+        /// informativ (Projekt rechnet keine Kälte bzw. Gebäude nicht gekühlt) — und danach die
+        /// Grenze der Zahl (K5), die an jeder Kältezahl steht. Die Sätze des Laufs werden
+        /// wiederverwendet, wo es sie gibt: ein Text, eine Stelle.
+        /// </summary>
+        internal static List<string> Kaelteherleitung(GebaeudeBedarfErgebnis e)
+        {
+            var zeilen = new List<string>();
+            if (e == null || !e.Erfolgreich) return zeilen;
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string obere = (e.ObereRaumtemperaturC ?? 0.0).ToString("N1", k);
+
+            if (e.KaelteBestandsweg)
+                zeilen.Add(string.Format(k, MyResource.Resource.SIMENG_KAELTE_BESTANDSWEG, e.Name));
+            else if (e.KuehlSollwertC is double soll)
+                zeilen.Add(string.Format(k, Text_("GEBB_HRL_KAELTE_WIRKSAM",
+                                                  "Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte."),
+                                         soll.ToString("N1", k),
+                                         e.KuehlleistungMaxKw is double kw
+                                             ? kw.ToString("N1", k) + " kW"
+                                             : Text_("GEBB_UNBEGRENZT", "unbegrenzt")));
+            else if (!e.KuehlbetriebProjekt)
+                zeilen.Add(string.Format(k, Text_("GEBB_HRL_KAELTE_PROJEKT_AUS",
+                                                  "Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal."),
+                                         obere));
+            else if (e.KuehlungAktiv)
+                zeilen.Add(string.Format(k, MyResource.Resource.SIMENG_KAELTE_OHNE_SOLLWERT, e.Name));
+            else
+                zeilen.Add(string.Format(k, Text_("GEBB_HRL_KAELTE_NICHT_GEKUEHLT",
+                                                  "Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal."),
+                                         obere));
+
+            zeilen.Add(SimulationKaeltebedarf.GrenzeFeuchte);
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Das Bild der Kältelast (Stufe KU1, Kühlkonzept 8.4) — dieselbe Bildform wie die
+        /// Wärmelast (normiert auf den Jahreshöchstwert), aber ein EIGENES Bild: im Wärmebild
+        /// normierte der Kältewert die Wärmelinie mit (4.2).
+        /// </summary>
+        private static Zeichenmodell Kaeltemodell(GebaeudeBedarfErgebnis ergebnis, bool sortiert)
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe(Text_("CHART_ACHSE_KAELTELAST", "Kältelast"),
+                                        (double[])ergebnis.KuehlbedarfKwh.Clone(),
+                                        Farbrolle.BEDARF)
+            };
+
+            return ChartRenderer.GanglinieNormiertModell(
+                Text_("CHART_TITEL_KAELTELAST_JAHRESGANGLINIE", "Kältelast Jahresganglinie"),
+                reihen,
+                Text_("CHART_ACHSE_KAELTELAST", "Kältelast"),
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert);
         }
 
         /// <summary>

@@ -637,9 +637,11 @@ namespace WindowsFormsApplication1
             }
             if (zeilen.Count == 0) return "";
 
+            // Nur die Wärmekanäle: Solarwärme ist nie Abnehmer-los, weil die Kälteseite
+            // offen bleibt (Kühlkonzept 4.2) - der Kühlkanal ist keine Frage der Senken.
             double[] bedarf = SimulationRunner.BedarfJeKanal(wb);
             List<string> offen = new List<string>();
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            foreach (int k in Kanal.KANAELE_WAERME)
                 if (bedarf[k] >= Warnkriterien.KANAL_BEDARF_SCHWELLE_MWH && !bedient[k])
                     offen.Add(Warnkriterien.KanalAnzeige(k));
             if (offen.Count == 0) return "";
@@ -917,6 +919,77 @@ namespace WindowsFormsApplication1
                 e.StrombedarfGesamtMwh = sb.StrombedarfGesamtMwh;
             }
             return e;
+        }
+
+        // =================================================================
+        //  Kälte (Stufe KU1; Kühlkonzept 8.4; E21, K5, K6)
+        // =================================================================
+
+        /// <summary>
+        /// Die Zahlen der KÄLTESEITE eines Laufs — Bedarfsreiter und Übersicht. Es gibt sie nur,
+        /// wenn der Lauf Kälte ERHOBEN hat (<see cref="SimulationKaeltebedarf.Gerechnet"/>): Ein
+        /// Projekt ohne Kühlung zeigt keine Kühlnullen, sondern gar keine Kältegruppe (K18).
+        /// Jahressummen in MWh, Spitze in kW, die Stundenreihe in kWh je Stunde.
+        /// </summary>
+        public sealed class KaelteErgebnis
+        {
+            /// <summary>Jahreskälte = Summe des Kühlkanals [MWh] (<c>kaelte.jahresbedarf</c>).</summary>
+            public double KaeltebedarfMwh;
+
+            /// <summary>Kältespitze [kW] (<c>Kaeltelast_Max</c>, <c>kaelte.spitze</c>).</summary>
+            public double KaeltelastMaxKw;
+
+            /// <summary>Stunden mit Kühlbedarf, gezählt am Kanalvektor (<c>kaelte.stunden</c>).</summary>
+            public int StundenMitKuehlbedarf;
+
+            /// <summary>Vollbenutzungsstunden der Kälte [h/a] — aus Jahreskälte und Spitze; <c>null</c> ohne Spitze.</summary>
+            public double? VollbenutzungsstundenH;
+
+            /// <summary>Ungedeckte Kälte [MWh] (<c>Kaelterestbedarf</c>) — ohne Kälteerzeuger der ganze Bedarf.</summary>
+            public double KaelterestbedarfMwh;
+
+            /// <summary>Davon aus den Gebäuden [MWh].</summary>
+            public double GebaeudeMwh;
+
+            /// <summary>Davon aus Lastgängen mit dem Kanal „Kühlung" [MWh].</summary>
+            public double ExternMwh;
+
+            /// <summary>Zahl der Gebäude, deren Kühlreihe in den Kühlkanal ging.</summary>
+            public int GekuehlteGebaeude;
+
+            /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen (K6), Maximum über die Gebäude.</summary>
+            public int StundenHeizenUndKuehlen;
+
+            /// <summary>Das Gebäude, von dem <see cref="StundenHeizenUndKuehlen"/> stammt.</summary>
+            public string StundenHeizenUndKuehlenGebaeude = "";
+
+            /// <summary>Der Kühlkanal je Stunde [kWh] — für das eigene Bild und den CSV-Export.</summary>
+            public double[] KaeltebedarfKwh = new double[0];
+        }
+
+        /// <summary>
+        /// Die Kälteseite des Laufs; <c>null</c>, wenn nicht erhoben (Projektschalter aus) — das
+        /// ist etwas anderes als ein Kältebedarf von 0.
+        /// </summary>
+        public static KaelteErgebnis Kaelte(SimulationWaermebedarf wb)
+        {
+            SimulationKaeltebedarf k = wb?.Kaelteseite;
+            if (k == null || !k.Gerechnet) return null;
+
+            return new KaelteErgebnis
+            {
+                KaeltebedarfMwh = k.Kaeltebedarf_Gesamt,
+                KaeltelastMaxKw = k.Kaeltebedarf_Max,
+                StundenMitKuehlbedarf = k.StundenMitKuehlbedarf,
+                VollbenutzungsstundenH = k.Kaeltebedarf_Max > 0 ? k.VollbenutzungsstundenKaelte : (double?)null,
+                KaelterestbedarfMwh = k.Kaelterestbedarf,
+                GebaeudeMwh = k.Kaeltebedarf_Gebaeude_Gesamt,
+                ExternMwh = k.Kaeltebedarf_Extern_Gesamt,
+                GekuehlteGebaeude = k.GekuehlteGebaeude,
+                StundenHeizenUndKuehlen = k.StundenHeizenUndKuehlen,
+                StundenHeizenUndKuehlenGebaeude = k.StundenHeizenUndKuehlenGebaeude ?? "",
+                KaeltebedarfKwh = (double[])k.Kaeltebedarf.Clone()
+            };
         }
 
         /// <summary>

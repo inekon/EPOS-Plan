@@ -304,4 +304,109 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string AKwkFall2Ohne { get; } = T("BHW_A_KWK_FALL2_OHNE",
         "KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine " +
         "Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.");
+
+    // ------------------- ETAPPE E7c2 — der Rest der Überlagerung (E7c1‑Q7, U22)
+    //
+    // Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer
+    // und der zweite Knopf „Wahl und Herkunft…". Die geplanten Schlüssel des Mockups
+    // (BHW_UEB_KNOPF_STEUERN, BHW_UEB_G_ENERGIEST, BHW_UEB_G_STROMST, BHW_UEB_WIRKUNG,
+    // BHW_UEB_WIRKUNG_JAHR1, BHW_UEB_SCOPE_PROJEKT, BHW_UEB_SCOPE_ANLAGE) tragen die
+    // Namen der Ressourcentafel.
+
+    public string UebArt { get; } = T("BHW_UEB_ART", "Anlagenart (§ 8 KWKG)");
+    public string UebArtHinweis { get; } = T("BHW_UEB_ART_HINWEIS",
+        "Der Anteil an den Neuherstellungskosten ist das Feld im Formular; er zählt nur bei " +
+        "modernisiert und nachgerüstet.");
+    public string UebEigenfall { get; } = T("BHW_UEB_EIGENFALL", "Eigenstrom nach § 6 Abs. 3");
+
+    /// <summary>Wirkung einer Wahl; {0} = Wirkung (Kontingent, Satz, Text).</summary>
+    public string UebWirkung { get; } = T("BHW_UEB_WIRKUNG", "→ {0}");
+
+    /// <summary>{0} = Vollbenutzungsstunden.</summary>
+    public string UebVbh { get; } = T("BHW_UEB_VBH", "{0} Vbh");
+
+    /// <summary>{0} = Satz.</summary>
+    public string UebCtKwh { get; } = T("BHW_UEB_CT_KWH", "{0} ct/kWh");
+
+    public string UebZEinsp { get; } = T("BHW_UEB_Z_EINSP", "Satz Einspeisung");
+    public string UebZEigen { get; } = T("BHW_UEB_Z_EIGEN", "Satz Eigenstrom");
+    public string UebZKontingent { get; } = T("BHW_UEB_Z_KONTINGENT", "Vbh-Kontingent");
+    public string UebZDeckel { get; } = T("BHW_UEB_Z_DECKEL", "Jahresdeckel");
+    public string UebStaffel { get; } = T("BHW_UEB_STAFFEL", "Staffel");
+
+    /// <summary>Spalte „gilt" beim Deckel ohne eigenen Wert; {0} = Deckel [h/a], {1} = Jahr.</summary>
+    public string UebGiltStaffel { get; } = T("BHW_UEB_GILT_STAFFEL", "Staffel — {0} h/a im Jahr {1}");
+
+    /// <summary>Spalte „gilt" ohne eigenen Wert und ohne Vorschlag.</summary>
+    public string UebGiltOhne { get; } = T("BHW_UEB_GILT_OHNE", "keiner — ohne Vorschlag kein Zuschlag");
+
+    public string UebInfoSaetze { get; } = T("BHW_UEB_INFO_SAETZE",
+        "Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars " +
+        "geschrieben; Kontingent und Deckel bleiben dann leer, der Lauf leitet sie selbst ab " +
+        "(§ 8 Abs. 1 bis 3, Staffel des § 8 Abs. 4). Ein eigener Wert gilt dauerhaft, auch wenn " +
+        "der Katalog später einen anderen Vorschlag liefert. „Vorschlag übernehmen“ leert das " +
+        "Feld: der Weg zurück. Im Formular bleibt 0 „kein Zuschlag“.");
+
+    /// <summary>{0} = erstes Förderjahr.</summary>
+    public string UebWirkungJahr1 { get; } = T("BHW_UEB_WIRKUNG_JAHR1", "Wirkung Jahr 1 ({0})");
+
+    /// <summary>{0} = vergütete Vbh, {1} = Vbh, {2} = Deckel [h/a], {3} = Anteil, {4} = Betrag [€].</summary>
+    public string UebWirkungKwkg { get; } = T("BHW_UEB_WIRKUNG_KWKG",
+        "vergütet {0} von {1} Vbh (Deckel {2} h/a) = {3} → {4} €");
+
+    /// <summary>{0} = Einspeisung [MWh], {1} = Satz, {2} = Anteil, {3} = Eigenverbrauch [MWh],
+    /// {4} = Satz, {5} und {6} = Beträge [€].</summary>
+    public string UebWirkungKwkgFormel { get; } = T("BHW_UEB_WIRKUNG_KWKG_FORMEL",
+        "{0} MWh × {1} ct × {2} + {3} MWh × {4} ct × {2} = {5} + {6} € — Mengen aus dem gebuchten Lauf");
+
+    public string UebWirkungOhneLauf { get; } = T("BHW_UEB_WIRKUNG_OHNE_LAUF",
+        "Ohne gebuchten Lauf keine Mengen — die Wirkung steht nach „Berechnen“ im Reiter " +
+        "Wirtschaftlichkeit.");
+
+    public string UebFuss { get; } = T("BHW_UEB_FUSS",
+        "Übernehmen schreibt Sätze, Kontingent, Deckel, Wahl und Modus in die Felder des " +
+        "Formulars — gespeichert wird erst mit „Speichern“.");
+
+    /// <summary>Knopf in der Gruppe Energiesteuer, der die Überlagerung öffnet.</summary>
+    public string UebKnopfSteuern { get; } = T("BHW_UEB_KNOPF_STEUERN", "Wahl und Herkunft…");
+
+    public string UebGEnergiest { get; } = T("BHW_UEB_G_ENERGIEST", "Energiesteuer (EnergieStG)");
+    public string UebGStromst { get; } = T("BHW_UEB_G_STROMST", "Stromsteuer (StromStG) — Projekt");
+    public string UebScope { get; } = T("BHW_UEB_SCOPE", "Gilt für");
+    public string UebScopeProjekt { get; } = T("BHW_UEB_SCOPE_PROJEKT", "Projektvorgabe für alle Anlagen");
+    public string UebScopeAnlage { get; } = T("BHW_UEB_SCOPE_ANLAGE", "nur diese Anlage");
+    public string UebEsWahl { get; } = T("BHW_UEB_ES_WAHL", "Energiesteuerentlastung");
+    public string UebEsAufteilung { get; } = T("BHW_UEB_ES_AUFTEILUNG", "Brennstoff auf Strom/Wärme (nur § 53)");
+    public string UebEsKeine { get; } = T("BHW_UEB_ES_KEINE", "→ keine Entlastung, 0 €");
+    public string UebEs53 { get; } = T("BHW_UEB_ES_53",
+        "→ voller Steuersatz auf den Brennstoff der Stromerzeugung");
+    public string UebEs53a { get; } = T("BHW_UEB_ES_53A",
+        "→ Teilsatz für hocheffiziente KWK-Anlagen, Jahresnutzungsgrad mindestens 70 %");
+    public string UebEs54 { get; } = T("BHW_UEB_ES_54",
+        "→ Heizstoffe, nur produzierendes Gewerbe, abzüglich Sockelbetrag");
+    public string UebAufVoll { get; } = T("BHW_UEB_AUF_VOLL", "→ Vorgabe");
+    public string UebAufEnergetisch { get; } = T("BHW_UEB_AUF_ENERGETISCH",
+        "→ nur der elektrische Anteil des Brennstoffs — bewusste Untergrenze");
+
+    /// <summary>Eine Energiesteuerzeile des gebuchten Laufs; {0} = Vorschrift, {1} = Menge,
+    /// {2} = Satz, {3} = Einheit des Satzes, {4} = Betrag [€].</summary>
+    public string UebEsGebucht { get; } = T("BHW_UEB_ES_GEBUCHT", "{0}: {1} × {2} {3} = {4} €");
+
+    public string UebEsOhne { get; } = T("BHW_UEB_ES_OHNE",
+        "Der gebuchte Lauf führt für diese Anlage keine Energiesteuerentlastung.");
+
+    public string UebUa { get; } = T("BHW_UEB_UA", "Unternehmensart");
+    public string UebUaKein { get; } = T("BHW_UEB_UA_KEIN", "→ § 9b und § 54 entfallen");
+    public string UebUaProd { get; } = T("BHW_UEB_UA_PROD", "→ § 9b-Entlastung auf den Netzbezug, § 54 möglich");
+    public string UebUaLand { get; } = T("BHW_UEB_UA_LAND", "→ wie produzierendes Gewerbe");
+    public string UebBefreiung { get; } = T("BHW_UEB_BEFREIUNG", "Befreiung § 9 Abs. 1 Nr. 3");
+    public string UebModus { get; } = T("BHW_UEB_MODUS", "Modus");
+    public string UebModusAusweis { get; } = T("BHW_UEB_MODUS_AUSWEIS", "→ nur ausgewiesen, nicht im Kapitalwert");
+    public string UebModusErloes { get; } = T("BHW_UEB_MODUS_ERLOES",
+        "→ Erlös im Kapitalwert (Block A), stets mit Kohärenzwarnung");
+
+    /// <summary>Die Stromsteuer des gebuchten Laufs; {0} = Entlastung [€], {1} = Befreiung [€],
+    /// {2} = Modus.</summary>
+    public string UebStGebucht { get; } = T("BHW_UEB_ST_GEBUCHT",
+        "Entlastung Netzbezug (§ 9b) {0} € · Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) {1} € — {2}");
 }

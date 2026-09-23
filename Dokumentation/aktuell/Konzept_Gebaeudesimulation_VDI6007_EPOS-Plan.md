@@ -27,6 +27,12 @@ Nachgezogen am 23.09.2026 mit **E30** (N1.35): Die Gebäudekennzahlen aus Kapite
 Lauf in die neue Ergebnistabelle `Tab_ErgebnisGebaeude` (Schemaschritt 107), der Bericht liest sie
 — Abschnitt „Gebäude" in der Projektbeschreibung und der Produktausweis nach E10 im Berichtskopf
 (A12); Kapitel 9 folgt.
+Nachgezogen am 23.09.2026 mit **E31** (N1.36): K4, K5, K6, K7 und K12 der Kühlung sind nach
+Empfehlung entschieden — die Kühlung steht zuletzt in der Knappheitsreihenfolge und ohne
+Bedienelement, gerechnet wird sensible Kälte ohne Entfeuchtung mit der Grenze an jeder Kältezahl,
+gleichzeitiges Heizen und Kühlen wird nicht saldiert, der Kältespeicher ist nach KU3 vertagt, und
+die Kühlung gilt auch auf iOS ohne eigenen Lauf; vor KU1 ist kein Anwenderentscheid mehr offen,
+das Register zählt 15 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3227,3 +3233,41 @@ Abschnitt 1 (E30) und Abschnitt 2 (G2); im Code Schemaschritt 107 (`SchemaMigrat
 `Werkzeuge/Testdatenbankschema`, Testdatenbank auf Stand 107), `ErgebnisCtrl`,
 `SimulationWaermebedarf`, `ProjektbeschreibungBaustein`, `DeckblattBaustein`; Tests
 `ErgebnisGebaeudeTests`.
+
+### N1.36 Entscheid E31 — K4, K5, K6, K7 und K12 der Kühlung nach Empfehlung
+
+**Entscheid E31 (Anwender, 23.09.2026).** Der Anwender entscheidet die fünf Punkte **K4**, **K5**,
+**K6**, **K7** und **K12** des [Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+nach dessen Empfehlung. Alle fünf waren vor **KU1** fällig; mit ihnen ist Stufe KU1 des
+[Kühlkonzepts](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) ohne offenen Anwenderentscheid
+beauftragbar. Wie in E27 und E28 gilt die Empfehlung im Wortlaut des jeweiligen
+Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt vor |
+|---|---|---|
+| **K4** | Die Kühlung steht **zuletzt** in der Knappheitsreihenfolge, und ihr Rang wird in der Oberfläche **nicht** zur Bearbeitung angeboten: Die Reihenfolge regelt die knappe **Wärme**erzeugung, an der die Kälteseite unbeteiligt ist — das vierte Glied macht die Folge vollständig und steuert nichts (Kühlkonzept 4.5) | KU1 (Kanal) |
+| **K5** | Die Feuchte bleibt ausgeschlossen — gerechnet wird **sensible Kälte ohne Entfeuchtung** —, und die Grenze steht an **jeder** Kältezahl: Dialog, Bericht, Wiki und Export (Kühlkonzept 1.3, 3.6, 9.2) | KU1 (Ressourcen, Dialog, Export) |
+| **K6** | Zonen, die in derselben Stunde heizen und kühlen, werden **nicht saldiert**: Heiz- und Kühlkanal tragen je ihren Betrag, und die Kennzahl „Stunden mit gleichzeitigem Heizen und Kühlen" weist den Fall aus (Kühlkonzept 3.5) | KU1 (Regel im Kanal); wirksam mit den Zonen (G6) |
+| **K7** | Der **Kältespeicher** wird nach **KU3** vertagt, gemeinsam mit der Kältemaschine; bis dahin gibt es **keinen Persistenzwert ohne Rechenweg** — keinen Verwendungswert `VERWENDUNG_KAELTE`, keine Eingabe eines Kältespeichers (Kühlkonzept 4.6, 7.6) | KU1 (Schemaumfang); gebaut frühestens in KU3 |
+| **K12** | Die Kühlung gilt **auch auf iOS**: Der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel; einen eigenen iOS-Lauf gibt es für KU1 und KU2 **nicht**, der Nachweis ist der Kern-Lauf (Kühlkonzept 8.6, 10.6) | KU1 |
+
+**Was das für den Schemaumfang von KU1 heißt (K7).** Die Ergebnisspalte
+`Tab_ErgebnisPufferspeicher.Entladung_Kuehlung` gehört weiter zu `KU-S4` (Kühlkonzept 7.4): Sie ist
+keine Eingabe, die einen Rechenweg verspricht, sondern die vierte Spalte des gleichförmigen
+Kanalschreibwegs, und sie bleibt leer, bis ein Kältespeicher rechnet. Ausgeschlossen sind der
+Verwendungswert und jede Eingabe eines Kältespeichers.
+
+**Was offen bleibt.** Das Register zählt **15 offene Punkte** — U13–U15 (G4), M3, M5–M8 und
+M11–M13 (G6b bis G6d), K8, K9, K21 und K23 (KU2; die freie Kühlung aus K8 mit KU3). Von den
+Folgeaufgaben aus E27 bleiben **K22** (vor KU2) und **D6** (vor der Stufe über die semantische
+hinaus).
+
+**Betroffene Stufen:** KU1 (K4, K5, K6, K7, K12), KU3 (K7).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter
+K4, K5, K6, K7 und K12, Kopf, Kapitel 0, 6 und 9, Zählung 15);
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 3.5, 4.5, 4.6, 8.6, 10.6,
+11.1 und 12; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

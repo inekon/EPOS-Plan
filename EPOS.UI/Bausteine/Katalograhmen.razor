@@ -44,15 +44,38 @@
      * Der EINGABEBLOCK ist so hoch wie sein Inhalt, hoechstens 34 % des
        Rahmens, rollt in sich und ist oben durch eine Linie abgesetzt.
    Titelzeile, Suchzeile und Fussleiste stehen damit fest; nur unter dem
-   Kleinstmass des Rahmens (22 rem) rollt als Notnagel die Maske. In Stufe 3
-   (V3) tritt das Stammblatt NEBEN die Liste; bis dahin bleibt der
-   Eingabeblock an seinem Platz. Die Regeln stehen in epos-ui.css bei
-   .epos-katalog-paar.
+   Kleinstmass des Rahmens (22 rem) rollt als Notnagel die Maske. Die Regeln
+   stehen in epos-ui.css bei .epos-katalog-paar.
+
+   DAS STAMMBLATT NEBEN DER LISTE (Stufe 3, V3; Entscheid AD-Q1). Reicht der
+   Wirt ein Stammblatt statt eines Eingabeblocks herein, ordnet der Rahmen
+   anders: Die Liste nimmt die GANZE Hoehe (gemessen bei 1 088 x 624: acht
+   Zeilen statt drei), das Stammblatt steht rechts daneben
+   (clamp(340px, 36 %, 440px)), darueber die Auswahlleiste (Zone 4). Unter
+   900 px Rahmenbreite steht die Liste allein unter der Auswahlleiste, und das
+   Stammblatt schiebt sich auf Wunsch als BLATT ueber sie (BlattOffen) - die
+   Auswahlleiste bleibt stehen. Die Breite fragt der Rahmen selbst ab: Er ist
+   ein Container (epos-katalograhmen), die Abfrage steht im Stilblatt. Ein
+   Container kann sich nicht selbst abfragen; deshalb umschliesst ihn eine
+   eigene Huelle, und das Paar darin ist das Raster.
+
+   Warum die Auswahlleiste im breiten Fenster UEBER DEM STAMMBLATT steht und
+   nicht ueber der Liste: Die Liste soll bei 624 px Fensterhoehe acht Zeilen
+   zeigen. Suchzeile (44 px) und Spaltenkopf (53 px) lassen ihr im Rahmen von
+   474 px genau 8 x 46 px; eine zweite Leiste von 44 px darueber naehme ihr
+   eine Zeile. Rechts steht sie ueber dem Blatt, das sie beschreibt - "Kessel 7"
+   ueber dem Stammblatt von Kessel 7.
+
+   Ohne Stammblatt bleibt alles, wie es war (Eingabeblock UNTER der Liste) -
+   die Verwaltungen mit Einleseblock (Klimadaten, Zeitreihen) folgen erst mit
+   Stufe 4.
 
    KEIN EIGENES CSS JE DIALOG. Wer den Rahmen benutzt, setzt an der Wurzel
    seines Dialogs zusaetzlich die Klasse epos-katalog-dialog - die gibt dem
    Fenster die volle Hoehe und nimmt die Breitenbremse von .epos-dialog. *@
 
+@if (Blatt is null)
+{
 <div class="epos-katalog-paar epos-katalog-fuellend@(Gestapelt ? " epos-katalog-paar--gestapelt" : "")">
 
     <div class="epos-katalog-liste">
@@ -63,6 +86,32 @@
         @Eingabe
     </div>
 </div>
+}
+else
+{
+<div class="epos-katalograhmen epos-katalog-fuellend">
+    <div class="epos-katalog-paar epos-katalog-fuellend epos-katalog-paar--stammblatt@(BlattOffen ? " epos-katalog-paar--blatt" : "")">
+
+        <div class="epos-katalog-liste">
+            @Liste
+        </div>
+
+        @if (Auswahl is not null)
+        {
+            <div class="epos-katalog-auswahl">
+                @Auswahl
+            </div>
+        }
+
+        @* Die Klasse epos-katalog-eingabe bleibt: Katalog- und Rasterprobe messen
+           den zweiten Bereich unter diesem Namen (Ueberlagerung mit Liste und
+           Fussleiste). *@
+        <div class="epos-katalog-eingabe epos-katalog-stammblatt">
+            @Blatt
+        </div>
+    </div>
+</div>
+}
 
 @code {
     /// <summary>
@@ -87,4 +136,24 @@
     /// streichen waere eine Aenderung an Wirten ohne einen Gewinn.
     /// </summary>
     [Parameter] public bool Gestapelt { get; set; }
+
+    /// <summary>
+    /// <b>Das Stammblatt</b> (Schlitz <c>Blatt</c>; Stufe 3, V3/V9) — gesetzt, ordnet der Rahmen Liste und
+    /// Stammblatt NEBENEINANDER (ab 900 px Rahmenbreite) statt Liste und Eingabeblock
+    /// untereinander. <see cref="Eingabe"/> ist dann ohne Wirkung.
+    /// </summary>
+    [Parameter] public RenderFragment? Blatt { get; set; }
+
+    /// <summary>
+    /// <b>Die Auswahlleiste</b> (Zone 4, V8) — nur mit <see cref="Blatt"/>: breit über
+    /// dem Stammblatt, schmal über der Liste.
+    /// </summary>
+    [Parameter] public RenderFragment? Auswahl { get; set; }
+
+    /// <summary>
+    /// <b>Steht das Stammblatt als Blatt über der Liste?</b> (V3, schmales Fenster.) Nur
+    /// unter 900 px Rahmenbreite sichtbar wirksam; breit stehen beide ohnehin nebeneinander.
+    /// Der Zustand gehört dem Wirt, weil Esc und „‹ Liste" ihn zurücknehmen.
+    /// </summary>
+    [Parameter] public bool BlattOffen { get; set; }
 }

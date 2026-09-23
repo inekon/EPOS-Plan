@@ -128,6 +128,15 @@ namespace WindowsFormsApplication1
                         item.Sommerlueftung = Schalter(row, GebaeudeSchema.SPALTE_SOMMERLUEFTUNG);
                     }
 
+                    // Die vier Kuehleingaben aus KU-S1 (Schemaschritt 108, zweiter
+                    // Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer Sicht ohne
+                    // die Spalten bleibt alles null bzw. aus. Der Loeser nimmt Sollwert und
+                    // Grenze nur mit dem Projektschalter (GebaeudeModellEingang.KuehlungWirksam).
+                    item.Kuehl_Sollwert = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT);
+                    item.Kuehlleistung_Max = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLLEISTUNG_MAX);
+                    item.Kuehlung_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLUNG_AKTIV);
+                    item.Kuehl_Sollwert_Nacht = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT_NACHT);
+
                     _internalList.Add(item);
                 }
             }
