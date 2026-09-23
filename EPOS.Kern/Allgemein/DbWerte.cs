@@ -883,6 +883,12 @@ namespace WindowsFormsApplication1
         /// der Grund, aus dem E5 fuer Bestandsprojekte ergebnisneutral ist.
         /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
         /// </summary>
+        /// <remarks>
+        /// Q11 (E7b, Anwender 22.09.2026: „kein HT/NT"): Dieser Modus rechnet nicht
+        /// mehr. Schemaschritt 103 schaltet aktive Saetze in ihm ab; der Wert bleibt der
+        /// Rueckfall eines leeren Modus (Altzeilen) und das Merkmal, an dem Kern und
+        /// Migration einen Satz des entfallenen Modells erkennen.
+        /// </remarks>
         public const string TARIF_MODUS_ZONEN = "ZONEN";
 
         /// <summary>

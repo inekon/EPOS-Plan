@@ -654,45 +654,42 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Vereinfachtes Tarifmodell (Stufe W3, Entscheidung 11.08.2026): Winterzeitraum
-    /// als Monatsspanne, EIN HT-Fenster Mo–Fr, je vier Zonenpreise für Bezug und
-    /// Einspeisung, zweistufige Leistungspreis-Staffel. Eine Zeile je STAMM in
-    /// Tab_ProjektTarif; Aktiv = false → Flat-Preise der Kostenmaske gelten weiter.
+    /// Der Tarifsatz Strom eines STAMMS (<c>Tab_ProjektTarif</c>, eine Zeile je Stamm):
+    /// das <b>Rollenmodell</b> der Etappe E5 — Bezugstarif ohne Anlage, Reststromtarif
+    /// mit Anlage, Einspeisetarif — für die Differenzmethode der vermiedenen Kosten.
+    /// Aktiv = false → die Preise des Stromträgers aus der Kostenverwaltung gelten.
+    ///
+    /// <para><b>Kein Zeitzonentarif</b> (Entscheid Q11, Anwender 22.09.2026: „kein
+    /// HT/NT"). Das vereinfachte Zonenmodell der Stufe W3 — Winter/Sommer × HT/NT mit
+    /// je vier Zonenpreisen für Bezug und Einspeisung und einer zweistufigen
+    /// Leistungspreis-Staffel — entfällt: Der Kern liest dessen Spalten nicht mehr und
+    /// schreibt sie nicht mehr (sie bleiben bis zu einem späteren Aufräumschritt in der
+    /// Tabelle stehen), die Staffel steht seit Schemaschritt 103 am Stromträger der
+    /// Kostenverwaltung (<see cref="LeistungspreisStaffel"/>). Ein Satz mit dem Modus
+    /// <c>ZONEN</c> (oder leer — Bestand vor Schritt 21) ist ein Satz des alten
+    /// Zonenmodells und rechnet nicht (<see cref="Wirksam"/>).</para>
     /// </summary>
     public class TarifParameter
     {
         public int IdStamm;
         public bool Aktiv;
 
+        /// <summary>
+        /// Die Winterspanne als Monatsspanne (über den Jahreswechsel möglich). Sie
+        /// trennt im Lastbild Sommer- und Wintermaximum — die Bemessung des
+        /// Leistungspreismodells <c>STAFFEL</c> der beiden Bezugsrollen.
+        /// </summary>
         public int WinterVonMonat = 10;    // Oktober …
         public int WinterBisMonat = 3;     // … März (über den Jahreswechsel)
-        public int HtVonStunde = 6;        // HT Mo–Fr [von, bis)
-        public int HtBisStunde = 22;
-
-        // Bezugspreise [€/kWh]
-        public double PreisBezugWinterHT;
-        public double PreisBezugWinterNT;
-        public double PreisBezugSommerHT;
-        public double PreisBezugSommerNT;
-
-        // Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung)
-        public double PreisEinspWinterHT;
-        public double PreisEinspWinterNT;
-        public double PreisEinspSommerHT;
-        public double PreisEinspSommerNT;
-
-        // Leistungspreis-Staffel: bis Grenze Preis 1, darüber Preis 2 [€/kW·a]
-        public double StaffelGrenzeKW;
-        public double StaffelPreis1EurKW;
-        public double StaffelPreis2EurKW;
 
         // ---- ETAPPE E5 — Rollenmodell (Migrationsschritt 21) ----
-        //
-        // Additiv: Alles oberhalb bleibt unverändert und wird weiter gelesen. Modus
-        // ZONEN (Vorbelegung) = Bestandsverhalten der Stufe W3; ROLLEN schaltet auf
-        // Bezugs-, Reststrom- und Einspeisetarif mit der Differenzmethode um.
 
-        /// <summary>Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>.</summary>
+        /// <summary>
+        /// Tarifmodus, Steuerwert aus <c>DbWerte.TARIF_MODUS_*</c>. Nur <c>ROLLEN</c>
+        /// rechnet; <c>ZONEN</c> ist der Wert des entfallenen Zonenmodells, und er ist
+        /// die Vorbelegung, damit ein neu angelegter Satz erst mit dem Speichern des
+        /// Dialogs (der <c>ROLLEN</c> schreibt) rechnet.
+        /// </summary>
         public string Modus = DbWerte.TARIF_MODUS_ZONEN;
 
         /// <summary>Preisstand des Tarifsatzes; null = nicht gepflegt (nur Ausweis,
@@ -736,6 +733,8 @@ namespace WindowsFormsApplication1
             return r;
         }
 
+        /// <summary>Der Nachweis des Tarifsatzes in einer Zeile (Parameterzeile der Seite,
+        /// Wort- und Excelbericht).</summary>
         public string Nachweis(System.Globalization.CultureInfo kultur)
         {
             if (!Aktiv) return "Tarifstruktur inaktiv (Flat-Preise der Kostenmaske)";
@@ -1382,7 +1381,7 @@ namespace WindowsFormsApplication1
     /// Differenz zweier PROJEKTweiter Rollenrechnungen (Bezug ohne Anlage gegen
     /// Reststrom mit Anlage). Wer fragt „was bringt das Blockheizkraftwerk?", bekommt
     /// aus dieser Differenz keine Antwort — sie kennt die Anlage nicht. Die Strommatrix
-    /// hilft nicht weiter: Sie trennt nach TARIFZONE, nicht nach Anlage (Befund R8).</para>
+    /// hilft nicht weiter: Sie trennt nicht nach Anlage (Befund R8).</para>
     ///
     /// <para><b>Die Naeherung V‑4, ausgewiesen.</b> Verteilt wird nach dem
     /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>) — seit E7 (Konzept § 6.3

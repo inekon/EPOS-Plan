@@ -1298,25 +1298,16 @@ namespace WindowsFormsApplication1
                     t.Aktiv = B(r, "Aktiv");
                     t.WinterVonMonat = (int)(D(r, "Winter_Von") ?? t.WinterVonMonat);
                     t.WinterBisMonat = (int)(D(r, "Winter_Bis") ?? t.WinterBisMonat);
-                    t.HtVonStunde = (int)(D(r, "HT_Von") ?? t.HtVonStunde);
-                    t.HtBisStunde = (int)(D(r, "HT_Bis") ?? t.HtBisStunde);
-                    t.PreisBezugWinterHT = D(r, "Bezug_W_HT") ?? 0;
-                    t.PreisBezugWinterNT = D(r, "Bezug_W_NT") ?? 0;
-                    t.PreisBezugSommerHT = D(r, "Bezug_S_HT") ?? 0;
-                    t.PreisBezugSommerNT = D(r, "Bezug_S_NT") ?? 0;
-                    t.PreisEinspWinterHT = D(r, "Einsp_W_HT") ?? 0;
-                    t.PreisEinspWinterNT = D(r, "Einsp_W_NT") ?? 0;
-                    t.PreisEinspSommerHT = D(r, "Einsp_S_HT") ?? 0;
-                    t.PreisEinspSommerNT = D(r, "Einsp_S_NT") ?? 0;
-                    t.StaffelGrenzeKW = D(r, "Staffel_Grenze") ?? 0;
-                    t.StaffelPreis1EurKW = D(r, "Staffel_Preis1") ?? 0;
-                    t.StaffelPreis2EurKW = D(r, "Staffel_Preis2") ?? 0;
 
-                    // ETAPPE E5 — Rollenmodell. Ein LEERER Modus bedeutet genau
-                    // dasselbe wie der Vorgabewert ZONEN: der Bestandsrechenweg. Eine
-                    // nicht migrierte Datenbank verhält sich dadurch wie eine migrierte.
+                    // Q11 (E7b, „kein HT/NT"): Die Spalten des Zonenmodells — HT-Fenster,
+                    // vier Zonen-Bezugs- und vier Zonen-Einspeisepreise, die zweistufige
+                    // Staffel — liest der Kern nicht mehr. Die Staffel steht seit
+                    // Schemaschritt 103 am Stromträger (LeistungspreisStaffel).
+
+                    // ETAPPE E5 — Rollenmodell. Ein LEERER Modus heißt dasselbe wie ZONEN:
+                    // ein Satz des entfallenen Zonenmodells, der nicht rechnet.
                     string modus = Text(r, SchemaKatalog.SPALTE_TARIF_MODUS);
-                    if (modus.Length > 0) t.Modus = modus;
+                    t.Modus = modus.Length > 0 ? modus : DbWerte.TARIF_MODUS_ZONEN;
                     if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_TARIF_GUELTIGAB) &&
                         r[SchemaKatalog.SPALTE_TARIF_GUELTIGAB] != DBNull.Value)
                         t.GueltigAb = Convert.ToDateTime(r[SchemaKatalog.SPALTE_TARIF_GUELTIGAB]);
@@ -1354,9 +1345,9 @@ namespace WindowsFormsApplication1
             StelleTabellenSicher();
             try
             {
-                // Spaltenliste und Werte entstehen aus EINER Quelle — bei 52 Spalten
+                // Spaltenliste und Werte entstehen aus EINER Quelle — bei 40 Spalten
                 // wäre eine von Hand gepflegte Fragezeichenkette die klassische
-                // Fehlerquelle (ETAPPE E5; bis dahin waren es 17 Spalten).
+                // Fehlerquelle (ETAPPE E5; ohne die dreizehn des Zonenmodells seit Q11/E7b).
                 // DbParam dürfen nur EINER Parameters-Collection angehören,
                 // deshalb je Kommando ein frischer Satz.
                 List<string> spalten = TarifSpalten();
@@ -1398,15 +1389,19 @@ namespace WindowsFormsApplication1
             catch { return false; }
         }
 
-        /// <summary>Spaltenreihenfolge des Tarifsatzes — EINE Wahrheit für UPDATE und INSERT.</summary>
+        /// <summary>
+        /// Spaltenreihenfolge des Tarifsatzes — EINE Wahrheit für UPDATE und INSERT.
+        ///
+        /// <para><b>Ohne die Spalten des Zonenmodells</b> (Q11, E7b): HT-Fenster,
+        /// Zonenpreise und Staffel schreibt der Kern nicht mehr — ein UPDATE lässt sie
+        /// stehen, ein INSERT lässt sie leer. Die Tabelle behält sie bis zu einem
+        /// späteren Aufräumschritt (kein DDL mit E7b).</para>
+        /// </summary>
         private static List<string> TarifSpalten()
         {
             var s = new List<string>
             {
-                "Aktiv", "Winter_Von", "Winter_Bis", "HT_Von", "HT_Bis",
-                "Bezug_W_HT", "Bezug_W_NT", "Bezug_S_HT", "Bezug_S_NT",
-                "Einsp_W_HT", "Einsp_W_NT", "Einsp_S_HT", "Einsp_S_NT",
-                "Staffel_Grenze", "Staffel_Preis1", "Staffel_Preis2",
+                "Aktiv", "Winter_Von", "Winter_Bis",
                 // ETAPPE E5
                 SchemaKatalog.SPALTE_TARIF_MODUS, SchemaKatalog.SPALTE_TARIF_GUELTIGAB
             };
@@ -1430,19 +1425,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@a", DbParamTyp.Boolean) { Wert = t.Aktiv },
                 new DbParam("@wv", t.WinterVonMonat),
                 new DbParam("@wb", t.WinterBisMonat),
-                new DbParam("@hv", t.HtVonStunde),
-                new DbParam("@hb", t.HtBisStunde),
-                new DbParam("@b1", t.PreisBezugWinterHT),
-                new DbParam("@b2", t.PreisBezugWinterNT),
-                new DbParam("@b3", t.PreisBezugSommerHT),
-                new DbParam("@b4", t.PreisBezugSommerNT),
-                new DbParam("@e1", t.PreisEinspWinterHT),
-                new DbParam("@e2", t.PreisEinspWinterNT),
-                new DbParam("@e3", t.PreisEinspSommerHT),
-                new DbParam("@e4", t.PreisEinspSommerNT),
-                new DbParam("@sg", t.StaffelGrenzeKW),
-                new DbParam("@s1", t.StaffelPreis1EurKW),
-                new DbParam("@s2", t.StaffelPreis2EurKW),
                 // ETAPPE E5: TEXT(12) — der längste Steuerwert ROLLEN hat 6 Zeichen.
                 new DbParam("@mod", DbParamTyp.VarWChar, 12)
                 { Wert = Steuerwert(t.Modus, DbWerte.TARIF_MODUS_ZONEN) },
@@ -2098,7 +2080,7 @@ namespace WindowsFormsApplication1
             bool stromOhneVerwendung = v.StrombedarfOhneVerwendungMWh.HasValue;
 
             // ---------------- Tarif-Rollenmodell (ETAPPE E5) ----------------
-            bool rollen = !stromOhneVerwendung && tarif != null && tarif.Aktiv && tarif.RollenModus;
+            bool rollen = !stromOhneVerwendung && tarif != null && tarif.Wirksam;
             if (rollen) RechneRollentarif(v, tarif, e);
 
             // ---------------- Kein Zeitzonentarif (Q11, ETAPPE E7b) ----------------
@@ -5416,7 +5398,7 @@ namespace WindowsFormsApplication1
         /// ihr Eigenverbrauch [MWh/a], daraus die Anteile.
         ///
         /// <para><b>Die Näherung V‑4, ausgewiesen (Entscheid A12).</b> Die Strommatrix
-        /// trennt nach TARIFZONE, nicht nach Anlage (Befund R8); modulscharfe
+        /// trennt nicht nach Anlage (Befund R8); modulscharfe
         /// Stundenreihen gibt es im Modell nicht. Der Eigenverbrauch je Modul kommt
         /// deshalb aus demselben Modulnachweis, mit dem der KWKG-Rechner seine Mengen
         /// gebildet hat — bei genau einem Modul exakt, bei mehreren eine Annahme.

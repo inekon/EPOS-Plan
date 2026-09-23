@@ -565,7 +565,8 @@ namespace WindowsFormsApplication1
         /// <c>YESNO</c> (Access legt sie mit <c>False</c> an ⇒ Aufschläge AUS) und
         /// <c>DOUBLE</c> (bleibt NULL ⇒ keine KWK-Vergütung). Die Leseseite behandelt
         /// einen leeren Modus genauso wie <c>ZONEN</c> — eine nicht migrierte Datenbank
-        /// rechnet deshalb ebenfalls wie bisher.
+        /// rechnet deshalb ebenfalls wie bisher. (Seit Q11 rechnet der Zonenmodus nicht
+        /// mehr; Schritt 103 schaltet seine aktiven Sätze ab.)
         ///
         /// <b>Warum der Aufschlagsschalter überhaupt existiert.</b> Netzentgelt,
         /// Umlagen, Stromsteuer, Konzession und Vertrieb sind seit dem

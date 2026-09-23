@@ -203,8 +203,12 @@ public static class BhkwWahlen
 /// <summary>
 /// Wohin der Anwender aus dem Dialog springen wollte.
 ///
-/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Beide Ziele sind
-/// Sichten desselben Tarifdialogs. Zu Etappe B5b war das eine WinForms-Maske
+/// <para><b>Ein Ziel.</b> Der zweite Sprung „Strombezug…" in die Einkaufsseite der
+/// Tarifstruktur ist mit Q11 entfallen: Den Zeitzonentarif gibt es nicht mehr, und
+/// die Leistungspreis-Staffel pflegt der Stromträger in der Kostenverwaltung.</para>
+///
+/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Das Ziel ist eine
+/// Sicht des Tarifdialogs. Zu Etappe B5b war das eine WinForms-Maske
 /// (<c>Form_Tarifstruktur</c>), fuer die es kein Muster gab, sie aus einem
 /// Blazor-Dialog heraus zu oeffnen; seit iU9-W2.2 gibt es dafuer die
 /// <c>Sprungbruecke</c> — der Tarifdialog ist mit iU9-W2.3 aber SELBST eine
@@ -220,10 +224,7 @@ public enum BhkwSprung
     Keiner,
 
     /// <summary>BHKW-Sicht der Tarifstruktur (<c>TarifSicht.Bhkw</c>).</summary>
-    BhkwTarif,
-
-    /// <summary>Einkaufsseite der Tarifstruktur (<c>TarifSicht.Strombezug</c>).</summary>
-    Strombezug
+    BhkwTarif
 }
 
 /// <summary>
@@ -314,7 +315,7 @@ public sealed class BhkwAnlagenstand
     /// der Arbeitsstand führt? Dann hat der Anwender an dieser Zeile nichts
     /// geändert, und ein Schreiben wäre folgenlos — schlimmer: In einer
     /// Mehrbenutzerlage überschriebe es die Änderung eines anderen mit dem
-    /// eigenen geladenen Stand. Die Sprungknöpfe fragen deshalb hier, statt
+    /// eigenen geladenen Stand. Der Sprungknopf fragt deshalb hier, statt
     /// sich auf ein Merkflag zu verlassen: Ein Flag kippt schon bei einem
     /// Fokuswechsel oder einem Neuzeichnen, ein Wertvergleich nicht.
     /// </summary>

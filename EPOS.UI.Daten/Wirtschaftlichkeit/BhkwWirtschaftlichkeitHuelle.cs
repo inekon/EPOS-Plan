@@ -28,8 +28,9 @@ namespace WindowsFormsApplication1
     /// OK und Abbrechen, und bis zum OK steht seine Eingabe in seinem
     /// Arbeitsstand.</para>
     ///
-    /// <para><b>Der Sprung in die Tarifstruktur gehoert dem WIRT.</b> Die beiden
-    /// Sprungknoepfe der Stromsteuergruppe fuehren in den Tarifdialog. Zu B5b war
+    /// <para><b>Der Sprung in die Tarifstruktur gehoert dem WIRT.</b> Der
+    /// Sprungknopf „BHKW-Tarif…" der Stromsteuergruppe fuehrt in den Tarifdialog
+    /// (Sicht BHKW; der zweite Sprung „Strombezug…" ist mit Q11 entfallen). Zu B5b war
     /// das eine WinForms-Maske ohne Weg, sie aus einem Blazor-Dialog heraus zu
     /// oeffnen; seit iU9-W2.3 ist der Tarifdialog SELBST Razor, und zwei WebViews
     /// uebereinander sind Risiko R2. Die Komponente meldet den Wunsch deshalb in

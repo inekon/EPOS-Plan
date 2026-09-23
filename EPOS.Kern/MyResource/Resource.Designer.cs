@@ -3475,15 +3475,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombezug… ähnelt.
-        /// </summary>
-        public static string BHW_BTN_STROMBEZUG {
-            get {
-                return ResourceManager.GetString("BHW_BTN_STROMBEZUG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag übernehmen ähnelt.
         /// </summary>
         public static string BHW_BTN_VORSCHLAG_FELD {
@@ -21351,7 +21342,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung steht nicht hier, sondern im Dialog „BHKW-Wirtschaftlichkeit“ (Einspeisevergütung KWK-Strom) und, bei aktivem Rollentarif, im Einspeisepreis der Tarifstruktur — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt. ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_FK7 {
             get {
@@ -22409,24 +22400,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_LP_SAISON {
             get {
                 return ResourceManager.GetString("KDLG_LP_SAISON", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis Strom: über die Tarifstruktur. ähnelt.
-        /// </summary>
-        public static string KDLG_LP_STROM_TARIF {
-            get {
-                return ResourceManager.GetString("KDLG_LP_STROM_TARIF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur… ähnelt.
-        /// </summary>
-        public static string KDLG_LP_STROM_TARIF_BTN {
-            get {
-                return ResourceManager.GetString("KDLG_LP_STROM_TARIF_BTN", resourceCulture);
             }
         }
         
@@ -32507,38 +32480,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde, mit der der Hochtarif endet (exklusiv) — nur im Zonenmodell. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_HTBIS_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_HTBIS_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde, mit der der Hochtarif beginnt — nur im Zonenmodell. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_HTVON_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_HTVON_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Leistungspreismodell dieser Rolle — monatlich, gestaffelt oder nach Jahreshöchstlast. ähnelt.
         /// </summary>
         public static string KI_DLG_TAR_LM_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TAR_LM_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell oder Rollenmodell. Das Zonenmodell rechnet mit vier Preiszonen und einer Leistungsstaffel, das Rollenmodell mit je einem Arbeits-, Grund- und Leistungspreis je Rolle. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_MODELL_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_MODELL_ERL", resourceCulture);
             }
         }
         
@@ -32579,34 +32525,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsgrenze, ab der der zweite Staffelpreis gilt. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_STAFFEL_GRENZE_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_GRENZE_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis oberhalb der Staffelgrenze. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_STAFFEL_OBEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_OBEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis unterhalb der Staffelgrenze. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_STAFFEL_UNTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_UNTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterzone endet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterspanne endet. ähnelt.
         /// </summary>
         public static string KI_DLG_TAR_WINTERBIS_ERL {
             get {
@@ -32615,29 +32534,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterzone beginnt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterspanne beginnt — sie trennt Sommer- und Wintermaximum des Leistungspreismodells „Staffel“. ähnelt.
         /// </summary>
         public static string KI_DLG_TAR_WINTERVON_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TAR_WINTERVON_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezugspreis dieser Preiszone im Zonenmodell. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_ZONE_BEZUG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_ZONE_BEZUG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einspeisepreis dieser Preiszone im Zonenmodell. Er gilt für PV UND KWK — beide teilen sich das Feld. ähnelt.
-        /// </summary>
-        public static string KI_DLG_TAR_ZONE_EINSP_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_TAR_ZONE_EINSP_ERL", resourceCulture);
             }
         }
         
@@ -60944,15 +60845,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
-        /// </summary>
-        public static string TARIF_BTN_SPEICHERN {
-            get {
-                return ResourceManager.GetString("TARIF_BTN_SPEICHERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisepreis [€/kWh]: ähnelt.
         /// </summary>
         public static string TARIF_EINSPEISEPREIS {
@@ -60980,24 +60872,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreise [€/kWh] ähnelt.
-        /// </summary>
-        public static string TARIF_G_BEZUGSPREISE {
-            get {
-                return ResourceManager.GetString("TARIF_G_BEZUGSPREISE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld) ähnelt.
-        /// </summary>
-        public static string TARIF_G_EINSPEISEPREISE {
-            get {
-                return ResourceManager.GetString("TARIF_G_EINSPEISEPREISE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
         /// </summary>
         public static string TARIF_G_EINSPEISUNG {
@@ -61016,56 +60890,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis-Staffel (auf die Jahres-Bezugsspitze) ähnelt.
-        /// </summary>
-        public static string TARIF_G_STAFFEL {
-            get {
-                return ResourceManager.GetString("TARIF_G_STAFFEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“) ähnelt.
         /// </summary>
         public static string TARIF_G_ZEITZONEN {
             get {
                 return ResourceManager.GetString("TARIF_G_ZEITZONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel ähnelt.
-        /// </summary>
-        public static string TARIF_G_ZONEN {
-            get {
-                return ResourceManager.GetString("TARIF_G_ZONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Stufe W3) — Einspeisepreise ähnelt.
-        /// </summary>
-        public static string TARIF_G_ZONEN_EINSP {
-            get {
-                return ResourceManager.GetString("TARIF_G_ZONEN_EINSP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die HT bis Stunde (exklusiv): ähnelt.
-        /// </summary>
-        public static string TARIF_HT_BIS {
-            get {
-                return ResourceManager.GetString("TARIF_HT_BIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die HT von Stunde (nur Zonenmodell): ähnelt.
-        /// </summary>
-        public static string TARIF_HT_VON {
-            get {
-                return ResourceManager.GetString("TARIF_HT_VON", resourceCulture);
             }
         }
         
@@ -61106,33 +60935,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifmodell: ähnelt.
-        /// </summary>
-        public static string TARIF_MODELL {
-            get {
-                return ResourceManager.GetString("TARIF_MODELL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell (Bezug / Reststrom / Einspeisung) ähnelt.
-        /// </summary>
-        public static string TARIF_MODELL_ROLLEN {
-            get {
-                return ResourceManager.GetString("TARIF_MODELL_ROLLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Winter/Sommer × HT/NT) ähnelt.
-        /// </summary>
-        public static string TARIF_MODELL_ZONEN {
-            get {
-                return ResourceManager.GetString("TARIF_MODELL_ZONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Monatlicher Leistungspreis [€/kW·Monat]: ähnelt.
         /// </summary>
         public static string TARIF_MONATSPREIS {
@@ -61142,29 +60944,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das HT-Fenster ist leer (von ≥ bis). ähnelt.
-        /// </summary>
-        public static string TARIF_MSG_HT_LEER {
-            get {
-                return ResourceManager.GetString("TARIF_MSG_HT_LEER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück. ähnelt.
         /// </summary>
         public static string TARIF_MSG_OHNE_ARBEIT {
             get {
                 return ResourceManager.GetString("TARIF_MSG_OHNE_ARBEIT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück. ähnelt.
-        /// </summary>
-        public static string TARIF_MSG_OHNE_BEZUG {
-            get {
-                return ResourceManager.GetString("TARIF_MSG_OHNE_BEZUG", resourceCulture);
             }
         }
         
@@ -61205,24 +60989,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer HT: ähnelt.
-        /// </summary>
-        public static string TARIF_SOMMER_HT {
-            get {
-                return ResourceManager.GetString("TARIF_SOMMER_HT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer NT: ähnelt.
-        /// </summary>
-        public static string TARIF_SOMMER_NT {
-            get {
-                return ResourceManager.GetString("TARIF_SOMMER_NT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Obergrenze [kW] ähnelt.
         /// </summary>
         public static string TARIF_SP_OBERGRENZE {
@@ -61250,38 +61016,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Staffelgrenze [kW]: ähnelt.
-        /// </summary>
-        public static string TARIF_STAFFEL_GRENZE {
-            get {
-                return ResourceManager.GetString("TARIF_STAFFEL_GRENZE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt bis 500 kW Stufe 1, 500–2.000 kW Stufe 2, 2.000–8.000 kW Stufe 3, darüber Stufe 4. Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind vor der Übernahme umzurechnen. ähnelt.
         /// </summary>
         public static string TARIF_STAFFEL_HINWEIS {
             get {
                 return ResourceManager.GetString("TARIF_STAFFEL_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preis bis Grenze [€/kW·a]: ähnelt.
-        /// </summary>
-        public static string TARIF_STAFFEL_PREIS1 {
-            get {
-                return ResourceManager.GetString("TARIF_STAFFEL_PREIS1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preis über Grenze [€/kW·a]: ähnelt.
-        /// </summary>
-        public static string TARIF_STAFFEL_PREIS2 {
-            get {
-                return ResourceManager.GetString("TARIF_STAFFEL_PREIS2", resourceCulture);
             }
         }
         
@@ -61300,24 +61039,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TARIF_STUFE_REST {
             get {
                 return ResourceManager.GetString("TARIF_STUFE_REST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur Strom ähnelt.
-        /// </summary>
-        public static string TARIF_TITEL {
-            get {
-                return ResourceManager.GetString("TARIF_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur Strombezug (Wärmepumpe &amp; Verbraucher) ähnelt.
-        /// </summary>
-        public static string TARIF_TITEL_BEZUG {
-            get {
-                return ResourceManager.GetString("TARIF_TITEL_BEZUG", resourceCulture);
             }
         }
         
@@ -61345,24 +61066,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TARIF_WINTER_BIS {
             get {
                 return ResourceManager.GetString("TARIF_WINTER_BIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Winter HT: ähnelt.
-        /// </summary>
-        public static string TARIF_WINTER_HT {
-            get {
-                return ResourceManager.GetString("TARIF_WINTER_HT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Winter NT: ähnelt.
-        /// </summary>
-        public static string TARIF_WINTER_NT {
-            get {
-                return ResourceManager.GetString("TARIF_WINTER_NT", resourceCulture);
             }
         }
         
@@ -62715,15 +62418,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BTN_PARAMETER {
             get {
                 return ResourceManager.GetString("WIRT_BTN_PARAMETER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombezug… ähnelt.
-        /// </summary>
-        public static string WIRT_BTN_STROM_TARIF {
-            get {
-                return ResourceManager.GetString("WIRT_BTN_STROM_TARIF", resourceCulture);
             }
         }
         

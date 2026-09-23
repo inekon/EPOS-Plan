@@ -317,7 +317,7 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="tarif">
         /// Tarifparameter der Gruppe; er entscheidet über die Beschriftung der
-        /// Stromkostenzeile. <c>null</c> = Zonenmodell (Bestandsverhalten).
+        /// Stromkostenzeile. <c>null</c> = kein wirksamer Rollentarif.
         /// </param>
         public static List<WirtZeile> Kennzahlen(IList<WirtschaftlichkeitErgebnis> menge,
                                                  TarifParameter tarif)
@@ -473,9 +473,13 @@ namespace WindowsFormsApplication1
             // also die Kosten MIT Anlage — und steht damit direkt neben den vermiedenen
             // Kosten, die sich auf den Bezug OHNE Anlage beziehen. Der Titel sagt
             // seither, welche der beiden Größen gemeint ist.
+            //
+            // Q11 (E7b): Gerechnet wird der Betrag nur noch im Rollenmodell. Den
+            // Bezugstitel trägt allein ein GESPEICHERTER Lauf aus der Zeit des
+            // Zeitzonentarifs, bis „Berechnen“ ihn ersetzt.
             if (Irgendein(menge, e => e.StromkostenTarif.HasValue))
                 z.Add(Zahl("STROMKOSTEN_TARIF",
-                           tarif != null && tarif.Aktiv && tarif.RollenModus
+                           tarif != null && tarif.Wirksam
                                ? MyResource.Resource.WIRT_ZEILE_STROMKOSTEN_RESTSTROM
                                : MyResource.Resource.WIRT_ZEILE_STROMKOSTEN_BEZUG,
                            e => e.StromkostenTarif));
@@ -828,8 +832,8 @@ namespace WindowsFormsApplication1
                     // entfallende entgangene § 9b-Entlastung. Verteilt hat das der Lauf
                     // (VermiedenJeAnlage); hier wird nur gelesen. Die Herleitungszeile
                     // nennt Menge, Anteil und — bei mehr als einer Anlage — die
-                    // Naeherung (A12): Die Strommatrix trennt nach Tarifzone, nicht nach
-                    // Anlage, der Schluessel ist der Eigenverbrauch je Anlage, brutto aus
+                    // Naeherung (A12): Die Strommatrix trennt nicht nach Anlage,
+                    // der Schluessel ist der Eigenverbrauch je Anlage, brutto aus
                     // der Strommatrix (Befund V-4, seit E7 Konzept § 6.3 Nr. 32).
                     foreach (string komponente in vermiedenK)
                     {

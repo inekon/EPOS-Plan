@@ -185,8 +185,9 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>
-        /// Der Tarifweg rechnet
-        /// <c>Energie = Energiekosten − StromkostenNetz + Bezugskosten(tarif)</c>
+        /// Der Tarifweg (das Rollenmodell; den Zeitzonentarif gibt es mit Q11 nicht
+        /// mehr) rechnet
+        /// <c>Energie = Energiekosten − StromkostenNetz + Reststromkosten(tarif)</c>
         /// (<see cref="WirtschaftlichkeitCtrl"/>). Er bleibt nur dann eine einzige
         /// Wahrheit, wenn <c>StromkostenNetz</c> den GANZEN Stromanteil trägt — also
         /// auch den neuen Leistungsanteil. Geprüft wird genau diese Invariante: Der

@@ -6,31 +6,23 @@ namespace EPOS.UI.Dialoge.Wirtschaftlichkeit;
 /// Ä18 (Nutzerauftrag 26.08.2026): Komponentensicht des Tarifdialogs. Es gilt
 /// weiterhin EIN Tarifsatz je Stamm (<c>Tab_ProjektTarif</c>) — die Sicht
 /// bestimmt nur, welche Blöcke der Dialog baut. Geteilte Felder (Kopf,
-/// Einspeisepreise, Bezugs-Referenzrolle) erscheinen in mehreren Sichten und
-/// meinen dieselben Werte; nicht gebaute Felder behält der Speichervorgang
-/// unverändert bei.
+/// Einspeisung, Bezugs-Referenzrolle) erscheinen in beiden Sichten und meinen
+/// dieselben Werte; nicht gebaute Felder behält der Speichervorgang unverändert bei.
 ///
-/// <para>Wortgleich aus der gelöschten WinForms-Fassung
-/// <c>Views/Wirtschaftlichkeit/Form_Tarifstruktur.cs</c> übernommen (iU9-W2.3);
-/// sie stand dort im selben Quelltext wie die Maske und musste mit ihr
-/// umziehen — <c>BhkwWirtschaftlichkeitHuelle</c> und
-/// <c>UcWirtschaftlichkeit</c> benutzen sie weiter.</para>
+/// <para><b>Zwei Sichten</b> (Entscheid Q11, Anwender 22.09.2026: „kein HT/NT"; der
+/// Rest nach Empfehlung). Die Sicht <c>Strombezug</c> — Zonen-Bezugspreise,
+/// Leistungspreis-Staffel und Bezugsrolle, geöffnet über „Strombezug…" — und die
+/// Sicht <c>Komplett</c> ohne Wirt sind entfallen: Den Zeitzonentarif gibt es nicht
+/// mehr, die Staffel pflegt der Stromträger in der Kostenverwaltung, und die
+/// Bezugsrolle steht in der BHKW-Sicht. Was bleibt, ist das Rollenmodell.</para>
 /// </summary>
 public enum TarifSicht
 {
-    /// <summary>Alle Blöcke (Bestandsverhalten, Rückfall).</summary>
-    Komplett,
-
-    /// <summary>Strom-EINKAUF: Zonen-Bezugspreise, Leistungspreis-Staffel und
-    /// die Bezugsrolle — die Tarifseite der Wärmepumpe und aller Verbraucher.</summary>
-    Strombezug,
-
-    /// <summary>BHKW: das Rollenmodell (Differenzmethode) samt Referenzbezug
-    /// und Einspeisung sowie die Zonen-Einspeisepreise (KWK-Anteil).</summary>
+    /// <summary>BHKW: das Rollenmodell (Differenzmethode) — Bezugstarif ohne Anlage
+    /// als Referenz, Reststromtarif mit Anlage und Einspeisung. Die Vorgabe.</summary>
     Bhkw,
 
-    /// <summary>Photovoltaik: die Einspeisepreise beider Modelle
-    /// (Zonenpreise bzw. Rollen-Einspeisung).</summary>
+    /// <summary>Photovoltaik: der Einspeisetarif des Rollenmodells.</summary>
     Photovoltaik
 }
 
@@ -41,16 +33,15 @@ public enum TarifSicht
 /// Zeichenketten nicht bequem in einem Attributwert tragen.
 ///
 /// <para>Schlüssel <c>TARIF_*</c> (Sammelnachtrag iU9-W2.6), deutscher Rückfall
-/// wortgleich aus <c>Form_Tarifstruktur.InitializeComponent</c>.</para>
+/// wortgleich aus <c>Form_Tarifstruktur.InitializeComponent</c>. Die Texte des
+/// Zonenmodells, der Staffel, der Modellwahl und der entfallenen Sichten sind mit
+/// Q11 gestrichen.</para>
 /// </summary>
 public sealed class TarifstrukturTexte
 {
     private static string T(string schluessel, string rueckfall) => BhwTexte.T(schluessel, rueckfall);
 
     // ------------------------------------------------------------ Rahmen
-    public string TitelKomplett { get; } = T("TARIF_TITEL", "Tarifstruktur Strom");
-    public string TitelStrombezug { get; } = T("TARIF_TITEL_BEZUG",
-        "Tarifstruktur Strombezug (Wärmepumpe & Verbraucher)");
     public string TitelBhkw { get; } = T("TARIF_TITEL_BHKW", "Tarifstruktur BHKW (Strom)");
     public string TitelPv { get; } = T("TARIF_TITEL_PV", "Tarifstruktur PV-Einspeisung");
     // W-E2 (Mockup-Prüfung 04): Speichern ist ein Hausknopf, derselbe Schlüssel wie
@@ -61,41 +52,16 @@ public sealed class TarifstrukturTexte
     // -------------------------------------------------------------- Kopf
     public string Aktiv { get; } = T("TARIF_AKTIV",
         "Tarifstruktur aktiv (ersetzt die Flat-Strompreise der Kostenmaske)");
-    public string Modell { get; } = T("TARIF_MODELL", "Tarifmodell:");
-    public string ModellZonen { get; } = T("TARIF_MODELL_ZONEN",
-        "Zonenmodell (Winter/Sommer × HT/NT)");
-    public string ModellRollen { get; } = T("TARIF_MODELL_ROLLEN",
-        "Rollenmodell (Bezug / Reststrom / Einspeisung)");
     public string GueltigAb { get; } = T("TARIF_GUELTIG_AB", "Preisstand (gültig ab):");
     public string SichtHinweis { get; } = T("TARIF_SICHT_HINWEIS",
         "Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und geteilte " +
         "Preisfelder erscheinen in mehreren Sichten und meinen dieselben Werte.");
 
-    // ---------------------------------------------------------- Zeitzonen
+    // ------------------------------------------------------- Winterspanne
     public string GZeitzonen { get; } = T("TARIF_G_ZEITZONEN",
-        "Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)");
+        "Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)");
     public string WinterVon { get; } = T("TARIF_WINTER_VON", "Winter von Monat:");
     public string WinterBis { get; } = T("TARIF_WINTER_BIS", "Winter bis Monat:");
-    public string HtVon { get; } = T("TARIF_HT_VON", "HT von Stunde (nur Zonenmodell):");
-    public string HtBis { get; } = T("TARIF_HT_BIS", "HT bis Stunde (exklusiv):");
-
-    // -------------------------------------------------------- Zonenmodell
-    public string GZonen { get; } = T("TARIF_G_ZONEN",
-        "Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel");
-    public string GZonenNurEinspeisung { get; } = T("TARIF_G_ZONEN_EINSP",
-        "Zonenmodell (Stufe W3) — Einspeisepreise");
-    public string GBezugspreise { get; } = T("TARIF_G_BEZUGSPREISE", "Bezugspreise [€/kWh]");
-    public string GEinspeisepreise { get; } = T("TARIF_G_EINSPEISEPREISE",
-        "Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld)");
-    public string WinterHt { get; } = T("TARIF_WINTER_HT", "Winter HT:");
-    public string WinterNt { get; } = T("TARIF_WINTER_NT", "Winter NT:");
-    public string SommerHt { get; } = T("TARIF_SOMMER_HT", "Sommer HT:");
-    public string SommerNt { get; } = T("TARIF_SOMMER_NT", "Sommer NT:");
-    public string GStaffel { get; } = T("TARIF_G_STAFFEL",
-        "Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)");
-    public string StaffelGrenze { get; } = T("TARIF_STAFFEL_GRENZE", "Staffelgrenze [kW]:");
-    public string StaffelPreis1 { get; } = T("TARIF_STAFFEL_PREIS1", "Preis bis Grenze [€/kW·a]:");
-    public string StaffelPreis2 { get; } = T("TARIF_STAFFEL_PREIS2", "Preis über Grenze [€/kW·a]:");
 
     // ------------------------------------------------------- Rollenmodell
     public string GRollen { get; } = T("TARIF_G_ROLLEN",
@@ -132,11 +98,6 @@ public sealed class TarifstrukturTexte
         "vor der Übernahme umzurechnen.");
 
     // ---------------------------------------------------------- Meldungen
-    public string MsgHtLeer { get; } = T("TARIF_MSG_HT_LEER",
-        "Das HT-Fenster ist leer (von ≥ bis).");
-    public string MsgOhneBezugspreis { get; } = T("TARIF_MSG_OHNE_BEZUG",
-        "Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — " +
-        "die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.");
     public string MsgOhneArbeitspreis { get; } = T("TARIF_MSG_OHNE_ARBEIT",
         "Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den " +
         "Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die " +
@@ -147,27 +108,20 @@ public sealed class TarifstrukturTexte
     /// <summary>Der Fenstertitel zur Sicht (Ä18).</summary>
     public string Titel(TarifSicht sicht) => sicht switch
     {
-        TarifSicht.Strombezug => TitelStrombezug,
-        TarifSicht.Bhkw => TitelBhkw,
         TarifSicht.Photovoltaik => TitelPv,
-        _ => TitelKomplett
+        _ => TitelBhkw
     };
 }
 
 /// <summary>
-/// Die beiden Auswahllisten des Tarifdialogs — Steuerwerte aus
-/// <c>DbWerte</c>, Anzeigetexte aus <see cref="TarifstrukturTexte"/>
-/// (Drei-Schichten-Regel).
+/// Die Auswahlliste des Tarifdialogs — Steuerwerte aus <c>DbWerte</c>,
+/// Anzeigetexte aus <see cref="TarifstrukturTexte"/> (Drei-Schichten-Regel) — und
+/// die Umrechnung Nummer ↔ Steuerwert, die auch der PV- und der Parameterdialog
+/// nehmen. Die Wahl des Tarifmodells ist mit Q11 entfallen: Es gibt nur noch das
+/// Rollenmodell.
 /// </summary>
 public static class TarifWahlen
 {
-    /// <summary>Tarifmodell: Zonen- oder Rollenmodell.</summary>
-    public static IReadOnlyList<Steuerwahl> Modus(TarifstrukturTexte t) => new[]
-    {
-        new Steuerwahl(0, DbWerte.TARIF_MODUS_ZONEN,  t.ModellZonen),
-        new Steuerwahl(1, DbWerte.TARIF_MODUS_ROLLEN, t.ModellRollen)
-    };
-
     /// <summary>Leistungspreismodell einer Bezugsrolle.</summary>
     public static IReadOnlyList<Steuerwahl> Leistungsmodell(TarifstrukturTexte t) => new[]
     {

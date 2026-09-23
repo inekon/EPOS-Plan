@@ -184,9 +184,10 @@ public class ZahlenfeldTests : BunitContext
     [Fact]
     public void Aktiv_false_sperrt_das_Feld_laesst_den_Wert_aber_lesbar()
     {
-        // iU9-W2.3: Der Tarifdialog sperrt den Block des nicht gewaehlten
+        // iU9-W2.3: Der Tarifdialog sperrte den Block des nicht gewaehlten
         // Rechenmodells, statt ihn auszublenden - die Werte des anderen Modells
-        // bleiben lesbar und erhalten (Form_Tarifstruktur.ModusUebernehmen).
+        // blieben lesbar und erhalten (Form_Tarifstruktur.ModusUebernehmen). Die
+        // Modellwahl ist mit Q11 entfallen; die Regel des Bausteins bleibt.
         var cut = Render<Zahlenfeld>(p => p
             .Add(x => x.Wert, 0.2345)
             .Add(x => x.Nachkommastellen, 4)

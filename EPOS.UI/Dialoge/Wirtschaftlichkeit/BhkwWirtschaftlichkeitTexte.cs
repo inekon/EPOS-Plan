@@ -139,7 +139,6 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. " +
         "Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die " +
         "Stromsteuer enthält.");
-    public string BtnStrombezug { get; } = T("BHW_BTN_STROMBEZUG", "Strombezug…");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 
     /// <summary>Der Sprung laeuft ueber die Huelle und schliesst diesen Dialog

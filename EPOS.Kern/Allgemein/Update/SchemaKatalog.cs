@@ -3788,8 +3788,12 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 21b
         /// belegt jede Bestandszeile mit <c>ZONEN</c>, und die Leseseite behandelt
-        /// leer/NULL genauso — ohne ausdrückliche Wahl rechnet die Anwendung weiter mit
+        /// leer/NULL genauso — ohne ausdrückliche Wahl rechnete die Anwendung weiter mit
         /// dem Zonenmodell aus Phase 8.
+        ///
+        /// <b>Q11 (E7b):</b> Der Zonenmodus rechnet nicht mehr. Schritt 103 schaltet
+        /// aktive Sätze in ihm ab; leer, NULL und <c>ZONEN</c> gelten der Leseseite als
+        /// nicht wirksam (<c>TarifParameter.Wirksam</c>), nur <c>ROLLEN</c> rechnet.
         ///
         /// <b>Spaltenbreite.</b> Längster Wert <c>ROLLEN</c> (6 Zeichen) → TEXT(12).
         /// </summary>
