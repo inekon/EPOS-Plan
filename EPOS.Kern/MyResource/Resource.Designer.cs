@@ -70983,6 +70983,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Normtag des Katalogs rechnet als DIN-4708-Profil aus der Wohnungstabelle. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_NORMTAG {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_NORMTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_UEBERGEBEN {

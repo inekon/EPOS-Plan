@@ -24246,6 +24246,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_GRUND_NOCH_NICHT" xml:space="preserve">
     <value>In dieser Fassung noch nicht verfügbar.</value>
   </data>
+  <data name="ZPG_AUS_GRUND_NORMTAG" xml:space="preserve">
+    <value>Ein Normtag des Katalogs rechnet als DIN-4708-Profil aus der Wohnungstabelle.</value>
+  </data>
   <data name="ZPG_AUS_GRP_EINGABEN" xml:space="preserve">
     <value>Eingaben der Summenlinie</value>
   </data>

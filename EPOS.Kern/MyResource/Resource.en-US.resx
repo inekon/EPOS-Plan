@@ -24239,6 +24239,9 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_GRUND_NOCH_NICHT" xml:space="preserve">
     <value>Not yet available in this version.</value>
   </data>
+  <data name="ZPG_AUS_GRUND_NORMTAG" xml:space="preserve">
+    <value>A standard day of the catalogue is calculated as the DIN 4708 profile from the dwelling table.</value>
+  </data>
   <data name="ZPG_AUS_GRP_EINGABEN" xml:space="preserve">
     <value>Inputs of the cumulative curve</value>
   </data>
