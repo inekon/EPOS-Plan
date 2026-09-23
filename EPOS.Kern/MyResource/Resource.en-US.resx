@@ -6629,6 +6629,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_FM_MJ_BASIS_PE" xml:space="preserve">
     <value>Operation base with p_E [€/a]</value>
   </data>
+  <data name="WIRT_FM_MJ_DELTA_NOMINAL" xml:space="preserve">
+    <value>Δ nominal against {0} (in T incl. residual value)</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_BARWERT" xml:space="preserve">
+    <value>Δ present value against {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_KUMULIERT" xml:space="preserve">
+    <value>Δ cumulative against {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_AMORT_HILFE" xml:space="preserve">
+    <value>Zero crossing in this year [a]</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>
   </data>

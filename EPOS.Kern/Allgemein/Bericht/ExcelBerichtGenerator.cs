@@ -517,12 +517,18 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r += 2;
 
+            // ETAPPE E8b, Stufe 2: die Lage des Blocks „Erwartet" (Zeile je Kennzahl, Spalte je
+            // Stand) — seine Kennzahlen bekommen nach den Mehrjahrestabellen ihre Formeln.
+            KennzahlBlock erwartetBlock = null;
+
             foreach (string szenario in new[] { WirtschaftlichkeitSzenario.ERWARTET,
                                                 WirtschaftlichkeitSzenario.BEST,
                                                 WirtschaftlichkeitSzenario.WORST })
             {
                 var block = alle.Where(x => x.Szenario == szenario).ToList();
                 if (block.Count == 0) continue;
+                KennzahlBlock lage = szenario == WirtschaftlichkeitSzenario.ERWARTET
+                                   ? (erwartetBlock = new KennzahlBlock()) : null;
 
                 // E5‑Q2: der Anzeigename des Szenarios (Ungünstig / Erwartet / Günstig),
                 // nicht der gespeicherte Schlüssel.
@@ -558,6 +564,7 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, c).Value = v.IstStamm ? "Stamm" : v.Anzeige;
                     // Hinterlegt wird die REFERENZ - ohne gewaehlte wie bisher der Stamm.
                     if (idReferenz > 0 ? v.IdProjekt == idReferenz : v.IstStamm) stammSpalte = c;
+                    if (lage != null) lage.Spalten[v.IdProjekt] = c;
                     c++;
                 }
                 ws.Range(kopfZeile, 1, kopfZeile, c - 1).Style.Font.Bold = true;
@@ -574,6 +581,7 @@ namespace WindowsFormsApplication1
 
                     // Der Titel kommt aus MyResource — kein BerichtTexte.T() darüber.
                     ws.Cell(r, 1).Value = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                    if (lage != null) lage.Zeilen[z.Schluessel] = r;
                     if (z.IstUeberschrift || z.IstSumme)
                         ws.Cell(r, 1).Style.Font.Bold = true;
                     if (z.IstUeberschrift)
@@ -845,6 +853,14 @@ namespace WindowsFormsApplication1
             // ihre Lage merkt sich die Liste — die Kennzahlen der Stufe 2 beziehen sich darauf.
             var tafeln = new List<MehrjahresTafel>();
             r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r, p, formeln, tafeln);
+
+            // ETAPPE E8b, Stufe 2 (Konzept § 2.11.6): die Kennzahlen des Szenarios „Erwartet"
+            // in Formeln — Nettobarwert über NBW, Differenz als Zellbezug, Annuität über RMZ
+            // auf die Tabellen; interner Zinsfuß (IKV) und Amortisation über die
+            // Differenzreihe Variante − Referenz, die jede Tabelle einer Variante rechts
+            // bekommt. Gegen dieselbe Referenz wie der Verlauf, aus dem die Tabellen stehen.
+            if (erwartetBlock != null && verlaufFuerMehrjahres != null)
+                ExcelFormelmappe.Kennzahlen(ws, erwartetBlock, tafeln, verlaufFuerMehrjahres, alle, p, formeln);
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
             // ETAPPE E5 Teil b (V‑A, V‑G6): die Zeilen der Bewertung dieses Laufs (in

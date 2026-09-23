@@ -7,6 +7,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using WindowsFormsApplication1;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.Kern.Tests
 {
@@ -110,15 +111,6 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static BerichtsDaten Gruppe1040MitSaetzen()
         {
-            var ctrl = new WirtschaftlichkeitCtrl();
-            WirtschaftlichkeitParameter p = ctrl.LadeParameter(1040);
-            p.IdStamm = 1040;
-            p.Zinssatz = 4.0;
-            p.Betrachtungszeitraum = 20;
-            p.PreissteigerungEnergie = 2.0;
-            p.PreissteigerungBetrieb = 1.5;
-            p.PreissteigerungInvestition = 2.5;
-            Assert.True(ctrl.SpeichereParameter(p), "Der Parametersatz der Prüfgruppe wurde nicht gespeichert.");
             DataRepository.ExecuteNonQuery(
                 "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
                 "Gruppe, Kostenart, Bemessung) VALUES (1041, 83, 7, 2, 1800.0, 'Wartung BHKW', 'BETRIEBSGEBUNDEN', 'BETRAG')");
@@ -126,12 +118,32 @@ namespace EPOS.Kern.Tests
                 "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
                 "Gruppe, Kostenart, Bemessung, StartJahr) VALUES (1041, 79, 2, 2, 600.0, 'Wartung Kessel', " +
                 "'BETRIEBSGEBUNDEN', 'BETRAG', 6)");
-            p = ctrl.LadeParameter(1040);
+            return GruppeMitSaetzen(new[] { 1040, 1041, 1042 }, new[] { 12000.0, 9000.0, 7000.0 });
+        }
 
-            var daten = new BerichtsDaten { IdStamm = 1040, Stammprojektname = "Stammprojekt" };
-            daten.Varianten.Add(Stand(1040, true, "Stammprojekt", 12000.0));
-            daten.Varianten.Add(Stand(1041, false, "Variante A", 9000.0));
-            daten.Varianten.Add(Stand(1042, false, "Variante B", 7000.0));
+        /// <summary>
+        /// ETAPPE E8b — eine Prüfgruppe aus echten Kostenpositionen mit synthetischen
+        /// Energiekosten und dem gepflegten Parametersatz der Formelmappe (i 4 %, T 20 a,
+        /// p_E 2 %, p_B 1,5 %, p_I 2,5 %); der erste Stand ist der Stamm, die übrigen heißen
+        /// „Variante A", „Variante B".
+        /// </summary>
+        private static BerichtsDaten GruppeMitSaetzen(int[] ids, double[] energie)
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(ids[0]);
+            p.IdStamm = ids[0];
+            p.Zinssatz = 4.0;
+            p.Betrachtungszeitraum = 20;
+            p.PreissteigerungEnergie = 2.0;
+            p.PreissteigerungBetrieb = 1.5;
+            p.PreissteigerungInvestition = 2.5;
+            Assert.True(ctrl.SpeichereParameter(p), "Der Parametersatz der Prüfgruppe wurde nicht gespeichert.");
+            p = ctrl.LadeParameter(ids[0]);
+
+            string[] namen = { "Stammprojekt", "Variante A", "Variante B" };
+            var daten = new BerichtsDaten { IdStamm = ids[0], Stammprojektname = "Stammprojekt" };
+            for (int i = 0; i < ids.Length; i++)
+                daten.Varianten.Add(Stand(ids[i], i == 0, namen[i], energie[i]));
             List<SensitivitaetZeile> sens;
             daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p, 0, false, out sens);
             daten.Bewertung = WirtschaftlichkeitBewertung.FuerBericht(daten, daten.Wirtschaftlichkeit, p,
@@ -457,33 +469,18 @@ namespace EPOS.Kern.Tests
 
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
-                var R = new
-                {
-                    Titel = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_TITEL,
-                    Name = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_NAME,
-                    Zins = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ZINS,
-                    Zeitraum = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM,
-                    PreisE = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_E,
-                    PreisB = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_B,
-                    PreisI = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_I,
-                    Invest = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_INVEST,
-                    Ertrag = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ERTRAG,
-                    Dauer = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_DAUER,
-                };
 
-                Zeile(w, 3, R.Titel, "Erwartet", "Günstig", "Ungünstig", R.Name);
-                SatzZeile(w, 4, R.Zins, "Zins_i", 0.03, 0.02, 0.04);
-                SatzZeile(w, 5, R.Zeitraum, "Zeitraum_T", 20, 20, 20);
-                SatzZeile(w, 6, R.PreisE, "p_E", 0.0, -0.01, 0.01);
-                SatzZeile(w, 7, R.PreisB, "p_B", 0.0, -0.01, 0.01);
-                SatzZeile(w, 8, R.PreisI, "p_I", 0.0, -0.01, 0.01);
-                SatzZeile(w, 9, R.Invest, "", 0.0, -0.10, 0.10);
-                SatzZeile(w, 10, R.Ertrag, "", 0.0, 0.10, -0.10);
-                SatzZeile(w, 11, R.Dauer, "", 0.0, 2.0, -2.0);
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_HINWEIS,
-                             w.Cell(12, 1).GetString());
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_FM_GRENZE,
-                             w.Cell(13, 1).GetString());
+                Zeile(w, 3, R.WIRT_FM_PARAM_TITEL, "Erwartet", "Günstig", "Ungünstig", R.WIRT_FM_PARAM_NAME);
+                SatzZeile(w, 4, R.WIRT_FM_PARAM_ZINS, "Zins_i", 0.03, 0.02, 0.04);
+                SatzZeile(w, 5, R.WIRT_FM_PARAM_ZEITRAUM, "Zeitraum_T", 20, 20, 20);
+                SatzZeile(w, 6, R.WIRT_FM_PARAM_PREIS_E, "p_E", 0.0, -0.01, 0.01);
+                SatzZeile(w, 7, R.WIRT_FM_PARAM_PREIS_B, "p_B", 0.0, -0.01, 0.01);
+                SatzZeile(w, 8, R.WIRT_FM_PARAM_PREIS_I, "p_I", 0.0, -0.01, 0.01);
+                SatzZeile(w, 9, R.WIRT_FM_PARAM_INVEST, "", 0.0, -0.10, 0.10);
+                SatzZeile(w, 10, R.WIRT_FM_PARAM_ERTRAG, "", 0.0, 0.10, -0.10);
+                SatzZeile(w, 11, R.WIRT_FM_PARAM_DAUER, "", 0.0, 2.0, -2.0);
+                Assert.Equal(R.WIRT_FM_PARAM_HINWEIS, w.Cell(12, 1).GetString());
+                Assert.Equal(R.WIRT_FM_GRENZE, w.Cell(13, 1).GetString());
                 // Unter dem Block eine Leerzeile — der Block ist P Zeilen hoch (3 bis 14).
                 for (int c = 1; c <= 5; c++)
                     Assert.Equal("", w.Cell(3 + P - 1, c).GetString());
@@ -573,6 +570,127 @@ namespace EPOS.Kern.Tests
                 // Und ClosedXML rechnet dieselben Formeln nach — drei Tabellen zu je 84
                 // Formeln, dazu die 20 Betriebszeilen der Variante A.
                 FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 3 * 84 + 20);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E8b, Stufe 2 (Konzept § 2.11.6) — die <b>Kennzahlen des Szenarios
+        /// „Erwartet" in Formeln</b>: Nettobarwert über NBW (<c>NPV</c>) auf die Nettospalte
+        /// der Tabelle, Kapitalwertdifferenz als Zellbezug, Annuität über RMZ (<c>PMT</c>);
+        /// interner Zinsfuß (IKV, <c>IRR</c>) und dynamische Amortisation über die neue
+        /// <b>Differenzreihe Variante − Referenz</b> rechts der Tabelle — nominal (im Jahr T
+        /// samt Restwert-Nominaldifferenz), als Barwert, kumuliert und mit dem Nulldurchgang
+        /// je Jahr. Die Zahlen sind die des Rechenlaufs.
+        ///
+        /// <para>Prüfgruppe 1042/1043/1044 (Nutzungsdauern: Ersatz und Restwert) mit dem
+        /// gepflegten Parametersatz; beide Varianten haben genau einen Vorzeichenwechsel,
+        /// also einen eindeutigen Zinsfuß.</para>
+        /// </summary>
+        [Fact]
+        public void Excel_Stufe2_Kennzahlen_ueber_NBW_RMZ_und_Differenzreihe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = GruppeMitSaetzen(new[] { 1042, 1043, 1044 }, new[] { 15000.0, 11000.0, 9500.0 });
+                string ziel = Path.Combine(ordner, "stufe2.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                int s = TabellenKopf(w, "Stamm");          // Tabelle der Referenz
+                int kopf = TabellenKopf(w, "Variante A");
+                int j0 = kopf + 1, jT = kopf + 21, abschluss = kopf + 22;
+
+                // Die Differenzreihe rechts der Tabelle (Spalten G bis J; die Tabelle führt
+                // Investition/Ersatz, Energie, Netto, Barwert, Kumuliert).
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_DELTA_NOMINAL, "Stamm"), w.Cell(kopf, 7).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_DELTA_BARWERT, "Stamm"), w.Cell(kopf, 8).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_DELTA_KUMULIERT, "Stamm"), w.Cell(kopf, 9).GetString());
+                Assert.Equal(R.WIRT_FM_MJ_AMORT_HILFE, w.Cell(kopf, 10).GetString());
+                Assert.Equal("D" + j0 + "-D" + (s + 1), w.Cell(j0, 7).FormulaA1);
+                Assert.Equal("D" + jT + "-D" + (s + 21) + "+D" + abschluss + "-D" + (s + 22), w.Cell(jT, 7).FormulaA1);
+                Assert.Equal("E" + j0 + "-E" + (s + 1), w.Cell(j0, 8).FormulaA1);
+                Assert.Equal("H" + j0, w.Cell(j0, 9).FormulaA1);
+                Assert.Equal("I" + j0 + "+H" + (j0 + 1), w.Cell(j0 + 1, 9).FormulaA1);
+                Assert.Equal("IF(AND(I" + j0 + "<0,I" + (j0 + 1) + ">=0),A" + j0 + "-I" + j0 + "/H" + (j0 + 1) + ",\"\")",
+                             w.Cell(j0 + 1, 10).FormulaA1);
+
+                // Die Kennzahlen des Blocks „Erwartet" (Spalte C = Variante A, B = Stamm).
+                int nbw = ZeileMitText(w, R.WIRT_ZEILE_NETTOBARWERT);
+                int diff = ZeileMitText(w, R.WIRT_ZEILE_KAPITALWERT_DIFF);
+                int ann = ZeileMitText(w, R.WIRT_ZEILE_ANNUITAET);
+                int amo = ZeileMitText(w, R.WIRT_ZEILE_AMORTISATION);
+                int irr = ZeileMitText(w, R.WIRT_ZEILE_IRR);
+                Assert.True(nbw > 0 && diff > 0 && ann > 0 && amo > 0 && irr > 0, "Eine Kennzahlzeile fehlt.");
+                Assert.Equal("NPV(Zins_i,D" + (j0 + 1) + ":D" + jT + ")+D" + j0 + "+E" + abschluss,
+                             w.Cell(nbw, 3).FormulaA1);
+                Assert.Equal("NPV(Zins_i,D" + (s + 2) + ":D" + (s + 21) + ")+D" + (s + 1) + "+E" + (s + 22),
+                             w.Cell(nbw, 2).FormulaA1);
+                Assert.Equal("C" + nbw + "-B" + nbw, w.Cell(diff, 3).FormulaA1);
+                Assert.Equal("PMT(Zins_i,Zeitraum_T,-C" + diff + ")", w.Cell(ann, 3).FormulaA1);
+                Assert.StartsWith("IF(I" + j0 + ">=0,IF(I" + jT + ">=0,0,", w.Cell(amo, 3).FormulaA1);
+                Assert.Contains("MIN(J" + (j0 + 1) + ":J" + jT + ")", w.Cell(amo, 3).FormulaA1);
+                Assert.StartsWith("IF(AND(COUNTIF(G" + j0 + ":G" + jT + ",\">1E-6\")>0,COUNTIF(G" + j0 + ":G" + jT +
+                                  ",\"<-1E-6\")>0),ROUND(IRR(G" + j0 + ":G" + jT + ",", w.Cell(irr, 3).FormulaA1);
+
+                // Die Zahlen sind die des Rechenlaufs — Zelle für Zelle der Kennzahlen.
+                WirtschaftlichkeitErgebnis a = daten.Wirtschaftlichkeit.First(
+                    x => x.IdProjekt == 1043 && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                Assert.Equal(a.Kapitalwert.Value, w.Cell(nbw, 3).GetDouble(), 6);
+                Assert.Equal(a.KapitalwertDiff.Value, w.Cell(diff, 3).GetDouble(), 6);
+                Assert.Equal(a.AnnuitaetKW.Value, w.Cell(ann, 3).GetDouble(), 6);
+                Assert.Equal(a.AmortisationJahre.Value, w.Cell(amo, 3).GetDouble(), 6);
+                Assert.Equal(a.IRR.Value, w.Cell(irr, 3).GetDouble(), 6);
+                Assert.Equal(1, a.IrrVorzeichenwechsel);
+                // Die kumulierte Differenz im Jahr T ist die Kapitalwertdifferenz ohne Restwert.
+                Assert.Equal(w.Cell(diff, 3).GetDouble() - (w.Cell(abschluss, 5).GetDouble() - w.Cell(s + 22, 5).GetDouble()),
+                             w.Cell(jT, 9).GetDouble(), 6);
+
+                // Und ClosedXML rechnet alles nach, was es kennt (NPV, PMT, IRR ausgenommen).
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 400);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E8b, Stufe 2 — der <b>benannte Leerwert</b>: Amortisiert sich eine
+        /// Variante im Betrachtungszeitraum nicht, trägt die Kennzahlzelle eine Formel, deren
+        /// Ergebnis der Satz der Seite ist („keine Amortisation im Betrachtungszeitraum") —
+        /// ein Text, kein Zellfehler. Bis Stufe 2 blieb die Zelle leer (Wertspalten
+        /// numerisch); der Satz stand nur auf der Seite und im Wortbericht.
+        /// </summary>
+        [Fact]
+        public void Excel_Stufe2_benannter_Leerwert_statt_Zellfehler()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                // Variante B: teurer in Investition UND Energie — sie amortisiert sich nie.
+                BerichtsDaten daten = GruppeMitSaetzen(new[] { 1041, 1042, 1044 }, new[] { 12000.0, 9000.0, 13000.0 });
+                string ziel = Path.Combine(ordner, "leerwert.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                WirtschaftlichkeitErgebnis b = daten.Wirtschaftlichkeit.First(
+                    x => x.IdProjekt == 1044 && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                Assert.False(b.AmortisationJahre.HasValue);
+
+                int amo = ZeileMitText(w, R.WIRT_ZEILE_AMORTISATION);
+                IXLCell zelle = w.Cell(amo, 4);   // Spalte D = Variante B
+                Assert.True(zelle.HasFormula, "Die Amortisation der Variante B steht nicht als Formel.");
+                Assert.Equal(R.WIRT_GRUND_KEINE_AMORTISATION, zelle.GetString());
+
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 400);
+                Assert.Equal(R.WIRT_GRUND_KEINE_AMORTISATION, wb.Worksheet("Wirtschaftlichkeit").Cell(amo, 4).GetString());
             }
             finally { Aufraeumen(ordner); }
         }

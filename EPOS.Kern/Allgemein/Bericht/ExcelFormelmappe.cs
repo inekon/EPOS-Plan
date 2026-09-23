@@ -298,6 +298,277 @@ namespace WindowsFormsApplication1
             return tafel;
         }
 
+        // =====================================================================
+        //  Stufe 2 — die Kennzahlen des Szenarios „Erwartet"
+        // =====================================================================
+
+        /// <summary>
+        /// Stufe 2 (Konzept § 2.11.6): die Kennzahlen des Szenarios „Erwartet" in Formeln.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>Nettobarwert</b> je Stand über NBW (Excel: <c>NPV</c>) auf
+        ///     die Nettospalte seiner Tabelle, plus Jahr 0 und Restwert-Barwert.</description></item>
+        ///   <item><description><b>Kapitalwertdifferenz</b> als Zellbezug Nettobarwert −
+        ///     Nettobarwert der Referenz; <b>Annuität</b> über RMZ (<c>PMT</c>).</description></item>
+        ///   <item><description><b>Differenzreihe Variante − Referenz</b> — neu je Tabelle
+        ///     einer Variante, rechts der Tabelle: nominal (im Jahr T samt
+        ///     Restwert-Nominaldifferenz), als Barwert ohne Restwert, kumuliert, dazu eine
+        ///     Hilfsspalte mit dem Nulldurchgang je Jahr.</description></item>
+        ///   <item><description><b>Interner Zinsfuß</b> über IKV (<c>IRR</c>) auf die
+        ///     nominale Differenzreihe, <b>dynamische Amortisation</b> über die Hilfsspalte;
+        ///     ohne Vorzeichenwechsel bzw. ohne Nulldurchgang ein benannter Leerwert als Text
+        ///     (dieselben Sätze wie auf der Seite), kein Zellfehler.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Nur wo die Formel dieselbe Zahl liefert:</b> Jede Kennzahl wird in C#
+        /// gegengerechnet (dieselben Rechenkern-Methoden wie der Lauf: Differenzreihe,
+        /// Vorzeichenzähler, Zinsfuß, Amortisation). Ein mehrdeutiger Zinsfuß (mehr als ein
+        /// Vorzeichenwechsel) bleibt ein Wert — die Zinsfußgleichung hat dann mehrere
+        /// Lösungen, und welche Excel fände, ist nicht die, die der Bericht nennt. Die
+        /// Szenarien „Günstig" und „Ungünstig" haben keine Mehrjahrestabelle; ihre Kennzahlen
+        /// bleiben Werte.</para>
+        /// </summary>
+        internal static void Kennzahlen(IXLWorksheet ws, KennzahlBlock block, List<MehrjahresTafel> tafeln,
+            WirtschaftlichkeitVerlauf verlauf, List<WirtschaftlichkeitErgebnis> alle,
+            WirtschaftlichkeitParameter p, Formelregister register)
+        {
+            if (ws == null || block == null || tafeln == null || verlauf == null || alle == null ||
+                p == null || register == null) return;
+            double i = p.Zinssatz / 100.0;
+            int T = p.Betrachtungszeitraum;
+
+            // ---- Nettobarwert je Stand über NPV ----
+            bool mitNbw = block.Zeilen.TryGetValue("NETTOBARWERT", out int zNbw);
+            if (mitNbw)
+                foreach (MehrjahresTafel tafel in tafeln)
+                {
+                    int c;
+                    WirtschaftlichkeitErgebnis e = Erwartet(alle, tafel.IdProjekt);
+                    if (!tafel.Vollstaendig || tafel.Jahre != T || e == null || !e.Kapitalwert.HasValue ||
+                        !block.Spalten.TryGetValue(tafel.IdProjekt, out c)) continue;
+
+                    MehrjahresSpalte netto = tafel.Tabelle.Spalten[tafel.SpalteNetto - 2];
+                    double nach = netto.Wert(0) + tafel.Tabelle.RestwertBarwert;
+                    double npv = 0;
+                    for (int t = 1; t <= T; t++) npv += netto.Wert(t) / Math.Pow(1.0 + i, t);
+                    nach += npv;
+                    string formel = "NPV(" + ZINS + "," + Bezug(tafel.Zeile(1), tafel.SpalteNetto) + ":" +
+                                    Bezug(tafel.Zeile(T), tafel.SpalteNetto) + ")+" +
+                                    Bezug(tafel.Zeile(0), tafel.SpalteNetto) + "+" +
+                                    Bezug(tafel.AbschlussZeile, tafel.SpalteBarwert);
+                    register.Formel(ws.Cell(zNbw, c), formel, e.Kapitalwert.Value, nach);
+                }
+
+            // ---- Die Referenz: ihre Tabelle und ihre Spalte im Block ----
+            int idRef = verlauf.IdReferenz;
+            MehrjahresTafel refTafel = tafeln.FirstOrDefault(x => x.IdProjekt == idRef);
+            WirtschaftlichkeitErgebnis refErg = Erwartet(alle, idRef);
+            int cRef;
+            bool refImBlock = block.Spalten.TryGetValue(idRef, out cRef);
+            string refName = RefName(verlauf);
+
+            foreach (MehrjahresTafel tafel in tafeln)
+            {
+                if (tafel.IdProjekt == idRef) continue;
+                WirtschaftlichkeitErgebnis e = Erwartet(alle, tafel.IdProjekt);
+                int c;
+                bool imBlock = block.Spalten.TryGetValue(tafel.IdProjekt, out c);
+
+                // ---- Kapitalwertdifferenz als Zellbezug, Annuität über PMT ----
+                int zDiff, zAnn;
+                bool diffFormel = false;
+                if (mitNbw && imBlock && refImBlock && e != null && refErg != null && e.KapitalwertDiff.HasValue &&
+                    e.Kapitalwert.HasValue && refErg.Kapitalwert.HasValue &&
+                    block.Zeilen.TryGetValue("KAPITALWERT_DIFF", out zDiff))
+                    diffFormel = register.Formel(ws.Cell(zDiff, c),
+                        Bezug(zNbw, c) + "-" + Bezug(zNbw, cRef),
+                        e.KapitalwertDiff.Value, e.Kapitalwert.Value - refErg.Kapitalwert.Value);
+                if (diffFormel && e.AnnuitaetKW.HasValue && block.Zeilen.TryGetValue("ANNUITAET", out zAnn) &&
+                    block.Zeilen.TryGetValue("KAPITALWERT_DIFF", out zDiff))
+                    register.Formel(ws.Cell(zAnn, c),
+                        "PMT(" + ZINS + "," + ZEITRAUM + ",-" + Bezug(zDiff, c) + ")",
+                        e.AnnuitaetKW.Value, e.KapitalwertDiff.Value * KapitalwertRechner.Annuitaet(i, T));
+
+                // ---- Die Differenzreihe rechts der Tabelle ----
+                if (refTafel == null || !tafel.Vollstaendig || !refTafel.Vollstaendig ||
+                    tafel.Jahre != refTafel.Jahre) continue;
+                if (!Differenzspalten(ws, tafel, refTafel, refName, register)) continue;
+
+                // ---- Amortisation über die Hilfsspalte, Zinsfuß über IRR ----
+                int zAmo, zIrr;
+                if (imBlock && e != null && e.KapitalwertDiff.HasValue &&
+                    block.Zeilen.TryGetValue("AMORTISATION", out zAmo))
+                    AmortisationFormel(ws.Cell(zAmo, c), tafel, e, register);
+                if (imBlock && e != null && e.KapitalwertDiff.HasValue &&
+                    block.Zeilen.TryGetValue("IRR", out zIrr))
+                    ZinsfussFormel(ws.Cell(zIrr, c), tafel, refTafel, e, register);
+            }
+        }
+
+        private static WirtschaftlichkeitErgebnis Erwartet(List<WirtschaftlichkeitErgebnis> alle, int idProjekt)
+        {
+            return alle.FirstOrDefault(x => x.IdProjekt == idProjekt &&
+                                            x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+        }
+
+        /// <summary>Der Name der Referenz, wie ihre Linie im Verlauf ihn trägt.</summary>
+        private static string RefName(WirtschaftlichkeitVerlauf verlauf)
+        {
+            VerlaufSerie s = verlauf.Absolut.FirstOrDefault(x => x != null && x.IdProjekt == verlauf.IdReferenz);
+            return s != null && !string.IsNullOrEmpty(s.Anzeige) ? s.Anzeige : BerichtTexte.T("Stamm");
+        }
+
+        /// <summary>
+        /// Die vier Spalten der Differenzreihe rechts einer Tabelle: nominal (Jahr T mit
+        /// Restwert-Nominaldifferenz), Barwert ohne Restwert, kumuliert, Nulldurchgang je
+        /// Jahr. <c>false</c>, wenn eine Zelle die Gegenrechnung nicht besteht — dann gibt es
+        /// für diese Variante keine Kennzahlformeln aus der Reihe.
+        /// </summary>
+        private static bool Differenzspalten(IXLWorksheet ws, MehrjahresTafel tafel, MehrjahresTafel refTafel,
+                                             string refName, Formelregister register)
+        {
+            double[] fluss = KapitalwertRechner.Differenzreihe(tafel.Bild, refTafel.Bild);
+            int T = tafel.Jahre;
+            if (fluss == null || fluss.Length != T + 1) return false;
+
+            int cN = tafel.FreieSpalte, cB = cN + 1, cK = cN + 2, cH = cN + 3;
+            tafel.Referenz = refTafel;
+            tafel.SpalteDeltaNominal = cN;
+            tafel.SpalteDeltaBarwert = cB;
+            tafel.SpalteDeltaKumuliert = cK;
+            tafel.SpalteAmortHilfe = cH;
+            tafel.FreieSpalte = cH + 1;
+            Kopf(ws, tafel.KopfZeile, cN, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_NOMINAL, refName));
+            Kopf(ws, tafel.KopfZeile, cB, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_BARWERT, refName));
+            Kopf(ws, tafel.KopfZeile, cK, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_KUMULIERT, refName));
+            Kopf(ws, tafel.KopfZeile, cH, MyResource.Resource.WIRT_FM_MJ_AMORT_HILFE);
+
+            MehrjahresSpalte netto = tafel.Tabelle.Spalten[tafel.SpalteNetto - 2];
+            MehrjahresSpalte nettoRef = refTafel.Tabelle.Spalten[refTafel.SpalteNetto - 2];
+            MehrjahresSpalte bw = tafel.Tabelle.Spalten[tafel.SpalteBarwert - 2];
+            MehrjahresSpalte bwRef = refTafel.Tabelle.Spalten[refTafel.SpalteBarwert - 2];
+            bool alle = true;
+            double kum = 0;
+            for (int t = 0; t <= T; t++)
+            {
+                int r = tafel.Zeile(t), rr = refTafel.Zeile(t);
+                ZahlFormat(ws.Cell(r, cN)); ZahlFormat(ws.Cell(r, cB)); ZahlFormat(ws.Cell(r, cK));
+
+                // nominal — im Jahr T samt Restwert-Nominaldifferenz (Abschlusszeilen)
+                string fN = Bezug(r, tafel.SpalteNetto) + "-" + Bezug(rr, refTafel.SpalteNetto);
+                double nachN = netto.Wert(t) - nettoRef.Wert(t);
+                if (t == T)
+                {
+                    fN += "+" + Bezug(tafel.AbschlussZeile, tafel.SpalteNetto) + "-" +
+                          Bezug(refTafel.AbschlussZeile, refTafel.SpalteNetto);
+                    nachN = nachN + tafel.Bild.RestwertNominal - refTafel.Bild.RestwertNominal;
+                }
+                alle &= Setze(ws.Cell(r, cN), fN, fluss[t], nachN, register);
+
+                // Barwert ohne Restwert und Laufsumme — die Reihe der Amortisation
+                double dBw = tafel.Bild.BarwertReihe[t] - refTafel.Bild.BarwertReihe[t];
+                alle &= Setze(ws.Cell(r, cB), Bezug(r, tafel.SpalteBarwert) + "-" + Bezug(rr, refTafel.SpalteBarwert),
+                              dBw, bw.Wert(t) - bwRef.Wert(t), register);
+                double vorher = kum;
+                kum = t == 0 ? dBw : kum + dBw;
+                alle &= Setze(ws.Cell(r, cK), t == 0 ? Bezug(r, cB) : Bezug(r - 1, cK) + "+" + Bezug(r, cB),
+                              kum, kum, register);
+
+                // Nulldurchgang je Jahr: (t−1) − K(t−1) / ΔBW(t), sonst ""
+                if (t >= 1)
+                {
+                    string fH = "IF(AND(" + Bezug(r - 1, cK) + "<0," + Bezug(r, cK) + ">=0)," +
+                                Bezug(r - 1, 1) + "-" + Bezug(r - 1, cK) + "/" + Bezug(r, cB) + ",\"\")";
+                    if (vorher < 0 && kum >= 0)
+                    {
+                        double h = (t - 1) - vorher / dBw;
+                        alle &= Setze(ws.Cell(r, cH), fH, h, h, register);
+                        ws.Cell(r, cH).Style.NumberFormat.Format = "#,##0.00";
+                    }
+                    else register.FormelText(ws.Cell(r, cH), fH, "");
+                }
+            }
+            return alle;
+        }
+
+        /// <summary>Setzt eine Formel in eine NEUE Zelle — ohne vorherigen Wert; besteht
+        /// die Gegenrechnung nicht, bleibt die Zelle als Wert stehen.</summary>
+        private static bool Setze(IXLCell zelle, string formel, double wert, double nachgerechnet,
+                                  Formelregister register)
+        {
+            if (register.Formel(zelle, formel, wert, nachgerechnet)) return true;
+            if (!double.IsNaN(wert) && !double.IsInfinity(wert)) zelle.Value = wert;
+            return false;
+        }
+
+        /// <summary>
+        /// Die Amortisation einer Variante über die Hilfsspalte: ohne Mehrinvestition 0 (wenn
+        /// auch das Ende nicht negativ ist), sonst der erste Nulldurchgang; ohne einen der
+        /// benannte Leerwert. Dieselbe Regel wie <see cref="KapitalwertRechner.AmortisationDifferenz"/>.
+        /// </summary>
+        private static void AmortisationFormel(IXLCell zelle, MehrjahresTafel tafel,
+                                               WirtschaftlichkeitErgebnis e, Formelregister register)
+        {
+            int T = tafel.Jahre;
+            string k0 = Bezug(tafel.Zeile(0), tafel.SpalteDeltaKumuliert);
+            string kT = Bezug(tafel.Zeile(T), tafel.SpalteDeltaKumuliert);
+            string hilfe = Bezug(tafel.Zeile(1), tafel.SpalteAmortHilfe) + ":" +
+                           Bezug(tafel.Zeile(T), tafel.SpalteAmortHilfe);
+            string leer = MyResource.Resource.WIRT_GRUND_KEINE_AMORTISATION.Replace("\"", "\"\"");
+            string formel = "IF(" + k0 + ">=0,IF(" + kT + ">=0,0,\"" + leer + "\"),IF(COUNT(" + hilfe +
+                            ")=0,\"" + leer + "\",MIN(" + hilfe + ")))";
+
+            double? nach = KapitalwertRechner.AmortisationDifferenz(tafel.Bild, RefBild(tafel));
+            if (nach.HasValue != e.AmortisationJahre.HasValue) return;
+            if (nach.HasValue) register.Formel(zelle, formel, e.AmortisationJahre.Value, nach.Value);
+            else register.FormelText(zelle, formel, MyResource.Resource.WIRT_GRUND_KEINE_AMORTISATION);
+        }
+
+        /// <summary>
+        /// Der interne Zinsfuß einer Variante über IRR auf die nominale Differenzreihe,
+        /// gerundet wie im Rechenkern (zwei Nachkommastellen in Prozent); der Wert des Laufs
+        /// ist der Startwert. Ohne Vorzeichenwechsel der benannte Leerwert. Mehrdeutig (mehr als
+        /// ein Wechsel) bleibt die Zelle ein Wert.
+        /// </summary>
+        private static void ZinsfussFormel(IXLCell zelle, MehrjahresTafel tafel, MehrjahresTafel refTafel,
+                                           WirtschaftlichkeitErgebnis e, Formelregister register)
+        {
+            int? wechsel = KapitalwertRechner.Vorzeichenwechsel(tafel.Bild, refTafel.Bild);
+            if (!wechsel.HasValue || wechsel != e.IrrVorzeichenwechsel) return;
+            string reihe = Bezug(tafel.Zeile(0), tafel.SpalteDeltaNominal) + ":" +
+                           Bezug(tafel.Zeile(tafel.Jahre), tafel.SpalteDeltaNominal);
+            string leer = MyResource.Resource.WIRT_IZF_KEIN_WERT.Replace("\"", "\"\"");
+            string grenze = KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR.ToString("0E0", CultureInfo.InvariantCulture);
+
+            if (wechsel == 1 && e.IRR.HasValue)
+            {
+                double? nach = KapitalwertRechner.InternerZinsfuss(tafel.Bild, refTafel.Bild);
+                if (!nach.HasValue) return;
+                string start = Math.Round(e.IRR.Value / 100.0, 6).ToString("R", CultureInfo.InvariantCulture);
+                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
+                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + "," + start + ")*100,2),\"" +
+                                leer + "\")";
+                register.Formel(zelle, formel, e.IRR.Value, nach.Value);
+            }
+            else if (wechsel == 0 && !e.IRR.HasValue)
+            {
+                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
+                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + ")*100,2),\"" + leer + "\")";
+                register.FormelText(zelle, formel, MyResource.Resource.WIRT_IZF_KEIN_WERT);
+            }
+        }
+
+        /// <summary>Das Zahlungsbild der Referenz einer Tabelle mit Differenzspalten.</summary>
+        private static KapitalwertRechner.Zahlungsbild RefBild(MehrjahresTafel tafel)
+        {
+            return tafel.Referenz != null ? tafel.Referenz.Bild : null;
+        }
+
+        private static void ZahlFormat(IXLCell zelle)
+        {
+            zelle.Style.NumberFormat.Format = "#,##0";
+        }
+
         /// <summary>Fortschreibung einer Spalte ab Jahr 2: Jahr 1 × (1+p)^(t−1).</summary>
         private static void Fortschreibung(IXLWorksheet ws, MehrjahresTafel tafel, Mehrjahresbild bild,
                                            string schluessel, double satz, Formelregister register)
@@ -382,6 +653,16 @@ namespace WindowsFormsApplication1
         internal Mehrjahresbild Tabelle;
         internal KapitalwertRechner.Zahlungsbild Bild;
 
+        // ---- Stufe 2: die Differenzreihe Variante − Referenz rechts der Tabelle ----
+
+        /// <summary>Die Tabelle der Referenz, gegen die die Differenzspalten rechnen;
+        /// <c>null</c> = keine Differenzspalten (die Referenz selbst oder keine Reihe).</summary>
+        internal MehrjahresTafel Referenz;
+        internal int SpalteDeltaNominal = -1;
+        internal int SpalteDeltaBarwert = -1;
+        internal int SpalteDeltaKumuliert = -1;
+        internal int SpalteAmortHilfe = -1;
+
         /// <summary>Die Zeile des Jahres <paramref name="jahr"/> (0…T).</summary>
         internal int Zeile(int jahr) { return Jahr0Zeile + jahr; }
 
@@ -390,6 +671,17 @@ namespace WindowsFormsApplication1
         {
             get { return SpalteNetto > 0 && SpalteBarwert > 0 && SpalteKumuliert > 0 && Jahre >= 1; }
         }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b, Stufe 2 — die Lage eines Kennzahlblocks im Blatt: die Zeile je
+    /// Kennzahlschlüssel (<see cref="WirtZeile.Schluessel"/>) und die Spalte je Stand
+    /// (<c>Tab_Projekt.ID</c>).
+    /// </summary>
+    internal sealed class KennzahlBlock
+    {
+        internal readonly Dictionary<string, int> Zeilen = new Dictionary<string, int>(StringComparer.Ordinal);
+        internal readonly Dictionary<int, int> Spalten = new Dictionary<int, int>();
     }
 
     /// <summary>

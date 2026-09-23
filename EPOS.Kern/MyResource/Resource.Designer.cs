@@ -66526,6 +66526,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang in diesem Jahr [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_AMORT_HILFE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_AMORT_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Basis Betrieb mit p_B [€/a] ähnelt.
         /// </summary>
         public static string WIRT_FM_MJ_BASIS_PB {
@@ -66540,6 +66549,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FM_MJ_BASIS_PE {
             get {
                 return ResourceManager.GetString("WIRT_FM_MJ_BASIS_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ Barwert gegenüber {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_BARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_BARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ kumuliert gegenüber {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_KUMULIERT {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ nominal gegenüber {0} (in T mit Restwert) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_NOMINAL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_NOMINAL", resourceCulture);
             }
         }
         

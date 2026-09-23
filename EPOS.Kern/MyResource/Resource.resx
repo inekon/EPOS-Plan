@@ -6645,6 +6645,18 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_FM_MJ_BASIS_PE" xml:space="preserve">
     <value>Basis Betrieb mit p_E [€/a]</value>
   </data>
+  <data name="WIRT_FM_MJ_DELTA_NOMINAL" xml:space="preserve">
+    <value>Δ nominal gegenüber {0} (in T mit Restwert)</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_BARWERT" xml:space="preserve">
+    <value>Δ Barwert gegenüber {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_KUMULIERT" xml:space="preserve">
+    <value>Δ kumuliert gegenüber {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_AMORT_HILFE" xml:space="preserve">
+    <value>Nulldurchgang in diesem Jahr [a]</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>
