@@ -227,9 +227,10 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14 + 12 + 3 + 14, schluessel.Count);
+            Assert.Equal(14 + 14 + 3 + 14, schluessel.Count);
             Assert.Contains("ZPG_EINGABE_KALENDER_UNGUELTIG", schluessel);
             Assert.Contains("ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG", schluessel);
+            Assert.Contains("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", schluessel);
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
             Assert.True(fehlend.Length == 0, "Ohne Text in beiden Sprachen: " + string.Join(", ", fehlend));

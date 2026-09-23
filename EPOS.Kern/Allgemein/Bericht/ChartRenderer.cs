@@ -3082,6 +3082,322 @@ namespace WindowsFormsApplication1
             return z;
         }
 
+        // ==================================== Summenlinie (Zapfprofil, Stufe Z2, Gruppe 2)
+
+        /// <summary>
+        /// Eine MARKE im <see cref="SummenlinieModell"/>: eine senkrechte Strecke bei
+        /// <see cref="X"/> von <see cref="YVon"/> bis <see cref="YBis"/> in Werten der LINKEN
+        /// Achse — etwa der Speicherinhalt zwischen Bedarfs- und Versorgungslinie oder der
+        /// maßgebende Zeitpunkt — oder, mit <see cref="Punkt"/>, ein Kreis bei (X, YBis).
+        /// Die Beschriftung steht rechts daneben.
+        /// </summary>
+        public sealed class Linienmarke
+        {
+            /// <summary>Die x-Stelle in der Einheit der x-Achse.</summary>
+            public double X;
+
+            /// <summary>Das untere Ende der Strecke; <c>null</c> = von der Achsennull.</summary>
+            public double? YVon;
+
+            /// <summary>Das obere Ende der Strecke bzw. die Höhe des Punkts.</summary>
+            public double YBis;
+
+            /// <summary>Die Beschriftung; leer = ohne.</summary>
+            public string Text;
+
+            /// <summary>Ein Punkt bei (X, YBis) statt einer Strecke.</summary>
+            public bool Punkt;
+
+            public Linienmarke(double x, double? yVon, double yBis, string text, bool punkt = false)
+            { X = x; YVon = yVon; YBis = yBis; Text = text; Punkt = punkt; }
+        }
+
+        /// <summary>
+        /// <b>SUMMENLINIE</b> (Umsetzungskonzept Zapfprofilgenerator 5.6; Stufe Z2, Gruppe 2) —
+        /// ein Linienbild über einer x-Größe mit eigener Teilung, für die Bilder der Auslegung:
+        /// die kumulierte Bedarfs- und Versorgungslinie des Bedarfstags über 1 441 Minutenwerte
+        /// mit markiertem Speicherinhalt, die Wertepaarkurve Volumen über Leistung mit dem
+        /// gewählten Punkt und die maßgebende Woche der Stundenbilanz mit Defizit und Füllstand
+        /// auf der zweiten Achse.
+        ///
+        /// <para><b>Die x-Achse</b> trägt die Werte aus <paramref name="xWerte"/> (aufsteigend,
+        /// so lang wie die Reihen), ohne sie den Index 0 … n−1. Geteilt wird alle
+        /// <paramref name="xIntervall"/> (≤ 0: runde Stufe), beschriftet mit Teilung durch
+        /// <paramref name="xTeiler"/> — so zeigen 1 441 Minutenwerte die Stunden 0, 6, 12, 18,
+        /// 24. <b>Die linke Achse</b> ist vorzeichenfähig und endet auf runder Stufe
+        /// (<c>Skala.Stufe</c>); die Reihen der <b>zweiten Achse</b> teilen sich rechts eine
+        /// Skala von null bis zum geglätteten Höchstwert, in der Farbe ihrer ersten Reihe.</para>
+        ///
+        /// <para><b>Reihen:</b> eine Reihe mit <see cref="Stapelart.Flaeche"/> wird als Fläche
+        /// ab der Achsennull mit Randlinie gezeichnet, jede andere als Linie in ihrer Strichart.
+        /// Eine Reihe mit anderer Länge als die erste, mit weniger als zwei oder mit nicht
+        /// endlichen Werten entfällt; ohne gültige linke Reihe steht der Leerhinweis. Die
+        /// Legende steht oben und schiebt die Zeichenfläche bei einem Umbruch nach unten.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift; leer = ohne.</param>
+        /// <param name="reihen">Die Reihen der linken Achse in Zeichenreihenfolge.</param>
+        /// <param name="xWerte">Die x-Stelle je Wert; <c>null</c> = der Index.</param>
+        /// <param name="xIntervall">Abstand der x-Teilung in x-Einheiten; ≤ 0 = runde Stufe.</param>
+        /// <param name="xTeiler">Teiler der x-Beschriftung (60: Minuten als Stunden); ≤ 0 = 1.</param>
+        /// <param name="xTitel">Beschriftung der x-Achse.</param>
+        /// <param name="yTitel">Beschriftung der linken y-Achse.</param>
+        /// <param name="zweiteAchse">Die Reihen der rechten Achse; <c>null</c> oder leer = keine.</param>
+        /// <param name="y2Titel">Beschriftung der rechten Achse.</param>
+        /// <param name="marken">Strecken und Punkte über den Reihen; <c>null</c> = keine.</param>
+        public static byte[] Summenlinie(string titel, IReadOnlyList<Reihe> reihen, double[] xWerte,
+                                         double xIntervall, double xTeiler, string xTitel, string yTitel,
+                                         IReadOnlyList<Reihe> zweiteAchse = null, string y2Titel = null,
+                                         IReadOnlyList<Linienmarke> marken = null)
+            => SkiaMaler.Png(SummenlinieModell(titel, reihen, xWerte, xIntervall, xTeiler, xTitel, yTitel,
+                                               zweiteAchse, y2Titel, marken));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL — der Weg der Oberfläche (<c>DiagrammSvg</c>): eine
+        /// Zeichenfläche mit x als freier Größe (<see cref="Achsenart.Wert"/>), je Reihe eine
+        /// <see cref="Datenreihe"/> (mit ihrer x-Stelle je Wert, wo <paramref name="xWerte"/>
+        /// gesetzt ist), die Reihen der zweiten Achse mit eigenem Fenster und
+        /// <see cref="Achsenseite.Rechts"/>; Marken <c>titel</c>, <c>xachse</c>, <c>yachse</c>,
+        /// <c>yachse2</c>, <c>reihe:…</c>, <c>legende:…</c>, <c>marke</c>, <c>leerhinweis</c>.
+        /// </summary>
+        public static Zeichenmodell SummenlinieModell(string titel, IReadOnlyList<Reihe> reihen, double[] xWerte,
+                                                      double xIntervall, double xTeiler, string xTitel, string yTitel,
+                                                      IReadOnlyList<Reihe> zweiteAchse = null, string y2Titel = null,
+                                                      IReadOnlyList<Linienmarke> marken = null)
+        {
+            const int W = 1244;
+            const float FLAECHE_HOEHE = 300f;
+            const byte FLAECHE_DECKUNG = 100;
+
+            List<Reihe> links = GleichLang(reihen, -1);
+            int n = links.Count > 0 ? links[0].Werte.Length : 0;
+            List<Reihe> rechts = n > 0 ? GleichLang(zweiteAchse, n) : new List<Reihe>();
+            bool mitY2 = rechts.Count > 0;
+
+            float legendeY = 62f;
+            float legendenHoehe = 0f;
+            var eintraege = links.Concat(rechts).ToList();
+            if (eintraege.Count > 0)
+                using (var f = Schrift(16f))
+                    legendenHoehe = LegendenHoehe(
+                        eintraege.Select(r => 40f + f.MeasureText(r.Name ?? "") + 24f).ToList(), 100f, W - 30f);
+            float oben = eintraege.Count > 0 ? legendeY + legendenHoehe + 44f : 76f;
+            int H = (int)Math.Ceiling(oben + FLAECHE_HOEHE + 88f);
+
+            var z = Modell(W, H);
+            if (!string.IsNullOrEmpty(titel)) z.Markiert("titel", zt => Titel(zt, titel, W));
+            var rc = SKRect.Create(100f, oben, W - (mitY2 ? 230f : 200f), FLAECHE_HOEHE);
+
+            if (links.Count == 0)
+            {
+                using (var f = Schrift(18f))
+                    z.Markiert("leerhinweis", zl =>
+                        Text(zl, BerichtTexte.T("Kein Profil vorhanden."), f, Farbrolle.ACHSE, rc.Left, rc.Top + 20f));
+                return z;
+            }
+
+            Legende(z, eintraege.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(), 100f, legendeY, W - 30f);
+
+            // --- x-Stellen: die übergebenen (aufsteigend, endlich, gleich lang) oder der Index ---
+            bool eigeneX = xWerte != null && xWerte.Length == n
+                           && xWerte.All(x => !double.IsNaN(x) && !double.IsInfinity(x));
+            for (int i = 1; eigeneX && i < n; i++) eigeneX = xWerte[i] >= xWerte[i - 1];
+            double[] xs = eigeneX ? xWerte : Enumerable.Range(0, n).Select(i => (double)i).ToArray();
+            double xMin = xs[0], xMax = xs[n - 1];
+            if (!(xMax - xMin > 1e-12)) xMax = xMin + 1.0;
+
+            // --- linke Achse: vorzeichenfähig, runde Stufe ---------------------------------------
+            double min = Math.Min(0.0, links.Min(r => r.Werte.Min()));
+            double max = links.Max(r => r.Werte.Max());
+            if (marken != null)
+                foreach (Linienmarke m in marken)
+                    if (m != null && !double.IsNaN(m.YBis) && !double.IsInfinity(m.YBis)) max = Math.Max(max, m.YBis);
+            if (!(max > min)) max = min + 1.0;
+            double schritt = Skala.Stufe(ref min, ref max);
+            string format = Stellenformat(schritt);
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            double minJ = min, maxJ = max;
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (double wert = minJ; wert <= maxJ + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - minJ) / (maxJ - minJ) * rc.Height);
+                        zy.Linie(rc.Left, y, rc.Right, y, raster);
+                        string lab = (Math.Abs(wert) < schritt * 1e-9 ? 0.0 : wert).ToString(format, DE);
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
+                    }
+            });
+
+            // --- x-Teilung ------------------------------------------------------------------------
+            double teiler = xTeiler > 0 ? xTeiler : 1.0;
+            double xSchritt = xIntervall;
+            if (!(xSchritt > 0))
+            {
+                double lo = xMin, hi = xMax;
+                xSchritt = Skala.Stufe(ref lo, ref hi);
+            }
+            string xFormat = Stellenformat(xSchritt / teiler);
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                    for (double wert = Math.Ceiling(xMin / xSchritt - 1e-9) * xSchritt; wert <= xMax + xSchritt * 1e-9;
+                         wert += xSchritt)
+                    {
+                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
+                        zx.Linie(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = (Math.Abs(wert) < xSchritt * 1e-9 ? 0.0 : wert / teiler).ToString(xFormat, DE);
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+            });
+
+            Achsenkreuz(z, rc);
+            using (var f = Schrift(15f))
+            {
+                z.Markiert("xachse", zx =>
+                    Text(zx, xTitel ?? "", f, Farbrolle.ACHSE, rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f));
+                z.Markiert("yachse", zy =>
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
+            }
+
+            var fensterLinks = new Datenfenster(xMin, xMax, min, max);
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks, Achsenart.Wert);
+
+            SKPoint Punktlage(double x, double wert, double unten, double oben2)
+            {
+                float px = rc.Left + (float)((x - xMin) / (xMax - xMin)) * rc.Width;
+                float py = (float)(rc.Bottom - (wert - unten) / (oben2 - unten) * rc.Height);
+                return new SKPoint(px, Math.Max(rc.Top, Math.Min(rc.Bottom, py)));
+            }
+
+            // --- Reihen der linken Achse ----------------------------------------------------------
+            double[] xDaten = eigeneX ? xs : null;
+            foreach (Reihe r in links)
+            {
+                var punkte = new SKPoint[n];
+                for (int i = 0; i < n; i++) punkte[i] = Punktlage(xs[i], r.Werte[i], min, max);
+                float staerke = r.Breite > 0 ? r.Breite : 2f;
+                Strichmuster muster = Strichfolge(r.Strichart);
+                if (r.Stapelgruppe == Stapelart.Flaeche)
+                {
+                    float null0 = Punktlage(xMin, 0.0, min, max).Y;
+                    var zug = new SKPoint[n + 2];
+                    zug[0] = new SKPoint(punkte[0].X, null0);
+                    Array.Copy(punkte, 0, zug, 1, n);
+                    zug[n + 1] = new SKPoint(punkte[n - 1].X, null0);
+                    z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    {
+                        Vieleck(zr, zug, Flaeche(Ton(r, FLAECHE_DECKUNG)));
+                        Linienzug(zr, punkte, Stift(Ton(r), staerke, muster, Strichverbindung.Rund));
+                    });
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r, FLAECHE_DECKUNG), staerke, muster, r.Werte,
+                                                fensterLinks, Reihenart.Flaeche, null, Ton(r), xDaten, yTitel));
+                }
+                else
+                {
+                    z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                        Linienzug(zr, punkte, Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, r.Werte, fensterLinks,
+                                                Reihenart.Linie, null, null, xDaten, yTitel));
+                }
+            }
+
+            // --- zweite Achse: eine gemeinsame Skala 0 … max2 --------------------------------------
+            if (mitY2)
+            {
+                double max2 = Nice(rechts.Max(r => r.Werte.Max()));
+                if (!(max2 > 0)) max2 = 1.0;
+                var fensterRechts = new Datenfenster(xMin, xMax, 0.0, max2);
+                foreach (Reihe r in rechts)
+                {
+                    var punkte = new SKPoint[n];
+                    for (int i = 0; i < n; i++) punkte[i] = Punktlage(xs[i], r.Werte[i], 0.0, max2);
+                    float staerke = r.Breite > 0 ? r.Breite : 2f;
+                    Strichmuster muster = Strichfolge(r.Strichart);
+                    z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                        Linienzug(zr, punkte, Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, r.Werte, fensterRechts,
+                                                Reihenart.Linie, null, null, xDaten, y2Titel,
+                                                Achsenseite: Achsenseite.Rechts));
+                }
+
+                Reihe erste = rechts[0];
+                string format2 = Stellenformat(max2 / 4.0);
+                z.Markiert("yachse2", zy2 =>
+                {
+                    zy2.Linie(rc.Right, rc.Top, rc.Right, rc.Bottom, Stift(Ton(erste), 2f));
+                    using (var f = Schrift(15f))
+                    {
+                        for (int i = 0; i <= 4; i++)
+                        {
+                            double wert = max2 * i / 4.0;
+                            float y = (float)(rc.Bottom - wert / max2 * rc.Height);
+                            Text(zy2, wert.ToString(format2, DE), f, Ton(erste), rc.Right + 8f, y - TextHoehe(f) / 2f);
+                        }
+                        string t2 = y2Titel ?? "";
+                        Text(zy2, t2, f, Ton(erste), W - 20f - f.MeasureText(t2), rc.Top - 24f);
+                    }
+                });
+            }
+
+            // --- Marken ---------------------------------------------------------------------------
+            if (marken != null)
+                foreach (Linienmarke m in marken)
+                {
+                    if (m == null || double.IsNaN(m.X) || double.IsInfinity(m.X) || m.X < xMin || m.X > xMax) continue;
+                    if (double.IsNaN(m.YBis) || double.IsInfinity(m.YBis)) continue;
+                    SKPoint obenP = Punktlage(m.X, m.YBis, min, max);
+                    SKPoint untenP = Punktlage(m.X, m.YVon ?? 0.0, min, max);
+                    string text = m.Text ?? "";
+                    bool punkt = m.Punkt;
+                    z.Markiert("marke", zm =>
+                    {
+                        if (punkt)
+                            zm.Kreis(obenP.X, obenP.Y, 6f, Stift(Farbrolle.RASTER_SCHLECHT, 3f));
+                        else
+                            zm.Linie(untenP.X, untenP.Y, obenP.X, obenP.Y,
+                                     Stift(Farbrolle.TEXT, 2.5f, new Strichmuster(6f, 3f)));
+                        if (text.Length > 0)
+                            using (var f = Schrift(14f))
+                            {
+                                float breite = f.MeasureText(text);
+                                float tx = obenP.X + 10f;
+                                if (tx + breite > rc.Right) tx = obenP.X - 10f - breite;
+                                float ty = punkt ? obenP.Y - TextHoehe(f) - 6f : (obenP.Y + untenP.Y) / 2f - TextHoehe(f) / 2f;
+                                Text(zm, text, f, Farbrolle.TEXT, tx, Math.Max(rc.Top, ty));
+                            }
+                    });
+                }
+
+            return z;
+        }
+
+        /// <summary>
+        /// Die brauchbaren Reihen einer Liste: mindestens zwei endliche Werte und dieselbe Länge
+        /// wie die erste — oder wie <paramref name="laenge"/>, wenn sie gesetzt ist (≥ 0).
+        /// </summary>
+        private static List<Reihe> GleichLang(IReadOnlyList<Reihe> reihen, int laenge)
+        {
+            var gueltig = new List<Reihe>();
+            if (reihen == null) return gueltig;
+            foreach (Reihe r in reihen)
+            {
+                if (r == null || r.Werte == null || r.Werte.Length < 2) continue;
+                if (r.Werte.Any(w => double.IsNaN(w) || double.IsInfinity(w))) continue;
+                int soll = laenge >= 0 ? laenge : gueltig.Count > 0 ? gueltig[0].Werte.Length : r.Werte.Length;
+                if (r.Werte.Length != soll) continue;
+                gueltig.Add(r);
+            }
+            return gueltig;
+        }
+
+        /// <summary>So viele Nachkommastellen, wie eine Stufe braucht (2,5 → „N1", 0,25 → „N2"; höchstens drei).</summary>
+        private static string Stellenformat(double schritt)
+        {
+            int stellen = 0;
+            for (double s = Math.Abs(schritt); stellen < 3 && s > 0 && Math.Abs(s - Math.Round(s)) > 1e-9; s *= 10) stellen++;
+            return "N" + stellen.ToString(CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// Jahresverlauf über alle 8 760 Stunden (Paket iU9-W8.0c) — die Jahresansicht des
         /// Brauchwasser-Ergebnisdialogs (<c>ZeigeJahresGrafik</c>:166).

@@ -31,11 +31,12 @@ namespace WindowsFormsApplication1
     /// des Kerns steht daneben (<c>Klartext</c>).</para>
     ///
     /// <para><b>Der Parametersatz</b> (<see cref="Gaben"/>) trägt die Schlüssel
-    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>HilfeSchluessel</c> und
-    /// <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
-    /// <c>ZapfprofilDialog.razor</c>.</para>
+    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
+    /// <c>HilfeSchluessel</c> und <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
+    /// <c>ZapfprofilDialog.razor</c>. <c>AuslegungGaben</c> baut je Öffnen den Parametersatz der
+    /// Überlagerung „Auslegung" zum Arbeitsstand des Dialogs (<see cref="AuslegungGaben"/>).</para>
     /// </summary>
-    internal static class ZapfprofilHuelle
+    internal static partial class ZapfprofilHuelle
     {
         /// <summary>Der Hilfeschlüssel des Dialogs (5.8).</summary>
         internal const string HILFE_DIALOG = "Form_Zapfprofil.btn_Help";
@@ -89,6 +90,8 @@ namespace WindowsFormsApplication1
                 ["Texte"] = Texte(),
                 ["Vorschau"] = new Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>(e => Vorschau(idProjekt, e, basis)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
+                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>(
+                    e => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };
@@ -106,6 +109,7 @@ namespace WindowsFormsApplication1
             {
                 IdProjekt = idProjekt,
                 Eingabe = AlsEingabe(stand),
+                MitPunkt = stand?.Projekt?.AuslegungVolumenL != null || stand?.Projekt?.AuslegungLeistungKw != null,
                 Stufe = ZapfprofilStufe.Einfach
             };
 
@@ -199,7 +203,20 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), basis?.Projekt);
+            // Die Auslegung (Z2): Mit OK der Überlagerung trägt der Arbeitsstand ihre Eingaben samt
+            // Punkt — sie gehen in die Projektgrößen, ein konstruierter Tag als Entwurf mit; ohne
+            // sie bleiben Projektgrößen und Entwurf der Basis, wie sie sind.
+            ProjektStand projekt = basis?.Projekt;
+            BedarfstagKatalogzeile entwurf = basis?.BedarfstagEntwurf;
+            if (eingabe.Auslegung != null)
+            {
+                projekt = MitAuslegung(projekt ?? ZapfprofilCtrl.ProjektVorgabe(), eingabe.Auslegung);
+                entwurf = EntwurfAus(eingabe.Auslegung);
+            }
+            // Haben sich die Zonen nach der Übernahme geändert, ist der Punkt überholt: verworfen,
+            // nicht gespeichert — auch ein Punkt, den schon der Stand beim Öffnen trug.
+            if (eingabe.PunktUeberholt) projekt = OhnePunkt(projekt);
+            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), projekt) { BedarfstagEntwurf = entwurf };
         }
 
         /// <summary>
@@ -949,6 +966,9 @@ namespace WindowsFormsApplication1
 
             t.KnopfStochastik = Text_("ZPG_BTN_STOCHASTIK", t.KnopfStochastik);
             t.KnopfAuslegung = Text_("ZPG_BTN_AUSLEGUNG", t.KnopfAuslegung);
+            t.StatusAuslegung = Text_("ZPG_STATUS_AUSLEGUNG", t.StatusAuslegung);
+            t.AuslegungOhnePunkt = Text_("ZPG_AUSLEGUNG_OHNE_PUNKT", t.AuslegungOhnePunkt);
+            t.PunktUeberholt = Text_("ZPG_PUNKT_UEBERHOLT", t.PunktUeberholt);
             t.StatusVorschau = Text_("ZPG_STATUS_VORSCHAU", t.StatusVorschau);
             t.StatusOhneVorschau = Text_("ZPG_STATUS_OHNE_VORSCHAU", t.StatusOhneVorschau);
             return t;

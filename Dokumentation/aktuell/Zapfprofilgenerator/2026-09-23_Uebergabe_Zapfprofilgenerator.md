@@ -301,3 +301,68 @@ Nach Abschnitt 7 wurde die Stufe Z1 noch am selben Tag auf dem Zweig `z1` ausgef
   Einspielen der lokalen Testdaten in `Tab_TwwBedarfstag_STAMM` und `Tab_TwwDin4708Wert_STAMM`
   geschieht in Z2 über ein Skript nach dem Muster von `tww_testkatalog_fiktiv.py`, lokal und nie
   in der Repo-Testdatenbank (Kapitel 6).
+
+## 9 Nachtrag 23.09.2026 — Stufe Z2 umgesetzt
+
+Nach Abschnitt 8 wurde die Stufe Z2 am selben Tag auf dem Zweig `z2` ausgeführt (von `13fff671`,
+29 Commits bis `89e46543`) und mit dem Stand von `ios_migration_september` zusammengeführt; der
+Übertrag setzt nach Push und Sichtabnahme bei Z3 an.
+
+- **Ergebnis Gruppe 1 (Rechenweg der Auslegung):** `Bedarfstag` mit Vorgaberegel (Konstruktor,
+  Referenztag, Normtag), `Wochenreihe`, `Summenlinie` mit Nachweis, Wertepaarkurve, Zeitkonstante
+  nach A1 und Schnellpfad, `Din4708Kennzahl` mit Wohnungstabelle, `TwwSpeicherauslegung` nach
+  Vorlage V4 mit Verfahrensvergleich, Band und Warnliste, `Grossanlage`, `Auslegungsergebnis` je
+  Topologiegruppe mit genau einer Empfehlung, Fassade `ZapfprofilAuslegung` — im Kern, ohne
+  Datenbank und Dienste; `ZapfprofilTrennungWacheTests`; unabhängiger Referenzfall als
+  Python-Skript mit Fassadenfall, Abweichung 0 auf 1e‑9; Testkatalogskript um Bedarfstage,
+  DIN-4708-Werte und die Parameter der Auslegung; Nachtrag N10.
+- **Ergebnis Gruppe 2 (Oberfläche der Auslegung):** Datenseite im `ZapfprofilCtrl`,
+  `ChartRenderer.SummenlinieModell` mit den Bildern der Auslegung (ChartProben: zehn neue Bilder),
+  DTO und Hülle `ZapfprofilHuelle.Auslegung`, 234 neue Schlüssel je Sprache,
+  `ZapfprofilAuslegungDialog.razor` samt `BedarfstagKonstruktor.razor`, benannt gesperrte Elemente
+  mit Grund, `HuellenTextschluesselWacheTests`, Wiki-Abschnitt „Auslegung" (Repo-Quelle);
+  Nachtrag N11.
+- **Statuszeile und Protokoll:** #451, Protokoll
+  [`2026-09-23_Z2_Auslegung_deterministisch.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-23_Z2_Auslegung_deterministisch.md).
+- **Gate im Worktree (vor dem Merge):** Kern-Filter 0 Fehler; voller Testlauf 11 455 grün, 0 rot,
+  1 übersprungen; ChartProben 145 Bilder ohne Verstoß; Windows-Schale 0 Fehler.
+- **Gegenprüfungen:** je Gruppe eine, zusammen 21 Befunde (Gruppe 1: 13 mit 0 hoch, 7 mittel,
+  6 gering; Gruppe 2: 8 mit 1 hoch, 3 mittel, 4 gering); der hohe Befund — ein übernommener Punkt
+  steuerte über die Großanlagenerkennung den neuen Punkt — ist behoben, alle übrigen behoben oder
+  als Folge in N10/N11 benannt.
+- **Merge und Nachzug:** Merge `04bf2ae0` von `origin` (`4b2ae6ce`; Konflikte nur in beiden
+  Resource-`.resx`, beide Seiten behalten, `Resource.Designer.cs` geprüft) und Merge `169716e8`
+  (`39c63361`, #449, ohne Konflikt); Testdatenbank `a228185d` mit
+  `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` nachgezogen (63 Zeilen angelegt, 2 nachgeführt,
+  zweiter Lauf 0/0, Schemastand 113 unverändert, LFS); `TwwKatalogWacheTests` wieder streng
+  (`8cc16a62`), Nachtrag in `Referenzlaeufe/LIESMICH.md` (`7bde6800`), zwei Tests auf den
+  Katalogstand (`cb347e02`). Nicht gepusht.
+- **Gate auf dem Merge-Stand:** Kern-Build 0 Fehler; 11 750 Tests grün, 1 übersprungen (nach der Anpassung zweier Tests an den
+  Katalogstand); Werkzeugtests Auslieferungsvorlage 26/26; Windows-Schale mit beiden Baubefehlen
+  0 Fehler; ChartProben 145 Bilder ohne Verstoß; `SqlDialektPruefer` 1 726 Texte ohne Fund;
+  Referenzlauf der fünf CI-Projekte gegen `2026-09-23_R12_Gebaeudemodell` PASS, byte-gleich.
+- **Beim Anwender:** Push von `z2` nach `ios_migration_september` (schneller Vorlauf, solange
+  `origin` nicht weiterrückt). Sichtabnahme unter Windows mit der Prüfliste — Überlagerung
+  „Auslegung": Zapfprofil → Knopf „Auslegung…"; Wahl des Bedarfstags mit Vorgaberegel, gesperrte
+  Quellen (A100-Referenzprofil, Ecodesign, Normtag) nennen ihren Grund; Karten (a) Summenlinie mit
+  Wertepaarkurve, (b) Perzentil gesperrt, (c) Normvergleich mit DIN-4708-Kennzahl und gesperrter
+  Zeile DIN 1988-300; Verfahrensvergleich mit Band, Füllstand und Warnliste; Banner „Spitzen
+  unterschätzt" bei einem Tag aus dem Stundenprofil; OK übernimmt den Punkt, eine Zonenänderung
+  danach meldet ihn überholt und das Speichern verwirft ihn. Konstruktor: öffnet sich ohne
+  konstruierten Tag von selbst; „Bedarfstag konstruieren…" mit Zeilen hinzufügen und entfernen,
+  Name (ein belegter wird mit einem freien Vorschlag abgelehnt), eine Fehleingabe hält das OK an
+  und wird benannt, erneutes Öffnen beginnt mit den Zeilen des Entwurfs. Dazu englische Oberfläche
+  gegenlesen, Wiki-Upload (gebündelt), Versionsnummer für den Logbuch-Satz (Statuszeile #451) und
+  DIN 4708-1 nachbeschaffen (K1, Lücke (a) aus Abschnitt 8).
+- **Folgeposten:** zehn Auslegungsbilder und elf Zapfprofilbilder aus Z1 in die Linux-Messlatte der
+  ChartProben; ΣV̇_A der Entnahmearmaturen ins Datenmodell für DIN 1988-300 (Schemaschritt);
+  Erzeugerart und Werkstoff speichern oder ableiten (Z4); Auslieferungswerte (Speichertemperatur-
+  Vorgabe, GLF-Gültigkeitsgrenze, Übertragerpaare, Nenninhaltsliste) ins Katalogpaket.
+- **Nächster Auftrag:** Stufe Z3 (Stochastik) nach Kapitel 7 des Umsetzungskonzepts — T2,
+  `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und
+  des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis,
+  Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch"; dazu die Z3-Folgen aus N10 (d)
+  und N11 (e), (f). Vorbedingungen: Z2 gepusht und abgenommen, ZU8. **Schemaschritt T2:** die
+  Nummer erst bei der Vergabe messen — `git fetch origin`, dann `SchemaStand.Zielversion` auf
+  `origin/ios_migration_september` **und** auf allen lokalen Zweigen und Worktrees; heute steht
+  sie überall auf 113, der nächste freie Schritt ist 114; die Nummer im Merge festschreiben.

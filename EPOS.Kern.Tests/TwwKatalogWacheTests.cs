@@ -209,10 +209,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das Einspielskript ist wiederholbar: Die Repo-Datei ist das Ergebnis eines ersten
-        /// Laufs; zwei weitere Läufe auf einer Arbeitskopie legen nichts an, führen nichts nach
-        /// und lassen jede Tww-Zeile gleich. Ohne Python schweigt der Fall — der Handlauf
-        /// steht im Kopf des Skripts.
+        /// Das Einspielskript ist wiederholbar, und die Repo-Testdatenbank steht auf seinem Stand:
+        /// Sie trägt schon jeden Parameterschlüssel von Bilanz und Auslegung, und jeder Lauf — auch
+        /// der erste auf der Arbeitskopie — legt nichts an, führt nichts nach und lässt jede
+        /// Tww-Zeile gleich. Wer den Testkatalog im Skript erweitert, zieht die Repo-Datei im
+        /// selben Schritt nach. Ohne Python schweigt der Fall — der Handlauf steht im Kopf des
+        /// Skripts.
         /// </summary>
         [Fact]
         public void Das_Einspielskript_ist_wiederholbar()
@@ -229,14 +231,23 @@ namespace EPOS.Kern.Tests
             {
                 string kopie = Path.Combine(ordner, "Kenndaten_Test.sqlite");
                 File.Copy(pfad, kopie);
+
+                // Die Repo-Datei trägt jeden Schlüssel, den Bilanz und Auslegung lesen — so rechnet
+                // der Generator auf einer Projektkopie ohne fehlenden Parameter.
+                List<string> fehlend = FehlendeParameter(kopie);
+                Assert.True(fehlend.Count == 0, "Dem Testkatalog der Repo-Datei fehlen Parameter: " + string.Join(", ", fehlend));
+                SqliteConnection.ClearAllPools();
                 string vorher = Abbild(kopie);
 
-                for (int lauf = 1; lauf <= 2; lauf++)
+                // Lauf 0 bis 2: streng 0/0, keine Tww-Zeile verändert.
+                for (int lauf = 0; lauf <= 2; lauf++)
                 {
                     (int code, string ausgabe)? r = PythonStarten(skript, kopie);
                     if (r == null) return;                                  // kein Python - schweigen
                     Assert.True(r.Value.code == 0, "Lauf " + lauf + " endete mit " + r.Value.code + ":\n" + r.Value.ausgabe);
-                    Assert.Contains("0 Zeile(n) angelegt, 0 nachgefuehrt", r.Value.ausgabe);
+                    Assert.True(r.Value.ausgabe.Contains("0 Zeile(n) angelegt, 0 nachgefuehrt"),
+                        "Lauf " + lauf + " legt an oder führt nach — die Repo-Testdatenbank steht nicht auf dem Stand "
+                        + "des Einspielskripts oder das Skript ist nicht wiederholbar:\n" + r.Value.ausgabe);
                     Assert.True(vorher == Abbild(kopie), "Lauf " + lauf + " hat Tww-Zeilen veraendert.");
                 }
             }
@@ -275,6 +286,25 @@ namespace EPOS.Kern.Tests
                 }
             }
             return sb.ToString();
+        }
+
+        /// <summary>Die Parameterschlüssel von Bilanz und Auslegung, die der Datei fehlen (Präfixe ausgenommen).</summary>
+        private static List<string> FehlendeParameter(string datei)
+        {
+            var fehlend = new List<string>();
+            using SqliteConnection c = Oeffnen(datei);
+            foreach (Type t in new[] { typeof(ZapfParameter), typeof(ZapfAuslegungParameter) })
+                foreach (System.Reflection.FieldInfo f in t.GetFields(System.Reflection.BindingFlags.Static
+                             | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
+                {
+                    if (!f.IsLiteral || f.FieldType != typeof(string)) continue;
+                    string schluessel = (string)f.GetRawConstantValue();
+                    if (schluessel.EndsWith(".", StringComparison.Ordinal)) continue;   // Präfix
+                    if (Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Schluessel\" = $w",
+                             schluessel) == 0)
+                        fehlend.Add(schluessel);
+                }
+            return fehlend;
         }
 
         /// <summary>

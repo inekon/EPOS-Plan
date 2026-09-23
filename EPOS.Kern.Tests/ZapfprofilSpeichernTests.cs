@@ -329,7 +329,11 @@ namespace EPOS.Kern.Tests
 
             Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, stand, 2, we);
             Assert.Equal(VERSION, e.Parameter.Katalogversion);
-            Assert.Equal(18, e.Parameter.Anzahl);
+            // Jeder Parameter der Katalogversion, so viele, wie der Testkatalog trägt.
+            int parameter = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Katalogversion = ?", new DbParam("@k", VERSION)));
+            Assert.True(parameter > 0, "Der Testkatalog trägt keinen Parameter.");
+            Assert.Equal(parameter, e.Parameter.Anzahl);
             Assert.Equal(2, e.WochentagJan1);
             Assert.Same(we, e.We);
             Assert.Equal(1.0, e.BelegungJeRaumzahl["2"]);

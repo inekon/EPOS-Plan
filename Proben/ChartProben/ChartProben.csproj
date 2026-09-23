@@ -78,6 +78,10 @@
     <!-- Zapfprofilgenerator Z1: die Vorschaubilder Tagesgang, Wochenprofil und
          Jahresgang - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Zapfprofil.cs" />
+
+    <!-- Zapfprofilgenerator Z2: die Bilder der Auslegung Summenlinie, Wertepaarkurve und
+         massgebende Woche - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Auslegung.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -206,10 +206,10 @@ namespace EPOS.Kern.Tests
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
         // Zapfprofilgenerator (P4): der FIKTIVE Testkatalog aus
         // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei Nutzungsarten, ein
-        // Tagesgangsatz, ein Bedarfstag, alle Status EIGEN.
+        // Tagesgangsatz, drei Bedarfstage (Konstruktor, Referenztag, Normtag), alle Status EIGEN.
         [InlineData("TWW_NUTZUNGSART", 3, 0, 0)]
         [InlineData("TWW_TAGESGANGSATZ", 1, 0, 0)]
-        [InlineData("TWW_BEDARFSTAG", 1, 0, 0)]
+        [InlineData("TWW_BEDARFSTAG", 3, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
         [InlineData("PROZESSWAERME", 32, 0, 1)]

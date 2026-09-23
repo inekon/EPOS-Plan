@@ -10798,6 +10798,123 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
+/* DIE UEBERLAGERUNG "AUSLEGUNG" DES ZAPFPROFILS                        */
+/* (Umsetzungskonzept Zapfprofilgenerator 5.1; Mockup Abschnitt 3)      */
+/*                                                                      */
+/* Drei Karten nebeneinander (Hauptverfahren, Perzentil, Normvergleich),*/
+/* die bei schmaler Breite untereinander rutschen; darunter die Karte   */
+/* des Verfahrensvergleichs ueber die ganze Breite. Der empfohlene      */
+/* Punkt traegt den Markenstrich links, die Warnstufe der Warnliste     */
+/* die Warnfarbe - unter forced-colors bleibt die Stufe als Wort.       */
+/* ==================================================================== */
+.epos-zapfausl-karten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--epos-abstand);
+    margin-block: var(--epos-abstand);
+}
+
+.epos-zapfausl-karte,
+.epos-zapfausl-vergleich {
+    border: 1px solid var(--epos-karte-rand);
+    border-radius: 6px;
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text);
+    padding: var(--epos-abstand);
+    min-width: 0;
+}
+
+.epos-zapfausl-vergleich {
+    margin-block: var(--epos-abstand);
+}
+
+.epos-zapfausl-karte h4,
+.epos-zapfausl-vergleich h4,
+.epos-zapfausl-warnungen h4 {
+    font-size: 1rem;
+    margin: 0 0 6px 0;
+}
+
+.epos-zapfausl-wert {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-zapfausl-empfehlung {
+    border-left: 4px solid var(--epos-marke);
+    padding: 4px 0 4px 10px;
+    margin-block: 6px;
+}
+
+.epos-zapfausl-marke {
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 0 6px;
+    border: 1px solid var(--epos-marke);
+    border-radius: 4px;
+    color: var(--epos-text);
+    font-size: 0.85rem;
+}
+
+.epos-zapfausl-kacheln {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 6px;
+    margin-block: 6px;
+}
+
+.epos-zapfausl-nachrichtlich,
+.epos-zapfausl-perzentil,
+.epos-zapfausl-grund,
+.epos-zapfausl-zeitpunkt {
+    color: var(--epos-text-leise);
+}
+
+.epos-zapfausl-warnliste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.epos-zapfausl-warnliste li {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-zapfausl-stufe {
+    display: inline-block;
+    min-width: 5em;
+    font-weight: 600;
+}
+
+.epos-zapfausl-stufe--warnung {
+    color: var(--epos-warn-text);
+}
+
+/* Der Konstruktor: Jedes Feld der Zeilentabelle traegt seine Beschriftung
+   ("Beginn [h], Zeile 2") fuer Sprachausgabe und Sammelmeldung; sichtbar
+   steht sie einmal im Tabellenkopf. */
+.epos-zapfausl-konstruktorzeilen .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+    .epos-zapfausl-stufe--warnung,
+    .epos-zapfausl-empfehlung,
+    .epos-zapfausl-marke {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

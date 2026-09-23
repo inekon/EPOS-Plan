@@ -191,11 +191,26 @@ public sealed class ZapfprofilEingabeDaten
     /// <summary>Die Zonen in ihrer Reihenfolge.</summary>
     public List<ZapfprofilZoneDaten> Zonen { get; set; } = new();
 
-    /// <summary>Eine unabhängige Kopie samt Zonen.</summary>
+    /// <summary>
+    /// Die mit OK der Überlagerung „Auslegung" übernommenen Eingaben samt Punkt (Stufe Z2);
+    /// <c>null</c> = die Auslegung wurde nicht berührt — die Projektgrößen bleiben, wie sie sind.
+    /// </summary>
+    public ZapfprofilAuslegungEingabeDaten? Auslegung { get; set; }
+
+    /// <summary>
+    /// Haben sich die Zonen geändert, nachdem ein Auslegungspunkt übernommen war (mit OK der
+    /// Überlagerung oder schon im Stand beim Öffnen)? Dann ist der Punkt überholt: Das Speichern
+    /// verwirft ihn; ein neues OK der Überlagerung setzt die Marke zurück.
+    /// </summary>
+    public bool PunktUeberholt { get; set; }
+
+    /// <summary>Eine unabhängige Kopie samt Zonen und Auslegung.</summary>
     public ZapfprofilEingabeDaten Kopie() => new()
     {
         Weg = Weg,
-        Zonen = Zonen.Select(z => z.Kopie()).ToList()
+        Zonen = Zonen.Select(z => z.Kopie()).ToList(),
+        Auslegung = Auslegung?.Kopie(),
+        PunktUeberholt = PunktUeberholt
     };
 }
 
@@ -393,6 +408,9 @@ public sealed class ZapfprofilDaten
     /// <summary>Der Arbeitsstand, mit dem der Dialog öffnet.</summary>
     public ZapfprofilEingabeDaten Eingabe { get; set; } = new();
 
+    /// <summary>Trägt der Stand beim Öffnen einen Auslegungspunkt (Projektgrößen)? Eine Zonenänderung macht ihn überholt.</summary>
+    public bool MitPunkt { get; set; }
+
     /// <summary>Die Stufe beim Öffnen.</summary>
     public ZapfprofilStufe Stufe { get; set; } = ZapfprofilStufe.Einfach;
 
@@ -420,3 +438,465 @@ public sealed record ZapfprofilErgebnisDaten(ZapfprofilEingabeDaten Eingabe)
     /// <summary>Der Weg des Arbeitsstands.</summary>
     public ZapfprofilWeg Weg => Eingabe.Weg;
 }
+// =====================================================================================
+//  Die Überlagerung „AUSLEGUNG" (Umsetzungskonzept Zapfprofilgenerator 4.5, 4.7, 5.1;
+//  Stufe Z2, Gruppe 2). Nur Daten: Die Hülle übersetzt das Ergebnis des Kerns
+//  (Auslegungsergebnis) in diese Typen und die Eingaben zurück in die Projektgrößen; der
+//  Dialog rechnet nichts nach.
+// =====================================================================================
+
+/// <summary>Die Quelle des Bedarfstags; die Zahlen des Kerns (1 … 5), 0 = Vorgaberegel.</summary>
+public enum ZapfprofilBedarfstagquelle
+{
+    Vorgaberegel = 0,
+    Stundenprofil = 1,
+    A100Referenz = 2,
+    Din4708Profil = 3,
+    Konstruktor = 4,
+    Ecodesign = 5
+}
+
+/// <summary>Die Erzeugerart am Speicher — eine Laufangabe, nicht gespeichert (N10 (i)).</summary>
+public enum ZapfprofilErzeugerart
+{
+    KeineAngabe = 0,
+    Kessel = 1,
+    Waermepumpe = 2
+}
+
+/// <summary>Der Werkstoff des Übertragers — eine Laufangabe, nicht gespeichert (N10 (i)).</summary>
+public enum ZapfprofilWerkstoff
+{
+    KeineAngabe = 0,
+    Stahl = 1,
+    Edelstahl = 2
+}
+
+/// <summary>Die Speicherart der Summenlinie; die Zahlen des Kerns.</summary>
+public enum ZapfprofilSpeicherart
+{
+    Ladespeicher = 1,
+    GemischterSpeicher = 2
+}
+
+/// <summary>Der Zustand der Auslegung (Hausregel „kein vorbelegtes DTO als Ergebnis").</summary>
+public enum ZapfprofilAuslegungZustand
+{
+    /// <summary>Noch nicht gerechnet (etwa ohne Zone).</summary>
+    NichtGerechnet = 0,
+
+    /// <summary>Gerechnet — auch mit abgelehnten Zonen oder ohne rechenbaren Punkt.</summary>
+    Gerechnet = 1,
+
+    /// <summary>Die Auslegung konnte für das Projekt nicht rechnen; der Grund steht daneben.</summary>
+    Abgebrochen = 2
+}
+
+/// <summary>Der Stand einer Karte der Dreiergruppe (Zahlen des Kerns).</summary>
+public enum ZapfprofilKartenstand
+{
+    Gerechnet = 1,
+    NichtGerechnet = 2,
+    NichtRechenbar = 3,
+    AusserhalbGueltigkeit = 4
+}
+
+/// <summary>Wie schwer ein Eintrag der Warnliste wiegt — nie blockierend.</summary>
+public enum ZapfprofilWarnstufe
+{
+    Hinweis = 0,
+    Warnung = 1
+}
+
+/// <summary>Ein Zapfereignis eines Bedarfstags: Beginn [Minute], Dauer [min], Energie [kWh].</summary>
+public sealed record ZapfprofilEreignisDaten(int MinuteBeginn, int DauerMin, double EnergieKwh);
+
+/// <summary>
+/// Ein Bedarfstag, wie die Auswahl ihn zeigt — eine Katalogzeile oder der konstruierte,
+/// noch nicht gespeicherte Entwurf (<see cref="Id"/> 0). Herkunft als Kurztext, nie ein Beleg.
+/// </summary>
+public sealed class ZapfprofilBedarfstagDaten
+{
+    /// <summary>Die Id der Katalogzeile; 0 = Entwurf des Konstruktors.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Der neutrale Name.</summary>
+    public string Bezeichner { get; set; } = "";
+
+    /// <summary>Die Quelle (Art) des Tages.</summary>
+    public ZapfprofilBedarfstagquelle Quelle { get; set; }
+
+    /// <summary>Die Herkunft als Kurztext.</summary>
+    public string Herkunft { get; set; } = "";
+
+    /// <summary>Die Katalogversion.</summary>
+    public string Katalogversion { get; set; } = "";
+
+    /// <summary>Kann die Auslegung den Tag als Katalogtag wählen? Sonst nennt <see cref="Sperrgrund"/> den Grund.</summary>
+    public bool Waehlbar { get; set; } = true;
+
+    /// <summary>Warum der Tag nicht wählbar ist.</summary>
+    public string Sperrgrund { get; set; } = "";
+
+    /// <summary>Die Ereignisse — nur beim Entwurf gefüllt (er geht mit ihnen zurück).</summary>
+    public List<ZapfprofilEreignisDaten> Ereignisse { get; set; } = new();
+
+    /// <summary>
+    /// Die Zeilen, aus denen der Konstruktor den Entwurf baute — ein erneutes Öffnen des
+    /// Konstruktors beginnt mit ihnen. Leer bei einer Katalogzeile und bei einem Entwurf, den der
+    /// Kern zurückgibt (er trägt nur Ereignisse).
+    /// </summary>
+    public List<ZapfprofilKonstruktorZeileDaten> Konstruktorzeilen { get; set; } = new();
+
+    /// <summary>Die Energie des Tages [kWh].</summary>
+    public double TagessummeKwh { get; set; }
+
+    /// <summary>Die größte Minutenleistung [kW].</summary>
+    public double MinutenspitzeKw { get; set; }
+
+    /// <summary>Eine unabhängige Kopie samt Ereignissen.</summary>
+    public ZapfprofilBedarfstagDaten Kopie() => new()
+    {
+        Id = Id,
+        Bezeichner = Bezeichner,
+        Quelle = Quelle,
+        Herkunft = Herkunft,
+        Katalogversion = Katalogversion,
+        Waehlbar = Waehlbar,
+        Sperrgrund = Sperrgrund,
+        Ereignisse = Ereignisse.ToList(),
+        Konstruktorzeilen = Konstruktorzeilen.Select(z => z.Kopie()).ToList(),
+        TagessummeKwh = TagessummeKwh,
+        MinutenspitzeKw = MinutenspitzeKw
+    };
+}
+
+/// <summary>
+/// Eine Zeile des Konstruktors (A100, NA.5.2.3): Zeitfenster [h], wahlweise eine Zapfregel des
+/// Katalogs mit Anzahl der Vorgänge oder ein Volumen [l] bei einer Zapftemperatur [°C].
+/// </summary>
+public sealed class ZapfprofilKonstruktorZeileDaten
+{
+    /// <summary>Beginn des Fensters [h, 0 … 24).</summary>
+    public double? BeginnH { get; set; }
+
+    /// <summary>Ende des Fensters [h, bis 24].</summary>
+    public double? EndeH { get; set; }
+
+    /// <summary>Der Name der Zapfregel; leer = Volumen und Temperatur direkt.</summary>
+    public string Regel { get; set; } = "";
+
+    /// <summary>Die Anzahl der Vorgänge der Regel.</summary>
+    public double? Anzahl { get; set; }
+
+    /// <summary>Das Volumen [l] ohne Regel.</summary>
+    public double? VolumenL { get; set; }
+
+    /// <summary>Die Zapftemperatur [°C] ohne Regel.</summary>
+    public double? ZapftemperaturC { get; set; }
+
+    /// <summary>Der Verbraucher („Küche") — neutral.</summary>
+    public string Verbraucher { get; set; } = "";
+
+    /// <summary>Eine unabhängige Kopie.</summary>
+    public ZapfprofilKonstruktorZeileDaten Kopie() => new()
+    {
+        BeginnH = BeginnH,
+        EndeH = EndeH,
+        Regel = Regel,
+        Anzahl = Anzahl,
+        VolumenL = VolumenL,
+        ZapftemperaturC = ZapftemperaturC,
+        Verbraucher = Verbraucher
+    };
+}
+
+/// <summary>Eine Zapfregel des Konstruktors aus dem Katalog: Volumenstrom, Dauer, Zapftemperatur.</summary>
+public sealed record ZapfprofilRegelDaten(string Name, double VolumenstromLJeMin, double DauerMin, double ZapftemperaturC)
+{
+    /// <summary>Volumen eines Vorgangs [l].</summary>
+    public double VolumenJeVorgangL => VolumenstromLJeMin * DauerMin;
+}
+
+/// <summary>Das Ergebnis des Konstruktors: der Entwurf oder die benannte Ablehnung.</summary>
+/// <param name="Tag">Der konstruierte Tag; <c>null</c> bei Ablehnung.</param>
+/// <param name="Meldungen">Die Ablehnungen (leer bei Erfolg).</param>
+public sealed record ZapfprofilKonstruktorErgebnis(ZapfprofilBedarfstagDaten? Tag, IReadOnlyList<ZapfprofilMeldung> Meldungen);
+
+/// <summary>
+/// Die EINGABEN der Überlagerung „Auslegung" — Teil des Arbeitsstands: die Quelle des
+/// Bedarfstags samt Katalogtag oder Entwurf, Speichertemperatur, Erzeuger- und
+/// Übertragerleistung, Speicherart, Sensorhöhe, die Laufangaben Erzeugerart und Werkstoff und
+/// der mit OK übernommene Punkt. Jede nullbare Größe heißt: Vorgabe.
+/// </summary>
+public sealed class ZapfprofilAuslegungEingabeDaten
+{
+    /// <summary>Die Quelle des Bedarfstags; <see cref="ZapfprofilBedarfstagquelle.Vorgaberegel"/> = Vorgaberegel.</summary>
+    public ZapfprofilBedarfstagquelle Quelle { get; set; }
+
+    /// <summary>Der gewählte Katalogtag (Quellen 2 … 5); <c>null</c> = keiner.</summary>
+    public int? IdBedarfstag { get; set; }
+
+    /// <summary>Der konstruierte, noch nicht gespeicherte Tag (Quelle Konstruktor ohne Id).</summary>
+    public ZapfprofilBedarfstagDaten? Entwurf { get; set; }
+
+    /// <summary>Speichertemperatur [°C]; <c>null</c> = Vorgabe.</summary>
+    public double? SpeicherC { get; set; }
+
+    /// <summary>Erzeugerleistung [kW]; <c>null</c> = angesetzte Ladeleistung.</summary>
+    public double? ErzeugerKw { get; set; }
+
+    /// <summary>Wärmeübertragerleistung [kW]; <c>null</c> = aus U·A, Fläche oder Schätzformel.</summary>
+    public double? UebertragerKw { get; set; }
+
+    /// <summary>Die Speicherart.</summary>
+    public ZapfprofilSpeicherart Speicherart { get; set; } = ZapfprofilSpeicherart.Ladespeicher;
+
+    /// <summary>Sensorhöhe h_sensor/h_sto [-]; <c>null</c> = Vorgabe.</summary>
+    public double? SensorhoeheAnteil { get; set; }
+
+    /// <summary>Die Erzeugerart am Speicher (Laufangabe, nicht gespeichert).</summary>
+    public ZapfprofilErzeugerart Erzeugerart { get; set; }
+
+    /// <summary>Der Werkstoff des Übertragers (Laufangabe, nicht gespeichert).</summary>
+    public ZapfprofilWerkstoff Werkstoff { get; set; }
+
+    /// <summary>Das Volumen des übernommenen Punkts [l]; <c>null</c> = keiner.</summary>
+    public double? PunktVolumenL { get; set; }
+
+    /// <summary>Die Leistung des übernommenen Punkts [kW]; <c>null</c> = keiner.</summary>
+    public double? PunktLeistungKw { get; set; }
+
+    /// <summary>Eine unabhängige Kopie samt Entwurf.</summary>
+    public ZapfprofilAuslegungEingabeDaten Kopie() => new()
+    {
+        Quelle = Quelle,
+        IdBedarfstag = IdBedarfstag,
+        Entwurf = Entwurf?.Kopie(),
+        SpeicherC = SpeicherC,
+        ErzeugerKw = ErzeugerKw,
+        UebertragerKw = UebertragerKw,
+        Speicherart = Speicherart,
+        SensorhoeheAnteil = SensorhoeheAnteil,
+        Erzeugerart = Erzeugerart,
+        Werkstoff = Werkstoff,
+        PunktVolumenL = PunktVolumenL,
+        PunktLeistungKw = PunktLeistungKw
+    };
+}
+
+/// <summary>Eine Karte der Dreiergruppe: Stand, Volumen und/oder Leistung, empfohlen, Satz.</summary>
+public sealed class ZapfprofilKarteDaten
+{
+    public ZapfprofilKartenstand Stand { get; set; } = ZapfprofilKartenstand.NichtGerechnet;
+
+    /// <summary>Volumen [l]; <c>null</c>, wo die Karte keines ausweist.</summary>
+    public double? VolumenL { get; set; }
+
+    /// <summary>Leistung [kW]; <c>null</c>, wo die Karte keine ausweist.</summary>
+    public double? LeistungKw { get; set; }
+
+    /// <summary>Ist dieser Wert der eine empfohlene Punkt?</summary>
+    public bool Empfohlen { get; set; }
+
+    /// <summary>Der Satz der Karte (Rechenweg oder Grund) in der Oberflächensprache bzw. im Wortlaut des Kerns.</summary>
+    public string Text { get; set; } = "";
+}
+
+/// <summary>Die EINE Empfehlung einer Topologiegruppe.</summary>
+public sealed class ZapfprofilEmpfehlungDaten
+{
+    public bool Rechenbar { get; set; }
+
+    /// <summary>Speicher: Punkt der Summenlinie (V, Φ); sonst die Minutenspitze.</summary>
+    public bool Speicher { get; set; }
+
+    public double? VolumenL { get; set; }
+    public double? LeistungKw { get; set; }
+
+    /// <summary>Der nächste Nenninhalt der Liste ≥ V — nur Anzeige.</summary>
+    public double? NenninhaltL { get; set; }
+
+    /// <summary>Trägt der Punkt den Vermerk „Schnellauslegung"?</summary>
+    public bool Schnellauslegung { get; set; }
+
+    /// <summary>Der Vermerk (Entwurfsstand, Spitzen unterschätzt …).</summary>
+    public string Vermerk { get; set; } = "";
+
+    /// <summary>Warum es keinen Punkt gibt; leer, wenn rechenbar.</summary>
+    public string Grund { get; set; } = "";
+}
+
+/// <summary>Eine Zeile des Verfahrensvergleichs (nachrichtlich).</summary>
+public sealed class ZapfprofilVerfahrenDaten
+{
+    /// <summary>Der Name des Verfahrens in der Oberflächensprache.</summary>
+    public string Verfahren { get; set; } = "";
+
+    /// <summary>Volumen [l]; <c>null</c> = nicht gerechnet („–").</summary>
+    public double? VolumenL { get; set; }
+
+    public bool Gueltig { get; set; }
+    public bool ImBand { get; set; }
+
+    /// <summary>Ist es der größte Wert im Band?</summary>
+    public bool Groesster { get; set; }
+
+    /// <summary>Nur nachrichtlich (der klassische Faustwert) — nie im Band.</summary>
+    public bool Nachrichtlich { get; set; }
+
+    public string Kennwert { get; set; } = "";
+    public string Rechenweg { get; set; } = "";
+}
+
+/// <summary>Der Verfahrensvergleich der Speicherauslegung nach V4 (nur Speicher, nachrichtlich).</summary>
+public sealed class ZapfprofilVergleichDaten
+{
+    public List<ZapfprofilVerfahrenDaten> Verfahren { get; set; } = new();
+    public double? BandMinL { get; set; }
+    public double? BandMaxL { get; set; }
+    public double? NenninhaltL { get; set; }
+    public bool Mehrspeicher { get; set; }
+
+    /// <summary>Die Bedarfskennzahl N des Kriteriums N_L ≥ N; <c>null</c> ohne gültigen Normvergleich.</summary>
+    public double? KennzahlN { get; set; }
+
+    /// <summary>Die angesetzte Ladeleistung [kW] und ihr Rechenweg.</summary>
+    public double LadeleistungKw { get; set; }
+    public bool LadeManuell { get; set; }
+    public string LadeRechenweg { get; set; } = "";
+
+    public double? Personen { get; set; }
+    public double Nutzanteil { get; set; }
+    public double Zuschlag { get; set; }
+
+    /// <summary>D_max [kWh]; der Strich „–" hängt an <see cref="ProfilbasiertVorhanden"/>, nie am Text.</summary>
+    public double DmaxKwh { get; set; }
+    public bool ProfilbasiertVorhanden { get; set; }
+
+    /// <summary>Der maßgebende Zeitpunkt als Satz; leer bei D_max = 0.</summary>
+    public string Zeitpunkt { get; set; } = "";
+
+    public double? FuellstandBezugL { get; set; }
+    public string FuellstandBezug { get; set; } = "";
+    public double? KapazitaetKwh { get; set; }
+    public double? MinFuellstandKwh { get; set; }
+    public double? ReserveAnteil { get; set; }
+
+    /// <summary>Das Wochenbild der Stundenbilanz.</summary>
+    public Zeichenmodell? WochenModell { get; set; }
+}
+
+/// <summary>Ein Eintrag der Warnliste: Kennung (Ressourcenschlüssel), Titel, Satz des Kerns, Stufe.</summary>
+public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe);
+
+/// <summary>Das Ergebnis einer Topologiegruppe (Zonen gleicher Topologie).</summary>
+public sealed class ZapfprofilAuslegungsgruppeDaten
+{
+    /// <summary>Die Topologie in der Oberflächensprache.</summary>
+    public string Topologie { get; set; } = "";
+
+    /// <summary>Topologie Speicher?</summary>
+    public bool Speicher { get; set; }
+
+    public List<string> Zonen { get; set; } = new();
+
+    /// <summary>Der Bedarfstag der Gruppe (Name) bzw. leer; der Satz der Wahl daneben.</summary>
+    public string Bedarfstag { get; set; } = "";
+    public string BedarfstagWahl { get; set; } = "";
+    public bool KonstruktorOeffnen { get; set; }
+    public bool SpitzenUnterschaetzt { get; set; }
+
+    /// <summary>Die EINE Speichertemperatur der Gruppe [°C] und ihre Herkunft.</summary>
+    public double? SpeicherC { get; set; }
+    public string SpeicherCHerkunft { get; set; } = "";
+
+    /// <summary>Die Dreiergruppe: Hauptwert (Summenlinie bzw. Minutenspitze), Perzentil, Normvergleich.</summary>
+    public ZapfprofilKarteDaten Hauptwert { get; set; } = new();
+    public ZapfprofilKarteDaten Perzentil { get; set; } = new();
+    public ZapfprofilKarteDaten Normvergleich { get; set; } = new();
+
+    public ZapfprofilEmpfehlungDaten Empfehlung { get; set; } = new();
+
+    /// <summary>Summenlinie: Ladezeit [h/d], Zeitkonstante [min], Zahl der Wertepaare, Vermerk.</summary>
+    public double? LadezeitH { get; set; }
+    public double? ZeitkonstanteMin { get; set; }
+    public int Wertepaare { get; set; }
+    public string Vermerk { get; set; } = "";
+    public Zeichenmodell? SummenlinieModell { get; set; }
+    public Zeichenmodell? WertepaarModell { get; set; }
+
+    /// <summary>Normvergleich: Kennzahl N, Zonen außerhalb, Hinweis zur Wärmepumpe.</summary>
+    public double? KennzahlN { get; set; }
+    public List<string> ZonenAusserhalb { get; set; } = new();
+    public bool HinweisWaermepumpe { get; set; }
+
+    /// <summary>Der Verfahrensvergleich; <c>null</c> außerhalb der Topologie Speicher oder wenn nicht rechenbar.</summary>
+    public ZapfprofilVergleichDaten? Vergleich { get; set; }
+
+    /// <summary>Die Warnliste der Gruppe.</summary>
+    public List<ZapfprofilWarnDaten> Warnliste { get; set; } = new();
+}
+
+/// <summary>Das Ergebnis des Rechen-Delegaten der Überlagerung.</summary>
+public sealed class ZapfprofilAuslegungDaten
+{
+    public ZapfprofilAuslegungZustand Zustand { get; set; }
+
+    /// <summary>Warum nicht gerechnet wurde; leer bei <see cref="ZapfprofilAuslegungZustand.Gerechnet"/>.</summary>
+    public string Grund { get; set; } = "";
+
+    /// <summary>Der Statustext der Fußleiste.</summary>
+    public string Status { get; set; } = "";
+
+    public List<ZapfprofilAuslegungsgruppeDaten> Gruppen { get; set; } = new();
+
+    /// <summary>Abgelehnte Zonen und allgemeine Hinweise.</summary>
+    public List<ZapfprofilMeldung> Meldungen { get; set; } = new();
+
+    /// <summary>Die angesetzte Erzeugerart und woher sie kommt (Eingabe, Anlagenbestand, keine).</summary>
+    public ZapfprofilErzeugerart ErzeugerartAngesetzt { get; set; }
+    public string ErzeugerartHerkunft { get; set; } = "";
+
+    /// <summary>
+    /// Die Gruppe des EINEN Punkts, den OK übernimmt: die erste Speichergruppe mit rechenbarer
+    /// Empfehlung, sonst die erste Gruppe mit rechenbarer Empfehlung; <c>null</c> ohne Punkt.
+    /// </summary>
+    public ZapfprofilAuslegungsgruppeDaten? Punktgruppe
+        => Gruppen.FirstOrDefault(g => g.Speicher && g.Empfehlung.Rechenbar)
+           ?? Gruppen.FirstOrDefault(g => g.Empfehlung.Rechenbar);
+}
+
+/// <summary>
+/// Der Stand der Überlagerung beim Öffnen: Kontext, Stufe, Eingaben, die wählbaren
+/// Bedarfstage, die Zapfregeln des Konstruktors samt Namensvorschlag, der Vorschlag der
+/// Erzeugerart aus dem Anlagenbestand und das erste Ergebnis.
+/// </summary>
+public sealed class ZapfprofilAuslegungStartDaten
+{
+    /// <summary>Die Kontextzeile (Projekt · Zonen).</summary>
+    public string Kontext { get; set; } = "";
+
+    /// <summary>Die Stufe des Zapfprofil-Dialogs (Einfach: der Punkt trägt „Schnellauslegung").</summary>
+    public ZapfprofilStufe Stufe { get; set; } = ZapfprofilStufe.Einfach;
+
+    public ZapfprofilAuslegungEingabeDaten Eingabe { get; set; } = new();
+
+    /// <summary>Die Bedarfstage des Katalogs.</summary>
+    public List<ZapfprofilBedarfstagDaten> Bedarfstage { get; set; } = new();
+
+    /// <summary>Die Zapfregeln des Konstruktors; leer mit Grund, wenn der Katalog keine trägt.</summary>
+    public List<ZapfprofilRegelDaten> Regeln { get; set; } = new();
+    public string RegelnGrund { get; set; } = "";
+
+    /// <summary>Ein freier Name für den konstruierten Tag.</summary>
+    public string NameVorschlag { get; set; } = "";
+
+    /// <summary>Kann die Auslegung hier rechnen? Sonst nennt <see cref="Sperrgrund"/> den Grund.</summary>
+    public bool Verfuegbar { get; set; }
+    public string Sperrgrund { get; set; } = "";
+
+    /// <summary>Das Ergebnis zu <see cref="Eingabe"/>; <c>null</c>, wenn nicht gerechnet wurde.</summary>
+    public ZapfprofilAuslegungDaten? Ergebnis { get; set; }
+}
+
