@@ -261,7 +261,7 @@
                    SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
                    Die Bandbreite zeigt die Spanne am Ende, der Verlauf, wie sie
                    entsteht. Ohne Datenseite steht nur der Platzhalter. *@
-                <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
                                              Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
 
                 @Sensitivitaetsteil
@@ -1048,9 +1048,24 @@
                 EintraegeB, z => z.Id, z => z.Text),
 
             WirkungLesen = () => _nichtMonetaer,
-            WirkungSetzen = wert => _nichtMonetaer = wert ?? ""
+            WirkungSetzen = wert => _nichtMonetaer = wert ?? "",
+
+            // Welle #458, Stufe 2: der Abschnitt „Verlauf" - Zeitraum und Haken, ueber
+            // die Wege des Abschnitts selbst.
+            VerlaufZeitraumLesen = () => _verlauf?.KiZeitraum,
+            VerlaufZeitraumSetzen = wert =>
+            {
+                if (_verlauf is null)
+                    throw new InvalidOperationException(Resource.KI_DLG_WIRT_VERLAUF_GESPERRT);
+                _verlauf.KiZeitraum = wert;
+            },
+            VerlaufschalterLesen = () => _verlauf?.KiSchalter
+                                         ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>()
         };
     }
+
+    /// <summary>Der Abschnitt „Verlauf" — der Wirt meldet seine Felder an (Welle #458, Stufe 2).</summary>
+    private KapitalwertVerlaufAbschnitt? _verlauf;
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).

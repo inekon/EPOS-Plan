@@ -164,6 +164,69 @@
 
     // ------------------------------------------------------------ Haken
 
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2) — angemeldet vom Wirt
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zeitraum für den Assistenten — derselbe Wert wie das Feld; gerechnet wird erst
+    /// mit „Aktualisieren", das der Anwender drückt. Außerhalb von 2 bis 60 Jahren und
+    /// während der Rechnung lehnt der Abschnitt benannt ab.
+    /// </summary>
+    public int? KiZeitraum
+    {
+        get => _jahre;
+        set
+        {
+            KiFrei();
+            if (value is not int jahre || jahre < MIN_JAHRE || jahre > MAX_JAHRE)
+                throw new InvalidOperationException(Resource.KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL);
+            _jahre = jahre;
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>
+    /// Die Haken des Verlaufs — je Stand und je Szenario einer, nur solange gerechnet ist.
+    /// Gesetzt wird über dieselben Wege wie die Haken; sie zeichnen nur neu.
+    /// </summary>
+    public IReadOnlyList<Anzeigeschalter> KiSchalter
+    {
+        get
+        {
+            VerlaufAnsicht? ansicht = _ansicht;
+            if (ansicht is null || ansicht.Staende.Count == 0) return Array.Empty<Anzeigeschalter>();
+
+            var liste = new List<Anzeigeschalter>();
+            foreach ((int Id, string Text) s in ansicht.Staende)
+            {
+                int id = s.Id;
+                liste.Add(new Anzeigeschalter(s.Text, () => _ansicht?.GewaehlteStaende.Contains(id) == true,
+                                              an => KiUmschalten(() => StandUmschalten(id, an))));
+            }
+            foreach ((int Id, string Text) s in ansicht.Szenarien)
+            {
+                int id = s.Id;
+                liste.Add(new Anzeigeschalter(s.Text, () => _ansicht?.GewaehlteSzenarien.Contains(id) == true,
+                                              an => KiUmschalten(() => SzenarioUmschalten(id, an))));
+            }
+            return liste;
+        }
+    }
+
+    /// <summary>Während der Rechnung und auf gesperrter Seite stehen Feld und Haken still.</summary>
+    private void KiFrei()
+    {
+        if (_laeuft || Gesperrt) throw new InvalidOperationException(Resource.KI_DLG_WIRT_VERLAUF_GESPERRT);
+    }
+
+    private void KiUmschalten(Action weg)
+    {
+        KiFrei();
+        weg();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     private void StandUmschalten(int id, bool an)
     {
         if (_ansicht is null || Dienste?.Zeichnen is null) return;

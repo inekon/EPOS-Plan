@@ -54,7 +54,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 @using EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
@@ -507,4 +507,29 @@
     /// </summary>
     private static string? Werkzeugtipp(WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile z)
         => z.Hinweis.Length > 0 ? z.Hinweis : null;
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// „sortiert" und je Reihe des Bildes ein Schalter — nur, solange das Bild des
+    /// Laufs steht (ein Lauf ohne Flottenergebnis, mit Modelldelegat).
+    /// </summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+    {
+        if (!Daten.LaufVorhanden || Daten.Flottenergebnis is not null || Modell is null)
+            return Array.Empty<Anzeigeschalter>();
+
+        var liste = new List<Anzeigeschalter>
+        {
+            Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, SortiertGesetzt)
+        };
+        foreach ((string Schluessel, string Text) reihe in Reihenwahl)
+        {
+            string schluessel = reihe.Schluessel;
+            liste.Add(Umschalter(reihe.Text, () => ReiheAn(schluessel), w => ReiheGesetzt(schluessel, w)));
+        }
+        return liste;
+    }
 }

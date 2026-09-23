@@ -86,7 +86,23 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
-        new("ErzeugerReiter",                 "Startseite",                  KiMaskennamen.STARTSEITE)
+        new("ErzeugerReiter",                 "Startseite",                  KiMaskennamen.STARTSEITE),
+
+        // Welle #458, Stufe 2: die Ergebnisblaetter der Simulation melden ihre
+        // Anzeigeschalter beim Register ihrer Seite an (Ergebnisblattwirt); die Maske
+        // Simulation fuehrt sie als Spalte „anzeige", das Blatt als Wahlfeld „reiter".
+        new("BedarfReiter",                   "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("BhkwReiter",                     "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("HeizkesselReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("PhotovoltaikReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("SolarthermieReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("StromgangReiter",                "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("StromspeicherReiter",            "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("WaermegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("WaermepumpeReiter",              "SimulationSeite",             KiMaskennamen.SIMULATION),
+
+        // Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite: Zeitraum und Haken.
+        new("KapitalwertVerlaufAbschnitt",    "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE)
     };
 
     // =====================================================================
@@ -108,9 +124,11 @@ public sealed class KiMaskenabdeckungWacheTests
     {
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
+        new("BedarfReiter", 3),
         new("BedarfsProfileDialog", 3, "die Optionsgruppe „Rechenweg“ ist offen (#458 Stufe 3 nach Z3)"),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
+        new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
         new("EinstellungenDialog", 9, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen"),
@@ -129,7 +147,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudetypDialog", 6, "die Kurven des Gebäudetyps sind Zahlenfolgen (Rahmenerweiterung, #458 Stufe 2)"),
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),
+        new("HeizkesselReiter", 4),
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
+        new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 3),
@@ -144,6 +164,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
+        new("PhotovoltaikReiter", 5),
         new("PhotovoltaikVerguetungDialog", 16),
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
@@ -156,6 +177,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SimulationKonfigSeite", 3),
         new("SimulationSeite", 0),
         new("SolarganglinieDialog", 0),
+        new("SolarthermieReiter", 3),
         new("SpeicherAuslegungEditor", 16),
         new("SpeicherFlottenBetriebEditor", 7),
         new("SpeicherFlottenEditor", 28),
@@ -165,15 +187,19 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherZeitreihenDialog", 16),
         new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),
+        new("StromgangReiter", 1, "die Serienauswahl (Mehrfachauswahl) steht als Anzeigeschalter mit im Katalog"),
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
+        new("StromspeicherReiter", 2),
         new("TarifstrukturDialog", 13),
         new("TypProfilDialog", 2, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 2)"),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
         new("VorlagenZeile", 4),
+        new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
         new("WaermepumpeKonfiguration", 8),
+        new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),
         new("WirtschaftlichkeitSeite", 7)
@@ -343,7 +369,7 @@ public sealed class KiMaskenabdeckungWacheTests
                     "Nur " + geltung.Count(k => k.Angemeldet) + " Anmeldungen gefunden.");
         Assert.True(geltung.Count(k => k.Eingaben.Count > 0) > 100,
                     "Nur " + geltung.Count(k => k.Eingaben.Count > 0) + " Dateien mit Eingabefeldern.");
-        Assert.True(KiDialogAusnahmen.Alle.Count > 30, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
+        Assert.True(KiDialogAusnahmen.Alle.Count > 20, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
     }
 
     /// <summary>

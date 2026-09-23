@@ -374,8 +374,11 @@ public class KiSimulationMaskeTests : IDisposable
             if (zugang is not null && zugang.Setzbar) setzbar.Add(feld.Name);
         }
 
+        // Welle #458, Stufe 2: Das Blatt von Schritt ③ ist ein Wahlfeld geworden; die
+        // Anzeigeschalter sind eine Spalte und stehen hier nur mit Zeilen.
         Assert.Equal(new[]
         {
+            "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
             "kessel_bereitschaft", "kuehlbetrieb", "quellanlage", "waermequelle",
             "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
@@ -749,5 +752,68 @@ public class KiSimulationMaskeTests : IDisposable
         wege.KuehlbetriebSchreiben = null;
         ex = Assert.Throws<InvalidOperationException>(() => sicht.Kuehlbetrieb = true);
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, ex.Message);
+    }
+
+    // =====================================================================
+    //  Welle #458, Stufe 2 — das Blatt als Wahl und die Anzeigeschalter
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Schalter der Anzeige sind eine SPALTE</b> — je Schalter des offenen Blattes
+    /// eine Zeile mit seiner Beschriftung als Kennzeichen; gesetzt wird über den Weg des
+    /// Blattes. <b>Das Blatt ist ein Wahlfeld</b> über die Titel, die der Reiter führt.
+    /// </summary>
+    [Fact]
+    public void Das_Blatt_ist_eine_Wahl_und_die_Anzeigeschalter_sind_eine_Spalte()
+    {
+        bool sortiert = false;
+        string gewaehlt = "";
+        var schalter = new[]
+        {
+            new Anzeigeschalter("sortiert", () => sortiert, w => sortiert = w),
+            new Anzeigeschalter("Restwärme", () => true, _ => { })
+        };
+
+        var probe = new Schreibprobe();
+        SimulationParameterDienste wege = probe.Wege();
+        var sicht = new SimulationKiSicht(() => null, () => probe.Stand, () => wege, () => null,
+                                          () => "3 Ergebnis", () => "Heizkessel")
+        {
+            ReiterEintraege = () => new[] { "Übersicht", "Heizkessel", "Ergebnis" },
+            ReiterWaehlen = t => gewaehlt = t,
+            ErgebnisschalterLesen = () => schalter
+        };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => sicht,
+                                                     new KiMaskenhaken());
+
+        KiFeldzugang erster = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "anzeige_1");
+        Assert.NotNull(erster);
+        Assert.Contains("sortiert", erster.Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Equal(false, erster.Lesen());
+        erster.Setzen(true);
+        Assert.True(sortiert);
+        Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "anzeige_2"));
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "anzeige_3"));
+
+        KiFeldzugang reiter = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "reiter");
+        KiFeldumsetzung u = KiFeldwandler.Wandle(reiter, "Ergebnis");
+        Assert.True(u.Ok, u.Grund);
+        reiter.Setzen(u.Wert);
+        Assert.Equal("Ergebnis", gewaehlt);
+    }
+
+    /// <summary>
+    /// Ohne Weg zum Blatt (Schritt ① vorn, oder eine Sicht ohne Ansicht) lehnt das
+    /// Wahlfeld benannt ab, statt still nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ergebnis_lehnt_die_Blattwahl_benannt_ab()
+    {
+        var probe = new Schreibprobe();
+        SimulationKiSicht sicht = Sicht(probe);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => sicht.Reiter = "Bedarf");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_REITER_NICHT_VORN, ex.Message);
+        Assert.Empty(sicht.Ergebnisschalter);
     }
 }

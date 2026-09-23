@@ -135,7 +135,6 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public static class KiDialogAusnahmen
     {
-        private const string STUFE_2 = "#458 Stufe 2";
         private const string STUFE_3 = "#458 Stufe 3 nach Z3";
 
         /// <summary>Die Einträge der Ausnahmeliste.</summary>
@@ -209,27 +208,6 @@ namespace WindowsFormsApplication1
                            "Die Schalter stellen nur das Ergebnisbild der Flotte ein."),
             new KiAusnahme("SpeicherFlottenGroessenAnsicht", KiAusnahmegrund.Anzeige,
                            "Die Wahl stellt nur das Bild der Größenrechnung ein."),
-            new KiAusnahme("KapitalwertVerlaufAbschnitt", KiAusnahmegrund.Anzeige,
-                           "Jahr und Schalter stellen nur den gezeigten Kapitalwertverlauf ein."),
-            new KiAusnahme("BedarfReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("BhkwReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("HeizkesselReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("PhotovoltaikReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("SolarthermieReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("StromgangReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("StromspeicherReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation; seine Speicherparameter " +
-                           "führt die Maske Simulation.", STUFE_2),
-            new KiAusnahme("WaermegangReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
-            new KiAusnahme("WaermepumpeReiter", KiAusnahmegrund.Anzeige,
-                           "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
 
             // ---- Offen: Stufe 3 (nach dem Merge der Zapfprofil-Sitzung) --------------
             new KiAusnahme("ZapfprofilDialog", KiAusnahmegrund.Offen,

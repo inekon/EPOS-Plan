@@ -1455,10 +1455,16 @@ namespace WindowsFormsApplication1
         /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
-        /// Kapitalwertverlauf</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
+        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und das Bild
+        /// des Kapitalwertverlaufs</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
         /// Welche Varianten angehakt sind, ist eine Menge von Verweisen und kein
         /// Feldwert.
+        /// </para>
+        /// <para>
+        /// <b>Drin ist seit Welle #458 (Stufe 2) die Bedienleiste des Verlaufs</b>
+        /// (<c>KapitalwertVerlaufAbschnitt</c>, ein Baustein dieser Seite): der Zeitraum
+        /// und je Stand und je Szenario ein Haken als SPALTE. Ein Haken zeichnet nur neu;
+        /// gerechnet wird erst mit „Aktualisieren", das der Anwender drueckt.
         /// </para>
         /// </remarks>
         private static KiDialog Wirtschaftlichkeitsseite()
@@ -1487,7 +1493,17 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nicht_monetaer",
                                      "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
                                      KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
-                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true),
+
+                    // ---- Der Abschnitt „Verlauf" (Welle #458, Stufe 2) ---------------
+                    new KiDialogFeld("verlauf_zeitraum",
+                                     "WirtschaftlichkeitSeiteKiSicht.VerlaufZeitraum",
+                                     KiDialogTexte.WseVerlaufZeitraumName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WseVerlaufZeitraumErl, leerErlaubt: true),
+                    new KiDialogFeld("verlauf_anzeige",
+                                     "WirtschaftlichkeitSeiteKiSicht.Verlaufsschalter[].An",
+                                     KiDialogTexte.WseVerlaufAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WseVerlaufAnzeigeErl, zeilenkennzeichen: "Name")
                 });
         }
 
@@ -5987,9 +6003,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("schritt", "SimulationKiSicht.Ansichtsschritt",
                                      KiDialogTexte.SimSchrittName, KiParameterTyp.Text,
                                      KiDialogTexte.SimSchrittErl, leerErlaubt: true),
+                    // Welle #458, Stufe 2: das Blatt ist ein WAHLFELD (Satzwahl - es
+                    // wechselt, was gezeigt wird), und die Schalter der Anzeige des
+                    // offenen Blattes sind eine SPALTE, je Schalter eine Zeile.
                     new KiDialogFeld("reiter", "SimulationKiSicht.Reiter",
-                                     KiDialogTexte.SimReiterName, KiParameterTyp.Text,
-                                     KiDialogTexte.SimReiterErl, leerErlaubt: true),
+                                     KiDialogTexte.SimReiterName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimReiterErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("anzeige", "SimulationKiSicht.Ergebnisschalter[].An",
+                                     KiDialogTexte.SimAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAnzeigeErl, zeilenkennzeichen: "Name"),
 
                     // ---- Schritt ① : Kaskade und Reihenfolge (nur lesend) -----------
                     new KiDialogFeld("kaskade", "SimulationKiSicht.Kaskade",

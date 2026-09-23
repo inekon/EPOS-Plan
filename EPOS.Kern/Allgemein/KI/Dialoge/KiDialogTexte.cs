@@ -629,6 +629,15 @@
         internal static string SimSchrittErl => MyResource.Resource.KI_DLG_SIM_SCHRITT_ERL;
         internal static string SimReiterName => MyResource.Resource.KI_DLG_SIM_REITER_NAME;
         internal static string SimReiterErl => MyResource.Resource.KI_DLG_SIM_REITER_ERL;
+        internal static string SimAnzeigeName => MyResource.Resource.KI_DLG_SIM_ANZEIGE_NAME;
+        internal static string SimAnzeigeErl => MyResource.Resource.KI_DLG_SIM_ANZEIGE_ERL;
+
+        // ---- Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite (Welle #458, Stufe 2)
+        internal static string WseVerlaufZeitraumName
+            => (MyResource.Resource.WVERL_LBL_ZEITRAUM ?? "").TrimEnd(' ', ':');
+        internal static string WseVerlaufZeitraumErl => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL;
+        internal static string WseVerlaufAnzeigeName => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME;
+        internal static string WseVerlaufAnzeigeErl => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL;
         internal static string SimKaskadeName => MyResource.Resource.KI_DLG_SIM_KASKADE_NAME;
         internal static string SimKaskadeErl => MyResource.Resource.KI_DLG_SIM_KASKADE_ERL;
         internal static string SimOhnePlatzName => MyResource.Resource.KI_DLG_SIM_OHNE_PLATZ_NAME;

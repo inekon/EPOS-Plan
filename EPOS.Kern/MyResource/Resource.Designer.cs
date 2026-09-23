@@ -34235,6 +34235,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Schalter der Anzeige auf dem offenen Ergebnisblatt — „sortiert“ (Dauerlinie), eine Reihe des Bildes ein oder aus, im Wärmegang auch die Bedarfsart. Er stellt nur das Bild ein; gerechnet und gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist eine Option einer Wahl — gewechselt wird, indem eine andere Option eingeschaltet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_WAHL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUTARKIE_ERL {
@@ -34487,7 +34514,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt des Ergebnisses, das vorn steht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis). Es zu wählen ist derselbe Klick wie auf den Reiter — nur, solange das Ergebnis vorn steht; leer in der Konfiguration. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_REITER_ERL {
             get {
@@ -34501,6 +34528,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_REITER_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ergebnis steht nicht vorn — ein Blatt lässt sich erst in Schritt ③ wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_REITER_NICHT_VORN {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_REITER_NICHT_VORN", resourceCulture);
             }
         }
         
@@ -36661,6 +36697,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WERTE_LEER {
             get {
                 return ResourceManager.GetString("KI_DLG_WERTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Kapitalwertverlauf diesen Stand bzw. dieses Szenario zeigt; ein Haken zeichnet nur neu, gerechnet ist schon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Verlauf zeigen ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verlauf rechnet gerade, oder die Seite ist gesperrt — Zeitraum und Haken stehen erst danach wieder offen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitraum des Kapitalwertverlaufs in Jahren (2 bis 60); gerechnet wird erst mit „Aktualisieren“, das der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL", resourceCulture);
             }
         }
         
