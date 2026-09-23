@@ -42,17 +42,29 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// ETAPPE E5 — Strombedarf <b>ohne die Anlage</b> [MWh]: die Menge, die ohne
-            /// BHKW aus dem Netz käme. Sie ist die Bezugsgröße der Differenzmethode
-            /// („Bezugskosten ohne BHKW") und fehlte bis E5 im Modell vollständig.
+            /// jede Eigenerzeugung aus dem Netz käme. Sie ist die Bezugsgröße der
+            /// Differenzmethode („Bezugskosten ohne Anlage").
             ///
-            /// <para>Gebildet als <c>Strombedarf − PV-Eigennutzung</c> je Stunde, nicht
-            /// negativ. Die Altanwendung rechnet genauso: „Photovoltaik wird vorab vom
-            /// Strombedarf abgezogen; das im Ergebnisdialog gezeigte ‚Strombedarf − PV‘
-            /// ist bereits bereinigt" (Analyse, Abschnitt 2.2). Ohne die
-            /// Strombedarfsreihe bleibt der Wert 0 und
-            /// <see cref="StrombedarfFehlt"/> sagt warum.</para>
+            /// <para><b>OHNE JEDE EIGENERZEUGUNG</b> (Konzept Wirtschaftlichkeit § 6.3
+            /// Nr. 32, Entscheid U6‑Q1 vom 22.09.2026): der Strombedarf der Stunde VOR
+            /// Abzug der PV-Eigennutzung. Bis E7 war es <c>Strombedarf −
+            /// PV-Eigennutzung</c> (die Rechnung der Altanwendung, „ohne
+            /// Blockheizkraftwerk"); die vermiedene Menge trug dadurch allein den
+            /// KWK-Eigenverbrauch. Jetzt führt sie KWK- und PV-Eigenverbrauch. Ohne die
+            /// Strombedarfsreihe bleibt der Wert 0 und <see cref="StrombedarfFehlt"/> sagt
+            /// warum.</para>
             /// </summary>
             public double BedarfMWh;
+
+            /// <summary>
+            /// ETAPPE E7 (Konzept § 6.3 Nr. 32) — die PV-Eigennutzung, soweit sie den
+            /// Strombedarf der Stunde deckt [MWh]: <c>Strombedarf − max(0, Strombedarf −
+            /// PV-Eigennutzung)</c>. Genau um diese Menge ist <see cref="BedarfMWh"/>
+            /// größer als der Bedarf nach Photovoltaik, auf den der KWK-Eigenanteil
+            /// begrenzt bleibt — der Verteilschlüssel der vermiedenen Kosten bringt sie für
+            /// die Photovoltaik ein.
+            /// </summary>
+            public double PvEigenMWh;
         }
 
         public Dictionary<string, Zone> ZonenWerte = new Dictionary<string, Zone>();
@@ -100,7 +112,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>ETAPPE E5 — Lastbild des Strombedarfs OHNE Anlage (Referenz).</summary>
+        /// <summary>ETAPPE E5 — Lastbild des Strombedarfs OHNE Anlage (Referenz) —
+        /// seit E7 der VOLLE Strombedarf ohne jede Eigenerzeugung (Konzept § 6.3
+        /// Nr. 32): der Leistungsanteil der Bezugsseite hängt am Lastbild des Bedarfs vor
+        /// Abzug der Photovoltaik.</summary>
         public Lastbild LastBedarf = new Lastbild();
 
         /// <summary>ETAPPE E5 — Lastbild des tatsächlichen Netzbezugs (Restbezug).</summary>
@@ -166,17 +181,24 @@ namespace WindowsFormsApplication1
                 if (pvUeber != null && h < pvUeber.Length)
                     z.EinspeisungPvMWh += pvUeber[h] / 1000.0;
 
-                // ETAPPE E5 — der Bedarf OHNE Anlage: dieselbe Größe, die schon bisher
-                // den KWK-Eigenanteil begrenzt hat, jetzt zusätzlich als Menge und
-                // Lastbild geführt. Ohne Bedarfsreihe bleibt sie 0 (StrombedarfFehlt).
-                double bedarfOhneAnlage = 0;
+                // ETAPPE E5/E7 — zwei Bedarfsgrößen aus derselben Stunde:
+                //  * der Bedarf NACH Photovoltaik begrenzt wie seit W3 den KWK-Eigenanteil
+                //    (min-Regel unten) — unverändert (Konzept § 6.3 Nr. 32: „der KWK-Split
+                //    bleibt unverändert");
+                //  * der Bedarf OHNE JEDE EIGENERZEUGUNG ist seit E7 die Bezugsgröße der
+                //    vermiedenen Kosten (Menge und Lastbild) — vor Abzug der PV-Eigennutzung.
+                // Die Differenz beider ist die PV-Eigennutzung, soweit sie Bedarf deckt.
+                // Ohne Bedarfsreihe bleiben alle drei 0 (StrombedarfFehlt).
+                double bedarfNachPv = 0;
                 if (bedarf != null && h < bedarf.Length)
                 {
-                    bedarfOhneAnlage = bedarf[h];
-                    if (pvGenutzt != null && h < pvGenutzt.Length) bedarfOhneAnlage -= pvGenutzt[h];
-                    if (bedarfOhneAnlage < 0) bedarfOhneAnlage = 0;
-                    z.BedarfMWh += bedarfOhneAnlage / 1000.0;
-                    m.LastBedarf.Nimm(bedarfOhneAnlage, monat, winter);
+                    double bedarfVoll = bedarf[h] > 0 ? bedarf[h] : 0;
+                    bedarfNachPv = bedarf[h];
+                    if (pvGenutzt != null && h < pvGenutzt.Length) bedarfNachPv -= pvGenutzt[h];
+                    if (bedarfNachPv < 0) bedarfNachPv = 0;
+                    z.BedarfMWh += bedarfVoll / 1000.0;
+                    z.PvEigenMWh += Math.Max(0, bedarfVoll - bedarfNachPv) / 1000.0;
+                    m.LastBedarf.Nimm(bedarfVoll, monat, winter);
                 }
 
                 if (bhkw != null && h < bhkw.Length)
@@ -187,7 +209,7 @@ namespace WindowsFormsApplication1
                     {
                         // PV-Eigennutzung derselben Stunde ist oben bereits abgezogen —
                         // sonst wäre der KWK-Eigenanteil systematisch zu hoch.
-                        eigen = Math.Min(erz, bedarfOhneAnlage);
+                        eigen = Math.Min(erz, bedarfNachPv);
                     }
                     z.KwkEigenMWh += eigen / 1000.0;
                     z.KwkEinspeisungMWh += Math.Max(0, erz - eigen) / 1000.0;
@@ -310,12 +332,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E5 — Strombedarf OHNE Anlage gesamt [MWh/a]: die Bezugsgröße der
-        /// vermiedenen Kosten. 0 zusammen mit <see cref="StrombedarfFehlt"/> heißt
-        /// „nicht bestimmbar", nicht „null".
+        /// vermiedenen Kosten, seit E7 ohne jede Eigenerzeugung (Konzept § 6.3 Nr. 32).
+        /// 0 zusammen mit <see cref="StrombedarfFehlt"/> heißt „nicht bestimmbar",
+        /// nicht „null".
         /// </summary>
         public double BedarfGesamtMWh
         {
             get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.BedarfMWh; return s; }
+        }
+
+        /// <summary>
+        /// ETAPPE E7 (Konzept § 6.3 Nr. 32) — PV-Eigennutzung gesamt, soweit sie Bedarf
+        /// deckt [MWh/a]: der Beitrag der Photovoltaik zum Verteilschlüssel der
+        /// vermiedenen Kosten (<see cref="Zone.PvEigenMWh"/>).
+        /// </summary>
+        public double PvEigenGesamtMWh
+        {
+            get { double s = 0; foreach (Zone z in ZonenWerte.Values) s += z.PvEigenMWh; return s; }
         }
     }
 }

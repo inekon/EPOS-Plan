@@ -285,6 +285,19 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
+> **Nachtrag: Schemastand 101 (Auftrag #437, Etappe E7a), die Basis bleibt.** Migrationsschritt
+> **101** (`SCHRITT_101_KWKG_ANLAGENART_LEER`, Quelle
+> `EPOS.Kern/Allgemein/Update/KwkgAnlagenartLeer.cs`; Konzept Wirtschaftlichkeit § 6.3 Nr. 30)
+> setzt die leere Zeichenkette in `Tab_Energieanlagen.KWKG_Anlagenart` auf NULL — **reines DML**,
+> genau sieben Zellen: Anlage 12310 (Projekt 1032) und die Anlagen 14819, 14842, 14843, 14844,
+> 14851, 14852 (Projekt 1043), Wärmepumpen, ein Kessel und Pufferspeicher, **kein BHKW und kein
+> Referenzprojekt**. `KWKG_Eigenstromfall` derselben Zeilen bleibt `''`. Der Zellvergleich aller
+> 119 Tabellen vor und nach dem Schritt zeigt genau diese sieben Zeilen und den Schemastand in
+> `Tab_Applikation`; Größe (67 624 960 Byte) und Schema bleiben. **Keine Einfrierregel ist
+> berührt**, und der Referenzlauf ist **13/13 byte-gleich** gegen diese Basis (357/357 CSV, auf
+> Schemastand 100 wie 101 gerechnet). Nachgezogen mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
 > Schemaständen 99 und 100 steht in

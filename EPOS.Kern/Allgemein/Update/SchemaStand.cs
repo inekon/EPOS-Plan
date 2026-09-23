@@ -334,6 +334,13 @@ namespace WindowsFormsApplication1
         /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
         /// Referenzlauf bleibt byte-gleich</b>, die Basis
         /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
+        /// Mit der LEEREN ANLAGENART (Schritt 101, Konzept Wirtschaftlichkeit § 6.3
+        /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>101</b>: Die
+        /// leere Zeichenkette in <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL,
+        /// und NULL heißt „nicht gepflegt". Die Anweisung steht bei
+        /// <see cref="KwkgAnlagenartLeer"/>. <b>Reines DML, ergebnisneutral:</b> Kein
+        /// Rechenweg unterscheidet die leere Zeichenkette von NULL; der Referenzlauf
+        /// bleibt byte-gleich.
         /// Mit KATALOG, ZONEN UND PROJEKT DES ZAPFPROFILGENERATORS (Schritt 101,
         /// Papiername T1, Umsetzungskonzept Zapfprofilgenerator Stufe Z0) steht das Ziel
         /// auf <b>101</b>: zehn leere Tabellen <c>Tab_Tww*</c>, deren DDL bei

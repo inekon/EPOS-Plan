@@ -369,8 +369,10 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         var cut = Aufbauen();
         var listen = Koerper(cut, 1).QuerySelectorAll("select");
 
-        // 1.9 Anlagenart: leer = "(nicht erfasst — gilt als Neuanlage)"
-        Assert.Equal("(nicht erfasst — gilt als Neuanlage)",
+        // 1.9 Anlagenart: leer = "(bitte wählen)" — E7, Konzept § 6.3 Nr. 30. ALT:
+        // "(nicht erfasst — gilt als Neuanlage)"; das stimmte nie: Ohne Anlagenart leitet
+        // § 8 KWKG kein Kontingent ab, und NULL heisst „nicht gepflegt".
+        Assert.Equal("(bitte wählen)",
                      listen[0].QuerySelectorAll("option")[0].TextContent);
         Assert.Equal(4, listen[0].QuerySelectorAll("option").Length);
 

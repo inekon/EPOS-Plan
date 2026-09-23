@@ -1111,6 +1111,27 @@ namespace Testdatenbankschema
                                       FremdschluesselVorgabe.ZeilenMitVorgabe(s.Tabelle, s.Name) + ".");
             }
 
+            // ---- Schritt 101: die leere Anlagenart wird NULL (Konzept Wirtschaftlichkeit
+            //      § 6.3 Nr. 30, Anwenderentscheid 22.09.2026). REIN DML, eine Anweisung aus
+            //      KwkgAnlagenartLeer - DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_101_KwkgAnlagenartLeer bedient.
+            //
+            //      ERGEBNISNEUTRAL: Kein Rechenweg unterscheidet die leere Zeichenkette von
+            //      NULL - die dreizehn Referenzprojekte rechnen byte-gleich weiter.
+            Console.WriteLine();
+            List<string> betroffene101 = KwkgAnlagenartLeer.Betroffene();
+            Console.WriteLine("Schritt 101 - " + KwkgAnlagenartLeer.TABELLE + "." +
+                              KwkgAnlagenartLeer.SPALTE + ": " + betroffene101.Count +
+                              " Zeile(n) mit leerer Zeichenkette.");
+            foreach (string zeile in betroffene101)
+                Console.WriteLine("Schritt 101 - " + zeile);
+            if (!trocken)
+            {
+                int gesetzt101 = KwkgAnlagenartLeer.Ausfuehren();
+                Console.WriteLine("Schritt 101 - " + gesetzt101 + " Zeile(n) auf NULL gesetzt, offen " +
+                                  KwkgAnlagenartLeer.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

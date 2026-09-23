@@ -3596,6 +3596,29 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_100_FREMDSCHLUESSEL_VORGABE = 100;
 
         /// <summary>
+        /// Schritt 101 — die <b>leere Anlagenart wird NULL</b> (Konzept Wirtschaftlichkeit
+        /// § 6.3 Nr. 30, Register R‑NR Nr. 30, Anwenderentscheid vom 22.09.2026: „ein
+        /// DML-Schritt setzt die leere Zeichenkette auf NULL; NULL heißt ‚nicht
+        /// gepflegt'").
+        ///
+        /// <para><b>Der Befund.</b> Sieben Anlagenzeilen der Testdatenbank trugen in
+        /// <c>Tab_Energieanlagen.KWKG_Anlagenart</c> eine leere Zeichenkette — weder
+        /// „nicht gepflegt" noch eine Wahl. Ein geratener Wert setzte Kontingent und
+        /// Satzstaffel, die niemand eingegeben hat; deshalb NULL.</para>
+        ///
+        /// <para><b>REIN DML</b>, eine Anweisung, die Quelle ist
+        /// <see cref="KwkgAnlagenartLeer"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>. <b>Ergebnisneutral:</b> Kein Rechenweg unterscheidet
+        /// die leere Zeichenkette von NULL. <b>Wiederholbar:</b> Ein zweiter Lauf findet
+        /// nichts mehr.</para>
+        ///
+        /// <para><b>Nach Schritt 100</b>, ohne Reihenfolgebedingung: Der Schritt fasst
+        /// allein einen Spaltenwert an und baut nichts um.</para>
+        /// </summary>
+        public const int SCHRITT_101_KWKG_ANLAGENART_LEER = 101;
+
+        /// <summary>
         /// Schritt 101 — <b>Katalog, Zonen und Projekt des Zapfprofilgenerators</b>
         /// (Papiername T1; <c>Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c> 3.1
         /// und 3.2, Stufe Z0).
@@ -4986,6 +5009,22 @@ namespace WindowsFormsApplication1
                         "gibt es nicht, und faende der Schritt welche, braeche er benannt " +
                         "ab.",
                         Schritt_100_FremdschluesselVorgabe),
+
+            // ANWENDERENTSCHEID 22.09.2026 (Konzept Wirtschaftlichkeit § 6.3 Nr. 30,
+            // Register R-NR Nr. 30) - die leere Anlagenart wird NULL. REIN DML, kein
+            // DDL; die Quelle ist KwkgAnlagenartLeer. Keine Reihenfolgebedingung - der
+            // Schritt fasst allein einen Spaltenwert an.
+            new Schritt(SCHRITT_101_KWKG_ANLAGENART_LEER,
+                        "Tab_Energieanlagen.KWKG_Anlagenart: leere Zeichenkette wird NULL",
+                        "Die Anlagenart nach Paragraf 8 KWKG entscheidet ueber Kontingent " +
+                        "und Satzstaffel. Eine leere Zeichenkette ist weder 'nicht " +
+                        "gepflegt' noch eine Wahl; ab hier steht dort NULL, und NULL " +
+                        "heisst 'nicht gepflegt'. Geraten wird kein Wert - er setzte " +
+                        "Kontingent und Satzstaffel, die niemand eingegeben hat. Jede " +
+                        "gepflegte Anlagenart und jede andere Spalte bleibt. " +
+                        "ERGEBNISNEUTRAL: Kein Rechenweg unterscheidet die leere " +
+                        "Zeichenkette von NULL.",
+                        Schritt_101_KwkgAnlagenartLeer),
 
             // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z0 (Papiername T1) - zehn
             // leere Tabellen fuer Katalog, Zonen und Projekt. REIN DDL; die Quelle ist
@@ -7553,6 +7592,55 @@ namespace WindowsFormsApplication1
                     "Vorgabe " + FremdschluesselVorgabe.VORGABE + ". Eine weggelassene Spalte " +
                     "meldet ab hier NOT NULL mit Tabelle und Spalte statt still eine 0 zu " +
                     "setzen. Werte, Ids und Zaehlerstaende bleiben - der Referenzlauf bleibt " +
+                    "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 101 - die leere Anlagenart wird NULL (Anwenderentscheid 22.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 101 — Anlass und Wortlaut des Entscheids stehen bei
+        /// <see cref="SCHRITT_101_KWKG_ANLAGENART_LEER"/> und bei
+        /// <see cref="KwkgAnlagenartLeer"/>.
+        ///
+        /// <para><b>Reines DML</b> über eine Spalte. Die betroffenen Zeilen werden VOR dem
+        /// Schreiben gelesen und mit Id, Projekt und Bezeichner ins Protokoll
+        /// geschrieben — danach findet die Abfrage nichts mehr, und die Notiz soll sagen,
+        /// welche Anlagen der Schritt angefasst hat.</para>
+        /// </summary>
+        private static bool Schritt_101_KwkgAnlagenartLeer(Lauf l)
+        {
+            List<string> betroffene = KwkgAnlagenartLeer.Betroffene();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, KwkgAnlagenartLeer.Anweisung> a
+                     in KwkgAnlagenartLeer.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            int rest = KwkgAnlagenartLeer.Offen();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Anlagenzeile(n) tragen nach dem Schritt weiter eine leere " +
+                                  "Anlagenart.";
+                l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("101: " + betroffene.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Anlagenzeile(n) mit leerer Anlagenart auf NULL gesetzt" +
+                    (betroffene.Count > 0 ? " - " + string.Join("; ", betroffene.ToArray()) : "") +
+                    ". NULL heisst 'nicht gepflegt'; geraten wird kein Wert. Kein Rechenweg " +
+                    "unterscheidet die leere Zeichenkette von NULL - der Referenzlauf bleibt " +
                     "byte-gleich.");
             return true;
         }

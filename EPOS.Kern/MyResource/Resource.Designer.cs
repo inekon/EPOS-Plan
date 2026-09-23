@@ -4024,7 +4024,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht erfasst — gilt als Neuanlage) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (bitte wählen) ähnelt.
         /// </summary>
         public static string BHW_W_ART_LEER {
             get {
@@ -60242,11 +60242,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag (brennwertbezogen) und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter. ähnelt.
         /// </summary>
         public static string STEUER_STROMST_CO2 {
             get {
                 return ResourceManager.GetString("STEUER_STROMST_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} g/kWh (EBeV {2} g/kWh, heizwertbezogen — kein Brennwert gepflegt) ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_FAKTOR_HI {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_FAKTOR_HI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen) ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_FAKTOR_HO {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_FAKTOR_HO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} g/kWh (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3}) ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_FAKTOR_UMGERECHNET {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_FAKTOR_UMGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen geprüft; der CO₂-Wert je kWh Energieertrag fällt dadurch zu hoch aus (konservativ). ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_HEIZWERT {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh. ähnelt.
+        /// </summary>
+        public static string STEUER_STROMST_CO2_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("STEUER_STROMST_CO2_HERLEITUNG", resourceCulture);
             }
         }
         
@@ -63160,7 +63205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: verteilt nach dem Netto-Stromanteil je Anlage ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: verteilt nach dem Eigenverbrauch je Anlage ähnelt.
         /// </summary>
         public static string WIRT_ERL_B1_NAEHERUNG {
             get {
@@ -64087,7 +64132,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
         /// </summary>
         public static string WIRT_MATRIX_BEDARF_HINWEIS {
             get {

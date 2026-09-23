@@ -6447,7 +6447,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Electricity tax § 9 (1) no. 3 StromStG: above the rated electrical output of {0} kW per plant and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
   </data>
   <data name="STEUER_STROMST_CO2" xml:space="preserve">
-    <value>Electricity tax § 9 (1) no. 3 StromStG: above the CO₂ limit of {0} g per kWh of energy output and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
+    <value>Electricity tax § 9 (1) no. 3 StromStG: above the CO₂ limit of {0} g per kWh of energy output (gross calorific value basis) and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
   </data>
   <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: direct CO₂ emissions per kWh of energy output cannot be determined ({0}) — check the carrier's emission factor in the catalogue; no exemption for these plants.</value>
@@ -6744,7 +6744,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Demand without the plant [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>"Demand without the plant" is the electricity demand less PV self-consumption — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
+    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
@@ -10253,7 +10253,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>(project value)</value>
   </data>
   <data name="BHW_W_ART_LEER" xml:space="preserve">
-    <value>(not recorded — treated as a new unit)</value>
+    <value>(please select)</value>
   </data>
   <data name="BHW_W_ART_NEU" xml:space="preserve">
     <value>new unit (sec. 8 (1))</value>
@@ -19890,7 +19890,7 @@ Do you want to allow this?</value>
     <value>{0} MWh avoided purchase · share {1} %</value>
   </data>
   <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
-    <value>approximation: allocated by net electricity share per unit</value>
+    <value>approximation: allocated by self-consumption per unit</value>
   </data>
   <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
     <value>avoided cost, effective — {0} [€/a]</value>
@@ -23203,5 +23203,20 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_SPANNE_LEER" xml:space="preserve">
     <value>No version with scenario values.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HO" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, gross calorific value basis)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_UMGERECHNET" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh net calorific value basis × H_i/H_s {3})</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HI" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, net calorific value basis — no gross calorific value maintained)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HERLEITUNG" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: CO₂ per kWh of energy output, checked on a gross calorific value basis — {0}; limit {1} g/kWh.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
   </data>
 </root>
