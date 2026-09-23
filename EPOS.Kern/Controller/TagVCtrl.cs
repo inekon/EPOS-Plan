@@ -193,8 +193,17 @@ namespace WindowsFormsApplication1
         /// Protokoll).</para>
         /// </summary>
         public static int Anlegen(string bezeichner, string beschreibung)
+            => Anlegen(bezeichner, beschreibung, NEUE_ZEILEN / STUNDEN);
+
+        /// <summary>
+        /// Wie <see cref="Anlegen(string, string)"/>, mit der ZAHL DER KURVEN — fünf oder acht
+        /// (Stufe 5 der Neuordnung: „Neu… fragt Name, Beschreibung und Kurvenzahl"). Jede
+        /// andere Zahl gilt als acht.
+        /// </summary>
+        public static int Anlegen(string bezeichner, string beschreibung, int kurven)
         {
             if (string.IsNullOrEmpty(bezeichner)) return 0;
+            int zeilen = (kurven == 5 ? 5 : 8) * STUNDEN;
 
             try
             {
@@ -211,7 +220,7 @@ namespace WindowsFormsApplication1
                         new DbParam("@ver", DbParamTyp.Boolean) { Wert = true },
                         new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
 
-                    for (int i = 0; i < NEUE_ZEILEN; i++)
+                    for (int i = 0; i < zeilen; i++)
                         v.Ausfuehren(
                             "INSERT INTO " + TABLE_DATEN + " (ID, ID_TagV, Verteilung, ReadOnly) VALUES (?, ?, ?, ?)",
                             new DbParam("@did", DbParamTyp.Integer) { Wert = nextDid++ },
@@ -288,6 +297,96 @@ namespace WindowsFormsApplication1
             var namen = new List<string>();
             for (int i = 0; i < kurven; i++) namen.Add(i < quelle.Length ? quelle[i] : "");
             return namen;
+        }
+
+        // ===================================================== Stufe 5 der Neuordnung (V16)
+
+        /// <summary>
+        /// <b>Die Zeilen der Gebaeudetypen-Verwaltung</b> (Konzept Administrationsdialoge,
+        /// V16) — Name, Zahl der Tageskurven und Beschreibung, in EINER Abfrage. Ein Typ, der
+        /// nicht <c>Veraenderbar</c> ist oder <c>ReadOnly</c> traegt, gehoert zur Auslieferung
+        /// und traegt das Schloss — dieselbe Regel wie <c>GebaeudetypDaten.Aenderbar</c>.
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT k.ID, k.Bezeichner, k.Beschreibung, k.Veraenderbar, k.ReadOnly, " +
+                "(SELECT COUNT(*) FROM " + TABLE_DATEN + " AS d WHERE d.ID_TagV = k.ID) AS Zeilen " +
+                "FROM " + TABLE + " AS k ORDER BY k.Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString();
+                bool veraenderbar = r["Veraenderbar"] != DBNull.Value && Convert.ToInt32(r["Veraenderbar"]) != 0;
+                bool schutz = r["ReadOnly"] != DBNull.Value && Convert.ToInt32(r["ReadOnly"]) != 0;
+                int zeilen = r["Zeilen"] == DBNull.Value ? 0 : Convert.ToInt32(r["Zeilen"]);
+
+                var zeile = new Katalogfilterzeile(Convert.ToInt32(r["ID"]), name)
+                {
+                    Geschuetzt = !veraenderbar || schutz
+                };
+                zeile.MitText(Katalogfilterprofil.SpBezeichner, name)
+                     .MitZahl(Katalogfilterprofil.SpKurven, zeilen / STUNDEN, 0)
+                     .MitText(Katalogfilterprofil.SpBeschreibung,
+                              r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString());
+                liste.Add(zeile);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>„Duplizieren…"</b> (Stufe 5; Entscheid AD-Q11) — der Typ als EIGENER Satz unter
+        /// <paramref name="neuerName"/>, samt seinen Tageskurven Zeile fuer Zeile, in EINER
+        /// Transaktion. Die Kopie ist <c>Veraenderbar</c>: Ein Auslieferungstyp ist es nicht, und
+        /// seine Kopie waere sonst ebenso gesperrt wie das Original.
+        /// </summary>
+        public static Katalogkopie.Ergebnis Duplizieren(int id, string neuerName)
+            => Katalogkopie.Duplizieren(TABLE, id, neuerName,
+                   new Dictionary<string, object> { ["Veraenderbar"] = 1 },
+                   new Katalogkopie.Kindtabelle(TABLE_DATEN, "ID_TagV"));
+
+        /// <summary>
+        /// Schreibt die BESCHREIBUNG eines Typs (Stufe 5: Kenndaten direkt im Stammblatt). Ein
+        /// Auslieferungstyp wird nie geschrieben — die Bedingung steht in der Anweisung.
+        /// </summary>
+        public static bool BeschreibungSchreiben(int idTagV, string beschreibung)
+        {
+            try
+            {
+                return DataRepository.ExecuteSQL(
+                    "UPDATE " + TABLE + " SET Beschreibung = ? WHERE ID = ? AND Veraenderbar = 1 AND ReadOnly = 0",
+                    new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = idTagV });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Schreiben der Beschreibung: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// <b>Wie viele Gebaeude des Katalogs einen Typ fuehren</b> (Stufe 5: die weiche
+        /// Loeschsperre nennt sie) — je Typname die Zahl der Saetze in
+        /// <c>Tab_Gebaeude_STAMM</c>, EINE Abfrage. Ein Gebaeude traegt seinen Typ als NAMEN
+        /// (<c>Typ</c>), und genau darueber holt die Uebernahme ins Projekt die Tagesverteilung
+        /// (<c>GebaeudeStammCtrl.CopyTagVForGebaeude</c>): Ein geloeschter Typ liesse diese
+        /// Gebaeude ohne Tagesgang.
+        /// </summary>
+        public static IReadOnlyDictionary<string, int> Gebaeudeverwendung()
+        {
+            var ergebnis = new Dictionary<string, int>(StringComparer.Ordinal);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Typ, COUNT(*) AS Anzahl FROM Tab_Gebaeude_STAMM WHERE Typ IS NOT NULL GROUP BY Typ");
+            if (dt == null) return ergebnis;
+            foreach (DataRow r in dt.Rows)
+            {
+                string typ = r["Typ"] == DBNull.Value ? "" : r["Typ"].ToString();
+                if (typ.Length > 0) ergebnis[typ] = Convert.ToInt32(r["Anzahl"]);
+            }
+            return ergebnis;
         }
 
         private static string Text(string schluessel, string rueckfall)

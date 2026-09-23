@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
             BlazorDialogForm<GebaeudeDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(
-                GebaeudeHuelle.Gaben(projektId, projektName, modelle, wizard: false, admin: false))
+                GebaeudeHuelle.Gaben(projektId, projektName, modelle, wizard: false))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -60,16 +60,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die KATALOGVERWALTUNG (<c>Masken.GebaeudeAdmin</c>): nur der Katalog, ohne
-        /// Projektteil und ohne die beiden Pfeile.
+        /// Die KATALOGVERWALTUNG (<c>Masken.GebaeudeAdmin</c>) — seit Stufe 5 der Neuordnung
+        /// der Administrationsdialoge (V16) eine eigene Komponente, <see cref="GebaeudeAdminDialog"/>,
+        /// im Gerüst der übrigen Verwaltungen; die Datenseite ist <see cref="GebaeudeAdminHuelle"/>.
         /// </summary>
         internal static bool Katalogverwaltung(IWin32Window besitzer)
         {
             bool ok = false;
-            BlazorDialogForm<GebaeudeDialog> dlg = null;
+            BlazorDialogForm<GebaeudeAdminDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>(
-                GebaeudeHuelle.Gaben(0, "", new List<Z_ProjGebModel>(), wizard: false, admin: true))
+            var werte = new Dictionary<string, object>(GebaeudeAdminHuelle.Gaben())
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<GebaeudeDialog>(GebaeudeHuelle.Titel(), MASS, werte);
+            dlg = new BlazorDialogForm<GebaeudeAdminDialog>(GebaeudeAdminHuelle.Titel(), MASS, werte);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();

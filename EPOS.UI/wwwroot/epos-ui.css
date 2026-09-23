@@ -8266,6 +8266,27 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
+/* --- Stufe 5 (V16): die Sonderlisten im Geruest ----------------------- */
+/* Die 24 STUNDENWERTE einer Tageskurve (Gebaeudetypen, "Stundenwerte...")
+   stehen in der Ueberlagerung als Raster aus schmalen Feldern - die
+   Beschriftung (die Stunde) ueber dem Feld, so viele Spalten, wie die Breite
+   traegt: bei 900 px Ueberlagerung sechs, bei 368 px zwei. Eine Liste von 24
+   Feldern untereinander waere 1 200 px hoch. */
+.epos-stundenwerte {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: 6px 12px;
+    min-width: 0;
+}
+
+.epos-stundenwerte-block,
+.epos-gebaeudetyp-neu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
 /* Die WERKZEUGLEISTE der Katalogliste traegt einen Schalter des Wirts (die
    Waermepumpe: "nur mit Kuehlfunktion", Stufe 4). Er steht neben dem
    Suchfeld und weicht nicht - die Leiste bricht um, wo es eng wird. */
