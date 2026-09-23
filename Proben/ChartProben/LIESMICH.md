@@ -57,9 +57,12 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** 72 Proben (51 Maßproben, 20 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
-  und ebenso viele Zeilen. Die vierunddreißig SVG-Gegenproben zeichnen kein PNG und stehen deshalb
-  nicht darin — die Probenzahl steigt, die Messlatte bleibt bei 91.
+- **Umfang.** 84 Proben (58 Maßproben, 25 Gegenproben, 1 Versatzprobe) ergeben **108 Bilder**
+  und ebenso viele Zeilen der Hashliste. Die achtunddreißig SVG-Gegenproben zeichnen kein PNG
+  und stehen deshalb nicht darin. `Messlatte_2026-09-20.sha256` nennt davon die **91 Bilder**
+  vor der Etappe E6 der Wirtschaftlichkeit; ihre Zeilen gelten unverändert. Die 17 Bilder der
+  Etappe E6 (Abschnitt „Etappe E6" unten) kommen mit dem nächsten Einfrieren auf dem
+  Linux-Läufer dazu.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
   `Farbpalette.Vorgabe`, damit die Hashliste unabhängig von einer Anwendereinstellung bleibt.
@@ -82,6 +85,8 @@ gegen diese Datei.
   Windows-Hashlisten miteinander — gleicher Rechner, gleiche Schriften, die Listen müssen gleich
   sein. So ist der Umbau auf das Zeichenmodell auch auf Windows abgenommen (Basis E0 gegen den
   Abschluss von E1 mit DF‑1: 91 von 91 gleich; E2 gegen denselben Stand: wieder 91 von 91).
+  Die Etappe E6 der Wirtschaftlichkeit ist auf dieselbe Weise abgenommen: die 91 Bilder vor ihr
+  gleich, 17 neu, keines geändert.
 
 ---
 
@@ -90,9 +95,9 @@ gegen diese Datei.
 Seit der Etappe E2 des
 [Diagrammkonzepts](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md) gibt
 es zu jedem Modell einen **zweiten Ausgabeweg**: `SvgSchreiber` schreibt dasselbe
-`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Vierunddreißig
-Proben halten ihn fest — sie zeichnen **kein PNG**, legen nichts ab und stehen **nicht** in
-der Messlatte:
+`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm.
+Achtunddreißig Proben halten ihn fest (die vier der Etappe E6 im Abschnitt „Etappe E6" unten) —
+sie zeichnen **kein PNG**, legen nichts ab und stehen **nicht** in der Messlatte:
 
 | Probe | Aussage |
 |---|---|
@@ -182,12 +187,36 @@ Einheit der Farbskala, und die Bestmarke nennt dieselbe Zelle),
 `svg_c_monatswert_nennt_monat_und_einheit` (Monatsname und Einheit, mit den Nachkommastellen
 der eigenen y-Achse) und `svg_c_anteil_steht_in_prozent` (Kuchen und Ring zeigen Anteile).
 
-**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle sechsundzwanzig Modelle (die acht der
-Gruppe (a), die sechs der Gruppe (b), die sieben der Gruppe (c), die vier der Gruppe (d) und
-den Jahresgang) als Dateien; ein kopfloser Browser macht daraus ein Bild, das sich neben das
-Skia-PNG aus `--ablage` legen lässt. Erwartet wird **dieselbe Struktur**, nicht dasselbe
+**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle neunundzwanzig Modelle (die acht der
+Gruppe (a), die sechs der Gruppe (b), die sieben der Gruppe (c), die vier der Gruppe (d), den
+Jahresgang und die drei der Etappe E6) als Dateien; ein kopfloser Browser macht daraus ein
+Bild, das sich neben das Skia-PNG aus `--ablage` legen lässt. Erwartet wird **dieselbe Struktur**, nicht dasselbe
 Pixel: Das SVG der Gruppen (a) und (b) zeichnet die Reihe roh bzw. als konservative Hülle,
 das PNG jeden n-ten Wert — im SVG steht deshalb der volle Tagesgang, wo das PNG ein
 ausgedünntes Band zeigt (Entscheid DG-E2-2). Die Pixelbilder der Gruppen (c) und (d) haben
 keine Reihen und stehen deshalb Bildpunkt für Bildpunkt wie das PNG; nur die Textbreiten
 kommen aus dem Browser statt aus der Schriftkette.
+
+---
+
+## Etappe E6 der Wirtschaftlichkeit: Verlauf mit drei Szenarien und Spannenbild
+
+Zwei Bilder des Abschnitts „Wie sicher ist das?" bringen eigene Probedateien mit; `Program.cs`
+ruft jede mit einer Zeile. Ihre Texte sind die deutsche Vorgabe der Textbündel, kein Bild hängt
+an der Sprache des Rechners.
+
+| Datei | Bild | Maßproben | Gegenproben | SVG-Proben |
+|---|---|---|---|---|
+| `Program.Szenarien.cs` | `KapitalwertSzenarien` — der kumulierte Barwert der Differenz zur Referenz je Jahr; Farbe = Stand, Strichart = Szenario (durchgezogen, gestrichelt, **gepunktet**), zweigeteilte Legende, Nulldurchgang je Linie | `kapitalwert_szenarien` (drei Stände, 1240 × 620), `…_eine_variante`, `…_acht_varianten` (eine Legendenzeile mehr: 1240 × 650), `…_neun_varianten` (die benannte Ablehnung) | `strichart_gepunktet_wirkt`, `kapitalwert_szenarien_legende_zweigeteilt_wirkt`, `kapitalwert_szenarien_nulldurchgang_wirkt` | `svg_kapitalwert_szenarien` (Modellprobe), `svg_kapitalwert_szenarien_stricharten` (Strichfolge je Szenario, Wert an jeder Marke) |
+| `Program.Spanne.cs` | `KapitalwertSpanne` — die Bandbreite je Version als Balken vom kleinsten bis zum größten Szenariowert, der Erwartungsfall als Punkt, die Referenz als Nulllinie | `kapitalwert_spanne` (die drei Versionen des Mockups, 1240 × 434), `…_unter_referenz` (vier Versionen um die Nulllinie, 1240 × 506), `…_leer` (Leerhinweis, 1240 × 200) | `kapitalwert_spanne_erwartet_wirkt`, `kapitalwert_spanne_spanne_wirkt` | `svg_c_kapitalwert_spanne` (Pixelbildprobe wie Gruppe (c)), `svg_kapitalwert_spanne_nulllinie` (die Nulllinie liegt bei der Referenz: links der Balken darüber, rechts der darunter, mitten in dem, der sie kreuzt) |
+
+Das sind sieben Maßproben und fünf Gegenproben — **17 neue Bilder** — und vier SVG-Proben.
+Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der
+Etappe gemessen, 91 von 91 gleich.
+
+**Die Messlatte nachziehen.** `Messlatte_2026-09-20.sha256` ist auf dem Linux-Läufer
+eingefroren und nennt diese 17 Bilder noch nicht. Nachgezogen wird dort: Ein Lauf mit
+`--ablage` und `--hashes` ergibt `Messlatte_<Datum>.sha256` mit 108 Zeilen; ihre 91 alten
+Zeilen müssen der bisherigen Datei gleichen — sonst hat sich ein Bild geändert —, die 17 neuen
+sind die Bilder dieser Tafel. Die neue Datei ersetzt die alte im selben Schritt (Regel oben);
+die Begründung — 17 Bilder neu, keines geändert — steht in der Commit-Nachricht.

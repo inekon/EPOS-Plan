@@ -156,7 +156,8 @@ namespace WindowsFormsApplication1
             if (!double.IsNaN(schwelleKw) && Gewaehlt(wahl, REIHE_SCHWELLE))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_SCHWELLE,
                                                   Konstante(schwelleKw, ohne.Length),
-                                                  Farbrolle.RASTER_SCHLECHT) { Gestrichelt = true });
+                                                  Farbrolle.RASTER_SCHLECHT)
+                         { Strichart = ChartRenderer.Strichart.Gestrichelt });
             if (Gewaehlt(wahl, REIHE_SPEICHER))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_LEISTUNG,
                                                   leistung, Farbrolle.WAERME_WP));

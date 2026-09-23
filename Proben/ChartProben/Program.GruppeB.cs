@@ -105,7 +105,7 @@ namespace ChartProben
                             new List<ChartRenderer.Reihe>
                             {
                                 new ChartRenderer.Reihe("Betrieb", projektionBetrieb,
-                                                        ChartRenderer.C_BHKW) { Gestrichelt = true }
+                                                        ChartRenderer.C_BHKW) { Strichart = ChartRenderer.Strichart.Gestrichelt }
                             },
                             "Zahlung [€]", "Projektjahr")),
                 Modellprobe("flotte_stueckzahlkurve",

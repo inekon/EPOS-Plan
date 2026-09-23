@@ -1,7 +1,8 @@
 # Rechenschritte der Gebäudesimulation nach VDI 6007 Blatt 1 in EPOS-Plan
 
 **Stand:** 22.09.2026 — Klimaspalten (M4) als umgesetzt nachgezogen (1.2, E5, Kapitel 11), die
-Zusicherung Heizen/Kühlen je Abschnitt ausdrücklich gefasst (7.1, 10.4)
+Zusicherung Heizen/Kühlen je Abschnitt ausdrücklich gefasst (7.1, 10.4), die Zusammenfassung der
+Außenbauteilgruppe nach (27)–(28c) ausgeschrieben (A4, A7a, B6, 10.4, 10.5)
 **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
 Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
 Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
@@ -318,9 +319,16 @@ R_Rest,AW = R_ges − R_1,AW − R_si / A_AW,opak                [K/W]
 
 Der Abzug R_si/A ist die Stelle, an der der U-Wert und das Netz zusammengeführt werden: der
 innere Übergang steckt bereits im U-Wert, im Netz liegt an seiner Stelle das innere
-Oberflächennetz; ohne den Abzug zählt er doppelt. **Kein Klemmwert:** wird R_Rest,AW ≤ 0 —
-rechnerisch ab einem mittleren U über 4,17 W/(m²K) —, bricht die Rechnung mit benanntem Fehler
-ab (Blatt 1, 6.8 verbietet den stillen Rückfall).
+Oberflächennetz; ohne den Abzug zählt er doppelt. **Nicht positiver Rest:** Wird R_Rest,AW ≤ 0 —
+rechnerisch ab einem mittleren U über 4,17 W/(m²K) —, entscheidet die Fallunterscheidung der
+Richtlinie für die zusammengefasste Außenbauteilgruppe (A7a). Einen Setzwert kennt sie nur für
+den Fall, dass der Gesamtwiderstand der Gruppe unter ihrem äußeren Übergangswiderstand liegt
+((28a)–(28c)); das tritt erst ein, wenn der U-Wert den äußeren Wärmeübergangskoeffizienten α_A
+übersteigt, bei physikalisch stimmigen Eingaben also nie ((28a)–(28c) sind eine Schutzregel für
+widersprüchliche Eingaben). Ein nicht positiver Rest ohne diesen Grenzfall ist ebenso eine
+widersprüchliche Eingabe, und die Rechnung bricht mit benanntem Fehler ab. Das ist Hausregel (kein stiller Rückfall auf einen
+selbst gewählten Wert); der Programmierhinweis 6.8 verlangt nur, Divisionen durch null
+auszuschließen.
 
 **Der Klassenweg gibt die Katalog-U-Werte bewusst nicht wieder.** Das abgezogene R_si/A und der
 Widerstand, den das Netz an seiner Stelle führt, sind nicht derselbe Wert. R_rad ist im
@@ -381,21 +389,55 @@ Zweig und mit Σψ·L in der Außenwandgruppe gerechnet wird.
 ```
 R_AF      = (1/U_w − 1/α_I − 1/α_A) / A_w                    [K/W]   (26)
 R_1,AF    = R_AF / 6                                         [K/W]
-R_Rest,AF = 5/6 · R_AF                                       [K/W]
+R_Rest,AF = 1/(U_w · A_w) − R_1,AF − R_α,i · A_AW,ges / A_w   [K/W]
+          (= 5/6 · R_AF + 1/(α_A · A_w), wenn der innere Übergang des Netzes je Fläche α_I entspricht)
 ```
 
 α_I ist der innere Übergang, der im U-Wert des Fensters steckt (α_I = 1/R_si nach 1.3), α_A der
-äußere aus 1.3. **Kein Klemmwert:** Wird R_AF ≤ 0, bricht die Rechnung mit benanntem Fehler ab —
-dieselbe Regel wie in A4 (Blatt 1, 6.8). Die kürzere Form R_AF = 1/(U·A)_w wäre falsch: Sie ließe
-beide Übergänge im Zweig stehen, obwohl im Netz an ihrer Stelle das innere Oberflächennetz
-(R_conv, R_rad) und der äußere Übergang in θ_A,eq liegen; der Übergang zählte zweimal.
+äußere aus 1.3. Wird R_AF ≤ 0, bricht die Rechnung mit benanntem Fehler ab: (26) hat für diesen
+Fall keinen Wert, und einen selbst gewählten setzt EPOS nicht (A4). Die kürzere Form
+R_AF = 1/(U·A)_w wäre falsch: Sie ließe den inneren Übergang im Zweig stehen, obwohl im Netz an
+seiner Stelle das innere Oberflächennetz (R_conv, R_rad) liegt; er zählte zweimal. Anders der
+äußere Übergang: Nach (27) geht das Fenster mit seinem **vollen** U·A in den Gesamtwiderstand der
+Gruppe ein, also einschließlich des äußeren Übergangs, so wie R_Rest,AW in A4 ihn enthält. Der
+Rest des Fensterzweigs trägt ihn deshalb mit: R_Rest,AF ist so gebildet, dass die Zweigsumme
+R_1,AF + R_Rest,AF + Flächenanteil an R_α,i (Schritt 3 unten) genau 1/(U·A)_w ergibt. Das ist
+eine Korrektur der Formel, kein neuer Entscheid — E14 legt fest, dass die Fenster im AW-Zweig
+liegen; die frühere Teilung R_Rest,AF = 5/6 · R_AF ließ den äußeren Übergang heraus und passte
+damit nicht zu (27).
 
-**Zusammenfassung zu einem Zweig.** Der Fensterzweig wird **nach** den Wänden parallel an den
-gemeinsamen Oberflächenknoten θ_s,AW geschaltet, (27)/(28). Danach trägt die Außenwandgruppe
-wieder **genau ein** Paar R_1,AW / R_Rest,AW — das der zusammengefassten Gruppe aus Wänden und
-Fenstern —, und Schritt C bleibt bei fünf Knoten mit einem G_1 und einem G_Rest (4.1). Greift
-einer der Klemmfälle (28a)–(28c) der Richtlinie, gilt der dort festgelegte Wert; die Kapazität
-C_AW der Wände bleibt in jedem Fall unverändert.
+**Zusammenfassung zu einem Zweig** ((27)/(28), Fallunterscheidung (28a)–(28c)). Die Fenster
+werden **nach** den Wänden an den gemeinsamen Oberflächenknoten θ_s,AW geschaltet; danach trägt
+die Außenwandgruppe wieder **genau ein** Paar R_1,AW / R_Rest,AW — das der zusammengefassten
+Gruppe aus Wänden und Fenstern —, und Schritt C bleibt bei fünf Knoten mit einem G_1 und einem
+G_Rest (4.1). Die Kapazität C_AW der Wände bleibt in jedem Fall unverändert. Die Rechnung:
+
+1. **Innerer Widerstand der Gruppe:** R_1,AW der Wände und R_1,AF der Fenster parallel.
+2. **Innerer Übergang der Gruppe** R_α,i: der konvektive Übergang der Außenbauteile parallel zum
+   Strahlungsaustausch, R_conv,AW ∥ R_rad — das ist die Größe, die (28) abzieht.
+3. **Gesamtwiderstand der Gruppe** nach (27): die Leitwerte der Zweige werden addiert. Die Zweige
+   liegen im Netz ohne ihren inneren Übergang vor (R_1 + R_Rest); jeder bekommt deshalb seinen
+   Flächenanteil an R_α,i zurück, bevor addiert wird. Ohne Fenster ist der Gesamtwiderstand
+   genau R_1,AW + R_Rest,AW + R_α,i.
+4. **Regelfall** (28): der Rest der Gruppe ist Gesamtwiderstand minus R_1 minus R_α,i. Ohne
+   Fenster ist das der R_Rest,AW aus A4 selbst.
+5. **Grenzfall** (28a)/(28b): liegt der Gesamtwiderstand **unter** dem äußeren
+   Übergangswiderstand der Gruppe R_α,A = 1/(α_A · A_AW,ges), wird der Rest gleich R_α,A gesetzt
+   und R_1 aus derselben Bilanz neu bestimmt: Gesamtwiderstand minus R_α,A minus R_α,i.
+6. **Untergrenze** (28c): fällt R_1 der Gruppe darunter, gilt der Setzwert der Richtlinie für
+   einen numerisch verschwindenden Widerstand (im Code eine benannte Konstante mit Verweis auf
+   (28c)); der Massenknoten liegt dann praktisch am Oberflächenknoten.
+
+**(28a)–(28c) sind eine Schutzregel für widersprüchliche Eingaben.** Die Bedingung von (28a)
+gilt wörtlich: Sie vergleicht den **Gesamtwiderstand** mit dem äußeren Übergang, nicht den Rest.
+Weil das U·A jedes Bauteils seinen äußeren Übergang enthält, ist bei physikalisch stimmigen
+Eingaben stets U·A < α_A · A, also R_ges > R_α,A — der Grenzfall tritt nur ein, wenn die
+Eingaben einander widersprechen. Dann ist (28b) stets negativ, und (28c) greift bestimmungsgemäß
+mit; dass Regelfall und Grenzfall an ihrer Grenze nicht stetig aneinander anschließen (der
+Durchgangswiderstand R_1 + R_Rest springt um R_α,i), ist für eine Schutzregel ohne Belang.
+Liefert der Regelfall keinen positiven Rest und greift (28a) nicht, ist die Eingabe ebenso
+widersprüchlich; die Rechnung bricht mit benanntem Fehler ab (A4). Welcher Fall gegriffen hat,
+weist der Parametersatz aus; ein Setzwert der Richtlinie ist damit kein stiller Rückfall.
 
 Die Fensterfläche A_w zählt damit in der Flächenwichtung der Oberflächen (A2), in der
 Strahlungsverteilung (Schritt E), in der Gewichtung der äquivalenten Außentemperatur nach (41)
@@ -428,7 +470,7 @@ Abschnitt 4.
 | B3 | Kettenmatrizen **von innen nach außen** multiplizieren — die Reihenfolge ist nicht vertauschbar | (11) | B2 je Schicht | Gesamtmatrix a_ij des Bauteils |
 | B4 | Identifikation der Ersatzgrößen: R_1 aus a_22/a_12, R_2 aus a_11/a_12, dann C_1, C_2, R_3 und die Korrektur C_1,korr | (12)–(17) | a_ij | R_1, C_1 [K/W, J/K] je Bauteil |
 | B5 | Bauteile einer Gruppe parallel schalten: ΣC, Σ1/R | Abschnitt 6.3 | B4 je Bauteil | R_1,AW, C_AW bzw. R_1,IW, C_IW |
-| B6 | Fenster **nach** den Wänden parallel anschließen: R_1,AF = R_AF/6 mit R_AF = (1/U_AF − 1/α_I − 1/α_A)/A; die Kapazität der Wände bleibt dabei unverändert | (25)–(28), Klemmen (28a)–(28c) | U_AF, A | R_ges,AW, R_Rest,AW |
+| B6 | Fenster **nach** den Wänden parallel anschließen: R_1,AF = R_AF/6 mit R_AF = (1/U_AF − 1/α_I − 1/α_A)/A; Gesamtwiderstand der Gruppe aus den U·A aller Wände und Fenster, Rest als Differenz; liegt der Gesamtwiderstand unter dem äußeren Übergang (nur bei widersprüchlicher Eingabe), Rest und R_1 nach den Grenzfällen als Schutzregel; der Fensterzweig geht mit vollem 1/(U·A) einschließlich äußerem Übergang ein; die Kapazität der Wände bleibt dabei unverändert | (25)–(28), Grenzfälle (28a)–(28c) | U_AF, A, α_A | R_ges,AW, R_1,AW, R_Rest,AW |
 | B7 | Zusammenfassung zum Raum mit der Bezugsperiode T_RA = 5 d | (10e) | B5, B6 | Ersatzparameter des Raums |
 
 **Fallen.** Innenbauteile werden über den **vollständigen** Schichtaufbau in die Kettenmatrix
@@ -590,8 +632,9 @@ Die Reihenentwicklungen nahe null sind Pflicht, nicht Verzierung: ohne sie lösc
 und Nenner aus. Die Grenze der Richtlinie — E = 0 ab Z > 170 (Blatt 1, Abschnitt 6.4, Seite 27)
 — wird als **Abschneidegrenze für den abklingenden Exponentialterm** übernommen; ein Überlauf
 kann in den drei Funktionen ohnehin nicht entstehen, weil alle Eigenwerte negativ sind. Der
-Programmierhinweis 6.8 (Seiten 36–37) trägt etwas anderes: das Verbot des stillen Rückfalls und
-die Behandlung der Division durch null (A4).
+Programmierhinweis 6.8 (Seiten 36–37) trägt etwas anderes: den Ausschluss der Division durch
+null bei fehlenden Bauteilgruppen. Das Verbot des stillen Rückfalls ist Hausregel, keine Regel
+der Richtlinie (A4).
 
 **Eigenschaften.** Das Verfahren ist unbedingt stabil (jeder Eigenwert von A ist negativ, also
 |e^(λh)| < 1), deterministisch und liefert **Endwert und Stundenmittel exakt**. Das
@@ -906,8 +949,8 @@ Stundenschritt(h):
 dass die Fallfolge nicht zur Ruhe kommt. Wird der Deckel erreicht, bricht die Rechnung mit
 benanntem Fehler ab und nennt Gebäude, Jahresstunde, Zahl der Abschnitte und die Folge der
 Betriebsfälle. Ein Teilstundenergebnis entsteht **nicht**: ein akkQ, das nur einen Teil der Stunde
-deckt und trotzdem durch 3 600 s geteilt wird, wäre eine stille Falschzahl (Blatt 1, 6.8 verbietet
-den stillen Rückfall). 10.4 führt dafür eine Rechenprobe.
+deckt und trotzdem durch 3 600 s geteilt wird, wäre eine stille Falschzahl (Hausregel: kein
+stiller Rückfall). 10.4 führt dafür eine Rechenprobe.
 
 **Heiz- und Kühlanteil werden je Abschnitt getrennt akkumuliert (F-P3).** Eine Stunde kann beides
 enthalten — Aufheizen am Morgen, Übertemperatur danach: Wechselt der Betriebsfall innerhalb der
@@ -1558,7 +1601,8 @@ ausgelieferte Test führt nur die berechneten Abweichungen und das Bestanden-Kri
 | Vorlauf 30 Tage | Zustand konvergiert auf unter 0,1 K — **für Zeitkonstanten bis rund 25 h**; darüber je Fall zu prüfen (7.2, 10.5). Normtests laufen in G0 mit dem Abbruchkriterium aus 7.2: Unterschied zweier Vorlaufwochen < 0,01 K, höchstens zwölf Wochen, sonst benannter Fehler |
 | stationärer Grenzfall (konstante Randbedingungen) | Φ_h = [1/(R_Rest,AW + R_1,AW + R_innen,eff) + H_ext]·(θ_soll − θ_out) − Gewinne — mit R_Rest,AW und R_1,AW der **zusammengefassten** Außenwandgruppe **einschließlich Fensterzweig** (A7a), H_ext = H_ve + Σψ·L (A7) und R_innen,eff nach A4; **nicht** mit Σ(U·A)_opak. Aufbau der Probe: `Grundflaeche_Randbedingung = AUSSENLUFT` **und** `Aussenbauteile_Strahlung = 0` (in G1 die Vorgabe), damit θ_eq und θ_out zusammenfallen |
 | wirksamer Leitwert gegen A4 und A7a | 1/(R_Rest,AW + R_1,AW + R_innen,eff) gleich dem aus der stationären Lösung zurückgerechneten U·A; der Fensterzweig muss darin sichtbar sein — für das Gebäude aus Kapitel 9 fehlten ohne ihn rund 126 W/K, etwa 15 % |
-| R_Rest,AW ≤ 0 oder R_AF ≤ 0 | benannter Abbruch, **kein** Klemmwert (A4, A7a) |
+| Außenbauteilgruppe nach (27)–(28c) | Regelfall, Grenzfall (28a)/(28b) und Untergrenze (28c) je mit ausgewiesenem Fall; an der Grenze der Sprung des Durchgangswiderstands um R_α,i; im Grenzfall bleibt das Netz passiv (Eigenwerte negativ), stationär gilt der Leitwert aus R_1 + R_Rest + R_innen,eff, die Energiebilanz eines Blocks ist geschlossen (A7a) |
+| nicht positiver Rest ohne Grenzfall, oder R_AF ≤ 0 | benannter Abbruch, **kein** selbst gewählter Wert (A4, A7a) |
 | Abschnittsdeckel: 60 Abschnitte in einer Stunde | benannter Fehler mit Gebäude, Jahresstunde, Zahl der Abschnitte und Fallfolge; **kein** Teilstundenergebnis, keine Ausgabe der Stunde (7.1). Die Probe erzwingt den Deckel mit einer Fallfolge, die nicht zur Ruhe kommt, und erwartet den Fehler statt einer Zahl |
 | Heiz- und Kühlanteil je Abschnitt | **scharf:** in keinem Abschnitt buchen Heiz- und Kühlanteil zugleich — Heizfälle nur in akkQ_heiz, Kühlfälle nur in akkQ_kuehl, das Totband in keinen; ein Verstoß ist ein benannter Fehler. **Als Hinweis**, nicht als Fehler: die Zahl der Stunden mit Q_heiz und Q_kuehl beide > 0 (Fallwechsel in der Stunde) (7.1, Kühlkonzept 3.3, F-K3) |
 | Ferientag außerhalb 1…365 in einem **aktiven** Fahrplan | benannte Ablehnung; 0 und 366 heißen „aus" und laufen still durch (E8) |
@@ -1574,7 +1618,8 @@ ausgelieferte Test führt nur die berechneten Abweichungen und das Bestanden-Kri
   Normtests gilt das Abbruchkriterium aus 7.2.
 - **Sehr gut gedämmt** (kleines Σ(U·A)): R_Rest,AW wird groß, das System langsam — unkritisch.
 - **Sehr schlecht gedämmt** (mittleres U über 4,17 W/(m²K)): R_Rest,AW wird null oder negativ —
-  Abbruch mit benanntem Fehler.
+  Abbruch mit benanntem Fehler, solange der Grenzfall (28a) nicht greift; er greift erst, wenn der
+  Gesamtwiderstand der Gruppe unter ihren äußeren Übergang fällt (A4, A7a).
 - **Gleiche Eigenwerte** (zusammenfallender Fall): die Sylvester-Formel geht in die Ableitungsform
   über; der Zweig ist eigens zu prüfen.
 - **Rechenzeit:** rund 5 ms je Gebäude und Jahr (9 480 Stundenschritte einschließlich 720 h

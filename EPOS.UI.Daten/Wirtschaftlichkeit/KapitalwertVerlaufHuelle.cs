@@ -1,274 +1,458 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using EPOS.UI.Dialoge.Wirtschaftlichkeit;
+using EPOS.UI.Seiten.Berichte;
+using EPOS.UI.Seiten.Simulation;
 using SpeicherEngine;
 using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die PLATTFORMFREIE Hülle des Dialogs „Kapitalwert-Verlauf" (iU9-W1.6).
-    ///
-    /// <para><b>Seit Etappe E3, Schritt 6 liegt sie in <c>EPOS.UI.Daten</c>,
-    /// und sie hat keine Fensterhälfte mehr</b> (P7): Sammeln, Rechnen und
-    /// Zeichnen sind plattformfrei — der Renderer des Kerns kommt ohne Windows
-    /// aus, und der Arbeitsfaden entsteht über
-    /// <c>SpeicherEngine.Kulturweitergabe</c> statt über ein nacktes
-    /// <c>Task.Run</c> (Wächter <c>ParallelitaetWacheTests</c>). Der Dialog
-    /// erscheint ausschließlich als <c>Ueberlagerung</c> der
-    /// Wirtschaftlichkeitsseite.</para>
-    ///
-    /// <para><b>Hier liegt die Rechnung.</b> Die Komponente
-    /// <see cref="KapitalwertVerlaufDialog"/> kennt weder Datenbank noch
-    /// Renderer; sie ruft einen Delegaten und bekommt zwei ZEICHENMODELLE. Dieser
-    /// Delegat macht genau das, was
-    /// <c>Form_WirtschaftlichkeitVerlauf.btnZeichnen_Click</c>
-    /// tat: Parameter und Tarif laden, die Simulationsdaten EINMAL sammeln
-    /// (<c>BerichtsDatenSammler</c>, danach aus dem Zwischenspeicher),
-    /// <c>WirtschaftlichkeitCtrl.BerechneVerlauf</c> rufen und die beiden Bilder
-    /// mit <c>ChartRenderer.KapitalwertVerlaufModell</c> bauen — alles auf einem
-    /// eigenen Faden (<c>Task.Run</c>), abbrechbar über den <c>CancellationToken</c>
-    /// der Komponente.</para>
-    ///
-    /// <para><b>Was nicht mitgeht.</b> Die <c>ProgressBar</c> und der
-    /// <c>IProgress</c>-Melder des Sammlers: Ein Fortschrittsbaustein entsteht in
-    /// <c>EPOS.UI</c> erst in Welle 11 (Bausteinlücke 13). Der Sammler bekommt
-    /// deshalb <c>null</c> als Melder — er kommt damit aus, der Weg ist
-    /// derselbe.</para>
+    /// Was der Verlauf von der Seite wissen muss, um zu rechnen und zu zeichnen: die im
+    /// Vergleich angehakten Stände, die Sicht der Sitzung und die Erklärzeile der Referenz.
+    /// Die Hülle der Seite liefert ihn bei jedem Aufruf frisch.
     /// </summary>
-    internal static class KapitalwertVerlaufHuelle
+    internal sealed class VerlaufKontext
     {
-        /// <summary>Die drei Szenarien als Auswahleinträge. Die Ids sind Indizes;
-        /// den Persistenzwert (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>)
-        /// setzt <see cref="SzenarioZu"/> — Anzeigetext und Steuerwert fallen hier
-        /// zusammen, genau wie in der <c>ComboBox</c> des Vorläufers.</summary>
-        private static readonly string[] SZENARIEN =
+        /// <summary>Die angehakten Stände samt Stamm (<c>Vergleichsauswahl.Gewaehlte</c>).</summary>
+        public List<int> Gewaehlt { get; set; } = new List<int>();
+
+        /// <summary>Die Sicht der Sitzung (Kopie); <c>null</c> oder Sicht 1 = gegen die Referenz der Gruppe.</summary>
+        public Vergleichssicht Sicht { get; set; }
+
+        /// <summary>Die Erklärzeile der Referenz, wie sie die Seite zeigt — die zweite Zeile des Excel-Blatts.</summary>
+        public string Referenzzeile { get; set; } = "";
+    }
+
+    /// <summary>
+    /// ETAPPE E6 (Konzept Wirtschaftlichkeit § 2.13 (5)) — die PLATTFORMFREIE Hülle des
+    /// Abschnitts „Verlauf" der Wirtschaftlichkeitsseite: der Kapitalwert-Verlauf mit allen
+    /// drei Szenarien, im Abschnitt und nicht mehr hinter dem Knopf „Verlauf…".
+    ///
+    /// <para><b>Aus der Hülle des Dialogs wird die Hülle des Abschnitts.</b> Bis E6 baute
+    /// diese Klasse den Parametersatz des Dialogs <c>KapitalwertVerlaufDialog</c>, der ein
+    /// Szenario je Lauf rechnete. Seit E6 hält sie den Verlauf der Seite: die gesammelten
+    /// Eingangsdaten (aus dem Rechenlauf der Seite oder eigens gesammelt), die drei Läufe
+    /// (<see cref="WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien"/>, ohne Speichern) und
+    /// daraus je Wahl das Zeichenmodell (<see cref="ChartRenderer.KapitalwertSzenarienModell"/>),
+    /// die Zeilen darunter und das Excel-Blatt (<see cref="VerlaufExcel"/>).</para>
+    ///
+    /// <para><b>Drei Wege.</b> <see cref="Zeichnen"/> ist billig: Er baut aus dem gerechneten
+    /// Verlauf die Ansicht zur Wahl und rechnet nur dann aus DENSELBEN Eingangsdaten nach, wenn
+    /// sich Sicht, Referenz oder Horizont geändert haben. <see cref="Berechnen"/> sammelt, wo
+    /// Eingangsdaten fehlen (der Sammler simuliert dann, wie im abgelösten Dialog), auf einem
+    /// eigenen Faden über <c>Kulturweitergabe</c> und ist abbrechbar. <see cref="NachExcel"/>
+    /// fragt über <c>Dienste.Datei</c> nach dem Ziel und schreibt das Blatt „Verlauf".</para>
+    ///
+    /// <para><b>Die Persistenzwerte der Szenarien kennt nur diese Hülle</b>: Die Seite sieht
+    /// die Nummern 0 (Ungünstig), 1 (Erwartet), 2 (Günstig).</para>
+    /// </summary>
+    internal sealed class KapitalwertVerlaufHuelle
+    {
+        private readonly int _idStamm;
+        private readonly string _stammName;
+        private readonly Func<VerlaufKontext> _kontext;
+        private readonly WirtschaftlichkeitCtrl _ctrl = new WirtschaftlichkeitCtrl();
+
+        /// <summary>Die Eingangsdaten des Verlaufs — aus dem Rechenlauf der Seite oder eigens gesammelt.</summary>
+        private BerichtsDaten _daten;
+
+        /// <summary>Der gerechnete Verlauf; <c>null</c> = noch keiner oder verworfen.</summary>
+        private WirtschaftlichkeitVerlaufSzenarien _verlauf;
+
+        /// <summary>Wofür <see cref="_verlauf"/> gilt: Horizont, Sicht, Referenz, Eingangsdaten.</summary>
+        private string _schluessel;
+
+        /// <summary>Der Horizont des Verlaufs [a]; 0 = der Betrachtungszeitraum.</summary>
+        private int _jahre;
+
+        /// <summary>Der Betrachtungszeitraum T beim letzten Rechnen [a].</summary>
+        private int _t;
+
+        /// <param name="kontext">Liefert die Wahl der Seite frisch (Vergleich, Sicht, Referenzzeile).</param>
+        internal KapitalwertVerlaufHuelle(int idStamm, string stammName, Func<VerlaufKontext> kontext)
         {
-            WirtschaftlichkeitSzenario.ERWARTET,
-            WirtschaftlichkeitSzenario.BEST,
-            WirtschaftlichkeitSzenario.WORST
-        };
+            _idStamm = idStamm;
+            _stammName = stammName ?? "";
+            _kontext = kontext ?? (() => new VerlaufKontext());
+        }
 
-        private static string SzenarioZu(int id)
-            => (id >= 0 && id < SZENARIEN.Length) ? SZENARIEN[id] : WirtschaftlichkeitSzenario.ERWARTET;
+        /// <summary>Ist ein Verlauf gerechnet? (Prüfhilfe)</summary>
+        internal bool Gerechnet => _verlauf != null;
 
-        /// <summary>
-        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
-        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
-        /// der Verlauf in einer <c>Ueberlagerung</c> darin — dasselbe Fenster,
-        /// dieselbe WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
-        /// </summary>
-        /// <param name="neuGesammelt">
-        /// Liefert nach dem Schließen, ob der Lauf neu simuliert hat — dann
-        /// passen die persistierten Ergebnisse nicht mehr zum Simulationsstand
-        /// (Review Phase 11).
-        /// </param>
-        internal static IReadOnlyDictionary<string, object> Gaben(
-            int idStamm, string stammName, List<int> variantenIds, out Func<bool> neuGesammelt)
+        /// <summary>Die Datenseite des Abschnitts für die Seite.</summary>
+        internal VerlaufDienste Seitenwege()
         {
-            string name = stammName ?? "";
-            List<int> varianten = variantenIds ?? new List<int>();
-
-            var ctrl = new WirtschaftlichkeitCtrl();
-            BerichtsDaten daten = null;              // Zwischenspeicher des Simulationsstands
-            var neu = new bool[1];
-            neuGesammelt = () => neu[0];
-
-            var szenarien = new List<ValueTuple<int, string>>();
-            for (int i = 0; i < SZENARIEN.Length; i++)
-                szenarien.Add(new ValueTuple<int, string>(i, SZENARIEN[i]));
-
-            // ParameterVorbelegen: der gespeicherte Betrachtungszeitraum, wenn er
-            // im Bereich des Drehfeldes liegt.
-            int jahreVorgabe = 20;
-            try
+            return new VerlaufDienste
             {
-                WirtschaftlichkeitParameter p0 = ctrl.LadeParameter(idStamm);
-                if (p0.Betrachtungszeitraum >= 2 && p0.Betrachtungszeitraum <= 60)
-                    jahreVorgabe = p0.Betrachtungszeitraum;
-            }
-            catch { }
-
-            return new Dictionary<string, object>
-            {
-                ["Szenarien"] = (IReadOnlyList<ValueTuple<int, string>>)szenarien,
-                ["JahreVorgabe"] = jahreVorgabe,
-
-                // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2): Die
-                // Verlaufsreihen nehmen Hausfarben, daraus wird im Modell eine
-                // Farbrolle. Kein Delegat, kein Waehler.
-                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
-                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
-
-                // E3/6: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten
-                // statt ueber ein nacktes Task.Run - in EPOS.UI.Daten gilt der
-                // Waechter ParallelitaetWacheTests, und ein Faden ohne eigene
-                // Kultur liest den VERAENDERLICHEN prozessweiten Vorgabewert.
-                // Derselbe Faden, dieselbe Rechnung, derselbe Abbruchschalter.
-                ["Berechnen"] = new Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>(
-                    (jahre, szenarioId, ct) => Kulturweitergabe.Starten(() =>
-                    {
-                        string szenario = SzenarioZu(szenarioId);
-                        WirtschaftlichkeitParameter p = ctrl.LadeParameter(idStamm);
-                        TarifParameter tarif = ctrl.LadeTarif(idStamm);
-                        // SP-W1: auch der Leistungspreis des Stromträgers braucht den
-                        // frischen Lauf — seine Basis ist die Bezugsspitze. LS-E-2 (VF-1):
-                        // Er zählt für die ganze Gruppe; eine Variante, die ihn als Einzige
-                        // führt, verlöre ihren Leistungsanteil sonst still.
-                        // BK1: Der KWKG-Zweig fragt KwkgAktivierung — die EINE Regel des
-                        // Kerns; die Sätze stehen seit Schemaschritt 89 je Anlage.
-                        bool mitZeitreihen = tarif.Aktiv ||
-                                             KwkgAktivierung.IstAktiv(idStamm, varianten) ||
-                                             KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm, varianten);
-
-                        bool warGecacht = daten != null;
-                        if (daten == null)   // Simulationsdaten nur einmal sammeln
-                            daten = new BerichtsDatenSammler().Sammle(
-                                idStamm, name, varianten, false, mitZeitreihen, null, ct);
-
-                        WirtschaftlichkeitVerlauf verlauf = ctrl.BerechneVerlauf(daten, p, jahre, szenario);
-
-                        // Exaktes Kriterium: der Sammler markiert neu simulierte (und damit
-                        // neu persistierte) Projekte selbst (Review-Verifikation 11).
-                        if (!warGecacht && daten != null &&
-                            daten.Varianten.Any(v => v.FrischSimuliert))
-                            neu[0] = true;
-
-                        return Bilder(verlauf, p, jahre, szenario);
-                    }, ct)),
-
-                ["TitelText"] = Titel(name),
-                ["LabelJahre"] = Text_("WVERL_LBL_ZEITRAUM", "Zeitraum [Jahre]:"),
-                ["LabelSzenario"] = Text_("WVERL_LBL_SZENARIO", "Szenario:"),
-                ["ZeichnenText"] = Text_("WVERL_BTN_ZEICHNEN", "Aktualisieren"),
-                ["SchliessenText"] = Text_("WVERL_BTN_SCHLIESSEN", "Schließen"),
-                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-                ["LaeuftText"] = Text_("WVERL_STATUS_LAEUFT", "Berechnung läuft …"),
-                ["AbgebrochenText"] = Text_("WVERL_STATUS_ABBRUCH", "Vorgang abgebrochen."),
-                ["VorlageFehler"] = Text_("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}"),
-                ["AltDifferenz"] = Text_("WVERL_BILD_DIFF", TITEL_DIFF),
-                ["AltAbsolut"] = Text_("WVERL_BILD_ABS", TITEL_ABS),
-                ["PlatzhalterText"] = Text_("WVERL_KEIN_BILD", "Noch kein Diagramm")
+                Zeichnen = Zeichnen,
+                Berechnen = Berechnen,
+                NachExcel = NachExcel,
+                JahreVorgabe = JahreVorgabe()
             };
         }
 
-        // ------------------------------------------------- Die Farbe einer Reihe
+        /// <summary>
+        /// Übernimmt die Eingangsdaten eines Rechenlaufs der Seite und rechnet den Verlauf
+        /// gleich mit — auf dem Faden des Laufs, damit die Seite danach nur noch zeichnet.
+        /// Ein Fehler hier lässt den Verlauf leer; der Rechenlauf der Seite bleibt gültig.
+        /// </summary>
+        internal void DatenUebernehmen(BerichtsDaten daten)
+        {
+            _daten = daten;
+            _verlauf = null;
+            _schluessel = null;
+            if (daten == null) return;
+            try { Rechne(_kontext()); }
+            catch { _verlauf = null; _schluessel = null; }
+        }
 
         /// <summary>
-        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
-        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
-        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
-        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// Nach gespeicherten Parametern: Der gerechnete Verlauf gilt nicht mehr; die
+        /// Eingangsdaten bleiben, und das nächste Zeichnen rechnet mit den neuen Parametern.
         /// </summary>
-        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        internal void Verwerfen()
         {
-            Diagrammfarben.Setze(rolle, farbe);
-            return Task.CompletedTask;
+            _verlauf = null;
+            _schluessel = null;
         }
 
-        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
-        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        // =====================================================================
+        // Die drei Wege der Seite
+        // =====================================================================
+
+        /// <summary>Die Ansicht zur Wahl — aus dem gerechneten Verlauf.</summary>
+        internal VerlaufAnsicht Zeichnen(VerlaufWahl wahl)
         {
-            Diagrammfarben.Zuruecksetzen(rolle);
-            return Task.CompletedTask;
+            VerlaufKontext k = _kontext();
+            if (_daten == null) return Leer();
+            try
+            {
+                if (_verlauf == null || !string.Equals(_schluessel, Schluessel(k), StringComparison.Ordinal))
+                    Rechne(k);
+                return Ansicht(wahl, k);
+            }
+            catch (Exception ex)
+            {
+                VerlaufAnsicht fehler = Leer();
+                fehler.Hinweis = string.Format(Kultur, T("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}"),
+                                               ex.Message);
+                return fehler;
+            }
         }
-
-        // ------------------------------------------------------------------ Bilder
-
-        /// <summary>Deutscher Rueckfall der beiden Bildtitel; die Anzeige holt sie
-        /// ueber <see cref="Text_"/> aus <c>WVERL_BILD_DIFF</c> bzw.
-        /// <c>WVERL_BILD_ABS</c> — DIESELBEN Schluessel wie die Alternativtexte der
-        /// Komponente, denn es ist derselbe Titel.</summary>
-        private const string TITEL_DIFF = "Kapitalwert-Verlauf: Differenz zur Stamm-Referenz";
-        private const string TITEL_ABS = "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt";
 
         /// <summary>
-        /// Baut die beiden Bilder und die beiden Textzeilen — wortgleich aus
-        /// <c>ZeigeDiagramme</c> und dem Statusteil von <c>btnZeichnen_Click</c>.
-        ///
-        /// <para><b>ZEICHENMODELL statt PNG</b> (Etappe DG-E3, Gruppe (c)):
-        /// <c>KapitalwertVerlaufModell</c> ist der Rumpf, den
-        /// <c>KapitalwertVerlauf</c> an den Maler gibt — dasselbe Bild, nur nicht in
-        /// Bildpunkten eingefroren. Beide Modelle entstehen in EINEM Lauf und bleiben
-        /// bis zum nächsten stehen: Der Baustein <c>DiagrammSvg</c> baut seinen
-        /// Knotenbaum an der REFERENZ des Modells fest, und mit einem neuen Baum
-        /// fielen Zoom, Zeigerstelle und abgewählte Reihen.</para>
+        /// Rechnet den Verlauf über <paramref name="jahre"/> neu — sammelt die
+        /// Simulationsdaten, wenn sie fehlen oder einen angehakten Stand nicht tragen.
         /// </summary>
-        private static KapitalwertVerlaufBilder Bilder(WirtschaftlichkeitVerlauf verlauf,
-                                                       WirtschaftlichkeitParameter p,
-                                                       int jahre, string szenario)
+        internal async Task<VerlaufAnsicht> Berechnen(int jahre, VerlaufWahl wahl, CancellationToken ct)
         {
-            var kultur = BerichtTexte.Kultur;
+            VerlaufKontext k = _kontext();
+            _jahre = Math.Max(2, Math.Min(60, jahre));
+            bool neu = false;
 
-            Zeichenmodell diff = ChartRenderer.KapitalwertVerlaufModell(
-                Text_("WVERL_BILD_DIFF", TITEL_DIFF),
-                ChartRenderer.VerlaufsReihen(verlauf.Differenz, false),
-                Text_("WVERL_UNTER_DIFF",
-                    "Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; " +
-                    "Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert."));
+            // E3/6-Muster: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten statt
+            // ueber ein nacktes Task.Run (Waechter ParallelitaetWacheTests).
+            await Kulturweitergabe.Starten(() =>
+            {
+                if (!Deckt(_daten, k.Gewaehlt))
+                {
+                    var varianten = k.Gewaehlt.Where(id => id != _idStamm).ToList();
+                    TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
+                    // Dieselbe EINE Regel wie im Kern und auf der Seite (BK1, SP-W1, LS-E-2).
+                    bool mitZeitreihen = tarif.Aktiv ||
+                                         KwkgAktivierung.IstAktiv(_idStamm, varianten) ||
+                                         KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, varianten);
+                    BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
+                        _idStamm, _stammName, varianten, false, mitZeitreihen, null, ct);
+                    // Exaktes Kriterium: Der Sammler markiert neu simulierte Projekte selbst.
+                    neu = daten.Varianten.Any(v => v.FrischSimuliert);
+                    _daten = daten;
+                }
+                ct.ThrowIfCancellationRequested();
+                Rechne(k);
+                return true;
+            }, ct);
 
-            Zeichenmodell abs = ChartRenderer.KapitalwertVerlaufModell(
-                Text_("WVERL_BILD_ABS", TITEL_ABS),
-                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true),
-                Text_("WVERL_UNTER_ABS",
-                    "Kumulierte diskontierte Zahlungsströme (Kosten negativ). " +
-                    "Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert."));
-
-            // Restwerte am gewählten Horizont ausweisen (Reihen sind ohne Restwert).
-            var teile = new List<string>();
-            foreach (VerlaufSerie s in verlauf.Absolut)
-                if (s.Kumuliert != null && Math.Abs(s.RestwertBarwert) > 0.5)
-                    teile.Add(s.Anzeige + " " + s.RestwertBarwert.ToString("N0", kultur) + " €");
-            string restwert = teile.Count > 0
-                ? string.Format(kultur,
-                      Text_("WVERL_RESTWERTE",
-                            "Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): {0}"),
-                      string.Join(" · ", teile))
-                : "";
-
-            // Nicht berechenbare Projekte offen ausweisen.
-            var fehler = verlauf.Absolut.Where(s => s.Fehlgrund != null).ToList();
-            if (fehler.Count > 0)
-                restwert = (string.Format(kultur, Text_("WVERL_OHNE_REIHE", "⚠ Ohne Reihe: {0}"),
-                        string.Join("; ", fehler.Select(s => s.Anzeige + " (" + s.Fehlgrund + ")"))) +
-                    "   " + restwert).Trim();
-
-            // Die Statuszeile setzt sich aus drei Bausteinen zusammen, damit jeder
-            // Zusatz fuer sich uebersetzbar bleibt: der Kopf, der Hinweis auf einen
-            // vom Betrachtungszeitraum abweichenden Horizont und - nur bei einem
-            // LAENGEREN Horizont - der Satz zur Amortisationskennzahl.
-            string jenseits = jahre > p.Betrachtungszeitraum
-                ? Text_("WVERL_STATUS_JENSEITS",
-                        "; Nulldurchgänge jenseits von T erscheinen nicht in der " +
-                        "gespeicherten Amortisationskennzahl")
-                : "";
-            string status = string.Format(kultur,
-                Text_("WVERL_STATUS_KOPF", "Verlauf über {0} Jahre, Szenario „{1}“"),
-                jahre, szenario) +
-                (jahre != p.Betrachtungszeitraum
-                 ? string.Format(kultur,
-                       Text_("WVERL_STATUS_ABWEICHEND",
-                             " (abweichend von T = {0} a — nur Anzeige, gespeicherte " +
-                             "Ergebnisse unverändert{1})."),
-                       p.Betrachtungszeitraum, jenseits)
-                 : ".");
-
-            return new KapitalwertVerlaufBilder(diff, abs, restwert, status);
+            VerlaufAnsicht ansicht = Ansicht(wahl, k);
+            ansicht.NeuSimuliert = neu;
+            if (neu)
+                ansicht.Meldung = T("WIRT_MELD_VERLAUF_NEU",
+                    "⚠ Für den Verlauf wurde neu simuliert — gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand, bitte „Berechnen“.");
+            return ansicht;
         }
 
-        /// <summary>Fenstertitel — wortgleich aus <c>TexteSetzen</c>.</summary>
-        private static string Titel(string stammName)
+        /// <summary>
+        /// „Verlauf nach Excel…" (U13): Ziel über <c>Dienste.Datei</c> wählen (gewartet —
+        /// ein synchron geöffnetes Plattformfenster mitten im Blazor-Ereignis ist der
+        /// Absturz aus Befund W13‑B‑1), dann das Blatt „Verlauf" mit der Wahl des Abschnitts
+        /// schreiben.
+        /// </summary>
+        internal async Task<Rueckmeldung> NachExcel(VerlaufWahl wahl)
         {
-            return string.Format(
-                Text_("WVERL_TITEL_STAMM", "{0} — Stamm: {1}"),
-                Text_("WVERL_TITEL", "Kapitalwert-Verlauf über den Nutzungszeitraum"),
-                stammName);
+            VerlaufKontext k = _kontext();
+            if (_daten == null)
+                return new Rueckmeldung(false, T("WIRT_VERL_EXCEL_LEER",
+                    "Noch kein Verlauf gerechnet — erst „Aktualisieren“."));
+            try
+            {
+                if (_verlauf == null || !string.Equals(_schluessel, Schluessel(k), StringComparison.Ordinal))
+                    Rechne(k);
+            }
+            catch (Exception ex)
+            {
+                return new Rueckmeldung(false, string.Format(Kultur,
+                    T("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}"), ex.Message));
+            }
+
+            string vorschlag = string.Format(Kultur,
+                T("WIRT_VERL_EXCEL_DATEI", "Kapitalwertverlauf_{0}.xlsx"), Dateiteil(_stammName));
+            string pfad = await Dienste.Datei.DateiSpeichernAsync(
+                T("WIRT_VERL_EXCEL_TITEL", "Verlauf nach Excel speichern"), "Excel (*.xlsx)|*.xlsx", vorschlag);
+            if (string.IsNullOrEmpty(pfad)) return Rueckmeldung.Still;
+
+            try
+            {
+                List<int> staende = Staende(wahl, k);
+                List<string> szenarien = Szenarien(wahl);
+                WirtschaftlichkeitVerlaufSzenarien verlauf = _verlauf;
+                string unterzeile = Unterzeile(k);
+                await Kulturweitergabe.Starten(() =>
+                {
+                    VerlaufExcel.SchreibeMappe(pfad, verlauf, VerlaufBlattTexte.AusRessourcen(), unterzeile,
+                                               staende, szenarien);
+                    return true;
+                }, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                return new Rueckmeldung(false, string.Format(Kultur,
+                    T("WIRT_VERL_EXCEL_FEHLER", "Der Verlauf konnte nicht nach Excel geschrieben werden: {0}"),
+                    ex.Message));
+            }
+            return new Rueckmeldung(true, string.Format(Kultur,
+                T("WIRT_VERL_EXCEL_OK", "Verlauf nach Excel geschrieben: {0}"), pfad));
         }
 
-        private static string Text_(string schluessel, string rueckfall)
+        // =====================================================================
+        // Rechnen
+        // =====================================================================
+
+        /// <summary>
+        /// Die drei Läufe aus den vorhandenen Eingangsdaten — in der Sicht der Sitzung: In
+        /// Sicht 2 rechnet der Kern gegen A und zeichnet allein B (Konzept § 2.15, VG‑Q5).
+        /// </summary>
+        private void Rechne(VerlaufKontext k)
+        {
+            WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+            int jahre = _jahre > 0 ? _jahre : Horizont(p);
+            _daten.Sicht = k.Sicht != null && k.Sicht.IstPaar ? k.Sicht.Kopie() : null;
+            _daten.IdGruppenreferenz = p.IdReferenzprojekt;
+            _verlauf = _ctrl.BerechneVerlaufSzenarien(_daten, p, jahre);
+            _jahre = jahre;
+            _t = p.Betrachtungszeitraum;
+            _schluessel = Schluessel(k);
+        }
+
+        /// <summary>Wofür ein gerechneter Verlauf gilt — ändert sich einer der Teile, wird nachgerechnet.</summary>
+        private string Schluessel(VerlaufKontext k)
+        {
+            int referenz = 0;
+            try { referenz = _ctrl.LadeParameter(_idStamm).IdReferenzprojekt; }
+            catch { }
+            Vergleichssicht s = k.Sicht;
+            bool paar = s != null && s.IstPaar;
+            return string.Join("|",
+                (_jahre > 0 ? _jahre : 0).ToString(CultureInfo.InvariantCulture),
+                paar ? "P" : "A",
+                (paar ? s.IdA : 0).ToString(CultureInfo.InvariantCulture),
+                (paar ? s.IdB : 0).ToString(CultureInfo.InvariantCulture),
+                referenz.ToString(CultureInfo.InvariantCulture),
+                (_daten == null ? 0 : RuntimeHelpers.GetHashCode(_daten)).ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>Tragen die Eingangsdaten jeden angehakten Stand?</summary>
+        private static bool Deckt(BerichtsDaten daten, List<int> gewaehlt)
+        {
+            if (daten == null) return false;
+            var vorhanden = new HashSet<int>(daten.Varianten.Select(v => v.IdProjekt));
+            return gewaehlt.All(vorhanden.Contains);
+        }
+
+        /// <summary>Der Horizont ohne eigene Wahl: der Betrachtungszeitraum (2 … 60 a), sonst 20.</summary>
+        private static int Horizont(WirtschaftlichkeitParameter p)
+            => p != null && p.Betrachtungszeitraum >= 2 && p.Betrachtungszeitraum <= 60 ? p.Betrachtungszeitraum : 20;
+
+        private int JahreVorgabe()
+        {
+            try { return Horizont(_ctrl.LadeParameter(_idStamm)); }
+            catch { return 20; }
+        }
+
+        // =====================================================================
+        // Die Ansicht
+        // =====================================================================
+
+        private static CultureInfo Kultur => BerichtTexte.Kultur;
+
+        /// <summary>Die Ansicht ohne gerechneten Verlauf: kein Modell, der Grund als Hinweis.</summary>
+        private static VerlaufAnsicht Leer()
+        {
+            return new VerlaufAnsicht
+            {
+                Szenarien = Szenarienliste(ChartRenderer.VerlaufSzenarienTexte.AusRessourcen()),
+                GewaehlteSzenarien = new[] { 0, 1, 2 },
+                Hinweis = T("WIRT_VERL_NOCH_NICHT",
+                    "Der Verlauf rechnet aus den Simulationsergebnissen alle drei Szenarien — „Aktualisieren“ "
+                    + "startet die Rechnung, „Berechnen“ rechnet ihn mit.")
+            };
+        }
+
+        private VerlaufAnsicht Ansicht(VerlaufWahl wahl, VerlaufKontext k)
+        {
+            var texte = ChartRenderer.VerlaufSzenarienTexte.AusRessourcen();
+            List<KeyValuePair<int, string>> sichtbar = Sichtbare(k);
+            List<int> staende = Staende(wahl, k);
+            List<string> szenarien = Szenarien(wahl);
+
+            ChartRenderer.Szenarienreihen inhalt =
+                ChartRenderer.VerlaufsReihenSzenarien(_verlauf, texte, staende, szenarien);
+            Zeichenmodell modell = ChartRenderer.KapitalwertSzenarienModell(
+                T("WIRT_VERL_BILD", "Kumulierter Barwert der Differenz zur Referenz — drei Szenarien"),
+                inhalt, texte,
+                T("WIRT_VERL_FUSS",
+                  "Kumulierter Barwert der Differenz zur Referenz je Jahr, ohne Restwert; Farbe = Variante, "
+                  + "Strichart = Szenario; der Nulldurchgang ist die dynamische Amortisation."));
+
+            var ansicht = new VerlaufAnsicht
+            {
+                Modell = modell,
+                Staende = sichtbar.Select(v => (v.Key, v.Value)).ToList(),
+                GewaehlteStaende = staende,
+                Szenarien = Szenarienliste(texte),
+                GewaehlteSzenarien = szenarien.Select(s => IndexVon(s)).ToList(),
+                Jahre = _jahre,
+                // Dieselben Zeilen wie unter dem Dreierbild des Wortberichts (VerlaufZeilen).
+                Nulldurchgangszeile = VerlaufZeilen.Nulldurchgaenge(_verlauf, staende, szenarien, Kultur),
+                Restwertzeile = VerlaufZeilen.Restwerte(_verlauf, staende, szenarien, Kultur),
+                Statuszeile = Statuszeile(),
+                Hinweis = Hinweis(k)
+            };
+            return ansicht;
+        }
+
+        /// <summary>Die Stände mit Linie, die im Vergleich angehakt sind — in der Reihenfolge der Gruppe.</summary>
+        private List<KeyValuePair<int, string>> Sichtbare(VerlaufKontext k)
+        {
+            List<KeyValuePair<int, string>> alle = _verlauf == null
+                ? new List<KeyValuePair<int, string>>() : _verlauf.Versionen();
+            if (k.Gewaehlt == null || k.Gewaehlt.Count == 0) return alle;
+            return alle.Where(v => k.Gewaehlt.Contains(v.Key)).ToList();
+        }
+
+        /// <summary>Die gezeichneten Stände: die sichtbaren, eingeschränkt auf die Wahl des Abschnitts.</summary>
+        private List<int> Staende(VerlaufWahl wahl, VerlaufKontext k)
+        {
+            List<int> sichtbar = Sichtbare(k).Select(v => v.Key).ToList();
+            if (wahl == null || wahl.Staende == null) return sichtbar;
+            return sichtbar.Where(wahl.Staende.Contains).ToList();
+        }
+
+        /// <summary>Die gezeichneten Szenarien als Persistenzwerte, in der Reihenfolge des Bildes.</summary>
+        private static List<string> Szenarien(VerlaufWahl wahl)
+        {
+            var liste = new List<string>();
+            IReadOnlyList<string> alle = WirtschaftlichkeitVerlaufSzenarien.Reihenfolge;
+            for (int i = 0; i < alle.Count; i++)
+                if (wahl == null || wahl.Szenarien == null || wahl.Szenarien.Contains(i)) liste.Add(alle[i]);
+            return liste;
+        }
+
+        private static int IndexVon(string szenario)
+        {
+            IReadOnlyList<string> alle = WirtschaftlichkeitVerlaufSzenarien.Reihenfolge;
+            for (int i = 0; i < alle.Count; i++)
+                if (string.Equals(alle[i], szenario, StringComparison.Ordinal)) return i;
+            return -1;
+        }
+
+        private static IReadOnlyList<(int Id, string Text)> Szenarienliste(ChartRenderer.VerlaufSzenarienTexte texte)
+        {
+            IReadOnlyList<string> alle = WirtschaftlichkeitVerlaufSzenarien.Reihenfolge;
+            var liste = new List<(int, string)>();
+            for (int i = 0; i < alle.Count; i++) liste.Add((i, texte.Szenarioname(alle[i])));
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Horizont — und nur bei einem abweichenden der Satz, dass die gespeicherten
+        /// Ergebnisse unverändert bleiben (bei einem längeren dazu der Satz zur
+        /// Amortisationskennzahl). Die drei Bausteine bleiben einzeln übersetzbar.
+        /// </summary>
+        private string Statuszeile()
+        {
+            string jenseits = _jahre > _t
+                ? T("WVERL_STATUS_JENSEITS",
+                    "; Nulldurchgänge jenseits von T erscheinen nicht in der gespeicherten Amortisationskennzahl")
+                : "";
+            return string.Format(Kultur, T("WIRT_VERL_STATUS", "Verlauf über {0} Jahre, alle drei Szenarien"), _jahre) +
+                   (_jahre != _t
+                    ? string.Format(Kultur,
+                        T("WVERL_STATUS_ABWEICHEND",
+                          " (abweichend von T = {0} a — nur Anzeige, gespeicherte Ergebnisse unverändert{1})."),
+                        _t, jenseits)
+                    : ".");
+        }
+
+        /// <summary>
+        /// Stände ohne Reihe (mit Grund) und angehakte Stände, die der gerechnete Verlauf nicht
+        /// trägt — beides benannt, nie still übergangen.
+        /// </summary>
+        private string Hinweis(VerlaufKontext k)
+        {
+            var saetze = new List<string>();
+            List<VerlaufSerie> ohne = _verlauf.OhneReihe();
+            if (ohne.Count > 0)
+                saetze.Add(string.Format(Kultur, T("WVERL_OHNE_REIHE", "⚠ Ohne Reihe: {0}"),
+                    string.Join("; ", ohne.Select(s => s.Anzeige + " (" + s.Fehlgrund + ")"))));
+
+            int fehlend = 0;
+            if (_daten != null && k.Gewaehlt != null)
+            {
+                var vorhanden = new HashSet<int>(_daten.Varianten.Select(v => v.IdProjekt));
+                fehlend = k.Gewaehlt.Count(id => !vorhanden.Contains(id));
+            }
+            if (fehlend > 0)
+                saetze.Add(string.Format(Kultur, T("WIRT_VERL_FEHLEND",
+                    "Für {0} angehakte Version(en) liegt noch kein Verlauf vor — „Aktualisieren“ rechnet ihn nach."),
+                    fehlend));
+            return string.Join(" ", saetze);
+        }
+
+        /// <summary>Die zweite Zeile des Excel-Blatts: Referenz und Horizont.</summary>
+        private string Unterzeile(VerlaufKontext k)
+        {
+            string status = Statuszeile();
+            return string.IsNullOrEmpty(k.Referenzzeile) ? status : k.Referenzzeile + " · " + status;
+        }
+
+        /// <summary>Ein Stammname als Teil eines Dateinamens — ohne die Zeichen, die kein Dateisystem nimmt.</summary>
+        private static string Dateiteil(string name)
+        {
+            var sb = new StringBuilder();
+            foreach (char c in name ?? "")
+                sb.Append(Array.IndexOf(Path.GetInvalidFileNameChars(), c) >= 0 || c == ' ' ? '_' : c);
+            return sb.Length == 0 ? "Projekt" : sb.ToString();
+        }
+
+        private static string T(string schluessel, string rueckfall)
         {
             string t = null;
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }

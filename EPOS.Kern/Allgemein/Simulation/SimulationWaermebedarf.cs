@@ -28,7 +28,10 @@ namespace WindowsFormsApplication1
         public double[] Waermebedarf = new double[8760];
         public double[] Waermebedarf_Gebaeude = new double[8760];
         public double[] Waermebedarf_Gebaeude_Monat = new double[12];
-        public double[] HeizwaermebedarfGeb = new double[100];
+        // Merkplatz je Gebäude (Jahresheizwärme für die Verbrauchsrückrechnung). Der Lauf
+        // dimensioniert ihn auf die Zahl der Gebäude des Projekts, HeizwaermeEinesGebaeudes
+        // wächst ihn für jeden anderen Aufrufer — keine feste Obergrenze der Gebäudezahl.
+        public double[] HeizwaermebedarfGeb = new double[1];
         public double[] Waermebedarf_sortiert = new double[8760];
         public double Waermebedarf_Max = 0;
         public double Waermebedarf_Gesamt = 0;
@@ -53,10 +56,13 @@ namespace WindowsFormsApplication1
         private double[] SpezWaermeverluste = new double[365];
         private double[] Heizlast = new double[365];
         private double[] TagesVerteilung = new double[240];
-        private double[] MaxP = new double[100];
         public double[] Dauerlinie = new double[8760];
         public double[] Dauerlinie_nicht_sortiert = new double[8760];
         private bool[] F_Absenkung = new bool[365];
+
+        // Die Vortemperatur des Tagesbilanz-Wegs — je Instanz, je Gebäude zurückgesetzt
+        // (HeizwaermeEinesGebaeudes), nicht mehr statisch in BhkwPlan.
+        private readonly WPPlan.Core.Tagesbilanzzustand _tagesbilanz = new WPPlan.Core.Tagesbilanzzustand();
 
         // Netzverluste
         public int Netzverluste = 0;
@@ -187,6 +193,10 @@ namespace WindowsFormsApplication1
             // Ergebnis bitgleich zum bisherigen Verhalten.
             double[] Waermebedarf_EinGebaeude = new double[8760];
 
+            // Ein Merkplatz je Gebäude des Projekts - keine feste Obergrenze (bis hierher
+            // double[100]: das 101. Gebäude brach mit IndexOutOfRangeException ab).
+            HeizwaermebedarfGeb = new double[Math.Max(1, ctrl.rows)];
+
             for (int i = 0; i < ctrl.rows; i++)
             {
                 // iU9-W9.8: Der Rumpf bis einschliesslich StdWerte steht seit dem
@@ -206,11 +216,6 @@ namespace WindowsFormsApplication1
                 // V0-1: Waermebedarf_Gebaeude bleibt die Summe ALLER Gebäude, wird aber
                 // nicht mehr selbst als Rechenpuffer benutzt.
                 WPPlan.Core.BhkwPlan.VectorenAddieren(Waermebedarf_EinGebaeude, Waermebedarf_Gebaeude);
-
-                // Maximaler Wärmebedarf pro Gebäude (V0-1: des EINZELNEN Gebäudes i,
-                // bisher versehentlich der kumulierte Vektor)
-                MaxP[i] = Maximaler_Waermebedarf(Waermebedarf_EinGebaeude);
-
             }
 
             Anzahl_Gebaeude = ctrl.rows;
@@ -558,13 +563,24 @@ namespace WindowsFormsApplication1
         /// <param name="item">Die Zeile aus <c>Abfrage_Projektgebaeude</c>. Sie wird
         /// GESCHRIEBEN — <c>Bewohner</c> und <c>Z_AuswahlWohnflaeche</c> werden
         /// nachgerechnet, wie im Lauf.</param>
-        /// <param name="index">Der Merkplatz in <c>HeizwaermebedarfGeb</c> (0 … 99).</param>
+        /// <param name="index">Der Merkplatz in <c>HeizwaermebedarfGeb</c> (ab 0; das Feld
+        /// wächst bei Bedarf).</param>
         /// <param name="ziel">Die 8 760 Stundenwerte in WATT; die Umrechnung nach kW
         /// macht der Aufrufer.</param>
         /// <returns><c>false</c>, wenn zum Gebäudetyp keine Tagesverteilung hinterlegt
         /// ist — der Lauf bricht dann ab, wie bisher.</returns>
         internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] ziel)
         {
+            // Keine feste Obergrenze der Gebäudezahl: Der Merkplatz wächst mit dem Index.
+            if (index >= HeizwaermebedarfGeb.Length)
+                Array.Resize(ref HeizwaermebedarfGeb, index + 1);
+
+            // Jedes Gebäude beginnt mit frischem Zustand der Vortemperatur - das Ergebnis
+            // hängt damit nicht an der Zeilenreihenfolge und nicht an einem früheren Lauf
+            // im selben Prozess. Innerhalb des Gebäudes (Rückrechnung, dann Rechnung) wird
+            // der Zustand weitergereicht wie bisher.
+            _tagesbilanz.ResetState();
+
             // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
             if (item.Einheit == "Wohnfläche [m²]")
             {
@@ -681,6 +697,117 @@ namespace WindowsFormsApplication1
             finally { rs.Close(); }
         }
 
+        /// <summary>
+        /// Bildet die Ferienmaske eines Gebäudes (<c>true</c> = der Tag ist abgesenkt) —
+        /// für jeden gültigen Zeitraum Tag für Tag dieselbe Maske wie bisher; wo die Eingabe
+        /// bisher still danebengriff, meldet sie eine benannte Warnung.
+        ///
+        /// <para><b>Die Lesart bleibt, wie sie ist</b> (eingefrorener Bestandsweg):
+        /// Zeitraum 1 ist der Jahreswechselblock — Tag <c>Ferienbeginn_1</c> (ohne
+        /// <c>−1</c>) bis Jahresende und Jahresanfang bis Tag <c>Ferienende_1</c>; er wirkt
+        /// nur bei <c>0 &lt; Ferienbeginn_1 ≤ 365</c>, 0 und 366 heißen „aus". Die Zeiträume
+        /// 2–4 laufen <c>Beginn − 1 … Ende</c> und wirken bei <c>Beginn &gt; 0</c> und
+        /// <c>Ende &gt; 0</c>. Gerechnet wird nur, wenn der Fahrplan aktiv ist
+        /// (<c>Ferien &gt; 0,9</c>).</para>
+        ///
+        /// <para><b>Was gemeldet wird.</b> (1) Ein Zeitraum, der über die Tage 1–365
+        /// hinausreicht, griff bisher über das Feld <c>bool[365]</c> hinaus und brach den
+        /// Lauf mit <c>IndexOutOfRangeException</c> ab — jetzt wird der Teil innerhalb des
+        /// Jahres abgesenkt und gewarnt; ein Beginn des Zeitraums 1 außerhalb von 0…366
+        /// wirkt wie bisher nicht, wird aber gemeldet. (2) Zeitraum 1 mit einem Beginn, der
+        /// nicht nach dem Ende liegt, senkt als Jahreswechsel gelesen das GANZE Jahr ab —
+        /// gerechnet wie bisher, aber gemeldet. (3) Ein Zeitraum 2–4, der keinen einzigen Tag
+        /// ergibt (Beginn nach Ende, nur eine der beiden Angaben), blieb still wirkungslos —
+        /// jetzt benannt. Ein Zeitraum, dessen beide Angaben 0 oder 366 sind, ist nicht
+        /// belegt und bleibt still.</para>
+        /// </summary>
+        /// <param name="item">Das Gebäude; nur gelesen.</param>
+        /// <param name="maske">Die 365 Tage; wird vollständig überschrieben.</param>
+        /// <param name="warnen">Nimmt (Schlüssel, Text) einer Warnung; der Schlüssel ist je
+        /// Gebäude, Zeitraum und Art eindeutig.</param>
+        internal static void FerienmaskeBilden(ProjektGebaeudeModel item, bool[] maske, Action<string, string> warnen)
+        {
+            int tage = maske.Length;
+            for (int Tag = 0; Tag < tage; Tag++)
+            {
+                maske[Tag] = false;
+            }
+
+            if (!(item.Ferien > 0.9)) return;
+
+            string name = item.Gebaeudename ?? "";
+
+            void Melden(int zeitraum, string art, string text) =>
+                warnen("Ferienmaske|" + item.ID_Gebaeude + "|" + zeitraum + "|" + art, text);
+
+            string Ausserhalb(int zeitraum, double beginn, double ende) =>
+                string.Format(MyResource.Resource.SIMENG_FERIEN_AUSSERHALB_JAHR, name, zeitraum, beginn, ende);
+
+            // --- Zeitraum 1: der Jahreswechselblock ---
+            double b1 = item.Ferienbeginn_1;
+            double e1 = item.Ferienende_1;
+            if (b1 > 0 && b1 <= tage)
+            {
+                for (int Tag = (int)b1; Tag < tage; Tag++)
+                {
+                    maske[Tag] = true;
+                }
+                if (e1 > tage) Melden(1, "ausserhalb", Ausserhalb(1, b1, e1));
+                for (int Tag = 0; Tag < (int)e1 && Tag < tage; Tag++)
+                {
+                    maske[Tag] = true;
+                }
+                if (e1 > 0 && b1 <= e1)
+                {
+                    Melden(1, "jahreswechsel", string.Format(
+                        MyResource.Resource.SIMENG_FERIEN_JAHRESWECHSEL, name, b1, e1));
+                }
+            }
+            else if (!(b1 == 0 || b1 == tage + 1))
+            {
+                // Negativ, jenseits von 366 oder keine Zahl: wirkt nicht - wie bisher -,
+                // wird aber nicht mehr verschwiegen.
+                Melden(1, "ausserhalb", Ausserhalb(1, b1, e1));
+            }
+
+            // --- Zeiträume 2 bis 4: Beginn - 1 ... Ende ---
+            double[] beginne = { item.Ferienbeginn_2, item.Ferienbeginn_3, item.Ferienbeginn_4 };
+            double[] enden = { item.Ferienende_2, item.Ferienende_3, item.Ferienende_4 };
+            for (int k = 0; k < 3; k++)
+            {
+                int zeitraum = k + 2;
+                double beginn = beginne[k];
+                double ende = enden[k];
+
+                if (beginn > 0 && ende > 0)
+                {
+                    int von = (int)beginn - 1;
+                    bool ausserhalb = von < 0 || von >= tage || ende > tage;
+                    if (ausserhalb) Melden(zeitraum, "ausserhalb", Ausserhalb(zeitraum, beginn, ende));
+                    if (!(von < ende))
+                    {
+                        if (!ausserhalb)
+                        {
+                            Melden(zeitraum, "ohnewirkung", string.Format(
+                                MyResource.Resource.SIMENG_FERIEN_OHNE_WIRKUNG, name, zeitraum, beginn, ende));
+                        }
+                        continue;
+                    }
+                    for (int Tag = Math.Max(von, 0); Tag < ende && Tag < tage; Tag++)
+                    {
+                        maske[Tag] = true;
+                    }
+                }
+                else if (!IstUnbelegt(beginn) || !IstUnbelegt(ende))
+                {
+                    Melden(zeitraum, "ohnewirkung", string.Format(
+                        MyResource.Resource.SIMENG_FERIEN_OHNE_WIRKUNG, name, zeitraum, beginn, ende));
+                }
+            }
+
+            bool IstUnbelegt(double tag) => tag == 0 || tag == tage + 1;
+        }
+
         private void Berechnung_Gebaeude_Tageswerte(ProjektGebaeudeModel item, int GebaeudeNr)
         {
             int WE_Absenkung = 0;
@@ -691,46 +818,11 @@ namespace WindowsFormsApplication1
                 item.Ferien = 0; // Ferienabsenkung
             }
 
-            for (int Tag = 0; Tag < 365; Tag++)
-            {
-                F_Absenkung[Tag] = false;
-            }
-
-            if (item.Ferien > 0.9)
-            {
-                if (item.Ferienbeginn_1 > 0 && item.Ferienbeginn_1 <= 365)
-                {
-                    for (int Tag = (int)item.Ferienbeginn_1; Tag < 365; Tag++)
-                    {
-                        F_Absenkung[Tag] = true;
-                    }
-                    for (int Tag = 0; Tag < (int)item.Ferienende_1; Tag++)
-                    {
-                        F_Absenkung[Tag] = true;
-                    }
-                }
-                if (item.Ferienbeginn_2 > 0 && item.Ferienende_2 > 0)
-                {
-                    for (int Tag = (int)item.Ferienbeginn_2 - 1; Tag < item.Ferienende_2; Tag++)
-                    {
-                        F_Absenkung[Tag] = true;
-                    }
-                }
-                if (item.Ferienbeginn_3 > 0 && item.Ferienende_3 > 0)
-                {
-                    for (int Tag = (int)item.Ferienbeginn_3 - 1; Tag < item.Ferienende_3; Tag++)
-                    {
-                        F_Absenkung[Tag] = true;
-                    }
-                }
-                if (item.Ferienbeginn_4 > 0 && item.Ferienende_4 > 0)
-                {
-                    for (int Tag = (int)item.Ferienbeginn_4 - 1; Tag < item.Ferienende_4; Tag++)
-                    {
-                        F_Absenkung[Tag] = true;
-                    }
-                }
-            }
+            // Die Ferienmaske mit benannten Warnungen statt stiller Fehlgriffe; je Gebäude,
+            // Zeitraum und Art nur EINMAL je Lauf (die Verbrauchsrückrechnung ruft diese
+            // Methode je Gebäude zweimal).
+            FerienmaskeBilden(item, F_Absenkung,
+                (schluessel, text) => SimulationProtokoll.Aktuell.WarnungEinmal(schluessel, text));
 
             // ANWENDERENTSCHEID W8-O-5d-Q2 (07.09.2026): "keine Treue zur alten DLL".
             // Die drei Physik-Funktionen des BHKW-Plan-Ports gaben bis hierher int zurueck
@@ -796,7 +888,7 @@ namespace WindowsFormsApplication1
                         (double)item.Z_AuswahlWohnflaeche,
                         (double)item.Wohnflaeche);
                 */
-                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(Tag + 1,
+                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
                         WE_Absenkung,
                         (double)item.Raumsolltemperatur_Wochenende,
                         Ferien_Absenkung,
@@ -847,6 +939,11 @@ namespace WindowsFormsApplication1
                 {
                     if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
                 }
+                // Die Ferienabsenkung je Tag nachführen wie im Vorlauf. Bis hierher fehlte
+                // diese Zeile: Ferien_Absenkung behielt den Wert des letzten Vorlauftags
+                // (Tag 365) und galt damit für alle 365 Tage des Jahres oder für keinen
+                // (Befund X 3.4 Punkt 8).
+                if (F_Absenkung[Tag]) Ferien_Absenkung = 1; else Ferien_Absenkung = 0;
 
                 /*
                 Heizlast[Tag] = (double)com.I_TaeglHeizlastWG(
@@ -866,7 +963,7 @@ namespace WindowsFormsApplication1
                     (double)item.Z_AuswahlWohnflaeche,
                     (double)item.Wohnflaeche);
                 */
-                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(Tag + 1,
+                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
                       WE_Absenkung,
                       (double)item.Raumsolltemperatur_Wochenende,
                       Ferien_Absenkung,

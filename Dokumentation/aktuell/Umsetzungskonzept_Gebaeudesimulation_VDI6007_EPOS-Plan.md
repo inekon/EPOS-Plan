@@ -52,7 +52,8 @@ Stufe **GA — Altweg ablösen** ist damit die letzte Stufe des Plans. Mit dem E
 entschieden: GA wird beauftragbar und fällig, sobald die vier Bedingungen des Ablösekriteriums
 **Q24** erfüllt sind (Kapitel 5), und ihr Umfang ist die **vollständige Ablösung** nach der
 **Löschliste** in Kapitel 6 (**Q25**). E27 beantwortet zugleich die offenen Fragen dieses Papiers
-(Kapitel 5) und die Architekturfragen, auf die es sich stützt. Die Festlegungen der Prüfung
+(Kapitel 5) und die Architekturfragen, auf die es sich stützt; **E28** (22.09.2026, Konzept N1.33)
+entscheidet danach U4 und U9 nach Empfehlung. Die Festlegungen der Prüfung
 vom 17.09.2026 (F-Ü1 … F-D1) stehen im
 [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 8.
 
@@ -266,7 +267,8 @@ der Stufe GA (Kapitel 6). Kanal, Senken, Erzeuger und Dialoge der Kälteseite st
 für `Anzahl_Bewohner` (`:11`, gesetzt `:577`) und `Wohnflaeche` (`:12`, gesetzt `:578`), die im
 ganzen Bestand keinen Leser haben (Befund X 2.3). Die drei Spitzenkennzahlen des Stundenmodells
 (Konzept 4.5) gehören deshalb nicht dorthin, sondern in ein eigenes, benanntes Ergebnisobjekt
-(1.4, `GebaeudeModellErgebnis`). Frage U9.
+(1.4, `GebaeudeModellErgebnis`). Frage U9 — mit E28 (22.09.2026) nach Empfehlung entschieden: die
+Grenze fällt in GB, ergebnisneutral.
 
 ### 1.2 Der Datenfluss vom Klima bis zum Kanal
 
@@ -340,7 +342,11 @@ Prüfungen aus Konzept 4.8 — `R_Rest_AW > 0` mit benanntem Fehler (kein stille
 
 **E14 (16.09.2026): die Fenster liegen im AW-Zweig, nicht im Lüftungszweig.** Der Satz führt
 dafür `R_1_AF_KW` (= R_AF/6, nach den Wänden parallel geschaltet, Gl. (25)–(28)) und
-`R_Rest_AF_KW`; `R_ext_KW` trägt allein Lüftung und Wärmebrücken. Der Fensterpfad des Prototyps
+`R_Rest_AF_KW` (der Rest des Fensterzweigs **einschließlich äußerem Übergang**, so gebildet, dass
+R_1,AF + R_Rest,AF + Flächenanteil am inneren Übergang = 1/(U·A) des Fensters ist und das Fenster
+mit vollem U·A in Gl. (27) eingeht); `R_ext_KW` trägt allein Lüftung und Wärmebrücken. Der Erbauer
+fasst Wände und Fenster nach Gl. (27)/(28) zu einem Paar zusammen; die Grenzfälle (28a)–(28c)
+sind eine Schutzregel für widersprüchliche Eingaben und werden im Satz ausgewiesen. Der Fensterpfad des Prototyps
 entfällt damit für das Produkt (Konzept N1.19, Rechenschritte A7a).
 
 **`Zonenmodell2K.cs`** — der Löser. **Der Name folgt der Norm:** die Richtlinie sagt „2-K-Modell",
@@ -837,9 +843,11 @@ Kühlkonzept, **AK1–AK3** in der Anlagenkopplung —, und **GA — Altweg abl�
 Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Systementwurf 8.3).
 
 - **GB** (Stufe vor G1, E4): `_prevRoomTemp` wird von `static` (`EPOS.Kern/Allgemein/BhkwPlan.cs:51`,
-  gesetzt `:433`, zurückgesetzt nur über `ResetState()` `:54`) auf Instanzzustand umgestellt — heute
-  startet Gebäude 2 mit der Raumtemperatur, die Gebäude 1 am 31.12. hinterlassen hat, und damit
-  hängt das Ergebnis an der Zeilenreihenfolge (1008, 1039). Dazu die Warnungen statt stiller
+  gesetzt `:433`, zurückgesetzt nur über `ResetState()` `:54`) auf Instanzzustand umgestellt — bis dahin
+  startete Gebäude 2 seinen Vorlauf mit der Raumtemperatur, die Gebäude 1 am 31.12. hinterlassen hat
+  (gemessen in GB: ohne Wirkung auf ein Ergebnis, weil Tag 1 des Jahreslaufs die Vortemperatur
+  auf den Nachtsollwert setzt und der Jahreslauf die Vorlaufwerte überschreibt — 1039 bleibt
+  byte-gleich). Dazu die Warnungen statt stiller
   Fehlgriffe in der Ferienmaske (`SimulationWaermebedarf.cs:689-733`: Zeitraum 1 läuft ohne `-1`
   (`:703`, `:707`), die Zeiträume 2–4 mit `-1` (`:714`, `:721`, `:728`); Zeitraum 1 ist zudem als
   Jahreswechsel gelesen und senkt bei `Ferienbeginn_1 < Ferienende_1` den ganzen Rest des Jahres
@@ -1440,7 +1448,9 @@ Verschattung, Rahmenanteil, Bauteil, Bodenplatte, Keller, Randbedingung, Transmi
 Lüftungsleitwert, operative Temperatur, Kühlbedarf, Bauweise, Rechenmodell und Tagesbilanz.
 **Ein Abschnitt „13. Gebäudehülle und Gebäudemodell" muss vor den en-US-Werten stehen** — sonst
 entstehen zwei Übersetzungen desselben Begriffs, genau die Lage, die § 12 für die
-`KONFIG_*`-Schlüssel eigens einfrieren musste. Vorschlagsliste: Befund M, Abschnitt 3.3. Frage U4.
+`KONFIG_*`-Schlüssel eigens einfrieren musste. Vorschlagsliste: Befund M, Abschnitt 3.3. Frage U4 —
+mit E28 (22.09.2026) nach Empfehlung entschieden: der Abschnitt entsteht vor den en-US-Werten, fällig
+vor G1.
 
 **Eine Lücke im Standardbaustein:** `EPOS.UI/Standards/Zahlenfeld.razor` kennt `Wert`, `Einheit`,
 `Min`/`Max`, `Nachkommastellen`, `Aktiv`, `Feldname`, `FehlerZustand` (`:42-93`), aber **keinen
@@ -1882,7 +1892,7 @@ ebenfalls in jenem Papier.
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
 | **G0 — Löser** | `Zonenmodell2K`, `ErsatzparameterRC`, Diskretisierung, ideale Regelung; Normfälle und Rechenproben (1.3, 1.9); Testfall 11 lösen, Testfall 6 klären, α_kon je Bauteil, Band-Prüfregel, Vorlaufkonvergenz. **Keine Datenbank, kein Aufrufer** | Kern-Filter grün; **elf der zwölf Normtestfälle** im Band ± 0,15 K / ± 1,5 W nach E10 (Druckrundung), Testfall 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) — **lokal**, in der CI schweigend (1.9); Rechenzeit je Gebäude und Jahr neu gemessen und Abnahmekriterium (4) aus Konzept 10.4 neu bestimmt (F-S6, 1.3). Referenzlauf **unberührt**, weil keine Zeile des Bestandswegs angefasst wird | 2–4 PT |
-| **GB — Bestandsbefunde** | `_prevRoomTemp` als Instanzzustand (`BhkwPlan.cs:51`, `:433`), Warnungen statt stiller Fehlgriffe in der Ferienmaske (`SimulationWaermebedarf.cs:689-733`) **und die nicht nachgeführte `Ferien_Absenkung` der Jahresschleife** (`:845-850`, Befund X 3.4), `Bauweise` 10576 auf 15 200 Wh/K, **vierte Einfrierregel** in `Referenzlaeufe/LIESMICH.md` und `CLAUDE.md`; dazu die 100-Gebäude-Grenze (U9). **GB läuft vor der Verschiebung** (E20): Das verschobene Modul soll der geprüfte Stand sein | **1008 und 1039 ändern sich** — eigener Einfrierschritt: Lauf, Vergleich, Begründung, grüner CI-Lauf. Diese Basis ist die **letzte reine Bestandsbasis** | 1–2 PT |
+| **GB — Bestandsbefunde** | `_prevRoomTemp` als Instanzzustand (`BhkwPlan.cs:51`, `:433`), Warnungen statt stiller Fehlgriffe in der Ferienmaske (`SimulationWaermebedarf.cs:689-733`) **und die nicht nachgeführte `Ferien_Absenkung` der Jahresschleife** (`:845-850`, Befund X 3.4), `Bauweise` 10576 auf 15 200 Wh/K, **vierte Einfrierregel** in `Referenzlaeufe/LIESMICH.md` und `CLAUDE.md`; dazu die 100-Gebäude-Grenze (U9, E28). **GB läuft vor der Verschiebung** (E20): Das verschobene Modul soll der geprüfte Stand sein | **1008 ändert sich** (geplant waren 1008 und 1039; 1039 bleibt byte-gleich, siehe 1.8 und Statusdatei) — eigener Einfrierschritt: Lauf, Vergleich, Begründung, grüner CI-Lauf. Diese Basis ist die **letzte reine Bestandsbasis** | 1–2 PT |
 | **M2 — Umbenennung** | `Fensterflaeche_Ost` → `Fensterflaeche_OstWest`, 15 Stellen (`GebaeudeModel.cs:20`/`:76`, `ProjektGebaeudeModel.cs:26`/`:88`, `GebaeudeCtrl.cs:66`, `GebaeudeStammCtrl.cs:291`/`:358`, `ProjektGebaeudeCtrl.cs:56`, `SimulationWaermebedarf.cs:752`/`:756`/`:822`/`:826`, `GebaeudeKatalogHuelle.cs:364`/`:443`/`:453`) | gegen die GB-Basis **byte-gleich**. Eigener Merge, weil jede dieser Zeilen in `SolareGewinneC` mündet | 0,5 PT |
 | **M3 — Schema** | der Gebäudespalten-Schritt M3 (die drei G2-Spalten verschmolzen, U5; Nummer bei Beauftragung, F-S1), Umbenennung `Wohnflaeche` → `Nutzflaeche` zuerst (E19, F-S2), `GebaeudeSchema.cs`, Sichtneubau, Namensleser statt `row[0…57]` — der Leser und `SQL_VIEW_NEU` schreiben die acht nicht-ASCII-Bezeichner **buchstabengetreu** (`k_Wert_Außenwand`, `Flaeche_Außenwand`, `WBVK_Anschluß_*`, `Abmessung_Anschluß_*`), Umlautregel [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) § 6.1, und der Feldbestandstest prüft sie namentlich; `DbWerte`, Katalogkopie NULL-erhaltend, `TestDatenbank` nachziehen | gegen die GB-Basis **byte-gleich** (Spalten bleiben NULL, kein Leser rechnet damit). Die Probe ist der Sichtneubau: `ProjektGebaeudeCtrl` liefert alle 58 Bestandsfelder unverändert; dazu `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` grün | 1,5–2 PT |
 | **M4 — Klimaspalten** (**umgesetzt**, durch Schemaschritt 95 vom 19.09.2026 vorweggenommen) | eigener Schritt (1.7): `Gegenstrahlung`, `Luftfeuchte`, `Bedeckungsgrad` in `Tab_Solar(_STAMM)`, `Quelle` und `Importdatum` in `Tab_Klimaregion(_STAMM)`, mit Schritt 97 `Szenario` und `Bezugsjahr`; keine `Windgeschwindigkeit` (F-S3); `TmyHourlyData`, `SaveTmyData`, `SolardatenCtrl`, `DwdTryLeser`; Quellen und Bedienweg im [Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md) | erbracht: kein Datenteil, alle Spalten im Bestand NULL, kein Rechenweg liest sie — Referenzlauf **byte-gleich**; Nachweise `KlimaspaltenTests` und `KlimaSzenarioTests` (Konzept Klimadatenquellen Kapitel 11) | **erbracht — in keiner Summe** |
@@ -1950,9 +1960,10 @@ Ablösung nach der Löschliste** in Kapitel 6. Beide Fragen führt das Konzept, 
 **Stand der Fragen dieses Papiers:** Mit **E27** nach Empfehlung entschieden sind **U1, U3, U5,
 U7, U8, U10, U12 und U17**; bei **U6** ist das **Verfahren** entschieden (in G1 beide Zeitbezüge
 messen), die Endwahl fällt mit der Messung vor dem Einfrieren von G1 + G2. **U11** und **U16**
-sind mit E18 entschieden, **U2** ist durch E20 überholt. **Offen mit Empfehlung** bleiben **U4,
-U9, U13, U14 und U15** — sie sind an ihre Stufe gebunden und werden mit ihr entschieden (Register
-Kapitel 0 führt sie nicht). Die Tabelle bleibt als Begründung stehen; die rechte Spalte trägt den
+sind mit E18 entschieden, **U2** ist durch E20 überholt. Mit **E28** (22.09.2026, [Konzept N1.33](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) sind
+**U4** (vor G1) und **U9** (in GB) nach Empfehlung entschieden; vor G0, GB und G1 ist damit keine
+Frage dieses Papiers mehr offen. **Offen mit Empfehlung** bleiben **U13, U14 und U15** — sie sind
+an G4 gebunden und werden mit ihr entschieden (Register Kapitel 0 führt sie nicht). Die Tabelle bleibt als Begründung stehen; die rechte Spalte trägt den
 Entscheidvermerk.
 
 | Nr. | Frage | Empfehlung und Stand (22.09.2026) |
@@ -1960,12 +1971,12 @@ Entscheidvermerk.
 | **U1** | Der Katalogeditor bekommt **einen** Schreibweg (OK/Abbrechen statt „Überschreiben", „Speichern"/„Speichern unter", „Beenden" und „Werte übernehmen", `GebaeudeKatalogDialog.razor:337-340`, `:360-369`). Das ist eine für den Anwender **sichtbare** Änderung | **Ja** — sonst hängen die zehn Prüfregeln aus Konzept 4.8 an drei Schreibstellen und der Reiter-2-Stand macht die U·A-Summe zeitweise falsch. „Speichern unter…" bleibt als nicht schließender Zweitknopf mit `MitSpeichern="true"` (`EPOS.UI/CLAUDE.md:53-56`) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U2** | ~~Die sieben Modellparameterfelder im Tagesbilanz-Weg **verstecken** oder **gesperrt zeigen**?~~ | **Durch E20 überholt (16.09.2026).** Die Modellparameter stehen **immer** sichtbar und bearbeitbar — sie sind der Parametersatz des Gebäudes, nicht der Rechenweg, und gelten nach der Umstellung. Bedingt ist allein der eingeklappte Abschnitt „Tagesbilanz (Bestandsweg)" mit den vier Feldern, die nur der Altweg liest (2.3, 2.4). Die Frage entfällt, die Nummer bleibt vergeben |
 | **U3** | `Platzhalter` am `Zahlenfeld` ergänzen (für „Vorgabe 0,3" im leeren Feld) — ein Eingriff in einen Standardbaustein, den alle Dialoge benutzen | **Ja**, rein additiv (ein `[Parameter] string`, ein `placeholder`-Attribut); zieht `StilblattTests` nach sich. Sonst je Feld eine `Herleitungszeile` — zehn Zeilen statt zehn Platzhalter — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
-| **U4** | Ein Abschnitt „13. Gebäudehülle und Gebäudemodell" im [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md), **bevor** die 63 en-US-Werte geschrieben werden | **Ja** — das Glossar kennt heute weder Wärmebrücke noch Verschattung, Rahmenanteil, Bodenplatte, Randbedingung oder operative Temperatur. Ohne den Abschnitt entstehen zwei Übersetzungen desselben Begriffs |
+| **U4** | Ein Abschnitt „13. Gebäudehülle und Gebäudemodell" im [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md), **bevor** die 63 en-US-Werte geschrieben werden | **Ja** — das Glossar kennt heute weder Wärmebrücke noch Verschattung, Rahmenanteil, Bodenplatte, Randbedingung oder operative Temperatur. Ohne den Abschnitt entstehen zwei Übersetzungen desselben Begriffs — **mit E28 (22.09.2026) nach Empfehlung entschieden**, fällig vor G1 (Ressourcen des Gebäudedialogs) |
 | **U5** | Den Gebäudespalten-Schritt M3 und die drei G2-Spalten zu **einem** Schritt verschmelzen (15 Spalten je Tabelle, ein Sichtneubau)? | **Ja** — E1 liefert G1 und G2 gemeinsam aus; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Der Tab_Solar-Schritt bleibt **getrennt** (andere Wirkung, anderer Mitläufercode, anderes Risiko) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U6** | Zeitbezug der Sonnengeometrie im Gebäudemodell: **Stundenanfang** wie im Bestand (`KlimaImportAblauf.cs:318-322`) oder **Stundenmitte** wie Blatt 3 (Konzept N1.10)? | **In G1 beide Zeitbezüge messen und dann entscheiden** — an der einen Stelle im Eingangsbauer. **Das Verfahren ist mit E27 (22.09.2026) nach Empfehlung entschieden; die Endwahl ist offen** und fällt mit der Messung vor dem Einfrieren von G1+G2. Der Unterschied sind 7,5° Stundenwinkel und trifft genau Ost und West. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt (Referenzbasis) |
 | **U7** | Wochenendmaske des Stundenmodells: Ortszeit-Kalender aus dem Wochentag des 1. Januar des Referenzjahres (Konzept 4.4) oder `Tab_Klimadaten.WE` (wie der Bestand)? | **Ortszeit-Kalender** (F-Ü8): Der Vorbereitungsschritt bildet `WE[365]` aus dem Wochentag des 1. Januar des Referenzjahres; eine Probe hält die Maske gegen `Tab_Klimadaten.WE` derselben Klimaregion (`KlimaImportAblauf.cs:354`), eine Abweichung ist ein Befund der Probe — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U8** | Normzahlen als **gitignorierte, lokal beizustellende** Datei (`Referenzlaeufe/Normzahlen/`) mit schweigenden Testfällen — Folge: der Normfallnachweis ist **lokal**, nicht CI | **Ja** — das Ausliefern der Normzahlen wäre eine Vervielfältigung (Konzept N1.2), und LFS ist keine Zugriffsbeschränkung. Die Lücke im Gate gehört ins Protokoll, der Laufauszug (Abweichung je Fall, ohne Absolutwerte) in die Dokumentation — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
-| **U9** | Die Grenze von 100 Gebäuden beheben (`HeizwaermebedarfGeb[100]`, `:31`; `MaxP[100]`, `:56`; `IndexOutOfRangeException` an `:816`)? | **Ja, in GB**, wo die Schleife ohnehin angefasst wird: `MaxP` **löschen** (wird nirgends gelesen — wie `Anzahl_Bewohner` `:11` und `Wohnflaeche` `:12`, Befund X 2.3), `HeizwaermebedarfGeb` auf `ctrl.rows` dimensionieren. Ergebnisneutral — und **vor** der Verschiebung nach `Altweg/`, damit das verschobene Modul der geprüfte Stand ist (E20) |
+| **U9** | Die Grenze von 100 Gebäuden beheben (`HeizwaermebedarfGeb[100]`, `:31`; `MaxP[100]`, `:56`; `IndexOutOfRangeException` an `:816`)? | **Ja, in GB**, wo die Schleife ohnehin angefasst wird: `MaxP` **löschen** (wird nirgends gelesen — wie `Anzahl_Bewohner` `:11` und `Wohnflaeche` `:12`, Befund X 2.3), `HeizwaermebedarfGeb` auf `ctrl.rows` dimensionieren. Ergebnisneutral — und **vor** der Verschiebung nach `Altweg/`, damit das verschobene Modul der geprüfte Stand ist (E20) — **mit E28 (22.09.2026) nach Empfehlung entschieden** |
 | **U10** | Eine Lizenzhinweisseite im Installationspaket — und dann gleich für **alle** ausgelieferten Fremdanteile, nicht nur xBIM? | **Ja, mit G4-1 und für alle.** CDDL § 3.1 verlangt den Quellenverweis an den Empfänger; ohne die Seite ist der IFC-Import nicht auslieferbar. Die übrigen Fremdanteile sind ohnehin fällig — darunter **three.js (MIT)** des Gebäudebetrachters (E11, Konzept N1.16) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U11** | Größenlimit für IFC-Dateien: 50 MB Windows / 20 MB iOS — oder es versuchen und bei Speichermangel abbrechen? | **Benannt ablehnen**, nicht versuchen: `MemoryModel` hält das Modell im Arbeitsspeicher (10–20 MB je MB STEP-Text), ein Speicherabbruch auf dem iPad ist kein Fehlerbild, das man erklären kann. **Die iOS-Zahl ist in G4-8 zu messen**, nicht zu schätzen — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
 | **U12** | Woher die Vorgaben je Baualtersklasse? TABULA/IWU hat weder DOI noch Datensatzlizenz | **Eigene Werte aus dem EPOS-Gebäudekatalog ableiten** — die Testdatenbank führt Gebäude je Klasse. Lizenzfrei, hausgemacht, passt zu den übrigen EPOS-Vorgaben. Sonst nur A–H vorbelegen und den Rest leer lassen — **mit E27 (22.09.2026) nach Empfehlung entschieden** |

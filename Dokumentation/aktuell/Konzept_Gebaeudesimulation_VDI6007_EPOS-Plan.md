@@ -15,6 +15,10 @@ Nachgezogen am 22.09.2026 mit **E27** (N1.32): Q24, Q25 und Q26 sind entschieden
 wird beauftragbar, sobald das Ablösekriterium aus Q24 erfüllt ist, ihr Umfang ist die Löschliste
 (Q25), der Stufenplan der Anlagenkopplung folgt der Empfehlung (Q26); Kapitel 0, 4.1, 4.4, 6.1,
 6.4, 10.4, 11, 13, 15 und 16 folgen.
+Nachgezogen am 22.09.2026 mit **E28** (N1.33): U4 und U9 sind nach Empfehlung entschieden — der
+Glossarabschnitt „Gebäudehülle und Gebäudemodell" entsteht vor den Übersetzungen (vor G1), die
+Grenze von 100 Gebäuden im Bestandsweg fällt in GB; vor G0, GB und G1 ist kein Anwenderentscheid
+mehr offen, das Register zählt 20 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -782,7 +786,10 @@ und der IFC-Import (G4), dann entfällt die Nachmultiplikation für diese Gebäu
 Reine 2×2-Arithmetik ohne Zufall; Zustand je Instanz; zwei Läufe liefern byte-gleiche
 Reihen. Rechenzeit rund 5 ms je Gebäude und Jahr, Planungsgröße 10 ms (5.13); die dreizehn
 Referenzprojekte bleiben damit unter 0,2 s gegenüber den 4 s des heutigen Gesamtlaufs. Harte
-Prüfungen vor der Rechnung (benannte Fehler, kein stiller Rückfall): `Nutzflaeche > 0`,
+Prüfungen vor der Rechnung (benannte Fehler, kein stiller Rückfall — das ist **Hausregel**, keine
+Regel der Richtlinie; ihr Programmierhinweis 6.8 verlangt nur, Divisionen durch null
+auszuschließen, und die einzigen Setzwerte, die sie selbst vorschreibt, sind die Grenzfälle
+(28a)–(28c) der Außenbauteilgruppe als Schutzregel für widersprüchliche Eingaben): `Nutzflaeche > 0`,
 `Flaeche_Nutzer > 0`, `Raumhoehe > 0`, `VerbrauchAlt > 0` vor der Rückrechnung,
 `5 ≤ Bauweise/Nutzflaeche ≤ 200 Wh/(m²K)`, 0 < g ≤ 1, U-Werte 0,1–6 W/(m²K), R_Rest,AW > 0
 (4.3), Ferientage 1…365 in einem aktiven Fahrplan (4.4), Summe der Fensterflächen =
@@ -1785,6 +1792,12 @@ der Strahlungslasten mit Ausschluss der Fensterfläche (Gl. (43)–(46)), h_rad 
 (Gl. (30)), h_a = 25 als Summe, die U·A-gewichtete äquivalente Außentemperatur
 (Gl. (41)/(42)), die ideale Regelung mit Sollwerthaltung über die Stunde (Gl. (96)–(102)).
 
+**Vermerk 22.09.2026:** Die Zeile 4.8 oben schreibt dem Programmierhinweis 6.8 das Verbot des
+stillen Rückfalls zu. Das trifft nicht zu: 6.8 verlangt nur, Divisionen durch null bei fehlenden
+Bauteilgruppen auszuschließen. Das Verbot des stillen Rückfalls ist Hausregel; berichtigt im
+Hauptteil 4.8 und in den [Rechenschritten](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+(A4, A7a, 5, 7.1).
+
 ### N1.4 Erläuterungen
 
 **Q16 — die Bestandsgewichte im neuen Weg streichen.** Der heutige Rechenweg multipliziert
@@ -1821,7 +1834,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-19_R10_BhkwWirkungsgrad`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-22_R11_Bestandsbefunde`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -2371,6 +2384,12 @@ Testbeispiele 5, 8 und 9 im Normband bleiben.
   Die im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) für G3 vorgesehene Umstellung
   des Fensterpfads samt ihrer Einfrierfolge **entfällt**; die Umstellung von R_rad auf Gl. (29)/(31)
   in G3 bleibt davon unberührt.
+
+**Vermerk 22.09.2026:** Der Rest des Fensterzweigs `R_Rest,AF` enthält den äußeren
+Wärmeübergangswiderstand des Fensters, damit die Summe des Zweigs 1/(U·A) ergibt und zu Gl. (27)
+passt; die Angabe 5/6·R_AF oben gilt nur für den Anteil ohne äußeren Übergang. Das ist eine
+Korrektur der Formel beim Abschluss von G0, kein neuer Entscheid — E14 bleibt, wie er ist
+([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) A7a, B6).
 
 ### N1.20 Entscheid E15 — Wärmepumpen mit Kühlfunktion: Auswahl und Konfiguration
 
@@ -3042,3 +3061,33 @@ Abschnitte 1 bis 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md
 Punkt, Kapitel 0 neu gefasst, Zählung 22). Die Fragentabellen von Umsetzungskonzept,
 Softwarearchitektur, Kühlkonzept, Mehrzonenkonzept und Datenaustauschkonzept sowie die Indexzeile
 in [`Dokumentation/LIESMICH.md`](../LIESMICH.md) tragen den Entscheid in einem eigenen Nachzug.
+
+### N1.33 Entscheid E28 — U4 und U9 nach Empfehlung: vor dem Start kein Anwenderentscheid mehr offen
+
+**Entscheid E28 (Anwender, 22.09.2026).** Der Anwender entscheidet die beiden Punkte **U4** und
+**U9** des [Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+nach dessen Empfehlung. Beide waren nach E27 (N1.32) die letzten offenen Punkte, die vor dem
+Start fällig sind (U9 vor GB, U4 vor G1). Wie in E27 gilt die Empfehlung im Wortlaut des
+jeweiligen Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt vor |
+|---|---|---|
+| **U4** | Ja — der Abschnitt „13. Gebäudehülle und Gebäudemodell" in [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md) entsteht, **bevor** die englischen Werte der Ressourcen geschrieben werden; ohne ihn entstünden zwei Übersetzungen desselben Begriffs | G1 (Ressourcen des Gebäudedialogs) |
+| **U9** | Ja, in GB — die feste Grenze von 100 Gebäuden im Bestandsweg wird dort behoben, wo die Schleife ohnehin angefasst wird: das ungelesene Feld wird gelöscht, das andere auf die tatsächliche Zeilenzahl dimensioniert; ergebnisneutral, also ohne Einfrieranlass, und vor der Verschiebung nach `Altweg/` (E20) | GB |
+
+**Was offen bleibt.** Vor dem Start (G0, GB, G1) ist **kein Anwenderentscheid mehr offen**. Es
+bleiben die Folgeaufgaben aus E27 (U6 Endwahl vor dem Einfrieren von G1 + G2, K22 vor KU2, D6 vor
+der Stufe über die semantische hinaus) und der Widerspruchsvorbehalt zu den Festlegungen F-Ü1 bis
+F-D1 bis zur Beauftragung von G1 (Register 8.4). Das Register zählt **20 offene Punkte** — U13–U15
+(G4), M3, M5–M8 und M11–M13 (G6b bis G6d), K4–K9, K12, K21 und K23 (KU1, KU2).
+
+**Betroffene Stufen:** GB (U9), G1 (U4).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 bis 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter
+U4 und U9, Kopf, Kapitel 0, 2 und 9, Zählung 20);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Vorspann, 1.1,
+2.9, 4 (Stufe GB) und 5; [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+(Verweise auf U4 und U9); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

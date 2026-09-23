@@ -322,7 +322,6 @@ Form_WpFilterAuswahl.btn_Help = Wärmepumpe
 Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
 Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit#parameter
-Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit#verlauf
 # W-E2: Der Dialog "BHKW-Wirtschaftlichkeit" hatte ueberhaupt keine Zeile - sein
 # Infoknopf fiel auf den Rubrikkopf zurueck. Der Anker traegt den Abschnitt mit
 # den Angaben je Anlage, den projektweiten KWK-Angaben und den Steuern.

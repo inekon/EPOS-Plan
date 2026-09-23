@@ -3194,6 +3194,15 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
     <value>Wärmebedarf: Zum Tagesverteilungstyp „{0}“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser Stelle abgebrochen; das Ergebnis ist unvollständig.</value>
   </data>
+  <data name="SIMENG_FERIEN_AUSSERHALB_JAHR" xml:space="preserve">
+    <value>Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) liegt ganz oder teilweise außerhalb der Tage 1 bis 365. Abgesenkt werden nur die Tage innerhalb des Jahres.</value>
+  </data>
+  <data name="SIMENG_FERIEN_JAHRESWECHSEL" xml:space="preserve">
+    <value>Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum 1 wird als Jahreswechsel gelesen (Tag {1} bis Jahresende und Jahresanfang bis Tag {2}). Weil der Beginn nicht nach dem Ende liegt, ist damit das ganze Jahr abgesenkt.</value>
+  </data>
+  <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) bleibt ohne Wirkung — Beginn und Ende ergeben keinen Ferientag.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>
@@ -10481,20 +10490,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="KFAK_MSG_IN_BENUTZUNG" xml:space="preserve">
     <value>{0} Projektposition(en) in {1} Projekt(en) und {2} Vorlagenposition(en) verweisen auf diesen Kostenfaktor.</value>
   </data>
-  <data name="WVERL_TITEL" xml:space="preserve">
-    <value>Kapitalwert-Verlauf über den Nutzungszeitraum</value>
-  </data>
   <data name="WVERL_LBL_ZEITRAUM" xml:space="preserve">
     <value>Zeitraum [Jahre]:</value>
   </data>
-  <data name="WVERL_LBL_SZENARIO" xml:space="preserve">
-    <value>Szenario:</value>
-  </data>
   <data name="WVERL_BTN_ZEICHNEN" xml:space="preserve">
     <value>Aktualisieren</value>
-  </data>
-  <data name="WVERL_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Schließen</value>
   </data>
   <data name="WVERL_STATUS_LAEUFT" xml:space="preserve">
     <value>Berechnung läuft …</value>
@@ -10504,12 +10504,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="WVERL_MSG_FEHLER" xml:space="preserve">
     <value>Fehler beim Berechnen des Verlaufs: {0}</value>
-  </data>
-  <data name="WVERL_BILD_DIFF" xml:space="preserve">
-    <value>Kapitalwert-Verlauf: Differenz zur Stamm-Referenz</value>
-  </data>
-  <data name="WVERL_BILD_ABS" xml:space="preserve">
-    <value>Kapitalwert-Verlauf: kumulierte Barwerte je Projekt</value>
   </data>
   <data name="WVERL_KEIN_BILD" xml:space="preserve">
     <value>Noch kein Diagramm</value>
@@ -11426,9 +11420,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WIRT_BTN_PARAMETER" xml:space="preserve">
     <value>Parameter…</value>
-  </data>
-  <data name="WIRT_BTN_VERLAUF" xml:space="preserve">
-    <value>Verlauf…</value>
   </data>
   <data name="WIRT_BTN_BERECHNEN" xml:space="preserve">
     <value>Berechnen</value>
@@ -16345,13 +16336,13 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Variante</value>
   </data>
   <data name="WIRT_SZ_SP_WORST" xml:space="preserve">
-    <value>ΔKW Worst [€]</value>
+    <value>ΔKW Ungünstig [€]</value>
   </data>
   <data name="WIRT_SZ_SP_ERWARTET" xml:space="preserve">
     <value>ΔKW Erwartet [€]</value>
   </data>
   <data name="WIRT_SZ_SP_BEST" xml:space="preserve">
-    <value>ΔKW Best [€]</value>
+    <value>ΔKW Günstig [€]</value>
   </data>
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Amortisation [a]</value>
@@ -16360,7 +16351,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Spanne [€]</value>
   </data>
   <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
-    <value>Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)</value>
+    <value>Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig)</value>
   </data>
   <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
     <value>dem Referenzfall</value>
@@ -19773,29 +19764,17 @@ Möchten Sie das zulassen?</value>
   <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
     <value>alle Wärmepumpen-Module</value>
   </data>
-  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
-    <value>Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert.</value>
-  </data>
-  <data name="WVERL_UNTER_ABS" xml:space="preserve">
-    <value>Kumulierte diskontierte Zahlungsströme (Kosten negativ). Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert.</value>
-  </data>
   <data name="WVERL_RESTWERTE" xml:space="preserve">
     <value>Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): {0}</value>
   </data>
   <data name="WVERL_OHNE_REIHE" xml:space="preserve">
     <value>⚠ Ohne Reihe: {0}</value>
   </data>
-  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
-    <value>Verlauf über {0} Jahre, Szenario „{1}“</value>
-  </data>
   <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
     <value> (abweichend von T = {0} a — nur Anzeige, gespeicherte Ergebnisse unverändert{1}).</value>
   </data>
   <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
     <value>; Nulldurchgänge jenseits von T erscheinen nicht in der gespeicherten Amortisationskennzahl</value>
-  </data>
-  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
-    <value>{0} — Stamm: {1}</value>
   </data>
   <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
     <value>Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die Stromsteuer enthält.</value>
@@ -23129,5 +23108,107 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SZR_OPT_SPALTE" xml:space="preserve">
     <value>Spalte {0}</value>
+  </data>
+  <data name="WIRT_VERL_LEG_VARIANTEN" xml:space="preserve">
+    <value>Varianten:</value>
+  </data>
+  <data name="WIRT_VERL_LEG_SZENARIEN" xml:space="preserve">
+    <value>Szenarien:</value>
+  </data>
+  <data name="WIRT_VERL_NULLDURCHGANG" xml:space="preserve">
+    <value>Nulldurchgang = dynamische Amortisation</value>
+  </data>
+  <data name="WIRT_VERL_ZU_VIELE" xml:space="preserve">
+    <value>Mehr als {0} Varianten gewählt — der Verlauf unterscheidet Varianten über die Farbe und kennt {0} Farben. Bitte höchstens {0} Varianten anhaken.</value>
+  </data>
+  <data name="WIRT_VERL_KEINE_REIHE" xml:space="preserve">
+    <value>Keine berechenbaren Reihen.</value>
+  </data>
+  <data name="WIRT_VERL_BLATT" xml:space="preserve">
+    <value>Verlauf</value>
+  </data>
+  <data name="WIRT_VERL_BLATT_TITEL" xml:space="preserve">
+    <value>Kumulierter Barwert der Differenz zur Referenz je Jahr [€] — ohne Restwert</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_NULL" xml:space="preserve">
+    <value>Nulldurchgang (dynamische Amortisation) [a]</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_RESTWERT" xml:space="preserve">
+    <value>Restwert-Barwert am Horizontende [€]</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_KW" xml:space="preserve">
+    <value>Kapitalwertdifferenz = Endwert + Restwert-Barwert [€]</value>
+  </data>
+  <data name="WIRT_VERL_TITEL" xml:space="preserve">
+    <value>Der Verlauf über die Zeit — alle drei Szenarien</value>
+  </data>
+  <data name="WIRT_VERL_BILD" xml:space="preserve">
+    <value>Kumulierter Barwert der Differenz zur Referenz — drei Szenarien</value>
+  </data>
+  <data name="WIRT_VERL_ERKLAERUNG" xml:space="preserve">
+    <value>Jede angehakte Variante bekommt eine Farbe, jedes angehakte Szenario eine Strichart; der Nulldurchgang einer Linie ist die dynamische Amortisation in diesem Szenario.</value>
+  </data>
+  <data name="WIRT_BTN_VERLAUF_EXCEL" xml:space="preserve">
+    <value>Verlauf nach Excel…</value>
+  </data>
+  <data name="WIRT_VERL_FUSS" xml:space="preserve">
+    <value>Kumulierter Barwert der Differenz zur Referenz je Jahr, ohne Restwert; Farbe = Variante, Strichart = Szenario; der Nulldurchgang ist die dynamische Amortisation.</value>
+  </data>
+  <data name="WIRT_VERL_NOCH_NICHT" xml:space="preserve">
+    <value>Der Verlauf rechnet aus den Simulationsergebnissen alle drei Szenarien — „Aktualisieren“ startet die Rechnung, „Berechnen“ rechnet ihn mit.</value>
+  </data>
+  <data name="WIRT_VERL_KEIN_NULL" xml:space="preserve">
+    <value>keiner im Zeitraum</value>
+  </data>
+  <data name="WIRT_VERL_NULLZEILE" xml:space="preserve">
+    <value>Nulldurchgänge (dynamische Amortisation): {0}</value>
+  </data>
+  <data name="WIRT_VERL_STATUS" xml:space="preserve">
+    <value>Verlauf über {0} Jahre, alle drei Szenarien</value>
+  </data>
+  <data name="WIRT_VERL_FEHLEND" xml:space="preserve">
+    <value>Für {0} angehakte Version(en) liegt noch kein Verlauf vor — „Aktualisieren“ rechnet ihn nach.</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_TITEL" xml:space="preserve">
+    <value>Verlauf nach Excel speichern</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_DATEI" xml:space="preserve">
+    <value>Kapitalwertverlauf_{0}.xlsx</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_OK" xml:space="preserve">
+    <value>Verlauf nach Excel geschrieben: {0}</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_FEHLER" xml:space="preserve">
+    <value>Der Verlauf konnte nicht nach Excel geschrieben werden: {0}</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_LEER" xml:space="preserve">
+    <value>Noch kein Verlauf gerechnet — erst „Aktualisieren“.</value>
+  </data>
+  <data name="WIRT_VERL_WORT_HINWEIS" xml:space="preserve">
+    <value>Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“.</value>
+  </data>
+  <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
+    <value>Szenarien {0} / {1} / {2}</value>
+  </data>
+  <data name="WIRT_EMPF_SATZ_STAMM" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung: Stammprojekt beibehalten — Kapitalwertdifferenz zu {3} {1} (Erwartet){2}.</value>
+  </data>
+  <data name="WIRT_SPANNE_TITEL" xml:space="preserve">
+    <value>Spanne der Kapitalwertdifferenz je Version</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_SPANNE" xml:space="preserve">
+    <value>Spanne ungünstig bis günstig</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_ERWARTET" xml:space="preserve">
+    <value>Erwartungsfall</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_UNTER" xml:space="preserve">
+    <value>unter der Referenz</value>
+  </data>
+  <data name="WIRT_SPANNE_ACHSE" xml:space="preserve">
+    <value>Kapitalwertdifferenz zu {0} [€] — Nulllinie = Referenz</value>
+  </data>
+  <data name="WIRT_SPANNE_LEER" xml:space="preserve">
+    <value>Keine Version mit Szenarienwerten.</value>
   </data>
 </root>

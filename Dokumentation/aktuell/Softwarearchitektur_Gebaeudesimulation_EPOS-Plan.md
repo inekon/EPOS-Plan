@@ -1071,7 +1071,7 @@ und der Nachweis hängen.
 
 | Papiername | Klasse | Inhalt | Ergebnisneutral? | Saat | Auslieferung |
 |---|---|---|---|---|---|
-| **GB** | — | kein DDL: Instanzzustand statt `static`, Warnungen in der Ferienmaske, Korrektur der Bauweise eines Testgebäudes, die 100-Gebäude-Grenze (U9), Einfrierregel **„gesäte Gebäudedaten"** | **nein** — zwei Referenzprojekte ändern sich | Wert in der Testdatenbank korrigieren | unberührt |
+| **GB** | — | kein DDL: Instanzzustand statt `static`, Warnungen in der Ferienmaske, Korrektur der Bauweise eines Testgebäudes, die 100-Gebäude-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | **nein** — zwei Referenzprojekte ändern sich | Wert in der Testdatenbank korrigieren | unberührt |
 | **M2** | — | kein DDL: Umbenennung `Fensterflaeche_Ost` → `Fensterflaeche_OstWest` im Modell, 15 Stellen | **ja**, byte-gleich | — | — |
 | **M3** | `GebaeudeSchema` | 15 Spalten × 2 Tabellen, `RENAME COLUMN Wohnflaeche → Nutzflaeche` (E19), Sicht `DROP` + `CREATE`, Leser auf **Namenszugriff**, `DbWerte`; **die Altweg-Spalten bleiben unberührt** (W13, E20) | **ja**, solange kein Leser rechnet | keine — neue Spalten bleiben NULL (= Vorgabe), `Nutzflaeche` behält die Werte von `Wohnflaeche` | läuft ohne Handgriff mit |
 | **S-E** | — | kein DDL: Umbau von `GebaeudeStammCtrl.CopyFromStamm`, `Insert` und `Overwrite` auf die Spaltenlisten-Bauweise mit NULL-erhaltender Bindung (W14). **In den Nachbarpapieren ist S-E genau dieser Schritt** (Mehrzonenkonzept 4.4, Datenaustauschkonzept 7.4); hier ist er **Sperrpunkt und Bestandteil von M3**, nicht ein eigener Migrationsschritt — er trägt kein DDL | **ja**, byte-gleich: Der Kopierweg läuft im Referenzlauf nicht | — | — |
@@ -1778,7 +1778,7 @@ mit BOM und CRLF; **ab etwa zehn Anzeigetexten ein Bündel** (`*Texte`-Klasse, *
 `[Parameter]`) statt einzelner Parameter — die Schwelle ist in jedem der neuen Dialoge
 überschritten; der **Glossarabschnitt „Gebäudehülle und Gebäudemodell"** in
 [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md) entsteht **bevor** die englischen Werte
-geschrieben werden (U4), sonst gibt es zwei Übersetzungen desselben Begriffs; und **nach jedem neuen
+geschrieben werden (U4, E28), sonst gibt es zwei Übersetzungen desselben Begriffs; und **nach jedem neuen
 Schlüssel läuft `Werkzeuge/ResourceDesigner`**.
 
 **Der Produktausweis nach E10 ist ein Ressourcenschlüssel, kein abgeschriebener Satz.** Sein
@@ -1947,7 +1947,7 @@ wird je Gebäude geschrieben (`:212`) und **nirgends gelesen** — toter Bestand
 `SimulationWaermebedarf` eine `List<GebaeudeModellErgebnis>`; sie trägt Reihen und Kennzahlen je
 Gebäude zum Export und in den Bericht. Zugleich fällt die 100er-Grenze: `HeizwaermebedarfGeb`
 (`:31`) wird auf die Zeilenzahl dimensioniert, `MaxP` (`:56`) gelöscht — ergebnisneutral, und es
-geschieht in **GB**, wo die Schleife ohnehin angefasst wird (U9).
+geschieht in **GB**, wo die Schleife ohnehin angefasst wird (U9, E28).
 
 ```mermaid
 flowchart LR
@@ -2161,7 +2161,7 @@ Stufe **GA** steht in keiner Summe (E26).
 | Stufe | Was aus diesem Papier entsteht | Vorbedingung | Abnahme |
 |---|---|---|---|
 | **G0** | `Zonenmodell2K`, `Stundenrand`, `Stundenergebnis`, `ErsatzparameterRC.AusKlassenweg`, `Bauteilreduktion` als leerer Platz; die Vorrichtung für nicht ausgelieferte Prüfdaten samt `EPOS.Kern.Tests/GebaeudeModellNormfallTests` (1.8) | — | Kern-Filter grün; `GebaeudeModellNormfallTests` **lokal** im Band nach E10, in der CI schweigend; **Referenzlauf unberührt** (kein Aufrufer) |
-| **GB** | Instanzzustand statt statischem Feld, Warnungen in der Ferienmaske, die 100er-Grenze (U9), Einfrierregel **„gesäte Gebäudedaten"** | G0 | zwei Referenzprojekte ändern sich — **eigener Einfrierschritt**; letzte reine Bestandsbasis (A15) |
+| **GB** | Instanzzustand statt statischem Feld, Warnungen in der Ferienmaske, die 100er-Grenze (U9, E28), Einfrierregel **„gesäte Gebäudedaten"** | G0 | zwei Referenzprojekte ändern sich — **eigener Einfrierschritt**; letzte reine Bestandsbasis (A15) |
 | **Merge M2** | Umbenennung des Ostfensterfeldes, 15 Stellen | GB | **byte-gleich** gegen die GB-Basis; eigener Merge, weil jede Zeile in die solaren Gewinne mündet |
 | **Merge M3** | `GebaeudeSchema` samt Sichtneubau, Namensleser, `DbWerte`, **Katalogkopie NULL-erhaltend über alle drei Schreibstellen** (W14), `SichtQuelleWache` | M2 | byte-gleich; die Probe **ist** der Sichtneubau; SQL-Dialekt-Prüfer grün |
 | **M4** (vorweggenommen) | **umgesetzt als Schemaschritt 95** (Anwenderentscheid 19.09.2026): Klimaspalten in `SchemaKatalog.Schritt95_Klimaspalten`, Leseweg der PVGIS- und der TRY-Antwort; keine `Windgeschwindigkeit` ([Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)) | — (lief vor GB) | erbracht: byte-gleich; Importprobe liefert dieselben Strahlungsreihen |

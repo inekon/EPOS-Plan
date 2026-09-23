@@ -72,6 +72,50 @@ namespace WindowsFormsApplication1
         private CancellationTokenSource _cts;
 
         /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — die Hülle des Abschnitts „Verlauf": der
+        /// Kapitalwert-Verlauf mit allen drei Szenarien. Sie entsteht beim ersten Zugriff und
+        /// bekommt die Eingangsdaten jedes Rechenlaufs dieser Seite (<see cref="Berechnen"/>).
+        /// </summary>
+        private KapitalwertVerlaufHuelle _verlaufHuelle;
+
+        /// <summary>
+        /// Die Erklärzeile der Referenz, wie sie <see cref="Laden"/> zuletzt gebildet hat — die
+        /// zweite Zeile des Excel-Blatts „Verlauf".
+        /// </summary>
+        private string _referenzzeile = "";
+
+        /// <summary>Die wirksame Referenz der Gruppe beim letzten <see cref="Laden"/> (0 = keine).</summary>
+        private int _referenzWirksam;
+
+        /// <summary>Die Verlaufshülle der Seite (ETAPPE E6).</summary>
+        private KapitalwertVerlaufHuelle Verlauf
+        {
+            get
+            {
+                if (_verlaufHuelle == null)
+                    _verlaufHuelle = new KapitalwertVerlaufHuelle(_idStamm, _stammName, Verlaufskontext);
+                return _verlaufHuelle;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — was der Verlauf von der Seite wissen muss: die angehakten Stände (samt
+        /// der wirksamen Referenz, die nicht aus dem Vergleich fallen kann), die Sicht der
+        /// Sitzung und die Erklärzeile der Referenz.
+        /// </summary>
+        private VerlaufKontext Verlaufskontext()
+        {
+            List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
+            if (_referenzWirksam > 0 && !gewaehlt.Contains(_referenzWirksam)) gewaehlt.Add(_referenzWirksam);
+            return new VerlaufKontext
+            {
+                Gewaehlt = gewaehlt,
+                Sicht = Vergleich.Sicht != null ? Vergleich.Sicht.Kopie() : null,
+                Referenzzeile = _referenzzeile ?? ""
+            };
+        }
+
+        /// <summary>
         /// ETAPPE E5 (V‑A, V‑G6) — die Sensitivitätszeilen zu den gezeigten Ergebnissen:
         /// die gespeicherten des Gruppenlaufs, in Sicht 2 die des Laufs gegen A (ohne
         /// Persistenz, <see cref="PaarErgebnisse"/>). Die Seite zeigt sie seither mit der
@@ -169,7 +213,10 @@ namespace WindowsFormsApplication1
                 ["TarifBhkwText"] = TarifstrukturHuelle.Titel(TarifSicht.Bhkw),
                 ["TarifPvText"] = TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik),
                 ["ParameterText"] = T("WIRT_BTN_PARAMETER", "Parameter…"),
-                ["VerlaufText"] = T("WIRT_BTN_VERLAUF", "Verlauf…"),
+                // ETAPPE E6 (K8, U3): Der Verlauf steht als eigener Abschnitt in „Wie sicher
+                // ist das?" - der Knopf „Verlauf…" und sein Dialog sind entfallen. Der
+                // Abschnitt bekommt seine Datenseite aus der Verlaufshülle.
+                ["Verlauf"] = Verlauf.Seitenwege(),
                 ["BerechnenText"] = T("WIRT_BTN_BERECHNEN", "Berechnen"),
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["MeldungStammReferenz"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
@@ -285,6 +332,10 @@ namespace WindowsFormsApplication1
             stand.Referenzzeile = Vergleich.Sicht.IstPaar
                 ? Referenzwahl.Nachweiszeile(Name(Vergleich.Sicht.IdA), wahl.Anzeige)
                 : Referenzwahl.Nachweiszeile(wahl.Anzeige);
+            // ETAPPE E6: Der Verlauf nennt dieselbe Referenz im Excel-Blatt und hält sie im
+            // Vergleich, auch wenn sie nicht angehakt ist.
+            _referenzzeile = stand.Referenzzeile ?? "";
+            _referenzWirksam = wahl.IdReferenz;
 
             var szenarien = new List<ValueTuple<int, string>>();
             for (int i = 0; i < SZENARIEN.Length; i++)
@@ -755,6 +806,8 @@ namespace WindowsFormsApplication1
                 // ValERI-Ansicht (Block 1).
                 Bandbreitenfuss = bandbreite == null || bandbreite.Leer ? ""
                     : string.Format(kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS, bandbreite.Referenzname),
+                // ETAPPE E6 (Nachtrag E5b, Frage (4)): das Spannenbild neben der Tafel.
+                Spannenbild = Spannenbild(bandbreite),
                 Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
@@ -915,6 +968,26 @@ namespace WindowsFormsApplication1
                 return WirtschaftlichkeitBandbreite.Bilde(staende, _ergebnisse, idReferenz, Name(idReferenz));
             }
             catch { return new WirtschaftlichkeitBandbreite(); }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 (Nachtrag E5b, Anwenderentscheid 22.09.2026 zu Frage (4)): das
+        /// <b>Spannenbild</b> aus DERSELBEN Bandbreite wie die Tafel — je Version ein Balken,
+        /// der Erwartungsfall als Punkt, die Referenz als Nulllinie. Gezeichnet vom Renderer
+        /// des Kerns (<see cref="ChartRenderer.KapitalwertSpanneModell"/>); ohne Bandbreite
+        /// oder bei einem Fehler kein Bild — die Tafel bleibt.
+        /// </summary>
+        private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Spannenbild(
+            WirtschaftlichkeitBandbreite bandbreite)
+        {
+            try
+            {
+                if (bandbreite == null || bandbreite.Leer) return null;
+                return ChartRenderer.KapitalwertSpanneModell(
+                    ChartRenderer.Spannenbalken.Aus(bandbreite), bandbreite.Referenzname,
+                    ChartRenderer.SpannenTexte.AusRessourcen());
+            }
+            catch { return null; }
         }
 
         /// <summary>
@@ -1314,7 +1387,13 @@ namespace WindowsFormsApplication1
                     daten.IdGruppenreferenz = p.IdReferenzprojekt;
                     daten.Sicht = null;
                     _letzteDaten = daten;
-                    return _ctrl.Berechne(daten, p, p.IdReferenzprojekt);
+                    List<WirtschaftlichkeitErgebnis> ergebnisse = _ctrl.Berechne(daten, p, p.IdReferenzprojekt);
+
+                    // ETAPPE E6: Der Verlauf mit drei Szenarien rechnet aus DENSELBEN
+                    // Eingangsdaten gleich mit - auf diesem Faden, ohne zu speichern. Die
+                    // Seite zeichnet ihn danach nur noch.
+                    Verlauf.DatenUebernehmen(daten);
+                    return ergebnisse;
                 }, ct);
 
                 _tarifCache = null;
@@ -1360,10 +1439,8 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Die fünf Unterdialoge
+        // Die Unterdialoge
         // =====================================================================
-
-        private Func<bool> _verlaufNeuGesammelt;
 
         private IReadOnlyDictionary<string, object> Unterdialog(
             WirtschaftlichkeitSeite.Unterdialog art)
@@ -1400,13 +1477,6 @@ namespace WindowsFormsApplication1
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                         return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
-
-                    case WirtschaftlichkeitSeite.Unterdialog.Verlauf:
-                        var varianten = new List<int>();
-                        foreach (WirtschaftlichkeitErgebnis e in _ergebnisse)
-                            if (!e.IstStamm && !varianten.Contains(e.IdProjekt)) varianten.Add(e.IdProjekt);
-                        return KapitalwertVerlaufHuelle.Gaben(
-                            _idStamm, _stammName, varianten, out _verlaufNeuGesammelt);
                 }
             }
             catch { }
@@ -1421,22 +1491,12 @@ namespace WindowsFormsApplication1
         {
             _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
 
-            if (art == WirtschaftlichkeitSeite.Unterdialog.Verlauf)
-            {
-                // Der Verlaufsdialog kann neu simuliert haben (Review Phase 11):
-                // Dann passen die persistierten Ergebnisse nicht mehr zum
-                // Simulationsstand — und das gehoert gesagt.
-                bool neu = _verlaufNeuGesammelt != null && _verlaufNeuGesammelt();
-                _verlaufNeuGesammelt = null;
-                if (!neu) return "";
-
-                return _ergebnisse.Any(x => x.Fehlgrund == null && !_ctrl.ErgebnisAktuell(x))
-                    ? T("WIRT_MELD_VERLAUF_NEU",
-                        "⚠ Für den Verlauf wurde neu simuliert — gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand, bitte „Berechnen“.")
-                    : "";
-            }
-
             if (!gespeichert) return "";
+
+            // ETAPPE E6: Gespeicherte Parameter, Tarife oder Vergütungen gelten auch für den
+            // Verlauf - der gerechnete gilt nicht mehr; das nächste Zeichnen rechnet ihn aus
+            // denselben Eingangsdaten mit den neuen Werten.
+            if (_verlaufHuelle != null) _verlaufHuelle.Verwerfen();
 
             switch (art)
             {

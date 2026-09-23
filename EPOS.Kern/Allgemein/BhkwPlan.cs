@@ -43,15 +43,10 @@ namespace WPPlan.Core
         public const int Months = 12;        // 0xC
         public const int HoursPerDay = 24;   // 0x18
 
-        // ----- Globaler Zustand -----
-        // Die DLL hält in 0x4211F8 die "Vortemperatur" des Kapazitätsmodells und nullt sie in
-        // DllMain (DLL_PROCESS_ATTACH). TaeglHeizlastWG liest/schreibt diese Variable über die
-        // 24-Stunden-Schleife UND über aufeinanderfolgende Tagesaufrufe hinweg. Für bit-nahe
-        // Ergebnisse muss dieser Zustand exakt so mitgeführt werden.
-        private static double _prevRoomTemp; // Spiegelt DATA:0x4211F8
-
-        /// <summary>Setzt den globalen Zustand zurück (entspricht DllMain/DLL_PROCESS_ATTACH: 0).</summary>
-        public static void ResetState() => _prevRoomTemp = 0.0;
+        // ----- Zustand -----
+        // Die DLL hielt in 0x4211F8 die "Vortemperatur" des Kapazitätsmodells als GLOBALE
+        // Variable. Diese Klasse ist zustandslos: Die Vortemperatur lebt in einem
+        // Tagesbilanzzustand, den der Aufrufer je Gebäude hält und TaeglHeizlastWG übergibt.
 
         // =========================================================================================
         // Gruppe A – Vektor-/Struktur-Primitive (trivial, direkt aus Disassembly)
@@ -373,11 +368,13 @@ namespace WPPlan.Core
         /// Verschiebung über Stunden weiter. In Projekt 1041 verschob eine Stelle hinter dem
         /// Komma die Tagesheizlast eines Januartags um 0,39 %.</para>
         ///
-        /// Zustandsführung: Die "Vortemperatur" wird in einer globalen Variablen (0x4211F8,
-        /// hier <see cref="_prevRoomTemp"/>) über Stunden UND Tagesaufrufe hinweg mitgeführt.
-        /// Bei day == 1 wird sie mit raumsolltempNacht initialisiert; sonst aus dem globalen Wert
-        /// übernommen. Vor dem eigentlichen Jahreslauf ruft WP-Plan die Funktion für Vorlauftage
-        /// (350..364) zum Einschwingen auf. Deshalb <see cref="ResetState"/> nur bewusst nutzen.
+        /// Zustandsführung: Die "Vortemperatur" (in der DLL die globale Variable 0x4211F8) wird
+        /// über Stunden UND Tagesaufrufe hinweg in <paramref name="zustand"/> mitgeführt — einem
+        /// Instanzzustand des Aufrufers, nicht einem statischen Feld. Bei day == 1 wird sie mit
+        /// raumsolltempNacht initialisiert; sonst aus dem Zustand übernommen. Vor dem eigentlichen
+        /// Jahreslauf ruft WP-Plan die Funktion für Vorlauftage (350..364) zum Einschwingen auf;
+        /// der Aufrufer setzt den Zustand je Gebäude über
+        /// <see cref="Tagesbilanzzustand.ResetState"/> zurück.
         ///
         /// Konstanten: 4.0 (f32 @0x41525C – Solar-Faktor für die Tagesstunden), 0.0/1.0/-1.0.
         /// Setpoint-Logik je Stunde h (1..24):
@@ -386,6 +383,7 @@ namespace WPPlan.Core
         /// Solargewinn wirkt nur in den Stunden 9..14 (mit Faktor 4.0).
         /// </summary>
         public static double TaeglHeizlastWG(
+            Tagesbilanzzustand zustand,
             int day, int weAbsenkung, double weTemp, int ferienAbsenkung, double ferienTemp,
             double raumsolltempTag, double raumsolltempNacht, double innereGewinne, double solareGewinne,
             double spezWaermeverluste, double gebaeudeKapazitaet, double aussenTemp, double maxRaumtemp,
@@ -395,8 +393,10 @@ namespace WPPlan.Core
             double C = gebaeudeKapazitaet;
 
             double acc = 0.0;                              // ebp-0x10: Summe der Stunden-Heizlast
+            if (zustand == null) throw new ArgumentNullException(nameof(zustand));
+
             double tPrev = (day == 1) ? raumsolltempNacht  // ebp-0xc: Vortemperatur
-                                      : _prevRoomTemp;
+                                      : zustand.Vortemperatur;
 
             for (int h = 1; h <= 24; h++)
             {
@@ -430,7 +430,7 @@ namespace WPPlan.Core
                 if (tPrev > maxRaumtemp) tPrev = maxRaumtemp; // Kappung auf Maximaltemperatur
             }
 
-            _prevRoomTemp = tPrev; // globalen Zustand fortschreiben (0x4211F8)
+            zustand.Vortemperatur = tPrev; // Zustand fortschreiben (in der DLL: 0x4211F8)
 
             return acc * gesamtflaeche / wohnflaeche; // W8-O-5d-Q2: kein _ftol mehr
         }

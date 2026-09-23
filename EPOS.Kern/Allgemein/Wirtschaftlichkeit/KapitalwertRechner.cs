@@ -897,5 +897,44 @@ namespace WindowsFormsApplication1
             }
             return null;
         }
+
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — der <b>Nulldurchgang</b> einer KUMULIERTEN
+        /// Differenzreihe, wie sie der Verlauf zeichnet (<see cref="VerlaufSerie.Kumuliert"/>
+        /// einer Differenzlinie): das Jahr, in dem der kumulierte Barwert der Differenz die
+        /// Nulllinie von unten erreicht — die dynamische Amortisation dieser Linie.
+        ///
+        /// <para><b>Dieselbe Regel wie <see cref="AmortisationDifferenz"/></b>, nur auf der
+        /// fertigen Summenreihe statt auf zwei Zahlungsbildern: lineare Interpolation im
+        /// Jahr des Durchgangs; ohne Mehrinvestition (Jahr 0 schon ≥ 0) die 0, wenn auch das
+        /// Ende nicht negativ ist, sonst keiner. Der Verlauf zeigt damit im Erwartungsfall
+        /// über T dieselbe Zahl wie die Amortisationskennzahl — die Marke im Bild und die
+        /// Zelle der Kennzahltafel können nicht auseinanderlaufen.</para>
+        ///
+        /// <para>Ein Horizont über T ist erlaubt (der Verlauf rechnet frei wählbare
+        /// Horizonte); ein Durchgang jenseits von T steht dann nur hier, nicht in der
+        /// gespeicherten Kennzahl.</para>
+        /// </summary>
+        /// <param name="kumuliert">Index = Jahr 0 … N.</param>
+        /// <returns>Jahre mit Nachkommastellen; <c>null</c> = kein Durchgang im Zeitraum
+        /// (oder die Reihe ist leer oder nicht endlich).</returns>
+        public static double? Nulldurchgang(double[] kumuliert)
+        {
+            if (kumuliert == null || kumuliert.Length == 0) return null;
+            foreach (double w in kumuliert)
+                if (double.IsNaN(w) || double.IsInfinity(w)) return null;
+
+            int T = kumuliert.Length - 1;
+            if (kumuliert[0] >= 0) return kumuliert[T] >= 0 ? (double?)0 : null;
+
+            for (int t = 1; t <= T; t++)
+            {
+                double kum = kumuliert[t - 1];
+                double zufluss = kumuliert[t] - kum;
+                if (kum + zufluss >= 0 && zufluss > 0)
+                    return (t - 1) + (-kum / zufluss);                       // Interpolation im Jahr t
+            }
+            return null;
+        }
     }
 }

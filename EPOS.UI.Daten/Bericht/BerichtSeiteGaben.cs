@@ -171,12 +171,24 @@ namespace WindowsFormsApplication1
         // Erstellen (Vorbild btnErstellen_Click)
         // =====================================================================
 
-        private async Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder)
+        /// <summary>Der Lauf der Berichtsseite: Er merkt sich die Auswahl als
+        /// Konfiguration der Gruppe (Kap. 8.4).</summary>
+        private Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder)
+        {
+            return Erstellen(auftrag, melder, true);
+        }
+
+        /// <param name="auswahlMerken"><c>true</c> = die Auswahl des Auftrags wird die
+        /// gespeicherte Konfiguration der Gruppe (Berichtsseite); <c>false</c> = der Lauf
+        /// nimmt sie nur für sich (<see cref="ErzeugeFuerVergleich"/>).</param>
+        private async Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder,
+                                                   bool auswahlMerken)
         {
             if (_cts != null) return new LaufErgebnis { Abgebrochen = true };
 
             BerichtsKonfiguration konfig = AusAuftrag(auftrag);
-            try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
+            if (auswahlMerken)
+                try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
 
             _cts = new CancellationTokenSource();
             var melde = new Progress<BerichtsDatenSammler.Fortschritt>(
@@ -280,8 +292,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Der Baustein „Wirtschaftlichkeit" ist immer dabei — ein Bericht, der von
         /// der Wirtschaftlichkeitsseite aus entsteht und sie nicht enthält, wäre ein
-        /// anderer Bericht als der, um den gebeten wurde. Wie jeder Lauf merkt sich der
-        /// Weg die Auswahl als Konfiguration der Gruppe.</para>
+        /// anderer Bericht als der, um den gebeten wurde.</para>
+        ///
+        /// <para><b>Nur für diesen Lauf</b> (Anwenderentscheid 22.09.2026 zu Frage (3) aus
+        /// E5b): Baustein und Versionen gelten für den einen Bericht; die gespeicherte
+        /// Konfiguration der Gruppe bleibt, wie die Berichtsseite sie zuletzt gemerkt hat.
+        /// Gemerkt wird allein beim Lauf der Berichtsseite.</para>
         /// </summary>
         /// <param name="varianten">Die gewählten Versionen OHNE Stamm.</param>
         internal Task<LaufErgebnis> ErzeugeFuerVergleich(IReadOnlyList<int> varianten, Action<Laufschritt> melder)
@@ -307,7 +323,7 @@ namespace WindowsFormsApplication1
                 Zielordner = string.IsNullOrWhiteSpace(k.ZielOrdner) ? Dienste.Pfade.Dokumente : k.ZielOrdner,
                 AnzahlMitStamm = ids.Count + 1
             };
-            return Erstellen(auftrag, melder);
+            return Erstellen(auftrag, melder, false);
         }
 
         // =====================================================================
