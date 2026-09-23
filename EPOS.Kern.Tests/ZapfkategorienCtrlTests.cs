@@ -129,5 +129,49 @@ namespace EPOS.Kern.Tests
             Assert.Equal((int)Math.Ceiling(1.5 * 20), Zapfensemble.RealisierungenAuslegung(p.RealisierungenAuslegung, 95, ps));
             Assert.Equal(7, Zapfensemble.RealisierungenAuslegung(7, 99, ps));
         }
+
+        /// <summary>
+        /// Auf der Repo-Testdatenbank: Der Eingang eines Arbeitsstands trägt die Kategorien der
+        /// Nutzungsart seiner Zone — genau die Zeilen der Tabelle, in ihrer Reihenfolge —, die
+        /// Parameter der Stochastik stehen im Parametersatz, und der stochastische Rechenweg rechnet
+        /// die Zone mit den Kategorien des Katalogs: dieselbe Jahresmenge wie der deterministische,
+        /// keine Ablehnung. Die Werte liest die Probe aus der Datenbank, keiner steht hier.
+        /// </summary>
+        [Fact]
+        public void Der_Eingang_traegt_die_Kategorien_des_Katalogs_und_die_Zone_rechnet_stochastisch()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int nutzung = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ? AND Katalogversion = ?",
+                new DbParam("@b", "Wohnen groß (abgeleitet)"), new DbParam("@k", "TEST-1")));
+            var soll = DataRepository.GetDataTable(
+                "SELECT Kategorie, Volumenstrom_l_min, Sigma FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ? " +
+                "ORDER BY Reihenfolge, ID", new DbParam("@n", nutzung)).Rows.Cast<System.Data.DataRow>()
+                .Select(r => (Convert.ToString(r[0]), Convert.ToDouble(r[1]), Convert.ToDouble(r[2]))).ToArray();
+            Assert.NotEmpty(soll);
+
+            var zone = new ZonenStand { Name = "Zone Probe", IdNutzungsart = nutzung, Bezugsmenge = 12.0 };
+            ProjektStand deterministisch = ZapfprofilCtrl.ProjektVorgabe() with { Weg = BrauchwasserWeg.Generator };
+            var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, deterministisch);
+            bool[] we = new bool[Zapfkalender.TAGE];
+
+            Zapfprofileingang e = ZapfprofilCtrl.Eingang(1007, stand, 0, we);
+            Assert.Equal(soll, e.Zapfkategorien.Select(k => (k.Name, k.VolumenstromLJeMin, k.StreuungLJeMin)).ToArray());
+            Assert.All(e.Zapfkategorien, k => Assert.Equal(nutzung, k.IdNutzungsart));
+            foreach (string s in new[] { ZapfStochastikParameter.URLAUBSVERSATZ, ZapfStochastikParameter.AUSLEGUNG_VIELFACHES,
+                                         ZapfStochastikParameter.KONSISTENZSCHWELLE, ZapfStochastikParameter.QUANTIL + "95",
+                                         ZapfStochastikParameter.QUANTIL + "99" })
+                Assert.True(e.Parameter.Enthaelt(s), s);
+
+            ZapfprofilErgebnis d = ZapfprofilCtrl.Rechnen(1007, stand, 0, we);
+            var stochastisch = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone },
+                                                   deterministisch with { JahresreiheStochastisch = true, Realisierungen = 2 });
+            ZapfprofilErgebnis st = ZapfprofilCtrl.Rechnen(1007, stochastisch, 0, we);
+            Assert.True(st.Vollstaendig, string.Join("; ", st.Ablehnungen.Select(a => a.Klartext)));
+            Assert.True(st.Stochastisch);
+            Assert.InRange(Math.Abs(st.Zapfung.JahressummeKwh / d.Zapfung.JahressummeKwh - 1.0), 0.0, 1e-12);
+            Assert.NotEqual(d.Zapfung.StundenKwh, st.Zapfung.StundenKwh);
+        }
     }
 }

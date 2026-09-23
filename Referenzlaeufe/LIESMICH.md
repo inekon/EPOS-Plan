@@ -267,11 +267,21 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+**113**, LFS-SHA-256 `769143e4…`, Nachtrag 114 unten; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
 kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.
+
+> **Nachtrag Schemastand 114 (Zapfprofilgenerator, Stufe Z3, Schemaschritt T2).** Die
+> Testdatenbank steht auf Schemastand **114** (LFS-SHA-256 `919e565f…`): Werkzeuge/Testdatenbankschema
+> hat `Tab_TwwZapfkategorie_STAMM` angelegt, und
+> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) hat 78 Katalogzeilen
+> ergänzt — vier aus VDI 6002 abgeleitete Nutzungsarten samt Tagesgangsätzen (ZU19, Abschnitt
+> „Abgeleitete VDI-Werte im Tww-Testkatalog“), das Ecodesign-Zapfprofil L als Bedarfstag, die fünf
+> Parameter der Stochastik und 24 fiktive Zapfkategorien. Ein zweiter Skriptlauf meldet 0/0. Kein
+> Referenzprojekt steht auf dem Generator: Der Referenzlauf der fünf CI-Projekte gegen diese Basis
+> ist **byte-gleich**, die Basis bleibt.
 
 > **Anlass: die vierte und letzte Welle der Stufe KU1 der Kühlung** (vom Anwender am 23.09.2026
 > beauftragt). Zwei Änderungen, eine davon an den Daten:
