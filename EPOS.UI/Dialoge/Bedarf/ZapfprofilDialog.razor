@@ -23,6 +23,10 @@
    AuslegungGaben der Huelle). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
    (ZapfprofilEingabeDaten.Auslegung), geschrieben wird erst mit dem OK des
    Bedarfsprofil-Dialogs; Abbrechen verwirft. Ohne Delegat steht der Knopf weich gesperrt.
+   Aendert der Anwender danach eine Zone so, dass sich die Auslegung aendert (neue, doppelte
+   oder entfernte Zone, Nutzungsart, Bezugsgroesse, Niveau), ist der Punkt UEBERHOLT: Der
+   uebernommene faellt aus dem Arbeitsstand, ein Punkt des Stands beim Oeffnen wird beim
+   Speichern verworfen (ZapfprofilEingabeDaten.PunktUeberholt); eine leise Zeile sagt es.
 
    BENANNT GESPERRT. Die Stufen Erweitert und Experte, der Reiter Dauerlinie und der
    Knopf "Stochastisch rechnen" kommen mit spaeteren Stufen: Sie stehen da, sind WEICH
@@ -89,6 +93,11 @@
     @if (_eingabe.Auslegung is not null)
     {
         <p class="epos-leisezeile epos-zapfprofil-auslegungsstand" role="status">@Format(Texte.StatusAuslegung, Auslegungspunkt)</p>
+    }
+
+    @if (_eingabe.PunktUeberholt)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-punktueberholt" role="status">@Texte.PunktUeberholt</p>
     }
 
     <div class="epos-blockspalten">
@@ -692,6 +701,7 @@
 
         _eingabe.Zonen.Add(new ZapfprofilZoneDaten { Name = name });
         _wahl = _eingabe.Zonen.Count - 1;
+        PunktUeberholen();
         Geaendert(ansichtZuruecksetzen: true);
     }
 
@@ -704,6 +714,7 @@
         kopie.Name = Format(Texte.ZoneKopie, z.Name);
         _eingabe.Zonen.Insert(_wahl + 1, kopie);
         _wahl++;
+        PunktUeberholen();
         Geaendert(ansichtZuruecksetzen: true);
     }
 
@@ -712,6 +723,7 @@
         if (Gewaehlte is null) return;
         _eingabe.Zonen.RemoveAt(_wahl);
         if (_wahl >= _eingabe.Zonen.Count) _wahl = _eingabe.Zonen.Count - 1;
+        PunktUeberholen();
         Geaendert(ansichtZuruecksetzen: true);
     }
 
@@ -725,6 +737,7 @@
     private void NutzungsartSetzen(int? id)
     {
         if (Gewaehlte is not { } z) return;
+        if (z.IdNutzungsart != (id ?? 0)) PunktUeberholen();
         z.IdNutzungsart = id ?? 0;
         Geaendert();
     }
@@ -732,6 +745,7 @@
     private void BezugsmengeSetzen(double? wert)
     {
         if (Gewaehlte is not { } z) return;
+        if (z.Bezugsmenge != wert) PunktUeberholen();
         z.Bezugsmenge = wert;
         Geaendert();
     }
@@ -740,8 +754,30 @@
     {
         if (Gewaehlte is not { } z || id is not int n) return;
         if (!Enum.IsDefined(typeof(ZapfprofilNiveau), n)) return;
+        if (z.Niveau != (ZapfprofilNiveau)n) PunktUeberholen();
         z.Niveau = (ZapfprofilNiveau)n;
         Geaendert();
+    }
+
+    /// <summary>Gibt es einen Punkt, der überholt werden kann: den übernommenen oder den des Stands beim Öffnen?</summary>
+    private bool PunktVorhanden
+        => !_eingabe.PunktUeberholt
+           && (_eingabe.Auslegung is { } a ? a.PunktVolumenL.HasValue || a.PunktLeistungKw.HasValue : Daten.MitPunkt);
+
+    /// <summary>
+    /// Eine Zonenänderung, die die Auslegung ändert: Der Punkt ist überholt — der übernommene
+    /// fällt aus dem Arbeitsstand, ein Punkt des Stands beim Öffnen wird beim Speichern
+    /// verworfen. Der Name einer Zone ändert die Auslegung nicht.
+    /// </summary>
+    private void PunktUeberholen()
+    {
+        if (!PunktVorhanden) return;
+        if (_eingabe.Auslegung is { } a)
+        {
+            a.PunktVolumenL = null;
+            a.PunktLeistungKw = null;
+        }
+        _eingabe.PunktUeberholt = true;
     }
 
     private void AnsichtWaehlen(int? id) => _ansicht = id ?? 0;
@@ -883,12 +919,13 @@
         _auslegungGaben = AuslegungGaben(_eingabe.Kopie());
     }
 
-    /// <summary>OK der Überlagerung: Eingaben samt Punkt in den Arbeitsstand; Abbrechen verwirft.</summary>
+    /// <summary>OK der Überlagerung: Eingaben samt Punkt in den Arbeitsstand (der Punkt gilt wieder); Abbrechen verwirft.</summary>
     private void AuslegungGeschlossen(ZapfprofilAuslegungEingabeDaten? auslegung)
     {
         _auslegungGaben = null;
         if (auslegung is null) return;
         _eingabe.Auslegung = auslegung.Kopie();
+        _eingabe.PunktUeberholt = false;
         _okMeldung = "";
         _okKennung = null;
     }

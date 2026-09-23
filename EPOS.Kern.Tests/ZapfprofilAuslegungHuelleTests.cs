@@ -240,6 +240,37 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Ein_ueberholter_Punkt_wird_verworfen_und_der_Rest_bleibt()
+        {
+            var projekt = new ProjektStand { Id = 3, Seed = 7, SpeicherC = 55.0, AuslegungVolumenL = 400.0, AuslegungLeistungKw = 20.0 };
+            var basis = new ZapfprofilStand(BrauchwasserWeg.Generator, new ZonenStand[0], projekt);
+
+            // Der Punkt des Stands beim Öffnen bleibt, solange keine Zone die Auslegung geändert hat …
+            Assert.Equal(400.0, ZapfprofilHuelle.AlsStand(new ZapfprofilEingabeDaten(), basis).Projekt.AuslegungVolumenL);
+
+            // … und fällt, sobald der Dialog ihn als überholt meldet; die übrigen Größen bleiben.
+            ProjektStand ohne = ZapfprofilHuelle.AlsStand(new ZapfprofilEingabeDaten { PunktUeberholt = true }, basis).Projekt;
+            Assert.Null(ohne.AuslegungVolumenL);
+            Assert.Null(ohne.AuslegungLeistungKw);
+            Assert.Equal(55.0, ohne.SpeicherC);
+            Assert.Equal(7, ohne.Seed);
+
+            // Ebenso der Punkt, den der Arbeitsstand mit OK der Überlagerung trägt.
+            var e = new ZapfprofilEingabeDaten
+            {
+                PunktUeberholt = true,
+                Auslegung = new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60.0, PunktVolumenL = 300.0, PunktLeistungKw = 25.0 }
+            };
+            ProjektStand mit = ZapfprofilHuelle.AlsStand(e, basis).Projekt;
+            Assert.Null(mit.AuslegungVolumenL);
+            Assert.Null(mit.AuslegungLeistungKw);
+            Assert.Equal(60.0, mit.SpeicherC);
+            Assert.Null(ZapfprofilHuelle.Uebernahme(new ZapfprofilErgebnisDaten(e), basis).Projekt.AuslegungVolumenL);
+            Assert.True(e.Kopie().PunktUeberholt);
+            Assert.Null(ZapfprofilHuelle.OhnePunkt(null));
+        }
+
+        [Fact]
         public void Ohne_Zone_rechnet_die_Auslegung_nicht_und_sagt_es()
         {
             ZapfprofilAuslegungDaten d = ZapfprofilHuelle.Auslegung(PROJEKT, new ZapfprofilEingabeDaten(),
@@ -428,6 +459,54 @@ namespace EPOS.Kern.Tests
             Assert.False(go.Empfehlung.Rechenbar);
             Assert.Contains("Werkstoff", go.Empfehlung.Grund);
         }
+
+        /// <summary>
+        /// Der übernommene Punkt ist Ergebnis, nicht Eingabe: Ein alter Punkt — im Arbeitsstand
+        /// und im gespeicherten Stand —, der als Speichervolumen weit über der Schwelle der
+        /// Großanlage läge, ändert weder Punkt noch Speichertemperatur noch Warnliste.
+        /// </summary>
+        [Fact]
+        public void Die_Auslegung_rechnet_unabhaengig_vom_alten_Punkt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+
+            ZapfprofilBedarfstagDaten tag = ZapfprofilHuelle.BedarfstagKonstruieren(new[]
+            {
+                new ZapfprofilKonstruktorZeileDaten { BeginnH = 7, EndeH = 7.5, VolumenL = 120, ZapftemperaturC = 45 },
+                new ZapfprofilKonstruktorZeileDaten { BeginnH = 18.5, EndeH = 19.5, VolumenL = 200, ZapftemperaturC = 45 }
+            }, "Probetag (fiktiv)").Tag;
+            ZapfprofilAuslegungEingabeDaten Eingaben(double? punktL) => new ZapfprofilAuslegungEingabeDaten
+            {
+                Quelle = ZapfprofilBedarfstagquelle.Konstruktor, Entwurf = tag.Kopie(), Werkstoff = ZapfprofilWerkstoff.Stahl,
+                PunktVolumenL = punktL, PunktLeistungKw = punktL.HasValue ? 1.0 : null
+            };
+
+            double schwelle = ZapfprofilCtrl.Parameter().Wert(ZapfAuslegungParameter.W551_GROSS_VOLUMEN);
+            double alterPunktL = schwelle * 1000.0;
+            var basis = new ZapfprofilStand(BrauchwasserWeg.Generator, new ZonenStand[0],
+                ZapfprofilCtrl.ProjektVorgabe() with { AuslegungVolumenL = alterPunktL, AuslegungLeistungKw = 1.0 });
+
+            ZapfprofilAuslegungDaten frei = ZapfprofilHuelle.Auslegung(PROJEKT, Zonen(), Eingaben(null), null, ZapfprofilStufe.Einfach);
+            ZapfprofilAuslegungDaten alt = ZapfprofilHuelle.Auslegung(PROJEKT, Zonen(), Eingaben(alterPunktL), basis, ZapfprofilStufe.Einfach);
+
+            ZapfprofilAuslegungsgruppeDaten g = Assert.Single(frei.Gruppen);
+            Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.Grund);
+            Assert.True(g.Empfehlung.VolumenL < schwelle, "Der Probetag darf selbst keine Großanlage sein.");
+            Assert.Equal(Kurzbild(frei), Kurzbild(alt));
+            Assert.DoesNotContain(Assert.Single(alt.Gruppen).Warnliste,
+                                  w => w.Kennung == ZapfprofilHuelle.AuslegungsHinweisSchluessel(Grossanlage.HINWEIS_GROSSANLAGE));
+        }
+
+        /// <summary>Punkt, Nenninhalt, Speichertemperatur samt Herkunft und Warnliste je Gruppe als Text.</summary>
+        private static string Kurzbild(ZapfprofilAuslegungDaten d)
+            => string.Join(" || ", d.Gruppen.Select(g => string.Join(" | ",
+                   g.Empfehlung.VolumenL?.ToString("R", CultureInfo.InvariantCulture),
+                   g.Empfehlung.LeistungKw?.ToString("R", CultureInfo.InvariantCulture),
+                   g.Empfehlung.NenninhaltL?.ToString("R", CultureInfo.InvariantCulture),
+                   g.SpeicherC?.ToString("R", CultureInfo.InvariantCulture), g.SpeicherCHerkunft,
+                   string.Join(", ", g.Warnliste.Select(w => w.Kennung + ": " + w.Text)))));
 
         [Fact]
         public void Der_Schreibweg_legt_im_gemeinsamen_Vorgang_den_Tag_an_und_haengt_Punkt_und_Projekt_daran()

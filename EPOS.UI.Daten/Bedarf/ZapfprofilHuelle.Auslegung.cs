@@ -25,6 +25,13 @@ namespace WindowsFormsApplication1
     /// Kerns einen Titel in der Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns
     /// mit eingesetzten Zahlen.</para>
     ///
+    /// <para><b>Der Punkt ist Ergebnis, nicht Eingabe.</b> Der mit OK übernommene Punkt geht nur in
+    /// Übernahme und Speichern; der Rechenweg der Überlagerung rechnet ohne ihn
+    /// (<see cref="OhnePunkt"/>) — sonst steuerte ein alter Punkt Großanlagenerkennung,
+    /// Speichertemperatur und Warnliste und damit den neuen Punkt. Ändert der Anwender danach eine
+    /// Zone, ist der Punkt überholt (<see cref="ZapfprofilEingabeDaten.PunktUeberholt"/>) und wird
+    /// beim Speichern verworfen.</para>
+    ///
     /// <para><b>Geschrieben wird nicht hier.</b> OK der Überlagerung legt die Eingaben samt Punkt
     /// in den Arbeitsstand des Dialogs (<see cref="ZapfprofilEingabeDaten.Auslegung"/>); das OK
     /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
@@ -159,7 +166,10 @@ namespace WindowsFormsApplication1
             Auslegungsrechnung r;
             try
             {
-                ZapfprofilStand stand = AlsStand(mit, basis) with { Weg = BrauchwasserWeg.Generator };
+                // Der übernommene Punkt (Arbeitsstand oder gespeichert) bleibt draußen: Er ist das
+                // Ergebnis dieser Rechnung, nicht ihre Eingabe.
+                ZapfprofilStand stand = AlsStand(mit, basis);
+                stand = stand with { Weg = BrauchwasserWeg.Generator, Projekt = OhnePunkt(stand.Projekt) };
                 r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we,
                     new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff)));
             }
@@ -454,7 +464,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Projektgrößen mit den Eingaben der Überlagerung: Bedarfstag (Quelle und Katalogtag;
         /// beim Entwurf ohne Id), Speichertemperatur, Erzeuger- und Übertragerleistung, Speicherart,
-        /// Sensorhöhe und der übernommene Punkt. <c>null</c> bleibt <c>null</c>.
+        /// Sensorhöhe und der übernommene Punkt. <c>null</c> bleibt <c>null</c>. Der Punkt gilt für
+        /// Übernahme und Speichern; der Rechenweg nimmt ihn mit <see cref="OhnePunkt"/> wieder heraus.
         /// </summary>
         internal static ProjektStand MitAuslegung(ProjektStand p, ZapfprofilAuslegungEingabeDaten a)
         {
@@ -477,6 +488,13 @@ namespace WindowsFormsApplication1
                 AuslegungLeistungKw = a.PunktLeistungKw
             };
         }
+
+        /// <summary>
+        /// Die Projektgrößen ohne Auslegungspunkt — für den Rechenweg der Überlagerung und für einen
+        /// überholten Punkt (<see cref="ZapfprofilEingabeDaten.PunktUeberholt"/>). <c>null</c> bleibt <c>null</c>.
+        /// </summary>
+        internal static ProjektStand OhnePunkt(ProjektStand p)
+            => p == null ? null : p with { AuslegungVolumenL = null, AuslegungLeistungKw = null };
 
         /// <summary>Der Entwurf der Eingaben als Katalogzeile des Kerns (Quelle Konstruktor); <c>null</c> ohne Entwurf.</summary>
         internal static BedarfstagKatalogzeile EntwurfAus(ZapfprofilAuslegungEingabeDaten a)

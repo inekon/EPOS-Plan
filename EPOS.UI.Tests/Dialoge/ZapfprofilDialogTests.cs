@@ -399,6 +399,71 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(300, ergebnis!.Eingabe.Auslegung!.PunktVolumenL);
     }
 
+    private static IElement Feld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
+        => cut.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+              .QuerySelector("input")!;
+
+    [Fact]
+    public void Eine_Zonenaenderung_macht_den_uebernommenen_Punkt_ueberholt()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = MitAuslegung(new List<ZapfprofilEingabeDaten>(), e => ergebnis = e);
+        Knopf(cut, "Auslegung…").Click();
+        Knopf(cut.FindComponent<ZapfprofilAuslegungDialog>(), "OK").Click();
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+
+        // Der Name einer Zone ändert die Auslegung nicht — der Punkt bleibt.
+        Feld(cut, "Zonenname").Input("Zone Nord");
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.False(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
+
+        // Die Bezugsgröße ändert sie: Der Punkt fällt, die leise Zeile sagt es.
+        Feld(cut, "Bezugsgröße").Input("35");
+        Assert.True(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Null(cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.Null(cut.Instance.Eingabe.Auslegung.PunktLeistungKw);
+        Assert.Equal(60, cut.Instance.Eingabe.Auslegung.SpeicherC);          // die Eingaben der Auslegung bleiben
+        Assert.Contains("überholt", cut.Find(".epos-zapfprofil-punktueberholt").TextContent);
+        Assert.Contains("Eingaben ohne Punkt", cut.Find(".epos-zapfprofil-auslegungsstand").TextContent);
+
+        // Ein neues OK der Auslegung setzt den Punkt und hebt die Marke auf.
+        Knopf(cut, "Auslegung…").Click();
+        Knopf(cut.FindComponent<ZapfprofilAuslegungDialog>(), "OK").Click();
+        Assert.False(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
+
+        // Eine neue Zone macht ihn wieder überholt; das OK trägt die Marke zum Wirt.
+        Knopf(cut, "Zone hinzufügen…").Click();
+        Assert.True(cut.Instance.Eingabe.PunktUeberholt);
+        Feld(cut, "Bezugsgröße").Input("10");
+        Option(cut, "hoch").Change("3");
+        Knopf(cut, "OK").Click();
+        Assert.True(ergebnis!.Eingabe.PunktUeberholt);
+        Assert.Null(ergebnis.Eingabe.Auslegung!.PunktVolumenL);
+    }
+
+    [Fact]
+    public void Ein_Punkt_des_Stands_beim_Oeffnen_wird_mit_einer_Zonenaenderung_ueberholt()
+    {
+        ZapfprofilDaten mitPunkt = Daten();
+        mitPunkt.MitPunkt = true;
+        var cut = Aufbauen(mitPunkt);
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
+
+        Option(cut, "hoch").Change("3");
+        Assert.True(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Null(cut.Instance.Eingabe.Auslegung);                        // die Auslegung selbst bleibt unberührt
+        Assert.Contains("beim Speichern verworfen", cut.Find(".epos-zapfprofil-punktueberholt").TextContent);
+
+        // Ohne Punkt beim Öffnen ist nichts zu überholen.
+        var ohne = Aufbauen();
+        Option(ohne, "hoch").Change("3");
+        Assert.False(ohne.Instance.Eingabe.PunktUeberholt);
+        Assert.Empty(ohne.FindAll(".epos-zapfprofil-punktueberholt"));
+    }
+
     [Fact]
     public void Esc_schliesst_bei_offener_Auslegung_nur_sie()
     {

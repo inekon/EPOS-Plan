@@ -109,6 +109,7 @@ namespace WindowsFormsApplication1
             {
                 IdProjekt = idProjekt,
                 Eingabe = AlsEingabe(stand),
+                MitPunkt = stand?.Projekt?.AuslegungVolumenL != null || stand?.Projekt?.AuslegungLeistungKw != null,
                 Stufe = ZapfprofilStufe.Einfach
             };
 
@@ -212,6 +213,9 @@ namespace WindowsFormsApplication1
                 projekt = MitAuslegung(projekt ?? ZapfprofilCtrl.ProjektVorgabe(), eingabe.Auslegung);
                 entwurf = EntwurfAus(eingabe.Auslegung);
             }
+            // Haben sich die Zonen nach der Übernahme geändert, ist der Punkt überholt: verworfen,
+            // nicht gespeichert — auch ein Punkt, den schon der Stand beim Öffnen trug.
+            if (eingabe.PunktUeberholt) projekt = OhnePunkt(projekt);
             return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), projekt) { BedarfstagEntwurf = entwurf };
         }
 
@@ -964,6 +968,7 @@ namespace WindowsFormsApplication1
             t.KnopfAuslegung = Text_("ZPG_BTN_AUSLEGUNG", t.KnopfAuslegung);
             t.StatusAuslegung = Text_("ZPG_STATUS_AUSLEGUNG", t.StatusAuslegung);
             t.AuslegungOhnePunkt = Text_("ZPG_AUSLEGUNG_OHNE_PUNKT", t.AuslegungOhnePunkt);
+            t.PunktUeberholt = Text_("ZPG_PUNKT_UEBERHOLT", t.PunktUeberholt);
             t.StatusVorschau = Text_("ZPG_STATUS_VORSCHAU", t.StatusVorschau);
             t.StatusOhneVorschau = Text_("ZPG_STATUS_OHNE_VORSCHAU", t.StatusOhneVorschau);
             return t;

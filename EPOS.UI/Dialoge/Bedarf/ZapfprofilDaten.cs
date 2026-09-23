@@ -197,12 +197,20 @@ public sealed class ZapfprofilEingabeDaten
     /// </summary>
     public ZapfprofilAuslegungEingabeDaten? Auslegung { get; set; }
 
+    /// <summary>
+    /// Haben sich die Zonen geändert, nachdem ein Auslegungspunkt übernommen war (mit OK der
+    /// Überlagerung oder schon im Stand beim Öffnen)? Dann ist der Punkt überholt: Das Speichern
+    /// verwirft ihn; ein neues OK der Überlagerung setzt die Marke zurück.
+    /// </summary>
+    public bool PunktUeberholt { get; set; }
+
     /// <summary>Eine unabhängige Kopie samt Zonen und Auslegung.</summary>
     public ZapfprofilEingabeDaten Kopie() => new()
     {
         Weg = Weg,
         Zonen = Zonen.Select(z => z.Kopie()).ToList(),
-        Auslegung = Auslegung?.Kopie()
+        Auslegung = Auslegung?.Kopie(),
+        PunktUeberholt = PunktUeberholt
     };
 }
 
@@ -399,6 +407,9 @@ public sealed class ZapfprofilDaten
 
     /// <summary>Der Arbeitsstand, mit dem der Dialog öffnet.</summary>
     public ZapfprofilEingabeDaten Eingabe { get; set; } = new();
+
+    /// <summary>Trägt der Stand beim Öffnen einen Auslegungspunkt (Projektgrößen)? Eine Zonenänderung macht ihn überholt.</summary>
+    public bool MitPunkt { get; set; }
 
     /// <summary>Die Stufe beim Öffnen.</summary>
     public ZapfprofilStufe Stufe { get; set; } = ZapfprofilStufe.Einfach;

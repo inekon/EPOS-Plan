@@ -24878,4 +24878,7 @@ Do you want to allow this?</value>
   <data name="ZPG_AUSLEGUNG_OHNE_PUNKT" xml:space="preserve">
     <value>inputs without point</value>
   </data>
+  <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
+    <value>The zones have changed — the design point is outdated and will be discarded on saving. Open “Design…” and take it over again.</value>
+  </data>
 </root>

@@ -73233,6 +73233,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen. ähnelt.
+        /// </summary>
+        public static string ZPG_PUNKT_UEBERHOLT {
+            get {
+                return ResourceManager.GetString("ZPG_PUNKT_UEBERHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zapfung ähnelt.
         /// </summary>
         public static string ZPG_REIHE_ZAPFUNG {

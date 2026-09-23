@@ -24885,4 +24885,7 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUSLEGUNG_OHNE_PUNKT" xml:space="preserve">
     <value>Eingaben ohne Punkt</value>
   </data>
+  <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
+    <value>Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.</value>
+  </data>
 </root>
