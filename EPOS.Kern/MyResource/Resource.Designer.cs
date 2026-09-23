@@ -37214,6 +37214,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stand, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist die Leitversion. Die Wahl ändert nur die Anzeige von Jahrestafel und Zahlungsstrombild, nicht die Kennzahlen; zur Wahl steht nur, wofür der letzte Rechenlauf Jahresreihen geliefert hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_STAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_STAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsreihen: Stand ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_STAND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_STAND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist der Erwartungsfall. Die Wahl ändert nur die Anzeige; trägt der Stand das Szenario nicht, steht der Erwartungsfall. Das Szenario der Kennzahlen stellt das Feld „Szenario“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_SZENARIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsreihen: Szenario ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_ZR_SZENARIO_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_ZR_SZENARIO_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_EINST_BTN_ABBRECHEN {

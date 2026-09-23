@@ -22967,6 +22967,18 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
   </data>
+  <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
+    <value>Cash flow series: version</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_ERL" xml:space="preserve">
+    <value>The version whose cash flow series block 2 of the ValERI assessment shows — by default the lead version. The choice only changes the display of the annual table and the cash flow chart, not the key figures; only versions for which the last calculation run delivered annual series can be chosen.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_NAME" xml:space="preserve">
+    <value>Cash flow series: scenario</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_ERL" xml:space="preserve">
+    <value>The scenario whose cash flow series block 2 of the ValERI assessment shows — by default the expected case. The choice only changes the display; if the version does not carry the scenario, the expected case is shown. The scenario of the key figures is set by the field “Scenario”.</value>
+  </data>
   <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
     <value>h0</value>
   </data>

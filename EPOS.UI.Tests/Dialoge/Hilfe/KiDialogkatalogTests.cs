@@ -1269,7 +1269,8 @@ public class KiDialogkatalogTests : IDisposable
             "der Seite; Zeuge ist KostenSeiteTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
             "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
-            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests",
+            "Wahlwege, den Freitext und die zwei Anzeigewahlen der Zahlungsreihen; " +
+            "Zeuge ist WirtschaftlichkeitSeiteTests",
 
         // Welle KI-F5: die drei Ausprägungen des Modulkatalogs. Ihre Felder stehen
         // NICHT im Markup — es zeichnet eine Schleife über den Feldsatz, den das

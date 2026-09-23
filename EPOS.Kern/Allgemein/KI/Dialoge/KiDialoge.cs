@@ -1299,7 +1299,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Reiterblatt „Wirtschaftlichkeit" — sechs Felder aus
+        /// Das Reiterblatt „Wirtschaftlichkeit" — acht Felder aus
         /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1314,6 +1314,11 @@ namespace WindowsFormsApplication1
         /// Seite holt sich zu jeder Wahl einen NEUEN Stand aus der Huelle und rechnet
         /// das Warnband nach. Sie bindet deshalb ueber eine Sichtklasse, die jede
         /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Die zwei Anzeigewahlen von Block 2 der ValERI-Bewertung sind drin</b>
+        /// (KI-D-Q11): Stand und Szenario der Zahlungsreihen waehlen nur, welche schon
+        /// gelieferte Jahrestafel die Seite zeigt - kein neuer Stand, kein Nachrechnen.
         /// </para>
         /// <para>
         /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
@@ -1348,7 +1353,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nicht_monetaer",
                                      "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
                                      KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
-                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_stand",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenStand",
+                                     KiDialogTexte.WseZrStandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrStandErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_szenario",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenSzenario",
+                                     KiDialogTexte.WseZrSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrSzenarioErl, leerErlaubt: true)
                 });
         }
 

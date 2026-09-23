@@ -1676,6 +1676,10 @@
         internal static string WseBErl => MyResource.Resource.KI_DLG_WSE_B_ERL;
         internal static string WseWirkungName => MyResource.Resource.WPAR_NICHT_MONETAER;
         internal static string WseWirkungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ERL;
+        internal static string WseZrStandName => MyResource.Resource.KI_DLG_WSE_ZR_STAND_NAME;
+        internal static string WseZrStandErl => MyResource.Resource.KI_DLG_WSE_ZR_STAND_ERL;
+        internal static string WseZrSzenarioName => MyResource.Resource.KI_DLG_WSE_ZR_SZENARIO_NAME;
+        internal static string WseZrSzenarioErl => MyResource.Resource.KI_DLG_WSE_ZR_SZENARIO_ERL;
 
         // ============================================== Einheiten der Welle KI-F5
 

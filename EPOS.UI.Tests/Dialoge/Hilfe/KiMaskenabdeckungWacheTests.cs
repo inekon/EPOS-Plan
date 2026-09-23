@@ -170,7 +170,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermepumpeKonfiguration", 8),
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),
-        new("WirtschaftlichkeitSeite", 7)
+        new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
+            "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen")
     };
 
     /// <summary>
