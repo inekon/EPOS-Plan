@@ -8139,3 +8139,86 @@ Regel dazu gilt künftig strikt).
 > ohne Pufferspeicher am Heizkreis als Hinweis gemeldet. Seit
 > 23.09.2026 übernehmen Kopien und Varianten keine gespeicherten
 > Wirtschaftlichkeitsergebnisse mehr als aktuell.
+
+## #445 — Administrationsdialoge Stufe 2: Zeile ist Wahl, Tastatur, Schloss, Duplizieren statt Überschreiben (23.09.2026)
+
+Anwenderzuruf „Stufe 2 der Administrationsdialoge umsetzen" mit Entscheid
+AD-Q11 (Auslieferungssätze nie überschreiben, nur duplizieren) nach dem Konzept
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`. Commits `5767e273`
+(Stufe 2 und AD-Q11), `e2fbb829` (Proben), `f6290028` (Merge in den
+Arbeitszweig), `852c42ca` (Ressourcen repariert).
+
+**Umsetzung.** V4: `Katalogliste` mit Schalter `ZeileIstWahl`, gesetzt in allen
+acht Verwaltungen (A1–A8); Wahlspalte entfällt, jede Zelle ist Klickfläche,
+Zeile 46 px (45 + 1 px Linie) als `ItemSize` und `--epos-rasterzeile`; gewählte
+Zeile mit Fläche und linkem Balken (bei ausgeblendeter erster Spalte trägt die
+Namensspalte den Balken); Zellen der gewählten Zeile tragen `aria-current`;
+Strg-Klick markiert weiter für den Vergleich; Projektdialoge und Importe
+behalten Wahlspalte und 53 px. V11: Liste ist Tabulatorhalt; ↑ ↓ Pos1 Ende
+bewegen die Wahl, Enter und Leertaste tun nichts; `epos-katalogliste.js` hält
+die Tasten vom Rollen ab und rollt die gewählte Zeile ins Bild (auch
+virtualisiert); Esc wirkt wie das Kreuz; Gelungenes in der Statuszeile der
+Fußleiste, Gescheitertes im Warnband, Rückfrage nur vor dem Löschen;
+`KatalogBrowserDialog` und `ModulKatalogDialog` halten bei geänderten Feldern
+Zeilenwechsel, Neu…, Duplizieren… und Beenden an („Speichern oder Verwerfen");
+der Modulkatalog hat Änderungserkennung und „Verwerfen" bekommen. V10: Baustein
+`Kennzeichen` (Schloss ohne Wort, Kurztext und `aria-label` „Auslieferungssatz
+– nur lesen, Duplizieren erlaubt", bei Klimadaten/Zeitreihen/Bedarfsprofilen
+ohne den Zusatz); Spalten „Auslieferung" (Bedarfsprofil) und „Schreibschutz"
+(Klimadaten) entfallen; `ModulKatalogDialog` wertet `ReadOnly` jetzt aus. V15:
+„OK" heißt „Beenden" (KatalogBrowser, Modulkatalog, Solar- und Stromganglinie),
+Reihenfolge Speichern · Verwerfen · Füller/Statuszeile · Neu… · Duplizieren… ·
+Löschen · Beenden; Kreuz und Esc = Beenden. AD-Q11: Auslieferungssatz nur
+lesend, „Speichern" weich gesperrt mit Grund; die BHKW-Rückfrage „Trotzdem
+überschreiben?" entfällt; Kern `Katalogkopie.Duplizieren` (alle Spalten außer
+ID, Bezeichner, ReadOnly per `pragma_table_info`, `ReadOnly = 0`, Transaktion)
+in allen acht Stamm-Controllern, Wärmepumpe mit Heiz- und Kühlkennlinien; Knopf
+„Duplizieren…" fragt den Namen („Name (Kopie)"/„(Kopie 2)") und wählt die Kopie
+(KatalogBrowser 4 Ausprägungen, Modulkatalog 3, Wärmepumpe). Auslieferungssätze
+außerhalb der Gerätekataloge: Brauchwasserprofile 6 von 16 (Schreibweg lehnt
+ab), Klimadaten 0, Wärmebedarf-Zeitreihen 3 von 4 (keine Felder) — dort kein
+Duplizieren laut Konzept. Neue Schlüssel (12): ADM_KOPIE_NAME,
+ADM_KOPIE_NAME_N, ADM_MSG_KOPIE_FEHLT, ADM_MSG_KOPIE_FEHLER, ADM_BTN_BEENDEN,
+ADM_BTN_DUPLIZIEREN, ADM_MSG_DUPLIZIERT, ADM_SCHLOSS, ADM_SCHLOSS_DUPLIZIEREN,
+ADM_SPEICHERN_GESPERRT, ADM_MSG_UNGESPEICHERT, ADM_LISTE_TASTEN.
+
+**Prüfung (Worktree, Stand `f6290028`).** Kern-Filter 0 Fehler; EPOS.UI.Tests 5
+346, EPOS.Kern.Tests 4 845, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen) — 0 Fehlschläge; 13 neue Kern-Tests
+(`KatalogduplizierenTests`), 17 bunit (`ZeileIstWahlTests`) plus Dialogfälle;
+Wachen Schließkreuz, Überlagerungstitel, Knopfleisten grün; Windows-Schale 0
+Fehler; SQL-Prüfer 1 653 Texte, 0 Fundstellen; Katalogprobe 45 Fälle und
+Rasterprobe 13 Fälle ohne Verstoß (Zeile 46 px, kein Umbruch, 0 px Querlauf,
+Schloss 16 × 16 in der Zelle, Tastatur wählt und rollt ins Bild, virtualisiert
+Ende → Zeile 6 653).
+
+**Nachtrag: Ressourcen repariert.** Die Vereinigung der resx-Konflikte im Merge
+`f6290028` hatte ein verwaistes `</data>` und den Schlüssel ADM_LISTE_TASTEN
+verloren; Commit `852c42ca` baut beide Sprachdateien neu aus dem Stand vor dem
+Merge plus den zwölf Schlüsseln der Stufe 2 (XML geprüft, 7 935 Schlüssel je
+Sprache), Designer neu erzeugt. **Gate auf `852c42ca`:** Kern-Filter 0 Fehler;
+EPOS.Kern.Tests 4 995, EPOS.UI.Tests 5 389, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler.
+
+**Was offen bleibt.** (1) „Beenden" schreibt offene Änderungen nicht mehr still
+zurück, sondern hält an (Konzept Administrationsdialoge 3.3). (2) Der
+Bedarfs-Projektdialog teilt das Profil der Verwaltung und zeigt statt der
+Spalte „Auslieferung" ebenfalls das Schloss. (3) Die Wärmepumpenverwaltung hat
+keine Änderungserkennung; Beenden hält dort nicht an. (4) Verwaist:
+`KatalogBrowserWege.IstGeschuetzt` (nur noch BHKW-Projektdialog),
+`KatalogBrowserProfil.ZeigtSchreibschutz`, Ressourcen ADM_SCHUTZ_FRAGE/TITEL,
+KLIMA_SP_SCHREIBSCHUTZ, KFLT_SP_AUSLIEFERUNG, aus #442 KBROW_BTN_BEARBEITEN —
+Aufräumen mit Stufe 3. (5) Heizkessel-Projektdialog bei 400 px weiter 91 px
+Querlauf (Spalte „im Projekt" ohne Rang, außerhalb des Geltungsbereichs). (6)
+Stufe 3: Leertaste und Kästchen der Mehrfachwahl (V6), Löschen eines
+Auslieferungssatzes weich sperren (V13), Duplizieren für Bedarfsprofile,
+Änderungserkennung Wärmepumpenverwaltung, Auswahlleiste und Stammblatt (V8,
+V9).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Seit 23.09.2026 wählt in den Verwaltungsdialogen ein Klick auf die Zeile
+> den Satz, die Pfeiltasten bewegen die Wahl, Esc schließt, und der Dialog
+> endet mit „Beenden". Seit 23.09.2026 tragen Auslieferungssätze ein Schloss,
+> werden nicht mehr überschrieben und lassen sich mit „Duplizieren…" als
+> eigener Satz kopieren.
