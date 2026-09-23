@@ -602,9 +602,15 @@ namespace WindowsFormsApplication1
             _bedarf.Strom.Berechnung(_kontext.Id);
             _bedarf.Waerme.Waermebedarf_berechnen(_kontext.Id, idKlima);
 
+            // Zapfprofilgenerator (Umsetzungskonzept 2.2, N8): Bricht die Wärmerechnung benannt
+            // ab, steht an Stelle der Zahl der Grund — nie eine Zahl, die nicht gerechnet ist.
+            string waerme = string.IsNullOrEmpty(_bedarf.Waerme.Fehlertext)
+                ? _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a"
+                : _bedarf.Waerme.Fehlertext;
+
             return new Zusammenfassung(
                 _kontext.Name,
-                _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a",
+                waerme,
                 _bedarf.Strom.StrombedarfGesamtMwh.ToString("F2") + " MWh/a",
                 Technologien());
         }

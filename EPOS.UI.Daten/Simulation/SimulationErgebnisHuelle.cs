@@ -504,9 +504,17 @@ namespace WindowsFormsApplication1
                 int idKlimaregion = projektCtrl.m_ID_Klimaregion;
                 if (idKlimaregion <= 0) return;
 
-                SimulationLaufCtrl.Bedarf(idProjekt, idKlimaregion,
-                                          ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
-                                          _waermebedarf, _strombedarf);
+                string grund = SimulationLaufCtrl.Bedarf(idProjekt, idKlimaregion,
+                                                         ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
+                                                         _waermebedarf, _strombedarf);
+
+                // Ein benannter Abbruch (Zapfprofilgenerator, Umsetzungskonzept 2.2, N8; oder die
+                // Stromrechnung) geht ins Protokoll — die Wärmefelder stehen dann auf 0, nicht auf
+                // einem früheren Stand. Den Grund der Wärmerechnung trägt der Kern schon als
+                // Fehlermeldung ein; nur ein anderer kommt als Warnung dazu.
+                if (!string.IsNullOrEmpty(grund) && !SimulationProtokoll.Aktuell.Fehler.Contains(grund))
+                    SimulationProtokoll.Aktuell.WarnungEinmal("bedarf-vorab-" + grund,
+                        "Der Bedarf konnte nicht vorab gerechnet werden: " + grund);
             }
             catch (Exception ex)
             {
