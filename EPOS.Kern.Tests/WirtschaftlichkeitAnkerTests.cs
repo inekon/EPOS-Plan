@@ -76,6 +76,19 @@ namespace EPOS.Kern.Tests
     /// die kein Basisprojekt trägt (Proben an 1040, 1045, 1046 mit eingesetzter
     /// Vergütung); der KWKG-Jahresbetrag ist nur ausgelagert
     /// (<see cref="KwkgJahresbetrag"/>), nicht geändert.</para>
+    ///
+    /// <para><b>ETAPPE E7c3 (Vbh nach Definition, Q5 b, Q8 b, B‑6, Brennstoff 24,
+    /// abgekündigte Katalogzeilen, Anzeigezeilen U22) — gemessen, kein Anker bewegt
+    /// sich</b> (alt = neu: 1024 −2.896.359,13 € mit Energiekosten 188.167,18 €/a, 1030
+    /// −21.895.377,28 € mit Energiekosten 1.176.906,60 €/a, Betriebskosten 99,00 €/a,
+    /// Kaskade 13.000,00 €; alle dreizehn Basisprojekte 9.519 von 9.519 Werten gleich,
+    /// nach jedem Punkt). Die Gründe: Die Vbh zählen wieder brutto wie vor E7c2/7, und
+    /// kein Basisprojekt trägt das Kennzeichen Abwärmeabfuhr; der ungerundete EV-Mix
+    /// wirkt nur mit einer Eigenverbrauchsvergütung; Brennstoff 24 nutzt kein Träger;
+    /// die zwei abgekündigten Katalogzeilen liest der Kern nicht; die benannten Fänge
+    /// (B‑6) behalten jeden Rückfall; die Energiesteuer-Vorschau rechnet auf Kopien und
+    /// ist reiner Ausweis. Der Kapitalwert 1024 ist nachgerechnet
+    /// (<see cref="Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83"/>).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitAnkerTests : IDisposable
@@ -152,7 +165,7 @@ namespace EPOS.Kern.Tests
             double bk = WirtschaftlichkeitCtrl.LiesBetriebskosten(
                 PROJEKT_KONZEPT, WirtschaftlichkeitSzenario.ERWARTET);
 
-            Assert.Equal(99.00, bk, 2);
+            Assert.Equal(99.00, bk, 2);   // E7c3: alt = neu (B‑6 benennt nur, der Rückfall bleibt)
         }
 
         // =====================================================================
@@ -193,7 +206,7 @@ namespace EPOS.Kern.Tests
                 new DbParam("@p", PROJEKT_KASKADE)).Rows[0]["s"];
             double roheSumme = roh == DBNull.Value ? 0.0 : Convert.ToDouble(roh);
 
-            Assert.Equal(13000.00, kaskade, 2);
+            Assert.Equal(13000.00, kaskade, 2);      // E7c3: alt = neu
             Assert.Equal(13000.00, roheSumme, 2);
 
             // Der Aufschlag der Kaskade gegenüber der rohen Summe — heute 0,00 €.
@@ -209,12 +222,26 @@ namespace EPOS.Kern.Tests
         ///
         /// <para><b>ABWEICHUNG ZUM KONZEPT.</b> Konzept § 6.2 nennt
         /// <b>−2.220.322,32 €</b>; gemessen am Stand vom 19.09.2026 sind es
-        /// <b>−2.896.359,13 €</b>, also <b>676.036,81 € niedriger</b>. Die
-        /// Konzeptzahl stammt von einem älteren Stand; als Ursachen kommen die
-        /// Schemaschritte 93–96 und die seither geänderten Rechenwege Kesselbrennstoff
-        /// (B‑1/#331) und Hilfsstrom (#365/#366) in Betracht. Die Differenz ist NICHT
-        /// nachgerechnet — sie wird hier nur benannt; der gemessene Wert ist der
-        /// Anker.</para>
+        /// <b>−2.896.359,13 €</b>, also <b>676.036,81 € niedriger</b>.</para>
+        ///
+        /// <para><b>ETAPPE E7c3 — nachgerechnet, der gemessene Wert ist richtig.</b> Die
+        /// Differenz zerfällt in zwei Teile, beide Datenstand, kein Rechenfehler:
+        /// (1) <b>−676.495,37 €</b> — Schemaschritt 83 (#313, 17.09.2026, Entscheide
+        /// SP‑E‑2/SP‑E‑3: die Preisanteile ZERLEGEN den Arbeitspreis) hat die aktiven
+        /// Strompreisanteile des Stromträgers (Modus „aufgeschlüsselt": Netzentgelt 6,440,
+        /// Umlagen 2,946, Stromsteuer 2,050, Konzession 0,110, Vertrieb 0,200 = 11,746
+        /// ct/kWh) in den Arbeitspreis gefaltet, 35,000 → 46,746 ct/kWh; die
+        /// Wirtschaftlichkeit rechnete sie vorher nicht (Projektschalter
+        /// <c>Aufschlaege_Anwenden</c>, mit #313 entfallen). 387,12 MWh Netzbezug ×
+        /// 0,11746 €/kWh = 45.471,12 €/a × Rentenbarwertfaktor 14,877475 (3 %, 20 a).
+        /// (2) <b>+458,56 €</b> — die Übernahme der Datenbank aus Access nach SQLite am
+        /// 02.09.2026 (FX1: „Anker-Aktualisierung −2.219.863,76, Datenstand"). Die drei
+        /// Kandidaten des Konzepts (Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366,
+        /// Schemaschritte 93–96) tragen <b>0,00 €</b> bei: Mit dem Arbeitspreis von vor
+        /// Schritt 83 rechnet der heutige Kern bitgleich den Wert vom 03.09.–14.09.2026
+        /// (B5, FX1–FX4: −2.219.863,761540025 €) — siehe
+        /// <see cref="Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83"/>. Der
+        /// gemessene Wert bleibt der Anker.</para>
         /// </summary>
         [Fact]
         public void Kapitalwert_des_Konzeptbeispiels_ist_absolut_gepinnt()
@@ -226,6 +253,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c3: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag, keine Energiesteuerwahl;
+            // die Abweichung zum Konzeptwert sind Schritt 83 und der Datenstand, siehe unten)
             // E7c2: alt = neu −2.896.359,13 € (Kennzeichen Ersatz/Restwert leer = wie bisher)
             // E7c1: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag im Projekt)
             Assert.Equal(-2896359.13, e.Kapitalwert.Value, 2);   // E7b: alt = neu (kein Tarifsatz, keine Staffel)
@@ -235,6 +264,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal(12001.00, e.Investition, 2);
             Assert.Equal(99.00, e.BetriebskostenJahr.Value, 2);
             Assert.Equal(188167.18, e.EnergiekostenJahr.Value, 2);
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3 — <b>die Abweichung zum Konzeptwert, nachgerechnet</b>. Mit dem
+        /// Arbeitspreis des Stromträgers von VOR Schemaschritt 83 (35,000 ct/kWh, die
+        /// Strompreisanteile nicht gefaltet) rechnet der heutige Kern <b>bitgleich</b> den
+        /// Kapitalwert, den B5, FX1, FX2, FX3 und FX4 vom 03.09. bis 14.09.2026 gemessen
+        /// haben: −2.219.863,761540025 €. Die Rechenwege, die seither dazugekommen sind
+        /// (Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366, Schemaschritte 93–96, E7),
+        /// bewegen diesen Wert also nicht; die 676.495,37 € bis zum Anker sind allein die
+        /// gefalteten 11,746 ct/kWh auf 387,12 MWh Netzbezug über 20 Jahre zu 3 %.
+        /// </summary>
+        [Fact]
+        public void Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Der Stromträger 60 des Projekts: Projekteinstellung und jede Preisversion
+            // mit Arbeitspreis > 0 (dieselben Stellen, die Schritt 83 gefaltet hat).
+            DataRepository.ExecuteNonQuery(
+                "UPDATE energy_project_settings SET custom_price_work = ? " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = 60",
+                new DbParam("@p", 0.35), new DbParam("@id", PROJEKT_KONZEPT));
+            DataRepository.ExecuteNonQuery(
+                "UPDATE energy_price SET arbeitspreis = ? " +
+                "WHERE id_projekt = ? AND carrier_id = 60 AND arbeitspreis > 0",
+                new DbParam("@p", 0.35), new DbParam("@id", PROJEKT_KONZEPT));
+
+            WirtschaftlichkeitErgebnis e = Rechne(PROJEKT_KONZEPT);
+
+            Assert.NotNull(e);
+            Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            Assert.Equal(-2219863.761540025, e.Kapitalwert.Value, 6);    // B5/FX1–FX4, 03.–14.09.2026
+            Assert.Equal(142696.06, e.EnergiekostenJahr.Value, 2);        // 188.167,18 − 45.471,12
+            // Der Anker minus diese Zahl: die gefalteten Anteile über 20 Jahre zu 3 %.
+            Assert.Equal(-676495.37, -2896359.13 - e.Kapitalwert.Value, 2);
         }
 
         /// <summary>
@@ -253,6 +319,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c3: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr — die Vbh
+            // brutto wie vor E7c2/7 —, keine Energiesteuerwahl, B‑6 ohne Rechenwirkung)
             // E7c2: alt = neu −21.895.377,28 € (kein Kennzeichen, keine Mischlage § 53/§ 54,
             // KWKG-Jahresbetrag nur ausgelagert)
             // E7c1: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr; Inbetriebnahme

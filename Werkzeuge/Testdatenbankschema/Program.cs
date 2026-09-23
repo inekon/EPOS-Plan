@@ -766,7 +766,9 @@ namespace Testdatenbankschema
                 GesetzKatalog.StelleKatalogSicher();
                 Console.WriteLine("Katalognachsaat - Gesetzeskatalog: " +
                                   GesetzKatalog.ZuletztNachgesaet +
-                                  " Zeile(n) nachgesaet, Generation jetzt " +
+                                  " Zeile(n) nachgesaet, " +
+                                  GesetzKatalog.ZuletztNachgepflegt +
+                                  " Zeile(n) nachgepflegt, Generation jetzt " +
                                   GesetzKatalog.AktuelleGeneration + ".");
                 foreach (string w in GesetzKatalog.SaatWarnungen)
                     Console.WriteLine("Katalognachsaat - WARNUNG: " + w);

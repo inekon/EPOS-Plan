@@ -2464,6 +2464,14 @@ namespace WindowsFormsApplication1
         /// <summary>Fortschreibung ohne Rechtsgrundlage — im Bericht als Prognose auszuweisen.</summary>
         public const string GESETZ_STATUS_PROGNOSE = "PROGNOSE";
 
+        /// <summary>
+        /// ETAPPE E7c3 (Entscheid E7c1‑Q8, 23.09.2026) — <b>abgekündigt</b>: Die Zeile hat
+        /// keinen Leser mehr, der Rechenweg fragt ihren Schlüssel nicht mehr ab. Sie bleibt
+        /// stehen (kein Löschen von Anwenderdaten) und ist als überholt erkennbar. Zwölf
+        /// Zeichen — die Länge, die <c>Tab_Gesetzesparameter.Status</c> zulässt.
+        /// </summary>
+        public const string GESETZ_STATUS_ABGEKUENDIGT = "ABGEKUENDIGT";
+
         // -------------------------------------------------------------- Einheit
         //   L3 — Einheitendisziplin: Jeder Satz steht in SEINER gesetzlichen
         //   Einheit. Die Vermischung von €/MWh, €/1.000 l und €/1.000 kg ist die
@@ -2591,10 +2599,16 @@ namespace WindowsFormsApplication1
         public const string GESETZ_KWKG_PAUSCHALE_BIS2KW_VBH = "KWKG_PAUSCHALE_BIS2KW_VBH";
         public const string GESETZ_KWKG_PAUSCHALE_GRENZE = "KWKG_PAUSCHALE_GRENZE_KW";
 
-        /// <summary>Kalenderjahr, bis zu dessen 31.12. der Dauerbetrieb aufgenommen sein muss (§ 6 Abs. 1).</summary>
+        /// <summary>Kalenderjahr, bis zu dessen 31.12. der Dauerbetrieb aufgenommen sein muss (§ 6 Abs. 1).
+        /// <b>Abgekündigt</b> (ETAPPE E7c3, <see cref="GESETZ_STATUS_ABGEKUENDIGT"/>): kein Code
+        /// liest den Schlüssel mehr — die Prüfkette nimmt <see cref="GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE"/>
+        /// und die Konstante <c>WirtschaftlichkeitCtrl.KWKG_STICHTAG_ENDE</c>.</summary>
         public const string GESETZ_KWKG_STICHTAG_DAUERBETRIEB = "KWKG_STICHTAG_DAUERBETRIEB";
 
-        /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).</summary>
+        /// <summary>Verlaengerung in Jahren bei Genehmigung oder Beauftragung bis zum Stichtag (Novelle 2025).
+        /// <b>Abgekündigt</b> (ETAPPE E7c3, <see cref="GESETZ_STATUS_ABGEKUENDIGT"/>): Seit E7c1 (A20)
+        /// endet die Frist am Katalogdatum <see cref="GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE"/>; kein
+        /// Code liest den Schlüssel mehr.</summary>
         public const string GESETZ_KWKG_REALISIERUNGSFRIST = "KWKG_REALISIERUNGSFRIST";
 
         /// <summary>

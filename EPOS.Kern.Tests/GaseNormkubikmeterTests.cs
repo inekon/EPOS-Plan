@@ -14,9 +14,11 @@ namespace EPOS.Kern.Tests
     /// fünf Stammzeilen und keine Preiszeile eines Gasträgers mehr „m³". Der Brennstoff 24
     /// führt „kWh"/„€/kWh"; ihn nutzt kein Träger, keine Preiszeile, keine Projektzuordnung
     /// und keine Umrechnungsregel (Testdatenbank 105 und 113, Anwenderdatenbank des
-    /// Rechners), sein Stamm trägt Hi = Hs = 0 — also reiner Stammtext, keine
-    /// Preisumrechnung. Die Wirkung: Die Identitätsregel eines Gases lässt sich aus dem
-    /// Stammtext ableiten (vorher −1). Die dreizehn Basisprojekte rechnen Wert für Wert
+    /// Rechners), sein Stamm trug Hi = Hs = 0 — also reiner Stammtext, keine
+    /// Preisumrechnung. (ETAPPE E7c3/6: Die Katalog-Generation 9 pflegt Hi = Hs = 1,0
+    /// nach; der Schritt selbst bleibt reiner Stammtext.) Die Wirkung: Die
+    /// Identitätsregel eines Gases lässt sich aus dem Stammtext ableiten (vorher −1).
+    /// Die dreizehn Basisprojekte rechnen Wert für Wert
     /// gleich (9.195 von 9.195 Werten samt Emissionen und frischem Lauf).</para>
     /// </summary>
     [Collection("Testdatenbank")]
@@ -51,9 +53,17 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal("kWh", Text("SELECT Einheit FROM Tab_Brennstoff_Stamm WHERE ID = 24"));
             Assert.Equal("€/kWh", Text("SELECT PreisEinheit FROM Tab_Brennstoff_Stamm WHERE ID = 24"));
-            // Die Heizwerte des Stamms bleiben (Hi = Hs = 0; nur der Text wandert).
-            Assert.Equal(0.0, Zahl("SELECT Hi FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 9);
-            Assert.Equal(0.0, Zahl("SELECT Hs FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 9);
+            // Die Heizwerte des Stamms rührt Schritt 113 nicht an — er zieht nur den Text.
+            // ETAPPE E7c3/6: Die Katalog-Generation 9 pflegt beim Brennstoff 24 Hi = Hs = 1,0
+            // nach (wie Strom und Fernwärme: kWh ist hier die Energie selbst), damit ein neu
+            // zugeordneter Träger keinen Heizwert 0 bekommt; die Testdatenbank steht seit
+            // E7c3/12 auf Generation 9. Der Aufruf hält den Fall auch auf einer Kopie vor der
+            // Generation 9 richtig (auf Generation 9 tut er nichts).
+            // alt (E7c2/10, Stammtext allein): Hi = Hs = 0; neu: Hi = Hs = 1,0.
+            GesetzKatalog.StelleKatalogSicher();
+            Assert.Equal(GesetzKatalog.SONSTIGE_HEIZWERT, Zahl("SELECT Hi FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 9);
+            Assert.Equal(GesetzKatalog.SONSTIGE_HEIZWERT, Zahl("SELECT Hs FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 9);
+            Assert.Equal(1.0, GesetzKatalog.SONSTIGE_HEIZWERT);
 
             Assert.Equal(0, GaseNormkubikmeter.Offen());
             Assert.Equal("Nm³", Text("SELECT arbeitspreis_unit FROM energy_price WHERE id = 10141"));

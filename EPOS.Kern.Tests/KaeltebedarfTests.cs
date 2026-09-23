@@ -16,12 +16,14 @@ namespace EPOS.Kern.Tests
     /// <see cref="SimulationKaeltebedarf"/> und der Projektschalter.
     ///
     /// <para><b>Die Rechenproben aus 10.2</b> — „Bestandsweg-Gebäude liefert Kältebedarf 0 mit
-    /// Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen" — dazu Parität,
-    /// Leistungsgrenze, Energiebilanz, Vorzeichen und Abschnittsregel, die Prüfregel des
-    /// Kühlsollwerts, die Bedarfsprobe Kälte und „Projekt aus → nichts gerechnet". Die Fälle
+    /// Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen" — dazu der freie Lauf ohne
+    /// wirksame Kühlung und seine Parität (Entscheid E32), Leistungsgrenze, Energiebilanz,
+    /// Vorzeichen und Abschnittsregel, die Prüfregel des Kühlsollwerts, die Bedarfsprobe Kälte
+    /// und „Projekt aus → nichts gerechnet". Die Fälle
     /// ohne Datenbank rechnen das Probegebäude der Rechenschritte; die Fälle mit Datenbank
-    /// schalten die Kühlung an einer Arbeitskopie ein (Referenzprojekte bleiben in der
-    /// Testdatenbank aus).</para>
+    /// schalten die Kühlung an einer Arbeitskopie ein (die Referenzprojekte, die sie benutzen,
+    /// sind in der Testdatenbank aus; eingeschaltet ist allein 1017, das Referenzprojekt mit
+    /// Kühlung).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class KaeltebedarfTests : IDisposable
@@ -63,7 +65,10 @@ namespace EPOS.Kern.Tests
             return g;
         }
 
-        /// <summary>K10/7.2: Ohne Projektschalter rechnet ein Gebäude mit Kühleingaben wie ohne sie.</summary>
+        /// <summary>
+        /// K10/7.2 und E32: Ohne Projektschalter rechnet ein Gebäude mit Kühleingaben wie ohne sie —
+        /// es wird nicht gekühlt, läuft frei (keine obere Grenze) und hat keine Kühlreihe.
+        /// </summary>
         [Fact]
         public void Ohne_Projektschalter_rechnet_das_Gebaeude_wie_ohne_Kuehleingaben()
         {
@@ -71,45 +76,72 @@ namespace EPOS.Kern.Tests
             GebaeudeModellErgebnis mit = Rechnen(Gekuehlt(22.0, 0.5), false, out GebaeudeModellEingang e);
 
             Assert.False(e.KuehlungWirksam);
-            Assert.Equal(24.0, e.KuehlSollwert);
+            Assert.True(double.IsPositiveInfinity(e.KuehlSollwert));
             Assert.True(double.IsNaN(e.KuehlleistungMaxW));
             Assert.False(mit.KuehlungWirksam);
+            Assert.Null(mit.KuehlbedarfKwh);
+            Assert.Null(ohne.KuehlbedarfKwh);
             Assert.Equal(ohne.HeizlastW, mit.HeizlastW);
-            Assert.Equal(ohne.KuehlbedarfKwh, mit.KuehlbedarfKwh);
             Assert.Equal(ohne.Raumtemperatur, mit.Raumtemperatur);
         }
 
         /// <summary>
-        /// Paritätsprobe: Mit Kühlsollwert = oberer Raumtemperatur und ohne Grenze regelt der Löser
-        /// genau dort, wo er vorher gekappt hat — alle Reihen bitgleich, nur jetzt „wirksam".
+        /// <b>Entscheid E32 — ohne wirksame Kühlung läuft das Gebäude frei.</b> Der Löser kappt
+        /// nicht mehr an der oberen Raumtemperatur: Die Raumluft steigt im Sommer über θ_max, es
+        /// wird keine Wärme abgeführt, und es gibt keine Kühlreihe und keine Kühlkennzahlen
+        /// (<c>null</c>, „nicht verfügbar"). Die Überhitzungsstunden zählen die Stunden über θ_max
+        /// im freien Lauf — mehr als am selben Gebäude, das auf θ_max gekühlt wird, und die im
+        /// Sommer gespeicherte Wärme senkt die Heizwärme der Übergangszeit.
         /// </summary>
         [Fact]
-        public void Paritaetsprobe_Kuehlsollwert_gleich_oberer_Raumtemperatur_ist_bitgleich()
+        public void Ohne_wirksame_Kuehlung_laeuft_das_Gebaeude_frei_ueber_die_obere_Raumtemperatur()
         {
-            GebaeudeModellErgebnis ohne = Rechnen(Vdi6007Probe.Gebaeude(), true);
-            GebaeudeModellErgebnis mit = Rechnen(Gekuehlt(24.0), true, out GebaeudeModellEingang e);
+            GebaeudeModellErgebnis frei = Rechnen(Vdi6007Probe.Gebaeude(), true, out GebaeudeModellEingang e);
+            GebaeudeModellErgebnis gekuehlt = Rechnen(Gekuehlt(24.0), true);
 
-            Assert.True(e.KuehlungWirksam);
-            Assert.True(mit.KuehlungWirksam);
-            Assert.Equal(24.0, mit.KuehlSollwert);
-            Assert.Equal(ohne.HeizlastW, mit.HeizlastW);
-            Assert.Equal(ohne.KuehlbedarfKwh, mit.KuehlbedarfKwh);
-            Assert.Equal(ohne.Raumtemperatur, mit.Raumtemperatur);
-            Assert.True(mit.KuehlenergieMwh > 0.0);
+            Assert.False(e.KuehlungWirksam);
+            Assert.All(e.ThetaMax, t => Assert.True(double.IsPositiveInfinity(t)));
+            Assert.Equal(24.0, frei.ThetaMax);
+            Assert.Null(frei.KuehlSollwert);
+            Assert.Null(frei.KuehlbedarfKwh);
+            Assert.Null(frei.KuehlenergieMwh);
+            Assert.Null(frei.StundenMitKuehlbedarf);
+            Assert.Equal(0, frei.StundenHeizenUndKuehlen);
+
+            // Die Raumluft darf über θ_max steigen; gekühlt hält sie θ_max (ohne Grenze).
+            Assert.True(frei.Raumtemperatur.Max() > 24.0 + 0.1, "Der freie Lauf bleibt unter θ_max.");
+            Assert.True(gekuehlt.Raumtemperatur.Max() <= 24.0 + 1e-6);
+            Assert.True(frei.Ueberhitzungsstunden > gekuehlt.Ueberhitzungsstunden);
+            Assert.True(frei.JahresheizwaermeMwh <= gekuehlt.JahresheizwaermeMwh);
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "E32: Raumluft max. {0:F2} °C (gekühlt {1:F2} °C); Überhitzung {2} h (gekühlt {3} h); " +
+                "Heizwärme {4:F4} MWh (gekühlt {5:F4} MWh, {6:+0.00;-0.00} %); Kühlenergie gekühlt {7:F3} MWh",
+                frei.Raumtemperatur.Max(), gekuehlt.Raumtemperatur.Max(), frei.Ueberhitzungsstunden,
+                gekuehlt.Ueberhitzungsstunden, frei.JahresheizwaermeMwh, gekuehlt.JahresheizwaermeMwh,
+                100.0 * (frei.JahresheizwaermeMwh / gekuehlt.JahresheizwaermeMwh - 1.0), gekuehlt.KuehlenergieMwh));
         }
 
-        /// <summary>10.2 „Kühlsollwert sehr hoch": kein Kühlbedarf, die Heizreihe wie ohne Kappung.</summary>
+        /// <summary>
+        /// Paritätsprobe nach E32 und 10.2 „Kühlsollwert sehr hoch": Der freie Lauf ohne wirksame
+        /// Kühlung ist bitgleich mit einem gekühlten Gebäude, dessen Kühlsollwert nie erreicht
+        /// wird — Heizreihe, Raumluft, operative Temperatur und Überhitzung; der gekühlte trägt
+        /// eine Kühlreihe aus lauter Nullen, der freie keine.
+        /// </summary>
         [Fact]
-        public void Kuehlsollwert_sehr_hoch_kuehlt_nie_und_die_Heizreihe_bleibt()
+        public void Paritaetsprobe_freier_Lauf_gleich_unerreichbarem_Kuehlsollwert()
         {
-            ProjektGebaeudeModel ohneKappung = Vdi6007Probe.Gebaeude();
-            ohneKappung.Maximaleraumtemperatur = 60.0;
-            GebaeudeModellErgebnis frei = Rechnen(ohneKappung, true);
-            GebaeudeModellErgebnis hoch = Rechnen(Gekuehlt(60.0), true);
+            GebaeudeModellErgebnis frei = Rechnen(Vdi6007Probe.Gebaeude(), true);
+            GebaeudeModellErgebnis hoch = Rechnen(Gekuehlt(60.0), true, out GebaeudeModellEingang e);
 
+            Assert.True(e.KuehlungWirksam);
+            Assert.True(hoch.KuehlungWirksam);
             Assert.All(hoch.KuehlbedarfKwh, w => Assert.Equal(0.0, w));
+            Assert.Equal(0.0, hoch.KuehlenergieMwh);
+            Assert.Null(frei.KuehlbedarfKwh);
             Assert.Equal(frei.HeizlastW, hoch.HeizlastW);
             Assert.Equal(frei.Raumtemperatur, hoch.Raumtemperatur);
+            Assert.Equal(frei.OperativeTemperatur, hoch.OperativeTemperatur);
+            Assert.Equal(frei.Ueberhitzungsstunden, hoch.Ueberhitzungsstunden);
         }
 
         /// <summary>10.2 „Kühlsollwert = höchster Heizsollwert + 1 K, Winter": kein Kühlen bei Frost.</summary>
@@ -346,7 +378,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(erg.KuehlbedarfKwh, kaelte.Kaeltebedarf);
             Assert.Equal(erg.KuehlbedarfKwh.Max(), kaelte.Kaeltebedarf_Max);
             Assert.Equal(erg.StundenMitKuehlbedarf, kaelte.StundenMitKuehlbedarf);
-            Assert.Equal(erg.KuehlenergieMwh, kaelte.Kaeltebedarf_Gesamt, 12);
+            Assert.Equal(erg.KuehlenergieMwh.Value, kaelte.Kaeltebedarf_Gesamt, 12);
             Assert.Equal(kaelte.Kaeltebedarf_Gesamt, kaelte.Kaelterestbedarf);   // KU1: gedeckt von niemandem
             Assert.Equal(kaelte.Kaeltebedarf_Gesamt, kaelte.Kaeltebedarf_Monat.Sum(), 9);
             Assert.Equal(0, kaelte.Bedarfsprobe_Verletzungen);
@@ -625,13 +657,16 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// F-K4 im ganzen Lauf, und 7.4: Ein Projekt MIT Kühlung auf Parität (Kühlsollwert = obere
-        /// Raumtemperatur, ohne Grenze) rechnet die Wärmeseite bitgleich wie ohne Kühlung — kein
-        /// Wärmeerzeuger deckt Kälte, die Wärmespitze bleibt; die Kältespalten tragen Werte, die
-        /// Deckung der Wärmeerzeuger 0, die Speicherzeile bleibt leer.
+        /// F-K4 im ganzen Lauf, und 7.4 — in zwei Läufen mit Kühlbetrieb (Entscheid E32). Erstens
+        /// die Parität: Ein Kühlsollwert, der nie erreicht wird (60 °C), rechnet die Wärmeseite
+        /// bitgleich wie das Projekt ohne Kühlung, denn beide laufen frei; die Kältespalten sind
+        /// erhoben, alle übrigen Spalten gleich. Zweitens mit Kühlbedarf (24 °C): Die Kälte geht in
+        /// keinen Wärmekanal — der Wärmesummenvektor ist die Summe der drei Wärmekanäle —, die
+        /// Kältespalten tragen Werte, die Deckung der Wärmeerzeuger ist 0, die Speicherzeile bleibt
+        /// leer, und der Lauf meldet den ungedeckten Kältebedarf.
         /// </summary>
         [Fact]
-        public void Mit_Kuehlung_bleibt_die_Waermeseite_bitgleich_und_die_Kaeltespalten_tragen_Werte()
+        public void Mit_Kuehlung_bleibt_die_Waermeseite_getrennt_und_die_Kaeltespalten_tragen_Werte()
         {
             if (!_db.Vorhanden) return;
             const int PROJEKT = 1045, GEBAEUDE = 10651;
@@ -643,45 +678,62 @@ namespace EPOS.Kern.Tests
             Dictionary<string, object> energieAus = Zeile("Tab_ErgebnisEnergiebedarf", kopfAus);
             Dictionary<string, object> wpAus = Zeile("Tab_ErgebnisWaermepumpe", kopfAus);
 
-            GebaeudeKuehlen(GEBAEUDE, 24.0);
+            // Parität: Kühlbetrieb ein, Kühlsollwert unerreichbar - die Wärmeseite bitgleich.
+            GebaeudeKuehlen(GEBAEUDE, 60.0);
             Assert.True(KonfigurationCtrl.KuehlbetriebSchreiben(PROJEKT, true));
-            var an = new SimulationRunner();
-            int kopfAn = an.SimuliereUndSpeichere(PROJEKT, out string fehlerAn);
-            Assert.True(kopfAn > 0, fehlerAn);
-            SimulationKaeltebedarf k = an.simulation_Kaeltebedarf;
-            Assert.True(k.Gerechnet);
-            Assert.True(k.Kaeltebedarf_Gesamt > 0.0);
+            var hoch = new SimulationRunner();
+            int kopfHoch = hoch.SimuliereUndSpeichere(PROJEKT, out string fehlerHoch);
+            Assert.True(kopfHoch > 0, fehlerHoch);
+            Assert.True(hoch.simulation_Kaeltebedarf.Gerechnet);
+            Assert.Equal(0.0, hoch.simulation_Kaeltebedarf.Kaeltebedarf_Gesamt);
+            Assert.Equal(aus.simulation_Waermebedarf.Waermebedarf, hoch.simulation_Waermebedarf.Waermebedarf);
+            Assert.Equal(aus.simulation_Waermebedarf.Waermebedarf_Max, hoch.simulation_Waermebedarf.Waermebedarf_Max);
+            Assert.Equal(aus.sim.Rest_Waermebedarf_stuendlich, hoch.sim.Rest_Waermebedarf_stuendlich);
+            Assert.Equal(aus.sim.RestwaermeMwh, hoch.sim.RestwaermeMwh);
 
-            // Wärmeseite bitgleich.
-            Assert.Equal(aus.simulation_Waermebedarf.Waermebedarf, an.simulation_Waermebedarf.Waermebedarf);
-            Assert.Equal(aus.simulation_Waermebedarf.Waermebedarf_Max, an.simulation_Waermebedarf.Waermebedarf_Max);
-            Assert.Equal(aus.sim.Rest_Waermebedarf_stuendlich, an.sim.Rest_Waermebedarf_stuendlich);
-            Assert.Equal(aus.sim.RestwaermeMwh, an.sim.RestwaermeMwh);
-
-            // Die Ergebniszeilen: alte Spalten gleich, die Kältespalten mit Wert.
-            Dictionary<string, object> energieAn = Zeile("Tab_ErgebnisEnergiebedarf", kopfAn);
+            // Die Ergebniszeilen: alte Spalten gleich, die Kältespalten erhoben. Gelesen wird vor dem
+            // nächsten Lauf - er ersetzt das gespeicherte Ergebnis des Projekts.
+            Dictionary<string, object> energieHoch = Zeile("Tab_ErgebnisEnergiebedarf", kopfHoch);
+            Dictionary<string, object> wpHoch = Zeile("Tab_ErgebnisWaermepumpe", kopfHoch);
             foreach (var kv in energieAus)
             {
                 if (kv.Key == "ID" || kv.Key == "ID_Ergebnis") continue;
                 if (KuehlungSchema.Ergebnisspalten.Any(s => s.Name == kv.Key))
                 {
                     Assert.Equal(DBNull.Value, kv.Value);                 // ohne Kühlung: nicht erhoben
-                    Assert.NotEqual(DBNull.Value, energieAn[kv.Key]);     // mit Kühlung: erhoben
+                    Assert.NotEqual(DBNull.Value, energieHoch[kv.Key]);   // mit Kühlbetrieb: erhoben
                 }
-                else Assert.Equal(kv.Value, energieAn[kv.Key]);
+                else Assert.True(Equals(kv.Value, energieHoch[kv.Key]), kv.Key + ": " + kv.Value + " / " + energieHoch[kv.Key]);
             }
+
+            // Mit Kühlbedarf: gekühlt auf 24 °C.
+            GebaeudeKuehlen(GEBAEUDE, 24.0);
+            var an = new SimulationRunner();
+            int kopfAn = an.SimuliereUndSpeichere(PROJEKT, out string fehlerAn);
+            Assert.True(kopfAn > 0, fehlerAn);
+            SimulationKaeltebedarf k = an.simulation_Kaeltebedarf;
+            Assert.True(k.Gerechnet);
+            Assert.True(k.Kaeltebedarf_Gesamt > 0.0);
+            Assert.Equal(an.simulation_Waermebedarf.KanaeleDrei().Summe(), an.simulation_Waermebedarf.Waermebedarf);
+
+            Dictionary<string, object> energieAn = Zeile("Tab_ErgebnisEnergiebedarf", kopfAn);
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten.Where(s => s.Tabelle == "Tab_ErgebnisEnergiebedarf"))
+                Assert.NotEqual(DBNull.Value, energieAn[s.Name]);
             double kanal = Convert.ToDouble(energieAn[KuehlungSchema.SPALTE_BEDARF_KUEHLUNG], CultureInfo.InvariantCulture);
             Assert.Equal(kanal, Convert.ToDouble(energieAn[KuehlungSchema.SPALTE_KAELTEBEDARF_GESAMT], CultureInfo.InvariantCulture));
             Assert.Equal(kanal, Convert.ToDouble(energieAn[KuehlungSchema.SPALTE_KAELTERESTBEDARF], CultureInfo.InvariantCulture));
             Assert.Equal(Math.Round(k.Kaeltebedarf_Max, 2, MidpointRounding.AwayFromZero),
                          Convert.ToDouble(energieAn[KuehlungSchema.SPALTE_KAELTELAST_MAX], CultureInfo.InvariantCulture));
 
+            // Die Wärmepumpe deckt keine Kälte: Deckung 0 mit Kühlbedarf; in der Parität alle
+            // übrigen Spalten gleich.
             Dictionary<string, object> wpAn = Zeile("Tab_ErgebnisWaermepumpe", kopfAn);
             Assert.Equal(DBNull.Value, wpAus[KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG]);
+            Assert.Equal(0.0, Convert.ToDouble(wpHoch[KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG], CultureInfo.InvariantCulture));
             Assert.Equal(0.0, Convert.ToDouble(wpAn[KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG], CultureInfo.InvariantCulture));
             foreach (var kv in wpAus)
                 if (kv.Key != "ID" && kv.Key != "ID_Ergebnis" && kv.Key != KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG)
-                    Assert.Equal(kv.Value, wpAn[kv.Key]);
+                    Assert.True(Equals(kv.Value, wpHoch[kv.Key]), kv.Key + ": " + kv.Value + " / " + wpHoch[kv.Key]);
 
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisPufferspeicher WHERE ID_Ergebnis = ? AND Entladung_Kuehlung IS NOT NULL", kopfAn));
             Assert.Contains(an.Protokoll.Warnungen, w => w.StartsWith("Kältebedarf ohne Kälteerzeuger", StringComparison.Ordinal));

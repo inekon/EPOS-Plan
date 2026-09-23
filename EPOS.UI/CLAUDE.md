@@ -77,6 +77,9 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Meint ein Vorbild nur EINE Seite, bekommt sie ein eigenes Token**, ein gemeinsames wird nicht
   gekippt: `--epos-start-*` gehört nur `Seiten/Start/*`.
 - **Jede neue Schrift-auf-Fläche-Paarung hält 4,5:1** (große fette Schrift 3:1).
+- **Eine Tabelle in einer `Stammblattgruppe` füllt deren Breite und bricht ihren Text um, statt
+  quer zu rollen** — die Hausregel „Namen brechen nicht" (`.epos-raster td`) gilt für Listen,
+  nicht für eine Tabelle aus Beschriftung und Wert im Stammblatt.
 - **bunit misst weder Farbe noch Breite noch Höhe:** Eine Stilregel wird als REGEL geprüft oder
   im Browser gemessen.
 
@@ -116,8 +119,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Stammblatt rechts (`clamp(340px, 36 %, 440px)`) neben der Liste, die über die volle Rahmenhöhe
   rollt; unter 900 px schiebt sich das Stammblatt als Blatt über Werkzeugleiste und Liste
   (`‹ Liste`, Esc führt zurück). Spalten blenden nach Rang aus (`Katalogspaltenrang`, Baustein
-  `Spaltenraenge`); eine Spalte mit gesetztem Filter oder Sortierung weicht nie. Verwaltungen ohne
-  Spaltenprofil (Gebäude, Gebäudetypen, Lastspitzenkappung) stehen außerhalb dieser Regel.
+  `Spaltenraenge`); eine Spalte mit gesetztem Filter oder Sortierung weicht nie.
 - **In den Verwaltungen ist die ZEILE die Wahl** (`Katalogliste` mit `ZeileIstWahl`): Klick oder
   Berührung auf eine Zelle wählt die Zeile, die Wahlspalte entfällt, das Zeilenmaß ist 46 statt
   53 px (`ItemSize`, `--epos-rasterzeile`); ↑ ↓ Pos1 Ende bewegen die Wahl (`epos-katalogliste.js`
@@ -206,6 +208,13 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Fußleiste öffnet eine `Ueberlagerung` mit Titel und Schließkreuz; ihr Inhalt (`.epos-einlesen`)
   bettet die vorhandene Einlesekette ein, nach dem Einlesen ist der neue Satz in der Liste
   gewählt.
+- **`ImportUeberlagerung` bündelt denselben Herstellerimport für mehrere Wirte an einer Stelle**
+  (`EPOS.UI/Dialoge/Import/`): KatalogBrowserDialog, ModulKatalogDialog und
+  `WaermepumpeStammDialog` reichen ihren Import-Parametersatz herein (BHKW hat keinen
+  Herstellerimport, also keinen Knopf). Ihre `Ueberlagerung` trägt hier KEINEN eigenen Kopf —
+  der Importdialog darin führt Titel und Kreuz selbst, weil er sein Kreuz während eines
+  laufenden Imports wegnimmt und Esc dann als „Lauf abbrechen" deutet; ein Kreuz der
+  `Ueberlagerung` schlösse mitten im Lauf.
 - **Eine Zeitreihe zeigt ihren Verlauf über GANGLINIENBLATTGRUPPE, nicht als Diagramm im
   Detailblock:** `Ganglinienblattgruppe` und `Ganglinienblatt` bringen Jahresverlauf und Herkunft
   (mit „Verwendet in“) ins Stammblatt; eine im Projekt verwendete Zeitreihe ist weich gegen

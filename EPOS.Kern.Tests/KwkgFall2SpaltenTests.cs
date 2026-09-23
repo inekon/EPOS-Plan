@@ -200,7 +200,8 @@ namespace EPOS.Kern.Tests
             return new KwkgModulNachweis
             {
                 Bezeichner = "BHKW 50 kW",
-                PelKW = 50, VbhElektrisch = 6055.2, StromBruttoMWh = 380, HilfsstromMWh = 6.22,
+                // E7c3: Vbh nach Definition, brutto 380 MWh ÷ 50 kW (E7c2: 6.055,2 aus dem KWK-Strom)
+                PelKW = 50, VbhElektrisch = 7600, StromBruttoMWh = 380, HilfsstromMWh = 6.22,
                 StromNettoMWh = 373.78, EigenMWh = 302.76,
                 SatzEigenCt = 4, SatzEinspeisungCt = 8, KontingentH = 30000,
                 Foerderbeginn = 2027, Jahr1Eur = 6200.00,

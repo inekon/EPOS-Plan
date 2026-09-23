@@ -893,4 +893,95 @@ public class ModulKatalogDialogTests : EposBunitContext
     /// <summary>Ein Knopf der Auswahlleiste nach seiner Beschriftung (Stufe 3, V8).</summary>
     private static AngleSharp.Dom.IElement Handlung(IRenderedComponent<ModulKatalogDialog> cut, string text)
         => cut.FindAll(".epos-auswahlleiste button").First(k => k.TextContent.Trim() == text);
+
+    // =================================================================================
+    // „Import…" als Zweitweg (Konzept Administrationsdialoge 7.1 d)
+    // =================================================================================
+
+    [Fact]
+    public void Ohne_Importweg_steht_kein_Importknopf()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-importknopf"));
+    }
+
+    [Fact]
+    public async Task Stromspeicher_importieren_ueber_den_Katalogimport_und_waehlen_den_neuen_Satz()
+    {
+        var zeilen = Zeilen().ToList();
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => zeilen.ToArray(),
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            KatalogImportGaben = () => new Dictionary<string, object>
+            {
+                ["Art"] = KatalogImportArt.Stromspeicher,
+                ["ProfilVorgabe"] = KatalogImportProfil.Finde(KatalogImportArt.Stromspeicher,
+                                                              EPOS.UI.Dialoge.Import.Texte.Zu),
+                ["Meldungstext"] = new Func<SpeicherEngine.PruefMeldung, string>(EPOS.UI.Dialoge.Import.Texte.Zu),
+                ["Fortschrittstext"] = new Func<ImportFortschritt, string>(EPOS.UI.Dialoge.Import.Texte.Zu)
+            }
+        };
+        var cut = Aufbauen(wege: wege);
+
+        cut.Find(".epos-importknopf").Click();
+
+        Assert.True(cut.Instance.ImportOffen);
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Null(ueberlagerung.QuerySelector(".epos-ueberlagerung-kopf"));
+        Assert.NotNull(ueberlagerung.QuerySelector(".epos-katalogimport .epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+
+        zeilen.Add(new Katalogfilterzeile(9, "Speicher Neu")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Speicher Neu"));
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Equal("Speicher Neu", cut.Instance.Gewaehlt);
+        Assert.Equal("„Speicher Neu“ eingelesen.", cut.Instance.Status);
+    }
+
+    [Fact]
+    public async Task PV_Module_importieren_ueber_den_Modulimport_und_Esc_bleibt_im_Import()
+    {
+        bool zu = false;
+        var zeilen = Zeilen().ToList();
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => zeilen.ToArray(),
+            Detail = name => Felder(ModulKatalogArt.Photovoltaik, name),
+            ModulImportGaben = () => new Dictionary<string, object>
+            {
+                ["Art"] = ModulImportArt.Photovoltaik,
+                ["Quelle"] = "CEC",
+                ["Wege"] = new EPOS.UI.Dialoge.Photovoltaik.ModulImportWege()
+            }
+        };
+        var cut = Aufbauen(ModulKatalogArt.Photovoltaik, wege, _ => zu = true);
+
+        cut.Find(".epos-importknopf").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Null(ueberlagerung.QuerySelector(".epos-ueberlagerung-kopf"));
+        Assert.NotNull(ueberlagerung.QuerySelector(".epos-pvimport .epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+
+        // Esc im Import schliesst den Import - die Verwaltung bleibt offen.
+        cut.Find(".epos-pvimport").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.False(zu);
+
+        // Zweiter Anlauf: zwei Module geschrieben.
+        cut.Find(".epos-importknopf").Click();
+        zeilen.Add(new Katalogfilterzeile(5, "Modul C").MitText(Katalogfilterprofil.SpBezeichner, "Modul C"));
+        zeilen.Add(new Katalogfilterzeile(6, "Modul D").MitText(Katalogfilterprofil.SpBezeichner, "Modul D"));
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Photovoltaik.ModulImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Equal("Modul C", cut.Instance.Gewaehlt);
+        Assert.Equal("2 Sätze eingelesen.", cut.Instance.Status);
+    }
 }

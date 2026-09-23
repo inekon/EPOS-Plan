@@ -23,19 +23,22 @@ Quelle: [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md), Abschnitt „Bedienung".
    Abbrechen eine Behauptung, die nicht stimmt.
 3. **Ein Katalogdialog ohne Arbeitsstand** (die Bearbeitung schreibt sofort in den Katalog) bietet
    kein Abbrechen an, sondern einen primären **„Beenden"**-Knopf am Ende:
-   Speichern · Verwerfen · Füller/Statuszeile · Neu… · Beenden (`KatalogBrowserDialog`,
-   `ModulKatalogDialog`; die Felder sind mit der Neuordnung der Administrationsdialoge direkt
-   bedienbar — kein eigener Editor, „Bearbeiten…" entfällt, „Verwerfen" nimmt Änderungen am
-   Stammblatt zurück). Seit der Stufe 3 der Administrationsdialoge (23.09.2026) stehen
+   Speichern · Verwerfen · Füller/Statuszeile · Neu… · Import… · Beenden (`KatalogBrowserDialog`,
+   `ModulKatalogDialog`, `WaermepumpeStammDialog`; die Felder sind mit der Neuordnung der
+   Administrationsdialoge direkt bedienbar — kein eigener Editor, „Bearbeiten…" entfällt,
+   „Verwerfen" nimmt Änderungen am Stammblatt zurück). „Import…" öffnet dort — außer beim BHKW,
+   das keinen Herstellerimport hat — den Baustein `ImportUeberlagerung` (Stufe 5 der
+   Administrationsdialoge, 23.09.2026) und steht als letzter Aktionsknopf unmittelbar links neben
+   „Beenden". Seit der Stufe 3 der Administrationsdialoge (23.09.2026) stehen
    „Duplizieren…" und „Löschen" nicht mehr in dieser Fußleiste, sondern in der `Auswahlleiste`
    über dem Stammblatt (V8: keine Handlung an zwei Orten) — „Duplizieren…" legt dort aus einem
    Auslieferungssatz einen eigenen Satz an.
 
 **Leseregel der Fußleiste,** aus den konformen Vorbildern (`KlimadatenDialog`, `ModulKatalogDialog`,
 `KatalogBrowserDialog`) abgelesen: **links vom Füller** stehen die Knöpfe, die auf den Eingabeblock
-oder eine Ansicht wirken (Speichern, Import, Grafik, Kennlinien), **rechts vom Füller** die Knöpfe, die
-auf die Liste wirken (Neu, Bearbeiten, Löschen), und ganz rechts der eine Schlussknopf. Der Schlussknopf
-ist der einzige primäre Knopf der Maske. Eine Knopfzeile **in einer Spalte oder einem Reiterblatt**
+oder eine Ansicht wirken (Speichern, Grafik, Kennlinien), **rechts vom Füller** die Knöpfe, die
+auf die Liste wirken (Neu, Bearbeiten, Löschen, Import…), und ganz rechts der eine Schlussknopf. Der
+Schlussknopf ist der einzige primäre Knopf der Maske. Eine Knopfzeile **in einer Spalte oder einem Reiterblatt**
 (die Regionsknöpfe des Klimadatendialogs, die Pfeile der `Zweispaltenauswahl`) gilt nicht als zweite
 Fußleiste, solange sie keinen primären und keinen schließenden Knopf trägt. Ein Knopf, der zu einem
 Feld gehört („Minimale haltbare Schwelle ermitteln" neben der Zielschwelle, „Neu" der Eingabezeile
@@ -55,7 +58,7 @@ Komponenten brauchen ihn (Gebäude im Projektmodus, Einstellungen, Kosten).
 | 2 | `Bedarf/GebaeudetypDialog.razor` (Gebäudetypen) | Typ hinzufügen · Typ Löschen · **Typ Speichern** (primär) · OK | **Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden** (primär) | Die Hervorhebung wandert von Speichern zu Beenden; Speichern bleibt gesperrt, solange kein änderbarer Typ gewählt ist | S | Die Gebäudetypen-Verwaltung ordnet ihre Knöpfe wie die übrigen Kataloge: Speichern links, Beenden rechts. |
 | 3 | `Bedarf/BedarfAdminDialog.razor` (Brauchwasser, Prozesswärme, Stromverbraucher) | Aktionsleiste Ändern · Neu · Typ ändern · Löschen · Grafik ohne Primär; darunter OK · Abbrechen | **Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden** (primär); keine zweite Leiste | OK/Abbrechen waren eine Behauptung (Stammkopf, Profil und Löschen schreiben sofort); der Weg „Abbrechen" entfällt, Esc/✕ schließen wie Beenden | S | Die Verwaltungen Brauchwasser, Prozesswärme und Stromverbraucher schließen mit „Beenden"; OK und Abbrechen entfallen. |
 | 4 | `Waermepumpe/WaermepumpeStammDialog.razor` (Wärmepumpen) | Kenndaten · Speichern · Neu · Löschen · Beenden, ohne Füller | **Speichern · Kennliniendaten… · Füller · Neu · Löschen · Beenden** | Nur die Anordnung ändert sich; kein Knopf fällt weg | S | Die Wärmepumpen-Verwaltung ordnet ihre Knöpfe wie die übrigen Kataloge. |
-| 5 | `Strom/PeakShavingDialog.razor` (Lastspitzenkappung) | „Berechnen" primär allein im Blatt; Fuß CSV-Export · In Variante übernehmen · Füller · Schließen | **Variante (a):** „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis, ohne Primärfarbe; Fuß **CSV-Export · In Variante übernehmen · Füller · Beenden** (primär). Variante (b) siehe DL-Q2 | Die Hervorhebung wandert vom Rechenknopf zum Schlussknopf; „In Variante übernehmen" schreibt weiter sofort (mit Rückfrage), wie heute | S | Die Lastspitzenkappung trägt einen Beenden-Knopf; „Berechnen" steht ohne Hervorhebung im Blatt. |
+| 5 | `Strom/PeakShavingDialog.razor` (Lastspitzenkappung) | „Berechnen" primär allein im Blatt; Fuß CSV-Export · In Variante übernehmen · Füller · Schließen | ✔ **umgesetzt 23.09.2026** (Stufe 5 der Administrationsdialoge, Variante a): „Berechnen" bleibt ohne Primärfarbe im Blatt zwischen Parametern und Ergebnis; Fuß **„Lastgang aus Datei…" (an der Stelle von Import…) · CSV-Export · In Variante übernehmen · Füller/Statuszeile · Beenden** (primär) | Die Hervorhebung wandert vom Rechenknopf zum Schlussknopf; „In Variante übernehmen" schreibt weiter sofort (mit Rückfrage), wie heute; ob CSV-Export und „In Variante übernehmen" in diese Fußleiste passen, ist eine offene Frage (Konzept Administrationsdialoge 7.1 c) | S | Die Lastspitzenkappung trägt einen Beenden-Knopf; „Berechnen" steht ohne Hervorhebung im Blatt. |
 | 6 | `Kosten/KostenKomponenteDialog.razor` (Kosten → Kostenvorlagen) | Reiter Kosten: Position anlegen · Übernahme… · Positionskatalog… · Nutzungsdauern vorbelegen…; Fuß Status · Abbrechen · Speichern · OK | Reiterleiste bleibt (Blattleiste des Reiters Kosten); Fuß als `SpeichernLeiste` **Status · Speichern · Abbrechen · OK** (`MitSpeichern`). Voller Arbeitsstand → DL-Q3 | Abbrechen verwirft nur die ungespeicherten Eingaben; Zeilenaktionen schreiben weiter sofort (Ids) — das steht dann in der Leiste selbst (Kurztext) | S (Variante a) / L (b) | Die Kostenverwaltung ordnet ihre Schlussleiste: Speichern, Abbrechen, OK. |
 | 7 | `Kosten/EnergietraegerDialog.razor` (Kosten → Energieträger) | Listenspalte Neu… · Variante · Löschen bzw. Übernehmen… · Entfernen; Kartenspalte „Stammwerte speichern"; Fuß Abbrechen · Speichern · OK | Listenspalte bleibt (Listenleiste); **„Stammwerte speichern" entfällt** — Bezeichnung und Gruppe gehören zur Karte und werden mit Speichern/OK geschrieben (DL-Q5); Fuß als `SpeichernLeiste` **Status · Speichern · Abbrechen · OK** | Ein Knopf fällt weg; die Hülle schreibt Stammwerte im Speichern-Weg mit; Abbrechen wie bei 6 (DL-Q3) | M | Die Energieträgerverwaltung speichert Bezeichnung und Gruppe mit „Speichern"; der eigene Knopf entfällt. |
 | 8 | `Photovoltaik/ModulImportDialog.razor` (PV Module, Wechselrichter) | Kopf Quellenwahl; „Zurücksetzen" im Blatt; Fuß Füller · **Auswahl übernehmen** (primär) · OK | Quellenwahl und Zurücksetzen bleiben im Blatt; Fuß **Füller · Auswahl übernehmen · Beenden** (primär) — DL-Q4 | Die Hervorhebung wandert von Übernehmen zu Beenden; Doppelklick übernimmt weiter eine Zeile sofort | S | PV-Modul- und Wechselrichter-Import schließen mit „Beenden". |

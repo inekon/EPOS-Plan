@@ -135,13 +135,19 @@ namespace EPOS.Kern.Tests
         //  Teil 2 - die Testdatenbank auf Stand 110
         // =============================================================================
 
+        /// <summary>Das Referenzprojekt mit Kühlung und sein Gebäude (Einfrierregel „gesäte Kältedaten").</summary>
+        private const int REFERENZ_MIT_KUEHLUNG = 1017, GEBAEUDE_MIT_KUEHLUNG = 10599;
+
         /// <summary>
-        /// Alle Strukturen stehen, und alle sind leer: Kühleingaben NULL (der Schalter 0),
-        /// <c>Kuehlbetrieb</c> in jedem Projekt 0, die Ergebnisspalten jedes gespeicherten
-        /// Laufs NULL. Die Sicht ist die geltende, und die angefassten Tabellen bleiben STRICT.
+        /// Alle Strukturen stehen, und sie tragen allein die gesäten Kältedaten des
+        /// Referenzprojekts mit Kühlung (`Referenzlaeufe/Skripte/kuehlung_1017_referenzprojekt.py`):
+        /// <c>Kuehlbetrieb</c> nur in 1017, die Kühleingaben nur an dessen Gebäude 10599 (Haken,
+        /// Kühlsollwert 24 °C, Grenze 15 kW, kein Nachtwert) — sonst NULL bzw. 0; die
+        /// Ergebnisspalten jedes gespeicherten Laufs NULL. Die Sicht ist die geltende, und die
+        /// angefassten Tabellen bleiben STRICT.
         /// </summary>
         [Fact]
-        public void Die_Testdatenbank_steht_auf_110_mit_leeren_Kuehlstrukturen()
+        public void Die_Testdatenbank_steht_auf_110_und_traegt_allein_die_gesaeten_Kaeltedaten()
         {
             if (!_db.Vorhanden) return;
 
@@ -157,11 +163,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUNG, sicht);
             Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SichtSpalten());
 
+            string ausser = " AND NOT ('{0}' = 'Tab_Gebaeude' AND ID = " +
+                            GEBAEUDE_MIT_KUEHLUNG.ToString(CultureInfo.InvariantCulture) + ")";
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehlspalten)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name +
-                                      "] IS NOT NULL AND [" + s.Name + "] <> 0"));
+                                      "] IS NOT NULL AND [" + s.Name + "] <> 0" + string.Format(ausser, s.Tabelle)));
+            DataRow g = DataRepository.GetDataTable(
+                "SELECT ID_Projekt, Kuehlung_Aktiv, Kuehl_Sollwert, Kuehlleistung_Max, Kuehl_Sollwert_Nacht FROM Tab_Gebaeude WHERE ID = ?",
+                new DbParam("?", GEBAEUDE_MIT_KUEHLUNG)).Rows[0];
+            Assert.Equal(REFERENZ_MIT_KUEHLUNG, Convert.ToInt32(g["ID_Projekt"], CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Convert.ToInt64(g["Kuehlung_Aktiv"], CultureInfo.InvariantCulture));
+            Assert.Equal(24.0, Convert.ToDouble(g["Kuehl_Sollwert"], CultureInfo.InvariantCulture));
+            Assert.Equal(15.0, Convert.ToDouble(g["Kuehlleistung_Max"], CultureInfo.InvariantCulture));
+            Assert.Equal(DBNull.Value, g["Kuehl_Sollwert_Nacht"]);
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Einstellungen") > 0);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Kuehlbetrieb <> 0"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Kuehlbetrieb <> 0"));
+            Assert.Equal(REFERENZ_MIT_KUEHLUNG, Zahl("SELECT ID_Projekt FROM Tab_Einstellungen WHERE Kuehlbetrieb <> 0"));
             foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
 

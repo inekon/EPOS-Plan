@@ -1,42 +1,48 @@
-﻿@* Gebaeudetypen-Verwaltung (iU9-W8.4).
+﻿@* Gebaeudetypen-Verwaltung (iU9-W8.4) - seit Stufe 5 der Neuordnung der
+   Administrationsdialoge (V16, Bestand A10) im Geruest der Verwaltungen.
 
-   VORBILD. Views/Gebaeude/Form_EingGebTyp (344 Z., 671 x 680, 33 Kartenzeilen,
-   6 MessageBox). Links die Typliste und die Beschreibung, daneben die
-   Kurvenliste ("Kurvenverlauf fuer den Tag:"), darunter 24 Stundenfelder und
-   das Tagesbild, unten vier Knoepfe.
+   VORBILD. Views/Gebaeude/Form_EingGebTyp (344 Z., 671 x 680): links die
+   Typliste mit rundem Wahlknopf und die Beschreibung, daneben die
+   Kurvenliste, darunter 24 Stundenfelder und das Tagesbild.
 
-   DAS EINZIGE KOPF-DETAIL-MODELL DER WELLE. Ein Typ fuehrt FUENF oder ACHT
-   Tageskurven zu je 24 Stunden. Welche Namensliste gilt, entscheidet die
-   KURVENZAHL und nicht die Listenposition - die Typliste ist alphabetisch
-   sortiert, und der 5-Kurven-Typ steht nicht immer vorn.
+   DAS EINZIGE KOPF-DETAIL-MODELL DER VERWALTUNGEN. Ein Typ fuehrt FUENF oder
+   ACHT Tageskurven zu je 24 Stunden; welche Namensliste gilt, entscheidet die
+   KURVENZAHL und nicht die Listenposition.
 
-   DER KURVENWECHSEL UEBERTRAEGT STILL. RefreshArrayValues:145 schrieb beim
-   Umschalten die 24 Felder der VORIGEN Kurve in die Verteilung zurueck - ein
-   ungueltiges oder leeres Feld liess den bisherigen Wert stehen, ohne zu
-   melden. Gemeldet wird erst am Speichern-Knopf, und dort sind alle 24 Werte
-   Pflicht ("Stunde n"). Beides steht hier genauso.
+   STUFE 5 (Konzept 3.6 Punkt 3):
+     * Die Typliste ist die KATALOGLISTE (Profil FuerGebaeudetyp: Name,
+       Tageskurven, Beschreibung) - die Zeile ist die Wahl, Kaestchen,
+       Suche und Trichter. Ein Typ, der nicht "Veraenderbar" ist, traegt das
+       SCHLOSS statt der Herleitungszeile von frueher.
+     * Das STAMMBLATT traegt die Gruppe "Tagesprofil": die Kurvenliste ist die
+       Klappliste "Kurve", darunter das Tagesbild; die 24 Stundenwerte oeffnen
+       als Ueberlagerung ("Stundenwerte...", Titel und Kreuz) - ein Editor
+       passt nicht in 340 bis 440 px (Konzept 3.6 Punkt 4). Ein Kurvenwechsel
+       mit geaenderten Werten haelt an wie ein Zeilenwechsel; der stille
+       Uebertrag des Vorlaeufers entfaellt.
+     * KENNDATEN: die Beschreibung direkt bedienbar; Speichern und Verwerfen
+       stehen in der Fussleiste, Neu... fragt Name, Beschreibung und Kurvenzahl.
+     * AUSWAHLLEISTE: Vergleichen (dieselbe Kurve zweier oder dreier Typen),
+       Duplizieren... (Kern Katalogkopie - die Kopie ist veraenderbar),
+       Loeschen (fragt zurueck; weich gesperrt fuer Auslieferungstypen und fuer
+       Typen, die Gebaeude des Katalogs fuehren).
 
-   DER AUSLIEFERUNGSBESTAND IST GESPERRT. Ist ein Typ nicht "Veraenderbar" oder
-   "ReadOnly", bleibt "Typ speichern" gesperrt. Der Vorlaeufer sagte den Grund
-   in einem gelben ToolTip ueber der Typliste; ein Tooltip ist auf einem
-   Beruehrungsgeraet nicht erreichbar, also steht er hier als Herleitungszeile
-   (A-7).
+   EINGEBETTET (Gebaeudedialog, Gebaeudeverwaltung) traegt die Ueberlagerung des
+   Wirts Titel und Kreuz; TitelText="" nimmt beide hier weg.
 
-   LOESCHEN FRAGT NACH. Der Vorlaeufer loeschte einen Gebaeudetyp OHNE
-   Rueckfrage - Kopf und 192 Datenzeilen auf einen Klick, und der Katalog gilt
-   fuer alle Projekte (A-8, wie W6 A-4).
-
-   TASTATUR: Esc schliesst wie "Beenden". Enter ist nicht belegt - drei der vier
-   Knoepfe schreiben sofort. *@
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, schmales Blatt, Dialog).
+   Enter ist nicht belegt - die Knoepfe schreiben sofort. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+@using System.Globalization
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
 @implements IDisposable
 
-<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-gebaeudetyp-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
@@ -50,125 +56,218 @@
         }
     </div>
 
-    <div class="epos-auswahlpaar">
-
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelName</h2>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <tbody>
-                        @foreach (string typ in _typen)
-                        {
-                            string t = typ;
-                            <tr class="@(t == Daten.Name ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(t == Daten.Name)" Kurztext="@LabelName"
-                                                Gewaehltwerden="() => TypWaehlen(t)" />
-                                </td>
-                                <td>@t</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
-                      NurLesen="true" Mehrzeilig="true" Zeilen="3" />
-
-            @if (!string.IsNullOrEmpty(Daten.Name) && !Daten.Aenderbar)
-            {
-                <Herleitungszeile Text="@HinweisGesperrt" />
-            }
-        </div>
-
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelKurve</h2>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <tbody>
-                        @for (int n = 0; n < Daten.Kurven; n++)
-                        {
-                            int kurve = n;
-                            <tr class="@(kurve == _kurve ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(kurve == _kurve)" Kurztext="@LabelKurve"
-                                                Gewaehltwerden="() => KurveWaehlen(kurve)" />
-                                </td>
-                                <td>@Kurvenname(kurve)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <Gruppenkopf Titel="@GruppeStunden">
-        <KindInhalt>
-            @for (int s = 0; s < 24; s++)
-            {
-                int stunde = s;
-                <Zahlenfeld Bezeichnung="@((stunde + 1).ToString())"
-                            Feldname="@Feldname(stunde)" Nachkommastellen="4"
-                            Aktiv="@(Daten.Kurven > 0)"
-                            Wert="@_felder[stunde]" WertChanged="w => _felder[stunde] = w" />
-            }
-        </KindInhalt>
-    </Gruppenkopf>
-
-    @* Das Tages-Stundenprofil im SVG-Baustein (Etappe DG-E3, Gruppe (a)): x zaehlt
-       den INDEX der Reihe, 1 … 24, keine Jahresstunde. *@
-    <DiagrammSvg Modell="@_modell" Kennung="gebaeudetyp" Bezeichnung="@GruppeStunden"
-                 PlatzhalterText="@PlatzhalterBild"
-                 Palette="@Farbpalette.Aktuell"
-                 FarbwahlErlaubt="@Farbwahl"
-                 FarbeGewaehlt="FarbeUebernehmen"
-                 FarbeZurueckgesetzt="FarbeVerwerfen" />
-
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* KATALOGMUSTER (DL-2 Nr. 2): Speichern wirkt auf den Eingabeblock und steht
-       LINKS vom Fueller, "Typ hinzufuegen" und "Typ loeschen" wirken auf die Liste
-       und stehen rechts, "Beenden" ist der eine primaere Schlussknopf - dieselbe
-       Anordnung wie in ModulKatalogDialog. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
+        <Liste>
+            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
+        </Liste>
+
+        <Auswahl>
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* TAGESPROFIL: die Klappliste "Kurve" und das Tagesbild; die 24 Werte
+                       oeffnen als Ueberlagerung. *@
+                    <Stammblattgruppe Titel="@GruppeTagesprofilText">
+                        <Kopf>
+                            <button type="button" class="epos-textknopf epos-gebaeudetyp-stundenwerte"
+                                    disabled="@(_daten.Kurven == 0)"
+                                    @onclick="StundenwerteOeffnen">@BtnStundenwerteText</button>
+                        </Kopf>
+                        <KindInhalt>
+                            <Formularraster Einspaltig="true">
+                                <KindInhalt>
+                                    <Auswahlfeld Bezeichnung="@LabelKurve" Eintraege="@Kurveneintraege"
+                                                 Auswahl="@(_daten.Kurven > 0 ? _kurve : null)"
+                                                 AuswahlChanged="BeiKurve" Aktiv="@(_daten.Kurven > 0)" />
+                                </KindInhalt>
+                            </Formularraster>
+                            @* Das Tages-Stundenprofil im SVG-Baustein (Etappe DG-E3): x zaehlt
+                               den INDEX der Reihe, 1 ... 24, keine Jahresstunde. *@
+                            <DiagrammSvg Modell="@_modell" Kennung="@("gebaeudetyp-" + _daten.Id + "-" + _kurve)"
+                                         Bezeichnung="@GruppeTagesprofilText"
+                                         PlatzhalterText="@PlatzhalterBild"
+                                         Palette="@Farbpalette.Aktuell"
+                                         FarbwahlErlaubt="@Farbwahl"
+                                         FarbeGewaehlt="FarbeUebernehmen"
+                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                            @if (_daten.Kurven > 0)
+                            {
+                                <p class="epos-stammblatt-erklaerung">@Kurvenhinweis</p>
+                            }
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    @* KENNDATEN: Name (umbenannt wird ueber Duplizieren...) und die
+                       Beschreibung, direkt bedienbar; ein Auslieferungstyp als TEXT. *@
+                    <Stammblattgruppe Titel="@Resource.ADM_SB_KENNDATEN" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Kenndatenwerte : null)">
+                        <KindInhalt>
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Textfeld Bezeichnung="@LabelName" Wert="@_daten.Name" NurLesen="true" />
+                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_arbeitBeschreibung"
+                                              WertChanged="BeiBeschreibung" Mehrzeilig="true" Zeilen="3" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Stammblattgruppe>
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller
+       (Statuszeile) - Neu... - Beenden. Duplizieren... und Loeschen stehen in der
+       Auswahlleiste, "Stundenwerte..." im Kopf der Gruppe Tagesprofil. *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf"
-                disabled="@(!TypGewaehlt || !Daten.Aenderbar)"
-                @onclick="BeiSpeichern">@BtnSpeichernText</button>
-        <span class="epos-leiste-fueller"></span>
-        <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
-        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
-                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        @if (Speichern is not null)
+        {
+            @if (_auslieferung)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@HinweisGesperrt" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                        @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                    @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
+        }
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Anlegen is not null)
+        {
+            <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@BtnSchliessenText</button>
     </div>
 
-    @* "Typ hinzufuegen" fragt Name UND Beschreibung im SELBEN Fenster (Risiko R2). *@
-    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
-                   Geschlossen="() => _namensfrage = false">
+    @* --- Die 24 Stundenwerte der gewaehlten Kurve (Konzept 3.6 Punkt 4) ----- *@
+    <Ueberlagerung Offen="@_stundenOffen" Titel="@StundenTitel" Geschlossen="StundenwerteSchliessen">
         <KindInhalt>
-            <NamensDialog TitelText="" FrageText="@LabelName"
-                          ZusatzFrageText="@LabelBeschreibung"
-                          MeldungLeer="@MeldungNameFehlt"
-                          OkText="@OkText" AbbrechenText="@AbbrechenText"
-                          ZusatzGeschlossen="b => _neueBeschreibung = b"
-                          Geschlossen="BeiNamensfrage" />
+            @if (_stundenOffen)
+            {
+                <div class="epos-stundenwerte-block">
+                    @if (_stundenMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_stundenMeldung" />
+                    }
+                    @if (_auslieferung)
+                    {
+                        <Herleitungszeile Text="@HinweisGesperrt" />
+                        <Stammblattwerte Werte="@Stundenwertwerte" />
+                    }
+                    else
+                    {
+                        <div class="epos-stundenwerte">
+                            @for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
+                            {
+                                int stunde = s;
+                                <Zahlenfeld Bezeichnung="@((stunde + 1).ToString(CultureInfo.CurrentCulture))"
+                                            Feldname="@Feldname(stunde)" Nachkommastellen="4"
+                                            Wert="@_felder[stunde]" WertChanged="w => _felder[stunde] = w" />
+                            }
+                        </div>
+                        <SpeichernLeiste OkText="@BtnUebernehmenText" AbbrechenText="@AbbrechenText"
+                                         Ergebnis="StundenwerteErgebnis" />
+                    }
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- "Neu...": Name, Beschreibung und Kurvenzahl (Konzept A10) ----------- *@
+    <Ueberlagerung Offen="@_neuOffen" Titel="@BtnNeuText" Geschlossen="() => _neuOffen = false">
+        <KindInhalt>
+            @if (_neuOffen)
+            {
+                <div class="epos-gebaeudetyp-neu">
+                    @if (_neuMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_neuMeldung" />
+                    }
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Textfeld Bezeichnung="@LabelName" Wert="@_neuName" WertChanged="w => _neuName = w ?? string.Empty" />
+                            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_neuBeschreibung"
+                                      WertChanged="w => _neuBeschreibung = w ?? string.Empty" Mehrzeilig="true" Zeilen="2" />
+                            <Optionsgruppe Bezeichnung="@LabelKurvenzahl" Eintraege="@Kurvenzahlen"
+                                           Auswahl="@_neuKurven" AuswahlChanged="k => _neuKurven = k ?? 8" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="NeuErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -- *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@LabelName"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@MeldungNameFehlt" Pruefung="NameBelegt"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="BeiDuplizierName" />
+            }
         </KindInhalt>
     </Ueberlagerung>
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText"
-                Frage="@string.Format(FrageLoeschen, Daten.Name)"
+                Frage="@_loeschfrageText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschfrage" />
 </div>
 
 @code {
-    /// <summary>Der Arbeitsstand: Kopf, Kurvennamen und die Tagesverteilungen.</summary>
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Hülle (GebaeudetypHuelle)
+    // =====================================================================
+
+    /// <summary>Ein Arbeitsstand, mit dem der Dialog beginnt (Rückfall ohne Liste).</summary>
     [Parameter] public GebaeudetypDaten Daten { get; set; } = new();
 
-    /// <summary>Die Namensliste der Gebäudetypen (<c>SetControls</c>:32).</summary>
+    /// <summary>
+    /// Die Zeilen der Typliste (<c>TagVCtrl.Katalogfilterzeilen</c>: Name, Tageskurven,
+    /// Beschreibung, das Schloss). Ohne sie baut der Dialog die Liste aus <see cref="Typen"/>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.FuerGebaeudetyp</c>; ohne sie das Profil mit den Ressourcentexten.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der Verwaltungen).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Die Namensliste der Gebäudetypen — der Rückfall ohne <see cref="Katalogzeilen"/>.</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Typen { get; set; }
 
     /// <summary>Lädt einen Gebäudetyp; <c>null</c> = es gibt ihn nicht (mehr).</summary>
@@ -177,16 +276,28 @@
     /// <summary>Schreibt die Tagesverteilungen zurück.</summary>
     [Parameter] public Func<int, double[,], bool>? Speichern { get; set; }
 
-    /// <summary>Legt einen Typ an (Kopf + 192 Nullzeilen); Rückgabe: die neue Id oder 0.</summary>
-    [Parameter] public Func<string, string, int>? Anlegen { get; set; }
+    /// <summary>Schreibt die Beschreibung eines Typs (<c>TagVCtrl.BeschreibungSchreiben</c>).</summary>
+    [Parameter] public Func<int, string, bool>? BeschreibungSpeichern { get; set; }
+
+    /// <summary>
+    /// Legt einen Typ an — Name, Beschreibung und Kurvenzahl (fünf oder acht), Kopf und
+    /// Nullzeilen in EINER Transaktion; Rückgabe: die neue Id oder 0. Ohne ihn kein „Neu…".
+    /// </summary>
+    [Parameter] public Func<string, string, int, int>? Anlegen { get; set; }
 
     /// <summary>Löscht einen Gebäudetyp — Daten vor Kopf.</summary>
     [Parameter] public Func<int, bool>? Loeschen { get; set; }
 
+    /// <summary>„Duplizieren…" (<c>TagVCtrl.Duplizieren</c>); ohne ihn keine Handlung.</summary>
+    [Parameter] public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; set; }
+
     /// <summary>
-    /// Rechnet das Zeichenmodell der 24 Stundenwerte einer Kurve; ohne Delegat bleibt
-    /// es leer.
+    /// Wie viele Gebäude des Katalogs jeden Typ führen (<c>TagVCtrl.Gebaeudeverwendung</c>)
+    /// — daran hängt die weiche Löschsperre.
     /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, int>>? Verwendung { get; set; }
+
+    /// <summary>Rechnet das Zeichenmodell der 24 Stundenwerte einer Kurve; ohne Delegat der Platzhalter.</summary>
     [Parameter] public Func<double[], Zeichenmodell?>? Bild { get; set; }
 
     /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
@@ -194,92 +305,165 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    [Parameter] public string TitelText { get; set; } = "Gebäudetypen Verwaltung";
-    [Parameter] public string LabelName { get; set; } = "Name:";
-    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelKurve { get; set; } = "Kurvenverlauf für den Tag:";
-    [Parameter] public string GruppeStunden { get; set; } = "Stundenwerteeingabe [kW, kWh oder %]";
+    [Parameter] public string TitelText { get; set; } = Resource.GTYP_TITEL;
+    [Parameter] public string LabelName { get; set; } = Resource.GEBA_LBL_NAME;
+    [Parameter] public string LabelBeschreibung { get; set; } = Resource.GEBA_LBL_BESCHREIBUNG;
+    [Parameter] public string LabelKurve { get; set; } = Resource.GTYP_LBL_KURVE_KURZ;
+    [Parameter] public string LabelKurvenzahl { get; set; } = Resource.GTYP_LBL_KURVENZAHL;
+    [Parameter] public string GruppeTagesprofilText { get; set; } = Resource.GTYP_SB_TAGESPROFIL;
     [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
 
-    [Parameter] public string BtnNeuText { get; set; } = "Typ hinzufügen";
-    [Parameter] public string BtnLoeschenText { get; set; } = "Typ löschen";
-    [Parameter] public string BtnSpeichernText { get; set; } = "Typ speichern";
-    [Parameter] public string BtnSchliessenText { get; set; } = "Beenden";
-    [Parameter] public string OkText { get; set; } = "OK";
-    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
-    [Parameter] public string JaText { get; set; } = "Ja";
-    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string BtnStundenwerteText { get; set; } = Resource.GTYP_BTN_STUNDENWERTE;
+    [Parameter] public string BtnUebernehmenText { get; set; } = Resource.GTYP_BTN_UEBERNEHMEN;
+    [Parameter] public string BtnNeuText { get; set; } = Resource.ADM_BTN_NEU;
+    [Parameter] public string BtnLoeschenText { get; set; } = Resource.PSP_TITEL_LOESCHEN;
+    [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
+    [Parameter] public string BtnSpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
+    [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
+    [Parameter] public string BtnSchliessenText { get; set; } = Resource.GTYP_BTN_BEENDEN;
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
 
     /// <summary>Die 24 Namen der Prüfmeldung („Stunde 7").</summary>
     [Parameter] public IReadOnlyList<string>? Feldnamen { get; set; }
 
-    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
-    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
-    [Parameter] public string MeldungNameBelegt { get; set; } = "Name existiert bereits!";
-    [Parameter] public string MeldungGespeichert { get; set; } = "Daten gespeichert!";
-    [Parameter] public string MeldungFehler { get; set; } = "Speichern nicht möglich!";
-    [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+    [Parameter] public string MeldungZahlFehlt { get; set; } = Resource.BTYP_MSG_ZAHL;
+    [Parameter] public string MeldungNameFehlt { get; set; } = Resource.BTYP_MSG_NAME_LEER;
+    [Parameter] public string MeldungNameBelegt { get; set; } = Resource.BTYP_MSG_NAME_BELEGT;
+    [Parameter] public string MeldungFehler { get; set; } = Resource.GTYP_MSG_FEHLER;
+    [Parameter] public string FrageLoeschen { get; set; } = Resource.BPRO_FRAGE_LOESCHEN;
 
     /// <summary>
-    /// Der Grund, aus dem „Typ speichern" gesperrt ist. Wörtlich der Tooltip des
-    /// Vorläufers (<c>listBox_Typename_SelectedIndexChanged</c>:95).
+    /// Der Grund, aus dem ein Auslieferungstyp nur lesbar ist — wörtlich der Tooltip des
+    /// Vorläufers; er steht jetzt am weich gesperrten „Speichern" und im Stundenblatt.
     /// </summary>
-    [Parameter] public string HinweisGesperrt { get; set; }
-        = "Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden";
+    [Parameter] public string HinweisGesperrt { get; set; } = Resource.GTYP_MSG_GESPERRT;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_EingGebTyp.btn_Help";
 
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private IReadOnlyList<string> _typen = Array.Empty<string>();
+    private Katalogfilterprofil? _profil;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _gewaehlt = "";
+    private bool _auslieferung;
+    private IReadOnlyDictionary<string, int> _verwendung = new Dictionary<string, int>();
+
+    /// <summary>Der GESPEICHERTE Stand des gewählten Typs (Kopf und Verteilung).</summary>
+    private GebaeudetypDaten _daten = new();
+
+    // ---- der ARBEITSSTAND: Verteilung und Beschreibung -------------------
+    private double[,] _verteilung = new double[0, GebaeudetypDaten.STUNDEN];
+    private string _arbeitBeschreibung = "";
+    private bool _geaendert;
+
     private int _kurve;
-    private readonly double?[] _felder = new double?[GebaeudetypDaten.STUNDEN];
     private Zeichenmodell? _modell;
 
-    private bool _namensfrage;
+    private bool _stundenOffen;
+    private string _stundenMeldung = "";
+    private readonly double?[] _felder = new double?[GebaeudetypDaten.STUNDEN];
+
+    private bool _neuOffen;
+    private string _neuName = "";
+    private string _neuBeschreibung = "";
+    private int? _neuKurven = 8;
+    private string _neuMeldung = "";
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+    private string _duplizierQuelle = "";
+
     private bool _loeschfrage;
-    private string _neueBeschreibung = "";
+    private string _loeschfrageText = "";
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    private readonly Zeilenauswahl _auswahl = new();
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private string _status = "";
 
-    /// <summary>Die Typliste — Prüfhilfe für die Tests.</summary>
-    public IReadOnlyList<string> Typliste => _typen;
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _loeschen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
 
-    /// <summary>Die gewählte Kurve — Prüfhilfe für die Tests.</summary>
+    private const string HERKUNFT = "__HERKUNFT";
+
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Die Typliste (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Typliste => _katalog.Select(z => z.Bezeichner).ToList();
+    /// <summary>Der gewählte Typ (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Die gewählte Kurve (Prüfhilfe).</summary>
     public int Kurvenwahl => _kurve;
-
-    /// <summary>Die 24 Felder der gewählten Kurve — Prüfhilfe für die Tests.</summary>
+    /// <summary>Die Werte der gewählten Kurve im Arbeitsstand (Prüfhilfe).</summary>
+    public IReadOnlyList<double> Kurvenwerte => Kurve(_verteilung, _kurve);
+    /// <summary>Die 24 Felder der Stundenwerte-Überlagerung (Prüfhilfe).</summary>
     public IReadOnlyList<double?> Felder => _felder;
-
-    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    /// <summary>Die stehende Meldung (Prüfhilfe).</summary>
     public string Meldung => _meldung;
-
-    /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
-    public bool Namensfrage => _namensfrage;
-
-    /// <summary>Steht die Löschrückfrage? Prüfhilfe für die Tests.</summary>
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
+    public string Status => _status;
+    /// <summary>Trägt das Stammblatt geänderte Werte? (Prüfhilfe)</summary>
+    public bool Geaendert => _geaendert;
+    /// <summary>Steht die Überlagerung der Stundenwerte? (Prüfhilfe)</summary>
+    public bool StundenwerteOffen => _stundenOffen;
+    /// <summary>Steht die Abfrage „Neu…"? (Prüfhilfe)</summary>
+    public bool Namensfrage => _neuOffen;
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
     public bool Loeschfrage => _loeschfrage;
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
 
-    private bool TypGewaehlt => !string.IsNullOrEmpty(Daten.Name);
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.FuerGebaeudetyp(s => Resource.ResourceManager.GetString(s) ?? s);
 
-    private string Kurvenname(int n)
-        => (Daten.Kurvennamen is not null && Daten.Kurvennamen.Count > n)
-            ? Daten.Kurvennamen[n] : "";
-
-    private string Feldname(int stunde)
-        => (Feldnamen is not null && Feldnamen.Count > stunde)
-            ? Feldnamen[stunde] : "Stunde " + (stunde + 1);
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
+        _filterstand = Filterstandvorgabe
+            ?? Katalogfilterregister.Stand(Profil.Schluessel);
+
+        _daten = Daten ?? new GebaeudetypDaten();
         ListeLaden();
 
-        // SetControls:32 - die erste Wahl steht vorn und bekommt den Fokus.
-        if (_typen.Count > 0) TypWaehlen(_typen[0]);
-
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDETYP, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
     }
 
     // =================================================================================
@@ -290,224 +474,635 @@
     private GebaeudetypKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten. Setzen nimmt denselben Weg wie ein Klick in die
-    /// Liste: Der Typ LÄDT seinen Satz, die Kurve zeigt ihre 24 Stundenwerte.
+    /// Die Sicht des Assistenten. Setzen nimmt denselben Weg wie ein Klick: Der Typ wählt
+    /// seine Zeile, die Kurve die Klappliste.
     /// </summary>
     private GebaeudetypKiSicht KiSicht()
     {
         return _kiSicht ??= new GebaeudetypKiSicht
         {
-            TypLesen = () => Daten.Name,
-            TypSetzen = TypWaehlen,
-            TypEintraege = () => KiMaskenanmeldung.Eintraege(_typen, t => t),
+            TypLesen = () => _daten.Name,
+            TypSetzen = name => BeiZeile(SchluesselZu(name)),
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(Typliste, t => t),
 
-            KurveLesen = () => _kurve,
-            KurveSetzen = n => KurveWaehlen(n ?? 0),
-            KurveEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Kurvennamen),
+            KurveLesen = () => _daten.Kurven > 0 ? _kurve : null,
+            KurveSetzen = n => BeiKurve(n ?? 0),
+            KurveEintraege = () => KiMaskenanmeldung.Eintraege(_daten.Kurvennamen),
 
-            BeschreibungLesen = () => Daten.Beschreibung
+            BeschreibungLesen = () => _arbeitBeschreibung
         };
     }
 
     /// <summary>
-    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3): „Speichern" ist der Weg
+    /// des Knopfes „Speichern"; der Schreibschutz ist der des Satzes.
     /// </summary>
-    /// <remarks>
-    /// <para><b>„Speichern" heißt hier der Weg des Knopfes „Typ speichern"</b> — er
-    /// schreibt die 24 Stundenwerte der offenen Kurve und lässt die Maske stehen.</para>
-    /// <para><b>Der SCHREIBSCHUTZ ist der des Satzes</b> (<c>Aenderbar</c>): Die vom
-    /// Softwarehersteller gelieferten Typen lassen sich nicht ändern.</para>
-    /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
-        Schreibgeschuetzt = () => !Daten.Aenderbar,
+        Schreibgeschuetzt = () => !_daten.Aenderbar,
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
     private KiKern.KiErgebnis KiSpeichern()
     {
-        if (Speichern is null || !TypGewaehlt)
+        if (Speichern is null || _daten.Name.Length == 0)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
 
-        if (!Daten.Aenderbar) return KiKern.KiErgebnis.Abgelehnt(HinweisGesperrt);
+        if (!_daten.Aenderbar) return KiKern.KiErgebnis.Abgelehnt(HinweisGesperrt);
+        if (!_geaendert) return KiKern.KiErgebnis.Ok(_daten.Name, anzahl: 0);
 
         BeiSpeichern();
-        return _meldungStufe == WarnStufe.Warnung
+        return _meldung.Length > 0
                    ? KiKern.KiErgebnis.Abgelehnt(_meldung)
-                   : KiKern.KiErgebnis.Ok(Daten.Name, anzahl: 1);
+                   : KiKern.KiErgebnis.Ok(_daten.Name, anzahl: 1);
     }
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender || !_ersterAufbau) return;
-        _ersterAufbau = false;
-        await _wurzel.FocusAsync();
-    }
-
-    private void ListeLaden() => _typen = Typen?.Invoke() ?? Array.Empty<string>();
+    // =====================================================================
+    // Liste und Wahl
+    // =====================================================================
 
     /// <summary>
-    /// Typwahl: Kopf, Kurvenzahl, Verteilung und Kurvenliste laden; danach steht die
-    /// erste Kurve vorn (<c>listBox_Typename_SelectedIndexChanged</c>:44).
+    /// Lädt die Liste — aus den Katalogzeilen, sonst aus der blossen Namensliste — und
+    /// die Verwendung; die bisherige Wahl bleibt, sonst die erste Zeile.
     /// </summary>
-    private void TypWaehlen(string name)
+    private void ListeLaden()
     {
-        _meldung = "";
-        GebaeudetypDaten? gelesen = Lies?.Invoke(name);
-        if (gelesen is null)
+        if (Katalogzeilen is not null)
+            _katalog = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        else
+            _katalog = (Typen?.Invoke() ?? Array.Empty<string>())
+                .Select((t, i) => new Katalogfilterzeile(i + 1, t).MitText(Katalogfilterprofil.SpBezeichner, t))
+                .ToList();
+
+        _verwendung = Verwendung?.Invoke() ?? new Dictionary<string, int>();
+
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        if (_katalog.Count == 0) { TypWaehlen(""); return; }
+        TypWaehlen(_katalog.Any(z => z.Schluessel == _gewaehlt) ? _gewaehlt : _katalog[0].Schluessel);
+    }
+
+    private string SchluesselZu(string name)
+        => _katalog.FirstOrDefault(z => z.Bezeichner == name)?.Schluessel ?? name;
+
+    /// <summary>
+    /// Die Liste meldet eine Zeile. <b>Geänderte Werte halten die Wahl</b> (Konzept 3.3) —
+    /// das Warnband sagt „Speichern oder Verwerfen".
+    /// </summary>
+    private void BeiZeile(string schluessel)
+    {
+        if (_geaendert && schluessel != _gewaehlt)
         {
-            Daten = new GebaeudetypDaten();
-            _kurve = 0;
-            Felderleeren();
-            _modell = null;
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
             return;
         }
-
-        Daten = gelesen;
-        _kurve = 0;
-        KurveZeigen(0);
+        TypWaehlen(schluessel);
     }
 
     /// <summary>
-    /// Kurvenwechsel: erst der STILLE Übertrag der bisherigen 24 Felder
-    /// (<c>RefreshArrayValues</c>: ein leeres oder ungültiges Feld lässt den alten Wert
-    /// stehen und meldet NICHT), dann die neue Kurve zeigen.
+    /// Typwahl: Kopf, Kurvenzahl und Verteilung laden; danach steht die erste Kurve vorn
+    /// (<c>listBox_Typename_SelectedIndexChanged</c>:44).
     /// </summary>
-    private void KurveWaehlen(int n)
-    {
-        if (n == _kurve) return;
-        FelderStillUebernehmen();
-        _kurve = n;
-        KurveZeigen(n);
-    }
-
-    private void KurveZeigen(int n)
-    {
-        double[] werte = Daten.Kurve(n);
-        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = werte[s];
-        _modell = Bild?.Invoke(werte);
-    }
-
-    private void Felderleeren()
-    {
-        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = null;
-    }
-
-    /// <summary>Der stille Übertrag — leere und ungültige Felder bleiben außen vor.</summary>
-    private void FelderStillUebernehmen()
-    {
-        if (_kurve < 0 || _kurve >= Daten.Kurven) return;
-        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
-            if (_felder[s] is double wert) Daten.Verteilung[_kurve, s] = wert;
-    }
-
-    // =================================================================================
-    // Speichern, Anlegen, Löschen
-    // =================================================================================
-
-    /// <summary>
-    /// „Typ speichern": erst die 24 Pflichtzahlen (<c>VerteilungUebernehmen</c>:158),
-    /// dann schreiben und das Bild neu zeichnen.
-    /// </summary>
-    private void BeiSpeichern()
+    private void TypWaehlen(string schluessel)
     {
         _meldung = "";
-        if (!TypGewaehlt || !Daten.Aenderbar || Speichern is null) return;
+        _gewaehlt = schluessel ?? "";
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt);
+        string name = zeile?.Bezeichner ?? _gewaehlt;
+
+        GebaeudetypDaten? gelesen = name.Length > 0 ? Lies?.Invoke(name) : null;
+        _daten = gelesen ?? (name.Length > 0 && Lies is null && Daten.Name == name ? Daten : new GebaeudetypDaten());
+        _auslieferung = zeile?.Geschuetzt == true || (_daten.Name.Length > 0 && !_daten.Aenderbar);
+        _kurve = 0;
+        Zuruecksetzen();
+    }
+
+    /// <summary>Der Arbeitsstand wird wieder der gespeicherte (Typwahl, Verwerfen, nach dem Speichern).</summary>
+    private void Zuruecksetzen()
+    {
+        _verteilung = (double[,])_daten.Verteilung.Clone();
+        _arbeitBeschreibung = _daten.Beschreibung;
+        _geaendert = false;
+        BildHolen();
+    }
+
+    private static double[] Kurve(double[,] verteilung, int n)
+    {
+        var w = new double[GebaeudetypDaten.STUNDEN];
+        if (n < 0 || n >= verteilung.GetLength(0)) return w;
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) w[s] = verteilung[n, s];
+        return w;
+    }
+
+    private void BildHolen()
+        => _modell = _daten.Kurven > 0 ? Bild?.Invoke(Kurve(_verteilung, _kurve)) : null;
+
+    private string Kurvenname(int n)
+        => (_daten.Kurvennamen is not null && _daten.Kurvennamen.Count > n) ? _daten.Kurvennamen[n] : "";
+
+    private IReadOnlyList<(int Id, string Text)> Kurveneintraege
+        => Enumerable.Range(0, _daten.Kurven).Select(n => (n, Kurvenname(n))).ToList();
+
+    private string Feldname(int stunde)
+        => (Feldnamen is not null && Feldnamen.Count > stunde) ? Feldnamen[stunde] : "Stunde " + (stunde + 1);
+
+    /// <summary>
+    /// Die Kurvenwahl der Klappliste. <b>Geänderte Werte halten an</b> wie ein
+    /// Zeilenwechsel (Konzept 3.6 Punkt 3) — der stille Übertrag des Vorläufers entfällt.
+    /// </summary>
+    private void BeiKurve(int? n)
+    {
+        int neu = n ?? 0;
+        if (neu == _kurve || neu < 0 || neu >= _daten.Kurven) return;
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return;
+        }
+        _meldung = "";
+        _kurve = neu;
+        BildHolen();
+    }
+
+    // =====================================================================
+    // Stammblatt: Kopf, Kenndaten
+    // =====================================================================
+
+    /// <summary>„8 Tageskurven · eigener Satz".</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            if (_daten.Name.Length == 0) return "";
+            string kurven = _daten.Kurven.ToString(CultureInfo.CurrentCulture) + " " + Resource.GTYP_KZ_KURVEN;
+            return kurven + " · " + (_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+        }
+    }
+
+    /// <summary>Tageskurven, die Stunde der Spitze und die Tagessumme der gewählten Kurve.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+    {
+        get
+        {
+            if (_daten.Kurven == 0) return Array.Empty<Stammblattkennzahl>();
+            double[] w = Kurve(_verteilung, _kurve);
+            int spitze = 0;
+            for (int s = 1; s < w.Length; s++) if (w[s] > w[spitze]) spitze = s;
+            var k = CultureInfo.CurrentCulture;
+            return new[]
+            {
+                new Stammblattkennzahl(_daten.Kurven.ToString(k), Resource.GTYP_KZ_KURVEN),
+                new Stammblattkennzahl(string.Format(k, Resource.GTYP_UHR, spitze), Resource.GTYP_KZ_SPITZE),
+                new Stammblattkennzahl(w.Sum().ToString("0.##", k), Resource.GTYP_KZ_SUMME)
+            };
+        }
+    }
+
+    private string Kurvenhinweis
+        => string.Format(CultureInfo.CurrentCulture, Resource.GTYP_SB_KURVEN_HINWEIS, _daten.Kurven);
+
+    private IReadOnlyList<Stammblattwert> Kenndatenwerte => new[]
+    {
+        new Stammblattwert(LabelName, _daten.Name),
+        new Stammblattwert(LabelBeschreibung, _daten.Beschreibung)
+    };
+
+    private void BeiBeschreibung(string wert)
+    {
+        if (_auslieferung) return;
+        _arbeitBeschreibung = wert ?? "";
+        Nachziehen();
+    }
+
+    private void Nachziehen()
+    {
+        _geaendert = GeaenderteFelder > 0;
+        _meldung = "";
+        _status = "";
+    }
+
+    /// <summary>Wie viele Werte vom gespeicherten Stand abweichen (Beschreibung, Stundenwerte).</summary>
+    private int GeaenderteFelder
+    {
+        get
+        {
+            int n = string.Equals(_arbeitBeschreibung, _daten.Beschreibung, StringComparison.Ordinal) ? 0 : 1;
+            int kurven = Math.Min(_verteilung.GetLength(0), _daten.Verteilung.GetLength(0));
+            for (int k = 0; k < kurven; k++)
+                for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
+                    if (_verteilung[k, s] != _daten.Verteilung[k, s]) n++;
+            return n;
+        }
+    }
+
+    private string Aenderungshinweis
+    {
+        get
+        {
+            if (!_geaendert) return "";
+            int n = GeaenderteFelder;
+            return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
+                 : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
+        }
+    }
+
+    // =====================================================================
+    // Die Stundenwerte als Überlagerung
+    // =====================================================================
+
+    private string StundenTitel
+        => string.Format(CultureInfo.CurrentCulture, Resource.GTYP_TITEL_STUNDENWERTE, Kurvenname(_kurve));
+
+    private IReadOnlyList<Stammblattwert> Stundenwertwerte
+        => Kurve(_verteilung, _kurve)
+               .Select((w, s) => new Stammblattwert(Feldname(s), w.ToString("0.####", CultureInfo.CurrentCulture)))
+               .ToList();
+
+    private void StundenwerteOeffnen()
+    {
+        if (_daten.Kurven == 0) return;
+        double[] w = Kurve(_verteilung, _kurve);
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = w[s];
+        _stundenMeldung = "";
+        _meldung = "";
+        _stundenOffen = true;
+    }
+
+    private void StundenwerteSchliessen()
+    {
+        _stundenOffen = false;
+        _stundenMeldung = "";
+    }
+
+    /// <summary>
+    /// „Übernehmen" legt die 24 Werte in den Arbeitsstand — jeder ist Pflicht
+    /// (<c>VerteilungUebernehmen</c>:158, „Stunde n"); geschrieben wird erst mit
+    /// „Speichern". „Abbrechen" verwirft.
+    /// </summary>
+    private void StundenwerteErgebnis(bool ok)
+    {
+        if (!ok) { StundenwerteSchliessen(); return; }
+        if (_auslieferung) { StundenwerteSchliessen(); return; }
 
         for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
             if (_felder[s] is null)
             {
-                _meldung = string.Format(MeldungZahlFehlt, Feldname(s));
-                _meldungStufe = WarnStufe.Warnung;
+                _stundenMeldung = string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, Feldname(s));
                 return;
             }
 
-        FelderStillUebernehmen();
-
-        if (!Speichern(Daten.Id, Daten.Verteilung))
-        {
-            _meldung = MeldungFehler;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
-        }
-
-        KurveZeigen(_kurve);
-        _meldung = MeldungGespeichert;
-        _meldungStufe = WarnStufe.Hinweis;
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _verteilung[_kurve, s] = _felder[s]!.Value;
+        StundenwerteSchliessen();
+        Nachziehen();
+        BildHolen();
     }
 
+    // =====================================================================
+    // Speichern, Verwerfen, Neu
+    // =====================================================================
+
     /// <summary>
-    /// „Typ hinzufügen": Name UND Beschreibung, Dublettenprüfung gegen die Liste
-    /// (<c>listBox_Typename.FindString</c>), dann Kopf und 192 Nullzeilen.
+    /// „Speichern": die Verteilung (wenn sie abweicht) und die Beschreibung (wenn sie
+    /// abweicht) über die Wege der Hülle; danach liest der Typ neu und die Statuszeile
+    /// meldet es. Ein Auslieferungstyp ist weich gesperrt.
     /// </summary>
-    private void BeiNamensfrage(string? name)
+    private void BeiSpeichern()
     {
-        _namensfrage = false;
-        if (string.IsNullOrEmpty(name) || Anlegen is null) return;
+        _meldung = "";
+        if (_auslieferung) { Warnen(HinweisGesperrt); return; }
+        if (!_geaendert || _daten.Name.Length == 0) return;
 
-        foreach (string vorhanden in _typen)
-            if (string.Equals(vorhanden, name, StringComparison.Ordinal))
-            {
-                _meldung = MeldungNameBelegt;
-                _meldungStufe = WarnStufe.Warnung;
-                return;
-            }
-
-        if (Anlegen(name, _neueBeschreibung) <= 0)
+        bool verteilungAnders = GeaenderteFelder - (BeschreibungAnders ? 1 : 0) > 0;
+        if (verteilungAnders && (Speichern is null || !Speichern(_daten.Id, _verteilung)))
         {
-            _meldung = MeldungFehler;
-            _meldungStufe = WarnStufe.Warnung;
+            Warnen(MeldungFehler);
+            return;
+        }
+        if (BeschreibungAnders && (BeschreibungSpeichern is null || !BeschreibungSpeichern(_daten.Id, _arbeitBeschreibung)))
+        {
+            Warnen(MeldungFehler);
             return;
         }
 
-        _neueBeschreibung = "";
+        int kurve = _kurve;
+        _geaendert = false;
         ListeLaden();
-        TypWaehlen(name);
+        if (kurve < _daten.Kurven) { _kurve = kurve; BildHolen(); }
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
+                                DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    private bool BeschreibungAnders
+        => !string.Equals(_arbeitBeschreibung, _daten.Beschreibung, StringComparison.Ordinal);
+
+    private void BeiVerwerfen()
+    {
+        Zuruecksetzen();
+        _meldung = "";
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Kurvenzahlen => new[]
+    {
+        (8, Resource.GTYP_KURVEN_ACHT),
+        (5, Resource.GTYP_KURVEN_FUENF)
+    };
+
+    private void BeiNeu()
+    {
+        if (Anlegen is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _neuName = "";
+        _neuBeschreibung = "";
+        _neuKurven = 8;
+        _neuMeldung = "";
+        _neuOffen = true;
     }
 
     /// <summary>
-    /// „Typ löschen": Der Vorläufer löschte OHNE Rückfrage (A‑8). Der Auslieferungsbestand
-    /// bleibt gesperrt, wie dort.
+    /// „Neu…" — Name, Beschreibung und Kurvenzahl; der Name ist Pflicht und frei
+    /// (<c>listBox_Typename.FindString</c>), dann Kopf und Nullzeilen.
     /// </summary>
+    private void NeuErgebnis(bool ok)
+    {
+        if (!ok) { _neuOffen = false; return; }
+        if (Anlegen is null) return;
+
+        string name = (_neuName ?? "").Trim();
+        if (name.Length == 0) { _neuMeldung = MeldungNameFehlt; return; }
+        if (NameVergeben(name)) { _neuMeldung = MeldungNameBelegt; return; }
+
+        int kurven = _neuKurven == 5 ? 5 : 8;
+        if (Anlegen(name, _neuBeschreibung ?? "", kurven) <= 0) { _neuMeldung = MeldungFehler; return; }
+
+        _neuOffen = false;
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        _gewaehlt = name;
+        ListeLaden();
+        _gewaehlt = SchluesselZu(name);
+        TypWaehlen(_gewaehlt);
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.GTYP_MSG_ANGELEGT, name, kurven);
+    }
+
+    // =====================================================================
+    // Auswahlleiste: Vergleichen, Duplizieren..., Löschen (V8)
+    // =====================================================================
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(3)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(BtnDuplizierenText, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        if (Loeschen is not null)
+            liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private Katalogfilterzeile? ZeileZu(string schluessel) => _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+
+    private bool Geschuetzt(string schluessel) => ZeileZu(schluessel)?.Geschuetzt == true;
+
+    private int Gebaeude(string schluessel)
+        => ZeileZu(schluessel) is Katalogfilterzeile z && _verwendung.TryGetValue(z.Bezeichner, out int n) ? n : 0;
+
+    /// <summary>
+    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile ein Auslieferungstyp oder von
+    /// Gebäuden des Katalogs geführt, ist der Knopf weich gesperrt; der Grund nennt die Zahl.
+    /// </summary>
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!Geschuetzt(z) && Gebaeude(z) == 0) return "";
+            int verwendet = ziele.Where(z => !Geschuetzt(z)).Select(Gebaeude).DefaultIfEmpty(0).Max();
+            return verwendet > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.GTYP_AW_LOESCHEN_VERWENDET, verwendet)
+                : Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich</b> (V12): dieselbe Kurve — die gewählte Nummer — der gewählten
+    /// Typen, Stunde für Stunde, dazu Tageskurven, Beschreibung und Herkunft.
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> schluessel = _auswahl.Gewaehlte;
+        _vergleichskoepfe = schluessel.Select(s => ZeileZu(s)?.Bezeichner ?? s).ToList();
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(schluessel.Count);
+        var k = CultureInfo.CurrentCulture;
+        foreach (string s in schluessel)
+        {
+            string name = ZeileZu(s)?.Bezeichner ?? s;
+            GebaeudetypDaten? d = Lies?.Invoke(name);
+            var felder = new List<Vergleichsfeld>
+            {
+                new("KURVEN", Resource.GTYP_KZ_KURVEN, d?.Kurven.ToString(k) ?? ""),
+                new("BESCHREIBUNG", LabelBeschreibung, d?.Beschreibung ?? ""),
+                new("KURVE", LabelKurve, d is not null && _kurve < d.Kurvennamen.Count ? d.Kurvennamen[_kurve] : "")
+            };
+            double[] w = d is null ? new double[GebaeudetypDaten.STUNDEN] : d.Kurve(_kurve);
+            for (int h = 0; h < GebaeudetypDaten.STUNDEN; h++)
+                felder.Add(new("S" + h, Feldname(h), d is null || _kurve >= d.Kurven ? "" : w[h].ToString("0.####", k)));
+            felder.Add(new(HERKUNFT, Resource.ADM_VG_HERKUNFT,
+                Geschuetzt(s) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary>
+    /// <b>„Löschen"</b> (V8, AD-Q9): wirkt auf die gewählten Zeilen, sonst auf die
+    /// Fokuszeile; Auslieferungstypen und Typen, die Gebäude führen, bleiben stehen. Der
+    /// Vorläufer löschte ohne Rückfrage (A‑8) — die Rückfrage bleibt.
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
+
+        var loeschbar = ziele.Where(z => !Geschuetzt(z) && Gebaeude(z) == 0).ToList();
+        var geschuetzt = ziele.Where(Geschuetzt).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        var verwendet = ziele.Where(z => !Geschuetzt(z) && Gebaeude(z) > 0).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = geschuetzt.Count + verwendet.Count;
+
+        var namen = loeschbar.Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        string frage = namen.Count == 1
+            ? string.Format(FrageLoeschen, namen[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            namen.Count, string.Join(", ", namen));
+        if (geschuetzt.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", geschuetzt));
+        if (verwendet.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.GTYP_LOESCHEN_BLEIBEN_VERWENDET,
+                                         string.Join(", ", verwendet));
+        _loeschfrageText = frage;
+        _loeschfrage = true;
+    }
+
     private void BeiLoeschfrage(bool? ja)
     {
         _loeschfrage = false;
-        if (ja != true || !TypGewaehlt || Loeschen is null) return;
+        if (ja != true || Loeschen is null) return;
 
-        if (!Daten.Aenderbar)
+        int geloescht = 0;
+        string einzeln = "";
+        foreach (string s in _loeschziele)
         {
-            _meldung = HinweisGesperrt;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
+            Katalogfilterzeile? z = ZeileZu(s);
+            if (z is null) continue;
+            if (Loeschen(z.Id)) { geloescht++; einzeln = z.Bezeichner; }
         }
 
-        if (!Loeschen(Daten.Id))
-        {
-            _meldung = MeldungFehler;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
-        }
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        bool fehlschlag = geloescht < _loeschziele.Count;
+        _loeschziele = new List<string>();
 
-        ListeLaden();
-        if (_typen.Count > 0) TypWaehlen(_typen[0]);
-        else { Daten = new GebaeudetypDaten(); Felderleeren(); _modell = null; }
+        if (geloescht > 0) ListeLaden();
+        if (fehlschlag) Warnen(MeldungFehler);
+        if (geloescht == 0) return;
+
+        _status = ziele == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.BADM_MSG_GELOESCHT, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
     }
+
+    private void BeiDuplizieren()
+    {
+        if (Duplizieren is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+
+        _duplizierQuelle = ziele[0];
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(ZeileZu(_duplizierQuelle)?.Bezeichner ?? _duplizierQuelle,
+                                                       NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name) => _katalog.Any(z => z.Bezeichner == name);
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
+        if (zeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = Duplizieren(zeile.Id, name);
+        if (!ergebnis.Ok)
+        {
+            Warnen(ergebnis.Meldung);
+            return;
+        }
+
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden();
+        TypWaehlen(SchluesselZu(ergebnis.Name));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_DUPLIZIERT,
+                                zeile.Bezeichner, ergebnis.Name);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        // Ueberlagerung und Rueckfrage werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _namensfrage || _loeschfrage) return Task.CompletedTask;
+        // Ueberlagerungen und Rueckfrage werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _stundenOffen || _duplizierfrage)
+            return Task.CompletedTask;
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return Schliessen();
     }
 
     /// <summary>
     /// Schließen — von „Beenden", Esc und dem Schliesskreuz gleichermaßen gerufen, immer
-    /// mit <c>true</c> (das Kreuz kopiert Esc, es erfindet keine neue Semantik).
+    /// mit <c>true</c>. Geänderte Werte halten an (Konzept 3.3).
     /// </summary>
-    private Task Schliessen() => Geschlossen.InvokeAsync(true);
+    private Task Schliessen()
+    {
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
 }

@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 23.09.2026** · Codestand `41764ab0` · `SchemaStand.Zielversion` = 113 · Schemaschritte 90–113 vergeben, neue ab **114** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 23.09.2026** · Codestand `387c2d9f` · `SchemaStand.Zielversion` = 113 · Schemaschritte 90–113 vergeben, neue ab **114** · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103 und 107 bis 110 gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -225,11 +225,13 @@ dem Knopf „Vorschlag übernehmen" bleibt am Feld; die Überlagerung „Sätze 
 (Mockup-Anhang U22) ergänzt je Größe die Wahl und die Herleitung.
 
 **Die Überlagerung „Sätze und Herkunft" trägt alle Wahlen und Sätze** (Mockup-Anhang U22; → Register
-R‑Q, Q2, R‑E7, E7‑Q2 (5), und R‑E7c1, E7c1‑Q7; umgesetzt #440 und #446). Die Gruppe „Angaben der gewählten
+R‑Q, Q2, R‑E7, E7‑Q2 (5), und R‑E7c1, E7c1‑Q7; umgesetzt #440, #446 und #452). Die Gruppe „Angaben der gewählten
 Anlage" zeigt die Zeile „KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung." bzw. „Fall 2 — Vorrichtung
 zur Abwärmeabfuhr, Stromkennzahl σ … (Herkunft)" und den Knopf „Sätze und Herkunft…"; die Gruppe Energiesteuer
 trägt den zweiten Knopf „Wahl und Herkunft…" — beide öffnen dieselbe Überlagerung „Sätze und Herkunft —
-‹Anlage›". Sie führt drei Gruppen:
+‹Anlage›". Jede Wahl steht dort als **eine Zeile** — Wahlknopf, Text und dahinter ihre Wirkung („→ 30.000 Vbh",
+„→ 5,50 €/MWh · 26.383,5 €/a"; Baustein `Optionsgruppe.Wirkungen`, ein Klick auf Text oder Wirkung wählt mit;
+Mockup-Anhang U22, umgesetzt #452). Sie führt drei Gruppen:
 
 1. **KWK-Zuschlag — diese Anlage:** die Anlagenart (§ 8) mit der Wirkung je Wahl, dem Kontingent aus
    `KwkgKontingentRechner`; der Tatbestand des § 6 Abs. 3 mit der Wirkung je Wahl, dem Eigenstromsatz aus
@@ -239,8 +241,8 @@ trägt den zweiten Knopf „Wahl und Herkunft…" — beide öffnen dieselbe Üb
    und ist ohne Grundlage weich gesperrt —; darunter „Wirkung Jahr 1" mit Menge × Satz × Deckelanteil aus dem
    gebuchten Lauf (ohne Lauf der Hinweis, dass die Wirkung nach „Berechnen" im Reiter steht).
 2. **Energiesteuer:** Geltung „Projektvorgabe für alle Anlagen" oder „nur diese Anlage", die Entlastung (keine,
-   § 53, § 53a Abs. 5, § 54) und die Aufteilung (nur § 53) je mit ihrer Wirkung, die Herkunft des Satzes und die
-   Positionen der Anlage aus dem gebuchten Lauf.
+   § 53, § 53a Abs. 5, § 54) und die Aufteilung (nur § 53) je mit Satz und Betrag im ersten Jahr aus der Vorschau des
+   Laufs (§ 3.7), die Herkunft des Satzes und die Positionen der Anlage aus dem gebuchten Lauf.
 3. **Stromsteuer — Projekt:** Unternehmensart und Modus § 9 Abs. 1 Nr. 3 je mit ihrer Wirkung, Hocheffizienz und
    räumlicher Zusammenhang, dazu Entlastung (§ 9b) und Befreiung aus dem gebuchten Lauf.
 
@@ -253,9 +255,12 @@ erscheint in der Überlagerung als eigener Wert 0, damit „Übernehmen" nicht s
 den Arbeitsstand, „Abbrechen" ändert nichts, geschrieben wird im OK-Weg des Dialogs (Anlagenspalten über
 `KwkgAnlagenCtrl.Speichere`). Die Klapplisten und die Knöpfe „Vorschlag übernehmen" des Formulars bleiben daneben
 stehen (Q2: Vorschlag am Feld und Überlagerung gelten beide). „Wirkung Jahr 1" und die KWKG-Reihe des Laufs
-rechnen denselben Ausdruck (`KwkgJahresbetrag`). Satz und Betrag der Energiesteuer zeigt die Überlagerung für die
-gebuchte Wahl, die übrigen Wahlen als Text; eine Vorschau je Wahl aus dem Kern ist entschieden (E7c2‑Q8,
-Lesart b, → Register R‑E7c2) und folgt mit E7c3.
+rechnen denselben Ausdruck (`KwkgJahresbetrag`). Satz und Betrag der Energiesteuer zeigt die Überlagerung für
+**jede** Wahl aus der Vorschau des Laufs (§ 3.7; entschieden E7c2‑Q8, Lesart b, → Register R‑E7c2; umgesetzt #452)
+— § 54 mit dem Sockel, den die Wahl auslöst, ohne Position der Grund, bei § 53 die Aufteilung mit ihrem Betrag;
+trägt der gebuchte Stand keine Vorschau (Nachweisumschlag vor Fassung 8), stehen der Text der Vorschrift und der
+Hinweis auf den nächsten Lauf. Dass die Klapplisten des Formulars neben den Zeilen der Überlagerung bleiben, ist
+gebaut und als Frage offen (E7c3‑Q7, → Register R‑E7c3).
 
 Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
 `disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
@@ -1811,7 +1816,7 @@ Netto(A)   = max(0, Brutto(A) − Hilfsstrom(A)) ;  Anteil = Netto(A) / Σ Netto
 Eigen/Einsp(A) = Projektmengen_netto × Anteil      (ohne Stundenreihen: alles Eigen)
 Fall 2(A): Eigen/Einsp(A) um Netto(A) − KWK-Strom(A) gekürzt, zuerst Einsp   (§ 2 Nr. 16, unten)
 Bonus_voll = Eigen × 10 × SatzEigen + Einsp × 10 × SatzEinsp        [€/a bei ct/kWh]
-Vbh(A)     = Bruttostrom(A) ÷ P_el(A) ;  Fall 2(A): KWK-Strom(A) ÷ P_el(A)       (E7c1‑Q2 b, unten)
+Vbh(A)     = W_a ÷ P_Nenn = erzeugte Arbeit brutto(A) ÷ P_el,Nenn(A)   in Fall 1 und Fall 2 (unten)
 
 je Jahr:  Vergütet = min(Vbh, Deckel(Jahr), Restkontingent) × (1 − Abschlag)
           Reihe[t] += Bonus_voll × Vergütet / Vbh
@@ -1830,6 +1835,16 @@ Inbetriebnahme danach bekommt keinen Zuschlag; die Herleitung nennt Fristende un
 Katalogwert, rechnet der Zuschlag ohne die Frist, mit der Zeile „ungeprüft" — keine stille Vorgabe
 (entschieden E7c1‑Q4, nach Empfehlung). Die Zuschlagsreihe läuft danach bis zum Ende des Kontingents, **eine Höchstdauer in
 Kalenderjahren gibt es nicht** (Inbetriebnahme 01.10.2026: Jahr 12 = 2037).
+
+**Die zwei Katalogzeilen der alten Frist sind abgekündigt** (E7c1‑Q8, → Register R‑E7c1; umgesetzt #452).
+`KWKG_REALISIERUNGSFRIST` (4 Jahre) und `KWKG_STICHTAG_DAUERBETRIEB` (2026) liest kein Code; sie tragen den vierten
+Status ABGEKUENDIGT neben GESICHERT, VORLAEUFIG und PROGNOSE — die Vorbelegung sät sie mit diesem Status, gelöscht wird
+nichts, Wert, Stichjahr und Quelle bleiben. In bestehende Datenbanken bringt ihn die **Katalog-Generation 9**: Sie
+sät keine Zeile, sondern pflegt bestehende nach — in jeder Datenbank mit einem Saatstand darunter genau einmal, beim
+Start oder beim ersten Katalogzugriff, ohne Schemaschritt (`GesetzKatalog.Nachpflege`); scheitert ein Schritt, steigt
+der Marker nicht, und der Grund steht in den Saatwarnungen. Dieselbe Generation setzt beim Brennstoff 24 „Sonstige"
+H_i = H_s = 1,0 (§ 5). Ob Nachpflege und vierter Status so bleiben, ist offen gestellt (E7c3‑Q2, E7c3‑Q3, → Register
+R‑E7c3; gebaut ist jeweils Lesart a).
 
 **Pauschale § 9** (≤ 2 kW): `0,04 × 60.000 × P_el`, einmalig in Index 0.
 
@@ -1872,8 +1887,8 @@ Eigen zuerst: Eigen' = max(0, E − H) ;  Einsp' = max(0, F − max(0, H − E))
 ```
 
 Das Netting wirkt **nur** auf die KWKG-Zuschlagsmengen. `StromMatrix`, § 9 Abs. 1 Nr. 3, der
-CO₂-Grenzwert und die Vollbenutzungsstunden bleiben **brutto** — ausgenommen die Vollbenutzungsstunden einer
-Anlage im zweiten Fall des § 2 Nr. 16: Sie zählen aus ihrem KWK-Strom (unten).
+CO₂-Grenzwert und die Vollbenutzungsstunden bleiben **brutto** — auch bei einer Anlage im zweiten Fall des § 2
+Nr. 16 (Vbh = W_a ÷ P_Nenn, unten).
 
 **Rechtskette.** Der Nachweis (dass die Fundstelle erst nachgetragen wurde: → Protokoll § 2.5):
 
@@ -1920,28 +1935,29 @@ es. (5) Gepflegt wird in der Überlagerung „Sätze und Herkunft" (§ 2.2).
 
 Die Herleitung je Anlage nennt Fall, σ mit Herkunft, Nutzwärme (Wärmeproduktion − Anteil am Überschuss),
 KWK-Strom und Kürzung, davon Einspeisung und Eigenverbrauch; `KwkgModulNachweis` führt dazu sieben nullbare
-Felder, die Fassung des Nachweisumschlags bleibt 7 (entschieden E7c1‑Q6, nach Empfehlung).
+Felder ohne eigene Fassung (entschieden E7c1‑Q6, nach Empfehlung); die Fassung des Nachweisumschlags ist 8, seit er
+die Energiesteuer-Vorschau trägt (§ 3.7).
 
-**Die Vollbenutzungsstunden in Fall 2 zählen aus dem KWK-Strom** (entschieden E7c1‑Q2, Lesart b, → Register
-R‑E7c1; umgesetzt #446): Vbh(A) = KWK-Strom(A) ÷ P_el(A), auf dem Ersatzweg der KWK-Strom der Gesamtanlage ÷ Σ P_el;
-Kontingentverbrauch und Jahresdeckel laufen über diese Stunden, je eine Hinweiszeile nennt sie
-(`WIRT_KWKG_FALL2_VBH`, `WIRT_KWKG_FALL2_VBH_ERSATZ`), und der Nachweis führt sie in `VbhElektrisch`. Ohne
-Kennzeichen (Fall 1) bleiben die Vollbenutzungsstunden brutto. Bindet der Jahresdeckel, entfällt die Kürzung bis
-auf den Mischsatz: Bezahlt werden Deckel × P_el zum Satz der gekürzten Mengen, bei gleichen Sätzen ist das der
-Zuschlag ohne Kürzung (Deckel × P_el × Satz); die Reihe bleibt bei zwölf Jahren (entschieden E7c2‑Q7, nach
-Empfehlung, → Register R‑E7c2). Bindet der Deckel nicht, reicht das Kontingent länger, und die Reihe wird länger.
-Eine Kürzung unter 0,01 MWh rechnet die Formel ohne Toleranz; die Herleitung nennt ihren Grund — die Rundung von
-σ bzw. der Mengen auf 0,01 MWh (`WIRT_KWKG_FALL2_RUNDUNG`; entschieden E7c1‑Q1, nach Empfehlung, mit Hinweis;
-umgesetzt #446). Mit berechnetem σ und ohne Wärmeüberschuss trifft `Nutzwärme × σ` etwa die
-Bruttoerzeugung und liegt über der Nettostromerzeugung — eine Kürzung entsteht dann erst mit Wärmeüberschuss
-oder einem gepflegten kleineren σ (Beispielprojekt: 1.953,9 × 0,845 = 1.651,2 > 1.563,2 MWh). Die
-Vollbenutzungsstunden zählen dagegen schon ohne Kürzung aus dem KWK-Strom, also nach dem Hilfsstromabzug; bei
-bindendem Deckel steigt damit der Jahresbetrag (Beispielprojekt, von Hand gerechnet: Jahr 1 32.022,2 € in Fall 1,
-33.800,2 € in Fall 2 ohne Kürzung — Rechenweg 05). Der Torwächter
-`BaueKwkgReihe` (`v.Ergebnis.BHKW.Stromproduktion` als Summe) bleibt. **Referenzprojekte:** Kein Projekt der
-Testdatenbank trägt das Kennzeichen; die dreizehn Basisprojekte sind gemessen unverändert, keine neue Basis
-(Proben an 1030 in den Protokollen E7c1 und E7c2, etwa σ 0,5: KWKG Jahr 1 7.315,96 → 6.137,94 € mit den
-Vollbenutzungsstunden aus dem Bruttostrom, 7.316,03 € mit denen aus dem KWK-Strom).
+**Die Vollbenutzungsstunden zählen in beiden Fällen brutto: Vbh = W_a ÷ P_Nenn** (Definition des Anwenders vom
+23.09.2026, die E7c1‑Q2 Lesart b präzisiert, → Register R‑E7c1; umgesetzt #452). W_a ist die jährlich erzeugte
+Arbeit — hier die elektrische Arbeit des Moduls brutto an den Generatorklemmen —, P_Nenn die installierte elektrische
+Nennleistung; die Kennzahl misst die Auslastung einer modulierend oder getaktet laufenden Anlage, hochgerechnet auf
+volle Stunden. Kontingentverbrauch, Jahresdeckel und Kontingentreihe zählen diese Stunden in Fall 1 und Fall 2
+gleich, auch auf dem Ersatzweg (erzeugte Arbeit der Gesamtanlage ÷ Σ P_el); der KWK-Strom bestimmt allein die
+bezahlte Menge. In Fall 2 nennt eine Hinweiszeile die Formel mit ihren Zahlen — „Vbh = erzeugte Arbeit ÷ P_Nenn =
+… MWh ÷ … kW = … h/a (brutto an den Klemmen, wie in Fall 1)" — und den KWK-Strom als bezahlte Menge
+(`WIRT_KWKG_FALL2_VBH`, `WIRT_KWKG_FALL2_VBH_ERSATZ`). Ohne gespeicherte Modulzahl nimmt der Rückfall
+`VbhDerAnlage` ebenso die Bruttoerzeugung. Bindet der Jahresdeckel, gilt der Deckelanteil von Fall 1, und eine
+Kürzung des Falls 2 mindert die bezahlte Menge voll (E7c2‑Q7 ist damit erledigt, → Register R‑E7c2). Eine Kürzung
+unter 0,01 MWh rechnet die Formel ohne Toleranz; die Herleitung nennt ihren Grund — die Rundung von σ bzw. der
+Mengen auf 0,01 MWh (`WIRT_KWKG_FALL2_RUNDUNG`; entschieden E7c1‑Q1, nach Empfehlung, mit Hinweis; umgesetzt
+#446). Mit berechnetem σ und ohne Wärmeüberschuss trifft `Nutzwärme × σ` etwa die Bruttoerzeugung und liegt über
+der Nettostromerzeugung — eine Kürzung entsteht dann erst mit Wärmeüberschuss oder einem gepflegten kleineren σ
+(Beispielprojekt: 1.953,9 × 0,845 = 1.651,2 > 1.563,2 MWh), und ohne Kürzung rechnet Fall 2 genau wie Fall 1
+(Beispielprojekt, von Hand gerechnet: Jahr 1 32.022,2 € — Rechenweg 05). Der Torwächter `BaueKwkgReihe`
+(`v.Ergebnis.BHKW.Stromproduktion` als Summe) bleibt. **Referenzprojekte:** Kein Projekt der Testdatenbank trägt
+das Kennzeichen; die dreizehn Basisprojekte sind gemessen unverändert, keine neue Basis (Proben an 1030 in den
+Protokollen E7c1 bis E7c3, etwa σ 0,5: KWKG Jahr 1 7.315,96 € in Fall 1, 6.137,94 € in Fall 2 bei 7.475,69 h/a).
 
 ### Einspeiseerlös
 
@@ -1977,8 +1993,10 @@ Marktprämie Jahr 1 = 13.536,00 € · § 51a = 1.812,00 €.
 der Erlös, auf Cent; die Herleitung nennt den ungerundeten Satz (`PvErloesErgebnis.EvCt`). § 51a bewertet die
 Ausfallarbeit bei fester Vergütung mit der Einspeisevergütung, die die Anlage in der Verlängerung tatsächlich
 bekäme, in der Direktvermarktung weiter mit dem anzulegenden Wert; der § 51a-Betrag bleibt ungerundet (E7c2‑Q6).
-Der Satz der Speicherbewertung (`VpvCtKwh`) nimmt noch den gerundeten Mix; ungerundet folgt er mit E7c3 (E7c2‑Q5,
-Lesart b, → Register R‑E7c2). Proben mit fester Vergütung: 1040 Erlös Jahr 1 139,832 → 139,83 €, § 51a 18,39 →
+Der Satz der Speicherbewertung (`VpvCtKwh`) nimmt bei fester Vergütung denselben ungerundeten Satz wie die
+Erlösreihe (E7c2‑Q5, Lesart b, → Register R‑E7c2; umgesetzt #452) — Rechner 100 kWp 6,03 → 6,032 ct/kWh, 750 kWp
+5,52 → 5,518933 ct/kWh; der Override bleibt, die Marktprämie rechnet weiter mit dem gerundeten anzulegenden Wert.
+Proben mit fester Vergütung: 1040 Erlös Jahr 1 139,832 → 139,83 €, § 51a 18,39 →
 17,48 €; der Rechner mit 100 kWp Jahr 1 3.207,96 → 3.209,02 €, § 51a 427,60 → 401,13 €. Kein Basisprojekt führt den
 PV-Vergütungsdialog; die Pinnung der Marktprämie (#380) bleibt gleich.
 
@@ -2045,6 +2063,19 @@ Anlage mit Stromerzeugung — ein Kessel mit § 53-Wahl rechnet ohnehin 0 und be
 Entlastungswelt (E7c2‑Q1, → Register R‑E7c2). Die Kohärenzprüfung meldet die Sperre als Warnung (§ 3.9). Probe
 an 1030 (produzierendes Gewerbe, BHKW § 53, Kessel § 54): § 54 Jahr 1 7.987,41 → 0 €; kein Basisprojekt trägt
 eine Mischlage.
+
+**Die Vorschau je Wahl** (E7c2‑Q8, Lesart b, → Register R‑E7c2; umgesetzt #452). Der Lauf rechnet für jede Anlage
+mit Brennstoff die Energiesteuer jeder wählbaren Entlastung vor — keine, § 53 voll und energetisch, § 53a Abs. 5,
+§ 54 — mit Satz, Menge und Wirkung im ersten Jahr (`SteuerGutschriftRechner.Vorschau`, Zeilen
+`EnergiesteuerVorschauZeile`). Ein zweiter Rechenweg ist das nicht: Es ist dieselbe Rechnung wie oben, auf einer
+Kopie der Steuereingabe, in der allein die Wahl dieser Anlage gesetzt ist; die Wirkung ist die Entlastung des
+Projekts mit der Wahl minus die mit „keine" für diese Anlage — Sockel und Mischlage wirken wie im Lauf, ihr Grund
+steht an der Zeile, die Eingabe des Laufs bleibt unberührt. Bei „Projektvorgabe für alle Anlagen" steht die
+Vorschau je Anlage (E7c3‑Q8, offen, → Register R‑E7c3). Sie reist im Nachweisumschlag (Fassung 8; eine ältere
+Fassung liest sich mit leerer Vorschau) und steht damit auch am gebuchten Stand; die Überlagerung „Sätze und
+Herkunft" zeigt sie in der Zeile jeder Wahl (§ 2.2). Handprobe am Beispielprojekt (Rechenweg 05,
+`EnergiesteuerVorschauTests`): § 53 voll 26.383,46 €, § 53 energetisch (Anteil 0,458) 12.079,17 €, § 53a Abs. 5
+21.202,71 €, § 54 nach dem Sockel 6.369,85 €.
 
 **Einheitenkette** — hier ist die Altanwendung um den Faktor 10 gescheitert:
 
@@ -2133,6 +2164,20 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis **mit Wert** — der Strommix-Vorgabewert in g CO₂/kWh, mit dem der Netzbezug gerechnet ist (`KOH_CO2_STROMMIX_RUECKFALL`, umgesetzt #405) |
 | **Stromkennzahl fehlt** | Kennzeichen „Vorrichtung zur Abwärmeabfuhr" gesetzt, aber weder eine gepflegte Stromkennzahl noch P_el und P_th der Gerätezeile — der Zuschlag der Anlage ist 0 (§ 3.6, zweiter Fall des § 2 Nr. 16) | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_STROMKENNZAHL_FEHLT`, umgesetzt #440; Schwere: entschieden E7c1‑Q5, nach Empfehlung) |
 | **Anlagenart fehlt** | weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 leitet kein Kontingent ab, der Zuschlag der Anlage ist 0 (§ 3.6, § 6.3 Nr. 30); ein gepflegtes Kontingent löst die Zeile nicht aus | Hinweis (ohne Betrag), eine Zeile mit allen betroffenen Anlagen (`KOH_KWKG_ANLAGENART_FEHLT`, umgesetzt #440; Schwere: entschieden E7c1‑Q5, nach Empfehlung) |
+| **Prüfung nicht ausführbar** | eine Teilprüfung dieser Tafel scheitert an einem Lesefehler (etwa einer nicht lesbaren Tabelle) | **Warnung** an ihrer Stelle: „Prüfung „X" nicht ausführbar: ‹Grund›" (`KOH_PRUEFUNG_NICHT_AUSFUEHRBAR` mit zehn Prüfungsnamen `KOH_TP_*`; umgesetzt #452, B‑6) |
+| **Rechenstufe nicht ausführbar** | eine Rechenstufe der Wirtschaftlichkeit scheitert — Parameter, Tarif, Anlagen, elektrische Leistung, Energieträger, Heizölprüfung, Betriebskosten, Gesetzeskatalog, Kohärenzprüfung, KWKG-Satzherleitung, Speichern oder Laden der Ergebnisse; die Stufe rechnet mit ihrem benannten Rückfall weiter | **Warnung** an jeder Ergebniszeile des Projekts, je Grund einmal: „Rechenstufe „X" nicht ausführbar: ‹Grund›" (`WIRT_STUFE_NICHT_AUSFUEHRBAR` mit zwölf Stufennamen; umgesetzt #452, B‑6); scheitert das Speichern, gilt der Kapitalwert, gespeichert ist er nicht |
+
+**Der Grund statt der stillen Null** (Befund B‑6, § 4; umgesetzt #452 für `KohaerenzPruefung`,
+`EmissionsBilanzRechner`, `Emissionsquelle`, `GesetzKatalog` und `WirtschaftlichkeitCtrl`). `DataRepository` wirft
+bei einem Abfragefehler nie — es meldet ihn selbst und liefert eine leere Tabelle bzw. null. Diese fünf Dateien
+lesen deshalb über den strengen Weg `StilleDb.TabelleStreng`/`ScalarStreng` (26 Lesestellen), der den Fehler
+weiterreicht (E7c3‑Q4, → Register R‑E7c3). Die Emissionsbilanz nennt eine gescheiterte Stufe in ihrem Hinweis
+(„Emissionsbilanz — Stufe „X" nicht ausführbar: ‹Grund›"), die Herkunft eines Emissionsfaktors einen Lesefehler
+(„… — Brennstoffkatalog nicht lesbar: ‹Grund›"). Gründe ohne eigene Zeile tragen die Eigenschaften `Lesefehler`
+(Parametersatz, Tarif, Emissionsfaktoren, Gesetzeskatalog), `LetzterFehler` (Pflegewege des Gesetzeskatalogs),
+`Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit); die
+letzten drei zeigt die Oberfläche nicht (E7c3‑Q6, offen). Ein nicht lesbarer Tarif gilt als nicht aktiv. Ohne
+Fehler steht keine dieser Zeilen; die dreizehn Basisprojekte sind Zeile für Zeile unverändert.
 
 ## 3.10 Rechenreihenfolge
 
@@ -2151,13 +2196,14 @@ Die Ordnung ist zwingend — Prozentbezüge und fortgeschriebene Restkontingente
  9. Vergütungen             Prüfkette (Fristende der Inbetriebnahme aus dem Katalog) → Satz (marginal)
                             → Hilfsstrom-Netting → Anteile → Fall 2: Kürzung auf den KWK-Strom,
                             zuerst an der Einspeisung → Bonus_voll
-                            → Jahresreihe mit Vbh (Fall 2: aus dem KWK-Strom)/Deckel/Restkontingent
+                            → Jahresreihe mit Vbh (brutto, W_a ÷ P_Nenn)/Deckel/Restkontingent
                               (Rest −= Vergütet)
 10. Steuern                 je Betrachtungsjahr, anlagenscharf, § 54-Sockel einmal je Lauf;
-                            Mischlage § 53/§ 53a neben § 54 ⇒ § 54 = 0 (S‑2)
+                            Mischlage § 53/§ 53a neben § 54 ⇒ § 54 = 0 (S‑2);
+                            Vorschau je Anlage und Wahl auf einer Kopie der Eingabe
 11. Kapitalwert             A_t/E_t, Abzinsung, Ersatz und Restwert je Kennzeichen der Position,
                             Index-0-Einmalzahlung; danach Kennzahlen und Sensitivität
-12. Kohärenzprüfung         zuletzt, liest gebuchte Jahr-1-Werte
+12. Kohärenzprüfung         zuletzt, liest gebuchte Jahr-1-Werte; gescheiterte Stufen als Warnzeile (B‑6)
 ```
 
 ## 3.11 Emissionsfaktoren, Primärenergie und CO₂-Preispfad
@@ -2240,7 +2286,7 @@ Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabe
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel. |
 | ✔ **B-4** | Zwei Arten nie frisch: `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN` — `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch. **Erledigt mit E7c2 (#446):** Beide beziehen ihre Bezugsgröße frisch aus dem jüngsten Lauf — die projektweiten Arbeitskosten des Brennstoffs bzw. des Netzbezugs (E7c2‑Q2, § 3.4); die Konserve nur, wo frisch nichts ermittelbar ist, mit Grund. |
 | ✔ **B-5** | `InvestSummeFuer` summierte `EingegebenerWert`, abgeleitete Beträge fehlten. **Erledigt mit W5‑B‑8:** Basis ist die Investitionskaskade (`InvestKaskade.Summen`). |
-| B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0). |
+| **B-6** | Fehler werden geschluckt (`catch {}` ⇒ still 0). **Für die fünf Prioritätsdateien erledigt mit E7c3 (#452):** In `KohaerenzPruefung`, `EmissionsBilanzRechner`, `Emissionsquelle`, `GesetzKatalog` und `WirtschaftlichkeitCtrl` sind alle 100 leeren Fänge benannt; 26 Lesestellen lesen über den strengen Weg `StilleDb.TabelleStreng`/`ScalarStreng`, weil `DataRepository` nie wirft; ein Fehler steht als Warnzeile an der Ergebniszeile oder als Grund in einer Eigenschaft (§ 3.9). **Offen:** 29 leere `catch` in 13 weiteren Dateien und fünf stille Lesestellen im Engine-Modus (E7c3‑Q5, → Register R‑E7c3). |
 | ✔ **B-7** | `MengenEinheit` beschriftet die neuen Arten mit „€". **Erledigt mit E2:** Die Bezugsmenge kommt aus dem `BemessungKatalog` wie der Satz — eine Leistung heißt „kW", ein Volumen am Pufferspeicher „Ltr.", eine Menge je Jahr „kWh/a". Regel: Trägt der Betriebssatz „·a", ist die Bezugsgröße ein Bestand und bleibt ohne Jahr; eine prozentuale Art bemisst sich an einem Betrag. |
 
 ## Energiekosten
@@ -2304,13 +2350,14 @@ Schemaschritt **113** (`SCHRITT_113_GASE_NM3`, reines DML nach dem Muster von Sc
 Stammtext `energy_carrier.billing_unit`, und die nächste Zuordnung eines Gasträgers findet ihre
 Identitätsregel. Ergebnisneutral: Kein Rechenweg liest den Stammtext. Der Vorlagenbau läuft danach ohne
 Auffälligkeit. Der Brennstoff 24 „Sonstige" führt im selben Schritt „kWh" und „€/kWh" (E7c2‑Q4, Anwender,
-→ Register R‑E7c2); sein Stamm trägt H_i = H_s = 0, eine Preisumrechnung gibt es deshalb nicht, Träger und
-Preise des Brennstoffs bleiben und werden im Migrationsprotokoll gezählt.
+→ Register R‑E7c2); eine Preisumrechnung nimmt der Schritt nicht vor, Träger und Preise des Brennstoffs bleiben und
+werden im Migrationsprotokoll gezählt. Sein Stamm trägt H_i = H_s = 1,0 wie Strom (13) und Fernwärme (23) —
+nachgepflegt von der Katalog-Generation 9, nur wo beide noch 0 oder leer waren (§ 3.6; umgesetzt #452).
 
 **Die Randfragen des Einheitenbruch-Konzepts sind hiermit hierher übernommen** und gelten von hier
 aus: Waisenheilung (`energy_project_settings` Zeile 10076, Projekt 1039), kg-/rm-Abrechnung der
-Brennstoffe 4/5/12, Brennstoff 24 „Sonstige" (die Einheit ist mit Schritt 113 entschieden; offen bleibt
-H_i = H_s = 1,0 wie bei Strom und Fernwärme, E7c3), der Fremdkörper Regel 67 und ein Prüfschritt in
+Brennstoffe 4/5/12, Brennstoff 24 „Sonstige" (die Einheit ist mit Schritt 113 entschieden, H_i = H_s = 1,0 wie
+bei Strom und Fernwärme mit der Katalog-Generation 9, #452), der Fremdkörper Regel 67 und ein Prüfschritt in
 `EnergieEinheitenPruefung`. Das Quellpapier
 [`ueberholt/Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md`](../../ueberholt/Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md)
 ist Geschichte (Bezugsstand Access, `SchemaVersion 61`) und **keine Regelquelle**. Nicht zu
@@ -2326,7 +2373,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | R-U2 | § 53a Abs. 3, Erdgassatz 4,96 €/MWh für das produzierende Gewerbe über dem allgemeinen 4,42 €/MWh | nicht umgesetzt; in § 2.6 (Klarstellung 2) als Kesselseite eingeordnet |
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe aus der KWKG-Förderung — nur Sekundärquelle | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt (§ 3.6) |
 | R-U4 | EuGH-Urteil 09.07.2026 zur Beihilfeeigenschaft des KWKG | kein Primärbeleg |
-| R-U5 | keine Nachfolgeregelung nach 2030 | Förderzeitraum als Datumsparameter im Katalog, nicht als Konstante — **umgesetzt #440**: das Ende der Frist zur Inbetriebnahme steht als `KWKG_INBETRIEBNAHME_FRISTENDE` (31.12.2030) im Gesetzeskatalog, `KWKG_REALISIERUNG_JAHRE` ist entfallen (§ 3.6) |
+| R-U5 | keine Nachfolgeregelung nach 2030 | Förderzeitraum als Datumsparameter im Katalog, nicht als Konstante — **umgesetzt #440**: das Ende der Frist zur Inbetriebnahme steht als `KWKG_INBETRIEBNAHME_FRISTENDE` (31.12.2030) im Gesetzeskatalog, `KWKG_REALISIERUNG_JAHRE` ist entfallen (§ 3.6); die zwei Katalogzeilen der alten Frist tragen den Status ABGEKUENDIGT (Katalog-Generation 9, #452) |
 | **R-U6** | **Auslösedauer des 45-Euro-Mechanismus im ETS 2** — zwei oder drei aufeinanderfolgende Monate; die Sekundärquellen widersprechen sich (Grundlagen § 10 Nr. 1) | nicht übernommen; der CO₂-Preispfad (§ 3.11) baut auf dieser Größe auf und führt sie als Stützstelle mit Status, nicht als Konstante |
 | **R-U7** | **Exakter Wortlaut des § 10 Abs. 3 BEHG** (Bezugspreis 2027), nur sekundär gesichert; die Zuordnung „Berechtigungen" gegen „Emissionszertifikate" ist auch fachlich strittig (Grundlagen § 10 Nr. 2) | entschärft, falls das Dritte Änderungsgesetz den Korridor festschreibt; bis dahin Katalogstatus VORLÄUFIG |
 | **R-U8** | **Zahlenreihe des Projektionsberichts 2026**, nur sekundär belegt (Grundlagen § 10 Nr. 3) | vor Verwendung als Vorbelegung des Preispfads (§ 3.11) zu prüfen |
@@ -2382,11 +2429,12 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E7a Rechenwirksame Lücken, Teil a** | CO₂-Grenzwert des § 9 Abs. 1 Nr. 3 StromStG brennwertbezogen mit Herleitung je Anlage (Nr. 29), Schemaschritt 102 und „(bitte wählen)" für die leere Anlagenart (Nr. 30, ohne die Kern-Regel), vermiedene Menge ohne jede Eigenerzeugung mit beiden Anlagen im Schlüssel (Nr. 32) — die dreizehn Basisprojekte wirtschaftlich unverändert. | #437 |
 | **E7b Zeitzonentarif und Leistungspreis-Staffel** (Q11) | Kein Zeitzonentarif: die Strommatrix ohne Tarifzonen mit einer Jahreszeile je Projekt; Schemaschritt 104 übernimmt die Staffel an den Stromträger, löscht die Zonensätze und verwirft ihre gespeicherten Läufe; die zweistufige Leistungspreis-Staffel in der Kostenverwaltung, bemessen an der Viertelstundenspitze, mit Vorrang vor Leistungspreis und Saisonreihe; der Tarifdialog nur noch im Rollenmodell, der Knopf „Strombezug…" entfällt — die dreizehn Basisprojekte unverändert (kein Tarifsatz im Bestand). | #439 |
 | **E7c1 K‑1 Fall 2, Förderende 2030, Anlagenart-Kohärenz** | Schemaschritt 105 (Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl je Anlage) und der zweite Fall des § 2 Nr. 16 KWKG — `min(Netto, Nutzwärme × σ)` auf Regel- und Ersatzweg, σ gepflegt oder P_el ÷ P_th, Kürzung zuerst an der Einspeisung, gepflegt in der Überlagerung „Sätze und Herkunft"; das Ende der Frist zur Inbetriebnahme als Katalogdatum 31.12.2030 statt der festen vier Jahre, die Reihe bis zum Kontingentende; die Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt" — die dreizehn Basisprojekte unverändert (kein Kennzeichen im Bestand, 1030 vor dem Fristende). | #440 |
-| **E7c2 Schritte E, F, G, S‑2, V‑1/V‑2, B‑4 und die E7c1-Reste** | Schemaschritt 111 (Ersatz und Restwert je Position, entkoppelt, im Zeileneditor gepflegt), 112 (die Preisbasis als eigener Kartenzustand) und 113 (der Stammtext der Gase auf Nm³, Brennstoff 24 auf kWh); die Mischlage § 53/§ 53a neben § 54 gesperrt, mit Warnung; der EV-Mix ungerundet und § 51a bei fester Vergütung mit der Einspeisevergütung; die zwei Prozentarten der Brennstoff- und Stromkosten frisch aus dem Lauf; in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom und der Rundungsgrund in der Herleitung; die Überlagerung „Sätze und Herkunft" vollständig, KI-Feldkatalog und Berichtsspalten zu Fall 2 — die dreizehn Basisprojekte unverändert (9.195 von 9.195 Werten). | #446 |
+| **E7c2 Schritte E, F, G, S‑2, V‑1/V‑2, B‑4 und die E7c1-Reste** | Schemaschritt 111 (Ersatz und Restwert je Position, entkoppelt, im Zeileneditor gepflegt), 112 (die Preisbasis als eigener Kartenzustand) und 113 (der Stammtext der Gase auf Nm³, Brennstoff 24 auf kWh); die Mischlage § 53/§ 53a neben § 54 gesperrt, mit Warnung; der EV-Mix ungerundet und § 51a bei fester Vergütung mit der Einspeisevergütung; die zwei Prozentarten der Brennstoff- und Stromkosten frisch aus dem Lauf; in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom (mit E7c3 zurückgebaut) und der Rundungsgrund in der Herleitung; die Überlagerung „Sätze und Herkunft" vollständig, KI-Feldkatalog und Berichtsspalten zu Fall 2 — die dreizehn Basisprojekte unverändert (9.195 von 9.195 Werten). | #446 |
+| **E7c3 Vbh nach Definition, B‑6, Kapitalwert 1024, Vorschau** | Die Vollbenutzungsstunden als erzeugte Arbeit ÷ Nennleistung in beiden Fällen des § 2 Nr. 16 (E7c2/7 zurückgebaut); B‑6 in den fünf Prioritätsdateien mit strengem Leseweg und Warnzeilen; der Kapitalwert 1024 als Datenstand nachgerechnet, der Anker bleibt; die Energiesteuer-Vorschau je Wahl im Kern (Nachweisfassung 8) und die Wahlen der Überlagerung als Anzeigezeilen; `VpvCtKwh` ungerundet; Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt) — die dreizehn Basisprojekte unverändert (9.519 von 9.519 Werten). | #452 |
 
 ## 6.2 Regressionsanker
 
-Die Anker stehen seit **E1 (#380)** als Testklasse im Kern: `WirtschaftlichkeitAnkerTests` (9 Fälle)
+Die Anker stehen seit **E1 (#380)** als Testklasse im Kern: `WirtschaftlichkeitAnkerTests` (10 Fälle)
 fährt den Weg `LadeParameter → ErgebnisCtrl.Load → KostenEmissionRechner.Berechne →
 WirtschaftlichkeitCtrl.Berechne` und hält damit die Größen dieses Papiers fest, ohne den
 Berichtssammler (`BerichtsDatenSammler`, seit E3 in `EPOS.Kern/Allgemein/Bericht/`, umgesetzt #431)
@@ -2397,20 +2445,25 @@ Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFo
 | Anker | Wert | Herkunft |
 |---|---|---|
 | `LiesBetriebskosten(1024)` | **99,00 €/a** | gemessen = Konzept (#380) |
-| Kapitalwert 1024 | **−2.896.359,13 €** | gemessen (#380) — das Konzept führte **−2.220.322,32 €** |
+| Kapitalwert 1024 | **−2.896.359,13 €** | gemessen (#380), nachgerechnet #452: Datenstand — Schemaschritt 83 (#313) faltete 11,746 ct/kWh Strompreisanteile in den Arbeitspreis (−676.495,37 €), dazu +458,56 € aus der Übernahme Access → SQLite am 02.09.2026; der frühere Konzeptwert −2.220.322,32 € ist ersetzt (E7c3‑Q1, gebaut ist Lesart a) |
+| Kapitalwert 1024 mit dem Strompreis vor Schritt 83 (35,000 ct/kWh) | **−2.219.863,76 €** | gemessen (#452, `Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83`) — bitgleich mit B5 und FX1 bis FX4 |
 | Kapitalwert 1030 | **−21.895.377,28 €** | gemessen (#380) |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
-| Referenzbasis | `Referenzlaeufe/2026-09-23_R12_Gebaeudemodell` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-23_R13_Kuehlung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
 heutigen Datenstand keinen Einheitpreis. Der Kapitalwert 1024 liegt mit −2.896.359,13 € um
-**−676.036,81 €** unter dem Konzeptwert; die Abweichung ist eingegrenzt, aber nicht nachgerechnet
-(Kandidaten: Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366, Schemaschritte 93–96) und gehört zu
-**E7c3**. Bis dahin gilt der **gemessene** Wert als Anker; die Etappen E7c1 (#440) und E7c2 (#446) haben keinen
-Anker bewegt.
+**−676.036,81 €** unter dem früheren Konzeptwert; **nachgerechnet mit E7c3 (#452), kein Codefehler, beide Anteile
+sind Datenstand:** −676.495,37 € aus Schemaschritt 83 (#313, 17.09.2026) — er hat die aktiven Strompreisanteile des
+Stromträgers 60 (Modus „aufgeschlüsselt", 11,746 ct/kWh) in den Arbeitspreis gefaltet, 35,000 → 46,746 ct/kWh:
+387,12 MWh Netzbezug × 0,11746 €/kWh = 45.471,12 €/a × 14,877475 (3 %, 20 a) —, dazu +458,56 € aus der Übernahme
+Access → SQLite am 02.09.2026 (FX1). Die drei Kandidaten Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366 und
+Schemaschritte 93–96 tragen 0,00 € bei: Mit 35,000 ct/kWh rechnet der Kern bitgleich −2.219.863,76 €, den Wert von
+B5 und FX1 bis FX4. Der **gemessene** Wert bleibt der Anker (E7c3‑Q1, → Register R‑E7c3); die Etappen E7c1 (#440),
+E7c2 (#446) und E7c3 (#452) haben keinen Anker bewegt.
 
 1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`) und seit
 #380 auch im Kapitalwert; **die Betriebskosten von 1030 tragen weiterhin keinen Anker.** Die Projekte
@@ -2460,8 +2513,16 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 **Aus der Anwenderdurchsicht der Ergebnisansicht (§ 2.13)**
 
 9h. **Nutzungsdauer, Ersatz, Restwert — zwei fehlende Stücke (Mockup-Anhang U39):** die ungelesenen
-    geräteeigenen Nutzungsdauer-Spalten und der Anschluss der Speicherflotte — offen (vorgesehen mit
-    E7c3; A7 und A8 binden beides an ND‑S3, E10). Erledigt sind die Nachpflege des Bestands und der
+    geräteeigenen Nutzungsdauer-Spalten und der Anschluss der Speicherflotte — offen mit ND‑S3 (E10; A7
+    und A8 binden beides daran). **Gemessen mit E7c3 (#452):** `Tab_BHKW` führt eine Nutzungsdauer in 3 von
+    6 Zeilen der Testdatenbank (10 a), im Stamm in 44 von 79; `Tab_Heizkessel` in 1 von 22 (20 a), im Stamm
+    in 0 von 63 — beide ohne Leser in der Wirtschaftlichkeit; `Tab_StromspeicherVariante` in 13 von 13 (20 a),
+    sie rechnet in der Speicherwirtschaftlichkeit und im Peak-Shaving. Die Nutzungsdauer-Tabelle führt
+    abweichend BHKW-Modul 15 a und Batterie 10 a; die Flotte von 1046 zwei Einheiten mit Ersatzintervall 10 a
+    und Restwert 500 bzw. 300 €. **Vorschlag für ND‑S3:** die Gerätespalten nur als „Gerätedaten"
+    kennzeichnen (A8); für Speichervariante und Flottenintervall die Tabelle nur als Vorgabe neuer Einträge
+    nehmen — das bewegt nichts; ein linearer Restwert aus der Nutzungsdauer erst mit ND‑S3 und einer neu
+    eingefrorenen Basis für 1046. Erledigt sind die Nachpflege des Bestands und der
     Pflegeort der Positionsart (#357), der Hinweis „T über Vorgabe, Position ohne Dauer" und die
     Zeitraumzeile auf Seite und Bericht (E5, #434) sowie die Entkopplung von Ersatz und Restwert
     (E7c2, #446, Schemaschritt 111, § 2.13 (3)) — siehe Protokoll.
@@ -2518,7 +2579,7 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-23_R12_Gebaeudemodell`); **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-23_R13_Kuehlung`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
@@ -2569,18 +2630,19 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
-(#436), E7 Teil a (#437), E7 Teil b (#439), E7 Teil c1 (#440) und E7 Teil c2 (#446)**; der Schnitt dieses
-Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt **E7c3**: die Lesarten b zu E7c2‑Q5 (`VpvCtKwh`
-ungerundet) und E7c2‑Q8 (Energiesteuer-Vorschau je Wahl im Kern), B‑6 (Robustheit), der Kapitalwert 1024
-(−676.036,81 € gegen den früheren Konzeptwert, § 6.2), der Rest von § 6.3 Nr. 9h (geräteeigene Dauerspalten,
-Speicherflotte — A7 und A8 binden beides an ND‑S3, die Zuordnung ist mit dem Auftrag zu klären), die
-Katalogzeilen ohne Leser (E7c1‑Q8) und H_i = H_s = 1,0 für den Brennstoff 24; die acht Fragen aus E7c2 sind am
-23.09.2026 entschieden (→ Register R‑E7c2). Danach **E8**. Aus der früheren Etappenreihe B5–B9 dieses Papiers
-ist nur noch B8 offen, und von B8 allein B‑6 (es läuft in E7c3 mit); B9 entfällt:
+(#436), E7 Teil a (#437), E7 Teil b (#439), E7 Teil c1 (#440), E7 Teil c2 (#446) und E7 Teil c3 (#452)** —
+E7 ist damit abgeschlossen; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt
+**E8**: die fünf ValERI-Blöcke vollständig (dazu Block 2 und das Zahlungsstrombild U42), der Formelbericht in den
+Stufen 0 bis 3 (§ 2.11.6), die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe, Nominalsummen, Differenzspalte
+und Brückenbild der Gliederung, „Was daraus im Lauf wird" und die Fußzeile (U41, U46 bis U48) und E6‑Q1 (Verlauf
+und Spannenbild in Block 4); vorab die ClosedXML-Fragen aus dem Prüfprotokoll `05/§ 3.3` des Analysepapiers. Die
+acht Fragen aus E7c3 sind offen (→ Register R‑E7c3); nach ihrem Entscheid kommen der Rest von B‑6 (E7c3‑Q5) und die
+Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6) dazu. Aus der
+früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot) und **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0). Der **PV-Teil von V-3** und **I-5** sind mit **E2 (#405)** erledigt. S‑2 ist mit **A3** entschieden (→ Register R‑A): **Sperre mit Begründungszeile**, nicht Warnung — **erledigt mit E7c2 (#446)** (§ 3.7, § 3.9). B‑6 läuft in **E7c3** des Etappenplans mit | **ja** bei S-2 (gebaut, im Bestand ohne Wirkung); B-6 ist Robustheit |
+| **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot) und **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0). Der **PV-Teil von V-3** und **I-5** sind mit **E2 (#405)** erledigt. S‑2 ist mit **A3** entschieden (→ Register R‑A): **Sperre mit Begründungszeile**, nicht Warnung — **erledigt mit E7c2 (#446)** (§ 3.7, § 3.9). B‑6 ist für die fünf Prioritätsdateien **erledigt mit E7c3 (#452)** (§ 3.9, § 4); der Rest ist offen (E7c3‑Q5) | **ja** bei S-2 (gebaut, im Bestand ohne Wirkung); B-6 ist Robustheit |
 | **B9** ≡ A8 | Zahlenprobe gegen die Altanwendung — **entfällt** (→ Register R‑NR, Nr. 20). Die Inventur der Mappen ([`Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md)) und die neun Abweichungen der Altanwendung (§ 5 der [Grundlagen](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md)) bleiben als Geschichte stehen; der Nachweis der Wirtschaftlichkeitsgrößen läuft über die Anker aus E1 (§ 6.2) und die A/B-Nachweise der rechenwirksamen Etappen | entfällt |
 
 *Die Reihenfolge vor dem Schnitt samt ihrer Einordnung: → Protokoll § 7.3; die Wiederaufnahme vom
@@ -2617,17 +2679,18 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **VG** (§ 2.9, § 2.15) ≡ **V-B** | W5‑B‑11 | — | **#358** | Vergleichsprojekt, Schritt 92 |
 | **VV** (§ 2.16) | — | — | **#359** | Vergütung je Variante, Schritt 93 |
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
-| **B8** | — | — | S-2 **#446**, B-6 offen (in **E7c3**) | Befunde S-2 (≡ A3, erledigt) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
+| **B8** | — | — | S-2 **#446**, B-6 **#452** (fünf Dateien; der Rest offen, E7c3‑Q5) | Befunde S-2 (≡ A3, erledigt) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
 | **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
 | **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, sonst keine im Bereich #300–#434 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 der ValERI-Ansicht mit #434 vorgezogen), V-E = **E9** |
 | § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild |
-| § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile), **#446** (Entkopplung, Schritt 111) | Nutzungsdauer, Ersatz, Restwert |
+| § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile), **#446** (Entkopplung, Schritt 111), **#452** (gemessen) | Nutzungsdauer, Ersatz, Restwert; der Rest mit ND‑S3 |
 | § 6.3 Nr. 29, 30, 32 | — | — | **#437** (Nr. 30 zum Teil, der Rest **#440**) | E7 Teil a: CO₂-Grenzwert brennwertbezogen, Schemaschritt 102 und „(bitte wählen)", vermiedene Menge ohne jede Eigenerzeugung |
 | Q11 (§ 3.5, § 2.5) | — | — | **#439** | E7 Teil b: kein Zeitzonentarif, Schemaschritt 104, Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell |
 | Befund **K‑1** (§ 3.6) · A20 · § 6.3 Nr. 30 Kern-Regel | — | — | **#440** | E7 Teil c1: Schemaschritt 105 und der zweite Fall des § 2 Nr. 16, das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum, die Kohärenzzeilen „Stromkennzahl fehlt" und „Anlagenart fehlt" |
-| Befunde **S‑2**, **V‑1**, **V‑2**, **B‑4** (§ 4) · Schritte **E**, **F**, **G** (A6, ET‑D‑3/U32, U‑1/A9) · E7c1‑Q1, Q2 b, Q7 | — | — | **#446** | E7 Teil c2: Schemaschritte 111, 112, 113, die Sperre der Mischlage, EV-Mix und § 51a, die Prozentarten frisch, Vbh aus dem KWK-Strom, die Überlagerung „Sätze und Herkunft" vollständig |
+| Befunde **S‑2**, **V‑1**, **V‑2**, **B‑4** (§ 4) · Schritte **E**, **F**, **G** (A6, ET‑D‑3/U32, U‑1/A9) · E7c1‑Q1, Q2 b, Q7 | — | — | **#446** | E7 Teil c2: Schemaschritte 111, 112, 113, die Sperre der Mischlage, EV-Mix und § 51a, die Prozentarten frisch, Vbh aus dem KWK-Strom (zurückgebaut #452), die Überlagerung „Sätze und Herkunft" vollständig |
+| Befund **B‑6** (§ 4) und § 6.2 Kapitalwert 1024 · E7c2‑Q5 b, Q8 b, Q4-Rest · E7c1‑Q2 b präzisiert, E7c1‑Q8 · U22 Anzeigezeilen · § 6.3 Nr. 9h gemessen | — | — | **#452** | E7 Teil c3: Vbh = W_a ÷ P_Nenn in beiden Fällen, B‑6 in den fünf Prioritätsdateien, Kapitalwert 1024 als Datenstand, die Energiesteuer-Vorschau je Wahl, die Wahlen als Anzeigezeilen, `VpvCtKwh` ungerundet, Katalog-Generation 9 |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 und U32 erledigt #446, U39 teilweise |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3) |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2643,8 +2706,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E7** Teil a — rechenwirksame Lücken | Nr. 29 (CO₂-Grenzwert brennwertbezogen), Nr. 30 ohne die Kern-Regel (Schemaschritt 102, „(bitte wählen)"), Nr. 32 (vermiedene Menge ohne jede Eigenerzeugung, Schlüssel brutto) | **#437** (Merge `befec9dc`) |
 | **E7** Teil b — Q11 | kein Zeitzonentarif (Strommatrix mit einer Jahreszeile), Schemaschritt 104 (Staffelspalten, Zonensätze gelöscht, ihre Läufe verworfen), zweistufige Leistungspreis-Staffel am Stromträger, Tarifdialog im Rollenmodell, Einstieg „Strombezug…" entfällt | **#439** (Merge `954d4dcc`) |
 | **E7** Teil c1 — K‑1, A20, Nr. 30 | Schemaschritt 105 und der zweite Fall des § 2 Nr. 16 KWKG (Regel- und Ersatzweg, Überlagerung „Sätze und Herkunft" mit den zwei Feldern), das Fristende der Inbetriebnahme 31.12.2030 als Katalogdatum (Generation 8), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt", Testdatenbank 105 mit der Anlagenart der 1030-BHKW | **#440** (Merge `ea8e2a12`) |
-| **E7** Teil c2 — Schritte E, F, G, S‑2, V‑1/V‑2, B‑4, E7c1-Reste | Schemaschritte 111 (Ersatz und Restwert je Position), 112 (Preisbasis als Kartenzustand) und 113 (Gase Nm³, Brennstoff 24 kWh), die Sperre der Mischlage § 53/§ 53a neben § 54 mit Warnung, EV-Mix ungerundet und § 51a mit der Einspeisevergütung, die Prozentarten der Brennstoff- und Stromkosten frisch, in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom und der Rundungsgrund, der Rest der Überlagerung „Sätze und Herkunft" (U22), KI-Feldkatalog und Berichtsspalten zu Fall 2, Testdatenbank 113 | **#446** (Merge `41764ab0`) |
-| **E7c3** … **E12** | Q5 b und Q8 b aus E7c2, B8 = B‑6, Kapitalwert 1024, der Rest von § 6.3 Nr. 9h, die Katalogzeilen ohne Leser (E7c1‑Q8), H_i = H_s = 1,0 für den Brennstoff 24 · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E7c3**, danach E8 (die acht Fragen aus E7c2 entschieden 23.09.2026, → Register R‑E7c2) |
+| **E7** Teil c2 — Schritte E, F, G, S‑2, V‑1/V‑2, B‑4, E7c1-Reste | Schemaschritte 111 (Ersatz und Restwert je Position), 112 (Preisbasis als Kartenzustand) und 113 (Gase Nm³, Brennstoff 24 kWh), die Sperre der Mischlage § 53/§ 53a neben § 54 mit Warnung, EV-Mix ungerundet und § 51a mit der Einspeisevergütung, die Prozentarten der Brennstoff- und Stromkosten frisch, in Fall 2 die Vollbenutzungsstunden aus dem KWK-Strom (zurückgebaut #452) und der Rundungsgrund, der Rest der Überlagerung „Sätze und Herkunft" (U22), KI-Feldkatalog und Berichtsspalten zu Fall 2, Testdatenbank 113 | **#446** (Merge `41764ab0`) |
+| **E7** Teil c3 — Reste | Vbh = W_a ÷ P_Nenn in Fall 1 und Fall 2 (Rückbau von E7c2/7), `VpvCtKwh` ungerundet (E7c2‑Q5 b), Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt, E7c1‑Q8), Kapitalwert 1024 als Datenstand, B‑6 in den fünf Prioritätsdateien, die Energiesteuer-Vorschau je Wahl (E7c2‑Q8 b, Nachweisfassung 8), die Wahlen der Überlagerung als Anzeigezeilen (U22), Nr. 9h gemessen, Testdatenbank auf Generation 9 | **#452** (Merge `9c7a0023`, Nachtrag `387c2d9f`) |
+| **E8** … **E12** | V-C/V-D (die fünf Blöcke samt Block 2 und U42, Formelbericht Stufen 0–3, U41, U43, U46–U48, Anhang-D-Gegenprobe, E6‑Q1) · V-E · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E8** (die acht Fragen aus E7c3 offen, → Register R‑E7c3) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

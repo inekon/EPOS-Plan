@@ -11,6 +11,12 @@ namespace WindowsFormsApplication1
     /// Fassade geht und den Kern nicht verlässt; Temperaturen in °C; die Kühlreihe in kWh je
     /// Stunde; Jahressummen in MWh; Leistungen in kW.
     ///
+    /// <para><b>Kühlreihe nur mit wirksamer Kühlung (Entscheid E32).</b> Ein Gebäude ohne
+    /// wirksame Kühlung läuft frei; es hat <b>keine</b> Kühlreihe und keine Kühlkennzahlen
+    /// (<see cref="KuehlbedarfKwh"/>, <see cref="KuehlenergieMwh"/> und
+    /// <see cref="StundenMitKuehlbedarf"/> sind <c>null</c> — „nicht verfügbar", keine 0).
+    /// Die Überhitzungsstunden zählen dann die Stunden über θ_max im freien Lauf.</para>
+    ///
     /// <para><b>Skalierung (E8).</b> Der Lauf rechnet den Katalogbau; die Fassade
     /// multipliziert danach mit dem Flächen- bzw. Verbrauchsverhältnis
     /// (<see cref="Skaliert"/>). <see cref="VerbrauchAltKwh"/> ist der <b>unskalierte</b>
@@ -38,7 +44,11 @@ namespace WindowsFormsApplication1
             if (heizlastW == null || heizlastW.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizlastW));
             if (raumtemperatur == null || raumtemperatur.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(raumtemperatur));
             if (operativeTemperatur == null || operativeTemperatur.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(operativeTemperatur));
-            if (kuehlbedarfKwh == null || kuehlbedarfKwh.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(kuehlbedarfKwh));
+            // E32: Eine Kühlreihe gibt es genau dann, wenn die Kühlung wirksam war.
+            if (kuehlSollwert.HasValue && (kuehlbedarfKwh == null || kuehlbedarfKwh.Length != 8760))
+                throw new ArgumentException("Mit wirksamer Kühlung werden 8760 Werte erwartet.", nameof(kuehlbedarfKwh));
+            if (!kuehlSollwert.HasValue && kuehlbedarfKwh != null)
+                throw new ArgumentException("Ohne wirksame Kühlung gibt es keine Kühlreihe (E32).", nameof(kuehlbedarfKwh));
 
             Index = index;
             ID_Gebaeude = idGebaeude;
@@ -81,15 +91,18 @@ namespace WindowsFormsApplication1
             int rang = (int)Math.Ceiling(0.95 * 8760);           // nächstgelegener Rang, 1-basiert
             Spitze95Kw = sortiert[rang - 1] / 1000.0;
 
-            double kuehlKwh = 0.0;
-            int kuehlStunden = 0;
-            for (int h = 0; h < 8760; h++)
+            if (kuehlbedarfKwh != null)
             {
-                kuehlKwh += kuehlbedarfKwh[h];
-                if (kuehlbedarfKwh[h] > 0.0) kuehlStunden++;
+                double kuehlKwh = 0.0;
+                int kuehlStunden = 0;
+                for (int h = 0; h < 8760; h++)
+                {
+                    kuehlKwh += kuehlbedarfKwh[h];
+                    if (kuehlbedarfKwh[h] > 0.0) kuehlStunden++;
+                }
+                KuehlenergieMwh = kuehlKwh / 1000.0;
+                StundenMitKuehlbedarf = kuehlStunden;
             }
-            KuehlenergieMwh = kuehlKwh / 1000.0;
-            StundenMitKuehlbedarf = kuehlStunden;
 
             double luft = 0.0;
             int nutzung = 0, ueber = 0;
@@ -125,9 +138,10 @@ namespace WindowsFormsApplication1
         internal double[] OperativeTemperatur { get; }
 
         /// <summary>
-        /// Kühlbedarf je Stunde [kWh], positiv (K2, je Abschnitt gebucht, F-K3): mit wirksamer
-        /// Kühlung die Regelung auf den Kühlsollwert samt Kühlleistungsgrenze, sonst die Kappung
-        /// an der oberen Raumtemperatur (informativ, <see cref="KuehlungWirksam"/>).
+        /// Kühlbedarf je Stunde [kWh], positiv (K2, je Abschnitt gebucht, F-K3): die Regelung auf
+        /// den Kühlsollwert samt Kühlleistungsgrenze. <c>null</c> ohne wirksame Kühlung
+        /// (<see cref="KuehlungWirksam"/>, Entscheid E32): Das Gebäude läuft frei, es gibt keine
+        /// Kühlreihe.
         /// </summary>
         internal double[] KuehlbedarfKwh { get; }
 
@@ -145,16 +159,19 @@ namespace WindowsFormsApplication1
         /// <summary>95-%-Quantil der Stundenlast nach nächstgelegenem Rang [kW].</summary>
         internal double Spitze95Kw { get; }
 
-        /// <summary>Summe der Kühlbedarfsreihe [MWh].</summary>
-        internal double KuehlenergieMwh { get; }
+        /// <summary>Summe der Kühlbedarfsreihe [MWh]; <c>null</c> ohne wirksame Kühlung (E32).</summary>
+        internal double? KuehlenergieMwh { get; }
 
-        /// <summary>Stunden mit Kühlbedarf [h].</summary>
-        internal int StundenMitKuehlbedarf { get; }
+        /// <summary>Stunden mit Kühlbedarf [h]; <c>null</c> ohne wirksame Kühlung (E32).</summary>
+        internal int? StundenMitKuehlbedarf { get; }
 
         /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit aller Stunden [°C].</summary>
         internal double MittlereRaumtemperaturHeizzeit { get; }
 
-        /// <summary>Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur [h].</summary>
+        /// <summary>
+        /// Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur
+        /// θ_max [h] — ohne wirksame Kühlung im freien Lauf gezählt (E32).
+        /// </summary>
         internal int Ueberhitzungsstunden { get; }
 
         // ---- außerhalb der acht ----
@@ -186,8 +203,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Kühlsollwert, auf den der Löser geregelt hat [°C] — gesetzt genau dann, wenn die
         /// Kühlung dieses Gebäudes WIRKSAM war (Projektschalter, <c>Kuehlung_Aktiv</c>, Sollwert;
-        /// Stufe KU1). <c>null</c>: Die Kühlreihe ist die Kappung an <see cref="ThetaMax"/>,
-        /// informativ wie vor KU1, und sie geht in keinen Kühlkanal.
+        /// Stufe KU1). <c>null</c>: Das Gebäude lief frei (Entscheid E32) — keine Kühlreihe,
+        /// nichts für den Kühlkanal.
         /// </summary>
         internal double? KuehlSollwert { get; }
 
@@ -206,11 +223,11 @@ namespace WindowsFormsApplication1
         internal GebaeudeModellErgebnis Skaliert(double faktor)
         {
             var heiz = new double[8760];
-            var kuehl = new double[8760];
+            double[] kuehl = KuehlbedarfKwh != null ? new double[8760] : null;
             for (int h = 0; h < 8760; h++)
             {
                 heiz[h] = HeizlastW[h] * faktor;
-                kuehl[h] = KuehlbedarfKwh[h] * faktor;
+                if (kuehl != null) kuehl[h] = KuehlbedarfKwh[h] * faktor;
             }
             return new GebaeudeModellErgebnis(Index, ID_Gebaeude, Modell, heiz, Raumtemperatur, OperativeTemperatur,
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,

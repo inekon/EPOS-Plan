@@ -388,6 +388,35 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string UebAufEnergetisch { get; } = T("BHW_UEB_AUF_ENERGETISCH",
         "→ nur der elektrische Anteil des Brennstoffs — bewusste Untergrenze");
 
+    // ---- ETAPPE E7c3 (E7c2‑Q8 b): die Vorschau je Wahl aus dem Kern ----
+
+    /// <summary>Wirkung einer Entlastung; {0} = Satz, {1} = Einheit des Satzes,
+    /// {2} = Betrag im ersten Jahr [€/a].</summary>
+    public string UebEsVorschau { get; } = T("BHW_UEB_ES_VORSCHAU", "→ {0} {1} · {2} €/a");
+
+    /// <summary>Wirkung des § 54 mit dem Sockel, den diese Wahl auslöst; {0} = Satz,
+    /// {1} = Einheit, {2} = Sockelbetrag [€], {3} = Betrag [€/a].</summary>
+    public string UebEsVorschau54 { get; } = T("BHW_UEB_ES_VORSCHAU_54", "→ {0} {1} − {2} € · {3} €/a");
+
+    /// <summary>Wirkung ohne Position dieser Anlage; {0} = Betrag [€/a].</summary>
+    public string UebEsVorschauOhneSatz { get; } = T("BHW_UEB_ES_VORSCHAU_OHNE_SATZ", "→ {0} €/a");
+
+    /// <summary>Eine Wirkung mit dem Grund, den erst diese Wahl hervorbringt;
+    /// {0} = Wirkung, {1} = Grund.</summary>
+    public string UebEsVorschauGrund { get; } = T("BHW_UEB_ES_VORSCHAU_GRUND", "{0} — {1}");
+
+    /// <summary>Aufteilung „voller Brennstoff" mit dem Betrag bei § 53; {0} = Betrag [€/a].</summary>
+    public string UebAufVorschauVoll { get; } = T("BHW_UEB_AUF_VORSCHAU_VOLL", "→ Vorgabe · {0} €/a bei § 53");
+
+    /// <summary>Aufteilung „energetisch" mit Faktor und Betrag bei § 53; {0} = Anteil des
+    /// Stroms am Brennstoff, {1} = Betrag [€/a].</summary>
+    public string UebAufVorschauEnergetisch { get; } = T("BHW_UEB_AUF_VORSCHAU_ENERGETISCH",
+        "× {0} → {1} €/a bei § 53 — bewusste Untergrenze");
+
+    /// <summary>Hinweis, wenn der gebuchte Lauf noch keine Vorschau je Wahl trägt.</summary>
+    public string UebEsVorschauOhne { get; } = T("BHW_UEB_ES_VORSCHAU_OHNE",
+        "Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.");
+
     /// <summary>Eine Energiesteuerzeile des gebuchten Laufs; {0} = Vorschrift, {1} = Menge,
     /// {2} = Satz, {3} = Einheit des Satzes, {4} = Betrag [€].</summary>
     public string UebEsGebucht { get; } = T("BHW_UEB_ES_GEBUCHT", "{0}: {1} × {2} {3} = {4} €");

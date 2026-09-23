@@ -138,6 +138,9 @@ namespace WindowsFormsApplication1
         /// die SPEICHERBEWERTUNG (<c>v_pv</c> der StromPreisCtrl-Welt) — Stufe-1-Satz
         /// des ersten Jahres, mengenunabhängig. null = Dialog inaktiv/fehlt: dann
         /// bleibt die bisherige Quelle (<c>Verguetung_PV</c> des Aufschlagsblocks).
+        /// Bei fester Einspeisevergütung ist das der UNGERUNDETE EV-Mix
+        /// (<see cref="EegSatzErgebnis.EvMixCtUnrundet"/>, Entscheid E7c2‑Q5 b) — derselbe
+        /// Satz, mit dem <see cref="Rechne"/> die Einspeisung vergütet.
         /// </summary>
         public static double? VpvCtKwh(ProjektPhotovoltaikModel pv, double kwpRechnerisch,
                                        Func<string, int, double?> katalog,
@@ -169,8 +172,14 @@ namespace WindowsFormsApplication1
                 return Math.Max(0, jw.Value + Math.Max(0, aw - jw.Value) - dv);
             }
 
+            // ETAPPE E7c3 — Entscheid E7c2‑Q5 b (23.09.2026): Der EV-Satz der
+            // Speicherbewertung nimmt denselben UNGERUNDETEN Mix wie die Erlösreihe in
+            // Rechne (V‑1, Entscheid A4) — sonst trüge dieselbe Einspeisung im Speicher
+            // und in der Vergütung zwei verschiedene Sätze. Der Override steht, wie er
+            // gepflegt ist; die Marktprämie oben bleibt beim gerundeten anzulegenden Wert,
+            // wie in Rechne.
             double abschlag = katalog(DbWerte.GESETZ_EEG_EV_ABSCHLAG, pv.Inbetriebnahme.Year) ?? 0.4;
-            return Math.Max(0, aw - abschlag);
+            return Math.Max(0, (pv.AwOverride ?? satz.AwMixCtUnrundet) - abschlag);
         }
 
         /// <summary>

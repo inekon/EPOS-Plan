@@ -394,7 +394,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Umschlag_der_Fassung_7_traegt_die_Vorzeichenwechsel()
         {
-            Assert.Equal(7, ErgebnisNachweisUmschlag.FASSUNG);
+            // E7c3 (E7c2‑Q8 b): alt 7, neu 8 — Fassung 8 trägt zusätzlich die
+            // Energiesteuer-Vorschau je Wahl; die Vorzeichenwechsel reisen unverändert.
+            Assert.Equal(8, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(

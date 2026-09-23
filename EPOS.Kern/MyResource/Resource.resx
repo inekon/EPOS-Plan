@@ -22351,7 +22351,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
   </data>
   <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
-    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom.</value>
+    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl) — er bestimmt allein die bezahlte Menge; die Vollbenutzungsstunden des Kontingents zählen wie ohne Vorrichtung nach der erzeugten Arbeit (brutto ÷ elektrische Nennleistung).</value>
   </data>
   <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
     <value>Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat.</value>
@@ -24421,10 +24421,10 @@ Möchten Sie das zulassen?</value>
     <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
-    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vbh = erzeugte Arbeit ÷ P_Nenn = {1} MWh ÷ {2} kW = {3} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {4} MWh bestimmt allein die bezahlte Menge.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
-    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = {0} MWh ÷ {1} kW = {2} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {3} MWh bestimmt allein die bezahlte Menge.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
     <value>Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.</value>
@@ -24479,6 +24479,135 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
+  </data>
+  <data name="KOH_PRUEFUNG_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Prüfung „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="KOH_TP_HILFSENERGIE" xml:space="preserve">
+    <value>Doppelpflege der Hilfsenergie</value>
+  </data>
+  <data name="KOH_TP_PV_HERKUNFT" xml:space="preserve">
+    <value>Herkunft der PV-Vergütung</value>
+  </data>
+  <data name="KOH_TP_CO2_DOPPEL" xml:space="preserve">
+    <value>CO₂-Doppelansatz</value>
+  </data>
+  <data name="KOH_TP_STROMMIX" xml:space="preserve">
+    <value>Strommix-Rückfall</value>
+  </data>
+  <data name="KOH_TP_KWKG" xml:space="preserve">
+    <value>Datenlücken der KWKG-Rechnung</value>
+  </data>
+  <data name="KOH_TP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffseite der Energiesteuer</value>
+  </data>
+  <data name="KOH_TP_MISCHLAGE" xml:space="preserve">
+    <value>Mischlage § 53/§ 53a neben § 54</value>
+  </data>
+  <data name="KOH_TP_STROM" xml:space="preserve">
+    <value>Stromseite der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_ERLAUBNIS" xml:space="preserve">
+    <value>Erlaubnisschwelle der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
+    <value>Doppelzählung der Stromsteuerbefreiung</value>
+  </data>
+  <data name="EMB_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="EMB_STUFE_KATALOG" xml:space="preserve">
+    <value>Katalog der Kraftwerksparks</value>
+  </data>
+  <data name="EMB_STUFE_ERGEBNIS" xml:space="preserve">
+    <value>Laden des Ergebnisses</value>
+  </data>
+  <data name="EMB_STUFE_BIOGEN" xml:space="preserve">
+    <value>biogene Einstufung eines Energieträgers</value>
+  </data>
+  <data name="EMB_STUFE_REFKESSEL" xml:space="preserve">
+    <value>Faktoren des Referenzkessels</value>
+  </data>
+  <data name="EMQ_NICHT_LESBAR" xml:space="preserve">
+    <value>{0} nicht lesbar: {1}</value>
+  </data>
+  <data name="EMQ_WAS_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffkatalog</value>
+  </data>
+  <data name="EMQ_WAS_STROMTRAEGER" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR" xml:space="preserve">
+    <value>Faktor des Stromträgers</value>
+  </data>
+  <data name="EMQ_WAS_KATALOGTRAEGER" xml:space="preserve">
+    <value>Auslieferungsträger Strom</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR_WAERME" xml:space="preserve">
+    <value>Faktor des Wärmeerzeugers</value>
+  </data>
+  <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
+    <value>Energieträger des Wärmeerzeugers</value>
+  </data>
+  <data name="WIRT_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Rechenstufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="WIRT_STUFE_PARAMETER" xml:space="preserve">
+    <value>Parameter des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_TARIF" xml:space="preserve">
+    <value>Stromtarif des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_ANLAGEN" xml:space="preserve">
+    <value>Anlagen des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_LEISTUNG" xml:space="preserve">
+    <value>elektrische Leistung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_TRAEGER" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="WIRT_STUFE_HEIZOEL" xml:space="preserve">
+    <value>Heizölprüfung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_STUFE_KATALOG" xml:space="preserve">
+    <value>Gesetzeskatalog</value>
+  </data>
+  <data name="WIRT_STUFE_KOHAERENZ" xml:space="preserve">
+    <value>Kohärenzprüfung</value>
+  </data>
+  <data name="WIRT_STUFE_SATZHERLEITUNG" xml:space="preserve">
+    <value>KWKG-Satzherleitung</value>
+  </data>
+  <data name="WIRT_STUFE_SPEICHERN" xml:space="preserve">
+    <value>Speichern der Ergebnisse</value>
+  </data>
+  <data name="WIRT_STUFE_LADEN" xml:space="preserve">
+    <value>Laden der Ergebnisse</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU" xml:space="preserve">
+    <value>→ {0} {1} · {2} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_54" xml:space="preserve">
+    <value>→ {0} {1} − {2} € · {3} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE_SATZ" xml:space="preserve">
+    <value>→ {0} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_GRUND" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_VOLL" xml:space="preserve">
+    <value>→ Vorgabe · {0} €/a bei § 53</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_ENERGETISCH" xml:space="preserve">
+    <value>× {0} → {1} €/a bei § 53 — bewusste Untergrenze</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
+    <value>Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.</value>
   </data>
   <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
     <value>der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag).</value>
@@ -25330,7 +25459,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt.</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
-    <value>Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.</value>
+    <value>Ohne Haken wird das Gebäude nicht gekühlt: Es läuft frei, und die Überhitzung wird an der Maximalraumtemperatur ({0} °C) gezählt.</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
     <value>Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
@@ -25348,7 +25477,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Kühlleistungsgrenze muss größer als 0 sein.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
-    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken bleibt die Überhitzung informativ.</value>
+    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken läuft das Gebäude frei, und die Überhitzung wird an der Maximalraumtemperatur gezählt.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
     <value>Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C.</value>
@@ -25372,10 +25501,10 @@ Möchten Sie das zulassen?</value>
     <value>Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
-    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Das Gebäude wird nicht gekühlt und läuft frei — die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht.</value>
   </data>
   <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
-    <value>Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+    <value>Das Gebäude wird nicht gekühlt und läuft frei: Die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht.</value>
   </data>
   <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
     <value>Kältelast Jahresganglinie</value>
@@ -25496,5 +25625,182 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
     <value>Für diesen Satz liegt keine brauchbare Reihe vor (weder 8 760 noch 35 040 Werte).</value>
+  </data>
+  <data name="KFLT_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KFLT_SP_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="KFLT_SP_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="KFLT_SP_KURVEN" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="KFLT_SP_LASTGANG" xml:space="preserve">
+    <value>Lastgang</value>
+  </data>
+  <data name="KFLT_SP_INTERVALL" xml:space="preserve">
+    <value>Intervall</value>
+  </data>
+  <data name="KFLT_SP_JAHRESMAXIMUM" xml:space="preserve">
+    <value>Jahresmaximum</value>
+  </data>
+  <data name="ADM_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="GEBA_TITEL" xml:space="preserve">
+    <value>Verwaltung Gebäude</value>
+  </data>
+  <data name="GEBA_SB_HUELLE" xml:space="preserve">
+    <value>Hülle</value>
+  </data>
+  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
+    <value>Gebäudetypen…</value>
+  </data>
+  <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
+    <value>Flächen und U-Werte ändert „Bearbeiten…“; dort stehen auch Fenster je Himmelsrichtung, Raumtemperaturen, Ferien und Wärmebrücken.</value>
+  </data>
+  <data name="GEBA_HUELLE_WERT" xml:space="preserve">
+    <value>{0} m² · U {1} W/(m²K)</value>
+  </data>
+  <data name="GEBA_KZ_FLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="GEBA_KZ_HGES" xml:space="preserve">
+    <value>H_ges</value>
+  </data>
+  <data name="GEBA_KZ_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="GEBA_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDETYP" xml:space="preserve">
+    <value>Gebäudetyp</value>
+  </data>
+  <data name="GEBA_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="GEBA_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="GEBA_LBL_WOHNFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="GEBA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="GEBA_MSG_FEHLER" xml:space="preserve">
+    <value>Die Kenndaten konnten nicht geschrieben werden.</value>
+  </data>
+  <data name="GEBA_MSG_NEU" xml:space="preserve">
+    <value>„{0}“ angelegt.</value>
+  </data>
+  <data name="GTYP_SB_TAGESPROFIL" xml:space="preserve">
+    <value>Tagesprofil</value>
+  </data>
+  <data name="GTYP_LBL_KURVE_KURZ" xml:space="preserve">
+    <value>Kurve</value>
+  </data>
+  <data name="GTYP_BTN_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte…</value>
+  </data>
+  <data name="GTYP_TITEL_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte – {0}</value>
+  </data>
+  <data name="GTYP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GTYP_SB_KURVEN_HINWEIS" xml:space="preserve">
+    <value>{0} Tageskurven zu je 24 Stunden; „Stundenwerte…“ öffnet die 24 Felder der gewählten Kurve.</value>
+  </data>
+  <data name="GTYP_LBL_KURVENZAHL" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="GTYP_KURVEN_FUENF" xml:space="preserve">
+    <value>5 – Winter, Übergang und Sommer nach Witterung</value>
+  </data>
+  <data name="GTYP_KURVEN_ACHT" xml:space="preserve">
+    <value>8 – Wochentag und Wochenende je Jahreszeit</value>
+  </data>
+  <data name="GTYP_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Von {0} Gebäuden des Katalogs verwendet – Löschen gesperrt.</value>
+  </data>
+  <data name="GTYP_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Stehen bleiben (von Gebäuden verwendet): {0}</value>
+  </data>
+  <data name="GTYP_MSG_ANGELEGT" xml:space="preserve">
+    <value>„{0}“ angelegt: {1} Tageskurven.</value>
+  </data>
+  <data name="GTYP_KZ_KURVEN" xml:space="preserve">
+    <value>Tageskurven</value>
+  </data>
+  <data name="GTYP_KZ_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="GTYP_KZ_SUMME" xml:space="preserve">
+    <value>Tagessumme</value>
+  </data>
+  <data name="GTYP_UHR" xml:space="preserve">
+    <value>{0} Uhr</value>
+  </data>
+  <data name="PEAK_QUELLE_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="PEAK_BTN_DATEI_LASTGANG" xml:space="preserve">
+    <value>Lastgang aus Datei…</value>
+  </data>
+  <data name="PEAK_TITEL_DATEI" xml:space="preserve">
+    <value>Lastgang aus Datei</value>
+  </data>
+  <data name="PEAK_HINWEIS_DATEI" xml:space="preserve">
+    <value>Die Datei wird eingelesen, aber nicht abgelegt: Sie erscheint als Zeile mit der Quelle „Datei“.</value>
+  </data>
+  <data name="PEAK_SB_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="PEAK_SB_SCHWELLE" xml:space="preserve">
+    <value>Schwelle</value>
+  </data>
+  <data name="PEAK_SB_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="PEAK_SB_WERTE" xml:space="preserve">
+    <value>{0} Werte</value>
+  </data>
+  <data name="PEAK_SB_BERECHNET" xml:space="preserve">
+    <value>berechnet</value>
+  </data>
+  <data name="PEAK_SB_OFFEN" xml:space="preserve">
+    <value>noch nicht berechnet</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ALT" xml:space="preserve">
+    <value>Spitze ohne Speicher</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_NEU" xml:space="preserve">
+    <value>Spitze mit Speicher</value>
+  </data>
+  <data name="PEAK_KZ_KOPF_ERTRAG" xml:space="preserve">
+    <value>Ertrag je Jahr</value>
+  </data>
+  <data name="PEAK_MSG_EINGELESEN" xml:space="preserve">
+    <value>„{0}“ eingelesen – nicht abgelegt.</value>
+  </data>
+  <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
+    <value>{0} Sätze eingelesen.</value>
   </data>
 </root>

@@ -70,12 +70,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
-                {
-                    object v = cmd.ExecuteScalar();
-                    return (v == DBNull.Value) ? null : v;
-                }
+                return ScalarStreng(sql, parameter);
             }
             catch (Exception ex)
             {
@@ -89,19 +84,56 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
-                using (SqliteDataReader leser = cmd.ExecuteReader())
-                {
-                    // Derselbe Typ-Rueckweg (D9) wie in DataRepository.GetDataTable -
-                    // es gibt keine zweite Uebersetzungsfassung.
-                    return DataRepository.LadeTabelle(leser);
-                }
+                return TabelleStreng(sql, parameter);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("StilleDb.Tabelle fehlgeschlagen: " + ex.Message);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6, „Fehler werden geschluckt"): dieselbe skalare Abfrage,
+        /// dialogfrei, aber sie <b>reicht den Fehler weiter</b>. <c>null</c> bei fehlender
+        /// Zeile oder NULL.
+        ///
+        /// <para><b>Wozu.</b> <c>DataRepository</c> meldet einen Abfragefehler selbst —
+        /// als Dialog oder im Engine-Modus still in die Sammelliste — und liefert
+        /// <c>null</c> bzw. eine LEERE Tabelle. Für eine Prüf- oder Rechenstufe der
+        /// Wirtschaftlichkeit sieht eine unlesbare Tabelle so aus wie eine leere, und
+        /// genau das ist der Befund. Wer den Grund an seiner Zeile nennen will
+        /// („Prüfung „X“ nicht ausführbar: &lt;Grund&gt;“), liest über diese Fassung und
+        /// fängt den Fehler selbst, benannt.</para>
+        ///
+        /// <para>Verbindung, Parameterübersetzung und Typ-Rückweg sind dieselben wie in
+        /// <see cref="Scalar"/> und <c>DataRepository</c> — es gibt keine zweite
+        /// Übersetzungsfassung.</para>
+        /// </summary>
+        internal static object ScalarStreng(string sql, params DbParam[] parameter)
+        {
+            using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+            using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
+            {
+                object v = cmd.ExecuteScalar();
+                return (v == DBNull.Value) ? null : v;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6): dieselbe Tabellenabfrage wie <see cref="Tabelle"/>,
+        /// dialogfrei, aber sie <b>reicht den Fehler weiter</b> statt <c>null</c> zu
+        /// liefern — Begründung bei <see cref="ScalarStreng"/>.
+        /// </summary>
+        internal static DataTable TabelleStreng(string sql, params DbParam[] parameter)
+        {
+            using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+            using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
+            using (SqliteDataReader leser = cmd.ExecuteReader())
+            {
+                // Derselbe Typ-Rueckweg (D9) wie in DataRepository.GetDataTable -
+                // es gibt keine zweite Uebersetzungsfassung.
+                return DataRepository.LadeTabelle(leser);
             }
         }
 

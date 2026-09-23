@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
 using WindowsFormsApplication1.Zeichnung;
 
@@ -62,50 +63,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
+            // Stufe 5 der Neuordnung der Administrationsdialoge (V16, A10): Die Typliste
+            // ist eine Katalogliste (Katalogfilterzeilen, Profil FuerGebaeudetyp), Neu...
+            // fragt die Kurvenzahl, Duplizieren... kopiert samt Tageskurven, und die
+            // Loeschsperre nennt die Gebaeude, die den Typ fuehren. Die Beschriftungen
+            // bringt die Komponente selbst aus MyResource mit.
             return new Dictionary<string, object>
             {
-                ["Daten"] = new GebaeudetypDaten(),
-                ["Typen"] = new Func<IReadOnlyList<string>>(() => TagVCtrl.Typen()),
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(() => TagVCtrl.Katalogfilterzeilen()),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeudetyp(s => Text_(s, s)),
                 ["Lies"] = new Func<string, GebaeudetypDaten>(Lesen),
                 ["Speichern"] = new Func<int, double[,], bool>(TagVCtrl.Speichern),
-                ["Anlegen"] = new Func<string, string, int>(TagVCtrl.Anlegen),
+                ["BeschreibungSpeichern"] = new Func<int, string, bool>(TagVCtrl.BeschreibungSchreiben),
+                ["Anlegen"] = new Func<string, string, int, int>(TagVCtrl.Anlegen),
                 ["Loeschen"] = new Func<int, bool>(TagVCtrl.Loeschen),
+                ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
+                ["Verwendung"] = new Func<IReadOnlyDictionary<string, int>>(() => TagVCtrl.Gebaeudeverwendung()),
                 ["Bild"] = new Func<double[], Zeichenmodell>(Tagesbild),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 ["TitelText"] = Text_("GTYP_TITEL", "Gebäudetypen Verwaltung"),
-                ["LabelName"] = Text_("GTYP_LBL_NAME", "Name:"),
-                ["LabelBeschreibung"] = Text_("GTYP_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelKurve"] = Text_("GTYP_LBL_KURVE", "Kurvenverlauf für den Tag:"),
-                ["GruppeStunden"] = Text_("GTYP_GRP_STUNDEN", "Stundenwerteeingabe [kW, kWh oder %]"),
                 ["Feldnamen"] = Feldnamen(),
-
-                ["BtnNeuText"] = Text_("GTYP_BTN_NEU", "Typ hinzufügen"),
-                ["BtnLoeschenText"] = Text_("GTYP_BTN_LOESCHEN", "Typ löschen"),
-                ["BtnSpeichernText"] = Text_("GTYP_BTN_SPEICHERN", "Typ speichern"),
-
-                // DL-2 Nr. 2: Der Schlussknopf heisst "Beenden" und traegt als
-                // einziger die Primaerfarbe - jede der drei uebrigen Aktionen
-                // schreibt sofort in den Katalog, "OK" hiess hier schon immer nur
-                // schliessen.
-                ["BtnSchliessenText"] = Text_("GTYP_BTN_BEENDEN", "Beenden"),
-                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
-                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-                ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
-                ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
-
-                ["MeldungZahlFehlt"] = Text_("BTYP_MSG_ZAHL", "Bitte {0} als Zahl eingeben."),
-                ["MeldungNameFehlt"] = Text_("BTYP_MSG_NAME_LEER", "Bitte einen Namen eingeben!"),
-                ["MeldungNameBelegt"] = Text_("BTYP_MSG_NAME_BELEGT", "Name existiert bereits!"),
-                ["MeldungGespeichert"] = Text_("BTYP_MSG_GESPEICHERT", "Daten gespeichert!"),
-                ["MeldungFehler"] = Text_("GTYP_MSG_FEHLER", "Speichern nicht möglich!"),
-                ["FrageLoeschen"] = Text_("BPRO_FRAGE_LOESCHEN", "Soll {0} wirklich gelöscht werden ?"),
-                ["HinweisGesperrt"] = Text_("GTYP_MSG_GESPERRT",
-                    "Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden"),
-
                 ["HilfeSchluessel"] = "Form_EingGebTyp.btn_Help"
             };
+        }
+
+        /// <summary>„Duplizieren…" — der Kern kopiert Kopf und Tageskurven in EINER Transaktion.</summary>
+        private static KatalogSpeicherErgebnis Duplizieren(int id, string name)
+        {
+            Katalogkopie.Ergebnis e = TagVCtrl.Duplizieren(id, name);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
         // =================================================================================

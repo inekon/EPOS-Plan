@@ -196,6 +196,14 @@
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiNeu">@BtnNeuText</button>
+        @* "IMPORT..." (Konzept 7.1 d, Zweitweg zu V14): derselbe Herstellerimport wie
+           im Menue "Daten & Import", als Ueberlagerung; ohne Weg der Huelle (BHKW)
+           kein Knopf. *@
+        @if (Wege.ImportGaben is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" disabled="@NurLesen"
+                    @onclick="ImportOeffnen">@BtnImportText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
@@ -239,6 +247,10 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- "Import..." als Ueberlagerung (7.1 d): Titel und Kreuz traegt der
+           Importdialog selbst - waehrend eines Laufs steht es nicht. *@
+    <EPOS.UI.Dialoge.Import.ImportUeberlagerung KatalogGaben="@_importGaben" Geschlossen="ImportFertig" />
 </div>
 
 @code {
@@ -1175,6 +1187,52 @@
         return false;
     }
 
+    // =====================================================================
+    // "Import..." (Konzept Administrationsdialoge 7.1 d, Zweitweg zu V14)
+    // =====================================================================
+
+    /// <summary>„Import…" — <c>ADM_BTN_IMPORT</c>.</summary>
+    [Parameter] public string BtnImportText { get; set; } = Resource.ADM_BTN_IMPORT;
+
+    private IReadOnlyDictionary<string, object>? _importGaben;
+    private HashSet<string> _vorImport = new(StringComparer.Ordinal);
+
+    /// <summary>Steht der Import als Überlagerung? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _importGaben is not null;
+
+    /// <summary>
+    /// „Import…" öffnet den Herstellerimport dieses Katalogs als Überlagerung. Geänderte
+    /// Felder halten an wie bei „Neu…" (Konzept 3.3).
+    /// </summary>
+    private void ImportOeffnen()
+    {
+        if (Wege.ImportGaben is null || NurLesen) return;
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+        _meldung = "";
+        _vorImport = new HashSet<string>(_zeilen.Select(z => z.Bezeichner), StringComparer.Ordinal);
+        _importGaben = Wege.ImportGaben();
+    }
+
+    /// <summary>
+    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, der erste neue Satz ist
+    /// gewählt, und die Statuszeile nennt die Zahl der neuen Sätze (V14).
+    /// </summary>
+    private void ImportFertig(bool geschrieben)
+    {
+        _importGaben = null;
+        if (!geschrieben) return;
+
+        ListeAufbauen();
+        List<Katalogfilterzeile> neu = _zeilen.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
+        if (neu.Count == 0) return;
+
+        _gewaehlt = neu[0].Bezeichner;
+        DetailLaden();
+        _status = neu.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_IMPORTIERT, neu.Count);
+    }
+
     /// <summary>
     /// Esc schließt die oberste Ebene — zuletzt den Dialog, und dort wie „Beenden".
     /// Enter bleibt unbelegt: „Löschen", „Speichern" und „Duplizieren…" schreiben sofort.
@@ -1182,7 +1240,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
+        if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage || _importGaben is not null)
+            return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3), dann den Dialog.
         if (_auswahl.BlattOffen)
