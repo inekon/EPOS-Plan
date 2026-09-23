@@ -106,8 +106,9 @@ public class GanzzahlfeldTests : BunitContext
     [Fact]
     public void Aktiv_false_sperrt_das_Feld_laesst_den_Wert_aber_lesbar()
     {
-        // iU9-W2.3: HT/NT entfaellt im Rollenmodell (Leitentscheidung L10) -
-        // die Stunden bleiben stehen, sind aber nicht mehr zu aendern.
+        // iU9-W2.3: Der Tarifdialog sperrte so die HT-Stunden im Rollenmodell
+        // (Leitentscheidung L10) - sie blieben stehen, waren aber nicht mehr zu
+        // aendern. Das HT-Fenster ist mit Q11 entfallen; die Regel des Bausteins bleibt.
         var cut = Render<Ganzzahlfeld>(p => p
             .Add(x => x.Wert, 6)
             .Add(x => x.Aktiv, false));
