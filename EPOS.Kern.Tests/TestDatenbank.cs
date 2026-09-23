@@ -400,6 +400,11 @@ namespace EPOS.Kern.Tests
                 // Steht keine Vorgabe mehr, tut der Aufruf nichts.
                 FremdschluesselVorgabe.Alle(null);
 
+                // Schritt 101 (Konzept Wirtschaftlichkeit § 6.3 Nr. 30, 22.09.2026): die
+                // leere Anlagenart wird NULL. Reines DML aus DERSELBEN Quelle wie in der
+                // Migration; wiederholbar, auf einer nachgezogenen Kopie ohne Treffer.
+                KwkgAnlagenartLeer.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

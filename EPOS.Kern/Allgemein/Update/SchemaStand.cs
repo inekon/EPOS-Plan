@@ -334,11 +334,18 @@ namespace WindowsFormsApplication1
         /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
         /// Referenzlauf bleibt byte-gleich</b>, die Basis
         /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
+        /// Mit der LEEREN ANLAGENART (Schritt 101, Konzept Wirtschaftlichkeit § 6.3
+        /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>101</b>: Die
+        /// leere Zeichenkette in <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL,
+        /// und NULL heißt „nicht gepflegt". Die Anweisung steht bei
+        /// <see cref="KwkgAnlagenartLeer"/>. <b>Reines DML, ergebnisneutral:</b> Kein
+        /// Rechenweg unterscheidet die leere Zeichenkette von NULL; der Referenzlauf
+        /// bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 100;
+        public const int Zielversion = 101;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
