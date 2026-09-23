@@ -2467,7 +2467,7 @@ Keine stillen Teilsummen
             </div>
           </div>
           <div class="f-herleitung" style="margin-top:8px">§ 9b: STROMST_ENTLASTUNG_9B = 20,00 €/MWh, ab 2026 · Sockel STROMST_SOCKELBETRAG_9B 250 €/a · Menge Netzbezug 250,0 MWh (Lauf „Beide Anlagen")<br>
-          § 9 Nr. 3: STROMST_REGELSATZ = 20,50 €/MWh, ab 2026 · Menge 1.155,0 MWh Eigenverbrauch brutto · P<sub>el</sub> 300 kW ≤ 2 MW ✓ · CO₂ 242,1 &lt; 270 g/kWh ✓</div>
+          § 9 Nr. 3: STROMST_REGELSATZ = 20,50 €/MWh, ab 2026 · Menge 1.155,0 MWh Eigenverbrauch brutto · P<sub>el</sub> 300 kW ≤ 2 MW ✓ · CO₂ 218,6 &lt; 270 g/kWh ✓ (EBeV 181,4 g/kWh, brennwertbezogen)</div>
           <div class="f-vorschau" style="margin-top:10px">
             <div class="f-vzeile"><span>Entlastung Netzbezug <span class="f-tag">250,0 × 20,00 − 250</span></span><span class="f-vwert num">4.750,0 €</span></div>
             <div class="f-vzeile" style="opacity:.78"><span>Befreiung Eigenverbrauch <span class="f-tag">1.155,0 × 20,50 — Ausweis</span></span><span class="num">23.677,5 €</span></div>
@@ -2528,7 +2528,7 @@ Keine stillen Teilsummen
         <tr><td>Stromsteuer-Entlastung § 9b</td><td class="r num">20,00 €/MWh</td><td class="r num">250,0 MWh Netzbezug</td><td class="r num">4.750,0 €</td>
             <td>Katalog ab 2026, Sockel 250 €/a · produzierendes Gewerbe ✓ · hängt am Restbezug, nicht an der Anlage</td></tr>
         <tr><td>Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3</td><td class="r num">20,50 €/MWh</td><td class="r num">1.155,0 MWh brutto</td><td class="r num">23.677,5 € · Ausweis</td>
-            <td>Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P<sub>el</sub> ≤ 2 MW ✓ · CO₂ 242,1 &lt; 270 g/kWh ✓ · Modus Ausweis</td></tr>
+            <td>Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P<sub>el</sub> ≤ 2 MW ✓ · CO₂ 218,6 &lt; 270 g/kWh brennwertbezogen ✓ · Modus Ausweis</td></tr>
       </tbody>
     </table>
   </div>
@@ -2852,10 +2852,11 @@ Stromsteuer
         <tr><td>Felder der gewählten Anlage (zwei Datumsfelder, sechs Zahlenfelder, vier Wahlfelder)</td><td class="rs">BHW_A_STICHTAG · BHW_A_IBN · BHW_A_ANLAGENART · BHW_A_EIGENFALL · BHW_A_SATZ_EINSP · BHW_A_SATZ_EIGEN · BHW_A_KONTINGENT · BHW_A_DECKEL · BHW_A_KOSTENANTEIL · BHW_A_ENERGIESTEUER · BHW_A_AUFTEILUNG · BHW_A_HILFSANTEIL · BHW_A_HILFS_BASIS</td><td>Angaben der gewählten Anlage</td></tr>
         <tr><td>Herkunftszeilen unter Satz Einspeisung, Satz Eigenstrom und Kontingent; Sperrgründe</td><td class="rs">BHW_HERLEITUNG_EINSP · BHW_HERLEITUNG_EIGEN · BHW_HERLEITUNG_KONTINGENT · BHW_SPERR_OHNE_PEL · BHW_SPERR_OHNE_EIGENFALL · BHW_SPERR_OHNE_ANLAGENART</td><td>Angaben der gewählten Anlage</td></tr>
         <tr><td>Knopf „Vorschlag übernehmen" (wandert in die Überlagerung) · Vermerk „eigener Wert {0} — Vorschlag {1}" <b>neu</b></td><td class="rs">BHW_BTN_VORSCHLAG_FELD · WIRT_ERL_HERKUNFT_EIGEN · WIRT_ERL_HERKUNFT_VORSCHLAG</td><td>Überlagerung · Herkunftszeile</td></tr>
-        <tr><td>Wahllisten Anlagenart, Tatbestand, Entlastung, Aufteilung, Unternehmensart, Modus</td><td class="rs">BHW_W_ART_* · BHW_W_FALL_* · BHW_W_ES_* · BHW_W_AUF_* · BHW_W_UA_* · BHW_W_MODUS_* · BHW_W_PROJEKTWERT</td><td>Anzeigezeilen · Überlagerung</td></tr>
+        <tr><td>Wahllisten Anlagenart (Leereintrag „(bitte wählen)"), Tatbestand, Entlastung, Aufteilung, Unternehmensart, Modus</td><td class="rs">BHW_W_ART_* ·BHW_W_FALL_* · BHW_W_ES_* · BHW_W_AUF_* · BHW_W_UA_* · BHW_W_MODUS_* · BHW_W_PROJEKTWERT</td><td>Anzeigezeilen · Überlagerung</td></tr>
         <tr><td>Projektweite KWK-Angaben: fünf Felder und zwei Hinweiszeilen</td><td class="rs">WPAR_EINSP_KWK · BHW_P_ABSCHLAG · BHW_P_PAUSCHAL · BHW_P_STICHTAG · BHW_P_IBN · BHW_P_EINSP_KWK_HINWEIS · BHW_P_NUR_PROJEKTWEIT</td><td>Projektweite KWK-Angaben</td></tr>
         <tr><td>Energiesteuer: Wahl, Aufteilung, Nutzungsgrad, Herkunft aus dem Lauf</td><td class="rs">BHW_E_WAHL · BHW_E_AUFTEILUNG · BHW_E_NUTZUNGSGRAD · BHW_E_OHNE_HERKUNFT</td><td>Energiesteuer (Projektvorgabe)</td></tr>
         <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, zwei Sprungknöpfe, Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_STROMBEZUG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
+        <tr><td>§ 9 Abs. 1 Nr. 3, CO₂-Grenzwert brennwertbezogen: Begründung „über dem CO₂-Grenzwert … (brennwertbezogen)" · Herleitung je Anlage „{0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen)", „… (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3})", „… heizwertbezogen — kein Brennwert gepflegt)" · Herkunftszeile „CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh" · Hinweis ohne gepflegten Brennwert</td><td class="rs">STEUER_STROMST_CO2 · STEUER_STROMST_CO2_FAKTOR_HO · STEUER_STROMST_CO2_FAKTOR_UMGERECHNET · STEUER_STROMST_CO2_FAKTOR_HI · STEUER_STROMST_CO2_HERLEITUNG · STEUER_STROMST_CO2_HEIZWERT</td><td>Begründung und Herkunft der Befreiungszeile · Vorschau</td></tr>
         <tr><td>Kohärenz: Leerzeile und Fallzeilen des Laufs · Doppelpflege Hilfsenergie</td><td class="rs">BHW_K_LEER · KOH_FALL1_ENERGIESTEUER … KOH_FALL5_MISCHLAGE · KOH_DOPPEL_STROMST_9_1_3 · KOH_HILFSENERGIE_DOPPELT</td><td>Kohärenzprüfung · Hilfsstrom</td></tr>
         <tr><td>Hilfsstrom: Basiszeile, Mengenkette, Kesselhinweis, ohne Lauf</td><td class="rs">BHW_H_BASIS · BHW_H_KETTE1 · BHW_H_KETTE2 · BHW_H_KESSEL · BHW_H_OHNE_LAUF</td><td>Hilfsstrom</td></tr>
         <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit" · ohne Lauf · Standzeile</td><td class="rs">WIRT_ERL_TEILSUMME · WIRT_ERL_PROJEKTWEIT · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
@@ -3447,7 +3448,7 @@ Zuordnung der Zeilen
         <tr><td>Herleitungszeile „Herleitung" unter jeder Geldzeile · Gründe der Nullzeilen</td><td class="rs">WIRT_GRUND_KWKG · WIRT_ERL_HERLEITUNG · WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF · WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF · WIRT_ERL_GRUND_KWKG_MENGE · WIRT_ERL_GRUND_KWKG_SATZ · WIRT_ERL_GRUND_KWKG_KONTINGENT · WIRT_ERL_GRUND_KEINE_EINSPEISUNG · WIRT_ERL_GRUND_OHNE_VERGUETUNG · WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE</td><td>dito</td></tr>
         <tr><td>Hinweis „Block B wird nicht summiert"</td><td class="rs">WIRT_ERL_KOPF_B</td><td>Fuß der Rubrik</td></tr>
         <tr><td>Textzeilen „Satz Einspeisung · Herkunft" und „Satz Eigenstrom · Herkunft" · Vermerk „eigener Wert {0} — Vorschlag {1}" · „Vorschlag"</td><td class="rs">WIRT_ERL_A1_SATZ · WIRT_ERL_A2_SATZ · WIRT_ERL_HERKUNFT_EIGEN · WIRT_ERL_HERKUNFT_VORSCHLAG</td><td>Erlösrubrik, Bericht, Vorschau</td></tr>
-        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil" · Herleitung je Anlage „{0} MWh vermiedener Bezug · Anteil {1} %" · „Näherung: verteilt nach dem Netto-Stromanteil je Anlage"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG · WIRT_ERL_B1_ANTEIL · WIRT_ERL_B1_NAEHERUNG</td><td>Block B</td></tr>
+        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil" · Herleitung je Anlage „{0} MWh vermiedener Bezug · Anteil {1} %" · „Näherung: verteilt nach dem Eigenverbrauch je Anlage"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG · WIRT_ERL_B1_ANTEIL · WIRT_ERL_B1_NAEHERUNG</td><td>Block B</td></tr>
       </tbody>
     </table>
   </div>
@@ -4555,8 +4556,11 @@ Einstufung
   Etappen E1 (Ankertests und Kaskadenrunde 2) und E2 (Kohärenzzeilen, Bandbreite mit Spanne,
   Referenztext, Formel N4, Dialogkorrekturen) haben Stücke berührt, die hier nie als offen standen;
   die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die Etappe E3 Plattform (#431) hat den
-  Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht. Die nächste Etappe ist
-  <b>E7 rechenwirksame Lücken</b>.</p>
+  Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht. E7 Teil a (#437) erledigt
+  keine Zeile dieser Tafel: U6 trägt den Nachtrag zu U6‑Q1 (Bedarf ohne jede Eigenerzeugung, Verteilschlüssel
+  brutto), U1 die Messung nach A2 — seine fünf Teilfragen liegen beim Anwender (E7‑Q2). Die nächsten
+  Etappen sind <b>E7b</b> (Zeitzonentarif und Leistungspreis-Staffel) und <b>E7c</b> (die übrigen
+  rechenwirksamen Lücken).</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4565,11 +4569,13 @@ Einstufung
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U1</td><td class="num">5</td>
             <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
               (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
-              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–100 sind vergeben,
-              der nächste freie ist <b>101</b>). <b>Vorbedingung:</b> Die modulscharfe
-              Nutzwärme (Wärmeproduktion abzüglich Wärmeüberschuss) liegt im Ergebnismodell je Modul
-              nicht vor — ohne sie ist Fall 2 nicht rechenbar. Zuerst ist zu klären, ob sie je Modul
-              geführt oder nach Wärmeproduktion aufgeteilt wird.</td>
+              <b>ein Schemaschritt</b> (Nummer bei der Umsetzung: 90–102 sind vergeben — 101 trägt die
+              leere Anlagenart, 102 den Zapfprofilgenerator —, der nächste freie ist <b>103</b>).
+              <b>Vorbedingung:</b> Die modulscharfe Nutzwärme (Wärmeproduktion abzüglich
+              Wärmeüberschuss) liegt im Ergebnismodell je Modul nicht vor — ohne sie ist Fall 2 nicht
+              rechenbar. Gemessen mit E7a (#437): Die Wärmeproduktion liegt je Modul vor, der
+              Wärmeüberschuss nur als Projektsumme (in allen BHKW-Basisprojekten 0); nach A2 greift die
+              Aufteilung nach P_el, fünf Teilfragen dazu sind beim Anwender (E7‑Q2).</td>
             <td><span class="mono">WirtschaftlichkeitCtrl.ReiheJeAnlage</span> ·
               <span class="mono">ErgebnisBHKWModulModel</span> · repoweit 0 Treffer „Abwärmeabfuhr"</td>
             <td>Prüffall: Anlage mit Kennzeichen und σ rechnet
@@ -4643,8 +4649,8 @@ Einstufung
               gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
               nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
               Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
-              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–100 sind vergeben, der nächste freie ist
-              <b>101</b>). Kennung im Text: UR-1 Schritt 2</td>
+              <b>eigener Schemaschritt</b> (Nummer bei der Umsetzung: 90–102 sind vergeben, der nächste freie ist
+              <b>103</b>). Kennung im Text: UR-1 Schritt 2</td>
             <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
               <span class="mono">energy_project_settings</span></td>
             <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
@@ -4752,7 +4758,7 @@ Einstufung
               Stromkosten je Anlage aus den Eigenverbrauchsmengen der Strommatrix; der Leistungsanteil
               bleibt projektweit</td>
             <td><span class="mono">WirtschaftlichkeitZeilen</span> · <span class="mono">StromMatrix</span></td>
-            <td class="grund"><b>erledigt mit E4/3 (#432):</b> Jede Erlöszeile trägt ihre Komponente (<span class="mono">WirtZeile.Komponente</span>); A und B gliedern innen nach Blockheizkraftwerk, Photovoltaik, Kessel und „projektweit", je mit Zwischensumme, Block A darunter die unveränderte Gesamtsumme. Die vermiedenen Stromkosten werden nach den Eigenverbrauchsmengen je Anlage verteilt (<span class="mono">VermiedenAnlageNachweis.Verteile()</span>, Näherung V‑4, ausgewiesen), der Leistungsanteil bleibt projektweit und nennt bei fehlender Bezugsspitze den Grund. Seite, Wort- und Tabellenbericht und BHKW-Vorschau lesen den einen Katalog; Nachweisumschlag Fassung 6, kein Schemaschritt. Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a als Ankertest. <b>Entschieden 22.09.2026 (U6‑Q1, mit E7):</b> Die vermiedene Menge führt künftig auch den PV-Eigenverbrauch (Bedarf ohne jede Eigenerzeugung, § 9b-Korrektur auf beide Anlagen, KWK-Split unverändert) — heute mindert <span class="mono">StromMatrix</span> „Bedarf ohne Anlage" bereits um ihn, der Lauf bringt deshalb nur das Blockheizkraftwerk in den Schlüssel ein</td></tr>
+            <td class="grund"><b>erledigt mit E4/3 (#432):</b> Jede Erlöszeile trägt ihre Komponente (<span class="mono">WirtZeile.Komponente</span>); A und B gliedern innen nach Blockheizkraftwerk, Photovoltaik, Kessel und „projektweit", je mit Zwischensumme, Block A darunter die unveränderte Gesamtsumme. Die vermiedenen Stromkosten werden nach den Eigenverbrauchsmengen je Anlage verteilt (<span class="mono">VermiedenAnlageNachweis.Verteile()</span>, Näherung V‑4, ausgewiesen), der Leistungsanteil bleibt projektweit und nennt bei fehlender Bezugsspitze den Grund. Seite, Wort- und Tabellenbericht und BHKW-Vorschau lesen den einen Katalog; Nachweisumschlag Fassung 6, kein Schemaschritt. Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a als Ankertest. <b>Entschieden 22.09.2026 (U6‑Q1), gebaut mit E7a (#437):</b> Die vermiedene Menge führt auch den PV-Eigenverbrauch (Bedarf ohne jede Eigenerzeugung, § 9b-Korrektur auf beide Anlagen, KWK-Split unverändert); beide Verteilschlüssel kommen brutto aus der Strommatrix (1.094,2 : 85,5 MWh — die Aufteilung dieser Seite), die Herleitung heißt „Näherung: verteilt nach dem Eigenverbrauch je Anlage", und im Rollentarif ersetzt der PV-Anteil die Zeile „PV: vermiedener Bezug"; der Kernweg rechnet 293.245,6 + 22.914,0 = 316.159,6 €/a</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U7</td><td class="num">7</td>
             <td>§ 53/53a und § 54 als getrennte Rückgabegrößen — sie kommen als eine Summe zurück und
               lassen sich deshalb nicht getrennt bei BHKW und Kessel ausweisen</td>

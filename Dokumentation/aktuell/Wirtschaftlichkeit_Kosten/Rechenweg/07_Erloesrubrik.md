@@ -35,8 +35,10 @@ aus) · Energiesteuer Kesselbrennstoff § 54 (nur produzierendes Gewerbe, Sockel
 | Vermiedene Stromkosten — Arbeit | Differenzmethode | 1.179,7 MWh | 28,80 ct | 339.753,6 | steckt im Reststrombetrag, der in den Kapitalwert geht (E5, fünffach belegt) |
 | abzüglich entgangener § 9b-Entlastung | § 9b StromStG | 1.179,7 MWh | 20,00 €/MWh | − 23.594,0 | bei produzierendem Gewerbe |
 | **vermiedene Kosten effektiv** | | | | **316.159,6** | |
+| davon Blockheizkraftwerk | Verteilschlüssel | 1.094,2 MWh | | 293.245,6 | Eigenverbrauch brutto aus der Strommatrix |
+| davon Photovoltaik | Verteilschlüssel | 85,5 MWh | | 22.914,0 | dito |
 | Vermiedene Stromkosten — Leistung | Differenzmethode | — | — | − 4.180,0 | regelmäßig **negativ** — Kernaussage, kein Fehler |
-| PV: vermiedener Bezug, Kappungs- und Ausfallmengen | | 85,5 MWh | | 24.624,0 | dito bzw. Mengenausweis |
+| PV: Kappungs- und Ausfallmengen | | — | | — | Mengenausweis; „PV: vermiedener Bezug" (85,5 MWh × 28,80 ct = 24.624,0 € zum Flat-Preis) steht nur im Flat-Tarif — im Rollentarif trägt der PV-Anteil oben den Betrag |
 
 Kennzeichnung im Dialog: Vermerk `[Ausweis]` je Zeile, Summenzeile nur über Block A. In der
 **Differenzsicht** gegen ein Vergleichsprojekt (§ 2.9) sind vermiedene Bezüge reguläre
@@ -49,7 +51,9 @@ Zeile nennt Menge, Satz und Herkunft in **einer** Spalte „Satz · Herkunft" (e
 Herkunft" des BHKW-Dialogs (`05`). Ein von Hand gesetzter Satz steht in der Spalte als „eigener Wert
 6,00 — Vorschlag 5,5667". Block B zeigt je Komponente **eine** Zeile „Vermiedene Stromkosten wirksam"
 und trägt die Kette brutto − entgangene § 9b-Entlastung in der Herkunftsspalte; die Tabelle oben ist
-die ausgeschriebene Fassung derselben Zeilen.
+die ausgeschriebene Fassung derselben Zeilen. Die Herleitung je Anlage nennt Menge und Anteil, bei mehr
+als einer Anlage mit dem Vermerk „Näherung: verteilt nach dem Eigenverbrauch je Anlage"
+(`WIRT_ERL_B1_NAEHERUNG`).
 
 ## Satz, Menge und Handeingabe je Zeile
 
@@ -77,11 +81,19 @@ der Rechenkern rechnet mit dem ungerundeten Quotienten (Unterschied 0,5 €/a im
 
 ```
 Vermiedene Stromkosten — Differenzmethode
-  Bezug     = Rollenkosten(Bezugstarif,    Bedarf OHNE Anlage)
+  Bezug     = Rollenkosten(Bezugstarif,    Bedarf OHNE JEDE EIGENERZEUGUNG)
   Reststrom = Rollenkosten(Reststromtarif, Restbezug MIT Anlage)
   Vermieden = Bezug − Reststrom            je Arbeit / Leistung / Gesamt
+  Menge     = Bedarf ohne jede Eigenerzeugung − Restbezug    (KWK- und PV-Eigenverbrauch)
   In den Kapitalwert geht der Reststrombetrag. Die Differenz zusätzlich zu buchen wäre
   Doppelzählung — fünffach belegt (E5).
+
+Aufteilung je Anlage (V‑4) — Schlüssel brutto aus der Strommatrix
+  BHKW  KwkEigenGesamtMWh = min(BHKW, Bedarf nach PV) je Stunde    (KWK-Split unverändert)
+  PV    PvEigenGesamtMWh  = PV-Eigennutzung, soweit sie Bedarf deckt
+  Menge, Arbeit und § 9b-Korrektur anteilig ; der Leistungsanteil bleibt projektweit
+  Rollentarif: der PV-Anteil ersetzt die Zeile „PV: vermiedener Bezug" (Flat-Preis) ;
+               im Flat-Tarif bleibt sie
 
 Korrektur um die entgangene Entlastung (Klarstellung 1, Konzept § 2.6)
   Vermieden_effektiv = Vermieden_brutto − Entlastungssatz(§ 9b) × vermiedene Menge
@@ -102,16 +114,18 @@ Stromsteuer mit 20,50 €/MWh. Ein Unternehmen des produzierenden Gewerbes bekom
 
 | Größe | Menge | Satz | Betrag | Wirkung |
 |---|---|---|---|---|
-| Strombedarf ohne Anlage | 1.429,7 MWh | 28,80 ct | 411.753,6 €/a | hypothetisch |
+| Strombedarf ohne jede Eigenerzeugung | 1.429,7 MWh | 28,80 ct | 411.753,6 €/a | hypothetisch |
 | Restbezug mit Anlage | 250,0 MWh | 28,80 ct | 72.000,0 €/a | **Kapitalwert** (Energiekosten, `04`) |
 | **Vermieden brutto** | 1.179,7 MWh | — | **339.753,6 €/a** | Ausweis |
-| entgangene § 9b-Entlastung | 1.179,7 MWh | 20,00 €/MWh | − 23.594,0 €/a | im Ausweis heute nicht abgezogen |
+| entgangene § 9b-Entlastung | 1.179,7 MWh | 20,00 €/MWh | − 23.594,0 €/a | im Ausweis abgezogen |
 | **Vermieden effektiv** | — | — | **316.159,6 €/a** | Ausweis |
 
-Die vermiedene Menge ist die **physisch** vermiedene — Bedarf ohne Anlage minus Restbezug der Strommatrix
-(1.429,7 − 250,0 = 1.179,7 MWh, davon 85,5 MWh Photovoltaik) —, nicht die brutto bemessene § 9-Menge und nicht
-die KWKG-Menge (`Beispielprojekt.md` § 3). Der Hilfsstrom berührt sie nicht: Die Strommatrix ist die Brutto-Welt,
-das Netting wirkt allein auf den Zuschlag (`WirtschaftlichkeitCtrl`, Kommentar zu `BaueKwkgReihe`).
+Die vermiedene Menge ist die **physisch** vermiedene — Bedarf ohne jede Eigenerzeugung minus Restbezug der
+Strommatrix (1.429,7 − 250,0 = 1.179,7 MWh, davon 1.094,2 MWh Blockheizkraftwerk und 85,5 MWh Photovoltaik) —,
+nicht die brutto bemessene § 9-Menge und nicht die KWKG-Menge (`Beispielprojekt.md` § 3). Der Hilfsstrom berührt
+sie nicht: Die Strommatrix ist die Brutto-Welt, das Netting wirkt allein auf den Zuschlag (`WirtschaftlichkeitCtrl`,
+Kommentar zu `BaueKwkgReihe`). Nach denselben Brutto-Mengen verteilt der Schlüssel: 1.094,2 : 85,5 ergibt
+293.245,6 und 22.914,0 €/a — so rechnet es der Kernweg (`VermiedeneMengeOhneEigenerzeugungTests`).
 
 Im Kapitalwert ist das bereits korrekt: Die § 9b-Reihe rechnet auf den kleineren Netzbezug und
 fällt dadurch automatisch geringer aus. Falsch war bisher nur der **Ausweis** — er zeigte den Vorteil
@@ -130,3 +144,4 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 | — | Die Vorschau des BHKW-Dialogs führte eine Summe „zahlungswirksam" (80.934,2 €), die weder der Variante 1 (84.435,6 €, § 9b auf 335,5 MWh) noch der Variante 3 (91.727,0 €, mit Photovoltaik) entsprach | Vorschau zeigt den Block Blockheizkraftwerk (77.975,6 €) und die projektweite § 9b-Zeile des Laufs „Beide Anlagen" getrennt — Mockup Abschnitt 5, `05` |
 | — | Spalte „Satz · Herkunft" je Zeile, Vermerk „eigener Wert — Vorschlag" | Mockup Abschnitt 7; Umsetzungsstand U23 (Vergleich Satz gegen Vorschlag im Nachweis) |
 | ✔ S-1 | Hilfsstrom-Netting des Beispiels gegen die Kernregel „Eigen zuerst" — Zuschlag- und Einspeisezeile betroffen | erledigt (U24): Zuschlag 32.022,2 €, Einspeiseerlös 24.750,0 €, Block A der Variante 3 91.727,0 €/a; Einzelheiten in `05` |
+| ✔ Nr. 32 | Die vermiedene Menge führte keinen PV-Eigenverbrauch: `StromMatrix` zog die PV-Eigennutzung vorab ab, der Schlüssel brachte nur das Blockheizkraftwerk ein (netto aus dem Modulnachweis), die Photovoltaik stand als eigene Zeile zum Flat-Preis (Frage U6‑Q1) | **umgesetzt #437**: Bedarf und Lastbild vor Abzug der PV-Eigennutzung, beide Schlüssel brutto aus der Strommatrix, im Rollentarif ersetzt der PV-Anteil die Zeile „PV: vermiedener Bezug"; der Kernweg rechnet das Beispiel dieses Papiers — 316.159,6 = 293.245,6 + 22.914,0 €/a (vorher 293.245,6, allein das Blockheizkraftwerk); Konzept § 3.6 |
