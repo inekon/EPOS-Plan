@@ -300,7 +300,7 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 
 > **Nachträge nach der Einfrierung von R12 (Merge vom 23.09.2026):** Die Schritte 104 und 105 der Etappen E7b und E7c1
 > wurden gegen die damalige Basis R11 nachgewiesen und beim Zusammenführen mit R12 erneut gerechnet:
-> NACHWEIS-R12-PLATZHALTER
+> **Nachweis gegen R12 (Merge a1985884, 23.09.2026):** Referenzlauf aller dreizehn Projekte auf Schemastand 105 mit dem Testdaten-UPDATE gegen `2026-09-23_R12_Gebaeudemodell` — **13/13 PASS**, 4 250 839 Werte innerhalb der Toleranz, 399 von 399 CSV byte-gleich; voller Testlauf des Kern-Filters auf dem gemergten Stand 11 091 grün, 1 übersprungen. Die Basis R12 bleibt.
 
 > **Nachtrag: Schemastand 104 (Auftrag #439, Etappe E7b), die Basis bleibt.** Migrationsschritt
 > **104** (`SCHRITT_104_ZEITZONENTARIF_ABLOESUNG`, Quellen `SchemaKatalog.Schritt104_LeistungspreisStaffel`
