@@ -94,7 +94,12 @@ Vorrang der Bezugsmenge (frisch vor Konserve, H2-1)
   3. Endenergie-Arten (PROZENT_ENDENERGIEKOSTEN / _BEDARF): Menge IMMER frisch aus dem
      jüngsten Lauf (höchste Tab_Ergebnis.ID); Auflöser null ⇒ Betrag 0 — die Konserve greift nie
   4. Rückfall-ermittelbare Arten (9 Stück): frisch versuchen, Konserve nur bei null
-  5. Übrige Arten (EUR_PRO_H, EUR_PRO_KWH, PROZENT_BRENNSTOFF-/STROMKOSTEN): nur Konserve (B-4)
+  5. Projektweite Arten PROZENT_BRENNSTOFF-/STROMKOSTEN (B-4): frisch aus dem jüngsten Lauf —
+     Brennstoffkosten = Σ Verbrauch × Arbeitspreis aller Brennstoffmodule (BHKW, Brennstoffkessel),
+     Stromkosten = Netzbezug × Arbeitspreis des Projekt-Stromträgers; Bezugsgröße die ARBEITSKOSTEN,
+     ohne Grund- und Leistungspreis (E7c2-Q2) ; Konserve nur, wo frisch nichts ermittelbar ist —
+     der Grund nennt Lauf, Menge oder Preis
+  6. Nur Konserve: EUR_PRO_KWH (ohne Anlagenbezug)
 
 Endenergie je Komponente (EndenergieAufloeser)
   BHKW, Kessel   Bedarf = Σ Verbrauch × 1000          Kosten = Bedarf × Arbeitspreis(CarrierId)
@@ -165,7 +170,8 @@ sind die Prozentwerte verschiedener Anlagen nicht vergleichbar.
 |---|---|---|
 | ⚠ B-1 | **Kessel-Endenergie ist strukturell 0** — der Rechenkern setzt `Verbrauch` nie; Endenergie-Positionen am Kessel liefern 0 € | Herleitungszeile zeigt „× 0 kWh" und macht den Befund sichtbar; Behebung: Verbrauch aus dem Lauf nachziehen |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel | Banner nennt Datum und Uhrzeit des Laufs |
+| ✔ B-4 | Zwei Arten nie frisch: `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN` nahmen nur die gepflegte Menge (Konserve) | **umgesetzt #446** (E7c2): beide frisch aus dem jüngsten Lauf, Bezugsgröße die projektweiten Arbeitskosten (E7c2‑Q2); Probe 1030 mit 3 % und Konserve 10.000 €: Brennstoff 300,00 → 15.483,29 €/a, Strom → 32.683,35 €/a; die Basisprojekte unverändert (die eine Zeile dieser Art, 1018, trägt keinen Satz) |
 | B-5 | `InvestSummeFuer` summiert `EingegebenerWert` — abgeleitete Beträge fehlen | Mockup zeigt den Kaskadenbetrag; Umsetzung muss auf den Kaskadenbetrag umstellen |
-| B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0) | Strich statt 0, Warnzeile — **offen**, gehört mit S‑2 zur Etappe **E7** (Konzept § 7, B8) |
+| B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0) | Strich statt 0, Warnzeile — **offen**, Etappe **E7c3** (Konzept § 7, B8; S‑2 ist mit #446 erledigt) |
 | ✔ B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€" | **umgesetzt #405**: Die Bezugsmenge kommt aus dem `BemessungKatalog` und trägt ihre eigene Einheit; die Herleitungszeile nennt kWh bzw. € ausdrücklich |
 | K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | in B5/B6 nachziehen |

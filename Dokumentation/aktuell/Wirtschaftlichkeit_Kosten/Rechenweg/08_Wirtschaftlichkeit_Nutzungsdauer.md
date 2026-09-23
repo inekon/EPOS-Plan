@@ -71,6 +71,10 @@ Nutzungsdauer, Ersatz, Restwert, Startjahr
   Jahr start, abgezinst, NICHT indexiert ; start > T → keine Zahlung, nur Ausweis
   Ersatz:   t_j = round(start + k·n)  für k = 1,2,… solange 1 ≤ t_j < T
   Restwert: Alter = T − letzte Beschaffung ; Restdauer = n − Alter ; RW_T = Betrag × Restdauer / n
+  Kennzeichen je Position (Schemaschritt 108, Konzept § 2.13 (3)) — leer und „ja" rechnen wie oben:
+    ErsatzFuehren = nein    ⇒ keine Ersatzkette ; die letzte Beschaffung bleibt die erste
+    RestwertAnsetzen = nein ⇒ RW_T = 0 ; entkoppelt — eine nicht ersetzte Position trägt ihren
+                              Restwert aus der ersten Beschaffung weiter
 
 Kennzahlen
   Annuitätenfaktor a(i,n) = i·(1+i)^n / ((1+i)^n − 1) ; a = 1/n bei i ≈ 0

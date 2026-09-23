@@ -24,7 +24,9 @@ Bezugsgröße, Herkunft und Kaskadenrunde („× 300,00 kW · P_el der Anlage ·
 Erlös-/Zuschusszeile führt — „Investition brutto 240.772,40 € · Zuschuss 6.000,00 € · I₀ 234.772,40 €".
 Knöpfe „+ Position hinzufügen",
 „Aus Vorlage übernehmen…", „Positionskatalog…"; Fußleiste Abbrechen · Speichern · OK. Kostenart,
-Erlös-/Zuschusskennzeichen und Empfehlungsbereich pflegt der Zeileneditor „Position bearbeiten". Was das Mockup
+Erlös-/Zuschusskennzeichen und Empfehlungsbereich pflegt der Zeileneditor „Position bearbeiten", dazu die zwei
+Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:" (leer — wie bisher · ja · nein, Schemaschritt 108;
+Rechnung in `08`, Konzept § 2.13 (3)). Was das Mockup
 darüber hinaus zeigt, steht im Anhang Umsetzungsstand: Gruppe „Ersatz und Restwert" (U30), Knopf
 „Nutzungsdauern vorbelegen…" (U8).
 
@@ -85,6 +87,11 @@ Zuschuss: Kennzeichen `Kostenart = "ZUSCHUSS"` (getrimmt, ohne Groß-/Kleinschre
 positiv. Zuschusszeilen erzeugen keine Ersatzbeschaffung, keinen Restwert und stehen in keiner
 Kaskadenbasis; `Ergebnis.Investition` bleibt brutto, nur I₀ ist netto.
 
+Ersatz und Restwert je Position: Die Kennzeichen `ErsatzFuehren` und `RestwertAnsetzen` (`Tab_ProjektWerte`,
+`Tab_KostenVorlagePosition`, nullbar) schalten Ersatzbeschaffung und Restwert einer Position getrennt ab — leer
+und „ja" rechnen wie die Nutzungsdauer es vorgibt, „nein" streicht das eine ohne das andere (Formel in `08`).
+Die Kaskade liest die Kennzeichen mit, Vorlagenübernahme, Projektkopie und „Speichern unter" tragen sie mit.
+
 ## Berechnungserläuterung am Beispielprojekt
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
@@ -111,3 +118,4 @@ kleine Prozentposition am Ende einen fünfstelligen Betrag.
 | ✔ I-3 | Runde 3 war reihenfolgeabhängig — zwei `PROZENT_INVESTITION`-Zeilen, die zweite rechnete die erste ein | **erledigt mit FX2** (Konzept § 4): Runde 3 friert ihre Basiszeilen vorher ein und ist reihenfolgeunabhängig. **Runde 2 ebenso — umgesetzt #380** (Befund R4): `InvestKaskade` fährt sie in zwei Phasen wie Runde 3; A/B über 25 Projekte × 3 Szenarien zeilenweise identisch (`InvestKaskadeTests`) |
 | ✔ I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung | **umgesetzt #405**: Steuerwerte werden im ganzen Kern zeichengenau verglichen (`Ordinal`); die tolerante Stelle `IstZuschuss` und ihr Gegenstück in `SpeicherAuslegungCtrl` sind nachgezogen |
 | I-6 | Nicht migrierte Datenbank: keine Kaskade, keine Zuschusserkennung | Migrationsprüfung beim Öffnen |
+| ✔ A6 | Ersatz und Restwert hingen allein an der Nutzungsdauer — das eine ließ sich nicht ohne das andere abschalten (U39) | **umgesetzt #446** (E7c2, Schemaschritt 108): je Position die Kennzeichen „Ersatzbeschaffung führen" und „Restwert ansetzen", gepflegt im Zeileneditor, die Tafel „Ersatz und Restwert" nennt die Abwahl; die Basisprojekte unverändert (alle leer) |
