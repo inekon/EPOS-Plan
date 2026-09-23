@@ -26550,4 +26550,7 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
+  </data>
 </root>

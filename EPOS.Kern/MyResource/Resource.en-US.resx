@@ -26543,4 +26543,7 @@ Do you want to allow this?</value>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>The heat pumps in cooling mode cover {0} MWh/a of the cooling demand ({1} %).</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
+  </data>
 </root>

@@ -140,6 +140,8 @@ namespace WindowsFormsApplication1
             }
 
             // --- 3. Kalibrierung, dann Zapfreihen (4.1, 4.2) ------------------------------
+            // Die Schranke der stochastischen Jahresreihe gilt für das Projekt, vor jeder Ziehung.
+            if (e.Projekt.JahresreiheStochastisch) EinheitentagePruefen(arbeit, e);
             double? rueckfrage = e.Parameter.Enthaelt(ZapfParameter.MESSWERT_RUECKFRAGESCHWELLE)
                                  ? e.Parameter.Wert(ZapfParameter.MESSWERT_RUECKFRAGESCHWELLE) : (double?)null;
             if (!rueckfrage.HasValue && arbeit.Exists(a => !a.Abgelehnt && a.Messwert != null))
@@ -327,6 +329,45 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kennung: Das Ensemblemittel lag außerhalb der Toleranz der Konsistenzprobe (4.4).</summary>
         internal const string HINWEIS_ENERGIEPROBE = "STOCHASTIK_ENERGIEPROBE";
+
+        /// <summary>
+        /// Kennung der Ablehnung „zu viele Einheitentage" der Jahresreihe
+        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>); Argumente: die Einheitentage
+        /// R · Σ n_E · 365 und die Grenze <see cref="Zapfensemble.HOECHSTENS_EINHEITSTAGE"/>.
+        /// </summary>
+        internal const string KENNUNG_EINHEITSTAGE = "STOCHASTIK_EINHEITSTAGE";
+
+        /// <summary>
+        /// <b>Die Schranke der Jahresreihe</b> (4.4): Die R Jahre ziehen je Zone n_E Einheiten an 365
+        /// Tagen; die Laufzeit wächst mit <c>R · Σ n_E · 365</c>. Liegt das über
+        /// <see cref="Zapfensemble.HOECHSTENS_EINHEITSTAGE"/> — derselben Grenze wie beim
+        /// Auslegungsensemble —, lehnt das Projekt benannt ab, bevor ein Jahr gezogen ist
+        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/> mit <see cref="KENNUNG_EINHEITSTAGE"/>
+        /// und den Werten). Eine Zone, deren Einheiten nicht bestimmbar sind, zählt nicht mit — sie
+        /// lehnt im Rechenweg selbst benannt ab.
+        /// </summary>
+        private static void EinheitentagePruefen(List<Zonenarbeit> arbeit, Zapfprofileingang e)
+        {
+            long einheiten = 0;
+            foreach (Zonenarbeit a in arbeit)
+            {
+                if (a.Abgelehnt) continue;
+                try { einheiten += Zapfeinheiten.Anzahl(a.Stand, a.Art, a.Menge.Bezugsmenge, e.Parameter); }
+                catch (ZapfprofilEingabeException) { /* die Zone lehnt im Rechenweg selbst ab */ }
+                catch (ParametersatzException) { /* ebenso */ }
+            }
+            long tage = (long)Math.Max(0, e.Projekt.Realisierungen) * einheiten * Zapfkalender.TAGE;
+            if (tage <= Zapfensemble.HOECHSTENS_EINHEITSTAGE) return;
+            string anzahl = tage.ToString(CultureInfo.InvariantCulture);
+            string grenze = Zapfensemble.HOECHSTENS_EINHEITSTAGE.ToString(CultureInfo.InvariantCulture);
+            throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, "",
+                "Nicht rechenbar — die stochastische Jahresreihe zöge " + anzahl
+                + " Einheitentage (Realisierungen × Einheiten × 365); höchstens " + grenze + " sind zulässig.")
+            {
+                Kennung = KENNUNG_EINHEITSTAGE,
+                Argumente = new[] { anzahl, grenze }
+            };
+        }
 
         /// <summary>
         /// Ersetzt die Zapfreihe der Zone durch die Realisierung zum Seed des Jahresensembles, mit dem

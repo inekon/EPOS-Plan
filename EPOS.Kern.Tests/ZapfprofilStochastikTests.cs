@@ -186,6 +186,27 @@ namespace EPOS.Kern.Tests
             Assert.All(s.Ablehnungen, a => Assert.Equal(ZapfEingabefehler.StochastikUngueltig, a.Grund));
         }
 
+        /// <summary>
+        /// Die Schranke der Jahresreihe (4.4): <c>R · Σ n_E · 365</c> über der Grenze der
+        /// Einheitentage (<see cref="Zapfensemble.HOECHSTENS_EINHEITSTAGE"/>) lehnt das Projekt benannt
+        /// ab — mit Kennung und Werten, bevor ein Jahr gezogen ist (der Fall braucht keine Laufzeit).
+        /// </summary>
+        [Fact]
+        public void Zu_viele_Einheitentage_lehnen_die_Jahresreihe_benannt_ab()
+        {
+            // Wohnhaus 20 WE + Büro 30 Personen = 50 Einheiten; 548 Jahre zögen 10 001 000 Einheitentage.
+            var ex = Assert.Throws<ZapfprofilEingabeException>(
+                () => ZapfprofilRechner.Rechnen(Eingang(Stochastisch(realisierungen: 548)), Katalog));
+            Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex.Fehler);
+            Assert.Equal("", ex.Zone);
+            Assert.Equal(ZapfprofilRechner.KENNUNG_EINHEITSTAGE, ex.Kennung);
+            Assert.Equal(new[] { "10001000", "10000000" }, ex.Argumente);
+            Assert.Contains("höchstens 10000000 sind zulässig", ex.Message);
+
+            // Deterministisch zieht nichts — die Schranke gilt nicht.
+            Assert.True(ZapfprofilRechner.Rechnen(Eingang(Projekt() with { Realisierungen = 548 }), Katalog).Vollstaendig);
+        }
+
         // =================================================================================
         // Perzentil der Auslegung
         // =================================================================================

@@ -77157,6 +77157,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch. ähnelt.
         /// </summary>
         public static string ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
