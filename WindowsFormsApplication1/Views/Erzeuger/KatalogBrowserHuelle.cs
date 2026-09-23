@@ -88,6 +88,11 @@ namespace WindowsFormsApplication1
                 // AD-Q6 (22.09.2026): "Bearbeiten..." entfaellt, die Felder sind
                 // direkt bedienbar - neben "Speichern" steht "Verwerfen".
                 ["BtnVerwerfenText"] = MyResource.Resource.ADM_BTN_VERWERFEN,
+                // Konzept Administrationsdialoge, Stufe 2 (V15, AD-Q11): Die Leiste
+                // schliesst mit "Beenden"; "Duplizieren..." legt einen eigenen Satz
+                // an. OK und Abbrechen gehoeren nur noch den Namensabfragen.
+                ["BtnBeendenText"] = MyResource.Resource.ADM_BTN_BEENDEN,
+                ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
@@ -106,8 +111,8 @@ namespace WindowsFormsApplication1
                 ["FrageLoeschen"] = MyResource.Resource.PSP_MELDUNG_WIRKLICH_LOESCHEN,
                 ["TitelLoeschen"] = MyResource.Resource.PSP_TITEL_LOESCHEN,
 
-                ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,
-                ["TitelSchutz"] = MyResource.Resource.ADM_SCHUTZ_TITEL,
+                // Die Rueckfrage des BHKW "Trotzdem ueberschreiben?" ist entfallen
+                // (AD-Q11): Ein Auslieferungssatz wird nie ueberschrieben.
 
                 ["MeldungNameBelegt"] = MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT,
                 ["MeldungNameFehlt"] = MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
@@ -187,6 +192,16 @@ namespace WindowsFormsApplication1
                 });
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Der Ausgang von <c>…StammCtrl.Duplizieren</c> (AD-Q11) in der Form, die die
+        /// Katalogdialoge lesen — für die vier Browser, die drei Modulkataloge und die
+        /// Wärmepumpe.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis Kopie(Katalogkopie.Ergebnis e)
+        {
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung ?? "", e.Name ?? "");
         }
 
         /// <summary>Der Wert eines Feldes aus dem Satz, den die Komponente zurückgibt.</summary>

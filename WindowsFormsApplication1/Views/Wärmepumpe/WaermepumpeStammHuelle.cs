@@ -95,6 +95,11 @@ namespace WindowsFormsApplication1
                 ["GesperrtDurch"] = new Func<string, string>(
                     name => new WPStammCtrl().GesperrtDurchProjekt(name)),
                 ["Loeschen"] = new Func<string, bool>(Loeschen),
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz samt Kennlinien an.
+                ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(
+                    (id, name) => KatalogBrowserHuelle.Kopie(WPStammCtrl.Duplizieren(id, name))),
+                ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(KennlinienZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     KennlinienAbgleichen),

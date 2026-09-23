@@ -24181,5 +24181,38 @@ Do you want to allow this?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (created from the project demand when saved)</value>
+  <data name="ADM_KOPIE_NAME" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME_N" xml:space="preserve">
+    <value>{0} (copy {1})</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>The record is no longer in the catalogue.</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>The record could not be duplicated.</value>
+  </data>
+  <data name="ADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="ADM_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate...</value>
+  </data>
+  <data name="ADM_MSG_DUPLIZIERT" xml:space="preserve">
+    <value>“{0}” duplicated as “{1}”.</value>
+  </data>
+  <data name="ADM_SCHLOSS" xml:space="preserve">
+    <value>Delivered record – read only</value>
+  </data>
+  <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
+    <value>Delivered record – read only, duplicating allowed</value>
+  </data>
+  <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
+    <value>Delivered record – read only. To change it, create your own record with “Duplicate...”.</value>
+  </data>
+  <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes – please “Save” or “Discard”.</value>
+  </data>
   </data>
 </root>

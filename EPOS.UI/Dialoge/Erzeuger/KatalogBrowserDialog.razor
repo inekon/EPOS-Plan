@@ -32,7 +32,24 @@
    hatte bis hierher einen eigenen Wortlaut OHNE Namen (Befund W14-B16).
 
    TASTATUR. Esc schliesst die oberste Ebene. Enter ist NICHT belegt - "Loeschen"
-   und "Speichern" schreiben sofort. *@
+   und "Speichern" schreiben sofort.
+
+   STUFE 2 DER NEUORDNUNG (Konzept Administrationsdialoge, V4, V10, V11, V15
+   und Entscheid AD-Q11 vom 23.09.2026):
+     * Die ZEILE ist die Wahl (Katalogliste ZeileIstWahl): Klick in die Zeile,
+       Pfeil hoch/runter, Pos1, Ende.
+     * Ein AUSLIEFERUNGSSATZ traegt das Schloss und wird NIE ueberschrieben:
+       seine Felder sind nur lesbar, "Speichern" ist weich gesperrt und nennt
+       den Weg - "Duplizieren..." legt einen eigenen Satz an und waehlt ihn. Die
+       Rueckfrage des BHKW vor dem Ueberschreiben ist damit entfallen; die
+       einzige Rueckfrage der Maske steht vor dem Loeschen.
+     * Die Fussleiste heisst Speichern - Verwerfen - Fueller - Neu... -
+       Duplizieren... - Loeschen - BEENDEN; das Kreuz und Esc tun, was Beenden
+       tut. Sind Felder geaendert, haelt Beenden an und sagt "Speichern oder
+       Verwerfen" - ebenso ein Zeilenwechsel, der die Aenderung sonst still
+       verwuerfe.
+     * Gelungenes meldet die Statuszeile der Fussleiste, ein Warnband nur, was
+       scheiterte. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
@@ -44,7 +61,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
         <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="Abbrechen" />
+        <Schliesskreuz Geschlossen="BeiBeenden" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -76,7 +93,7 @@
             <Katalogliste Profil="@Profil.Filterprofil" Zeilen="@_zeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -99,7 +116,9 @@
                    derselbe, den der Modulbereich der Erzeugerdialoge benutzt. Zwei
                    Fassungen derselben Regel (welche Feldart wird wie gezeichnet, wann
                    ist ein Feld setzbar) waeren zwei Fassungen, die auseinanderlaufen. *@
-                <Katalogfelder Felder="@_felder" NurLesen="@NurLesen"
+                @* Ein Auslieferungssatz ist nur lesbar (AD-Q11) - geaendert wird die
+                   eigene Kopie, die "Duplizieren..." anlegt. *@
+                <Katalogfelder Felder="@_felder" NurLesen="@(NurLesen || Auslieferungssatz)"
                                Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />
 
                 @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
@@ -129,29 +148,63 @@
        gewaehlten Satzes neu und nimmt die Aenderungen zurueck. Beide wirken auf
        den Eingabeblock und stehen deshalb LINKS vom Fueller (Leseregel des
        Konzepts Knopfleisten); "Neu..." oeffnet weiter den Editor. *@
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller -
+       Neu... - Duplizieren... - Loeschen - Beenden. Der Fueller ist zugleich die
+       STATUSZEILE (role="status"): Dort steht, was gelang ("... dupliziert als
+       ..."); ein Warnband erst, wenn etwas scheiterte (V11).
+
+       SPEICHERN BEI EINEM AUSLIEFERUNGSSATZ (AD-Q11) ist WEICH gesperrt: nicht
+       disabled, sondern aria-disabled mit dem Grund im Kurztext - ein Klick nennt
+       ihn im Warnband, sonst erschiene er nie (Hausregel "Bedienung"). *@
     <div class="epos-leiste">
         @if (Profil.HatSpeicherweg)
         {
-            <button type="button" class="epos-knopf" disabled="@(!SpeichernErlaubt)"
-                    @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            @if (SpeichernWeichGesperrt)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@MeldungSpeichernGesperrt"
+                        @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!SpeichernErlaubt)"
+                        @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
             <button type="button" class="epos-knopf" disabled="@(!VerwerfenErlaubt)"
                     @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         }
-        <span class="epos-leiste-fueller"></span>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiNeu">@BtnNeuText</button>
+        @if (Wege.Duplizieren is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
+                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
+        }
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                @onclick="BeiOk">@OkText</button>
+                @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
 
-    @* --- Rueckfragen ----------------------------------------------------- *@
+    @* --- Rueckfrage: nur vor dem Loeschen (V11) ------------------------- *@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
 
-    <Rueckfrage Offen="@_schutzfrage" TitelText="@TitelSchutz" Frage="@_schutztext"
-                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchutzAntwort" />
+    @* --- Namensabfrage von „Duplizieren…" (AD-Q11): Vorbelegung „… (Kopie)" -- *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@Profil.SpalteName"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@MeldungNameFehlt" Pruefung="NameBelegt"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Namensabfrage von „Neu…" ---------------------------------------- *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
@@ -241,16 +294,43 @@
     /// </summary>
     [Parameter] public Func<string, bool, Action<string?>, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
 
-    /// <summary>Der Browser ist zu — <c>Bestaetigt</c> sagt, ob über „OK".</summary>
+    /// <summary>
+    /// Der Browser ist zu. <c>Bestaetigt</c> ist immer <c>true</c>: „Beenden", das Kreuz
+    /// und Esc sind EIN Weg (V15) — ein Katalogdialog ohne Arbeitsstand hat nichts zu
+    /// verwerfen.
+    /// </summary>
     [Parameter] public EventCallback<BrowserErgebnis> Geschlossen { get; set; }
 
     // --- Texte -----------------------------------------------------------
+
+    /// <summary>Der eine Schlussknopf der Verwaltung (V15) — <c>ADM_BTN_BEENDEN</c>.</summary>
+    [Parameter] public string BtnBeendenText { get; set; } = Resource.ADM_BTN_BEENDEN;
+
+    /// <summary>„Duplizieren…" (AD-Q11) — <c>ADM_BTN_DUPLIZIEREN</c>.</summary>
+    [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
+
+    /// <summary>
+    /// Der Grund am weich gesperrten „Speichern" eines Auslieferungssatzes (AD-Q11) —
+    /// Kurztext des Knopfes und Warnband nach dem Versuch.
+    /// </summary>
+    [Parameter] public string MeldungSpeichernGesperrt { get; set; } = Resource.ADM_SPEICHERN_GESPERRT;
+
+    /// <summary>
+    /// „Speichern oder Verwerfen" — wenn geänderte Felder einen Zeilenwechsel, ein
+    /// Duplizieren oder Beenden aufhalten (V11).
+    /// </summary>
+    [Parameter] public string MeldungUngespeichert { get; set; } = Resource.ADM_MSG_UNGESPEICHERT;
+
+    /// <summary>Die Statuszeile nach „Duplizieren…"; <c>{0}</c> = Original, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string MeldungDupliziert { get; set; } = Resource.ADM_MSG_DUPLIZIERT;
 
     [Parameter] public string BtnNeuText { get; set; } = "Neu...";
     /// <summary>„Verwerfen" — nimmt die Änderungen im Eingabeblock zurück (AD-Q6).</summary>
     [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+
+    /// <summary>OK der Namensabfragen von „Neu…" und „Duplizieren…" — nicht mehr der Fußleiste.</summary>
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -260,11 +340,6 @@
     /// <summary>Rückfrage vor dem Löschen; <c>{0}</c> nimmt den Bezeichner auf.</summary>
     [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
-
-    /// <summary>Rückfrage vor dem Überschreiben eines geschützten Satzes (nur BHKW).</summary>
-    [Parameter] public string FrageSchutz { get; set; } =
-        "Der Datensatz \"{0}\" gehört zum Auslieferungskatalog. Trotzdem überschreiben?";
-    [Parameter] public string TitelSchutz { get; set; } = "Schreibgeschützt";
 
     /// <summary>Meldung, wenn der Name schon vergeben ist.</summary>
     [Parameter] public string MeldungNameBelegt { get; set; } = "Name existiert bereits!";
@@ -304,11 +379,18 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
+    /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
+    private string _status = "";
+
     private bool _loeschfrage;
     private string _loeschtext = "";
-    private bool _schutzfrage;
-    private string _schutztext = "";
     private bool _namensfrage;
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+
+    /// <summary>Ist der gewählte Satz ein Auslieferungssatz? Gesetzt, wenn er geladen wird.</summary>
+    private bool _auslieferung;
 
     private bool _editorOffen;
     private IReadOnlyDictionary<string, object>? _editorGaben;
@@ -331,19 +413,34 @@
     /// <summary>Steht die Löschrückfrage? (Prüfhilfe für Tests.)</summary>
     public bool Loeschfrage => _loeschfrage;
 
-    /// <summary>Steht die Schreibschutzrückfrage? (Prüfhilfe für Tests.)</summary>
-    public bool Schutzfrage => _schutzfrage;
-
     /// <summary>Steht der Katalogeditor? (Prüfhilfe für Tests.)</summary>
     public bool EditorOffen => _editorOffen;
 
     /// <summary>Steht die Namensabfrage? (Prüfhilfe für Tests.)</summary>
     public bool Namensfrage => _namensfrage;
 
-    private bool SpeichernErlaubt => !NurLesen && _geaendert && _gewaehlt.Length > 0;
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Ist der gewählte Satz ein Auslieferungssatz? (Prüfhilfe für Tests.)</summary>
+    public bool Auslieferungssatz => _auslieferung;
+
+    private bool SpeichernErlaubt => !NurLesen && !_auslieferung && _geaendert && _gewaehlt.Length > 0;
+
+    /// <summary>
+    /// <b>„Speichern" bei einem Auslieferungssatz</b> (AD-Q11): weich gesperrt, mit dem
+    /// Grund im Kurztext. Im Lesemodus bleibt es hart gesperrt wie jeder Knopf dort.
+    /// </summary>
+    private bool SpeichernWeichGesperrt => !NurLesen && _auslieferung && _gewaehlt.Length > 0;
 
     /// <summary>Verwerfen hat nur etwas zu tun, solange ein Feld geändert ist.</summary>
     private bool VerwerfenErlaubt => _geaendert && _gewaehlt.Length > 0;
+
+    /// <summary>Duplizieren braucht einen gewählten Satz und einen Schreibweg.</summary>
+    private bool DuplizierenErlaubt => !NurLesen && _gewaehlt.Length > 0 && Wege.Duplizieren is not null;
 
     protected override void OnParametersSet()
     {
@@ -353,6 +450,11 @@
         // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
         // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
         Filtertexte.SpalteWahl = SpalteWahlText;
+
+        // Das Schloss nennt den Ausweg, wo es ihn gibt (V10, AD-Q11).
+        Filtertexte.Schloss = Wege.Duplizieren is not null && !NurLesen
+            ? Resource.ADM_SCHLOSS_DUPLIZIEREN
+            : Resource.ADM_SCHLOSS;
     }
 
     protected override void OnInitialized()
@@ -399,6 +501,11 @@
         _fehlerhaft.Clear();
         _geaendert = false;
 
+        // Der Schreibschutz kommt aus der Zeile der Liste (Katalogfilterzeile.Geschuetzt,
+        // aus ReadOnly) - fuer alle vier Auspraegungen, nicht nur das BHKW (AD-Q11).
+        _auslieferung = _gewaehlt.Length > 0
+                     && _zeilen.Any(z => z.Bezeichner == _gewaehlt && z.Geschuetzt);
+
         // Die Uebersicht wird AUCH OHNE Auswahl geholt: Sie beantwortet die Frage
         // „welche Parameter gibt es hier ueberhaupt", und die haengt nicht am Satz
         // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
@@ -408,11 +515,32 @@
         _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
     }
 
+    /// <summary>
+    /// Eine andere Zeile — per Klick oder Pfeiltaste. <b>Geänderte Felder halten die
+    /// Wahl fest</b> (V11): Der Wechsel verwürfe sie still; das Warnband sagt
+    /// „Speichern oder Verwerfen", und die Liste springt auf die gehaltene Zeile zurück.
+    /// </summary>
     private void BeiZeile(string bezeichner)
     {
-        _gewaehlt = bezeichner ?? "";
+        string neu = bezeichner ?? "";
+        if (neu == _gewaehlt) return;
+
+        if (_geaendert)
+        {
+            Warnen(MeldungUngespeichert);
+            return;
+        }
+
+        _gewaehlt = neu;
         _meldung = "";
+        _status = "";
         DetailLaden();
+    }
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = WarnStufe.Warnung;
     }
 
     // =====================================================================
@@ -432,6 +560,7 @@
     {
         _geaendert = true;
         _meldung = "";
+        _status = "";
         SummeNachziehen();
     }
 
@@ -499,56 +628,103 @@
     }
 
     // =====================================================================
-    // Die fuenf Knoepfe
+    // Die Knoepfe der Fussleiste
     // =====================================================================
 
+    /// <summary>
+    /// „Speichern" — die Felder des gewählten Satzes. <b>Ein Auslieferungssatz wird nie
+    /// überschrieben</b> (AD-Q11): Der Knopf ist weich gesperrt, ein Klick nennt den Weg
+    /// über „Duplizieren…". Die Rückfrage des BHKW „Trotzdem überschreiben?" gibt es
+    /// deshalb nicht mehr, und der Schreibweg bekommt nie die Erlaubnis, den Schutz zu
+    /// übergehen.
+    /// </summary>
     private void BeiSpeichern()
     {
+        if (SpeichernWeichGesperrt)
+        {
+            Warnen(MeldungSpeichernGesperrt);
+            return;
+        }
+
         if (!SpeichernErlaubt || Wege.Speichern is null) return;
         if (!EingabenPruefen()) return;
 
-        // Der BHKW-Browser fragt vor dem Ueberschreiben eines geschuetzten Satzes -
-        // in der Auslieferungsdatenbank ist das der Regelfall.
-        if (Profil.ZeigtSchreibschutz && Wege.IstGeschuetzt?.Invoke(_gewaehlt) == true)
-        {
-            _schutztext = string.Format(FrageSchutz, _gewaehlt);
-            _schutzfrage = true;
-            return;
-        }
-
-        Schreiben(false);
+        Schreiben();
     }
 
-    private void BeiSchutzAntwort(bool? antwort)
+    /// <summary>Schreibt die Felder; Erfolg in die Statuszeile, ein Fehlschlag ins Warnband.</summary>
+    private bool Schreiben()
     {
-        _schutzfrage = false;
-        if (antwort != true) return;
-        Schreiben(true);
-    }
-
-    private void Schreiben(bool schutzUebergehen)
-    {
-        KatalogSpeicherErgebnis ergebnis =
-            Wege.Speichern!(_gewaehlt, _felder, schutzUebergehen);
+        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
 
         if (!ergebnis.Ok)
         {
-            _meldung = ergebnis.Meldung;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
+            Warnen(ergebnis.Meldung);
+            return false;
         }
 
-        _meldung = ergebnis.Meldung;
-        _meldungStufe = WarnStufe.Hinweis;
+        _meldung = "";
+        _status = ergebnis.Meldung;
         _geaendert = false;
         ListeAufbauen();
+        return true;
     }
 
     private void BeiNeu()
     {
         if (NurLesen) return;
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
         _meldung = "";
         _namensfrage = true;
+    }
+
+    // =====================================================================
+    // „Duplizieren…" (Entscheid AD-Q11)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>„Duplizieren…"</b>: fragt den Namen — vorbelegt mit „Name (Kopie)", der erste
+    /// freie — und legt den eigenen Satz an. Wie „Neu…" beginnt es mit der
+    /// Namensabfrage; anders als „Neu…" übernimmt es alle Werte des gewählten Satzes.
+    /// Geänderte Felder halten es auf — kopiert wird der Stand im Katalog.
+    /// </summary>
+    private void BeiDuplizieren()
+    {
+        if (!DuplizierenErlaubt) return;
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name)
+        => _zeilen.Any(z => z.Bezeichner == name) || Wege.Existiert?.Invoke(name) == true;
+
+    /// <summary>Die Namensprüfung der Abfrage — ein vergebener Name hält sie offen.</summary>
+    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Wege.Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null) return;
+
+        string alt = _gewaehlt;
+        KatalogSpeicherErgebnis ergebnis = Wege.Duplizieren(zeile.Id, name);
+        if (!ergebnis.Ok)
+        {
+            Warnen(ergebnis.Meldung);
+            return;
+        }
+
+        // Die Kopie ist gewaehlt - ihr Eingabeblock steht bearbeitbar da.
+        _gewaehlt = ergebnis.Name;
+        ListeAufbauen();
+        DetailLaden();
+        _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
     /// <summary>
@@ -635,35 +811,23 @@
     }
 
     /// <summary>
-    /// „OK". <b>Angleichung E-1:</b> Drei der vier Vorläufer setzten kein
-    /// <c>DialogResult</c> und lieferten deshalb immer <c>false</c> (Befund W14-B4);
-    /// „OK" heißt jetzt OK. Beim Heizkessel und beim BHKW schreibt „OK" vorher offene
-    /// Änderungen zurück — genau wie ihr <c>btn_OK_Click</c>.
+    /// <b>„Beenden"</b> — der eine Schlussweg (V15); das Kreuz und Esc nehmen ihn auch.
+    /// Die Verwaltung hat keinen Arbeitsstand, der zu verwerfen wäre: Speichern,
+    /// Duplizieren und Löschen schreiben sofort.
+    ///
+    /// <para><b>Geänderte Felder halten sie auf</b> (Konzept 3.3, V11): Beenden sagt
+    /// im Warnband „Speichern oder Verwerfen" und bleibt offen. Bis Stufe 1 schrieb „OK"
+    /// die Änderungen still zurück und „Abbrechen" (✕, Esc) verwarf sie still — beides
+    /// entschied ein Knopf, dessen Name es nicht sagte.</para>
     /// </summary>
-    private async Task BeiOk()
+    private Task BeiBeenden()
     {
-        if (Profil.HatSpeicherweg && SpeichernErlaubt)
+        if (_geaendert)
         {
-            if (!EingabenPruefen()) return;
-
-            if (Profil.ZeigtSchreibschutz && Wege.IstGeschuetzt?.Invoke(_gewaehlt) == true)
-            {
-                _schutztext = string.Format(FrageSchutz, _gewaehlt);
-                _schutzfrage = true;
-                return;
-            }
-
-            KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
-            if (!ergebnis.Ok)
-            {
-                _meldung = ergebnis.Meldung;
-                _meldungStufe = WarnStufe.Warnung;
-                return;      // Dialog offen lassen
-            }
-            _geaendert = false;
+            Warnen(MeldungUngespeichert);
+            return Task.CompletedTask;
         }
-
-        await Geschlossen.InvokeAsync(new BrowserErgebnis(true, _gewaehlt));
+        return Geschlossen.InvokeAsync(new BrowserErgebnis(true, _gewaehlt));
     }
 
     /// <summary>
@@ -683,18 +847,15 @@
         return false;
     }
 
-    /// <summary>Der Abbrechen-Weg: schließt ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(new BrowserErgebnis(false, _gewaehlt));
-
     /// <summary>
-    /// Esc schließt die oberste Ebene. Enter bleibt unbelegt: „Löschen" und „Speichern"
-    /// schreiben sofort.
+    /// Esc schließt die oberste Ebene — zuletzt den Dialog, und dort wie „Beenden".
+    /// Enter bleibt unbelegt: „Löschen", „Speichern" und „Duplizieren…" schreiben sofort.
     /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_editorOffen || _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
+        if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
 
-        return Abbrechen();
+        return BeiBeenden();
     }
 }

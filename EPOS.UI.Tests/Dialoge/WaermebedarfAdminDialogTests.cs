@@ -142,7 +142,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
 
         Assert.True(Knopf(cut, "DB Ganglinie Löschen").HasAttribute("disabled"));
 
-        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         Assert.False(Knopf(cut, "DB Ganglinie Löschen").HasAttribute("disabled"));
         Assert.Equal("Buerohaus 2024", cut.Instance.Gewaehlt);
     }
@@ -160,7 +160,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         var cut = Aufbauen(hatZuordnung: _ => Task.FromResult(true),
                            loeschen: _ => { geloescht = true; return Task.FromResult(true); });
 
-        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "DB Ganglinie Löschen").Click();
 
         Assert.Equal("Es existiert eine Projektzuordnung, Löschen nicht möglich!", cut.Instance.Meldung);
@@ -178,7 +178,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         bool geloescht = false;
         var cut = Aufbauen(loeschen: _ => { geloescht = true; return Task.FromResult(true); });
 
-        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();   // "Auslieferung Standard"
+        Zeilenklick.Zeile(cut, 1);   // "Auslieferung Standard"
         Knopf(cut, "DB Ganglinie Löschen").Click();
 
         Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
@@ -195,7 +195,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         string? geloescht = null;
         var cut = Aufbauen(loeschen: n => { geloescht = n; return Task.FromResult(true); });
 
-        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "DB Ganglinie Löschen").Click();
 
         Assert.Single(cut.FindAll("[role='dialog']"));
@@ -373,6 +373,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
     // 4 — Tastatur und Schluss
     // =====================================================================
 
+    /// <summary>Esc wirkt wie „Beenden" — EIN Schlussweg (Konzept Administrationsdialoge, V15).</summary>
     [Fact]
     public void Esc_schliesst_den_Dialog()
     {
@@ -381,10 +382,10 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
     }
 
-    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc und wie „Beenden" (V15).</summary>
     [Fact]
     public void Kreuz_schliesst_wie_Esc()
     {
@@ -393,7 +394,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog-zu").Click();
 
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
     }
 
     /// <summary>Esc schließt zuerst die Rückfrage, nicht den Dialog.</summary>
@@ -403,7 +404,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         bool? ergebnis = null;
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
 
-        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "DB Ganglinie Löschen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 

@@ -88,8 +88,9 @@ public class KatalogfilterS3Tests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-katalog-suchzeile input"));
         Assert.Equal("2 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
 
-        // Wahl + die fuenf Spalten des Profils.
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Die vier Spalten des Profils - keine Wahlspalte (die Zeile ist die Wahl, V4)
+        // und keine "Auslieferung" mehr (das Schloss hinter dem Namen, V10).
+        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
     }
 
     /// <summary>
@@ -138,8 +139,9 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Info, (Func<string, BedarfsProfilInfo?>)(n => new BedarfsProfilInfo(n, "", "")))
             .Add(x => x.Jahressumme, (Func<string, double>)(_ => 12.5)));
 
-        // Wahl + fuenf Profilspalten + "im Projekt verwendet".
-        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Wahl + vier Profilspalten + "im Projekt verwendet"; die "Auslieferung" ist
+        // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
 
         Katalogfilterzeile verwendet =
             cut.Instance.Katalog.First(z => z.Bezeichner == "Haushalt-3");
@@ -171,7 +173,8 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
         Assert.Single(cut.FindAll(".epos-katalogliste"));
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Bezeichner + Zeitintervall + Jahresarbeit + Spitze - ohne Wahlspalte (V4).
+        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
 
         // Die Stundenspitze der Viertelstundenreihe steht als Zahl in der Zelle.
         Assert.Contains("1.513,5", cut.Markup);
@@ -195,8 +198,8 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Waermebedarf))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        // Wahl + Bezeichner + Jahresarbeit + Spitze.
-        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Bezeichner + Jahresarbeit + Spitze - die Zeile ist die Wahl (V4).
+        Assert.Equal(3, cut.FindAll(".epos-katalogliste thead th").Count);
     }
 
     /// <summary>
@@ -216,8 +219,8 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        // Wahl + Bezeichner + Beschreibung + Jahresarbeit + Spitze.
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Bezeichner + Beschreibung + Jahresarbeit + Spitze - die Zeile ist die Wahl (V4).
+        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("Leistung Solarsystem [W]", cut.Markup);
     }
 

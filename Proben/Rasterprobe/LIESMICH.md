@@ -84,7 +84,7 @@ melden sie im Takt des Bildaufbaus.
 | G | 20 746 Zeilen (die CEC-Modulliste), Ladeweg |
 | I | 6 654 Zeilen, danach im Suchfeld gefiltert (→ 444 Zeilen, weiter virtualisiert) |
 | H | **Gegenprobe zum Fix**: dieselbe Seite, das gesetzte Zeilenmaß per Stilblatt wieder weggenommen. Sie MUSS die Sollwerte verfehlen — sonst belegt der Fix nichts |
-| J / K | 6 654 Stromspeicher **im Katalogdialog** (Seite `/katalogprobe`, Stromspeicher-Verwaltung), 1 088 × 624 und 400 × 624 — die Liste nimmt dort seit Stufe 1 der Neuordnung die Resthöhe; zusätzlich geprüft: Rollbehälter = Hülle, Zeile 53 px |
+| J / K | 6 654 Stromspeicher **im Katalogdialog** (Seite `/katalogprobe`, Stromspeicher-Verwaltung), 1 088 × 624 und 400 × 624 — die Liste nimmt dort seit Stufe 1 der Neuordnung die Resthöhe; zusätzlich geprüft: Rollbehälter = Hülle, Zeile **46 px** (Stufe 2: die Zeile ist die Wahl) und die Tastatur (k): Ende wählt die letzte Zeile, sie steht gezeichnet im Bild, Pos1 zurück, die Liste behält den Fokus |
 | L / M | wie A (freie Liste der Importmaske), 1 088 × 624 und 400 × 624 |
 
 ---
@@ -375,3 +375,39 @@ Die KL-5-Prüfungen (Überlagerung, Fußleiste im Fenster, Knöpfe frei) laufen 
 | Zeilenhöhe | 53 px | 53 px |
 | virtualisiert im Dialog (J, K) | — | Rollbehälter = Hülle (209 / 118 px), Zeile 53 px, 4 Melder nach dem Rollen |
 | Rückgabe | Katalogprobe 1, Rasterprobe — | Katalogprobe 0 (45 Fälle), Rasterprobe 0 (13 Fälle) |
+
+## Neuordnung der Administrationsdialoge, Stufe 2 (V4, V10, V11)
+
+In den Verwaltungen ist die **Zeile die Wahl** (`Katalogliste.ZeileIstWahl`): keine Wahlspalte,
+jede Zelle eine Klickfläche von 45 px, mit der Trennlinie **46 px** Zeilenmaß — dieselbe Zahl als
+`ItemSize` und `--epos-rasterzeile`. Die Liste ist ein Tabulatorhalt; `epos-katalogliste.js` hält
+Pfeil hoch/runter, Pos1 und Ende vom Rollen ab (nur wenn die Liste selbst den Fokus hat) und rollt
+die gewählte Zeile ins Bild. Ein Auslieferungssatz trägt das Schloss hinter dem Namen.
+
+**Was die Fälle N zusätzlich messen** (Funktionen `STUFE2` und `tastenprobe`):
+
+| | Größe | Sollwert |
+|---|---|---|
+| (t1) | Höhe jeder gezeichneten Datenzeile (bis zwölf) | 46 px — keine bricht um |
+| (t2) | Wahlspalte (`th.epos-spalte-wahl`, `.epos-anlagenwahl`) | keine |
+| (t3) | Tabulatorhalt an der Hülle, genau eine Zeile `epos-zeile--gewaehlt` | ja |
+| (t4) | linker Balken der Fokuszeile an ihrer ersten SICHTBAREN Zelle und nur dort | ja — auch wenn die erste Spalte weicht (Wärmepumpe, 400 px: `epos-balken-ab-N`) |
+| (t5) | Schloss des Auslieferungssatzes ganz in seiner Zelle, sichtbar | ja, 16 × 16 px |
+| (t6) | Tastatur: Fokus auf die Liste, Ende / Pos1 / zweimal Pfeil runter | richtige Zeile gewählt, ganz im sichtbaren Teil unter dem Kopf, Fokus bleibt, Pos1 rollt auf 0 |
+
+Die Probe wählt die erste Zeile über die Klickfläche des **Namens** (`.epos-zeilenzelle--name`):
+Die erste Zelle kann in einer schmalen Liste weichen.
+
+**Ergebnis vom 23.09.2026** (Chromium headless, Playwright 1.58.0):
+
+| | Stufe 1 | Stufe 2 |
+|---|---|---|
+| Zeilenhöhe der Verwaltungen (N01 … N15, beide Größen) | 53 px | **46 px** in jeder Zeile, keine Umbrüche |
+| Querüberlauf 1 088 / 400 px | 0 px | 0 px |
+| Rollbereiche ineinander | 0 | 0 |
+| Fußleiste (mit „Duplizieren…" und „Beenden") | im Fenster, frei | im Fenster, frei |
+| Schloss | — | 16 × 16 px, ganz in der Namenszelle |
+| Tastatur (30 Fälle N) | — | Ende / Pos1 / Pfeil runter wählen richtig, Zeile im Bild, Fokus bleibt |
+| virtualisiert im Dialog (J, K) | Zeile 53 px | Zeile **46 px**, Platzhalter 46 px, 4 Melder nach dem Rollen; Ende → Zeile 6 653 gezeichnet im Bild, 4 Melder in 3 s, Pos1 → Rollstand 0 |
+| Nachbar Heizkessel-Projektdialog (P2a/P2b) | Wahlspalte, 53 px | unverändert: Wahlspalte, quer 0 px bei 1 088 |
+| Rückgabe | Katalogprobe 0 (45), Rasterprobe 0 (13) | **Katalogprobe 0 (45), Rasterprobe 0 (13)** |

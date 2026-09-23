@@ -24188,5 +24188,38 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (wird beim Speichern aus dem Bedarf des Projekts angelegt)</value>
+  <data name="ADM_KOPIE_NAME" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME_N" xml:space="preserve">
+    <value>{0} (Kopie {1})</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>Der Satz steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Der Satz konnte nicht dupliziert werden.</value>
+  </data>
+  <data name="ADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ADM_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren...</value>
+  </data>
+  <data name="ADM_MSG_DUPLIZIERT" xml:space="preserve">
+    <value>„{0}“ dupliziert als „{1}“.</value>
+  </data>
+  <data name="ADM_SCHLOSS" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen</value>
+  </data>
+  <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+  </data>
+  <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
+  </data>
+  <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“.</value>
+  </data>
   </data>
 </root>

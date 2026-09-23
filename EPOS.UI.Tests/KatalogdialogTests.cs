@@ -286,51 +286,61 @@ public class KatalogdialogTests : EposBunitContext
     }
 
     // =====================================================================
-    //  (c) Die erste Spalte heißt „Wahl"
+    //  (c) Die Zeile ist die Wahl - die Wahlspalte ist in den Verwaltungen
+    //      entfallen (Konzept Administrationsdialoge, Stufe 2, V4)
     // =====================================================================
 
     /// <summary>
-    /// Die Kopfzeile las am Gerät „Name | Name | Eigenschaften": In der
-    /// Wahlspalte stand <c>profil.SpalteName</c> (Katalogbrowser) bzw.
-    /// <c>profil.Listenbeschriftung</c> (Modulkatalog) statt
-    /// <c>KFAK_SP_WAHL</c>. Der Fehler saß in den zwei HÜLLEN; die Komponenten
-    /// führten den Text schon immer als eigenen Parameter.
+    /// <b>Keine Wahlspalte mehr in der Verwaltung</b>: Der runde Knopf war das einzige
+    /// Klickziel einer breiten Zeile; jetzt wählt ein Klick irgendwo in der Zeile. Die
+    /// erste Kopfzelle ist die erste Spalte des Profils — und damit auch nicht mehr
+    /// „Name | Name", der Befund, aus dem die Wahlspalte einst ihren Text bekam.
     /// </summary>
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel)]
     [InlineData(KatalogBrowserArt.Bhkw)]
     [InlineData(KatalogBrowserArt.Solarkollektoren)]
     [InlineData(KatalogBrowserArt.Pufferspeicher)]
-    public void Die_erste_Spalte_des_Katalogbrowsers_heisst_Wahl(KatalogBrowserArt art)
+    public void Der_Katalogbrowser_hat_keine_Wahlspalte(KatalogBrowserArt art)
     {
-        var kopfzeilen = Katalogbrowser(art).FindAll(".epos-katalog-liste thead th")
-                                            .Select(e => e.TextContent.Trim()).ToList();
+        var cut = Katalogbrowser(art);
+        var kopfzeilen = cut.FindAll(".epos-katalog-liste thead th")
+                            .Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Equal("Wahl", kopfzeilen[0]);
-        Assert.NotEqual(kopfzeilen[0], kopfzeilen[1]);
+        Assert.DoesNotContain(Resource.KFAK_SP_WAHL, kopfzeilen);
+        Assert.Empty(cut.FindAll(".epos-katalog-liste .epos-anlagenwahl"));
+        Assert.NotEmpty(cut.FindAll(".epos-katalog-liste .epos-zeilenzelle"));
     }
 
     [Theory]
     [InlineData(ModulKatalogArt.Photovoltaik)]
     [InlineData(ModulKatalogArt.Stromspeicher)]
-    public void Die_erste_Spalte_des_Modulkatalogs_heisst_Wahl(ModulKatalogArt art)
+    public void Der_Modulkatalog_hat_keine_Wahlspalte(ModulKatalogArt art)
     {
-        var kopfzeilen = Modulkatalog(art).FindAll(".epos-katalog-liste thead th")
-                                          .Select(e => e.TextContent.Trim()).ToList();
+        var cut = Modulkatalog(art);
+        var kopfzeilen = cut.FindAll(".epos-katalog-liste thead th")
+                            .Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Equal("Wahl", kopfzeilen[0]);
-        Assert.NotEqual(kopfzeilen[0], kopfzeilen[1]);
+        Assert.DoesNotContain(Resource.KFAK_SP_WAHL, kopfzeilen);
+        Assert.Empty(cut.FindAll(".epos-katalog-liste .epos-anlagenwahl"));
     }
 
     /// <summary>
-    /// „Wahl" ist ein Ressourcentext, kein Literal — der englische Katalog
-    /// führt „Select". Der Fall hält die Herkunft fest, nicht den Wortlaut.
+    /// Wo die Wahlspalte bleibt — in den Listen ohne <c>ZeileIstWahl</c> (Projektdialoge,
+    /// Importe) —, heißt sie weiter nach dem Ressourcenkatalog: „Wahl" ist ein
+    /// Ressourcentext, kein Literal; der englische Katalog führt „Select".
     /// </summary>
     [Fact]
     public void Der_Spaltentext_kommt_aus_dem_Ressourcenkatalog()
     {
-        Assert.Equal(Resource.KFAK_SP_WAHL,
-                     Katalogbrowser().FindAll(".epos-katalog-liste thead th")[0].TextContent.Trim());
+        var cut = Render<EPOS.UI.Bausteine.Katalogliste>(p => p
+            .Add(x => x.Profil, Katalogfilterprofil.Finde(Anlagenart.Heizkessel))
+            .Add(x => x.Zeilen, new[] { new Katalogfilterzeile(1, "Kessel A")
+                                        .MitText(Katalogfilterprofil.SpBezeichner, "Kessel A") })
+            .Add(x => x.Filterstand, new Katalogfilterstand())
+            .Add(x => x.Texte, new EPOS.UI.Bausteine.Katalogfiltertexte { SpalteWahl = Resource.KFAK_SP_WAHL }));
+
+        Assert.Equal(Resource.KFAK_SP_WAHL, cut.FindAll("thead th")[0].TextContent.Trim());
     }
 
     // =====================================================================

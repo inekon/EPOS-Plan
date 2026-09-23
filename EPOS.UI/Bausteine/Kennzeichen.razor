@@ -1,0 +1,36 @@
+﻿@* DAS KENNZEICHEN EINES AUSLIEFERUNGSSATZES - nur das Schloss (Konzept
+   Administrationsdialoge, Vorschlag V10; Entscheid AD-Q13 vom 22.09.2026:
+   "Hinweis 'Auslieferung' zu gross, evtl. nur das Schloss-Symbol").
+
+   GENAU EINE FORM. Ein Satz mit ReadOnly traegt hinter seinem Bezeichner ein
+   kleines Schloss ohne Wort. Das Wort steht im Kurztext ("Auslieferungssatz -
+   nur lesen, Duplizieren erlaubt"; in Klimadaten und den Zeitreihen, die kein
+   Duplizieren kennen, "Auslieferungssatz - nur lesen") und fuer die
+   Sprachausgabe als aria-label. Es ersetzt die Spalten "Auslieferung"
+   (Bedarfsprofile) und "Schreibschutz" (Klimadaten), die der Liste Breite nahmen.
+
+   DIE FORM TRAEGT OHNE FARBE: ein geschlossener Buegel ueber einem gefuellten
+   Kasten; die Farbe ist die leise Schrift, im Hochkontrastbetrieb CanvasText
+   (epos-ui.css, .epos-schloss).
+
+   KEIN TEXTKNOTEN. Das Zeichen ist ein Bild in einem Kasten ohne Text - der
+   TextContent der Zelle bleibt der Bezeichner, und wer eine Zeile an ihrem
+   Namen sucht, findet sie weiter. *@
+
+@namespace EPOS.UI.Bausteine
+
+<span class="epos-schloss" role="img" aria-label="@Kurztext" title="@Kurztext">
+    <svg class="epos-schloss-bild" viewBox="0 0 12 12" width="12" height="12"
+         aria-hidden="true" focusable="false">
+        <rect x="2" y="5.5" width="8" height="5.5" rx="1" fill="currentColor" />
+        <path d="M4 5.5 V4 a2 2 0 0 1 4 0 V5.5" fill="none" stroke="currentColor" stroke-width="1.4" />
+    </svg>
+</span>
+
+@code {
+    /// <summary>
+    /// Der Kurztext am Zeichen — <c>ADM_SCHLOSS</c> („Auslieferungssatz – nur lesen"),
+    /// in den Verwaltungen mit Duplizieren <c>ADM_SCHLOSS_DUPLIZIEREN</c>.
+    /// </summary>
+    [Parameter] public string Kurztext { get; set; } = Resource.ADM_SCHLOSS;
+}

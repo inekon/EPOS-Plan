@@ -157,9 +157,9 @@
 
 @typeparam TZeile
 
-<div class="@HuellenKlasse" style="@Hoehenstil">
+<div class="@HuellenKlasse" style="@Hoehenstil" @ref="_huelle" @attributes="Tastenattribute">
     <QuickGrid @key="@Rasterstand" Items="@Zeilen" Class="@Klasse"
-               Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe">
+               Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe" RowClass="@Zeilenklasse">
         @KindInhalt
     </QuickGrid>
 </div>
@@ -170,6 +170,51 @@
 
     /// <summary>Die Spaltendefinitionen (QuickGrid-Spalten).</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// <b>Die Klasse einer Zeile</b> — QuickGrids <c>RowClass</c>, durchgereicht. Die
+    /// <c>Katalogliste</c> markiert damit die gewählte Zeile, wenn die Zeile selbst die
+    /// Wahl ist (Konzept Administrationsdialoge, V4): Eine Spaltenklasse
+    /// (<c>ColumnBase.Class</c>) gilt der ganzen SPALTE, nicht einer Zeile.
+    /// <c>null</c> (Vorgabe) zeichnet jede Zeile wie bisher ohne Klasse.
+    /// </summary>
+    [Parameter] public Func<TZeile, string?>? Zeilenklasse { get; set; }
+
+    /// <summary>
+    /// <b>Die Liste als EIN Tabulatorhalt</b> (V4/V11): Mit einem Delegaten wird die
+    /// Hülle fokussierbar (<c>tabindex="0"</c>) und meldet jeden Tastendruck. Was die
+    /// Tasten bedeuten, weiß der Wirt (↑ ↓ Pos1 Ende in der <c>Katalogliste</c>).
+    /// <b>Kein Delegat, keine Tastenführung</b> — die übrigen Listen des Hauses bleiben,
+    /// wie sie sind, und ein Tastendruck in einer bearbeitbaren Zelle zeichnet nichts neu.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> Tastenfuehrung { get; set; }
+
+    /// <summary>
+    /// Die Beschriftung der fokussierbaren Hülle für die Sprachausgabe (<c>aria-label</c>)
+    /// — nur mit <see cref="Tastenfuehrung"/>.
+    /// </summary>
+    [Parameter] public string Tastenbeschriftung { get; set; } = "";
+
+    private ElementReference _huelle;
+
+    /// <summary>
+    /// Die Hülle — der Rollbehälter. Die <c>Katalogliste</c> reicht sie an ihr Skript,
+    /// das die Pfeiltasten dort vom Rollen abhält und die gewählte Zeile in den
+    /// sichtbaren Bereich rollt.
+    /// </summary>
+    public ElementReference Huelle => _huelle;
+
+    /// <summary>
+    /// Die Attribute der Tastenführung — nur, wenn es einen Delegaten gibt; sonst
+    /// bleibt das Markup der Hülle Zeichen für Zeichen, wie es war.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? Tastenattribute =>
+        !Tastenfuehrung.HasDelegate ? null : new Dictionary<string, object>
+        {
+            ["tabindex"] = "0",
+            ["aria-label"] = Tastenbeschriftung,
+            ["onkeydown"] = Tastenfuehrung
+        };
 
     /// <summary>
     /// Stehen Bedienelemente in den Zellen? Dann sitzen die Felder eng in der

@@ -70,6 +70,19 @@ public sealed class Katalogfiltertexte
     /// <summary>Kopf der Wahlspalte (<c>KBROW_SPALTE_WAHL</c> bzw. der Wirt).</summary>
     public string SpalteWahl { get; set; } = "Wahl";
 
+    /// <summary>
+    /// <b>Der Kurztext des Schlosses</b> hinter dem Bezeichner eines Auslieferungssatzes
+    /// (Konzept Administrationsdialoge, V10) — <c>ADM_SCHLOSS</c>; eine Verwaltung mit
+    /// „Duplizieren…" setzt <c>ADM_SCHLOSS_DUPLIZIEREN</c>.
+    /// </summary>
+    public string Schloss { get; set; } = Resource.ADM_SCHLOSS;
+
+    /// <summary>
+    /// <b>Die Beschriftung der Liste als Tabulatorhalt</b> (V4/V11) — sie nennt die
+    /// Tasten, weil man ihnen nicht ansieht, dass es sie gibt (<c>ADM_LISTE_TASTEN</c>).
+    /// </summary>
+    public string Listenbeschriftung { get; set; } = Resource.ADM_LISTE_TASTEN;
+
     /// <summary>Der Alle-Schalter der Mehrfachwahl (W13‑B‑5) — <c>KFLT_ALLE_WAEHLEN</c>.</summary>
     public string AlleWaehlen { get; set; } = Resource.KFLT_ALLE_WAEHLEN;
 
