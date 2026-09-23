@@ -70722,6 +70722,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_ZONE_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_ZONE_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben. ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_OHNE_BEZUGSMENGE {

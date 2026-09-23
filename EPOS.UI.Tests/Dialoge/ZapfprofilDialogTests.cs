@@ -294,6 +294,37 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.NotNull(ergebnis);
     }
 
+    /// <summary>
+    /// Befund 8: Tragen zwei Zonen denselben Namen, ordnet die Position der Hülle die Meldung
+    /// genau ihrer Zone zu; ohne Position steht sie an keiner der beiden, sondern bei den
+    /// allgemeinen Meldungen — nie an beiden.
+    /// </summary>
+    [Fact]
+    public void Meldungen_gehen_ueber_die_Position_an_ihre_Zone_auch_bei_gleichem_Namen()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.Zonen[1].Name = e.Zonen[0].Name;
+        string name = e.Zonen[0].Name;
+        var zweite = new ZapfprofilMeldung("ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE", name,
+                                           "Hinweis der zweiten Zone.", ZapfprofilMeldungsart.Hinweis, "", 1);
+        var ohnePosition = new ZapfprofilMeldung("ZPG_HINW_MESSWERT_ABWEICHUNG", name,
+                                                 "Hinweis ohne Position.", ZapfprofilMeldungsart.Hinweis);
+        var cut = Aufbauen(Daten(e, Vorschau(e, zweite, ohnePosition)));
+
+        // Gewählt ist die erste Zone: an ihrem Feld keiner der beiden Hinweise.
+        IElement[] amFeld = cut.FindAll(".epos-blockspalte:first-child .epos-zapfprofil-feldhinweis").ToArray();
+        Assert.Empty(amFeld);
+        Assert.Contains("Hinweis der zweiten Zone.", cut.Markup);
+        Assert.Contains("Hinweis ohne Position.", cut.Markup);
+
+        // Die zweite Zone gewählt: ihr Hinweis steht an ihrem Feld, der ohne Position nicht.
+        cut.FindAll(".epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button, input")!.Click();
+        string[] feld = cut.FindAll(".epos-blockspalte:first-child .epos-zapfprofil-feldhinweis")
+                           .Select(x => x.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Hinweis der zweiten Zone." }, feld);
+        Assert.Single(cut.FindAll(".epos-zapfprofil-feldhinweis"), x => x.TextContent.Contains("Hinweis ohne Position."));
+    }
+
     [Fact]
     public void Ohne_Vorschau_steht_der_Grund_statt_einer_Zahl()
     {

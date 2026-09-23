@@ -78,8 +78,14 @@ public enum ZapfprofilVorschauZustand
 /// <param name="Text">Der Satz in der Oberflächensprache.</param>
 /// <param name="Art">Hinweis, Ablehnung oder Fehler.</param>
 /// <param name="Klartext">Der Wortlaut des Kerns (deutsch) für Protokoll und Assistent; leer, wenn es keinen gibt.</param>
+/// <param name="Position">
+/// Die Position der Zone in der Eingabe (0-basiert), wo die Hülle sie eindeutig bestimmen kann;
+/// <c>null</c> = ohne Zone oder nicht bestimmt. Der Dialog ordnet eine Meldung darüber ihrer Zone
+/// zu; ohne Position nur über einen Namen, den genau eine Zone trägt — sonst steht sie bei den
+/// allgemeinen Meldungen, nie an zwei Zonen.
+/// </param>
 public sealed record ZapfprofilMeldung(string Kennung, string Zone, string Text, ZapfprofilMeldungsart Art,
-                                       string Klartext = "");
+                                       string Klartext = "", int? Position = null);
 
 /// <summary>
 /// Eine Nutzungsart des Katalogs, wie die Auswahl sie zeigt (5.3): Name, Bezugsart samt

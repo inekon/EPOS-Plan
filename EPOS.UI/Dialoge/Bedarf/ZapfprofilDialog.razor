@@ -164,7 +164,7 @@
                             </KindInhalt>
                         </Formularraster>
 
-                        @foreach (ZapfprofilMeldung m in ZonenMeldungen(zone))
+                        @foreach (ZapfprofilMeldung m in ZonenMeldungen(_wahl))
                         {
                             if (m.Art == ZapfprofilMeldungsart.Hinweis)
                             {
@@ -558,28 +558,38 @@
         yield return (Texte.KennzahlGleichzeitigkeit, "—", Texte.KennzahlGleichzeitigkeitVermerk);
     }
 
-    /// <summary>Die Meldungen der Vorschau zu einer Zone (am Feld, nicht blockierend).</summary>
-    private IEnumerable<ZapfprofilMeldung> ZonenMeldungen(ZapfprofilZoneDaten zone)
+    /// <summary>
+    /// Die Meldungen der Vorschau zur Zone an Position <paramref name="index"/> (am Feld, nicht
+    /// blockierend): über die Position, die die Hülle mitgibt; ohne Position nur über einen Namen,
+    /// den genau diese Zone trägt — tragen zwei Zonen denselben Namen, steht keine Meldung an beiden.
+    /// </summary>
+    private IEnumerable<ZapfprofilMeldung> ZonenMeldungen(int index)
     {
         if (!_vorschauAktuell || _vorschau is null) return Array.Empty<ZapfprofilMeldung>();
-        string name = (zone.Name ?? "").Trim();
-        return _vorschau.Meldungen.Where(m => m.Zone.Length > 0 && m.Zone == name);
+        return _vorschau.Meldungen.Where(m => GehoertZu(m, index));
+    }
+
+    private bool GehoertZu(ZapfprofilMeldung m, int index)
+    {
+        if (index < 0 || index >= _eingabe.Zonen.Count || m.Zone.Length == 0) return false;
+        if (m.Position is int p) return p == index;
+        string name = (_eingabe.Zonen[index].Name ?? "").Trim();
+        return m.Zone == name && _eingabe.Zonen.Count(z => (z.Name ?? "").Trim() == name) == 1;
     }
 
     /// <summary>
     /// Die Meldungen ohne sichtbare Zone: Projekt und Zirkulation, der Grund einer nicht
-    /// gerechneten Vorschau und die Meldungen einer Zone, die gerade nicht gewählt ist, stehen
-    /// in der Vorschau — benannt statt still.
+    /// gerechneten Vorschau und die Meldungen einer Zone, die gerade nicht gewählt ist oder
+    /// sich keiner Zone eindeutig zuordnen lässt, stehen in der Vorschau — benannt statt still.
     /// </summary>
     private IEnumerable<ZapfprofilMeldung> AllgemeineMeldungen
     {
         get
         {
             if (_vorschau is null) return Array.Empty<ZapfprofilMeldung>();
-            string gewaehlt = (Gewaehlte?.Name ?? "").Trim();
             return _vorschau.Meldungen.Where(m =>
                 m.Zone.Length == 0 ? _vorschau.Zustand == ZapfprofilVorschauZustand.Gerechnet
-                                   : !_vorschauAktuell || m.Zone != gewaehlt);
+                                   : !_vorschauAktuell || !GehoertZu(m, _wahl));
         }
     }
 

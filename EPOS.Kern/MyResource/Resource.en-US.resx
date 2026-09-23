@@ -23876,6 +23876,9 @@ Do you want to allow this?</value>
   <data name="ZPG_MSG_ZONE_OHNE_BEZUGSMENGE" xml:space="preserve">
     <value>Zone “{0}”: please enter a reference quantity greater than 0.</value>
   </data>
+  <data name="ZPG_MSG_ZONE_NAME_DOPPELT" xml:space="preserve">
+    <value>Zone “{0}”: the name is used more than once — please give each zone a name of its own.</value>
+  </data>
   <data name="ZPG_MSG_ZONE_TRAEGT_NULL" xml:space="preserve">
     <value>Zone “{0}” contributes 0: {1}</value>
   </data>

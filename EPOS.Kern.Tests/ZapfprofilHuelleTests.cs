@@ -174,6 +174,14 @@ namespace EPOS.Kern.Tests
 
             e.Zonen.RemoveRange(0, 2);
             Assert.Empty(ZapfprofilHuelle.Pruefen(e));
+
+            // Befund 8: Ein doppelter Name (auch in anderer Schreibung) wird einmal benannt abgelehnt.
+            e.Zonen.Add(new ZapfprofilZoneDaten { Name = "wohnen ", IdNutzungsart = 1, Bezugsmenge = 5 });
+            e.Zonen.Add(new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = 1, Bezugsmenge = 5 });
+            ZapfprofilMeldung doppelt = Assert.Single(ZapfprofilHuelle.Pruefen(e));
+            Assert.Equal("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt.Kennung);
+            Assert.Equal("Wohnen", doppelt.Zone);
+            Assert.StartsWith("Zone „Wohnen“: Der Name ist mehrfach vergeben", doppelt.Text);
         }
 
         // =================================================================================

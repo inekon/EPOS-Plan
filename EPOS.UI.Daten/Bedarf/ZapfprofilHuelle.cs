@@ -413,10 +413,32 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            foreach (ZapfAblehnung a in e.Ablehnungen) vorschau.Meldungen.Add(Meldung(a));
-            foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(Meldung(h));
+            // Die Meldungen tragen die Position ihrer Zone, wo der Name sie eindeutig bestimmt —
+            // der Dialog ordnet sie darüber zu, nicht über den Namen.
+            IReadOnlyDictionary<string, int> position = EindeutigePositionen(e.JeZone.Select(z => z.Zone));
+            foreach (ZapfAblehnung a in e.Ablehnungen) vorschau.Meldungen.Add(MitPosition(Meldung(a), position));
+            foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
             return vorschau;
         }
+
+        /// <summary>Zonenname → Position, nur für Namen, die genau einmal vorkommen.</summary>
+        private static IReadOnlyDictionary<string, int> EindeutigePositionen(IEnumerable<string> namen)
+        {
+            var d = new Dictionary<string, int>(StringComparer.Ordinal);
+            var doppelt = new HashSet<string>(StringComparer.Ordinal);
+            int i = 0;
+            foreach (string n in namen)
+            {
+                string name = n ?? "";
+                if (name.Length > 0 && !d.TryAdd(name, i)) doppelt.Add(name);
+                i++;
+            }
+            foreach (string n in doppelt) d.Remove(n);
+            return d;
+        }
+
+        private static ZapfprofilMeldung MitPosition(ZapfprofilMeldung m, IReadOnlyDictionary<string, int> position)
+            => m.Zone.Length > 0 && position.TryGetValue(m.Zone, out int p) ? m with { Position = p } : m;
 
         private static ZapfprofilAnsichtDaten Ansicht(int idZone, string titel, bool abgelehnt, Bilanzreihe zapfung,
                                                      Bilanzreihe zirkulation, IReadOnlyList<ZapfTagtyp> kalender, int wochentagJan1,
@@ -550,7 +572,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Pflichtprüfung des OK (5.2): mindestens eine Zone, jede mit Name, Nutzungsart und
-        /// Bezugsmenge größer 0. Leer = in Ordnung. Dieselbe Prüfung für jeden Weg, der übernimmt.
+        /// Bezugsmenge größer 0, und kein Name doppelt — das Laufprotokoll nennt die Zonen beim
+        /// Namen. Leer = in Ordnung. Dieselbe Prüfung für jeden Weg, der übernimmt.
         /// </summary>
         internal static IReadOnlyList<ZapfprofilMeldung> Pruefen(ZapfprofilEingabeDaten eingabe)
         {
@@ -572,6 +595,13 @@ namespace WindowsFormsApplication1
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", name,
                         Format(Text_("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben."), name)));
             }
+            foreach (string doppelt in eingabe.Zonen.Select(z => (z.Name ?? "").Trim())
+                                                    .Where(n => n.Length > 0)
+                                                    .GroupBy(n => n, StringComparer.OrdinalIgnoreCase)
+                                                    .Where(g => g.Count() > 1)
+                                                    .Select(g => g.First()))
+                m.Add(Fehler("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt,
+                    Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben."), doppelt)));
             return m;
         }
 
