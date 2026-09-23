@@ -45,7 +45,9 @@ namespace EPOS.Kern.Tests
             "TwwSpeicherauslegung.cs", "Grossanlage.cs", "Auslegungsergebnis.cs", "ZapfprofilAuslegung.cs",
             // Stufe Z3: Zufall, Kategorien und Ereignisgenerator dienen beiden Produkten und halten
             // die strengere Regel — keine Bilanzreihe, keine Zahlenliste in einer Signatur.
-            "ZapfZufall.cs", "Zapfkategorie.cs", "Zapfereignisgenerator.cs"
+            "ZapfZufall.cs", "Zapfkategorie.cs", "Zapfereignisgenerator.cs",
+            // Das Auslegungsensemble (Bedarfstag, Perzentile, Gleichzeitigkeit) — die Zapfensemble-Auswertung der Invariante 2.4.
+            "Zapfensemble.cs"
         };
 
         /// <summary>Die Dateien der Bilanz (Stufe Z1) — jede Datei des Ordners gehört zu genau einer Liste.</summary>
@@ -54,7 +56,9 @@ namespace EPOS.Kern.Tests
             "Bilanzreihe.cs", "Formvektor.cs", "Herkunftsprotokoll.cs", "Kaltwassergang.cs", "Mengengeruest.cs",
             "Nutzungsart.cs", "Parametersatz.cs", "Provenienz.cs", "Zapfauswertung.cs", "Zapfkalender.cs",
             "ZapfprofilErgebnis.cs", "ZapfprofilRechner.cs", "ZapfprofilStand.cs", "Zapfprofileingang.cs",
-            "Zirkulationskanal.cs"
+            "Zirkulationskanal.cs",
+            // Stufe Z3: das Ensemble der Jahresreihe („stochastisch") ist Bilanz.
+            "Jahresensemble.cs"
         };
 
         /// <summary>Die Dateien, deren Typen Minuten- bzw. Stundenwerte tragen dürfen.</summary>
@@ -72,6 +76,8 @@ namespace EPOS.Kern.Tests
              "Defizit D(t) der doppelten Wochenreihe (336 h) — Stundenwerte der Auslegung, keine Jahresreihe."),
             ("Nenninhaltsliste", "WerteL", "Liste der Speicher-Nenninhalte (Einstellung), keine Zeitreihe."),
             ("Nenninhaltsliste", "Aus", "Bildet die Liste der Nenninhalte aus Werten (Einstellung), keine Zeitreihe."),
+            ("Perzentilwerte", "Aus",
+             "Perzentile einer Stichprobe je Realisierung des Auslegungsensembles (R Werte), keine Zeitreihe."),
         };
 
         /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Rückgabe, Eigenschaft und Feld.</summary>

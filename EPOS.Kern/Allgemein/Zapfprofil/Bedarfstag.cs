@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
         private readonly double[] _minutenKwh;
         private readonly Zapfereignis[] _ereignisse;
 
-        private Bedarfstag(ZapfBedarfstagquelle quelle, string bezeichner, Zapfereignis[] ereignisse, Provenienz herkunft,
+        private Bedarfstag(ZapfBedarfstagquelle? quelle, string bezeichner, Zapfereignis[] ereignisse, Provenienz herkunft,
                            bool spitzenUnterschaetzt)
         {
             Quelle = quelle;
@@ -186,8 +186,14 @@ namespace WindowsFormsApplication1
             GroessteStundenleistungKw = stunde;
         }
 
-        /// <summary>Die Quelle des Tages (4.5).</summary>
-        internal ZapfBedarfstagquelle Quelle { get; }
+        /// <summary>
+        /// Die Quelle des Tages (4.5); <c>null</c> bei einem gezogenen Tag des Auslegungsensembles
+        /// (<see cref="AusZiehung"/>, 4.4) — er ist weder Katalog- noch Vorgabetag.
+        /// </summary>
+        internal ZapfBedarfstagquelle? Quelle { get; }
+
+        /// <summary>Ist der Tag eine Realisierung des Auslegungsensembles (4.4)?</summary>
+        internal bool Gezogen => !Quelle.HasValue;
 
         /// <summary>Der neutrale Name des Tages.</summary>
         internal string Bezeichner { get; }
@@ -237,6 +243,25 @@ namespace WindowsFormsApplication1
         internal static Bedarfstag AusEreignissen(ZapfBedarfstagquelle quelle, string bezeichner,
                                                   IEnumerable<Zapfereignis> ereignisse, Provenienz herkunft)
         {
+            Zapfereignis[] liste = Geprueft(bezeichner, ereignisse);
+            if (liste.Length == 0)
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
+                    "Nicht rechenbar — der Bedarfstag „" + bezeichner + "“ trägt kein Ereignis.");
+            return new Bedarfstag(quelle, bezeichner, liste, herkunft, quelle == ZapfBedarfstagquelle.Stundenprofil);
+        }
+
+        /// <summary>
+        /// <b>Ein gezogener Tag</b> des Auslegungsensembles (4.4, 4.5 b): die Ereignisse einer
+        /// Realisierung, ohne Quelle und ohne Provenienz. Anders als ein Katalog- oder Vorgabetag darf
+        /// er leer sein — eine Realisierung ohne Zapfung ist ein Ergebnis, kein Fehler. Ein Ereignis
+        /// über Mitternacht läuft am Tagesanfang weiter wie bei jedem Bedarfstag.
+        /// </summary>
+        internal static Bedarfstag AusZiehung(string bezeichner, IEnumerable<Zapfereignis> ereignisse)
+            => new Bedarfstag(null, bezeichner, Geprueft(bezeichner, ereignisse), null, false);
+
+        /// <summary>Prüft die Ereignisse (Beginn im Tag, Dauer 1 … 1440, Energie endlich und nicht negativ).</summary>
+        private static Zapfereignis[] Geprueft(string bezeichner, IEnumerable<Zapfereignis> ereignisse)
+        {
             var liste = new List<Zapfereignis>();
             if (ereignisse != null)
                 foreach (Zapfereignis e in ereignisse)
@@ -251,10 +276,7 @@ namespace WindowsFormsApplication1
                             + "“ trägt eine negative oder nicht endliche Energie.");
                     liste.Add(e);
                 }
-            if (liste.Count == 0)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — der Bedarfstag „" + bezeichner + "“ trägt kein Ereignis.");
-            return new Bedarfstag(quelle, bezeichner, liste.ToArray(), herkunft, quelle == ZapfBedarfstagquelle.Stundenprofil);
+            return liste.ToArray();
         }
 
         /// <summary>
