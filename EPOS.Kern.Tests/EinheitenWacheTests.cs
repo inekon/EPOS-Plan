@@ -392,10 +392,12 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Was ein Rechenordner des Zapfprofils NICHT nennen darf: Oberfläche, Windows-API,
         /// Datenbank und Umgebung (Umsetzungskonzept Zapfprofilgenerator 2.1: „Keine Datei kennt
-        /// DataRepository, Dienste oder eine Oberfläche").
+        /// DataRepository, Dienste oder eine Oberfläche") — auch nicht <c>System.Data</c>, SQLite,
+        /// das Dateisystem, <c>SpecialFolder</c>, <c>Program.*</c> oder <c>Environment.*</c>.
         /// </summary>
         private static readonly Regex Umgebungsbindung = new Regex(
-            @"System\.Windows|System\.Drawing|MessageBox\.|\bRegistry\.|ProtectedData|OleDb|\bDataRepository\b|\bDienste\.",
+            @"System\.Windows|System\.Drawing|MessageBox\.|\bRegistry\.|ProtectedData|OleDb|\bDataRepository\b|\bDienste\."
+            + @"|\bSystem\.Data\b|\bDataTable\b|Sqlite|\bSystem\.IO\b|SpecialFolder|\bProgram\.|\bEnvironment\.",
             RegexOptions.Compiled);
 
         /// <summary>
@@ -441,6 +443,14 @@ namespace EPOS.Kern.Tests
             Assert.Matches(Umgebungsbindung, "DataTable t = DataRepository.GetDataTable(sql);");
             Assert.Matches(Umgebungsbindung, "Dienste.Dialog.Zeige(text);");
             Assert.DoesNotMatch(Umgebungsbindung, "internal static Zirkulationsansatz Ansetzen(ProjektStand p)");
+            foreach (string bindung in new[]
+                     {
+                         "using System.Data;", "DataTable t = new DataTable();", "var c = new SqliteConnection(pfad);",
+                         "using System.IO;", "Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);",
+                         "string p = Program.Pfad;", "string n = Environment.NewLine;"
+                     })
+                Assert.Matches(Umgebungsbindung, bindung);
+            Assert.DoesNotMatch(Umgebungsbindung, "System.DateTime jetzt; double datenMenge; int ProgrammTeil;");
         }
 
         // =====================================================================
