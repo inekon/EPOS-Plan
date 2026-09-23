@@ -93,6 +93,7 @@
         {
             <Schema Layout="@_schema" Gewaehlt="@_auswahl"
                     LeerText="@SchemaLeerText" WarnungText="@SchemaWarnungText"
+                    AbnehmerWarnungText="@SchemaAbnehmerWarnungText"
                     KetteKopfText="@SchemaKetteKopfText" KeineKetteText="@SchemaKeineKetteText"
                     Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten" />
         }
@@ -611,6 +612,7 @@
     [Parameter] public string SchemaLeerText { get; set; }
         = "Für dieses Projekt ist noch keine Hydraulik konfiguriert.";
     [Parameter] public string SchemaWarnungText { get; set; } = "Vorlauf unter dem Puffer-Sollwert";
+    [Parameter] public string SchemaAbnehmerWarnungText { get; set; } = "Kein Versorger";
     [Parameter] public string SchemaKetteKopfText { get; set; } = "Kaskadenkette";
     [Parameter] public string SchemaKeineKetteText { get; set; }
         = "Dieses Projekt führt keine Kaskade.";

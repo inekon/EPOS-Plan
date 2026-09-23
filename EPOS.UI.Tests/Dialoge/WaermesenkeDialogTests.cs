@@ -463,6 +463,30 @@ public class WaermesenkeDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// SOLARTHERMIE OHNE PUFFER AUF PROZESSWÄRME: Der Befund des Warnkatalogs ist WEICH —
+    /// gespeichert wird trotzdem, die Warnung steht danach im Banner. Welche Zeilen den
+    /// Befund auslösen, prüft der Kern gegen die Testdatenbank
+    /// (<c>VersorgungWarnungTests</c>); hier geht es darum, dass der Satz den Anwender
+    /// beim Speichern erreicht und das Speichern nicht verhindert.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_ohne_Puffer_auf_Prozesswaerme_warnt_beim_Speichern()
+    {
+        var stand = MitPuffern();
+        stand.Bestand.Add(new SenkenzeileDaten { Ziel = PROZESS, Bedarfsart = BEIDES });
+        stand.Weiche.Add("Kollektorfeld Süd: Solarthermie ohne Pufferspeicher deckt Prozesswärme " +
+                         "nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. " +
+                         "Empfehlung: Pufferspeicher mit Nutzung Prozess.");
+
+        var cut = Zeige(stand);
+        Ok(cut);
+
+        Assert.NotNull(stand.Geschrieben);                    // weich: gespeichert wird
+        Assert.Contains("nur zeitgleich", cut.Instance.Meldung);
+        Assert.Contains("Pufferspeicher mit Nutzung Prozess", cut.Instance.Meldung);
+    }
+
+    /// <summary>
     /// Der Absprung (Konzept 4.6): Ein Fehler, der sich durch das Anlegen eines Puffers
     /// beheben laesst, fragt zurueck statt nur zu melden.
     /// </summary>

@@ -544,6 +544,13 @@ namespace WindowsFormsApplication1
             public double WaermeproduktionMwh;
             public double UeberschussMwh;
             public List<SolarModulZeile> Module = new List<SolarModulZeile>();
+
+            /// <summary>
+            /// „Ertrag … ohne Abnehmer" — gesetzt, wenn Überschuss anfällt UND Bedarf in
+            /// einem Kanal liegt, den keine Senke der Felder bedient; "" = kein Hinweis.
+            /// Siehe <see cref="SolarHinweisOhneAbnehmer"/>.
+            /// </summary>
+            public string HinweisOhneAbnehmer = "";
         }
 
         /// <summary>
@@ -586,7 +593,92 @@ namespace WindowsFormsApplication1
                                                      k.WaermeproduktionKwh / 1000.0,
                                                      k.UeberschussKwh / 1000.0));
 
+            e.HinweisOhneAbnehmer = SolarHinweisOhneAbnehmer(sim, wb, e.UeberschussMwh);
+
             return e;
+        }
+
+        /// <summary>
+        /// ERTRAG OHNE ABNEHMER — der Hinweis des Solarthermie-Reiters, wenn der
+        /// Überschuss daher rührt, dass die Senken der Felder den Kanal gar nicht
+        /// bedienen, in dem der Bedarf liegt (Befund: Kollektorfeld mit Vorbelegung
+        /// Heizkreis/Beides in einem reinen Prozesswärmeprojekt — Produktion 0, das ganze
+        /// Potenzial als Überschuss). "" = kein Hinweis.
+        ///
+        /// <para><b>Alles aus dem Lauf.</b> Die Senken sind die Senkenlisten, mit denen
+        /// die Felder gerechnet haben (<c>SimulationSolarthermie.FeldSenke</c>, samt
+        /// Vorbelegung und Rückfall), der Kanalbedarf der des Laufs
+        /// (<see cref="SimulationRunner.BedarfJeKanal"/>), die Entladekanäle einer
+        /// Puffersenke das Klassen-Set ihres Speichers im Lauf
+        /// (<c>SimulationPufferspeicher.BedientKanal</c>). Gelesen wird nur der
+        /// Puffername für den Satz — und nur, wenn der Hinweis wirklich entsteht.</para>
+        /// </summary>
+        internal static string SolarHinweisOhneAbnehmer(SimulationControl sim,
+                                                        SimulationWaermebedarf wb,
+                                                        double ueberschussMwh)
+        {
+            if (sim == null || wb == null || sim.simulation_solarthermie == null) return "";
+            if (ueberschussMwh < Warnkriterien.KANAL_BEDARF_SCHWELLE_MWH) return "";
+
+            SimulationSolarthermie st = sim.simulation_solarthermie;
+            List<Senkenzeile> zeilen = new List<Senkenzeile>();
+            bool[] bedient = new bool[Kanal.ANZAHL];
+
+            for (int f = 0; f < st.FelderAnzahl; f++)
+            {
+                Senkenliste liste = st.FeldSenke(f) ?? Senkenliste.Vorbelegung(0);
+                foreach (Senkenzeile z in liste.Zeilen)
+                {
+                    if (z == null) continue;
+                    zeilen.Add(z);
+                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                        if (ZeileBedient(sim, z, k)) bedient[k] = true;
+                }
+            }
+            if (zeilen.Count == 0) return "";
+
+            double[] bedarf = SimulationRunner.BedarfJeKanal(wb);
+            List<string> offen = new List<string>();
+            for (int k = 0; k < Kanal.ANZAHL; k++)
+                if (bedarf[k] >= Warnkriterien.KANAL_BEDARF_SCHWELLE_MWH && !bedient[k])
+                    offen.Add(Warnkriterien.KanalAnzeige(k));
+            if (offen.Count == 0) return "";
+
+            List<string> senken = new List<string>();
+            foreach (Senkenzeile z in zeilen)
+            {
+                string anzeige = WaermesenkeClass.SenkeAnzeige(new Z_AnlageSenkeModel
+                {
+                    Ziel = Senkenzuordnung.ZielAusSenke(z.Ziel),
+                    Bedarfsart = z.Bedarfsart,
+                    ID_Puffer = z.IDPuffer
+                });
+                if (!senken.Contains(anzeige)) senken.Add(anzeige);
+            }
+
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 MyResource.Resource.SIMERG_ST_HINWEIS_OHNE_ABNEHMER,
+                                 ueberschussMwh.ToString("N1", System.Globalization.CultureInfo.CurrentCulture),
+                                 string.Join(", ", senken),
+                                 string.Join(MyResource.Resource.SIMWARN_TRENNER, offen));
+        }
+
+        /// <summary>
+        /// Bedient eine Senkenzeile des Laufs diesen Kanal? Direktsenke: ihre Kanalmaske;
+        /// Puffersenke: das Klassen-Set ihres Speichers in DIESEM Lauf.
+        /// </summary>
+        private static bool ZeileBedient(SimulationControl sim, Senkenzeile z, int kanal)
+        {
+            if (z.IstPuffersenke)
+            {
+                SimulationPufferspeicher sp;
+                return sim.speicherRegistry != null &&
+                       sim.speicherRegistry.TryGetValue(z.IDPuffer, out sp) && sp != null &&
+                       sp.BedientKanal(kanal);
+            }
+
+            bool[] maske = Kaskadenschleife.SenkenMaske(z);
+            return maske != null && maske[kanal];
         }
 
         // =================================================================
