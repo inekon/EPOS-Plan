@@ -43,10 +43,12 @@ namespace EPOS.Kern.Tests
 
         public void Dispose()
         {
-            // Derselbe Grund wie in DatenbanksicherungTests.Dispose: der Verbindungspool
-            // haelt Dateien offen, bis er geleert wird.
-            try { SqliteConnection.ClearAllPools(); } catch { /* Aufraeumen darf nicht scheitern */ }
-            try { Directory.Delete(_ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            // Derselbe Weg wie in TestDatenbank: Pool leeren (er haelt Dateien offen, bis er
+            // geleert wird), loeschen, bei Bedarf wiederholen. Er hebt auch den Schreibschutz
+            // auf, den Die_Kopie_ist_nicht_schreibgeschuetzt der Vorlage bewusst gibt - an ihm
+            // scheiterte Directory.Delete unter Windows still, und je Lauf blieb ein Ordner
+            // epos-erstbereitstellung-* liegen.
+            TestDatenbank.OrdnerLoeschen(_ordner);
         }
 
         /// <summary>

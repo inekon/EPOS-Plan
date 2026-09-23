@@ -3766,6 +3766,58 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_107_ERGEBNIS_GEBAEUDE = 107;
 
         /// <summary>
+        /// Schritt 108 — <b>KU-S1, die Kühleingaben an Gebäude und Gebäudekatalog</b>
+        /// (Kühlkonzept 7.1; Stufe KU1, Entscheide E27/K11 und E31).
+        ///
+        /// <para><b>In dieser Reihenfolge</b>, wie Schritt 101: die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> verwerfen (SQLite kennt kein <c>ALTER VIEW</c>); an
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> je vier Spalten anlegen —
+        /// <c>Kuehl_Sollwert</c> (NULL = Kühlung aus), <c>Kuehlleistung_Max</c> (NULL =
+        /// unbegrenzt), <c>Kuehlung_Aktiv</c> (0/1, Vorgabe 0) und <c>Kuehl_Sollwert_Nacht</c>
+        /// (NULL = wie der Tagwert; gelesen erst ab KU3); die Sicht mit den vier Spalten hinter
+        /// denen von M3 neu bauen. Definitionen: <see cref="GebaeudeSchema"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Die Spalten bleiben NULL (der Schalter 0), kein
+        /// Rechenweg liest sie; der Referenzlauf bleibt byte-gleich. <b>Nach Schritt 107</b>,
+        /// und nach 101, dessen Sicht er erweitert.</para>
+        /// </summary>
+        public const int SCHRITT_108_KUEHLUNG_GEBAEUDE = 108;
+
+        /// <summary>
+        /// Schritt 109 — <b>KU-S2, die Projekteinstellung „Kühlbetrieb"</b> (Kühlkonzept 7.2,
+        /// K10; Entscheid E27).
+        ///
+        /// <para><b>REIN DDL</b>, eine Spalte an <c>Tab_Einstellungen</c>:
+        /// <c>Kuehlbetrieb</c> als <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c> — jedes
+        /// vorhandene Projekt bekommt 0 und rechnet ohne Kühlung, bis seine Projekteinstellung
+        /// ausdrücklich eingeschaltet wird. Die Programmeinstellung „Neue Projekte mit Kühlung
+        /// anlegen" liest dieser Schritt NICHT: Sie setzt allein den Anfangswert eines neu
+        /// angelegten Projekts. Die Quelle ist
+        /// <see cref="KuehlungSchema.Projekteinstellung"/>. <b>Nach Schritt 108</b> ohne
+        /// Reihenfolgebedingung.</para>
+        /// </summary>
+        public const int SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG = 109;
+
+        /// <summary>
+        /// Schritt 110 — <b>KU-S4, die neun Ergebnisspalten des Kühlkanals</b> (Kühlkonzept
+        /// 7.4; E21, K13, K24/K18a).
+        ///
+        /// <para><b>REIN DDL</b>, nach dem Muster von Schritt 52: <c>Waermebedarf_Kuehlung</c>,
+        /// <c>Kaeltebedarf_Gesamt</c>, <c>Kaeltelast_Max</c> und <c>Kaelterestbedarf</c> an
+        /// <c>Tab_ErgebnisEnergiebedarf</c>, <c>Deckung_Kuehlung</c> an den vier
+        /// Erzeuger-Ergebnistabellen, <c>Entladung_Kuehlung</c> an
+        /// <c>Tab_ErgebnisPufferspeicher</c> — alle nullbares <c>REAL</c>, ohne Vorgabe und
+        /// ohne Nachtrag. Die Quelle ist <see cref="KuehlungSchema.Ergebnisspalten"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Lauf schreibt die Spalten, bevor der Kanal steht
+        /// (<c>Kanal.ANZAHL = 4</c> kommt NACH diesem Schritt, Kühlkonzept 7.4); der
+        /// Referenzlauf-Export nimmt eine Spalte erst auf, wenn sie einen Wert trägt — er
+        /// bleibt byte-gleich. <b>Nach Schritt 109</b> ohne Reihenfolgebedingung.</para>
+        /// </summary>
+        public const int SCHRITT_110_KUEHLUNG_ERGEBNIS = 110;
+
+        /// <summary>
         /// Schritt 108 — <b>Ersatz und Restwert je Position entkoppelt</b> (Schritt E des
         /// Analysepapiers Wirtschaftlichkeit § 6, Entscheid A6 vom 20.09.2026, Mockup U39,
         /// Konzept § 2.13 (3)). Er folgt auf
@@ -5297,6 +5349,39 @@ namespace WindowsFormsApplication1
                         "Bericht laesst den Abschnitt 'Gebaeude (Simulationsergebnis)' " +
                         "weg. Gerechnet wird unveraendert.",
                         Schritt_107_ErgebnisGebaeude),
+
+            // KUEHLKONZEPT 7.1, STUFE KU1 (Entscheide E27/K11 und E31) - KU-S1, die vier
+            // Kuehleingaben an Tab_Gebaeude(_STAMM), zweiter Sichtneubau. REIN DDL; die
+            // Quelle ist GebaeudeSchema. Er steht NACH 101, dessen Sicht er erweitert.
+            new Schritt(SCHRITT_108_KUEHLUNG_GEBAEUDE,
+                        "Tab_Gebaeude(_STAMM): vier Kuehleingaben (Sollwert, Leistungsgrenze, " +
+                        "Schalter, Nachtwert), die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Die Kuehleingaben eines Gebaeudes haetten keinen Ort; die Kuehlung " +
+                        "liesse sich spaeter nicht einrichten. KEIN Rechenergebnis aendert " +
+                        "sich - die Spalten bleiben leer, und kein Rechenweg liest sie.",
+                        Schritt_108_KuehlungGebaeude),
+
+            // KUEHLKONZEPT 7.2 (K10, Entscheid E27) - KU-S2, die Projekteinstellung
+            // Kuehlbetrieb. REIN DDL; die Quelle ist KuehlungSchema.Projekteinstellung. Er
+            // steht NACH 108 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG,
+                        "Tab_Einstellungen bekommt die Projekteinstellung Kuehlbetrieb (0/1, " +
+                        "Vorgabe 0)",
+                        "Die Kuehlung liesse sich je Projekt nicht schalten. Jedes vorhandene " +
+                        "Projekt steht nach dem Schritt auf 'aus' und rechnet ohne Kuehlung, " +
+                        "bis seine Projekteinstellung ausdruecklich eingeschaltet wird. " +
+                        "ERGEBNISNEUTRAL.",
+                        Schritt_109_KuehlungProjekteinstellung),
+
+            // KUEHLKONZEPT 7.4 (E21, K13) - KU-S4, die neun Ergebnisspalten des
+            // Kuehlkanals. REIN DDL; die Quelle ist KuehlungSchema.Ergebnisspalten. Er steht
+            // NACH 109 ohne Reihenfolgebedingung und VOR dem Kanal (Kanal.ANZAHL = 4).
+            new Schritt(SCHRITT_110_KUEHLUNG_ERGEBNIS,
+                        "Ergebnistabellen: neun Spalten des Kuehlkanals (Bedarf, Deckung je " +
+                        "Erzeuger, Speicherentladung, Kaeltebedarf, Kaeltespitze, ungedeckte Kaelte)",
+                        "Der Kuehlkanal haette keine Ergebnisspalten. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, bis ein Lauf Kaelte rechnet.",
+                        Schritt_110_KuehlungErgebnis),
 
             // ENTSCHEID A6 (20.09.2026, Schritt E) - Ersatz und Restwert je Position
             // entkoppelt. REIN DDL; die Quelle ist
@@ -8230,6 +8315,112 @@ namespace WindowsFormsApplication1
                     ", zwei Indizes sichergestellt. KEIN DML: die Tabelle fuellt erst der naechste " +
                     "Lauf, kein Rechenweg liest sie. KEIN Rechenergebnis aendert sich; der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritte 108 bis 110 - die Schemaschritte der Kuehlung, Stufe KU1 (E27, E31)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 108 (KU-S1) — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_108_KUEHLUNG_GEBAEUDE"/>, die Definitionen bei
+        /// <see cref="GebaeudeSchema"/>. Dieselbe Folge wie Schritt 101: Sicht verwerfen,
+        /// Spalten anlegen, Sicht neu - nur mit <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteSpalteAnlegen"/>.
+        ///
+        /// <para><b>Wiederholbar:</b> Die Sicht fällt mit <c>IF EXISTS</c>,
+        /// <see cref="SqliteSpalteAnlegen"/> übergeht eine vorhandene Spalte, die Sicht wird
+        /// immer neu gebaut. Die Nachprobe fragt
+        /// <see cref="GebaeudeSchema.KuehlspaltenVollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_108_KuehlungGebaeude(Lauf l)
+        {
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann die vier Kuehlspalten je Gebaeudetabelle (acht Eintraege)
+            foreach (SchemaSpalte s in GebaeudeSchema.Kuehlspalten)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            // zuletzt die Sicht neu - aus SQL_VIEW_KUEHLUNG, M3 und dahinter die Kuehlspalten
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_KUEHLUNG, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = GebaeudeSchema.KuehlspaltenVollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Kuehlspalten der Gebaeudetabellen oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz("108: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("108: KU-S1 - " +
+                    GebaeudeSchema.Kuehlspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Kuehlspalten stehen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_KUEHLUNG.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die Spalten bleiben leer (Kuehlung_Aktiv 0); KEIN Rechenergebnis " +
+                    "aendert sich durch diesen Schritt.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt 109 (KU-S2) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG"/>, die Spalte bei
+        /// <see cref="KuehlungSchema.Projekteinstellung"/>. Dieselbe Schleife wie Schritt 105;
+        /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen.
+        /// </summary>
+        private static bool Schritt_109_KuehlungProjekteinstellung(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in KuehlungSchema.Projekteinstellung)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("109: KU-S2 - " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    KuehlungSchema.Projekteinstellung.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.TAB_EINSTELLUNGEN + "." +
+                    KuehlungSchema.SPALTE_KUEHLBETRIEB + " (0/1, Vorgabe 0). KEIN DML: Jedes " +
+                    "vorhandene Projekt steht auf 0 und rechnet ohne Kuehlung; die " +
+                    "Programmeinstellung fuer neue Projekte liest dieser Schritt nicht.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt 110 (KU-S4) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_110_KUEHLUNG_ERGEBNIS"/>, die Spalten bei
+        /// <see cref="KuehlungSchema.Ergebnisspalten"/>. Dieselbe Schleife wie Schritt 105;
+        /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen.
+        /// </summary>
+        private static bool Schritt_110_KuehlungErgebnis(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("110: KU-S4 - " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    KuehlungSchema.Ergebnisspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Ergebnisspalte(n) des Kuehlkanals angelegt, alle nullbar. KEIN DML: Die " +
+                    "Spalten bleiben leer, bis ein Lauf Kaelte rechnet; der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

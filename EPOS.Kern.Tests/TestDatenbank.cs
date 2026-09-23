@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading;
+using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -106,14 +109,70 @@ namespace EPOS.Kern.Tests
     /// schreibende Faelle richtig (jeder bekommt einen unberuehrten Stand), fuer rein
     /// lesende aber teuer. Die vier Klassen der Welle 11 lesen nur und teilen sich
     /// deshalb EINE Kopie je Klasse.</para>
+    ///
+    /// <para><b>Jede Instanz wird entsorgt</b> - mit <c>using</c>, als Klassenvorrichtung
+    /// oder als Feld einer Testklasse, die <see cref="IDisposable"/> traegt und das Feld in
+    /// <c>Dispose</c> entsorgt. Eine Testklasse mit dem Feld, aber ohne <c>IDisposable</c>,
+    /// legt je Testfall eine Kopie an, die nie geloescht wird: Vier solche Klassen liessen
+    /// je Lauf 40 Kopien liegen, bis die Platte voll war (Befund 23.09.2026: 1 170 Ordner,
+    /// 77 GB). Der Waechter <see cref="TestDatenbankEntsorgungWacheTests"/> haelt die Regel;
+    /// was trotzdem liegen bleibt, raeumt der naechste Lauf weg
+    /// (<see cref="VerwaisteKopienAufraeumen"/>).</para>
     /// </remarks>
     public sealed class TestDatenbank : IDisposable
     {
+        /// <summary>
+        /// Namensanfang jeder Arbeitskopie unter <see cref="Path.GetTempPath"/>; es folgen acht
+        /// Hexziffern. Der Aufraeumlauf fasst nur Ordner an, die GENAU diesem Muster folgen.
+        /// </summary>
+        internal const string ORDNER_PRAEFIX = "epos-kerntest-";
+
+        /// <summary>
+        /// Die BESITZMARKE: eine leere Datei im Kopieordner, die die Vorrichtung vom Anlegen
+        /// des Ordners bis zum Loeschen EXKLUSIV offen haelt.
+        ///
+        /// <para><b>Warum nicht die Datenbank selbst.</b> Ob eine Kopie noch gebraucht wird,
+        /// laesst sich an der Datenbankdatei nicht ablesen: Vor der ersten Verbindung ist sie
+        /// frei, und der Pool von Microsoft.Data.Sqlite schliesst eine untaetige Verbindung
+        /// nach zwei bis acht Minuten - eine Klassenvorrichtung zwischen zwei langen Faellen
+        /// saehe dann aus wie eine Waise. Die Marke ist belegt, solange ihr Besitzer lebt, und
+        /// frei, sobald sein Prozess endet - auch wenn er abgeschossen wurde.</para>
+        /// </summary>
+        internal const string BESITZMARKE = "besitz.sperre";
+
+        /// <summary>
+        /// Wie lange ein Kopieordner OHNE Besitzmarke unangetastet bleibt. Ohne Marke sind nur
+        /// Kopien von einem Stand vor der Marke; ein solcher Lauf kann in einer anderen Sitzung
+        /// noch laufen, aber kein voller Lauf dauert auch nur annaehernd so lange.
+        /// </summary>
+        internal static readonly TimeSpan SCHONFRIST_OHNE_MARKE = TimeSpan.FromHours(2);
+
+        /// <summary>Die Pausen vor den Loeschversuchen in <see cref="OrdnerLoeschen"/> (zusammen rund 1,5 s).</summary>
+        private static readonly int[] WARTEZEITEN_MS = { 0, 50, 100, 200, 400, 800 };
+
+        /// <summary>Der Name, den der Konstruktor vergibt - und nur diesen raeumt der Aufraeumlauf.</summary>
+        private static readonly Regex KOPIEORDNER =
+            new Regex("^" + ORDNER_PRAEFIX + "[0-9a-f]{8}$", RegexOptions.CultureInvariant);
+
+        /// <summary>1, sobald der Aufraeumlauf dieses Prozesses gelaufen ist.</summary>
+        private static int _aufraeumlaufGelaufen;
+
         private readonly string _vorher;
         private readonly Func<bool> _schreibrechtVorher;
         private readonly string _ordner;
+        private FileStream _besitzmarke;
+        private bool _entsorgt;
 
-        public TestDatenbank()
+        public TestDatenbank() : this(Quelle(), Path.GetTempPath())
+        {
+        }
+
+        /// <summary>
+        /// Der Aufbau mit ausdruecklicher Quelle und Wurzel - fuer die Aufraeumprobe, die einen
+        /// abgebrochenen Aufbau in einem eigenen Ordner nachstellt. xunit sieht fuer eine
+        /// Klassenvorrichtung nur oeffentliche Konstruktoren; dieser stoert es also nicht.
+        /// </summary>
+        internal TestDatenbank(string quelle, string wurzel)
         {
             _vorher = DataRepository.PfadUeberschreibung;
 
@@ -127,29 +186,45 @@ namespace EPOS.Kern.Tests
             _schreibrechtVorher = Schreibnaht.Schreibrecht;
             Schreibnaht.WerkzeugFreigabe("EPOS.Kern.Tests (Arbeitskopie der Testdatenbank)");
 
-            string quelle = Quelle();
             if (quelle == null) return;
 
-            // Seit Auftrag #243 (Anwenderentscheid AUF-Q2, 12.09.2026) liegt die
-            // Testdatenbank in Git LFS. Wer ohne aktiven LFS-Filter klont, hat an
-            // dieser Stelle eine 130-Byte-Textdatei statt 68 MB SQLite - und saehe
-            // sonst nur "file is not a database" in einem beliebigen der Faelle
-            // weiter unten. Deshalb hier EINE benannte Meldung.
-            LfsZeigerProbe.Sicherstellen(quelle);
+            try
+            {
+                // Seit Auftrag #243 (Anwenderentscheid AUF-Q2, 12.09.2026) liegt die
+                // Testdatenbank in Git LFS. Wer ohne aktiven LFS-Filter klont, hat an
+                // dieser Stelle eine 130-Byte-Textdatei statt 68 MB SQLite - und saehe
+                // sonst nur "file is not a database" in einem beliebigen der Faelle
+                // weiter unten. Deshalb hier EINE benannte Meldung.
+                LfsZeigerProbe.Sicherstellen(quelle);
 
-            _ordner = Path.Combine(Path.GetTempPath(),
-                                   "epos-kerntest-" + Guid.NewGuid().ToString("N").Substring(0, 8));
-            Directory.CreateDirectory(_ordner);
-            string ziel = Path.Combine(_ordner, "Kenndaten.sqlite");
-            File.Copy(quelle, ziel);
+                VerwaisteKopienEinmalAufraeumen();
 
-            DataRepository.PfadUeberschreibung = ziel;
-            SchemaNachziehen();
+                _ordner = Path.Combine(wurzel, ORDNER_PRAEFIX + Guid.NewGuid().ToString("N").Substring(0, 8));
+                Directory.CreateDirectory(_ordner);
+                _besitzmarke = new FileStream(Path.Combine(_ordner, BESITZMARKE), FileMode.CreateNew,
+                                              FileAccess.Write, FileShare.None);
+                string ziel = Path.Combine(_ordner, "Kenndaten.sqlite");
+                File.Copy(quelle, ziel);
+
+                DataRepository.PfadUeberschreibung = ziel;
+                SchemaNachziehen();
+            }
+            catch
+            {
+                // Bricht der Aufbau mittendrin ab (volle Platte beim Kopieren, LFS-Zeiger),
+                // ruft niemand Dispose - das Objekt entsteht ja nie. Ohne diesen Zweig
+                // blieben der halbe Ordner UND der umgebogene Prozesszustand zurueck.
+                Zuruecksetzen();
+                throw;
+            }
             Vorhanden = true;
         }
 
         /// <summary>Steht eine beschreibbare Arbeitskopie? Sonst ueberspringt der Fall.</summary>
         public bool Vorhanden { get; }
+
+        /// <summary>Der Kopieordner, <c>null</c> ohne Kopie - fuer die Aufraeumproben.</summary>
+        internal string Ordner => _ordner;
 
         /// <summary>
         /// Merge 5 (05.09.2026): Die Datei steht auf dem Freeze-Stand 61. Die SQLite-Schritte
@@ -450,7 +525,20 @@ namespace EPOS.Kern.Tests
 
                 // Schritt 107 (E30, Ergebnistabelle je Gebaeude) steht in der
                 // Testdatenbank selbst (Werkzeuge/Testdatenbankschema).
-                //
+
+                // Schritte 108 bis 110 (Kuehlkonzept Kapitel 7, Stufe KU1; E27, E31). KU-S1:
+                // die vier Kuehleingaben an Tab_Gebaeude(_STAMM) und der zweite Neubau der
+                // Sicht - NACH 101, dessen Sicht er erweitert (GebaeudeSchema.Alle oben baut
+                // die Sicht von M3, dieser Aufruf die mit den Kuehlspalten). KU-S2: die
+                // Projekteinstellung Kuehlbetrieb (0/1, Vorgabe 0). KU-S4: die neun
+                // Ergebnisspalten des Kuehlkanals, nullbar. Aus DENSELBEN Quellen wie
+                // Migration und Werkzeug; wiederholbar, kein DML.
+                GebaeudeSchema.KuehlspaltenAlle(null);
+                foreach (SchemaSpalte s in KuehlungSchema.Projekteinstellung)
+                    SpalteSicherstellen(s);
+                foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                    SpalteSicherstellen(s);
+
                 // Schritt 108 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
                 // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
                 // Tab_KostenVorlagePosition. Wie in der Migration ueber ADD COLUMN, aus
@@ -692,15 +780,165 @@ namespace EPOS.Kern.Tests
 
         public void Dispose()
         {
+            if (_entsorgt) return;
+            Zuruecksetzen();
+        }
+
+        /// <summary>
+        /// Stellt den Prozesszustand wieder her und loescht die Kopie - aus <see cref="Dispose"/>
+        /// und aus dem Konstruktor, wenn der Aufbau abbricht.
+        /// </summary>
+        private void Zuruecksetzen()
+        {
+            _entsorgt = true;
             DataRepository.PfadUeberschreibung = _vorher;
             Schreibnaht.Schreibrecht = _schreibrechtVorher;
             if (_ordner == null) return;
-            // Der Verbindungspool von Microsoft.Data.Sqlite haelt die Arbeitskopie nach dem Schliessen
-            // der Verbindung offen; die geloeschte 77-MB-Datei bliebe dann bis zum Prozessende belegt -
-            // ein voller Lauf band so rund 9 GB und fiel auf einer knappen Platte mit "No space left on
-            // device" (Windows-Abnahme 05.09.2026). Pool leeren, damit das Loeschen den Platz freigibt.
-            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { /* wie unten */ }
-            try { Directory.Delete(_ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+
+            try { _besitzmarke?.Dispose(); } catch { /* ob der Ordner fort ist, entscheidet das Loeschen */ }
+            _besitzmarke = null;
+
+            if (!OrdnerLoeschen(_ordner))
+                Console.WriteLine("Arbeitskopie der Testdatenbank blieb liegen, der naechste Lauf raeumt sie weg: " + _ordner);
         }
+
+        /// <summary>
+        /// Loescht einen Kopieordner und sagt, ob er danach fort ist. Aufraeumen darf keinen
+        /// Test kosten - deshalb keine Ausnahme nach aussen.
+        ///
+        /// <para><b>Der erste Versuch</b> ist der gewohnte Weg: Der Verbindungspool von
+        /// Microsoft.Data.Sqlite haelt die Arbeitskopie nach dem Schliessen der Verbindung
+        /// offen; die geloeschte 77-MB-Datei bliebe dann bis zum Prozessende belegt - ein voller
+        /// Lauf band so rund 9 GB und fiel auf einer knappen Platte mit "No space left on
+        /// device" (Windows-Abnahme 05.09.2026). Pool leeren, dann loeschen.</para>
+        ///
+        /// <para><b>Jeder weitere Versuch</b> sammelt vorher den Speicher ein und wartet kurz.
+        /// Das faengt eine Datei, die ein Virenscanner gerade liest, und die Griffe einer
+        /// ungepoolten Verbindung oder eines Befehls, den niemand entsorgt hat - die schliesst
+        /// erst der Finalisierer. Eine GEPOOLTE Verbindung, die nie entsorgt wurde, faengt er
+        /// nicht: Schon der erste <c>ClearAllPools</c> loest ihren Pool ab, und einen
+        /// abgeloesten Pool raeumt nur der interne Takt der Bibliothek (alle 30 s). Die Kopie
+        /// bleibt dann bis zum Prozessende belegt, und der naechste Lauf nimmt sie ueber die
+        /// freie Besitzmarke mit (<see cref="VerwaisteKopienAufraeumen"/>).</para>
+        /// </summary>
+        internal static bool OrdnerLoeschen(string ordner)
+        {
+            foreach (int warten in WARTEZEITEN_MS)
+            {
+                if (warten > 0)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    Thread.Sleep(warten);
+                }
+                try { SqliteConnection.ClearAllPools(); } catch { /* das Loeschen versucht es trotzdem */ }
+                try
+                {
+                    if (Directory.Exists(ordner)) Directory.Delete(ordner, true);
+                    return true;
+                }
+                catch (UnauthorizedAccessException) { SchreibschutzAufheben(ordner); }
+                catch (IOException) { /* noch belegt - naechster Versuch */ }
+            }
+            return !Directory.Exists(ordner);
+        }
+
+        /// <summary>Ein schreibgeschuetzter Eintrag haelt <c>Directory.Delete</c> unter Windows auf.</summary>
+        private static void SchreibschutzAufheben(string ordner)
+        {
+            try
+            {
+                foreach (string datei in Directory.EnumerateFiles(ordner, "*", SearchOption.AllDirectories))
+                    File.SetAttributes(datei, FileAttributes.Normal);
+            }
+            catch { /* der naechste Versuch zeigt, ob es gereicht hat */ }
+        }
+
+        // =============================================================================
+        //  Der Aufraeumlauf ueber verwaiste Kopien
+        // =============================================================================
+
+        /// <summary>
+        /// Der Aufraeumlauf, EINMAL je Testprozess, vor der ersten eigenen Kopie. Er darf keinen
+        /// Test kosten: Was er nicht schafft, bleibt fuer den naechsten Lauf.
+        /// </summary>
+        private static void VerwaisteKopienEinmalAufraeumen()
+        {
+            if (Interlocked.Exchange(ref _aufraeumlaufGelaufen, 1) != 0) return;
+            try
+            {
+                int geloescht = VerwaisteKopienAufraeumen(Path.GetTempPath(), DateTime.UtcNow, SCHONFRIST_OHNE_MARKE);
+                if (geloescht > 0)
+                    Console.WriteLine(geloescht + " verwaiste Arbeitskopien der Testdatenbank geloescht.");
+            }
+            catch { /* siehe oben */ }
+        }
+
+        /// <summary>
+        /// Loescht unter <paramref name="wurzel"/> jede VERWAISTE Arbeitskopie und gibt ihre
+        /// Zahl zurueck.
+        ///
+        /// <para><b>Verwaist ist ein Ordner</b>, dessen Name genau dem Muster des Konstruktors
+        /// folgt, in dem keine Datei gesperrt ist und dessen Besitzer nicht mehr lebt: Traegt er
+        /// eine <see cref="BESITZMARKE"/>, ist sie frei; traegt er keine (eine Kopie von einem
+        /// Stand vor der Marke), liegt seine letzte Regung mindestens
+        /// <paramref name="schonfrist"/> vor <paramref name="jetztUtc"/>. Die Kopie eines
+        /// laufenden Tests - auch aus einer anderen Sitzung - bleibt damit unberuehrt.</para>
+        /// </summary>
+        internal static int VerwaisteKopienAufraeumen(string wurzel, DateTime jetztUtc, TimeSpan schonfrist)
+        {
+            int geloescht = 0;
+            foreach (string ordner in Directory.EnumerateDirectories(wurzel, ORDNER_PRAEFIX + "*"))
+            {
+                try
+                {
+                    if (!KOPIEORDNER.IsMatch(Path.GetFileName(ordner))) continue;
+                    if (!Verwaist(ordner, jetztUtc, schonfrist)) continue;
+                    Directory.Delete(ordner, true);
+                    geloescht++;
+                }
+                catch (IOException) { /* belegt oder schon fort - der naechste Lauf sieht wieder nach */ }
+                catch (UnauthorizedAccessException) { /* dito */ }
+            }
+            return geloescht;
+        }
+
+        private static bool Verwaist(string ordner, DateTime jetztUtc, TimeSpan schonfrist)
+        {
+            var info = new DirectoryInfo(ordner);
+            string marke = Path.Combine(ordner, BESITZMARKE);
+            bool besitzerFort = File.Exists(marke)
+                ? Frei(marke)
+                : jetztUtc - LetzteRegung(info) >= schonfrist;
+            if (!besitzerFort) return false;
+
+            foreach (FileInfo datei in info.EnumerateFiles("*", SearchOption.AllDirectories))
+                if (!Frei(datei.FullName)) return false;
+            return true;
+        }
+
+        /// <summary>Laesst sich die Datei exklusiv oeffnen - haelt sie also niemand offen?</summary>
+        private static bool Frei(string datei)
+        {
+            try
+            {
+                using (new FileStream(datei, FileMode.Open, FileAccess.Read, FileShare.None)) { }
+                return true;
+            }
+            catch (IOException) { return false; }
+            catch (UnauthorizedAccessException) { return false; }
+        }
+
+        /// <summary>Die juengste Zeitmarke des Ordners und aller Eintraege darin (UTC).</summary>
+        private static DateTime LetzteRegung(DirectoryInfo ordner)
+        {
+            DateTime letzte = Spaeter(ordner.CreationTimeUtc, ordner.LastWriteTimeUtc);
+            foreach (FileSystemInfo eintrag in ordner.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                letzte = Spaeter(letzte, Spaeter(eintrag.CreationTimeUtc, eintrag.LastWriteTimeUtc));
+            return letzte;
+        }
+
+        private static DateTime Spaeter(DateTime a, DateTime b) => a > b ? a : b;
     }
 }

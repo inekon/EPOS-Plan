@@ -388,6 +388,17 @@ namespace WindowsFormsApplication1
         /// <see cref="ErgebnisGebaeudeSchema"/> steht. <b>Reines DDL</b> — der Lauf schreibt
         /// sie, kein Rechenweg liest sie, und der Referenzlauf exportiert sie nicht;
         /// <b>der Referenzlauf bleibt byte-gleich</b>.
+        /// Mit den DREI SCHEMASCHRITTEN DER KÜHLUNG, Stufe KU1 (Kühlkonzept Kapitel 7,
+        /// Entscheide E27 und E31 vom 22./23.09.2026) steht das Ziel auf <b>110</b>:
+        /// Schritt 108 (KU-S1) legt die vier Kühleingaben an <c>Tab_Gebaeude</c> und
+        /// <c>Tab_Gebaeude_STAMM</c> und baut die Sicht <c>Abfrage_Projektgebaeude</c> ein
+        /// zweites Mal neu (<see cref="GebaeudeSchema.Kuehlspalten"/>), Schritt 109 (KU-S2)
+        /// die Projekteinstellung <c>Tab_Einstellungen.Kuehlbetrieb</c> (0/1, Vorgabe 0),
+        /// Schritt 110 (KU-S4) die neun Ergebnisspalten des Kühlkanals — beide bei
+        /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Die Eingaben
+        /// bleiben NULL (der Schalter 0), jedes vorhandene Projekt rechnet ohne Kühlung, die
+        /// Ergebnisspalten bleiben NULL, und kein Rechenweg liest sie; <b>der Referenzlauf
+        /// bleibt byte-gleich</b>.
         /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 108, Schritt E
         /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>108</b>:
         /// <c>Tab_ProjektWerte</c> und <c>Tab_KostenVorlagePosition</c> bekommen die
