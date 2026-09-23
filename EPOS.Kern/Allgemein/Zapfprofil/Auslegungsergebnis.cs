@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1
         /// <summary>Minutenspitze des Bedarfstags [kW] — Durchfluss, Frischwasser- und Wohnungsstation.</summary>
         Minutenspitze = 2,
 
-        /// <summary>Perzentil aus dem Auslegungsensemble (Stufe Z3).</summary>
+        /// <summary>Perzentil aus dem Auslegungsensemble (4.5 b).</summary>
         Perzentil = 3,
 
         /// <summary>Normvergleich nach DIN 4708.</summary>
@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
         /// <summary>Gerechnet.</summary>
         Gerechnet = 1,
 
-        /// <summary>Noch nicht gerechnet — das Verfahren kommt mit einer späteren Stufe (Perzentil: Z3).</summary>
+        /// <summary>Noch nicht gerechnet — das Perzentil läuft erst auf „Stochastisch rechnen" (4.5 b).</summary>
         NichtGerechnet = 2,
 
         /// <summary>Nicht rechenbar — eine Eingabe fehlt (Grund im Text).</summary>
@@ -95,8 +95,50 @@ namespace WindowsFormsApplication1
         /// <summary>Das Laufzeitfenster der Zirkulation — dieselben Stunden wie die Bilanz (4.3, N7 (g)).</summary>
         public Tagesfenster ZirkulationLaufzeit { get; init; }
 
+        /// <summary>
+        /// Das Perzentil aus dem Auslegungsensemble (4.5 b) samt Streuband, Gleichzeitigkeit und
+        /// Einzelstatistik; <c>null</c>, solange nicht „stochastisch" gerechnet ist oder das Ensemble
+        /// nicht rechenbar war (Grund in der Dreiergruppe und in der Warnliste).
+        /// </summary>
+        public Perzentilergebnis Perzentil { get; init; }
+
         /// <summary>Die Warnliste der Gruppe (nie blockierend).</summary>
         public IReadOnlyList<Auslegungshinweis> Hinweise { get; init; } = new Auslegungshinweis[0];
+    }
+
+    /// <summary>
+    /// <b>Das Perzentil einer Topologiegruppe</b> (4.4, 4.5 b): p (95/99), Seed, R, der maßgebende
+    /// Jahrestag, belastbar ja/nein (R ≥ 1/(1 − p)); die Minuten- und Stundenspitze der Gruppe als
+    /// Perzentile mit Streuband; bei Speicher das erforderliche Volumen beim Φ_N des
+    /// Summenlinienpunkts (<see cref="LeistungKw"/>) samt Realisierungen ohne Nachweis; die
+    /// Gleichzeitigkeit von Leistung und Volumen als Ergebnis; die Zonen mit der Spitze je Einheit
+    /// (Wohnungsstation) und der Vergleich μ + z·σ/√N (<c>null</c> ohne Quantil im Parametersatz).
+    /// </summary>
+    internal sealed record Perzentilergebnis
+    {
+        public ZapfTopologie Topologie { get; init; }
+        public int Perzentil { get; init; }
+        public long Seed { get; init; }
+        public int Realisierungen { get; init; }
+
+        /// <summary>Der maßgebende Jahrestag (1 … 365) des gezogenen Bedarfstags.</summary>
+        public int Tag { get; init; }
+
+        public bool Belastbar { get; init; }
+        public Perzentilwerte MinutenspitzeKw { get; init; }
+        public Perzentilwerte StundenspitzeKw { get; init; }
+
+        /// <summary>Das erforderliche Volumen je Realisierung [l] (nur Speicher).</summary>
+        public Perzentilwerte VolumenL { get; init; }
+
+        /// <summary>Φ_N des Summenlinienpunkts, bei dem die Volumina gelten [kW] (nur Speicher).</summary>
+        public double? LeistungKw { get; init; }
+
+        public int OhneNachweis { get; init; }
+        public double? GleichzeitigkeitLeistung { get; init; }
+        public double? GleichzeitigkeitVolumen { get; init; }
+        public IReadOnlyList<Ensemblezonenstatistik> Zonen { get; init; } = new Ensemblezonenstatistik[0];
+        public double? WurzelNSchaetzungKw { get; init; }
     }
 
     /// <summary>
@@ -114,20 +156,20 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Die Bausteine der Dreiergruppe: Perzentil (bis Z3 „noch nicht gerechnet"), Normvergleich,
-    /// Empfehlung und die größengleiche Plausibilitätsprüfung (4.5).
+    /// Die Bausteine der Dreiergruppe: Perzentil („noch nicht gerechnet" bis „Stochastisch rechnen"),
+    /// Normvergleich, Empfehlung und die größengleiche Plausibilitätsprüfung (4.5).
     /// </summary>
     internal static class Dreiergruppe
     {
-        /// <summary>Text des Perzentils bis zur Stufe Z3.</summary>
-        internal const string PERZENTIL_Z3 = "noch nicht gerechnet (Z3)";
+        /// <summary>Text des Perzentils, solange das Auslegungsensemble nicht gerechnet ist (4.5 b).</summary>
+        internal const string PERZENTIL_OFFEN = "noch nicht gerechnet — „Stochastisch rechnen“ zieht das Auslegungsensemble";
 
         /// <summary>Kennung der Reihenfolgeprüfung.</summary>
         internal const string HINWEIS_REIHENFOLGE = "REIHENFOLGE";
 
-        /// <summary>Das Perzentil der Stufe Z2: noch nicht gerechnet.</summary>
+        /// <summary>Das Perzentil vor „Stochastisch rechnen": noch nicht gerechnet.</summary>
         internal static Auslegungswert PerzentilOffen()
-            => new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtGerechnet, null, null, false, PERZENTIL_Z3);
+            => new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtGerechnet, null, null, false, PERZENTIL_OFFEN);
 
         /// <summary>Der Normvergleich als Wert: V_DIN [l] oder „außerhalb"/„nicht rechenbar".</summary>
         internal static Auslegungswert Normvergleich(Din4708Ergebnis d)

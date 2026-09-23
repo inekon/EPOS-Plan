@@ -24003,6 +24003,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
   </data>
+  <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel der gezogenen Jahre, auf die Jahresmenge gebracht.</value>
+  </data>
+  <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; die Reihe ist auf die Jahresmenge gebracht.</value>
+  </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>
   </data>
@@ -25130,6 +25136,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
     <value>Kriterium N_L</value>
+  </data>
+  <data name="ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR" xml:space="preserve">
+    <value>Perzentil nicht belastbar</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE" xml:space="preserve">
+    <value>Stochastische Spitze</value>
+  </data>
+  <data name="ZPG_AUSHINW_WURZEL_N_VERGLEICH" xml:space="preserve">
+    <value>Vergleich μ + z·σ/√N</value>
+  </data>
+  <data name="ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Stochastik nicht rechenbar</value>
   </data>
   <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
     <value>Katalogparameter</value>

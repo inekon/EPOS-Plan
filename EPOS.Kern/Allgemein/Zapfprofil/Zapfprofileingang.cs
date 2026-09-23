@@ -205,6 +205,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double NetzverlusteProjekt { get; init; }
 
+        /// <summary>
+        /// Die Zapfkategorien des Katalogs (T2, 4.4), alle Nutzungsarten; leer, solange der Katalog
+        /// keine trägt. Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
+        /// (<see cref="ProjektStand.JahresreiheStochastisch"/>) und des Auslegungsensembles; fehlen die
+        /// Kategorien einer Nutzungsart dort, lehnt die Zone benannt ab.
+        /// </summary>
+        public IReadOnlyList<Zapfkategorie> Zapfkategorien { get; init; } = new Zapfkategorie[0];
+
         /// <summary>Der Eingang aus einem Arbeitsstand, dem Kalender und dem Parametersatz.</summary>
         internal static Zapfprofileingang Aus(ZapfprofilStand stand, int wochentagJan1, bool[] we, Parametersatz ps)
         {

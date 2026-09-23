@@ -72126,6 +72126,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastische Spitze ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfstag fehlt ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_KONSTRUKTOR_OEFFNEN {
@@ -72207,6 +72216,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perzentil nicht belastbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge der Verfahren ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_REIHENFOLGE {
@@ -72261,6 +72279,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik nicht rechenbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summenkontrolle ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_SUMMENKONTROLLE {
@@ -72311,6 +72338,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT {
             get {
                 return ResourceManager.GetString("ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich μ + z·σ/√N ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_WURZEL_N_VERGLEICH {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_WURZEL_N_VERGLEICH", resourceCulture);
             }
         }
         
@@ -74385,6 +74421,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel der gezogenen Jahre, auf die Jahresmenge gebracht. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Messwert weicht um mehr als die Rückfrageschwelle vom Katalogwert ab. ähnelt.
         /// </summary>
         public static string ZPG_HINW_MESSWERT_ABWEICHUNG {
@@ -74435,6 +74480,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_PARAMETER_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_HINW_PARAMETER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; die Reihe ist auf die Jahresmenge gebracht. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_STOCHASTIK_ENERGIEPROBE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_STOCHASTIK_ENERGIEPROBE", resourceCulture);
             }
         }
         

@@ -14,10 +14,20 @@ namespace WindowsFormsApplication1
     /// (4.1) → Kalender, Kaltwassergang und Formvektor (S2) → Laufzeitfenster um die Tagesmitte
     /// der Zapfung → Summen und Kennzahlen.</para>
     ///
-    /// <para><b>Rein und deterministisch:</b> kein Zufall, keine Datenbank, kein <c>Dienste.*</c>,
-    /// feste Summationsfolge. <b>Kein stiller Rückfall:</b> Kalender, Projektgrößen und
+    /// <para><b>Rein und reproduzierbar:</b> keine Datenbank, kein <c>Dienste.*</c>, feste
+    /// Summationsfolge. <b>Kein stiller Rückfall:</b> Kalender, Projektgrößen und
     /// Parametersatz sind Pflicht (benannte Ausnahme); eine Zone, die nicht rechenbar ist, trägt 0
     /// und steht in <see cref="ZapfprofilErgebnis.Ablehnungen"/>; ebenso die Zirkulation.</para>
+    ///
+    /// <para><b>Rechenweg der Jahresreihe (4.4, 5.3).</b> Vorgabe ist „deterministisch": die
+    /// Zapfreihe ist der Formvektor mal Jahresmenge. Steht <see cref="ProjektStand.JahresreiheStochastisch"/>,
+    /// ist die Zapfreihe jeder Zone das Mittel der <see cref="ProjektStand.Realisierungen"/> gezogenen
+    /// Jahre zum <see cref="ProjektStand.Seed"/> (<see cref="Jahresensemble"/>; eine Realisierung ist
+    /// das Jahr zum Seed), mit dem Faktor der Energieprobe auf die Jahresmenge des Mengengerüsts
+    /// gebracht — die Energie ist in beiden Wegen dieselbe, die Konsistenzprobe steht je Zone im
+    /// Ergebnis. Fehlen Kategorien oder Einheiten, trägt die Zone benannt 0, nie still den
+    /// deterministischen Weg. Das Laufzeitfenster der Zirkulation bleibt das der deterministischen
+    /// Reihe.</para>
     /// </summary>
     internal static class ZapfprofilRechner
     {
@@ -38,6 +48,9 @@ namespace WindowsFormsApplication1
             internal double ZirkulationKwh;
             internal double? Kalibrierfaktor;
             internal Bilanzreihe Zapfreihe;
+            internal int Index;
+            internal Bilanzreihe Deterministisch;
+            internal Jahreskonsistenz Konsistenz;
         }
 
         /// <summary>Rechnet die Bilanz. Kalender, Projektgrößen und Parametersatz sind Pflicht.</summary>
@@ -61,7 +74,7 @@ namespace WindowsFormsApplication1
             // --- 1. je Zone: Temperaturen, Mengengerüst, Zeitstruktur (S1, S2) -------------
             foreach (ZonenStand z in zonen)
             {
-                var a = new Zonenarbeit { Stand = z, Name = z?.Name ?? "" };
+                var a = new Zonenarbeit { Stand = z, Name = z?.Name ?? "", Index = arbeit.Count };
                 arbeit.Add(a);
                 if (z == null)
                 {
@@ -161,12 +174,22 @@ namespace WindowsFormsApplication1
                     double[] tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
                                                            a.Kaltwasserfaktor, a.Name);
                     a.Zapfreihe = new Bilanzreihe(Formvektor.Stundenreihe(tage, a.Struktur, a.Kalender));
+                    if (e.Projekt.JahresreiheStochastisch) Stochastisch(a, e, hinweise);
                 }
                 catch (ZapfprofilEingabeException ex)
                 {
                     Ablehnen(a, ex.Fehler, ex.Message, ablehnungen);
                 }
+                catch (ParametersatzException ex)
+                {
+                    Ablehnen(a, ZapfEingabefehler.ParameterFehlt, ex.Message, ablehnungen);
+                }
             }
+            if (e.Projekt.JahresreiheStochastisch && arbeit.Exists(a => !a.Abgelehnt))
+                hinweise.Add(new ZapfHinweis("", "JAHRESREIHE_STOCHASTISCH",
+                    "Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel aus "
+                    + e.Projekt.Realisierungen.ToString(CultureInfo.InvariantCulture) + " gezogenen Jahren zum Seed "
+                    + e.Projekt.Seed.ToString(CultureInfo.InvariantCulture) + ", auf die Jahresmenge des Mengengerüsts gebracht."));
 
             // --- 4. Laufzeitfenster und Zirkulationsreihen (4.3) --------------------------
             var z1Reihen = new List<IReadOnlyList<double>>();
@@ -174,8 +197,10 @@ namespace WindowsFormsApplication1
             foreach (Zonenarbeit a in arbeit)
             {
                 if (a.Abgelehnt) continue;
-                alleReihen.Add(a.Zapfreihe.StundenKwh);
-                if (a.InZ1) z1Reihen.Add(a.Zapfreihe.StundenKwh);
+                // Das Laufzeitfenster folgt dem Formvektor — auch auf dem stochastischen Weg (4.3, 4.4).
+                Bilanzreihe form = a.Deterministisch ?? a.Zapfreihe;
+                alleReihen.Add(form.StundenKwh);
+                if (a.InZ1) z1Reihen.Add(form.StundenKwh);
             }
             double[] fenster = null;
             Bilanzreihe rest = null;
@@ -219,7 +244,8 @@ namespace WindowsFormsApplication1
                     ZapfungLiterJeTag = Liter(a.Zapfreihe.JahressummeKwh, a.Temperaturen, e.AnzeigetemperaturC, a.Name),
                     Temperaturfaktor = a.Menge.Temperaturfaktor,
                     Kalibrierfaktor = a.Kalibrierfaktor,
-                    Kalender = Array.AsReadOnly(a.Kalender)
+                    Kalender = Array.AsReadOnly(a.Kalender),
+                    Konsistenz = a.Konsistenz
                 });
             }
             if (rest != null) zirkreihen.Add(rest);
@@ -238,6 +264,7 @@ namespace WindowsFormsApplication1
 
             return new ZapfprofilErgebnis
             {
+                Stochastisch = e.Projekt.JahresreiheStochastisch,
                 Zapfung = zapfung,
                 Zirkulation = zirkulation,
                 JeZone = jeZone.AsReadOnly(),
@@ -287,6 +314,65 @@ namespace WindowsFormsApplication1
                 StundenUeberSchwelle = schwelleKw.HasValue ? gesamtreihe.StundenUeber(schwelleKw.Value) : (int?)null,
                 SchwelleKw = schwelleKw
             };
+        }
+
+        // =================================================================================
+        // Rechenweg „stochastisch" (4.4)
+        // =================================================================================
+
+        /// <summary>Kennung: Die Jahresreihe ist stochastisch (Realisierungen und Seed im Text).</summary>
+        internal const string HINWEIS_STOCHASTISCH = "JAHRESREIHE_STOCHASTISCH";
+
+        /// <summary>Kennung: Das Ensemblemittel lag außerhalb der Toleranz der Konsistenzprobe (4.4).</summary>
+        internal const string HINWEIS_ENERGIEPROBE = "STOCHASTIK_ENERGIEPROBE";
+
+        /// <summary>
+        /// Ersetzt die Zapfreihe der Zone durch das Mittel des Jahresensembles, mit dem Faktor der
+        /// Energieprobe auf die Jahresmenge gebracht; die deterministische Reihe bleibt für das
+        /// Laufzeitfenster und die Probe. Die Urlaube werden bei Kalenderart Wohnen je Einheit
+        /// versetzt, wenn die Zone Ferien trägt (Parameter <see cref="ZapfStochastikParameter.URLAUBSVERSATZ"/>).
+        /// </summary>
+        private static void Stochastisch(Zonenarbeit a, Zapfprofileingang e, ICollection<ZapfHinweis> hinweise)
+        {
+            IReadOnlyList<Ferienfenster> ferien = Zapfkalender.FensterDerZone(a.Stand);
+            bool entkoppeln = a.Art.Kalender == ZapfKalenderart.Wohnen && ferien.Count > 0;
+            int versatz = 0;
+            if (entkoppeln)
+            {
+                double v = e.Parameter.Wert(ZapfStochastikParameter.URLAUBSVERSATZ);
+                if (double.IsNaN(v) || v < 0 || v >= Zapfkalender.TAGE || v != Math.Floor(v))
+                    throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, a.Name,
+                        "Nicht rechenbar — der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen.");
+                versatz = (int)v;
+            }
+            double[] kaltwasser = Kaltwassergang.Monatswerte(a.Temperaturen.KaltwasserMittelC, a.Temperaturen.KaltwasserAmplitudeK,
+                                                             a.Temperaturen.KaltwasserMonatMaximum);
+            var spreizung = new double[Zapfkalender.MONATE];
+            for (int m = 0; m < Zapfkalender.MONATE; m++) spreizung[m] = a.Temperaturen.ZapfC - kaltwasser[m];
+
+            var zone = new Jahreszone
+            {
+                Index = a.Index, Zone = a.Name,
+                Einheiten = Zapfeinheiten.Anzahl(a.Stand, a.Art, a.Menge.Bezugsmenge, e.Parameter),
+                Kategorien = Zapfkategoriensatz.Aus(e.Zapfkategorien, a.Art.Id, a.Name),
+                JahresmengeKwh = a.ZapfungKwh, Struktur = a.Struktur, Kalender = a.Kalender, Ferien = ferien,
+                Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
+                WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz
+            };
+            Jahresensemble ensemble = Jahresensemble.Ziehen(zone, e.Projekt.Seed, e.Projekt.Realisierungen);
+            Jahreskonsistenz k = ensemble.Pruefen(a.Zapfreihe);
+            if (double.IsNaN(k.Faktor))
+                throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, a.Name,
+                    "Nicht rechenbar — die gezogenen Jahre der Zone „" + a.Name + "“ tragen keine Zapfung; die Jahresmenge ist nicht darstellbar.");
+            if (!k.Erfuellt)
+                hinweise.Add(new ZapfHinweis(a.Name, "STOCHASTIK_ENERGIEPROBE",
+                    "Zone „" + a.Name + "“: Das Mittel der gezogenen Jahre (" + k.MittelKwh.ToString("0.#", CultureInfo.InvariantCulture)
+                    + " kWh) weicht um mehr als die Toleranz " + k.ToleranzKwh.ToString("0.#", CultureInfo.InvariantCulture)
+                    + " kWh von der Jahresmenge " + k.DeterministischKwh.ToString("0.#", CultureInfo.InvariantCulture)
+                    + " kWh ab; die Reihe ist auf die Jahresmenge gebracht."));
+            a.Deterministisch = a.Zapfreihe;
+            a.Konsistenz = k;
+            a.Zapfreihe = ensemble.Mittel.Mal(k.Faktor);
         }
 
         // =================================================================================

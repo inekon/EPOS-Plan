@@ -48,6 +48,13 @@ namespace WindowsFormsApplication1
         /// wurde, bevor ihr Kalender stand.
         /// </summary>
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
+
+        /// <summary>
+        /// Die Konsistenzprobe der stochastischen Jahresreihe (4.4) — Ensemblemittel gegen den
+        /// deterministischen Pfad, Toleranz und Faktor der Energieprobe; <c>null</c> auf dem
+        /// deterministischen Weg und bei einer abgelehnten Zone.
+        /// </summary>
+        public Jahreskonsistenz Konsistenz { get; init; }
     }
 
     /// <summary>
@@ -100,6 +107,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record ZapfprofilErgebnis
     {
+        /// <summary>Rechnet die Jahresreihe stochastisch (Ensemblemittel, 4.4) statt deterministisch?</summary>
+        public bool Stochastisch { get; init; }
+
         /// <summary>Summe der Zapfreihen aller Zonen.</summary>
         public Bilanzreihe Zapfung { get; init; }
 

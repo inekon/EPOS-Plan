@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
         {
             Auslegungswert p = Dreiergruppe.PerzentilOffen();
             Assert.Equal(Auslegungsstatus.NichtGerechnet, p.Status);
-            Assert.Equal(Dreiergruppe.PERZENTIL_Z3, p.Text);
+            Assert.Equal(Dreiergruppe.PERZENTIL_OFFEN, p.Text);
             Assert.False(p.Empfohlen);
             Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(Eingang(), new[] { Wohnen, Buero }, Zusatz());
             Assert.All(r.Gruppen, g => Assert.Equal(Auslegungsstatus.NichtGerechnet, g.Dreiergruppe[1].Status));
