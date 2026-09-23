@@ -18,8 +18,11 @@
      "Was ist angenommen?" (Annahmentafel, Hinweistext, Parameternachweis,
      Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
      Deklarationen, Knopf "Bericht erzeugen").
-   - "ValERI-Bewertung": die Bloecke 1, 3, 4, 5 der Norm; an der Stelle von
-     Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile.
+   - "ValERI-Bewertung": die fuenf Bloecke der Norm. Block 2 (Zahlungsreihen,
+     Etappe E8a) zeigt je Stand und Szenario die Jahresreihen des Laufs; ohne Lauf
+     in dieser Sitzung steht an seiner Stelle EINE benannte Hinweiszeile. Block 4
+     traegt seit Etappe E8a (E6-Q1) auch Spannenbild und Verlauf - dieselben
+     Bausteine wie "Wie sicher ist das?".
    Die Fussleiste traegt die Sichten (Photovoltaik, BHKW - je nach
    Ausstattung) und "Berechnen" - in beiden Zustaenden dieselbe; der Umschalter
    wechselt nur den Leib. Den Knopf "Verlauf..." gibt es nicht mehr (Etappe E6,
@@ -299,6 +302,13 @@
         @* ------------------------------------- 3 · Woraus entsteht die Zahl? *@
         <Gruppenkopf Titel="@Texte.AbsWoraus">
             <KindInhalt>
+                @* ETAPPE E8a (U46, Mockup "Woraus entsteht die Zahl?"): ZUERST die
+                   Gliederung des Kapitalwerts - je Bestandteil der Barwert mit der
+                   Nominalsumme darunter und die Differenzspalte Leitversion - Referenz, die
+                   in der Kapitalwertdifferenz aufgeht. Sie folgt der Szenario-Klappliste
+                   wie die Tafel darunter. *@
+                @Bestandteilteil
+
                 @* Die Gliederungstafeln der Zeilendefinition (Investition, Betrieb,
                    Energie, Erloesrubrik, Ersatz und Restwert, Nettobarwert) im GEWAEHLTEN
                    Szenario - ohne die Kennzahlen, die in Abschnitt 1 stehen - und darunter
@@ -328,6 +338,12 @@
                         <Herleitungszeile Text="@_stand.Szenariohinweis" />
                     </div>
                 }
+
+                @* ETAPPE E8a (U47, Mockup "Was ist angenommen?"): UNTER dem Hinweistext die
+                   Tafel "Was daraus im Lauf wird" - je Szenario die Wirkung auf die
+                   Leitversion (I0, faellige Ersatzbeschaffungen, Restwert am Ende). Der
+                   Hinweistext sagt, was ein Szenario variiert; die Tafel, was daraus wird. *@
+                @Laufwirkungsteil
 
                 @* Der Parameternachweis (L12/L13) und der Nachweisblock W5-B-11 (VALERI
                    G7 / G10 / G1,G3,G5): Betrachtungszeitraum gegen die Nutzungsdauern,
@@ -435,6 +451,16 @@
                     }
                 }
 
+                @* ETAPPE E8a (U48, Mockup "Was ist angenommen?"): die FUSSZEILE des
+                   Abschnitts - wie viele Szenarien gerechnet sind und woher ihre Annahmen
+                   kommen ("Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts
+                   gepflegt"). Sie steht als eigene leise Zeile ueber dem Fuss mit den
+                   Knoepfen; nach einer Pflege im Parameterdialog frischt die Seite auf und
+                   die Zeile nennt die gepflegten Groessen. *@
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenariofuss))
+                {
+                    <p class="epos-status epos-wirt-szenariofuss">@_stand.Ansicht.Szenariofuss</p>
+                }
                 @BerichtKnopfteil
             </KindInhalt>
         </Gruppenkopf>
@@ -443,12 +469,15 @@
     {
         @* ============== Darstellung "ValERI-Bewertung" (V-1, V-C) ==============
 
-           IN DIESER ETAPPE NUR, WAS DATEN HAT: Block 1 (Gegenstand und Rahmen aus
-           dem Parametersatz), Block 3 (Kennzahlen), Block 4 (Unsicherheit) und
-           Block 5 (Deklarationen). Block 2 - die Zahlungsreihen je Jahr samt
-           Zahlungsstrombild - kommt mit E8; an seiner Stelle steht EINE benannte
-           Hinweiszeile, kein leerer Rahmen. Der Normbezug steht als Untertitel im
-           Balken (Mockup-Tafel "ValERI-Bewertung - die fuenf Bloecke"). *@
+           DIE FUENF BLOECKE DER NORM: Block 1 (Gegenstand und Rahmen aus dem
+           Parametersatz), Block 2 (Zahlungsreihen, seit E8a), Block 3 (Kennzahlen),
+           Block 4 (Unsicherheit, seit E8a mit Spannenbild und Verlauf) und Block 5
+           (Deklarationen). Block 2 zeigt die Zahlungsreihen je Jahr aus den
+           Zahlungsbildern des Laufs dieser Sitzung; solange es keine gibt, steht an
+           seiner Stelle EINE benannte Hinweiszeile, kein leerer Rahmen. Das
+           Zahlungsstrombild (U42) ist nicht gebaut - Konzeptentscheid offen. Der
+           Normbezug steht als Untertitel im Balken (Mockup-Tafel "ValERI-Bewertung -
+           die fuenf Bloecke"). *@
         <Gruppenkopf Titel="@Texte.Block1" Summe="@Texte.Norm1">
             <KindInhalt>
                 @if (_stand.Ansicht.Rahmen.Zeilen.Count > 0)
@@ -461,9 +490,7 @@
 
         <Gruppenkopf Titel="@Texte.Block2" Summe="@Texte.Norm2">
             <KindInhalt>
-                <div class="epos-wirt-block-luecke">
-                    <Herleitungszeile Text="@Texte.Block2Hinweis" />
-                </div>
+                @Zahlungsreihenteil
             </KindInhalt>
         </Gruppenkopf>
 
@@ -477,6 +504,20 @@
         <Gruppenkopf Titel="@Texte.Block4" Summe="@Texte.Norm4">
             <KindInhalt>
                 @Bandbreitenteil
+
+                @* ETAPPE E8a (Frage E6‑Q1, Anwender 23.09.2026: „ja — dieselben Bausteine
+                   wie unter ‚Wie sicher ist das?'", Mockup-Anhang U49): SPANNENBILD UND
+                   VERLAUF AUCH IN BLOCK 4 — die Tafel der fünf Blöcke nennt dort den
+                   Verlauf. Es sind DIESELBEN Bausteine: das Fragment Spannenteil mit dem
+                   Modell der Ansicht und die Komponente KapitalwertVerlaufAbschnitt mit
+                   derselben Datenseite und derselben Fassung - keine zweite Zeichenlogik,
+                   keine zweite Datenquelle. Es steht immer nur EINE der beiden
+                   Darstellungen auf der Seite; die Kennungen der Bilder bleiben damit je
+                   Blatt eindeutig. Reihenfolge wie in „Wie sicher ist das?": das
+                   Spannenbild unter der Bandbreitentafel, der Verlauf vor der
+                   Sensitivität; Vorschlag und Hinweistext bleiben bei der Bandbreite, aus
+                   der sie entstehen. *@
+                @Spannenteil
                 @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
                 {
                     <div class="epos-wirt-vorschlag">
@@ -489,6 +530,8 @@
                         <Herleitungszeile Text="@_stand.Szenariohinweis" />
                     </div>
                 }
+                <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                                             Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
                 @Sensitivitaetsteil
             </KindInhalt>
         </Gruppenkopf>
@@ -1196,6 +1239,11 @@
         if (neu is null) return;
         _stand.Ansicht.Matrix = neu.Matrix ?? new ErgebnisMatrix();
         _stand.Ansicht.Szenariozeile = neu.Szenariozeile ?? "";
+        // ETAPPE E8a (U46): die Gliederung des Kapitalwerts steht unter der Klappliste.
+        _stand.Ansicht.Bestandteile = neu.Bestandteile ?? new ErgebnisMatrix();
+        _stand.Ansicht.BestandteileTitel = neu.BestandteileTitel ?? "";
+        _stand.Ansicht.BestandteileUnterzeile = neu.BestandteileUnterzeile ?? "";
+        _stand.Ansicht.Bruecke = neu.Bruecke;               // U41: dasselbe Szenario
     }
 
     // =====================================================================
@@ -1394,6 +1442,140 @@
     </div>;
 
     /// <summary>
+    /// ETAPPE E8a (U46, Mockup „Woraus entsteht die Zahl?"): die <b>Gliederung des
+    /// Kapitalwerts</b> — sechs Bestandteile und der Nettobarwert, je Stand der Barwert mit
+    /// der Nominalsumme darunter, als letzte Spalte die Differenz Leitversion − Referenz. Die
+    /// Zahlen stammen aus den Zahlungsbildern des Laufs dieser Sitzung; ohne sie steht eine
+    /// benannte Zeile, und die Zeilentafel darunter bleibt, wie sie ist.
+    /// </summary>
+    private RenderFragment Bestandteilteil => @<div class="epos-wirt-bestandteile-teil">
+        @if (_stand.Ansicht.Bestandteile.Zeilen.Count > 0)
+        {
+            ErgebnisMatrix m = _stand.Ansicht.Bestandteile;
+            <p class="epos-untergruppe">@_stand.Ansicht.BestandteileTitel</p>
+            @if (!string.IsNullOrEmpty(_stand.Ansicht.BestandteileUnterzeile))
+            {
+                <Herleitungszeile Text="@_stand.Ansicht.BestandteileUnterzeile" />
+            }
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-matrix epos-wirt-bestandteile">
+                    <thead>
+                        <tr>
+                            @foreach (string kopf in m.Spalten)
+                            {
+                                <th scope="col">@kopf</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (MatrixZeile z in m.Zeilen)
+                        {
+                            <tr class="@Zeilenklasse(z, false)">
+                                <th scope="row" class="epos-matrix-titel">
+                                    @z.Titel
+                                    @if (!string.IsNullOrEmpty(z.Kennzeichen))
+                                    {
+                                        <span class="epos-wirt-kennzeichen">@z.Kennzeichen</span>
+                                    }
+                                </th>
+                                @for (int i = 0; i < z.Zellen.Count; i++)
+                                {
+                                    string unter = z.Unterwert(i);
+                                    <td class="epos-matrix-zelle">
+                                        @z.Zellen[i]
+                                        @if (unter.Length > 0)
+                                        {
+                                            <span class="epos-wirt-nominal">@unter</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <Herleitungszeile Text="@Texte.GliederungNichtGerechnet" />
+        }
+        @* ETAPPE E8a (U41): das BRUECKENBILD unter der Gliederung - dieselben Schritte wie
+           die Differenzspalte, die Ergebnissaeule ist die Kapitalwertdifferenz. Ein reines
+           Pixelbild wie das Spannenbild: ohne Zoom, die Legende schaltet nichts. *@
+        @if (_stand.Ansicht.Bruecke is not null)
+        {
+            <div class="epos-wirt-bruecke-teil">
+                <DiagrammSvg Modell="@_stand.Ansicht.Bruecke" Kennung="kapitalwert-bruecke"
+                             Bezeichnung="@Texte.BrueckeBild" OhneZoom="true" LegendeSchaltbar="false" />
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
+        {
+            <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
+        }
+    </div>;
+
+    /// <summary>
+    /// ETAPPE E8a (U47, Mockup „Was ist angenommen?"): die Tafel <b>„Was daraus im Lauf
+    /// wird"</b> — je Szenario die Wirkung auf die Leitversion, aus den Szenarioläufen der
+    /// Bandbreite. Ohne Jahresreihen steht sie nicht da (die Gliederung sagt, warum).
+    /// </summary>
+    private RenderFragment Laufwirkungsteil => @<div class="epos-wirt-laufwirkung-teil">
+        @if (_stand.Ansicht.Laufwirkung.Zeilen.Count > 0)
+        {
+            <p class="epos-untergruppe">@Texte.LaufwirkungTitel</p>
+            @Tafel(_stand.Ansicht.Laufwirkung, "epos-raster epos-wirt-tafel epos-wirt-laufwirkung", false)
+        }
+    </div>;
+
+    /// <summary>
+    /// ETAPPE E8a (ValERI-Block 2 „Zahlungsreihen", DIN EN 17463 6.1 bis 6.4): je Stand und
+    /// Szenario die Jahresreihen der sechs Bestandteile, Netto und Barwert, darunter die
+    /// Summe nominal und die Barwerte — dieselben Zahlen wie die Gliederung unter „Woraus
+    /// entsteht die Zahl?". Zwei Klapplisten wählen Stand und Szenario (Vorgabe: die
+    /// Leitversion im Erwartungsfall); sie wählen nur, was die Hülle schon geliefert hat.
+    /// Unter der Tafel steht das Zahlungsstrombild (U42) desselben Standes im selben
+    /// Szenario. Ohne Jahresreihen (kein Lauf in dieser Sitzung) steht EINE benannte Zeile.
+    /// </summary>
+    private RenderFragment Zahlungsreihenteil => @<div class="epos-wirt-zahlungsreihen-teil">
+        @if (Zahlungsreihe is ZahlungsreihenTafel tafel)
+        {
+            <div class="epos-seite-zeile epos-wirt-zahlungsreihen-wahl">
+                <Auswahlfeld Bezeichnung="@Texte.ZrStand" Eintraege="@_stand.Ansicht.Zahlungsstaende"
+                             Auswahl="@tafel.IdStand" AuswahlChanged="BeiZahlungsstand" />
+                <Auswahlfeld Bezeichnung="@Texte.ZrSzenario" Eintraege="@_stand.Szenarien"
+                             Auswahl="@tafel.Szenario" AuswahlChanged="BeiZahlungsszenario" />
+            </div>
+            @Tafel(tafel.Tafel, "epos-raster epos-wirt-tafel epos-wirt-zahlungsreihen", false)
+            @if (!string.IsNullOrEmpty(tafel.Unterzeile))
+            {
+                <Herleitungszeile Text="@tafel.Unterzeile" />
+            }
+            @* ETAPPE E8a (U42, E8a-Q1 Lesart a): das ZAHLUNGSSTROMBILD unter der Jahrestafel -
+               derselbe Stand im selben Szenario, die Spalten der Mehrjahrestafel als gestapelte
+               Jahresbalken, Ausgaben nach unten, Ersatzjahre markiert. Ein reines Pixelbild:
+               ohne Zoom, die Legende schaltet nichts; die Kennung traegt Stand und Szenario. *@
+            @if (tafel.Bild is not null)
+            {
+                <div class="epos-wirt-zahlungsstrom-teil">
+                    <DiagrammSvg Modell="@tafel.Bild" Kennung="@($"zahlungsstrom-{tafel.IdStand}-{tafel.Szenario}")"
+                                 Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false" />
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
+            {
+                <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
+            }
+        }
+        else
+        {
+            <div class="epos-wirt-block-luecke">
+                <Herleitungszeile Text="@(string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis) ? Texte.Block2Hinweis : _stand.Ansicht.Zahlungshinweis)" />
+            </div>
+        }
+    </div>;
+
+    /// <summary>
     /// U44: der Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks. Er ist KEIN
     /// Primärknopf — die Seite trägt genau einen, „Berechnen" in der Fußleiste (Q8).
     /// </summary>
@@ -1428,7 +1610,7 @@
                 @for (int r = 0; r < m.Zeilen.Count; r++)
                 {
                     MatrixZeile z = m.Zeilen[r];
-                    <tr class="@(ersteIstReferenz && r == 0 ? "epos-wirt-referenzzeile" : null)">
+                    <tr class="@Zeilenklasse(z, ersteIstReferenz && r == 0)">
                         <th scope="row" class="epos-matrix-titel">@z.Titel</th>
                         @for (int i = 0; i < z.Zellen.Count; i++)
                         {
@@ -1468,6 +1650,53 @@
             </tbody>
         </table>
     </div>;
+
+    /// <summary>Die Klasse einer Tafelzeile: die Referenzzeile der Bandbreite hinterlegt, eine
+    /// Summenzeile (ETAPPE E8a) abgesetzt; sonst keine.</summary>
+    private static string? Zeilenklasse(MatrixZeile z, bool referenz)
+        => referenz ? "epos-wirt-referenzzeile" : z.IstSumme ? "epos-wirt-summenzeile" : null;
+
+    // =====================================================================
+    // ETAPPE E8a — Block 2 „Zahlungsreihen": die Wahl von Stand und Szenario
+    // =====================================================================
+
+    /// <summary>Der in Block 2 gewählte Stand; <c>null</c> = die Leitversion.</summary>
+    private int? _zahlungsstand;
+
+    /// <summary>Das in Block 2 gewählte Szenario; <c>null</c> = Erwartet (Nummer 0).</summary>
+    private int? _zahlungsszenario;
+
+    /// <summary>
+    /// Die gezeigte Tafel der Zahlungsreihen: der gewählte Stand (sonst die Leitversion,
+    /// sonst der erste) im gewählten Szenario (sonst Erwartet, sonst das erste, das der
+    /// Stand trägt). <c>null</c> = keine Jahresreihen. Eine Wahl, die die Ansicht nicht mehr
+    /// trägt (Vergleichswahl gewechselt), fällt still auf die Vorgabe zurück — sie ist eine
+    /// Blickrichtung, kein Zustand.
+    /// </summary>
+    private ZahlungsreihenTafel? Zahlungsreihe
+    {
+        get
+        {
+            IReadOnlyList<ZahlungsreihenTafel> tafeln = _stand.Ansicht.Zahlungsreihen;
+            if (tafeln is null || tafeln.Count == 0) return null;
+
+            int stand = tafeln[0].IdStand;
+            if (_zahlungsstand is int s && tafeln.Any(t => t.IdStand == s)) stand = s;
+            else if (tafeln.Any(t => t.IdStand == _stand.Ansicht.Leitversion)) stand = _stand.Ansicht.Leitversion;
+
+            int szenario = _zahlungsszenario ?? 0;
+            return tafeln.FirstOrDefault(t => t.IdStand == stand && t.Szenario == szenario)
+                ?? tafeln.FirstOrDefault(t => t.IdStand == stand && t.Szenario == 0)
+                ?? tafeln.First(t => t.IdStand == stand);
+        }
+    }
+
+    /// <summary>Die gezeigte Tafel der Zahlungsreihen (Prüfhilfe).</summary>
+    public ZahlungsreihenTafel? GezeigteZahlungsreihe => Zahlungsreihe;
+
+    private void BeiZahlungsstand(int? id) => _zahlungsstand = id;
+
+    private void BeiZahlungsszenario(int? id) => _zahlungsszenario = id;
 
     // =====================================================================
     // ETAPPE E5 (U44) — „Bericht erzeugen"

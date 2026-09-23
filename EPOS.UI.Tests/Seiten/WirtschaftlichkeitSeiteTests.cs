@@ -1161,6 +1161,46 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E8a (U48): Die <b>Fußzeile</b> von „Was ist angenommen?" nennt die gerechneten
+    /// Szenarien und die Herkunft der Annahmen — „Vorgaben" ohne Pflege, „gepflegt" nach
+    /// einer Pflege im Parameterdialog: Dessen OK frischt die Seite auf, und die Hülle bildet
+    /// die Zeile aus dem neu gelesenen Parametersatz.
+    /// </summary>
+    [Fact]
+    public async Task Die_Fusszeile_nennt_Vorgaben_und_nach_einer_Pflege_gepflegt()
+    {
+        const string vorgaben = "Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt";
+        const string gepflegt = "Drei Szenarien gerechnet · Annahmen gepflegt: Kalkulationszins";
+        bool gespeichert = false;
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () =>
+            {
+                WirtschaftlichkeitStand s = Standard();
+                s.Ansicht.Szenariofuss = gespeichert ? gepflegt : vorgaben;
+                return s;
+            })
+            .Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) => LeererSatz())
+            .Add(x => x.Nachlauf, (WirtschaftlichkeitSeite.Unterdialog a, bool ok)
+                => ok ? "Parameter gespeichert — bitte neu berechnen." : ""));
+
+        IElement fuss = cut.Find(".epos-wirt-szenariofuss");
+        Assert.Equal(vorgaben, fuss.TextContent);
+        // Sie steht im Fuß von „Was ist angenommen?", über dem Knopffuß.
+        IElement annahmen = cut.FindAll("section.epos-gruppenkopf")[3];
+        Assert.Contains("Was ist angenommen?", annahmen.TextContent);
+        Assert.NotNull(annahmen.QuerySelector(".epos-wirt-szenariofuss"));
+        Assert.Contains("epos-wirt-abschnitt-fuss", fuss.NextElementSibling!.ClassList);
+
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Parameter).Click();
+        var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();
+        gespeichert = true;                                       // die Pflege im Dialog
+        await cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(new WirtParameterErgebnis(true)));
+
+        Assert.Equal(gepflegt, cut.Find(".epos-wirt-szenariofuss").TextContent);
+        Assert.Contains("gepflegt", cut.Find(".epos-wirt-szenariofuss").TextContent);
+    }
+
+    /// <summary>
     /// Eine veraltete Statuszeile (Warnzeichen der Hülle) stellt dasselbe Band auf —
     /// die angezeigten Zahlen stammen dann aus einem älteren Lauf.
     /// </summary>

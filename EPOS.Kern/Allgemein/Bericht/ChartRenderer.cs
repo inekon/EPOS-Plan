@@ -1880,6 +1880,305 @@ namespace WindowsFormsApplication1
         private static double? EndlicherWert(double? x)
             => x.HasValue && !double.IsNaN(x.Value) && !double.IsInfinity(x.Value) ? x : null;
 
+        // ============ Brücke von der Investition zur Kapitalwertdifferenz (E8a, U41)
+
+        /// <summary>
+        /// ETAPPE E8a (U41, Mockup Kategorie 8 „Woraus entsteht die Zahl?") — EIN Schritt des
+        /// Brückenbilds: ein Bestandteil der Kapitalwertdifferenz mit seinem Namen und seinem
+        /// Beitrag [€] — der Differenz der Barwerte, Stand minus Referenz. Negativ mindert,
+        /// positiv mehrt die Differenz; ein nicht endlicher Wert fällt weg.
+        /// </summary>
+        public sealed class Brueckenschritt
+        {
+            /// <summary>Der Name des Bestandteils — die Beschriftung unter der Säule.</summary>
+            public string Name { get; set; } = "";
+
+            /// <summary>Der Beitrag zur Kapitalwertdifferenz [€].</summary>
+            public double Wert { get; set; }
+
+            /// <summary>
+            /// Die sechs Schritte der Differenz zweier Gliederungen (Stand − Referenz) in der
+            /// Reihenfolge der Gliederung — Investition, Betriebskosten, Energiekosten, Erlöse,
+            /// Ersatzbeschaffungen, Restwert; dieselben Zahlen wie die Differenzspalte der Seite
+            /// (<see cref="Zahlungsgliederung.Differenz"/>). Leer, wenn eine Seite fehlt.
+            /// </summary>
+            public static List<Brueckenschritt> Aus(Zahlungsgliederung stand, Zahlungsgliederung referenz)
+            {
+                var liste = new List<Brueckenschritt>();
+                Zahlungsgliederung d = Zahlungsgliederung.Differenz(stand, referenz);
+                if (d == null) return liste;
+                foreach (string s in Zahlungsgliederung.Reihenfolge)
+                    liste.Add(new Brueckenschritt { Name = Zahlungsgliederung.Titel(s), Wert = d.Bestandteil(s).Barwert });
+                return liste;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U41) — die Texte des Brückenbilds. Die Vorgaben sind der deutsche Wortlaut
+        /// (die ChartProben hängen so nicht an der Sprache des Rechners);
+        /// <see cref="AusRessourcen"/> liest die Oberflächensprache. Unterzeile und Fuß nennen
+        /// Stand, Referenz, Szenario, Zins und Zeitraum — der Aufrufer bildet sie.
+        /// </summary>
+        public sealed class BrueckenTexte
+        {
+            /// <summary>Die Überschrift (<c>WIRT_BR_TITEL</c>); „[€]" hängt das Bild an.</summary>
+            public string Titel { get; set; } = "Von der Investition zur Kapitalwertdifferenz";
+
+            /// <summary>Die Zeile unter der Überschrift (<c>WIRT_BR_UNTER</c>, vom Aufrufer gefüllt).</summary>
+            public string Unterzeile { get; set; } = "";
+
+            /// <summary>Die Zeile unter den Säulen (<c>WIRT_BR_FUSS</c>, vom Aufrufer gefüllt).</summary>
+            public string Fuss { get; set; } = "";
+
+            /// <summary>Der Name der Ergebnissäule (<c>WIRT_BR_ERGEBNIS</c>).</summary>
+            public string Ergebnis { get; set; } = "ΔKW";
+
+            /// <summary>Der Legendeneintrag der roten Säulen (<c>WIRT_BR_LEG_MINDERT</c>).</summary>
+            public string Mindert { get; set; } = "mindert die Differenz";
+
+            /// <summary>Der Legendeneintrag der grünen Säulen (<c>WIRT_BR_LEG_MEHRT</c>).</summary>
+            public string Mehrt { get; set; } = "mehrt die Differenz";
+
+            /// <summary>Der Legendeneintrag der Ergebnissäule (<c>WIRT_BR_LEG_ERGEBNIS</c>).</summary>
+            public string ErgebnisLegende { get; set; } = "Ergebnis";
+
+            /// <summary>Der Leerhinweis ohne zeichenbaren Schritt (<c>WIRT_BR_LEER</c>).</summary>
+            public string Leer { get; set; } = "Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe.";
+
+            /// <summary>Dieselben Texte in der Oberflächensprache (<c>MyResource</c>).</summary>
+            public static BrueckenTexte AusRessourcen(string unterzeile, string fuss)
+            {
+                return new BrueckenTexte
+                {
+                    Titel = MyResource.Resource.WIRT_BR_TITEL,
+                    Unterzeile = unterzeile ?? "",
+                    Fuss = fuss ?? "",
+                    Ergebnis = MyResource.Resource.WIRT_BR_ERGEBNIS,
+                    Mindert = MyResource.Resource.WIRT_BR_LEG_MINDERT,
+                    Mehrt = MyResource.Resource.WIRT_BR_LEG_MEHRT,
+                    ErgebnisLegende = MyResource.Resource.WIRT_BR_LEG_ERGEBNIS,
+                    Leer = MyResource.Resource.WIRT_BR_LEER
+                };
+            }
+
+            /// <summary>
+            /// Die Texte für die Brücke eines Standes gegen die Referenz in einem Szenario —
+            /// Unterzeile („‹Stand› gegenüber ‹Referenz› · Barwerte · Szenario ‹S›") und Fuß
+            /// (Referenz, Szenario, Zins, Zeitraum der Gliederung) aus <c>MyResource</c>. Seite
+            /// und Wortbericht bilden sie hier, damit beide dasselbe sagen.
+            /// </summary>
+            public static BrueckenTexte Fuer(string stand, string referenz, string szenario,
+                                             Zahlungsgliederung gliederung, CultureInfo kultur)
+            {
+                if (kultur == null) kultur = CultureInfo.CurrentCulture;
+                string unterzeile = string.Format(kultur, MyResource.Resource.WIRT_BR_UNTER,
+                                                  stand ?? "", referenz ?? "", szenario ?? "");
+                string fuss = gliederung == null ? ""
+                    : string.Format(kultur, MyResource.Resource.WIRT_BR_FUSS, referenz ?? "", szenario ?? "",
+                                    gliederung.ZinsProzent.ToString("N1", kultur),
+                                    gliederung.Jahre.ToString(CultureInfo.InvariantCulture));
+                return AusRessourcen(unterzeile, fuss);
+            }
+        }
+
+        /// <summary>Die Breite des Brückenbilds [px] — wie Spannenbild und Verlauf.</summary>
+        public const int BRUECKE_BREITE = 1240;
+
+        /// <summary>Die Höhe des Brückenbilds [px] (ohne zeichenbaren Schritt: 200).</summary>
+        public const int BRUECKE_HOEHE = 610;
+
+        /// <summary>Die Beträge der Schritte — mit Vorzeichen („+2.606.605", „−426.922").</summary>
+        private const string BRUECKE_GELD = "+#,##0;−#,##0;0";
+
+        /// <summary>
+        /// ETAPPE E8a — das Brückenbild als PNG (Wortbericht). Siehe
+        /// <see cref="KapitalwertBrueckeModell"/>.
+        /// </summary>
+        public static byte[] KapitalwertBruecke(IReadOnlyList<Brueckenschritt> schritte, BrueckenTexte texte)
+            => SkiaMaler.Png(KapitalwertBrueckeModell(schritte, texte));
+
+        /// <summary>
+        /// ETAPPE E8a (U41, Anwenderentscheid E5b‑4 vom 22.09.2026; Mockup Kategorie 8 „Von der
+        /// Investition zur Kapitalwertdifferenz") — die <b>Brücke</b> als Wasserfall: je
+        /// Bestandteil eine Säule vom Stand vor bis zum Stand nach dem Schritt, rot, wenn er die
+        /// Differenz mindert, grün, wenn er sie mehrt, gestrichelt verbunden auf der Höhe des
+        /// neuen Standes; zuletzt die Ergebnissäule von null bis zur Summe in der Hausfarbe. Die
+        /// Summe der Schritte IST die Kapitalwertdifferenz — das Bild rechnet nichts, es stapelt.
+        ///
+        /// <para><b>Die Achse</b> zählt Euro und schließt die Null immer ein; die Nulllinie ist
+        /// die Referenz und trägt ihre Marke. Die Stufen sind die „schönen" Stufen des
+        /// Spannenbilds (etwa fünf Rasterlinien).</para>
+        ///
+        /// <para><b>Ein reines Pixelbild</b> wie das Spannenbild: keine Zeichenfläche, keine
+        /// Datenreihe. Eine SÄULE ist das Datenelement — Säule und Betrag stehen in der Klammer
+        /// <c>reihe:&lt;Name&gt;</c> und tragen den Betrag am Element. Die Legende schaltet
+        /// nichts (Marke <c>legende</c> ohne Namen).</para>
+        ///
+        /// <para><b>Das Bildmaß:</b> 1240 × 610; ohne zeichenbaren Schritt 1240 × 200 mit dem
+        /// Leerhinweis. Deterministisch: dieselben Schritte, dasselbe Bild.</para>
+        /// </summary>
+        /// <param name="schritte">Die Bestandteile in ihrer Reihenfolge (<see cref="Brueckenschritt.Aus"/>).</param>
+        /// <param name="texte">Überschrift, Unterzeile, Fuß, Legende; <c>null</c> = die Vorgabe.</param>
+        public static Zeichenmodell KapitalwertBrueckeModell(IReadOnlyList<Brueckenschritt> schritte,
+                                                             BrueckenTexte texte)
+        {
+            texte = texte ?? new BrueckenTexte();
+            const int W = BRUECKE_BREITE;
+            string titel = (texte.Titel ?? "") + "  [€]";
+
+            var gueltig = new List<Brueckenschritt>();
+            if (schritte != null)
+                foreach (Brueckenschritt s in schritte)
+                    if (s != null && EndlicherWert(s.Wert).HasValue) gueltig.Add(s);
+
+            if (gueltig.Count == 0)
+            {
+                var leer = Modell(W, 200);
+                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                using (var f = Schrift(18f))
+                {
+                    List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
+                    leer.Markiert("leerhinweis", zl =>
+                    {
+                        for (int i = 0; i < zeilen.Count; i++)
+                            Text(zl, zeilen[i], f, Farbrolle.ACHSE, 110f, 80f + i * (TextHoehe(f) + 6f));
+                    });
+                }
+                return leer;
+            }
+
+            const float links = 150f, rechts = W - 40f, oben = 110f, unten = 470f;
+            var z = Modell(W, BRUECKE_HOEHE);
+            string unterzeile = texte.Unterzeile ?? "";
+            z.Markiert("titel", zt =>
+            {
+                Titel(zt, titel, W);
+                using (var f = Schrift(15f))
+                    Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
+            });
+
+            // Die Treppe: je Schritt der Stand davor; die Skala schließt Null und jeden Stand ein.
+            var davor = new double[gueltig.Count];
+            double stand = 0.0, lo = 0.0, hi = 0.0;
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                davor[i] = stand;
+                stand += gueltig[i].Wert;
+                lo = Math.Min(lo, stand);
+                hi = Math.Max(hi, stand);
+            }
+            double summe = stand;
+            SchoeneStufen(ref lo, ref hi, out double schritt);
+            float Y(double w) => unten - (float)((w - lo) / (hi - lo)) * (unten - oben);
+
+            // Raster und Beschriftung der Euro-Achse.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            int stufen = (int)Math.Round((hi - lo) / schritt);
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (int k = 0; k <= stufen; k++)
+                    {
+                        double wert = lo + k * schritt;
+                        if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
+                        float y = Y(wert);
+                        zy.Linie(links, y, rechts, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
+                    }
+            });
+            float y0 = Y(0.0);
+            z.Markiert("nulllinie", zn => zn.Linie(links, y0, rechts, y0, Stift(Farbrolle.ACHSE, 2f)));
+
+            int n = gueltig.Count + 1;
+            float platz = (rechts - links) / n;
+            float breite = platz * 0.62f;
+            var verbinder = Stift(Farbrolle.ACHSE, 1f, new Strichmuster(4f, 3f));
+
+            using (var wf = Schrift(15f))
+            using (var ef = Schrift(16f, fett: true))
+            {
+                for (int i = 0; i < gueltig.Count; i++)
+                {
+                    Brueckenschritt s = gueltig[i];
+                    double a = davor[i], b = a + s.Wert;
+                    float x = links + i * platz + (platz - breite) / 2f;
+                    float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
+                    Farbrolle rolle = s.Wert < 0.0 ? Farbrolle.RASTER_SCHLECHT : Farbrolle.RASTER_GUT;
+                    string betrag = s.Wert.ToString(BRUECKE_GELD, DE);
+                    string name = s.Name ?? "";
+                    z.Markiert("reihe:" + name, name + ": " + betrag + " €", zr =>
+                    {
+                        zr.Rechteck(x, yo, breite, Math.Max(yu - yo, 1f), null, Flaeche(rolle));
+                        float bb = wf.MeasureText(betrag);
+                        Text(zr, betrag, wf, Farbrolle.ACHSE, x + (breite - bb) / 2f, yo - 6f - TextHoehe(wf));
+                    });
+
+                    // Die Verbindung zur nächsten Säule, auf der Höhe des neuen Standes.
+                    float yb = Y(b);
+                    z.Linie(x + breite, yb, x + platz, yb, verbinder);
+                }
+
+                // Die Ergebnissäule: von null bis zur Summe, in der Hausfarbe.
+                float xe = links + gueltig.Count * platz + (platz - breite) / 2f;
+                float yeo = Y(Math.Max(0.0, summe)), yeu = Y(Math.Min(0.0, summe));
+                string ergebnis = summe.ToString("#,##0;−#,##0;0", DE);
+                string ergName = texte.Ergebnis ?? "";
+                z.Markiert("reihe:" + ergName, ergName + ": " + ergebnis + " €", zr =>
+                {
+                    zr.Rechteck(xe, yeo, breite, Math.Max(yeu - yeo, 1f), null, Flaeche(Farbrolle.STAMM));
+                    float eb = ef.MeasureText(ergebnis);
+                    Text(zr, ergebnis, ef, Farbrolle.STAMM, xe + (breite - eb) / 2f, yeo - 6f - TextHoehe(ef));
+                });
+            }
+
+            // Die Namen unter den Säulen (höchstens zwei Zeilen) und der Fuß.
+            string fuss = texte.Fuss ?? "";
+            string ergebnisname = texte.Ergebnis ?? "";
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                using (var ff = Schrift(15f, fett: true))
+                {
+                    for (int i = 0; i <= gueltig.Count; i++)
+                    {
+                        bool letzte = i == gueltig.Count;
+                        Schriftmass fs = letzte ? ff : f;
+                        List<string> zeilen = Umbruchzeilen(letzte ? ergebnisname : (gueltig[i].Name ?? ""),
+                                                            fs, platz - 8f, 2);
+                        float mitte = links + i * platz + platz / 2f;
+                        for (int k = 0; k < zeilen.Count; k++)
+                            Text(zx, zeilen[k], fs, letzte ? Farbrolle.TEXT : Farbrolle.ACHSE,
+                                 mitte - fs.MeasureText(zeilen[k]) / 2f, unten + 10f + k * (TextHoehe(fs) + 2f));
+                    }
+                    Text(zx, fuss, f, Farbrolle.ACHSE, links, unten + 66f);
+                }
+            });
+
+            // Die Legende: mindert, mehrt, Ergebnis — sie schaltet nichts.
+            float ly = unten + 100f;
+            using (var f = Schrift(16f))
+            {
+                var eintraege = new[]
+                {
+                    (Farbrolle.RASTER_SCHLECHT, texte.Mindert ?? ""),
+                    (Farbrolle.RASTER_GUT, texte.Mehrt ?? ""),
+                    (Farbrolle.STAMM, texte.ErgebnisLegende ?? "")
+                };
+                z.Markiert("legende", zl =>
+                {
+                    float ex = links;
+                    foreach ((Farbrolle rolle, string text) in eintraege)
+                    {
+                        zl.Rechteck(ex, ly + 4f, 26f, 14f, null, Flaeche(rolle));
+                        Text(zl, text, f, Farbrolle.TEXT, ex + 34f, ly + 1f);
+                        ex += 34f + f.MeasureText(text) + 32f;
+                    }
+                });
+            }
+            return z;
+        }
+
         /// <summary>
         /// „Schöne" Stufen für eine Wertachse mit etwa fünf Rasterlinien — derselbe Weg wie
         /// in <see cref="VerlaufAchsen"/>: Schritt 1, 2, 2,5, 5 oder 10 mal einer
@@ -1895,6 +2194,391 @@ namespace WindowsFormsApplication1
                 if (zehner * f >= roh) { schritt = zehner * f; break; }
             unten = Math.Floor(unten / schritt) * schritt;
             oben = Math.Ceiling(oben / schritt) * schritt;
+        }
+
+        // ============================================ Zahlungsstrom je Jahr (E8a, U42)
+
+        /// <summary>
+        /// ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1 vom 23.09.2026, Lesart a) — EINE Reihe des
+        /// Zahlungsstrombilds: eine Positionsspalte der Mehrjahrestafel mit ihrem Schlüssel,
+        /// ihrem Namen und ihren nominalen Beträgen je Jahr 0…T [€], Ausgaben negativ.
+        /// </summary>
+        public sealed class Zahlungsstromreihe
+        {
+            /// <summary>Die Spalte der Mehrjahrestafel, die im Jahr 0 die Investition und danach
+            /// die Ersatzbeschaffungen trägt.</summary>
+            public const string INVEST_ERSATZ = "INVEST_ERSATZ";
+
+            /// <summary>Der sprachneutrale Schlüssel der Spalte (<see cref="MehrjahresSpalte.Schluessel"/>);
+            /// er wählt die Farbe.</summary>
+            public string Schluessel { get; set; } = "";
+
+            /// <summary>Der Name der Spalte — Legende und Wert am Element.</summary>
+            public string Name { get; set; } = "";
+
+            /// <summary>Die nominalen Beträge je Jahr [€], Index 0…T; Ausgaben negativ.</summary>
+            public double[] JeJahr { get; set; } = Array.Empty<double>();
+
+            /// <summary>
+            /// Die Positionsspalten einer Mehrjahrestafel in ihrer Reihenfolge — dieselben
+            /// Spalten, Namen und Beträge wie die Tafel des Berichts, ohne die Summenspalten
+            /// (Netto, Barwert, kumuliert). Leer ohne Tafel.
+            /// </summary>
+            public static List<Zahlungsstromreihe> Aus(Mehrjahresbild bild)
+            {
+                var liste = new List<Zahlungsstromreihe>();
+                if (bild == null) return liste;
+                foreach (MehrjahresSpalte s in bild.Spalten)
+                    if (s != null && !s.IstSumme && s.JeJahr != null)
+                        liste.Add(new Zahlungsstromreihe
+                        {
+                            Schluessel = s.Schluessel ?? "", Name = s.Titel ?? "", JeJahr = (double[])s.JeJahr.Clone()
+                        });
+                return liste;
+            }
+
+            /// <summary>
+            /// Die Jahre mit einer Ersatzbeschaffung, aufsteigend — die Jahre nach dem Jahr 0,
+            /// in denen die Spalte „Investition und Ersatz" einen Betrag trägt (dieselben Jahre
+            /// wie in „Was daraus im Lauf wird"). Leer ohne Tafel.
+            /// </summary>
+            public static List<int> Ersatzjahre(Mehrjahresbild bild)
+            {
+                var jahre = new List<int>();
+                MehrjahresSpalte s = bild == null ? null
+                    : bild.Spalten.FirstOrDefault(x => x != null && x.Schluessel == INVEST_ERSATZ);
+                if (s == null || s.JeJahr == null) return jahre;
+                for (int t = 1; t < s.JeJahr.Length; t++)
+                    if (s.JeJahr[t] != 0.0) jahre.Add(t);
+                return jahre;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U42) — die Texte des Zahlungsstrombilds. Die Vorgaben sind der deutsche
+        /// Wortlaut (die ChartProben hängen so nicht an der Sprache des Rechners);
+        /// <see cref="AusRessourcen"/> liest die Oberflächensprache.
+        /// </summary>
+        public sealed class ZahlungsstromTexte
+        {
+            /// <summary>Die Überschrift (<c>WIRT_ZS_TITEL</c>); „[€]" hängt das Bild an.</summary>
+            public string Titel { get; set; } = "Zahlungsstrom je Jahr";
+
+            /// <summary>Die Zeile unter der Überschrift (<c>WIRT_ZS_UNTER</c>, vom Aufrufer gefüllt).</summary>
+            public string Unterzeile { get; set; } = "";
+
+            /// <summary>Die Beschriftung der Jahresachse und der Werte am Element (<c>WIRT_MJ_JAHR</c>).</summary>
+            public string Jahr { get; set; } = "Jahr";
+
+            /// <summary>Der Schlüssel der Ersatzjahr-Marke unter der Achse (<c>WIRT_ZS_ERSATZJAHR</c>).</summary>
+            public string Ersatzjahr { get; set; } = "Ersatzjahr";
+
+            /// <summary>Der Leerhinweis ohne zeichenbaren Betrag (<c>WIRT_ZS_LEER</c>).</summary>
+            public string Leer { get; set; } = "Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe.";
+
+            /// <summary>Dieselben Texte in der Oberflächensprache (<c>MyResource</c>).</summary>
+            public static ZahlungsstromTexte AusRessourcen(string unterzeile)
+            {
+                return new ZahlungsstromTexte
+                {
+                    Titel = MyResource.Resource.WIRT_ZS_TITEL,
+                    Unterzeile = unterzeile ?? "",
+                    Jahr = MyResource.Resource.WIRT_MJ_JAHR,
+                    Ersatzjahr = MyResource.Resource.WIRT_ZS_ERSATZJAHR,
+                    Leer = MyResource.Resource.WIRT_ZS_LEER
+                };
+            }
+
+            /// <summary>
+            /// Die Texte für den Zahlungsstrom eines Standes in einem Szenario — die Unterzeile
+            /// („‹Stand› · Szenario ‹S› · nominal je Jahr, Ausgaben nach unten, ohne Restwert")
+            /// aus <c>MyResource</c>. Seite und Wortbericht bilden sie hier, damit beide
+            /// dasselbe sagen.
+            /// </summary>
+            public static ZahlungsstromTexte Fuer(string stand, string szenario, CultureInfo kultur)
+            {
+                if (kultur == null) kultur = CultureInfo.CurrentCulture;
+                return AusRessourcen(string.Format(kultur, MyResource.Resource.WIRT_ZS_UNTER,
+                                                   stand ?? "", szenario ?? ""));
+            }
+        }
+
+        /// <summary>Die Breite des Zahlungsstrombilds [px] — wie Brücke, Spannenbild und Verlauf.</summary>
+        public const int ZAHLUNGSSTROM_BREITE = 1240;
+
+        /// <summary>Die Höhe des Zahlungsstrombilds [px] (ohne zeichenbaren Betrag: 200). Eine
+        /// umbrechende Legende nimmt ihren Platz der Zeichenfläche, nicht dem Bild.</summary>
+        public const int ZAHLUNGSSTROM_HOEHE = 620;
+
+        /// <summary>Die Beträge eines Jahres am Element — wie in der Jahrestafel darüber
+        /// („−182.000", „64.000").</summary>
+        private const string ZAHLUNGSSTROM_GELD = "#,##0;−#,##0;0";
+
+        /// <summary>Der Ton der Stromsteuer-Entlastung — ein helles Blau neben dem Blau der
+        /// Energiesteuer und dem Violett der Stromsteuer-Befreiung.</summary>
+        private static readonly SKColor C_ZAHLUNGSSTROM_HELLBLAU = new SKColor(0x5B, 0x9B, 0xD5);
+
+        /// <summary>
+        /// Die Farbe einer Reihe des Zahlungsstrombilds — FEST je Spalte, damit dieselbe
+        /// Position in jedem Stand und jedem Szenario dieselbe Farbe trägt: die Investition in
+        /// der Hausfarbe, Betrieb, Energie und CO₂-Abgabe warm und grau, die Erlöse grün und
+        /// blau. Eine unbekannte Spalte nimmt die Serienpalette nach ihrer Stelle.
+        /// </summary>
+        private static SKColor Zahlungsstromfarbe(string schluessel, int stelle)
+        {
+            switch (schluessel)
+            {
+                case Zahlungsstromreihe.INVEST_ERSATZ: return C_STAMM;
+                case "BETRIEB": return C_SERIEN[0];                                              // Orange
+                case "ENERGIE": return C_SERIEN[6];                                              // Rot
+                case "BEHG": return C_KESSEL;                                                    // Grau
+                case "EINSPEISUNG": return C_SERIEN[1];                                          // Grün
+                case KapitalwertRechner.ErloesReihe.KWKG: return C_SERIEN[5];                    // Petrol
+                case KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE: return C_SERIEN[3];          // Braun
+                case KapitalwertRechner.ErloesReihe.ENERGIESTEUER: return C_SERIEN[2];           // Blau
+                case KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG: return C_SERIEN[4];   // Violett
+                case KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG: return C_ZAHLUNGSSTROM_HELLBLAU;
+                case KapitalwertRechner.ErloesReihe.PV_VERGUETUNG: return C_SERIEN[7];           // Ocker
+                default: return C_SERIEN[Math.Max(0, stelle) % C_SERIEN.Length];
+            }
+        }
+
+        /// <summary>Der Betrag einer Reihe im Jahr <paramref name="t"/>; ein fehlender oder
+        /// nicht endlicher Betrag ist 0 (er fällt weg).</summary>
+        private static double Zahlungsbetrag(Zahlungsstromreihe r, int t)
+        {
+            if (r == null || r.JeJahr == null || t < 0 || t >= r.JeJahr.Length) return 0.0;
+            double? w = EndlicherWert(r.JeJahr[t]);
+            return w.HasValue ? w.Value : 0.0;
+        }
+
+        /// <summary>
+        /// ETAPPE E8a — das Zahlungsstrombild als PNG (Wortbericht). Siehe
+        /// <see cref="ZahlungsstromModell"/>.
+        /// </summary>
+        public static byte[] Zahlungsstrom(IReadOnlyList<Zahlungsstromreihe> reihen, IReadOnlyList<int> ersatzjahre,
+                                           ZahlungsstromTexte texte)
+            => SkiaMaler.Png(ZahlungsstromModell(reihen, ersatzjahre, texte));
+
+        /// <summary>
+        /// ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1 vom 23.09.2026, Lesart a) — der
+        /// <b>Zahlungsstrom je Jahr</b> EINER Version in EINEM Szenario als gestapelte
+        /// Jahresbalken: je Jahr 0…T die Positionen der Mehrjahrestafel, die Einnahmen von der
+        /// Nulllinie nach oben, die Ausgaben nach unten, beide in der Reihenfolge der Tafel. Es
+        /// ist der absolute Strom der Version — keine Differenz zu einer Referenz; die Summe
+        /// eines Balkens über und unter der Null ist das Netto des Jahres ohne Restwert.
+        ///
+        /// <para><b>Die Ersatzjahre sind der GRUND, nicht eine Reihe</b> — dieselbe Marke wie
+        /// in der Jahresprojektion der Speicherflotte: ein senkrechtes Band hinter dem Balken
+        /// ihres Jahres und ein Dreieck am oberen Rand; unter der Achse steht ihr Schlüssel. Ihr
+        /// Betrag steht als Teil der Spalte „Investition und Ersatz" im Balken.</para>
+        ///
+        /// <para><b>Ein reines Pixelbild</b> wie Brücke und Spannenbild: keine Zeichenfläche,
+        /// keine Datenreihe. Jede Stapelschicht ist ein Datenelement mit der Marke
+        /// <c>reihe:&lt;Spalte&gt;</c> und dem Wert „Jahr 5 · Energiekosten: −182.000 €"; die
+        /// Legende nennt die Spalten in ihrer Farbe (fest je Spalte). Die Achse zählt Euro und
+        /// schließt die Null immer ein, in den „schönen" Stufen der Brücke.</para>
+        ///
+        /// <para><b>Das Bildmaß:</b> 1240 × 620; ohne zeichenbaren Betrag 1240 × 200 mit dem
+        /// Leerhinweis. Deterministisch: dieselben Reihen, dasselbe Bild.</para>
+        /// </summary>
+        /// <param name="reihen">Die Positionen in der Reihenfolge der Tafel (<see cref="Zahlungsstromreihe.Aus"/>).</param>
+        /// <param name="ersatzjahre">Die Jahre mit Ersatzbeschaffung (<see cref="Zahlungsstromreihe.Ersatzjahre"/>);
+        /// <c>null</c> = keine Marke.</param>
+        /// <param name="texte">Überschrift, Unterzeile, Achse, Marke; <c>null</c> = die Vorgabe.</param>
+        public static Zeichenmodell ZahlungsstromModell(IReadOnlyList<Zahlungsstromreihe> reihen,
+                                                        IReadOnlyList<int> ersatzjahre,
+                                                        ZahlungsstromTexte texte)
+        {
+            texte = texte ?? new ZahlungsstromTexte();
+            const int W = ZAHLUNGSSTROM_BREITE, H = ZAHLUNGSSTROM_HOEHE;
+            string titel = (texte.Titel ?? "") + "  [€]";
+            string jahrText = texte.Jahr ?? "";
+
+            // Gezeichnet werden die Reihen mit wenigstens einem endlichen Betrag ungleich 0.
+            var gueltig = new List<Zahlungsstromreihe>();
+            int n = 0;
+            if (reihen != null)
+                foreach (Zahlungsstromreihe r in reihen)
+                {
+                    if (r == null || r.JeJahr == null) continue;
+                    bool belegt = false;
+                    for (int t = 0; t < r.JeJahr.Length && !belegt; t++)
+                        belegt = Zahlungsbetrag(r, t) != 0.0;
+                    if (!belegt) continue;
+                    gueltig.Add(r);
+                    n = Math.Max(n, r.JeJahr.Length);
+                }
+
+            if (gueltig.Count == 0)
+            {
+                var leer = Modell(W, 200);
+                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                using (var f = Schrift(18f))
+                {
+                    List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
+                    leer.Markiert("leerhinweis", zl =>
+                    {
+                        for (int i = 0; i < zeilen.Count; i++)
+                            Text(zl, zeilen[i], f, Farbrolle.ACHSE, 110f, 80f + i * (TextHoehe(f) + 6f));
+                    });
+                }
+                return leer;
+            }
+
+            var z = Modell(W, H);
+            string unterzeile = texte.Unterzeile ?? "";
+            z.Markiert("titel", zt =>
+            {
+                Titel(zt, titel, W);
+                using (var f = Schrift(15f))
+                    Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
+            });
+
+            // Die Legende: je Spalte ihr Name in ihrer Farbe. Sie macht sich selbst Platz —
+            // jede Zeile über der ersten schiebt die Zeichenfläche nach unten.
+            const float LEGENDE_X = 110f, LEGENDE_Y = 84f;
+            var farben = new SKColor[gueltig.Count];
+            var leg = new List<Segment>();
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                farben[i] = Zahlungsstromfarbe(gueltig[i].Schluessel, i);
+                leg.Add(new Segment(gueltig[i].Name ?? "", 0, farben[i]));
+            }
+            float legendenhoehe = Legende(z, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
+            float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
+
+            const float links = 150f, rechts = W - 40f, unten = H - 74f;
+            float oben = LEGENDE_Y + LEGENDE_ZEILE + 30f + schub;
+
+            // Die Skala: je Jahr die Summe der Einnahmen und die der Ausgaben — sie schließt
+            // die Null und beide Enden jedes Balkens ein.
+            double lo = 0.0, hi = 0.0;
+            for (int t = 0; t < n; t++)
+            {
+                double plus = 0.0, minus = 0.0;
+                foreach (Zahlungsstromreihe r in gueltig)
+                {
+                    double w = Zahlungsbetrag(r, t);
+                    if (w > 0.0) plus += w; else minus += w;
+                }
+                hi = Math.Max(hi, plus);
+                lo = Math.Min(lo, minus);
+            }
+            SchoeneStufen(ref lo, ref hi, out double schritt);
+            float Y(double w) => unten - (float)((w - lo) / (hi - lo)) * (unten - oben);
+
+            // Raster und Beschriftung der Euro-Achse.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            int stufen = (int)Math.Round((hi - lo) / schritt);
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (int k = 0; k <= stufen; k++)
+                    {
+                        double wert = lo + k * schritt;
+                        if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
+                        float y = Y(wert);
+                        zy.Linie(links, y, rechts, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
+                    }
+            });
+
+            float fach = (rechts - links) / n;
+
+            // ERSATZJAHRE zuerst: Das Band steht HINTER dem Balken. Band und Dreieck sagen nicht
+            // „wie viel", sondern „hier ist eine Ersatzbeschaffung fällig".
+            var ersatz = new List<int>();
+            if (ersatzjahre != null)
+                foreach (int t in ersatzjahre)
+                    if (t >= 0 && t < n && !ersatz.Contains(t)) ersatz.Add(t);
+            ersatz.Sort();
+            string ersatzText = texte.Ersatzjahr ?? "";
+            if (ersatz.Count > 0)
+            {
+                var band = Flaeche(C_ERSATZJAHR);
+                var dreieck = Flaeche(C_RASTER_SCHLECHT);
+                z.Markiert("marke", zm =>
+                {
+                    foreach (int t in ersatz)
+                    {
+                        float mitte = links + (t + 0.5f) * fach;
+                        string wert = jahrText + " " + t.ToString(DE) + ": " + ersatzText;
+                        zm.Markiert("marke", wert, zb =>
+                        {
+                            zb.Rechteck(mitte - fach * 0.45f, oben, fach * 0.9f, unten - oben, null, band);
+                            Vieleck(zb, new[]
+                            {
+                                new SKPoint(mitte - 7f, oben - 12f),
+                                new SKPoint(mitte + 7f, oben - 12f),
+                                new SKPoint(mitte, oben - 1f)
+                            }, dreieck);
+                        });
+                    }
+                });
+            }
+
+            // DIE BALKEN: je Jahr die Schichten in der Reihenfolge der Tafel, die Einnahmen von
+            // der Null nach oben, die Ausgaben nach unten. Jede Schicht nennt Jahr, Spalte und
+            // Betrag.
+            float breite = fach * 0.62f;
+            for (int t = 0; t < n; t++)
+            {
+                float x = links + t * fach + (fach - breite) / 2f;
+                double plus = 0.0, minus = 0.0;
+                for (int i = 0; i < gueltig.Count; i++)
+                {
+                    double w = Zahlungsbetrag(gueltig[i], t);
+                    if (w == 0.0) continue;
+                    double a = w > 0.0 ? plus : minus, b = a + w;
+                    if (w > 0.0) plus = b; else minus = b;
+                    float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
+                    var fuellung = Flaeche(farben[i]);
+                    string name = gueltig[i].Name ?? "";
+                    string wert = Elementwert(jahrText + " " + t.ToString(DE) + WERT_TRENNER + name,
+                                              w, ZAHLUNGSSTROM_GELD, "€");
+                    z.Markiert("reihe:" + name, wert, zr => zr.Rechteck(x, yo, breite, yu - yo, null, fuellung));
+                }
+            }
+
+            // Die Nulllinie ÜBER den Balken: Sie trennt Einnahmen und Ausgaben.
+            float y0 = Y(0.0);
+            z.Markiert("nulllinie", zn => zn.Linie(links, y0, rechts, y0, Stift(Farbrolle.ACHSE, 2f)));
+
+            // Die Jahre unter der Achse (bei vielen Jahren jedes zweite oder fünfte), rechts der
+            // Achsentitel, links der Schlüssel der Ersatzjahr-Marke.
+            int jeX = fach >= 28f ? 1 : fach >= 14f ? 2 : 5;
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                {
+                    for (int t = 0; t < n; t += jeX)
+                    {
+                        string lab = t.ToString(DE);
+                        float mitte = links + (t + 0.5f) * fach;
+                        Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, unten + 8f);
+                    }
+                    Text(zx, jahrText, f, Farbrolle.ACHSE, rechts - f.MeasureText(jahrText), unten + 34f);
+                }
+            });
+            if (ersatz.Count > 0)
+            {
+                float ky = unten + 36f;
+                z.Markiert("marke", zm =>
+                {
+                    zm.Rechteck(links, ky, 22f, 16f, null, Flaeche(C_ERSATZJAHR));
+                    Vieleck(zm, new[]
+                    {
+                        new SKPoint(links + 4f, ky - 1f),
+                        new SKPoint(links + 18f, ky - 1f),
+                        new SKPoint(links + 11f, ky + 10f)
+                    }, Flaeche(C_RASTER_SCHLECHT));
+                    using (var f = Schrift(15f))
+                        Text(zm, ersatzText, f, Farbrolle.TEXT, links + 30f, ky - 1f);
+                });
+            }
+            return z;
         }
 
         // =================================================================== Kostenprofil

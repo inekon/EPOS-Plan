@@ -66400,6 +66400,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW ähnelt.
+        /// </summary>
+        public static string WIRT_BR_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a ähnelt.
+        /// </summary>
+        public static string WIRT_BR_FUSS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrt die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MEHRT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindert die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MINDERT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MINDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Investition zur Kapitalwertdifferenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_BR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gegenüber {1} · Barwerte · Szenario {2} ähnelt.
+        /// </summary>
+        public static string WIRT_BR_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Berechnen ähnelt.
         /// </summary>
         public static string WIRT_BTN_BERECHNEN {
@@ -67224,6 +67296,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_TEILSUMME {
             get {
                 return ResourceManager.GetString("WIRT_ERL_TEILSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_DREI {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_DREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen gepflegt: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Szenario gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_TEIL {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen aus Vorgaben, nichts gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_VORGABEN {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestandteil ähnelt.
+        /// </summary>
+        public static string WIRT_GL_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_BETRIEB {
+            get {
+                return ResourceManager.GetString("WIRT_GL_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Differenz {0} − {1} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_DIFFERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_GL_DIFFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ENERGIE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die einschließlich CO₂-Abgabe ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ENERGIE_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ENERGIE_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlöse ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERLOESE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERLOESE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zahlungswirksam — Block A ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERLOESE_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERLOESE_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I₀ ähnelt.
+        /// </summary>
+        public static string WIRT_GL_INVESTITION {
+            get {
+                return ResourceManager.GetString("WIRT_GL_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Zuschussabzug ähnelt.
+        /// </summary>
+        public static string WIRT_GL_INVESTITION_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_INVESTITION_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettobarwert ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NETTOBARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NETTOBARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen. ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NICHT_GERECHNET {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nominal {0} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NOMINAL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NOMINAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende ähnelt.
+        /// </summary>
+        public static string WIRT_GL_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_GL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gliederung des Kapitalwerts — Szenario {0} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a ähnelt.
+        /// </summary>
+        public static string WIRT_GL_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_UNTER", resourceCulture);
             }
         }
         
@@ -68124,6 +68385,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_LBL_SZENARIO {
             get {
                 return ResourceManager.GetString("WIRT_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen fällig im Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_LW_ERSATZJAHRE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_ERSATZJAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung auf {0} ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende, nominal ähnelt.
+        /// </summary>
+        public static string WIRT_LW_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_LW_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was daraus im Lauf wird ähnelt.
+        /// </summary>
+        public static string WIRT_LW_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_LW_TITEL", resourceCulture);
             }
         }
         
@@ -69298,7 +69604,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine Jahresreihen. ähnelt.
         /// </summary>
         public static string WIRT_VALERI_BLOCK_2_HINWEIS {
             get {
@@ -70068,6 +70374,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_ZUSCHUSS {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zu den gespeicherten Ergebnissen liegen keine passenden Jahresreihen vor — „Berechnen“ rechnet sie neu. ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominal und unabgezinst, Ausgaben negativ; das Jahr 0 trägt die Investition nach Zuschussabzug, das letzte Jahr den Restwert. Die Zeile „Barwert“ zinst jede Spalte mit i = {0} % ab — dieselben Zahlen wie die Gliederung unter „Woraus entsteht die Zahl?“; ihre Summe ist der Nettobarwert ({1} €). ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe nominal ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SUMME {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SZENARIO {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_ERSATZJAHR {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_ERSATZJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsstrom je Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_UNTER", resourceCulture);
             }
         }
         
