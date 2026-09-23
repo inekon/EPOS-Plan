@@ -54,7 +54,7 @@ A9–A15, A17, A18; A4, A5 und A9 über U1, U3 und U5) und 5 im Kühlkonzept (K1
 K24) — und die Festlegung K2 (8.2) bestätigt; alle bis auf **K10** nach Empfehlung. Drei
 entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1 — mit **E29**
 am 23.09.2026 erledigt: Stundenanfang, Konzept N1.34), **K22**
-(Prüfung vor KU2), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
+(Prüfung vor KU2 — am 23.09.2026 erledigt, Glossar), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
 **E28** (22.09.2026) hat danach **U4** und **U9** nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen.
 Davor: Die Entscheide E16–E25 vom 16.09.2026 haben Q10, Q11a, H1–H12, U2, U11, U16, M1, M4, A7,
@@ -97,7 +97,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **K10** | **Abweichend von der Empfehlung:** eine Programmeinstellung legt fest, ob **neue** Projekte mit eingeschalteter Kühlung angelegt werden (Vorgabe aus); bestehende Projekte samt Referenzprojekten bleiben aus, bis die je Projekt schaltbare Projekteinstellung ausdrücklich eingeschaltet wird; Umsetzung über `Dienste.Einstellungen`. | **KU1** | — |
 | **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze in KU1 nach Empfehlung (a); das Zeitprofil nach deren Wortlaut in KU3. | **KU1** | — |
 | **K19** | KU2 bekommt einen eigenen, kleinen Einfrierschritt. | **KU2** | — |
-| **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung** vor KU2 |
+| **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung erledigt** (23.09.2026): die Spalte führt den EER; Importregel für Kühlblöcke in Heizlage mit KU2 |
 | **A11** | Schemaschrittnummern erst bei Beauftragung; verbindlich sind Reihenfolge und Inhalt. | **erste Auslieferung** eines Schemaschritts | — |
 | **A1** | Die Kaskade bleibt; Schreibweg vor G3 messen, Rettung an der Löschstelle. | **G3** | — |
 | **A14** | Umschalter Klassenweg → Bauteilweg nach Datenlage, Übergang benannt. | **G3** | — |
@@ -1729,6 +1729,16 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — vor KU2 wird an den vorhandenen Kühlkennlinien geprüft, ob die COP-Spalte das Kälteverhältnis führt, und das Ergebnis im Glossar festgehalten. **Offen bleibt als Folgeaufgabe die Prüfung selbst**, fällig vor KU2.
 
+**Prüfung erledigt (23.09.2026, KU2 Welle 1; Ergebnis im [Glossar](Glossar_Lokalisierung.md),
+Abschnitt 6):** Die Spalte `COP` der Kühlkennlinie führt das Kälteverhältnis (EER), nie das
+Wärmeverhältnis. Am Importweg ist die Kennzahl der Kühlblöcke in 99,1 % der Wertzeilen der
+Herstellerdateien die Kälteleistung durch die elektrische Leistungsaufnahme; die sieben
+Katalogsätze der Testdatenbank (174 Zeilen) liegen in Kaltwasserlage und führen den EER des
+Kühlbetriebs. **Befund:** 826 von 2 641 Kühlblöcken der Herstellerdateien liegen in Heizlage und
+beschreiben die Kälteleistung am Verdampfer im Heizbetrieb — kein EER; der Import übernimmt sie
+heute ungeprüft. Nach der Empfehlung (a) wird eine solche Lage beim Import benannt abgelehnt —
+eine Aufgabe der Stufe KU2, kein neuer Entscheid.
+
 - **Frage:** Führt die Spalte `COP` der Kühlkennlinie **wirklich das Kälteverhältnis (EER)** — oder
   in manchen Datensätzen das Wärmeverhältnis eines Heizbetriebs bei Kühlvorlauf?
 - **Hintergrund:** Der Herstellerdaten-Import trennt Heiz- und Kühlblock, **die Herstellerangaben
@@ -1984,6 +1994,6 @@ entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (
 Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)", „Entschieden: E31 (23.09.2026,
 Konzept N1.36)" bzw. „Entschieden: E33 (23.09.2026, Konzept N1.38)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
-(U6 — mit E29 erledigt —, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
+(U6 — mit E29 erledigt —, K22 — mit der Prüfung vom 23.09.2026 erledigt —, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
