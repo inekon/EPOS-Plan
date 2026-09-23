@@ -123,110 +123,115 @@ public class KatalograhmenTests : EposBunitContext
         Assert.Contains("min-height: 0", block);
     }
 
-    /// <summary>
-    /// <b>Seit W14a‑E‑10 (07.09.2026) trägt die Liste im Katalograhmen wieder eine
-    /// Höchsthöhe</b> — die Ausnahme zu W9‑B‑2 fällt. Steht die Eingabe UNTER der
-    /// Liste statt daneben, schöbe eine lange Liste sie beliebig weit nach unten;
-    /// das Maß ist <b>1,3 × <c>--epos-listenhoehe</c></b> = 458 px = elf Zeilen
-    /// (Konzept_Katalogfilter 5.6.5, im Mockup gemessen).
-    /// </summary>
-    [Fact]
-    public void Die_Liste_im_Rahmen_traegt_die_Hoechsthoehe_von_elf_Zeilen()
-    {
-        string block = Stilblock(".epos-katalog-liste .epos-raster-huelle {");
-
-        Assert.Contains("flex: 0 1 auto", block);
-        Assert.Contains("max-height: calc(var(--epos-listenhoehe) * 1.3)", block);
-        Assert.DoesNotContain("max-height: none", block);
-        Assert.Contains("min-height:", block);
-    }
+    // =====================================================================
+    //  Stufe 1 der Neuordnung (Konzept Administrationsdialoge, V1): Kopf und
+    //  Fuß stehen, Liste und Eingabeblock rollen je für sich, nie einer im
+    //  anderen. Die MASSE misst Proben/Rasterprobe/katalogprobe.mjs (Fälle N,
+    //  1 088 × 624 und 400 × 624, Gegenprobe G2); hier stehen die REGELN.
+    // =====================================================================
 
     /// <summary>
-    /// <b>Der Eingabeblock rollt NICHT mehr selbst.</b> Er steht unter der Liste und
-    /// ist so hoch wie sein Inhalt; was über die Fensterhöhe hinausgeht, nimmt der
-    /// Rollbalken der MASKE (<c>.epos-katalog-dialog</c>, <c>overflow: auto</c>) —
-    /// ein zweiter Rollbereich mitten im Dialog verbärge die Hälfte der Felder
-    /// hinter einem Balken, den niemand sucht (offener Punkt O‑7).
+    /// <b>Der Befund vor Stufe 1</b> (Katalogprobe, Heizkessel 1 088 × 624): Der Rahmen
+    /// rollte in sich (474 px sichtbar von 1 261), in ihm die Liste mit ihrer
+    /// Höchsthöhe von 457,6 px — ein Rollbereich im Rollbereich —, und der
+    /// Eingabeblock lag mit 0 px sichtbar unter dem Rand. <b>Jetzt rollt der Rahmen
+    /// nicht mehr, er verteilt</b>; nur unter seinem Kleinstmaß rollt als Notnagel die
+    /// Maske.
     /// </summary>
     [Fact]
-    public void Der_Eingabeblock_rollt_nicht_mehr_selbst()
+    public void Der_Rahmen_rollt_nicht_er_verteilt()
     {
-        Assert.DoesNotContain("overflow-y: auto", Stilblock(".epos-katalog-eingabe {"));
+        string rahmen = Stilblock(".epos-katalog-paar.epos-katalog-fuellend {");
+        Assert.Contains("overflow: hidden", rahmen);
+        Assert.DoesNotContain("overflow: auto", rahmen);
+        Assert.Contains("min-height: 22rem", rahmen);
+
+        // Der Listenbereich malt nie über den Eingabeblock (KL-5), er schneidet ab.
+        Assert.Contains("overflow: hidden", Stilblock("\n.epos-katalog-liste {"));
+
+        // Der Notnagel bleibt an der Maske.
         Assert.Contains("overflow: auto", Stilblock(".epos-katalog-dialog {"));
     }
 
     /// <summary>
-    /// <b>Es gibt nur noch EINE Anordnung: untereinander</b> (Anwenderentscheid
-    /// W14a‑E‑10 — „Liste wie zuvor über ganze Breite, sonst zu schmale Liste").
-    /// Die Medienabfrage bei 900 px entfällt damit ersatzlos; untereinander war
-    /// schon vorher der schmale Fall. Das Token <c>--epos-zweispalten-umbruch</c>
-    /// bleibt — <c>Zweispaltenauswahl</c> und <c>Formularraster</c> benutzen es
-    /// weiter.
+    /// <b>Die Liste nimmt die Resthöhe</b> (V1) — keine Höchsthöhe mehr (die
+    /// 1,3 × <c>--epos-listenhoehe</c> fallen). Die Hülle füllt den Listenbereich und
+    /// ist der Behälter fester Höhe, den <c>Virtualize</c> braucht (Rasterprobe, Fälle
+    /// J und K: Rollbehälter = Hülle, Zeile 53 px).
+    /// </summary>
+    [Fact]
+    public void Die_Liste_im_Rahmen_nimmt_die_Resthoehe()
+    {
+        Assert.Contains("flex: 1 1 0", Stilblock(".epos-katalog-paar > .epos-katalog-liste {"));
+        Assert.Contains("flex: 1 1 0", Stilblock(".epos-katalog-liste > .epos-katalogliste {"));
+
+        string huelle = Stilblock(".epos-katalog-liste .epos-katalogliste > .epos-raster-huelle {");
+        Assert.Contains("flex: 1 1 0", huelle);
+        Assert.Contains("max-height: none", huelle);
+        Assert.Contains("min-height:", huelle);
+        Assert.DoesNotContain("--epos-listenhoehe", huelle);
+    }
+
+    /// <summary>
+    /// <b>Der Eingabeblock ist der zweite Bereich</b>: so hoch wie sein Inhalt,
+    /// höchstens 34 % des Rahmens, er rollt selbst und ist oben sichtbar abgesetzt.
+    /// Die Grenze steht als <c>max-height</c> eines Flexkindes — als Rasterreihe
+    /// (<c>fit-content(38%)</c>) löste Chromium die Prozenthöhe nicht auf, und der
+    /// Liste blieben 59 px (gemessen).
+    /// </summary>
+    [Fact]
+    public void Der_Eingabeblock_rollt_fuer_sich_und_ist_gedeckelt()
+    {
+        // Der Zeilenumbruch davor grenzt die EIGENE Regel von der des Paares ab.
+        string block = Stilblock("\n.epos-katalog-eingabe {");
+        Assert.Contains("overflow: auto", block);
+        Assert.Contains("border-top:", block);
+
+        string kind = Stilblock(".epos-katalog-paar > .epos-katalog-eingabe {");
+        Assert.Contains("flex: 0 1 auto", kind);
+        Assert.Contains("max-height: 34%", kind);
+    }
+
+    /// <summary>
+    /// <b>Eine Anordnung, untereinander</b> — als Flexspalte. Die Medienabfrage bei
+    /// 900 px gibt es im Rahmen nicht; das Token <c>--epos-zweispalten-umbruch</c>
+    /// bleibt — <c>Zweispaltenauswahl</c> und <c>Formularraster</c> benutzen es weiter.
     /// </summary>
     [Fact]
     public void Es_gibt_nur_noch_eine_Anordnung_untereinander()
     {
         string block = Stilblock(".epos-katalog-paar {");
 
-        Assert.Contains("grid-template-columns: 1fr", block);
-        Assert.DoesNotContain("minmax(280px", block);
-        Assert.Contains("grid-template-rows: auto auto", block);
+        Assert.Contains("display: flex", block);
+        Assert.Contains("flex-direction: column", block);
+        Assert.DoesNotContain("grid-template-rows", block);
 
-        // Der Umbruch war die zweite Anordnung; ohne sie gibt es ihn nicht mehr.
         string css = Stilblatt();
         int a = css.IndexOf(".epos-katalog-paar {", StringComparison.Ordinal);
         int e = css.IndexOf(".epos-katalog-suchzeile {", a, StringComparison.Ordinal);
         Assert.True(e > a);
         Assert.DoesNotContain("@media (max-width: 900px)", css.Substring(a, e - a));
 
-        // Das Token bleibt - es traegt weiter die Zweispaltenauswahl.
         Assert.Contains("--epos-zweispalten-umbruch: 900px", Stilblock(":root {"));
     }
 
-    // =====================================================================
-    //  KL-5 — der Rahmen staucht seine Reihen nicht mehr
-    // =====================================================================
-
     /// <summary>
-    /// <b>Der Befund KL‑5.</b> Im Dialog „Klimadaten" (1 180 × 780, nach einem
-    /// Regionalimport mit 35 Regionen) malten Reiterleiste und Diagrammkasten über
-    /// die Listenzeilen, der Eingabeblock über die Fußleiste; dasselbe Bild kam aus
-    /// der „Stromverbraucher Verwaltung". Gemessen im Chromium
-    /// (<c>Proben/Rasterprobe/katalogprobe.mjs</c>): Der Rahmen wurde von der
-    /// Flexbox auf 601,8 px gestaucht und verteilte diese Höhe zu GLEICHEN Teilen
-    /// auf seine zwei auto‑Reihen (295,906 px | 295,906 px) — weil beide Kinder
-    /// <c>min-height: 0</c> trugen und die Mindestgröße einer Reihe damit null war.
-    /// Die zweite Reihe war 618 px zu kurz, ihr Inhalt zeichnete darüber hinaus.
-    ///
-    /// <para>Die Behebung steht auf zwei Beinen, und beide werden hier geprüft:
-    /// die Kinder bekommen ihre selbsttätige Mindestgröße zurück
-    /// (<c>min-height: auto</c>), und der Rahmen rollt in sich
-    /// (<c>overflow: auto</c>), statt die Maske länger zu machen — sonst stünde
-    /// „Beenden" weit unter dem Fensterrand.</para>
-    ///
-    /// <para>Die MASSE prüft nur der Browser: <c>katalogprobe.mjs</c>, zwölf Fälle
-    /// über alle sieben Katalograhmen‑Masken samt Gegenprobe <c>--vorher</c>. bunit
-    /// hat kein Layout und sieht eine Überlagerung grundsätzlich nicht.</para>
+    /// <b>Eingebettet in eine Überlagerung</b> („Katalog verwalten…" aus einem
+    /// Projektdialog) nimmt die Maske die Höhe der Überlagerung statt der des
+    /// Fensters — sonst rollte die Überlagerung um die zwei Bereiche der Maske.
     /// </summary>
     [Fact]
-    public void Der_Rahmen_rollt_in_sich_und_laesst_seinen_Reihen_ihre_Hoehe()
+    public void Eingebettet_nimmt_die_Maske_die_Hoehe_der_Ueberlagerung()
     {
-        Assert.Contains("overflow: auto",
-                        Stilblock(".epos-katalog-paar.epos-katalog-fuellend {"));
-
-        // Der zweite Selektor der Regel genügt als Anker — so hängt der Fall nicht
-        // an der Zeilenendung des Stilblattes.
-        Assert.Contains("min-height: auto",
-                        Stilblock(".epos-katalog-paar > .epos-katalog-eingabe {"));
+        Assert.Contains("height: calc(90vh",
+                        Stilblock(".epos-ueberlagerung-inhalt > .epos-katalog-dialog {"));
     }
 
     /// <summary>
-    /// Die Regel gilt nur für das RASTERpaar. Zwei Masken setzen
+    /// Die Regeln gelten nur für das Paar. Zwei Masken setzen
     /// <c>epos-katalog-fuellend</c> auf eine bloße Liste
-    /// (<c>GesetzeskatalogDialog</c>, <c>WaermepumpenKatalogDialog</c>); sie haben
-    /// keine zweite Reihe und sollen ihre Liste weiter mitschrumpfen lassen.
-    /// Deshalb trägt die gemeinsame Klasse <c>epos-katalog-fuellend</c> die zwei
-    /// neuen Regeln NICHT.
+    /// (<c>GesetzeskatalogDialog</c>, <c>WaermepumpenKatalogDialog</c>); die gemeinsame
+    /// Klasse trägt deshalb kein <c>overflow</c>.
     /// </summary>
     [Fact]
     public void Die_gemeinsame_Fuellklasse_bleibt_unberuehrt()

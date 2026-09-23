@@ -314,7 +314,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <c>NurLesen</c>: „Neu…", „Bearbeiten…" und „Löschen" sind gesperrt, Liste und
+    /// <c>NurLesen</c>: „Neu…" und „Löschen" sind gesperrt, Liste und
     /// Detailblock bleiben sichtbar — wortgleich
     /// <c>Form_PufferSp_Admin.Form_PufferSp_Admin_Load</c> (Z. 39-44).
     ///
@@ -332,12 +332,15 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         int v = Versatz(art);
         var knoepfe = cut.FindAll(".epos-leiste .epos-knopf");
-        Assert.Equal(4 + v, knoepfe.Count);
-        if (v == 1) Assert.True(knoepfe[0].HasAttribute("disabled"));   // Speichern
+        Assert.Equal(3 + v, knoepfe.Count);
+        if (v == 2)
+        {
+            Assert.True(knoepfe[0].HasAttribute("disabled"));           // Speichern
+            Assert.True(knoepfe[1].HasAttribute("disabled"));           // Verwerfen
+        }
         Assert.True(knoepfe[v].HasAttribute("disabled"));               // Neu...
-        Assert.True(knoepfe[v + 1].HasAttribute("disabled"));           // Bearbeiten...
-        Assert.True(knoepfe[v + 2].HasAttribute("disabled"));           // Löschen
-        Assert.False(knoepfe[v + 3].HasAttribute("disabled"));          // OK
+        Assert.True(knoepfe[v + 1].HasAttribute("disabled"));           // Löschen
+        Assert.False(knoepfe[v + 2].HasAttribute("disabled"));          // OK
 
         // Liste und Detailblock stehen unveraendert.
         Assert.Equal(2, cut.Instance.Zeilen.Count);
@@ -360,7 +363,11 @@ public class KatalogBrowserDialogTests : EposBunitContext
         int v = Versatz(art);
         var knoepfe = cut.FindAll(".epos-leiste .epos-knopf");
         Assert.All(knoepfe.Skip(v), k => Assert.False(k.HasAttribute("disabled")));
-        if (v == 1) Assert.True(knoepfe[0].HasAttribute("disabled"));   // Speichern, noch ohne Änderung
+        if (v == 2)
+        {
+            Assert.True(knoepfe[0].HasAttribute("disabled"));           // Speichern, noch ohne Änderung
+            Assert.True(knoepfe[1].HasAttribute("disabled"));           // Verwerfen, ebenso
+        }
     }
 
     // =================================================================================
@@ -435,7 +442,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Neu und Bearbeiten
+    // Neu - und „Bearbeiten…" entfällt (AD-Q6)
     // =================================================================================
 
     [Fact]
@@ -476,9 +483,10 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// „Bearbeiten…" ohne Auswahl meldet dort, wo der Vorläufer meldete (BHKW und
+    /// „Löschen" ohne Auswahl meldet dort, wo der Vorläufer meldete (BHKW und
     /// Solarkollektoren), und schweigt dort, wo er schwieg (Heizkessel,
-    /// Pufferspeicher) — bitgleich.
+    /// Pufferspeicher) — bitgleich. Bis AD-Q6 prüfte der Fall „Bearbeiten…"; die
+    /// Regel dahinter (<c>Ausgewaehlt</c>) ist dieselbe.
     /// </summary>
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, "")]
@@ -495,7 +503,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         var cut = Aufbauen(art, wege: wege);
 
         Assert.Equal("", cut.Instance.Gewaehlt);
-        Bearbeitenknopf(cut, art).Click();
+        Loeschknopf(cut, art).Click();
 
         Assert.Equal(meldung, cut.Instance.Meldung);
     }
@@ -582,6 +590,62 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         Assert.NotNull(gesehen);
         Assert.Equal("42", gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldPtherm).Wert);
+    }
+
+    // =================================================================================
+    // AD-Q6 (22.09.2026): „Bearbeiten…" entfällt, die Felder sind direkt bedienbar
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Kein „Bearbeiten…" mehr</b> (Konzept Administrationsdialoge, Entscheid AD-Q6,
+    /// Stufe 1): Die Felder im Eingabeblock sind direkt bedienbar; neben „Speichern"
+    /// steht „Verwerfen". „Neu…" öffnet weiter den Editor.
+    /// </summary>
+    [Theory]
+    [InlineData(KatalogBrowserArt.Heizkessel)]
+    [InlineData(KatalogBrowserArt.Bhkw)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher)]
+    public void Bearbeiten_entfaellt_neben_Speichern_steht_Verwerfen(KatalogBrowserArt art)
+    {
+        var cut = Aufbauen(art);
+
+        var texte = cut.FindAll(".epos-leiste .epos-knopf").Select(k => k.TextContent.Trim()).ToList();
+        Assert.DoesNotContain(texte, t => t.StartsWith("Bearbeiten", StringComparison.Ordinal));
+        Assert.Equal("Speichern", texte[0]);
+        Assert.Equal("Verwerfen", texte[1]);
+        Assert.Equal("Neu...", texte[2]);
+    }
+
+    /// <summary>
+    /// <b>„Verwerfen" nimmt die Änderung zurück und schreibt nichts</b> — gesperrt,
+    /// solange nichts geändert ist, danach frei; nach dem Klick steht der Wert aus dem
+    /// Katalog wieder da, und „Speichern" ist wieder gesperrt.
+    /// </summary>
+    [Fact]
+    public void Verwerfen_nimmt_die_Aenderung_zurueck_und_schreibt_nicht()
+    {
+        bool geschrieben = false;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
+            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
+            Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+        };
+        var cut = Aufbauen(wege: wege);
+
+        string vorher = cut.FindAll("input[inputmode=decimal]")[0].GetAttribute("value") ?? "";
+        Assert.True(cut.FindAll(".epos-leiste .epos-knopf")[1].HasAttribute("disabled"));
+
+        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
+        Assert.False(cut.FindAll(".epos-leiste .epos-knopf")[1].HasAttribute("disabled"));
+
+        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+
+        Assert.Equal(vorher, cut.FindAll("input[inputmode=decimal]")[0].GetAttribute("value") ?? "");
+        Assert.True(cut.FindAll(".epos-leiste .epos-knopf")[0].HasAttribute("disabled"));   // Speichern
+        Assert.True(cut.FindAll(".epos-leiste .epos-knopf")[1].HasAttribute("disabled"));   // Verwerfen
+        Assert.False(geschrieben);
     }
 
     /// <summary>
@@ -760,19 +824,18 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // Helfer: die Knopfstellen je Ausprägung
     // =================================================================================
 
-    /// <summary>Ohne Speicherweg fehlt der erste Knopf; alles rückt um eins.</summary>
+    /// <summary>
+    /// Mit Speicherweg stehen „Speichern" und „Verwerfen" (AD-Q6) vor dem Füller; ohne
+    /// ihn fehlen beide, und alles rückt um zwei.
+    /// </summary>
     private static int Versatz(KatalogBrowserArt art) =>
-        Profil(art).HatSpeicherweg ? 1 : 0;
+        Profil(art).HatSpeicherweg ? 2 : 0;
 
     private static AngleSharp.Dom.IElement Neuknopf(
         IRenderedComponent<KatalogBrowserDialog> cut, KatalogBrowserArt art) =>
         cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art)];
 
-    private static AngleSharp.Dom.IElement Bearbeitenknopf(
-        IRenderedComponent<KatalogBrowserDialog> cut, KatalogBrowserArt art) =>
-        cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art) + 1];
-
     private static AngleSharp.Dom.IElement Loeschknopf(
         IRenderedComponent<KatalogBrowserDialog> cut, KatalogBrowserArt art) =>
-        cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art) + 2];
+        cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art) + 1];
 }

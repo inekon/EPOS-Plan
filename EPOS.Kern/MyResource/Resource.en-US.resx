@@ -6214,6 +6214,9 @@ After that the value will be missing from every calculation concerning that year
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="ADM_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
   <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
     <value>Writes the values shown back into the catalogue record. The dialog stays open.</value>
   </data>

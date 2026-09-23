@@ -22,7 +22,7 @@
    Mehrfachwahl aus W13 wird hier NICHT gebraucht.
 
    NUR LESEN. Der Pufferspeicher-Browser kennt einen zweiten Zustand
-   (m_bReadOnly, gesetzt von Sprungziel.PufferSpAdminNurLesen): Neu, Bearbeiten
+   (m_bReadOnly, gesetzt von Sprungziel.PufferSpAdminNurLesen): Neu, Speichern
    und Loeschen sind gesperrt, Liste und Detailblock bleiben sichtbar. Genau das
    macht der Parameter NurLesen.
 
@@ -121,17 +121,25 @@
         </Eingabe>
     </Katalograhmen>
 
+    @* DIE FELDER SIND DIREKT BEDIENBAR (Entscheid AD-Q6, 22.09.2026, Konzept
+       Administrationsdialoge Stufe 1): "Bearbeiten..." entfaellt. Der Editor
+       konnte nichts, was die Felder oben nicht auch koennen - jede fachliche
+       Spalte ausser dem Bezeichner ist dort bearbeitbar und wird mit
+       "Speichern" geschrieben. Dazu kommt "Verwerfen": Es laedt die Felder des
+       gewaehlten Satzes neu und nimmt die Aenderungen zurueck. Beide wirken auf
+       den Eingabeblock und stehen deshalb LINKS vom Fueller (Leseregel des
+       Konzepts Knopfleisten); "Neu..." oeffnet weiter den Editor. *@
     <div class="epos-leiste">
         @if (Profil.HatSpeicherweg)
         {
             <button type="button" class="epos-knopf" disabled="@(!SpeichernErlaubt)"
                     @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            <button type="button" class="epos-knopf" disabled="@(!VerwerfenErlaubt)"
+                    @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         }
         <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiNeu">@BtnNeuText</button>
-        <button type="button" class="epos-knopf" disabled="@NurLesen"
-                @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -185,7 +193,7 @@
     private KatalogBrowserProfil? _profil;
 
     /// <summary>
-    /// NUR LESEN: „Neu…", „Bearbeiten…" und „Löschen" sind gesperrt, Liste und
+    /// NUR LESEN: „Neu…", „Speichern" und „Löschen" sind gesperrt, Liste und
     /// Detailblock bleiben sichtbar. Vorbild <c>Form_PufferSp_Admin.m_bReadOnly</c>.
     /// </summary>
     [Parameter] public bool NurLesen { get; set; }
@@ -222,8 +230,8 @@
 
     /// <summary>
     /// Der Katalogeditor als Inhaltsbaustein — der Wirt entscheidet, welche Komponente
-    /// erscheint, und splattet den Parametersatz. Ohne ihn bleiben „Neu…" und
-    /// „Bearbeiten…" wirkungslos.
+    /// erscheint, und splattet den Parametersatz. Ohne ihn bleibt „Neu…" wirkungslos —
+    /// seit AD-Q6 der einzige Weg in den Editor.
     /// </summary>
     [Parameter] public RenderFragment<IReadOnlyDictionary<string, object>>? EditorInhalt { get; set; }
 
@@ -239,7 +247,8 @@
     // --- Texte -----------------------------------------------------------
 
     [Parameter] public string BtnNeuText { get; set; } = "Neu...";
-    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    /// <summary>„Verwerfen" — nimmt die Änderungen im Eingabeblock zurück (AD-Q6).</summary>
+    [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string OkText { get; set; } = "OK";
@@ -332,6 +341,9 @@
     public bool Namensfrage => _namensfrage;
 
     private bool SpeichernErlaubt => !NurLesen && _geaendert && _gewaehlt.Length > 0;
+
+    /// <summary>Verwerfen hat nur etwas zu tun, solange ein Feld geändert ist.</summary>
+    private bool VerwerfenErlaubt => _geaendert && _gewaehlt.Length > 0;
 
     protected override void OnParametersSet()
     {
@@ -560,11 +572,16 @@
         EditorOeffnen(name, neu: true);
     }
 
-    private void BeiBearbeiten()
+    /// <summary>
+    /// „Verwerfen" (AD-Q6): Die Felder des gewählten Satzes kommen neu aus dem Katalog,
+    /// die Änderungen sind zurückgenommen, eine Prüfmeldung ist weg. Geschrieben wird
+    /// nichts.
+    /// </summary>
+    private void BeiVerwerfen()
     {
-        if (NurLesen) return;
-        if (!Ausgewaehlt()) return;
-        EditorOeffnen(_gewaehlt, neu: false);
+        if (!VerwerfenErlaubt) return;
+        _meldung = "";
+        DetailLaden();
     }
 
     private void EditorOeffnen(string name, bool neu)

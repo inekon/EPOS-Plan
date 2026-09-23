@@ -52,6 +52,31 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Wann eine Spalte einer Katalogliste zu sehen ist</b> (Konzept
+    /// Administrationsdialoge, Vorschlag V2 „keine waagerechte Rollleiste: Spalten mit
+    /// Rang"). Der Rang sagt die REIHENFOLGE, in der Spalten weichen, wenn die Liste
+    /// schmal wird; WANN eine Spalte weicht, rechnet die Liste aus den Breiten ihres
+    /// Inhalts (<c>EPOS.UI/Bausteine/Spaltenraenge.cs</c>).
+    /// </summary>
+    public enum Katalogspaltenrang
+    {
+        /// <summary>
+        /// Immer sichtbar — der Bezeichner und der EINE Hauptkennwert. Das ist auch die
+        /// Vorgabe: Ein Profil, das keinen Rang nennt, zeigt alle Spalten wie bisher.
+        /// </summary>
+        Immer = 1,
+
+        /// <summary>Sichtbar, sobald die Liste Platz hat — Hersteller, Brennstoff, Typ.</summary>
+        BeiPlatz = 2,
+
+        /// <summary>
+        /// Nur in einer breiten Liste — was man zum Waehlen selten braucht. Weicht als
+        /// erste; im Stammblatt (Stufe 3) steht es ohnehin.
+        /// </summary>
+        Breit = 3
+    }
+
+    /// <summary>
     /// <b>Eine Spalte einer Katalogliste</b> — Titel, Einheit, Art und die zwei
     /// Fragen „sortierbar?" und „filterbar?" (Konzept_Katalogfilter Kapitel 4 und
     /// 5.6.5).
@@ -69,7 +94,8 @@ namespace WindowsFormsApplication1
     {
         public Katalogspalte(string schluessel, string titel, string einheit = "",
                              Katalogspaltenart art = Katalogspaltenart.Text,
-                             bool sortierbar = true, bool filterbar = true)
+                             bool sortierbar = true, bool filterbar = true,
+                             Katalogspaltenrang rang = Katalogspaltenrang.Immer)
         {
             Schluessel = schluessel;
             Titel = titel;
@@ -77,7 +103,15 @@ namespace WindowsFormsApplication1
             Art = art;
             Sortierbar = sortierbar;
             Filterbar = filterbar && art != Katalogspaltenart.JaNein;
+            Rang = rang;
         }
+
+        /// <summary>
+        /// <b>Der Rang der Spalte</b> (Vorschlag V2): in welcher Reihenfolge sie weicht,
+        /// wenn die Liste schmal wird. Eine Spalte mit gesetztem Filter oder Sortierung
+        /// weicht nie (V7) — das entscheidet die Liste, nicht das Profil.
+        /// </summary>
+        public Katalogspaltenrang Rang { get; }
 
         /// <summary>Sprachneutraler ASCII-Schluessel — zugleich der Zugriff auf den Wert.</summary>
         public string Schluessel { get; }
@@ -557,14 +591,14 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner,  t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller,  t("KFLT_SP_HERSTELLER")),
-                            new Katalogspalte(SpBrennstoff,  t("KFLT_SP_BRENNSTOFF")),
+                            new Katalogspalte(SpHersteller,  t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpBrennstoff,  t("KFLT_SP_BRENNSTOFF"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpPtherm,      t("KFLT_SP_PTHERM"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEta,         t("KFLT_SP_ETA"), "", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpEta,         t("KFLT_SP_ETA"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
                             // Kennzeichen: nur der Sortierpfeil (5.6.2). Befund D-1 -
                             // 6 von 63 Saetzen tragen es, 46 Beschreibungen nennen
                             // "Brennwert"; die SUCHE ueber alle Spalten findet die 46.
-                            new Katalogspalte(SpBrennwert,   t("KFLT_SP_BRENNWERT"), "", Katalogspaltenart.JaNein)
+                            new Katalogspalte(SpBrennwert,   t("KFLT_SP_BRENNWERT"), "", Katalogspaltenart.JaNein, rang: Katalogspaltenrang.Breit)
                         }
                     };
 
@@ -578,15 +612,15 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner, t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER")),
-                            new Katalogspalte(SpBrennstoff, t("KFLT_SP_BRENNSTOFF")),
+                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpBrennstoff, t("KFLT_SP_BRENNSTOFF"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpPel,        t("KFLT_SP_PEL"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpPtherm,     t("KFLT_SP_PTHERM"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpSigma,      t("KFLT_SP_SIGMA"), "", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEta,        t("KFLT_SP_ETA"), "", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpPtherm,     t("KFLT_SP_PTHERM"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpSigma,      t("KFLT_SP_SIGMA"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpEta,        t("KFLT_SP_ETA"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
                             // 45 verschiedene Werte in 79 Saetzen (Befund O-3): als
                             // Spalte mit Feld tauglich, als Klappliste nie gewesen.
-                            new Katalogspalte(SpMotortyp,   t("KFLT_SP_MOTORTYP"))
+                            new Katalogspalte(SpMotortyp,   t("KFLT_SP_MOTORTYP"), rang: Katalogspaltenrang.Breit)
                         }
                     };
 
@@ -599,21 +633,21 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Spalten = new[]
                         {
-                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER")),
+                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
                             // Der Bezeichner heisst hier "Modell" - der Vorlaeufer
                             // Form_WpFilterAuswahl nannte ihn so.
                             new Katalogspalte(SpBezeichner,   t("KFLT_SP_MODELL")),
-                            new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE")),
+                            new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
                             // 16.09.2026: die ZAHL statt des Kennzeichens „Kuehlen" - sie
                             // sagt dasselbe und nennt die Leistung; das schnelle Ja/Nein
                             // traegt der Schalter „nur mit Kuehlfunktion", der genau
                             // diese Spalte auf ">0" setzt.
-                            new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl)
+                            new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                         }
                     };
 
@@ -627,11 +661,11 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner,   t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER")),
-                            new Katalogspalte(SpKollektortyp, t("KFLT_SP_KOLLEKTORTYP")),
+                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpKollektortyp, t("KFLT_SP_KOLLEKTORTYP"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpApertur,      t("KFLT_SP_APERTUR"), "m²", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEtaNull,      t("KFLT_SP_ETANULL"), "", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpK1,           t("KFLT_SP_K1"), "W/(m²·K)", Katalogspaltenart.Zahl)
+                            new Katalogspalte(SpEtaNull,      t("KFLT_SP_ETANULL"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpK1,           t("KFLT_SP_K1"), "W/(m²·K)", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz)
                         }
                     };
 
@@ -645,10 +679,10 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner,  t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller,  t("KFLT_SP_HERSTELLER")),
-                            new Katalogspalte(SpSpeichertyp, t("KFLT_SP_SPEICHERTYP")),
+                            new Katalogspalte(SpHersteller,  t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpSpeichertyp, t("KFLT_SP_SPEICHERTYP"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpVolumen,     t("KFLT_SP_VOLUMEN"), "l", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpVerluste,    t("KFLT_SP_VERLUSTE"), "kWh/d", Katalogspaltenart.Zahl)
+                            new Katalogspalte(SpVerluste,    t("KFLT_SP_VERLUSTE"), "kWh/d", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz)
                         }
                     };
 
@@ -662,12 +696,12 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner,   t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER")),
+                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpPstc,         t("KFLT_SP_PSTC"), "W", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEta,          t("KFLT_SP_ETA"), "%", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpTechnologie,  t("KFLT_SP_TECHNOLOGIE")),
-                            new Katalogspalte(SpModulflaeche, t("KFLT_SP_MODULFLAECHE"), "m²", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpTnoct,        t("KFLT_SP_TNOCT"), "°C", Katalogspaltenart.Zahl)
+                            new Katalogspalte(SpEta,          t("KFLT_SP_ETA"), "%", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpTechnologie,  t("KFLT_SP_TECHNOLOGIE"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpModulflaeche, t("KFLT_SP_MODULFLAECHE"), "m²", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpTnoct,        t("KFLT_SP_TNOCT"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                         }
                     };
 
@@ -681,12 +715,12 @@ namespace WindowsFormsApplication1
                         Spalten = new[]
                         {
                             new Katalogspalte(SpBezeichner, t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER")),
+                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpPac,        t("KFLT_SP_PAC"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEtaEuro,    t("KFLT_SP_ETAEURO"), "", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpMppt,       t("KFLT_SP_MPPT"), "", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpUdcMax,     t("KFLT_SP_UDCMAX"), "V", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpHerkunft,   t("KFLT_SP_HERKUNFT"))
+                            new Katalogspalte(SpEtaEuro,    t("KFLT_SP_ETAEURO"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpMppt,       t("KFLT_SP_MPPT"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpUdcMax,     t("KFLT_SP_UDCMAX"), "V", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpHerkunft,   t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.BeiPlatz)
                         }
                     };
 
@@ -704,13 +738,13 @@ namespace WindowsFormsApplication1
                             // Firma; der Hersteller kommt aus dem Bezeichnerpraefix
                             // (Text vor dem ersten Doppelpunkt), wie ihn der Import
                             // schreibt. Q7 - die Spalte selbst ist ein Schemaschritt.
-                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER")),
-                            new Katalogspalte(SpChemie,     t("KFLT_SP_CHEMIE")),
+                            new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpChemie,     t("KFLT_SP_CHEMIE"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpEnergie,    t("KFLT_SP_ENERGIE"), "kWh", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpLeistung,   t("KFLT_SP_LEISTUNG"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpCrate,      t("KFLT_SP_CRATE"), "1/h", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEtaRt,      t("KFLT_SP_ETART"), "", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpZyklen,     t("KFLT_SP_ZYKLEN"), "", Katalogspaltenart.Zahl)
+                            new Katalogspalte(SpLeistung,   t("KFLT_SP_LEISTUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpCrate,      t("KFLT_SP_CRATE"), "1/h", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpEtaRt,      t("KFLT_SP_ETART"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpZyklen,     t("KFLT_SP_ZYKLEN"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                         }
                     };
             }
@@ -748,10 +782,10 @@ namespace WindowsFormsApplication1
                 Spalten = new[]
                 {
                     new Katalogspalte(SpBezeichner,      t("KFLT_SP_BEZEICHNER")),
-                    new Katalogspalte(SpTyp,             t("KFLT_SP_TYP")),
+                    new Katalogspalte(SpTyp,             t("KFLT_SP_TYP"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpJahressummeMwh,  t("KFLT_SP_JAHRESSUMME"), "MWh", Katalogspaltenart.Zahl),
-                    new Katalogspalte(SpBeschreibung,    t("KFLT_SP_BESCHREIBUNG")),
-                    new Katalogspalte(SpAuslieferung,    t("KFLT_SP_AUSLIEFERUNG"), "", Katalogspaltenart.JaNein)
+                    new Katalogspalte(SpBeschreibung,    t("KFLT_SP_BESCHREIBUNG"), rang: Katalogspaltenrang.Breit),
+                    new Katalogspalte(SpAuslieferung,    t("KFLT_SP_AUSLIEFERUNG"), "", Katalogspaltenart.JaNein, rang: Katalogspaltenrang.Breit)
                 }
             };
         }
@@ -788,15 +822,16 @@ namespace WindowsFormsApplication1
 
             if (art == Zeitreihenart.Stromganglinie)
                 spalten.Add(new Katalogspalte(SpZeitintervall, t("KFLT_SP_ZEITINTERVALL"), "",
-                                              Katalogspaltenart.Zahl));
+                                              Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
             if (art == Zeitreihenart.Solarganglinie)
-                spalten.Add(new Katalogspalte(SpBeschreibung, t("KFLT_SP_BESCHREIBUNG")));
+                spalten.Add(new Katalogspalte(SpBeschreibung, t("KFLT_SP_BESCHREIBUNG"),
+                                              rang: Katalogspaltenrang.BeiPlatz));
 
             spalten.Add(new Katalogspalte(SpJahresarbeitMwh, t("KFLT_SP_JAHRESARBEIT"), "MWh",
                                           Katalogspaltenart.Zahl));
             spalten.Add(new Katalogspalte(SpSpitzeKw, t("KFLT_SP_SPITZE"), "kW",
-                                          Katalogspaltenart.Zahl));
+                                          Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
             return new Katalogfilterprofil { Schluessel = "ZEITREIHE_" + art, Spalten = spalten };
         }

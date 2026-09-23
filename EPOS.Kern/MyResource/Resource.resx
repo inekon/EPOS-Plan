@@ -6230,6 +6230,9 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
   </data>
+  <data name="ADM_BTN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
   <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
     <value>Schreibt die angezeigten Werte in den Stammdatensatz zurück. Der Dialog bleibt geöffnet.</value>
   </data>

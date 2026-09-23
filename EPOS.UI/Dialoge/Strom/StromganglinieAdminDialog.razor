@@ -31,7 +31,7 @@
 @using WindowsFormsApplication1
 @implements IDisposable
 
-<div class="epos-dialog epos-stromganglinie-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-stromganglinie-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -44,28 +44,39 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Gruppenkopf Titel="@LabelKatalog" />
+    @* DER GEMEINSAME RAHMEN (Konzept Administrationsdialoge, Stufe 1, V1): Liste
+       oben, Einleseblock darunter - wie die Waermebedarfsverwaltung. Titelzeile
+       und Fussleiste stehen fest, Liste und Einleseblock rollen je fuer sich.
+       Bis hierher stand beides frei untereinander in der Maske, und die Liste
+       trug die Hoechsthoehe der Hausregel. *@
+    <Katalograhmen Gestapelt="true">
+        <Liste>
+            <Gruppenkopf Titel="@LabelKatalog" />
 
-    @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2): Suche
-       ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf. Zum Bezeichner und
-       zum Zeitintervall kommen die zwei Kennzahlen JAHRESARBEIT und SPITZE - sie
-       stehen nicht am Kopfsatz, sondern in der Wertetabelle (78 840 Zeilen) und
-       kommen aus EINER Gruppenabfrage beim Aufbau der Liste. *@
-    <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
-                  Filterstand="@_filterstand" Texte="@Filtertexte"
-                  Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2): Suche
+               ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf. Zum Bezeichner und
+               zum Zeitintervall kommen die zwei Kennzahlen JAHRESARBEIT und SPITZE - sie
+               stehen nicht am Kopfsatz, sondern in der Wertetabelle (78 840 Zeilen) und
+               kommen aus EINER Gruppenabfrage beim Aufbau der Liste. *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+        </Liste>
 
-    <Gruppenkopf Titel="@GruppeEinlesen" />
+        <Eingabe>
+            <Gruppenkopf Titel="@GruppeEinlesen" />
 
-    <Herleitungszeile Text="@LabelJahreswerte" />
+            <Herleitungszeile Text="@LabelJahreswerte" />
 
-    <Auswahlfeld Bezeichnung="@LabelZeitinterval" Eintraege="@_rasterliste"
-                 Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)"
-                 Aktiv="@(!_laeuft)" />
+            <Auswahlfeld Bezeichnung="@LabelZeitinterval" Eintraege="@_rasterliste"
+                         Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)"
+                         Aktiv="@(!_laeuft)" />
 
-    <Dateiwahl Bezeichnung="" KnopfText="@EinlesenText" Filter="@Dateifilter"
-               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-               Aktiv="@(!_laeuft)" />
+            <Dateiwahl Bezeichnung="" KnopfText="@EinlesenText" Filter="@Dateifilter"
+                       Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                       Aktiv="@(!_laeuft)" />
+        </Eingabe>
+    </Katalograhmen>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"

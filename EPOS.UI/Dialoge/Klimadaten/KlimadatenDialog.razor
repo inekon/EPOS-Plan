@@ -603,21 +603,28 @@
     /// <c>&gt;50</c> und <c>8..10</c>. <b>Das Importdatum ist ein TEXT</b>: ISO
     /// sortiert als Zeichenkette in derselben Reihenfolge wie als Datum, und
     /// „enthält 2026-09" wird damit zum Monatsfilter.</para>
+    ///
+    /// <para><b>Der Rang der Spalten</b> (Konzept Administrationsdialoge, V2): Region und
+    /// Importdatum stehen immer — das Datum ist der Kennwert, nach dem man eine
+    /// eingelesene Region wiederfindet; Quelle und Standort, sobald Platz ist; die
+    /// Koordinaten und der Schreibschutz nur in einer breiten Liste.</para>
     /// </summary>
     private Katalogfilterprofil Filterprofil => _filterprofil ??= Katalogfilterprofil.AusSpalten(
         KATALOG,
         new[]
         {
             new Katalogspalte(Katalogfilterprofil.SpBezeichner, SpalteRegionText),
-            new Katalogspalte(Katalogfilterprofil.SpQuelle, SpalteQuelleText),
-            new Katalogspalte(Katalogfilterprofil.SpStandort, SpalteStandortText),
+            new Katalogspalte(Katalogfilterprofil.SpQuelle, SpalteQuelleText,
+                              rang: Katalogspaltenrang.BeiPlatz),
+            new Katalogspalte(Katalogfilterprofil.SpStandort, SpalteStandortText,
+                              rang: Katalogspaltenrang.BeiPlatz),
             new Katalogspalte(Katalogfilterprofil.SpLongitude, SpalteLongitudeText, "",
-                              Katalogspaltenart.Zahl),
+                              Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
             new Katalogspalte(Katalogfilterprofil.SpLatitude, SpalteLatitudeText, "",
-                              Katalogspaltenart.Zahl),
+                              Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
             new Katalogspalte(Katalogfilterprofil.SpImportdatum, SpalteImportdatumText),
             new Katalogspalte(Katalogfilterprofil.SpSchreibschutz, SpalteSchreibschutzText, "",
-                              Katalogspaltenart.JaNein)
+                              Katalogspaltenart.JaNein, rang: Katalogspaltenrang.Breit)
         });
 
     /// <summary>Der sprachneutrale Schlüssel dieses Katalogs im <c>Katalogfilterregister</c>.</summary>

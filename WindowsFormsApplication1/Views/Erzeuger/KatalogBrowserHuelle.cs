@@ -83,9 +83,11 @@ namespace WindowsFormsApplication1
                 ["NurLesen"] = nurLesen,
 
                 ["BtnNeuText"] = MyResource.Resource.KBROW_BTN_NEU,
-                ["BtnBearbeitenText"] = MyResource.Resource.KBROW_BTN_BEARBEITEN,
                 ["BtnLoeschenText"] = MyResource.Resource.KBROW_BTN_LOESCHEN,
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
+                // AD-Q6 (22.09.2026): "Bearbeiten..." entfaellt, die Felder sind
+                // direkt bedienbar - neben "Speichern" steht "Verwerfen".
+                ["BtnVerwerfenText"] = MyResource.Resource.ADM_BTN_VERWERFEN,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,

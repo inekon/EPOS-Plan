@@ -7085,179 +7085,137 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
-/* SEIT W14a-E-10 (07.09.2026) STEHEN SIE UNTEREINANDER                  */
+/* DAS GERUEST DES KATALOGDIALOGS (Konzept Administrationsdialoge,       */
+/* Stufe 1, Vorschlag V1): KOPF UND FUSS STEHEN, NUR DIE LISTE ROLLT     */
 /*                                                                      */
-/* Der Anwender hat es begruendet: "Liste wie zuvor ueber ganze Breite,  */
-/* sonst zu schmale Liste." Gemessen im Mockup (Chromium, 1 366 px):     */
-/* neben dem Eingabeblock hatten FUENF Parameterspalten Platz, ueber die */
-/* ganze Breite sind es SECHS BIS NEUN - ohne dass die Liste in sich     */
-/* waagerecht rollt; und der Hersteller zeigt seinen vollen Namen        */
-/* ("Vaillant Deutschland GmbH & Co. KG"), der vorher nach 9 rem abbrach.*/
+/* DER BEFUND (Katalogprobe, 1 088 x 624 CSS-Pixel - 85 % x 90 % von     */
+/* 1 920 x 1 040 bei 150 %): drei Rollbereiche ineinander. Der Rahmen    */
+/* rollte in sich (474 px sichtbar von 1 261), in ihm die Liste (456 px, */
+/* davon 367 sichtbar), und der Eingabeblock lag mit 0 px sichtbar ganz  */
+/* unter dem Rand des Rahmens - erreichbar nur ueber den Balken des      */
+/* Rahmens, waehrend darin die Liste ihren eigenen Balken hatte.         */
 /*                                                                      */
-/* DER PREIS IST DIE HOEHE (offener Punkt O-7): Der Dialog misst         */
-/* gemessen 1 152 px (M1), 1 228 px (M2) und 1 225 px (M3) bei 1 366 px  */
-/* Breite; bei 768 px Fensterhoehe braucht man dafuer den Rollbalken der */
-/* MASKE. Das ist kein Bruch mit W9-B-2 - die LISTE rollt in sich und    */
-/* schluckt die Seite nicht mehr -, aber es ist der Preis der Anordnung. */
+/* JETZT: Titelzeile, Suchzeile und Fussleiste stehen fest; dazwischen   */
+/* teilt der Rahmen seine Hoehe in ZWEI Bereiche UNTEREINANDER, die je   */
+/* fuer sich rollen und nie einer im anderen:                            */
+/*   * die LISTE nimmt die Resthoehe (flex 1) - keine Hoechsthoehe mehr, */
+/*     ihre Huelle fuellt den Bereich und rollt; Virtualize findet in    */
+/*     ihr den Behaelter fester Hoehe, den es braucht;                   */
+/*   * der EINGABEBLOCK steht darunter, so hoch wie sein Inhalt, aber    */
+/*     hoechstens 34 % des Rahmens (max-height), rollt in sich und ist   */
+/*     oben durch eine Linie abgesetzt.                                  */
+/* Der Rahmen selbst rollt NICHT. Nur unter dem Kleinstmass (22 rem      */
+/* Rahmen) rollt als Notnagel die Maske (.epos-katalog-dialog).          */
 /*                                                                      */
-/* ZWEI REIHEN AUTO und nicht minmax(0,1fr): Beide Bloecke sind so hoch  */
-/* wie ihr Inhalt, die Liste bis zu ihrer Hoechsthoehe. Eine 1fr-Reihe   */
-/* zoege die Liste auf die volle Dialoghoehe auf und liesse unter den    */
-/* sieben Zeilen eine leere Flaeche stehen.                              */
+/* In Stufe 3 (V3) tritt das Stammblatt NEBEN die Liste; bis dahin ist   */
+/* der Eingabeblock an seinem Platz, nur eben sichtbar.                  */
 /*                                                                      */
-/* DIE MEDIENABFRAGE BEI 900 px ENTFAELLT: Es gibt nur noch EINE         */
-/* Anordnung, und die ist die schmale. Das Token                         */
-/* --epos-zweispalten-umbruch bleibt - das Formularraster, der           */
-/* Dublettenbaum und die Kennzahlzeile benutzen es weiter (die           */
-/* Zweispaltenauswahl seit W14a-E-10-Q2 nicht mehr).                     */
+/* EINE FLEXSPALTE UND KEIN RASTER: Die Grenze von 34 % ist eine         */
+/* Prozenthoehe, und die loest eine Rasterreihe (fit-content(...)) im    */
+/* Rahmen nicht auf - gemessen nahm der Eingabeblock seine vollen 405 px,*/
+/* und der Liste blieben 59. Als max-height eines Flexkindes bezieht sie */
+/* sich auf die feste Hoehe des Rahmens und greift.                      */
 /* ==================================================================== */
 .epos-katalog-paar {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
+    display: flex;
+    flex-direction: column;
     gap: var(--epos-rand);
-    align-items: stretch;
-    align-content: start;
 }
 
-/* Seit W14a-E-10 die EINZIGE Anordnung - der Schalter Gestapelt bleibt als
-   benannter Parameter der zwei Masken stehen, die ihn schon setzten
-   (WaermebedarfAdminDialog, BedarfAdminDialog), und aendert nichts mehr. */
+/* Der Schalter Gestapelt ist ohne Wirkung - untereinander ist die einzige
+   Anordnung. Er bleibt als benannter Parameter der zwei Masken stehen, die
+   ihn setzen (WaermebedarfAdminDialog, BedarfAdminDialog). */
 .epos-katalog-paar--gestapelt {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
+    flex-direction: column;
 }
 
-/* DER RAHMEN SCHRUMPFT NICHT UNTER SEINEN INHALT (KL-5).
-
-   DER BEFUND. Im Dialog "Klimadaten" (1 180 x 780, nach einem Regionalimport
-   mit 35 Regionen) malten die Reiterleiste und der Diagrammkasten ueber die
-   Listenzeilen, der Eingabeblock ueber die Fussleiste: Von "Loeschen" war nur
-   "…oeschen" zu lesen, "Beenden" halb verdeckt. Dasselbe Bild kam aus der
-   "Stromverbraucher Verwaltung". Es ist KEIN Fehler der einzelnen Maske,
-   sondern einer des Musters Katalograhmen + Liste - vierzehn Menuepunkte in
-   sieben Komponenten haengen daran.
-
-   DIE URSACHE, IM CHROMIUM GEMESSEN (Proben/Rasterprobe/katalogprobe.mjs,
-   Fall K1, 1 180 x 780, 35 Regionen):
-
-     Dialog       780 px hoch (height: 100dvh), Inhalt 1 475 px
-     Rahmen       auf 601,8 px gestaucht, Inhalt 1 377 px
-     Rasterreihen 295,906 px | 295,906 px  <- BEIDE gleich, nicht nach Inhalt
-     Listenblock  Reihe 295,9 px, Huelle 457,6 px -> 296 284 px² ueber die
-                  Felder darunter
-     Eingabeblock Reihe 295,9 px, Inhalt 1 071 px -> malt bis y = 876,8
-     Fussleiste   y = 720 … 764            -> 49 829 px² ueberdeckt, alle drei
-                  Knoepfe von img.epos-chartbild verdeckt
-
-   Die Kette: .epos-katalog-fuellend gibt dem Rahmen flex: 1 1 auto UND
-   min-height: 0, er DARF also unter seinen Inhalt schrumpfen. Ist der
-   Dialog (height: 100dvh) kuerzer als sein Inhalt, tut die Flexbox das auch.
-   Der Rahmen ist aber ein RASTER mit zwei auto-Reihen, und weil seine zwei
-   Kinder ihrerseits min-height: 0 tragen, ist die Mindestgroesse einer Reihe
-   null: Chromium verteilt die gestauchte Hoehe zu GLEICHEN Teilen auf beide
-   Reihen, statt jeder ihren Inhalt zu lassen. Die zweite Reihe ist dann 775 px
-   zu kurz, und ihr Inhalt zeichnet einfach darueber hinaus - quer ueber die
-   Liste und ueber die Fussleiste.
-
-   DIE REGEL, die hier fehlte, steht seit W14a-E-10 in den Kommentaren
-   nebenan: "Beide Bloecke sind so hoch wie ihr Inhalt, die Liste bis zu ihrer
-   Hoechsthoehe" und "was ueber die Fensterhoehe hinausgeht, nimmt der
-   Rollbalken der Maske (.epos-katalog-dialog, overflow: auto)". Geschrieben
-   war sie nie - flex-shrink stand auf 1.
-
-   flex-shrink: 0 SCHREIBT SIE HIN. Keine Positionierung, keine feste
-   Pixelhoehe: Der Rahmen behaelt seine Inhaltshoehe, die Rasterreihen damit
-   ihre eigene, die Liste ihre Hoechsthoehe von sieben Zeilen - und was nicht
-   ins Fenster passt, rollt der Dialog, dessen Rollbalken dafuer schon da ist.
-   Die Fussleiste steht danach IMMER unter dem Rahmen.
-
-   DIE BEHEBUNG STEHT AUF ZWEI BEINEN, und beide sind noetig:
-
-     (1) JEDE RASTERREIHE BEHAELT IHRE INHALTSHOEHE. Die zwei Kinder bekommen
-         ihre selbsttaetige Mindestgroesse zurueck (min-height: auto statt 0).
-         Damit ist die Mindestgroesse einer auto-Reihe wieder die Hoehe ihres
-         Inhalts, und es gibt nichts mehr gleichmaessig zu verteilen. Das gilt
-         NUR im Rasterpaar: Die zwei Masken, die epos-katalog-fuellend auf eine
-         blosse Liste setzen (GesetzeskatalogDialog, WaermepumpenKatalogDialog),
-         haben keine zweite Reihe, sollen ihre Liste weiter mitschrumpfen lassen
-         und bleiben deshalb unberuehrt.
-
-     (2) DER RAHMEN ROLLT IN SICH, statt die Maske laenger zu machen. Ohne das
-         waere die Fussleiste zwar nicht mehr ueberdeckt, stuende aber 850 px
-         unter dem Fensterrand - "Beenden" waere so unerreichbar wie vorher,
-         nur anders. Mit overflow: auto bleiben Kopf, Fortschrittsbalken und
-         Fussleiste stehen, wo sie sind, und der Rahmen dazwischen nimmt, was
-         uebrig ist. Das ist KEIN Rollbereich mitten im Eingabeblock (die
-         Falle, vor der der Kommentar unten warnt): Der Eingabeblock bleibt am
-         Stueck, es rollt der Rahmen um ihn herum.
-
-   Gemessen wird das in Proben/Rasterprobe/katalogprobe.mjs (zwoelf Faelle
-   ueber alle sieben Katalograhmen-Masken, Gegenprobe --vorher). */
+/* Der Rahmen rollt nicht in sich - er VERTEILT (V1). Seine zwei Bereiche
+   rollen je fuer sich. Unter 22 rem (Liste mit Kopf und einer Zeile plus
+   ein Stueck Eingabeblock) haelt er sein Kleinstmass, und die Maske rollt. */
 .epos-katalog-paar.epos-katalog-fuellend {
-    overflow: auto;
+    overflow: hidden;
+    min-height: 22rem;
 }
 
-.epos-katalog-paar > .epos-katalog-liste,
+/* Die Liste nimmt, was der Eingabeblock uebrig laesst; der Eingabeblock ist so
+   hoch wie sein Inhalt, hoechstens 34 % des Rahmens. Gemessen bei 1 088 x 624
+   (Rahmen 474 px): 38 % liessen der Liste Kopf und gut zwei Zeilen, 34 % und
+   der Gruppenkopf ohne Aussenabstand geben ihr drei. */
+.epos-katalog-paar > .epos-katalog-liste {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
 .epos-katalog-paar > .epos-katalog-eingabe {
-    min-height: auto;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 34%;
 }
 
 .epos-katalog-liste {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+    min-width: 0;
     min-height: 0;
+    overflow: hidden;                       /* malt nie ueber den Eingabeblock */
 }
 
-/* Der Eingabeblock steht UNTER der Liste und ist so hoch wie sein Inhalt.
-   Er rollt seit W14a-E-10 NICHT mehr selbst: Solange die Liste ihre eigene
-   Hoehengrenze hat, schiebt sie ihn nicht mehr beliebig weit nach unten -
-   und was darueber hinausgeht, nimmt der Rollbalken der Maske
-   (.epos-katalog-dialog, overflow: auto). Ein zweiter Rollbereich mitten im
-   Dialog waere hier eine Falle: Er verbaerge die Haelfte der Felder hinter
-   einem Balken, den niemand sucht. */
+/* Der EINGABEBLOCK ist der zweite Bereich: so hoch wie sein Inhalt, hoechstens
+   34 % des Rahmens, und was darueber hinausgeht, rollt HIER - nicht im Rahmen
+   und nicht in der Maske. Die Linie oben trennt ihn sichtbar von der Liste. */
 .epos-katalog-eingabe {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
     min-height: 0;
+    overflow: auto;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: var(--epos-rand);
 }
 
-/* DIE HOEHENGRENZE DER LISTE (W14a-E-10, Konzept 5.6.5 - die Ausnahme aus
-   W9-B-2 faellt damit).
-
-   Bis hierher nahm die Liste im Katalograhmen die VERBLEIBENDE Hoehe: Der
-   Eingabeblock stand daneben, also schob sie nichts. Seit die Eingabe UNTER
-   ihr steht, schoebe eine lange Liste sie beliebig weit nach unten - deshalb
-   gilt die Hausregel auch hier, nur mit einem groesseren Mass:
-
-     1,3 x --epos-listenhoehe = 1,3 x 22 rem = 28,6 rem = 457,6 px
-     (border-box, abzueglich des 1-px-Rahmens 456 px innen)
-     bei 52,5 px Kopfzelle und 53,0 px Zeilenhoehe sind das SIEBEN
-     ganze Zeilen (403,5 / 53 = 7,6).
-
-   IM BROWSER GEMESSEN, nicht im Mockup (Chromium, 1 300 x 900, Auftrag #248
-   vom 13.09.2026, gleiche Messweise wie Proben/Rasterprobe). Die alte
-   Mockup-Zahl (elf Zeilen) gilt seit Auftrag #240 nicht mehr: Mit der
-   Zellenpolsterung des Hauses ist die Katalogzeile 53,0 px hoch, genau
-   Raster.ZEILENHOEHE. Die kurze Projektliste bekommt 12 rem = drei
-   Zeilen. */
-.epos-katalog-liste .epos-raster-huelle {
-    flex: 0 1 auto;
-    max-height: calc(var(--epos-listenhoehe) * 1.3);
-    min-height: 9rem;
-}
-
-/* Alles ANDERE in den zwei Spalten behaelt seine Hoehe: Ueberschrift,
-   Filterzeile, Hinweis, Fortschrittsbalken. Nur die Liste waechst. Ohne
-   diese Zeile teilte sich der Rest die Hoehe mit ihr und ein
-   Gruppenkopf wuerde zusammengestaucht. */
+/* Alles in den zwei Bereichen behaelt seine Hoehe - Ueberschrift,
+   Gruppenkopf, Fortschrittsbalken. Nur die Liste waechst. */
 .epos-katalog-liste > *,
 .epos-katalog-eingabe > * {
     flex: 0 0 auto;
+}
+
+/* DIE LISTE NIMMT DIE RESTHOEHE: Die Katalogliste waechst im Listenbereich,
+   in ihr waechst die Huelle - und nur die Huelle rollt. Keine Hoechsthoehe
+   mehr (die 1,3 x --epos-listenhoehe fallen): Die Hoehe gibt der Rahmen.
+   Die Mindesthoehe haelt Kopf und eine Zeile. Dieselbe Regel traegt die zwei
+   Masken mit einer blossen Liste (GesetzeskatalogDialog,
+   WaermepumpenKatalogDialog): Auch dort fuellt die Liste den Dialog. */
+/* Im Listenbereich traegt der Gruppenkopf keinen Aussenabstand: Den Abstand
+   zur Suchzeile gibt der Bereich (4 px), und jede Zeile Hoehe gehoert der Liste. */
+.epos-katalog-paar > .epos-katalog-liste > .epos-gruppenkopf {
+    margin-bottom: 0;
+}
+
+.epos-katalog-liste > .epos-katalogliste {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.epos-katalog-liste .epos-katalogliste > * {
+    flex: 0 0 auto;
+}
+
+.epos-katalog-liste .epos-katalogliste > .epos-raster-huelle {
+    flex: 1 1 0;
+    min-height: 7rem;
+    max-height: none;
+}
+
+/* EINGEBETTET in eine Ueberlagerung (die Verwaltung aus einem Projektdialog
+   heraus, "Katalog verwalten..."): Die Maske nimmt die Hoehe der
+   Ueberlagerung (90vh abzueglich Polsterung und Rahmen) statt der des
+   Fensters. Sonst waere sie hoeher als die Ueberlagerung, und die rollte
+   um sie herum - ein Rollbereich um die zwei der Maske. */
+.epos-ueberlagerung-inhalt > .epos-katalog-dialog {
+    height: calc(90vh - 2 * var(--epos-karte-rand) - 2px);
 }
 
 /* ==================================================================== */
@@ -7575,6 +7533,137 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         color: Highlight;
     }
 }
+
+/* ==================================================================== */
+/* SPALTEN NACH RANG - KEINE WAAGERECHTE ROLLLEISTE (Konzept             */
+/* Administrationsdialoge, Stufe 1, Vorschlaege V2 und V7)               */
+/*                                                                      */
+/* DER BEFUND (Katalogprobe, 1 088 x 624): Die Liste des Heizkessels     */
+/* rollte um 234 px quer (1 288 px Tabelle in 1 054 px Huelle), die der  */
+/* Waermepumpe um 1 269 px. Schuld waren der Bezeichner (bis 76 Zeichen, */
+/* 487 px), der Hersteller (34 Zeichen, 251 px) und die Zahl der Spalten.*/
+/*                                                                      */
+/* DREI REGELN, alle in der Katalogliste:                                */
+/*   1. Der BEZEICHNER ist elastisch: width 100 % nimmt den Rest der     */
+/*      Zeile, max-width 0 laesst ihn darunter schrumpfen, und er kuerzt */
+/*      mit "..." - der volle Name steht im Kurztext der Zelle. Auch sein*/
+/*      Kopftext darf kuerzen, sonst bestimmte der die Mindestbreite.    */
+/*   2. Jede andere TEXTspalte hat eine Hoechstbreite (14 rem) und kuerzt */
+/*      ebenso; Zahlen sind so breit wie ihr Inhalt.                     */
+/*   3. Spalten mit RANG weichen: Die Katalogliste gibt jeder weichenden  */
+/*      Spalte die Listenbreite, ab der sie steht (epos-spalte-ab-N,      */
+/*      gerechnet in EPOS.UI/Bausteine/Spaltenraenge.cs aus der Breite    */
+/*      ihres Inhalts), und die Containerabfragen unten blenden sie       */
+/*      darunter aus. Eine Spalte mit Filter oder Sortierung bekommt nie  */
+/*      eine Stufe (V7).                                                  */
+/* Der Container ist die Katalogliste selbst - und nur, wenn ihr Profil  */
+/* Raenge kennt (epos-katalogliste--raenge): Ein Container misst seine   */
+/* Breite nicht mehr am Inhalt, und die Wirte ohne Rang bleiben, wie sie */
+/* waren. Die Zeilenhoehe aendert keine der Regeln - alles steht in       */
+/* einer Zeile (nowrap), die Zelle bleibt 53 px.                          */
+/* ==================================================================== */
+.epos-katalogliste--raenge {
+    container-type: inline-size;
+    container-name: epos-katalogliste;
+}
+
+/* QuickGrids Thema haengt an jeden Kopf 1 rem Luft (--col-gap) - in einer
+   Liste, die nicht quer rollen soll, sind das 16 px je Spalte umsonst. */
+.epos-katalogliste table.quickgrid {
+    --col-gap: 0px;
+}
+
+.epos-katalogliste table.epos-raster th.epos-spalte--bezeichner,
+.epos-katalogliste table.epos-raster td.epos-spalte--bezeichner {
+    width: 100%;
+}
+
+.epos-katalogliste table.epos-raster td.epos-spalte--bezeichner {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* DER KOPF DER ELASTISCHEN SPALTE darf kuerzen, sonst bestimmte sein Text die
+   Mindestbreite der Spalte. Er haelt Titel, Pfeil und Trichter beisammen wie
+   jeder andere Kopf und kuerzt erst, wenn die Spalte schmaler wird als sie:
+   contain: inline-size nimmt dem Kasten seine Eigenbreite (die Spalte misst
+   ihn nicht mehr), width 100 % gibt ihm die Breite der Zelle - und darin
+   schrumpft der Titel mit "..." bis auf 3 em. Die Mindestbreite der Spalte
+   (7 rem) steht dafuer an der Kopfzelle. QuickGrid legt den Kopf in einen
+   Flexkasten (col-header-content); dort waechst er mit. */
+.epos-katalogliste table.epos-raster th.epos-spalte--bezeichner {
+    min-width: 7rem;
+}
+
+.epos-katalogliste th.epos-spalte--bezeichner .epos-spaltenkopf {
+    contain: inline-size;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
+.epos-katalogliste th.epos-spalte--bezeichner .epos-spaltenkopf-titel {
+    min-width: 0;
+}
+
+.epos-katalogliste th.epos-spalte--bezeichner .epos-spaltenkopf-text {
+    min-width: 3em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ZAHLEN STEHEN RECHTSBUENDIG (V2) - so wollte es die Hausregel
+   .epos-raster td.epos-spalte-zahl schon immer, aber QuickGrids scoped
+   td.col-justify-start wog gleich viel und kam spaeter: Die Zahlen standen
+   links (gemessen vor Stufe 1). Hier wiegt die Regel mehr, und der Kopf steht
+   mit ihnen rechts. */
+.epos-katalogliste table.epos-raster td.epos-spalte-zahl {
+    text-align: right;
+}
+
+.epos-katalogliste table.epos-raster th.epos-spalte-zahl .col-header-content {
+    justify-content: flex-end;
+}
+
+.epos-katalogliste td.epos-spalte--begrenzt > span {
+    display: block;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Die Leiter der Stufen - ein Eintrag je 80 px (Spaltenraenge.STUFE), von
+   400 bis 2 400 px Listenbreite. Unter der Stufe N weicht jede Spalte, die
+   epos-spalte-ab-N traegt, samt Kopf und allen Zellen. */
+@container epos-katalogliste (max-width: 399.98px) { .epos-spalte-ab-400 { display: none; } }
+@container epos-katalogliste (max-width: 479.98px) { .epos-spalte-ab-480 { display: none; } }
+@container epos-katalogliste (max-width: 559.98px) { .epos-spalte-ab-560 { display: none; } }
+@container epos-katalogliste (max-width: 639.98px) { .epos-spalte-ab-640 { display: none; } }
+@container epos-katalogliste (max-width: 719.98px) { .epos-spalte-ab-720 { display: none; } }
+@container epos-katalogliste (max-width: 799.98px) { .epos-spalte-ab-800 { display: none; } }
+@container epos-katalogliste (max-width: 879.98px) { .epos-spalte-ab-880 { display: none; } }
+@container epos-katalogliste (max-width: 959.98px) { .epos-spalte-ab-960 { display: none; } }
+@container epos-katalogliste (max-width: 1039.98px) { .epos-spalte-ab-1040 { display: none; } }
+@container epos-katalogliste (max-width: 1119.98px) { .epos-spalte-ab-1120 { display: none; } }
+@container epos-katalogliste (max-width: 1199.98px) { .epos-spalte-ab-1200 { display: none; } }
+@container epos-katalogliste (max-width: 1279.98px) { .epos-spalte-ab-1280 { display: none; } }
+@container epos-katalogliste (max-width: 1359.98px) { .epos-spalte-ab-1360 { display: none; } }
+@container epos-katalogliste (max-width: 1439.98px) { .epos-spalte-ab-1440 { display: none; } }
+@container epos-katalogliste (max-width: 1519.98px) { .epos-spalte-ab-1520 { display: none; } }
+@container epos-katalogliste (max-width: 1599.98px) { .epos-spalte-ab-1600 { display: none; } }
+@container epos-katalogliste (max-width: 1679.98px) { .epos-spalte-ab-1680 { display: none; } }
+@container epos-katalogliste (max-width: 1759.98px) { .epos-spalte-ab-1760 { display: none; } }
+@container epos-katalogliste (max-width: 1839.98px) { .epos-spalte-ab-1840 { display: none; } }
+@container epos-katalogliste (max-width: 1919.98px) { .epos-spalte-ab-1920 { display: none; } }
+@container epos-katalogliste (max-width: 1999.98px) { .epos-spalte-ab-2000 { display: none; } }
+@container epos-katalogliste (max-width: 2079.98px) { .epos-spalte-ab-2080 { display: none; } }
+@container epos-katalogliste (max-width: 2159.98px) { .epos-spalte-ab-2160 { display: none; } }
+@container epos-katalogliste (max-width: 2239.98px) { .epos-spalte-ab-2240 { display: none; } }
+@container epos-katalogliste (max-width: 2319.98px) { .epos-spalte-ab-2320 { display: none; } }
+@container epos-katalogliste (max-width: 2399.98px) { .epos-spalte-ab-2400 { display: none; } }
 
 /* ==================================================================== */
 /* WOCHEN-STUNDENPROFIL (Befund W8-E-1, Windows-Abnahme 05.09.2026)      */

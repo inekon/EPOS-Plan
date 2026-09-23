@@ -79,6 +79,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string ADM_BTN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (alle Kataloge) ähnelt.
         /// </summary>
         public static string ADM_DUBLETTEN_ALLE {
