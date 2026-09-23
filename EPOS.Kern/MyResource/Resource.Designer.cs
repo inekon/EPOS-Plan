@@ -70884,11 +70884,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
         /// </summary>
         public static string WPS_LBL_KUEHLLEISTUNG {
             get {
                 return ResourceManager.GetString("WPS_LBL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil Kühlung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_VORLAUF {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_VORLAUF", resourceCulture);
             }
         }
         

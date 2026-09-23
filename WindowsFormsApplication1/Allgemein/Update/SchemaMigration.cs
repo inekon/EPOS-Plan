@@ -3876,6 +3876,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_113_GASE_NM3 = 113;
 
+        /// <summary>
+        /// Schritt 114 — <b>KU-S3, der Kühlbetrieb am Erzeuger</b> (Kühlkonzept 7.3; Stufe KU2,
+        /// Welle 1; Entscheide E15 und E33 vom 23.09.2026). Er folgt auf
+        /// <see cref="SCHRITT_113_GASE_NM3"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, sieben Spalten: <c>Kuehlbetrieb</c> (0/1 mit <c>CHECK</c>,
+        /// Vorgabe 0), <c>Kuehl_Vorlauf</c> (<c>INTEGER</c>, NULL = kleinster Stützwert der
+        /// Kühlkennlinie) und <c>Kuehl_Hilfsstromanteil</c> (<c>REAL</c>, NULL = kein Zuschlag) je
+        /// an <c>Tab_WP</c> und <c>Tab_WP_STAMM</c>, dazu die Stromträgerwahl der Kühlung
+        /// <c>Tab_Energieanlagen.Kuehl_ID_Carrier</c> — ein Verweis auf <c>energy_carrier.id</c>
+        /// mit <c>ON DELETE SET NULL</c>, NULL = wie Heizbetrieb (K9, E33). Die Definitionen
+        /// stehen bei <see cref="KuehlungSchema"/> (<see cref="KuehlungSchema.Erzeugerspalten"/>,
+        /// <see cref="KuehlungSchema.TYP_KUEHL_ID_CARRIER"/>) — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Jede Wärmepumpe steht danach auf „kein Kühlbetrieb",
+        /// die übrigen Spalten auf NULL, und kein Rechenweg liest sie; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5428,6 +5449,19 @@ namespace WindowsFormsApplication1
                         "findet damit ihre Umrechnungsregel. Der Brennstoff Sonstige (24) fuehrt " +
                         "kWh statt m3. ERGEBNISNEUTRAL: Kein Zahlenwert aendert sich.",
                         Schritt_113_GaseNm3),
+
+            // KUEHLKONZEPT 7.3 (Stufe KU2 Welle 1; Entscheide E15 und E33) - KU-S3, der
+            // Kuehlbetrieb am Erzeuger. REIN DDL; die Quelle ist KuehlungSchema. Er steht NACH
+            // 113 ohne Reihenfolgebedingung - er legt allein sieben neue Spalten an, die kein
+            // anderer Schritt liest oder schreibt.
+            new Schritt(SCHRITT_114_KUEHLUNG_ERZEUGER,
+                        "Tab_WP(_STAMM): Kuehlbetrieb, Kuehl-Vorlauf und Hilfsstromanteil; " +
+                        "Tab_Energieanlagen: Stromtraeger der Kuehlung",
+                        "Eine Waermepumpe liesse sich spaeter nicht auf Kuehlbetrieb stellen, und der " +
+                        "Kaeltestrom haette keinen eigenen Stromtraeger. KEIN Rechenergebnis aendert " +
+                        "sich - jede Waermepumpe steht auf 'kein Kuehlbetrieb', die uebrigen Spalten " +
+                        "bleiben leer, und kein Rechenweg liest sie.",
+                        Schritt_114_KuehlungErzeuger),
         };
 
         /// <summary>
@@ -8554,6 +8588,66 @@ namespace WindowsFormsApplication1
 
             l.Notiz("113: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
                     "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 114 - KU-S3, der Kuehlbetrieb am Erzeuger (Stufe KU2 Welle 1, E15, E33)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 114 (KU-S3) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/>, die Spalten bei
+        /// <see cref="KuehlungSchema.Erzeugerspalten"/> und
+        /// <see cref="KuehlungSchema.TYP_KUEHL_ID_CARRIER"/>. Dieselbe Schleife wie Schritt 110 für
+        /// die sechs Spalten am Gerät, dann die Stromträgerwahl mit ihrem eigenen Typ (die
+        /// Typübersetzung kennt keinen Fremdschlüssel — dieselbe Bauart wie Schritt 80);
+        /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen. Die Nachprobe fragt
+        /// <see cref="KuehlungSchema.ErzeugerspaltenVollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_114_KuehlungErzeuger(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in KuehlungSchema.Erzeugerspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            if (!SqliteSpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER))
+            {
+                if (!SqliteSpalteAnlegen(l, SchemaKatalog.TAB_ENERGIEANLAGEN,
+                                         KuehlungSchema.SPALTE_KUEHL_ID_CARRIER,
+                                         KuehlungSchema.TYP_KUEHL_ID_CARRIER)) return false;
+                angelegt++;
+            }
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = KuehlungSchema.ErzeugerspaltenVollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten des Kuehlbetriebs am Erzeuger stehen nach dem Schritt " +
+                                  "nicht auf dem Zielstand.";
+                l.Notiz("114: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("114: KU-S3 - " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    (KuehlungSchema.Erzeugerspalten.Length + 1).ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Kuehlbetrieb (0/1, Vorgabe 0), Kuehl_Vorlauf und " +
+                    "Kuehl_Hilfsstromanteil an Tab_WP und Tab_WP_STAMM, " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." + KuehlungSchema.SPALTE_KUEHL_ID_CARRIER +
+                    " (Verweis auf energy_carrier.id, NULL = wie Heizbetrieb). KEIN DML: Jede " +
+                    "Waermepumpe steht auf 0, die uebrigen Spalten bleiben leer, und kein Rechenweg " +
+                    "liest sie; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

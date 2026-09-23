@@ -132,6 +132,13 @@ namespace WindowsFormsApplication1
         /// Bestand beide Schreibweisen fuer „keiner" (NULL und 0), und der lesende Code
         /// behandelt sie gleich (SchemaKatalog, Schritt 8).
         /// </param>
+        /// <param name="KuehlIdCarrier">
+        /// Der Stromtraeger des Kaeltestroms (<c>Tab_Energieanlagen.Kuehl_ID_Carrier</c>, KU-S3;
+        /// K9, E33). <c>null</c> heisst „nicht anfassen"; <b>0 (oder kleiner) heisst „wie
+        /// Heizbetrieb"</b> und wird als NULL geschrieben - die Spalte kennt keine 0, sie steht
+        /// unter einer Beziehung auf <c>energy_carrier.id</c>. Ein Traeger, den es nicht gibt,
+        /// faellt ebenso auf NULL (<see cref="AnlagenSql.TraegerVerweisOderNull"/>).
+        /// </param>
         public sealed record KonfigurationFelder(bool? Heizstab = null,
                                                  bool? Sperrung = null,
                                                  int? SperrzeitVon = null,
@@ -139,7 +146,8 @@ namespace WindowsFormsApplication1
                                                  bool? BivalenterBetrieb = null,
                                                  string Betriebsart = null,
                                                  double? Abschaltpunkt = null,
-                                                 int? IdCarrier = null);
+                                                 int? IdCarrier = null,
+                                                 int? KuehlIdCarrier = null);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -184,7 +192,8 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner, Heizstab, Sperrung, Sperrzeit_von, Sperrzeit_bis, " +
                     "Bivalenter_Betrieb, Betriebsart, Abschaltpunkt, [" +
-                    SchemaKatalog.SPALTE_ID_CARRIER + "] " +
+                    SchemaKatalog.SPALTE_ID_CARRIER + "], [" +
+                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "] " +
                     "FROM Tab_Energieanlagen WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@id", idAnlage), new DbParam("@proj", idProjekt));
 
@@ -203,7 +212,8 @@ namespace WindowsFormsApplication1
                     "UPDATE Tab_Energieanlagen SET Heizstab = ?, Sperrung = ?, " +
                     "Sperrzeit_von = ?, Sperrzeit_bis = ?, Bivalenter_Betrieb = ?, " +
                     "Betriebsart = ?, Abschaltpunkt = ?, [" +
-                    SchemaKatalog.SPALTE_ID_CARRIER + "] = ? " +
+                    SchemaKatalog.SPALTE_ID_CARRIER + "] = ?, [" +
+                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "] = ? " +
                     "WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@stab", Uebernommen(felder.Heizstab, satz, "Heizstab")),
                     new DbParam("@sperr", Uebernommen(felder.Sperrung, satz, "Sperrung")),
@@ -219,6 +229,8 @@ namespace WindowsFormsApplication1
                         Uebernommen(felder.Abschaltpunkt, satz, "Abschaltpunkt")),
                     ProjektPuffer.Par("@carrier", DbParamTyp.Integer,
                         Uebernommen(felder.IdCarrier, satz, SchemaKatalog.SPALTE_ID_CARRIER)),
+                    ProjektPuffer.Par("@kuehlcarrier", DbParamTyp.Integer,
+                        KuehlTraeger(felder.KuehlIdCarrier, satz, bezeichner)),
                     new DbParam("@id", idAnlage),
                     new DbParam("@proj", idProjekt));
 
@@ -245,6 +257,18 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
                     "Die Konfiguration der Anlage konnte nicht gespeichert werden."), "");
             }
+        }
+
+        /// <summary>
+        /// Der Stromtraeger der Kuehlung fuer <see cref="KonfigurationSchreiben"/> (KU-S3): <c>null</c>
+        /// = der gelesene Wert (NULL bleibt NULL), kleiner gleich 0 = NULL („wie Heizbetrieb"),
+        /// sonst der Traeger - sofern es ihn gibt (<see cref="AnlagenSql.TraegerVerweisOderNull"/>).
+        /// </summary>
+        private static object KuehlTraeger(int? neu, DataRow satz, string bezeichner)
+        {
+            if (!neu.HasValue)
+                return Wertoderleer(Feldwert(satz, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER));
+            return AnlagenSql.TraegerVerweisOderNull(neu.Value, bezeichner);
         }
 
         /// <summary>Der neue Wahrheitswert, sonst der gelesene (0/1, nie <c>NULL</c>).</summary>
@@ -538,6 +562,9 @@ namespace WindowsFormsApplication1
             // anschliessend mit ID_Carrier = 0 zurueck.
             // Über den ROHWERT, damit NULL nicht zur 0 wird (siehe WErzeugerModel).
             item.ID_CarrierRoh = Zahl(dt, row, "ID_Carrier");
+            // KU-S3 (Schemaschritt 114; K9, E33): der Stromtraeger der Kuehlung, NULL = wie
+            // Heizbetrieb - ausdruecklich auch mit null; eine fehlende Spalte gilt wie NULL.
+            item.Kuehl_ID_Carrier = Zahl(dt, row, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER);
 
             // --- Quellen-/Senken-Konfiguration (ausdrücklich, auch mit null) -----------
             item.Prioritaet = Zahl(dt, row, "Prioritaet");

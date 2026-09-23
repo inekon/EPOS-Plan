@@ -11792,6 +11792,15 @@ Overwrite it anyway?</value>
   <data name="WPS_LBL_KUEHLLEISTUNG" xml:space="preserve">
     <value>Cooling performance</value>
   </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Cooling mode</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Cooling flow temperature</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Auxiliary power share (cooling)</value>
+  </data>
   <data name="WPS_LBL_KENNLINIEN" xml:space="preserve">
     <value>Characteristics characteristics:</value>
   </data>

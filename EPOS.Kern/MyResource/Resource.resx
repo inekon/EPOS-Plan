@@ -11799,6 +11799,15 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="WPS_LBL_KUEHLLEISTUNG" xml:space="preserve">
     <value>Kühlleistung</value>
   </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil Kühlung</value>
+  </data>
   <data name="WPS_LBL_KENNLINIEN" xml:space="preserve">
     <value>Kenndaten Kennlinien:</value>
   </data>
