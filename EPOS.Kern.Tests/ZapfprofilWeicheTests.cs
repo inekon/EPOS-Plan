@@ -346,15 +346,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, waerme.Waermebedarf_Gesamt);
         }
 
-        // =================================================================================
-        // (d) Kein Referenzprojekt auf dem Generator
-        // =================================================================================
-
-        /// <summary>
-        /// Kein Projekt der Referenzbasis — die fünf der CI und die übrigen, deren Ordner
-        /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
-        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4). Gelesen wird eine Arbeitskopie.
-        /// </summary>
         /// <summary>
         /// Rechenweg der Jahresreihe „stochastisch" (4.4) ohne Zapfkategorien im Katalog (T2 folgt):
         /// kein stiller Rückfall auf den deterministischen Weg — die Zone trägt 0 und steht benannt
@@ -386,6 +377,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, waerme.Energieprobe_Verletzungen);
         }
 
+        // =================================================================================
+        // (d) Kein Referenzprojekt auf dem Generator
+        // =================================================================================
+
+        /// <summary>
+        /// Kein Projekt der Referenzbasis — die fünf der CI und die übrigen, deren Ordner
+        /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
+        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4). Gelesen wird eine Arbeitskopie.
+        /// </summary>
         [Fact]
         public void Kein_Referenzprojekt_hat_eine_Projektzeile()
         {
