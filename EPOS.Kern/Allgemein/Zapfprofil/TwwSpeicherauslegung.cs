@@ -212,12 +212,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Lindley-Bilanz</b> über die zweimal hintereinander gelegte Woche: D(t) für
-        /// t = 1 … 336 [kWh].
+        /// t = 1 … 336 [kWh]; nach außen nur als <see cref="Speicherauslegungsergebnis.DefizitKwh"/>.
         /// </summary>
-        internal static IReadOnlyList<double> Defizit(Wochenreihe woche, double ladeKw, Tagesfenster ladefenster,
-                                                      double zirkKw, Tagesfenster laufzeit)
-            => Array.AsReadOnly(DefizitFeld(woche, ladeKw, ladefenster, zirkKw, laufzeit));
-
         private static double[] DefizitFeld(Wochenreihe woche, double ladeKw, Tagesfenster ladefenster, double zirkKw,
                                             Tagesfenster laufzeit)
         {

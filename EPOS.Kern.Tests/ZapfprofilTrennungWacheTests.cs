@@ -22,10 +22,14 @@ namespace EPOS.Kern.Tests
     /// Parameter noch als Rückgabe, Eigenschaft oder Feld, auch nicht als Typargument; keine
     /// Methode nimmt ein Zahlenfeld an (<c>double[]</c>, <c>double[,]</c>,
     /// <c>IReadOnlyList&lt;double&gt;</c>, <c>IList</c>, <c>List</c>, <c>ICollection</c>,
-    /// <c>IEnumerable</c> von <c>double</c>), und kein Glied gibt ein <c>double[]</c> heraus.
-    /// Minutenwerte kommen nur über <see cref="Bedarfstag"/>, Stundenwerte nur über
-    /// <see cref="Wochenreihe"/> (168 h) — deren Dateien sind vom Zahlenfeldsatz ausgenommen,
-    /// nicht vom Bilanzsatz. (3) <b>Vollständigkeit:</b> Jeder Typ, den eine Auslegungsdatei auf
+    /// <c>IEnumerable</c> von <c>double</c>), und kein Glied gibt eines heraus — weder als
+    /// Rückgabe noch als Eigenschaft oder Feld, außer den benannten Gliedern in
+    /// <see cref="Ausnahmen"/>. Minutenwerte kommen nur über <see cref="Bedarfstag"/>,
+    /// Stundenwerte nur über <see cref="Wochenreihe"/> (168 h) — deren Dateien sind vom
+    /// Zahlenfeldsatz ausgenommen, nicht vom Bilanzsatz. Als Kommentar zählt eine Zeile, die
+    /// mit <c>//</c> oder <c>/*</c> beginnt, und eine Zeile innerhalb eines Blocks
+    /// <c>/* … */</c> — eine Zeile, die mit <c>*</c> beginnt, nur dort (sonst ist sie Code, etwa
+    /// die Fortsetzung eines Produkts). (3) <b>Vollständigkeit:</b> Jeder Typ, den eine Auslegungsdatei auf
     /// Namensraumebene deklariert, steht in der Liste dieser Wache — ein neuer Typ entgeht ihr
     /// nicht.</para>
     ///
@@ -54,13 +58,26 @@ namespace EPOS.Kern.Tests
         private static readonly string[] ZahlenfeldDateien = { "Bedarfstag.cs", "Wochenreihe.cs" };
 
         /// <summary>
-        /// Die begründeten Ausnahmen vom Zahlenfeldsatz außerhalb der beiden Dateien — je Typ mit
-        /// Grund.
+        /// Die begründeten Ausnahmen vom Zahlenfeldsatz außerhalb der beiden Dateien — je Typ
+        /// und Glied mit Grund. Jede andere Zahlenliste eines Auslegungstyps ist ein Verstoß.
         /// </summary>
-        private static readonly (string Typ, string Grund)[] Ausnahmen =
+        private static readonly (string Typ, string Glied, string Grund)[] Ausnahmen =
         {
-            ("Nenninhaltsliste", "Liste der Speicher-Nenninhalte (Einstellung), keine Zeitreihe."),
+            ("Summenliniennachweis", "InhaltKwh",
+             "Speicherinhalt je Minute des Bedarfstags (1441 Werte) — Minutenwerte der Auslegung, keine Jahresreihe."),
+            ("Speicherauslegungsergebnis", "DefizitKwh",
+             "Defizit D(t) der doppelten Wochenreihe (336 h) — Stundenwerte der Auslegung, keine Jahresreihe."),
+            ("Nenninhaltsliste", "WerteL", "Liste der Speicher-Nenninhalte (Einstellung), keine Zeitreihe."),
+            ("Nenninhaltsliste", "Aus", "Bildet die Liste der Nenninhalte aus Werten (Einstellung), keine Zeitreihe."),
         };
+
+        /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Rückgabe, Eigenschaft und Feld.</summary>
+        private sealed class Zahlenlistenprobe
+        {
+            internal IReadOnlyList<double> Reihe() => null;
+            internal IReadOnlyList<double> ReiheKwh { get; } = null;
+            internal List<double> FeldKwh = null;
+        }
 
         /// <summary>Die Bezeichner der Bilanz, die keine Auslegungsdatei nennt.</summary>
         private static readonly Regex Bilanzbezug = new Regex(
@@ -83,12 +100,7 @@ namespace EPOS.Kern.Tests
         {
             var funde = new List<string>();
             foreach (string datei in Dateien)
-            {
-                string[] zeilen = Lesen(datei);
-                for (int i = 0; i < zeilen.Length; i++)
-                    if (!IstKommentar(zeilen[i]) && Bilanzbezug.IsMatch(zeilen[i]))
-                        funde.Add(datei + ":" + (i + 1) + "  " + zeilen[i].Trim());
-            }
+                funde.AddRange(Bilanzfunde(datei, Lesen(datei)));
             Assert.True(funde.Count == 0, "Die Auslegung nennt die Bilanz:\n" + string.Join("\n", funde));
 
             // Gegenproben zum Leser.
@@ -96,8 +108,15 @@ namespace EPOS.Kern.Tests
             Assert.Matches(Bilanzbezug, "double[] s = Formvektor.Stundenreihe(t, s, k);");
             Assert.Matches(Bilanzbezug, "var e = ZapfprofilRechner.Rechnen(x, k);");
             Assert.DoesNotMatch(Bilanzbezug, "Wochenreihe w = Wochenreihe.Bilden(z, 0, r); // ohne Stundenreihe");
-            Assert.True(IstKommentar("        /// ohne Stundenreihe(…) der Bilanz"));
-            Assert.Contains(Lesen("ZapfprofilRechner.cs"), z => !IstKommentar(z) && Bilanzbezug.IsMatch(z));
+            Assert.True(Kommentarzeilen(new[] { "        /// ohne Stundenreihe(…) der Bilanz" })[0]);
+            Assert.NotEmpty(Bilanzfunde("ZapfprofilRechner.cs", Lesen("ZapfprofilRechner.cs")));
+
+            // Gegenprobe zum Stern: Innerhalb /* … */ ist eine Zeile mit „*" Kommentar, außerhalb
+            // Code — etwa die Fortsetzung eines Produkts, die die Bilanz nennt.
+            string[] block = { "        /*", "         * Formvektor.Stundenreihe(t, s, k) der Bilanz", "         */",
+                               "        double x = a" , "            * Formvektor.Stundenreihe(t, s, k).Length;" };
+            Assert.Equal(new[] { true, true, true, false, false }, Kommentarzeilen(block));
+            Assert.Equal(new[] { "Probe:5" }, Bilanzfunde("Probe", block).Select(f => f.Substring(0, f.IndexOf(' '))).ToArray());
         }
 
         // =====================================================================
@@ -115,8 +134,7 @@ namespace EPOS.Kern.Tests
                 foreach (string name in Deklarationen(datei))
                 {
                     Type t = Typ(name);
-                    bool ausnahme = zahlenfeld || Ausnahmen.Any(a => a.Typ == name);
-                    funde.AddRange(Verstoesse(t, !ausnahme));
+                    funde.AddRange(Verstoesse(t, !zahlenfeld, Ausnahmen));
                     geprueft++;
                 }
             }
@@ -131,7 +149,19 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Verstoesse(typeof(Bedarfstag), false));
             Assert.Empty(Verstoesse(typeof(Wochenreihe), false));
             Assert.NotEmpty(Verstoesse(typeof(Wochenreihe), true));
-            Assert.All(Ausnahmen, a => Assert.False(string.IsNullOrWhiteSpace(a.Grund)));
+
+            // Gegenproben zu den Zahlenlisten: Rückgabe, Eigenschaft und Feld werden erkannt …
+            string[] probe = Verstoesse(typeof(Zahlenlistenprobe), true).ToArray();
+            Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.Reihe gibt IReadOnlyList", StringComparison.Ordinal));
+            Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.ReiheKwh ist IReadOnlyList", StringComparison.Ordinal));
+            Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.FeldKwh ist List", StringComparison.Ordinal));
+            // … und jede benannte Ausnahme wäre ohne ihren Eintrag ein Verstoß (keine Ausnahme auf Vorrat).
+            foreach (var (typ, glied, grund) in Ausnahmen)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(grund));
+                Assert.Contains(Verstoesse(Typ(typ), true), f => f.StartsWith(typ + "." + glied + " ", StringComparison.Ordinal));
+                Assert.DoesNotContain(Verstoesse(Typ(typ), true, Ausnahmen), f => f.StartsWith(typ + "." + glied + " ", StringComparison.Ordinal));
+            }
         }
 
         // =====================================================================
@@ -154,7 +184,7 @@ namespace EPOS.Kern.Tests
             Assert.True(ordner.SequenceEqual(bekannt), "Dateien des Zapfprofil-Ordners ohne Zuordnung zu Bilanz oder Auslegung: "
                 + string.Join(", ", ordner.Except(bekannt).Concat(bekannt.Except(ordner).Select(x => "fehlt: " + x))));
             Assert.Empty(Dateien.Intersect(Bilanzdateien));
-            foreach (var (typ, _) in Ausnahmen)
+            foreach (var (typ, _, _) in Ausnahmen)
                 Assert.Contains(Dateien, d => Deklarationen(d).Contains(typ));
             Assert.Contains("ZapfprofilAuslegung", Deklarationen("ZapfprofilAuslegung.cs"));
             Assert.DoesNotContain("Zonenarbeit", Deklarationen("ZapfprofilAuslegung.cs"));   // geschachtelt, privat
@@ -166,26 +196,31 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Verstöße eines Typs: Bilanztypen in jedem nicht privaten Glied; mit
-        /// <paramref name="zahlenfeldsatz"/> zusätzlich Zahlenfelder als Methodenparameter und
-        /// <c>double[]</c> als Rückgabe, Eigenschaft oder Feld.
+        /// <paramref name="zahlenfeldsatz"/> zusätzlich Zahlenfelder (<see cref="IstZahlenfeld"/>)
+        /// als Methodenparameter, Rückgabe, Eigenschaft oder Feld — außer den Gliedern in
+        /// <paramref name="ausnahmen"/>.
         /// </summary>
-        private static IEnumerable<string> Verstoesse(Type t, bool zahlenfeldsatz)
+        private static IEnumerable<string> Verstoesse(Type t, bool zahlenfeldsatz,
+                                                      IEnumerable<(string Typ, string Glied, string Grund)> ausnahmen = null)
         {
             const BindingFlags alle = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic
                                       | BindingFlags.Instance | BindingFlags.Static;
             string n = t.Name + ".";
+            var frei = new HashSet<string>((ausnahmen ?? Enumerable.Empty<(string, string, string)>())
+                                           .Where(a => a.Item1 == t.Name).Select(a => a.Item2), StringComparer.Ordinal);
             // Eigenschaftszugriffe und Operatoren prüft die Eigenschaftsschleife bzw. sie tragen den Typ
             // selbst; vom Übersetzer erzeugte Glieder (lokale Funktionen, Klonen) heißen mit „<".
             foreach (MethodInfo m in t.GetMethods(alle).Where(m => !m.IsPrivate && !m.IsSpecialName
                                                                    && !m.Name.StartsWith("<", StringComparison.Ordinal)))
             {
+                bool liste = zahlenfeldsatz && !frei.Contains(m.Name);
                 if (TraegtBilanz(m.ReturnType)) yield return n + m.Name + " gibt " + m.ReturnType.Name + " heraus";
-                if (zahlenfeldsatz && m.ReturnType == typeof(double[])) yield return n + m.Name + " gibt Double[] heraus";
+                if (liste && IstZahlenfeld(m.ReturnType)) yield return n + m.Name + " gibt " + Anzeige(m.ReturnType) + " heraus";
                 foreach (ParameterInfo p in m.GetParameters())
                 {
                     Type pt = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
                     if (TraegtBilanz(pt)) yield return n + m.Name + " nimmt " + pt.Name + " (" + p.Name + ")";
-                    if (zahlenfeldsatz && !p.IsOut && IstZahlenfeld(pt))
+                    if (liste && !p.IsOut && IstZahlenfeld(pt))
                         yield return n + m.Name + " nimmt " + Anzeige(pt) + " (" + p.Name + ")";
                 }
             }
@@ -197,12 +232,14 @@ namespace EPOS.Kern.Tests
                 MethodInfo g = p.GetGetMethod(true);
                 if (g == null || g.IsPrivate) continue;
                 if (TraegtBilanz(p.PropertyType)) yield return n + p.Name + " ist " + p.PropertyType.Name;
-                if (zahlenfeldsatz && p.PropertyType == typeof(double[])) yield return n + p.Name + " ist Double[]";
+                if (zahlenfeldsatz && !frei.Contains(p.Name) && IstZahlenfeld(p.PropertyType))
+                    yield return n + p.Name + " ist " + Anzeige(p.PropertyType);
             }
             foreach (FieldInfo f in t.GetFields(alle).Where(f => !f.IsPrivate))
             {
                 if (TraegtBilanz(f.FieldType)) yield return n + f.Name + " ist " + f.FieldType.Name;
-                if (zahlenfeldsatz && f.FieldType == typeof(double[])) yield return n + f.Name + " ist Double[]";
+                if (zahlenfeldsatz && !frei.Contains(f.Name) && IstZahlenfeld(f.FieldType))
+                    yield return n + f.Name + " ist " + Anzeige(f.FieldType);
             }
         }
 
@@ -239,11 +276,45 @@ namespace EPOS.Kern.Tests
         private static string[] Lesen(string datei)
             => File.ReadAllText(Path.Combine(Ordner(), datei)).Replace("\r\n", "\n").Split('\n');
 
-        private static bool IstKommentar(string zeile)
+        /// <summary>Die Zeilen, die die Bilanz nennen und kein Kommentar sind, als „Datei:Zeile  Text".</summary>
+        private static List<string> Bilanzfunde(string datei, string[] zeilen)
         {
-            string s = zeile.TrimStart();
-            return s.StartsWith("//", StringComparison.Ordinal) || s.StartsWith("*", StringComparison.Ordinal)
-                   || s.StartsWith("/*", StringComparison.Ordinal);
+            bool[] kommentar = Kommentarzeilen(zeilen);
+            var funde = new List<string>();
+            for (int i = 0; i < zeilen.Length; i++)
+                if (!kommentar[i] && Bilanzbezug.IsMatch(zeilen[i]))
+                    funde.Add(datei + ":" + (i + 1) + "  " + zeilen[i].Trim());
+            return funde;
+        }
+
+        /// <summary>
+        /// Welche Zeilen Kommentar sind: eine Zeile, die mit <c>//</c> oder <c>/*</c> beginnt, und
+        /// jede Zeile, solange ein Block <c>/* … */</c> offen ist. Eine Zeile, die mit <c>*</c>
+        /// beginnt, ist nur innerhalb des Blocks Kommentar — außerhalb ist sie Code.
+        /// </summary>
+        private static bool[] Kommentarzeilen(string[] zeilen)
+        {
+            var k = new bool[zeilen.Length];
+            bool imBlock = false;
+            for (int i = 0; i < zeilen.Length; i++)
+            {
+                string s = zeilen[i].TrimStart();
+                if (imBlock)
+                {
+                    k[i] = true;
+                    if (s.Contains("*/")) imBlock = false;
+                }
+                else if (s.StartsWith("//", StringComparison.Ordinal))
+                {
+                    k[i] = true;
+                }
+                else if (s.StartsWith("/*", StringComparison.Ordinal))
+                {
+                    k[i] = true;
+                    imBlock = !s.Substring(2).Contains("*/");
+                }
+            }
+            return k;
         }
 
         private static string Ordner()
