@@ -121,6 +121,10 @@ namespace WindowsFormsApplication1
             {
                 DataRow row = dt.Rows[0];
 
+                // Ein VORMERKSATZ ist fuer jeden Leser der Konfiguration „kein Satz" - vor
+                // jeder Feldzuordnung und vor HeizkesselNachziehen (Kuehlkonzept 7.2, K10).
+                if (IstVormerksatz(row)) return false;
+
                 if (row[0] != DBNull.Value) model.m_ID = Convert.ToInt32(row[0]);
                 if (row[1] != DBNull.Value) model.m_ID_Projekt = Convert.ToInt32(row[1]);
                 if (row[2] != DBNull.Value) model.m_BHKW_Grenzleistung = Convert.ToDouble(row[2]);
@@ -807,6 +811,15 @@ namespace WindowsFormsApplication1
         /// Der Wert haelt, weil das Speichern der Kaskade ihn nach Loeschen und Neuanlegen
         /// nachreicht.</para>
         ///
+        /// <para><b>Dieser frühe Satz ist ein VORMERKSATZ</b> (<see cref="IstVormerksatz"/>):
+        /// Er traegt allein den Anfangswert, keine Kaskade - seine sechs Plaetze
+        /// <c>Tool_1..6</c> bleiben NULL. Fuer jeden Leser der Konfiguration ist er „kein Satz":
+        /// Der Lauf meldet „keine Konfiguration" wie ohne Satz, die Konfigurationsseite waehlt
+        /// die verbauten Anlagen vor wie ohne Satz, und <see cref="HeizkesselNachziehen"/> greift
+        /// nicht vor der Vorwahl ein. Mit oder ohne Programmeinstellung verhaelt sich die
+        /// Anlage eines neuen Projekts damit gleich; nur <see cref="KuehlbetriebLesen"/> sieht
+        /// den Schalter. Zum Einstellungssatz wird er beim ersten Speichern der Kaskade.</para>
+        ///
         /// <para><b>Nie zur Laufzeit.</b> Kein Lesen der Konfiguration, kein Lauf und kein
         /// Schemaschritt fragt die Programmeinstellung; ein Projektduplikat uebernimmt den
         /// Wert seiner Quelle (es ist kopiert, nicht neu angelegt). Wer diese Methode
@@ -823,11 +836,55 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM Tab_Einstellungen WHERE ID_Projekt = ?",
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)), 0) > 0;
 
-            // Dasselbe leere Modell, mit dem die Konfigurationsseite ein Projekt ohne Satz
-            // oeffnet - der Satz sieht aus, als waere die Kaskade einmal leer gespeichert.
-            if (!satzVorhanden && !new KonfigurationCtrl().Insert(idProjekt)) return false;
+            // Der VORMERKSATZ: dieselben Vorbelegungen wie beim ersten Speichern der Kaskade,
+            // aber OHNE Kaskade - die sechs Plaetze bleiben NULL (IstVormerksatz). So ist er
+            // fuer die Leser der Konfiguration „kein Satz", bis die Kaskade gespeichert ist.
+            if (!satzVorhanden)
+            {
+                KonfigurationCtrl anlage = new KonfigurationCtrl();
+                anlage.model.m_Tool_1 = null;
+                anlage.model.m_Tool_2 = null;
+                anlage.model.m_Tool_3 = null;
+                anlage.model.m_Tool_4 = null;
+                anlage.model.m_Tool_5 = null;
+                anlage.model.m_Tool_6 = null;
+                if (!anlage.Insert(idProjekt)) return false;
+            }
 
             return KuehlbetriebSchreiben(idProjekt, true);
+        }
+
+        /// <summary>
+        /// <b>Ist diese Zeile ein Vormerksatz?</b> — der Einstellungssatz, den allein die
+        /// Projektanlage fuer den Anfangswert der Kuehlung anlegt
+        /// (<see cref="KuehlbetriebAnfangswertSetzen"/>, K10), bevor die Kaskade je gespeichert
+        /// wurde. Kennzeichen: Alle sechs Plaetze <c>Tool_1..6</c> - die vier Waerme- und
+        /// die zwei Stromplaetze - sind NULL. Jeder andere Schreibweg schreibt dort Text, einen
+        /// Erzeuger oder die leere Zeichenkette: Das Modell belegt die Plaetze mit der leeren
+        /// Zeichenkette vor (<see cref="KonfigurationModel"/>), die Kaskade schreibt Text
+        /// (<c>Kaskade.Schreiben</c>, gerufen von der Vorwahl und von
+        /// <see cref="HeizkesselNachziehen"/>), und die Bestandsdaten fuehren Text. NULL steht
+        /// in allen sechs Plaetzen nur, wo <see cref="KuehlbetriebAnfangswertSetzen"/> den Satz
+        /// angelegt hat; ein Satz, der auch nur in einem Platz Text fuehrt - und sei es die
+        /// leere Zeichenkette -, ist nie ein Vormerksatz.
+        ///
+        /// <para><b>Warum es ihn gibt</b> (Seiteneffekt aus Welle 1 von KU1): Ein frueher Satz mit
+        /// leerer Kaskade liess den Lauf anders enden als ein Projekt ohne Satz, und
+        /// <see cref="HeizkesselNachziehen"/> setzte den Kessel vor die Vorwahl der
+        /// Konfigurationsseite. Der Vormerksatz ist fuer die Leser der Konfiguration deshalb
+        /// „kein Satz" (<see cref="ZeileUebernehmen"/>); die Kaskaden-Vorwahl ist unabhaengig
+        /// davon, ob der Satz frueh oder spaet entsteht.</para>
+        /// </summary>
+        internal static bool IstVormerksatz(DataRow row)
+        {
+            if (row == null) return false;
+            for (int i = 1; i <= Kaskade.PLATZ_ENERGIESPEICHER; i++)
+            {
+                string spalte = "Tool_" + i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                if (!row.Table.Columns.Contains(spalte)) return false;
+                if (row[spalte] != DBNull.Value) return false;
+            }
+            return true;
         }
 
         public bool Insert(int ID_Projekt)

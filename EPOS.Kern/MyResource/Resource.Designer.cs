@@ -22566,6 +22566,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
+        /// </summary>
+        public static string KAELTE_GRENZE_FEUCHTE {
+            get {
+                return ResourceManager.GetString("KAELTE_GRENZE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser ähnelt.
         /// </summary>
         public static string KANAL_BRAUCHWASSER_ANZEIGE {
@@ -22580,6 +22589,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KANAL_HEIZUNG_ANZEIGE {
             get {
                 return ResourceManager.GetString("KANAL_HEIZUNG_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string KANAL_KUEHLUNG_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KANAL_KUEHLUNG_ANZEIGE", resourceCulture);
             }
         }
         
@@ -52676,6 +52694,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprobe Kälte: Der Kühlkanal weicht in {0} Stunden von den gebuchten Kältebeiträgen ab (größte Abweichung {1} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_BEDARFSPROBE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_BEDARFSPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}&quot;: Tagesbilanz (Bestandsweg) liefert keine Kühllast — Kältebedarf 0. Die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_BESTANDSWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}&quot;) — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_HEIZEN_UND_KUEHLEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_HEIZEN_UND_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ohne Kälteerzeuger: {0} MWh/a, Spitze {1} kW. Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_OHNE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_OHNE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}&quot;: Die Kühlung ist eingeschaltet, aber ohne Kühlsollwert — ein leerer Kühlsollwert heißt „Kühlung aus&quot;; das Gebäude trägt keinen Kältebedarf. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_OHNE_SOLLWERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_OHNE_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus). {0} Gebäude mit eingeschalteter Kühlung und {1} Lastgänge mit dem Kanal Kühlung bleiben ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
         /// </summary>
         public static string SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT {
@@ -52748,11 +52820,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Knappheitsreihenfolge: Die Projekteinstellung „{0}&quot; ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knappheitsreihenfolge: Die Projekteinstellung „{0}&quot; ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal; {7} darf fehlen und steht immer zuletzt. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6} -&gt; {8}. ähnelt.
         /// </summary>
         public static string SIMENG_KNAPPHEIT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("SIMENG_KNAPPHEIT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT", resourceCulture);
             }
         }
         

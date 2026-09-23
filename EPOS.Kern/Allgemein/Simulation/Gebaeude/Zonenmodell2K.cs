@@ -246,15 +246,20 @@ namespace WindowsFormsApplication1
                 double air = ab.System.Geregelt ? ab.ThetaFest : z2;
                 double q = ab.System.Geregelt ? z2 : ab.QFest;
 
-                // Je Abschnitt nie beides: Heizfälle buchen nur Heizen, Kühlfälle nur Kühlen.
+                // Je Abschnitt nie beides (Festlegung F-K3, Kühlkonzept 3.3) - die SCHARFE
+                // Zusicherung: Heizfälle buchen nur Heizen, Kühlfälle nur Kühlen, das Totband
+                // nichts. Bucht ein Fall eine Leistung mit falschem Vorzeichen über den Zahlenrand
+                // hinaus, ist das ein Fehler und kein Klemmwert - er fällt laut.
                 switch (fall)
                 {
                     case Betriebsfall.HeizenGeregelt:
                     case Betriebsfall.Heizgrenze:
+                        if (-q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
                         akkHeiz += Math.Max(q, 0.0) * tau;
                         break;
                     case Betriebsfall.KuehlenGeregelt:
                     case Betriebsfall.Kuehlgrenze:
+                        if (q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
@@ -439,6 +444,18 @@ namespace WindowsFormsApplication1
                                           gExt: _gExt,
                                           schluessel: anteilInnenflaeche);
             return _kuehlen;
+        }
+
+        /// <summary>
+        /// Die Abschnittsregel ist verletzt (F-K3): Ein Heizfall hat Kälte bzw. ein Kühlfall
+        /// Wärme gebucht. Kein Teilstundenergebnis, der Zustand bleibt unverändert.
+        /// </summary>
+        private void AbschnittsregelVerletzt(Betriebsfall fall, double q)
+        {
+            throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
+                _bezeichnung + ": Ein Abschnitt im Betriebsfall " + fall + " bucht die Leistung " +
+                q.ToString("G6", CultureInfo.InvariantCulture) + " W mit falschem Vorzeichen " +
+                "(Abschnittsregel: je Abschnitt nie Heizen und Kühlen zugleich).");
         }
 
         private void RandPruefen(in Stundenrand r)

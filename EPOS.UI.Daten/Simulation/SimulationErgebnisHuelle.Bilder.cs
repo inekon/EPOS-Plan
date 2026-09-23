@@ -175,7 +175,8 @@ namespace WindowsFormsApplication1
                 reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF,
                                  _waermebedarf.Waermebedarf, Farbrolle.BEDARF));
 
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            // Das Wärmebild zeigt nur Wärmekanäle (Kühlkonzept 4.3 #32, 8.4).
+            foreach (int k in Kanal.KANAELE_WAERME)
             {
                 if (!wahl.Contains("KANAL_" + k)) continue;
                 reihen.Add(Reihe(KANALNAMEN[k],

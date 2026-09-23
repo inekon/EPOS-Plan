@@ -44,8 +44,10 @@ namespace WindowsFormsApplication1
             };
 
             // Je Kanal mit Jahressumme > 0 eine Spalte - der kWh-Vektor, NICHT die
-            // normierte Prozentkurve des Diagramms (Begründung :2714-2721).
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            // normierte Prozentkurve des Diagramms (Begründung :2714-2721). Die Spalten
+            // tragen „Wärmelast …" und gehören den Wärmekanälen; die Kältereihe exportiert
+            // die Kälteseite selbst (Kühlkonzept 4.3 #32, 9.2).
+            foreach (int k in Kanal.KANAELE_WAERME)
             {
                 double[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
                 if (werte == null || Jahressumme(werte) <= 0) continue;

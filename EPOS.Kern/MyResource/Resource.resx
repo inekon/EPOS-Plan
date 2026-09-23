@@ -9342,6 +9342,12 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Prozesswärme</value>
   </data>
+  <data name="KANAL_KUEHLUNG_ANZEIGE" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="KAELTE_GRENZE_FEUCHTE" xml:space="preserve">
+    <value>Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.</value>
+  </data>
   <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
     <value>Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — was mit diesem Zweck geladen wird, entlädt der Speicher nie.</value>
   </data>
@@ -9574,7 +9580,28 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.</value>
   </data>
   <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
-    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}.</value>
+    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal; {7} darf fehlen und steht immer zuletzt. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6} -&gt; {8}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Kältebedarf ohne Kälteerzeuger: {0} MWh/a, Spitze {1} kW. Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BESTANDSWEG" xml:space="preserve">
+    <value>Gebäude „{0}": Tagesbilanz (Bestandsweg) liefert keine Kühllast — Kältebedarf 0. Die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Gebäude „{0}": Die Kühlung ist eingeschaltet, aber ohne Kühlsollwert — ein leerer Kühlsollwert heißt „Kühlung aus"; das Gebäude trägt keinen Kältebedarf.</value>
+  </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus). {0} Gebäude mit eingeschalteter Kühlung und {1} Lastgänge mit dem Kanal Kühlung bleiben ohne Wirkung.</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}") — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BEDARFSPROBE" xml:space="preserve">
+    <value>Bedarfsprobe Kälte: Der Kühlkanal weicht in {0} Stunden von den gebuchten Kältebeiträgen ab (größte Abweichung {1} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
+    <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>

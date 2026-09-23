@@ -93,6 +93,7 @@ namespace WindowsFormsApplication1
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
             StelleKanalSpaltenSicher();     // Ergebnisspalten je Kanal (Schritt 52, Paket E1)
+            StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
@@ -108,6 +109,12 @@ namespace WindowsFormsApplication1
             // KostenEmissionRechner zählt sie als verbrauchOhneTraeger (kostenVollstaendig
             // = false). Die Rückfallebene gehört auf die Leseseite — dort steht sie bereits
             // (WirtschaftlichkeitCtrl.BaueSteuerAnlage: Modulträger vor Anlagenträger).
+
+            // KUEHLKANAL (Schritt 110, KU-S4; Kuehlkonzept 7.4): Hat der Lauf Kaelte ERHOBEN,
+            // tragen die neun Kaeltespalten Werte (auch 0); sonst bleiben sie NULL - "nicht
+            // erhoben". Ein Projekt ohne Kuehlung schreibt damit dieselben Zeilen wie vor dem
+            // vierten Kanal (Referenzlauf byte-gleich, Kuehlkonzept 10.5).
+            bool kaelteErhoben = m.Energiebedarf != null && m.Energiebedarf.KaelteErhoben;
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -196,8 +203,12 @@ namespace WindowsFormsApplication1
                             "Waermerestbedarf, Stromrestbedarf, " +
                             SchemaKatalog.SPALTE_BEDARF_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER + ", " +
-                            SchemaKatalog.SPALTE_BEDARF_PROZESS + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?)";
+                            SchemaKatalog.SPALTE_BEDARF_PROZESS + ", " +
+                            KuehlungSchema.SPALTE_BEDARF_KUEHLUNG + ", " +
+                            KuehlungSchema.SPALTE_KAELTEBEDARF_GESAMT + ", " +
+                            KuehlungSchema.SPALTE_KAELTELAST_MAX + ", " +
+                            KuehlungSchema.SPALTE_KAELTERESTBEDARF + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -208,7 +219,10 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Strombedarf_Max) });
                             p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Waermerestbedarf) });
                             p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Stromrestbedarf) });
-                            KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal);
+                            KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal, kaelteErhoben);
+                            p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltebedarf_Gesamt) });
+                            p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltelast_Max) });
+                            p.Add(new DbParam("@c3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaelterestbedarf) });
                             v.Ausfuehren(sql, p.ToArray());
                         }
                     }
@@ -223,8 +237,9 @@ namespace WindowsFormsApplication1
                             "Waermebedarfsdeckung, Vollbenutzungsstunden, Bivalenzpunkt, " +
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)";
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
@@ -239,7 +254,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Waermebedarfsdeckung) });
                             p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Vollbenutzungsstunden) });
                             p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
-                            KanalParameter(p, m.Waermepumpe.Deckung_Kanal);
+                            KanalParameter(p, m.Waermepumpe.Deckung_Kanal, kaelteErhoben);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -280,8 +295,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = bId });
@@ -308,7 +324,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a20", DbParamTyp.Double) { Wert = R(m.BHKW.TierischeFette) });
                             // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
                             p.Add(new DbParam("@a21", DbParamTyp.Double) { Wert = R(m.BHKW.VbhElektrisch) });
-                            KanalParameter(p, m.BHKW.Deckung_Kanal);
+                            KanalParameter(p, m.BHKW.Deckung_Kanal, kaelteErhoben);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -408,8 +424,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)";
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = hId });
@@ -433,7 +450,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a17", DbParamTyp.Double) { Wert = R(m.Heizkessel.Pellets) });
                             p.Add(new DbParam("@a18", DbParamTyp.Double) { Wert = R(m.Heizkessel.TierischeFette) });
                             p.Add(new DbParam("@a19", DbParamTyp.Double) { Wert = R(m.Heizkessel.Quellwaerme) });
-                            KanalParameter(p, m.Heizkessel.Deckung_Kanal);
+                            KanalParameter(p, m.Heizkessel.Deckung_Kanal, kaelteErhoben);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -513,8 +530,9 @@ namespace WindowsFormsApplication1
                             "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Waermebedarfsdeckung, Ueberschuss, " +
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                            "VALUES (?,?,?,?,?,?,?, ?,?,?)";
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?,?, ?,?,?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = sId });
@@ -524,7 +542,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Solarthermie.Waermeproduktion) });
                             p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Solarthermie.Waermebedarfsdeckung) });
                             p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Solarthermie.Ueberschuss) });
-                            KanalParameter(p, m.Solarthermie.Deckung_Kanal);
+                            KanalParameter(p, m.Solarthermie.Deckung_Kanal, kaelteErhoben);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -636,7 +654,9 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(sp.Vollzyklen) });
 
                                 // PAKET E1
-                                KanalParameter(p, sp.Entladung_Kanal);
+                                // Nur die drei Waermekanaele: Entladung_Kuehlung bleibt NULL,
+                                // bis ein Kaeltespeicher rechnet (K7, E31).
+                                WaermekanalParameter(p, sp.Entladung_Kanal);
                                 p.Add(new DbParam("@d1", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Geladen) });
                                 p.Add(new DbParam("@d2", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Entladen) });
                                 p.Add(new DbParam("@anl", DbParamTyp.Integer) { Wert = sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value });
@@ -827,7 +847,12 @@ namespace WindowsFormsApplication1
                 KanalLesen(re, m.Energiebedarf.Waermebedarf_Kanal,
                            SchemaKatalog.SPALTE_BEDARF_HEIZUNG,
                            SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER,
-                           SchemaKatalog.SPALTE_BEDARF_PROZESS);
+                           SchemaKatalog.SPALTE_BEDARF_PROZESS,
+                           KuehlungSchema.SPALTE_BEDARF_KUEHLUNG);
+                // KU-S4 (Schritt 110): NULL bleibt null - "nicht erhoben", nie 0.
+                m.Energiebedarf.Kaeltebedarf_Gesamt = DN(re, KuehlungSchema.SPALTE_KAELTEBEDARF_GESAMT);
+                m.Energiebedarf.Kaeltelast_Max = DN(re, KuehlungSchema.SPALTE_KAELTELAST_MAX);
+                m.Energiebedarf.Kaelterestbedarf = DN(re, KuehlungSchema.SPALTE_KAELTERESTBEDARF);
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -1649,34 +1674,64 @@ namespace WindowsFormsApplication1
         // ---------------------------------------------------------------------------
 
         /// <summary>
-        /// Haengt die drei Kanalwerte in der Reihenfolge Heizung, Brauchwasser, Prozess
-        /// an die Parameterliste. Ein fehlendes oder zu kurzes Feld wird als 0
-        /// geschrieben - die Spalten werden IMMER belegt, damit "nicht erhoben" (NULL,
-        /// Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben; dieselbe
-        /// Begruendung wie bei Quellwaerme und den Vbh-Spalten.
+        /// Haengt die drei WAERMEkanalwerte in der Reihenfolge Heizung, Brauchwasser, Prozess
+        /// an die Parameterliste (<see cref="Kanal.KANAELE_WAERME"/>). Ein fehlendes oder zu
+        /// kurzes Feld wird als 0 geschrieben - die Spalten werden IMMER belegt, damit "nicht
+        /// erhoben" (NULL, Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben;
+        /// dieselbe Begruendung wie bei Quellwaerme und den Vbh-Spalten. Der Schreibweg der
+        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> bleibt NULL (K7).
         /// </summary>
-        private static void KanalParameter(List<DbParam> p, double[] werte)
+        private static void WaermekanalParameter(List<DbParam> p, double[] werte)
         {
-            for (int k = 0; k < Kanal.ANZAHL; k++)
+            foreach (int k in Kanal.KANAELE_WAERME)
             {
                 double wert = (werte != null && k < werte.Length) ? werte[k] : 0.0;
                 p.Add(new DbParam("@k" + k, DbParamTyp.Double) { Wert = R(wert) });
             }
         }
 
-        /// <summary>Liest die drei Kanalspalten in ein vorhandenes Feld (Reihenfolge wie oben).</summary>
+        /// <summary>
+        /// Die drei Waermekanalwerte (<see cref="WaermekanalParameter"/>) und dahinter die
+        /// KAELTEkanaele (<see cref="Kanal.KANAELE_KAELTE"/>, Spalten <c>Waermebedarf_Kuehlung</c>
+        /// bzw. <c>Deckung_Kuehlung</c>, Schritt 110): mit Wert, wenn der Lauf Kaelte erhoben
+        /// hat, sonst NULL - "nicht erhoben" (Kuehlkonzept 7.4). Heizkessel, BHKW und
+        /// Solarthermie tragen dort dauerhaft 0, sobald erhoben wird: Sie decken keine Kaelte.
+        /// </summary>
+        private static void KanalParameter(List<DbParam> p, double[] werte, bool kaelteErhoben)
+        {
+            WaermekanalParameter(p, werte);
+            foreach (int k in Kanal.KANAELE_KAELTE)
+            {
+                double wert = (werte != null && k < werte.Length) ? werte[k] : 0.0;
+                p.Add(new DbParam("@k" + k, DbParamTyp.Double)
+                    { Wert = kaelteErhoben ? (object)R(wert) : DBNull.Value });
+            }
+        }
+
+        /// <summary>Ein nullbarer Ergebniswert: gerundet, oder NULL fuer "nicht erhoben".</summary>
+        private static object WertOderNull(double? wert)
+        {
+            return wert.HasValue ? (object)R(wert.Value) : DBNull.Value;
+        }
+
+        /// <summary>
+        /// Liest die Kanalspalten in ein vorhandenes Feld (Reihenfolge wie oben). Die vierte
+        /// (Kuehlung) ist nullbar: NULL liefert 0 - ob sie erhoben wurde, sagt
+        /// <see cref="ErgebnisEnergiebedarfModel.KaelteErhoben"/>.
+        /// </summary>
         private static void KanalLesen(DataRow r, double[] ziel,
                                        string spalteHeizung, string spalteBrauchwasser,
-                                       string spalteProzess)
+                                       string spalteProzess, string spalteKuehlung = null)
         {
             if (ziel == null || ziel.Length < Kanal.ANZAHL) return;
             ziel[Kanal.HEIZUNG] = D(r, spalteHeizung);
             ziel[Kanal.BRAUCHWASSER] = D(r, spalteBrauchwasser);
             ziel[Kanal.PROZESS] = D(r, spalteProzess);
+            ziel[Kanal.KUEHLUNG] = spalteKuehlung != null ? D(r, spalteKuehlung) : 0.0;
         }
 
         /// <summary>
-        /// Liest die drei Deckungsspalten einer Erzeuger-Ergebniszeile. Sie heissen in
+        /// Liest die vier Deckungsspalten einer Erzeuger-Ergebniszeile. Sie heissen in
         /// allen vier Tabellen gleich - deshalb eine Fassung ohne Spaltenparameter.
         /// </summary>
         private static void DeckungLesen(DataRow r, double[] ziel)
@@ -1684,7 +1739,25 @@ namespace WindowsFormsApplication1
             KanalLesen(r, ziel,
                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG,
                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER,
-                       SchemaKatalog.SPALTE_DECKUNG_PROZESS);
+                       SchemaKatalog.SPALTE_DECKUNG_PROZESS,
+                       KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG);
+        }
+
+        /// <summary>
+        /// Rueckfallebene zu Schemaschritt 110 (KU-S4) nach dem Muster von
+        /// <see cref="StelleKanalSpaltenSicher"/>: Die INSERT oben fuehren die Kaeltespalten
+        /// NAMENTLICH auf - fehlen sie, scheiterte die ganze Ergebniszeile. Die Namen kommen
+        /// aus <see cref="KuehlungSchema.Ergebnisspalten"/>; wer die Spalten schreibt, legt sich
+        /// die Vorsorge vor dem Schreiben selbst an (Kopf von <see cref="KuehlungSchema"/>).
+        /// </summary>
+        private static void StelleKuehlSpaltenSicher()
+        {
+            try
+            {
+                foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                    ErgaenzeSpalte(s.Tabelle, s.Name, s.TypDefinition);
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
         }
 
         /// <summary>

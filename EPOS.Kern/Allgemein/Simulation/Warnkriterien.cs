@@ -453,6 +453,11 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Die Prüfung MELDET, sie ändert nichts — die Vorbelegung bleibt, wie sie
         /// ist, und der Rechenweg sieht diese Methode nie.</para>
+        ///
+        /// <para><b>Nur die WÄRMEkanäle</b> (<see cref="Kanal.KANAELE_WAERME"/>): Ein
+        /// Wärmeerzeuger ist nie Versorger des Kühlkanals. Für den Kältebedarf ohne
+        /// Kälteerzeuger meldet die Kälteseite selbst (<c>SimulationKaeltebedarf</c>,
+        /// Kühlkonzept 5.5, F-K12).</para>
         /// </summary>
         public static List<Warnbefund> KanaeleOhneVersorger(int idProjekt, double[] bedarfJeKanalMwh)
         {
@@ -461,8 +466,10 @@ namespace WindowsFormsApplication1
 
             Projektbild bild = null;
 
-            for (int kanal = 0; kanal < Kanal.ANZAHL && kanal < bedarfJeKanalMwh.Length; kanal++)
+            foreach (int kanal in Kanal.KANAELE_WAERME)
             {
+                if (kanal >= bedarfJeKanalMwh.Length) continue;
+
                 double mwh = bedarfJeKanalMwh[kanal];
                 if (double.IsNaN(mwh) || mwh < KANAL_BEDARF_SCHWELLE_MWH) continue;
 
@@ -512,6 +519,10 @@ namespace WindowsFormsApplication1
                                                PufferSpCtrl.KlassenSet pufferSet)
         {
             if (z == null || kanal < 0 || kanal >= Kanal.ANZAHL) return false;
+
+            // Kühlkonzept 4.3 (die Lehre aus #24 bis #27): Eine WÄRMEsenke bedient keinen
+            // Kältekanal - ausdrücklich, nicht über den Rückfall auf Heizung unten.
+            if (Kanal.IstKaelte(kanal)) return false;
 
             if (WaermesenkeClass.IstPufferZiel(z.Ziel) && z.ID_Puffer > 0)
             {
@@ -1127,13 +1138,18 @@ namespace WindowsFormsApplication1
             return speichertyp;
         }
 
-        /// <summary>Anzeigename eines Kanals (Schicht „Anzeige", nie <c>Kanal.Name</c>).</summary>
+        /// <summary>
+        /// Anzeigename eines Kanals (Schicht „Anzeige", nie <c>Kanal.Name</c>). Der Kühlkanal
+        /// hat seinen AUSDRÜCKLICHEN Zweig (Kühlkonzept 4.3 #24): Ohne ihn trüge jede
+        /// Kühlmeldung still den Heizungstext.
+        /// </summary>
         public static string KanalAnzeige(int kanal)
         {
             switch (kanal)
             {
                 case Kanal.BRAUCHWASSER: return MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE;
                 case Kanal.PROZESS: return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+                case Kanal.KUEHLUNG: return MyResource.Resource.KANAL_KUEHLUNG_ANZEIGE;
                 default: return MyResource.Resource.KANAL_HEIZUNG_ANZEIGE;
             }
         }
@@ -1254,6 +1270,9 @@ namespace WindowsFormsApplication1
                 {
                     case Kanal.BRAUCHWASSER: return Set.Brauchwasser;
                     case Kanal.PROZESS: return Set.Prozess;
+                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung -
+                    // ein Speicher bedient keine Kälte, solange kein Kältespeicher rechnet (K7).
+                    case Kanal.KUEHLUNG: return false;
                     default: return Set.Heizung;
                 }
             }

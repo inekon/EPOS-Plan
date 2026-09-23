@@ -132,6 +132,23 @@
         /// <summary>Hysterese des Zurückschaltens [K] (Rechenschritte 7.2, F-P4).</summary>
         internal const double SOMMERLUEFTUNG_HYSTERESE = 1.0;
 
+        // ---- Kühlung (Stufe KU1; Kühlkonzept 3.2, 3.4) ----------------------------------
+
+        /// <summary>
+        /// Mindestabstand des Kühlsollwerts über dem höchsten Heizsollwert [K] — die harte
+        /// Prüfregel aus Kühlkonzept 3.2 (Q18-Regel des Stundenwegs): Ein Kühlsollwert darunter
+        /// ließe Heizung und Kühlung gegeneinander arbeiten; das ist ein Eingabefehler.
+        /// </summary>
+        internal const double KUEHLSOLLWERT_ABSTAND_K = 1.0;
+
+        /// <summary>
+        /// Abstand der Sommerlüftungsschwelle UNTER dem Kühlsollwert [K] — mit wirksamer Kühlung
+        /// schaltet die Sommerlüftung ab θ_kuehl − 3 K statt am Festwert
+        /// <see cref="SOMMERLUEFTUNG_SCHWELLE"/> (Kühlkonzept 3.4, die einzige Verzahnung von
+        /// Lüftungsregel und Kühlsollwert).
+        /// </summary>
+        internal const double SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT = 3.0;
+
         // ---- Langwelliger Austausch der Außenflächen (Stufe G2; Rechenschritte E5) ----
 
         /// <summary>Stefan-Boltzmann-Konstante σ [W/(m²K⁴)].</summary>

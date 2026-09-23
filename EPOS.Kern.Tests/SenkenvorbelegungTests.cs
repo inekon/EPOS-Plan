@@ -105,19 +105,28 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             // 1041: Gebaeude, Brauchwasser, Prozessprofil, Ganglinie Heizung.
-            Assert.Equal(new[] { true, true, true }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
+            Assert.Equal(new[] { true, true, true, false }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
             // 1030: nur eine Waermeganglinie im Kanal Heizung.
-            Assert.Equal(new[] { true, false, false }, Senkenvorbelegung.KanaeleMitBedarf(1030));
+            Assert.Equal(new[] { true, false, false, false }, Senkenvorbelegung.KanaeleMitBedarf(1030));
             // 1026: Gebaeude und Brauchwasser.
-            Assert.Equal(new[] { true, true, false }, Senkenvorbelegung.KanaeleMitBedarf(1026));
+            Assert.Equal(new[] { true, true, false, false }, Senkenvorbelegung.KanaeleMitBedarf(1026));
             // Projekt 19: kein Bedarf.
-            Assert.Equal(new[] { false, false, false }, Senkenvorbelegung.KanaeleMitBedarf(19));
+            Assert.Equal(new[] { false, false, false, false }, Senkenvorbelegung.KanaeleMitBedarf(19));
 
             // Eine Ganglinie im Kanal Prozesswaerme zaehlt dort - nicht im Heizkanal.
             Assert.True(DataRepository.ExecuteSQL(
                 "UPDATE Z_ProjektWaermebedarf SET Kanal = ? WHERE ID_Projekt = ?",
                 new DbParam("@k", DbWerte.KANAL_PROZESS), new DbParam("@p", 1030)));
-            Assert.Equal(new[] { false, false, true }, Senkenvorbelegung.KanaeleMitBedarf(1030));
+            Assert.Equal(new[] { false, false, true, false }, Senkenvorbelegung.KanaeleMitBedarf(1030));
+
+            // Kuehlkonzept 4.3 #6 und K3: Eine Ganglinie im Kanal Kuehlung zaehlt im Kuehlkanal -
+            // nie im Heizkanal -, und die Ableitung macht daraus keine Waermesenke.
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Z_ProjektWaermebedarf SET Kanal = ? WHERE ID_Projekt = ?",
+                new DbParam("@k", DbWerte.KANAL_KUEHLUNG), new DbParam("@p", 1030)));
+            bool[] kuehl = Senkenvorbelegung.KanaeleMitBedarf(1030);
+            Assert.Equal(new[] { false, false, false, true }, kuehl);
+            Assert.Empty(Senkenvorbelegung.Ableiten(kuehl));
         }
 
         // =================================================================================
@@ -164,7 +173,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             BedarfEntfernen(heizungUndWarmwasser: true, prozess: false);
-            Assert.Equal(new[] { false, false, true }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
+            Assert.Equal(new[] { false, false, true, false }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
 
             WizardCtrl wiz = KesselSpeichern(mitNeuem: true);
 
@@ -184,7 +193,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             BedarfEntfernen(heizungUndWarmwasser: true, prozess: true);
-            Assert.Equal(new[] { false, false, false }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
+            Assert.Equal(new[] { false, false, false, false }, Senkenvorbelegung.KanaeleMitBedarf(PROJEKT));
 
             WizardCtrl wiz = KesselSpeichern(mitNeuem: true);
 

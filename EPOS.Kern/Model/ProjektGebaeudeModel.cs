@@ -112,8 +112,8 @@ namespace WindowsFormsApplication1
 
         // =====================================================================
         //  Die vier Kühleingaben aus KU-S1 (Schemaschritt 108, Kühlkonzept 7.1) —
-        //  NULL-ERHALTEND wie der Block darüber. Gelesen aus der Sicht, von keinem
-        //  Rechenweg benutzt, bis der Kühlkanal steht (zweite Welle von KU1).
+        //  NULL-ERHALTEND wie der Block darüber. Gelesen aus der Sicht; der Löser nimmt
+        //  Sollwert und Grenze nur mit dem Projektschalter (GebaeudeModellEingang.KuehlungWirksam).
         // =====================================================================
 
         /// <summary>Kühlsollwert [°C]; null = Kühlung aus (kein stiller Rückfall auf die Maximaltemperatur).</summary>
