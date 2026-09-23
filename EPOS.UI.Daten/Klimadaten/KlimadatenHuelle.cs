@@ -200,8 +200,16 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.KLIMA_ACHSE_SONNENWINKEL,
                 true);
 
+            // DIE DREI KENNZAHLEN IM KOPF DES STAMMBLATTS (Neuordnung Stufe 4):
+            // Jahresmittel, Tiefst- und Hoechstwert der Aussentemperatur - aus
+            // DENSELBEN Stundenwerten wie das Bild, einmal je Wahl.
             return Task.FromResult(new KlimadatenDialog.Regionsansicht(
-                region.Details ?? "", region.Longitude, region.Latitude, temperatur, winkel, ""));
+                region.Details ?? "", region.Longitude, region.Latitude, temperatur, winkel, "")
+            {
+                Jahresmittel = werteTemperatur.Average(),
+                Tiefstwert = werteTemperatur.Min(),
+                Hoechstwert = werteTemperatur.Max()
+            });
         }
 
         // =====================================================================

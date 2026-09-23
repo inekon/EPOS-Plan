@@ -888,4 +888,27 @@ public class KataloglisteTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal("Beta", gemeldet), TimeSpan.FromSeconds(10));
         Assert.Empty(cut.Instance.Markiert);
     }
+
+    /// <summary>
+    /// <b>Die Werkzeugleiste trägt einen Schalter des Wirts</b> (Konzept
+    /// Administrationsdialoge 3.1, Zone 2; Stufe 4): Er steht IN der Suchzeile, neben dem
+    /// Suchfeld — ohne Gabe steht dort nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Werkzeugleiste_traegt_den_Schalter_des_Wirts()
+    {
+        var ohne = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, Zeilen())
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+        Assert.Empty(ohne.FindAll(".epos-katalog-werkzeug"));
+
+        var mit = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, Zeilen())
+            .Add(x => x.Filterstand, new Katalogfilterstand())
+            .Add(x => x.Werkzeug, b => b.AddMarkupContent(0, "<label id=\"schalter\">nur mit Kühlfunktion</label>")));
+        var werkzeug = mit.Find(".epos-katalog-suchzeile > .epos-katalog-werkzeug");
+        Assert.NotNull(werkzeug.QuerySelector("#schalter"));
+    }
 }

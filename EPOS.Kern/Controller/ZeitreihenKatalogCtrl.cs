@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace WindowsFormsApplication1
@@ -87,6 +88,79 @@ namespace WindowsFormsApplication1
                 liste.Add(zeile);
             }
             return liste;
+        }
+
+        // =====================================================================
+        // Die VERWENDUNG in Projekten (Neuordnung der Administrationsdialoge,
+        // Stufe 4: Loeschen weich gesperrt mit dem Projektnamen)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Welche Projekte einen Katalogsatz verwenden</b> — je Bezeichner die
+        /// Projektnamen aus der Zuordnungstabelle (<c>Z_Projekt…</c>), alphabetisch und ohne
+        /// Doppel.
+        ///
+        /// <para><b>Wozu.</b> „Löschen…" in der Auswahlleiste der drei Zeitreihen-
+        /// verwaltungen ist WEICH gesperrt, solange ein Projekt den Satz führt, und sein
+        /// Kurztext nennt die Projekte (Konzept Administrationsdialoge 3.4). Bis hierher
+        /// meldete erst der Klick „Es existiert eine Projektzuordnung" — ohne zu sagen,
+        /// welche.</para>
+        ///
+        /// <para><b>EINE Abfrage je Liste, nicht eine je Zeile</b>: Die Auswahlleiste
+        /// fragt den Sperrgrund bei jedem Zeichnen, und das darf keine Datenbank kosten.
+        /// Die Zuordnung läuft über den BEZEICHNER — dieselbe Bedingung wie
+        /// <c>HatProjektzuordnung</c> der drei Stamm-Controller (die Zuordnung zeigt mit
+        /// <c>ID_Ganglinie</c> auf die Projektkopie, nicht auf den Katalogsatz). Eine
+        /// neue Beziehung entsteht nicht; sie wird gelesen.</para>
+        ///
+        /// <para>Fehlt eine Tabelle (nie migrierte Datenbank), bleibt die Karte leer —
+        /// dann sperrt nur noch der Löschweg des Controllers.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung(Zeitreihenart art)
+        {
+            var karte = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
+            DataTable dt = StilleDb.Tabelle(VerwendungSql(art));
+            if (dt != null)
+            {
+                foreach (DataRow r in dt.Rows)
+                {
+                    string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+                    string projekt = Katalogfeld.Text(r, "Projektname");
+                    if (bezeichner.Length == 0 || projekt.Length == 0) continue;
+
+                    if (!karte.TryGetValue(bezeichner, out List<string> projekte))
+                        karte[bezeichner] = projekte = new List<string>();
+                    if (!projekte.Contains(projekt)) projekte.Add(projekt);
+                }
+            }
+
+            var ergebnis = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, List<string>> e in karte) ergebnis[e.Key] = e.Value;
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Die Abfrage der Verwendung je Ausprägung — drei feste Texte statt eines
+        /// zusammengesetzten, damit der <c>SqlDialektPruefer</c> jeden von ihnen hält.
+        /// </summary>
+        private static string VerwendungSql(Zeitreihenart art)
+        {
+            switch (art)
+            {
+                case Zeitreihenart.Stromganglinie:
+                    return "SELECT Z.Bezeichner, P.Projektname FROM Z_ProjektStromganglinie Z " +
+                           "INNER JOIN Tab_Projekt P ON P.ID = Z.ID_Projekt " +
+                           "ORDER BY Z.Bezeichner, P.Projektname";
+                case Zeitreihenart.Solarganglinie:
+                    return "SELECT Z.Bezeichner, P.Projektname FROM Z_ProjektSolarganglinie Z " +
+                           "INNER JOIN Tab_Projekt P ON P.ID = Z.ID_Projekt " +
+                           "ORDER BY Z.Bezeichner, P.Projektname";
+                default:
+                    return "SELECT Z.Bezeichner, P.Projektname FROM Z_ProjektWaermebedarf Z " +
+                           "INNER JOIN Tab_Projekt P ON P.ID = Z.ID_Projekt " +
+                           "ORDER BY Z.Bezeichner, P.Projektname";
+            }
         }
     }
 }

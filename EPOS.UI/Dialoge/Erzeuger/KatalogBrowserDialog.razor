@@ -134,7 +134,10 @@
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
                         Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
-                        VergleichZurueck="BeiVergleichZurueck" Kosten="@KostenInhalt">
+                        VergleichZurueck="BeiVergleichZurueck" Kosten="@KostenInhalt"
+                        Lesemodus="@(NurLesen || Auslieferungssatz)"
+                        KenndatenWerte="@((NurLesen || Auslieferungssatz) ? Lesewerte(_kenndaten) : null)"
+                        KostenWerte="@((NurLesen || Auslieferungssatz) ? Lesewerte(_kosten) : null)">
                 <Kenndaten>
                     @* DAS RASTER STEHT IM BAUSTEIN Katalogfelder - derselbe, den der
                        Modulbereich der Erzeugerdialoge benutzt. Gesetzt wird nur, wo
@@ -665,6 +668,19 @@
     /// Die Gruppe „Kosten" — nur, wo der Satz Kostenfelder führt; ohne Inhalt keine
     /// Gruppe (ohne Satz gibt es keine Felder).
     /// </summary>
+    /// <summary>
+    /// <b>Die Felder als Text</b> (V13, Stufe 4): Ein Auslieferungssatz — und der
+    /// Lesemodus des Wirts — zeigt Kenndaten und Kosten im Stammblatt als Liste aus Name
+    /// und Wert statt als gesperrte Eingaben; ein Schalter steht als Ja/Nein da.
+    /// </summary>
+    private static IReadOnlyList<Stammblattwert> Lesewerte(IEnumerable<BrowserFeldwert> felder)
+        => felder.Select(f => new Stammblattwert(
+               f.Bezeichnung,
+               f.Art == BrowserFeldArt.Schalter
+                   ? (f.Schalterwert ? Resource.ALLG_BTN_JA : Resource.ALLG_BTN_NEIN)
+                   : f.Wert,
+               f.Einheit)).ToList();
+
     private RenderFragment? KostenInhalt => _kosten.Count == 0 ? null :
         @<Katalogfelder Felder="@_kosten" NurLesen="@(NurLesen || Auslieferungssatz)"
                         Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />;

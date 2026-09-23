@@ -81,20 +81,26 @@
            nichts zu tippen. Die Klassen sind die des Hauses: .epos-feld traegt im
            Formularraster die Beschriftungsspalte, .epos-feld-zeile setzt Wert und
            Einheit nebeneinander. *@
-        <div class="epos-feld">
-            <span class="epos-feld-text">@Texte.LabelModulkosten</span>
-            <span class="epos-feld-zeile">
-                <span class="epos-lesewert">@ModulkostenText</span>
-                @if (HatModulkosten)
-                {
-                    <span class="epos-einheit">@Texte.EinheitEuro</span>
-                }
-            </span>
-        </div>
-        <Herleitungszeile Text="@Texte.HerleitungModulkosten" />
-        @if (!HatModulkosten)
+        @* In der KATALOGPFLEGE steht der Wert seit Stufe 4 der Neuordnung in der
+           eigenen Gruppe "Kosten" des Stammblatts (MitModulkosten="false"); hier
+           bleibt er fuer den Anlagendialog. *@
+        @if (MitModulkosten)
         {
-            <Herleitungszeile Text="@Texte.HinweisModulkostenLeer" />
+            <div class="epos-feld">
+                <span class="epos-feld-text">@Texte.LabelModulkosten</span>
+                <span class="epos-feld-zeile">
+                    <span class="epos-lesewert">@ModulkostenText</span>
+                    @if (HatModulkosten)
+                    {
+                        <span class="epos-einheit">@Texte.EinheitEuro</span>
+                    }
+                </span>
+            </div>
+            <Herleitungszeile Text="@Texte.HerleitungModulkosten" />
+            @if (!HatModulkosten)
+            {
+                <Herleitungszeile Text="@Texte.HinweisModulkostenLeer" />
+            }
         }
     </KindInhalt>
 </Formularraster>
@@ -133,6 +139,51 @@
 
     /// <summary>Jede Eingabe meldet sich — der Wirt zieht daraufhin Sperren und Knöpfe nach.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Stehen die Modulkosten im Feldraster? <c>true</c> (Vorgabe) ist der Weg des
+    /// Anlagendialogs; die Katalogpflege zeigt sie seit Stufe 4 der Neuordnung in der
+    /// eigenen Gruppe „Kosten" ihres Stammblatts (<see cref="Kostenwerte"/>).
+    /// </summary>
+    [Parameter] public bool MitModulkosten { get; set; } = true;
+
+    /// <summary>
+    /// <b>Die Felder als Werte für den Lesemodus</b> (V13): Ein Auslieferungssatz zeigt
+    /// sie im Stammblatt als Text statt als gesperrte Eingaben — in derselben Folge
+    /// und mit denselben Beschriftungen wie das Feldraster.
+    /// </summary>
+    public static IReadOnlyList<EPOS.UI.Bausteine.Stammblattwert> Kenndatenwerte(
+        WaermepumpeStammDaten daten, WaermepumpeStammFelderTexte texte)
+    {
+        string Zahl(double? w) => w is double d ? d.ToString(CultureInfo.CurrentCulture) : "";
+        return new[]
+        {
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelName, daten.Name),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelHersteller, daten.Firma),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelBeschreibung, daten.Beschreibung),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelTyp, daten.Typ),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelRegelung, daten.Regelung),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelAufstellung, daten.Aufstellung),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelBaujahr, daten.Baujahr?.ToString(CultureInfo.CurrentCulture) ?? ""),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelNennleistung, Zahl(daten.Nennleistung), texte.EinheitKw),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelHeizstab, Zahl(daten.Heizstab), texte.EinheitKw),
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelKuehlleistung, Zahl(daten.Kuehlleistung), texte.EinheitKw)
+        };
+    }
+
+    /// <summary>
+    /// <b>Die Gruppe „Kosten" der Katalogpflege</b> (Stufe 4): die Modulkosten — immer
+    /// ein Lesewert (W14a-O-1, gepflegt in der Kostenverwaltung), ohne Planwert der
+    /// Halbgeviertstrich.
+    /// </summary>
+    public static IReadOnlyList<EPOS.UI.Bausteine.Stammblattwert> Kostenwerte(
+        WaermepumpeStammDaten daten, WaermepumpeStammFelderTexte texte)
+        => new[]
+        {
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelModulkosten,
+                daten.Modulkosten > 0 ? daten.Modulkosten.ToString(CultureInfo.CurrentCulture) : "",
+                texte.EinheitEuro)
+        };
 
     /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
     /// <remarks>

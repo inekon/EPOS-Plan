@@ -24549,4 +24549,64 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
     <value>Das Wochenprofil gehört zum Typ „{0}“ und gilt für jedes Profil dieses Typs.</value>
   </data>
+  <data name="ADM_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ADM_SB_JAHRESVERLAUF" xml:space="preserve">
+    <value>Jahresverlauf</value>
+  </data>
+  <data name="ADM_SB_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ADM_SB_GANGLINIE" xml:space="preserve">
+    <value>Ganglinie</value>
+  </data>
+  <data name="ADM_SB_GROSS" xml:space="preserve">
+    <value>groß…</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen, nicht löschbar.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
+    <value>Auslieferungssatz – Löschen gesperrt.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen.</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Stehen bleiben (in Projekten verwendet): {0}</value>
+  </data>
+  <data name="ADM_MSG_EINGELESEN" xml:space="preserve">
+    <value>„{0}“ eingelesen.</value>
+  </data>
+  <data name="ADM_SB_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="ADM_SB_ABLAGE" xml:space="preserve">
+    <value>Ablageordner</value>
+  </data>
+  <data name="ADM_SB_VOLLLAST" xml:space="preserve">
+    <value>Volllaststunden</value>
+  </data>
+  <data name="ADM_SB_VERWENDET" xml:space="preserve">
+    <value>Verwendet in</value>
+  </data>
+  <data name="KLIMA_IMPORT_TITEL" xml:space="preserve">
+    <value>Klimadaten einlesen</value>
+  </data>
+  <data name="KLIMA_KZ_MITTEL" xml:space="preserve">
+    <value>Jahresmittel</value>
+  </data>
+  <data name="KLIMA_KZ_TIEFST" xml:space="preserve">
+    <value>Tiefstwert</value>
+  </data>
+  <data name="KLIMA_KZ_HOECHST" xml:space="preserve">
+    <value>Höchstwert</value>
+  </data>
+  <data name="KLIMA_SB_VERMERK" xml:space="preserve">
+    <value>Herkunftsvermerk</value>
+  </data>
+  <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
+    <value>Für diesen Satz liegt keine brauchbare Reihe vor (weder 8 760 noch 35 040 Werte).</value>
+  </data>
 </root>

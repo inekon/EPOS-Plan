@@ -159,7 +159,8 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         string knoepfe = string.Join("|", cut.FindAll("button").Select(b => b.TextContent.Trim()));
 
-        Assert.Contains(t.Aendern, knoepfe);
+        // Stufe 4 (A5): „ändern…" ist entfallen - die Kenndaten sind direkt bedienbar.
+        Assert.DoesNotContain(t.Aendern, knoepfe);
         Assert.Contains(t.Neu, knoepfe);
         Assert.Contains(t.TypAendern, knoepfe);
         Assert.Contains(t.Loeschen, knoepfe);
@@ -201,7 +202,7 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         var gruppen = cut.FindAll(".epos-stammblattgruppe-kopf").Select(k => k.TextContent).ToList();
         Assert.Contains(gruppen, g => g.Contains("Grafik...") && g.Contains(t.TypAendern));
-        Assert.Contains(gruppen, g => g.Contains(t.Aendern));
+        Assert.DoesNotContain(gruppen, g => g.Contains(t.Aendern));
         Assert.Contains(t.Loeschen, cut.Find(".epos-auswahlleiste").TextContent);
 
         var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
@@ -584,7 +585,11 @@ public class BedarfAdminDialogTests : EposBunitContext
         var cut = Aufbauen(BedarfsArt.Prozesswaerme,
                            typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
 
-        Knopf(cut, "Prozess ändern...").Click();
+        // Seit Stufe 4 oeffnet der Stammkopf nur noch fuer "Neu..." (die Kenndaten sind
+        // direkt bedienbar): Namensabfrage, dann der Stammkopf.
+        Knopf(cut, "Neuer Prozess...").Click();
+        cut.Find(".epos-ueberlagerung input").Input("Delta");
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
         Assert.True(cut.Instance.TypStammOffen);
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
@@ -660,8 +665,8 @@ public class BedarfAdminDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Das Stammblatt der Bedarfsprofile</b> (V9): die Gruppe „Wochenprofil" sagt, dass
-    /// es zum Typ gehört, und trägt „Grafik…" und „Typ ändern…"; die Kenndaten tragen
-    /// „Ändern…"; der Kopf nennt Typ und Herkunft.
+    /// es zum Typ gehört, und trägt „Grafik…" und „Typ ändern…"; die Kenndaten sind seit
+    /// Stufe 4 direkt bedienbar; der Kopf nennt Typ und Herkunft.
     /// </summary>
     [Fact]
     public void Das_Stammblatt_traegt_Wochenprofil_und_Kenndaten()
@@ -672,6 +677,166 @@ public class BedarfAdminDialogTests : EposBunitContext
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent));
         Assert.Contains("Typ Alpha", cut.Find(".epos-stammblatt-erklaerung").TextContent);
         Assert.Equal("Typ Alpha · eigener Satz", cut.Find(".epos-stammblatt-unter").TextContent);
+    }
+
+    // =====================================================================
+    // Stufe 4 (Konzept Administrationsdialoge, A5): die Kenndaten direkt im
+    // Stammblatt - Speichern und Verwerfen wie bei den Geraetekatalogen
+    // =====================================================================
+
+    /// <summary>Der Dialog mit den Wegen der direkt bedienbaren Kenndaten.</summary>
+    private IRenderedComponent<BedarfAdminDialog> MitKenndaten(
+        List<(string Name, string Typ, string Beschreibung, double[] Monate)> geschrieben,
+        bool geschuetzt = false, Func<string, KatalogSpeicherErgebnis>? ergebnis = null,
+        Action<bool>? geschlossen = null)
+        => Render<BedarfAdminDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Stromverbraucher)
+            .Add(x => x.Katalogzeilen, () => KATALOG.Select((n, i) =>
+                new Katalogfilterzeile(i + 1, n) { Geschuetzt = geschuetzt }
+                    .MitText(Katalogfilterprofil.SpBezeichner, n)).ToList())
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Stromverbraucher))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("Beschreibung " + n, "Buero")))
+            .Add(x => x.Jahressumme, n => "12,00")
+            .Add(x => x.Typen, () => new[] { "Buero", "Werkstatt" })
+            .Add(x => x.Monatswerte, n => Enumerable.Repeat(1.0, 12).ToArray())
+            .Add(x => x.Monatsnamen, Enumerable.Range(1, 12).Select(m => "Monat " + m + ":").ToArray())
+            .Add(x => x.Speichern, (name, typ, beschr, monate) =>
+            {
+                geschrieben.Add((name, typ, beschr, monate));
+                return ergebnis?.Invoke(name) ?? new KatalogSpeicherErgebnis(true, "", name);
+            })
+            .Add(x => x.MeldungTypFehlt, "Verbrauchertyp auswählen!")
+            .Add(x => x.BtnNeuText, "Verbraucher in DB neu...")
+            .Add(x => x.BtnLoeschenText, "Verbraucher in DB löschen")
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>
+    /// <b>Direkt bedienbar statt „Ändern…"</b>: Typ und Beschreibung stehen als Felder in
+    /// den Kenndaten, die zwölf Monatswerte in der eigenen Gruppe; die Fußleiste trägt
+    /// Speichern · Verwerfen · Statuszeile · Neu… · Beenden. Ohne Änderung sind Speichern
+    /// und Verwerfen gesperrt.
+    /// </summary>
+    [Fact]
+    public void Die_Kenndaten_sind_direkt_bedienbar()
+    {
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben);
+
+        Assert.Equal(new[] { "Wochenprofil", "Kenndaten", "Monatswerte" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent));
+        Assert.Single(cut.FindAll(".epos-stammblatt select"));
+        Assert.Single(cut.FindAll(".epos-stammblatt textarea"));
+        Assert.Equal(12, cut.FindAll(".epos-stammblatt input[inputmode=decimal]").Count);
+
+        var leiste = cut.FindAll(".epos-katalog-dialog > .epos-leiste").Last();
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Verbraucher in DB neu...", "Beenden" },
+                     leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        Assert.True(Knopf(cut, "Verwerfen").HasAttribute("disabled"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("ändern...") && b.TextContent.Contains("Verbraucher"));
+    }
+
+    /// <summary>
+    /// <b>Speichern schreibt den Arbeitsstand</b> über den Weg der Hülle: Typ,
+    /// Beschreibung und die zwölf Monatswerte; danach ist der Stand gespeichert und die
+    /// Statuszeile meldet es.
+    /// </summary>
+    [Fact]
+    public void Speichern_schreibt_Typ_Beschreibung_und_Monatswerte()
+    {
+        var geschrieben = new List<(string Name, string Typ, string Beschreibung, double[] Monate)>();
+        var cut = MitKenndaten(geschrieben);
+
+        cut.Find(".epos-stammblatt select").Change("1");                 // Werkstatt
+        cut.Find(".epos-stammblatt textarea").Input("neu beschrieben");
+        cut.FindAll(".epos-stammblatt input[inputmode=decimal]")[2].Input("3,5");
+
+        Assert.True(cut.Instance.Geaendert);
+        Assert.Equal("3 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        Knopf(cut, "Speichern").Click();
+
+        var satz = Assert.Single(geschrieben);
+        Assert.Equal("Alpha", satz.Name);
+        Assert.Equal("Werkstatt", satz.Typ);
+        Assert.Equal("neu beschrieben", satz.Beschreibung);
+        Assert.Equal(3.5, satz.Monate[2]);
+        Assert.Equal(1.0, satz.Monate[0]);
+        Assert.False(cut.Instance.Geaendert);
+        Assert.StartsWith("Gespeichert um", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Geänderte Felder halten an</b> (Konzept 3.3): Zeilenwechsel, Neu… und Beenden
+    /// melden „Speichern oder Verwerfen"; Verwerfen nimmt den Arbeitsstand zurück.
+    /// </summary>
+    [Fact]
+    public void Geaenderte_Felder_halten_Zeilenwechsel_und_Beenden_an()
+    {
+        bool? geschlossen = null;
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben, geschlossen: b => geschlossen = b);
+
+        cut.Find(".epos-stammblatt textarea").Input("geaendert");
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal("Alpha", cut.Instance.Gewaehlt);
+        Assert.Contains("Speichern", cut.Instance.Meldung);
+
+        Knopf(cut, "Beenden").Click();
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "Verwerfen").Click();
+        Assert.False(cut.Instance.Geaendert);
+        Assert.Contains("Beschreibung Alpha", cut.Find(".epos-stammblatt textarea").TextContent);
+
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal("Beta", cut.Instance.Gewaehlt);
+        Assert.Empty(geschrieben);
+    }
+
+    /// <summary>
+    /// <b>Die Prüfregeln des Stammkopfes</b>: Der Typ ist Pflicht, ein leerer Monatswert
+    /// hält an und nennt das Feld; geschrieben wird dann nichts.
+    /// </summary>
+    [Fact]
+    public void Speichern_prueft_Typ_und_Monatswerte()
+    {
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben);
+
+        cut.FindAll(".epos-stammblatt input[inputmode=decimal]")[4].Input("");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Empty(geschrieben);
+        Assert.Contains("Monat 5", cut.Instance.Meldung);
+        Assert.True(cut.Instance.Geaendert);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz zeigt seine Werte als TEXT</b> (V13, Stufe 4): keine
+    /// gesperrten Felder, sondern Name und Wert; Speichern ist weich gesperrt mit Grund.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_zeigt_Kenndaten_und_Monatswerte_als_Text()
+    {
+        var geschrieben = new List<(string, string, string, double[])>();
+        var cut = MitKenndaten(geschrieben, geschuetzt: true);
+
+        var gruppen = cut.FindAll(".epos-stammblattgruppe--lesen");
+        Assert.Equal(2, gruppen.Count);
+        Assert.Empty(cut.FindAll(".epos-stammblatt select, .epos-stammblatt textarea, .epos-stammblatt input"));
+        var namen = cut.FindAll(".epos-stammblattwert dt").Select(e => e.TextContent).ToList();
+        Assert.Contains("Typ", namen);
+        Assert.Contains("Beschreibung", namen);
+        Assert.Contains("Monat 1", namen);
+        Assert.Contains(cut.FindAll(".epos-stammblattwert dd"), d => d.TextContent == "1 MWh");
+
+        IElement speichern = Knopf(cut, "Speichern");
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+        Assert.Contains("Duplizieren", cut.Instance.Meldung);
+        Assert.Empty(geschrieben);
     }
 
     /// <summary>

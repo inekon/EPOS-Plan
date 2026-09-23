@@ -50,7 +50,16 @@
    mehrere Zeilen, Auslieferungssaetze bleiben stehen), das Schloss statt der
    Spalte "Auslieferung". DUPLIZIEREN ist neu: Es legt den eigenen Satz samt
    Typ und Monatswerten an (Kern Katalogkopie ueber BedarfStammCtrl.Duplizieren)
-   - der Weg, einen Auslieferungssatz abzuwandeln. *@
+   - der Weg, einen Auslieferungssatz abzuwandeln.
+
+   STUFE 4 (Konzept Administrationsdialoge, A5; zurueckgestellt aus Stufe 3):
+   Die KENNDATEN sind direkt bedienbar statt ueber "Aendern..." (den Stammkopf
+   als Ueberlagerung): Typ und Beschreibung in der Gruppe Kenndaten, die zwoelf
+   Monatswerte in der Gruppe Monatswerte, Speichern und Verwerfen in der
+   Fussleiste wie bei den Geraetekatalogen. Der Dialog fuehrt dafuer einen
+   ARBEITSSTAND; ein geaendertes Feld haelt Zeilenwechsel, Neu... und Beenden an
+   ("Speichern oder Verwerfen"). Ein Auslieferungssatz zeigt seine Werte als
+   TEXT (V13). Der Stammkopf bleibt als Ueberlagerung fuer "Neu...". *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -111,7 +120,7 @@
                    A5) bleibt offen. *@
             <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
                         Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
-                        Kennzahlen="@Kennzahlen"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
                         Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
@@ -128,42 +137,83 @@
                             <p class="epos-stammblatt-erklaerung">@Wochenprofiltext</p>
                         </KindInhalt>
                     </Stammblattgruppe>
-                    <Stammblattgruppe Titel="@Resource.ADM_SB_KENNDATEN">
-                        <Kopf>
-                            <button type="button" class="epos-textknopf" disabled="@(!ZeileGewaehlt)"
-                                    @onclick="BeiAendern">@BtnAendernText</button>
-                        </Kopf>
+                    @* KENNDATEN (Stufe 4, A5): direkt bedienbar - Typ und Beschreibung;
+                       Name und Jahressumme sind Lesewerte (umbenannt wird ueber
+                       Duplizieren..., die Jahressumme rechnet der Kern). Ein
+                       Auslieferungssatz zeigt alles als TEXT (V13). *@
+                    <Stammblattgruppe Titel="@Resource.ADM_SB_KENNDATEN" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Kenndatenwerte : null)">
                         <KindInhalt>
-                            @* Beschriftung neben dem Feld, die Einheit rechts daneben wie
-                               Label11 im Designer. *@
                             <Formularraster>
                                 <KindInhalt>
+                                    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
+                                    <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Typeintraege"
+                                                 Auswahl="@Typindex" AuswahlChanged="BeiTyp" />
+                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_arbeitBeschreibung"
+                                              WertChanged="BeiBeschreibung" Mehrzeilig="true" Zeilen="3" />
                                     <div class="epos-feldpaar">
                                         <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
                                         <span class="epos-einheit">@EinheitText</span>
                                     </div>
-
-                                    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
-                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-                                              Mehrzeilig="true" Zeilen="3" />
-                                    <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
                                 </KindInhalt>
                             </Formularraster>
                         </KindInhalt>
                     </Stammblattgruppe>
+
+                    @* MONATSWERTE (Stufe 4, A5): die zwoelf Felder des Stammkopfes -
+                       Pflicht, eine Fehleingabe faerbt das Feld und sperrt Speichern. *@
+                    @if (Monatswerte is not null)
+                    {
+                        <Stammblattgruppe Titel="@GruppeMonateText" Lesemodus="@_auslieferung"
+                                          Werte="@(_auslieferung ? Monatswertwerte : null)">
+                            <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        @for (int m = 0; m < 12; m++)
+                                        {
+                                            int monat = m;
+                                            <Zahlenfeld Bezeichnung="@Monatsname(monat)" Einheit="@EinheitMonat"
+                                                        Feldname="@Feldname(monat)" Nachkommastellen="4"
+                                                        Wert="@_arbeitMonate[monat]"
+                                                        WertChanged="@(w => BeiMonat(monat, w))"
+                                                        FehlerZustand="BeiFehlerZustand" />
+                                        }
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Stammblattgruppe>
+                    }
                 </Gruppen>
             </Stammblatt>
         </Blatt>
     </Katalograhmen>
 
-    @* DIE FUSSLEISTE DER VERWALTUNG (V15, Stufe 3): Fueller (Statuszeile) - Neu... -
-       Beenden. Grafik... und Typ aendern... stehen im Kopf der Gruppe Wochenprofil,
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15; seit Stufe 4 mit Speichern und
+       Verwerfen fuer die direkt bedienbaren Kenndaten): Speichern - Verwerfen -
+       Fueller (Statuszeile) - Neu... - Beenden. Grafik... und Typ aendern... stehen im Kopf der Gruppe Wochenprofil,
        Aendern... im Kopf der Kenndaten, Duplizieren... und Loeschen in der
        Auswahlleiste (V8: keine Handlung an zwei Orten). Stammkopf, Wochenprofil
        und Loeschen schreiben SOFORT - es gibt nichts zu speichern; der Dialog
        schliesst mit "Beenden", Esc und Kreuz tun dasselbe. Gelungenes steht in der
        Statuszeile, Gescheitertes im Warnband (V11). *@
     <div class="epos-leiste">
+        @if (Speichern is not null)
+        {
+            @* SPEICHERN BEI EINEM AUSLIEFERUNGSSATZ (AD-Q11): weich gesperrt, der
+               Grund im Kurztext und nach dem Klick im Warnband. *@
+            @if (_auslieferung)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@MeldungSpeichernGesperrt" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                        @onclick="BeiSpeichern">@BtnSpeichernText</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                    @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
+        }
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -187,7 +237,7 @@
 
     @* --- Ueberlagerung 1: der Stammkopf (W8.1), Modi Bearbeiten und Neu --- *@
     <Ueberlagerung Offen="@(_typStammGaben is not null)"
-                   Titel="@BtnAendernText" Geschlossen="TypStammFertig">
+                   Titel="@BtnNeuText" Geschlossen="TypStammFertig">
         <KindInhalt>
             @if (_typStammGaben is not null)
             {
@@ -329,6 +379,24 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>?>? Vorschau { get; set; }
 
+    // ---- Stufe 4 (A5): die Kenndaten direkt im Stammblatt -----------------
+
+    /// <summary>Die Typliste der Klappliste (<c>BedarfStammCtrl.Typen</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Typen { get; set; }
+
+    /// <summary>
+    /// Die zwölf Monatswerte eines Satzes (<c>BedarfStammCtrl.Monatswerte</c>); ohne ihn
+    /// gibt es die Gruppe Monatswerte nicht.
+    /// </summary>
+    [Parameter] public Func<string, double[]?>? Monatswerte { get; set; }
+
+    /// <summary>
+    /// <b>„Speichern"</b> — schreibt den Kopf eines vorhandenen Satzes (Name, Typ,
+    /// Beschreibung, Monatswerte) über <c>BedarfStammCtrl.SaveHead</c>; die Hülle prüft
+    /// die ReadOnly-Sperre vorher. Ohne ihn stehen weder Speichern noch Verwerfen da.
+    /// </summary>
+    [Parameter] public Func<string, string, string, double[], KatalogSpeicherErgebnis>? Speichern { get; set; }
+
     /// <summary>
     /// Der Dialog ist zu Ende — immer <c>true</c>. Einen Abbruchweg gibt es nicht:
     /// Jede Aktion schreibt sofort in den Katalog (DL-2 Nr. 3).
@@ -374,6 +442,27 @@
 
     [Parameter] public string HilfeSchluessel { get; set; } = "";
 
+    // ---- Stufe 4 (A5) ----------------------------------------------------
+    [Parameter] public string BtnSpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
+    [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
+    [Parameter] public string GruppeMonateText { get; set; } = Resource.BTYP_GRP_MONATE;
+    [Parameter] public string EinheitMonat { get; set; } = "MWh";
+
+    /// <summary>Die zwölf Beschriftungen der Monatsfelder (<c>TypStammHuelle.Monatsbeschriftungen</c>).</summary>
+    [Parameter] public IReadOnlyList<string>? Monatsnamen { get; set; }
+
+    /// <summary>Die zwölf Feldnamen der Prüfmeldung — je Ausprägung verschieden (Befund W8‑O‑1).</summary>
+    [Parameter] public IReadOnlyList<string>? Feldnamen { get; set; }
+
+    /// <summary>„… auswählen!" — die Pflichtmeldung des Typs, je Ausprägung.</summary>
+    [Parameter] public string MeldungTypFehlt { get; set; } = Resource.BTYP_MSG_TYP_STROM;
+
+    /// <summary>„Bitte {0} als Zahl eingeben." — die Pflichtmeldung eines Monatswerts.</summary>
+    [Parameter] public string MeldungZahlFehlt { get; set; } = Resource.BTYP_MSG_ZAHL;
+
+    /// <summary>Der Grund am weich gesperrten „Speichern" eines Auslieferungssatzes (AD-Q11).</summary>
+    [Parameter] public string MeldungSpeichernGesperrt { get; set; } = Resource.ADM_SPEICHERN_GESPERRT;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -387,6 +476,21 @@
     private string _beschreibung = "";
     private string _typ = "";
     private string _jahressumme = "";
+
+    // ---- Stufe 4 (A5): der ARBEITSSTAND der direkt bedienbaren Kenndaten ----
+    private string _arbeitTyp = "";
+    private string _arbeitBeschreibung = "";
+    private double?[] _monate = new double?[12];
+    private double?[] _arbeitMonate = new double?[12];
+    private bool _geaendert;
+    private readonly HashSet<string> _fehlerhaft = new(StringComparer.Ordinal);
+    private IReadOnlyList<string> _typliste = Array.Empty<string>();
+
+    /// <summary>Trägt das Stammblatt geänderte Felder? (Prüfhilfe für Tests.)</summary>
+    public bool Geaendert => _geaendert;
+
+    /// <summary>Der Typ im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public string ArbeitTyp => _arbeitTyp;
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -613,6 +717,8 @@
         _filterstand = Filterstandvorgabe
             ?? Katalogfilterregister.Stand(Katalogprofil?.Schluessel ?? ("BEDARF_" + Art));
 
+        _typliste = Typen?.Invoke() ?? Array.Empty<string>();
+
         KatalogLaden();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaske, () => KiSicht(), KiHaken());
@@ -656,8 +762,8 @@
             SatzEintraege = () => KiMaskenanmeldung.Eintraege(
                 _katalog, z => z.Bezeichner, z => z.Bezeichner),
 
-            BeschreibungLesen = () => _beschreibung,
-            TypLesen = () => _typ,
+            BeschreibungLesen = () => _arbeitBeschreibung,
+            TypLesen = () => _arbeitTyp,
             JahressummeLesen = () => _jahressumme,
             BedarfsartLesen = () => Art.ToString()
         };
@@ -704,7 +810,19 @@
         else Waehlen(_gewaehlt);
     }
 
-    private void BeiZeile(string bezeichner) => Waehlen(bezeichner);
+    /// <summary>
+    /// Die Liste meldet eine Zeile. <b>Trägt das Stammblatt geänderte Felder, bleibt die
+    /// Wahl stehen</b> (Konzept 3.3) — das Warnband sagt „Speichern oder Verwerfen".
+    /// </summary>
+    private void BeiZeile(string bezeichner)
+    {
+        if (_geaendert && bezeichner != _gewaehlt)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return;
+        }
+        Waehlen(bezeichner);
+    }
 
     /// <summary>
     /// Eine Zeile wählen — <c>listBox_*_SelectedIndexChanged</c> des Vorläufers:
@@ -727,6 +845,23 @@
             _beschreibung = kopf.Value.Beschreibung;
             _typ = kopf.Value.Typ;
         }
+
+        // Stufe 4: der Arbeitsstand beginnt beim gespeicherten Stand.
+        double[]? monate = Monatswerte?.Invoke(_gewaehlt);
+        _monate = new double?[12];
+        if (monate is not null)
+            for (int m = 0; m < 12 && m < monate.Length; m++) _monate[m] = monate[m];
+        Zuruecksetzen();
+    }
+
+    /// <summary>Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen).</summary>
+    private void Zuruecksetzen()
+    {
+        _arbeitTyp = _typ;
+        _arbeitBeschreibung = _beschreibung;
+        _arbeitMonate = (double?[])_monate.Clone();
+        _fehlerhaft.Clear();
+        _geaendert = false;
     }
 
     private void Leeren()
@@ -743,15 +878,10 @@
     // "Profil ändern..." / "Neues Profil..." / "Profiltyp ändern..."
     // =====================================================================
 
-    private void BeiAendern()
-    {
-        if (!ZeileGewaehlt || TypStammGaben is null) return;
-        _typStammGaben = TypStammGaben(_gewaehlt, _beschreibung, _typ, false);
-    }
-
     private void BeiNeu()
     {
         if (TypStammGaben is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         _meldung = "";
         _namensfrage = true;
     }
@@ -875,6 +1005,7 @@
     private void BeiDuplizieren()
     {
         if (Duplizieren is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
         if (ziele.Count != 1) return;
 
@@ -938,7 +1069,186 @@
     /// Wochenprofil und Löschen schreiben sofort in den Katalog. Esc und das
     /// Schliesskreuz rufen denselben Weg (DL-2 Nr. 3).
     /// </summary>
-    private Task Beenden() => Geschlossen.InvokeAsync(true);
+    private Task Beenden()
+    {
+        // Stufe 4: Geaenderte Felder halten Beenden an (Konzept 3.3) - Esc und das
+        // Kreuz nehmen denselben Weg.
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
+
+    // =====================================================================
+    // Stufe 4 (A5): die Kenndaten direkt im Stammblatt
+    // =====================================================================
+
+    /// <summary>
+    /// Die Klapplisteneinträge des Typs. Ein BESTANDSWERT, den der Katalog nicht (mehr)
+    /// führt, wird vorangestellt (A-16 aus Welle 7, wie im Stammkopf).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Typeintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (_arbeitTyp.Length > 0 && !_typliste.Contains(_arbeitTyp)) l.Add((-1, _arbeitTyp));
+            for (int i = 0; i < _typliste.Count; i++) l.Add((i, _typliste[i]));
+            return l;
+        }
+    }
+
+    private int? Typindex
+    {
+        get
+        {
+            if (_arbeitTyp.Length == 0) return null;
+            for (int i = 0; i < _typliste.Count; i++)
+                if (string.Equals(_typliste[i], _arbeitTyp, StringComparison.Ordinal)) return i;
+            return -1;
+        }
+    }
+
+    private void BeiTyp(int? index)
+    {
+        if (_auslieferung) return;
+        if (index is null) _arbeitTyp = "";
+        else if (index.Value >= 0 && index.Value < _typliste.Count) _arbeitTyp = _typliste[index.Value];
+        Nachziehen();
+    }
+
+    private void BeiBeschreibung(string wert)
+    {
+        if (_auslieferung) return;
+        _arbeitBeschreibung = wert ?? "";
+        Nachziehen();
+    }
+
+    private void BeiMonat(int monat, double? wert)
+    {
+        if (_auslieferung) return;
+        _arbeitMonate[monat] = wert;
+        Nachziehen();
+    }
+
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft) { _fehlerhaft.Add(meldung.Feld); _geaendert = true; }
+        else _fehlerhaft.Remove(meldung.Feld);
+    }
+
+    /// <summary>Nach einer Eingabe: geändert, solange der Arbeitsstand vom gespeicherten abweicht.</summary>
+    private void Nachziehen()
+    {
+        _geaendert = GeaenderteFelder > 0 || _fehlerhaft.Count > 0;
+        _meldung = "";
+        _status = "";
+    }
+
+    /// <summary>Wie viele Felder vom gespeicherten Stand abweichen.</summary>
+    private int GeaenderteFelder
+    {
+        get
+        {
+            int n = 0;
+            if (!string.Equals(_arbeitTyp, _typ, StringComparison.Ordinal)) n++;
+            if (!string.Equals(_arbeitBeschreibung, _beschreibung, StringComparison.Ordinal)) n++;
+            for (int m = 0; m < 12; m++)
+                if (_arbeitMonate[m] != _monate[m]) n++;
+            return n;
+        }
+    }
+
+    /// <summary>Der Hinweis im Fuß des Stammblatts: „2 Felder geändert".</summary>
+    private string Aenderungshinweis
+    {
+        get
+        {
+            if (!_geaendert) return "";
+            int n = GeaenderteFelder;
+            return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
+                 : n > 1 ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n)
+                 : Resource.ADM_SB_GEAENDERT_OFFEN;
+        }
+    }
+
+    private string Monatsname(int m)
+        => Monatsnamen is not null && Monatsnamen.Count > m ? Monatsnamen[m] : (m + 1).ToString(CultureInfo.CurrentCulture);
+
+    private string Feldname(int m)
+        => Feldnamen is not null && Feldnamen.Count > m ? Feldnamen[m] : Monatsname(m);
+
+    /// <summary>Die Kenndaten eines Auslieferungssatzes als TEXT (V13).</summary>
+    private IReadOnlyList<Stammblattwert> Kenndatenwerte => new[]
+    {
+        new Stammblattwert(LabelName, _gewaehlt),
+        new Stammblattwert(LabelTyp, _typ),
+        new Stammblattwert(LabelBeschreibung, _beschreibung),
+        new Stammblattwert(LabelJahressumme, _jahressumme, EinheitText)
+    };
+
+    /// <summary>Die Monatswerte eines Auslieferungssatzes als TEXT (V13).</summary>
+    private IReadOnlyList<Stammblattwert> Monatswertwerte
+        => Enumerable.Range(0, 12)
+                     .Select(m => new Stammblattwert(Monatsname(m),
+                         _monate[m] is double w ? w.ToString("0.####", CultureInfo.CurrentCulture) : "",
+                         EinheitMonat))
+                     .ToList();
+
+    /// <summary>
+    /// <b>„Speichern"</b> — die Prüfregeln des Stammkopfes, wörtlich: Ein Feld mit
+    /// Fehleingabe hält an, der Typ ist Pflicht, jeder der zwölf Monatswerte ist Pflicht
+    /// (die Meldung nennt das erste Feld). Geschrieben wird über den Weg der Hülle;
+    /// danach lädt die Liste neu (die Jahressumme rechnet der Kern) und die Statuszeile
+    /// meldet es.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        if (_auslieferung) { Warnen(MeldungSpeichernGesperrt); return; }
+        if (!_geaendert || Speichern is null || _gewaehlt.Length == 0) return;
+
+        if (_fehlerhaft.Count > 0)
+        {
+            Warnen(string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, _fehlerhaft.First()));
+            return;
+        }
+        if (_arbeitTyp.Trim().Length == 0) { Warnen(MeldungTypFehlt); return; }
+        if (Monatswerte is not null)
+        {
+            for (int m = 0; m < 12; m++)
+            {
+                if (_arbeitMonate[m] is null)
+                {
+                    Warnen(string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, Feldname(m)));
+                    return;
+                }
+            }
+        }
+
+        var werte = new double[12];
+        for (int m = 0; m < 12; m++) werte[m] = _arbeitMonate[m] ?? _monate[m] ?? 0.0;
+
+        KatalogSpeicherErgebnis erg = Speichern(_gewaehlt, _arbeitTyp, _arbeitBeschreibung, werte);
+        if (!erg.Ok)
+        {
+            Warnen(erg.Meldung);
+            return;
+        }
+
+        _geaendert = false;
+        KatalogLaden();
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
+                                DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>„Verwerfen" — der Arbeitsstand wird wieder der gespeicherte.</summary>
+    private void BeiVerwerfen()
+    {
+        Zuruecksetzen();
+        _meldung = "";
+    }
 
     private Task BeiTaste(KeyboardEventArgs e)
     {

@@ -24542,4 +24542,64 @@ Do you want to allow this?</value>
   <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
     <value>The weekly profile belongs to the type “{0}” and applies to every profile of this type.</value>
   </data>
+  <data name="ADM_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ADM_SB_JAHRESVERLAUF" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="ADM_SB_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ADM_SB_GANGLINIE" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="ADM_SB_GROSS" xml:space="preserve">
+    <value>enlarge…</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
+    <value>Delivered record – read only, cannot be deleted.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
+    <value>Delivered record – deletion is locked.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Used in projects ({0}) – deletion is locked; remove it there first.</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Kept (used in projects): {0}</value>
+  </data>
+  <data name="ADM_MSG_EINGELESEN" xml:space="preserve">
+    <value>“{0}” imported.</value>
+  </data>
+  <data name="ADM_SB_SATZ" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="ADM_SB_ABLAGE" xml:space="preserve">
+    <value>Storage folder</value>
+  </data>
+  <data name="ADM_SB_VOLLLAST" xml:space="preserve">
+    <value>Full load hours</value>
+  </data>
+  <data name="ADM_SB_VERWENDET" xml:space="preserve">
+    <value>Used in</value>
+  </data>
+  <data name="KLIMA_IMPORT_TITEL" xml:space="preserve">
+    <value>Import climate data</value>
+  </data>
+  <data name="KLIMA_KZ_MITTEL" xml:space="preserve">
+    <value>Annual mean</value>
+  </data>
+  <data name="KLIMA_KZ_TIEFST" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="KLIMA_KZ_HOECHST" xml:space="preserve">
+    <value>Maximum</value>
+  </data>
+  <data name="KLIMA_SB_VERMERK" xml:space="preserve">
+    <value>Source note</value>
+  </data>
+  <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
+    <value>No usable series is available for this record (neither 8,760 nor 35,040 values).</value>
+  </data>
 </root>

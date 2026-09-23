@@ -133,6 +133,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. ähnelt.
+        /// </summary>
+        public static string ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE {
+            get {
+                return ResourceManager.GetString("ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen. ähnelt.
+        /// </summary>
+        public static string ADM_AW_LOESCHEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("ADM_AW_LOESCHEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stammblatt › ähnelt.
         /// </summary>
         public static string ADM_AW_STAMMBLATT {
@@ -165,6 +183,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_BTN_DUPLIZIEREN {
             get {
                 return ResourceManager.GetString("ADM_BTN_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import… ähnelt.
+        /// </summary>
+        public static string ADM_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("ADM_BTN_IMPORT", resourceCulture);
             }
         }
         
@@ -700,6 +727,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stehen bleiben (in Projekten verwendet): {0} ähnelt.
+        /// </summary>
+        public static string ADM_LOESCHEN_BLEIBEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("ADM_LOESCHEN_BLEIBEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sollen diese {0} Sätze gelöscht werden? {1} ähnelt.
         /// </summary>
         public static string ADM_LOESCHEN_FRAGE_MEHR {
@@ -734,6 +770,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_MSG_DUPLIZIERT {
             get {
                 return ResourceManager.GetString("ADM_MSG_DUPLIZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ eingelesen. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_EINGELESEN {
+            get {
+                return ResourceManager.GetString("ADM_MSG_EINGELESEN", resourceCulture);
             }
         }
         
@@ -783,6 +828,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablageordner ähnelt.
+        /// </summary>
+        public static string ADM_SB_ABLAGE {
+            get {
+                return ResourceManager.GetString("ADM_SB_ABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Daten ähnelt.
         /// </summary>
         public static string ADM_SB_ALLE_DATEN {
@@ -810,6 +864,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
+        /// </summary>
+        public static string ADM_SB_GANGLINIE {
+            get {
+                return ResourceManager.GetString("ADM_SB_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Felder geändert ähnelt.
         /// </summary>
         public static string ADM_SB_GEAENDERT {
@@ -833,6 +896,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SB_GEAENDERT_OFFEN {
             get {
                 return ResourceManager.GetString("ADM_SB_GEAENDERT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die groß… ähnelt.
+        /// </summary>
+        public static string ADM_SB_GROSS {
+            get {
+                return ResourceManager.GetString("ADM_SB_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ADM_SB_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ADM_SB_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresverlauf ähnelt.
+        /// </summary>
+        public static string ADM_SB_JAHRESVERLAUF {
+            get {
+                return ResourceManager.GetString("ADM_SB_JAHRESVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Satz liegt keine brauchbare Reihe vor (weder 8 760 noch 35 040 Werte). ähnelt.
+        /// </summary>
+        public static string ADM_SB_KEINE_GANGLINIE {
+            get {
+                return ResourceManager.GetString("ADM_SB_KEINE_GANGLINIE", resourceCulture);
             }
         }
         
@@ -891,11 +990,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, nicht löschbar. ähnelt.
+        /// </summary>
+        public static string ADM_SB_NUR_LESEN_OHNE_KOPIE {
+            get {
+                return ResourceManager.GetString("ADM_SB_NUR_LESEN_OHNE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string ADM_SB_SATZ {
+            get {
+                return ResourceManager.GetString("ADM_SB_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stammblatt ähnelt.
         /// </summary>
         public static string ADM_SB_TITEL {
             get {
                 return ResourceManager.GetString("ADM_SB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet in ähnelt.
+        /// </summary>
+        public static string ADM_SB_VERWENDET {
+            get {
+                return ResourceManager.GetString("ADM_SB_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volllaststunden ähnelt.
+        /// </summary>
+        public static string ADM_SB_VOLLLAST {
+            get {
+                return ResourceManager.GetString("ADM_SB_VOLLLAST", resourceCulture);
             }
         }
         
@@ -40030,6 +40165,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten einlesen ähnelt.
+        /// </summary>
+        public static string KLIMA_IMPORT_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_IMPORT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstwert ähnelt.
+        /// </summary>
+        public static string KLIMA_KZ_HOECHST {
+            get {
+                return ResourceManager.GetString("KLIMA_KZ_HOECHST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel ähnelt.
+        /// </summary>
+        public static string KLIMA_KZ_MITTEL {
+            get {
+                return ResourceManager.GetString("KLIMA_KZ_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tiefstwert ähnelt.
+        /// </summary>
+        public static string KLIMA_KZ_TIEFST {
+            get {
+                return ResourceManager.GetString("KLIMA_KZ_TIEFST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
         /// </summary>
         public static string KLIMA_LBL_BEZEICHNUNG {
@@ -40287,6 +40458,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_REITER_TEMPERATUR {
             get {
                 return ResourceManager.GetString("KLIMA_REITER_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunftsvermerk ähnelt.
+        /// </summary>
+        public static string KLIMA_SB_VERMERK {
+            get {
+                return ResourceManager.GetString("KLIMA_SB_VERMERK", resourceCulture);
             }
         }
         

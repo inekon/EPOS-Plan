@@ -46,6 +46,15 @@ namespace WindowsFormsApplication1
                 ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
                     Zeitreihenart.Stromganglinie, Katalogtexte.Fuer),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
+                // Neuordnung Stufe 4: das Stammblatt mit Jahresverlauf und Kennzahlen,
+                // die weiche Loeschsperre mit dem Projektnamen - und als letzte Pruefung
+                // vor dem Loeschen die Zuordnung (neu fuer die Stromganglinie).
+                ["Ansicht"] = new Func<string, Task<EPOS.UI.Bausteine.Ganglinienansicht>>(
+                    n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.Stromganglinie, n)),
+                ["Verwendung"] = new Func<Task<IReadOnlyDictionary<string, IReadOnlyList<string>>>>(
+                    () => ZeitreihenAdminWege.Verwendung(Zeitreihenart.Stromganglinie)),
+                ["HatProjektzuordnung"] = new Func<string, Task<bool>>(
+                    n => Task.FromResult(new StromganglinieStammCtrl().HatProjektzuordnung(n))),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
                 ["Einlesen"] = new Func<string, GanglinienRaster, GanglinienImportRueckrufe,
                                         Task<GanglinienImportErgebnis>>(Einlesen),
