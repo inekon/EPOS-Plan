@@ -254,7 +254,8 @@ jeden gerollten Dialog als Verstoß.
 | B1 / B2 | Stromverbraucher Verwaltung, dieselben zwei Größen |
 | M1 / M2 | Photovoltaik-Module, dieselben zwei Größen |
 | W1, S1, C1, P1 | Wärmebedarf, Solarganglinie, BHKW-Katalog, Wärmepumpen-Stamm (je 1 180 × 780) |
-| G1 | **Gegenprobe**: Klimadaten mit dem Maß von vor KL-5 (seit Stufe 1 samt dem Raster von damals). Sie MUSS den Befund zeigen |
+| K4 | der **Katalograhmen mit Eingabeblock** (Seite `maske=rahmen`: Liste, darunter zwei Bilder in Reitern und acht Felder, darunter die Fußleiste) — die Anordnung, die seit Stufe 4 keine Verwaltung mehr trägt, der Baustein aber weiterführt |
+| G1 | **Gegenprobe**: derselbe Rahmen (`maske=rahmen`) mit dem Maß von vor KL-5 samt dem Raster von damals. Sie MUSS den Befund zeigen |
 | N01a … N15b | **Neuordnung Stufe 1**: jede Verwaltung im Katalograhmen (vier Katalogbrowser, drei Modulkataloge, Wärmepumpe, Klimadaten, drei Bedarfe, drei Zeitreihen) mit vollen Zeilen, je 1 088 × 624 (`a`) und 400 × 624 (`b`) — Messung und Sollwerte im Abschnitt zu Stufe 1 unten |
 | G2 | **Gegenprobe zu Stufe 1**: Heizkessel mit den Regeln von vor Stufe 1. Sie MUSS Rollbereich-in-Rollbereich und Querüberlauf zeigen |
 | P2a / P2b | Nachbar: der Heizkessel-**Projektdialog** (erbt die Katalogliste); die Liste darf nicht zusammenfallen, bei 1 088 px nicht quer rollen |
@@ -442,3 +443,45 @@ derselbe Wirt aus `HEAD` gebaut):
 | Kästchen gesetzt | — | Liste springt nicht (auch schmal: feste Ordnung der Leiste) |
 | Nachbar Heizkessel-Projektdialog | P2a quer 0 px, P2b quer 91 px | unverändert (P2a 0 px, P2b 91 px) |
 | Rückgabe | Katalogprobe 0 (45), Rasterprobe 0 (13) | **Katalogprobe 0 (45), Rasterprobe 0 (13)** |
+
+## Neuordnung der Administrationsdialoge, Stufe 4 (V9, V14)
+
+**Klimadaten und die drei Zeitreihen** (Wärmebedarf extern, Solarthermieganglinie,
+Stromganglinie) tragen das Stammblatt wie die Gerätekataloge — Gruppe „Jahresverlauf" bzw.
+„Ganglinie" mit dem Bild des Kern-Renderers (`ChartRenderer.JahresverlaufModell`, 8 760
+Stundenwerte, im Blatt auf dessen Breite gezogen; „groß…" öffnet es breit) und Gruppe
+„Herkunft" als Text. Das **Einlesen ist eine Überlagerung** mit Titel und Kreuz hinter
+„Import…" in der Fußleiste (`button.epos-importknopf`). Die Fälle N09, N13, N14, N15 kommen
+dazu in die Menge `STUFE3` (Messung (u1) … (u7) wie oben) und bilden die Menge `STUFE4`
+(Funktion `stufe4probe`, Sollwerte in `pruefe`):
+
+| | Größe | Sollwert |
+|---|---|---|
+| (v1) | das Bild der Gruppe steht ganz im Stammblatt (rechts nicht über dessen Inhalt), das SVG nicht breiter als seine Fläche | ja |
+| (v2) | der Inhalt des Stammblatts rollt nicht quer; schmal gemessen im geöffneten Blatt | 0 px |
+| (v3) | „Import…" öffnet **eine** Überlagerung mit Titel und genau einem Kreuz, ganz im Fenster, mit den Feldern des Einlesens (`.epos-einlesen`) | ja |
+| (v4) | die Überlagerung rollt nicht quer, die Seite auch nicht | 0 px |
+| (v5) | das Kreuz schließt sie wieder | ja |
+
+Die Gegenprobe G1 hat mit Stufe 4 ihren Gegenstand verloren (der Klimadialog steht nicht mehr
+„Liste oben, Eingabeblock darunter"); sie misst jetzt die Probeseite `maske=rahmen`, die diese
+Anordnung des `Katalograhmen` (Schlitz `Eingabe`) im Bau nachstellt, K4 dieselbe Seite mit der
+Behebung von KL-5.
+
+**Ergebnis vom 23.09.2026** (Chromium headless 1208, Playwright 1.61.0 über eine Hülle mit
+`executablePath`, weil der zu 1.61 gehörige Chromium auf dem Rechner fehlte; die Messung hängt
+nicht an der Fassung):
+
+| | 1 088 × 624 (`a`) | 400 × 624 (`b`) |
+|---|---|---|
+| Klimadaten N09: Listenhülle | 424 px innen, 8 ganze Zeilen | 286 px innen, 5 ganze Zeilen |
+| N09: Stammblatt / Bild „Jahresverlauf" | 380 × 370 px rechts / 358 × 122 px (SVG 356 × 120) | 368 × 364 px / 346 × 118 px |
+| N09: Überlagerung „Klimadaten einlesen" | 900 × 562 px, 1 Kreuz, quer 0 | 368 × 562 px, 1 Kreuz, quer 0 |
+| Zeitreihen N13 / N14 / N15: Bild „Ganglinie" | 358 × 199 px (SVG 356 × 197) | 346 × 193 px (SVG 344 × 191) |
+| N13 Überlagerung „Datei einlesen" | 900 × 292 px | 368 × 397 px |
+| N14 / N15 Überlagerung (Titel der Ganglinie) | 900 × 272 px | 368 × 373 / 368 × 295 px |
+| Stammblatt quer, Seite quer, Überlagerung quer | 0 px | 0 px |
+| Vergleich (N09, drei gewählt) | Tabelle 358 × 535 px im Blatt, quer 0 | — |
+| K4 Rahmen mit Eingabeblock (1 180 × 780) | Listenhülle 372 px, Eingabeblock 222 px darunter, frei | — |
+| G1 Gegenprobe | Befund wie erwartet: Listenhülle über Eingabeblock, 116 471 px² Überschneidung | — |
+| Rückgabe | **Katalogprobe 0 (46 Fälle), Rasterprobe 0 (13 Fälle)** | |
