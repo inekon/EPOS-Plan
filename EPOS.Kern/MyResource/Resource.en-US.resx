@@ -6953,21 +6953,6 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KOSTENART_OHNE" xml:space="preserve">
     <value>not classified</value>
   </data>
-  <data name="BEMESSUNG_BETRAG" xml:space="preserve">
-    <value>fixed amount</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_INVESTITION" xml:space="preserve">
-    <value>% of investment</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_H" xml:space="preserve">
-    <value>per operating hour</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_KWH" xml:space="preserve">
-    <value>per kWh</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN" xml:space="preserve">
-    <value>% of fuel cost</value>
-  </data>
   <data name="WIRT_KWKG_MODUL_TITEL" xml:space="preserve">
     <value>CHP bonus per module</value>
   </data>

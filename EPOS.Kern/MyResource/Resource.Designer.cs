@@ -2861,51 +2861,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_BETRAG {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_BETRAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die je Betriebsstunde ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_EUR_PRO_H {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_H", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_EUR_PRO_KWH {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_KWH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_PROZENT_INVESTITION {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_PROZENT_INVESTITION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {

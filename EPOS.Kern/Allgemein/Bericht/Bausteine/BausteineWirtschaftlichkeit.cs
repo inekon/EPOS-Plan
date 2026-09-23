@@ -692,7 +692,8 @@ namespace WindowsFormsApplication1
                                           false, WordBerichtGenerator.SCHRIFT_TABELLE));
                         tr.Append(k.Zelle(n.Gruppe, w[1], false, null, JustificationValues.Left,
                                           false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                        tr.Append(k.Zelle(WirtschaftlichkeitZeilen.BemessungText(n.Bemessung), w[2],
+                        // ETAPPE E8c (E8b‑Q2): jede Bemessungsart mit ihrem Namen im Gewerk.
+                        tr.Append(k.Zelle(WirtschaftlichkeitZeilen.BemessungText(n.Bemessung, n.Komponente), w[2],
                                           false, null, JustificationValues.Left, false,
                                           WordBerichtGenerator.SCHRIFT_TABELLE));
                         tr.Append(k.Zelle(herleitung, w[3], false, null, JustificationValues.Left,

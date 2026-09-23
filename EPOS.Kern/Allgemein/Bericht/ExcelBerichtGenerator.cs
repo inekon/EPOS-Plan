@@ -1518,7 +1518,8 @@ namespace WindowsFormsApplication1
 
                         ws.Cell(r, 1).Value = n.Bezeichnung;
                         ws.Cell(r, 2).Value = n.Gruppe;
-                        ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung);
+                        // ETAPPE E8c (E8b‑Q2): jede Bemessungsart mit ihrem Namen im Gewerk.
+                        ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung, n.Komponente);
                         ws.Cell(r, 4).Value = herleitung;
                         Zahl(ws, r, 5, n.BetragJahr, "#,##0");
                         // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): eine bemessene Position

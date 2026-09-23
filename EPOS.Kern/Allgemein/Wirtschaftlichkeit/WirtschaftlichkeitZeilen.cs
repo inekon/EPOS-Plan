@@ -1891,32 +1891,47 @@ namespace WindowsFormsApplication1
             ""                                   // nicht eingeordnet
         };
 
-        /// <summary>Anzeigetext einer Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>).</summary>
-        public static string BemessungText(string steuerwert)
+        /// <summary>
+        /// Anzeigetext einer Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>) in diesem Gewerk —
+        /// die Spalte „Bemessung" der Betriebskostentabelle in Wort- und Tabellenbericht.
+        ///
+        /// <para><b>ETAPPE E8c (E8b‑Q2): EINE Wahrheit.</b> Die Methode führte eine eigene
+        /// Liste und kannte 4 von 17 Arten; jede andere stand im Bericht als „fester
+        /// Betrag" — auch neben einer Menge-×-Satz-Formel der Formelmappe. Der Text kommt
+        /// jetzt aus dem <see cref="BemessungKatalog"/> (Ressourcen <c>BM_*</c>, beide
+        /// Sprachen), derselben Quelle wie Kostendialog und Kostenseite, samt der
+        /// gewerkeigenen Beschriftung („je Liter" am Pufferspeicher, „je kW elektr.
+        /// Leistung" am BHKW). Der Wächter <c>BemessungstexteAlleArtenTests</c> hält jede
+        /// Konstante <c>DbWerte.BEMESSUNG_*</c> gegen den Katalog.</para>
+        ///
+        /// <para>„fester Betrag" steht nur noch an einer festen Position: leerer Steuerwert,
+        /// BETRAG — und ein unbekannter Steuerwert, weil der Rechenweg ihn wie BETRAG
+        /// rechnet (<see cref="BetriebskostenCtrl.Betrag"/>: „nie stillschweigend 0").</para>
+        /// </summary>
+        /// <param name="komponente"><c>Tab_KostenKomponente.ID</c> der Position; 0 =
+        /// unbekannt, dann der allgemeine Name der Art.</param>
+        public static string BemessungText(string steuerwert, int komponente = 0)
         {
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_PROZENT_INVESTITION;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_EUR_PRO_H;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_EUR_PRO_KWH;
-            return MyResource.Resource.BEMESSUNG_BETRAG;
+            if (string.IsNullOrEmpty(steuerwert) || BemessungKatalog.Finde(steuerwert) == null)
+                steuerwert = DbWerte.BEMESSUNG_BETRAG;
+            return BemessungKatalog.Anzeige(steuerwert, komponente);
         }
 
         /// <summary>
         /// Herleitung einer Kostenposition als Klartext („1.500 h/a × 2,50 €/h").
-        /// Leer, wenn die Position ein fester Betrag ist oder ein Szenariowert die
-        /// Ableitung geschlagen hat — dann steht keine Herleitung dahinter.
+        /// Leer, wenn die Position fest ist (fester Betrag, fester Jahresbetrag, unbekannter
+        /// Steuerwert) oder ein Szenariowert die Ableitung geschlagen hat — dann steht keine
+        /// Herleitung dahinter.
         /// </summary>
         public static string Herleitung(KostenPositionNachweis n,
                                         System.Globalization.CultureInfo kultur)
         {
             if (n == null || n.SzenarioGepflegt) return "";
-            if (string.IsNullOrEmpty(n.Bemessung) ||
-                string.Equals(n.Bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
-                return "";
+            // ETAPPE E8c (E8b‑Q2): „bemessen" ist, was der Rechenweg als Menge × Satz rechnet —
+            // dieselbe Frage wie die Formelmappe (Stufe 3). Bis hierher galt nur BETRAG als
+            // fest; ein fester JAHRESBETRAG mit gepflegter Menge bekam eine Herleitung, nach
+            // der gar nicht gerechnet wird.
+            if (!BetriebskostenCtrl.Bemessungsfaktor(n.Bemessung).HasValue) return "";
             if (!n.Menge.HasValue || !n.Einheitpreis.HasValue) return "";
             // ANWENDERENTSCHEID 15.09.2026: Die Satzeinheit folgt der Bezugsgröße des
             // GEWERKS — am Pufferspeicher ist sie „€/Ltr.", nicht „€/kW".
