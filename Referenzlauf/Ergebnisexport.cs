@@ -62,7 +62,21 @@ namespace WindowsFormsApplication1.Referenzlauf
             dateien += Vektor(zielOrdner, "waermebedarf_extern.csv", wb.Waermebedarf_Extern, summen);
             dateien += Vektor(zielOrdner, "waermebedarf_dauerlinie.csv", wb.Dauerlinie, summen);
             dateien += Vektor(zielOrdner, "stundentemperatur.csv", wb.Stundentemperatur, summen);
-            dateien += Vektor(zielOrdner, "restwaerme.csv", sim.Rest_Waermebedarf_stuendlich, summen);
+
+            // --- Gebaeudesimulation VDI 6007 (Stufe G1 + G2, Umsetzungskonzept 1.8) --------
+            // Je Gebaeude des VDI-Wegs drei Reihen: raumtemperatur_<n>.csv und
+            // operative_temperatur_<n>.csv in Grad Celsius, kuehlbedarf_<n>.csv in kWh
+            // (n = Merkplatz des Gebaeudes im Lauf). Dateinamen, Schluessel und Reihenfolge
+            // legt der Kern fest (GebaeudeErgebnisexport). Ein Gebaeude auf dem
+            // Tagesbilanz-Weg erzeugt KEINE Datei und KEINEN Skalar - nicht einmal Nullen:
+            // Der Vergleich kennt keinen Dateiausschluss, und der Rueckweg-Test des
+            // Referenzprojekts auf dem Altweg (A15) verlangt einen unveraenderten Ordner.
+            IReadOnlyList<GebaeudeExportsatz> gebaeudeSaetze = GebaeudeErgebnisexport.Saetze(wb);
+            foreach (GebaeudeExportsatz satz in gebaeudeSaetze)
+                foreach (var reihe in satz.Reihen)
+                    dateien += Vektor(zielOrdner, reihe.Key, reihe.Value, summen);
+
+            dateien += Vektor(zielOrdner, "restwaerme.csv",sim.Rest_Waermebedarf_stuendlich, summen);
             dateien += Vektor(zielOrdner, "strombedarf_viertelstunde.csv", sb.Strombedarf_viertelStundenwerte, summen);
             dateien += Vektor(zielOrdner, "reststrom_viertelstunde.csv", sim.Rest_Strombedarf_viertelstuendlich, summen);
 
@@ -269,6 +283,22 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(p + "FrostWarnung", a.FrostWarnung.ToString()));
                     skalare.Add(Neu(p + "Pruefung_Moeglich", a.Pruefung.Moeglich.ToString()));
                     skalare.Add(Neu(p + "Pruefung_Warnung", a.Pruefung.Warnung.ToString()));
+                }
+            }
+
+            // --- Kennzahlen je Gebaeude des VDI-Wegs (Stufe G1 + G2) ----------------------
+            // Muster Erdreich-Block: Praefix Geb[n]., die Einheit steht im Namen,
+            // Jahressummen in MWh. Ohne VDI-Gebaeude kein einziger Eintrag.
+            foreach (GebaeudeExportsatz satz in gebaeudeSaetze)
+            {
+                for (int k = 0; k < satz.Skalare.Count; k++)
+                {
+                    var s = satz.Skalare[k];
+                    skalare.Add(Neu(s.Key, Zahl(s.Value)));
+                    // Der Rechenweg als Text steht gleich hinter der Kennung.
+                    if (k == 0)
+                        skalare.Add(Neu("Geb[" + satz.Index.ToString(CultureInfo.InvariantCulture) + "].Modell",
+                                        satz.Modell));
                 }
             }
 
