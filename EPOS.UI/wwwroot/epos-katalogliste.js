@@ -19,8 +19,9 @@
 // Liste dann nicht mit (die Komponente faengt das ab). Kein Zustand, keine
 // Ablage, kein Netz.
 
-/** Die vier Tasten der Liste. */
-const TASTEN = new Set(["ArrowUp", "ArrowDown", "Home", "End"]);
+/** Die Tasten der Liste: vier bewegen die Wahl, die Leertaste setzt das Kaestchen der
+ *  Fokuszeile (Stufe 3, V6) - und rollte sonst die Liste um eine Seite. */
+const TASTEN = new Set(["ArrowUp", "ArrowDown", "Home", "End", " "]);
 
 /**
  * Haengt den Tastenhalter an die Huelle der Liste - einmal je Element.

@@ -27,10 +27,10 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Ergebnisneutral.</b> Reines DDL, kein DML: Die Kuehleingaben bleiben NULL (der
     /// Schalter 0), <c>Kuehlbetrieb</c> steht in jedem vorhandenen Projekt auf 0, die
-    /// Ergebnisspalten bleiben NULL („nicht erhoben"). Kein Rechenweg liest eine dieser
-    /// Spalten; der Kanal (<c>Kanal.ANZAHL = 4</c>) und die Fassade
-    /// <c>SimulationKaeltebedarf</c> kommen mit der zweiten Welle von KU1 — und zwar NACH
-    /// KU-S4 (Kuehlkonzept 7.4, Reihenfolge innerhalb von KU1).</para>
+    /// Ergebnisspalten bleiben NULL („nicht erhoben"). Der Kanal (<c>Kanal.ANZAHL = 4</c>) und
+    /// die Fassade <c>SimulationKaeltebedarf</c> stehen NACH KU-S4 (Kuehlkonzept 7.4,
+    /// Reihenfolge innerhalb von KU1); sie lesen und schreiben diese Spalten nur, wenn das
+    /// Projekt Kaelte rechnet (<c>Kuehlbetrieb</c> = 1).</para>
     ///
     /// <para><b>KU-S3</b> (Kuehlbetrieb am Erzeuger) gehoert zur Stufe KU2 und steht hier noch
     /// nicht.</para>
@@ -111,8 +111,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="SchemaKatalog.Alle"/> —
         /// dieselbe Begruendung wie bei <see cref="SchemaKatalog.Schritt52_ErgebnisJeKanal"/>: Die
-        /// Rueckfallebene sichert die Spalten der EINGABEseite. Wer sie schreibt (der Kanal der
-        /// zweiten Welle), legt sich die Vorsorge vor dem Schreiben selbst an.</para>
+        /// Rueckfallebene sichert die Spalten der EINGABEseite. Wer sie schreibt
+        /// (<c>ErgebnisCtrl.Save</c>), legt sich die Vorsorge vor dem Schreiben selbst an.</para>
         ///
         /// <para><b>Der Referenzlauf-Export</b> liest die Ergebnistabellen mit <c>SELECT *</c>.
         /// Er nimmt eine dieser Spalten erst in die Kennzahlendatei auf, wenn ein Lauf sie

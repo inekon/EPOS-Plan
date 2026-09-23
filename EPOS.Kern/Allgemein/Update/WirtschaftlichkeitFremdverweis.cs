@@ -22,9 +22,11 @@ namespace WindowsFormsApplication1
     // Projekts zeigt - der Anwenderentscheid vom 23.09.2026 ("Ergebnisverweise werden nicht
     // mitkopiert; die Kopie hat noch kein Ergebnis, die Wirtschaftlichkeit rechnet nach dem
     // ersten Lauf neu"). Die Zeilen selbst BLEIBEN: Sie gelten danach als "passt nicht zum
-    // Simulationsstand", wie es jede Kopie ab jetzt von Anfang an tut
-    // (ProjektDuplizierenCtrl.ERGEBNISVERWEISE_LEEREN). Ein Verweis auf einen Lauf, den es
-    // gar nicht mehr gibt, zeigt ebenso auf keinen eigenen Lauf und wird mit leer.
+    // Simulationsstand". Eine NEUE Kopie traegt gar keine Wirtschaftlichkeitszeile mehr - der
+    // Kopierlauf nimmt keine Ergebnistabelle mit (ProjektDuplizierenCtrl.IstErgebnisTabelle);
+    // bestehende Kopien behalten ihre Zeilen, dieser Schritt leert nur deren fremden Verweis.
+    // Ein Verweis auf einen Lauf, den es gar nicht mehr gibt, zeigt ebenso auf keinen
+    // eigenen Lauf und wird mit leer.
     //
     // NUR DER FREMDE VERWEIS. Getroffen wird genau ein gesetzter Verweis (> 0) ohne eigenen
     // Lauf; ein Verweis auf den eigenen Lauf bleibt, NULL und 0 bleiben, und jede andere

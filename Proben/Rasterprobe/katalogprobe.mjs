@@ -372,6 +372,86 @@ async function tastenprobe(seite) {
   return schritte;
 }
 
+// ------------------------------------------------ STUFE 3 der Neuordnung
+//  (Konzept Administrationsdialoge, V3 "Stammblatt neben der Liste", V6
+//  "Kaestchen", V8 "Auswahlleiste", V12 "Vergleich"). Gemessen wird im Zustand
+//  nach der Wahl der ersten Zeile und dann Schritt fuer Schritt:
+//    start     - wo Liste, Auswahlleiste und Stammblatt stehen; wie viele
+//                Zeilen GANZ im Rollbereich unter dem Kopf stehen;
+//    gewaehlt  - drei Kaestchen gesetzt: die Leiste nennt "3 gewaehlt", und
+//                die Liste springt nicht (die Huelle bleibt, wo sie war);
+//    vergleich - (breit) "Vergleichen": die Vergleichstabelle steht IM Blatt
+//                und rollt nicht quer ueber seinen Rand;
+//    blatt     - (schmal) "Stammblatt ›": das Blatt tritt an die Stelle der
+//                Liste, die Auswahlleiste bleibt; "‹ Liste" fuehrt zurueck.
+//  Die Knoepfe werden an ihren KLASSEN gefunden, nicht am Text - der Wirt
+//  laeuft in der Sprache des Rechners.
+async function stufe3probe(seite, f) {
+  const lies = () => seite.evaluate(() => {
+    const r = el => {
+      if (!el) return null;
+      const b = el.getBoundingClientRect();
+      return { links: +b.left.toFixed(1), oben: +b.top.toFixed(1), rechts: +b.right.toFixed(1),
+               unten: +b.bottom.toFixed(1), breite: +b.width.toFixed(1), hoehe: +b.height.toFixed(1) };
+    };
+    const liste = document.querySelector('.epos-katalog-liste');
+    const blatt = document.querySelector('.epos-katalog-stammblatt');
+    const auswahl = document.querySelector('.epos-auswahlleiste');
+    const huelle = document.querySelector('.epos-katalog-liste .epos-raster-huelle');
+    const kopf = huelle ? huelle.querySelector('thead') : null;
+    let ganz = 0;
+    if (huelle && huelle.getBoundingClientRect().height > 0) {
+      const h = huelle.getBoundingClientRect();
+      const oben = h.top + huelle.clientTop + (kopf ? kopf.getBoundingClientRect().height : 0);
+      const unten = h.top + huelle.clientTop + huelle.clientHeight;
+      for (const z of huelle.querySelectorAll('tbody > tr')) {
+        if (!z.querySelector('td') || z.querySelector('td.grid-cell-placeholder')) continue;
+        const b = z.getBoundingClientRect();
+        if (b.top >= oben - 0.5 && b.bottom <= unten + 0.5) ganz++;
+      }
+    }
+    const vergleich = document.querySelector('.epos-stammblatt .epos-vergleichstabelle');
+    const vh = vergleich ? vergleich.querySelector('.epos-vergleichstabelle-huelle') : null;
+    const was = auswahl ? auswahl.querySelector('.epos-auswahlleiste-was, .epos-auswahlleiste-leise') : null;
+    const name = document.querySelector('.epos-stammblatt-name');
+    return {
+      liste: r(liste), blatt: r(blatt), auswahl: r(auswahl), huelle: r(huelle),
+      ganzeZeilen: ganz,
+      auswahlText: was ? was.textContent.trim() : null,
+      vergleich: vergleich ? { ...r(vergleich), quer: vh ? vh.scrollWidth - vh.clientWidth : 0,
+                               zeilen: vergleich.querySelectorAll('tbody tr').length } : null,
+      seiteQuer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      blattKopf: name ? name.textContent.trim().slice(0, 40) : null
+    };
+  });
+
+  const e = { start: await lies() };
+  const kaestchen = seite.locator('.epos-katalog-liste tbody td.epos-spalte-kaestchen input');
+  if (await kaestchen.count() >= 5) {
+    await kaestchen.nth(1).check(); await schlaf(300);
+    await kaestchen.nth(3).check(); await schlaf(300);
+    await kaestchen.nth(4).check(); await schlaf(600);
+    e.gewaehlt = await lies();
+    if (f.breite >= 900) {
+      await seite.locator('.epos-auswahlleiste .epos-auswahlleiste-knopf').first().click();
+      await schlaf(800);
+      e.vergleich = await lies();
+      await seite.locator('.epos-auswahlleiste .epos-auswahlleiste-aufheben').click();
+      await schlaf(500);
+    }
+  }
+  if (f.breite < 900) {
+    const auf = seite.locator('.epos-auswahlleiste .epos-nur-schmal');
+    if (await auf.count()) {
+      await auf.click(); await schlaf(600);
+      e.blatt = await lies();
+      const zu = seite.locator('.epos-stammblatt-zurliste');
+      if (await zu.count()) { await zu.click(); await schlaf(600); e.zurueck = await lies(); }
+    }
+  }
+  return e;
+}
+
 // ---------------------------------------------------------------- Helfer
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
@@ -479,6 +559,7 @@ async function fall(browser, f) {
     k.stufe2 = await seite.evaluate(STUFE2);
     k.tasten = await tastenprobe(seite);
   }
+  if (f.stufe3) k.stufe3 = await stufe3probe(seite, f);
 
   if (FOTOS) {
     const marke = (f.vorher || VORHER) ? 'vorher' : 'nachher';
@@ -591,8 +672,53 @@ function pruefe(e) {
     }
   }
 
+  // STUFE 3 (V3, V6, V8, V12): das Stammblatt neben der Liste (breit) bzw. als
+  // Blatt ueber ihr (schmal), die Liste mit ihrer ganzen Hoehe, die Kaestchen.
+  const d = e.stufe3;
+  if (d) {
+    const s = d.start;
+    if (s.seiteQuer > 0) m.push(`die Seite rollt quer um ${s.seiteQuer} px`);
+    if (f3breit(e)) {
+      if (!s.blatt || s.blatt.hoehe < 100) m.push('kein Stammblatt neben der Liste');
+      else {
+        if (s.blatt.links < s.liste.rechts - 0.5) m.push(`das Stammblatt (x ${s.blatt.links}) steht nicht rechts der Liste (bis ${s.liste.rechts})`);
+        if (s.blatt.breite < 339.5 || s.blatt.breite > 440.5) m.push(`das Stammblatt ist ${s.blatt.breite} px breit (soll 340 … 440)`);
+      }
+      if (s.auswahl && s.auswahl.links < s.liste.rechts - 0.5) m.push('die Auswahlleiste steht nicht ueber dem Stammblatt');
+    } else {
+      if (s.blatt && s.blatt.hoehe > 0.5) m.push('schmal steht das Stammblatt schon beim Oeffnen ueber der Liste');
+      if (!s.auswahl || s.auswahl.hoehe < 1) m.push('schmal fehlt die Auswahlleiste');
+    }
+    if (e.fall.mindestZeilen && s.ganzeZeilen < e.fall.mindestZeilen)
+      m.push(`die Liste zeigt ${s.ganzeZeilen} ganze Zeilen (soll mindestens ${e.fall.mindestZeilen})`);
+    if (d.gewaehlt) {
+      if (!/^3\b/.test(d.gewaehlt.auswahlText || '')) m.push(`nach drei Kaestchen nennt die Leiste „${d.gewaehlt.auswahlText}"`);
+      if (s.huelle && d.gewaehlt.huelle && Math.abs(d.gewaehlt.huelle.oben - s.huelle.oben) > 0.5)
+        m.push(`die Liste springt mit den Kaestchen (${s.huelle.oben} → ${d.gewaehlt.huelle.oben})`);
+    }
+    if (d.vergleich) {
+      const v = d.vergleich;
+      if (!v.vergleich) m.push('„Vergleichen" zeigt keine Vergleichstabelle im Stammblatt');
+      else if (v.blatt && v.vergleich.rechts > v.blatt.rechts + 0.5)
+        m.push(`die Vergleichstabelle ragt ueber das Stammblatt (${v.vergleich.rechts} > ${v.blatt.rechts})`);
+      if (v.vergleich && v.vergleich.quer > 1) m.push(`die Vergleichstabelle rollt quer um ${v.vergleich.quer} px`);
+      if (v.seiteQuer > 0) m.push(`im Vergleich rollt die Seite quer um ${v.seiteQuer} px`);
+    }
+    if (d.blatt) {
+      if (!d.blatt.blatt || d.blatt.blatt.hoehe < 100) m.push('„Stammblatt ›" zeigt kein Blatt');
+      if (d.blatt.liste && d.blatt.liste.hoehe > 0.5) m.push('das Blatt steht neben statt ueber der Liste');
+      if (!d.blatt.auswahl || d.blatt.auswahl.hoehe < 1) m.push('mit offenem Blatt fehlt die Auswahlleiste');
+      if (d.zurueck && (!d.zurueck.liste || d.zurueck.liste.hoehe < 1 || (d.zurueck.blatt && d.zurueck.blatt.hoehe > 0.5)))
+        m.push('„‹ Liste" fuehrt nicht zur Liste zurueck');
+    } else if (!f3breit(e)) m.push('schmal fehlt der Knopf „Stammblatt ›"');
+  }
+
   return m;
 }
+
+// Steht der Rahmen breit (ab 900 px Rahmenbreite)? Der Rahmen ist das Fenster
+// abzueglich 2 x 16 px Polsterung der Maske.
+const f3breit = e => e.fenster.breite - 32 >= 900;
 
 function zeige(e) {
   console.log('');
@@ -651,6 +777,14 @@ function zeige(e) {
   if (t && !t.fehler)
     console.log('            Tasten: ' + Object.entries(t).map(([w, s2]) =>
       `${w} → Zeile ${s2.index}/${s2.zeilen} sichtbar=${s2.sichtbar} fokus=${s2.fokus} roll ${s2.rollstand}`).join(' · '));
+  const d = e.stufe3;
+  if (!d) return;
+  for (const [was, s3] of Object.entries(d)) {
+    if (!s3) continue;
+    console.log(`  [Stufe 3] ${was.padEnd(9)} Liste ${r(s3.liste)}  Auswahl ${r(s3.auswahl)} „${s3.auswahlText}"  ` +
+                `Blatt ${r(s3.blatt)} „${s3.blattKopf}"  ganze Zeilen ${s3.ganzeZeilen}` +
+                (s3.vergleich ? `  Vergleich ${r(s3.vergleich)} ${s3.vergleich.zeilen} Zeilen, quer ${s3.vergleich.quer}` : ''));
+  }
 }
 
 // ------------------------------------------------------------- Hauptlauf
@@ -729,11 +863,19 @@ FAELLE.push({ name: 'P2b_projekt_heizkessel_400x624', maske: 'projekt-heizkessel
 // STUFE 2 (V4, V10, V11): In den Verwaltungen ist die Zeile die Wahl - 46 px
 // statt 53, ohne Wahlspalte, mit Schloss (Zeilenbau.Voll macht jede siebte Zeile
 // zum Auslieferungssatz, die erste eingeschlossen) und mit Tastatur.
+// STUFE 3 (V3, V6, V8, V12): die Verwaltungen mit Stammblatt. Bei 1 088 x 624
+// muss die Liste mindestens ACHT ganze Zeilen zeigen - das war die Schwaeche
+// von Stufe 1 (drei Zeilen neben dem Eingabeblock darunter).
+const STUFE3 = new Set(['N01', 'N02', 'N03', 'N04', 'N05', 'N06', 'N07', 'N08',
+                        'N10', 'N11', 'N12']);
 for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
+  const s3 = STUFE3.has(nr);
   FAELLE.push({ name: `${nr}a_${name}_1088x624`, maske, art, zeilen, breite: 1088, hoehe: 624,
-                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
+                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
+                stufe3: s3, mindestZeilen: s3 && zeilen >= 8 ? 8 : 0 });
   FAELLE.push({ name: `${nr}b_${name}_400x624`, maske, art, zeilen, breite: 400, hoehe: 624,
-                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
+                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
+                stufe3: s3 });
 }
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });

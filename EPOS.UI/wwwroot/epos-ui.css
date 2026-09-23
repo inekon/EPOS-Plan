@@ -7819,6 +7819,480 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
+/* STUFE 3 DER NEUORDNUNG (Konzept Administrationsdialoge, V3 V6 V8 V9  */
+/* V12 V13): DAS STAMMBLATT NEBEN DER LISTE                              */
+/*                                                                      */
+/* DER BEFUND NACH STUFE 1 (Katalogprobe, Heizkessel 1 088 x 624): Der   */
+/* Eingabeblock stand UNTER der Liste und nahm ihr die Hoehe - von 474   */
+/* px Rahmen blieben der Huelle 211 px, drei Zeilen. Jetzt steht das     */
+/* Stammblatt ab 900 px RAHMENbreite rechts (clamp(340px, 36 %, 440px)), */
+/* und die Liste hat die ganze Hoehe: Suchzeile 44 px, Spaltenkopf 53    */
+/* px, dann 8 x 46 px. Die Auswahlleiste steht dafuer ueber dem          */
+/* Stammblatt statt ueber der Liste (Herleitung im Katalograhmen).       */
+/*                                                                      */
+/* SCHMAL (unter 900 px) steht die Liste allein unter der Auswahlleiste, */
+/* und das Stammblatt schiebt sich als Blatt ueber sie                   */
+/* (epos-katalog-paar--blatt); die Auswahlleiste bleibt stehen.          */
+/*                                                                      */
+/* DIE BREITE IST DIE DES RAHMENS, nicht die des Fensters: Die Huelle    */
+/* .epos-katalograhmen ist ein Container, und die Abfrage unten fragt    */
+/* ihn. Eingebettet in eine Ueberlagerung ("Katalog verwalten..." aus    */
+/* einem Projektdialog) entscheidet damit die Breite, die er dort hat.   */
+/* Ohne Stammblatt (Eingabeblock) gilt die Anordnung von Stufe 1 oben.   */
+/* ==================================================================== */
+
+/* Die Huelle ist der Container - ein Container kann sich nicht selbst
+   abfragen; das Paar darin ist das Raster. */
+.epos-katalograhmen {
+    container-type: inline-size;
+    container-name: epos-katalograhmen;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* SCHMAL, die Vorgabe: Auswahlleiste ueber der Liste, das Blatt verborgen. */
+.epos-katalog-paar.epos-katalog-paar--stammblatt {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "auswahl" "liste";
+    gap: var(--epos-rand);
+}
+
+.epos-katalog-paar--stammblatt > .epos-katalog-liste {
+    grid-area: liste;
+    min-height: 0;
+}
+
+.epos-katalog-paar--stammblatt > .epos-katalog-auswahl {
+    grid-area: auswahl;
+    min-width: 0;
+}
+
+/* Das Stammblatt rollt nicht selbst - in ihm rollt nur sein Inhalt
+   (.epos-stammblatt-inhalt), Kopf und Fuss stehen. Keine Hoechsthoehe
+   von 34 %, keine Linie oben: Es steht daneben, nicht darunter. */
+.epos-katalog-paar--stammblatt > .epos-katalog-stammblatt {
+    grid-area: blatt;
+    display: none;
+    max-height: none;
+    min-height: 0;
+    overflow: hidden;
+    border-top: none;
+    padding-top: 0;
+}
+
+/* SCHMAL MIT OFFENEM BLATT: Das Stammblatt tritt an die Stelle der Liste. */
+.epos-katalog-paar.epos-katalog-paar--stammblatt.epos-katalog-paar--blatt {
+    grid-template-areas: "auswahl" "blatt";
+}
+
+.epos-katalog-paar--blatt > .epos-katalog-liste {
+    display: none;
+}
+
+.epos-katalog-paar--blatt > .epos-katalog-stammblatt {
+    display: flex;
+    flex-direction: column;
+}
+
+/* BREIT: Liste links ueber die ganze Hoehe, rechts Auswahlleiste und
+   Stammblatt. Die Knoepfe des schmalen Fensters ("Stammblatt ›",
+   "‹ Liste") weichen. */
+@container epos-katalograhmen (min-width: 900px) {
+    .epos-katalog-paar.epos-katalog-paar--stammblatt,
+    .epos-katalog-paar.epos-katalog-paar--stammblatt.epos-katalog-paar--blatt {
+        grid-template-columns: minmax(0, 1fr) clamp(340px, 36%, 440px);
+        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-areas: "liste auswahl" "liste blatt";
+        column-gap: var(--epos-karte-rand);
+    }
+
+    .epos-katalog-paar--stammblatt > .epos-katalog-liste,
+    .epos-katalog-paar--blatt > .epos-katalog-liste {
+        display: flex;
+    }
+
+    .epos-katalog-paar--stammblatt > .epos-katalog-stammblatt {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .epos-katalograhmen .epos-nur-schmal {
+        display: none;
+    }
+}
+
+/* Der TEXTKNOPF des Hauses fuer leise Handlungen ("Auswahl aufheben",
+   "‹ Liste", "‹ Stammblatt von ..."): kein Kasten, 44 px hoch. */
+.epos-textknopf {
+    min-height: var(--epos-touchziel);
+    padding: 0 8px;
+    border: none;
+    background: none;
+    color: var(--epos-marke);
+    text-decoration: underline;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.epos-textknopf:hover {
+    color: var(--epos-text);
+}
+
+/* --- Zone 4: die Auswahlleiste (V8) ---------------------------------- */
+.epos-auswahlleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    min-height: var(--epos-touchziel);
+    min-width: 0;
+}
+
+.epos-auswahlleiste-was {
+    flex: 0 1 auto;
+    min-width: 3em;
+    max-width: 16rem;
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epos-auswahlleiste-fueller {
+    flex: 1 1 0;
+}
+
+.epos-auswahlleiste-leise {
+    color: var(--epos-text-leise);
+}
+
+/* SCHMAL steht die Auswahlleiste UEBER der Liste - und die Liste darf nicht
+   springen, wenn Kaestchen gesetzt werden (Konzept 3.3; Katalogprobe, Faelle
+   N10b bis N12b: "3 gewaehlt" ist kuerzer als der Name der Fokuszeile, die
+   Leiste brach um eine Zeile weniger um, und die Liste rueckte 50 px hoch).
+   Deshalb eine FESTE Ordnung: oben das erste Wort (gekuerzt), "Auswahl
+   aufheben" und "Stammblatt ›", darunter die Handlungen - der Fueller wird
+   zum Zeilenumbruch, der leise Hinweis weicht. So haengt die Hoehe nur an
+   den Handlungen, und die sind in beiden Zustaenden dieselben. */
+@container epos-katalograhmen (max-width: 899.98px) {
+    .epos-auswahlleiste-was {
+        order: 0;
+        flex: 1 1 0;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .epos-auswahlleiste-aufheben {
+        order: 1;
+    }
+
+    .epos-auswahlleiste .epos-nur-schmal {
+        order: 2;
+    }
+
+    /* Der Umbruch ist eine Zeile ohne Hoehe - ihr zweiter Zeilenabstand (6 px)
+       wird zurueckgenommen, sonst waere die Leiste 6 px hoeher als zwei Zeilen. */
+    .epos-auswahlleiste-fueller {
+        order: 3;
+        flex: 0 0 100%;
+        height: 0;
+        margin-top: -6px;
+    }
+
+    .epos-auswahlleiste .epos-auswahlleiste-knopf:not(.epos-nur-schmal) {
+        order: 4;
+    }
+
+    .epos-auswahlleiste > .epos-auswahlleiste-leise:not(:only-child) {
+        display: none;
+    }
+}
+
+/* --- Zone 3: die Kaestchenspalte der Mehrfachwahl (V6) --------------- */
+/* Die Zelle ist ein label ueber die ganze Hoehe der Zeile: 45 px wie die
+   Klickflaeche daneben, damit das Zeilenmass (46 px) steht. */
+.epos-katalogliste table.epos-raster th.epos-spalte-kaestchen,
+.epos-katalogliste table.epos-raster td.epos-spalte-kaestchen {
+    width: 44px;
+    padding: 0;
+}
+
+.epos-kaestchenzelle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 44px;
+    height: 45px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.epos-kaestchenzelle input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.epos-kaestchenzelle--kopf {
+    height: var(--epos-touchziel);
+}
+
+/* Eine ueber das Kaestchen gewaehlte Zeile: eine leise Flaeche - der Haken
+   im Kaestchen traegt die Aussage, die Flaeche nur den Blick. Die Rahmen der
+   Markierung aus Stufe 2 (Strg-Klick fuer den Vergleich: je Zelle und um den
+   Namen) fallen hier: Mit Kaestchen ist die Markierung eine Wahl, kein
+   Vergleichszustand, und zehn gerahmte Zeilen waeren ein Gitter. */
+.epos-katalogliste--kaestchen table.epos-raster > tbody > tr.epos-zeile--markiert > td {
+    background: var(--epos-flaeche);
+    outline: none;
+}
+
+.epos-katalogliste--kaestchen table.epos-raster > tbody > tr.epos-zeile--gewaehlt.epos-zeile--markiert > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-katalogliste--kaestchen .epos-zeile--markiert .epos-zeilenzelle--name {
+    outline: none;
+}
+
+/* --- Zone 5: das Stammblatt (V9) ------------------------------------- */
+.epos-katalog-stammblatt > .epos-stammblatt {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+/* Im schmalen Blatt ist jeder Pixel Feldbreite: die Beschriftung schmaler
+   als im Dialog (12 rem), und das Formularraster steht EINspaltig - eine
+   Spalte von 26 rem Mindestbreite passte nicht in 340 bis 440 px und rollte
+   quer; mit 16 rem passen in 440 px keine zwei. Werte je Element, keine
+   Farbtoken. */
+.epos-stammblatt {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    --epos-beschriftung-breite: 9rem;
+    --epos-formularspalte: 16rem;
+}
+
+.epos-stammblatt-kopf {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px var(--epos-rand);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-stammblatt-zurliste {
+    align-self: flex-start;
+    padding-left: 0;
+}
+
+.epos-stammblatt-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-stammblatt-nametext {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epos-stammblatt-unter,
+.epos-stammblatt-leer {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* V13: der Hinweis eines Auslieferungssatzes in Worten - leise Flaeche mit
+   Balken, keine Warnfarbe: Er meldet keinen Fehler, er erklaert. */
+.epos-stammblatt-schutz {
+    margin: 4px 0 0;
+    padding: 4px 8px;
+    border-left: 3px solid var(--epos-rahmen);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
+.epos-stammblatt-kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 6px 0 0;
+}
+
+/* Wert oben, Name darunter - im Markup steht der Name (dt) zuerst. */
+.epos-stammblatt-kennzahl {
+    display: flex;
+    flex-direction: column-reverse;
+    min-width: 0;
+    padding: 4px 6px;
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+.epos-stammblatt-kennzahl dt,
+.epos-stammblatt-kennzahl dd {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epos-stammblatt-kennzahl dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-stammblatt-kennzahl dd {
+    font-weight: 700;
+    color: var(--epos-text);
+}
+
+/* Der Inhalt ist der EINE Rollbereich des Blatts. */
+.epos-stammblatt-inhalt {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: 8px var(--epos-rand);
+}
+
+.epos-stammblatt-inhalt > * {
+    flex: 0 0 auto;
+}
+
+.epos-stammblatt-zurueck {
+    align-self: flex-start;
+    padding-left: 0;
+}
+
+.epos-stammblatt-fuss {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px var(--epos-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    color: var(--epos-text-leise);
+}
+
+.epos-stammblatt-hinweis {
+    flex: 1 1 auto;
+}
+
+.epos-stammblattgruppe-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    font-size: var(--epos-schriftgroesse-gruppenkopf);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-stammblattgruppe-titel {
+    flex: 1 1 auto;
+}
+
+/* EIN MEHRZEILIGES FELD IM BLATT WAECHST MIT SEINEM TEXT, statt in sich zu
+   rollen - sonst laege ein Rollbereich im Rollbereich des Blatts (Katalogprobe
+   N10a: die Beschreibung eines Bedarfsprofils in 360 px Breite). Wo der Browser
+   field-sizing nicht kennt, bleibt es bei der Zeilenzahl des Feldes. */
+.epos-stammblatt textarea.epos-eingabe {
+    field-sizing: content;
+}
+
+/* --- V12: die Vergleichstabelle -------------------------------------- */
+.epos-vergleichstabelle {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-vergleichstabelle-schalter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+    cursor: pointer;
+}
+
+.epos-vergleichstabelle-schalter input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.epos-vergleichstabelle-huelle {
+    overflow-x: auto;
+}
+
+/* IM BLATT (340 bis 440 px) BRECHEN DIE WERTE UM, statt quer zu rollen: feste
+   Spaltenaufteilung, die Parameterspalte ein Drittel, die Werte teilen den
+   Rest. Die Hausregel der Rasterzellen (nowrap, Namen brechen nicht) gilt
+   einer Liste, nicht einem Vergleich von drei Saetzen nebeneinander. */
+.epos-vergleichstabelle table.epos-vergleich {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.epos-vergleichstabelle table.epos-vergleich th:first-child {
+    width: 34%;
+}
+
+.epos-vergleichstabelle table.epos-vergleich th,
+.epos-vergleichstabelle table.epos-vergleich td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    vertical-align: top;
+}
+
+/* Der Kopf nennt den Satz in hoechstens drei Zeilen - der volle Name steht im
+   Kurztext; ein Bezeichner von 76 Zeichen machte den Kopf sonst hoeher als
+   das Blatt. */
+.epos-vergleich-kopf {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
+.epos-vergleichstabelle .epos-vergleich-stufe {
+    display: block;
+    margin-left: 0;
+}
+
+.epos-vergleichstabelle-leer {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* ==================================================================== */
 /* WOCHEN-STUNDENPROFIL (Befund W8-E-1, Windows-Abnahme 05.09.2026)      */
 /*                                                                      */
 /* Der Anwender wollte den Dialog "so wie zuvor". Die erste Fassung      */

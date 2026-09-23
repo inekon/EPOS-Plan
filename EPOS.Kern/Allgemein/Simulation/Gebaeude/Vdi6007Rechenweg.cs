@@ -56,11 +56,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Zeitbezug Zeitbezug { get; set; } = GebaeudeKlimaweg.ZEITBEZUG_VORGABE;
 
+        /// <summary>
+        /// Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>, K10)? Gesetzt von
+        /// der Fassade vor jedem Aufruf (<c>SimulationWaermebedarf.HeizwaermeEinesGebaeudes</c>).
+        /// Nur mit ihm gelten Kühlsollwert und Kühlleistungsgrenze eines Gebäudes
+        /// (<see cref="GebaeudeModellEingang.KuehlungWirksam"/>); ohne ihn rechnet jedes Gebäude
+        /// wie vor der Kühlung — Kappung an der oberen Raumtemperatur, ohne Grenze.
+        /// </summary>
+        internal bool Kuehlbetrieb { get; set; }
+
+        /// <summary>
+        /// Zahl der Gebäuderechnungen dieses Wegs seit seinem Bau — die Probe „Ein Lauf, zwei
+        /// Reihen" (Kühlkonzept 10.2, E21) zählt hier: Das Modul läuft je Gebäude und Lauf
+        /// EINMAL, und Heiz- wie Kühlreihe stammen aus diesem einen Ergebnis. Eine zweite
+        /// Gebäuderechnung für die Kälte fiele an dieser Zahl auf.
+        /// </summary>
+        internal int Aufrufe { get; private set; }
+
         /// <inheritdoc/>
         public bool Rechnen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
             verbrauchAltKwh = 0.0;
+            Aufrufe++;
             string wer = Bezeichnung(gebaeude);
             try
             {
@@ -73,7 +91,7 @@ namespace WindowsFormsApplication1
 
                 GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
                     gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
+                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
 
@@ -105,8 +123,14 @@ namespace WindowsFormsApplication1
             var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
 
             // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
-            // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus.
-            Sommerlueftungsregel regel = eingang.Sommerlueftung ? new Sommerlueftungsregel() : null;
+            // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus. Mit wirksamer
+            // Kühlung (KU1) folgt die Schwelle dem Kühlsollwert: θ_kuehl − 3 K (Kühlkonzept
+            // 3.4) - sonst läge sie fest über dem Sollwert und die Lüftung griffe nie, bzw. weit
+            // darunter und lüftete gegen die Kühlung an. Ohne Kühlung bleibt der Festwert.
+            Sommerlueftungsregel regel = !eingang.Sommerlueftung ? null
+                : eingang.KuehlungWirksam
+                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
+                    : new Sommerlueftungsregel();
             double luftVor = double.NaN, aussenVor = double.NaN;
 
             // Vorlauf: die letzten 30 Tage des Jahres, Startwert der Sollwert der ersten
@@ -156,7 +180,9 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, umschaltung, beides,
-                                              (double[])eingang.ThetaSoll.Clone(), sommerStunden);
+                                              (double[])eingang.ThetaSoll.Clone(), sommerStunden,
+                                              eingang.KuehlungWirksam
+                                                  ? (double?)eingang.KuehlSollwert : null);
         }
 
         private static void Melden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,

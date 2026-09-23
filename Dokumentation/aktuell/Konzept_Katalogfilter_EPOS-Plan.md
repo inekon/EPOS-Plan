@@ -777,6 +777,14 @@ Chips — und mit Rev. 3 die **Filterzeile** selbst. Es kommt **eines** dazu: de
 > Zone B blenden seit Stufe 1 nach Rang aus (`Katalogspaltenrang`, Baustein `Spaltenraenge`); eine
 > Spalte mit gesetztem Filter oder Sortierung bleibt dabei immer sichtbar.
 
+> **Nachtrag 23.09.2026 (#447).** Zone B trägt seit der Stufe 3 der Administrationsdialoge eine
+> eigene Kästchenspalte für die Mehrfachwahl (Kopfkästchen = alle sichtbaren, Leertaste setzt das
+> Kästchen der Fokuszeile, Strg-Klick markiert weiter, ohne Obergrenze der Zeilenzahl); die
+> Wahlspalte mit dem runden Knopf aus dem Mockup oben bleibt entfallen (V4). Die Fußleiste
+> (Zone C) trägt heute Speichern · Verwerfen · Füller/Statuszeile · Neu… · Beenden; „Vergleichen",
+> „Duplizieren…" und „Löschen" stehen in der `Auswahlleiste` über dem Stammblatt, nicht mehr in
+> Zone C.
+
 #### 5.6.2 Der Spaltenkopf
 
 Vorbild ist der Tabellenkopf aus der Anwendung, die der Anwender als Screenshot 1 gezeigt hat:

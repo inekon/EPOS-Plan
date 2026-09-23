@@ -6,6 +6,7 @@ using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -173,11 +174,10 @@ public class BedarfAdminDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Das Katalogmuster in EINER Leiste: <b>Grafik… · Typ ändern… · Füller · Neu… ·
-    /// Ändern… · Löschen · Beenden</b>. Links vom Füller stehen die Knöpfe, die auf
-    /// eine Ansicht oder den Nachbarkatalog wirken, rechts die Zeilenaktionen, und
-    /// ganz rechts der eine primäre Schlussknopf. Eine zweite Leiste gibt es nicht
-    /// mehr.
+    /// Die Fußleiste der Verwaltung (Stufe 3): <b>Füller/Statuszeile · Neu… · Beenden</b>.
+    /// „Grafik…" und „Typ ändern…" stehen im Kopf der Gruppe Wochenprofil, „Ändern…" im
+    /// Kopf der Kenndaten, Duplizieren… und Löschen in der Auswahlleiste (V8: keine
+    /// Handlung an zwei Orten). Eine zweite Leiste gibt es nicht.
     /// </summary>
     [Theory]
     [MemberData(nameof(AlleArten))]
@@ -191,21 +191,26 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         var leiste = leisten[0];
         var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Grafik...", t.TypAendern, t.Neu, t.Aendern, t.Loeschen, "Beenden" },
-                     knoepfe);
+        Assert.Equal(new[] { t.Neu, "Beenden" }, knoepfe);
 
-        // Der Fueller steht zwischen "Typ aendern..." und "Neu...".
+        // Der Fueller ist die Statuszeile und steht vorn.
         var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
         Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
-        Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+        Assert.Equal(0, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+        Assert.Equal("status", leiste.QuerySelector(".epos-leiste-fueller")!.GetAttribute("role"));
+
+        var gruppen = cut.FindAll(".epos-stammblattgruppe-kopf").Select(k => k.TextContent).ToList();
+        Assert.Contains(gruppen, g => g.Contains("Grafik...") && g.Contains(t.TypAendern));
+        Assert.Contains(gruppen, g => g.Contains(t.Aendern));
+        Assert.Contains(t.Loeschen, cut.Find(".epos-auswahlleiste").TextContent);
 
         var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
         Assert.Single(primaer);
         Assert.Equal("Beenden", primaer[0].TextContent.Trim());
 
-        // Die zweite Leiste (Status . Abbrechen . OK) ist entfallen - die
-        // SpeichernLeiste zeichnete eine eigene .epos-leiste samt Statusspanne.
-        Assert.Empty(cut.FindAll(".epos-status"));
+        // Die zweite Leiste (Status . Abbrechen . OK) ist entfallen; die eine
+        // Statuszeile steht in der Fussleiste.
+        Assert.Single(cut.FindAll(".epos-status"));
     }
 
     /// <summary>
@@ -220,7 +225,8 @@ public class BedarfAdminDialogTests : EposBunitContext
         var cut = Aufbauen(art);
 
         Assert.Equal(t.Titel, cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Contains(t.Katalog, cut.Markup);
+        // Die Ueberschrift ueber der Liste (t.Katalog) entfaellt seit Stufe 3 - sie nahm
+        // der Liste eine Zeile; die Liste nennt sich ueber ihre Spaltenkoepfe.
         Assert.Contains(t.Jahressumme, cut.Markup);
         Assert.Contains(t.Einheit, cut.Markup);
         Assert.Contains("Name:", cut.Markup);
@@ -290,16 +296,20 @@ public class BedarfAdminDialogTests : EposBunitContext
     /// prüfte als einziges nicht und fragte bei leerer Liste
     /// „Soll  wirklich gelöscht werden ?" (Befund W14‑B51).
     /// </summary>
+    /// <remarks>
+    /// Seit Stufe 3 (V8) steht „Löschen" in der Auswahlleiste, und die zeigt ohne Zeile
+    /// nur ihre leise Zeile — es gibt keinen Knopf, der ins Leere drückt, und damit auch
+    /// keine Rückfrage „Soll  wirklich gelöscht werden ?".
+    /// </remarks>
     [Theory]
     [MemberData(nameof(AlleArten))]
-    public void Ohne_Auswahl_meldet_das_Loeschen_statt_zu_fragen(BedarfsArt art)
+    public void Ohne_Auswahl_gibt_es_kein_Loeschen(BedarfsArt art)
     {
         Beschriftung t = Texte(art);
         var cut = Aufbauen(art, katalog: Array.Empty<string>());
 
-        Knopf(cut, t.Loeschen).Click();
-
-        Assert.Equal(t.KeineWahl, cut.Instance.Meldung);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == t.Loeschen);
+        Assert.Single(cut.FindAll(".epos-auswahlleiste-leise"));
         Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
     }
 
@@ -352,7 +362,9 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         Assert.Equal(2, rest.Count);
         Assert.Equal(2, cut.FindAll("tbody tr").Count);
-        Assert.Contains("\"Alpha\" wurde gelöscht.", cut.Instance.Meldung);
+        // Gelungenes steht seit Stufe 3 in der Statuszeile, nicht im Warnband (V11).
+        Assert.Contains("\"Alpha\" wurde gelöscht.", cut.Instance.Status);
+        Assert.Equal("", cut.Instance.Meldung);
         Assert.Equal("Beta", cut.Instance.Gewaehlt);
     }
 
@@ -454,16 +466,18 @@ public class BedarfAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Ohne Vorschau-Delegat bleibt der Knopf wirkungslos — und ohne Auswahl
-    /// gesperrt.
+    /// Ohne Auswahl zeigt das Stammblatt „Keine Zeile gewählt." — seine Gruppen und mit
+    /// ihnen „Grafik…" und „Ändern…" stehen erst mit einer Zeile da (Stufe 3, V9).
     /// </summary>
     [Fact]
-    public void Ohne_Auswahl_ist_Grafik_gesperrt()
+    public void Ohne_Auswahl_stehen_Grafik_und_Aendern_nicht_da()
     {
         var cut = Aufbauen(BedarfsArt.Stromverbraucher, katalog: Array.Empty<string>());
 
-        Assert.True(Knopf(cut, "Grafik...").HasAttribute("disabled"));
-        Assert.True(Knopf(cut, Texte(BedarfsArt.Stromverbraucher).Aendern).HasAttribute("disabled"));
+        var texte = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.DoesNotContain("Grafik...", texte);
+        Assert.DoesNotContain(Texte(BedarfsArt.Stromverbraucher).Aendern, texte);
+        Assert.Single(cut.FindAll(".epos-stammblatt-leer"));
     }
 
     // =====================================================================
@@ -637,5 +651,97 @@ public class BedarfAdminDialogTests : EposBunitContext
         WindowsFormsApplication1.KiFeldzugang bedarfsart =
             KiMaskenbruecke.Feldzugang(maske, "bedarfsart");
         Assert.Equal(art.ToString(), bedarfsart.Lesen());
+    }
+
+    // =====================================================================
+    // Stufe 3 (Konzept Administrationsdialoge): Stammblatt, Auswahlleiste,
+    // Duplizieren (V3 V6 V8 V9 V12 V13)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Das Stammblatt der Bedarfsprofile</b> (V9): die Gruppe „Wochenprofil" sagt, dass
+    /// es zum Typ gehört, und trägt „Grafik…" und „Typ ändern…"; die Kenndaten tragen
+    /// „Ändern…"; der Kopf nennt Typ und Herkunft.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_traegt_Wochenprofil_und_Kenndaten()
+    {
+        var cut = Aufbauen(BedarfsArt.Brauchwasser);
+
+        Assert.Equal(new[] { "Wochenprofil", "Kenndaten" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent));
+        Assert.Contains("Typ Alpha", cut.Find(".epos-stammblatt-erklaerung").TextContent);
+        Assert.Equal("Typ Alpha · eigener Satz", cut.Find(".epos-stammblatt-unter").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Duplizieren für die Bedarfsprofile</b> (zurückgestellt aus Stufe 2): Die
+    /// Namensabfrage ist mit „Name (Kopie)" vorbelegt, der Weg bekommt die ID, danach ist
+    /// die Kopie gewählt und die Statuszeile nennt beide. Ohne den Weg keine Handlung.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_legt_das_eigene_Profil_an()
+    {
+        Assert.DoesNotContain(Aufbauen(BedarfsArt.Prozesswaerme).FindAll(".epos-auswahlleiste button"),
+                              b => b.TextContent.Trim() == "Duplizieren...");
+
+        var namen = new List<string>(KATALOG);
+        (int, string)? gerufen = null;
+        var cut = Render<BedarfAdminDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Prozesswaerme)
+            .Add(x => x.Katalogzeilen, () => Zeilen(namen))
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Prozesswaerme))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("B " + n, "T " + n)))
+            .Add(x => x.Jahressumme, n => "1")
+            .Add(x => x.Duplizieren, (id, name) =>
+            {
+                gerufen = (id, name);
+                namen.Add(name);
+                return new KatalogSpeicherErgebnis(true, "", name);
+            }));
+
+        cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Duplizieren...").Click();
+        Assert.True(cut.Instance.Duplizierfrage);
+        Assert.Equal("Alpha (Kopie)", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal((1, "Alpha (Kopie)"), gerufen);
+        Assert.Equal("Alpha (Kopie)", cut.Instance.Gewaehlt);
+        Assert.Contains("dupliziert", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz trägt das Schloss, Löschen ist weich gesperrt</b> (V10,
+    /// V13) — der Grund steht am Knopf, ein Klick meldet ihn, es gibt keine Rückfrage.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_sperrt_Loeschen_weich()
+    {
+        int geloescht = 0;
+        var cut = Render<BedarfAdminDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Brauchwasser)
+            .Add(x => x.Katalogzeilen, () => new[]
+            {
+                new Katalogfilterzeile(1, "Alpha") { Geschuetzt = true }
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Alpha")
+            })
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Brauchwasser))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("B", "T")))
+            .Add(x => x.Jahressumme, n => "1")
+            .Add(x => x.Loeschen, _ => { geloescht++; return BedarfLoeschAusgang.Geloescht; })
+            .Add(x => x.BtnLoeschenText, "Profil löschen"));
+
+        Assert.NotNull(cut.Find(".epos-katalogliste tbody .epos-schloss"));
+        Assert.NotNull(cut.Find(".epos-stammblatt-schutz"));
+
+        var loeschen = Knopf(cut, "Profil löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        loeschen.Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
+        Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
     }
 }

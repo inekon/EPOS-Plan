@@ -169,8 +169,9 @@
         ///
         /// <para>Gelesen namensbasiert, nicht über die Ordinalkette; geschrieben
         /// ausschließlich über <see cref="KonfigurationCtrl.KuehlbetriebSchreiben"/> — dieselbe
-        /// Begründung wie bei <see cref="Kaskade_Gepflegt"/>. Kein Rechenweg liest den Wert,
-        /// bis der Kühlkanal steht (zweite Welle von KU1).</para>
+        /// Begründung wie bei <see cref="Kaskade_Gepflegt"/>. Der Rechenweg liest den Schalter
+        /// dialogfrei je Lauf (<c>SimulationWaermebedarf.KuehlbetriebProjekt</c>): Aus heißt,
+        /// kein Gebäude rechnet anders als ohne Kühlung und keine Kältezahl wird erhoben.</para>
         /// </summary>
         public bool Kuehlbetrieb;
 

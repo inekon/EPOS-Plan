@@ -1340,7 +1340,9 @@ namespace WindowsFormsApplication1
 
             for (int stunde = 0; stunde < 8760; stunde++)
             {
-                for (int k = 0; k < Kanal.ANZAHL; k++) rest[k] = kanaele.Bedarf[k][stunde];
+                // Kuehlkonzept 4.2 (F-K4): nur die Waermekanaele - der Kuehlkanal bleibt in
+                // rest[] 0 und im Kanalsatz unberuehrt; kein Waermeerzeuger sieht Kaeltebedarf.
+                foreach (int k in Kanal.KANAELE_WAERME) rest[k] = kanaele.Bedarf[k][stunde];
 
                 // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
                 // Kanalstand an dieser Kaskadenposition.
@@ -1348,7 +1350,7 @@ namespace WindowsFormsApplication1
                 Stunde_Bedarf(stunde, rest);
                 Stunde_Abschluss(stunde);
 
-                for (int k = 0; k < Kanal.ANZAHL; k++)
+                foreach (int k in Kanal.KANAELE_WAERME)
                     kanaele.Bedarf[k][stunde] = (double)rest[k];
             }
 

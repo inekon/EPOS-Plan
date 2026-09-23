@@ -146,7 +146,9 @@
            liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
            Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
            JaNein-Spalte keinen Trichter traegt). *@
-        @if (!Mehrfach && Vergleichbar)
+        @* Mit KAESTCHEN (Stufe 3, V6) vergleicht die Auswahlleiste des Wirts -
+           hier stuende derselbe Knopf ein zweites Mal. *@
+        @if (!Mehrfach && Vergleichbar && !KaestchenAktiv)
         {
             <button type="button" class="epos-katalog-vergleichknopf"
                     disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
@@ -172,6 +174,37 @@
             Tastenfuehrung="@(ZeilenwahlAktiv ? _tastenfuehrung : default)"
             Tastenbeschriftung="@Texte.Listenbeschriftung">
         <KindInhalt>
+            @if (KaestchenAktiv)
+            {
+            @* DIE KAESTCHENSPALTE DER MEHRFACHWAHL (Stufe 3, V6). Das Kaestchen
+               waehlt MEHRERE Zeilen fuer die Handlungen der Auswahlleiste; die
+               Fokuszeile (Klick in die Zeile, Pfeiltasten) bleibt davon
+               unberuehrt. Die Leertaste setzt das Kaestchen der Fokuszeile, das
+               Kopfkaestchen alle SICHTBAREN. Die Zelle ist ein <label> ueber ihre
+               ganze Hoehe - Beruehrungsziel 45 px -, und das Feld haelt seine
+               Tasten bei sich (stopPropagation): Sonst setzte eine Leertaste auf
+               dem fokussierten Kaestchen es zweimal - einmal vom Browser, einmal
+               von der Tastenfuehrung der Liste. *@
+            <TemplateColumn TGridItem="Katalogfilterzeile" Class="epos-spalte-kaestchen">
+                <HeaderTemplate>
+                    @{ bool alle = AlleSichtbarenMarkiert; }
+                    <label class="epos-kaestchenzelle epos-kaestchenzelle--kopf"
+                           title="@(alle ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                        <input type="checkbox" checked="@alle"
+                               aria-label="@(alle ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                               @onchange="BeiKopfkaestchen" @onkeydown:stopPropagation="true" />
+                    </label>
+                </HeaderTemplate>
+                <ChildContent>
+                    @{ bool an = _markiertMenge.Contains(context.Schluessel); }
+                    <label class="epos-kaestchenzelle" title="@Kaestchenkurztext(context)">
+                        <input type="checkbox" checked="@an" aria-label="@Kaestchenkurztext(context)"
+                               @onchange="@(() => KaestchenUmschalten(context))"
+                               @onkeydown:stopPropagation="true" />
+                    </label>
+                </ChildContent>
+            </TemplateColumn>
+            }
             @if (!ZeilenwahlAktiv)
             {
             <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
@@ -456,6 +489,103 @@
     /// <summary>Wirkt <see cref="ZeileIstWahl"/>? Nicht in der Mehrfachwahl.</summary>
     private bool ZeilenwahlAktiv => ZeileIstWahl && !Mehrfach;
 
+    // =====================================================================
+    //  Die Kästchen der Mehrfachwahl (Konzept Administrationsdialoge, Stufe 3: V6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Kästchenspalte der Verwaltungen</b> (V6): Neben der Fokuszeile, die die Zeile
+    /// selbst wählt, wählt ein Kästchen MEHRERE Zeilen für die Handlungen der
+    /// Auswahlleiste (Vergleichen, Löschen). Die Leertaste setzt das Kästchen der
+    /// Fokuszeile, Strg- und Umschalt-Klick tun dasselbe, das Kopfkästchen wählt alle
+    /// SICHTBAREN. Wirkt nur zusammen mit <see cref="ZeileIstWahl"/>; der
+    /// Vergleichsknopf der Suchzeile entfällt dann (er steht in der Auswahlleiste), und
+    /// es gibt keine Grenze von drei.
+    /// </summary>
+    [Parameter] public bool Kaestchen { get; set; }
+
+    /// <summary>
+    /// <b>Die über das Kästchen gewählten Zeilen</b> (Schlüssel) — der Stand gehört dem
+    /// Wirt (<c>Zeilenauswahl</c>). Kommt eine NEUE Instanz herein („Auswahl aufheben",
+    /// ein Löschen), zieht die Liste nach; die Instanz, die sie selbst gemeldet hat,
+    /// erkennt sie wieder.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Gewaehlte { get; set; }
+
+    /// <summary>Die Kästchen haben sich geändert — mit der neuen Liste der gewählten Schlüssel.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<string>> GewaehlteChanged { get; set; }
+
+    /// <summary>Wirken die Kästchen? Nur, wo die Zeile die Wahl ist.</summary>
+    private bool KaestchenAktiv => Kaestchen && ZeilenwahlAktiv;
+
+    /// <summary>Die zuletzt gesehene Gabe — dieselbe Instanz heißt: nichts nachzuziehen.</summary>
+    private IReadOnlyList<string>? _gewaehlteGabe;
+
+    /// <summary>Zieht die Kästchen aus der Gabe des Wirts nach, wenn sie eine neue Instanz ist.</summary>
+    private void GewaehlteNachziehen()
+    {
+        if (!KaestchenAktiv || Gewaehlte is null || ReferenceEquals(Gewaehlte, _gewaehlteGabe)) return;
+
+        _gewaehlteGabe = Gewaehlte;
+        _markiert.Clear();
+        _markiertMenge.Clear();
+        foreach (string s in Gewaehlte)
+            if (_markiertMenge.Add(s)) _markiert.Add(s);
+    }
+
+    /// <summary>Meldet die Kästchen als NEUE Liste — und merkt sie sich als eigene Gabe.</summary>
+    private Task GewaehlteMelden()
+    {
+        var neu = new List<string>(_markiert);
+        _gewaehlteGabe = neu;
+        return GewaehlteChanged.InvokeAsync(neu);
+    }
+
+    /// <summary>Das Kästchen einer Zeile schaltet um — vom Kästchen, von der Leertaste, von Strg-Klick.</summary>
+    private Task KaestchenUmschalten(Katalogfilterzeile zeile)
+    {
+        string s = zeile.Schluessel;
+        if (_markiertMenge.Remove(s)) _markiert.Remove(s);
+        else { _markiertMenge.Add(s); _markiert.Add(s); }
+        return GewaehlteMelden();
+    }
+
+    /// <summary>Sind alle SICHTBAREN Zeilen gewählt? (Stellung des Kopfkästchens.)</summary>
+    private bool AlleSichtbarenMarkiert
+    {
+        get
+        {
+            if (_gefiltert.Count == 0 || _markiertMenge.Count < _gefiltert.Count) return false;
+            foreach (Katalogfilterzeile z in _gefiltert)
+                if (!_markiertMenge.Contains(z.Schluessel)) return false;
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Das Kopfkästchen: Sind alle sichtbaren gewählt, fallen ihre Kästchen; sonst kommen
+    /// die fehlenden in Anzeigereihenfolge dazu. Gewählte, die ein Filter gerade
+    /// ausblendet, bleiben gewählt — die Wahl hängt am Schlüssel.
+    /// </summary>
+    private Task BeiKopfkaestchen()
+    {
+        if (AlleSichtbarenMarkiert)
+        {
+            foreach (Katalogfilterzeile z in _gefiltert)
+                if (_markiertMenge.Remove(z.Schluessel)) _markiert.Remove(z.Schluessel);
+        }
+        else
+        {
+            foreach (Katalogfilterzeile z in _gefiltert)
+                if (_markiertMenge.Add(z.Schluessel)) _markiert.Add(z.Schluessel);
+        }
+        return GewaehlteMelden();
+    }
+
+    /// <summary>Kurztext und Name des Kästchens: „Kessel 7 wählen".</summary>
+    private string Kaestchenkurztext(Katalogfilterzeile zeile)
+        => string.Format(CultureInfo.CurrentCulture, Texte.KaestchenZeile, zeile.Bezeichner);
+
     /// <summary>Das Zeilenmaß dieser Liste — EINE Zahl für <c>ItemSize</c> und Stilblatt.</summary>
     private float Zeilenmass => ZeilenwahlAktiv ? ZEILENHOEHE_ZEILENWAHL : ZEILENHOEHE;
 
@@ -489,7 +619,7 @@
     private string? Zeilenklasse(Katalogfilterzeile zeile)
     {
         bool gewaehlt = zeile.Schluessel == Gewaehlt;
-        bool markiert = _markiert.Count > 0 && _markiert.Contains(zeile.Schluessel);
+        bool markiert = _markiertMenge.Count > 0 && _markiertMenge.Contains(zeile.Schluessel);
         if (gewaehlt && markiert) return "epos-zeile--gewaehlt epos-zeile--markiert";
         if (gewaehlt) return "epos-zeile--gewaehlt";
         return markiert ? "epos-zeile--markiert" : null;
@@ -501,16 +631,20 @@
     /// Sprachausgabe nicht.
     /// </summary>
     private string Namenskurztext(Katalogfilterzeile zeile)
-        => _markiert.Contains(zeile.Schluessel)
+        => !KaestchenAktiv && _markiertMenge.Contains(zeile.Schluessel)
             ? zeile.Bezeichner + " · " + Texte.VergleichTitel
             : zeile.Bezeichner;
 
     /// <summary>
     /// Ein Klick in die Zeile: blank wählt sie, mit Strg oder Umschalt markiert er sie für
-    /// den Vergleich (dieselbe Regel wie am Wahlknopf, S3.3).
+    /// den Vergleich (dieselbe Regel wie am Wahlknopf, S3.3) — mit Kästchen (V6) setzt er
+    /// das Kästchen der Zeile.
     /// </summary>
     private Task BeiZeilenklick(Katalogfilterzeile zeile, MouseEventArgs e)
     {
+        if (KaestchenAktiv && (e.CtrlKey || e.ShiftKey))
+            return KaestchenUmschalten(zeile);
+
         if (Vergleichbar && (e.CtrlKey || e.ShiftKey))
         {
             Markieren(zeile);
@@ -538,6 +672,14 @@
         if (n == 0) return;
 
         int i = IndexVon(Gewaehlt);
+
+        // DIE LEERTASTE setzt das Kaestchen der Fokuszeile (V6). Das Skript haelt sie
+        // vom Rollen ab, solange die Liste selbst den Fokus hat.
+        if (KaestchenAktiv && (e.Key == " " || e.Key == "Spacebar"))
+        {
+            if (i >= 0) await KaestchenUmschalten(_gefiltert[i]);
+            return;
+        }
         int ziel = e.Key switch
         {
             "ArrowDown" => i < 0 ? 0 : Math.Min(i + 1, n - 1),
@@ -745,6 +887,12 @@
     private readonly List<string> _markiert = new();
 
     /// <summary>
+    /// Dieselben Schlüssel als Menge — die Frage JE ZEILE („markiert?") in O(1). Mit den
+    /// Kästchen (V6) gibt es keine Grenze von drei mehr; eine Liste fragte n².
+    /// </summary>
+    private readonly HashSet<string> _markiertMenge = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Trug der letzte Klick eine Zusatztaste? Dann markiert er, statt zu wählen.
     /// <c>Zeilenwahl</c> ruft <c>Tastenwahl</c> VOR <c>Gewaehltwerden</c>.
     /// </summary>
@@ -792,7 +940,11 @@
 
     protected override void OnAfterRender(bool firstRender) => Zeichenlaeufe++;
 
-    protected override void OnParametersSet() => Neuberechnen();
+    protected override void OnParametersSet()
+    {
+        GewaehlteNachziehen();
+        Neuberechnen();
+    }
 
     /// <summary>
     /// <b>Dieselbe Menge behält ihre Instanz</b> (Befund <b>W13‑B‑6</b>) — und
@@ -1080,7 +1232,8 @@
     /// </summary>
     private string Wurzelklasse =>
         (_hatRaenge ? "epos-katalogliste epos-katalogliste--raenge" : "epos-katalogliste")
-        + (ZeilenwahlAktiv ? " epos-katalogliste--zeilenwahl" : "");
+        + (ZeilenwahlAktiv ? " epos-katalogliste--zeilenwahl" : "")
+        + (KaestchenAktiv ? " epos-katalogliste--kaestchen" : "");
 
     private bool _hatRaenge;
 
@@ -1120,8 +1273,10 @@
             _laengenProfil = Profil;
         }
 
-        // Ohne Wahlspalte (V4) hat die Liste deren 60 px mehr fuer ihre Spalten.
-        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten, mitWahlspalte: !ZeilenwahlAktiv);
+        // Ohne Wahlspalte (V4) hat die Liste deren 60 px mehr fuer ihre Spalten - die
+        // Kaestchenspalte (V6) nimmt sie wieder.
+        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten,
+                                       mitWahlspalte: !ZeilenwahlAktiv || KaestchenAktiv);
         BalkenErsatzRechnen();
     }
 
@@ -1138,7 +1293,8 @@
     {
         _balkenErsatz = "";
         _balkenAb = 0;
-        if (!ZeilenwahlAktiv || Profil is null || Profil.Spalten.Count < 2) return;
+        // Mit Kaestchen (V6) ist die erste Zelle das Kaestchen - sie weicht nie.
+        if (!ZeilenwahlAktiv || KaestchenAktiv || Profil is null || Profil.Spalten.Count < 2) return;
 
         if (!_stufen.TryGetValue(Profil.Spalten[0].Schluessel, out int erste) || erste <= 0) return;
 
@@ -1239,7 +1395,7 @@
         _markierhinweis = "";
         string schluessel = zeile.Schluessel;
 
-        if (_markiert.Remove(schluessel)) return;
+        if (_markiert.Remove(schluessel)) { _markiertMenge.Remove(schluessel); return; }
 
         if (_markiert.Count >= HOECHSTENS)
         {
@@ -1247,6 +1403,7 @@
             return;
         }
         _markiert.Add(schluessel);
+        _markiertMenge.Add(schluessel);
     }
 
     /// <summary>Zwei oder drei markierte Zeilen machen den Knopf frei (5.5).</summary>

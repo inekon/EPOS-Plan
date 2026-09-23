@@ -606,9 +606,6 @@
   <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
     <value>Format error in line {0}: the line ends with “{1}”. Values must be line oriented without a ',' or ';' separator at the end of the line.</value>
   </data>
-  <data name="KBROW_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Edit...</value>
-  </data>
   <data name="KBROW_BTN_LOESCHEN" xml:space="preserve">
     <value>Delete</value>
   </data>
@@ -821,9 +818,6 @@
   </data>
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
-  </data>
-  <data name="KFLT_SP_AUSLIEFERUNG" xml:space="preserve">
-    <value>Factory</value>
   </data>
   <data name="KFLT_SP_BESCHREIBUNG" xml:space="preserve">
     <value>Description</value>
@@ -9341,6 +9335,12 @@ They typically stem from a variant copy without this trade and keep entering the
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Process heat</value>
   </data>
+  <data name="KANAL_KUEHLUNG_ANZEIGE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="KAELTE_GRENZE_FEUCHTE" xml:space="preserve">
+    <value>Sensible cooling without dehumidification: humidity and latent load are not included — the cooling demand of a system with dehumidification is higher.</value>
+  </data>
   <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
     <value>Unit "{0}" (rank {1}): storage "{2}" is charged as {3}, but its class set is {4}. Channel {5} is missing — heat charged for this purpose is never discharged by this storage.</value>
   </data>
@@ -9573,7 +9573,28 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
     <value>Boiler cascade (booster): Plant {0} draws its inlet temperature from buffer {1} ({2}), a SHARED buffer. The source temperature follows the storage state and is formed anew in every hour ({3} … {4} °C{5}). Boiler lift {6}/{7} °C; at full charge the buffer contributes {8} % of the useful heat. The boiler is calculated AFTER the generator that charges the buffer.</value>
   </data>
   <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
-    <value>Scarcity order: The project setting "{0}" is unusable - the three keys {1};{2};{3} are expected in any order, each exactly once. The calculation uses the default {4} -&gt; {5} -&gt; {6}.</value>
+    <value>Scarcity order: The project setting "{0}" is unusable - the three keys {1};{2};{3} are expected in any order, each exactly once; {7} may be omitted and always comes last. The calculation uses the default {4} -&gt; {5} -&gt; {6} -&gt; {8}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Cooling demand without a cooling generator: {0} MWh/a, peak {1} kW. Heat generators do not cover cooling — the cooling demand remains uncovered.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BESTANDSWEG" xml:space="preserve">
+    <value>Building "{0}": Daily balance (legacy method) provides no cooling load — cooling demand 0. The cooling inputs apply as soon as the building is calculated with VDI 6007.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Building "{0}": Cooling is switched on but has no cooling set point — an empty cooling set point means "cooling off"; the building has no cooling demand.</value>
+  </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Cooling: The project does not calculate cooling (project setting "Calculate cooling" off). {0} buildings with cooling switched on and {1} load profiles with the cooling channel have no effect.</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Hours with simultaneous heating and cooling: {0} h (building "{1}") — switch-over hours in the transition season or zoning that requires both. Heating and cooling demand are not offset against each other.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BEDARFSPROBE" xml:space="preserve">
+    <value>Cooling demand check: The cooling channel deviates from the booked cooling contributions in {0} hours (largest deviation {1} kWh). The separation of heat and cooling does not hold; the run is not saved.</value>
+  </data>
+  <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
+    <value>The cooling set point {0} °C is not at least {2} K above the highest heating set point {1} °C — heating and cooling would work against each other. This is an input error; the run stops.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
@@ -13803,9 +13824,6 @@ The CHP unit never generates more electricity than the current own demand. The u
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Import date</value>
-  </data>
-  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>Read-only</value>
   </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Read data</value>
@@ -24574,5 +24592,110 @@ Do you want to allow this?</value>
   </data>
   <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
     <value>The next run shows rate and amount for each option — the booked state does not carry them yet.</value>
+  </data>
+  <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="ADM_AW_AUFHEBEN" xml:space="preserve">
+    <value>Clear selection</value>
+  </data>
+  <data name="ADM_AW_HINWEIS" xml:space="preserve">
+    <value>Check boxes: select several</value>
+  </data>
+  <data name="ADM_AW_LEER" xml:space="preserve">
+    <value>No row selected</value>
+  </data>
+  <data name="ADM_AW_STAMMBLATT" xml:space="preserve">
+    <value>Record sheet ›</value>
+  </data>
+  <data name="ADM_AW_BESCHRIFTUNG" xml:space="preserve">
+    <value>Selection</value>
+  </data>
+  <data name="ADM_AW_VERGLEICHEN_GRUND" xml:space="preserve">
+    <value>Select at least two rows with the check box to compare.</value>
+  </data>
+  <data name="ADM_AW_DUPLIZIEREN_GRUND" xml:space="preserve">
+    <value>Duplicate works on exactly one row.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>Delivery record – deletion locked. Create your own record with “Duplicate...”.</value>
+  </data>
+  <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Delete these {0} records? {1}</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN" xml:space="preserve">
+    <value>Kept (delivery record): {0}</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} deleted</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT_BLEIBEN" xml:space="preserve">
+    <value>{0} deleted, {1} kept</value>
+  </data>
+  <data name="ADM_KAESTCHEN_ZEILE" xml:space="preserve">
+    <value>Select {0}</value>
+  </data>
+  <data name="ADM_SB_TITEL" xml:space="preserve">
+    <value>Record sheet</value>
+  </data>
+  <data name="ADM_SB_LEER" xml:space="preserve">
+    <value>No row selected.</value>
+  </data>
+  <data name="ADM_SB_LISTE" xml:space="preserve">
+    <value>‹ List</value>
+  </data>
+  <data name="ADM_SB_KENNDATEN" xml:space="preserve">
+    <value>Key data</value>
+  </data>
+  <data name="ADM_SB_KOSTEN" xml:space="preserve">
+    <value>Costs</value>
+  </data>
+  <data name="ADM_SB_ALLE_DATEN" xml:space="preserve">
+    <value>All data</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
+    <value>Delivery record – read only. To change it, duplicate it in the selection bar.</value>
+  </data>
+  <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
+    <value>Delivery record</value>
+  </data>
+  <data name="ADM_SB_EIGENER_SATZ" xml:space="preserve">
+    <value>own record</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT" xml:space="preserve">
+    <value>{0} fields changed</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_EINS" xml:space="preserve">
+    <value>1 field changed</value>
+  </data>
+  <data name="ADM_VG_SAETZE" xml:space="preserve">
+    <value>{0} records</value>
+  </data>
+  <data name="ADM_VG_NUR_LESEN" xml:space="preserve">
+    <value>The comparison is read-only; changes are made in the record sheet of a row.</value>
+  </data>
+  <data name="ADM_VG_ZURUECK" xml:space="preserve">
+    <value>‹ Record sheet of {0}</value>
+  </data>
+  <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
+    <value>only differing values</value>
+  </data>
+  <data name="ADM_VG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>The selected records match in every value.</value>
+  </data>
+  <data name="ADM_VG_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ADM_SB_KENNLINIE" xml:space="preserve">
+    <value>Characteristic curve</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_OFFEN" xml:space="preserve">
+    <value>Changed fields – save or discard</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
+    <value>The weekly profile belongs to the type “{0}” and applies to every profile of this type.</value>
   </data>
 </root>

@@ -31,7 +31,8 @@ namespace WindowsFormsApplication1
             double[] kuehlbedarfKwh, double thetaMax,
             double verbrauchAltKwh, double skalierungsfaktor,
             int stundenMitUmschaltung, int stundenHeizenUndKuehlen,
-            double[] heizsollwert = null, int stundenMitSommerlueftung = 0)
+            double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
+            double? kuehlSollwert = null)
         {
             if (heizsollwert != null && heizsollwert.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizsollwert));
             if (heizlastW == null || heizlastW.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizlastW));
@@ -53,6 +54,7 @@ namespace WindowsFormsApplication1
             StundenHeizenUndKuehlen = stundenHeizenUndKuehlen;
             Heizsollwert = heizsollwert;
             StundenMitSommerlueftung = stundenMitSommerlueftung;
+            KuehlSollwert = kuehlSollwert;
 
             // Kennzahlen (8.2)
             double summeW = 0.0, spitzeW = 0.0;
@@ -122,7 +124,11 @@ namespace WindowsFormsApplication1
         /// <summary>Operative Temperatur je Stunde, Blockmittel [°C].</summary>
         internal double[] OperativeTemperatur { get; }
 
-        /// <summary>Kühlbedarf je Stunde [kWh] (vor KU1: Kappung an der oberen Raumtemperatur).</summary>
+        /// <summary>
+        /// Kühlbedarf je Stunde [kWh], positiv (K2, je Abschnitt gebucht, F-K3): mit wirksamer
+        /// Kühlung die Regelung auf den Kühlsollwert samt Kühlleistungsgrenze, sonst die Kappung
+        /// an der oberen Raumtemperatur (informativ, <see cref="KuehlungWirksam"/>).
+        /// </summary>
         internal double[] KuehlbedarfKwh { get; }
 
         // ---- die acht Kennzahlen (8.2) ----
@@ -178,6 +184,21 @@ namespace WindowsFormsApplication1
         internal int StundenMitSommerlueftung { get; }
 
         /// <summary>
+        /// Der Kühlsollwert, auf den der Löser geregelt hat [°C] — gesetzt genau dann, wenn die
+        /// Kühlung dieses Gebäudes WIRKSAM war (Projektschalter, <c>Kuehlung_Aktiv</c>, Sollwert;
+        /// Stufe KU1). <c>null</c>: Die Kühlreihe ist die Kappung an <see cref="ThetaMax"/>,
+        /// informativ wie vor KU1, und sie geht in keinen Kühlkanal.
+        /// </summary>
+        internal double? KuehlSollwert { get; }
+
+        /// <summary>
+        /// War die Kühlung wirksam? Dann ist <see cref="KuehlbedarfKwh"/> Kältebedarf im Sinn des
+        /// Kühlkanals (Kühlkonzept 3.7): Die Kältefassade bucht ihn aus DIESEM Ergebnis — keine
+        /// zweite Gebäuderechnung für die Kälte (E21).
+        /// </summary>
+        internal bool KuehlungWirksam => KuehlSollwert.HasValue;
+
+        /// <summary>
         /// Dasselbe Ergebnis mit der Heizlast- und Kühlreihe mal <paramref name="faktor"/>
         /// (E8, Nachmultiplikation der Fassade); die Kennzahlen entstehen neu aus den
         /// skalierten Reihen.
@@ -194,7 +215,7 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(Index, ID_Gebaeude, Modell, heiz, Raumtemperatur, OperativeTemperatur,
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
-                                              Heizsollwert, StundenMitSommerlueftung);
+                                              Heizsollwert, StundenMitSommerlueftung, KuehlSollwert);
         }
     }
 

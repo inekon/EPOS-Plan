@@ -372,6 +372,19 @@ namespace WindowsFormsApplication1
             return weg ? BedarfLoeschErgebnis.Geloescht : BedarfLoeschErgebnis.Fehlgeschlagen;
         }
 
+        /// <summary>
+        /// <b>„Duplizieren…" eines Bedarfsprofils</b> (Konzept Administrationsdialoge,
+        /// Stufe 3; Entscheid AD-Q11): kopiert den Kopfsatz <paramref name="id"/> als EIGENEN
+        /// Satz (<c>ReadOnly = 0</c>) unter <paramref name="neuerName"/> — Typ, Beschreibung
+        /// und die zwoelf Monatswerte kommen mit. Das Wochenprofil gehoert zum TYP und wird
+        /// nicht kopiert: Die Kopie verweist auf denselben Typ. Die Regel steht einmal in
+        /// <see cref="Katalogkopie.Duplizieren"/>; hier steht nur die Tabelle.
+        /// </summary>
+        internal static Katalogkopie.Ergebnis Duplizieren(BedarfsArt art, int id, string neuerName)
+        {
+            return Katalogkopie.Duplizieren(KopfTabelle(art), id, neuerName);
+        }
+
         /// <summary>Gibt es den Bezeichner schon? („Name existiert bereits!")</summary>
         internal static bool Exists(BedarfsArt art, string bezeichner)
         {

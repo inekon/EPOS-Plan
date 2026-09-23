@@ -1189,7 +1189,10 @@ namespace WindowsFormsApplication1
                     // Stunde indiziert. Eine Zeile neben der Jahressumme, aus demselben
                     // Wert — die Ganglinie kann von ihr nicht abweichen (Nachtrag zu
                     // Konzept 4.4).
-                    for (int k = 0; k < Kanal.ANZAHL; k++)
+                    //
+                    // Kühlkonzept 4.2 (F-K4): der Kanalsplit der Wärmeseite, über die
+                    // Wärmekanäle - die Wärmepumpe bucht im Heizbetrieb keine Kälte.
+                    foreach (int k in Kanal.KANAELE_WAERME)
                     {
                         Direktdeckung_Kanal[k] += _deckungIteration[k];
                         Direktdeckung_KanalStuendlich.Buchen(k, stunde, _deckungIteration[k]);
@@ -1697,14 +1700,14 @@ namespace WindowsFormsApplication1
         private void DeckungIterationKuerzen(double menge)
         {
             double summe = 0;
-            for (int k = 0; k < Kanal.ANZAHL; k++) summe += _deckungIteration[k];
+            foreach (int k in Kanal.KANAELE_WAERME) summe += _deckungIteration[k];
             if (summe <= 0) return;
 
             double faktor = (summe - menge) / summe;
             if (faktor < 0) faktor = 0;
             if (faktor >= 1) return;
 
-            for (int k = 0; k < Kanal.ANZAHL; k++) _deckungIteration[k] *= faktor;
+            foreach (int k in Kanal.KANAELE_WAERME) _deckungIteration[k] *= faktor;
         }
 
         /// <summary>

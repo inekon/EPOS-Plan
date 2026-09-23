@@ -606,9 +606,6 @@
   <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
     <value>Format Fehler in Zeile {0}: Die Zeile endet auf „{1}“. Werte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';' am Zeilenende.</value>
   </data>
-  <data name="KBROW_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Bearbeiten...</value>
-  </data>
   <data name="KBROW_BTN_LOESCHEN" xml:space="preserve">
     <value>Löschen</value>
   </data>
@@ -821,9 +818,6 @@
   </data>
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
-  </data>
-  <data name="KFLT_SP_AUSLIEFERUNG" xml:space="preserve">
-    <value>Auslieferung</value>
   </data>
   <data name="KFLT_SP_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung</value>
@@ -9348,6 +9342,12 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="KANAL_PROZESS_ANZEIGE" xml:space="preserve">
     <value>Prozesswärme</value>
   </data>
+  <data name="KANAL_KUEHLUNG_ANZEIGE" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="KAELTE_GRENZE_FEUCHTE" xml:space="preserve">
+    <value>Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.</value>
+  </data>
   <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
     <value>Anlage „{0}" (Rang {1}): Der Speicher „{2}" wird als {3} geladen, sein Klassen-Set lautet aber {4}. Der Kanal {5} fehlt — was mit diesem Zweck geladen wird, entlädt der Speicher nie.</value>
   </data>
@@ -9580,7 +9580,28 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.</value>
   </data>
   <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
-    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6}.</value>
+    <value>Knappheitsreihenfolge: Die Projekteinstellung „{0}" ist unbrauchbar - erwartet werden die drei Schlüssel {1};{2};{3} in beliebiger Reihenfolge, jeder genau einmal; {7} darf fehlen und steht immer zuletzt. Gerechnet wird mit der Vorbelegung {4} -&gt; {5} -&gt; {6} -&gt; {8}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Kältebedarf ohne Kälteerzeuger: {0} MWh/a, Spitze {1} kW. Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BESTANDSWEG" xml:space="preserve">
+    <value>Gebäude „{0}": Tagesbilanz (Bestandsweg) liefert keine Kühllast — Kältebedarf 0. Die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Gebäude „{0}": Die Kühlung ist eingeschaltet, aber ohne Kühlsollwert — ein leerer Kühlsollwert heißt „Kühlung aus"; das Gebäude trägt keinen Kältebedarf.</value>
+  </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus). {0} Gebäude mit eingeschalteter Kühlung und {1} Lastgänge mit dem Kanal Kühlung bleiben ohne Wirkung.</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}") — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BEDARFSPROBE" xml:space="preserve">
+    <value>Bedarfsprobe Kälte: Der Kühlkanal weicht in {0} Stunden von den gebuchten Kältebeiträgen ab (größte Abweichung {1} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
+    <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
@@ -13810,9 +13831,6 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Importdatum</value>
-  </data>
-  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>Schreibschutz</value>
   </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Daten einlesen</value>
@@ -24581,5 +24599,110 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
     <value>Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.</value>
+  </data>
+  <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
+    <value>{0} gewählt</value>
+  </data>
+  <data name="ADM_AW_AUFHEBEN" xml:space="preserve">
+    <value>Auswahl aufheben</value>
+  </data>
+  <data name="ADM_AW_HINWEIS" xml:space="preserve">
+    <value>Kästchen: mehrere wählen</value>
+  </data>
+  <data name="ADM_AW_LEER" xml:space="preserve">
+    <value>Keine Zeile gewählt</value>
+  </data>
+  <data name="ADM_AW_STAMMBLATT" xml:space="preserve">
+    <value>Stammblatt ›</value>
+  </data>
+  <data name="ADM_AW_BESCHRIFTUNG" xml:space="preserve">
+    <value>Auswahl</value>
+  </data>
+  <data name="ADM_AW_VERGLEICHEN_GRUND" xml:space="preserve">
+    <value>Zum Vergleichen mindestens zwei Zeilen über das Kästchen wählen.</value>
+  </data>
+  <data name="ADM_AW_DUPLIZIEREN_GRUND" xml:space="preserve">
+    <value>Duplizieren gilt für genau eine Zeile.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“.</value>
+  </data>
+  <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Sollen diese {0} Sätze gelöscht werden? {1}</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN" xml:space="preserve">
+    <value>Stehen bleiben (Auslieferungssatz): {0}</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} gelöscht</value>
+  </data>
+  <data name="ADM_MSG_GELOESCHT_BLEIBEN" xml:space="preserve">
+    <value>{0} gelöscht, {1} stehen geblieben</value>
+  </data>
+  <data name="ADM_KAESTCHEN_ZEILE" xml:space="preserve">
+    <value>{0} wählen</value>
+  </data>
+  <data name="ADM_SB_TITEL" xml:space="preserve">
+    <value>Stammblatt</value>
+  </data>
+  <data name="ADM_SB_LEER" xml:space="preserve">
+    <value>Keine Zeile gewählt.</value>
+  </data>
+  <data name="ADM_SB_LISTE" xml:space="preserve">
+    <value>‹ Liste</value>
+  </data>
+  <data name="ADM_SB_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten</value>
+  </data>
+  <data name="ADM_SB_KOSTEN" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="ADM_SB_ALLE_DATEN" xml:space="preserve">
+    <value>Alle Daten</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.</value>
+  </data>
+  <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferungssatz</value>
+  </data>
+  <data name="ADM_SB_EIGENER_SATZ" xml:space="preserve">
+    <value>eigener Satz</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT" xml:space="preserve">
+    <value>{0} Felder geändert</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_EINS" xml:space="preserve">
+    <value>1 Feld geändert</value>
+  </data>
+  <data name="ADM_VG_SAETZE" xml:space="preserve">
+    <value>{0} Sätze</value>
+  </data>
+  <data name="ADM_VG_NUR_LESEN" xml:space="preserve">
+    <value>Der Vergleich ist nur lesbar; geändert wird im Stammblatt einer Zeile.</value>
+  </data>
+  <data name="ADM_VG_ZURUECK" xml:space="preserve">
+    <value>‹ Stammblatt von {0}</value>
+  </data>
+  <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
+    <value>nur abweichende Werte</value>
+  </data>
+  <data name="ADM_VG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>Die gewählten Sätze stimmen in jedem Wert überein.</value>
+  </data>
+  <data name="ADM_VG_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ADM_SB_KENNLINIE" xml:space="preserve">
+    <value>Kennlinie</value>
+  </data>
+  <data name="ADM_SB_GEAENDERT_OFFEN" xml:space="preserve">
+    <value>Geänderte Felder – Speichern oder Verwerfen</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
+    <value>Das Wochenprofil gehört zum Typ „{0}“ und gilt für jedes Profil dieses Typs.</value>
   </data>
 </root>

@@ -42,11 +42,19 @@
    Entscheid AD-Q11): Die Zeile ist die Wahl; ein Auslieferungssatz traegt das
    Schloss, seine Felder sind nur lesbar, "Speichern" ist weich gesperrt und
    "Duplizieren..." legt den eigenen Satz samt Kennlinien an. Fussleiste
-   Speichern - Kennliniendaten... - Fueller (Statuszeile) - Neu - Duplizieren... -
-   Loeschen - Beenden; Kreuz und Esc wie Beenden. *@
+   Kreuz und Esc wie Beenden.
+
+   STUFE 3 (V3, V6, V8, V9, V12, V13): Stammblatt neben der Liste mit der
+   Gruppe Kennlinie vorn, Kaestchen und Auswahlleiste (Vergleichen,
+   Duplizieren..., Loeschen - auch mehrere Zeilen, Auslieferungssaetze und
+   Projektgeraete bleiben stehen), Vergleich im Stammblatt. Dazu die
+   AENDERUNGSERKENNUNG: Ein geaendertes Feld haelt Zeilenwechsel, Neu,
+   Duplizieren... und Beenden an, "Verwerfen" nimmt es zurueck. Fussleiste
+   Speichern - Verwerfen - Fueller (Statuszeile) - Neu - Beenden. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
 @inherits Farbwahlwirt
+@using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 @implements IDisposable
@@ -62,7 +70,11 @@
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
-            <h1 class="epos-dialog-titel">@TitelText</h1>
+            @* Das Kopfband des Vorlaeufers ("Verwaltung Daten zu Waermepumpen und deren
+               Kennlinien") steht seit Stufe 3 als Kurztext am Titel: Als eigene Zeile
+               nahm es der Liste eine Zeile (Katalogprobe N08a: sieben statt acht), und
+               das Schema kennt in Zone 1 nur Titel, Info und Kreuz. *@
+            <h1 class="epos-dialog-titel" title="@KopfbandText">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @if (TitelAnzeigen)
@@ -70,8 +82,6 @@
             <Schliesskreuz Geschlossen="Beenden" />
         }
     </div>
-
-    <p class="epos-kontextzeile">@KopfbandText</p>
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -99,126 +109,126 @@
        waeren genau das, was die Hausregel seit iZ5 verbietet - "nie zwei Fassungen
        derselben Maske". Die zwei anderen Wirte des Katalogdialogs (Waermepumpen-
        verwaltung, Anlagenmaske) haben keine eigene Katalogliste und behalten ihn. *@
-    <Katalograhmen>
+    @* STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste links
+       ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT - dasselbe
+       Geruest wie in der Verwaltung Heizkessel. Das Stammblatt traegt vorn die
+       dialogspezifische Gruppe KENNLINIE (Umschalter Waerme/Kuehlung, COP und
+       Leistung, "Kennliniendaten..." als Knopf im Kopf der Gruppe - er vertieft
+       sie), dann die Kenndaten (WaermepumpeStammFelder) und "Alle Daten". Die
+       Ueberschrift ueber der Liste entfaellt: Sie nahm der Liste eine Zeile. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <h2 class="epos-untergruppe">@LabelListe</h2>
-
             <Katalogliste Profil="@Spaltenprofil" Zeilen="@_liste"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            <Gruppenkopf Titel="@GruppeStammdaten">
-                <KindInhalt>
-                    @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik
-                       "Berechnung". Er sitzt HIER, weil dieser Block die Kennwerte
-                       des Stammsatzes fuehrt - Nennleistung, Heizstab, Regelung -,
-                       die der Rechenweg spaeter liest. Der Fensterknopf oben rechts
-                       bleibt die Bedienhilfe.
+        <Auswahl>
+            @* Zone 4 (V8): Vergleichen, Duplizieren..., Loeschen. Loeschen ist weich
+               gesperrt, wenn jede Zielzeile ein Auslieferungssatz ist oder die
+               Fokuszeile einem Projekt zugeordnet ist - der Kurztext nennt das
+               Projekt (Konzept 3.4). *@
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
 
-                       DER SCHLUESSEL TRAEGT DEN ZUSATZ "_Stamm". Den kuerzeren
-                       Namen ohne ihn hat H13b (Abweichung A-1) dem ANLAGENDIALOG
-                       gegeben, weil dessen Fensterschluessel noch
-                       Wizard_WPItem.btn_Help lautet. Zwei Masken, zwei Schluessel -
-                       ein Schluessel gehoert genau einem Dialog. *@
+        <Blatt>
+            <Stammblatt Name="@Blattname" Unterzeile="@Unterzeile"
+                        Auslieferung="@NurLesbar" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* DIE KENNLINIE (V9, dialogspezifisch). "Kennliniendaten..." steht im
+                       Kopf der Gruppe und oeffnet den Editor als Ueberlagerung (Konzept
+                       3.2); er wirkt auf den Satz des Blatts, nicht auf die Liste. *@
+                    <Stammblattgruppe Titel="@TextKennlinie">
+                        <Kopf>
+                            <button type="button" class="epos-textknopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
+                        </Kopf>
+                        <KindInhalt>
+                            @if (_hatKuehlung)
+                            {
+                                <Optionsgruppe Eintraege="@(new[] { (0, OptionWaerme), (1, OptionKuehlung) })"
+                                               Auswahl="@(_kuehlung ? 1 : 0)"
+                                               AuswahlChanged="BetriebsartWaehlen" />
+                            }
+
+                            @* ZWEI BILDER, ZWEI KENNUNGEN (Etappe DG-E3, Gruppe (b)): Die
+                               Kennung bildet die clipPath-Namen. KEIN ZOOM UND KEINE EINHEIT
+                               VON AUSSEN: Die Kennlinien haben keine Zeichenflaeche
+                               (DG-E3-7). DIE FARBWAHL AM BILD steht jeder Vorlaufkennlinie
+                               offen; ohne FarbeSetzen bleibt das Farbfeld stumm. *@
+                            <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
+                                <KindInhalt>
+                                    <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
+                                        <KindInhalt>
+                                            <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
+                                                         Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild"
+                                                         FarbwahlErlaubt="@Farbwahl"
+                                                         FarbeGewaehlt="FarbeUebernehmen"
+                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
+                                    <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
+                                        <KindInhalt>
+                                            <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
+                                                         Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild"
+                                                         FarbwahlErlaubt="@Farbwahl"
+                                                         FarbeGewaehlt="FarbeUebernehmen"
+                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
+                                </KindInhalt>
+                            </Reiter>
+                        </KindInhalt>
+                    </Stammblattgruppe>
+                </Gruppen>
+                <Kenndaten>
+                    @* DAS FELDRASTER STEHT IM BAUSTEIN WaermepumpeStammFelder - derselbe
+                       wie in der Detailansicht einer Anlage. Ein Auslieferungssatz ist nur
+                       lesbar (AD-Q11). Jede Eingabe meldet sich ueber Geaendert: Seit
+                       Stufe 3 haelt ein geaendertes Feld Zeilenwechsel, Neu,
+                       Duplizieren... und Beenden an ("Speichern oder Verwerfen") - bis
+                       dahin verwarf ein Zeilenwechsel die Eingabe still. *@
+                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte"
+                                            Typen="@Typen" Leistungsstufen="@Leistungsstufen"
+                                            Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
+                                            Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
+                </Kenndaten>
+                <AlleDaten>
+                    @* ALLE PARAMETER UND IHRE VERWENDUNG (W14a-E-8) - hier die Auskunft
+                       ueber die sieben Fachspalten, die das Raster nicht zeigt. *@
+                    @if (Uebersicht is not null)
+                    {
+                        <Parameteruebersicht Zeilen="@_uebersicht" Beschriftung="@Resource.ADM_SB_ALLE_DATEN" />
+                    }
+                </AlleDaten>
+                <Nachsatz>
+                    @* H13 / O-H13b-5: der Weg in die Wikirubrik "Berechnung"; der
+                       Schluessel traegt den Zusatz "_Stamm" (A-1: den kuerzeren hat der
+                       Anlagendialog). *@
                     <div class="epos-berechnungshilfe">
                         <InfoKnopf Schluessel="Form_WP_Stamm.Berechnung"
                                    StandardKurztext="Berechnung: Wärmepumpe" />
                     </div>
-                    @* DAS FELDRASTER STEHT SEIT DEM 16.09.2026 IM BAUSTEIN
-                       WaermepumpeStammFelder. Es zeichnet dieselben Felder in
-                       derselben Reihenfolge wie zuvor hier - nur eben auch in der
-                       DETAILANSICHT einer Anlage, wo der Anwender die Parameter des
-                       Stammgeraets jetzt unmittelbar bearbeitet, statt den Umweg
-                       "Parameter Bearbeiten…" zu nehmen. Zwei Fassungen desselben
-                       Rasters waeren genau das, was die Hausregel seit iZ5 verbietet.
-
-                       Die Beschriftungen kommen weiterhin aus DIESER Huelle: Der
-                       Dialog legt seine Einzelgaben in OnParametersSet in das Buendel
-                       (siehe Felderbuendel). *@
-                    @* Ein Auslieferungssatz ist nur lesbar (AD-Q11); geaendert wird die
-                       eigene Kopie, die "Duplizieren..." anlegt. *@
-                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte"
-                                            Typen="@Typen" Leistungsstufen="@Leistungsstufen"
-                                            Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
-                                            Aktiv="@(!NurLesbar)" />
-
-                    @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
-                       (06.09.2026). Gerade hier ist er die Auskunft, die im Bestand
-                       fehlte: Diese Maske zeigt elf der achtzehn Fachspalten von
-                       Tab_WP_STAMM, die uebrigen sieben laufen unsichtbar mit
-                       (Modulkosten, maxPtherm) oder liegen aus dem VDI-3805-Import
-                       ungenutzt da (Laenge, Breite, Hoehe, Gewicht, Raum). *@
-                    @if (Uebersicht is not null)
-                    {
-                        <Parameteruebersicht Zeilen="@_uebersicht" />
-                    }
-                </KindInhalt>
-            </Gruppenkopf>
-
-            @* DIE KENNLINIEN STEHEN IM EINGABEBLOCK (Konzept Administrationsdialoge,
-               Stufe 1, V1): Zwischen Rahmen und Fussleiste waren sie ein dritter
-               Bereich, dessen Reiterblatt in sich rollte (gemessen 41 px sichtbar
-               von 412 bei 1 088 x 624). Im Eingabeblock rollen sie mit den Feldern -
-               ein Bereich, kein Rollbalken im Rollbalken. *@
-            @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
-            <h2 class="epos-untergruppe">@LabelKennlinien</h2>
-
-            @if (_hatKuehlung)
-            {
-                <Optionsgruppe Eintraege="@(new[] { (0, OptionWaerme), (1, OptionKuehlung) })"
-                               Auswahl="@(_kuehlung ? 1 : 0)"
-                               AuswahlChanged="BetriebsartWaehlen" />
-            }
-
-            @* ZWEI BILDER, ZWEI KENNUNGEN (Etappe DG-E3, Gruppe (b)): Die Kennung bildet die
-               clipPath-Namen; zwei gleiche schnitten das eine Bild am Rechteck des anderen.
-               Es sind dieselben zwei Kennungen wie im WaermepumpeAnlageDialog - die beiden
-               Masken stehen nie auf demselben Blatt.
-
-               KEIN ZOOM UND KEINE EINHEIT VON AUSSEN. Die Kennlinien haben keine
-               Zeichenflaeche (Entscheid DG-E3-7): Der Baustein schaltet den Zoom von selbst
-               ab und zeigt statt einer Reihenzeile den Wert des Elements unter dem Zeiger
-               (DG-E3-10) - jede Punktmarke nennt Aussentemperatur, Vorlauf und Wert bereits
-               fertig formatiert.
-
-               DIE FARBWAHL AM BILD steht jeder Vorlaufkennlinie offen: Das Kennlinienmodell
-               gibt jeder Reihe eine Farbrolle, und der Wirt reicht den Schreibweg der Huelle
-               durch (Farbrollen, Bedienung Teil 2). Ohne FarbeSetzen bleibt das Farbfeld
-               stumm. *@
-            <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
-                <KindInhalt>
-                    <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
-                        <KindInhalt>
-                            <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
-                                         Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild"
-                                         FarbwahlErlaubt="@Farbwahl"
-                                         FarbeGewaehlt="FarbeUebernehmen"
-                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
-                        </KindInhalt>
-                    </Reiterblatt>
-                    <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
-                        <KindInhalt>
-                            <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
-                                         Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild"
-                                         FarbwahlErlaubt="@Farbwahl"
-                                         FarbeGewaehlt="FarbeUebernehmen"
-                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
-                        </KindInhalt>
-                    </Reiterblatt>
-                </KindInhalt>
-            </Reiter>
-        </Eingabe>
+                </Nachsatz>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
-    @* KATALOGMUSTER (DL-2 Nr. 4): "Speichern" und der Kennlinieneditor wirken auf
-       den markierten Satz und stehen LINKS vom Fueller, "Neu" und "Loeschen" auf
-       die Liste und stehen rechts, "Beenden" ist der eine primaere Schlussknopf -
-       dieselbe Anordnung wie in ModulKatalogDialog. Der Knopf traegt den KURZEN
-       Text; den vollen ("Kennliniendaten Ansicht/Bearbeiten...") traegt die
-       Ueberlagerung als Titel. *@
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15, Stufe 3): Speichern - Verwerfen -
+       Fueller (Statuszeile) - Neu - Beenden. "Kennliniendaten..." steht im Kopf
+       der Gruppe Kennlinie, Duplizieren... und Loeschen in der Auswahlleiste (V8:
+       keine Handlung an zwei Orten). Der Knopf "Kennliniendaten..." traegt den
+       KURZEN Text; den vollen traegt die Ueberlagerung als Titel. *@
     <div class="epos-leiste">
         @* SPEICHERN BEI EINEM AUSLIEFERUNGSSATZ (AD-Q11): weich gesperrt, der Grund
            im Kurztext und nach dem Klick im Warnband. *@
@@ -231,15 +241,10 @@
         {
             <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@BtnSpeichernText</button>
         }
-        <button type="button" class="epos-knopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
-        @if (Duplizieren is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
-                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
-        }
-        <button type="button" class="epos-knopf" @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Beenden">@BtnBeendenText</button>
     </div>
@@ -258,7 +263,7 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    <Rueckfrage Offen="@_loeschfrage" Frage="@FrageLoeschen" TitelText="@BtnLoeschenText"
+    <Rueckfrage Offen="@_loeschfrage" Frage="@_loeschtext" TitelText="@BtnLoeschenText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
 
     @* --- Namensabfrage von „Duplizieren…" (AD-Q11) ------------------------ *@
@@ -469,6 +474,15 @@
     /// <summary>„Duplizieren…" (AD-Q11).</summary>
     [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
 
+    /// <summary>„Verwerfen" — nimmt geänderte Felder zurück (Stufe 3) — <c>ADM_BTN_VERWERFEN</c>.</summary>
+    [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
+
+    /// <summary>
+    /// „Speichern oder Verwerfen" — wenn ein geändertes Feld Zeilenwechsel, Neu,
+    /// Duplizieren… oder Beenden aufhält (Stufe 3) — <c>ADM_MSG_UNGESPEICHERT</c>.
+    /// </summary>
+    [Parameter] public string MeldungUngespeichert { get; set; } = Resource.ADM_MSG_UNGESPEICHERT;
+
     /// <summary>Der Grund am weich gesperrten „Speichern" eines Auslieferungssatzes (AD-Q11).</summary>
     [Parameter] public string MeldungSpeichernGesperrt { get; set; } = Resource.ADM_SPEICHERN_GESPERRT;
 
@@ -564,6 +578,217 @@
     /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
     public bool KennlinieneditorOffen => _kennlinien is not null;
 
+    // =================================================================================
+    // Stufe 3: Auswahlleiste, Stammblatt, Vergleich, Aenderungserkennung
+    // (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13)
+    // =================================================================================
+
+    /// <summary>Die Kästchen, der Vergleich und das Blatt im schmalen Fenster.</summary>
+    private readonly Zeilenauswahl _auswahl = new();
+
+    /// <summary>Die Zeile der Liste zur Fokuszeile — Herkunft und Kennzahlen des Stammblatts.</summary>
+    private Katalogfilterzeile? _fokuszeile;
+
+    /// <summary>
+    /// Das Projekt, dem die Fokuszeile zugeordnet ist (<c>GesperrtDurch</c>) — EINMAL beim
+    /// Wählen gefragt, nicht je Zeichenlauf: Die Frage geht an die Datenbank.
+    /// </summary>
+    private string? _gesperrtDurch;
+
+    /// <summary>Ein Feld des geladenen Satzes ist geändert (Stufe 3, Änderungserkennung).</summary>
+    private bool _geaendert;
+
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
+    private string _loeschtext = "";
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    /// <summary>Der Satz, den „Duplizieren…" kopiert — die gewählte Zeile oder die Fokuszeile.</summary>
+    private string _duplizierQuelle = "";
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _loeschen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    private const string HERKUNFT = "__HERKUNFT";
+
+    /// <summary>Die über das Kästchen gewählten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Ist ein Feld geändert? (Prüfhilfe für Tests.)</summary>
+    public bool Geaendert => _geaendert;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen
+        => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+
+    /// <summary>Die aktuelle Meldung (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>„Kennlinie" — der Titel der dialogspezifischen Gruppe (<c>ADM_SB_KENNLINIE</c>).</summary>
+    private static string TextKennlinie => Resource.ADM_SB_KENNLINIE;
+
+    /// <summary>Der Name im Kopf des Stammblatts — bei „Neu" der eingegebene Name oder „Neu".</summary>
+    private string Blattname => _neu ? (Daten.Name.Length > 0 ? Daten.Name : BtnNeuText) : _gewaehlt;
+
+    private string Unterzeile => Stammblattkopf.Unterzeile(
+        Spaltenprofil, _neu ? null : _fokuszeile,
+        NurLesbar ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+        => _neu ? Array.Empty<Stammblattkennzahl>() : Stammblattkopf.Kennzahlen(Spaltenprofil, _fokuszeile);
+
+    /// <summary>Der Fuß des Stammblatts sagt, dass geänderte Felder anstehen.</summary>
+    private string Aenderungshinweis => _geaendert ? Resource.ADM_SB_GEAENDERT_OFFEN : "";
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>
+    /// <b>Die Handlungen der Auswahlleiste</b> (V8): Vergleichen ab zwei Kästchen,
+    /// Duplizieren… für genau eine Zeile, Löschen — weich gesperrt, wenn jede Zielzeile
+    /// ein Auslieferungssatz ist oder die eine Fokuszeile einem Projekt gehört.
+    /// </summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(3)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(BtnDuplizierenText, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        if (Loeschen is not null)
+            liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            if (ziele.All(Geschuetzt)) return Resource.ADM_AW_LOESCHEN_GESPERRT;
+            if (_auswahl.Anzahl == 0 && _gesperrtDurch is not null)
+                return string.Format(MeldungProjektFormat, _gesperrtDurch);
+            return "";
+        }
+    }
+
+    private bool Geschuetzt(string name) => _liste.Any(z => z.Bezeichner == name && z.Geschuetzt);
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    private void BeiFeldAenderung()
+    {
+        _geaendert = true;
+        _status = "";
+    }
+
+    /// <summary>
+    /// „Verwerfen": Der gewählte Satz kommt neu aus dem Katalog; ein neuer, noch nicht
+    /// gespeicherter Satz fällt weg, und die erste Zeile steht wieder.
+    /// </summary>
+    private void BeiVerwerfen()
+    {
+        if (!_geaendert) return;
+        _geaendert = false;
+        _meldung = "";
+        Katalogfilterzeile? zeile = _neu ? null : _liste.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null && _liste.Count > 0) zeile = _liste[0];
+        if (zeile is not null) ZeileWaehlen(zeile);
+        else BeiNeu();
+    }
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich über die Felder des Stammsatzes</b> (V12) — dieselben, die die
+    /// Kenndaten zeigen, dazu die Herkunft. Gerechnet beim Anstellen und wenn sich die
+    /// Kästchen ändern: hinter <c>Satz</c> steht ein Datenbankzugriff je Gerät.
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(namen.Count);
+        foreach (string name in namen)
+        {
+            Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == name);
+            WaermepumpeStammDaten? d = zeile is null ? null : Satz?.Invoke(zeile.Id);
+            saetze.Add(Vergleichsfelder(d, zeile?.Geschuetzt == true));
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    private IReadOnlyList<Vergleichsfeld> Vergleichsfelder(WaermepumpeStammDaten? d, bool geschuetzt)
+    {
+        d ??= new WaermepumpeStammDaten();
+        string kw = " [" + EinheitKw + "]";
+        return new[]
+        {
+            new Vergleichsfeld("FIRMA", LabelHersteller, d.Firma),
+            new Vergleichsfeld("BESCHREIBUNG", LabelBeschreibung, d.Beschreibung),
+            new Vergleichsfeld("TYP", LabelTyp, d.Typ),
+            new Vergleichsfeld("REGELUNG", LabelRegelung, d.Regelung),
+            new Vergleichsfeld("AUFSTELLUNG", LabelAufstellung, d.Aufstellung),
+            new Vergleichsfeld("BAUJAHR", LabelBaujahr, d.Baujahr?.ToString(CultureInfo.CurrentCulture) ?? ""),
+            new Vergleichsfeld("NENNLEISTUNG", LabelNennleistung + kw,
+                               d.Nennleistung?.ToString(CultureInfo.CurrentCulture) ?? ""),
+            new Vergleichsfeld("HEIZSTAB", LabelHeizstab + kw,
+                               d.Heizstab?.ToString(CultureInfo.CurrentCulture) ?? ""),
+            new Vergleichsfeld("KUEHLLEISTUNG", LabelKuehlleistung + kw,
+                               d.Kuehlleistung.ToString(CultureInfo.CurrentCulture)),
+            new Vergleichsfeld("MODULKOSTEN", LabelModulkosten + " [" + EinheitEuro + "]",
+                               d.Modulkosten.ToString(CultureInfo.CurrentCulture)),
+            new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
+                               geschuetzt ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ)
+        };
+    }
+
     /// <summary>
     /// Die Beschriftungen des Feldrasters (<c>WaermepumpeStammFelder</c>). Der Baustein
     /// füllt sein Bündel selbst aus <c>MyResource</c>; DIESER Dialog bezieht seine Texte
@@ -603,6 +828,12 @@
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
         // S2.5: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
         // Projektdialog (Frage Q2). Ein Pruefstand gibt seinen eigenen herein.
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
@@ -683,11 +914,23 @@
     private void ListeNeuLaden()
     {
         _liste = Liste?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+
+        // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
+        _auswahl.Abgleichen(_liste.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
     }
 
-    /// <summary>Die Katalogliste meldet den Bezeichner; hier wird die Zeile dazu gesucht.</summary>
+    /// <summary>
+    /// Die Katalogliste meldet den Bezeichner; hier wird die Zeile dazu gesucht.
+    /// <b>Geänderte Felder halten die Wahl fest</b> (Stufe 3): Der
+    /// Wechsel verwürfe sie still; das Warnband sagt „Speichern oder Verwerfen".
+    /// </summary>
     private void BeiZeile(string bezeichner)
     {
+        if (bezeichner == _gewaehlt && !_neu) return;
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+
         Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
         if (zeile is not null) ZeileWaehlen(zeile);
     }
@@ -696,9 +939,14 @@
     {
         _gewaehlteId = zeile.Id;
         _gewaehlt = zeile.Bezeichner;
+        _fokuszeile = zeile;
         _neu = false;
+        _geaendert = false;
         _meldung = "";
         _status = "";
+
+        // Die Projektsperre der Fokuszeile - der Grund am weich gesperrten "Loeschen".
+        _gesperrtDurch = zeile.Geschuetzt ? null : GesperrtDurch?.Invoke(zeile.Bezeichner);
 
         WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
         if (satz is not null) Daten = satz;
@@ -777,8 +1025,14 @@
     private void BeiDuplizieren()
     {
         if (!DuplizierenErlaubt) return;
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+
+        // Kopiert wird die EINE Zielzeile: die gewaehlte, sonst die Fokuszeile (V8).
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+        _duplizierQuelle = ziele[0];
         _meldung = "";
-        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_duplizierQuelle, NameVergeben);
         _duplizierfrage = true;
     }
 
@@ -789,10 +1043,13 @@
     private void BeiDuplizierName(string? name)
     {
         _duplizierfrage = false;
-        if (name is null || Duplizieren is null || _gewaehlteId <= 0) return;
+        if (name is null || Duplizieren is null) return;
 
-        string alt = _gewaehlt;
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(_gewaehlteId, name);
+        Katalogfilterzeile? quelle = _liste.FirstOrDefault(z => z.Bezeichner == _duplizierQuelle);
+        if (quelle is null) return;
+
+        string alt = _duplizierQuelle;
+        KatalogSpeicherErgebnis ergebnis = Duplizieren(quelle.Id, name);
         if (!ergebnis.Ok)
         {
             _meldung = ergebnis.Meldung;
@@ -800,6 +1057,8 @@
             return;
         }
 
+        // Die Kopie ist gewaehlt, die Kaestchen fallen: Die naechste Handlung gilt ihr.
+        _auswahl.Aufheben();
         ListeNeuLaden();
         Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
         if (zeile is not null) ZeileWaehlen(zeile);
@@ -809,7 +1068,12 @@
     /// <summary>„Neu": leere Vorgaben, keine Zeile markiert (<c>btn_Neu_Click</c>:458).</summary>
     private void BeiNeu()
     {
+        if (_geaendert) { Warnen(MeldungUngespeichert); return; }
+
         _neu = true;
+        _geaendert = false;
+        _fokuszeile = null;
+        _gesperrtDurch = null;
         _gewaehlteId = 0;
         _gewaehlt = "";
         _meldung = "";
@@ -820,32 +1084,82 @@
         Daten = new WaermepumpeStammDaten();
     }
 
+    /// <summary>
+    /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten
+    /// Zeilen, sonst auf die Fokuszeile. Auslieferungssätze bleiben stehen (V13) — sind
+    /// es alle, ist der Knopf weich gesperrt. Die Rückfrage nennt, was gelöscht wird und
+    /// was stehen bleibt.
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
+
+        var loeschbar = ziele.Where(z => !Geschuetzt(z)).ToList();
+        var bleiben = ziele.Where(Geschuetzt).ToList();
+        if (loeschbar.Count == 0) { Warnen(Resource.ADM_AW_LOESCHEN_GESPERRT); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = bleiben.Count;
+
+        string frage = loeschbar.Count == 1
+            ? FrageLoeschen
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            loeschbar.Count, string.Join(", ", loeschbar));
+        if (bleiben.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", bleiben));
+        _loeschtext = frage;
+        _loeschfrage = true;
+    }
+
+    /// <summary>
+    /// Nach dem „Ja": je Zeile ein Schritt. Die Projektsperre kommt VOR dem Löschen
+    /// (<c>btn_Loeschen_Click:441</c>) — eine zugeordnete Wärmepumpe bleibt stehen und
+    /// nennt ihr Projekt im Warnband; die Statuszeile nennt beide Zahlen.
+    /// </summary>
     private void LoeschfrageBeantwortet(bool? antwort)
     {
         _loeschfrage = false;
         if (antwort != true || Loeschen is null) return;
 
-        if (Daten.NurLesen)
+        int geloescht = 0;
+        var gruende = new List<string>();
+        bool fokusWeg = false;
+        foreach (string name in _loeschziele)
         {
-            _meldung = MeldungReadOnlyLoeschen;
-            _meldungStufe = WarnStufe.Hinweis;
-            return;
+            string? projekt = GesperrtDurch?.Invoke(name);
+            if (projekt is not null)
+            {
+                string grund = string.Format(MeldungProjektFormat, projekt);
+                if (!gruende.Contains(grund)) gruende.Add(grund);
+                continue;
+            }
+            if (!Loeschen(name)) continue;
+            geloescht++;
+            if (name == _gewaehlt) fokusWeg = true;
         }
 
-        // Die Projektsperre kommt VOR dem Loeschen (btn_Loeschen_Click:441).
-        string? projekt = GesperrtDurch?.Invoke(Daten.Name);
-        if (projekt is not null)
-        {
-            _meldung = string.Format(MeldungProjektFormat, projekt);
-            _meldungStufe = WarnStufe.Warnung;
-            return;
-        }
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
 
-        Loeschen(Daten.Name);
-        _meldung = "";
+        if (gruende.Count > 0) Warnen(string.Join(" ", gruende));
+        else _meldung = "";
+
+        if (geloescht == 0) return;
+
         ListeNeuLaden();
-        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        Katalogfilterzeile? fokus = fokusWeg ? null : _liste.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (fokus is null && _liste.Count > 0) fokus = _liste[0];
+        string meldung = _meldung;
+        if (fokus is not null) ZeileWaehlen(fokus);
         else BeiNeu();
+        _meldung = meldung;
+
+        _status = ziele <= 1 ? ""
+                : blieben > 0 ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
     }
 
     // =================================================================================
@@ -879,13 +1193,32 @@
     /// Esc. Die Maske hat keinen Arbeitsstand, der zu verwerfen wäre — Speichern,
     /// Duplizieren, Löschen und der Kennlinieneditor schreiben sofort.
     /// </summary>
-    private Task Beenden() => Geschlossen.InvokeAsync(true);
+    /// <summary>
+    /// „Beenden" — Kreuz und Esc nehmen denselben Weg. <b>Geänderte Felder halten ihn
+    /// auf</b> (Stufe 3): „Speichern oder Verwerfen" im Warnband, der Dialog bleibt offen.
+    /// </summary>
+    private Task Beenden()
+    {
+        if (_geaendert)
+        {
+            Warnen(MeldungUngespeichert);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage || _duplizierfrage)
             return Task.CompletedTask;
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return Beenden();
     }
 }

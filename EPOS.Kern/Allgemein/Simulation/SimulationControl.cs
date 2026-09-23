@@ -2033,7 +2033,10 @@ namespace WindowsFormsApplication1
             k.AlleSpeicher.AddRange(RegistrySpeicher());
 
             // --- 2. Entladereihenfolge JE KANAL (Konzept 3.6, Paket K2) --------------
-            for (int kanal = 0; kanal < Kanal.ANZAHL; kanal++)
+            // Nur die Wärmekanäle (Kühlkonzept 4.2, 4.6): Ein Speicher entlädt keine Kälte,
+            // solange kein Kältespeicher rechnet (K7) - die Liste des Kühlkanals bleibt die
+            // leere aus dem Konstruktor des Kontexts, ohne Abfrage der Heizungsordnung.
+            foreach (int kanal in Kanal.KANAELE_WAERME)
                 k.Entladen[kanal] = EntladeordnungAufbauen(k, kanal);
 
             // --- 3. Senkenliste je WP-Modul (Konzept 5.1, Paket S1) ------------------
