@@ -10,7 +10,7 @@ Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 |---|---|
 | [`Konzept_TWW-Zapfprofile_WP-Plan_1.md`](Konzept_TWW-Zapfprofile_WP-Plan_1.md) (Fassung V1.2) | Methodik: drei Lehren, Schichten S0–S6, Entscheidung D (Hybrid), Eingabe- und Vorgabekonzept, Risiken |
 | [`Mockups/Zapfprofilgenerator_Mockup.html`](Mockups/Zapfprofilgenerator_Mockup.html) | Zielbild von Dialog, Überlagerungen, Katalogdialog, Einbindung, Stufen Z0–Z5 und offene Entscheide K1–K8, A1–A12 |
-| Vorlagenanalyse der Excel-Vorlage „TWW-Auslegung V4" (Arbeitspapier, nicht im Repositorium) | Speicherauslegung nach der INEKON-Vorlage: Blattfolge, Formelsammlung, Bedienmuster, vier Schwächen |
+| [`Zapfprofilgenerator/2026-09-22_Vorlagenanalyse_TWW-Auslegung_V4.md`](Zapfprofilgenerator/2026-09-22_Vorlagenanalyse_TWW-Auslegung_V4.md) (Vorlagenanalyse der Excel-Vorlage „TWW-Auslegung V4") | Speicherauslegung nach der INEKON-Vorlage: Blattfolge, Formelsammlung, Bedienmuster, vier Schwächen |
 | [`Grundlagen_1_Normen_Regelwerke_TWW-Zapfprofile.md`](Grundlagen_1_Normen_Regelwerke_TWW-Zapfprofile.md), [`Grundlagen_2_Modelle_Generatoren_Daten_TWW.md`](Grundlagen_2_Modelle_Generatoren_Daten_TWW.md), [`Grundlagen_3_DIN-EN-12831-3_A1_A100_Auswertung.md`](Grundlagen_3_DIN-EN-12831-3_A1_A100_Auswertung.md), [`Grundlagen_4_WP-Plan_Repo-Analyse.md`](../ueberholt/Grundlagen_4_WP-Plan_Repo-Analyse.md) (überholt), [`Grundlagen_5_VDI-4655_Auswertung.md`](Grundlagen_5_VDI-4655_Auswertung.md) | Normen, Generatoren, Summenlinienverfahren, frühere Repo-Analyse, VDI 4655 |
 | [`KONTEXT_Brauchwassertypen_VDI6002.md`](KONTEXT_Brauchwassertypen_VDI6002.md) | Herkunft des heutigen Brauchwasserkatalogs |
 
