@@ -76,6 +76,19 @@ namespace EPOS.Kern.Tests
     /// die kein Basisprojekt trägt (Proben an 1040, 1045, 1046 mit eingesetzter
     /// Vergütung); der KWKG-Jahresbetrag ist nur ausgelagert
     /// (<see cref="KwkgJahresbetrag"/>), nicht geändert.</para>
+    ///
+    /// <para><b>ETAPPE E7c3 (Vbh nach Definition, Q5 b, Q8 b, B‑6, Brennstoff 24,
+    /// abgekündigte Katalogzeilen, Anzeigezeilen U22) — gemessen, kein Anker bewegt
+    /// sich</b> (alt = neu: 1024 −2.896.359,13 € mit Energiekosten 188.167,18 €/a, 1030
+    /// −21.895.377,28 € mit Energiekosten 1.176.906,60 €/a, Betriebskosten 99,00 €/a,
+    /// Kaskade 13.000,00 €; alle dreizehn Basisprojekte 9.519 von 9.519 Werten gleich,
+    /// nach jedem Punkt). Die Gründe: Die Vbh zählen wieder brutto wie vor E7c2/7, und
+    /// kein Basisprojekt trägt das Kennzeichen Abwärmeabfuhr; der ungerundete EV-Mix
+    /// wirkt nur mit einer Eigenverbrauchsvergütung; Brennstoff 24 nutzt kein Träger;
+    /// die zwei abgekündigten Katalogzeilen liest der Kern nicht; die benannten Fänge
+    /// (B‑6) behalten jeden Rückfall; die Energiesteuer-Vorschau rechnet auf Kopien und
+    /// ist reiner Ausweis. Der Kapitalwert 1024 ist nachgerechnet
+    /// (<see cref="Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83"/>).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitAnkerTests : IDisposable
@@ -152,7 +165,7 @@ namespace EPOS.Kern.Tests
             double bk = WirtschaftlichkeitCtrl.LiesBetriebskosten(
                 PROJEKT_KONZEPT, WirtschaftlichkeitSzenario.ERWARTET);
 
-            Assert.Equal(99.00, bk, 2);
+            Assert.Equal(99.00, bk, 2);   // E7c3: alt = neu (B‑6 benennt nur, der Rückfall bleibt)
         }
 
         // =====================================================================
@@ -193,7 +206,7 @@ namespace EPOS.Kern.Tests
                 new DbParam("@p", PROJEKT_KASKADE)).Rows[0]["s"];
             double roheSumme = roh == DBNull.Value ? 0.0 : Convert.ToDouble(roh);
 
-            Assert.Equal(13000.00, kaskade, 2);
+            Assert.Equal(13000.00, kaskade, 2);      // E7c3: alt = neu
             Assert.Equal(13000.00, roheSumme, 2);
 
             // Der Aufschlag der Kaskade gegenüber der rohen Summe — heute 0,00 €.
@@ -240,6 +253,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c3: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag, keine Energiesteuerwahl;
+            // die Abweichung zum Konzeptwert sind Schritt 83 und der Datenstand, siehe unten)
             // E7c2: alt = neu −2.896.359,13 € (Kennzeichen Ersatz/Restwert leer = wie bisher)
             // E7c1: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag im Projekt)
             Assert.Equal(-2896359.13, e.Kapitalwert.Value, 2);   // E7b: alt = neu (kein Tarifsatz, keine Staffel)
@@ -304,6 +319,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c3: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr — die Vbh
+            // brutto wie vor E7c2/7 —, keine Energiesteuerwahl, B‑6 ohne Rechenwirkung)
             // E7c2: alt = neu −21.895.377,28 € (kein Kennzeichen, keine Mischlage § 53/§ 54,
             // KWKG-Jahresbetrag nur ausgelagert)
             // E7c1: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr; Inbetriebnahme
