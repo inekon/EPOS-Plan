@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using KiKern;
 
@@ -444,6 +445,43 @@ namespace WindowsFormsApplication1
 
         /// <summary>„Als Variante speichern" (<c>ProjektVarianteDialog</c>).</summary>
         public const string PROJEKT_VARIANTE = "Projektvariante";
+
+        // =================================================================
+        //  Welle #456: die VERWALTUNGEN der Erzeugerkataloge
+        // =================================================================
+        //
+        // VIER Schluessel auf EINER Komponente (KatalogBrowserDialog), wie die
+        // drei Bedarfskataloge und die drei Modulkataloge. Sie SIND die
+        // Navigationsschluessel der Verwaltungen (Masken.*) und zugleich die
+        // Vorsilbe ihres Hilfeschluessels (Form_Heizkessel_Admin.btn_Help) -
+        // deshalb stehen sie hier als Verweis und nicht als zweite Zeichenkette.
+
+        /// <summary>„Administration Heizkessel" (<c>KatalogBrowserDialog</c>, Heizkessel).</summary>
+        public const string HEIZKESSEL_ADMIN = Masken.HeizkesselAdmin;
+
+        /// <summary>Die BHKW-Verwaltung (<c>KatalogBrowserDialog</c>, BHKW).</summary>
+        public const string BHKW_ADMIN = Masken.BhkwAdmin;
+
+        /// <summary>„Administration Solarkollektoren" (<c>KatalogBrowserDialog</c>).</summary>
+        public const string SOLARKOLLEKTOREN_ADMIN = Masken.SolarkollektorenAdmin;
+
+        /// <summary>„Administration Pufferspeicher" (<c>KatalogBrowserDialog</c>).</summary>
+        public const string PUFFERSPEICHER_ADMIN = Masken.PufferSpAdmin;
+
+        /// <summary>
+        /// Der Katalogschluessel der Verwaltung zu einer Auspraegung des Katalogbrowsers —
+        /// die EINE Stelle, an der der Dialog erfaehrt, unter welchem Namen er sich anmeldet.
+        /// </summary>
+        public static string KatalogBrowser(KatalogBrowserArt art)
+        {
+            switch (art)
+            {
+                case KatalogBrowserArt.Bhkw: return BHKW_ADMIN;
+                case KatalogBrowserArt.Solarkollektoren: return SOLARKOLLEKTOREN_ADMIN;
+                case KatalogBrowserArt.Pufferspeicher: return PUFFERSPEICHER_ADMIN;
+                default: return HEIZKESSEL_ADMIN;
+            }
+        }
     }
 
     /// <summary>
@@ -614,6 +652,10 @@ namespace WindowsFormsApplication1
                 PvModulkatalog(),
                 Stromspeicherkatalog(),
                 Wechselrichterkatalog(),
+                ErzeugerVerwaltung(KatalogBrowserArt.Heizkessel),
+                ErzeugerVerwaltung(KatalogBrowserArt.Bhkw),
+                ErzeugerVerwaltung(KatalogBrowserArt.Solarkollektoren),
+                ErzeugerVerwaltung(KatalogBrowserArt.Pufferspeicher),
                 PeakShaving(),
                 Speicherzeitreihen(),
                 StromganglinieAdmin(),
@@ -621,6 +663,96 @@ namespace WindowsFormsApplication1
                 Berichtseite(),
                 ProjektKopie(),
                 ProjektVariante());
+        }
+
+        // =====================================================================
+        // Form_*_Admin  ->  KatalogBrowserDialog   (Welle #456)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse, an der die vier Erzeugerverwaltungen ihre Felder
+        /// anmelden (<c>EPOS.UI.Dialoge.Erzeuger.KatalogBrowserKiSicht</c>).
+        /// </summary>
+        public const string KATALOGBROWSER_SICHT = "KatalogBrowserKiSicht";
+
+        /// <summary>
+        /// Eine Verwaltung der Erzeugerkataloge (Heizkessel, BHKW, Solarkollektoren,
+        /// Pufferspeicher) — die Feldkarte kommt aus dem PROFIL, dazu das Wahlfeld
+        /// <c>satz</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Wahrheit, keine zweite Feldliste.</b> Welche Felder eine Verwaltung
+        /// zeigt, in welcher Art und ob ihr Speicherweg sie schreibt, steht EINMAL in
+        /// <see cref="KatalogBrowserProfil"/>. Eine Liste hier daneben liefe ihm davon
+        /// - der Modulkatalog braucht dafuer einen eigenen Waechter. Die Karte wird
+        /// deshalb aus dem Profil ERZEUGT: Feldname = Profilschluessel klein,
+        /// Eigenschaftspfad = Sichtklasse + Profilschluessel (die Sichtklasse loest ihn
+        /// als FELDTAFEL ueber den lebenden Feldsatz auf), Anzeigename = die Beschriftung
+        /// ohne Doppelpunkt, Einheit aus dem Profil, nur lesbar = nicht editierbar.
+        /// </para>
+        /// <para>
+        /// <b>Der Satz ist die Wahl der Liste</b> — dasselbe Muster wie die
+        /// Bedarfsverwaltungen: Ihn zu setzen waehlt die Zeile, wie ein Klick. Er ist
+        /// SATZWAHL (<see cref="KiDialogFeld.Satzwahl"/>): Der Schutz eines
+        /// Auslieferungssatzes gilt fuer ihn nicht, sonst liesse sich aus einem
+        /// geschuetzten Satz heraus nie der eigene waehlen.
+        /// </para>
+        /// <para>
+        /// <b>Nicht ueber den Assistenten</b> gehen „Neu…", „Duplizieren…",
+        /// „Loeschen" und „Import…" — sie legen Saetze an oder nehmen sie weg
+        /// (KI-D-Q11). Die Knopfliste nennt deshalb nur Speichern, Verwerfen und Beenden.
+        /// </para>
+        /// </remarks>
+        private static KiDialog ErzeugerVerwaltung(KatalogBrowserArt art)
+        {
+            KatalogBrowserProfil profil = KatalogBrowserProfil.Finde(art, KiDialogTexte.Profiltext);
+
+            var felder = new List<KiDialogFeld>(profil.Detailfelder.Count + 1)
+            {
+                new KiDialogFeld("satz", KATALOGBROWSER_SICHT + ".Satz",
+                                 KiDialogTexte.KbrowSatzName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.KbrowSatzErl, satzwahl: true)
+            };
+
+            foreach (BrowserDetailfeld f in profil.Detailfelder)
+                felder.Add(new KiDialogFeld(
+                    f.Schluessel.ToLowerInvariant(),
+                    KATALOGBROWSER_SICHT + "." + f.Schluessel,
+                    f.Feldname,
+                    Feldtyp(f.Art),
+                    KiDialogTexte.KbrowErlaeuterung(art, f.Schluessel, f.Feldname),
+                    einheit: f.Einheit,
+                    leerErlaubt: f.Art == BrowserFeldArt.Text || f.Art == BrowserFeldArt.Mehrzeilig,
+                    nurLesen: !f.Editierbar));
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.KatalogBrowser(art),
+                anzeigename: profil.Titel,
+                felder: felder,
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("verwerfen", "btn_Verwerfen", KiDialogTexte.KnopfVerwerfen),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// Die Feldart des Profils als Feldtyp des Katalogs. Eine AUSWAHL (Code und
+        /// Beschriftung, bisher nur am PV-Modul) steht als Text da: Die vier
+        /// Erzeugerprofile fuehren keine; kaeme eine dazu, bekaeme sie ihren Weg ueber
+        /// eine Wahlquelle.
+        /// </summary>
+        public static KiParameterTyp Feldtyp(BrowserFeldArt art)
+        {
+            switch (art)
+            {
+                case BrowserFeldArt.Zahl: return KiParameterTyp.Zahl;
+                case BrowserFeldArt.Ganzzahl: return KiParameterTyp.Ganzzahl;
+                case BrowserFeldArt.Schalter: return KiParameterTyp.Wahrheitswert;
+                default: return KiParameterTyp.Text;
+            }
         }
 
         // =====================================================================

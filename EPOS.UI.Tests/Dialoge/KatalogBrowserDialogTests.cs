@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
@@ -1504,5 +1505,216 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         Assert.False(cut.Instance.ImportOffen);
         Assert.False(zu);
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #456, KI-D-Q11)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Jede Ausprägung meldet sich unter ihrem Navigationsschlüssel an</b> — mit genau
+    /// den Feldern ihres Profils und dem Satz — und beim Schließen wieder ab.
+    /// </summary>
+    [Theory]
+    [InlineData(KatalogBrowserArt.Heizkessel, KiMaskennamen.HEIZKESSEL_ADMIN)]
+    [InlineData(KatalogBrowserArt.Bhkw, KiMaskennamen.BHKW_ADMIN)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, KiMaskennamen.SOLARKOLLEKTOREN_ADMIN)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, KiMaskennamen.PUFFERSPEICHER_ADMIN)]
+    public void Jede_Auspraegung_meldet_sich_unter_ihrem_Navigationsschluessel_an_und_ab(
+        KatalogBrowserArt art, string maske)
+    {
+        var cut = Aufbauen(art);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(maske));
+        Assert.Equal(maske, KiMaskenbruecke.AktiveMaske());
+        Assert.Equal(Profil(art).Detailfelder.Count + 1, KiMaskenbruecke.Lesen(maske).Count);
+
+        // Der Infoknopf gibt dem Assistenten den Namen der Verwaltung mit.
+        Assert.Contains(cut.FindComponents<InfoKnopf>(), k => k.Instance.Dialogname == Profil(art).Titel);
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(maske));
+    }
+
+    /// <summary>
+    /// <b>Der Assistent liest und setzt einen Wert des gewählten Satzes</b> — beim
+    /// Heizkessel, BHKW und Kollektor den Vorlauf, beim Pufferspeicher (der keinen führt)
+    /// das Volumen. Der Wert landet im Feldsatz des Stammblatts, „Speichern" wird frei.
+    /// </summary>
+    [Theory]
+    [InlineData(KatalogBrowserArt.Heizkessel, KiMaskennamen.HEIZKESSEL_ADMIN, "vorlauf", 55)]
+    [InlineData(KatalogBrowserArt.Bhkw, KiMaskennamen.BHKW_ADMIN, "vorlauf", 85)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, KiMaskennamen.SOLARKOLLEKTOREN_ADMIN, "vorlauf", 60)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, KiMaskennamen.PUFFERSPEICHER_ADMIN, "volumen", 1500)]
+    public void Der_Assistent_liest_und_setzt_einen_Wert_und_Speichern_wird_frei(
+        KatalogBrowserArt art, string maske, string feld, int wert)
+    {
+        var cut = Aufbauen(art);
+
+        // Das BHKW beginnt auf einem Auslieferungssatz - der Assistent waehlt den eigenen.
+        if (cut.Instance.Auslieferungssatz)
+            KiSatzSetzen(cut, maske, "BHKW B");
+        Assert.False(cut.Instance.Auslieferungssatz);
+
+        WindowsFormsApplication1.KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, feld)!;
+        Assert.NotNull(zugang);
+        Assert.True(zugang.Setzbar);
+        Assert.Equal(70, zugang.Lesen());
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(zugang, wert.ToString(CultureInfo.InvariantCulture));
+        Assert.True(u.Ok, u.Grund);
+        zugang.Setzen(u.Wert);
+        KiMaskenbruecke.Haken(maske).Auffrischung();
+        cut.Render();
+
+        Assert.Equal(wert, zugang.Lesen());
+        Assert.False(cut.FindAll(".epos-leiste .epos-knopf")[0].HasAttribute("disabled"));
+
+        // Beim BHKW laeuft die Summe der Wirkungsgrade mit (BeiFeldAenderung) - dort
+        // zaehlt der Fuss zwei Felder, sonst eins.
+        Assert.EndsWith("geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Der Speicherhaken schreibt über den Weg des Knopfes</b> — dieselben Felder, und
+    /// die Statuszeile meldet es; die Prüfung ist die des Knopfes.
+    /// </summary>
+    [Fact]
+    public async Task Der_Speicherhaken_schreibt_ueber_den_Weg_des_Knopfes()
+    {
+        IReadOnlyList<BrowserFeldwert>? geschrieben = null;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
+            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
+            Speichern = (n, f, _) => { geschrieben = f; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); }
+        };
+        var cut = Aufbauen(wege: wege);
+        const string maske = KiMaskennamen.HEIZKESSEL_ADMIN;
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+
+        // Ohne Aenderung gibt es nichts zu speichern - benannt, nicht still.
+        Assert.Equal(KiKern.KiStatus.Abgelehnt, (await haken.Speichern()).Status);
+
+        WindowsFormsApplication1.KiFeldzugang vorlauf = KiMaskenbruecke.Feldzugang(maske, "vorlauf")!;
+        vorlauf.Setzen(55);
+        cut.Render();
+        Assert.Equal("", haken.Befund());
+
+        KiKern.KiErgebnis ok = await haken.Speichern();
+
+        Assert.Equal(KiKern.KiStatus.Ausgefuehrt, ok.Status);
+        Assert.NotNull(geschrieben);
+        Assert.Equal("55", geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldVorlauf).Wert);
+        Assert.Equal("Datensatz gespeichert", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz ist für den Assistenten geschützt</b> (AD-Q11): Schon
+    /// <c>feld_setzen</c> lehnt ab und nennt „Duplizieren…", ebenso der Speicherweg. Die
+    /// WAHL des Satzes bleibt frei — der eigene Satz lässt sich danach setzen.
+    /// </summary>
+    [Fact]
+    public async Task Ein_Auslieferungssatz_lehnt_ab_und_nennt_den_Weg_die_Satzwahl_bleibt_frei()
+    {
+        Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var cut = Aufbauen(KatalogBrowserArt.Bhkw);
+            const string maske = KiMaskennamen.BHKW_ADMIN;
+            Assert.True(cut.Instance.Auslieferungssatz);
+
+            KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+            Assert.True(haken.IstSchreibgeschuetzt());
+            Assert.Contains("Duplizieren", haken.Schutzgrund());
+
+            string? grund = Vorbedingung("feld_setzen", maske, ("feld", "vorlauf"), ("wert", "85"));
+            Assert.NotNull(grund);
+            Assert.Contains("Duplizieren", grund);
+
+            KiKern.KiErgebnis gespeichert = await haken.Speichern();
+            Assert.Equal(KiKern.KiStatus.Abgelehnt, gespeichert.Status);
+
+            // Die Satzwahl geht durch, und der eigene Satz ist setzbar.
+            Assert.Null(Vorbedingung("feld_setzen", maske, ("feld", "satz"), ("wert", "BHKW B")));
+            KiSatzSetzen(cut, maske, "BHKW B");
+            Assert.Equal("BHKW B", cut.Instance.Gewaehlt);
+            Assert.False(haken.IstSchreibgeschuetzt());
+            Assert.Null(Vorbedingung("feld_setzen", maske, ("feld", "vorlauf"), ("wert", "85")));
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = schreibrechtVorher;
+        }
+    }
+
+    /// <summary>
+    /// <b>Im Lesemodus des Wirts</b> ist die Verwaltung für den Assistenten geschützt —
+    /// mit dem eigenen Grund, nicht dem des Auslieferungssatzes.
+    /// </summary>
+    [Fact]
+    public async Task Im_Lesemodus_ist_die_Verwaltung_geschuetzt()
+    {
+        var cut = Aufbauen(KatalogBrowserArt.Pufferspeicher, nurLesen: true);
+        const string maske = KiMaskennamen.PUFFERSPEICHER_ADMIN;
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_KBROW_NURLESEN, haken.Schutzgrund());
+        Assert.Equal(KiKern.KiStatus.Abgelehnt, (await haken.Speichern()).Status);
+        Assert.NotNull(cut.Instance);
+    }
+
+    /// <summary>
+    /// <b>„satz" wechselt die Zeile</b> wie ein Klick — und ungespeicherte Änderungen
+    /// halten den Wechsel an: BENANNT, mit dem Text des Warnbands.
+    /// </summary>
+    [Fact]
+    public void Der_Satz_wechselt_die_Zeile_und_Aenderungen_halten_den_Wechsel_an()
+    {
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.HEIZKESSEL_ADMIN;
+
+        WindowsFormsApplication1.KiFeldzugang satz = KiMaskenbruecke.Feldzugang(maske, "satz")!;
+        Assert.True(satz.IstWahl);
+        Assert.Equal(2, satz.Wahleintraege().Count);
+        Assert.Equal("Eintrag A", satz.Lesen());
+
+        KiSatzSetzen(cut, maske, "Eintrag B");
+        Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
+
+        KiMaskenbruecke.Feldzugang(maske, "vorlauf")!.Setzen(55);
+        cut.Render();
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => satz.Setzen("Eintrag A"));
+        Assert.Contains("Speichern", fehler.Message);
+        cut.Render();
+        Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
+        Assert.Contains("Speichern", cut.Instance.Meldung);
+    }
+
+    /// <summary>Setzt den Satz über die Brücke — der Weg des Assistenten.</summary>
+    private static void KiSatzSetzen(IRenderedComponent<KatalogBrowserDialog> cut, string maske, string name)
+    {
+        WindowsFormsApplication1.KiFeldzugang satz = KiMaskenbruecke.Feldzugang(maske, "satz")!;
+        KiFeldumsetzung u = KiFeldwandler.Wandle(satz, name);
+        Assert.True(u.Ok, u.Grund);
+        satz.Setzen(u.Wert);
+        cut.Render();
+    }
+
+    /// <summary>Die Vorbedingung einer Formularaktion — die Stelle, die ablehnt oder durchlässt.</summary>
+    private static string? Vorbedingung(string aktion, string maske, params (string Name, string Wert)[] werte)
+    {
+        var parameter = new Dictionary<string, object?> { ["maske"] = maske };
+        foreach (var (name, wert) in werte) parameter[name] = wert;
+
+        var schicht = new KiAusfuehrung { Schreibrecht = () => true };
+        KiKern.KiPruefErgebnis p = KiKern.KiPruefung.Pruefe(schicht.Register, aktion, parameter);
+        Assert.True(p.Gueltig, p.FehlerText());
+
+        return schicht.Register.Finde(aktion)!.Vorbedingung!(p.Aufruf!);
     }
 }
