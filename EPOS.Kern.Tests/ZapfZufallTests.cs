@@ -229,7 +229,7 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>Die Dateien der Ziehung — keine nennt eine transzendente Funktion der Plattform.</summary>
-        internal static readonly string[] Ziehdateien = { "ZapfZufall.cs" };
+        internal static readonly string[] Ziehdateien = { "ZapfZufall.cs", "Zapfkategorie.cs", "Zapfereignisgenerator.cs" };
 
         private static readonly Regex Transzendent = new Regex(
             @"\bMath\s*\.\s*(Log|Log10|Log2|Exp|Cos|Sin|Tan|Pow|Atan|Atan2|Acos|Asin|Cosh|Sinh|Tanh|Cbrt)\s*\(|\bMathF\s*\.",

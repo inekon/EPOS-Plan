@@ -74160,6 +74160,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen). ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf ist ungültig. ähnelt.
         /// </summary>
         public static string ZPG_EINGABE_TAGESBEDARF_UNGUELTIG {

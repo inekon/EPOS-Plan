@@ -23924,6 +23924,9 @@ Do you want to allow this?</value>
   <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>The draw-off profile generator is not available in this database.</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
+    <value>The data of the stochastic annual series are incomplete or invalid (draw-off categories, units, realisations).</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>the draw-off profile tables are missing in this database.</value>
   </data>

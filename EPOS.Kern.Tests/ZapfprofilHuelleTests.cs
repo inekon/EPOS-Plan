@@ -227,7 +227,7 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14 + 14 + 3 + 14, schluessel.Count);
+            Assert.Equal(15 + 14 + 3 + 14, schluessel.Count);
             Assert.Contains("ZPG_EINGABE_KALENDER_UNGUELTIG", schluessel);
             Assert.Contains("ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG", schluessel);
             Assert.Contains("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", schluessel);

@@ -46,7 +46,13 @@ namespace WindowsFormsApplication1
         KeineVerteilung = 13,
 
         /// <summary>Der Generator ist in dieser Datenbank nicht verfügbar — die Tww-Tabellen fehlen (3.2).</summary>
-        NichtVerfuegbar = 14
+        NichtVerfuegbar = 14,
+
+        /// <summary>
+        /// Die stochastische Jahresreihe ist nicht rechenbar (4.4): Zapfkategorien fehlen oder sind
+        /// ungültig, die Einheiten sind nicht bestimmbar oder die Zahl der Realisierungen ist kleiner 1.
+        /// </summary>
+        StochastikUngueltig = 15
     }
 
     /// <summary>

@@ -23931,6 +23931,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar.</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
+    <value>Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen).</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>die Tabellen des Zapfprofils fehlen in dieser Datenbank.</value>
   </data>

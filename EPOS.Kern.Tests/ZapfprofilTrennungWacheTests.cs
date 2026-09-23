@@ -43,8 +43,9 @@ namespace EPOS.Kern.Tests
         {
             "Auslegungsparameter.cs", "Bedarfstag.cs", "Wochenreihe.cs", "Summenlinie.cs", "Din4708Kennzahl.cs",
             "TwwSpeicherauslegung.cs", "Grossanlage.cs", "Auslegungsergebnis.cs", "ZapfprofilAuslegung.cs",
-            // Stufe Z3: der portable Zufall — er dient beiden Produkten und hält die strengere Regel.
-            "ZapfZufall.cs"
+            // Stufe Z3: Zufall, Kategorien und Ereignisgenerator dienen beiden Produkten und halten
+            // die strengere Regel — keine Bilanzreihe, keine Zahlenliste in einer Signatur.
+            "ZapfZufall.cs", "Zapfkategorie.cs", "Zapfereignisgenerator.cs"
         };
 
         /// <summary>Die Dateien der Bilanz (Stufe Z1) — jede Datei des Ordners gehört zu genau einer Liste.</summary>
