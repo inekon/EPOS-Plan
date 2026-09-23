@@ -333,29 +333,29 @@ namespace WindowsFormsApplication1
         /// Wohnungstabelle Σ Anzahl. Die Wohnfläche je WE kommt aus der Zone, sonst aus dem
         /// Parameter <see cref="ZapfParameter.WOHNEN_FLAECHE_JE_WE"/>; fehlt er, trägt die Zone
         /// keine Fläche und ein Hinweis nennt den Schlüssel. Sonst <c>null</c>.
+        ///
+        /// <para><b>Gebundenes Gebäude (A8, N7 (f)).</b> Trägt die Zone keine eigene Fläche
+        /// (<see cref="HatEigeneFlaeche"/>), aber <see cref="ZonenStand.GebaeudeflaecheM2"/> —
+        /// vorbelegt von <c>ZapfprofilCtrl.Eingang</c> aus dem gebundenen Gebäude —, gilt diese
+        /// Fläche; sie geht dem Parameter vor, weil sie eine Angabe des Projekts ist.</para>
         /// </summary>
         internal static double? FlaecheM2(ZonenStand z, Nutzungsart n, double bezugsmenge, Parametersatz ps = null,
                                           Herkunftsprotokoll p = null, ICollection<ZapfHinweis> hinweise = null)
         {
             if (n.Bezug == ZapfBezugsart.Flaeche) return bezugsmenge;
 
-            double? we = null;
-            string herkunftWe = "";
-            if (n.Bezug == ZapfBezugsart.Wohneinheiten)
-            {
-                we = bezugsmenge;
-                herkunftWe = "WE = Bezugsmenge";
-            }
-            else if (n.Bezug == ZapfBezugsart.Personen && z.Wohnungen != null && z.Wohnungen.Count > 0)
-            {
-                double summe = 0.0;
-                foreach (WohnungstypStand w in z.Wohnungen) summe += w.Anzahl;
-                we = summe;
-                herkunftWe = "WE = Σ Anzahl der Wohnungstabelle";
-            }
-            if (!we.HasValue || !(we.Value > 0)) return null;
-
+            double? we = WohneinheitenZahl(z, n, bezugsmenge, out string herkunftWe);
             string zone = z.Name ?? "";
+            bool eigene = we.HasValue && z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0;
+            if (!eigene && z.GebaeudeflaecheM2.HasValue && z.GebaeudeflaecheM2.Value > 0)
+            {
+                double g = z.GebaeudeflaecheM2.Value;
+                p?.Vermerken(zone, ZapfFeld.ZONENFLAECHE, g, "m²", Wertstatus.Vorgabe, null,
+                             "Fläche des gebundenen Gebäudes (A8)");
+                return g;
+            }
+            if (!we.HasValue) return null;
+
             double jeWe;
             Wertstatus status;
             Provenienz quelle;
@@ -384,6 +384,43 @@ namespace WindowsFormsApplication1
             p?.Vermerken(zone, ZapfFeld.ZONENFLAECHE, flaeche, "m²", status, quelle,
                          herkunftWe + " · Wohnfläche je WE " + Z(jeWe) + " m²");
             return flaeche;
+        }
+
+        /// <summary>
+        /// Trägt die Zone eine EIGENE Fläche — Bezugsart Fläche, oder bekannte WE-Zahl mit eigener
+        /// Wohnfläche je WE? Dann bleibt die Fläche des gebundenen Gebäudes (A8) ungenutzt; die
+        /// Vorbelegung in <c>ZapfprofilCtrl.Eingang</c> verteilt sie nur auf Zonen ohne eigene.
+        /// Die Bezugsmenge ist hier die gespeicherte; eine Wohnungstabelle zählt über Σ Anzahl.
+        /// </summary>
+        internal static bool HatEigeneFlaeche(ZonenStand z, Nutzungsart n)
+        {
+            if (z == null || n == null) return false;
+            if (n.Bezug == ZapfBezugsart.Flaeche) return true;
+            return WohneinheitenZahl(z, n, z.Bezugsmenge, out _).HasValue
+                   && z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0;
+        }
+
+        /// <summary>
+        /// Die WE-Zahl einer Zone: bei Bezugsart Wohneinheiten die Bezugsmenge, bei Bezugsart
+        /// Personen mit Wohnungstabelle Σ Anzahl; sonst oder bei nicht positiver Zahl <c>null</c>.
+        /// </summary>
+        private static double? WohneinheitenZahl(ZonenStand z, Nutzungsart n, double bezugsmenge, out string herkunft)
+        {
+            herkunft = "";
+            double? we = null;
+            if (n.Bezug == ZapfBezugsart.Wohneinheiten)
+            {
+                we = bezugsmenge;
+                herkunft = "WE = Bezugsmenge";
+            }
+            else if (n.Bezug == ZapfBezugsart.Personen && z.Wohnungen != null && z.Wohnungen.Count > 0)
+            {
+                double summe = 0.0;
+                foreach (WohnungstypStand w in z.Wohnungen) summe += w.Anzahl;
+                we = summe;
+                herkunft = "WE = Σ Anzahl der Wohnungstabelle";
+            }
+            return we.HasValue && we.Value > 0 ? we : null;
         }
 
         // =================================================================================

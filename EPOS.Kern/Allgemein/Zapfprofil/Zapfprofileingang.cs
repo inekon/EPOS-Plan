@@ -43,7 +43,10 @@ namespace WindowsFormsApplication1
         TagesbedarfUngueltig = 12,
 
         /// <summary>Die Zeitstruktur verteilt keine Zapfung: jeder Tag hat das Gewicht 0.</summary>
-        KeineVerteilung = 13
+        KeineVerteilung = 13,
+
+        /// <summary>Der Generator ist in dieser Datenbank nicht verfügbar — die Tww-Tabellen fehlen (3.2).</summary>
+        NichtVerfuegbar = 14
     }
 
     /// <summary>

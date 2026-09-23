@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
     /// Tabellen- und Spaltennamen stammen aus <see cref="TwwSchema"/> bzw. aus Schleifen über
     /// feste Zahlen, nie aus einer Eingabe.</para>
     /// </summary>
-    internal static class ZapfprofilCtrl
+    internal static partial class ZapfprofilCtrl
     {
         // =================================================================================
         // Parameter (Posten P5)
