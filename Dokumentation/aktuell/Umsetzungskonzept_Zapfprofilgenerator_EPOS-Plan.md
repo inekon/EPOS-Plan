@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N4 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N5 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1389,7 +1389,7 @@ Papier voraussetzt:
 | K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | Empfehlung vorausgesetzt |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
-| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1) |
+| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
 | A1 | Ort des Rechenwegs | Ordner im Kern | Empfehlung vorausgesetzt |
 | A2 | Übergabeform | eigene Projekttabelle mit Weiche; Reihe je Lauf neu gerechnet | Empfehlung vorausgesetzt |
 | A3 | Weiche exklusiv oder additiv | exklusiv | Empfehlung vorausgesetzt |
@@ -1421,7 +1421,7 @@ Papier voraussetzt:
 | **ZU12** | Projektkopie der Nutzungsart oder Katalogverweis? | **Katalogverweis auf unveränderliche Versionen** (3.2): kein Kopieren je Projekt, keine rückwirkende Änderung; Umstellen auf eine neue Version nur ausdrücklich je Zone | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU13** | Topologie je Zone oder je Gebäude? | je Zone wie im Konzept 2.2; die Auslegung rechnet je Topologiegruppe (4.5) | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU14** | Wie kommt der Auslieferungskatalog in Bestandsinstallationen? | Katalogpaket außerhalb des Repositoriums, eingespielt von der Auslieferungsvorlage (neue Installation) bzw. über einen Katalogimport in der Verwaltung (Z4); nie über den Schemaschritt | nach Empfehlung, 23.09.2026 (N1) |
-| **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
 | **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | offen |
 | **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen | offen |
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | offen |
@@ -1620,6 +1620,23 @@ Vergabe ist mit der Sitzung der Wirtschaftlichkeit abgestimmt.
 Schritten 102 und 103 migriert und trägt den fiktiven Testkatalog wie zuvor (19 Zeilen); der
 Zellvergleich gegen die frühere Fassung auf 102 zeigt nur den Schemastand und die Gebäudespalten
 aus Schritt 101. Merge `23437ea1`, Testdatenbank `3d5e5b84`.
+
+### N5 (23.09.2026) — Lizenz: vorab zu Testzwecken freigegeben
+
+**Anwenderentscheid** (im Wortlaut: „Lizenz - vorab zu testzwecken OK"): Die Nutzung der
+Normkopien in der Ablage des Anwenders und der daraus extrahierten Tabellen (VDI 4655, VDI 6002)
+ist **vorab für Testzwecke freigegeben**. Sie gilt für die lokalen Testdaten unter
+`Referenzlaeufe/Normzahlen/` (gitignoriert), für die Ladeweiche des Mockups und für lokale
+Proben in den Stufen Z1 bis Z5.
+
+**Was unverändert bleibt:** Keine Weitergabe an Dritte, nichts davon ins Repository, in die
+Testdatenbank, in die CI oder in die Auslieferung (Kapitel 6); die juristische Prüfung K8 und die
+Lizenzprüfung ZU15 laufen weiter und entscheiden über Auslieferung, Mitauslieferung und
+Weitergabe. K8 wird mit Z0 beauftragt (N1); dieser Nachtrag ändert nur den Zwischenstand bis zu
+ihrem Ergebnis.
+
+**Folgen:** Kapitel 9, Zeilen K8 und ZU15, tragen den Zusatz „vorab zu Testzwecken OK (N5)".
+Keine Änderung an Code, Wachen oder Testdatenbank.
 
 ---
 
