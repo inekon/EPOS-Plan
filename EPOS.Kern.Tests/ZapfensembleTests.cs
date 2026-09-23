@@ -309,6 +309,38 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Kategorien_ohne_Anteil_ziehen_nichts_und_Fehler_der_Faeden_kommen_benannt()
+        {
+            // Eine Kategorie ohne Anteil und mit gestutztem Mittel 0 bricht kein Ensemble ab — parallel wie seriell.
+            Zapfkategorie null_ = ZapfereignisgeneratorTests.Kategorien()[0] with
+            {
+                Name = "Null (fiktiv)", Anteil = 0.0, VolumenstromLJeMin = 0.0, StreuungLJeMin = 0.0, DauerMin = 3
+            };
+            Zapfkategoriensatz mitNull = Zapfkategoriensatz.Aus(ZapfereignisgeneratorTests.Kategorien().Append(null_).ToArray(), 1, "Zone A");
+            Jahresensemble j = Jahresensemble.Ziehen(Jahreszone(3) with { Kategorien = mitNull }, 5, 3, parallel: true);
+            Assert.Equal(Jahresensemble.Ziehen(Jahreszone(3), 5, 3).JahrZumSeed.StundenKwh, j.JahrZumSeed.StundenKwh);
+            IReadOnlyList<Ensemblezone> gruppe = new[] { Gruppe(4, 8.0)[0] with { Kategorien = mitNull } };
+            Bedarfstagensemble b = Zapfensemble.Ziehen(gruppe, 5, 40, 95, parallel: true);
+            Assert.Equal(Zapfensemble.Ziehen(Gruppe(4, 8.0), 5, 40, 95).MinutenspitzeKw, b.MinutenspitzeKw);
+
+            // Ein ungültiger Satz (Rate nicht endlich) wirft in jedem Faden — heraus kommt die benannte
+            // Ablehnung, keine AggregateException.
+            Zapfkategoriensatz ungueltig = Zapfkategoriensatz.Aus(new[]
+            {
+                ZapfereignisgeneratorTests.Kategorien()[0] with { VolumenstromLJeMin = 1e-310, StreuungLJeMin = 0.0 }
+            }, 1, "Zone A");
+            foreach (bool parallel in new[] { true, false })
+            {
+                var ej = Assert.Throws<ZapfprofilEingabeException>(() =>
+                    Jahresensemble.Ziehen(Jahreszone(3) with { Kategorien = ungueltig }, 5, 4, parallel: parallel));
+                Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ej.Fehler);
+                var eb = Assert.Throws<ZapfprofilEingabeException>(() =>
+                    Zapfensemble.Ziehen(new[] { Gruppe(4, 8.0)[0] with { Kategorien = ungueltig } }, 5, 40, 95, parallel: parallel));
+                Assert.Equal(ZapfEingabefehler.StochastikUngueltig, eb.Fehler);
+            }
+        }
+
+        [Fact]
         public void Ein_gezogener_Tag_traegt_keine_Quelle_und_darf_leer_sein()
         {
             // Sehr kleine Tagesmenge: viele Realisierungen ohne Ereignis.

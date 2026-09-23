@@ -261,6 +261,32 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, Zapfereignisgenerator.Rate(s.Werte[1], TAG_KWH, SPREIZUNG_K));
             List<Zapfereignis>[] tage = Ziehen(38, s, Tageszeitdichte.Aus(Struktur(), ZapfTagtyp.Werktag), 500);
             Assert.DoesNotContain(tage.SelectMany(t => t), e => e.DauerMin == 3);
+
+            // Anteil 0 mit gestutztem Mittel 0 (μ = σ = 0 bzw. μ ≤ −6σ): Rate 0 statt 0/0, keine Ziehung,
+            // kein Abbruch — und der Zufallsstrom ist derselbe wie ohne die Kategorie.
+            foreach (Zapfkategorie null_ in new[]
+                     {
+                         basis with { Name = "Null", Anteil = 0.0, VolumenstromLJeMin = 0.0, StreuungLJeMin = 0.0, DauerMin = 3 },
+                         basis with { Name = "Null", Anteil = 0.0, VolumenstromLJeMin = -13.0, StreuungLJeMin = 2.0, DauerMin = 3 }
+                     })
+            {
+                Zapfkategoriensatz mitNull = Zapfkategoriensatz.Aus(new[] { basis, null_ }, 1, "Z");
+                Assert.Equal(0.0, mitNull.Werte[1].EnergieJeKelvinKwh);
+                Assert.Equal(0.0, Zapfereignisgenerator.Rate(mitNull.Werte[1], TAG_KWH, SPREIZUNG_K));
+                Tageszeitdichte d = Tageszeitdichte.Aus(Struktur(), ZapfTagtyp.Werktag);
+                List<Zapfereignis>[] mit = Ziehen(39, mitNull, d, 200);
+                List<Zapfereignis>[] ohne = Ziehen(39, Zapfkategoriensatz.Aus(new[] { basis }, 1, "Z"), d, 200);
+                Assert.Equal(ohne.SelectMany(t => t), mit.SelectMany(t => t));
+            }
+
+            // Eine nicht endliche Rate (Mittel so klein, dass λ überläuft) lehnt benannt ab — nicht die Poisson-Ziehung.
+            Zapfkategoriensatz winzig = Zapfkategoriensatz.Aus(new[] { basis with { VolumenstromLJeMin = 1e-310, StreuungLJeMin = 0.0 } }, 1, "Zone Nord");
+            var rate = Assert.Throws<ZapfprofilEingabeException>(() =>
+                Zapfereignisgenerator.Ziehen(new ZapfZufall(40), winzig, TAG_KWH, SPREIZUNG_K,
+                                             Tageszeitdichte.Aus(Struktur(), ZapfTagtyp.Werktag), new List<Zapfereignis>()));
+            Assert.Equal(ZapfEingabefehler.StochastikUngueltig, rate.Fehler);
+            Assert.Equal("Zone Nord", rate.Zone);
+            Assert.Contains("keine endliche Rate", rate.Message);
         }
 
         // =================================================================================

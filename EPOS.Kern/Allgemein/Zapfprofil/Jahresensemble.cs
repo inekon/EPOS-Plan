@@ -191,10 +191,8 @@ namespace WindowsFormsApplication1
 
             var vorbereitung = new Vorbereitung(z);
             var reihen = new Bilanzreihe[realisierungen];
-            if (parallel && realisierungen > 1)
-                SpeicherEngine.Kulturweitergabe.For(0, realisierungen, null, r => reihen[r] = Realisierung(z, vorbereitung, seed, r));
-            else
-                for (int r = 0; r < realisierungen; r++) reihen[r] = Realisierung(z, vorbereitung, seed, r);
+            // Parallel oder seriell; eine Ausnahme eines Fadens kommt ausgepackt heraus (benannt, nicht als AggregateException).
+            Zapfensemble.Lauf(realisierungen, parallel, r => reihen[r] = Realisierung(z, vorbereitung, seed, r));
 
             // Mittel in fester Folge r = 0, 1, … — unabhängig von der Reihenfolge der Fäden.
             var mittel = new double[Bilanzreihe.STUNDEN];

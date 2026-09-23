@@ -77,6 +77,10 @@ namespace WindowsFormsApplication1
     /// dann ihre Zeitpunkte nach der Dichte. Die Erwartung ist dieselbe und exakt (keine Kappung
     /// von p bei 1), die Zahl der Ziehungen folgt den Ereignissen statt den 1440 Minuten.</para>
     ///
+    /// <para><b>Kategorien ohne Anteil</b> (oder mit Rate 0) werden übersprungen und ziehen
+    /// keinen Zufall; eine nicht endliche Rate lehnt benannt ab
+    /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>), nie als Ausnahme der Poisson-Ziehung.</para>
+    ///
     /// <para><b>Gestutztes Mittel.</b> V̄_k ist das Mittel des gekappten Volumenstroms
     /// (<see cref="Zapfverteilung.GestutztesMittel"/>) — der Erwartungswert trifft die Tagesmenge.
     /// Ein Tag ohne Menge oder mit leerem Tagesgang zieht nichts (der Zufallsstrom bleibt stehen).</para>
@@ -85,10 +89,14 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Die Rate λ_k [Ereignisse je Tag] der Kategorie bei der Tagesmenge der Einheit und der
-        /// Spreizung Zapftemperatur − Kaltwasser des Tages.
+        /// Spreizung Zapftemperatur − Kaltwasser des Tages. Eine Kategorie ohne Anteil hat die Rate 0
+        /// — auch wenn ihr gestutztes Mittel 0 ist (μ = σ = 0 oder μ ≤ −6σ), wo die Formel 0/0 wäre.
         /// </summary>
         internal static double Rate(Zapfkategoriewert k, double tagesmengeKwh, double spreizungK)
-            => k.AnteilNormiert * tagesmengeKwh / (k.EnergieJeKelvinKwh * spreizungK);
+        {
+            if (!(k.AnteilNormiert > 0) || !(tagesmengeKwh > 0)) return 0.0;
+            return k.AnteilNormiert * tagesmengeKwh / (k.EnergieJeKelvinKwh * spreizungK);
+        }
 
         /// <summary>
         /// Zieht die Ereignisse einer Einheit an einem Tag (Formel oben) und hängt sie an
@@ -111,7 +119,14 @@ namespace WindowsFormsApplication1
 
             foreach (Zapfkategoriewert k in satz.Werte)
             {
-                int anzahl = z.Poisson(Rate(k, tagesmengeKwh, spreizungK));
+                // Eine Kategorie ohne Anteil oder mit Rate 0 zieht nichts — auch keinen Zufall.
+                double rate = Rate(k, tagesmengeKwh, spreizungK);
+                if (double.IsNaN(rate) || double.IsInfinity(rate) || rate < 0)
+                    throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, satz.Zone,
+                        "Nicht rechenbar — die Zapfkategorie „" + (k.Kategorie.Name ?? "") + "“ der Zone „" + satz.Zone
+                        + "“ ergibt keine endliche Rate der Ereignisse.");
+                if (!(rate > 0)) continue;
+                int anzahl = z.Poisson(rate);
                 if (anzahl == 0) continue;
                 Zapfkategorie kat = k.Kategorie;
                 double energieJeVolumenstrom = kat.DauerMin * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * spreizungK

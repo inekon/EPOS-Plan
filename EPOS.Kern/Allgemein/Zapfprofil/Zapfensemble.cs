@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 
 namespace WindowsFormsApplication1
 {
@@ -468,10 +469,38 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void Lauf(int anzahl, bool parallel, Action<int> arbeit)
+        /// <summary>
+        /// Führt <paramref name="arbeit"/> für 0 … <paramref name="anzahl"/> − 1 aus — parallel über
+        /// <c>Kulturweitergabe.For</c> oder seriell. Die Ausnahme eines Arbeitspakets kommt
+        /// <b>ausgepackt</b> heraus, nicht als <see cref="AggregateException"/>, damit die Fassaden sie
+        /// benannt fangen; werfen mehrere Pakete, gilt die erste benannte
+        /// (<see cref="ZapfprofilEingabeException"/>, <see cref="ZapfAuslegungException"/>), sonst die erste.
+        /// </summary>
+        internal static void Lauf(int anzahl, bool parallel, Action<int> arbeit)
         {
-            if (parallel && anzahl > 1) SpeicherEngine.Kulturweitergabe.For(0, anzahl, null, arbeit);
-            else for (int i = 0; i < anzahl; i++) arbeit(i);
+            if (!parallel || anzahl <= 1)
+            {
+                for (int i = 0; i < anzahl; i++) arbeit(i);
+                return;
+            }
+            try
+            {
+                SpeicherEngine.Kulturweitergabe.For(0, anzahl, null, arbeit);
+            }
+            catch (AggregateException ex)
+            {
+                ExceptionDispatchInfo.Capture(Innere(ex)).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>Die maßgebende innere Ausnahme eines parallelen Laufs (siehe <see cref="Lauf"/>).</summary>
+        private static Exception Innere(AggregateException ex)
+        {
+            IReadOnlyList<Exception> alle = ex.Flatten().InnerExceptions;
+            foreach (Exception e in alle)
+                if (e is ZapfprofilEingabeException || e is ZapfAuslegungException) return e;
+            return alle.Count > 0 ? alle[0] : ex;
         }
 
         private static void PerzentilPruefen(int perzentil)

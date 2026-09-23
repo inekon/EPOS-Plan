@@ -74,20 +74,26 @@ namespace WindowsFormsApplication1
     /// <b>Die Kategorien einer Nutzungsart, geprüft und kalibriert</b> (4.4). Ohne Kategorie, mit
     /// einem ungültigen Wert oder ohne Anteil wird benannt abgelehnt
     /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>) — die Zone rechnet dann nicht
-    /// stochastisch, nie still deterministisch. Reihenfolge wie im Katalog.
+    /// stochastisch, nie still deterministisch. Reihenfolge wie im Katalog. Eine Kategorie ohne
+    /// Anteil ist erlaubt — auch mit gestutztem Mittel 0 — und zieht nie
+    /// (<see cref="Zapfereignisgenerator.Rate"/> = 0).
     /// </summary>
     internal sealed class Zapfkategoriensatz
     {
         private readonly Zapfkategoriewert[] _werte;
 
-        private Zapfkategoriensatz(int idNutzungsart, Zapfkategoriewert[] werte)
+        private Zapfkategoriensatz(int idNutzungsart, string zone, Zapfkategoriewert[] werte)
         {
             IdNutzungsart = idNutzungsart;
+            Zone = zone ?? "";
             _werte = werte;
         }
 
         /// <summary>Die Nutzungsart der Kategorien.</summary>
         internal int IdNutzungsart { get; }
+
+        /// <summary>Die Zone, für die der Satz geprüft ist (für benannte Ablehnungen der Ziehung).</summary>
+        internal string Zone { get; }
 
         /// <summary>Die Kategorien in der Reihenfolge des Katalogs — nur lesbar.</summary>
         internal IReadOnlyList<Zapfkategoriewert> Werte => Array.AsReadOnly(_werte);
@@ -137,7 +143,7 @@ namespace WindowsFormsApplication1
                 double energie = mittel * k.DauerMin * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K / Mengengeruest.WH_JE_KWH;
                 werte[i] = new Zapfkategoriewert(k, k.Anteil / summe, mittel, energie);
             }
-            return new Zapfkategoriensatz(idNutzungsart, werte);
+            return new Zapfkategoriensatz(idNutzungsart, zone, werte);
         }
 
         private static bool Endlich(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
