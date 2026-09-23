@@ -5045,18 +5045,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Take from</value>
   </data>
-  <data name="OPT_QUELLE_TARIF" xml:space="preserve">
-    <value>Tariff structure (economics): {0} €/(kW·a) — {1}</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE1" xml:space="preserve">
-    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE2" xml:space="preserve">
-    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_OHNE_SPITZE" xml:space="preserve">
-    <value>Tier 1, peak demand unknown</value>
-  </data>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Electricity carrier: {0} €/(kW·a)</value>
   </data>
@@ -23242,5 +23230,17 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
     <value>Highest hourly load</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL" xml:space="preserve">
+    <value>Demand charge tiers of the electricity carrier: {0} €/(kW·a) — {1}</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE1" xml:space="preserve">
+    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE2" xml:space="preserve">
+    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
+    <value>Tier 1, peak demand unknown</value>
   </data>
 </root>

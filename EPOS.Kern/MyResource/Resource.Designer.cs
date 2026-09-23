@@ -42430,38 +42430,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur (Wirtschaftlichkeit): {0} €/(kW·a) — {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis-Staffel des Stromträgers: {0} €/(kW·a) — {1} ähnelt.
         /// </summary>
-        public static string OPT_QUELLE_TARIF {
+        public static string OPT_QUELLE_STAFFEL {
             get {
-                return ResourceManager.GetString("OPT_QUELLE_TARIF", resourceCulture);
+                return ResourceManager.GetString("OPT_QUELLE_STAFFEL", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Bezugsspitze nicht bekannt ähnelt.
         /// </summary>
-        public static string OPT_QUELLE_TARIF_OHNE_SPITZE {
+        public static string OPT_QUELLE_STAFFEL_OHNE_SPITZE {
             get {
-                return ResourceManager.GetString("OPT_QUELLE_TARIF_OHNE_SPITZE", resourceCulture);
+                return ResourceManager.GetString("OPT_QUELLE_STAFFEL_OHNE_SPITZE", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW ähnelt.
         /// </summary>
-        public static string OPT_QUELLE_TARIF_STUFE1 {
+        public static string OPT_QUELLE_STAFFEL_STUFE1 {
             get {
-                return ResourceManager.GetString("OPT_QUELLE_TARIF_STUFE1", resourceCulture);
+                return ResourceManager.GetString("OPT_QUELLE_STAFFEL_STUFE1", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet ähnelt.
         /// </summary>
-        public static string OPT_QUELLE_TARIF_STUFE2 {
+        public static string OPT_QUELLE_STAFFEL_STUFE2 {
             get {
-                return ResourceManager.GetString("OPT_QUELLE_TARIF_STUFE2", resourceCulture);
+                return ResourceManager.GetString("OPT_QUELLE_STAFFEL_STUFE2", resourceCulture);
             }
         }
         

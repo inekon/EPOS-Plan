@@ -87,8 +87,75 @@ namespace WindowsFormsApplication1
                 SO2 = Zahl(row, "so2"),
                 NOx = Zahl(row, "nox"),
                 IdUmrechnung = row["ID_Umrechnung"] != DBNull.Value
-                    ? (int?)Convert.ToInt32(row["ID_Umrechnung"]) : null
+                    ? (int?)Convert.ToInt32(row["ID_Umrechnung"]) : null,
+                Staffel = StaffelAus(row)
             };
+        }
+
+        // =====================================================================
+        // Die Leistungspreis-Staffel des Stromträgers (Q11, Schemaschritt 103)
+        // =====================================================================
+
+        /// <summary>
+        /// Die zweistufige Leistungspreis-Staffel eines Trägers im Projekt
+        /// (<c>energy_project_settings</c>, Schritt 103). Leer (nie <c>null</c>), wenn die
+        /// Zeile oder die Spalten fehlen — dann rechnet keine Staffel.
+        /// </summary>
+        public static LeistungspreisStaffel StaffelLesen(int projektId, int traegerId)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [" + SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE + "], [" +
+                    SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1 + "], [" + SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2 +
+                    "] FROM energy_project_settings WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                    new DbParam("@p", projektId),
+                    new DbParam("@c", traegerId));
+                if (dt != null && dt.Rows.Count > 0) return StaffelAus(dt.Rows[0]);
+            }
+            catch { }
+            return new LeistungspreisStaffel();
+        }
+
+        /// <summary>
+        /// Schreibt die Staffel an die Projektübersteuerung des Trägers — der Schreibweg
+        /// der Trägerkarte (Kostenverwaltung). Die Zeile muss stehen: Die Karte schreibt
+        /// vorher <see cref="Projektwerte"/>, das sie bei Bedarf anlegt. Ein leeres Feld
+        /// schreibt NULL („nicht gepflegt").
+        /// </summary>
+        /// <returns>true, wenn genau die Zeile des Trägers getroffen wurde.</returns>
+        public static bool StaffelSchreiben(int projektId, int traegerId, LeistungspreisStaffel staffel)
+        {
+            if (staffel == null) staffel = new LeistungspreisStaffel();
+            int zeilen = DataRepository.ExecuteNonQuery(
+                "UPDATE energy_project_settings SET [" + SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE + "] = ?, [" +
+                SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1 + "] = ?, [" + SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2 +
+                "] = ? WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam[]
+                {
+                    Nullbar("@g", staffel.GrenzeKW),
+                    Nullbar("@p1", staffel.Preis1EurKWa),
+                    Nullbar("@p2", staffel.Preis2EurKWa),
+                    new DbParam("@pid", projektId),
+                    new DbParam("@eid", traegerId)
+                });
+            return zeilen == 1;
+        }
+
+        private static LeistungspreisStaffel StaffelAus(DataRow row)
+        {
+            return new LeistungspreisStaffel
+            {
+                GrenzeKW = Zahl(row, SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE),
+                Preis1EurKWa = Zahl(row, SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1),
+                Preis2EurKWa = Zahl(row, SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2)
+            };
+        }
+
+        private static DbParam Nullbar(string name, double? wert)
+        {
+            return new DbParam(name, DbParamTyp.Double)
+            { Wert = wert.HasValue ? (object)Math.Round(wert.Value, 4) : DBNull.Value };
         }
 
         /// <summary>
@@ -705,6 +772,10 @@ namespace WindowsFormsApplication1
             public double? SO2;
             public double? NOx;
             public int? IdUmrechnung;
+
+            /// <summary>Die zweistufige Leistungspreis-Staffel (Schritt 103); leer, wenn
+            /// nicht gepflegt oder die Spalten fehlen — nie <c>null</c>.</summary>
+            public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
         }
 
         private static double? Zahl(DataRow r, string spalte)

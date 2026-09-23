@@ -14,7 +14,9 @@ namespace WindowsFormsApplication1
     /// Viertelstundenreihe gebildet und <b>nicht</b> aus der auf Stunden gemittelten
     /// Ganglinie: Das Stundenmittel glättet die Spitze und fiele regelmäßig zu
     /// niedrig aus (<see cref="StromMatrix.MaxBezugKW"/> ist genau diese kleinere
-    /// Zahl und bleibt der Tarifstruktur vorbehalten).</para>
+    /// Zahl und dient allein dem Lastbild des Rollentarifs). Auch die zweistufige
+    /// Leistungspreis-Staffel des Stromträgers bemisst sich an dieser Spitze
+    /// (<see cref="LeistungspreisStaffel"/>).</para>
     ///
     /// <para><b>Woran sie hängt.</b> Quelle ist die Reihe, die auch der Speicher
     /// kappt (<c>SimulationControl.Rest_Strombedarf_viertelstuendlich</c>: bei

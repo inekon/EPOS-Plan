@@ -494,8 +494,8 @@ namespace WindowsFormsApplication1
             // und Kohärenzprüfung ihre Antwort nehmen. Hier wird sie EINMAL gestellt, und
             // alles, was den Netzbezug bewertet, hängt an ihrem Ergebnis:
             //  - KOSTEN: Der Preisträger wird gar nicht erst geladen; StromkostenNetz bleibt
-            //    null (nicht 0), damit auch Tarifstruktur und Rollenpfad der
-            //    Wirtschaftlichkeit, die StromkostenNetz ersetzen, keinen Strom
+            //    null (nicht 0), damit auch der Rollentarif der
+            //    Wirtschaftlichkeit, der StromkostenNetz ersetzt, keinen Strom
             //    nachträglich bepreisen. Kein Rückfallvermerk — bepreist wurde nichts.
             //  - EMISSIONEN: kein Netzstromfaktor, netzCO2t = 0 (CO₂ bzw. im Modus CO2E
             //    das Äquivalent aller Arten — weitere Schadstoffe leitet dieser Rechner
@@ -559,11 +559,20 @@ namespace WindowsFormsApplication1
                     // Lauf keine Zeitreihen, wird der gepflegte Leistungspreis
                     // benannt (v.LeistungspreisOhneSpitze) statt still zu entfallen.
                     //
-                    // KEINE ZWEITE WAHRHEIT: Eine aktive Tarifstruktur ersetzt den
+                    // KEINE ZWEITE WAHRHEIT: Ein aktiver Rollentarif ersetzt den
                     // ganzen Stromanteil (WirtschaftlichkeitCtrl rechnet
                     // v.StromkostenNetz heraus) — dieser Anteil ist deshalb
                     // ausdrücklich TEIL von StromkostenNetz und fällt dort mit heraus.
-                    bool leistungStrom = preistraeger.ReiheJeKW != null ||
+                    //
+                    // DIE ZWEISTUFIGE STAFFEL (Q11, Schemaschritt 103): Sie stand im
+                    // Tarifsatz und rechnete nur im Zonenmodell; jetzt steht sie am
+                    // Stromträger und geht dessen Leistungspreis und Saisonreihe VOR —
+                    // dieselbe Rangfolge wie damals, als der Tarif den ganzen
+                    // Stromanteil ersetzte. Bemessen an der JAHRESspitze der
+                    // Viertelstundenreihe, in €/(kW·a), gleich welcher Modus am Träger
+                    // steht: min(S, Grenze) × Preis 1 + max(0, S − Grenze) × Preis 2.
+                    bool leistungStrom = preistraeger.Staffel.Gepflegt ||
+                                         preistraeger.ReiheJeKW != null ||
                                          preistraeger.PreisLeistung.HasValue;
                     if (leistungStrom)
                     {
@@ -571,7 +580,9 @@ namespace WindowsFormsApplication1
                         if (spitze != null && spitze.JahrKW > 0)
                         {
                             double anteilStrom;
-                            if (preistraeger.ReiheJeKW != null)
+                            if (preistraeger.Staffel.Gepflegt)
+                                anteilStrom = preistraeger.Staffel.Betrag(spitze.JahrKW);
+                            else if (preistraeger.ReiheJeKW != null)
                             {
                                 anteilStrom = 0;
                                 for (int mo = 0; mo < 12; mo++)
@@ -803,6 +814,14 @@ namespace WindowsFormsApplication1
             /// ist (die vorgehaltene Anschlussleistung); der STROMzweig braucht die
             /// Sätze einzeln, weil jeder Monat seine eigene Bezugsspitze hat.</summary>
             public double[] ReiheJeKW;
+
+            /// <summary>
+            /// Q11 (Schemaschritt 103) — die zweistufige Leistungspreis-Staffel der
+            /// Projektübersteuerung; gelesen nur im STROMzweig. Gepflegt geht sie dem
+            /// konstanten Satz und der Saisonreihe vor. Leer, wenn nicht gepflegt — nie
+            /// <c>null</c>.
+            /// </summary>
+            public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
         }
 
         /// <summary>
@@ -981,14 +1000,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Trägt der bepreisende Stromträger dieses Projekts einen Leistungspreis?</b>
-        /// (konstanter Satz oder Saisonreihe, Projektwert vor Katalogwert, 0 zählt wie
-        /// überall als nicht gepflegt).
+        /// (zweistufige Staffel, konstanter Satz oder Saisonreihe, Projektwert vor
+        /// Katalogwert, 0 zählt wie überall als nicht gepflegt).
         ///
         /// <para><b>Wozu die Schale das braucht.</b> Der Leistungsanteil des Stroms
         /// bemisst sich an der Bezugsspitze, und die gibt es nur aus einem frischen
         /// Lauf mit eingesammelten Zeitreihen. Wer die Wirtschaftlichkeit rechnet, muss
         /// also VORHER wissen, ob dieser Lauf gebraucht wird — dieselbe Frage, die
-        /// heute schon die Tarifstruktur und der KWKG-Bonus stellen.</para>
+        /// heute schon der Rollentarif und der KWKG-Bonus stellen.</para>
         /// </summary>
         public static bool StromLeistungspreisGepflegt(int idProjekt)
         {
@@ -999,7 +1018,8 @@ namespace WindowsFormsApplication1
                 if (traeger <= 0) return false;
 
                 TraegerInfo info = LadeTraeger(idProjekt, traeger);
-                return info.ReiheJeKW != null || info.PreisLeistung.HasValue;
+                // Q11: Auch die zweistufige Staffel bemisst sich an der Bezugsspitze.
+                return info.Staffel.Gepflegt || info.ReiheJeKW != null || info.PreisLeistung.HasValue;
             }
             catch { return false; }
         }
@@ -1096,6 +1116,11 @@ namespace WindowsFormsApplication1
             // (dieselbe Regel wie beim Arbeitspreis, Befund D5).
             if (sLeistung.HasValue && sLeistung.Value > 0) info.PreisLeistung = sLeistung;
             else if (kLeistung.HasValue && kLeistung.Value > 0) info.PreisLeistung = kLeistung;
+
+            // Q11 (Schemaschritt 103): die zweistufige Leistungspreis-Staffel der
+            // Projektübersteuerung — eigene Abfrage über den Controller der Trägerkarte,
+            // damit eine Datenbank ohne die Spalten die Preise oben nicht verliert.
+            info.Staffel = EnergietraegerPreisCtrl.StaffelLesen(idProjekt, carrierId);
 
             // FK6a: saisonale Leistungspreis-Reihe (12 Monatssätze). Sie gilt vor dem
             // konstanten Satz; die Ebenen (Projekt vor Stamm) löst der Controller auf.

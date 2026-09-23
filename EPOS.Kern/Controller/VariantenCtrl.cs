@@ -289,12 +289,22 @@ namespace WindowsFormsApplication1
             {
                 if (!HatProjektZeilen("energy_project_settings", nachProjekt))
                 {
+                    // Q11 (Schemaschritt 103): Die Leistungspreis-Staffel des Stromträgers
+                    // wandert mit — sie stand im Tarifsatz des Stammes und galt für die
+                    // ganze Gruppe; eine neue Version erbt sie deshalb wie den
+                    // Leistungspreis. Ohne die Spalten (Datenbank vor 103) bleibt die
+                    // Kopie, wie sie war.
+                    string staffel =
+                        DataRepository.SpalteVorhanden("energy_project_settings", SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE)
+                            ? ", [" + SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE + "], [" +
+                              SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1 + "], [" + SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2 + "]"
+                            : "";
                     string sqlSettings =
                         "INSERT INTO energy_project_settings " +
                         "(ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
-                        " custom_price_base, ID_Umrechnung, co2, so2, nox) " +
+                        " custom_price_base, ID_Umrechnung, co2, so2, nox" + staffel + ") " +
                         "SELECT ?, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +
-                        " custom_price_base, ID_Umrechnung, co2, so2, nox " +
+                        " custom_price_base, ID_Umrechnung, co2, so2, nox" + staffel + " " +
                         "FROM energy_project_settings WHERE ID_Projekt = ?";
                     DataRepository.ExecuteSQL(sqlSettings,
                         new DbParam("@neu", nachProjekt),
