@@ -719,6 +719,15 @@ namespace WindowsFormsApplication1
         public bool RollenModus
         { get { return string.Equals(Modus, DbWerte.TARIF_MODUS_ROLLEN, StringComparison.Ordinal); } }
 
+        /// <summary>
+        /// Rechnet dieser Tarifsatz? Nur ein AKTIVER Satz im ROLLENmodell (Q11, Etappe
+        /// E7b): Einen Zeitzonentarif gibt es nicht mehr, ein Satz im Zonenmodell wirkt
+        /// nicht. Wer fragt, ob ein Lauf Stundenreihen braucht, fragt deshalb diese
+        /// Eigenschaft und nicht <see cref="Aktiv"/>.
+        /// </summary>
+        public bool Wirksam
+        { get { return Aktiv && RollenModus; } }
+
         /// <summary>Eine Rolle mit vier leeren Staffelstufen (Vorbelegung MONATLICH).</summary>
         private static TarifRolle NeueRolle(string rolle)
         {
@@ -743,13 +752,10 @@ namespace WindowsFormsApplication1
                     t += " · Preisstand " + GueltigAb.Value.ToString("dd.MM.yyyy", kultur);
                 return t;
             }
-            return "Tarif aktiv: Winter " + WinterVonMonat + "–" + WinterBisMonat +
-                   " · HT Mo–Fr " + HtVonStunde + "–" + HtBisStunde + " Uhr · Bezug W/S HT/NT " +
-                   PreisBezugWinterHT.ToString("N3", kultur) + "/" + PreisBezugWinterNT.ToString("N3", kultur) + "/" +
-                   PreisBezugSommerHT.ToString("N3", kultur) + "/" + PreisBezugSommerNT.ToString("N3", kultur) +
-                   " €/kWh · Leistungspreis " + StaffelPreis1EurKW.ToString("N0", kultur) + "/" +
-                   StaffelPreis2EurKW.ToString("N0", kultur) + " €/kW (Grenze " +
-                   StaffelGrenzeKW.ToString("N0", kultur) + " kW)";
+            // Q11 (Anwender 22.09.2026, „kein HT/NT"): Einen Zeitzonentarif gibt es
+            // nicht mehr. Ein Satz, der noch aktiv auf dem Zonenmodell steht, rechnet
+            // nicht — der Nachweis sagt das, statt Zonenpreise zu zeigen, die nicht gelten.
+            return MyResource.Resource.WIRT_TARIF_NACHWEIS_ZONEN;
         }
     }
 
@@ -1281,7 +1287,7 @@ namespace WindowsFormsApplication1
         public bool OhneNachweis;
 
         // Stufe W3 (Phase 8)
-        public double? StromkostenTarif;       // Bezugskosten nach Tarifmatrix [€/a] (null = Flat-Rechnung)
+        public double? StromkostenTarif;       // Reststromkosten nach Rollentarif [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)
 
         /// <summary>

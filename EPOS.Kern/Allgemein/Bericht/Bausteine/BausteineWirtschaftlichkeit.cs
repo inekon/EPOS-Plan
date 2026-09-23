@@ -182,14 +182,13 @@ namespace WindowsFormsApplication1
                 SchreibeSensitivitaet(k, daten, sens);
             }
 
-            // ---------------- Strommengen-Matrix + Tarif (W3) ----------------
+            // ---------------- Strommengen-Matrix (W3) ----------------
+            // Q11 (E7b): keine Tarifzonen mehr — eine Jahreszeile je Projekt.
             Dictionary<int, StromMatrix> matrizen = provider.LadeStromMatrix(ids);
             if (matrizen.Count > 0)
             {
-                k.Ueberschrift2("Strommengen nach Tarifzonen");
-                k.Hinweis("Stundenweise Zuordnung aus der In-Memory-Simulation (Referenzjahr 2026 " +
-                          "für die Wochentage). KWK-Aufteilung: Eigenstrom = min(BHKW-Erzeugung, " +
-                          "Strombedarf) je Stunde — dokumentierte Näherung (W3).");
+                k.Ueberschrift2(MyResource.Resource.WIRT_MATRIX_TITEL);
+                k.Hinweis(MyResource.Resource.WIRT_MATRIX_HERKUNFT);
                 SchreibeMatrix(k, daten, matrizen);
             }
 
@@ -240,7 +239,8 @@ namespace WindowsFormsApplication1
             // lassen und offen begründen (keine stillen Widersprüche).
             // ETAPPE BK1: Der KWKG-Zweig fragt KwkgAktivierung — die EINE Regel, die
             // auch der Rechenkern zieht. Die Projektsätze entscheiden nicht mehr.
-            bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
+            // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+            bool zeitreihenNoetig = (tarifP != null && tarifP.Wirksam) ||
                                     KwkgAktivierung.IstAktiv(daten.IdStamm,
                                         daten.Varianten.Select(x => x.IdProjekt));
             if (zeitreihenNoetig &&
@@ -799,7 +799,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Strommengen-Matrix: je Projekt eine Tabelle Zone × Mengenart [MWh].</summary>
+        /// <summary>
+        /// Strommengen-Matrix: je Projekt eine Tabelle mit der Jahreszeile × Mengenart
+        /// [MWh]. Q11 (E7b): Die vier Zeilen der Tarifzonen Winter/Sommer × HT/NT sind
+        /// entfallen — es gibt keinen Zeitzonentarif mehr, also auch keine Zone, die eine
+        /// Menge trüge.
+        /// </summary>
         private static void SchreibeMatrix(WordKontext k, BerichtsDaten daten,
                                            Dictionary<int, StromMatrix> matrizen)
         {
@@ -819,7 +824,8 @@ namespace WindowsFormsApplication1
 
                 Table t = k.NeueTabelle(w);
                 var kopf = new TableRow();
-                kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+                kopf.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_ZEITRAUM, w[0], true,
+                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
                 kopf.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_BEDARF, w[1], true,
                                     WordBerichtGenerator.HEAD_FILL, JustificationValues.Center,
                                     false, WordBerichtGenerator.SCHRIFT_TABELLE));
@@ -829,21 +835,17 @@ namespace WindowsFormsApplication1
                 kopf.Append(k.Zelle("KWK-Einspeisung [MWh]", w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 t.Append(kopf);
 
-                foreach (string zone in StromMatrix.Zonen)
-                {
-                    StromMatrix.Zone z = m.Hole(zone);
-                    if (z == null) continue;
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(zone, w[0], false, null, JustificationValues.Left));
-                    tr.Append(k.Zelle(k.F(z.BedarfMWh, 1), w[1], false, null, JustificationValues.Right));
-                    tr.Append(k.Zelle(k.F(z.BezugMWh, 1), w[2], false, null, JustificationValues.Right));
-                    tr.Append(k.Zelle(k.F(z.EinspeisungPvMWh, 1), w[3], false, null, JustificationValues.Right));
-                    tr.Append(k.Zelle(k.F(z.KwkEigenMWh, 1), w[4], false, null, JustificationValues.Right));
-                    tr.Append(k.Zelle(k.F(z.KwkEinspeisungMWh, 1), w[5], false, null, JustificationValues.Right));
-                    t.Append(tr);
-                }
+                var tr = new TableRow();
+                tr.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_JAHR, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(k.F(m.BedarfGesamtMWh, 1), w[1], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(m.BezugGesamtMWh, 1), w[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(m.EinspeisungPvGesamtMWh, 1), w[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(m.KwkEigenGesamtMWh, 1), w[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(m.KwkEinspeisungGesamtMWh, 1), w[5], false, null, JustificationValues.Right));
+                t.Append(tr);
                 k.Fuege(t);
-                k.Hinweis("Jahres-Bezugsspitze: " + k.F(m.MaxBezugKW, 0) + " kW (Basis der Leistungspreis-Staffel).");
+                k.Hinweis(string.Format(k.Kultur, MyResource.Resource.WIRT_MATRIX_STUNDENSPITZE,
+                                        k.F(m.MaxBezugKW, 0)));
                 k.HinweisRoh(MyResource.Resource.WIRT_MATRIX_BEDARF_HINWEIS);
             }
         }

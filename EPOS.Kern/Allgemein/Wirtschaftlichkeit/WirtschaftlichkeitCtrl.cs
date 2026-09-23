@@ -2101,56 +2101,31 @@ namespace WindowsFormsApplication1
             bool rollen = !stromOhneVerwendung && tarif != null && tarif.Aktiv && tarif.RollenModus;
             if (rollen) RechneRollentarif(v, tarif, e);
 
-            // Tarifkosten ersetzen die Flat-Stromkosten NUR, wenn beide Seiten
-            // bestimmbar sind (Energiekosten und Flat-Netzanteil aus Phase 5) UND
-            // Zonenpreise gepflegt wurden (Review Phase 8: Aktiv + Nullpreise würde
-            // den Strom sonst still kostenlos machen). Der Tarifersatz umfasst
-            // Arbeits-, Grund- UND Leistungspreis der Kostenmaske.
+            // ---------------- Kein Zeitzonentarif (Q11, ETAPPE E7b) ----------------
+            //
+            // Bis E7b ersetzte ein aktiver Tarifsatz im ZONENmodell die Flat-Stromkosten
+            // durch vier Zonenpreise Winter/Sommer × HT/NT samt einer zweistufigen
+            // Leistungspreis-Staffel auf die höchste Stundenlast, und den Einspeiseerlös
+            // durch vier Zonen-Einspeisepreise. Entscheid Q11 (Anwender 22.09.2026: „kein
+            // HT/NT"): Den Zeitzonentarif gibt es nicht mehr. Der Netzbezug bleibt mit
+            // den Preisen des Stromträgers aus der Kostenverwaltung bepreist — die Staffel
+            // steht seither dort (KostenEmissionRechner, Viertelstundenspitze) —, der
+            // Einspeiseerlös mit den Vergütungssätzen der Parameter.
+            //
+            // KEIN STILLER RÜCKFALL: Ein Tarifsatz, der noch aktiv auf dem Zonenmodell
+            // steht (eine Datenbank vor Schemaschritt 103, der ihn abschaltet), rechnet
+            // nicht mehr — und das steht als Hinweis am Ergebnis.
             if (!stromOhneVerwendung && tarif != null && tarif.Aktiv && !rollen)
-            {
-                bool preiseGepflegt = tarif.PreisBezugWinterHT > 0 || tarif.PreisBezugWinterNT > 0 ||
-                                      tarif.PreisBezugSommerHT > 0 || tarif.PreisBezugSommerNT > 0;
-                if (!preiseGepflegt)
-                    e.Hinweis = "Tarifstruktur aktiv, aber keine Bezugspreise gepflegt — " +
-                                "Flat-Preise der Kostenmaske verwendet.";
-                else if (e.Matrix != null && v.Energiekosten.HasValue && v.StromkostenNetz.HasValue)
-                {
-                    double stromTarif = e.Matrix.Bezugskosten(tarif);
-                    e.StromkostenTarif = stromTarif;
-                    e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + stromTarif;
-                    e.Erloes = e.Matrix.Einspeiseerloes(tarif);   // ersetzt PV × Flat-Vergütung
-                    // ETAPPE E7: Der Zonenerlös trägt PV-Überschuss und KWK-Einspeisung
-                    // zusammen. Der PV-Anteil wird eigens gerechnet, der KWK-Anteil als
-                    // REST gebildet — so ist die Summe der beiden Teile ohne
-                    // Rundungsrest der ausgewiesene Gesamtbetrag.
-                    e.ErloesPv = e.Matrix.EinspeiseerloesPv(tarif);
-                    e.ErloesKwk = e.Erloes - e.ErloesPv;
-
-                    // Mengenabgleich Flat-Basis (Jahressumme) vs. Stundenreihe.
-                    double flatMWh = v.Ergebnis.Energiebedarf != null
-                                     ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0;
-                    double reiheMWh = e.Matrix.BezugGesamtMWh;
-                    if (flatMWh > 0 && Math.Abs(reiheMWh - flatMWh) / flatMWh > 0.05)
-                        e.Hinweis = "Netzbezug der Stundenreihe (" + reiheMWh.ToString("N0") +
-                                    " MWh) weicht > 5 % vom Jahresergebnis (" + flatMWh.ToString("N0") +
-                                    " MWh) ab — Tarifkosten bitte prüfen.";
-                    else if (e.Matrix.StrombedarfFehlt)
-                        e.Hinweis = "KWK-Split ohne Strombedarfs-Reihe — gesamte BHKW-Erzeugung " +
-                                    "als Eigenstrom gewertet.";
-                }
-                else if (e.Matrix == null)
-                    e.Hinweis = "Tarifstruktur aktiv, aber keine (vollständigen) Stundenreihen im " +
-                                "Lauf — Flat-Preise der Kostenmaske verwendet.";
-                else
-                    e.Hinweis = "Tarifstruktur aktiv, aber Flat-Energiekosten unvollständig — " +
-                                "Tarifersatz nicht möglich.";
-            }
+                Melde(e, T("WIRT_HINWEIS_ZEITZONENTARIF",
+                    "Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch " +
+                    "auf dem Zonenmodell und wird nicht mehr gerechnet — der Strom ist mit den " +
+                    "Preisen des Stromträgers aus der Kostenverwaltung bepreist."));
 
             // ---------------- PV-Vergütung (PV-Konzept, ETAPPE P4) ----------------
             // Ist der Vergütungsdialog AKTIV, ersetzt seine jahresscharfe Reihe
             // (ErloesReihe.PV_VERGUETUNG) die PV-Bewertung des gerade aktiven Pfades
-            // (Flat/Rollen/Tarif) — EINE Vergütungswahrheit (Befund V4, F7). Der Platz
-            // NACH allen drei Pfaden ist Absicht: Jeder von ihnen führt e.ErloesPv,
+            // (Flat/Rollen) — EINE Vergütungswahrheit (Befund V4, F7). Der Platz
+            // NACH beiden Pfaden ist Absicht: Jeder von ihnen führt e.ErloesPv,
             // also wird genau dieser Anteil aus dem konstanten Erlös herausgelöst.
             // Inaktiv (Aktiv = false) ändert sich NICHTS — Abnahmekriterium P4.
             RechnePvVerguetung(v, p, e);
@@ -2238,7 +2213,7 @@ namespace WindowsFormsApplication1
             // genau die Doppelzählung, die der E5-Restpunkt benannt hat.
 
             // ETAPPE W5-B-9: die Ertragsaenderung des Szenarios - GANZ ZUM SCHLUSS, wenn
-            // alle drei Erloespfade (Flat, Tarifmatrix, Rollenmodell) und der
+            // beide Erloespfade (Flat, Rollenmodell) und der
             // PV-Verguetungsdialog ihre Zahlen gesetzt haben.
             SkaliereErtraege(e, satz);
             return e;
@@ -2300,8 +2275,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Was in den Kapitalwert geht, ist der Reststrom.</b> Die vermiedenen
         /// Kosten sind eine AUSSAGE, kein zweiter Zahlungsstrom: Die Einsparung steckt
         /// bereits darin, dass die Anlage die Bezugsmenge senkt. Wer sie zusätzlich als
-        /// Erlös bucht, zählt sie doppelt. Deshalb ersetzt hier — wie im Zonenmodell —
-        /// der Tarifbetrag den Flat-Netzanteil der Energiekosten, und die drei
+        /// Erlös bucht, zählt sie doppelt. Deshalb ersetzt hier der Tarifbetrag den
+        /// Flat-Netzanteil der Energiekosten (samt Leistungsanteil), und die drei
         /// Differenzzeilen werden nur ausgewiesen.</para>
         ///
         /// <para><b>Ohne Strombedarfsreihe keine Referenz.</b> „Bedarf ohne Anlage" lässt
@@ -5612,7 +5587,7 @@ namespace WindowsFormsApplication1
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
             erg.SteuerHerkunft = eingabe.SteuerHerkunft;
-            erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
+            erg.StromkostenTarif = eingabe.StromkostenTarif;  // Rollentarif (Reststrom)
             erg.BezugsspitzeKW = v.BezugsspitzeKW;            // SP-W1: Herleitungszeile
             erg.VermiedenArbeitJahr = eingabe.VermiedenArbeit;        // E5
             erg.VermiedenLeistungJahr = eingabe.VermiedenLeistung;
@@ -7343,7 +7318,8 @@ namespace WindowsFormsApplication1
                             }
                         }
 
-                        // Strommengen-Matrix (W3) — eine Zeile je Projekt und Zone.
+                        // Strommengen-Matrix (W3) — EINE Jahreszeile je Projekt (Q11, E7b:
+                        // keine Tarifzonen mehr; die Spalte Zone trägt StromMatrix.ZEILE_JAHR).
                         if (matrizen != null && matrizen.Count > 0)
                         {
                             int mxId;
@@ -7353,28 +7329,23 @@ namespace WindowsFormsApplication1
                             }
                             foreach (KeyValuePair<int, StromMatrix> kv in matrizen)
                             {
-                                foreach (string zone in StromMatrix.Zonen)
-                                {
-                                    StromMatrix.Zone z = kv.Value.Hole(zone);
-                                    if (z == null) continue;
-                                    {
-                                        List<DbParam> pl = new List<DbParam>();
-                                        pl.Add(new DbParam("@id", mxId));
-                                        pl.Add(new DbParam("@p", kv.Key));
-                                        pl.Add(new DbParam("@z", zone));
-                                        pl.Add(new DbParam("@b", Math.Round(z.BezugMWh, 3)));
-                                        pl.Add(new DbParam("@pv", Math.Round(z.EinspeisungPvMWh, 3)));
-                                        pl.Add(new DbParam("@ke", Math.Round(z.KwkEigenMWh, 3)));
-                                        pl.Add(new DbParam("@ki", Math.Round(z.KwkEinspeisungMWh, 3)));
-                                        pl.Add(new DbParam("@mx", Math.Round(kv.Value.MaxBezugKW, 1)));
-                                        pl.Add(new DbParam("@bd", Math.Round(z.BedarfMWh, 3)));   // E5
-                                        pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = DateTime.Now });
-                                        v.Ausfuehren("INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
-                                        "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
-                                        "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
-                                    }
-                                    mxId++;
-                                }
+                                StromMatrix m = kv.Value;
+                                if (m == null) continue;
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@id", mxId));
+                                pl.Add(new DbParam("@p", kv.Key));
+                                pl.Add(new DbParam("@z", StromMatrix.ZEILE_JAHR));
+                                pl.Add(new DbParam("@b", Math.Round(m.BezugGesamtMWh, 3)));
+                                pl.Add(new DbParam("@pv", Math.Round(m.EinspeisungPvGesamtMWh, 3)));
+                                pl.Add(new DbParam("@ke", Math.Round(m.KwkEigenGesamtMWh, 3)));
+                                pl.Add(new DbParam("@ki", Math.Round(m.KwkEinspeisungGesamtMWh, 3)));
+                                pl.Add(new DbParam("@mx", Math.Round(m.MaxBezugKW, 1)));
+                                pl.Add(new DbParam("@bd", Math.Round(m.BedarfGesamtMWh, 3)));   // E5
+                                pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = DateTime.Now });
+                                v.Ausfuehren("INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
+                                "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
+                                "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                mxId++;
                             }
                         }
                         v.Commit();
@@ -7558,7 +7529,16 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Persistierte Strommengen-Matrizen laden (IWirtschaftlichkeitProvider, W3).</summary>
+        /// <summary>
+        /// Persistierte Strommengen-Matrizen laden (IWirtschaftlichkeitProvider, W3).
+        ///
+        /// <para><b>Summiert ALLE Zeilen eines Projekts</b> (Q11, E7b). Geschrieben wird
+        /// eine Jahreszeile (<see cref="StromMatrix.ZEILE_JAHR"/>); ein Stand von vor E7b
+        /// trägt vier Zeilen, je Tarifzone eine. Beide ergeben so dieselben
+        /// Jahressummen — ein alter Stand wird weder falsch gelesen noch als Zone
+        /// gezeigt, bis Schemaschritt 103 ihn zusammenfasst oder ein neuer Lauf ihn
+        /// ersetzt. Die höchste Stundenlast ist das Maximum der Zeilen.</para>
+        /// </summary>
         public Dictionary<int, StromMatrix> LadeStromMatrix(List<int> projektIds)
         {
             var map = new Dictionary<int, StromMatrix>();
@@ -7574,23 +7554,21 @@ namespace WindowsFormsApplication1
                     if (dt == null || dt.Rows.Count == 0) continue;
 
                     var m = new StromMatrix();
+                    bool gelesen = false;
                     foreach (DataRow r in dt.Rows)
                     {
-                        string zone = r["Zone"] != DBNull.Value ? r["Zone"].ToString() : "";
-                        if (zone.Length == 0) continue;
-                        m.ZonenWerte[zone] = new StromMatrix.Zone
-                        {
-                            Name = zone,
-                            BezugMWh = D(r, "BezugMWh") ?? 0,
-                            EinspeisungPvMWh = D(r, "EinspPvMWh") ?? 0,
-                            KwkEigenMWh = D(r, "KwkEigenMWh") ?? 0,
-                            KwkEinspeisungMWh = D(r, "KwkEinspMWh") ?? 0,
-                            BedarfMWh = D(r, "BedarfMWh") ?? 0        // E5
-                        };
+                        string zeile = r["Zone"] != DBNull.Value ? r["Zone"].ToString() : "";
+                        if (zeile.Length == 0) continue;
+                        m.BezugGesamtMWh += D(r, "BezugMWh") ?? 0;
+                        m.EinspeisungPvGesamtMWh += D(r, "EinspPvMWh") ?? 0;
+                        m.KwkEigenGesamtMWh += D(r, "KwkEigenMWh") ?? 0;
+                        m.KwkEinspeisungGesamtMWh += D(r, "KwkEinspMWh") ?? 0;
+                        m.BedarfGesamtMWh += D(r, "BedarfMWh") ?? 0;        // E5
                         double mx = D(r, "MaxBezugKW") ?? 0;
                         if (mx > m.MaxBezugKW) m.MaxBezugKW = mx;
+                        gelesen = true;
                     }
-                    map[idProjekt] = m;
+                    if (gelesen) map[idProjekt] = m;
                 }
             }
             catch { }

@@ -63538,6 +63538,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell und wird nicht mehr gerechnet — der Strom ist mit den Preisen des Stromträgers aus der Kostenverwaltung bepreist. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_ZEITZONENTARIF {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_ZEITZONENTARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein Zinsfuß bestimmbar ähnelt.
         /// </summary>
         public static string WIRT_IZF_KEIN_WERT {
@@ -64132,11 +64141,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
         /// </summary>
         public static string WIRT_MATRIX_BEDARF_HINWEIS {
             get {
                 return ResourceManager.GetString("WIRT_MATRIX_BEDARF_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressummen aus den Stundenreihen der In-Memory-Simulation. KWK-Aufteilung: Eigenstrom = min(BHKW-Erzeugung, Strombedarf nach Photovoltaik) je Stunde — dokumentierte Näherung. ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_HERKUNFT {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_JAHR {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Stundenlast ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_STUNDENLAST {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_STUNDENLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Stundenlast des Netzbezugs: {0} kW — Bemessungsgröße der Leistungspreise im Rollentarif; der Leistungspreis des Stromträgers bemisst sich an der Viertelstundenspitze. ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_STUNDENSPITZE {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_STUNDENSPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strommengen ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum ähnelt.
+        /// </summary>
+        public static string WIRT_MATRIX_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WIRT_MATRIX_ZEITRAUM", resourceCulture);
             }
         }
         
@@ -65010,6 +65073,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SZ_UEBERSCHRIFT {
             get {
                 return ResourceManager.GetString("WIRT_SZ_UEBERSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung ähnelt.
+        /// </summary>
+        public static string WIRT_TARIF_NACHWEIS_ZONEN {
+            get {
+                return ResourceManager.GetString("WIRT_TARIF_NACHWEIS_ZONEN", resourceCulture);
             }
         }
         

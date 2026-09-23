@@ -6744,7 +6744,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Demand without the plant [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
+    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero means the demand time series was missing in the run.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
@@ -23218,5 +23218,29 @@ Do you want to allow this?</value>
   </data>
   <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
+  </data>
+  <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies: the project's tariff set is still on the zone model and is no longer calculated — electricity is priced with the prices of the electricity carrier from cost management.</value>
+  </data>
+  <data name="WIRT_TARIF_NACHWEIS_ZONEN" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies — prices of the electricity carrier from cost management</value>
+  </data>
+  <data name="WIRT_MATRIX_TITEL" xml:space="preserve">
+    <value>Electricity volumes</value>
+  </data>
+  <data name="WIRT_MATRIX_HERKUNFT" xml:space="preserve">
+    <value>Annual totals from the hourly series of the in-memory simulation. CHP split: self-consumption = min(CHP generation, electricity demand after photovoltaics) per hour — documented approximation.</value>
+  </data>
+  <data name="WIRT_MATRIX_ZEITRAUM" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="WIRT_MATRIX_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENSPITZE" xml:space="preserve">
+    <value>Highest hourly grid import: {0} kW — the basis of the demand charges in the role tariff; the demand charge of the electricity carrier is based on the 15-minute peak.</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
+    <value>Highest hourly load</value>
   </data>
 </root>

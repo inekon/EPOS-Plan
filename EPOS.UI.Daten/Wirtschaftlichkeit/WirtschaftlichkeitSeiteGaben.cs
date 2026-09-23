@@ -706,17 +706,19 @@ namespace WindowsFormsApplication1
         /// <b>Braucht der Lauf dieser Gruppe Stundenreihen?</b> — die EINE Herleitung für
         /// den Rechenlauf und für den Ausweis in der Parameterzeile (VF-1).
         ///
-        /// <para>W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen; dann wird je
+        /// <para>W3: Rollentarif und KWKG-Split brauchen Stundenreihen; dann wird je
         /// Projekt frisch in-memory simuliert. SP-W1: derselbe Grund für den
-        /// Leistungspreis des Stromträgers — seine Basis ist die Bezugsspitze aus der
-        /// Viertelstundenreihe, und die gibt es nur aus dem frischen Lauf. LS-E-2: Der
+        /// Leistungspreis des Stromträgers samt Staffel — seine Basis ist die
+        /// Bezugsspitze aus der Viertelstundenreihe, und die gibt es nur aus dem
+        /// frischen Lauf. LS-E-2: Der
         /// Leistungspreis zählt für die GANZE Gruppe, nicht nur für den Stamm — sonst
         /// fiele er einer Variante still weg, die ihn als Einzige führt.</para>
         /// </summary>
         private bool MitZeitreihen(WirtschaftlichkeitParameter p, TarifParameter tarif)
         {
-            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle.
-            return tarif.Aktiv || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
+            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle; Q11 (E7b):
+            // nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+            return tarif.Wirksam || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
                    KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, _gruppe);
         }
 
