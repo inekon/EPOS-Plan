@@ -574,11 +574,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
+        /// </summary>
+        public static string ADM_KOPIE_NAME {
+            get {
+                return ResourceManager.GetString("ADM_KOPIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie {1}) ähnelt.
         /// </summary>
         public static string ADM_KOPIE_NAME_N {
             get {
                 return ResourceManager.GetString("ADM_KOPIE_NAME_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende ähnelt.
+        /// </summary>
+        public static string ADM_LISTE_TASTEN {
+            get {
+                return ResourceManager.GetString("ADM_LISTE_TASTEN", resourceCulture);
             }
         }
         

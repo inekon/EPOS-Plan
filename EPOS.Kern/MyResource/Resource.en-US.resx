@@ -24181,6 +24181,7 @@ Do you want to allow this?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (created from the project demand when saved)</value>
+  </data>
   <data name="ADM_KOPIE_NAME" xml:space="preserve">
     <value>{0} (copy)</value>
   </data>
@@ -24214,5 +24215,7 @@ Do you want to allow this?</value>
   <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
     <value>There are unsaved changes – please “Save” or “Discard”.</value>
   </data>
+  <data name="ADM_LISTE_TASTEN" xml:space="preserve">
+    <value>Catalogue list – ↑ and ↓ change the row, Home and End jump to the first and the last row</value>
   </data>
 </root>

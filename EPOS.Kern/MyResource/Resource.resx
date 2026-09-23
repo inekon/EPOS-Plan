@@ -24188,6 +24188,7 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
     <value>{0} (wird beim Speichern aus dem Bedarf des Projekts angelegt)</value>
+  </data>
   <data name="ADM_KOPIE_NAME" xml:space="preserve">
     <value>{0} (Kopie)</value>
   </data>
@@ -24221,5 +24222,7 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
     <value>Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“.</value>
   </data>
+  <data name="ADM_LISTE_TASTEN" xml:space="preserve">
+    <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
   </data>
 </root>
