@@ -1321,9 +1321,9 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
-(N4). Z1 umgesetzt auf dem Zweig `z1`, Abweichungen und Festlegungen in N7 bis N9; die
-Sichtabnahme unter Windows, der Merge und das Gate auf dem Merge-Stand stehen aus. Stand je Stufe
-in der Statusdatei (#438, #443).
+(N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
+dem Merge-Stand grün), Abweichungen und Festlegungen in N7 bis N9; die Sichtabnahme unter Windows
+steht aus. Stand je Stufe in der Statusdatei (#438, #443).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:

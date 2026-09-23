@@ -70,6 +70,34 @@ Bestandsweg 0) und den Hinweis ZU5 (nur im Generatorweg) hinzu; der Referenzlauf
 und der `SqlDialektPruefer` über die neuen SQL-Texte (`ZapfprofilCtrl`, Projektimport) gehören zum
 Gate auf dem Merge-Stand.
 
+**Merge und Push.** Merge `c220cbd1` von `origin/ios_migration_september` (`ac6e65ee`) nach `z1`;
+die Konflikte sind inhaltlich zusammengeführt, beide Seiten behalten: Statusdatei (Zeilen #439 bis
+#442, danach #443), `Dokumentation/LIESMICH.md` (Indexzeilen Zapfprofilgenerator und
+Gebäudesimulation), `Resource.resx` und `Resource.en-US.resx` (183 neue Schlüssel dieses Zweigs,
+72 fremde aus `origin`, 38 entfernte; keine Dopplung, `Resource.Designer.cs` mit `designer_neu.py`
+geprüft und unverändert). Die Testdatenbank ist die Fassung von `origin` (Schemastand 105) mit
+erneut eingespieltem `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` (`7544bb9d`: 15 Parameter
+des Bilanzrechenwegs angelegt, zweiter Lauf ohne Änderung, `integrity_check` ok), dazu der Nachtrag
+in `Referenzlaeufe/LIESMICH.md` (`4971556a`). Push `4971556a` auf `ios_migration_september`.
+
+Auf dem Merge-Stand (`4971556a`):
+
+- `dotnet build WP-Plan.Kern.slnf -c Release`: 0 Fehler.
+- Voller Testlauf `WP-Plan.Kern.slnf` mit den xUnit-Schaltern: 11 252 grün, 0 rot, 1 übersprungen.
+- Werkzeugtests Auslieferungsvorlage: 26/26 grün.
+- Windows-Schale mit beiden Baubefehlen: 0 Fehler.
+- `ChartProben`: 135 Bilder, 0 Verstöße.
+- `SqlDialektPruefer`: 1 672 SQL-Texte, 0 Fundstellen.
+- Referenzlauf 1030, 1007, 1017, 1045, 1046 gegen `2026-09-23_R12_Gebaeudemodell`: PASS,
+  byte-gleich.
+
+Nachzug Veraltet-Markierung (`db22001b`, nach dem Push): `ZapfprofilCtrl.Speichern` setzt im
+selben `DbVorgang` über die Vorgangsklammer `Tab_Projekt.Aenderungsdatum`
+(`MerkmalUebernahmeCtrl.MarkiereProjektGeaendert`, Mechanismus aus #441), auch beim bloßen
+Umstellen der Weiche. Neuer Fall in `ZapfprofilSpeichernTests` (Ablehnung, Rollback, Commit,
+Weiche), ohne die Änderung rot belegt; Filter `Zapfprofil|Wache|Aenderungsdatum|Veraltet` 282 grün
+(EPOS.Kern.Tests 202, EPOS.UI.Tests 80); `SqlDialektPruefer` 1 672 Texte, 0 Fundstellen.
+
 ## Gegenprüfungen
 
 Je Gruppe prüfte ein zweiter Agent nach der Umsetzung; nachgebessert wurde in eigenen Commits, wo
@@ -110,15 +138,15 @@ Eine Zweitinstanz eines Workflow-Agenten überschrieb kurz eine Datei; behoben (
 
 ## Offene Punkte
 
-- **Sichtabnahme unter Windows** durch den Anwender: Startseite → Kachel Brauchwasser → Knopf
+- **Sichtabnahme unter Windows** (offen) durch den Anwender: Startseite → Kachel Brauchwasser → Knopf
   „Zapfprofil erzeugen…"; Optionsgruppe „Rechenweg Brauchwasser" hin und zurück; Überlagerung mit
   den Reitern Tagesgang, Wochenprofil, Jahresgang und Kennzahlen; OK des Bedarfsprofil-Dialogs;
   Ergebnisdialog mit gestapelten Brauchwassersäulen (Zapfung und Zirkulation).
-- **Merge nach `ios_migration_september`:** Dort stehen die Schemaschritte 104 und 105, die
-  Testdatenbank auf 105 und die Referenzbasis R12 der Gebäudesimulation
-  (`2026-09-23_R12_Gebaeudemodell`). Beim Merge die Testdatenbank von dort übernehmen und
-  `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` erneut einspielen (LFS); danach das Gate auf
-  dem Merge-Stand samt Referenzlauf gegen die dann gültige Basis und `SqlDialektPruefer`.
+- **Merge nach `ios_migration_september`** — erledigt: Merge `c220cbd1`, Testdatenbank `7544bb9d`,
+  Push `4971556a`, Gate auf dem Merge-Stand samt Referenzlauf gegen R12 und `SqlDialektPruefer`
+  (siehe Gates).
+- **Nachzug Veraltet-Markierung** — erledigt (`db22001b`): Ein gespeichertes Zapfprofil setzt das
+  Änderungsdatum des Projekts, ein vorhandenes Simulationsergebnis gilt als veraltet.
 - **ChartProben-Messlatte:** die elf Zapfprofilbilder beim nächsten Kern-Lauf auf ubuntu in
   `Proben/ChartProben/Messlatte_2026-09-20.sha256` aufnehmen (N9, Folgen (a)).
 - **Wiki und Logbuch:** Upload der Seite „Brauchwasser-Zapfprofil" gebündelt mit den übrigen

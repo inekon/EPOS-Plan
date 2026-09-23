@@ -267,10 +267,21 @@ Nach Abschnitt 7 wurde die Stufe Z1 noch am selben Tag auf dem Zweig `z1` ausgef
   Zirkulation). Dazu der Wiki-Upload (gebündelt mit den übrigen Seiten), die Versionsnummer für
   den Logbuch-Satz aus 5.8 des Umsetzungskonzepts und die Frage aus N8 (e) 1, ob die Provenienz
   im Inhaltsvergleich mitzählt (vor Z2).
-- **Merge:** Auf `ios_migration_september` stehen inzwischen die Schemaschritte 104 und 105, die
-  Testdatenbank auf 105 und die Referenzbasis R12 der Gebäudesimulation; beim Merge deren
-  Testdatenbank übernehmen und `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` erneut
-  einspielen, danach das Gate auf dem Merge-Stand.
+- **Merge und Push:** Merge `c220cbd1` von `origin` (`ac6e65ee`) nach `z1` (Konflikte in
+  Statusdatei, `Dokumentation/LIESMICH.md` und beiden Resource-`.resx` inhaltlich
+  zusammengeführt); Testdatenbank von `origin` (Schemastand 105) mit erneut eingespieltem
+  `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` (`7544bb9d`), Nachtrag in
+  `Referenzlaeufe/LIESMICH.md`; Push `4971556a` auf `ios_migration_september`.
+- **Gate auf dem Merge-Stand:** Kern-Build 0 Fehler; 11 252 Tests grün, 1 übersprungen;
+  Werkzeugtests Auslieferungsvorlage 26/26; Windows-Schale mit beiden Baubefehlen 0 Fehler;
+  ChartProben 135 Bilder ohne Verstoß; `SqlDialektPruefer` 1 672 Texte ohne Fund; Referenzlauf der
+  fünf CI-Projekte gegen `2026-09-23_R12_Gebaeudemodell` byte-gleich.
+- **Nachzug Veraltet-Markierung** (`db22001b`): `ZapfprofilCtrl.Speichern` setzt im selben
+  `DbVorgang` `Tab_Projekt.Aenderungsdatum` (`MerkmalUebernahmeCtrl.MarkiereProjektGeaendert`,
+  Mechanismus aus #441), auch beim bloßen Umstellen der Weiche — ein gespeichertes Zapfprofil
+  markiert ein vorhandenes Simulationsergebnis als veraltet; Fall in `ZapfprofilSpeichernTests`.
+- **Hinweis:** Budgetgrenze des Anwenders 98 % — die Folgesitzung setzt mit diesem Abschnitt an
+  (Sichtabnahme, dann Z2).
 - **Regel aus dieser Stufe:** Laufende Workflow-Agenten nie anschreiben — Steuerung nur per
   Auftrag oder Datei. Hintergrund ist der Zwischenfall im Protokoll: Eine Zweitinstanz eines
   Workflow-Agenten überschrieb kurz eine Datei.
