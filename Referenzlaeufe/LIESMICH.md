@@ -420,6 +420,21 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Einfrierregel ist berührt**, und der Referenzlauf der fünf CI-Projekte ist **5/5 PASS** und byte-gleich gegen diese
 > Basis (1 761 589 Werte) (LFS-SHA-256 `fc13e3a7…`).
 
+> **Nachtrag: Katalog-Generation 9 (Auftrag #452), die Basis bleibt.** Kein Schemaschritt: Mit der Generation 9
+> sät der Gesetzeskatalog keine Zeile, sondern pflegt bestehende einmal nach (`GesetzKatalog.Nachpflege`; Konzept
+> Wirtschaftlichkeit § 3.6 und § 5; Register E7c1‑Q8, E7c2‑Q4) — Brennstoff 24 „Sonstige" in `Tab_Brennstoff_Stamm`
+> H_i 0 → 1 und H_s 0 → 1, die Katalogzeilen `KWKG_REALISIERUNGSFRIST` und `KWKG_STICHTAG_DAUERBETRIEB` Status
+> GESICHERT → ABGEKUENDIGT, Katalog-Marker 8 → 9: genau fünf Zellen im Zellvergleich über alle 130 Tabellen; Schema
+> gleich, Integritätsprüfung ok, ein zweiter Lauf pflegt nichts. Nachgezogen mit `dotnet run --project
+> Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` in zwei Schritten: erst auf der Fassung 113
+> aus E7c2/14 (LFS-SHA-256 `689a0755…` → `db143098…`, 67 743 744 Byte; Commit E7c3/11 `ffff2fe2`), dann nach dem
+> Nachzug des Zapfprofilgenerators Z2 auf dessen Fassung aus `a228185d` (LFS-SHA-256 `fc13e3a7…` → `9df1b7a5…`,
+> 67 751 936 Byte, 10 496 533 Zellen verglichen, der Z2-Testkatalog unberührt; Commit E7c3/12 `6ebb26b6`), die die
+> erste ersetzt. Schemastand unverändert 113. **Keine Einfrierregel ist berührt** (die Liste nennt von
+> `Tab_Brennstoff_Stamm` nur CO₂/SO₂/NOx/Staub, den Gesetzeskatalog gar nicht), und der Referenzlauf aller dreizehn
+> Projekte ist **13/13 PASS** gegen diese Basis, byte-gleich mit beiden Ständen der Datenbank (4 250 839 Werte in der
+> Toleranz, 399/399 CSV byte-gleich; Gate #452 auf `9c7a0023`, vervollständigt mit `387c2d9f`).
+
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
 > der Begründung zur Stufe GB und den Nachträgen zu den Schemaständen 101 bis 103 steht in
