@@ -42,7 +42,9 @@ namespace EPOS.Kern.Tests
         private static readonly string[] Dateien =
         {
             "Auslegungsparameter.cs", "Bedarfstag.cs", "Wochenreihe.cs", "Summenlinie.cs", "Din4708Kennzahl.cs",
-            "TwwSpeicherauslegung.cs", "Grossanlage.cs", "Auslegungsergebnis.cs", "ZapfprofilAuslegung.cs"
+            "TwwSpeicherauslegung.cs", "Grossanlage.cs", "Auslegungsergebnis.cs", "ZapfprofilAuslegung.cs",
+            // Stufe Z3: der portable Zufall — er dient beiden Produkten und hält die strengere Regel.
+            "ZapfZufall.cs"
         };
 
         /// <summary>Die Dateien der Bilanz (Stufe Z1) — jede Datei des Ordners gehört zu genau einer Liste.</summary>
