@@ -3,7 +3,7 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Dialog '''Brauchwasser-Zapfprofil''' erzeugt den Wärmebedarf für Brauchwasser (Trinkwarmwasser) aus Nutzungszonen: Je Zone entsteht eine Stundenreihe der Zapfenergie über das ganze Jahr, die Zirkulation läuft als eigene Teilreihe daneben. Die Summe geht als Brauchwasserbedarf in die Simulation.
 
-Der Dialog öffnet sich aus dem Bedarfsprofil-Dialog ''Brauchwasserwärme'' über den Knopf ''Zapfprofil erzeugen…'' in der Fußleiste – von der Startseite (Reiter ''Wärmebedarf'', Kachel ''Brauchwasser'') oder aus dem Gebäudekatalog über ''Brauchwasser…''. Das Zapfprofil gehört zum Projekt; der Knopf ist deshalb erst frei, wenn das Projekt gespeichert ist. Ist er gesperrt, nennt sein Hinweis den Grund.
+Der Dialog öffnet sich aus dem Bedarfsprofil-Dialog ''Brauchwasserwärme'' über den Knopf ''Zapfprofil erzeugen…'' in der Fußleiste – von der Startseite (Reiter ''Wärmebedarf'', Kachel ''Brauchwasser'') oder aus dem Gebäudekatalog des Projekts über ''Brauchwasser…''. Das Zapfprofil gehört zum Projekt; der Knopf ist deshalb erst frei, wenn das Projekt gespeichert ist. Ist er gesperrt, nennt sein Hinweis den Grund. Aus der Gebäudeverwaltung des Menüs heraus gehört der Katalog keinem Projekt; dort gibt es weder den Knopf noch die Wahl des Rechenwegs.
 
 == Rechenweg Brauchwasser ==
 
@@ -14,7 +14,7 @@ Der Dialog öffnet sich aus dem Bedarfsprofil-Dialog ''Brauchwasserwärme'' übe
 
 ''OK'' im Zapfprofil stellt die Wahl auf ''Zapfprofil''. Wer auf ''Bestandsprofile'' zurückschaltet, behält die Zonen; sie rechnen wieder, sobald die Wahl zurück auf ''Zapfprofil'' steht. Solange noch keine Zone angelegt ist, ist ''Zapfprofil'' gesperrt.
 
-Gespeichert werden Zapfprofil und Wahl zusammen mit den Profilzuordnungen: auf der Startseite mit ''OK'' des Bedarfsprofil-Dialogs, im Gebäudekatalog sofort. Lehnt das Programm das Zapfprofil beim Speichern ab, etwa weil eine Nutzungsart nicht mehr im Katalog steht, bleibt der gespeicherte Stand unberührt, und eine Meldung nennt den Grund.
+Gespeichert werden Zapfprofil und Wahl zusammen mit den Profilzuordnungen, mit ''OK'' des Bedarfsprofil-Dialogs. Lehnt das Programm das Zapfprofil beim Speichern ab, etwa weil eine Nutzungsart nicht mehr im Katalog steht, bleibt der Bedarfsprofil-Dialog offen und nennt den Grund über den Listen; Profilliste, Zonen und Wahl bleiben erhalten, der gespeicherte Stand unberührt. Nach der Korrektur speichert ein weiteres ''OK''.
 
 == Eingaben ==
 
@@ -38,18 +38,19 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 
 {{Anker|vorschau}}Die Vorschau rechnet nach jeder Eingabe neu, auf demselben Rechenweg wie die Simulation. ''Anzeigen für'' wählt die Summe aller Zonen oder eine einzelne Zone. Über den Reitern stehen Zapfung, Zirkulation, Brauchwasser gesamt und der Anteil der Zirkulation.
 
-* '''Tagesgang''' – die mittlere Stundenleistung eines Werktags, eines Samstags und eines Sonn- oder Feiertags im Monat mit dem größten Bedarf, dazu die Zirkulation.
+* '''Tagesgang''' – die mittlere Stundenleistung eines Werktags, eines Samstags und eines Sonn- oder Feiertags im Monat mit dem größten Bedarf, dazu die Zirkulation. Ferientage einer Zone gehen in keinen Tagtyp ein; in der Summe fehlen die Ferientage aller Zonen.
 * '''Wochenprofil''' – die 168 Stunden der Woche mit dem größten Tagesbedarf des Jahres.
 * '''Jahresgang''' – zwölf Monatssäulen, gestapelt aus Zapfung und Zirkulation, darunter der Anteil der Zirkulation.
 * '''Dauerlinie''' – gesperrt; der Hinweis am Reiter nennt den Grund.
-* {{Anker|kennzahlen}}'''Kennzahlen''' – Jahresbedarf der Zapfung, Zirkulation, Brauchwasser gesamt samt Zirkulationsanteil, Tagesmittel der Zapfung mit der Wassermenge in Litern, in der Ansicht einer Zone der spezifische Jahresbedarf je Bezugseinheit, dazu Volllaststunden und der größte Stundenwert. Der größte Stundenwert ist ein Bilanzwert aus der Jahresreihe und keine Größe für die Auslegung von Speicher oder Wärmeerzeuger; die Tabelle vermerkt das neben dem Wert.
+* {{Anker|kennzahlen}}'''Kennzahlen''' – Jahresbedarf der Zapfung, Zirkulation, Brauchwasser gesamt samt Zirkulationsanteil, Tagesmittel der Zapfung mit der Wassermenge in Litern, in der Ansicht einer Zone der spezifische Jahresbedarf je Bezugseinheit, dazu Volllaststunden und der größte Stundenwert. Der größte Stundenwert ist ein Bilanzwert aus der Jahresreihe und keine Größe für die Auslegung von Speicher oder Wärmeerzeuger; die Tabelle vermerkt das neben dem Wert. Die Gruppe ''Stochastik'' erklärt, was ''Stochastisch rechnen'' liefert.
 
 == Hinweise und Prüfung ==
 
 * Hinweise des Rechenwegs – etwa ein Bedarf außerhalb der Bandbreite des Katalogs – stehen am Eingabeblock der betroffenen Zone und blockieren nicht.
 * Kann eine Zone nicht gerechnet werden, trägt sie 0; die Liste vermerkt „trägt 0“, und eine Meldung nennt Zone und Grund. Die übrigen Zonen rechnen weiter.
 * Fehlen dem Projekt die Voraussetzungen für die Rechnung, etwa eine Klimaregion, zeigt die Vorschau statt der Zahlen den Grund.
-* {{Anker|ok}}''OK'' prüft, dass jede Zone einen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
+* Trägt das Projekt Netzverluste und rechnet das Zapfprofil eine Zirkulation, weist ein Hinweis darauf hin, dass derselbe Verlust doppelt zählen kann, wenn die Netzverluste die Zirkulation schon enthalten. Er blockiert nicht.
+* {{Anker|ok}}''OK'' prüft, dass jede Zone einen eigenen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt; zwei Zonen dürfen nicht gleich heißen. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
 * ''Stochastisch rechnen'' und ''Auslegung…'' in der Fußleiste sind gesperrt; ihr Hinweis nennt den Grund.
 
 == Simulation und monatlicher Verlauf ==
