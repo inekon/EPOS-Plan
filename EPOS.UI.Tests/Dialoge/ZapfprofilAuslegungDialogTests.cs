@@ -231,7 +231,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Equal("Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.", a100.GetAttribute("title"));
         IElement eco = wahl.QuerySelectorAll("option").Single(o => o.TextContent.StartsWith("Ecodesign-Zapfprofil"));
         Assert.True(eco.HasAttribute("disabled"));
-        Assert.Equal("Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.", eco.GetAttribute("title"));
+        Assert.Equal("Die Katalogzeile des Ecodesign-Zapfprofils folgt mit dem Katalogpaket.", eco.GetAttribute("title"));
         // Jeder gesperrte Eintrag trägt SEINEN Grund.
         Assert.Equal("Das DIN-4708-Profil rechnet der Kern aus der Kennzahl.",
                      wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Normtag")).GetAttribute("title"));
@@ -250,6 +250,19 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Contains("Referenztag · Katalog", texte);
         Assert.DoesNotContain(texte, t => t.StartsWith("A100-Referenzprofil"));
         Assert.Contains(texte, t => t.StartsWith("Ecodesign-Zapfprofil"));
+
+        // Ebenso das Ecodesign-Zapfprofil (N11 (e), Stufe Z3): Führt der Katalog eine Zeile der Art 5,
+        // steht sie als wählbarer Katalogtag da, und die Sperrzeile entfällt.
+        ZapfprofilAuslegungStartDaten mitEco = Start();
+        mitEco.Bedarfstage.Add(new ZapfprofilBedarfstagDaten { Id = 11, Bezeichner = "Ecodesign-Zapfprofil L", Herkunft = "frei",
+                                                              Quelle = ZapfprofilBedarfstagquelle.Ecodesign });
+        var eco2 = Aufbauen(mitEco);
+        IElement wahl2 = Feld(eco2, "Bedarfstag", "select");
+        IElement katalogtag = wahl2.QuerySelectorAll("option").Single(o => o.TextContent == "Ecodesign-Zapfprofil L · frei");
+        Assert.False(katalogtag.HasAttribute("disabled"));
+        Assert.DoesNotContain(wahl2.QuerySelectorAll("option"), o => o.HasAttribute("disabled")
+                                                                    && o.TextContent.StartsWith("Ecodesign-Zapfprofil"));
+        Assert.Contains(wahl2.QuerySelectorAll("option"), o => o.TextContent.StartsWith("A100-Referenzprofil"));
     }
 
     [Fact]

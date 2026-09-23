@@ -73584,7 +73584,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogzeile des Ecodesign-Zapfprofils folgt mit dem Katalogpaket. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_ECODESIGN {
             get {

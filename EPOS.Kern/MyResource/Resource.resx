@@ -24658,7 +24658,7 @@ Möchten Sie das zulassen?</value>
     <value>Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)</value>
   </data>
   <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
-    <value>Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.</value>
+    <value>Die Katalogzeile des Ecodesign-Zapfprofils folgt mit dem Katalogpaket.</value>
   </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
