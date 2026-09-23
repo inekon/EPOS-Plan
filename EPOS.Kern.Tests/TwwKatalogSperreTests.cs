@@ -167,7 +167,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Eine Datenbank vor Schritt 114 führt die Kategorien nicht: Löschen und Dublettenscan
+        /// Eine Datenbank vor Schritt 115 führt die Kategorien nicht: Löschen und Dublettenscan
         /// laufen ohne den Block, statt an der fehlenden Tabelle zu scheitern.
         /// </summary>
         [Fact]
@@ -263,7 +263,7 @@ namespace EPOS.Kern.Tests
         /// „Speichern unter" nimmt die Kategorien der Vorlage mit — Werte, Reihenfolge und Provenienz
         /// unverändert, Status wie die Kopie, <c>ReadOnly = 0</c> —, sodass die neue Version
         /// stochastisch rechnet wie die alte; die Vorlage behält ihre. Ohne Kategorientabelle (Stand
-        /// vor Schritt 114) läuft „Speichern unter" wie zuvor.
+        /// vor Schritt 115) läuft „Speichern unter" wie zuvor.
         /// </summary>
         [Fact]
         public void Speichern_unter_nimmt_die_Zapfkategorien_der_Vorlage_mit()

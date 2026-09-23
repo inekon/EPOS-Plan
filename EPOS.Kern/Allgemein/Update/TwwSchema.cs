@@ -6,7 +6,7 @@ namespace WindowsFormsApplication1
     /// <b>Die DDL des Zapfprofilgenerators</b> — Schemaschritt T1 „Katalog, Zonen, Projekt"
     /// (<c>Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c>,
     /// Abschnitte 3.1 und 3.2, Stufe Z0) und Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
-    /// Schritt 114, <see cref="AnweisungenT2"/>).
+    /// Schritt 115, <see cref="AnweisungenT2"/>).
     ///
     /// <para><b>Eine Quelle für Migration und Testdatenbank.</b> Dieselben zehn Tabellen
     /// legen <c>SchemaMigration</c> beim Programmstart und <c>Werkzeuge/Testdatenbankschema</c>
@@ -498,7 +498,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Anweisungen des Schemaschritts T2 (Schritt 114, Stufe Z3): die Zapfkategorien.
+        /// Die Anweisungen des Schemaschritts T2 (Schritt 115, Stufe Z3): die Zapfkategorien.
         /// Sie verweisen auf <see cref="TAB_TWW_NUTZUNGSART_STAMM"/> und laufen deshalb NACH
         /// <see cref="Anweisungen"/>; ein eigener Index entfällt, weil der natürliche Schlüssel
         /// mit <c>ID_Nutzungsart</c> beginnt. Reines DDL, wiederholbar über <c>IF NOT EXISTS</c>.

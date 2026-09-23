@@ -57,7 +57,8 @@ Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "T
 und keine Zeile in Tab_TwwProjekt - kein Projekt steht auf dem Generator, der Referenzlauf bleibt
 unberuehrt.
 
-VORAUSSETZUNG. Schemastand 114 (die zehn Tww-Tabellen und die Zapfkategorien), nachgezogen mit
+VORAUSSETZUNG. Schemastand 115 (die zehn Tww-Tabellen und die Zapfkategorien aus Schritt 115),
+nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
 WIEDERHOLBAR UND NACHFUEHREND. Jede Zeile wird ueber ihren natuerlichen Schluessel gesucht, fehlt
@@ -470,7 +471,7 @@ def main():
                    if zahl(con, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", t) == 0]
         if fehlend:
             print(f"Schemastand {stand}: es fehlen {', '.join(fehlend)} - erst Werkzeuge/Testdatenbankschema"
-                  + (" (die Zapfkategorien brauchen den Schemaschritt T2)" if TABELLE_KATEGORIEN in fehlend else "")
+                  + (" (die Zapfkategorien brauchen den Schemaschritt T2, Schritt 115)" if TABELLE_KATEGORIEN in fehlend else "")
                   + ". Abbruch ohne Schreiben.")
             return 2
 

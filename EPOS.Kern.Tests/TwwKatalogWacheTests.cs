@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
             var funde = new List<string>();
             foreach (string t in KOEPFE.Concat(OHNE_VERSION))
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 114).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 115).");
                 long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" = $w", TwwSchema.STATUS_AUSLIEFERUNG);
                 if (n > 0) funde.Add(t + ": " + n);
             }
@@ -207,7 +207,7 @@ namespace EPOS.Kern.Tests
             geprueft = 0;
             foreach (string t in KOEPFE.Concat(OHNE_VERSION).Concat(KINDER))
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 114).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 115).");
                 List<string> spalten = Spalten(c, t);
                 List<string> praefixe = spalten.Where(s => s == "Herkunftsart" ||
                                                            s.EndsWith("_Herkunftsart", StringComparison.Ordinal))

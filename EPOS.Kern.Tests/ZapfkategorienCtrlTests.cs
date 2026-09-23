@@ -10,7 +10,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Der Kern liest Zapfkategorien und Parameter der Stochastik aus dem Katalog</b>
     /// (Umsetzungskonzept Zapfprofilgenerator 3.1 T2, 4.4; Stufe Z3, Gruppe 2): je Nutzungsart in
-    /// der Reihenfolge des Katalogs, samt Kappung und Provenienz; ohne Tabelle (Stand vor 114)
+    /// der Reihenfolge des Katalogs, samt Kappung und Provenienz; ohne Tabelle (Stand vor 115)
     /// leer. Die fünf Parameter <c>Zapfprofil.Stochastik.*</c> kommen mit dem Parametersatz der
     /// Katalogversion, und die Vorgaben der Projektzeile wirken: Seed 1, zehn Realisierungen,
     /// Realisierungen des Bedarfstags = ⌈Vielfaches · 1/(1 − p)⌉.

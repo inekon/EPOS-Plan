@@ -163,7 +163,7 @@ namespace WindowsFormsApplication1
                     foreach (KatalogDatenblock b in k.Datenbloecke)
                     {
                         // Ein Block, dessen Tabelle diese Datenbank noch nicht fuehrt (etwa die
-                        // Zapfkategorien vor Schritt 114), hat nichts zu loeschen.
+                        // Zapfkategorien vor Schritt 115), hat nichts zu loeschen.
                         if (!BlocktabelleDa(v, b)) continue;
                         v.Ausfuehren(
                             "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",

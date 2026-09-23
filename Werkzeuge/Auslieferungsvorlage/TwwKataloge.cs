@@ -361,7 +361,7 @@ namespace Auslieferungsvorlage
                     if (!File.Exists(d)) throw new InvalidDataException(t + ".csv fehlt im Paketteil.");
                     if (!vorhanden.Contains(t))
                     {
-                        // Etwa die Zapfkategorien in einer Quelle vor Schritt 114: benannt uebergangen.
+                        // Etwa die Zapfkategorien in einer Quelle vor Schritt 115: benannt uebergangen.
                         _bericht.Zeile("uebergangen: " + t + ".csv — die Tabelle fehlt im Schema der Quelle");
                         zeilen[t] = new List<Dictionary<string, object>>();
                         orte[t] = new List<string>();

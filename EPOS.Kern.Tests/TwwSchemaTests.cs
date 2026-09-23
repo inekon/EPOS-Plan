@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// Die DDL des Zapfprofilgenerators (<see cref="TwwSchema"/>, Schemaschritte T1 und T2,
     /// Umsetzungskonzept Zapfprofilgenerator 3.1/3.2) gegen eine leere Datenbank im
-    /// Speicher: zehn Tabellen aus T1 und die Zapfkategorien aus T2 (Schritt 114), STRICT,
+    /// Speicher: zehn Tabellen aus T1 und die Zapfkategorien aus T2 (Schritt 115), STRICT,
     /// wiederholbar, Beziehungen über IDs, und die Prüfungen greifen. Alle Werte sind erfunden (Konzept Kapitel 6 (a)) — die Fälle
     /// prüfen Struktur, nie eine Normzahl.
     /// </summary>
@@ -252,13 +252,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schemaschritt T2 (Schritt 114) auf einer Datenbank mit Stand 113: Die zehn Tabellen
+        /// Der Schemaschritt T2 (Schritt 115) auf einer Datenbank mit Stand 114: Die zehn Tabellen
         /// aus T1 stehen samt einer Katalogkette, T2 legt die Zapfkategorien daneben — wiederholbar,
         /// ohne eine Zeile zu berühren. Eine Kategorie gehört genau einer Nutzungsart: kein Verweis
         /// ins Leere, kein Name doppelt je Nutzungsart, und sie geht mit ihrer Nutzungsart.
         /// </summary>
         [Fact]
-        public void Schritt_T2_legt_die_Zapfkategorien_auf_Stand_113_an()
+        public void Schritt_T2_legt_die_Zapfkategorien_auf_Stand_114_an()
         {
             using SqliteConnection c = Datenbank();
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
@@ -293,26 +293,26 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 114 steht in der Migration der Schale NACH 113 und bedient sich derselben
-        /// Quelle (<see cref="TwwSchema.AnweisungenT2"/>); das Ziel steht mindestens auf 114.
-        /// Gelesen wird der Quelltext — die Schale ist kein Teil des Kern-Filters.
+        /// Der Schritt 115 steht in der Migration der Schale NACH 114 (Kühlbetrieb am Erzeuger) und
+        /// bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT2"/>); das Ziel steht
+        /// mindestens auf 115. Gelesen wird der Quelltext — die Schale ist kein Teil des Kern-Filters.
         /// </summary>
         [Fact]
-        public void Schritt_114_steht_in_der_Migration_nach_113()
+        public void Schritt_115_steht_in_der_Migration_nach_114()
         {
-            Assert.True(SchemaStand.Zielversion >= 114, "Zielstand " + SchemaStand.Zielversion + " liegt unter 114.");
+            Assert.True(SchemaStand.Zielversion >= 115, "Zielstand " + SchemaStand.Zielversion + " liegt unter 115.");
 
             string datei = Migrationsquelle();
             if (datei == null) return;   // Quelle nicht im Baum: nichts zu pruefen
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_114_ZAPFKATEGORIEN = 114;", text, StringComparison.Ordinal);
-            int ort113 = text.IndexOf("new Schritt(SCHRITT_113_GASE_NM3", StringComparison.Ordinal);
-            int ort114 = text.IndexOf("new Schritt(SCHRITT_114_ZAPFKATEGORIEN", StringComparison.Ordinal);
-            Assert.True(ort113 > 0 && ort114 > ort113, "Schritt 114 steht nicht nach 113 in der Schrittliste.");
+            Assert.Contains("public const int SCHRITT_115_ZAPFKATEGORIEN = 115;", text, StringComparison.Ordinal);
+            int ort114 = text.IndexOf("new Schritt(SCHRITT_114_KUEHLUNG_ERZEUGER", StringComparison.Ordinal);
+            int ort115 = text.IndexOf("new Schritt(SCHRITT_115_ZAPFKATEGORIEN", StringComparison.Ordinal);
+            Assert.True(ort114 > 0 && ort115 > ort114, "Schritt 115 steht nicht nach 114 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_114_Zapfkategorien(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 114 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_115_Zapfkategorien(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 115 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             Assert.Contains("TwwSchema.AnweisungenT2", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }

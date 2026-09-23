@@ -149,7 +149,7 @@ namespace WindowsFormsApplication1
             {
                 var jeFk = new Dictionary<int, List<DataRow>>();
                 // Eine Blocktabelle, die diese Datenbank noch nicht fuehrt (die Zapfkategorien
-                // vor Schritt 114), ist ein leerer Block - kein Lesefehler.
+                // vor Schritt 115), ist ein leerer Block - kein Lesefehler.
                 DataTable bt = DataRepository.TabelleVorhanden(b.Tabelle)
                     ? DataRepository.GetDataTable(
                         "SELECT * FROM [" + b.Tabelle + "] ORDER BY [" + b.FkSpalte + "], " + b.Sortierung)

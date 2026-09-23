@@ -22,7 +22,7 @@ namespace WindowsFormsApplication1
     /// ihr Tagesgangsatz mit (er ist NOT NULL an ihr), und zu Tagesgangsatz, Bedarfstag und
     /// Nutzungsart ihre Kindzeilen unter <c>catalogchildren/</c> — Tagesgänge, Ereignisse und
     /// die Zapfkategorien (Schemaschritt T2). Eine Kindtabelle, die die Zieldatenbank nicht
-    /// führt (Stand vor 114), bleibt beim Import liegen.</para>
+    /// führt (Stand vor 115), bleibt beim Import liegen.</para>
     ///
     /// <para><b>Fehlt die Zeile am Ziel, wird sie mitgenommen</b> — als EIGENE Zeile mit
     /// <c>Status = 'IMPORT'</c>, <c>ReadOnly = 0</c>, ohne <c>ID_Vorlage</c>, mit ihrem
@@ -189,7 +189,7 @@ namespace WindowsFormsApplication1
                 }
                 if (kinder.Any(x => string.Equals(x.name, fest[0].Kind, StringComparison.OrdinalIgnoreCase))) continue;
                 // Eine Kindtabelle, die diese Datenbank noch nicht führt (die Zapfkategorien vor
-                // Schritt 114), kann weder verglichen noch eingespielt werden — sie bleibt liegen.
+                // Schritt 115), kann weder verglichen noch eingespielt werden — sie bleibt liegen.
                 if (!DataRepository.TabelleVorhanden(fest[0].Kind)) continue;
                 kinder.Add(new KindMeta { name = fest[0].Kind, parent = fest[0].Kopf, parentColumn = fest[0].Spalte, pk = "ID" });
             }
@@ -296,7 +296,7 @@ namespace WindowsFormsApplication1
             foreach (var k in TWW_KINDER)
             {
                 if (!katalogRefs.TryGetValue(k.Kopf, out HashSet<long> koepfe) || koepfe.Count == 0) continue;
-                if (!DataRepository.TabelleVorhanden(k.Kind)) continue;   // Stand vor 114: keine Zapfkategorien
+                if (!DataRepository.TabelleVorhanden(k.Kind)) continue;   // Stand vor 115: keine Zapfkategorien
 
                 DataTable alle = null;
                 foreach (long id in koepfe.OrderBy(x => x))

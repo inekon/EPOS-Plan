@@ -98,7 +98,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="Zapfkategoriensatz.Aus(IReadOnlyList{Zapfkategorie}, Nutzungsart, string)"/>):
         /// Fehlen die Kategorien einer Nutzungsart, lehnt eine stochastisch gerechnete Zone benannt
         /// ab (<see cref="ZapfEingabefehler.StochastikUngueltig"/>), eine deterministische braucht
-        /// sie nicht. Ohne Tabelle (Stand vor Schritt 114, älterer iOS-Seed) leer.
+        /// sie nicht. Ohne Tabelle (Stand vor Schritt 115, älterer iOS-Seed) leer.
         /// </summary>
         internal static IReadOnlyList<Zapfkategorie> Zapfkategorien(IEnumerable<int> idNutzungsarten)
         {

@@ -670,7 +670,7 @@ namespace WindowsFormsApplication1
         /// <paramref name="nach"/> (Kopierstellen „Speichern unter" und neue Version aus
         /// <see cref="TagesgangSpeichern"/>): Werte, Reihenfolge, Provenienz und interner Beleg wie
         /// im Original — die Werte sind unverändert —, Status wie die Kopie (<c>EIGEN</c>),
-        /// <c>ReadOnly = 0</c>. Ohne Tabelle (Stand vor Schritt 114) nichts.
+        /// <c>ReadOnly = 0</c>. Ohne Tabelle (Stand vor Schritt 115) nichts.
         /// </summary>
         private static void KategorienKopieren(DbVorgang v, int von, int nach)
         {

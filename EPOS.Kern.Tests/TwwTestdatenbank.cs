@@ -52,7 +52,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die zehn Tabellen und ihre Indizes — genau wie Schemaschritt T1 —, mit
-        /// <paramref name="mitT2"/> dazu die Zapfkategorien (Schemaschritt T2, Schritt 114).
+        /// <paramref name="mitT2"/> dazu die Zapfkategorien (Schemaschritt T2, Schritt 115).
         /// </summary>
         public static void SchemaAnlegen(bool mitT2 = true)
         {

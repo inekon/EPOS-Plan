@@ -318,7 +318,7 @@ namespace WindowsFormsApplication1
             // Nutzungsart: Sie gehoeren zu ihrer Katalogversion, gehen mit ihr (Kaskade)
             // und zaehlen zum Inhalt. Eine Kategorie mit ReadOnly sperrt ihre Nutzungsart
             // wie deren eigenes ReadOnly (KatalogBereinigung.Sperrgrund). Einer Datenbank
-            // ohne die Tabelle (Stand vor 114) fehlt der Block nur.
+            // ohne die Tabelle (Stand vor 115) fehlt der Block nur.
             // ------------------------------------------------------------------------
             new KatalogDefinition
             {

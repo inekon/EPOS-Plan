@@ -227,7 +227,7 @@ namespace WindowsFormsApplication1
         /// Die Zapfkategorien des Katalogs (T2, 4.4) für die Nutzungsarten der Zonen — gelesen von
         /// <c>ZapfprofilCtrl.Eingang</c> aus <c>Tab_TwwZapfkategorie_STAMM</c> je Nutzungsart in der
         /// Reihenfolge des Katalogs; leer, solange der Katalog keine trägt oder die Datenbank die
-        /// Tabelle nicht führt (Stand vor 114). Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
+        /// Tabelle nicht führt (Stand vor 115). Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
         /// (<see cref="ProjektStand.JahresreiheStochastisch"/>) und des Auslegungsensembles; fehlen die
         /// Kategorien einer Nutzungsart dort, lehnt die Zone benannt ab.
         /// </summary>
