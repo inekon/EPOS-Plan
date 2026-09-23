@@ -155,6 +155,13 @@ namespace WindowsFormsApplication1
         /// <summary>Raster der Rundung über dem Ende der Nenninhaltsliste [l] (INEKON-Setzung aus V4).</summary>
         internal const string NENNINHALT_RASTER = "Speicherauslegung.Nenninhalt.Raster";
 
+        /// <summary>
+        /// Präfix der Vorgabe der Nenninhaltsliste [l]: <c>Speicherauslegung.Nenninhalt.Liste.{k}</c>
+        /// (k = 1 … n, INEKON-Setzung, neutral). Die Einstellung <c>Zapfprofil.Nenninhalte</c> geht
+        /// ihr vor (Stufe Z2, Gruppe 2); die Werte stehen im Katalog, nie im Code.
+        /// </summary>
+        internal const string NENNINHALT_LISTE = "Speicherauslegung.Nenninhalt.Liste.";
+
         // --- Großanlage nach DVGW W 551 (4.7) ------------------------------------------------
 
         /// <summary>Schwelle des Speichervolumens einer Großanlage [l].</summary>

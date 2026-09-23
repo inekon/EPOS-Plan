@@ -71370,6 +71370,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Name des konstruierten Bedarfstags ist in dieser Katalogversion schon vergeben. ähnelt.
+        /// </summary>
+        public static string ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag). ähnelt.
+        /// </summary>
+        public static string ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude gibt es nicht. ähnelt.
         /// </summary>
         public static string ZPG_SPEICHER_GEBAEUDE_FEHLT {

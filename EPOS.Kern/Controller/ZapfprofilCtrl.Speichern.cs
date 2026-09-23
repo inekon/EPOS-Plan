@@ -46,7 +46,13 @@ namespace WindowsFormsApplication1
         GebaeudeFremd = 11,
 
         /// <summary>Eine Projektgröße liegt außerhalb ihrer Wertemenge (Perzentil, Methode, Speicherart …).</summary>
-        ProjektUngueltig = 12
+        ProjektUngueltig = 12,
+
+        /// <summary>Der konstruierte Bedarfstag ist ungültig (ohne Namen, ohne Ereignis, Ereignis außerhalb des Tages).</summary>
+        BedarfstagUngueltig = 13,
+
+        /// <summary>Der Name des konstruierten Bedarfstags ist in seiner Katalogversion schon vergeben.</summary>
+        BedarfstagNameBelegt = 14
     }
 
     /// <summary>Die benannte Ablehnung des Schreibwegs: Grund, betroffene Zone (leer = Projekt) und Klartext.</summary>
@@ -134,13 +140,25 @@ namespace WindowsFormsApplication1
             if (dz != null) foreach (DataRow r in dz.Rows) bekannteZonen.Add(Ganz(r, "ID"));
 
             foreach (ZonenStand z in zonen) ZonePruefen(v, idProjekt, z, bekannteZonen);
-            if (stand.Projekt != null) ProjektPruefen(stand.Projekt);
-            if (stand.Projekt?.IdBedarfstag != null
+
+            // Ein konstruierter Bedarfstag (Z2, Gruppe 2) entsteht im selben Vorgang als
+            // Katalogzeile; die Projektzeile zeigt danach auf ihn (Quelle Konstruktor).
+            BedarfstagKatalogzeile entwurf = stand.BedarfstagEntwurf;
+            ProjektStand projektZeile = stand.Projekt;
+            if (entwurf != null)
+            {
+                EntwurfPruefen(v, entwurf);
+                projektZeile = (projektZeile ?? ProjektVorgabe(v))
+                               with { BedarfstagQuelle = ZapfBedarfstagquelle.Konstruktor, IdBedarfstag = null };
+            }
+            if (projektZeile != null) ProjektPruefen(projektZeile);
+            if (projektZeile?.IdBedarfstag != null
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE ID = ?",
-                          stand.Projekt.IdBedarfstag.Value) == 0)
+                          projektZeile.IdBedarfstag.Value) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagFehlt, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — der Bedarfstag " + stand.Projekt.IdBedarfstag.Value
+                    "Das Zapfprofil kann nicht gespeichert werden — der Bedarfstag " + projektZeile.IdBedarfstag.Value
                     + " steht nicht im Katalog.");
+            if (entwurf != null) projektZeile = projektZeile with { IdBedarfstag = BedarfstagAnlegen(v, entwurf) };
 
             // --- 2. Projektzeile ---------------------------------------------------------------
             string weg = stand.Weg == BrauchwasserWeg.Generator ? TwwSchema.WEG_GENERATOR : TwwSchema.WEG_BESTAND;
@@ -149,7 +167,7 @@ namespace WindowsFormsApplication1
                                         new DbParam("@projekt", idProjekt));
             bool zeileDa = vorhanden != null && vorhanden != DBNull.Value;
             int idZeile;
-            if (stand.Projekt == null)
+            if (projektZeile == null)
             {
                 if (zeileDa)
                 {
@@ -164,7 +182,7 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                List<KeyValuePair<string, object>> werte = ProjektWerte(stand.Projekt, weg, jetzt);
+                List<KeyValuePair<string, object>> werte = ProjektWerte(projektZeile, weg, jetzt);
                 if (zeileDa)
                 {
                     idZeile = Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
@@ -218,9 +236,9 @@ namespace WindowsFormsApplication1
             using (Vorgangsklammer.Setzen(v))
                 MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
 
-            ProjektStand projekt = stand.Projekt == null ? null
-                : stand.Projekt with { Id = idZeile, Weg = stand.Weg, Aenderungsdatum = jetzt };
-            return new ZapfprofilStand(stand.Weg, geschrieben, projekt);
+            ProjektStand projekt = projektZeile == null ? null
+                : projektZeile with { Id = idZeile, Weg = stand.Weg, Aenderungsdatum = jetzt };
+            return new ZapfprofilStand(stand.Weg, geschrieben, projekt);   // ohne Entwurf: er ist jetzt Katalogzeile
         }
 
         // =================================================================================

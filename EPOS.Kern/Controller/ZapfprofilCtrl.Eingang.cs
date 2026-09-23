@@ -107,13 +107,24 @@ namespace WindowsFormsApplication1
         /// Vorgabewerte im Quelltext gibt (<see cref="ZapfprofilStand"/>). Spalten ohne Vorgabe
         /// bleiben <c>null</c> (= Vorgabe des Verfahrens). <c>null</c> ohne Tabelle.
         /// </summary>
-        internal static ProjektStand ProjektVorgabe()
-        {
-            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PROJEKT)) return null;
+        internal static ProjektStand ProjektVorgabe() => ProjektVorgabe(null);
 
-            DataTable info = DataRepository.GetDataTable(
-                "SELECT name, dflt_value FROM pragma_table_info(?) ORDER BY cid",
-                new DbParam("@tabelle", TwwSchema.TAB_TWW_PROJEKT));
+        /// <summary>
+        /// Dieselben Vorgaben, gelesen im übergebenen Vorgang (<c>null</c> = eigene Verbindung) —
+        /// der Schreibweg braucht sie, wenn ein konstruierter Bedarfstag die erste Projektzeile
+        /// anlegt (Z2, Gruppe 2).
+        /// </summary>
+        internal static ProjektStand ProjektVorgabe(DbVorgang v)
+        {
+            const string SQL_INFO = "SELECT name, dflt_value FROM pragma_table_info(?) ORDER BY cid";
+            if (v == null ? !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PROJEKT)
+                          : Anzahl(v, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                   TwwSchema.TAB_TWW_PROJEKT) == 0)
+                return null;
+
+            DataTable info = v == null
+                ? DataRepository.GetDataTable(SQL_INFO, new DbParam("@tabelle", TwwSchema.TAB_TWW_PROJEKT))
+                : v.Lese(SQL_INFO, new DbParam("@tabelle", TwwSchema.TAB_TWW_PROJEKT));
             if (info == null || info.Rows.Count == 0) return null;
 
             var zeile = new DataTable();

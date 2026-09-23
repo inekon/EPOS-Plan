@@ -24221,4 +24221,10 @@ Do you want to allow this?</value>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Catalogue list – ↑ and ↓ change the row, Home and End jump to the first and the last row</value>
   </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
+    <value>the constructed design day is invalid (no name or no draw-off event within the day).</value>
+  </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT" xml:space="preserve">
+    <value>the name of the constructed design day is already used in this catalogue version.</value>
+  </data>
 </root>

@@ -96,5 +96,33 @@ namespace EPOS.Kern.Tests
         /// <summary>Ein Bedarfstag aus Ereignissen.</summary>
         internal static Bedarfstag Tag(params Zapfereignis[] e)
             => Bedarfstag.AusEreignissen(ZapfBedarfstagquelle.Konstruktor, "Testtag (fiktiv)", e, Fiktiv);
+
+        /// <summary>Die erfundene Vorgabe der Nenninhaltsliste [l] — wie im Einspielskript des Testkatalogs.</summary>
+        internal static readonly double[] NENNINHALTE = { 120.0, 250.0, 400.0, 650.0, 900.0, 1400.0 };
+
+        /// <summary>
+        /// Legt auf der ARBEITSKOPIE die Auslegungsparameter (<see cref="Werte"/>) samt Vorgabe der
+        /// Nenninhaltsliste in der Katalogversion <paramref name="version"/> an, soweit sie fehlen —
+        /// dieselben erfundenen Werte wie <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c>.
+        /// Die Repo-Testdatenbank trägt sie erst nach dem Nachzug beim Merge der Stufe Z2 (N10 (m));
+        /// so rechnen die Fälle schon vorher und ohne Python. Liefert die Zahl der neuen Zeilen.
+        /// </summary>
+        internal static int ParameterEinspielen(string version = "TEST-1")
+        {
+            Dictionary<string, double> werte = Werte();
+            for (int k = 0; k < NENNINHALTE.Length; k++)
+                werte[ZapfAuslegungParameter.NENNINHALT_LISTE + (k + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)] = NENNINHALTE[k];
+            int neu = 0;
+            foreach (KeyValuePair<string, double> kv in werte)
+            {
+                object da = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Katalogversion = ?",
+                    new DbParam("@s", kv.Key), new DbParam("@k", version));
+                if (System.Convert.ToInt64(da, System.Globalization.CultureInfo.InvariantCulture) > 0) continue;
+                TwwTestdatenbank.ParameterAnlegen(kv.Key, kv.Value, version);
+                neu++;
+            }
+            return neu;
+        }
     }
 }

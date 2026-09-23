@@ -24228,4 +24228,10 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
   </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
+    <value>der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag).</value>
+  </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT" xml:space="preserve">
+    <value>der Name des konstruierten Bedarfstags ist in dieser Katalogversion schon vergeben.</value>
+  </data>
 </root>

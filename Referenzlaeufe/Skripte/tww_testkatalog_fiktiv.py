@@ -19,7 +19,8 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
     Projektkopie der Testdatenbank rechenbar (Stufe Z1, Gruppe 2);
   - die Parameter der Auslegung (Schluessel wie ZapfAuslegungParameter in
     EPOS.Kern/Allgemein/Zapfprofil/Auslegungsparameter.cs: Summenlinie, DIN-4708-Kennzahl samt
-    Zapfbloecken des Profils, Speicherauslegung, Grossanlage, Konstruktorregel) mit runden,
+    Zapfbloecken des Profils, Speicherauslegung samt Vorgabe der Nenninhaltsliste, Grossanlage,
+    Konstruktorregel) mit runden,
     ERFUNDENEN Werten neben jeder Normvorgabe (Stufe Z2);
   - drei Bedarfstage mit erfundenen Ereignissen: Konstruktor, Referenztag, Normtag
     (Quelle_Art 4, 2, 3) - keiner ist ein Normprofil;
@@ -160,6 +161,13 @@ PARAMETER += [
     ("Speicherauslegung.Klassisch.Spreizung", 45.0, "K"),
     ("Speicherauslegung.Klassisch.Warnfaktor", 2.5, "-"),
     ("Speicherauslegung.Nenninhalt.Raster", 500.0, "l"),
+    # Die Vorgabe der Nenninhaltsliste (Stufe Z2, Gruppe 2): erfundene, neutrale Stufen - keine Produktgroessen.
+    ("Speicherauslegung.Nenninhalt.Liste.1", 120.0, "l"),
+    ("Speicherauslegung.Nenninhalt.Liste.2", 250.0, "l"),
+    ("Speicherauslegung.Nenninhalt.Liste.3", 400.0, "l"),
+    ("Speicherauslegung.Nenninhalt.Liste.4", 650.0, "l"),
+    ("Speicherauslegung.Nenninhalt.Liste.5", 900.0, "l"),
+    ("Speicherauslegung.Nenninhalt.Liste.6", 1400.0, "l"),
     ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
     ("W551.Grossanlage.Leitungsinhalt", 4.0, "l"),
     ("W551.Leitungsinhalt.JeMeter", 0.2, "l/m"),

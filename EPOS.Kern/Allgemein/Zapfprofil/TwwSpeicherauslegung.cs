@@ -58,6 +58,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Vorgabe der Liste aus dem Parametersatz: die Schlüssel
+        /// <c>Speicherauslegung.Nenninhalt.Liste.{k}</c>, geordnet nach k (ganze Zahl ≥ 1);
+        /// <c>null</c>, wenn der Satz keinen trägt. Ein Schlüssel, dessen Glied keine ganze Zahl
+        /// ist, oder eine ungültige Folge wird benannt abgelehnt.
+        /// </summary>
+        internal static Nenninhaltsliste AusParametern(Parametersatz ps)
+        {
+            if (ps == null) return null;
+            var werte = new SortedDictionary<int, double>();
+            foreach (string s in ps.Werte.Keys)
+            {
+                if (!s.StartsWith(ZapfAuslegungParameter.NENNINHALT_LISTE, StringComparison.Ordinal)) continue;
+                string glied = s.Substring(ZapfAuslegungParameter.NENNINHALT_LISTE.Length);
+                if (!int.TryParse(glied, System.Globalization.NumberStyles.None,
+                                  System.Globalization.CultureInfo.InvariantCulture, out int k) || k < 1)
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
+                        "Nicht rechenbar — der Parameter „" + s + "“ nennt keine Stelle der Nenninhaltsliste.");
+                werte[k] = ps.Wert(s);
+            }
+            return werte.Count == 0 ? null : Aus(werte.Values);
+        }
+
+        /// <summary>
         /// Der kleinste Nenninhalt ≥ V; über dem Listenende V aufgerundet auf das Raster
         /// (<paramref name="ueberEnde"/> = true).
         /// </summary>
