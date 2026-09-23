@@ -40714,6 +40714,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfung „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string KOH_PRUEFUNG_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("KOH_PRUEFUNG_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ führt eine eigene, INAKTIVE PV-Vergütung, während das Stammprojekt „{1}“ eine aktive führt — gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt übernehmen“ im Reiter Ertrag/Bonus löst es auf. ähnelt.
         /// </summary>
         public static string KOH_PV_EIGENE_INAKTIV {
@@ -40746,6 +40755,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOH_STROMST_ERLAUBNIS {
             get {
                 return ResourceManager.GetString("KOH_STROMST_ERLAUBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffseite der Energiesteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KOH_TP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Doppelansatz ähnelt.
+        /// </summary>
+        public static string KOH_TP_CO2_DOPPEL {
+            get {
+                return ResourceManager.GetString("KOH_TP_CO2_DOPPEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelzählung der Stromsteuerbefreiung ähnelt.
+        /// </summary>
+        public static string KOH_TP_DOPPELZAEHLUNG {
+            get {
+                return ResourceManager.GetString("KOH_TP_DOPPELZAEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlaubnisschwelle der Stromsteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_ERLAUBNIS {
+            get {
+                return ResourceManager.GetString("KOH_TP_ERLAUBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelpflege der Hilfsenergie ähnelt.
+        /// </summary>
+        public static string KOH_TP_HILFSENERGIE {
+            get {
+                return ResourceManager.GetString("KOH_TP_HILFSENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenlücken der KWKG-Rechnung ähnelt.
+        /// </summary>
+        public static string KOH_TP_KWKG {
+            get {
+                return ResourceManager.GetString("KOH_TP_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mischlage § 53/§ 53a neben § 54 ähnelt.
+        /// </summary>
+        public static string KOH_TP_MISCHLAGE {
+            get {
+                return ResourceManager.GetString("KOH_TP_MISCHLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der PV-Vergütung ähnelt.
+        /// </summary>
+        public static string KOH_TP_PV_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KOH_TP_PV_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromseite der Stromsteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_STROM {
+            get {
+                return ResourceManager.GetString("KOH_TP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strommix-Rückfall ähnelt.
+        /// </summary>
+        public static string KOH_TP_STROMMIX {
+            get {
+                return ResourceManager.GetString("KOH_TP_STROMMIX", resourceCulture);
             }
         }
         

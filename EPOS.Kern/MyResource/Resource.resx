@@ -24453,4 +24453,37 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
   </data>
+  <data name="KOH_PRUEFUNG_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Prüfung „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="KOH_TP_HILFSENERGIE" xml:space="preserve">
+    <value>Doppelpflege der Hilfsenergie</value>
+  </data>
+  <data name="KOH_TP_PV_HERKUNFT" xml:space="preserve">
+    <value>Herkunft der PV-Vergütung</value>
+  </data>
+  <data name="KOH_TP_CO2_DOPPEL" xml:space="preserve">
+    <value>CO₂-Doppelansatz</value>
+  </data>
+  <data name="KOH_TP_STROMMIX" xml:space="preserve">
+    <value>Strommix-Rückfall</value>
+  </data>
+  <data name="KOH_TP_KWKG" xml:space="preserve">
+    <value>Datenlücken der KWKG-Rechnung</value>
+  </data>
+  <data name="KOH_TP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffseite der Energiesteuer</value>
+  </data>
+  <data name="KOH_TP_MISCHLAGE" xml:space="preserve">
+    <value>Mischlage § 53/§ 53a neben § 54</value>
+  </data>
+  <data name="KOH_TP_STROM" xml:space="preserve">
+    <value>Stromseite der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_ERLAUBNIS" xml:space="preserve">
+    <value>Erlaubnisschwelle der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
+    <value>Doppelzählung der Stromsteuerbefreiung</value>
+  </data>
 </root>

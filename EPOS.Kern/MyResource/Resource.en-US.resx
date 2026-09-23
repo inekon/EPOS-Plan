@@ -24446,4 +24446,37 @@ Do you want to allow this?</value>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Catalogue list – ↑ and ↓ change the row, Home and End jump to the first and the last row</value>
   </data>
+  <data name="KOH_PRUEFUNG_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Check “{0}” could not be run: {1}</value>
+  </data>
+  <data name="KOH_TP_HILFSENERGIE" xml:space="preserve">
+    <value>auxiliary energy maintained twice</value>
+  </data>
+  <data name="KOH_TP_PV_HERKUNFT" xml:space="preserve">
+    <value>origin of the PV remuneration</value>
+  </data>
+  <data name="KOH_TP_CO2_DOPPEL" xml:space="preserve">
+    <value>CO₂ counted twice</value>
+  </data>
+  <data name="KOH_TP_STROMMIX" xml:space="preserve">
+    <value>electricity-mix fallback</value>
+  </data>
+  <data name="KOH_TP_KWKG" xml:space="preserve">
+    <value>data gaps of the CHP Act calculation</value>
+  </data>
+  <data name="KOH_TP_BRENNSTOFF" xml:space="preserve">
+    <value>fuel side of the energy tax</value>
+  </data>
+  <data name="KOH_TP_MISCHLAGE" xml:space="preserve">
+    <value>mixed position sec. 53/53a next to sec. 54</value>
+  </data>
+  <data name="KOH_TP_STROM" xml:space="preserve">
+    <value>electricity side of the electricity tax</value>
+  </data>
+  <data name="KOH_TP_ERLAUBNIS" xml:space="preserve">
+    <value>licence threshold of the electricity tax</value>
+  </data>
+  <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
+    <value>double counting of the electricity tax exemption</value>
+  </data>
 </root>

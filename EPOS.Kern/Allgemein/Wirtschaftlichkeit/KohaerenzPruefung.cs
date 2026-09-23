@@ -210,15 +210,20 @@ namespace WindowsFormsApplication1
 
             CultureInfo kultur = BerichtTexte.Kultur;
 
+            // ETAPPE E7c3 (Befund B‑6): Jede Teilprüfung läuft weiter für sich gekapselt —
+            // ein Fehlschlag darf die übrigen nicht mitnehmen und den Lauf nicht —, aber
+            // nicht mehr STILL: Scheitert eine, steht an ihrer Stelle die Kohärenzzeile
+            // „Prüfung „X“ nicht ausführbar: <Grund>“ (Teilpruefung).
+
             // ETAPPE B3 Paket b: Die Doppelpflege der Hilfsenergie hängt an KEINEM
             // Steuerpfad — sie ist auch an einem reinen Wärmepumpenprojekt möglich und
             // wird deshalb VOR der Prüfung auf lauf.Steuer erledigt.
-            try { HilfsenergieDoppelpflege(idProjekt, kultur, liste); } catch { }
+            Teilpruefung(TP_HILFSENERGIE, () => HilfsenergieDoppelpflege(idProjekt, kultur, liste), kultur, liste);
 
             // KONZEPT § 2.16: die Herkunft der PV-Verguetung. Sie haengt wie die
             // Doppelpflege an KEINEM Steuerpfad und steht deshalb VOR der Pruefung auf
             // lauf.Steuer.
-            try { PvVerguetungHerkunft(idProjekt, kultur, liste); } catch { }
+            Teilpruefung(TP_PV_HERKUNFT, () => PvVerguetungHerkunft(idProjekt, kultur, liste), kultur, liste);
 
             if (lauf == null) return liste;
 
@@ -226,35 +231,86 @@ namespace WindowsFormsApplication1
             // STEUERpfad — ein reines Kesselprojekt ohne jede Entlastungswahl kann
             // sowohl den Doppelansatz als auch den Strommix-Rückfall tragen. Sie stehen
             // deshalb VOR der Prüfung auf lauf.Steuer.
-            try { Co2DoppelansatzBehg(idProjekt, lauf, kultur, liste); } catch { }
-            try { StrommixRueckfall(lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_CO2_DOPPEL, () => Co2DoppelansatzBehg(idProjekt, lauf, kultur, liste), kultur, liste);
+            Teilpruefung(TP_STROMMIX, () => StrommixRueckfall(lauf, kultur, liste), kultur, liste);
 
             // ETAPPE E7c: die Datenlücken der KWKG-Rechnung. Sie hängen an keinem
             // STEUERpfad — ein BHKW-Projekt ohne jede Entlastungswahl kann sie tragen —
             // und stehen deshalb wie die CO₂-Zeilen VOR der Prüfung auf lauf.Steuer.
-            try { KwkgDatenluecken(lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_KWKG, () => KwkgDatenluecken(lauf, kultur, liste), kultur, liste);
 
             if (lauf.Steuer == null) return liste;
 
             // Jede Seite für sich gekapselt: Ein Fehlschlag der Brennstoffseite darf die
             // Stromseite nicht mitnehmen — und keiner von beiden den Lauf.
-            try { Brennstoffseite(idProjekt, lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_BRENNSTOFF, () => Brennstoffseite(idProjekt, lauf, kultur, liste), kultur, liste);
             // PAKET FX5-b (Anwenderentscheid 03.09.2026, offener Punkt S-2): Fall 5.
             // Eigener Schritt, nicht Teil von Brennstoffseite — er braucht weder
             // Energieträger noch Preiszerlegung, sondern allein die Normwahlen, und
             // dürfte deshalb nicht an deren Vorabfiltern hängenbleiben.
-            try { MischlageEnergiesteuer(lauf, kultur, liste); } catch { }
-            try { Stromseite(idProjekt, lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_MISCHLAGE, () => MischlageEnergiesteuer(lauf, kultur, liste), kultur, liste);
+            Teilpruefung(TP_STROM, () => Stromseite(idProjekt, lauf, kultur, liste), kultur, liste);
             // ETAPPE E2 (Befund S-5): die Erlaubnisschwelle des StromStG. Sie war der
             // einzige gesäte Katalogschlüssel der Stromsteuer OHNE Leser; ein
             // Rechenwerk gibt es dazu nicht, eine Pflicht des Betreibers schon.
-            try { ErlaubnisschwelleStrom(lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_ERLAUBNIS, () => ErlaubnisschwelleStrom(lauf, kultur, liste), kultur, liste);
             // ETAPPE B6: Der Einwand gegen den Modus ERLOES hängt weder an einem
             // Energieträger noch an der Preiszerlegung - er gilt aus der Sache heraus
             // und steht deshalb, wie Fall 5, als eigener Schritt.
-            try { DoppelzaehlungBefreiung(lauf, kultur, liste); } catch { }
+            Teilpruefung(TP_DOPPELZAEHLUNG, () => DoppelzaehlungBefreiung(lauf, kultur, liste), kultur, liste);
 
             return liste;
+        }
+
+        // =====================================================================
+        // ETAPPE E7c3 (Befund B‑6) — eine gescheiterte Teilprüfung wird sichtbar
+        // =====================================================================
+
+        /// <summary>Ressourcenschlüssel der zehn Teilprüfungen — ihr Anzeigename in der
+        /// Zeile „Prüfung „X“ nicht ausführbar".</summary>
+        internal const string TP_HILFSENERGIE = "KOH_TP_HILFSENERGIE";
+        internal const string TP_PV_HERKUNFT = "KOH_TP_PV_HERKUNFT";
+        internal const string TP_CO2_DOPPEL = "KOH_TP_CO2_DOPPEL";
+        internal const string TP_STROMMIX = "KOH_TP_STROMMIX";
+        internal const string TP_KWKG = "KOH_TP_KWKG";
+        internal const string TP_BRENNSTOFF = "KOH_TP_BRENNSTOFF";
+        internal const string TP_MISCHLAGE = "KOH_TP_MISCHLAGE";
+        internal const string TP_STROM = "KOH_TP_STROM";
+        internal const string TP_ERLAUBNIS = "KOH_TP_ERLAUBNIS";
+        internal const string TP_DOPPELZAEHLUNG = "KOH_TP_DOPPELZAEHLUNG";
+
+        /// <summary>
+        /// Führt EINE Teilprüfung aus. Scheitert sie, fängt die Methode den Fehler und
+        /// schreibt an ihrer Stelle eine <b>WARNUNG</b> „Prüfung „X“ nicht ausführbar:
+        /// &lt;Grund&gt;“ in die Liste — die übrigen Teilprüfungen und der Lauf gehen
+        /// weiter (dieselbe Kapselung wie bisher), aber der Anwender sieht, dass eine
+        /// Kohärenzaussage fehlt. Bis E7c3 stand hier <c>try { … } catch { }</c>: Eine
+        /// gescheiterte Prüfung sah aus wie eine bestandene (Befund B‑6).
+        /// </summary>
+        /// <param name="schluessel">Ressourcenschlüssel des Prüfungsnamens (<c>TP_*</c>).</param>
+        internal static void Teilpruefung(string schluessel, Action pruefung, CultureInfo kultur,
+                                          List<KohaerenzHinweis> liste)
+        {
+            try
+            {
+                pruefung();
+            }
+            catch (Exception ex)
+            {
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.WARNUNG,
+                    Text = NichtAusfuehrbar(schluessel, ex, kultur)
+                });
+            }
+        }
+
+        /// <summary>Der Wortlaut „Prüfung „X“ nicht ausführbar: &lt;Grund&gt;“.</summary>
+        internal static string NichtAusfuehrbar(string schluessel, Exception ex, CultureInfo kultur)
+        {
+            return string.Format(kultur, T("KOH_PRUEFUNG_NICHT_AUSFUEHRBAR",
+                                           "Prüfung „{0}“ nicht ausführbar: {1}"),
+                                 T(schluessel, schluessel), Fehlergrund.Text(ex));
         }
 
         // =====================================================================
@@ -279,9 +335,12 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0 || idAnlage <= 0) return "";
 
+            // ETAPPE E7c3 (B‑6): Scheitert die Prüfung, zeigt der Dialog ihren Grund statt
+            // einer leeren Zeile — dieselbe Zeile wie in der Kohärenzgruppe.
             var liste = new List<KohaerenzHinweis>();
-            try { HilfsenergieDoppelpflege(idProjekt, BerichtTexte.Kultur, liste, idAnlage); }
-            catch { return ""; }
+            Teilpruefung(TP_HILFSENERGIE,
+                         () => HilfsenergieDoppelpflege(idProjekt, BerichtTexte.Kultur, liste, idAnlage),
+                         BerichtTexte.Kultur, liste);
 
             return liste.Count > 0 ? liste[0].Text : "";
         }
@@ -460,39 +519,39 @@ namespace WindowsFormsApplication1
         /// <summary>Anlagenzeilen des Projekts mit einem Hilfsenergieanteil &gt; 0 —
         /// über <b>alle</b> Anlagenarten, weil jede Komponente Hilfsenergie haben
         /// kann (Konzept § 5.2).</summary>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — ein Lesefehler trifft die
+        /// Teilprüfung, die ihn als „nicht ausführbar" nennt; bis E7c3 leerte ein
+        /// <c>catch</c> die Liste, und die Prüfung fand still nichts. Eine fehlende Spalte
+        /// (Datenbank vor Schritt 61) bleibt der benannte Weg „kein Anteil".</remarks>
         private static List<HilfsstromRechner.AnlagenAnteil> AnlagenMitAnteil(int idProjekt)
         {
             var treffer = new List<HilfsstromRechner.AnlagenAnteil>();
-            try
+            DataTable dt;
+            using (DataRepository.EngineModus())
+                dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner, [" +
+                    SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
+                    "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@p", idProjekt));
+
+            if (dt == null ||
+                !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL))
+                return treffer;
+
+            foreach (DataRow r in dt.Rows)
             {
-                DataTable dt;
-                using (DataRepository.EngineModus())
-                    dt = DataRepository.GetDataTable(
-                        "SELECT ID, Bezeichner, [" +
-                        SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
-                        "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                        new DbParam("@p", idProjekt));
-
-                if (dt == null ||
-                    !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL))
-                    return treffer;
-
-                foreach (DataRow r in dt.Rows)
+                object w = r[SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL];
+                if (w == DBNull.Value) continue;
+                double anteil = Convert.ToDouble(w);
+                if (anteil <= 0) continue;
+                treffer.Add(new HilfsstromRechner.AnlagenAnteil
                 {
-                    object w = r[SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL];
-                    if (w == DBNull.Value) continue;
-                    double anteil = Convert.ToDouble(w);
-                    if (anteil <= 0) continue;
-                    treffer.Add(new HilfsstromRechner.AnlagenAnteil
-                    {
-                        IdAnlage = r["ID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ID"]),
-                        Bezeichner = r["Bezeichner"] == DBNull.Value
-                                   ? "" : Convert.ToString(r["Bezeichner"]).Trim(),
-                        AnteilProzent = anteil
-                    });
-                }
+                    IdAnlage = r["ID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ID"]),
+                    Bezeichner = r["Bezeichner"] == DBNull.Value
+                               ? "" : Convert.ToString(r["Bezeichner"]).Trim(),
+                    AnteilProzent = anteil
+                });
             }
-            catch { treffer.Clear(); }
             return treffer;
         }
 
@@ -506,50 +565,54 @@ namespace WindowsFormsApplication1
         /// müssen mitwarnen. Ein <c>LIKE</c> dafür wäre in Access mit <c>*</c> und über
         /// OLE DB mit <c>%</c> zu schreiben; diese Falle wird hier nicht aufgestellt.</para>
         /// </summary>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — wie
+        /// <see cref="AnlagenMitAnteil"/>; ein Lesefehler wird zur Zeile „nicht
+        /// ausführbar" der Teilprüfung.</remarks>
         private static List<int> AnlagenMitHilfsenergiePosition(int idProjekt)
         {
             var treffer = new List<int>();
-            try
+            DataTable dt;
+            using (DataRepository.EngineModus())
+                dt = DataRepository.GetDataTable(
+                    "SELECT f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "], " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.EingegebenerWert " +
+                    "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
+                    "ON w.StammID = f.StammID " +
+                    "WHERE w.ProjektID = ? AND w.KategorieID = 2",
+                    new DbParam("@p", idProjekt));
+            if (dt == null) return treffer;
+
+            foreach (DataRow r in dt.Rows)
             {
-                DataTable dt;
-                using (DataRepository.EngineModus())
-                    dt = DataRepository.GetDataTable(
-                        "SELECT f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "], " +
-                        "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.EingegebenerWert " +
-                        "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
-                        "ON w.StammID = f.StammID " +
-                        "WHERE w.ProjektID = ? AND w.KategorieID = 2",
-                        new DbParam("@p", idProjekt));
-                if (dt == null) return treffer;
+                string name = r["Bezeichnung"] == DBNull.Value
+                            ? "" : Convert.ToString(r["Bezeichnung"]).Trim();
+                if (!name.StartsWith(DbWerte.VDI_POS_HILFSENERGIE,
+                                     StringComparison.OrdinalIgnoreCase)) continue;
 
-                foreach (DataRow r in dt.Rows)
-                {
-                    string name = r["Bezeichnung"] == DBNull.Value
-                                ? "" : Convert.ToString(r["Bezeichnung"]).Trim();
-                    if (!name.StartsWith(DbWerte.VDI_POS_HILFSENERGIE,
-                                         StringComparison.OrdinalIgnoreCase)) continue;
+                object ida = r[SchemaKatalog.SPALTE_PW_ID_ANLAGE];
+                if (ida == DBNull.Value) continue;
+                int idAnlage = Convert.ToInt32(ida);
+                if (idAnlage <= 0 || treffer.Contains(idAnlage)) continue;
 
-                    object ida = r[SchemaKatalog.SPALTE_PW_ID_ANLAGE];
-                    if (ida == DBNull.Value) continue;
-                    int idAnlage = Convert.ToInt32(ida);
-                    if (idAnlage <= 0 || treffer.Contains(idAnlage)) continue;
+                if (!Aktiv(r[SchemaKatalog.SPALTE_PW_EINHEITPREIS]) &&
+                    !Aktiv(r["EingegebenerWert"])) continue;
 
-                    if (!Aktiv(r[SchemaKatalog.SPALTE_PW_EINHEITPREIS]) &&
-                        !Aktiv(r["EingegebenerWert"])) continue;
-
-                    treffer.Add(idAnlage);
-                }
+                treffer.Add(idAnlage);
             }
-            catch { treffer.Clear(); }
             return treffer;
         }
 
-        /// <summary>Ein Zahlenfeld ist „gepflegt", wenn es weder NULL noch 0 ist.</summary>
+        /// <summary>Ein Zahlenfeld ist „gepflegt", wenn es weder NULL noch 0 ist. Ein Wert,
+        /// der keine Zahl ist, gilt als nicht gepflegt (ETAPPE E7c3: benannt statt
+        /// <c>catch { }</c> — nur die Fehler der Zahlumwandlung).</summary>
         private static bool Aktiv(object wert)
         {
             if (wert == null || wert == DBNull.Value) return false;
             try { return Math.Abs(Convert.ToDouble(wert)) > 1e-9; }
-            catch { return false; }
+            catch (Exception ex) when (ex is FormatException || ex is InvalidCastException || ex is OverflowException)
+            {
+                return false;
+            }
         }
 
         // =====================================================================
@@ -607,33 +670,31 @@ namespace WindowsFormsApplication1
         /// <see cref="BrennstoffBestandteilCtrl.Read"/> (NULL heißt „kein Anteil
         /// erfasst", der Aktiv-Schalter entscheidet über die Verwendung).
         /// </summary>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — ein Lesefehler wird zur
+        /// Zeile „nicht ausführbar" der Teilprüfung CO₂-Doppelansatz.</remarks>
         private static List<string> TraegerMitCo2Anteil(int idProjekt)
         {
             var namen = new List<string>();
-            try
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + BrennstoffBestandteilCtrl.TABLE + "] WHERE ID_Projekt = ?",
+                new DbParam("@proj", idProjekt));
+
+            if (dt == null || dt.Rows.Count == 0) return namen;
+            if (!dt.Columns.Contains(SchemaKatalog.SPALTE_BB_CO2)) return namen;
+
+            foreach (DataRow r in dt.Rows)
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT * FROM [" + BrennstoffBestandteilCtrl.TABLE + "] WHERE ID_Projekt = ?",
-                    new DbParam("@proj", idProjekt));
+                double? wert = null; bool aktiv = false;
+                Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref wert, ref aktiv);
+                if (!wert.HasValue || !aktiv || wert.Value <= 0) continue;
 
-                if (dt == null || dt.Rows.Count == 0) return namen;
-                if (!dt.Columns.Contains(SchemaKatalog.SPALTE_BB_CO2)) return namen;
-
-                foreach (DataRow r in dt.Rows)
-                {
-                    double? wert = null; bool aktiv = false;
-                    Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref wert, ref aktiv);
-                    if (!wert.HasValue || !aktiv || wert.Value <= 0) continue;
-
-                    // Der Spaltenname steht EINMAL — buchstabengetreu mit Umlaut, wie
-                    // BETRIEB_SQLITE.md 6.1 es verlangt.
-                    object id = r[ProjektEnergietraegerEindeutig.SPALTE_TRAEGER];
-                    if (id == null || id == DBNull.Value) continue;
-                    string name = TraegerName(Convert.ToInt32(id));
-                    if (!namen.Contains(name)) namen.Add(name);
-                }
+                // Der Spaltenname steht EINMAL — buchstabengetreu mit Umlaut, wie
+                // BETRIEB_SQLITE.md 6.1 es verlangt.
+                object id = r[ProjektEnergietraegerEindeutig.SPALTE_TRAEGER];
+                if (id == null || id == DBNull.Value) continue;
+                string name = TraegerName(Convert.ToInt32(id));
+                if (!namen.Contains(name)) namen.Add(name);
             }
-            catch { namen.Clear(); }
             return namen;
         }
 
@@ -1290,24 +1351,24 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static double? StromsteuerRoh(int idProjekt, int carrierId)
         {
-            try
-            {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT * FROM [" + StrompreisZerlegungCtrl.TABLE + "] " +
-                    "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new DbParam("@proj", idProjekt),
-                    new DbParam("@eid", carrierId));
+            // ETAPPE E7c3 (B‑6): ohne eigenes try — ein Lesefehler wird zur Zeile „nicht
+            // ausführbar" der Teilprüfung Stromseite; bis E7c3 hieß er still „nie gepflegt".
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + StrompreisZerlegungCtrl.TABLE + "] " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@proj", idProjekt),
+                new DbParam("@eid", carrierId));
 
-                if (dt == null || dt.Rows.Count == 0) return null;
-                if (!dt.Columns.Contains(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER)) return null;
+            if (dt == null || dt.Rows.Count == 0) return null;
+            if (!dt.Columns.Contains(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER)) return null;
 
-                object v = dt.Rows[0][SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER];
-                return (v == null || v == DBNull.Value) ? (double?)null : Convert.ToDouble(v);
-            }
-            catch { return null; }
+            object v = dt.Rows[0][SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER];
+            return (v == null || v == DBNull.Value) ? (double?)null : Convert.ToDouble(v);
         }
 
-        /// <summary>Anzeigename eines Energieträgers; leer = nicht lesbar.</summary>
+        /// <summary>Anzeigename eines Energieträgers; nicht lesbar = „#Id". ETAPPE E7c3
+        /// (B‑6): ein benannter Anzeigerückfall — die Zeile, die den Namen trägt, erscheint
+        /// trotzdem, und die Kennung macht den Träger auffindbar.</summary>
         private static string TraegerName(int carrierId)
         {
             try
@@ -1318,7 +1379,11 @@ namespace WindowsFormsApplication1
                 string s = (v == null || v == DBNull.Value) ? "" : Convert.ToString(v).Trim();
                 return s.Length > 0 ? s : ("#" + carrierId.ToString(CultureInfo.InvariantCulture));
             }
-            catch { return "#" + carrierId.ToString(CultureInfo.InvariantCulture); }
+            catch (Exception)
+            {
+                // Anzeigerückfall: die Kennung statt des Namens (siehe Kopf).
+                return "#" + carrierId.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         // =====================================================================
@@ -1402,7 +1467,14 @@ namespace WindowsFormsApplication1
                 string s = MyResource.Resource.ResourceManager.GetString(schluessel);
                 return string.IsNullOrEmpty(s) ? rueckfall : s;
             }
-            catch { return rueckfall; }
+            catch (Exception ex) when (ex is System.Resources.MissingManifestResourceException ||
+                                       ex is System.Resources.MissingSatelliteAssemblyException ||
+                                       ex is InvalidOperationException)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — nur die Fehler der Ressourcensuche; der
+                // deutsche Rückfalltext ist der Zweck dieser Methode.
+                return rueckfall;
+            }
         }
     }
 }
