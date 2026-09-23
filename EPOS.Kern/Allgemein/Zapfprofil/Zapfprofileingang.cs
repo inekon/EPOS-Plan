@@ -68,14 +68,35 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>
-    internal sealed record ZapfHinweis(string Zone, string Code, string Text);
+    internal sealed record ZapfHinweis(string Zone, string Code, string Text)
+    {
+        /// <summary>Kennung „Parameter fehlt" eines Parameters, der die Rechnung nicht entscheidet (N7).</summary>
+        internal const string PARAMETER_FEHLT = "PARAMETER_FEHLT";
+
+        /// <summary>
+        /// Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt: Er nennt den
+        /// Schlüssel und die Folge; ein Rückfallwert wird nicht gesetzt (Konzept 2.1, N7).
+        /// </summary>
+        internal static ZapfHinweis ParameterFehlt(string schluessel, string folge)
+            => new ZapfHinweis("", PARAMETER_FEHLT,
+                               "Parameter fehlt: „" + (schluessel ?? "") + "“. " + (folge ?? ""));
+
+        /// <summary>Nimmt einen Hinweis nur auf, wenn derselbe noch nicht in der Liste steht.</summary>
+        internal static void Einmal(ICollection<ZapfHinweis> liste, ZapfHinweis h)
+        {
+            if (liste != null && h != null && !liste.Contains(h)) liste.Add(h);
+        }
+    }
 
     /// <summary>
     /// <b>Die Schlüssel des Parametersatzes, die der Bilanzrechenweg liest</b> (Konzept 2.1,
     /// Kapitel 6 (a)). Die Schlüssel stehen im Code, die Werte nie — sie kommen aus
     /// <c>Tab_TwwParameter_STAMM</c>. Fehlt ein Schlüssel, den eine Rechnung braucht, lehnt
     /// sie benannt ab (<see cref="ParametersatzException"/>); die zwei Schwellen der Hinweise
-    /// sind nicht rechnungsentscheidend und nur für die Hinweise zu lesen.
+    /// und die Vorgabe der Wohnfläche je WE für die Zonenfläche entscheiden die Rechnung nicht —
+    /// fehlen sie, entfällt ihre Prüfung bzw. die Fläche, und der Hinweis
+    /// <see cref="ZapfHinweis.PARAMETER_FEHLT"/> nennt den Schlüssel; einen Rückfallwert gibt es
+    /// nicht (N7).
     /// </summary>
     internal static class ZapfParameter
     {

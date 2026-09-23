@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
                     a.Struktur = Formvektor.Bilden(z, a.Art, satz, e.Parameter, prot, hinweise);
                     a.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(a.Temperaturen, a.Name);
                     a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, e.We, Zapfkalender.FensterDerZone(z));
-                    a.Messwert = Mengengeruest.MesswertAus(z, a.Temperaturen);
+                    a.Messwert = Mengengeruest.MesswertAus(z, a.Temperaturen, prot);
                     a.InZ1 = z.Zirkulation && a.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     a.ZapfungKwh = a.Menge.JahresenergieKwh;
                 }
@@ -128,6 +128,9 @@ namespace WindowsFormsApplication1
             // --- 3. Kalibrierung, dann Zapfreihen (4.1, 4.2) ------------------------------
             double? rueckfrage = e.Parameter.Enthaelt(ZapfParameter.MESSWERT_RUECKFRAGESCHWELLE)
                                  ? e.Parameter.Wert(ZapfParameter.MESSWERT_RUECKFRAGESCHWELLE) : (double?)null;
+            if (!rueckfrage.HasValue && arbeit.Exists(a => !a.Abgelehnt && a.Messwert != null))
+                ZapfHinweis.Einmal(hinweise, ZapfHinweis.ParameterFehlt(ZapfParameter.MESSWERT_RUECKFRAGESCHWELLE,
+                    "Die Abweichung der Messwerte vom Katalogwert wird nicht geprüft."));
             foreach (Zonenarbeit a in arbeit)
             {
                 if (a.Abgelehnt) continue;

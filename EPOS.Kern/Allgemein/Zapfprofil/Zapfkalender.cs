@@ -34,15 +34,15 @@ namespace WindowsFormsApplication1
     /// <code>
     /// Wochentag(d) = (WochentagJan1 + d − 1) mod 7        Montag = 0 … Sonntag = 6
     /// Ferienfenster enthält d                  -> Ruhetag
-    /// sonst Wochentag = Samstag                -> Samstag
-    /// sonst Wochentag = Sonntag oder We[d]     -> SonnFeiertag   (Feiertag wie Sonntag)
+    /// sonst We[d] und Wochentag = Samstag      -> Samstag
+    /// sonst We[d]                              -> SonnFeiertag   (Feiertag wie Sonntag)
     /// sonst                                    -> Werktag
     /// </code>
     ///
-    /// <para>Ein Feiertag am Samstag bleibt Samstag (Konzept 4.2). Anders als die Zeile des
-    /// Papiers („We[d] und Samstag") entscheidet der Wochentag allein über Samstag und Sonntag;
-    /// bei stimmigen Klimadaten (jedes Wochenende gekennzeichnet) ist das dasselbe, bei einer
-    /// Lücke der Kennzeichen bleibt ein Samstag Samstag und ein Sonntag Sonntag.</para>
+    /// <para>Ein Feiertag am Samstag bleibt Samstag (Konzept 4.2). Wie im Papier sind die
+    /// Kennzeichen We der Klimaregion die Quelle des Wochenendes: Ein Samstag oder Sonntag ohne
+    /// Kennzeichen ist ein Werktag (2.2 „Kalender und Probe", N7). Bei einem Klimakalender ohne
+    /// Kennzeichen (Altkonvention) gibt es deshalb weder Samstag noch Sonntag.</para>
     /// </summary>
     internal static class Zapfkalender
     {
@@ -129,8 +129,8 @@ namespace WindowsFormsApplication1
                 int wt = Wochentag(wochentagJan1, d);
                 ZapfTagtyp typ;
                 if (InFerien(ferien, d)) typ = ZapfTagtyp.Ruhetag;
-                else if (wt == SAMSTAG) typ = ZapfTagtyp.Samstag;
-                else if (wt == SONNTAG || we[d - 1]) typ = ZapfTagtyp.SonnFeiertag;
+                else if (we[d - 1] && wt == SAMSTAG) typ = ZapfTagtyp.Samstag;
+                else if (we[d - 1]) typ = ZapfTagtyp.SonnFeiertag;
                 else typ = ZapfTagtyp.Werktag;
                 kalender[d - 1] = typ;
             }

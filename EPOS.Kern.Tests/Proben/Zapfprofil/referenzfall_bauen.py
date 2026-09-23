@@ -13,6 +13,16 @@ ZWECK. Unabhaengige Nachrechnung ueber 8760 Stunden nach den Formeln des Umsetzu
 den C#-Code. Der Test EPOS.Kern.Tests/ZapfprofilReferenzfallTests laedt Eingabe und CSV,
 rechnet mit ZapfprofilRechner und verlangt je Stunde Abweichung 0 nach Rundung auf
 1e-9 kWh sowie gleiche Monats- und Jahressummen (Kapitel 7, Zeile Z1; Methodikkonzept 3.6 P1).
+Dieses Skript steht an Stelle der Tabellenkalkulation, die Kapitel 7 nennt (Nachtrag N7).
+
+ABGEDECKT. Vier Zonen: Kalender mit Feiertagen und Ferienfenstern (auch ueber den
+Jahreswechsel), Ruhetag mit und ohne Ferienfaktor, eigener Tagesgangsatz mit leerem Tagtyp,
+Temperaturumrechnung, Messwert in m3 (Grenze 1) und in kWh mit Grenze 2 (Kalibrierung samt
+Zirkulationsanteil der Zone), eine Zone mit Katalog-Grenze 2 (nicht in Z1) und eine Zone mit
+Zirkulation "nein"; Zirkulation nach der Methode Flaechenkennwert mit gebaeudeweiter Flaeche
+(mengengewichtetes alpha). Das Laufzeitfenster (Schwerpunkt der Zapfung in Z1, Beginn
+floor(m - t/2 + 1/2), an den Tagesrand geschoben) ist eine Festlegung der Umsetzung zu 4.3
+(N7); das Skript rechnet sie nach, prueft sie aber nicht unabhaengig vom Papier.
 
 WIEDERHOLBAR. Das Skript liest nur die Eingabe und schreibt die zwei CSV-Dateien neben sich;
 ein zweiter Lauf erzeugt dieselben Bytes.
@@ -111,13 +121,15 @@ def main():
         q_spez = n["bedarf_kwh_je_einheit_tag"][z["niveau"] - 1]
         q_katalog = z["bezugsmenge"] * q_spez * TAGE * f_theta
 
-        # 4.1: Messwert in m3 -> kWh an der Zapfstelle (Grenze 1): Q = V * c_w * (theta_Zapf - theta_KW)
-        kalibrierfaktor = None
-        q_a = q_katalog
-        if z["messwert_m3"] is not None:
+        # 4.1: Messwert in m3 -> kWh an der Zapfstelle (Grenze 1): Q = V * c_w * (theta_Zapf - theta_KW);
+        # Messwert in kWh mit ausdruecklicher Grenze. Kalibriert wird erst nach dem Zirkulationsanteil.
+        q_mess, grenze_mess = None, None
+        if z.get("messwert_m3") is not None:
             q_mess = z["messwert_m3"] * C_W * (t_zapf - t_kw)
-            kalibrierfaktor = q_mess / q_katalog
-            q_a = q_mess
+            grenze_mess = 1
+        elif z.get("messwert_kwh") is not None:
+            q_mess = z["messwert_kwh"]
+            grenze_mess = z["messwert_grenze"]
 
         # 4.2: Kaltwasser-Jahresgang, Monatswerte auf neun Stellen gerundet
         theta_m = [round(t_kw + amp * math.cos(2.0 * math.pi * (m - m_max) / 12.0), 9) for m in range(1, 13)]
@@ -160,21 +172,14 @@ def main():
             typen.append(typ)
             gewichte.append(g)
 
-        summe_g = sum(gewichte)
-        tagesmengen = [q_a * g / summe_g for g in gewichte]
-        stunden = []
-        for d in range(TAGE):
-            p = phi[typen[d]]
-            for h in range(24):
-                stunden.append(0.0 if p is None else tagesmengen[d] * p[h])
-
         zonen.append({
-            "name": z["name"], "q_katalog": q_katalog, "q_a": q_a, "stunden": stunden,
-            "z1": n["bilanzgrenze"] == 1 and z["zirkulation"], "kalibrierfaktor": kalibrierfaktor,
+            "name": z["name"], "q_katalog": q_katalog, "typen": typen, "gewichte": gewichte, "phi": phi,
+            "z1": n["bilanzgrenze"] == 1 and z["zirkulation"], "q_mess": q_mess, "grenze_mess": grenze_mess,
             "t_kw": t_kw, "bezugsmenge": z["bezugsmenge"],
         })
 
-    # 4.3: Zirkulation, Methode Flaechenkennwert (mengengewichtet, keine Zone traegt eine Flaeche)
+    # 4.3: Zirkulation, Methode Flaechenkennwert mit gebaeudeweiter Flaeche A_N (Zirk_Flaeche_m2):
+    # alpha mengengewichtet (keine Zone traegt eine Flaeche), Anteil je Zone in Z1 nach Q_a vor Kalibrierung.
     summe_alle = sum(z["q_katalog"] for z in zonen)
     summe_z1 = sum(z["q_katalog"] for z in zonen if z["z1"])
     alpha = summe_z1 / summe_alle
@@ -183,6 +188,36 @@ def main():
     a_n = ein["projekt"]["zirk_flaeche_m2"]
     p_zirk = alpha * k_a * a_n / (TAGE * t_lauf)
     q_zirk = p_zirk * t_lauf * TAGE
+    for z in zonen:
+        z["anteil"] = q_zirk * z["q_katalog"] / summe_z1 if z["z1"] else 0.0
+
+    # 4.1: Kalibrierung nach dem Zirkulationsanteil. Grenze 1: Q_a = Q_Mess; Grenze 2: Zapfung und
+    # Zirkulationsanteil der Zone gemeinsam skaliert, zusammen = Q_Mess.
+    for z in zonen:
+        z["q_a"], z["kalibrierfaktor"] = z["q_katalog"], None
+        if z["q_mess"] is None:
+            continue
+        if z["grenze_mess"] == 1:
+            z["kalibrierfaktor"] = z["q_mess"] / z["q_katalog"]
+            z["q_a"] = z["q_mess"]
+        elif z["grenze_mess"] == 2:
+            f_kal = z["q_mess"] / (z["q_katalog"] + z["anteil"])
+            z["kalibrierfaktor"] = f_kal
+            z["q_a"] = f_kal * z["q_katalog"]
+            z["anteil"] = f_kal * z["anteil"]
+        else:
+            raise ValueError("Grenze 3 ist im Referenzfall nicht vorgesehen")
+
+    # 4.2: Tagesmengen und Stundenwerte aus der kalibrierten Jahresmenge
+    for z in zonen:
+        summe_g = sum(z["gewichte"])
+        tagesmengen = [z["q_a"] * g / summe_g for g in z["gewichte"]]
+        stunden = []
+        for d in range(TAGE):
+            p = z["phi"][z["typen"][d]]
+            for h in range(24):
+                stunden.append(0.0 if p is None else tagesmengen[d] * p[h])
+        z["stunden"] = stunden
 
     # Laufzeitfenster um die Tagesmitte der Zapfung der Zonen in Z1
     e_h = [0.0] * 24
@@ -204,8 +239,7 @@ def main():
         z["zirk"] = [0.0] * (TAGE * 24)
         if not z["z1"]:
             continue
-        anteil = q_zirk * z["q_katalog"] / summe_z1
-        leistung = anteil / (TAGE * t_lauf)
+        leistung = z["anteil"] / (TAGE * t_lauf)
         for d in range(TAGE):
             for h in range(24):
                 z["zirk"][d * 24 + h] = leistung * fenster[h]
@@ -239,8 +273,11 @@ def main():
     for i, z in enumerate(zonen, start=1):
         zeilen.append((f"zone_{i}_zapfung_kwh", sum(z["stunden"])))
         zeilen.append((f"zone_{i}_zirkulation_kwh", sum(z["zirk"])))
+    for i, z in enumerate(zonen, start=1):
+        if z["kalibrierfaktor"] is not None:
+            zeilen.append((f"zone_{i}_kalibrierfaktor", z["kalibrierfaktor"]))
     zeilen += [
-        ("zone_2_kalibrierfaktor", zonen[1]["kalibrierfaktor"]),
+        # Jahresverlust des Ansatzes VOR der Kalibrierung (jahr_zirkulation_kwh ist der verbuchte)
         ("zirkulation_gewicht", alpha),
         ("zirkulation_leistung_kw", p_zirk),
         ("zirkulation_jahresverlust_kwh", q_zirk),

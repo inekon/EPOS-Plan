@@ -65,6 +65,24 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Ein_Wochenende_ohne_Kennzeichen_ist_ein_Werktag()
+        {
+            // 4.2 (N7): Samstag und Sonntag nur mit Kennzeichen We[d]. Jahr beginnt am Montag:
+            // Tag 6 Samstag, Tag 7 Sonntag — beide ohne Kennzeichen, Tag 13/14 mit.
+            bool[] we = We(0);
+            we[5] = false;
+            we[6] = false;
+            ZapfTagtyp[] k = Zapfkalender.Bilden(0, we, null);
+            Assert.Equal(ZapfTagtyp.Werktag, k[5]);
+            Assert.Equal(ZapfTagtyp.Werktag, k[6]);
+            Assert.Equal(ZapfTagtyp.Samstag, k[12]);
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[13]);
+
+            // Ein Klimakalender ganz ohne Kennzeichen (Altkonvention) kennt kein Wochenende.
+            Assert.All(Zapfkalender.Bilden(6, new bool[365], null), t => Assert.Equal(ZapfTagtyp.Werktag, t));
+        }
+
+        [Fact]
         public void Jahrestag_366_ist_keine_Angabe()
         {
             Assert.Equal(new[] { new Ferienfenster(1, 6) }, Zapfkalender.AusJahrestagen(366, 6));

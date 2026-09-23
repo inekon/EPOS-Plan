@@ -16,13 +16,23 @@ namespace WindowsFormsApplication1
     /// Laufzeitstunden, Laufzeit [h/d], Gewicht α, Jahresverlust [kWh/a] und je Zone (Reihenfolge
     /// der Eingabe) der Anteil am Jahresverlust [kWh/a]. <see cref="RestKwh"/> ist der Teil, der
     /// keiner Zone zufällt — nur bei manueller Leistung ohne Zone in Z1.
+    ///
+    /// <para><b>Vor der Kalibrierung (N7).</b> Jahresverlust und Zonenanteile sind der Ansatz
+    /// aus den Mengen VOR der Kalibrierung (2.3, 4.1). Kalibriert eine Zone mit Grenze 2 oder 3,
+    /// skaliert sie ihren Anteil mit; der verbuchte Jahresverlust steht dann nur in
+    /// <see cref="Zapfkennzahlen.JahresverlustZirkulationKwh"/> und in der Reihe
+    /// <see cref="ZapfprofilErgebnis.Zirkulation"/> und weicht vom Ansatz ab.</para>
+    ///
+    /// <para><b>Gewicht α</b> ist der Anteil von Z1 (4.3); angewandt wird es nur bei der Methode
+    /// Leitungslänge und beim Flächenkennwert mit gebäudeweiter Fläche <c>Zirk_Flaeche_m2</c>.
+    /// Stammt A_N aus den Zonenflächen, ist A_N schon die Fläche von Z1, α entfällt (N7).</para>
     /// </summary>
     internal sealed record Zirkulationsansatz(
         ZapfZirkulationsmethode? Methode,
         double LeistungKw,
         double LaufzeitH,
         double Gewicht,
-        double JahresverlustKwh,
+        double JahresverlustVorKalibrierungKwh,
         IReadOnlyList<double> AnteilJeZoneKwh,
         double RestKwh);
 
@@ -36,7 +46,8 @@ namespace WindowsFormsApplication1
     /// α  = Σ_{Z1} Q_a,z / Σ_z Q_a,z   (flächengewichtet, wenn jede Zone eine Fläche trägt)
     /// Leitungslänge:   P = α · L · q' / 1000                        [kW]
     /// Anteil:          P = a · Q̄_d,Z1 / t_Lauf,  Q̄_d,Z1 = Σ_{Z1} Q_a,z / 365
-    /// Flächenkennwert: P = α · k_A(Lage) · A_N / (365 · t_Lauf)
+    /// Flächenkennwert: P = α · k_A(Lage) · A_N / (365 · t_Lauf)   A_N = Zirk_Flaeche_m2 (gebäudeweit)
+    ///                  P = k_A(Lage) · A_N,Z1 / (365 · t_Lauf)    A_N,Z1 = Σ_{Z1} Zonenfläche (N7)
     /// manuell:         P = Zirk_Manuell_Kw
     /// q_zirk,h = P in den Laufzeitstunden, sonst 0;  Q_zirk = P · t_Lauf · 365
     /// Q_zirk,z = Q_zirk · Q_a,z / Σ_{Z1} Q_a
@@ -44,8 +55,12 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Vorgabe</b> ist die Methode Flächenkennwert (<c>Zirk_Auto</c> = 1 mit
     /// <c>Zirk_Methode</c>); fehlt jede Fläche, fällt sie mit Hinweis auf die Methode Anteil
-    /// zurück. <c>Zirk_Auto</c> = 0 heißt manuell. Die Fläche A_N ist <c>Zirk_Flaeche_m2</c>,
-    /// sonst die Summe der Zonenflächen (Fläche als Bezugsart oder WE · Wohnfläche je WE).</para>
+    /// zurück. <c>Zirk_Auto</c> = 0 heißt manuell. Die Fläche A_N ist <c>Zirk_Flaeche_m2</c>
+    /// (gebäudeweit, mit α), sonst die Summe der Flächen der Zonen in Z1 (Fläche als Bezugsart
+    /// oder WE · Wohnfläche je WE, <see cref="Mengengeruest.FlaecheM2"/>) ohne α — eine Zone
+    /// außerhalb von Z1 ändert den Verlust der Zonen in Z1 dann nicht (N7). Trägt eine Zone in
+    /// Z1 keine Fläche, nennt ein Hinweis sie; sie trägt ihren Mengenanteil am Verlust der
+    /// übrigen.</para>
     ///
     /// <para><b>Laufzeitfenster.</b> Die Laufzeitstunden liegen zusammenhängend um die
     /// Tagesmitte der Zapfung: Tagesmitte <c>m = Σ_h (h + ½) · E_h / Σ_h E_h</c> über die
@@ -76,6 +91,7 @@ namespace WindowsFormsApplication1
             double summeAlle = 0.0, summeZ1 = 0.0;
             bool jedeFlaeche = zonen.Count > 0;
             double flaecheAlle = 0.0, flaecheZ1 = 0.0;
+            var z1OhneFlaeche = new List<string>();
             foreach (Zonenanteil z in zonen)
             {
                 summeAlle += z.JahresenergieKwh;
@@ -85,7 +101,11 @@ namespace WindowsFormsApplication1
                     flaecheAlle += z.FlaecheM2.Value;
                     if (z.InZ1) flaecheZ1 += z.FlaecheM2.Value;
                 }
-                else jedeFlaeche = false;
+                else
+                {
+                    jedeFlaeche = false;
+                    if (z.InZ1) z1OhneFlaeche.Add(z.Zone);
+                }
             }
             double alpha = Gewicht(summeAlle, summeZ1, jedeFlaeche, flaecheAlle, flaecheZ1);
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_GEWICHT, alpha, "-", Wertstatus.Vorgabe, null,
@@ -113,18 +133,27 @@ namespace WindowsFormsApplication1
             {
                 methode = p.ZirkMethode;
                 double flaecheN = 0.0;
+                // α nur auf eine gebäudeweite Fläche; A_N aus den Zonen ist schon die Fläche von Z1 (N7).
+                double gewichtFlaeche = alpha;
                 if (methode == ZapfZirkulationsmethode.Flaechenkennwert)
                 {
                     if (p.ZirkFlaecheM2.HasValue)
                     {
                         flaecheN = NichtNegativ(p.ZirkFlaecheM2.Value, "Fläche der Zirkulation");
-                        prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Ueberschrieben, null);
+                        prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Ueberschrieben, null,
+                                        "gebäudeweit, mit α");
                     }
                     else
                     {
-                        flaecheN = flaecheAlle;
+                        flaecheN = flaecheZ1;
+                        gewichtFlaeche = 1.0;
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Vorgabe, null,
-                                        "Summe der Zonenflächen");
+                                        "Summe der Flächen der Zonen in Z1, ohne α");
+                        if (flaecheN > 0)
+                            foreach (string name in z1OhneFlaeche)
+                                hinweise?.Add(new ZapfHinweis(name, "ZIRKULATION_ZONE_OHNE_FLAECHE",
+                                    "Die Zone „" + name + "“ gehört zur Zirkulation, trägt aber keine Fläche; "
+                                    + "A_N enthält sie nicht."));
                     }
                     if (!(flaecheN > 0))
                     {
@@ -169,7 +198,7 @@ namespace WindowsFormsApplication1
                         double k = ProjektOderParameter(p.ZirkKennwert, schluessel, ps, prot,
                                                         ZapfFeld.ZIRKULATION_KENNWERT, "kWh/(m²·a)");
                         NichtNegativ(k, "Flächenkennwert");
-                        leistung = alpha * k * flaecheN / (Zapfkalender.TAGE * laufzeit);
+                        leistung = gewichtFlaeche * k * flaecheN / (Zapfkalender.TAGE * laufzeit);
                         break;
                     }
                     default:
@@ -207,7 +236,7 @@ namespace WindowsFormsApplication1
                     hinweise?.Add(new ZapfHinweis(z.Zone, "ZIRKULATION_NICHT_IN_Z1",
                         "Die Zone „" + z.Zone + "“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“)."));
 
-            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, anteile, rest);
+            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, Array.AsReadOnly(anteile), rest);
         }
 
         /// <summary>

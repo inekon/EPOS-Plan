@@ -40,11 +40,11 @@ namespace EPOS.Kern.Tests
             foreach (Zirkulationsansatz a in new[] { anteil, laenge, flaeche })
             {
                 Assert.True(Relativ(a.LeistungKw, 0.5) < 1e-12);
-                Assert.True(Relativ(a.JahresverlustKwh, 1825.0) < 1e-12);
+                Assert.True(Relativ(a.JahresverlustVorKalibrierungKwh, 1825.0) < 1e-12);
             }
             Zirkulationsansatz manuell = Ansatz(basis with { ZirkAuto = false, ZirkManuellKw = 0.5 });
             Assert.Null(manuell.Methode);
-            Assert.Equal(1825.0, manuell.JahresverlustKwh);
+            Assert.Equal(1825.0, manuell.JahresverlustVorKalibrierungKwh);
         }
 
         [Fact]
@@ -60,12 +60,12 @@ namespace EPOS.Kern.Tests
             };
             foreach (Zirkulationsansatz a in ansaetze)
             {
-                Assert.True(a.JahresverlustKwh > 0);
+                Assert.True(a.JahresverlustVorKalibrierungKwh > 0);
                 double[] fenster = Zirkulationskanal.Laufzeitfenster(a.LaufzeitH, 11.7);
                 Assert.True(Relativ(fenster.Sum(), a.LaufzeitH) < 1e-12);
-                Bilanzreihe r = Zirkulationskanal.Reihe(a.JahresverlustKwh, a.LaufzeitH, fenster);
-                Assert.True(Relativ(r.JahressummeKwh, a.JahresverlustKwh) < 1e-12);
-                Assert.True(Relativ(r.StundenKwh.Sum(), a.JahresverlustKwh) < 1e-12);
+                Bilanzreihe r = Zirkulationskanal.Reihe(a.JahresverlustVorKalibrierungKwh, a.LaufzeitH, fenster);
+                Assert.True(Relativ(r.JahressummeKwh, a.JahresverlustVorKalibrierungKwh) < 1e-12);
+                Assert.True(Relativ(r.StundenKwh.Sum(), a.JahresverlustVorKalibrierungKwh) < 1e-12);
             }
         }
 
@@ -74,9 +74,9 @@ namespace EPOS.Kern.Tests
         {
             // α = 1: der Flächenkennwert gibt k_A · A_N als Jahresverlust zurück (Lage 2 aus dem Projekt).
             Zirkulationsansatz a = Ansatz(Projekt() with { ZirkFlaecheM2 = 400.0, ZirkLage = ZapfLeitungslage.AusserhalbHuelle });
-            Assert.True(Relativ(a.JahresverlustKwh, 20.0 * 400.0) < 1e-12);
+            Assert.True(Relativ(a.JahresverlustVorKalibrierungKwh, 20.0 * 400.0) < 1e-12);
             Zirkulationsansatz b = Ansatz(Projekt() with { ZirkFlaecheM2 = 400.0 });   // Lage 1 aus dem Parameter
-            Assert.True(Relativ(b.JahresverlustKwh, 5.0 * 400.0) < 1e-12);
+            Assert.True(Relativ(b.JahresverlustVorKalibrierungKwh, 5.0 * 400.0) < 1e-12);
         }
 
         [Fact]
@@ -88,12 +88,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfZirkulationsmethode.Anteil, a.Methode);
             Assert.Contains(h, x => x.Code == "ZIRKULATION_OHNE_FLAECHE");
             // 0,25 · 10 kWh/d / 18 h · 18 h · 365 = 912,5 kWh/a
-            Assert.True(Relativ(a.JahresverlustKwh, 0.25 * 10.0 * 365.0) < 1e-12);
+            Assert.True(Relativ(a.JahresverlustVorKalibrierungKwh, 0.25 * 10.0 * 365.0) < 1e-12);
 
             // Mit Zonenfläche: Flächenkennwert, A_N = Summe der Zonenflächen.
             Zirkulationsansatz f = Ansatz(Projekt(), new[] { new Zonenanteil("Zone A", 3650.0, true, 300.0) });
             Assert.Equal(ZapfZirkulationsmethode.Flaechenkennwert, f.Methode);
-            Assert.True(Relativ(f.JahresverlustKwh, 5.0 * 300.0) < 1e-12);
+            Assert.True(Relativ(f.JahresverlustVorKalibrierungKwh, 5.0 * 300.0) < 1e-12);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace EPOS.Kern.Tests
             }, zonen, h);
             Assert.Equal(0.25, a.Gewicht, 15);
             Assert.True(Relativ(a.LeistungKw, 0.25 * 100.0 * 10.0 / 1000.0) < 1e-12);
-            Assert.Equal(a.JahresverlustKwh, a.AnteilJeZoneKwh[0], 9);
+            Assert.Equal(a.JahresverlustVorKalibrierungKwh, a.AnteilJeZoneKwh[0], 9);
             Assert.Equal(0.0, a.AnteilJeZoneKwh[1]);
             Assert.Contains(h, x => x.Code == "ZIRKULATION_NICHT_IN_Z1" && x.Zone == "Zone B");
 
@@ -122,7 +122,7 @@ namespace EPOS.Kern.Tests
                 ZirkMethode = ZapfZirkulationsmethode.Leitungslaenge, ZirkLaengeM = 100.0
             }, aussen);
             Assert.Equal(0.0, b.Gewicht);
-            Assert.Equal(0.0, b.JahresverlustKwh);
+            Assert.Equal(0.0, b.JahresverlustVorKalibrierungKwh);
         }
 
         [Fact]
@@ -136,16 +136,57 @@ namespace EPOS.Kern.Tests
             };
             Zirkulationsansatz a = Ansatz(Projekt() with { ZirkFlaecheM2 = 400.0 }, zonen);
             Assert.Equal(0.5, a.Gewicht, 15);                         // flächengewichtet: 200 / 400
-            Assert.True(Relativ(a.JahresverlustKwh, 0.5 * 5.0 * 400.0) < 1e-12);
-            Assert.Equal(0.25 * a.JahresverlustKwh, a.AnteilJeZoneKwh[0], 9);
-            Assert.Equal(0.75 * a.JahresverlustKwh, a.AnteilJeZoneKwh[1], 9);
+            Assert.True(Relativ(a.JahresverlustVorKalibrierungKwh, 0.5 * 5.0 * 400.0) < 1e-12);
+            Assert.Equal(0.25 * a.JahresverlustVorKalibrierungKwh, a.AnteilJeZoneKwh[0], 9);
+            Assert.Equal(0.75 * a.JahresverlustVorKalibrierungKwh, a.AnteilJeZoneKwh[1], 9);
             Assert.Equal(0.0, a.AnteilJeZoneKwh[2]);
-            Assert.Equal(a.JahresverlustKwh, a.AnteilJeZoneKwh.Sum(), 9);
+            Assert.Equal(a.JahresverlustVorKalibrierungKwh, a.AnteilJeZoneKwh.Sum(), 9);
 
             // Eine Zone ohne Fläche -> mengengewichtet: 4000 / 8000.
             zonen[2] = new Zonenanteil("Zone C", 4000.0, false, null);
             Assert.Equal(0.5, Ansatz(Projekt() with { ZirkFlaecheM2 = 400.0 }, zonen).Gewicht, 15);
             Assert.Equal(0.25, Zirkulationskanal.Gewicht(4000.0, 1000.0, false, 0.0, 0.0), 15);
+        }
+
+        [Fact]
+        public void Eine_Zone_ausserhalb_Z1_ohne_Flaeche_laesst_den_Verlust_aus_Zonenflaechen_unveraendert()
+        {
+            // N7: Zone W in Z1 mit 800 m², Zone G außerhalb (Grenze 2), ohne Fläche; k_A 5 (erfunden).
+            var w = new Zonenanteil("Zone W", 10000.0, true, 800.0);
+            var g = new Zonenanteil("Zone G", 10000.0, false, null);
+            Zirkulationsansatz allein = Ansatz(Projekt(), new[] { w });
+            Zirkulationsansatz mitG = Ansatz(Projekt(), new[] { w, g });
+            Assert.True(Relativ(allein.JahresverlustVorKalibrierungKwh, 5.0 * 800.0) < 1e-12);
+            Assert.Equal(allein.JahresverlustVorKalibrierungKwh, mitG.JahresverlustVorKalibrierungKwh);
+            Assert.Equal(0.5, mitG.Gewicht, 15);   // α bleibt ausgewiesen, wird hier aber nicht angewandt
+
+            // Eine gebäudeweite Fläche trägt α weiter: 0,5 · 5 · 800.
+            Zirkulationsansatz gebaeude = Ansatz(Projekt() with { ZirkFlaecheM2 = 800.0 }, new[] { w, g });
+            Assert.True(Relativ(gebaeude.JahresverlustVorKalibrierungKwh, 0.5 * 5.0 * 800.0) < 1e-12);
+
+            // Eine Zone außerhalb Z1 MIT Fläche zählt nicht zu A_N.
+            Zirkulationsansatz mitFlaeche = Ansatz(Projekt(), new[] { w, g with { FlaecheM2 = 800.0 } });
+            Assert.True(Relativ(mitFlaeche.JahresverlustVorKalibrierungKwh, 5.0 * 800.0) < 1e-12);
+
+            // Eine Zone in Z1 ohne Fläche wird genannt; A_N enthält sie nicht.
+            var h = new List<ZapfHinweis>();
+            Zirkulationsansatz teil = Ansatz(Projekt(), new[] { w, new Zonenanteil("Zone P", 5000.0, true, null) }, h);
+            Assert.True(Relativ(teil.JahresverlustVorKalibrierungKwh, 5.0 * 800.0) < 1e-12);
+            Assert.Contains(h, x => x.Code == "ZIRKULATION_ZONE_OHNE_FLAECHE" && x.Zone == "Zone P");
+
+            // Nur eine Zone außerhalb Z1 trägt Fläche: A_N von Z1 ist 0 -> Methode Anteil mit Hinweis.
+            h.Clear();
+            Zirkulationsansatz rueck = Ansatz(Projekt(), new[] { new Zonenanteil("Zone W", 3650.0, true, null), g with { FlaecheM2 = 800.0 } }, h);
+            Assert.Equal(ZapfZirkulationsmethode.Anteil, rueck.Methode);
+            Assert.Contains(h, x => x.Code == "ZIRKULATION_OHNE_FLAECHE");
+        }
+
+        [Fact]
+        public void Die_Zonenanteile_sind_nur_lesbar()
+        {
+            Zirkulationsansatz a = Ansatz(Projekt() with { ZirkFlaecheM2 = 400.0 });
+            Assert.False(a.AnteilJeZoneKwh is double[]);
+            Assert.Throws<NotSupportedException>(() => ((IList<double>)a.AnteilJeZoneKwh)[0] = 1.0);
         }
 
         [Fact]

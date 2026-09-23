@@ -43,6 +43,11 @@ namespace WindowsFormsApplication1
     /// vor Katalogwert des Niveaus. Die Bedarfsüberschreibung ersetzt q_spez in derselben
     /// Formel und wird wie der Katalogwert umgerechnet; der manuelle Tagesbedarf gilt bei den
     /// Projekttemperaturen und wird nicht umgerechnet.</para>
+    ///
+    /// <para><b>Flächenformel und f_θ (N7):</b> Auch der Kennwert der Flächenformel wird über
+    /// f_θ umgerechnet (A1: jeder Kennwert mit anderem Temperaturbezug zwingend). Bezug sind die
+    /// Bezugstemperaturen der Nutzungsart, die die Formel wählt; a, b, c tragen keinen eigenen
+    /// Temperaturbezug.</para>
     /// </summary>
     internal static class Mengengeruest
     {
@@ -242,7 +247,7 @@ namespace WindowsFormsApplication1
         {
             string zone = z.Name ?? "";
             double bezugsmenge = BezugsmengeWirksam(z, n, belegungJeRaumzahl, p);
-            double? flaeche = FlaecheM2(z, n, bezugsmenge);
+            double? flaeche = FlaecheM2(z, n, bezugsmenge, ps, p, hinweise);
             double tage = Zapfkalender.TAGE;
 
             // Tagesbedarf manuell — bei den Projekttemperaturen, ohne Umrechnung.
@@ -283,7 +288,7 @@ namespace WindowsFormsApplication1
             else if (n.Bezug == ZapfBezugsart.Flaeche && n.Kalender == ZapfKalenderart.Wohnen)
             {
                 double aWe = ZoneOderParameter(z.WohnflaecheJeWeM2, ZapfParameter.WOHNEN_FLAECHE_JE_WE, ps, p, zone,
-                                               "WohnflaecheJeWe", "m²");
+                                               ZapfFeld.WOHNFLAECHE_JE_WE, "m²");
                 if (aWe <= 0)
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.BezugsmengeFehlt, zone,
                         "Nicht rechenbar — die Wohnfläche je WE der Zone „" + zone + "“ ist nicht positiv.");
@@ -322,15 +327,63 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Fläche einer Zone [m²], wenn sie eine trägt: Bezugsart Fläche → Bezugsmenge;
-        /// Bezugsart Wohneinheiten mit Wohnfläche je WE → WE · Wohnfläche; sonst <c>null</c>.
+        /// Die Fläche einer Zone [m²], wenn sie eine trägt (4.3, N7): Bezugsart Fläche →
+        /// Bezugsmenge; eine Wohnzone mit bekannter WE-Zahl → WE · Wohnfläche je WE. Die WE-Zahl
+        /// ist bei Bezugsart Wohneinheiten die Bezugsmenge, bei Bezugsart Personen mit
+        /// Wohnungstabelle Σ Anzahl. Die Wohnfläche je WE kommt aus der Zone, sonst aus dem
+        /// Parameter <see cref="ZapfParameter.WOHNEN_FLAECHE_JE_WE"/>; fehlt er, trägt die Zone
+        /// keine Fläche und ein Hinweis nennt den Schlüssel. Sonst <c>null</c>.
         /// </summary>
-        internal static double? FlaecheM2(ZonenStand z, Nutzungsart n, double bezugsmenge)
+        internal static double? FlaecheM2(ZonenStand z, Nutzungsart n, double bezugsmenge, Parametersatz ps = null,
+                                          Herkunftsprotokoll p = null, ICollection<ZapfHinweis> hinweise = null)
         {
             if (n.Bezug == ZapfBezugsart.Flaeche) return bezugsmenge;
-            if (n.Bezug == ZapfBezugsart.Wohneinheiten && z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0)
-                return bezugsmenge * z.WohnflaecheJeWeM2.Value;
-            return null;
+
+            double? we = null;
+            string herkunftWe = "";
+            if (n.Bezug == ZapfBezugsart.Wohneinheiten)
+            {
+                we = bezugsmenge;
+                herkunftWe = "WE = Bezugsmenge";
+            }
+            else if (n.Bezug == ZapfBezugsart.Personen && z.Wohnungen != null && z.Wohnungen.Count > 0)
+            {
+                double summe = 0.0;
+                foreach (WohnungstypStand w in z.Wohnungen) summe += w.Anzahl;
+                we = summe;
+                herkunftWe = "WE = Σ Anzahl der Wohnungstabelle";
+            }
+            if (!we.HasValue || !(we.Value > 0)) return null;
+
+            string zone = z.Name ?? "";
+            double jeWe;
+            Wertstatus status;
+            Provenienz quelle;
+            if (z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0)
+            {
+                jeWe = z.WohnflaecheJeWeM2.Value;
+                status = Wertstatus.Ueberschrieben;
+                quelle = null;
+            }
+            else if (ps != null && ps.Enthaelt(ZapfParameter.WOHNEN_FLAECHE_JE_WE)
+                     && ps.Wert(ZapfParameter.WOHNEN_FLAECHE_JE_WE) > 0)
+            {
+                ZapfParameterwert pw = ps.Lies(ZapfParameter.WOHNEN_FLAECHE_JE_WE);
+                jeWe = pw.Wert;
+                status = Wertstatus.Vorgabe;
+                quelle = pw.Herkunft;
+            }
+            else
+            {
+                ZapfHinweis.Einmal(hinweise, ZapfHinweis.ParameterFehlt(ZapfParameter.WOHNEN_FLAECHE_JE_WE,
+                    "Wohnzonen ohne eigene Wohnfläche je WE tragen keine Fläche für die Zirkulation."));
+                return null;
+            }
+
+            double flaeche = we.Value * jeWe;
+            p?.Vermerken(zone, ZapfFeld.ZONENFLAECHE, flaeche, "m²", status, quelle,
+                         herkunftWe + " · Wohnfläche je WE " + Z(jeWe) + " m²");
+            return flaeche;
         }
 
         // =================================================================================
@@ -341,8 +394,10 @@ namespace WindowsFormsApplication1
         /// Der Jahresmesswert einer Zone in kWh: Einheit kWh/a unverändert, m³/a über
         /// <c>Q = V [m³] · c_w · (θ_Zapf − θ̄_KW)</c> — ein Volumenmesswert ist immer Grenze 1;
         /// eine andere ausdrücklich gesetzte Grenze wird benannt abgelehnt. <c>null</c> ohne Messwert.
+        /// <b>Kein stiller Rückfall (2.2, N7):</b> Ein Messwert ohne Einheit und ein Messwert in
+        /// kWh/a ohne Bilanzgrenze werden benannt abgelehnt; Einheit und Grenze stehen im Protokoll.
         /// </summary>
-        internal static Messwert MesswertAus(ZonenStand z, Zonentemperaturen t)
+        internal static Messwert MesswertAus(ZonenStand z, Zonentemperaturen t, Herkunftsprotokoll p = null)
         {
             if (!z.Jahresmesswert.HasValue) return null;
             string zone = z.Name ?? "";
@@ -350,8 +405,11 @@ namespace WindowsFormsApplication1
             if (double.IsNaN(wert) || double.IsInfinity(wert) || wert <= 0)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
                     "Nicht rechenbar — der Jahresmesswert der Zone „" + zone + "“ ist nicht positiv.");
+            if (!z.JahresmesswertEinheit.HasValue)
+                throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
+                    "Nicht rechenbar — der Jahresmesswert der Zone „" + zone + "“ trägt keine Einheit (kWh/a oder m³/a).");
 
-            ZapfMesswerteinheit einheit = z.JahresmesswertEinheit ?? ZapfMesswerteinheit.KwhJeJahr;
+            ZapfMesswerteinheit einheit = z.JahresmesswertEinheit.Value;
             ZapfBilanzgrenze grenze;
             double kwh;
             if (einheit == ZapfMesswerteinheit.KubikmeterJeJahr)
@@ -365,9 +423,16 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                grenze = z.JahresmesswertBilanzgrenze ?? ZapfBilanzgrenze.Zapfstelle;
+                if (!z.JahresmesswertBilanzgrenze.HasValue)
+                    throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
+                        "Nicht rechenbar — der Jahresmesswert der Zone „" + zone
+                        + "“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3).");
+                grenze = z.JahresmesswertBilanzgrenze.Value;
                 kwh = wert;
             }
+            p?.Vermerken(zone, ZapfFeld.MESSWERT, kwh, "kWh/a", Wertstatus.Ueberschrieben, null,
+                         (einheit == ZapfMesswerteinheit.KubikmeterJeJahr ? "aus " + Z(wert) + " m³/a" : "in kWh/a")
+                         + ", Grenze " + (int)grenze);
             return new Messwert(kwh, grenze, z.SpeicherverlustKwhJeJahr, z.JahresmesswertQuelle, z.JahresmesswertZeitraum);
         }
 

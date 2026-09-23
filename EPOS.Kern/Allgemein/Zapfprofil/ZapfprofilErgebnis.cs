@@ -98,7 +98,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zonen in der Reihenfolge des Eingangs.</summary>
         public IReadOnlyList<ZonenErgebnis> JeZone { get; init; } = new ZonenErgebnis[0];
 
-        /// <summary>Der Ansatz der Zirkulation; <c>null</c>, wenn sie abgelehnt wurde.</summary>
+        /// <summary>
+        /// Der Ansatz der Zirkulation VOR der Kalibrierung; <c>null</c>, wenn sie abgelehnt wurde.
+        /// Der verbuchte Jahresverlust ist <see cref="Zapfkennzahlen.JahresverlustZirkulationKwh"/>
+        /// — nach einer Kalibrierung mit Grenze 2 oder 3 weicht er vom Ansatz ab (N7).
+        /// </summary>
         public Zirkulationsansatz Zirkulationsansatz { get; init; }
 
         /// <summary>Die Laufzeitbelegung der 24 Tagesstunden; <c>null</c> ohne Zirkulationsansatz.</summary>

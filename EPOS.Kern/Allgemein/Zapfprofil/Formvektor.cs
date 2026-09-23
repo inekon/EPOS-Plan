@@ -9,6 +9,10 @@ namespace WindowsFormsApplication1
     /// (Katalog oder Auslastungsgang der Zone), sieben Wochenfaktoren (Σ 1), Ferienfaktor
     /// (<c>null</c> = wie Sonntag) und vier Tagesgänge zu 24 Anteilen (je Σ 1; ein Tagesgang mit
     /// Σ 0 bleibt 0 und ist in <see cref="TagtypLeer"/> gekennzeichnet).
+    ///
+    /// <para><b>Nur intern:</b> Die Felder sind Arrays und damit veränderlich; die Zeitstruktur
+    /// verlässt den Rechenweg nicht (weder Ergebnis noch Hülle sehen sie) und wird nach
+    /// <see cref="Formvektor.Bilden"/> nur gelesen.</para>
     /// </summary>
     internal sealed record Zeitstruktur(double[] Monatsfaktoren, double[] Wochenfaktoren, double? Ferienfaktor,
                                         double[,] Tagesgaenge, bool[] TagtypLeer);
@@ -45,6 +49,9 @@ namespace WindowsFormsApplication1
             string zone = z.Name ?? "";
             double? warnschwelle = ps != null && ps.Enthaelt(ZapfParameter.FORMVEKTOR_WARNSCHWELLE)
                                    ? ps.Wert(ZapfParameter.FORMVEKTOR_WARNSCHWELLE) : (double?)null;
+            if (!warnschwelle.HasValue)
+                ZapfHinweis.Einmal(hinweise, ZapfHinweis.ParameterFehlt(ZapfParameter.FORMVEKTOR_WARNSCHWELLE,
+                    "Die Summen der Wochenfaktoren und Tagesgänge werden nicht geprüft, nur normiert."));
 
             // --- Monate: Katalog, je Monat überschreibbar durch den Auslastungsgang ------------
             double[] monateKatalog = Raster(n.Monatsfaktoren, Zapfkalender.MONATE, zone, "Monatsfaktoren");
@@ -223,14 +230,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Hinweis, wenn eine Summe von 1 abweicht: über der Warnschwelle des Parametersatzes,
-        /// ohne Parameter über der Rechengenauigkeit (1e-9).
+        /// Hinweis, wenn eine Summe über der Warnschwelle des Parametersatzes von 1 abweicht.
+        /// Ohne Parameter keine Prüfung und kein Rückfallwert — den fehlenden Schlüssel nennt
+        /// <see cref="Bilden"/> einmal als Hinweis (N7).
         /// </summary>
         private static void SummeWarnen(double summe, double? schwelle, string zone, string code, string was,
                                         ICollection<ZapfHinweis> hinweise)
         {
-            double grenze = schwelle ?? 1e-9;
-            if (hinweise != null && Math.Abs(summe - 1.0) > grenze)
+            if (!schwelle.HasValue) return;
+            if (hinweise != null && Math.Abs(summe - 1.0) > schwelle.Value)
                 hinweise.Add(new ZapfHinweis(zone, code,
                     was + " der Zone „" + zone + "“ summiert zu " + summe.ToString("0.######", CultureInfo.InvariantCulture)
                     + " statt 1; vor dem Rechnen normiert."));

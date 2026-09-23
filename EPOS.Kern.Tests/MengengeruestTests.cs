@@ -92,6 +92,48 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Die_Flaechenformel_traegt_den_Temperaturfaktor_der_Nutzungsart()
+        {
+            // N7: Q = max(a − b · A_WE ; c) · A · f_θ; θ_Zapf 55, θ̄_KW 12, Bezug 50/12 -> f_θ = 43/38.
+            var p = new Herkunftsprotokoll();
+            Nutzungsart wohnen = Art(bezug: ZapfBezugsart.Flaeche, kalender: ZapfKalenderart.Wohnen);
+            ZonenStand z = Zone(menge: 800.0) with { WohnflaecheJeWeM2 = 80.0, KaltwasserMittelC = 12.0, ZapftemperaturC = 55.0 };
+            Mengenergebnis m = Menge(z, wohnen, p: p);
+            Assert.Equal(43.0 / 38.0, m.Temperaturfaktor, 15);
+            Assert.True(Relativ(m.JahresenergieKwh, 12.0 * 800.0 * 43.0 / 38.0) < 1e-12);
+            Assert.Equal(Wertstatus.Umgerechnet, p.Letzter("Zone A", ZapfFeld.JAHRESENERGIE).Status);
+            Assert.Equal(Wertstatus.Ueberschrieben, p.Letzter("Zone A", ZapfFeld.WOHNFLAECHE_JE_WE).Status);
+        }
+
+        [Fact]
+        public void Die_Zonenflaeche_folgt_aus_WE_und_Wohnflaeche_je_WE()
+        {
+            // Personen mit Wohnungstabelle: WE = Σ Anzahl = 3; Wohnfläche aus dem Parameter (80, erfunden).
+            var p = new Herkunftsprotokoll();
+            ZonenStand personen = Zone(menge: 999.0) with
+            {
+                KaltwasserMittelC = 12.0,
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 2, Personen = 3.0 }, new WohnungstypStand { Anzahl = 1, Personen = 1.0 } }
+            };
+            Assert.Equal(240.0, Menge(personen, Art(), p: p).FlaecheM2);
+            Assert.Equal(Wertstatus.Vorgabe, p.Letzter("Zone A", ZapfFeld.ZONENFLAECHE).Status);
+            Assert.Equal(180.0, Menge(personen with { WohnflaecheJeWeM2 = 60.0 }, Art()).FlaecheM2);
+
+            // Wohneinheiten: WE = Bezugsmenge; ohne Wohnfläche der Zone die Vorgabe.
+            Assert.Equal(4.0 * 80.0, Menge(Zone(menge: 4.0) with { KaltwasserMittelC = 12.0 },
+                                           Art(bezug: ZapfBezugsart.Wohneinheiten)).FlaecheM2);
+
+            // Personen ohne Wohnungstabelle und Beschäftigte: keine WE-Zahl, keine Fläche.
+            Assert.Null(Menge(Zone() with { KaltwasserMittelC = 12.0 }, Art()).FlaecheM2);
+            Assert.Null(Menge(Zone() with { KaltwasserMittelC = 12.0 }, Art(bezug: ZapfBezugsart.Beschaeftigte)).FlaecheM2);
+
+            // Fehlt der Parameter, trägt die Zone keine Fläche und ein Hinweis nennt den Schlüssel.
+            var h = new List<ZapfHinweis>();
+            Assert.Null(Menge(personen, Art(), Parameter(null, ZapfParameter.WOHNEN_FLAECHE_JE_WE), h: h).FlaecheM2);
+            Assert.Contains(h, x => x.Code == ZapfHinweis.PARAMETER_FEHLT && x.Text.Contains(ZapfParameter.WOHNEN_FLAECHE_JE_WE));
+        }
+
+        [Fact]
         public void Der_manuelle_Tagesbedarf_gilt_ohne_Umrechnung()
         {
             ZonenStand z = Zone() with { TagesbedarfAuto = false, TagesbedarfManuellKwh = 10.0, ZapftemperaturC = 55.0 };
@@ -200,6 +242,30 @@ namespace EPOS.Kern.Tests
             ZonenStand falsch = z with { JahresmesswertBilanzgrenze = ZapfBilanzgrenze.MitVerteilung };
             Assert.Equal(ZapfEingabefehler.MesswertUngueltig,
                 Assert.Throws<ZapfprofilEingabeException>(() => Mengengeruest.MesswertAus(falsch, t)).Fehler);
+        }
+
+        [Fact]
+        public void Ein_Messwert_ohne_Einheit_oder_ohne_Grenze_wird_benannt_abgelehnt()
+        {
+            // N7: kein stiller Rückfall auf kWh/a oder Grenze 1.
+            var t = new Zonentemperaturen(50.0, 12.0, 0.0, 1);
+            ZonenStand ohneEinheit = Zone() with { Jahresmesswert = 10.0, JahresmesswertBilanzgrenze = ZapfBilanzgrenze.Zapfstelle };
+            var ex = Assert.Throws<ZapfprofilEingabeException>(() => Mengengeruest.MesswertAus(ohneEinheit, t));
+            Assert.Equal(ZapfEingabefehler.MesswertUngueltig, ex.Fehler);
+            Assert.Equal("Zone A", ex.Zone);
+
+            ZonenStand kwhOhneGrenze = Zone() with { Jahresmesswert = 1000.0, JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr };
+            Assert.Equal(ZapfEingabefehler.MesswertUngueltig,
+                Assert.Throws<ZapfprofilEingabeException>(() => Mengengeruest.MesswertAus(kwhOhneGrenze, t)).Fehler);
+
+            // Mit Grenze: angenommen und im Protokoll; ein Volumenmesswert braucht keine Grenze.
+            var p = new Herkunftsprotokoll();
+            Messwert m = Mengengeruest.MesswertAus(kwhOhneGrenze with { JahresmesswertBilanzgrenze = ZapfBilanzgrenze.MitVerteilung }, t, p);
+            Assert.Equal(ZapfBilanzgrenze.MitVerteilung, m.Grenze);
+            Assert.Equal(1000.0, m.WertKwh);
+            Assert.Equal(Wertstatus.Ueberschrieben, p.Letzter("Zone A", ZapfFeld.MESSWERT).Status);
+            ZonenStand volumen = Zone() with { Jahresmesswert = 10.0, JahresmesswertEinheit = ZapfMesswerteinheit.KubikmeterJeJahr };
+            Assert.Equal(ZapfBilanzgrenze.Zapfstelle, Mengengeruest.MesswertAus(volumen, t).Grenze);
         }
 
         // =================================================================================

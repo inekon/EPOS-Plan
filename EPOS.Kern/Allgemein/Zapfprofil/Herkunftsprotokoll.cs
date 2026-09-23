@@ -97,6 +97,9 @@ namespace WindowsFormsApplication1
         internal const string TAGESGANGSATZ = "Tagesgangsatz";
         internal const string FERIENFAKTOR = "Ferienfaktor";
         internal const string KALIBRIERFAKTOR = "Kalibrierfaktor";
+        internal const string MESSWERT = "Messwert";
+        internal const string WOHNFLAECHE_JE_WE = "WohnflaecheJeWe";
+        internal const string ZONENFLAECHE = "Zonenflaeche";
         internal const string ZIRKULATION_METHODE = "Zirkulation.Methode";
         internal const string ZIRKULATION_LAUFZEIT = "Zirkulation.Laufzeit";
         internal const string ZIRKULATION_ANTEIL = "Zirkulation.Anteil";

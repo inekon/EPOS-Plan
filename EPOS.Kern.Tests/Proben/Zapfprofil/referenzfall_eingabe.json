@@ -61,6 +61,20 @@
       "monate": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
       "woche": [0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0],
       "tagesgangsatz": 1
+    },
+    {
+      "id": 3,
+      "name": "Referenzherberge (fiktiv)",
+      "bezugsart": 3,
+      "bedarf_kwh_je_einheit_tag": [0.8, 1.0, 1.4],
+      "bezug_zapftemperatur_c": 50.0,
+      "bezug_kaltwasser_c": 12.0,
+      "bilanzgrenze": 2,
+      "kalenderart": 4,
+      "ferienfaktor": null,
+      "monate": [0.8, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.3, 1.1, 0.9, 0.8, 0.8],
+      "woche": [0.13, 0.13, 0.13, 0.13, 0.14, 0.17, 0.17],
+      "tagesgangsatz": 1
     }
   ],
   "zonen": [
@@ -91,6 +105,36 @@
       "kaltwasser_mittel_c": null,
       "kaltwasser_amplitude_k": 3.0,
       "messwert_m3": 380.0
+    },
+    {
+      "id": 3,
+      "name": "Zone C (fiktiv)",
+      "nutzungsart": 3,
+      "tagesgangsatz": null,
+      "bezugsmenge": 30.0,
+      "niveau": 2,
+      "zirkulation": true,
+      "ferien": [],
+      "zapftemperatur_c": null,
+      "kaltwasser_mittel_c": null,
+      "kaltwasser_amplitude_k": null,
+      "messwert_m3": null
+    },
+    {
+      "id": 4,
+      "name": "Zone D (fiktiv)",
+      "nutzungsart": 1,
+      "tagesgangsatz": null,
+      "bezugsmenge": 8.0,
+      "niveau": 1,
+      "zirkulation": true,
+      "ferien": [[120, 126]],
+      "zapftemperatur_c": null,
+      "kaltwasser_mittel_c": 10.0,
+      "kaltwasser_amplitude_k": null,
+      "messwert_m3": null,
+      "messwert_kwh": 6000.0,
+      "messwert_grenze": 2
     }
   ],
   "projekt": {

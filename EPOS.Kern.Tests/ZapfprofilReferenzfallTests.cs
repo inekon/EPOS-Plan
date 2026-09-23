@@ -14,8 +14,9 @@ namespace EPOS.Kern.Tests
     /// Zapfprofilgenerator Kapitel 7, Zeile Z1; Methodikkonzept 3.6 P1).
     ///
     /// <para>Das Python-Skript <c>Proben/Zapfprofil/referenzfall_bauen.py</c> rechnet aus
-    /// <c>referenzfall_eingabe.json</c> (zwei fiktive Zonen, fiktiver Katalog mit runden Werten,
-    /// Feiertage, Ferienfenster, Messwert in m³, Zirkulation nach der Methode Flächenkennwert) die
+    /// <c>referenzfall_eingabe.json</c> (vier fiktive Zonen, fiktiver Katalog mit runden Werten,
+    /// Feiertage, Ferienfenster, Messwert in m³ mit Grenze 1 und in kWh mit Grenze 2, eine Zone mit
+    /// Katalog-Grenze 2, Zirkulation nach der Methode Flächenkennwert) die
     /// Stundenwerte von Zapfung und Zirkulation nach den Formeln des Papiers — ohne den C#-Code —
     /// und legt sie mit neun Nachkommastellen ab. Dieser Test rechnet dieselbe Eingabe mit
     /// <see cref="ZapfprofilRechner"/> und verlangt je Stunde <b>Abweichung 0 nach Rundung auf
@@ -75,15 +76,23 @@ namespace EPOS.Kern.Tests
                 Gleich(k["monat_" + mm + "_zapfung_kwh"], e.Zapfung.MonatssummenKwh[m], "Monat " + mm + " Zapfung");
                 Gleich(k["monat_" + mm + "_zirkulation_kwh"], e.Zirkulation.MonatssummenKwh[m], "Monat " + mm + " Zirkulation");
             }
-            for (int z = 0; z < 2; z++)
+            Assert.Equal(4, e.JeZone.Count);
+            for (int z = 0; z < e.JeZone.Count; z++)
             {
                 Gleich(k["zone_" + (z + 1) + "_zapfung_kwh"], e.JeZone[z].Zapfung.JahressummeKwh, "Zone " + (z + 1) + " Zapfung");
                 Gleich(k["zone_" + (z + 1) + "_zirkulation_kwh"], e.JeZone[z].Zirkulation.JahressummeKwh, "Zone " + (z + 1) + " Zirkulation");
             }
-            Gleich(k["zone_2_kalibrierfaktor"], e.JeZone[1].Kalibrierfaktor.Value, "Kalibrierfaktor");
+            for (int z = 0; z < e.JeZone.Count; z++)
+            {
+                string schluessel = "zone_" + (z + 1) + "_kalibrierfaktor";
+                if (k.TryGetValue(schluessel, out double faktor))
+                    Gleich(faktor, e.JeZone[z].Kalibrierfaktor.Value, "Kalibrierfaktor Zone " + (z + 1));
+                else
+                    Assert.Null(e.JeZone[z].Kalibrierfaktor);
+            }
             Gleich(k["zirkulation_gewicht"], e.Zirkulationsansatz.Gewicht, "Gewicht α");
             Gleich(k["zirkulation_leistung_kw"], e.Zirkulationsansatz.LeistungKw, "Leistung");
-            Gleich(k["zirkulation_jahresverlust_kwh"], e.Zirkulationsansatz.JahresverlustKwh, "Jahresverlust");
+            Gleich(k["zirkulation_jahresverlust_kwh"], e.Zirkulationsansatz.JahresverlustVorKalibrierungKwh, "Jahresverlust");
             Gleich(k["laufzeit_beginn_h"], e.Laufzeitfenster.ToList().FindIndex(x => x > 0), "Beginn der Laufzeit");
             Gleich(k["groesster_stundenwert_kw"], e.Kennzahlen.GroessterStundenwertKw, "größter Stundenwert");
             Gleich(k["volllaststunden_h"], e.Kennzahlen.VolllaststundenH, "Volllaststunden");
@@ -223,6 +232,8 @@ namespace EPOS.Kern.Tests
                     i++;
                 }
                 double? m3 = ZahlOderNull(z, "messwert_m3");
+                double? kwh = ZahlOderNull(z, "messwert_kwh");
+                double? grenze = ZahlOderNull(z, "messwert_grenze");
                 double? satz = ZahlOderNull(z, "tagesgangsatz");
                 zonen.Add(new ZonenStand
                 {
@@ -238,8 +249,10 @@ namespace EPOS.Kern.Tests
                     ZapftemperaturC = ZahlOderNull(z, "zapftemperatur_c"),
                     KaltwasserMittelC = ZahlOderNull(z, "kaltwasser_mittel_c"),
                     KaltwasserAmplitudeK = ZahlOderNull(z, "kaltwasser_amplitude_k"),
-                    Jahresmesswert = m3,
-                    JahresmesswertEinheit = m3.HasValue ? ZapfMesswerteinheit.KubikmeterJeJahr : null,
+                    Jahresmesswert = m3 ?? kwh,
+                    JahresmesswertEinheit = m3.HasValue ? ZapfMesswerteinheit.KubikmeterJeJahr
+                                            : kwh.HasValue ? ZapfMesswerteinheit.KwhJeJahr : null,
+                    JahresmesswertBilanzgrenze = grenze.HasValue ? (ZapfBilanzgrenze)(int)grenze.Value : null,
                     Reihenfolge = ++reihenfolge
                 });
             }
