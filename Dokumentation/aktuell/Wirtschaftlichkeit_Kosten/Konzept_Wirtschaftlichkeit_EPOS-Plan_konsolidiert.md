@@ -2707,9 +2707,10 @@ Knopfreihe (E8a‑Q4); der Schnitt dieses Papiers (A13) ist mit **#435** ausgef�
 Szenarioabdeckung nach § 2.11.5): die Schemaschritte B (Betrachtungszeitraum und Mengenfaktor je Szenario), C
 (Trägerpreise best/worst) und D (Erlössätze best/worst) mit ihren Nummern bei der Umsetzung, der ±-Knopf an den neuen
 Orten, der Kern liest die Paare, der Hinweistext (§ 2.11.7) entfällt; ohne Degradation (A5), rechenwirksam je Pflege.
-Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3) und die sechs aus E8b (→ Register R‑E8b); nach ihrem
-Entscheid kommen der Rest von B‑6 (E7c3‑Q5), die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`,
-`Vorsorgewarnung` (E7c3‑Q6) und die zwei kleinen Aufträge zu E8b‑Q2 und E8b‑Q3 dazu. Aus der
+Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3); die sechs aus E8b sind entschieden (23.09.2026, nach
+Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6 (E7c3‑Q5) und die Anzeige der drei
+Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6) dazu; aus E8b kommt **E8c** mit den
+zwei kleinen Aufträgen zu E8b‑Q2 und E8b‑Q3. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2784,7 +2785,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E7** Teil c3 — Reste | Vbh = W_a ÷ P_Nenn in Fall 1 und Fall 2 (Rückbau von E7c2/7), `VpvCtKwh` ungerundet (E7c2‑Q5 b), Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt, E7c1‑Q8), Kapitalwert 1024 als Datenstand, B‑6 in den fünf Prioritätsdateien, die Energiesteuer-Vorschau je Wahl (E7c2‑Q8 b, Nachweisfassung 8), die Wahlen der Überlagerung als Anzeigezeilen (U22), Nr. 9h gemessen, Testdatenbank auf Generation 9 | **#452** (Merge `9c7a0023`, Nachtrag `387c2d9f`) |
 | **E8** Teil a — V‑C | die fünf Blöcke vollständig: Block 2 mit dem Zahlungsstrombild (U42), Block 4 mit Spannenbild und Verlauf (E6‑Q1, U49); die Gliederung mit Nominalsumme und Differenzspalte (U46), das Brückenbild (U41), „Was daraus im Lauf wird" (U47), die Fußzeile (U48) | **#454** (Merge `485052c6`) |
 | **E8** Teil b — V‑D | die Formelmappe Stufen 0 bis 3 (U12) samt Blattstruktur- und ClosedXML-Wache, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`, die Fußzeile in der Knopfreihe (E8a‑Q4) — E8 abgeschlossen | **#455** (Merge `704356a4`) |
-| **E9** … **E12** | V-E (Schritte B, C, D) · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E9** (offen die acht Fragen aus E7c3 und die sechs aus E8b, → Register R‑E7c3, R‑E8b) |
+| **E8c** | Bemessungstexte und Startjahr-Warnung (E8b‑Q2/Q3), dann E9 | offen — Entscheid 23.09.2026, nach Empfehlung |
+| **E9** … **E12** | V-E (Schritte B, C, D) · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E9** (offen die acht Fragen aus E7c3, → Register R‑E7c3; E8b entschieden, → Register R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
