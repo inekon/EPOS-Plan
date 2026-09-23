@@ -149,9 +149,11 @@ namespace Auslieferungsvorlage
             // gemeinsame Transaktion ueber alle Kataloge zwaenge dagegen rund 400 000
             // Zeilen samt Kaskade in EIN Rollback-Journal - gemessen ueber zehnmal
             // langsamer als derselbe Lauf in Einzelschritten.
+            // Die Tww-Kataloge des Zapfprofilgenerators folgen ihrer EIGENEN Regel
+            // (Schritt 3c, TwwKataloge): Ihre Auslieferungsmarke ist Status, nicht ReadOnly.
             if (!_arg.KatalogeVollstaendig)
                 foreach (string t in sicht.Stammtabellen)
-                    if (sicht.Hat(t, "ReadOnly"))
+                    if (sicht.Hat(t, "ReadOnly") && !TwwKataloge.IstTww(t))
                         DataRepository.ExecuteNonQuery(
                             "DELETE FROM \"" + t + "\" WHERE \"ReadOnly\" IS NULL OR \"ReadOnly\" = 0");
 
@@ -163,9 +165,10 @@ namespace Auslieferungsvorlage
             {
                 summeVor += vorher[t];
                 summeNach += nachher[t];
-                _bericht.Tabellenzeile(t + (sicht.Hat(t, "ReadOnly") ? "" : "  (ohne Spalte ReadOnly)"),
+                _bericht.Tabellenzeile(t + (TwwKataloge.IstTww(t) ? "  (eigene Regel, 3c)"
+                                            : sicht.Hat(t, "ReadOnly") ? "" : "  (ohne Spalte ReadOnly)"),
                                        vorher[t], nachher[t]);
-                if (vorher[t] > 0 && nachher[t] == 0) GeleerteKataloge.Add(t);
+                if (vorher[t] > 0 && nachher[t] == 0 && !TwwKataloge.IstTww(t)) GeleerteKataloge.Add(t);
             }
             _bericht.Tabellenzeile("SUMME", summeVor, summeNach);
 

@@ -90,6 +90,9 @@ namespace Auslieferungsvorlage
 
             // ---- 6. Datenschutzwaechter --------------------------------------------
             ok &= Datenschutzwaechter(beispielIds);
+
+            // ---- 7. Zapfprofil-Kataloge (Konzept Zapfprofilgenerator 3.2, 6 (b), (c)) --
+            ok &= new TwwKataloge(_bericht).Pruefen();
             return ok;
         }
 
