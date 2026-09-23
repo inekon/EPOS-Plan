@@ -49,7 +49,11 @@ namespace WindowsFormsApplication1
                 {
                     ok = b;
                     if (dlg != null) dlg.Schliessen(b);
-                })
+                }),
+
+                // "Import..." (Konzept Administrationsdialoge 7.1 d) nur im eigenen
+                // Fenster, nicht in der Ueberlagerung des Anlagendialogs.
+                ["ImportGaben"] = new Func<IReadOnlyDictionary<string, object>>(Importsatz)
             };
 
             dlg = new BlazorDialogForm<WaermepumpeStammDialog>(
@@ -60,6 +64,17 @@ namespace WindowsFormsApplication1
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
             return ok;
+        }
+
+        /// <summary>
+        /// Der Parametersatz des Wärmepumpenimports (VDI 3805 Blatt 22) hinter „Import…"
+        /// (Konzept Administrationsdialoge 7.1 d) — derselbe wie im Menü „Daten &amp; Import".
+        /// Er gehört dem <c>KatalogImportDialog</c>, nicht dem Stammdialog; deshalb steht er
+        /// in einer eigenen Methode und nicht im Wörterbuch von <see cref="Oeffnen"/>.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> Importsatz()
+        {
+            return KatalogImportHuelle.Gaben(KatalogImportArt.Waermepumpe);
         }
 
         /// <summary>

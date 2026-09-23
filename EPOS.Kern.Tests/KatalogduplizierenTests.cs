@@ -41,6 +41,8 @@ namespace EPOS.Kern.Tests
             BrauchwasserStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Brauchwasser, id, name),
             ProzesswaermeStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Prozesswaerme, id, name),
             StromverbraucherStammCtrl.TABLE => BedarfStammCtrl.Duplizieren(BedarfsArt.Stromverbraucher, id, name),
+            // Stufe 5: die Gebaeudeverwaltung (V16).
+            GebaeudeStammCtrl.TABLE => GebaeudeStammCtrl.Duplizieren(id, name),
             _ => throw new ArgumentOutOfRangeException(nameof(tabelle))
         };
 
@@ -85,6 +87,7 @@ namespace EPOS.Kern.Tests
         [InlineData(BrauchwasserStammCtrl.TABLE)]
         [InlineData(ProzesswaermeStammCtrl.TABLE)]
         [InlineData(StromverbraucherStammCtrl.TABLE)]
+        [InlineData(GebaeudeStammCtrl.TABLE)]
         public void Duplizieren_legt_einen_eigenen_Satz_mit_allen_Spalten_an(string tabelle)
         {
             using (var db = new TestDatenbank())

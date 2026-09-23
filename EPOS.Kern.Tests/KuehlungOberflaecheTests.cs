@@ -159,7 +159,7 @@ namespace EPOS.Kern.Tests
             const int PROJEKT = 1045;                                // Referenzprojekt ohne Kühlung
             List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
             IReadOnlyDictionary<string, object> liste =
-                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false, admin: false);
+                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
             GebaeudeProjektZeile zeile = ((List<GebaeudeProjektZeile>)liste["Zeilen"])[0];
 
             IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(zeile, PROJEKT);

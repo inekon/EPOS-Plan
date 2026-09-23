@@ -14,8 +14,9 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Gebäude eines Projekts (iU9-W9.2). Soll ist die Feldkarte von <c>Form_Gebaeude</c>:
 /// 27 Zeilen — zwei Listen, vier Filter, der Detailblock und zehn Knöpfe.
 ///
-/// <para>Drei Betriebsarten (Risiko R‑W9‑2): Projekt, Assistent, Verwaltung. Jede hat
-/// ihren eigenen Feldbestandsfall.</para>
+/// <para>Zwei Betriebsarten (Risiko R‑W9‑2): Projekt und Assistent. Die Verwaltung ist seit
+/// Stufe 5 der Neuordnung der Administrationsdialoge eine eigene Komponente —
+/// <c>GebaeudeAdminDialogTests</c>.</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
@@ -74,7 +75,6 @@ public class GebaeudeDialogTests : EposBunitContext
     private IRenderedComponent<GebaeudeDialog> Aufbauen(
         List<GebaeudeProjektZeile>? zeilen = null,
         bool wizard = false,
-        bool admin = false,
         Filterprotokoll? protokoll = null,
         Func<string, bool>? katalogLoeschen = null,
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
@@ -89,7 +89,6 @@ public class GebaeudeDialogTests : EposBunitContext
         return Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<GebaeudeProjektZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
-            .Add(x => x.Admin, admin)
             .Add(x => x.Katalog, (wohn, art, klasse, ausBaujahr) =>
             {
                 p2.Wohngebaeude = wohn;
@@ -169,18 +168,6 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
         Assert.Contains("ausgewählte Gebäude im Projekt:", cut.Markup);
-    }
-
-    [Fact]
-    public void In_der_Verwaltung_fehlt_der_ganze_Projektteil()
-    {
-        var cut = Aufbauen(admin: true);
-
-        Assert.DoesNotContain("ausgewählte Gebäude im Projekt:", cut.Markup);
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("übernehmen"));
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("entfernen"));
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Ändern");
-        Assert.Contains("Gebäude in DB:", cut.Markup);
     }
 
     /// <summary>Ohne Delegat kein Knopf — die Hausregel für alle Sprünge.</summary>
@@ -439,15 +426,6 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.False(gerufen);
     }
 
-    /// <summary>In der Katalogverwaltung gibt es den Knopf auch MIT Delegat nicht.</summary>
-    [Fact]
-    public void In_der_Verwaltung_fehlt_der_Simulationsknopf()
-    {
-        var cut = Aufbauen(admin: true, bedarfGaben: _ => new Dictionary<string, object>());
-
-        Assert.DoesNotContain("Simulation...", cut.Markup);
-    }
-
     [Fact]
     public void Der_Katalogeditor_meldet_ohne_markierten_Satz()
     {
@@ -697,40 +675,12 @@ public class GebaeudeDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Katalogverwaltung.</b> Jede Aktion schreibt sofort; OK und Abbrechen
-    /// entfallen, der Fuß trägt <b>Füller · Beenden</b>, und „Beenden" meldet
-    /// <c>true</c> — derselbe Ausgang, den dort „OK" trug.
-    /// </summary>
-    [Fact]
-    public void In_der_Verwaltung_schliesst_der_Fuss_mit_Beenden()
-    {
-        bool? ergebnis = null;
-        var cut = Aufbauen(admin: true, geschlossen: b => ergebnis = b);
-
-        IElement fuss = Fuss(cut);
-
-        Assert.Equal(new[] { "Beenden" },
-                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
-        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
-
-        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
-        Assert.Single(primaer);
-        Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
-
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Abbrechen");
-
-        primaer[0].Click();
-        Assert.True(ergebnis);
-    }
-
-    /// <summary>
     /// Die Listenleiste der Katalogspalte läuft <b>Neu… · Ändern… · Löschen</b>; den
-    /// Gebäudetyp-Knopf trägt sie NUR in der Verwaltung (Entscheid DL-Q1 b) — im
-    /// Projekt steht er im Fuß.
+    /// Gebäudetyp-Knopf trägt im Projekt der Fuß (Entscheid DL-Q1 b) — nie die
+    /// Listenleiste.
     /// </summary>
     [Fact]
-    public void Der_Gebaeudetyp_Knopf_steht_je_Betriebsart_an_genau_einer_Stelle()
+    public void Der_Gebaeudetyp_Knopf_steht_im_Projekt_nur_im_Fuss()
     {
         var projekt = Aufbauen(gebaeudetypGaben: () => new Dictionary<string, object>());
 
@@ -740,16 +690,6 @@ public class GebaeudeDialogTests : EposBunitContext
                          .Select(b => b.TextContent.Trim()).ToArray());
         Assert.Contains(Fuss(projekt).QuerySelectorAll("button"),
                         b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...");
-
-        var verwaltung = Aufbauen(admin: true,
-                                  gebaeudetypGaben: () => new Dictionary<string, object>());
-
-        Assert.Equal(new[] { "Gebäude in DB neu...", "Gebäude in DB ändern...",
-                             "Gebäude in DB löschen", "Gebäudetyp in DB ändern..." },
-                     Katalogleiste(verwaltung).QuerySelectorAll("button")
-                         .Select(b => b.TextContent.Trim()).ToArray());
-        Assert.DoesNotContain(Fuss(verwaltung).QuerySelectorAll("button"),
-                              b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...");
     }
 
     /// <summary>
