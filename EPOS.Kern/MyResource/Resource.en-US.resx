@@ -10018,8 +10018,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energy costs/CO₂ balance incomplete: the fuel consumption of boiler {0} is not available in the simulation result — boiler fuel is missing from energy costs, CO₂ balance and the BEHG levy.</value>
   </data>
-  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
-    <value>Two relief regimes coexist in this project: {0} against {1}. Section 54 EnergieStG excludes quantities already relieved under Section 53 / Section 53a(5) — the same fuel quantity must not be relieved twice; the applications are separate procedures at the customs office. The calculation is unchanged: each plant is computed according to its own choice.</value>
+  <data name="KOH_FALL5_MISCHLAGE_SPERRE" xml:space="preserve">
+    <value>Two relief regimes coexist in this project: {0} against {1}. This mix is blocked — the Section 54 amount is discarded (EUR 0), only the relief under Section 53 / Section 53a(5) is calculated. Section 54 EnergieStG excludes quantities already relieved under Section 53 / Section 53a; to claim both reliefs, choose the same regime for every plant.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_MISCHLAGE" xml:space="preserve">
+    <value>Section 54 EnergieStG blocked: Section 53 / Section 53a(5) ({0}) and Section 54 ({1}) coexist in this project. This mix is not permitted — the Section 54 amount is discarded (EUR 0); the relief under Section 53 / Section 53a remains.</value>
   </data>
   <data name="KOH_NORM_53" xml:space="preserve">
     <value>Sec. 53</value>

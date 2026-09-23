@@ -39985,11 +39985,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. Gerechnet wird unverändert je Anlage nach ihrer Wahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. Diese Mischlage ist gesperrt — der § 54-Betrag wird verworfen (0 €), gerechnet wird allein die Entlastung nach § 53 / § 53a Abs. 5. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a entlastet wurden; wer beide Entlastungen beantragen will, wählt für jede Anlage dieselbe Welt. ähnelt.
         /// </summary>
-        public static string KOH_FALL5_MISCHLAGE {
+        public static string KOH_FALL5_MISCHLAGE_SPERRE {
             get {
-                return ResourceManager.GetString("KOH_FALL5_MISCHLAGE", resourceCulture);
+                return ResourceManager.GetString("KOH_FALL5_MISCHLAGE_SPERRE", resourceCulture);
             }
         }
         
@@ -61570,6 +61570,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STEUER_ENERGIEST_54_BEMESSUNG {
             get {
                 return ResourceManager.GetString("STEUER_ENERGIEST_54_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG gesperrt: Im Projekt stehen § 53 / § 53a Abs. 5 ({0}) und § 54 ({1}) nebeneinander. Diese Mischlage ist nicht zulässig — der § 54-Betrag wird verworfen (0 €), die Entlastung nach § 53 / § 53a bleibt. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_54_MISCHLAGE {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_54_MISCHLAGE", resourceCulture);
             }
         }
         

@@ -12,11 +12,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class KohaerenzSchwere
     {
-        /// <summary>Entlastung gebucht, Belastung im Preis fehlt (Fall 2 des Konzepts § 4.1).</summary>
+        /// <summary>Entlastung gebucht, Belastung im Preis fehlt (Fall 2 des Konzepts § 4.1);
+        /// seit E7c (S‑2, Entscheid A3) auch die GESPERRTE Mischlage § 53/§ 53a neben
+        /// § 54 (Fall 5) — der § 54-Betrag ist verworfen.</summary>
         public const string WARNUNG = "WARNUNG";
 
-        /// <summary>Belastung ohne Entlastung bzw. abweichender Satz (Fälle 3 und 4);
-        /// seit FX5-b auch die Mischlage § 53/§ 53a neben § 54 (Fall 5).</summary>
+        /// <summary>Belastung ohne Entlastung bzw. abweichender Satz (Fälle 3 und 4).</summary>
         public const string HINWEIS = "HINWEIS";
 
         /// <summary>
@@ -989,48 +990,53 @@ namespace WindowsFormsApplication1
         private static void MischlageEnergiesteuer(KohaerenzLauf lauf, CultureInfo kultur,
                                                    List<KohaerenzHinweis> liste)
         {
+            // ETAPPE E7c — S‑2 (Entscheid A3 vom 20.09.2026): Die Mischlage ist
+            // GESPERRT — der Steuerrechner verwirft den § 54-Betrag. Welche Anlagen auf
+            // welcher Seite stehen, sagt DIESELBE Prüfung, die dort sperrt
+            // (SteuerGutschriftRechner.Mischlage); die Zeile steht also genau dann, wenn
+            // die Sperre greift. Schwere WARNUNG statt HINWEIS: Die Zeile benennt eine
+            // Rechenwirkung, keine bloße Stolperstelle im Antrag.
+            List<SteuerAnlage> strom, gewerbe;
+            if (!SteuerGutschriftRechner.Mischlage(lauf.Steuer, out strom, out gewerbe)) return;
+
             var seiteStrom = new List<string>();   // § 53 / § 53a Abs. 5
             var seiteGewerbe = new List<string>(); // § 54
 
-            foreach (SteuerAnlage a in lauf.Steuer.Anlagen)
+            foreach (SteuerAnlage a in strom)
             {
-                if (a == null || a.BrennstoffMWh <= 0) continue;
-
                 bool eigen;
                 string wahl = WirksameWahl(a, lauf.Steuer, out eigen);
-                if (!Gewaehlt(wahl)) continue;
-
-                string herkunft = eigen
-                    ? T("KOH_HERKUNFT_ANLAGE", "Anlagenwahl")
-                    : T("KOH_HERKUNFT_PROJEKT", "Projektwahl");
-
-                if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal))
-                    seiteStrom.Add(MitGrund(AnlagenName(a),
-                        T("KOH_NORM_53", "§ 53") + ", " + herkunft));
-                else if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal))
-                    seiteStrom.Add(MitGrund(AnlagenName(a),
-                        T("KOH_NORM_53A", "§ 53a Abs. 5") + ", " + herkunft));
-                else if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal))
-                    seiteGewerbe.Add(MitGrund(AnlagenName(a),
-                        T("KOH_NORM_54", "§ 54") + ", " + herkunft));
+                string norm = string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal)
+                    ? T("KOH_NORM_53A", "§ 53a Abs. 5") : T("KOH_NORM_53", "§ 53");
+                seiteStrom.Add(MitGrund(AnlagenName(a), norm + ", " + Herkunft(eigen)));
             }
-
-            // Beide Welten müssen wirklich besetzt sein; eine Seite allein ist der
-            // Normalfall und schweigt.
-            if (seiteStrom.Count == 0 || seiteGewerbe.Count == 0) return;
+            foreach (SteuerAnlage a in gewerbe)
+            {
+                bool eigen;
+                WirksameWahl(a, lauf.Steuer, out eigen);
+                seiteGewerbe.Add(MitGrund(AnlagenName(a), T("KOH_NORM_54", "§ 54") + ", " + Herkunft(eigen)));
+            }
 
             liste.Add(new KohaerenzHinweis
             {
-                Schwere = KohaerenzSchwere.HINWEIS,
-                Text = string.Format(kultur, T("KOH_FALL5_MISCHLAGE",
+                Schwere = KohaerenzSchwere.WARNUNG,
+                Text = string.Format(kultur, T("KOH_FALL5_MISCHLAGE_SPERRE",
                         "Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. " +
-                        "§ 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 " +
-                        "entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet " +
-                        "werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. " +
-                        "Gerechnet wird unverändert je Anlage nach ihrer Wahl."),
+                        "Diese Mischlage ist gesperrt — der § 54-Betrag wird verworfen (0 €), " +
+                        "gerechnet wird allein die Entlastung nach § 53 / § 53a Abs. 5. § 54 " +
+                        "EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a entlastet " +
+                        "wurden; wer beide Entlastungen beantragen will, wählt für jede Anlage " +
+                        "dieselbe Welt."),
                     string.Join(", ", seiteStrom.ToArray()),
                     string.Join(", ", seiteGewerbe.ToArray()))
             });
+        }
+
+        /// <summary>ETAPPE E7c: „Anlagenwahl" bzw. „Projektwahl" — woher die Wahl stammt.</summary>
+        private static string Herkunft(bool eigen)
+        {
+            return eigen ? T("KOH_HERKUNFT_ANLAGE", "Anlagenwahl")
+                         : T("KOH_HERKUNFT_PROJEKT", "Projektwahl");
         }
 
         /// <summary>

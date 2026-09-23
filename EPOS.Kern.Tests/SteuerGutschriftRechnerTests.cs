@@ -576,18 +576,21 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Zahlenprobe der Etappe (Mockup, Umsetzungsstand U7):</b> Am
-        /// Beispielprojekt mit BHKW UND Kessel zerfällt die Energiesteuer in
-        /// § 53a Abs. 5 beim Blockheizkraftwerk und § 54 beim Kessel — bis U7 kam sie
-        /// als EINE Summe zurück und ließ sich keiner der beiden Anlagen zuordnen.
+        /// <b>Die Zahlenprobe der Etappe (Mockup, Umsetzungsstand U7) — seit E7c
+        /// GESPERRT (S‑2, Entscheid A3):</b> Am Beispielprojekt mit BHKW nach § 53a
+        /// Abs. 5 UND Kessel nach § 54 stehen zwei Entlastungswelten nebeneinander.
+        /// Diese Mischlage ist nicht zulässig; der § 54-Betrag wird verworfen, der
+        /// § 53a-Teil bleibt.
         ///
         /// <para>Gemessen wird am KERN: 4.796,99 MWh (H_s) × 4,42 €/MWh = 21.202,71 €
-        /// und 2.272,26 MWh (H_s) × 1,38 €/MWh − 250 € = 2.885,72 €. Der Mockup nennt
-        /// 21.203,4 und 2.885,7 — die Zahlen des GERUNDETEN Brennwertfaktors 1,1048
-        /// (Befund B4, oben im Klassenkopf); gepinnt ist der ungerundete Quotient.</para>
+        /// (§ 53a) — unverändert. Der § 54-Teil, 2.272,26 MWh (H_s) × 1,38 €/MWh =
+        /// 3.135,72 € vor dem Sockel, ist verworfen: <b>alt 2.885,72 € (nach Sockel 250 €),
+        /// neu 0 €</b>; die Summe <b>alt 24.088,43 €, neu 21.202,71 €</b>. Der Mockup nennt
+        /// 21.203,4 — die Zahl des GERUNDETEN Brennwertfaktors 1,1048 (Befund B4, oben
+        /// im Klassenkopf); gepinnt ist der ungerundete Quotient.</para>
         /// </summary>
         [Fact]
-        public void Zahlenprobe_Die_Energiesteuer_zerfaellt_in_Paragraf_53a_und_Paragraf_54()
+        public void Zahlenprobe_Die_Mischlage_aus_Paragraf_53a_und_Paragraf_54_ist_gesperrt()
         {
             SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A), Kessel());
             e.JahresnutzungsgradProzent = 83.0;
@@ -595,12 +598,67 @@ namespace EPOS.Kern.Tests
             SteuerErgebnis r = Rechne(e);
 
             Assert.Equal(21202.71, r.Energiesteuer53Eur, 2);
-            Assert.Equal(2885.72, r.Energiesteuer54Eur, 2);
-            Assert.Equal(250.0, r.Energiesteuer54SockelEur, 6);
+            Assert.Equal(0.0, r.Energiesteuer54Eur, 6);            // E7c S-2: alt 2.885,72
+            Assert.Equal(0.0, r.Energiesteuer54SockelEur, 6);      // E7c S-2: alt 250,00
+            Assert.True(r.Energiesteuer54Gesperrt);
+            Assert.Equal(3135.72, r.Energiesteuer54VerworfenEur, 2);
 
             // Und die eine Zahl, die Erlösreihe, Ergebnisspalte und Anker lesen:
-            Assert.Equal(24088.43, r.EnergiesteuerEur, 2);
+            Assert.Equal(21202.71, r.EnergiesteuerEur, 2);         // E7c S-2: alt 24.088,43
             Assert.Equal(r.Energiesteuer53Eur + r.Energiesteuer54Eur, r.EnergiesteuerEur, 9);
+
+            // Die § 54-Zeile trägt die Begründung, die Liste ebenso.
+            Assert.StartsWith("§ 54 EnergieStG gesperrt", r.PositionsGruende[SteuerPosition.ENERGIEST_54]);
+            Assert.Contains(r.Begruendungen, b => b.StartsWith("§ 54 EnergieStG gesperrt", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Die Aufteilung selbst bleibt: Ohne Mischlage — der Kessel allein nach § 54 —
+        /// trägt der § 54-Topf seinen Betrag nach Sockel, <b>2.885,72 €</b>.
+        /// </summary>
+        [Fact]
+        public void Ohne_Mischlage_traegt_der_Kessel_seinen_Paragraf_54_Betrag()
+        {
+            SteuerErgebnis r = Rechne(Projekt(Kessel()));
+
+            Assert.False(r.Energiesteuer54Gesperrt);
+            Assert.Equal(0.0, r.Energiesteuer53Eur, 6);
+            Assert.Equal(2885.72, r.Energiesteuer54Eur, 2);
+            Assert.Equal(250.0, r.Energiesteuer54SockelEur, 6);
+        }
+
+        /// <summary>
+        /// S‑2 (Entscheid A3): Die Sperre setzt an der WAHL an und gilt auch für § 53;
+        /// ein Heizkessel mit § 53-Wahl begründet dagegen keine zweite Welt — § 53 kommt
+        /// für ihn nie in Betracht (B3), seine Wahl rechnet 0 mit eigener Begründung.
+        /// </summary>
+        [Fact]
+        public void Die_Mischlage_setzt_an_der_Wahl_an_und_nicht_am_Kessel_mit_Paragraf_53()
+        {
+            List<SteuerAnlage> strom, gewerbe;
+
+            Assert.True(SteuerGutschriftRechner.Mischlage(
+                Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53), Kessel()), out strom, out gewerbe));
+            Assert.Single(strom);
+            Assert.Single(gewerbe);
+
+            SteuerAnlage kessel53 = Kessel();
+            kessel53.EnergiesteuerWahl = DbWerte.ENERGIESTEUER_WAHL_53;
+            Assert.False(SteuerGutschriftRechner.Mischlage(
+                Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_54), kessel53), out strom, out gewerbe));
+
+            // Ohne Brennstoff keine Welt.
+            SteuerAnlage leer = Kessel();
+            leer.BrennstoffMWh = 0.0;
+            Assert.False(SteuerGutschriftRechner.Mischlage(
+                Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53), leer), out strom, out gewerbe));
+
+            // § 53 und § 54 im selben Projekt: § 53 bleibt, § 54 ist verworfen.
+            SteuerErgebnis r = Rechne(Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53), Kessel()));
+            Assert.True(r.Energiesteuer54Gesperrt);
+            Assert.Equal(26383.46, r.Energiesteuer53Eur, 2);
+            Assert.Equal(0.0, r.Energiesteuer54Eur, 6);
+            Assert.DoesNotContain(r.EnergiesteuerNachweise, n => n.Ist54);
         }
 
         /// <summary>
@@ -656,12 +714,18 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Nachweis_traegt_Paragraf_Menge_Satz_und_Betrag_je_Position()
         {
-            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A), Kessel());
+            // E7c (S-2): BHKW nach § 53a und Kessel nach § 54 im SELBEN Projekt sind
+            // seither gesperrt (§ 54 verworfen, sein Posten verlässt den Nachweis). Die
+            // zwei Nachweise stehen deshalb je in ihrem eigenen Projekt — die Zahlen sind
+            // dieselben wie vorher.
+            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A));
             e.JahresnutzungsgradProzent = 83.0;
 
             SteuerErgebnis r = Rechne(e);
+            SteuerErgebnis r54 = Rechne(Projekt(Kessel()));
 
-            Assert.Equal(2, r.EnergiesteuerNachweise.Count);
+            Assert.Single(r.EnergiesteuerNachweise);
+            Assert.Single(r54.EnergiesteuerNachweise);
 
             EnergiesteuerNachweis n53 = r.EnergiesteuerNachweise
                 .Single(n => n.Paragraf == EnergiesteuerNachweis.PARAGRAF_53A);
@@ -672,7 +736,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4.42, n53.SatzEur, 6);
             Assert.Equal(21202.71, n53.BetragEur, 2);
 
-            EnergiesteuerNachweis n54 = r.EnergiesteuerNachweise
+            EnergiesteuerNachweis n54 = r54.EnergiesteuerNachweise
                 .Single(n => n.Paragraf == EnergiesteuerNachweis.PARAGRAF_54);
             Assert.True(n54.Ist54);
             Assert.Equal(2272.26, n54.Menge, 2);
@@ -680,7 +744,7 @@ namespace EPOS.Kern.Tests
             // Der Nachweis führt den Betrag VOR dem Sockel — der fällt einmal je
             // Lauf an und steht deshalb neben den Anlagenzeilen.
             Assert.Equal(3135.72, n54.BetragEur, 2);
-            Assert.Equal(n54.BetragEur - r.Energiesteuer54SockelEur, r.Energiesteuer54Eur, 6);
+            Assert.Equal(n54.BetragEur - r54.Energiesteuer54SockelEur, r54.Energiesteuer54Eur, 6);
         }
 
         /// <summary>
