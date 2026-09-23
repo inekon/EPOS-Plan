@@ -331,6 +331,13 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
 > das UPDATE als SQL außerhalb des Repos (Commit E7c1/9 `ccf9f22f`, LFS-SHA-256 `66aa52b0…`).
 
+> **Nachtrag: fiktiver Tww-Testkatalog auf Schemastand 105 (Auftrag #443, Zapfprofilgenerator Z1), die Basis bleibt.**
+> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) ist nach dem Zusammenführen mit Stand 105 erneut
+> eingespielt: 15 erfundene Parameter des Bilanzrechenwegs (`Tab_TwwParameter_STAMM`, Katalogversion `TEST-1`, jetzt 18 Zeilen),
+> keine Zone, kein Projekt auf dem Generator; ein zweiter Lauf ändert nichts. `integrity_check` ok, `foreign_key_check` leer,
+> Größe unverändert 67 727 360 Byte; der Referenzlauf der fünf CI-Projekte ist byte-gleich gegen diese Basis
+> (LFS-SHA-256 `a978270a…`).
+
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
 > der Begründung zur Stufe GB und den Nachträgen zu den Schemaständen 101 bis 103 steht in
