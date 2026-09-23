@@ -7,7 +7,8 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Katalogpflege der Brauchwasser-Nutzungsarten</b> (Umsetzungskonzept
     /// Zapfprofilgenerator 3.2, 3.3; Stufe Z0, Posten P7): Sperren benutzter und
-    /// ausgelieferter Zeilen, „Speichern unter" als neue Zeile, Neu, Ändern, Löschen.
+    /// ausgelieferter Zeilen, „Speichern unter" als neue Zeile, Neu, Ändern, Löschen,
+    /// die Provenienz je Wertgruppe und die benannten Ausgänge.
     /// Alle Werte erfunden, jede Probe in einer eigenen leeren Datei (<see cref="TwwTestdatenbank"/>).
     /// </summary>
     [Collection("Testdatenbank")]
@@ -176,7 +177,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 7.0, 8.0, 9.0 }, n.BedarfJeNiveauKwhJeEinheitTag);
             Assert.Null(n.Freigabe);
             Assert.Equal(ZapfKatalogstatus.Eigen, n.Status);
-            Assert.Equal(TwwTestdatenbank.QUELLE, n.Herkunft.Bedarf.Quelle);
+            // Die geaenderte Gruppe ist Eigenkonstruktion in der Version der Zeile; die uebrigen bleiben.
+            Assert.Equal(new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, "T1", Herkunftsart.Eigenkonstruktion),
+                         n.Herkunft.Bedarf);
+            Assert.Equal(TwwTestdatenbank.QUELLE, n.Herkunft.Jahresgang.Quelle);
+            Assert.Equal(Herkunftsart.Fiktiv, n.Herkunft.Wochengang.Art);
 
             // Der Name einer ANDEREN Zeile ist belegt; nichts wird geschrieben.
             Assert.Equal(TwwKatalogAusgang.NameBelegt,
@@ -216,13 +221,17 @@ namespace EPOS.Kern.Tests
             Assert.False(neu.ReadOnly);
             Assert.Equal(alt, neu.IdVorlage);
             Assert.Null(neu.Freigabe);
-            // Provenienz und Herkunftsart der Vorlage uebernommen, Beleg ebenso.
-            Assert.Equal(vorlage.Herkunft.Bedarf, neu.Herkunft.Bedarf);
+            // Konzept 3.1: Die geaenderte Gruppe Bedarf ist in der neuen Version gesetzt - als
+            // Eigenkonstruktion mit neutraler Quelle, nie mit der Quelle der Vorlage. Die
+            // unveraenderten Gruppen behalten ihre Provenienz, der Beleg der Vorlage entfaellt.
+            Assert.Equal(new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, "T1-eigen", Herkunftsart.Eigenkonstruktion),
+                         neu.Herkunft.Bedarf);
+            Assert.Equal(vorlage.Herkunft.Bandbreite.Min, neu.Herkunft.Bandbreite.Min);
             Assert.Equal(vorlage.Herkunft.Jahresgang, neu.Herkunft.Jahresgang);
             Assert.Equal(vorlage.Herkunft.Wochengang, neu.Herkunft.Wochengang);
             Assert.Equal(vorlage.Monatsfaktoren, neu.Monatsfaktoren);
             Assert.Equal(satz, neu.Tagesgaenge.Id);
-            Assert.Equal("Sekundaerquelle intern", DataRepository.ExecuteScalar(
+            Assert.Null(DataRepository.ExecuteScalar(
                 "SELECT \"Beleg\" FROM \"Tab_TwwNutzungsart_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", erg.Id)));
 
             // Die Vorlage bleibt, wie sie war, und die Zone zeigt weiter auf sie.
@@ -340,6 +349,203 @@ namespace EPOS.Kern.Tests
             ScanErgebnis scanSatz = DublettenPruefung.ScanKatalog(ks);
             Assert.Null(scanSatz.Fehler);
             Assert.Equal(2, KatalogBereinigung.VerwendungZaehlen(ks.VerwendungsPruefungen[0], scanSatz.Saetze.Single(), out _));
+        }
+
+        // =================================================================================
+        // 5 — Provenienz je Wertgruppe (Konzept 3.1)
+        // =================================================================================
+
+        [Fact]
+        public void Speichern_unter_ohne_Wertaenderung_behaelt_Provenienz_und_Beleg()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int alt = TwwTestdatenbank.NutzungsartAnlegen("Auslieferung A", "T1", satz, TwwSchema.STATUS_AUSLIEFERUNG,
+                                                          readOnly: true, beleg: "Sekundaerquelle intern");
+            Nutzungsart vorlage = TwwNutzungsartCtrl.Lies(alt);
+
+            TwwKatalogErgebnis erg = TwwNutzungsartCtrl.SpeichernUnter(alt,
+                TwwNutzungsartEntwurf.Aus(vorlage) with { Katalogversion = "T2" });
+            Assert.True(erg.Ok);
+
+            Nutzungsart neu = TwwNutzungsartCtrl.Lies(erg.Id);
+            Assert.Equal(vorlage.Herkunft.Bedarf, neu.Herkunft.Bedarf);          // Version bleibt "T1": zuletzt dort gesetzt
+            Assert.Equal(vorlage.Herkunft.Jahresgang, neu.Herkunft.Jahresgang);
+            Assert.Equal(vorlage.Herkunft.Wochengang, neu.Herkunft.Wochengang);
+            Assert.Equal("Sekundaerquelle intern", DataRepository.ExecuteScalar(
+                "SELECT \"Beleg\" FROM \"Tab_TwwNutzungsart_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", erg.Id)));
+        }
+
+        [Fact]
+        public void Jede_Wertgruppe_wird_fuer_sich_nachgefuehrt()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int alt = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz, beleg: "intern");
+            TwwNutzungsartEntwurf basis = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(alt));
+            var eigen = new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, "T2", Herkunftsart.Eigenkonstruktion);
+
+            // Jahresgang geaendert (Ferienfaktor gehoert dazu), Bedarf und Wochengang nicht.
+            Nutzungsart j = TwwNutzungsartCtrl.Lies(TwwNutzungsartCtrl.SpeichernUnter(alt,
+                basis with { Katalogversion = "T2", Ferienfaktor = 0.5 }).Id);
+            Assert.Equal(basis.BedarfHerkunft, j.Herkunft.Bedarf);
+            Assert.Equal(eigen, j.Herkunft.Jahresgang);
+            Assert.Equal(basis.WochengangHerkunft, j.Herkunft.Wochengang);
+
+            // Die Bezugstemperatur gehoert zur Gruppe Bedarf; der Wochengang ist geaendert.
+            Nutzungsart b = TwwNutzungsartCtrl.Lies(TwwNutzungsartCtrl.SpeichernUnter(alt,
+                basis with
+                {
+                    Katalogversion = "T3",
+                    Bezugstemperaturen = new Temperaturbezug(60.0, 20.0),
+                    Wochenfaktoren = new[] { 0.1, 0.2, 0.2, 0.2, 0.2, 0.1, 0.0 }
+                }).Id);
+            Assert.Equal(eigen with { Version = "T3" }, b.Herkunft.Bedarf);
+            Assert.Equal(basis.JahresgangHerkunft, b.Herkunft.Jahresgang);
+            Assert.Equal(eigen with { Version = "T3" }, b.Herkunft.Wochengang);
+
+            // Eine im Entwurf ausdruecklich gesetzte andere Provenienz bleibt - nur die Version folgt.
+            var gesetzt = new Provenienz("Verfahren X", "Ausgabe 2", "egal", Herkunftsart.Verfahren);
+            Nutzungsart v = TwwNutzungsartCtrl.Lies(TwwNutzungsartCtrl.SpeichernUnter(alt,
+                basis with { Katalogversion = "T4", Bedarf = new[] { 5.0, 6.0, 7.0 }, BedarfHerkunft = gesetzt }).Id);
+            Assert.Equal(gesetzt with { Version = "T4" }, v.Herkunft.Bedarf);
+
+            // Eine unveraenderte Gruppe mit ausdruecklich korrigierter Provenienz nimmt die Korrektur an.
+            Nutzungsart k = TwwNutzungsartCtrl.Lies(TwwNutzungsartCtrl.SpeichernUnter(alt,
+                basis with { Katalogversion = "T5", JahresgangHerkunft = basis.JahresgangHerkunft with { Ausgabe = "Ausgabe 3" } }).Id);
+            Assert.Equal("Ausgabe 3", k.Herkunft.Jahresgang.Ausgabe);
+            Assert.Equal("T1", k.Herkunft.Jahresgang.Version);
+        }
+
+        [Fact]
+        public void Aendern_an_Ort_und_Stelle_verliert_den_Beleg_nur_bei_geaenderten_Werten()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz, beleg: "intern");
+            TwwNutzungsartEntwurf basis = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id));
+            string Beleg() => (string)DataRepository.ExecuteScalar(
+                "SELECT \"Beleg\" FROM \"Tab_TwwNutzungsart_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", id));
+
+            // Nur der Name: keine Wertgruppe geaendert, Provenienz und Beleg bleiben.
+            Assert.True(TwwNutzungsartCtrl.Aendern(id, basis with { Bezeichner = "Nutzung A2" }).Ok);
+            Assert.Equal("intern", Beleg());
+            Assert.Equal(basis.BedarfHerkunft, TwwNutzungsartCtrl.Lies(id).Herkunft.Bedarf);
+
+            Assert.True(TwwNutzungsartCtrl.Aendern(id, basis with { Bezeichner = "Nutzung A2", Monatsfaktoren =
+                Enumerable.Range(1, 12).Select(m => m % 2 == 0 ? 0.5 : 1.5).ToArray() }).Ok);
+            Assert.Null(Beleg());
+            Assert.Equal(Herkunftsart.Eigenkonstruktion, TwwNutzungsartCtrl.Lies(id).Herkunft.Jahresgang.Art);
+            Assert.Equal(basis.BedarfHerkunft, TwwNutzungsartCtrl.Lies(id).Herkunft.Bedarf);
+        }
+
+        // =================================================================================
+        // 6 — Weitere benannte Ausgaenge
+        // =================================================================================
+
+        [Fact]
+        public void Aendern_nennt_fehlenden_Satz_und_nimmt_einen_freien_neuen_Namen_an()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwNutzungsartEntwurf e = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id));
+
+            Assert.Equal(TwwKatalogAusgang.TagesgangsatzFehlt,
+                         TwwNutzungsartCtrl.Aendern(id, e with { IdTagesgangsatz = 9999 }).Ausgang);
+            Assert.Equal(satz, TwwNutzungsartCtrl.Lies(id).Tagesgaenge.Id);
+
+            TwwKatalogErgebnis erg = TwwNutzungsartCtrl.Aendern(id, e with { Bezeichner = "Nutzung Z", Katalogversion = "T9" });
+            Assert.True(erg.Ok);
+            Nutzungsart n = TwwNutzungsartCtrl.Lies(id);
+            Assert.Equal(("Nutzung Z", "T9"), (n.Name, n.Katalogversion));
+            Assert.Single(TwwNutzungsartCtrl.Liste());
+        }
+
+        [Fact]
+        public void ReadOnly_hat_Vorrang_vor_der_Verwendung()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Auslieferung A", "T1", satz, TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            TwwTestdatenbank.ZoneAnlegen(1, id, "Zone", 10.0);
+
+            Assert.True(TwwNutzungsartCtrl.IstReadOnly(id));
+            Assert.True(TwwNutzungsartCtrl.IstBenutzt(id));
+            TwwNutzungsartEntwurf e = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id)) with { Bedarf = new[] { 7.0, 8.0, 9.0 } };
+            Assert.Equal(TwwKatalogAusgang.ReadOnlyGesperrt, TwwNutzungsartCtrl.Aendern(id, e).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.ReadOnlyGesperrt, TwwNutzungsartCtrl.Loeschen(id).Ausgang);
+        }
+
+        [Fact]
+        public void Ein_Wurf_der_Datenbank_wird_Fehlgeschlagen_und_rollt_zurueck()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER \"Probe_Sperre_Update\" BEFORE UPDATE ON \"Tab_TwwNutzungsart_STAMM\" " +
+                "BEGIN SELECT RAISE(ABORT, 'Probe'); END");
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER \"Probe_Sperre_Insert\" BEFORE INSERT ON \"Tab_TwwNutzungsart_STAMM\" " +
+                "BEGIN SELECT RAISE(ABORT, 'Probe'); END");
+
+            TwwNutzungsartEntwurf e = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id)) with { Bedarf = new[] { 7.0, 8.0, 9.0 } };
+            TwwKatalogErgebnis aendern = TwwNutzungsartCtrl.Aendern(id, e);
+            Assert.Equal(TwwKatalogAusgang.Fehlgeschlagen, aendern.Ausgang);
+            Assert.Equal(id, aendern.Id);
+            Assert.Equal(new[] { 1.0, 2.0, 3.0 }, TwwNutzungsartCtrl.Lies(id).BedarfJeNiveauKwhJeEinheitTag);
+
+            Assert.Equal(TwwKatalogAusgang.Fehlgeschlagen, TwwNutzungsartCtrl.Neu(Entwurf("Nutzung B", satz)).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.Fehlgeschlagen,
+                         TwwNutzungsartCtrl.SpeichernUnter(id, e with { Katalogversion = "T2" }).Ausgang);
+            Assert.Single(TwwNutzungsartCtrl.Liste());
+        }
+
+        [Fact]
+        public void Die_Lesemodus_Sperre_der_Lizenz_kommt_beim_Aufrufer_an()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+
+            System.Func<bool> vorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.Schreibrecht = () => false;
+            try
+            {
+                Assert.Throws<LesemodusException>(() => TwwNutzungsartCtrl.Neu(Entwurf("Nutzung B", satz)));
+                Assert.Throws<LesemodusException>(() => TwwNutzungsartCtrl.Loeschen(id));
+            }
+            finally
+            {
+                Schreibnaht.Schreibrecht = vorher;
+            }
+            Assert.Single(TwwNutzungsartCtrl.Liste());
+        }
+
+        [Fact]
+        public void Die_Rasterregeln_lehnen_benannt_ab()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            TwwNutzungsartEntwurf e = Entwurf("Nutzung A", satz);
+
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Neu(e with { Wochenfaktoren = new[] { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 } }).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Neu(e with { Monatsfaktoren = Enumerable.Repeat(2.0, 12).ToArray() }).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Neu(e with { Bedarf = new[] { -1.0, 2.0, 4.0 } }).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Neu(e with { Bedarf = new[] { double.NaN, 2.0, 4.0 } }).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Neu(e with { Wochenfaktoren = new[] { 1.5, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0 } }).Ausgang);
+            Assert.Empty(TwwNutzungsartCtrl.Liste());
+
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung B", "T1", satz);
+            Assert.Equal(TwwKatalogAusgang.RasterUngueltig,
+                         TwwNutzungsartCtrl.Aendern(id, TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id))
+                             with { Wochenfaktoren = new double[7] }).Ausgang);
         }
     }
 }

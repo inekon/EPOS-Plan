@@ -303,7 +303,12 @@ namespace WindowsFormsApplication1
         internal static string AnteilSpalte(int stunde)
             => "Anteil_" + stunde.ToString("00", CultureInfo.InvariantCulture);
 
-        private static IReadOnlyList<Nutzungsart> NutzungsartenAus(DataTable dt, Dictionary<int, Tagesgangsatz> saetze)
+        /// <summary>
+        /// Die Nutzungsarten aus den Zeilen von <c>Tab_TwwNutzungsart_STAMM</c>; ein Tagesgangsatz,
+        /// der in <paramref name="saetze"/> fehlt, bleibt <c>null</c>. Auch der Weg der Katalogpflege
+        /// (<c>TwwNutzungsartCtrl</c>), die ihre Bezugszeile im laufenden Vorgang liest.
+        /// </summary>
+        internal static IReadOnlyList<Nutzungsart> NutzungsartenAus(DataTable dt, Dictionary<int, Tagesgangsatz> saetze)
         {
             var liste = new List<Nutzungsart>();
             if (dt == null) return liste;
