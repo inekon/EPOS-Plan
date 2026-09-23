@@ -837,6 +837,10 @@ namespace WindowsFormsApplication1
             ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
                                                                     Name(ansicht.Leitversion), kultur);
 
+            // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
+            // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
+            ansicht.Szenariofuss = Szenariofuss(spaltenIds, kultur);
+
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
             for (int i = 0; i < spaltenErg.Count; i++)
             {
@@ -948,6 +952,24 @@ namespace WindowsFormsApplication1
         {
             try { return Verlauf.GliederungenUeberT(_ergebnisse); }
             catch { return null; }
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U48): die Fußzeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben,
+        /// nichts gepflegt" — gezählt werden die Szenarien, für die einer der gezeigten Stände
+        /// ein Ergebnis trägt; die Herkunft der Annahmen nennt der Kern
+        /// (<see cref="ValeriAusweis.Szenarienfuss"/>). Ein Lesefehler lässt die Herkunft weg.
+        /// </summary>
+        private string Szenariofuss(List<int> staende, CultureInfo kultur)
+        {
+            int gerechnet = 0;
+            foreach (string s in SZENARIEN)
+                if (_ergebnisse.Any(e => e.Szenario == s && staende.Contains(e.IdProjekt))) gerechnet++;
+            WirtschaftlichkeitParameter p = null;
+            try { p = _ctrl.LadeParameter(_idStamm); }
+            catch { }
+            try { return ValeriAusweis.Szenarienfuss(gerechnet, p, kultur); }
+            catch { return ""; }
         }
 
         /// <summary>

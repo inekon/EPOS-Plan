@@ -382,6 +382,13 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Laufwirkung { get; set; } = new();
 
     /// <summary>
+    /// ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien
+    /// gerechnet sind und woher ihre Annahmen kommen („Drei Szenarien gerechnet · Annahmen aus
+    /// Vorgaben, nichts gepflegt"). Leer = keine Zeile.
+    /// </summary>
+    public string Szenariofuss { get; set; } = "";
+
+    /// <summary>
     /// ETAPPE E8a (ValERI-Block 2): die Zahlungsreihen je Stand und Szenario — aus den
     /// Zahlungsbildern des Laufs, der in dieser Sitzung gerechnet ist, und nur, wo sie zum
     /// gespeicherten Ergebnis passen. Leer = keine Jahresreihen (dann steht

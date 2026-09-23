@@ -451,6 +451,16 @@
                     }
                 }
 
+                @* ETAPPE E8a (U48, Mockup "Was ist angenommen?"): die FUSSZEILE des
+                   Abschnitts - wie viele Szenarien gerechnet sind und woher ihre Annahmen
+                   kommen ("Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts
+                   gepflegt"). Sie steht als eigene leise Zeile ueber dem Fuss mit den
+                   Knoepfen; nach einer Pflege im Parameterdialog frischt die Seite auf und
+                   die Zeile nennt die gepflegten Groessen. *@
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenariofuss))
+                {
+                    <p class="epos-status epos-wirt-szenariofuss">@_stand.Ansicht.Szenariofuss</p>
+                }
                 @BerichtKnopfteil
             </KindInhalt>
         </Gruppenkopf>

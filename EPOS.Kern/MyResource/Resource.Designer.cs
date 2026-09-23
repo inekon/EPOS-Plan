@@ -66517,6 +66517,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_DREI {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_DREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen gepflegt: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Szenario gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_TEIL {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen aus Vorgaben, nichts gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_VORGABEN {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bestandteil ähnelt.
         /// </summary>
         public static string WIRT_GL_BESTANDTEIL {

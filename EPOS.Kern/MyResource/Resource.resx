@@ -16617,6 +16617,21 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_LW_KEINE" xml:space="preserve">
     <value>keine</value>
   </data>
+  <data name="WIRT_FUSS_DREI" xml:space="preserve">
+    <value>Drei Szenarien gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_TEIL" xml:space="preserve">
+    <value>{0} von drei Szenarien gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_KEINE" xml:space="preserve">
+    <value>Noch kein Szenario gerechnet</value>
+  </data>
+  <data name="WIRT_FUSS_VORGABEN" xml:space="preserve">
+    <value>Annahmen aus Vorgaben, nichts gepflegt</value>
+  </data>
+  <data name="WIRT_FUSS_GEPFLEGT" xml:space="preserve">
+    <value>Annahmen gepflegt: {0}</value>
+  </data>
   <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
     <value>Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen.</value>
   </data>

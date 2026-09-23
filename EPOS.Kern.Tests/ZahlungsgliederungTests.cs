@@ -520,6 +520,37 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // =====================================================================
+        //  (6) U48 — die Fußzeile „Drei Szenarien gerechnet · …"
+        // =====================================================================
+
+        /// <summary>
+        /// U48: Die Fußzeile nennt, wie viele Szenarien gerechnet sind, und die Herkunft der
+        /// Annahmen — ohne Pflege „Annahmen aus Vorgaben, nichts gepflegt", mit gepflegtem Feld
+        /// die gepflegten Größen mit den Namen der Annahmentafel (dieselbe Regel).
+        /// </summary>
+        [Fact]
+        public void Die_Fusszeile_nennt_Szenarien_und_Herkunft_der_Annahmen()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Assert.Equal("Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt",
+                         ValeriAusweis.Szenarienfuss(3, p, DE));
+            Assert.StartsWith("1 von drei Szenarien gerechnet · ", ValeriAusweis.Szenarienfuss(1, p, DE));
+            Assert.StartsWith("Noch kein Szenario gerechnet · ", ValeriAusweis.Szenarienfuss(0, p, DE));
+            Assert.Equal("Drei Szenarien gerechnet", ValeriAusweis.Szenarienfuss(3, null, DE));
+
+            p.SatzWorst.Zinssatz = 5.0;
+            p.SatzBest.NutzungsdauerAenderung = 3.0;
+            string gepflegt = ValeriAusweis.Szenarienfuss(3, p, DE);
+            Assert.StartsWith("Drei Szenarien gerechnet · Annahmen gepflegt: ", gepflegt);
+            List<AnnahmeZeile> tafel = ValeriAusweis.Annahmen(p, DE);
+            Assert.Contains(tafel.Single(z => z.Schluessel == AnnahmeZeile.ZINS).Groesse, gepflegt);
+            Assert.Contains(tafel.Single(z => z.Schluessel == AnnahmeZeile.DAUER).Groesse, gepflegt);
+            Assert.DoesNotContain(tafel.Single(z => z.Schluessel == AnnahmeZeile.INVEST).Groesse, gepflegt);
+            Assert.Equal(2, tafel.Count(z => z.Gepflegt));
+            Assert.All(tafel.Where(z => z.Gepflegt), z => Assert.Equal("gepflegt", z.Herkunft));
+        }
+
         /// <summary>Ein Betrag der Seite („+1.234", „−567", „0") als Zahl.</summary>
         private static double Betrag(string text)
             => double.Parse(text.Replace("−", "-").Replace("+", ""), NumberStyles.Number, DE);
