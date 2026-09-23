@@ -16,7 +16,7 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
-| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454 |
+| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455 |
 | Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise; neuer Punkt „Ersatzbeschaffung und Restwert je Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis (Anker `preisbasis`), Nm³ und kWh im Brennstoffkatalog (Anker `einheiten`), „% der Brennstoffkosten" und „% der Stromkosten" aus dem Simulationslauf (Anker `laufgroessen`) | Statuszeilen #439, #446 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 | Programm Dokumentation/Gebäudemodell VDI 6007 | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | neue Seite: stündliches Gebäudemodell nach VDI 6007 als Vorgabe, Tagesbilanz als wählbarer Bestandsweg, Eingaben der Gebäudehülle, Luftwechsel mit Sommerlüftung, Strahlung auf die Außenbauteile, Kennzahlen und Raumtemperatur im Wärmebedarf, Vergleich der Rechenwege; Gebäude ohne Kühlung laufen im Sommer frei | Status der Gebäudesimulation, Stufen G1 + G2 und KU1 (E27–E32) |
@@ -166,6 +166,15 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   steht. (#454)
 - Seit 26.09.2026: „Was ist angenommen?" zeigt die Tafel „Was daraus im Lauf wird" und eine Fußzeile zur Herkunft
   der Annahmen. (#454)
+- Seit 26.09.2026: Der Tabellenbericht führt die Parameter der Wirtschaftlichkeit je Szenario in einem eigenen Block
+  mit benannten Zellen. (#455)
+- Seit 26.09.2026: Die Mehrjahrestabellen des Tabellenberichts rechnen mit sichtbaren Formeln auf diesen Block. (#455)
+- Seit 26.09.2026: Kapitalwert, Annuität, interner Zinsfuß und Amortisation stehen im Tabellenbericht als
+  Formeln. (#455)
+- Seit 26.09.2026: Bemessene Betriebskosten zeigen im Tabellenbericht Menge und Satz; der Betrag ist ihr
+  Produkt. (#455)
+- Seit 26.09.2026: Wort- und Tabellenbericht schließen mit der Checkliste nach DIN EN 17463, Anhang E; die
+  Ergebnisseite zeigt sie über „Anhang-E-Checkliste…". (#455)
 - Seit 26.09.2026: Der Wärmebedarf der Gebäude wird stündlich nach VDI 6007 gerechnet; der
   Wärmebedarf eines Gebäudes zeigt die Kennzahlen des Gebäudemodells, den Vergleich der
   Rechenwege und den Verlauf der Raumtemperatur. (Gebäudesimulation G1 + G2)
@@ -185,6 +194,10 @@ und mit #452 durch den Satz zur erzeugten Arbeit ersetzt (Definition der Vollben
 
 *Aus #454 ohne eigenen Satz:* die neu gefasste Hinweiszeile in Block 2 bis zum ersten Rechenlauf. Der Satz zur
 Fußzeile gilt unverändert, wenn sie mit #455 in die Knopfreihe rückt.
+
+*Aus #455 ohne eigenen Satz:* die Fußzeile in der Reihe der Knöpfe (der Satz aus #454 gilt), die Neuberechnung der
+Mappe beim Öffnen und die Gegenprobe an der Fallstudie des Anhangs D der Norm — ein Prüffall ohne sichtbare
+Änderung.
 
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
 beiden Sätze aus #411 zu „Wärmeproduktion/Stromproduktion“ sowie zu den Bedarfs- und
@@ -266,7 +279,7 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
 - Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
   22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436, E7 Teil a #437, E7 Teil b #439, E7 Teil c1
-  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454). Die Repo-Quelle
+  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454, E8 Teil b #455). Die Repo-Quelle
   `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` ist mit den Papieren zu #436 auf
   die Ergebnisseite nach E5 und E6 nachgezogen (Umschalter, vier Abschnitte, Empfehlungskarten,
   Bandbreite mit Spannenbild, Verlauf mit drei Szenarien, „Bericht erzeugen", „Verlauf nach Excel…",
@@ -289,12 +302,16 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   Zahlungsreihen und dem Zahlungsstrombild (neuer Anker `zahlungsreihen`), Block 4 mit Spannenbild und Verlauf —,
   die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte, das Brückenbild, die Tafel „Was daraus im
   Lauf wird", die Fußzeile (neue Anker `gliederung`, `bruecke`, `laufwirkung`, `szenariofuss`) und die zwei Bilder im
-  Word-Bericht (Anker `bericht`) (Tabuwort-Regex 0 Treffer); die Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` ist mit #439 um den Punkt
+  Word-Bericht (Anker `bericht`) (Tabuwort-Regex 0 Treffer), mit den Papieren zu #455 um die Excel-Arbeitsmappe mit
+  Formeln — Parameterblock mit benannten Zellen, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz,
+  Neuberechnung beim Öffnen (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite, als
+  Abschlussseite des Word-Berichts und als letztes Blatt der Mappe (neuer Anker `checkliste`; `darstellung`, `valeri`,
+  `szenariofuss`, `bericht`) (Tabuwort-Regex 0 Treffer); die Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` ist mit #439 um den Punkt
   „Leistungspreis-Staffel" (Anker `staffel`) und mit #446 um den Punkt „Ersatzbeschaffung und Restwert je
   Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis, Nm³ und kWh im
   Brennstoffkatalog und die Prozentarten der Brennstoff- und Stromkosten aus dem Lauf ergänzt
   (Tabuwort-Regex 0 Treffer in beiden Quellen); die Logbuch-Sätze zu #432, #434, #436, #437, #439, #440, #446,
-  #452 und #454 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt). Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog (#437) und die
+  #452, #454 und #455 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt). Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog (#437) und die
   Kohärenzzeile „Anlagenart fehlt" (#440) sind Kleinigkeiten ohne eigenen Satz; ebenso ohne eigenen Satz
   bleiben aus #446 der Rundungsgrund winziger Kürzungen und der Hinweis bei fehlender Preisbasis-Spalte.
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,
