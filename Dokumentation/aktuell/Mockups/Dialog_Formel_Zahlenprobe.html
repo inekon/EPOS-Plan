@@ -2151,7 +2151,7 @@ Keine stillen Teilsummen
         <tr><td>Summenzeile „Summe der Bestandteile {0} {1} — deckungsgleich / weicht um {2} ab"</td><td class="rs">BB_KOHAERENZ_OK · BB_KOHAERENZ_AB</td><td>Block B, über den Knöpfen</td></tr>
         <tr><td>Fußnote und Summe des Emissionsblocks</td><td class="rs">KDLG_EM_FUSSNOTE · KDLG_EM_SUMME</td><td>Block C</td></tr>
         <tr><td>Hinweis „Diese Regeln prüfen die Einheitenkette…"</td><td class="rs">ETV_REGELN_HINWEIS</td><td>Block D, unter dem Regelblock</td></tr>
-        <tr><td>Grund, wenn die Datenbank die Preisbasis noch nicht speichern kann (Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit <b>neu</b></td><td class="rs">ETV_PREISBASIS_OHNE_SPALTE</td><td>Block D, Preisbasis (U32)</td></tr>
+        <tr><td>Grund, wenn die Datenbank die Preisbasis noch nicht speichern kann (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit <b>neu</b></td><td class="rs">ETV_PREISBASIS_OHNE_SPALTE</td><td>Block D, Preisbasis (U32)</td></tr>
         <tr><td>Gruppe „Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)": Staffelgrenze [kW], „Preis bis zur Grenze", „Preis über der Grenze" [€/(kW·a)], Erklärzeile, Speicherfehler; Erklärtexte der drei Felder für den Hilfe-Assistenten</td><td class="rs">ETV_STAFFEL_TITEL · ETV_STAFFEL_GRENZE · ETV_STAFFEL_PREIS1 · ETV_STAFFEL_PREIS2 · ETV_STAFFEL_HINWEIS · ETV_STAFFEL_SPEICHERFEHLER · KI_DLG_ET_STAFFEL_GRENZE_ERL · KI_DLG_ET_STAFFEL_PREIS1_ERL · KI_DLG_ET_STAFFEL_PREIS2_ERL</td><td>Block A, Stromträger im Projektkontext</td></tr>
         <tr><td>Herkunft des Leistungspreises der Speicherauslegung „Leistungspreis-Staffel des Stromträgers: {0} €/(kW·a) — {1}" mit Stufe 1, Stufe 2 (Kappung zum Preis der oberen Stufe) und „Bezugsspitze nicht bekannt"</td><td class="rs">OPT_QUELLE_STAFFEL · OPT_QUELLE_STAFFEL_STUFE1 · OPT_QUELLE_STAFFEL_STUFE2 · OPT_QUELLE_STAFFEL_OHNE_SPITZE</td><td>Stromspeicher-Auslegung, Herkunftszeile</td></tr>
       </tbody>
@@ -4611,13 +4611,14 @@ Einstufung
   „Anlagenart fehlt" und die Prüfkette mit dem Ende der Frist zur Inbetriebnahme (31.12.2030 aus dem
   Katalog). <b>E7 Teil c2 (#446) erledigt U22 und U32</b> — die Überlagerung „Sätze und Herkunft" mit allen
   Größen samt dem zweiten Knopf „Wahl und Herkunft…" und die Preisbasis der Trägerkarte als eigener
-  Kartenzustand (Schemaschritt 109) — und von U39 die Entkopplung von Ersatz und Restwert je Position
-  (Schemaschritt 108). Ohne eigene Zeile dieser Tafel kommen dazu: der Stammtext der Gase in Nm³, des
-  Brennstoffs „Sonstige" in kWh (Schemaschritt 110), die Sperre der Mischlage § 53/§ 53a neben § 54 mit
+  Kartenzustand (Schemaschritt 112) — und von U39 die Entkopplung von Ersatz und Restwert je Position
+  (Schemaschritt 111). Ohne eigene Zeile dieser Tafel kommen dazu: der Stammtext der Gase in Nm³, des
+  Brennstoffs „Sonstige" in kWh (Schemaschritt 113), die Sperre der Mischlage § 53/§ 53a neben § 54 mit
   Warnung, der ungerundete EV-Mix und § 51a mit der Einspeisevergütung bei fester Vergütung (Kategorie 6),
   die Prozentarten der Brennstoff- und Stromkosten frisch aus dem Lauf und in Fall 2 die
-  Vollbenutzungsstunden aus dem KWK-Strom (Kategorie 5). Die Schemaschritte stehen bei 110: 106 eine
-  Datenbereinigung der Welle #444, 107 die Gebäudesimulation (E30), 108 bis 110 die Schritte E, F, G. Die
+  Vollbenutzungsstunden aus dem KWK-Strom (Kategorie 5). Die Schemaschritte stehen bei 113: 106 eine
+  Datenbereinigung der Welle #444, 107 die Gebäudesimulation (E30), 108 bis 110 die Kühlung der
+  Gebäudesimulation (KU1), 111 bis 113 die Schritte E, F, G. Die
   Ressourcentafeln der Kategorien 2, 4 und 5 nennen die gebauten Schlüssel; die sieben dort geplanten
   <span class="mono">BHW_UEB_*</span> sind unter ihrem geplanten Namen gebaut, der Hinweis
   <span class="mono">KOH_FALL5_MISCHLAGE</span> ist durch die Warnung
@@ -4685,7 +4686,7 @@ Einstufung
               in <span class="mono">EPOS.UI.Daten</span> und stehen auf der Seite und in Wort- und Tabellenbericht.
               <b>Teilweise gebaut mit E7c2 (#446) — die Entkopplung von Ersatz und Restwert:</b> je Position (A6) die
               nullbaren Kennzeichen <span class="mono">ErsatzFuehren</span> und <span class="mono">RestwertAnsetzen</span>
-              (Schemaschritt 108 an <span class="mono">Tab_ProjektWerte</span> und
+              (Schemaschritt 111 an <span class="mono">Tab_ProjektWerte</span> und
               <span class="mono">Tab_KostenVorlagePosition</span>; leer = wie bisher), im Zeileneditor „Position
               bearbeiten" als Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:" (leer — wie bisher · ja ·
               nein) mit Herleitungszeile; „nein" streicht das eine ohne das andere, die Tafel „Ersatz und Restwert" nennt
@@ -5004,8 +5005,8 @@ Einstufung
               der nächste freie ist <b>106</b>). Kennung im Text: UR-1 Schritt 2</td>
             <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
               <span class="mono">energy_project_settings</span></td>
-            <td class="grund"><b>erledigt mit E7c2 (#446):</b> Schemaschritt 109
-              (<span class="mono">SCHRITT_109_PREISBASIS</span>) legt die nullbare Textspalte
+            <td class="grund"><b>erledigt mit E7c2 (#446):</b> Schemaschritt 112
+              (<span class="mono">SCHRITT_112_PREISBASIS</span>) legt die nullbare Textspalte
               <span class="mono">Preisbasis</span> an <span class="mono">energy_project_settings</span> an und füllt sie
               einmalig aus <span class="mono">ID_Umrechnung</span> — „kWh" bei einer Regel nach kWh, sonst die
               Abrechnungseinheit (Testdatenbank: 5 und 23 Zeilen). <span class="mono">EnergietraegerPreisCtrl</span>

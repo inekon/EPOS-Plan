@@ -3,8 +3,8 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 23.09.2026** · Codestand `51c49577` · `SchemaStand.Zielversion` = **110**, Schemaschritte
-90–110 vergeben, neue ab **111**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
+**Stand 23.09.2026** · Codestand `41764ab0` · `SchemaStand.Zielversion` = **113**, Schemaschritte
+90–113 vergeben, neue ab **114**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
 unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im Etappenplan **E0–E12** des
 Analysepapiers. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die Degradation nicht
 ein** — der Entscheid „G3 nicht umsetzen" dieses Papiers gilt, der Widerspruch zum konsolidierten
@@ -473,7 +473,7 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   nicht berührt.
 * **Zielstand dieser Etappe:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
   `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab. Der **heutige** Schemastand ist
-  ein anderer (23.09.2026: Zielversion 110, neue Schritte ab 111) — die 72 beziffert, womit diese
+  ein anderer (23.09.2026: Zielversion 113, neue Schritte ab 114) — die 72 beziffert, womit diese
   Etappe abgeschlossen wurde, nicht den Stand des Programms.
 
 ### 10.4 Parametersatz und Dialog (Teil b)

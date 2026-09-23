@@ -1276,7 +1276,7 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wortlaut des Konzepts vor der
 jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
 #437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`), in § 8.7 und § 8.8 **vor
-#440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `51c49577`) —, nicht vor dem Schnitt.*
+#440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1628,7 +1628,7 @@ alle am 23.09.2026 entschieden — unter R‑E7c2.
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **E7 Teil c2** (#446, Merge `51c49577`) | Schemaschritt 108 (`ErsatzFuehren`, `RestwertAnsetzen` je Position, nullbar) mit Zeileneditor, Tafel „Ersatz und Restwert" und Kapitalwert; Schemaschritt 109 (`Preisbasis` an `energy_project_settings`, einmalig aus `ID_Umrechnung`); Schemaschritt 110 (die fünf Gase auf Nm³, der Brennstoff 24 auf kWh, eine Preiszeile); S‑2: die Mischlage gesperrt, § 54 = 0 mit Begründung, Kohärenzzeile als Warnung; V‑1/V‑2: EV-Mix ungerundet, Erlös auf Cent, § 51a bei fester Vergütung mit der Einspeisevergütung; B‑4: die zwei Prozentarten frisch aus dem Lauf (Arbeitskosten); E7c1‑Q2 b: Vollbenutzungsstunden in Fall 2 aus dem KWK-Strom; E7c1‑Q1: der Rundungsgrund; E7c1‑Q7: der Rest der Überlagerung (`KwkgJahresbetrag`), der KI-Feldkatalog und die Modultafel mit fünf Spalten mehr; 72 Ressourcenschlüssel neu, einer gestrichen; Testdatenbank auf Schemastand 110 | **gewollt, im Bestand ohne Wirkung** — die dreizehn Basisprojekte 9.195 von 9.195 Werten gleich; Proben im Protokoll E7c2 (S‑2 an 1030: § 54 Jahr 1 7.987,41 → 0 €; B‑4 an 1030: 300,00 → 15.483,29 €/a; E7c1‑Q2 b an 1030 mit σ 0,5: KWKG Jahr 1 6.137,94 → 7.316,03 €); Referenzlauf gegen R12 13/13, 4 250 839 Werte, 399/399 byte-gleich; Gate #446 grün |
+| **E7 Teil c2** (#446, Merge `41764ab0`) | Schemaschritt 111 (`ErsatzFuehren`, `RestwertAnsetzen` je Position, nullbar) mit Zeileneditor, Tafel „Ersatz und Restwert" und Kapitalwert; Schemaschritt 112 (`Preisbasis` an `energy_project_settings`, einmalig aus `ID_Umrechnung`); Schemaschritt 113 (die fünf Gase auf Nm³, der Brennstoff 24 auf kWh, eine Preiszeile); S‑2: die Mischlage gesperrt, § 54 = 0 mit Begründung, Kohärenzzeile als Warnung; V‑1/V‑2: EV-Mix ungerundet, Erlös auf Cent, § 51a bei fester Vergütung mit der Einspeisevergütung; B‑4: die zwei Prozentarten frisch aus dem Lauf (Arbeitskosten); E7c1‑Q2 b: Vollbenutzungsstunden in Fall 2 aus dem KWK-Strom; E7c1‑Q1: der Rundungsgrund; E7c1‑Q7: der Rest der Überlagerung (`KwkgJahresbetrag`), der KI-Feldkatalog und die Modultafel mit fünf Spalten mehr; 72 Ressourcenschlüssel neu, einer gestrichen; Testdatenbank auf Schemastand 113 | **gewollt, im Bestand ohne Wirkung** — die dreizehn Basisprojekte 9.195 von 9.195 Werten gleich; Proben im Protokoll E7c2 (S‑2 an 1030: § 54 Jahr 1 7.987,41 → 0 €; B‑4 an 1030: 300,00 → 15.483,29 €/a; E7c1‑Q2 b an 1030 mit σ 0,5: KWKG Jahr 1 6.137,94 → 7.316,03 €); Referenzlauf gegen R12 13/13, 4 250 839 Werte, 399/399 byte-gleich; Gate #446 grün |
 
 *§ 2.2, Gruppe 2, die Überlagerung (Z. 219–230):*
 
@@ -1665,7 +1665,7 @@ Vorschlag".
 >    Flottenstands** (`ErsatzintervallJahre`, `RestwertEuro` als JSON in `Tab_SpeicherAuslegung`) führt
 >    — nicht über Spalten; der Anschluss berührt deshalb die **Einfrierregel** des Projekts 1046.
 
-**Stück 1 erledigt mit E7c2 (#446):** Die Kennzeichen stehen je Position (A6), nullbar, als Schemaschritt 108 an
+**Stück 1 erledigt mit E7c2 (#446):** Die Kennzeichen stehen je Position (A6), nullbar, als Schemaschritt 111 an
 `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`; „nein" streicht die Ersatzbeschaffung bzw. den Restwert, leer
 und „ja" rechnen wie vorher; gepflegt im Zeileneditor „Position bearbeiten". Probe 1024 mit Nutzungsdauern:
 −2.897.442,20 € ohne Kennzeichen, Wärmepumpe „Ersatz nein" −2.895.805,46 €, Kessel „Restwert nein"
@@ -1688,8 +1688,8 @@ zwei übrigen Stücke.
 > des Etappenplans.
 
 **Erledigt mit E7c2 (#446):** U32 — die Preisbasis steht als eigener Kartenzustand in
-`energy_project_settings.Preisbasis` (Schemaschritt 109; Testdatenbank: 5 Zeilen „kWh", 23 mit der
-Abrechnungseinheit), der Rückfall auf −1 entfällt für die Karte. U‑1 — Schemaschritt 110 zieht Einheit und
+`energy_project_settings.Preisbasis` (Schemaschritt 112; Testdatenbank: 5 Zeilen „kWh", 23 mit der
+Abrechnungseinheit), der Rückfall auf −1 entfällt für die Karte. U‑1 — Schemaschritt 113 zieht Einheit und
 Preiseinheit der fünf Gase auf Nm³ und €/Nm³ (dazu eine Preiszeile, Projekt 1039), nach E7c2‑Q4 auch den
 Brennstoff 24 auf kWh; der Vorlagenbau läuft danach ohne Auffälligkeit. Im Konzept stehen in § 5 der Satz „Der
 Rest zu ET-D-3 (U32) ist erledigt" und der Absatz „Der Einheitenbruch ist behoben", die Regel der Preisbasis in
@@ -1703,21 +1703,21 @@ Rest zu ET-D-3 (U32) ist erledigt" und der Absatz „Der Einheitenbruch ist beho
 >     der Positionsart (#357) sowie der Hinweis „T über Vorgabe, Position ohne Dauer" und die
 >     Zeitraumzeile auf Seite und Bericht (E5, #434) — siehe Protokoll.
 
-**Zum Teil erledigt mit E7c2 (#446):** die Entkopplung von Ersatz und Restwert (Schemaschritt 108, wie oben). Im
+**Zum Teil erledigt mit E7c2 (#446):** die Entkopplung von Ersatz und Restwert (Schemaschritt 111, wie oben). Im
 Konzept führt Nr. 9h die zwei übrigen Stücke — die geräteeigenen Dauerspalten und die Speicherflotte, vorgesehen
 mit E7c3, wobei A7 und A8 beides an ND‑S3 binden — und die Entkopplung unter den erledigten.
 
 ### 8.10 Berichtigungen im gültigen Stand (#446)
 
-Die Stellen, die mit E7c2 veraltet sind; „vorher" ist der Wortlaut vor #446 (Stand `51c49577`). Je Stelle eine
+Die Stellen, die mit E7c2 veraltet sind; „vorher" ist der Wortlaut vor #446 (Stand `41764ab0`). Je Stelle eine
 Zeile:
 
 | Stelle im Konzept | vorher | nachher |
 |---|---|---|
-| Kopf | Codestand `ea8e2a12`, `SchemaStand.Zielversion` = 105, „Schemaschritte 90–105 vergeben, neue ab **106**"; „Die Schritte 97 bis 101 und 103 gehören nicht diesem Feld … Diesem Feld gehören **102** …, **104** … und **105** …" | Codestand `51c49577`, `Zielversion` = 110, 90–110 vergeben, neue ab 111; nicht diesem Feld auch 107 (Gebäudesimulation, E30); 106 an Tabellen dieses Feldes, aus der Welle #444; diesem Feld dazu 108, 109 und 110 (#446) |
+| Kopf | Codestand `ea8e2a12`, `SchemaStand.Zielversion` = 105, „Schemaschritte 90–105 vergeben, neue ab **106**"; „Die Schritte 97 bis 101 und 103 gehören nicht diesem Feld … Diesem Feld gehören **102** …, **104** … und **105** …" | Codestand `41764ab0`, `Zielversion` = 113, 90–113 vergeben, neue ab 114; nicht diesem Feld auch 107 (Gebäudesimulation, E30) und 108 bis 110 (Kühlung KU1); 106 an Tabellen dieses Feldes, aus der Welle #444; diesem Feld dazu 111, 112 und 113 (#446) |
 | § 2.2, Gruppe 2 | Wortlaut in § 8.9 | Absatz „Die Überlagerung „Sätze und Herkunft" trägt alle Wahlen und Sätze" mit drei Gruppen und „Leer heißt Vorschlag"; die Energiesteuer-Vorschau je Wahl mit E7c3 (E7c2‑Q8) |
 | § 2.2, Gruppe 3 | „… Kohärenzzeile in Firebrick, wenn der erfasste Brennstoffpreis die Energiesteuer nicht ausweist." | dazu der Knopf „Wahl und Herkunft…" und die gesperrte Mischlage |
-| § 2.5, Trägerkarte | „… und die gewählte Basis geht als `ID_Umrechnung` mit. Beim Öffnen mit gespeicherter Preisbasis wird die Anzeige umgerechnet." | „Die gewählte Basis ist ein eigener Kartenzustand" (`energy_project_settings.Preisbasis`, Schemaschritt 109; leer = Abrechnungseinheit, E7c2‑Q3; ohne Spalte der Grund) |
+| § 2.5, Trägerkarte | „… und die gewählte Basis geht als `ID_Umrechnung` mit. Beim Öffnen mit gespeicherter Preisbasis wird die Anzeige umgerechnet." | „Die gewählte Basis ist ein eigener Kartenzustand" (`energy_project_settings.Preisbasis`, Schemaschritt 112; leer = Abrechnungseinheit, E7c2‑Q3; ohne Spalte der Grund) |
 | § 2.13 (3) | Wortlaut in § 8.9; „Offen bleiben die drei Stücke oben (U39)." | Absatz „Ersatz und Restwert je Position — entkoppelt"; die Liste mit zwei Stücken; „Offen bleiben die zwei Stücke oben (U39); die Entkopplung … ist umgesetzt #446." |
 | § 3.1, Nutzungsdauer, Ersatz, Restwert | Formelblock ohne Kennzeichen | je eine Zeile „nur wenn ErsatzFuehren ≠ nein" und „nur wenn RestwertAnsetzen ≠ nein", dazu ein Satz zur Entkopplung |
 | § 3.4, Vorrangordnung Nr. 5 | „**Nur Konserve** bleiben `PROZENT_BRENNSTOFFKOSTEN` und `PROZENT_STROMKOSTEN` (Rest von Befund B-4)" | „**Projektweite Arten** … frisch aus dem jüngsten Lauf …", Bezugsgröße die Arbeitskosten (E7c2‑Q2), die Konserve nur, wo frisch nichts ermittelbar ist, mit Grund |

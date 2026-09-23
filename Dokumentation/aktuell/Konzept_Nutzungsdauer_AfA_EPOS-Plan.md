@@ -2,8 +2,8 @@
 
 Stand 23.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1 und S2
 sind umgesetzt**; S3 (Instandsetzung, Wartung, Gerätekataloge) steht aus und braucht einen eigenen
-Entscheid (Abschnitte 3 und 6). Codestand `51c49577`, `SchemaStand.Zielversion` = **110** (neue
-Schritte ab 111). **ND‑S3 ist die Etappe E10** des Etappenplans E0–E12 im Analysepapier
+Entscheid (Abschnitte 3 und 6). Codestand `41764ab0`, `SchemaStand.Zielversion` = **113** (neue
+Schritte ab 114). **ND‑S3 ist die Etappe E10** des Etappenplans E0–E12 im Analysepapier
 [`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
@@ -75,8 +75,8 @@ rechnen mit ihrer eigenen Nutzungsdauer (Vorgabe ± 2 Jahre). Der Betrachtungsze
 
 Administration → Kostenverwaltung führt „Kostenvorlagen" und „Energieträger" (`Menuetabelle.cs`). Die
 Menüwache zählt 59 Punkte, 8 Trenner, 13 klappbare und 46 nicht klappbare Knoten; ein neuer Punkt
-verschiebt diese Zahlen. Schemastand: **Zielversion 110** (Stand 23.09.2026), Schritte 90–110
-vergeben, **neue ab 111**; neue Fachtabellen sind STRICT und laufen als nummerierter Schritt über
+verschiebt diese Zahlen. Schemastand: **Zielversion 113** (Stand 23.09.2026), Schritte 90–113
+vergeben, **neue ab 114**; neue Fachtabellen sind STRICT und laufen als nummerierter Schritt über
 `SchemaMigration`.
 
 ### 1.6 VDI 2067 im Bestand
@@ -246,7 +246,7 @@ Dazu sind zwei Entscheide gefallen
 jetzt** abgekündigt, sondern nur **gekennzeichnet**; die Speichervariante sollte die Positionsarten
 20/21 lesen. Ein Schemaschritt dafür (vormals „104") bekommt seine Nummer erst bei der Umsetzung.
 Die Entkopplung von Ersatz und Restwert ist mit **A6** entschieden (Kennzeichen je **Position**,
-nullbar, NULL = wie bisher) und **umgesetzt #446** (E7c2, Schemaschritt 108): `ErsatzFuehren` und
+nullbar, NULL = wie bisher) und **umgesetzt #446** (E7c2, Schemaschritt 111): `ErsatzFuehren` und
 `RestwertAnsetzen` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, gepflegt im Zeileneditor
 „Position bearbeiten" als Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:"; „nein"
 schaltet das eine ohne das andere ab, die Tafel „Ersatz und Restwert" nennt die Abwahl (Konzept

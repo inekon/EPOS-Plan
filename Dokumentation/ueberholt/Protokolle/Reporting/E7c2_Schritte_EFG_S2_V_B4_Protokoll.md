@@ -10,15 +10,18 @@ Analysepapiers
 unter R‑A (A3, A4, A6, A9), R‑D (ET‑D‑3, U‑1), R‑Q (Q2) und R‑E7c1 (E7c1‑Q1, E7c1‑Q2 Lesart b, E7c1‑Q7), die acht
 Fragen dieser Etappe unter R‑E7c2. Anlass: der Anwender, „fahre fort" und „fahre fort auf diesem account"
 (23.09.2026) — Etappe E7, Teil c2, nach den Entscheiden E7c1‑Q1 bis E7c1‑Q8. Zweig `e7c2` von `4971556a` (`origin`,
-Schemastand 105), zwei Phasen; Phase 1: `e924834d` (E7c2/1), `66620b70` (E7c2/2), `8854ba56` (E7c2/3), `657abb4a`
+Schemastand 105), drei Phasen; Phase 1: `e924834d` (E7c2/1), `66620b70` (E7c2/2), `8854ba56` (E7c2/3), `657abb4a`
 (E7c2/4), `4354b009` (E7c2/5), `2f0fc21f` (E7c2/6), `a339a633` (E7c2/7), `3b6f54fe` (E7c2/8), `dcc875ac` (E7c2/9a),
 `ed4b3395` (E7c2/9b), `bd866b4c` (E7c2/9c); nach den Entscheiden `af450ed6` (E7c2/10, E7c2‑Q4); Phase 2: Merge
 `c3eb2cfe` (Arbeitszweig `13fff671` mit den Schemaschritten 106 und 107, dabei die Umnummerierung 107/108/109 →
-108/109/110), `84b1effd` (E7c2/11), `b943f534` (E7c2/12, Testdatenbank, vom Orchestrator committet). Merge
-`51c49577` auf dem Hilfszweig `pm2` (Basis `origin/ios_migration_september` = `13fff671`; 60 Dateien, +6 022/−232;
-der Baum gleicht `b943f534`). Opus 5.5 im Worktree `.claude/worktrees/e7c2`. Die Commit-Betreffs E7c2/1 bis
-E7c2/10 und der Phase‑1-Bericht nennen die Schrittnummern vor der Umnummerierung (107, 108, 109); dieses Protokoll
-nennt die gültigen (108, 109, 110).
+108/109/110), `84b1effd` (E7c2/11), `b943f534` (E7c2/12, Testdatenbank, vom Orchestrator committet); Phase 3:
+Merge `62bcd8a2` (Arbeitszweig `4df10282` mit den Schemaschritten 108 bis 110 der Kühlung KU1), `db26e231`
+(E7c2/13, die Umnummerierung 108/109/110 → 111/112/113), `94db9f92` (E7c2/14, Testdatenbank auf 113). Merge
+`41764ab0` auf dem Hilfszweig `pm3` (Basis `origin/ios_migration_september` = `4df10282`; 60 Dateien,
++6 022/−232; der Baum gleicht `94db9f92`); er ersetzt den ersten Merge `51c49577` auf dem Hilfszweig `pm2`
+(Basis `13fff671`, der Baum gleicht `b943f534`). Opus 5.5 im Worktree `.claude/worktrees/e7c2`. Die
+Commit-Betreffs E7c2/1 bis E7c2/12 und der Phase‑1-Bericht nennen die Schrittnummern vor den Umnummerierungen
+(107, 108, 109 bzw. 108, 109, 110); dieses Protokoll nennt die gültigen (111, 112, 113).
 
 ## Befund vor der Welle
 
@@ -50,10 +53,10 @@ nennt die gültigen (108, 109, 110).
 
 ## Gebaut — Phase 1 (E7c2/1 bis E7c2/9c)
 
-- **Schemaschritt 108 — Ersatz und Restwert je Position (E7c2/1, Schritt E).**
-  `SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen` legt die nullbaren Kennzeichen `ErsatzFuehren` und
+- **Schemaschritt 111 — Ersatz und Restwert je Position (E7c2/1, Schritt E).**
+  `SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen` legt die nullbaren Kennzeichen `ErsatzFuehren` und
   `RestwertAnsetzen` (`CHECK (… IN (0,1))`) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition` an — vier Spalten,
-  reines DDL, wiederholbar, ergebnisneutral (`SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN`). `KapitalwertRechner`:
+  reines DDL, wiederholbar, ergebnisneutral (`SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN`). `KapitalwertRechner`:
   „Ersatz nein" streicht die Kette der Ersatzbeschaffungen (die letzte Beschaffung bleibt die erste), „Restwert nein"
   den Restwert — entkoppelt, eine nicht ersetzte Position trägt ihren Restwert aus der ersten Beschaffung weiter;
   leer und „ja" rechnen Zeichen für Zeichen wie vorher. Ein Lese- und Schreibweg im Kern
@@ -64,18 +67,18 @@ nennt die gültigen (108, 109, 110).
   Herleitungszeile; die Tafel „Ersatz und Restwert" nennt eine Abwahl als Grund („— nein (Kennzeichen der
   Position)"); der KI-Feldkatalog der Vorlagenposition kennt `ersatz_fuehren` und `restwert_ansetzen`. Tests
   `ErsatzRestwertKennzeichenTests`, bunit `VorlagenPositionDialogTests`.
-- **Schemaschritt 109 — die Preisbasis als eigener Kartenzustand (E7c2/2, Schritt F).**
-  `SchemaKatalog.Schritt109_Preisbasis` legt die nullbare Textspalte `Preisbasis` an `energy_project_settings` an;
+- **Schemaschritt 112 — die Preisbasis als eigener Kartenzustand (E7c2/2, Schritt F).**
+  `SchemaKatalog.Schritt112_Preisbasis` legt die nullbare Textspalte `Preisbasis` an `energy_project_settings` an;
   der einmalige Datenteil (`PreisbasisUebernahme`) setzt „kWh", wo `ID_Umrechnung` eine Regel nach kWh trägt, sonst
   die Abrechnungseinheit des Trägers — genau die Basis, die die Karte bis dahin beim Öffnen zeigte
-  (`SCHRITT_109_PREISBASIS`). `EnergietraegerPreisCtrl` liest und schreibt die Spalte, die Karte nimmt ihre Basis aus
+  (`SCHRITT_112_PREISBASIS`). `EnergietraegerPreisCtrl` liest und schreibt die Spalte, die Karte nimmt ihre Basis aus
   ihr; der Rückfall auf −1 entfällt für die Karte, `ID_Umrechnung` bleibt die Regel der Einheitenprüfung. Fehlt die
-  Spalte (Datenbank vor 109), zeigt die Karte die Abrechnungseinheit und nennt den Grund
+  Spalte (Datenbank vor 112), zeigt die Karte die Abrechnungseinheit und nennt den Grund
   (`ETV_PREISBASIS_OHNE_SPALTE`), statt still zurückzufallen; die Versionskopie trägt die Basis mit. Neue Zuordnungen
   aus Wizard, Katalog und Variantenträger schreiben keine Preisbasis — leer heißt Abrechnungseinheit (E7c2‑Q3). Test
   `PreisbasisSchrittTests`, dazu `EnergietraegerHuelleTests`.
-- **Schemaschritt 110 — der Stammtext der Gase (E7c2/3, Schritt G; erweitert mit E7c2/10).** `GaseNormkubikmeter`,
-  reines DML nach dem Muster von Schritt 26a (`SCHRITT_110_GASE_NM3`): `Tab_Brennstoff_Stamm.Einheit` „m³" → „Nm³"
+- **Schemaschritt 113 — der Stammtext der Gase (E7c2/3, Schritt G; erweitert mit E7c2/10).** `GaseNormkubikmeter`,
+  reines DML nach dem Muster von Schritt 26a (`SCHRITT_113_GASE_NM3`): `Tab_Brennstoff_Stamm.Einheit` „m³" → „Nm³"
   und `PreisEinheit` → „€/Nm³" an den Brennstoffen 1, 2, 3, 14 und 25 (Stadtgas, Erdgas LL, Erdgas E, Biogas,
   Wasserstoff), dazu jede Preiszeile ihrer Träger, die noch „m³" führt (in der Testdatenbank eine: Projekt 1039,
   Erdgas E). Vorher gemessen: Eine Umrechnung hängt allein bei der nächsten Zuordnung am Stammtext
@@ -143,7 +146,7 @@ nennt die gültigen (108, 109, 110).
 ## Nach den Entscheiden: E7c2/10 (E7c2‑Q4)
 
 Der Anwender hat E7c2‑Q4 am 23.09.2026 abweichend von der Empfehlung entschieden: Brennstoff 24 „Sonstige" in kWh
-statt m³. Schritt 110 zieht deshalb auch dessen Stammtext — Einheit „m³" → „kWh", Preiseinheit → „€/kWh", wie bei
+statt m³. Schritt 113 zieht deshalb auch dessen Stammtext — Einheit „m³" → „kWh", Preiseinheit → „€/kWh", wie bei
 Strom (13) und Fernwärme (23). Vorher gemessen: Weder die Testdatenbank noch die Anwenderdatenbank dieses Rechners
 führt einen Träger, eine Preiszeile, eine Projektzuordnung oder eine Umrechnungsregel des Brennstoffs 24; sein Stamm
 trägt H_i = H_s = 0 — also reiner Einheitentext, keine Preisumrechnung (ohne Heizwert auch nicht möglich). Träger,
@@ -158,26 +161,58 @@ gleich, der Vorlagenbau ohne Auffälligkeit. `GaseNormkubikmeterTests` um den Br
 - **Merge `c3eb2cfe`** holt den Arbeitszweig `13fff671`: Schemaschritt 106 der Welle #444 (fremde Ergebnisverweise der
   Wirtschaftlichkeit werden NULL), Schritt 107 der Gebäudesimulation (Entscheid E30, die Ergebnistabelle je Gebäude),
   die Administrationsdialoge Stufe 2 (#445), die Papiere des Zapfprofilgenerators; die Testdatenbank auf 107 (LFS
-  `36e693ad…`). Weil `origin` 106 und 107 belegt hatte, sind die drei Schritte dieser Etappe umnummeriert, vom
-  Koordinator bestätigt: E 107 → **108**, F 108 → **109**, G 109 → **110**; `SchemaStand.Zielversion` 110, die Kette
+  `36e693ad…`). Weil `origin` 106 und 107 belegt hatte, sind die drei Schritte dieser Etappe ein erstes Mal
+  umnummeriert, vom Koordinator bestätigt: E 107 → 108, F 108 → 109, G 109 → 110; `SchemaStand.Zielversion` 110, die Kette
   105 → 106 → 107 → 108 → 109 → 110 an allen vier Stellen (`SchemaStand`, `SchemaMigration`, `TestDatenbank`,
   `Werkzeuge/Testdatenbankschema`); `SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen`, `Schritt109_Preisbasis`,
   die Migrationstests, Nachproben und Kommentare sind nachgezogen, `ETV_PREISBASIS_OHNE_SPALTE` nennt „vor 109".
   Die Konflikte sind inhaltlich aufgelöst — `SchemaStand`, `SchemaMigration` (Konstanten, Schrittliste, Methoden in
   der Folge 106 bis 110), `TestDatenbank`, `Werkzeuge/Testdatenbankschema` (zuerst 106 und 107 aus `origin`, dann
   E7c2) und die zwei Ressourcendateien (beide Seiten, je 8 003 Einträge ohne Doppel); der Designer ist neu erzeugt
-  und im Zweitlauf unverändert. Kern-Filter und Windows-Schale 0 Fehler.
+  und im Zweitlauf unverändert. Kern-Filter und Windows-Schale 0 Fehler. Die Nummern dieses Absatzes gelten bis
+  Phase 3.
 - **E7c2/11 `84b1effd` — Testfix.** Der Fall „Brennstoff 24 wandert nur im Stammtext" legte seinen Probeträger mit
   `new DbParam("@a", 0)` an; die Konstante 0 wählt in C# den Konstruktor `DbParam(string, DbParamTyp)`, der Wert
   blieb NULL, das INSERT scheiterte an NOT NULL, und die Zählung fand 0 Träger. Jetzt `(object)0`; die Klasse läuft
   4/4.
-- **E7c2/12 `b943f534` — die Testdatenbank auf Schemastand 110** (vom Orchestrator committet):
-  `Werkzeuge/Testdatenbankschema` zieht die Repo-Testdatenbank von 107 auf 110 — 108 legt die vier Kennzeichenspalten
-  an; 109 legt `Preisbasis` an und füllt sie (5 Zeilen „kWh" über die Regel, 23 mit der Abrechnungseinheit); 110
-  setzt Einheit und Preiseinheit der fünf Gase auf Nm³ und des Brennstoffs 24 auf kWh, dazu die eine Preiszeile.
-  `Tab_Applikation` trägt 110, `quick_check` ok, die 1030-Anlagen behalten die Anlagenart NEUANLAGE; LFS-Zeiger,
-  SHA-256 `8225443a…`, 67 739 648 Byte. Der Nachtrag „Schemastand 110" in `Referenzlaeufe/LIESMICH.md` steht mit den
-  Papieren zu #446.
+- **E7c2/12 `b943f534` — die Testdatenbank auf Schemastand 110** (vom Orchestrator committet, mit E7c2/14 ersetzt):
+  `Werkzeuge/Testdatenbankschema` zieht die Repo-Testdatenbank von 107 auf 110 — E (damals 108) legt die vier
+  Kennzeichenspalten an; F (109) legt `Preisbasis` an und füllt sie (5 Zeilen „kWh" über die Regel, 23 mit der
+  Abrechnungseinheit); G (110) setzt Einheit und Preiseinheit der fünf Gase auf Nm³ und des Brennstoffs 24 auf kWh,
+  dazu die eine Preiszeile. `Tab_Applikation` trägt 110, `quick_check` ok, die 1030-Anlagen behalten die Anlagenart
+  NEUANLAGE; LFS-Zeiger, SHA-256 `8225443a…`, 67 739 648 Byte.
+
+## Phase 3 (Merge `62bcd8a2`, E7c2/13, E7c2/14) und Merge `41764ab0`
+
+- **Die Kollision.** Beim Holen von `origin` vor der Statuszeile — der Merge `51c49577` stand schon auf `pm2` —
+  trug `origin/ios_migration_september` seit `c1028989` (23.09.2026, 15:42) die Kühlungswelle KU1 der
+  Gebäudesimulation mit den Schemaschritten 108 (KU-S1: vier Kühleingaben an `Tab_Gebaeude(_STAMM)` und der
+  Neubau der Sicht `Abfrage_Projektgebaeude`), 109 (KU-S2: `Tab_Einstellungen.Kuehlbetrieb`) und 110 (KU-S4: neun
+  Ergebnisspalten des Kühlkanals), `SchemaStand.Zielversion` 110 — dieselben Nummern wie E, F und G. Der
+  Koordinator hat entschieden: KU1 behält 108 bis 110, E7c2 rückt auf 111 bis 113, Zielversion 113.
+- **Merge `62bcd8a2`** holt den Arbeitszweig `4df10282` (KU1 und die Behebung des Lecks der
+  Testdatenbank-Kopien). Die Testdatenbank von `origin` (110 mit KU1, LFS `a3355a80…`) ersetzt die aus E7c2/12.
+  Die Konflikte sind inhaltlich aufgelöst, `origin` 108 bis 110 zuerst, E7c2 danach — `SchemaStand`,
+  `SchemaMigration` (Konstanten, Schrittliste, die Methoden als zwei Blöcke), `TestDatenbank`,
+  `Werkzeuge/Testdatenbankschema`; die Ressourcen ohne Konflikt, der Designer neu erzeugt und unverändert.
+- **E7c2/13 `db26e231` — die zweite Umnummerierung:** E 108 → **111**, F 109 → **112**, G 110 → **113**;
+  `SchemaStand.Zielversion` 113, die Kette 105 → 106 → 107 → 108 → 109 → 110 → 111 → 112 → 113 an allen vier
+  Stellen; `SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN`, `SCHRITT_112_PREISBASIS`, `SCHRITT_113_GASE_NM3`,
+  `SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen` und `Schritt112_Preisbasis`, die Migrationstests
+  (Zielstand ≥ 111, 112, 113), Protokollzeilen, Nachproben und Kommentare; `ETV_PREISBASIS_OHNE_SPALTE` nennt
+  „vor 112" (de und en), der Designer ist neu erzeugt. Umnummeriert sind nur Zeilen, die E7c2 gegenüber `origin`
+  hinzufügt; eine gleichlautende KU-S2-Zeile im Werkzeug ist auf 109 zurückgesetzt. Kern-Filter, Windows-Schale
+  und Testdatenbankschema 0 Fehler.
+- **E7c2/14 `94db9f92` — die Testdatenbank auf Schemastand 113:** `Werkzeuge/Testdatenbankschema` zieht die
+  Repo-Testdatenbank von 110 (Stand `4df10282` mit KU1) auf 113 — 111 legt die vier Kennzeichenspalten an; 112
+  legt `Preisbasis` an und füllt sie (5 Zeilen „kWh", 23 mit der Abrechnungseinheit); 113 setzt Einheit und
+  Preiseinheit der fünf Gase auf Nm³ und des Brennstoffs 24 auf kWh, dazu die Preiszeile 1039.
+  `Tab_Applikation` trägt 113, `quick_check` ok; LFS-Zeiger, SHA-256 `689a0755…`, 67 743 744 Byte. Der Nachtrag
+  „Schemastand 113" in `Referenzlaeufe/LIESMICH.md` steht mit den Papieren zu #446.
+- **Tests nach dem dritten Nachzug:** gefiltert Kern 244/244 und Oberfläche 500/500; mit einer 113-Kopie
+  Schemastand-Wache 1/1, Auslieferungsvorlage 26/26.
+- **Merge `41764ab0`** auf dem Hilfszweig `pm3` über `4df10282` (60 Dateien, +6 022/−232, der Baum gleicht
+  `94db9f92`); er ersetzt den Merge `51c49577` auf `pm2`. Das Gate #446 lief auf diesem Baum (unten).
 
 ## Fragen aus der Etappe
 
@@ -213,15 +248,15 @@ Gemessen an Kopien der Testdatenbank im Scratchpad des Agenten: vorher der Basis
 
 | Punkt | Probe | vorher | nachher | Grund |
 |---|---|---|---|---|
-| E (108) | 1024 mit Nutzungsdauern (Wärmepumpe 15 a, Kessel 25 a), ohne Kennzeichen | −2.897.442,20 € | — | Ausgangslage der Probe |
+| E (111) | 1024 mit Nutzungsdauern (Wärmepumpe 15 a, Kessel 25 a), ohne Kennzeichen | −2.897.442,20 € | — | Ausgangslage der Probe |
 | E | Wärmepumpe „Ersatz nein" | −2.897.442,20 € | −2.895.805,46 € | keine Ersatzbeschaffung |
 | E | Kessel „Restwert nein" | −2.897.442,20 € | −2.897.995,88 € | kein Restwert |
 | E | beide Positionen, Ersatz und Restwert „nein" | −2.897.442,20 € | −2.896.359,13 € | gleich dem Anker (ohne Dauer weder Ersatz noch Restwert) |
 | E | „ja" | −2.897.442,20 € | gleich | „ja" rechnet wie leer |
-| F (109) | Migration der Testdatenbank | — | 5 Zeilen „kWh" (Regel nach kWh), 23 Abrechnungseinheit | die Basis, die die Karte beim Öffnen zeigte |
+| F (112) | Migration der Testdatenbank | — | 5 Zeilen „kWh" (Regel nach kWh), 23 Abrechnungseinheit | die Basis, die die Karte beim Öffnen zeigte |
 | F | 1030 (Erdgas E, Regel 67 nach kWh) und 1024 (Stadtgas ohne Regel) mit Basis kWh: Preise und Kosten | — | gleich | Eingabehilfe; gerechnet wird der Basiswert je Abrechnungseinheit |
 | F | U32: Öffnen, Speichern, Öffnen (Stadtgas ohne Regel nach kWh, Basis kWh) | Abrechnungseinheit | kWh | eigene Spalte statt Regelkennung |
-| G (110) | Stammtext der Testdatenbank | „m³" | 5 Einheiten, 5 Preiseinheiten und 1 Preiszeile (1039) auf Nm³; Brennstoff 24 auf kWh | Energiekosten, Emissionen und frischer Lauf der Basisprojekte gleich; Vorlagenbau ohne Auffälligkeit |
+| G (113) | Stammtext der Testdatenbank | „m³" | 5 Einheiten, 5 Preiseinheiten und 1 Preiszeile (1039) auf Nm³; Brennstoff 24 auf kWh | Energiekosten, Emissionen und frischer Lauf der Basisprojekte gleich; Vorlagenbau ohne Auffälligkeit |
 | S‑2 | 1030 (produzierendes Gewerbe, BHKW § 53, Kessel § 54): § 54 Jahr 1 | 7.987,41 € | 0 € | Sperre; Kohärenzzeile Warnung |
 | S‑2 | ebenso, Kapitalwert | −20.388.846,98 € | −20.507.679,50 € | — |
 | S‑2 | Zahlenprobe U7 (§ 53a und § 54 im selben Projekt, `SteuerGutschriftRechnerTests`) | 24.088,43 €/a | 21.202,71 €/a | der § 54-Betrag 2.885,72 € ist verworfen |
@@ -243,20 +278,29 @@ Gemessen an Kopien der Testdatenbank im Scratchpad des Agenten: vorher der Basis
 
 ## Zahlen und Abnahme
 
-- **Im Worktree `e7c2`** (Phase 2, nach dem Merge `c3eb2cfe`): Kern-Filter und Windows-Schale 0 Fehler; gefiltert
+- **Im Worktree `e7c2`** (Phase 2, nach dem Merge `c3eb2cfe`; die drei Schritte hießen dort 108 bis 110, die
+  „110-Kopie" trägt sie): Kern-Filter und Windows-Schale 0 Fehler; gefiltert
   Kern 214 und Oberfläche 500 grün; voller Lauf `WP-Plan.Kern.slnf` auf der Repo-Datenbank (Stand 107): EPOS.Kern
   5 054 von 5 055 — rot allein die Schemastand-Wache —, EPOS.UI 5 403, KiKern 524, SpeicherEngine 386,
   SpeicherPlanung 27 und 1 übersprungen; `Auslieferungsvorlage.Tests` 14 von 26 rot („107, erwartet 110");
   Gegenprobe mit einer außerhalb des Repos auf 110 gebrachten Kopie: Schemastand-Wache 1/1, Auslieferungsvorlage
   26/26 (dabei lief ein fremder Testprozess aus einem anderen Worktree, beide Läufe grün). Migrationsprotokoll
-  107 → 110: 108 vier Spalten; 109 fünf Zeilen kWh, 23 Abrechnungseinheit; 110 fünf Einheiten und Preiseinheiten,
+  107 → 110: E vier Spalten; F fünf Zeilen kWh, 23 Abrechnungseinheit; G fünf Einheiten und Preiseinheiten,
   eine Preiszeile, Brennstoff 24 Einheit und Preiseinheit (0 Nutzer). Referenzlauf aller dreizehn Projekte auf der
   110-Kopie gegen `2026-09-23_R12_Gebaeudemodell`: 13/13 PASS, 4 250 839 Werte, 399/399 CSV byte-gleich — die Basis
   bleibt R12. SQL-Prüfer 1 705 Texte, 0 Fundstellen; Designer unverändert; Ressourcen je 8 003 Einträge.
-- **Gate #446** auf dem Baum von `51c49577` (Worktree `e7c2`, 15:30–15:31): Kern-Filter (Release) 0 Fehler;
-  ChartProben 135 Bilder geprüft, 0 Verstöße, alle grün; Dokumentationswachen 26/26; Windows-Schale 0 Fehler; der
-  volle Testlauf ist der aus Phase 2 (oben) — mit der Datenbank auf 110 sind Schemastand-Wache (1/1) und
-  Auslieferungsvorlage (26/26) grün.
+- **Nach dem dritten Nachzug** (Phase 3): Kern-Filter, Windows-Schale und Testdatenbankschema 0 Fehler; gefiltert
+  Kern 244/244 und Oberfläche 500/500; mit einer 113-Kopie Schemastand-Wache 1/1, Auslieferungsvorlage 26/26.
+  Migrationsprotokoll 110 → 113 (E7c2/14): 111 vier Spalten; 112 fünf Zeilen kWh, 23 Abrechnungseinheit; 113 fünf
+  Einheiten und Preiseinheiten, die Preiszeile 1039, Brennstoff 24 auf kWh.
+- **Gate #446** auf dem Baum von `41764ab0` (16:29–16:34): Kern-Filter (Release) 0 Fehler; ChartProben 135 Bilder
+  geprüft, 0 Verstöße, alle grün; Tests Kern-Filter 0 Fehler, 11 430 bestanden, 1 übersprungen (EPOS.Kern 5 087,
+  EPOS.UI 5 406, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen) — die Schemastand-Wache
+  ist mit der Testdatenbank auf 113 grün; Dokumentationswachen 26/26; Referenzlauf 13/13 PASS gegen
+  `2026-09-23_R12_Gebaeudemodell`, 4 250 839 Werte in der Toleranz, 399/399 CSV byte-gleich — die Basis bleibt R12;
+  SQL-Prüfer 1 712 Texte, 0 Fundstellen; Windows-Schale 0 Fehler. Vorher, auf dem Baum von `51c49577` (gleich
+  `b943f534`; Worktree `e7c2`, 15:30–15:31): Kern-Filter (Release) 0 Fehler; ChartProben 135 Bilder, 0 Verstöße;
+  Dokumentationswachen 26/26; Windows-Schale 0 Fehler; der volle Testlauf war der aus Phase 2 (oben).
 - **Ressourcen** (de und en): **72 neu.** Aus den Punkten 1 bis 5 (17): `ERK_HERLEITUNG`, `ERK_INFO`, `ERK_JA`,
   `ERK_LBL_ERSATZ`, `ERK_LBL_RESTWERT`, `ERK_LEER`, `ERK_NEIN`, `ERK_WIE_BISHER`; `ND_TAFEL_ERSATZ_AUS`,
   `ND_TAFEL_RESTWERT_AUS`; `KI_DLG_VOP_ERSATZ_NAME`, `KI_DLG_VOP_ERSATZ_ERL`, `KI_DLG_VOP_RESTWERT_NAME`,
@@ -267,9 +311,10 @@ Gemessen an Kopien der Testdatenbank im Scratchpad des Agenten: vorher der Basis
   `WIRT_KWKG_SP_KUERZUNG`; 44 `BHW_UEB_*` — die sieben im Mockup geplanten unter ihrem geplanten Namen
   (`BHW_UEB_KNOPF_STEUERN`, `BHW_UEB_G_ENERGIEST`, `BHW_UEB_G_STROMST`, `BHW_UEB_WIRKUNG`, `BHW_UEB_WIRKUNG_JAHR1`,
   `BHW_UEB_SCOPE_PROJEKT`, `BHW_UEB_SCOPE_ANLAGE`) und 37 weitere. **1 gestrichen:** `KOH_FALL5_MISCHLAGE`. Kein
-  bestehender Text geändert. Je Sprache 7 932 → 8 003 Einträge.
-- **Schemaschritte 108, 109, 110** (`SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN`, `SCHRITT_109_PREISBASIS`,
-  `SCHRITT_110_GASE_NM3`), `SchemaStand.Zielversion` = 110; der nächste freie Schritt ist **111**.
+  bestehender Text geändert. Je Sprache 7 932 → 8 003 Einträge über `13fff671`, 7 936 → 8 007 über `4df10282`
+  (die vier Schlüssel dazwischen bringt die Kühlung KU1).
+- **Schemaschritte 111, 112, 113** (`SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN`, `SCHRITT_112_PREISBASIS`,
+  `SCHRITT_113_GASE_NM3`), `SchemaStand.Zielversion` = 113; der nächste freie Schritt ist **114**.
 
 ## Abnahme am Gerät (A‑E7c2‑1, Windows und iPad)
 
@@ -291,7 +336,7 @@ Umbruch fünfstelliger MWh prüfen. (9) Englisch.
 ## Befunde nebenbei
 
 - **H_i = H_s = 0 beim Brennstoff 24.** Der Stamm führt für „Sonstige" keinen Heizwert; eine Preisumrechnung ist
-  nicht möglich, Schritt 110 zieht nur den Einheitentext. Offen: H_i = H_s = 1,0 wie bei Strom (13) und Fernwärme
+  nicht möglich, Schritt 113 zieht nur den Einheitentext. Offen: H_i = H_s = 1,0 wie bei Strom (13) und Fernwärme
   (23), in einer späteren Stufe (E7c3).
 - **Word-Tafel mit 16 Spalten.** Mit Fall 2 trägt die Modultafel im Wortbericht 16 Spalten in 7 pt; fünfstellige
   MWh-Werte können umbrechen — Abnahme am Gerät.
@@ -306,11 +351,16 @@ Umbruch fünfstelliger MWh prüfen. (9) Englisch.
   bekommt deshalb bei bindendem Deckel auch ohne Kürzung einen höheren Jahresbetrag als ohne Kennzeichen — am
   Beispiel des Rechenwegs 05 (Hilfsstrom 86,8 MWh) 33.800,2 statt 32.022,2 € im Jahr 1 (von Hand gerechnet, nicht
   gemessen). Das folgt aus dem Wortlaut von E7c1‑Q2 b; ob es so gewollt ist, wäre eine Frage an den Anwender.
-- **Schrittnummern.** Gebaut sind die drei Schritte als 107, 108 und 109 mit einer Lücke bei 106 bis zum Nachzug;
-  der Merge `c3eb2cfe` hat sie auf 108, 109 und 110 umnummeriert. Die Commit-Betreffs E7c2/1 bis E7c2/10 und der
-  Phase‑1-Bericht nennen die alten Nummern.
-- **Schlüsselzahl der Merge-Nachricht.** `51c49577` nennt 86 neue Schlüssel; die Ressourcendateien tragen 72 neue
-  (die 17 aus den Punkten 1 bis 5 sind darin enthalten).
+- **Schrittnummern — zweimal umnummeriert, eine Kollision.** Gebaut sind die drei Schritte als 107, 108 und 109
+  mit einer Lücke bei 106 bis zum Nachzug; der Merge `c3eb2cfe` hat sie auf 108, 109 und 110 gerückt (`origin` hatte
+  106 und 107 belegt), der Nachzug `4df10282` mit E7c2/13 auf 111, 112 und 113 (`origin` trägt seit `c1028989` die
+  Kühlung KU1 mit 108 bis 110): E 107 → 108 → 111, F 108 → 109 → 112, G 109 → 110 → 113, die Zielversion 109 →
+  110 → 113. Bemerkt wurde die Kollision erst beim Holen von `origin` vor der Statuszeile, als der Merge `51c49577`
+  schon stand; er ist durch `41764ab0` ersetzt. Die Commit-Betreffs E7c2/1 bis E7c2/12 und der Phase‑1-Bericht
+  nennen ältere Nummern. Vor jedem Schemaschritt `origin` holen und die Nummer dort prüfen — auch unmittelbar vor
+  dem Merge.
+- **Schlüsselzahl der Merge-Nachrichten.** `51c49577` und `41764ab0` nennen 86 neue Schlüssel; die
+  Ressourcendateien tragen 72 neue (die 17 aus den Punkten 1 bis 5 sind darin enthalten) und einen gestrichenen.
 
 ## Offen
 
@@ -320,13 +370,14 @@ Umbruch fünfstelliger MWh prüfen. (9) Englisch.
   Rest von § 6.3 Nr. 9h (geräteeigene Dauerspalten, Anschluss der Speicherflotte — A7 und A8 binden beides an ND‑S3,
   die Zuordnung ist mit dem Auftrag zu klären), die Katalogzeilen ohne Leser (E7c1‑Q8) und H_i = H_s = 1,0 für den
   Brennstoff 24; danach E8.
-- **Push** nach der Regel des Anwenders ohne Rückfrage aus dem Hilfszweig `pm2`, sobald diese Papiere dort gemergt
-  sind (`ios_migration_september` und `main`).
+- **Push** nach dem dritten Nachzug, nach der Regel des Anwenders ohne Rückfrage aus dem Hilfszweig `pm3`, sobald
+  diese Papiere dort gemergt sind (`ios_migration_september` und `main`).
 - **Papiere mit der Statuszeile:** Register (A3, A4, A6, A9, ET‑D‑3, U‑1, Q2, R‑E7c1 Q1/Q2/Q7, EZ‑9, EZ‑10, neue
-  Familie R‑E7c2), Konzept (Kopf mit Schemastand 110, § 2.2, § 2.5, § 2.13 (3), § 3.1, § 3.4, § 3.5, § 3.6, § 3.7,
+  Familie R‑E7c2), Konzept (Kopf mit Schemastand 113, § 2.2, § 2.5, § 2.13 (3), § 3.1, § 3.4, § 3.5, § 3.6, § 3.7,
   § 3.9, § 3.10, § 4, § 5, § 6.1, § 6.2, § 6.3 Nr. 9h, § 7, Anhang), Protokoll der Entscheidwege (§ 8.9, § 8.10, § 0.5
   und Kopf), Analysepapier (Kopf, Nachtrag, § 0, § 5, § 6), Rechenwege 01, 02, 04, 05, 06, 07 und 08, Mockup
   (Ressourcentafeln der Kategorien 2, 4 und 5, Berechnungsgrundlagen der Kategorien 5 und 6, U22 und U32 erledigt,
   U39 teilweise, Stand-Absatz), Logbuch-Sätze und die Wiki-Quellen der Seiten Wirtschaftlichkeit und Kosten; der
-  Nachtrag „Schemastand 110" in `Referenzlaeufe/LIESMICH.md`; die Köpfe des Szenarienkonzepts, der Mockup-Prüfung und
-  des Nutzungsdauer-Konzepts auf Schemastand 110.
+  Nachtrag „Schemastand 113" in `Referenzlaeufe/LIESMICH.md`; die Köpfe des Szenarienkonzepts, der Mockup-Prüfung und
+  des Nutzungsdauer-Konzepts auf Schemastand 113; die Umnummerierung auf 111 bis 113 und der Codestand `41764ab0`
+  in allen Papieren als eigener Commit.

@@ -375,23 +375,24 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Projekte ist **13/13 PASS** gegen diese Basis (4 250 839 Werte, 399/399 CSV byte-gleich, außer
 > `protokoll.txt`) (LFS-SHA-256 `36e693ad…`).
 
-> **Nachtrag: Schemastand 110 (Auftrag #446, Etappe E7c2), die Basis bleibt.** Drei Migrationsschritte
-> (Konzept Wirtschaftlichkeit § 2.5, § 2.13 (3) und § 5; Register A6, ET‑D‑3, U‑1 mit A9): **108**
-> (`SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN`, Quelle `SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen`) legt
+> **Nachtrag: Schemastand 113 (Auftrag #446, Etappe E7c2), die Basis bleibt.** Drei Migrationsschritte
+> (Konzept Wirtschaftlichkeit § 2.5, § 2.13 (3) und § 5; Register A6, ET‑D‑3, U‑1 mit A9): **111**
+> (`SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN`, Quelle `SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen`) legt
 > die nullbaren Kennzeichen `ErsatzFuehren` und `RestwertAnsetzen` (`CHECK` 0/1) an `Tab_ProjektWerte` und
-> `Tab_KostenVorlagePosition` an — vier Spalten, **reines DDL**, alle Zeilen leer (= wie bisher); **109**
-> (`SCHRITT_109_PREISBASIS`, Quellen `SchemaKatalog.Schritt109_Preisbasis` und
+> `Tab_KostenVorlagePosition` an — vier Spalten, **reines DDL**, alle Zeilen leer (= wie bisher); **112**
+> (`SCHRITT_112_PREISBASIS`, Quellen `SchemaKatalog.Schritt112_Preisbasis` und
 > `EPOS.Kern/Allgemein/Update/PreisbasisUebernahme.cs`) legt die Textspalte `Preisbasis` an
 > `energy_project_settings` an und füllt sie einmalig aus `ID_Umrechnung` (5 Zeilen „kWh", 23 mit der
-> Abrechnungseinheit); **110** (`SCHRITT_110_GASE_NM3`, Quelle `EPOS.Kern/Allgemein/Update/GaseNormkubikmeter.cs`),
+> Abrechnungseinheit); **113** (`SCHRITT_113_GASE_NM3`, Quelle `EPOS.Kern/Allgemein/Update/GaseNormkubikmeter.cs`),
 > **reines DML**, setzt `Tab_Brennstoff_Stamm.Einheit`/`PreisEinheit` der fünf Gase auf Nm³ und €/Nm³ und des
 > Brennstoffs 24 „Sonstige" auf kWh und €/kWh, dazu die eine Preiszeile mit „m³" (Projekt 1039, Erdgas E).
-> `Tab_Applikation` trägt 110, `quick_check` ok, die Anlagenart NEUANLAGE der 1030-Anlagen bleibt, Größe
-> 67 739 648 Byte. **Keine Einfrierregel ist berührt** (die Liste nennt von `Tab_Brennstoff_Stamm` nur
-> CO₂/SO₂/NOx/Staub), und der Referenzlauf aller dreizehn Projekte auf der 110-Kopie ist **13/13 PASS** gegen
-> diese Basis (4 250 839 Werte, 399/399 CSV byte-gleich). Nachgezogen mit `dotnet run --project
-> Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der Fassung 107 (Commit E7c2/12
-> `b943f534`, LFS-SHA-256 `8225443a…`).
+> `Tab_Applikation` trägt 113, `quick_check` ok, Größe 67 743 744 Byte. **Keine Einfrierregel ist berührt** (die
+> Liste nennt von `Tab_Brennstoff_Stamm` nur CO₂/SO₂/NOx/Staub), und der Referenzlauf aller dreizehn Projekte ist
+> **13/13 PASS** gegen diese Basis (4 250 839 Werte in der Toleranz, 399/399 CSV byte-gleich; Gate #446 auf
+> `41764ab0`). Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema --
+> Referenzlaeufe/Kenndaten_Test.sqlite` auf der Fassung 110 der Kühlung (Commit E7c2/14 `94db9f92`, LFS-SHA-256
+> `689a0755…`). Gebaut waren die drei Schritte als 107 bis 109; die Zwischenfassung aus E7c2/12 (`b943f534`, 107 →
+> 110 mit den Nummern 108 bis 110 für diese Schritte) ist ersetzt.
 
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
