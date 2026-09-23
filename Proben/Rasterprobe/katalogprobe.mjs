@@ -285,6 +285,93 @@ const STUFE1 = () => {
   };
 };
 
+// ------------------------------------------------ STUFE 2 der Neuordnung
+//  (Konzept Administrationsdialoge, V4 "die Zeile ist die Wahl" und V10 "das
+//  Schloss"). Gemessen im Zustand nach der Wahl der ersten Zeile:
+//    * die Hoehe JEDER gezeichneten Datenzeile - alle gleich dem Zeilenmass,
+//      keine bricht um (ein Umbruch machte sie hoeher);
+//    * die Wahlspalte ist weg (kein th.epos-spalte-wahl, kein runder Knopf);
+//    * das Schloss eines Auslieferungssatzes steht ganz in seiner Zelle,
+//      sichtbar und nicht abgeschnitten, 16 x 16 px.
+const STUFE2 = () => {
+  const liste = document.querySelector('.epos-katalog-liste .epos-katalogliste');
+  if (!liste) return { fehler: 'keine Katalogliste im Rahmen' };
+  const huelle = liste.querySelector('.epos-raster-huelle');
+  const zeilen = [...liste.querySelectorAll('tbody > tr')]
+    .filter(z => z.querySelector('td') && !z.querySelector('td.grid-cell-placeholder'));
+  const hoehen = zeilen.slice(0, 12).map(z => +z.getBoundingClientRect().height.toFixed(3));
+
+  const schloss = liste.querySelector('tbody .epos-schloss');
+  let schlossbefund = null;
+  if (schloss) {
+    const r = schloss.getBoundingClientRect();
+    const zelle = schloss.closest('td').getBoundingClientRect();
+    schlossbefund = {
+      breite: +r.width.toFixed(1), hoehe: +r.height.toFixed(1),
+      inZelle: r.left >= zelle.left - 0.5 && r.right <= zelle.right + 0.5 &&
+               r.top >= zelle.top - 0.5 && r.bottom <= zelle.bottom + 0.5,
+      sichtbar: getComputedStyle(schloss).visibility !== 'hidden' && r.width > 0,
+      titel: schloss.getAttribute('title') || ''
+    };
+  }
+  // Der linke Balken der Fokuszeile steht an ihrer ersten SICHTBAREN Zelle - und nur
+  // dort, auch wenn die erste Spalte weicht (Waermepumpe, schmal).
+  const fokus = liste.querySelector('tbody tr.epos-zeile--gewaehlt');
+  let balken = null;
+  if (fokus) {
+    const sichtbar = [...fokus.children].filter(td => getComputedStyle(td).display !== 'none');
+    const mit = sichtbar.map(td => /inset/.test(getComputedStyle(td).boxShadow));
+    balken = { ersteZelle: mit[0] === true, weitere: mit.slice(1).filter(Boolean).length };
+  }
+
+  return {
+    hoehen,
+    balken,
+    wahlspalte: liste.querySelectorAll('th.epos-spalte-wahl, .epos-anlagenwahl').length,
+    zeilenwahl: liste.classList.contains('epos-katalogliste--zeilenwahl'),
+    tabulatorhalt: huelle ? huelle.getAttribute('tabindex') : null,
+    gewaehlt: liste.querySelectorAll('tbody tr.epos-zeile--gewaehlt').length,
+    schloss: schlossbefund
+  };
+};
+
+//  DIE TASTATUR (V11): Die Liste bekommt den Fokus, dann Ende, Pos1 und zweimal
+//  Pfeil runter. Nach jedem Schritt: Welche Zeile ist gewaehlt (aria-rowindex),
+//  steht sie GANZ im sichtbaren Teil der Huelle (unter dem stehenden Kopf), und
+//  hat die Liste den Fokus behalten? Rollt das Skript nicht mit oder nimmt der
+//  Browser die Taste zum Rollen, sieht man es hier.
+async function tastenprobe(seite) {
+  const huelle = '.epos-katalog-liste .epos-raster-huelle[tabindex="0"]';
+  if (await seite.locator(huelle).count() === 0) return { fehler: 'die Liste ist kein Tabulatorhalt' };
+  await seite.focus(huelle);
+
+  const lies = () => seite.evaluate(sel => {
+    const h = document.querySelector(sel);
+    const zeile = h.querySelector('tbody tr.epos-zeile--gewaehlt');
+    const kopf = h.querySelector('thead');
+    const hr = h.getBoundingClientRect();
+    const oben = hr.top + h.clientTop + (kopf ? kopf.getBoundingClientRect().height : 0);
+    const unten = hr.top + h.clientTop + h.clientHeight;
+    const zr = zeile ? zeile.getBoundingClientRect() : null;
+    const alle = h.querySelectorAll('tbody tr[aria-rowindex]');
+    return {
+      index: zeile ? +zeile.getAttribute('aria-rowindex') - 2 : -1,
+      zeilen: +(h.querySelector('table').getAttribute('aria-rowcount') || 0) - 1,
+      sichtbar: zr ? (zr.top >= oben - 0.5 && zr.bottom <= unten + 0.5) : false,
+      fokus: document.activeElement === h,
+      rollstand: Math.round(h.scrollTop),
+      gezeichnet: alle.length
+    };
+  }, huelle);
+
+  const schritte = {};
+  await seite.keyboard.press('End');    await schlaf(900); schritte.ende = await lies();
+  await seite.keyboard.press('Home');   await schlaf(900); schritte.pos1 = await lies();
+  await seite.keyboard.press('ArrowDown'); await schlaf(500);
+  await seite.keyboard.press('ArrowDown'); await schlaf(900); schritte.runter2 = await lies();
+  return schritte;
+}
+
 // ---------------------------------------------------------------- Helfer
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
@@ -370,8 +457,12 @@ async function fall(browser, f) {
   // Locator und nicht ueber ein Element: Das QuickGrid baut seine Zeilen nach
   // dem ersten Zeichenlauf noch einmal auf, und ein festgehaltenes Element
   // haengt danach nicht mehr im Baum ("Element is not attached to the DOM").
+  // Seit Stufe 2 der Neuordnung (V4) ist die ZEILE die Wahl: Geklickt wird die
+  // Klickflaeche des Namens (.epos-zeilenzelle--name) - die erste Zelle kann in einer
+  // schmalen Liste weichen (Waermepumpe: Hersteller). Ein Wirt mit Wahlspalte
+  // behaelt den Knopf.
   await schlaf(400);
-  await seite.locator('.epos-katalog-liste tbody tr button').first()
+  await seite.locator('.epos-katalog-liste tbody tr :is(.epos-zeilenzelle--name, button)').first()
              .click({ timeout: 15000 });
   await schlaf(1400);
 
@@ -384,6 +475,10 @@ async function fall(browser, f) {
 
   const k = await seite.evaluate(KAESTEN);
   if (f.stufe1) k.stufe1 = await seite.evaluate(STUFE1);
+  if (f.stufe2) {
+    k.stufe2 = await seite.evaluate(STUFE2);
+    k.tasten = await tastenprobe(seite);
+  }
 
   if (FOTOS) {
     const marke = (f.vorher || VORHER) ? 'vorher' : 'nachher';
@@ -455,10 +550,45 @@ function pruefe(e) {
       m.push(`die Liste rollt quer um ${s.querUeberlauf} px (Innenbreite ${s.huelle.innen}); ` +
              `jenseits: ${schuld.join(', ') || '—'}`);
     }
-    if (s.zeilenhoehe !== null && Math.abs(s.zeilenhoehe - 53) > 0.5)
-      m.push(`Zeilenhoehe ${s.zeilenhoehe} px statt 53 (ItemSize)`);
+    const soll = e.fall.zeile || 53;
+    if (s.zeilenhoehe !== null && Math.abs(s.zeilenhoehe - soll) > 0.5)
+      m.push(`Zeilenhoehe ${s.zeilenhoehe} px statt ${soll} (ItemSize)`);
     if (e.fall.bezeichnerKurz && s.bezeichner && s.bezeichner.gekuerzt && !s.bezeichner.titel)
       m.push('ein gekuerzter Bezeichner traegt keinen Kurztext (title)');
+  }
+
+  // STUFE 2 (V4, V10, V11): jede Zeile im Mass, keine Wahlspalte, das Schloss
+  // ganz in seiner Zelle, die Tastatur waehlt und rollt mit.
+  const z = e.stufe2;
+  if (z) {
+    if (z.fehler) { m.push(z.fehler); return m; }
+    const soll = e.fall.zeile || 53;
+    const falsch = z.hoehen.filter(h => Math.abs(h - soll) > 0.5);
+    if (falsch.length) m.push(`Zeilen nicht im Mass ${soll} px (Umbruch?): ${falsch.join(', ')}`);
+    if (!z.zeilenwahl) m.push('die Liste ist nicht im Modus "Zeile ist die Wahl"');
+    if (z.wahlspalte) m.push(`noch ${z.wahlspalte} Elemente der Wahlspalte`);
+    if (z.tabulatorhalt !== '0') m.push('die Liste ist kein Tabulatorhalt');
+    if (z.gewaehlt !== 1) m.push(`${z.gewaehlt} Zeilen als gewaehlt markiert (soll 1)`);
+    if (z.balken && (!z.balken.ersteZelle || z.balken.weitere))
+      m.push(`der linke Balken der Fokuszeile steht falsch (${JSON.stringify(z.balken)})`);
+    if (e.fall.schloss && !z.schloss) m.push('kein Schloss an einem Auslieferungssatz');
+    if (z.schloss && (!z.schloss.inZelle || !z.schloss.sichtbar))
+      m.push(`das Schloss steht nicht ganz in seiner Zelle (${JSON.stringify(z.schloss)})`);
+    const t = e.tasten;
+    if (t && t.fehler) m.push(t.fehler);
+    else if (t) {
+      const letzte = t.ende.zeilen - 1;
+      if (t.ende.index !== letzte) m.push(`Ende waehlt Zeile ${t.ende.index} statt ${letzte}`);
+      if (t.pos1.index !== 0) m.push(`Pos1 waehlt Zeile ${t.pos1.index} statt 0`);
+      // Am Ende bleibt die Wahl stehen: bei einer Zeile (Solarganglinie) ist das die 0.
+      const zwei = Math.min(2, t.runter2.zeilen - 1);
+      if (t.runter2.index !== zwei) m.push(`zweimal Pfeil runter waehlt Zeile ${t.runter2.index} statt ${zwei}`);
+      for (const [was, s2] of Object.entries(t)) {
+        if (!s2.sichtbar) m.push(`nach „${was}" steht die gewaehlte Zeile nicht ganz im Bild`);
+        if (!s2.fokus) m.push(`nach „${was}" hat die Liste den Fokus verloren`);
+      }
+      if (t.pos1.rollstand !== 0) m.push(`nach Pos1 rollt die Liste bei ${t.pos1.rollstand} px statt 0`);
+    }
   }
 
   return m;
@@ -511,6 +641,16 @@ function zeige(e) {
   console.log(`            Zeilenhoehe ${s.zeilenhoehe}   Bezeichner: ` +
               (s.bezeichner ? `„${s.bezeichner.text}" gekuerzt=${s.bezeichner.gekuerzt} ` +
                               `title=${s.bezeichner.titel ? 'ja' : 'nein'} text-overflow=${s.bezeichner.textOverflow}` : '—'));
+  const st2 = e.stufe2;
+  if (!st2 || st2.fehler) return;
+  console.log(`  [Stufe 2] Zeilenhoehen ${st2.hoehen.join(' | ')}   Wahlspalte ${st2.wahlspalte}   ` +
+              `Tabulatorhalt ${st2.tabulatorhalt}   gewaehlt ${st2.gewaehlt}   ` +
+              `Balken ${st2.balken ? (st2.balken.ersteZelle ? 'erste Zelle' : 'FEHLT') + (st2.balken.weitere ? ' +' + st2.balken.weitere : '') : '—'}   Schloss ` +
+              (st2.schloss ? `${st2.schloss.breite}x${st2.schloss.hoehe} inZelle=${st2.schloss.inZelle}` : '—'));
+  const t = e.tasten;
+  if (t && !t.fehler)
+    console.log('            Tasten: ' + Object.entries(t).map(([w, s2]) =>
+      `${w} → Zeile ${s2.index}/${s2.zeilen} sichtbar=${s2.sichtbar} fokus=${s2.fokus} roll ${s2.rollstand}`).join(' · '));
 }
 
 // ------------------------------------------------------------- Hauptlauf
@@ -586,11 +726,14 @@ FAELLE.push({ name: 'P2a_projekt_heizkessel_1088x624', maske: 'projekt-heizkesse
 FAELLE.push({ name: 'P2b_projekt_heizkessel_400x624', maske: 'projekt-heizkessel', zeilen: 63,
               breite: 400, hoehe: 624, projekt: true });
 
+// STUFE 2 (V4, V10, V11): In den Verwaltungen ist die Zeile die Wahl - 46 px
+// statt 53, ohne Wahlspalte, mit Schloss (Zeilenbau.Voll macht jede siebte Zeile
+// zum Auslieferungssatz, die erste eingeschlossen) und mit Tastatur.
 for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
   FAELLE.push({ name: `${nr}a_${name}_1088x624`, maske, art, zeilen, breite: 1088, hoehe: 624,
-                voll: true, stufe1: true, bezeichnerKurz: true });
+                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
   FAELLE.push({ name: `${nr}b_${name}_400x624`, maske, art, zeilen, breite: 400, hoehe: 624,
-                voll: true, stufe1: true, bezeichnerKurz: true });
+                voll: true, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
 }
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });

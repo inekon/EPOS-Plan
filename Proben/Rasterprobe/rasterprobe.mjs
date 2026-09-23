@@ -348,6 +348,42 @@ async function fall(browser, f) {
   const zurueck = await seite.evaluate(ABLESEN);
   await fotoschuss('zurueck');
 
+  // --- STUFE 2 (V11): die Tastatur, nur in den Dialogfaellen mit tasten: true ---
+  let tasten = null;
+  if (f.tasten) {
+    const sel = '.epos-katalogliste .epos-raster-huelle[tabindex="0"]';
+    if (await seite.locator(sel).count() === 0) tasten = { fehler: 'die Liste ist kein Tabulatorhalt' };
+    else {
+      await seite.focus(sel);
+      const lies = () => seite.evaluate(s => {
+        const h = document.querySelector(s);
+        const zeile = h.querySelector('tbody tr.epos-zeile--gewaehlt');
+        const kopf = h.querySelector('thead');
+        const hr = h.getBoundingClientRect();
+        const oben = hr.top + h.clientTop + (kopf ? kopf.getBoundingClientRect().height : 0);
+        const unten = hr.top + h.clientTop + h.clientHeight;
+        const zr = zeile ? zeile.getBoundingClientRect() : null;
+        return {
+          index: zeile ? +zeile.getAttribute('aria-rowindex') - 2 : -1,
+          sichtbar: zr ? (zr.top >= oben - 0.5 && zr.bottom <= unten + 0.5) : false,
+          fokus: document.activeElement === h,
+          rollstand: Math.round(h.scrollTop),
+          platzhalter: h.querySelectorAll('td.grid-cell-placeholder').length
+        };
+      }, sel);
+      const vorEnde = await seite.evaluate(() => window.__probe.melder.length);
+      await seite.keyboard.press('End');
+      await schlaf(3000);
+      const melderEnde = await seite.evaluate(() => window.__probe.melder.length) - vorEnde;
+      const ende = await lies();
+      await fotoschuss('taste_ende');
+      await seite.keyboard.press('Home');
+      await schlaf(1500);
+      const pos1 = await lies();
+      tasten = { ende, pos1, melderEnde };
+    }
+  }
+
   const um2 = await seite.evaluate(() => window.__probe.umschaltungen);
   const proben2 = await seite.evaluate(() => window.__probe.proben);
 
@@ -362,7 +398,7 @@ async function fall(browser, f) {
     t2000: zuZeit(proben1, 2000),
     t5000: zuZeit(proben1, 5000),
     bei500, bei5000,
-    rollmass, nachRollen, nachRollenStand, zurueck, umRollen, melder1, melderRollen,
+    rollmass, nachRollen, nachRollenStand, zurueck, umRollen, melder1, melderRollen, tasten,
     probenZahl: proben1.length,
     umschaltungen: um2,
     // Der Verlauf, auf ZUSTANDSWECHSEL eingedampft: eine Zeile je Aenderung
@@ -386,7 +422,7 @@ function zeige(e) {
               `   (${e.probenZahl} Proben)`);
   console.log(`      Verlauf (t|Platzh|echt|laden|HalterVor|HalterNach): ${e.verlauf}`);
   console.log(`  (c) Zeilenhoehen gemessen: ${JSON.stringify(b.zeilenhoehen)}` +
-              `  (echt ${b.echtHoehe}, Platzhalter ${b.platzhalterHoehe}, ItemSize 53)`);
+              `  (echt ${b.echtHoehe}, Platzhalter ${b.platzhalterHoehe}, ItemSize ${e.fall.zeile || 53})`);
   console.log(`  (d) Abstandshalter: ${JSON.stringify(b.abstandshalter)}`);
   console.log(`      Huelle: ${JSON.stringify(b.huelle)}`);
   console.log(`  (e) Rollbehaelter (wie Virtualize.ts ihn sucht): ${b.rollbehaelter}` +
@@ -399,6 +435,11 @@ function zeige(e) {
   console.log(`      Umschaltungen gesamt ueber den ganzen Lauf: ${e.umschaltungenGesamt}`);
   console.log(`  (i) Sichtbarkeitsmelder: ${e.melder1} beim Aufbau, ` +
               `${e.melderRollen} in den 3 s nach dem Rollen (soll <= 12)`);
+  if (e.tasten && !e.tasten.fehler)
+    console.log(`  (k) Tastatur: Ende → Zeile ${e.tasten.ende.index} sichtbar=${e.tasten.ende.sichtbar} ` +
+                `Platzhalter ${e.tasten.ende.platzhalter} Rollstand ${e.tasten.ende.rollstand}, ` +
+                `${e.tasten.melderEnde} Melder in 3 s;  Pos1 → Zeile ${e.tasten.pos1.index} ` +
+                `Rollstand ${e.tasten.pos1.rollstand}; Fokus ${e.tasten.ende.fokus && e.tasten.pos1.fokus}`);
 }
 
 // ------------------------------------------------------- Die Sollwerte
@@ -428,8 +469,29 @@ function pruefe(e) {
     const b = e.bei5000;
     if (!/epos-raster-huelle/.test(b.rollbehaelter || ''))
       maengel.push(`Rollbehaelter ist ${b.rollbehaelter}, nicht die Huelle der Liste`);
-    if (b.echtHoehe !== null && Math.abs(b.echtHoehe - 53) > 0.5)
-      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt 53 (ItemSize)`);
+    const soll = e.fall.zeile || 53;
+    if (b.echtHoehe !== null && Math.abs(b.echtHoehe - soll) > 0.5)
+      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt ${soll} (ItemSize)`);
+    if (b.platzhalterHoehe !== null && b.platzhalterHoehe !== undefined &&
+        Math.abs(b.platzhalterHoehe - soll) > 0.5)
+      maengel.push(`Platzhalterzeile ${b.platzhalterHoehe} px statt ${soll}`);
+  }
+  // STUFE 2 (V11): die Tastatur in der virtualisierten Liste. Ende springt ans
+  // Ende - die Zeile steht gezeichnet und ganz im Bild -, Pos1 zurueck an den
+  // Anfang, und die Sichtbarkeitsmelder beruhigen sich danach wie nach dem Rollen.
+  const t = e.tasten;
+  if (t) {
+    if (t.fehler) maengel.push(t.fehler);
+    else {
+      if (t.ende.index !== e.fall.zeilen - 1) maengel.push(`Ende waehlt Zeile ${t.ende.index} statt ${e.fall.zeilen - 1}`);
+      if (!t.ende.sichtbar) maengel.push('nach Ende steht die gewaehlte Zeile nicht im Bild');
+      if (t.ende.platzhalter) maengel.push(`${t.ende.platzhalter} Platzhalter nach Ende`);
+      if (t.melderEnde > 12) maengel.push(`${t.melderEnde} Sichtbarkeitsmeldungen in 3 s nach Ende (soll <= 12)`);
+      if (t.pos1.index !== 0 || t.pos1.rollstand !== 0)
+        maengel.push(`Pos1: Zeile ${t.pos1.index}, Rollstand ${t.pos1.rollstand} (soll 0 / 0)`);
+      if (!t.pos1.sichtbar) maengel.push('nach Pos1 steht die gewaehlte Zeile nicht im Bild');
+      if (!t.ende.fokus || !t.pos1.fokus) maengel.push('die Liste verliert den Fokus');
+    }
   }
   return maengel;
 }
@@ -454,10 +516,12 @@ const FAELLE = [
   // Fenstermasse des Anwenders. J und K stellen die virtualisierte Liste IM
   // Katalogdialog (Stromspeicher-Verwaltung, 6 654 volle Zeilen) - dort nimmt
   // sie seit V1 die Resthoehe; L und M die freie Liste der Importmaske.
+  // Seit Stufe 2 (V4) ist die Zeile dort die Wahl: 46 px statt 53, und die
+  // Tastatur (Ende, Pos1) waehlt und rollt mit.
   { name: 'J_6654_Dialog_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1' },
+    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1', zeile: 46, tasten: true },
   { name: 'K_6654_Dialog_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1' },
+    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1', zeile: 46, tasten: true },
   { name: 'L_6654_sofort_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1 },
   { name: 'M_6654_sofort_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1 }
 ];
