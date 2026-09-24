@@ -9365,3 +9365,83 @@ unverändert.
 KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
 Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
 Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 120.
+
+## #468 — Schemaschritt 121: Katalogverweis im Projektgebäude, Löschsperre der Gebäudeverwaltung über die ID; vier regelwidrige Katalogsätze repariert (24.09.2026)
+
+Anwenderentscheid „Schemaschritt 122: vornehmen“ zum Löschsperre-Vorschlag aus
+#465; die Nummer 121 nach Absprache mit der parallelen Zapfprofil-Sitzung
+(Regel zwischen den Sitzungen: wer zuerst pusht, hat die Nummer). Commits
+(Zweig `worktree-agent-a9ccf106d1d862b70`, Basis `4a9d7449`): `881bb49f`
+Schritt 121 samt Reparatur und Testdatenbank; `0481b2c0` Übernahme,
+Löschsperre, Kopierwege, Transfer, Tests; `b21a5bab` Papiere. Merge in den
+Hauptbaum `6be906b0`, konfliktfrei.
+
+**Schema.** Spalte `Tab_Gebaeude.ID_Gebaeude_Stamm INTEGER REFERENCES
+Tab_Gebaeude_STAMM(ID) ON DELETE SET NULL`, Index
+`Tab_Gebaeude_ID_Gebaeude_Stamm`; eine Quelle für alle Wege
+`EPOS.Kern/Allgemein/Update/GebaeudeKatalogverweis.cs`. SET NULL statt
+RESTRICT: Die Projektkopie trägt alle Werte, die Simulation liest nur sie;
+RESTRICT würde die weiche Sperre der Verwaltung auf allen anderen Löschwegen
+(Dublettenbereinigung, „Gebäude in DB löschen“, Auslieferungsvorlage) zum
+harten Datenbankfehler machen und wäre in SQLite nur per Tabellenneubau
+rücknehmbar; Vorbild ist der Wärmepumpen-Verweis aus Schritt 80. Nachtrag in
+der Testdatenbank: 26/26 Projektgebäude tragen den Verweis; mehrdeutige Namen
+gibt es dort nicht (eindeutiger Index auf `Bezeichner`), ein Test prüft den
+Fall künstlich. Stellen mit der Nummer: `SchemaStand.cs` (Zielversion 121),
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`
+(`SCHRITT_121_GEBAEUDE_KATALOGVERWEIS`, `Schritt_121_GebaeudeKatalogverweis`),
+`Werkzeuge/Testdatenbankschema/Program.cs`, `EPOS.Kern.Tests/TestDatenbank.cs`,
+`GebaeudeKatalogverweisTests.cs`, Kommentare, `Referenzlaeufe/LIESMICH.md`,
+Konzept Administrationsdialoge. Marker `SchemaVersion = 121` in der
+Testdatenbank (LFS, oid `00fbbb8b…`, 67 792 896 Byte).
+
+**Übernahme, Kopierwege, Löschsperre.** `GebaeudeStammCtrl.CopyFromStamm`
+schreibt den Verweis — der einzige Weg vom Katalog ins Projekt (Assistent und
+Projekt-Gebäudedialog über `WizardCtrl.Add_Projekt_ZuordungGebäude`);
+Duplizieren und Varianten kopieren den Verweis mit (`KATALOG_SPALTEN` in
+`ProjektDuplizierenCtrl`). Beim Projekttransfer reist der Verweis nicht mit,
+der Import trägt ihn am Ziel über den Namen nach, ohne neuen Katalogsatz.
+`Projektverwendung` fragt zuerst den Verweis, nur für Kopien ohne Verweis den
+Namen; neu `Loeschsperre(name)`, `Loeschen` lehnt ein benutztes Gebäude auch im
+Kern ab. Die Sperre hält auch nach Umbenennung, der Sperrgrund-Text nennt
+weiterhin die Projekte.
+
+**Reparatur der Katalogsätze.** Die Editor-Grenze 0,1–6 W/(m²K) ist nicht zu
+eng (das Stundenmodell `ErsatzparameterRC.UWert` prüft dieselbe Grenze) — die
+Daten waren falsch, keiner der fünf beanstandeten Sätze war einem Projekt oder
+Referenzprojekt zugeordnet. Repariert (nur Katalog, unabhängig vom
+Schreibschutz): Satz 1 `AltenH-95-EnEV2016`, Satz 6 `Pflegeheim-122-EnEV2016`
+(je 4,0 m²), Satz 100 `SpH-Umkl-287-EnEV2016`, Satz 103 `SpH-Umkl-NE` (je
+2,2 m²) — alle vier hatten eine Sonstige Fläche mit U 0 → Fläche auf 0
+gesetzt (U·A war vorher schon 0, der Wärmeverlust ändert sich nicht). **Nicht
+repariert, Anwenderentscheid nötig:** Satz 79 `Krankenhaus_92-EnEV2016` —
+U-Wert Fenster 0,09 bei 11 646 m² Fensterfläche (10 000 m² davon Nord); die
+verwandten `KrankenH-F-*` führen U 1,3 bei rund 3 062 m².
+
+**Nachweise.** Zellvergleich über alle 132 Tabellen gegen Fassung 120 —
+geändert nur Schemaversion, die neue Spalte, der Index und die vier Flächen;
+`integrity_check` ok, `foreign_key_check` leer, 131/131 STRICT;
+SQL-Dialekt-Prüfer 1 772 Texte, 0 Fundstellen; Builds 0 Fehler; voller Testlauf
+Kern 5 756, UI 5 903, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen), Auslieferungsvorlage 30, 0 rot; 12 neue Kerntests
+`GebaeudeKatalogverweisTests` und ein bunit-Test. Referenzlauf 13/13 PASS gegen
+`2026-09-23_R13_Kuehlung`, 387/387 CSV byte-gleich — die Basis bleibt R13.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 121); Konzept
+Administrationsdialoge (Stand, 7.1 (a) abgeschlossen, SET-NULL-Begründung);
+`BETRIEB_SQLITE.md` und Wiki unverändert. Kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Anwenderentscheid zum Krankenhaus-Fenstersatz (79);
+zwölf weitere Katalogsätze mit leerem `Flaeche_Nutzer` (u. a. `EFH-BZ2`,
+`KrankenH-F-U-400`, `KMEH-M-U-54`, sieben `Z2-EFH-A-S*`); das Neuschreiben der
+Gebäudeliste läuft im Assistenten und auf der Startseite noch über den Namen
+(schlägt nach Umbenennung fehl) — mit dem neuen Verweis lösbar über
+`Z_ProjGebModel`/`GebaeudeProjektZeile`; „Gebäude in DB löschen“ im
+Projekt-Gebäudedialog bleibt ohne Nutzungssperre (Bestand); `Tab_WP.ID_Stamm`
+reist beim Transfer weiter unter der Original-Id mit; der Testdatenbank-Hash
+ändert sich je Werkzeuglauf (Sicht), nicht der Inhalt.
+
+**Gate nach Merge auf `6be906b0`.** Kern-Filter 0 Fehler; Kern 5 756, UI 5 904,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
