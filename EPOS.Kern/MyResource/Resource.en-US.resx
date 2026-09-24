@@ -6864,10 +6864,10 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Word report: scenarios Unfavourable / Expected / Favourable · Workbook: blocks “Favourable” and “Unfavourable”, range, sheet “Profile”</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>three complete runs, each scenario with its own parameter set.</value>
+    <value>only Expected or only one of the scenarios Favourable and Unfavourable calculated with a net present value.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
-    <value>no range calculated.</value>
+    <value>no scenarios calculated — calculate first.</value>
   </data>
   <data name="WIRT_AE_10_THEMA" xml:space="preserve">
     <value>Evaluation of results</value>
@@ -27332,6 +27332,12 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
     <value>three complete runs, each scenario with its own parameter set; {0}.</value>
+  </data>
+  <data name="WIRT_AE_9_ERFUELLT" xml:space="preserve">
+    <value>three complete runs, each scenario with its own parameter set.</value>
+  </data>
+  <data name="WIRT_AE_9_TEILWEISE_ABDECKUNG" xml:space="preserve">
+    <value>only Expected or only one of the scenarios Favourable and Unfavourable calculated with a net present value; {0}.</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>

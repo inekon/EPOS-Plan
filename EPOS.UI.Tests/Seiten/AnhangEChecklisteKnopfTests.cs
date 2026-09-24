@@ -91,10 +91,11 @@ public class AnhangEChecklisteKnopfTests : EposBunitContext
         Assert.True(cut.Find("button.epos-wirt-checklistenknopf").HasAttribute("disabled"));
     }
 
-    /// <summary>Punkt 9 verlangt Ungünstig UND Günstig mit Zahl: Eine Bandbreite, deren
-    /// Zeilen nur „—" tragen, lässt ihn offen — dieselbe Bedingung wie im Bericht
-    /// (<see cref="ChecklistenLage.SzenarienGerechnet"/>). Die Tafel ist gebaut wie in der
-    /// Hülle: erste Spalte die Version, darunter zuerst die Referenzzeile.</summary>
+    /// <summary>Punkt 9 ist „erfüllt" mit Ungünstig UND Günstig mit Zahl (E9b‑Q5 b), „teilweise"
+    /// mit nur einem der beiden; eine Bandbreite, deren Zeilen nur „—" tragen, lässt ihn
+    /// offen — dieselbe Bedingung wie im Bericht (<see cref="ChecklistenLage.SzenarienGerechnet"/>).
+    /// Die Tafel ist gebaut wie in der Hülle: erste Spalte die Version, darunter zuerst die
+    /// Referenzzeile.</summary>
     [Fact]
     public void Die_Szenarioanalyse_verlangt_Zahlen_in_Unguenstig_und_Guenstig()
     {
@@ -119,8 +120,9 @@ public class AnhangEChecklisteKnopfTests : EposBunitContext
         }
 
         Assert.StartsWith(Resource.WIRT_AE_STAND_OFFEN, Punkt9(Tafel("—", "—")));
-        Assert.StartsWith(Resource.WIRT_AE_STAND_OFFEN, Punkt9(Tafel("-500", "—")));
-        Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punkt9(Tafel("-500", "2.500")));
+        Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punkt9(Tafel("-500", "—")));
+        Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punkt9(Tafel("—", "2.500")));
+        Assert.StartsWith(Resource.WIRT_AE_STAND_ERFUELLT, Punkt9(Tafel("-500", "2.500")));
     }
 
     /// <summary>Der Knopf steht im Fuß des Bewertungsblocks — in beiden Darstellungen,

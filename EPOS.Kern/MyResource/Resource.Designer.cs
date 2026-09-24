@@ -69397,7 +69397,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine Bandbreite gerechnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_ERFUELLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Szenarien gerechnet — erst berechnen. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_OFFEN {
             get {
@@ -69415,11 +69424,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Erwartet oder nur eines der Szenarien Günstig und Ungünstig mit Kapitalwert gerechnet. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_TEILWEISE {
             get {
                 return ResourceManager.GetString("WIRT_AE_9_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Erwartet oder nur eines der Szenarien Günstig und Ungünstig mit Kapitalwert gerechnet; {0}. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_TEILWEISE_ABDECKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_TEILWEISE_ABDECKUNG", resourceCulture);
             }
         }
         

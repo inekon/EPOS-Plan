@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.WIRT_AE_8_OFFEN, Punkt(leer, "8").StandText);
         }
 
-        /// <summary>Mit allem, was EPOS liefern kann, ist kein Punkt mehr offen — und sieben
+        /// <summary>Mit allem, was EPOS liefern kann, ist kein Punkt mehr offen — und sechs
         /// bleiben „teilweise": Was EPOS nicht erfasst, steht im Standtext.</summary>
         [Fact]
         public void Die_volle_Lage_hebt_jeden_Punkt_so_weit_EPOS_ihn_liefert()
@@ -99,8 +99,8 @@ namespace EPOS.Kern.Tests
             var voll = VolleLage();
 
             Assert.Empty(MitStand(voll, ChecklistenStand.Offen));
-            Assert.Equal(new[] { "0.1", "1", "2a", "3a", "4", "7", "10", "11" }, MitStand(voll, ChecklistenStand.Erfuellt));
-            Assert.Equal(new[] { "0.2", "2b", "3b", "5", "6", "8", "9" }, MitStand(voll, ChecklistenStand.Teilweise));
+            Assert.Equal(new[] { "0.1", "1", "2a", "3a", "4", "7", "9", "10", "11" }, MitStand(voll, ChecklistenStand.Erfuellt));
+            Assert.Equal(new[] { "0.2", "2b", "3b", "5", "6", "8" }, MitStand(voll, ChecklistenStand.Teilweise));
             Assert.Equal(R.WIRT_AE_NM_TEILWEISE, Punkt(voll, "3b").StandText);
             Assert.Equal(R.WIRT_AE_10_ERFUELLT, Punkt(voll, "10").StandText);
         }
@@ -122,7 +122,7 @@ namespace EPOS.Kern.Tests
             lage = VolleLage();
             lage.SzenarienGerechnet = false;
             Assert.Equal(ChecklistenStand.Offen, Punkt(lage, "10").Stand);
-            Assert.Equal(ChecklistenStand.Offen, Punkt(lage, "9").Stand);
+            Assert.Equal(ChecklistenStand.Teilweise, Punkt(lage, "9").Stand);   // Erwartet ist gerechnet
 
             lage = VolleLage();
             lage.VorschlagVorhanden = false;
@@ -142,9 +142,73 @@ namespace EPOS.Kern.Tests
             bewertung.Bandbreite.Zeilen.Add(new BandbreitenZeile { IdProjekt = 3, Worst = -500.0, Erwartet = 800.0 });
             Assert.False(bewertung.Bandbreite.Leer);
             Assert.False(ChecklistenLage.AusBericht(null, null, bewertung).SzenarienGerechnet);
+            Assert.True(ChecklistenLage.AusBericht(null, null, bewertung).EinSzenarioGerechnet);
 
             bewertung.Bandbreite.Zeilen.Add(new BandbreitenZeile { IdProjekt = 4, Worst = -500.0, Erwartet = 800.0, Best = 2500.0 });
             Assert.True(ChecklistenLage.AusBericht(null, null, bewertung).SzenarienGerechnet);
+        }
+
+        /// <summary>
+        /// ETAPPE E13 (E9b‑Q5 b) — Punkt 9 (Szenarioanalyse) in drei Fällen: „offen" ohne Lauf;
+        /// „teilweise" mit nur Erwartet oder nur einem der Szenarien Günstig und Ungünstig;
+        /// „erfüllt", sobald beide mit Kapitalwert gerechnet sind — auch ohne einen einzigen
+        /// szenarierten Parameter. Der Ausweis „n von m Parametern szenariert" bleibt Beleg.
+        /// </summary>
+        [Fact]
+        public void Punkt_9_ist_offen_teilweise_oder_erfuellt()
+        {
+            ChecklistenPunkt offen = Punkt(new ChecklistenLage(), "9");
+            Assert.Equal(ChecklistenStand.Offen, offen.Stand);
+            Assert.Equal(R.WIRT_AE_9_OFFEN, offen.StandText);
+
+            ChecklistenPunkt nurErwartet = Punkt(new ChecklistenLage { Gerechnet = true }, "9");
+            Assert.Equal(ChecklistenStand.Teilweise, nurErwartet.Stand);
+            Assert.Equal(R.WIRT_AE_9_TEILWEISE, nurErwartet.StandText);
+
+            ChecklistenPunkt einSzenario = Punkt(new ChecklistenLage
+            {
+                Gerechnet = true, EinSzenarioGerechnet = true,
+                Szenarioabdeckung = "1 von 11 Parametern szenariert: Arbeitspreis Erdgas E"
+            }, "9");
+            Assert.Equal(ChecklistenStand.Teilweise, einSzenario.Stand);
+            Assert.Equal(string.Format(R.WIRT_AE_9_TEILWEISE_ABDECKUNG, "1 von 11 Parametern szenariert: Arbeitspreis Erdgas E"),
+                         einSzenario.StandText);
+
+            // Beide Szenarien gerechnet, kein Parameter szenariert: trotzdem „erfüllt".
+            ChecklistenPunkt erfuellt = Punkt(new ChecklistenLage
+            {
+                Gerechnet = true, EinSzenarioGerechnet = true, SzenarienGerechnet = true,
+                Szenarioabdeckung = "0 von 11 Parametern szenariert"
+            }, "9");
+            Assert.Equal(ChecklistenStand.Erfuellt, erfuellt.Stand);
+            Assert.Equal("erfüllt: drei vollständige Läufe, je Szenario mit eigenem Parametersatz; "
+                         + "0 von 11 Parametern szenariert.", erfuellt.StandZeile);
+
+            // Kein Text von Punkt 9 behauptet mehr, Zeitraum und Mengen blieben unverändert.
+            foreach (string text in new[] { R.WIRT_AE_9_OFFEN, R.WIRT_AE_9_TEILWEISE, R.WIRT_AE_9_ERFUELLT,
+                                            R.WIRT_AE_9_ABDECKUNG, R.WIRT_AE_9_TEILWEISE_ABDECKUNG })
+            {
+                Assert.DoesNotContain("unverändert", text);
+                Assert.DoesNotContain("Mengen", text);
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E13 — das Blatt „Checkliste Anhang E" der Mappe zeigt für Punkt 9 denselben
+        /// Stand wie die Punkte selbst: „erfüllt" mit beiden Szenarien.
+        /// </summary>
+        [Fact]
+        public void Das_Blatt_der_Mappe_zeigt_Punkt_9_mit_demselben_Stand()
+        {
+            var lage = new ChecklistenLage { Gerechnet = true, EinSzenarioGerechnet = true, SzenarienGerechnet = true };
+            string erwartet = Punkt(lage, "9").StandZeile;
+            Assert.StartsWith(R.WIRT_AE_STAND_ERFUELLT + ": ", erwartet);
+
+            using var wb = new XLWorkbook();
+            AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.Punkte(lage));
+            IXLWorksheet ws = wb.Worksheet("Checkliste Anhang E");
+            Assert.Equal(erwartet, Enumerable.Range(5, 20).Where(z => ws.Cell(z, 1).GetString() == "9")
+                                             .Select(z => ws.Cell(z, 5).GetString()).Single());
         }
 
         /// <summary>Die Zelle „Stand in EPOS" ist in allen drei Darstellungen dieselbe
