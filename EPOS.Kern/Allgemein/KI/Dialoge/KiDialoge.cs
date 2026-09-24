@@ -5032,6 +5032,57 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKuehlleistungMaxName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKuehlleistungMaxErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    // ---- Waermeuebergabe (Stufe AK1, Anlagenkopplung 9.1, 9.2) ------------
+                    //
+                    // Schalter, Art und Zeitprogramm gehen ueber die Wege des Arbeitsstands
+                    // (Vorschlag der Heizkurve, „ideal" haelt NULL, strenger Leser des
+                    // Zeitprogramms); die Zahlen schreiben leer NULL - es gilt die Vorgabe.
+                    new KiDialogFeld("heizkreis_aktiv", "GebaeudeKatalogKiSicht.HeizkreisAktiv",
+                                     KiDialogTexte.GebkHeizkreisAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkHeizkreisAktivErl),
+                    new KiDialogFeld("uebergabe_art", "GebaeudeKatalogKiSicht.UebergabeArt",
+                                     KiDialogTexte.GebkUebergabeArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkUebergabeArtErl),
+                    new KiDialogFeld("uebergabe_exponent", "GebaeudeKatalogKiSicht.UebergabeExponent",
+                                     KiDialogTexte.GebkUebergabeExponentName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUebergabeExponentErl, leerErlaubt: true, min: 1.0, max: 1.6),
+                    new KiDialogFeld("uebergabe_nennleistung", "GebaeudeKatalogKiSicht.UebergabeNennleistung",
+                                     KiDialogTexte.GebkUebergabeNennleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUebergabeNennleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("auslegung_vorlauf", "GebaeudeKatalogKiSicht.AuslegungVorlauf",
+                                     KiDialogTexte.GebkAuslegungVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAuslegungVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 25, max: 90),
+                    new KiDialogFeld("auslegung_ruecklauf", "GebaeudeKatalogKiSicht.AuslegungRuecklauf",
+                                     KiDialogTexte.GebkAuslegungRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAuslegungRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("auslegung_raum", "GebaeudeKatalogKiSicht.AuslegungRaumtemperatur",
+                                     KiDialogTexte.GebkAuslegungRaumName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAuslegungRaumErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 15, max: 26),
+                    new KiDialogFeld("auslegung_aussen", "GebaeudeKatalogKiSicht.AuslegungAussentemperatur",
+                                     KiDialogTexte.GebkAuslegungAussenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAuslegungAussenErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: -30, max: 5),
+                    new KiDialogFeld("heizkurve_aktiv", "GebaeudeKatalogKiSicht.HeizkurveAktiv",
+                                     KiDialogTexte.GebkHeizkurveAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkHeizkurveAktivErl),
+                    new KiDialogFeld("heizkurve_niveau", "GebaeudeKatalogKiSicht.HeizkurveNiveau",
+                                     KiDialogTexte.GebkHeizkurveNiveauName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkHeizkurveNiveauErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: -10, max: 10),
+                    new KiDialogFeld("heizkurve_steilheit", "GebaeudeKatalogKiSicht.HeizkurveSteilheit",
+                                     KiDialogTexte.GebkHeizkurveSteilheitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkHeizkurveSteilheitErl, leerErlaubt: true, min: 0.2, max: 3),
+                    new KiDialogFeld("proportionalband", "GebaeudeKatalogKiSicht.Proportionalband",
+                                     KiDialogTexte.GebkProportionalbandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkProportionalbandErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0, max: 5),
+                    new KiDialogFeld("sollwertprofil", "GebaeudeKatalogKiSicht.Sollwertprofil",
+                                     KiDialogTexte.GebkSollwertprofilName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebkSollwertprofilErl, leerErlaubt: true),
                     new KiDialogFeld("rechenweg", "GebaeudeKatalogKiSicht.Rechenweg",
                                      KiDialogTexte.GebkRechenwegName, KiParameterTyp.Text,
                                      KiDialogTexte.GebkRechenwegErl, nurLesen: true)
@@ -7296,6 +7347,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlbetrieb", "SimulationKiSicht.Kuehlbetrieb",
                                      KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimKuehlbetriebErl),
+
+                    // ---- Die Projektstufe der Anlagenkopplung (Konzept Anlagenkopplung 9.4) ----
+                    //
+                    // Neben dem Kuehlschalter und wie er SOFORT geschrieben - ueber denselben
+                    // Delegaten wie die Wahl (AnlagenkopplungSchreiben). Wahlfeld mit den
+                    // gebauten Stufen; eine nicht gebaute lehnt die Sicht benannt ab.
+                    new KiDialogFeld("anlagenkopplung", "SimulationKiSicht.Anlagenkopplung",
+                                     KiDialogTexte.SimAnlagenkopplungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAnlagenkopplungErl),
 
                     // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
                     //

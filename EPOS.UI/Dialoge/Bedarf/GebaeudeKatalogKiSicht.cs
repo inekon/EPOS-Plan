@@ -580,6 +580,140 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.KuehlleistungMax = value; }
     }
 
+    // =====================================================================
+    //  Stufe AK1: die Gruppe „Wärmeübergabe" (Anlagenkopplung 9.1, 9.2)
+    // =====================================================================
+    //
+    // Schalter, Art, Schnellwahl des Bandes und Zeitprogramm gehen über die WEGE DES
+    // ARBEITSSTANDS (Vorschlag der Heizkurve, „ideal" hält NULL, strenger Leser); die Zahlen
+    // unmittelbar in den Satz - leer schreibt NULL, wie das Feld.
+
+    /// <summary>Der Weg des Hakens „Übergabe rechnen" (schlägt beim ersten Einschalten die Heizkurve vor).</summary>
+    public Action<bool>? HeizkreisSetzen { get; init; }
+
+    /// <summary>Wählt die Übergabeart über ihren Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? UebergabeArtSetzen { get; init; }
+
+    /// <summary>Setzt das Zeitprogramm aus Text (168 Werte, „;"); Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? SollwertprofilSetzen { get; init; }
+
+    /// <summary>Die Übergabearten als Einträge des Wahlfeldes (Schlüssel = Steuerwert).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? UebergabeArtEintraege { get; init; }
+
+    /// <summary>
+    /// „Übergabe rechnen" (Stufe AK1) — wirkt nur mit einer Übergabeart und in einem Projekt mit
+    /// der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)".
+    /// </summary>
+    public bool HeizkreisAktiv
+    {
+        get => Daten?.HeizkreisAktiv ?? false;
+        set
+        {
+            if (HeizkreisSetzen is not null) HeizkreisSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.HeizkreisAktiv = value;
+        }
+    }
+
+    /// <summary>Die Übergabeart als Steuerwert: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR.</summary>
+    public string UebergabeArt
+    {
+        get => string.IsNullOrEmpty(Daten?.UebergabeArt) ? WindowsFormsApplication1.DbWerte.UEBERGABE_IDEAL : Daten!.UebergabeArt!;
+        set
+        {
+            string? grund = UebergabeArtSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
+    /// <summary>Die vier Übergabearten.</summary>
+    public IReadOnlyList<KiWahleintrag> UebergabeArtWahl
+        => UebergabeArtEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Exponent der Übergabe; leer = Vorgabe der Art.</summary>
+    public double? UebergabeExponent
+    {
+        get => Daten?.UebergabeExponent;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UebergabeExponent = value; }
+    }
+
+    /// <summary>Nennleistung der Übergabe in kW; leer = hergeleitet aus der stationären Heizlast.</summary>
+    public double? UebergabeNennleistung
+    {
+        get => Daten?.UebergabeLeistungNennKw;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UebergabeLeistungNennKw = value; }
+    }
+
+    /// <summary>Auslegungsvorlauf in °C; leer = Vorgabe der Art.</summary>
+    public double? AuslegungVorlauf
+    {
+        get => Daten?.AuslegungVorlauf;
+        set { if (Daten is GebaeudeKatalogDaten d) d.AuslegungVorlauf = value; }
+    }
+
+    /// <summary>Auslegungsrücklauf in °C; leer = Vorgabe der Art.</summary>
+    public double? AuslegungRuecklauf
+    {
+        get => Daten?.AuslegungRuecklauf;
+        set { if (Daten is GebaeudeKatalogDaten d) d.AuslegungRuecklauf = value; }
+    }
+
+    /// <summary>Raumtemperatur im Auslegungspunkt in °C; leer = das Soll am Tag.</summary>
+    public double? AuslegungRaumtemperatur
+    {
+        get => Daten?.AuslegungRaumtemperatur;
+        set { if (Daten is GebaeudeKatalogDaten d) d.AuslegungRaumtemperatur = value; }
+    }
+
+    /// <summary>Auslegungs-Außentemperatur in °C; leer = kältestes Tagesmittel der Klimareihe.</summary>
+    public double? AuslegungAussentemperatur
+    {
+        get => Daten?.AuslegungAussentemperatur;
+        set { if (Daten is GebaeudeKatalogDaten d) d.AuslegungAussentemperatur = value; }
+    }
+
+    /// <summary>„Heizkurve fahren" — sonst fester Vorlauf.</summary>
+    public bool HeizkurveAktiv
+    {
+        get => Daten?.HeizkurveAktiv ?? false;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveAktiv = value; }
+    }
+
+    /// <summary>Niveau der Heizkurve in K; leer = 0.</summary>
+    public double? HeizkurveNiveau
+    {
+        get => Daten?.HeizkurveNiveau;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveNiveau = value; }
+    }
+
+    /// <summary>Steilheit der Heizkurve; leer = 1,0.</summary>
+    public double? HeizkurveSteilheit
+    {
+        get => Daten?.HeizkurveSteilheit;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveSteilheit = value; }
+    }
+
+    /// <summary>Proportionalband des Raumreglers in K (0 bis 5); leer = 1 K.</summary>
+    public double? Proportionalband
+    {
+        get => Daten?.ReglerProportionalband;
+        set { if (Daten is GebaeudeKatalogDaten d) d.ReglerProportionalband = value; }
+    }
+
+    /// <summary>
+    /// Das Sollwert-Zeitprogramm: 168 Werte in °C, Montag 00 Uhr bis Sonntag 23 Uhr, getrennt
+    /// durch „;", Dezimalpunkt; leer = die Bestandssollwerte. Streng gelesen — eine falsche
+    /// Wertzahl wird benannt abgelehnt, nicht aufgefüllt.
+    /// </summary>
+    public string Sollwertprofil
+    {
+        get => Daten?.Sollwertprofil ?? "";
+        set
+        {
+            string? grund = SollwertprofilSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 

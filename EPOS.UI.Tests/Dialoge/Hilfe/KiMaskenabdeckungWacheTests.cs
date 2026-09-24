@@ -110,7 +110,13 @@ public sealed class KiMaskenabdeckungWacheTests
 
         // Welle #465: Hülle, Fenster, Kenngrößen und „Alle Daten" des Gebäude-Stammblatts -
         // die Felder des Katalogeditors; die Verwaltung meldet sie als Form_Gebaeude_Admin an.
-        new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN)
+        new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN),
+
+        // Anlagenkopplung AK1 Welle 3 (Konzept 9.1): die Gruppe „Wärmeübergabe" - ein Baustein,
+        // zwei Wirte: der Katalogeditor (Form_Gebaeude1) und über GebaeudeStammblattFelder das
+        // Stammblatt der Verwaltung (Form_Gebaeude_Admin); beide melden dieselben dreizehn Felder
+        // über GebaeudeKatalogKiSicht an. Die Tabelle führt je Kind EINEN Wirt.
+        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
     };
 
     // =====================================================================
@@ -187,6 +193,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeKatalogDialog", 45),
         new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
+        new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
+            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
         new("GebaeudeWohnflaecheDialog", 4),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
@@ -218,7 +226,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
-        new("SimulationKonfigSeite", 3),
+        new("SimulationKonfigSeite", 4),
         new("SimulationSeite", 0),
         new("SolarganglinieDialog", 0),
         new("SolarthermieReiter", 3),

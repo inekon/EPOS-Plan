@@ -327,6 +327,15 @@ public sealed class SimulationParameterDienste
     /// </summary>
     public Func<bool, bool>? KuehlbetriebSchreiben;
 
+    /// <summary>
+    /// Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4, AK1 Welle 3) —
+    /// schreibt SOFORT wie der Kühlschalter und meldet, ob danach die gewünschte Stufe steht
+    /// (<c>KonfigurationCtrl.AnlagenkopplungSetzen</c>); der Parameter ist der Steuerwert,
+    /// <c>null</c> = aus. <c>null</c> als Delegat = die Plattform bietet die Wahl nicht an; dann
+    /// steht der Abschnitt „Anlagenkopplung" nicht da.
+    /// </summary>
+    public Func<string?, bool>? AnlagenkopplungSchreiben;
+
     // =====================================================================
     //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)
     // =====================================================================

@@ -30418,4 +30418,262 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
   </data>
+  <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Anlagenkopplung</value>
+  </data>
+  <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Anlagenkopplung:</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>aus</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heizkreis (AK1)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK2" xml:space="preserve">
+    <value>Fahrplan (AK2)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK3" xml:space="preserve">
+    <value>geschlossener Kreis (AK3)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>noch nicht verfügbar</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>Aus: Jedes Gebäude rechnet mit idealer Regelung; die Eingaben der Wärmeübergabe am Gebäude ruhen. Die Einstellung gilt für das ganze Projekt.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heizkreis (AK1): Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT" xml:space="preserve">
+    <value>Gespeichert ist „{0}“ — diese Stufe ist noch nicht verfügbar; der Lauf rechnet den Heizkreis (AK1) und nennt es.</value>
+  </data>
+  <data name="SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER" xml:space="preserve">
+    <value>Die Anlagenkopplung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
+    <value>Projekteinstellung Anlagenkopplung: AUS (ideale Regelung) oder AK1 (Heizkreis als Randbedingung); AK2 und AK3 sind noch nicht verfügbar. Wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
+    <value>Die Stufe „{0}“ gibt es nicht; bekannt sind AUS, AK1, AK2 und AK3.</value>
+  </data>
+  <data name="GEBK_GRP_WAERMEUEBERGABE" xml:space="preserve">
+    <value>Wärmeübergabe</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKREIS_AKTIV" xml:space="preserve">
+    <value>Übergabe rechnen (statt idealer Regelung)</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_ART" xml:space="preserve">
+    <value>Übergabeart :</value>
+  </data>
+  <data name="GEBK_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>ideal (keine Übergabe)</value>
+  </data>
+  <data name="GEBK_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>Radiator</value>
+  </data>
+  <data name="GEBK_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>Flächenheizung</value>
+  </data>
+  <data name="GEBK_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>Konvektor</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Exponent :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Auslegung Vorlauf :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Auslegung Rücklauf :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Auslegung Raum :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur :</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung der Übergabe :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_AKTIV" xml:space="preserve">
+    <value>Heizkurve fahren</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_NIVEAU" xml:space="preserve">
+    <value>Niveau der Heizkurve :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_STEILHEIT" xml:space="preserve">
+    <value>Steilheit der Heizkurve :</value>
+  </data>
+  <data name="GEBK_LBL_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportionalband des Raumreglers :</value>
+  </data>
+  <data name="GEBK_BAND_FREI" xml:space="preserve">
+    <value>frei</value>
+  </data>
+  <data name="GEBK_LBL_BAND_FREI" xml:space="preserve">
+    <value>Proportionalband (frei) :</value>
+  </data>
+  <data name="GEBK_VORGABE_HERGELEITET" xml:space="preserve">
+    <value>Vorgabe: hergeleitet</value>
+  </data>
+  <data name="GEBK_LBL_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Sollwert-Zeitprogramm</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_AUS" xml:space="preserve">
+    <value>Ohne Haken rechnet das Gebäude wie bisher mit idealer Regelung.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>Übergabeart „ideal“: Das Gebäude rechnet wie ohne Haken mit idealer Regelung. Gerechnet wird die Übergabe mit Radiator, Flächenheizung oder Konvektor.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_ART" xml:space="preserve">
+    <value>Vorgaben der Übergabeart {0}: Exponent {1}, Auslegung {2}/{3} °C, Strahlungsanteil der Heizung {4} (gilt bei leerem Feld) — Vorgaben von EPOS-Plan, keine Normwerte; jedes Feld überschreibt sie.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Auslegung Raum leer: das Soll am Tag, {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur leer: das kälteste Tagesmittel der Klimareihe des Projekts, abgerundet — {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN_OHNE" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur leer: das kälteste Tagesmittel der Klimareihe des Projekts, abgerundet; die Zahl steht hier, sobald das Gebäude in einem Projekt mit Klimaregion geöffnet ist.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung leer: die stationäre Heizlast dieses Gebäudes bei {1} °C außen und {2} °C innen — {0} kW. Kein Nachweis nach DIN EN 12831; im Projekt skaliert sie mit dem Gebäude.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG_OHNE" xml:space="preserve">
+    <value>Nennleistung leer: die stationäre Heizlast des Gebäudes im Auslegungspunkt, kein Nachweis nach DIN EN 12831; die Zahl steht hier, sobald das Gebäude in einem Projekt mit Klimaregion geöffnet ist.</value>
+  </data>
+  <data name="GEBK_ZEILE_HERLEITUNG_BEFUND" xml:space="preserve">
+    <value>Keine hergeleitete Zahl: {0}</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AN" xml:space="preserve">
+    <value>Heizkurve: Der Vorlauf folgt der Außentemperatur durch den Auslegungspunkt ({0} °C bei {1} °C); das Niveau verschiebt, die Steilheit neigt die Kurve (Vorgabe {2} K und {3}).</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AUS" xml:space="preserve">
+    <value>Ohne Heizkurve fährt das Gebäude einen festen Vorlauf: den höchsten projektierten Vorlauf der Wärmeerzeuger des Heizkanals, ohne solche Anlage den Auslegungsvorlauf.</value>
+  </data>
+  <data name="GEBK_ZEILE_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportionalband: Schnellwahl 0,5 / 1 / 2 K oder frei von 0 bis {1} K; 0 K ist die ideale Regelung mit Grenze. Leer gilt die Vorgabe {0} K.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
+    <value>Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ (Simulationskonfiguration).</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
+    <value>Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_OHNE" xml:space="preserve">
+    <value>Ohne Zeitprogramm gelten die Sollwerte des Gebäudes (Tag, Nacht, Wochenende); das Raster zeigt sie. Die Ferien wirken in beiden Fällen darüber.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_MIT" xml:space="preserve">
+    <value>Das Zeitprogramm gilt je Wochenstunde (Montag 00 Uhr bis Sonntag 23 Uhr); die Ferienzeiträume wirken darüber mit dem Feriensollwert.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_BEREICH" xml:space="preserve">
+    <value>{0} muss zwischen {1} und {2} liegen.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_ART_UNBEKANNT" xml:space="preserve">
+    <value>Die Übergabeart „{0}“ ist unbekannt; bitte Radiator, Flächenheizung, Konvektor oder ideal wählen.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_NENNLEISTUNG" xml:space="preserve">
+    <value>Die Nennleistung der Übergabe muss größer als 0 sein.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_VORLAUF_RAUM" xml:space="preserve">
+    <value>Der Auslegungsvorlauf {0} °C liegt nicht über der Auslegungs-Raumtemperatur {1} °C — die Übergabe gäbe keine Wärme ab.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_RUECKLAUF" xml:space="preserve">
+    <value>Der Auslegungsrücklauf {0} °C muss zwischen der Auslegungs-Raumtemperatur {1} °C und dem Auslegungsvorlauf {2} °C liegen.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_AUSSEN_RAUM" xml:space="preserve">
+    <value>Die Auslegungs-Außentemperatur {0} °C muss unter der Auslegungs-Raumtemperatur {1} °C liegen.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERTZAHL" xml:space="preserve">
+    <value>Das Sollwert-Zeitprogramm hat {0} statt {1} Werte.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_KEINE_ZAHL" xml:space="preserve">
+    <value>Das Sollwert-Zeitprogramm enthält an Stelle {0} keine Zahl.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERT" xml:space="preserve">
+    <value>Das Sollwert-Zeitprogramm hat an Stelle {0} den Wert {1} °C; zulässig sind {2} bis {3} °C.</value>
+  </data>
+  <data name="WRASTER_TAGE" xml:space="preserve">
+    <value>Mo;Di;Mi;Do;Fr;Sa;So</value>
+  </data>
+  <data name="WRASTER_KOPF_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="WRASTER_ZELLE" xml:space="preserve">
+    <value>{0} {1} Uhr</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILE" xml:space="preserve">
+    <value>Zeile :</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILENWERT" xml:space="preserve">
+    <value>Wert für die ganze Zeile :</value>
+  </data>
+  <data name="WRASTER_BTN_ZEILE_SETZEN" xml:space="preserve">
+    <value>Zeile setzen</value>
+  </data>
+  <data name="WRASTER_BTN_WERKTAGE" xml:space="preserve">
+    <value>auf Mo–Fr kopieren</value>
+  </data>
+  <data name="WRASTER_BTN_WOCHENENDE" xml:space="preserve">
+    <value>auf Sa–So kopieren</value>
+  </data>
+  <data name="WRASTER_BTN_ALLE" xml:space="preserve">
+    <value>auf alle Tage kopieren</value>
+  </data>
+  <data name="WRASTER_BTN_ANLEGEN" xml:space="preserve">
+    <value>Als Zeitprogramm bearbeiten</value>
+  </data>
+  <data name="WRASTER_BTN_VERWERFEN" xml:space="preserve">
+    <value>Zeitprogramm verwerfen</value>
+  </data>
+  <data name="WRASTER_ZEILE_VORGABE" xml:space="preserve">
+    <value>Noch kein Zeitprogramm — das Raster zeigt, was ohne es gilt.</value>
+  </data>
+  <data name="WRASTER_BILD_TITEL" xml:space="preserve">
+    <value>Die Woche</value>
+  </data>
+  <data name="WRASTER_BILD_X" xml:space="preserve">
+    <value>Wochenstunde (1..168)</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL" xml:space="preserve">
+    <value>Wärmeübergabe rechnen statt idealer Regelung (Anlagenkopplung AK1); wirkt nur mit einer Übergabeart und in einem Projekt mit Anlagenkopplung AK1. Beim ersten Einschalten schlägt der Dialog die Heizkurve vor.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Übergabeart: IDEAL (keine Übergabe), RADIATOR, FLAECHE (Flächenheizung) oder KONVEKTOR; die Art bringt Exponent, Auslegung und Strahlungsanteil als Vorgaben mit.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Exponent der Übergabegleichung, 1,0 bis 1,6; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Nennleistung der Übergabe im Auslegungspunkt in kW; leer = hergeleitet aus der stationären Heizlast des Gebäudes (kein Normnachweis).</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_VORLAUF_ERL" xml:space="preserve">
+    <value>Auslegungsvorlauf in °C, 25 bis 90; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Auslegungsrücklauf in °C, zwischen Auslegungs-Raumtemperatur und Auslegungsvorlauf; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RAUM_ERL" xml:space="preserve">
+    <value>Raumtemperatur im Auslegungspunkt in °C, 15 bis 26; leer = Soll am Tag.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_AUSSEN_ERL" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur in °C, −30 bis 5; leer = kältestes Tagesmittel der Klimareihe des Projekts, abgerundet.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_AKTIV_ERL" xml:space="preserve">
+    <value>Heizkurve fahren (Vorlauf aus der Außentemperatur); sonst fester Vorlauf der Anlage.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL" xml:space="preserve">
+    <value>Niveau der Heizkurve in K, −10 bis 10; leer = 0.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL" xml:space="preserve">
+    <value>Steilheit der Heizkurve, 0,2 bis 3; leer = 1,0 (Kurve durch den Auslegungspunkt).</value>
+  </data>
+  <data name="KI_DLG_GEBK_PROPORTIONALBAND_ERL" xml:space="preserve">
+    <value>Proportionalband des Raumreglers in K, 0 bis 5 (0 = ideale Regelung mit Grenze); leer = 1 K.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLLWERTPROFIL_ERL" xml:space="preserve">
+    <value>Sollwert-Zeitprogramm: genau 168 Werte in °C (0 bis 30), Montag 00 Uhr bis Sonntag 23 Uhr, getrennt durch „;“, Dezimalpunkt; leer = die Sollwerte des Gebäudes. Eine falsche Wertzahl wird abgelehnt, nicht aufgefüllt.</value>
+  </data>
 </root>

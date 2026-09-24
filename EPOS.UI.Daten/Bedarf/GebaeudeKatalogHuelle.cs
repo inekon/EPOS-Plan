@@ -73,6 +73,12 @@ namespace WindowsFormsApplication1
                     : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, modus)),
                 ["BrauchwasserFertig"] = new Action<bool>(BrauchwasserFertig),
 
+                // Stufe AK1 (Anlagenkopplung 8.4, 9.1, 9.2): die hergeleiteten Vorgaben der
+                // Waermeuebergabe aus dem Kern (Klimareihe des laufenden Projekts, einmal je
+                // Oeffnen gelesen) und das Vorschaubild des Sollwert-Zeitprogramms.
+                ["UebergabeHerleitung"] = Herleitungsweg(Dienste.Projekt.Id),
+                ["WochenVorschau"] = Wochenvorschau(),
+
                 ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
 
@@ -275,6 +281,9 @@ namespace WindowsFormsApplication1
 
             t.HinweisSpeichernUnter = Text_("GEBK_HINWEIS_SPEICHERN_UNTER", t.HinweisSpeichernUnter);
 
+            // Stufe AK1 (Anlagenkopplung 9.1, 9.2): die Gruppe „Waermeuebergabe" samt Wochenraster.
+            t.Uebergabe = UebergabeTexte();
+
             t.MeldungUngueltig = Text_("GEBK_MSG_UNGUELTIG", t.MeldungUngueltig);
             t.MeldungNutzflaeche = Text_("GEBK_MSG_NUTZFLAECHE", t.MeldungNutzflaeche);
             t.MeldungFlaecheNutzer = Text_("GEBK_MSG_FLAECHE_NUTZER", t.MeldungFlaecheNutzer);
@@ -286,6 +295,100 @@ namespace WindowsFormsApplication1
             t.MeldungRRest = Text_("GEBK_MSG_RREST", t.MeldungRRest);
             t.MeldungOstWest = Text_("GEBK_MSG_OST_WEST", t.MeldungOstWest);
             return t;
+        }
+
+        /// <summary>Das Textbündel der Gruppe „Wärmeübergabe" und des Wochenrasters — Rückfall ist der Vorgabewert.</summary>
+        internal static WaermeuebergabeTexte UebergabeTexte()
+        {
+            var u = new WaermeuebergabeTexte();
+            u.Gruppe = Text_("GEBK_GRP_WAERMEUEBERGABE", u.Gruppe);
+            u.LabelHeizkreisAktiv = Text_("GEBK_LBL_HEIZKREIS_AKTIV", u.LabelHeizkreisAktiv);
+            u.LabelArt = Text_("GEBK_LBL_UEBERGABE_ART", u.LabelArt);
+            u.ArtIdeal = Text_("GEBK_UEBERGABE_IDEAL", u.ArtIdeal);
+            u.ArtRadiator = Text_("GEBK_UEBERGABE_RADIATOR", u.ArtRadiator);
+            u.ArtFlaeche = Text_("GEBK_UEBERGABE_FLAECHE", u.ArtFlaeche);
+            u.ArtKonvektor = Text_("GEBK_UEBERGABE_KONVEKTOR", u.ArtKonvektor);
+            u.LabelExponent = Text_("GEBK_LBL_UEBERGABE_EXPONENT", u.LabelExponent);
+            u.LabelAuslegungVorlauf = Text_("GEBK_LBL_AUSLEGUNG_VORLAUF", u.LabelAuslegungVorlauf);
+            u.LabelAuslegungRuecklauf = Text_("GEBK_LBL_AUSLEGUNG_RUECKLAUF", u.LabelAuslegungRuecklauf);
+            u.LabelAuslegungRaum = Text_("GEBK_LBL_AUSLEGUNG_RAUM", u.LabelAuslegungRaum);
+            u.LabelAuslegungAussen = Text_("GEBK_LBL_AUSLEGUNG_AUSSEN", u.LabelAuslegungAussen);
+            u.LabelNennleistung = Text_("GEBK_LBL_UEBERGABE_NENNLEISTUNG", u.LabelNennleistung);
+            u.LabelHeizkurveAktiv = Text_("GEBK_LBL_HEIZKURVE_AKTIV", u.LabelHeizkurveAktiv);
+            u.LabelHeizkurveNiveau = Text_("GEBK_LBL_HEIZKURVE_NIVEAU", u.LabelHeizkurveNiveau);
+            u.LabelHeizkurveSteilheit = Text_("GEBK_LBL_HEIZKURVE_STEILHEIT", u.LabelHeizkurveSteilheit);
+            u.LabelProportionalband = Text_("GEBK_LBL_PROPORTIONALBAND", u.LabelProportionalband);
+            u.BandFrei = Text_("GEBK_BAND_FREI", u.BandFrei);
+            u.LabelBandFrei = Text_("GEBK_LBL_BAND_FREI", u.LabelBandFrei);
+            u.VorgabeHergeleitet = Text_("GEBK_VORGABE_HERGELEITET", u.VorgabeHergeleitet);
+            u.LabelSollwertprofil = Text_("GEBK_LBL_SOLLWERTPROFIL", u.LabelSollwertprofil);
+            u.ZeileAus = Text_("GEBK_ZEILE_UEBERGABE_AUS", u.ZeileAus);
+            u.ZeileIdeal = Text_("GEBK_ZEILE_UEBERGABE_IDEAL", u.ZeileIdeal);
+            u.ZeileArt = Text_("GEBK_ZEILE_UEBERGABE_ART", u.ZeileArt);
+            u.ZeileRaum = Text_("GEBK_ZEILE_AUSLEGUNG_RAUM", u.ZeileRaum);
+            u.ZeileAussen = Text_("GEBK_ZEILE_AUSLEGUNG_AUSSEN", u.ZeileAussen);
+            u.ZeileAussenOhne = Text_("GEBK_ZEILE_AUSLEGUNG_AUSSEN_OHNE", u.ZeileAussenOhne);
+            u.ZeileNennleistung = Text_("GEBK_ZEILE_NENNLEISTUNG", u.ZeileNennleistung);
+            u.ZeileNennleistungOhne = Text_("GEBK_ZEILE_NENNLEISTUNG_OHNE", u.ZeileNennleistungOhne);
+            u.ZeileHerleitungBefund = Text_("GEBK_ZEILE_HERLEITUNG_BEFUND", u.ZeileHerleitungBefund);
+            u.ZeileHeizkurveAn = Text_("GEBK_ZEILE_HEIZKURVE_AN", u.ZeileHeizkurveAn);
+            u.ZeileHeizkurveAus = Text_("GEBK_ZEILE_HEIZKURVE_AUS", u.ZeileHeizkurveAus);
+            u.ZeileBand = Text_("GEBK_ZEILE_PROPORTIONALBAND", u.ZeileBand);
+            u.ZeileProjekt = Text_("GEBK_ZEILE_UEBERGABE_PROJEKT", u.ZeileProjekt);
+            u.ZeileBestandsweg = Text_("GEBK_ZEILE_UEBERGABE_BESTANDSWEG", u.ZeileBestandsweg);
+            u.ZeileProfilOhne = Text_("GEBK_ZEILE_SOLLWERTPROFIL_OHNE", u.ZeileProfilOhne);
+            u.ZeileProfilMit = Text_("GEBK_ZEILE_SOLLWERTPROFIL_MIT", u.ZeileProfilMit);
+            u.MeldungBereich = Text_("GEBK_MSG_UEB_BEREICH", u.MeldungBereich);
+            u.MeldungArtUnbekannt = Text_("GEBK_MSG_UEB_ART_UNBEKANNT", u.MeldungArtUnbekannt);
+            u.MeldungNennleistung = Text_("GEBK_MSG_UEB_NENNLEISTUNG", u.MeldungNennleistung);
+            u.MeldungVorlaufRaum = Text_("GEBK_MSG_UEB_VORLAUF_RAUM", u.MeldungVorlaufRaum);
+            u.MeldungRuecklauf = Text_("GEBK_MSG_UEB_RUECKLAUF", u.MeldungRuecklauf);
+            u.MeldungAussenRaum = Text_("GEBK_MSG_UEB_AUSSEN_RAUM", u.MeldungAussenRaum);
+            u.MeldungProfilWertzahl = Text_("GEBK_MSG_UEB_PROFIL_WERTZAHL", u.MeldungProfilWertzahl);
+            u.MeldungProfilKeineZahl = Text_("GEBK_MSG_UEB_PROFIL_KEINE_ZAHL", u.MeldungProfilKeineZahl);
+            u.MeldungProfilWert = Text_("GEBK_MSG_UEB_PROFIL_WERT", u.MeldungProfilWert);
+
+            EPOS.UI.Bausteine.WochenrasterTexte r = u.Raster;
+            r.Wochentage = Text_("WRASTER_TAGE", r.Wochentage);
+            r.KopfTag = Text_("WRASTER_KOPF_TAG", r.KopfTag);
+            r.Zelle = Text_("WRASTER_ZELLE", r.Zelle);
+            r.LabelZeile = Text_("WRASTER_LBL_ZEILE", r.LabelZeile);
+            r.LabelZeilenwert = Text_("WRASTER_LBL_ZEILENWERT", r.LabelZeilenwert);
+            r.KnopfZeileSetzen = Text_("WRASTER_BTN_ZEILE_SETZEN", r.KnopfZeileSetzen);
+            r.KnopfWerktage = Text_("WRASTER_BTN_WERKTAGE", r.KnopfWerktage);
+            r.KnopfWochenende = Text_("WRASTER_BTN_WOCHENENDE", r.KnopfWochenende);
+            r.KnopfAlle = Text_("WRASTER_BTN_ALLE", r.KnopfAlle);
+            r.KnopfAnlegen = Text_("WRASTER_BTN_ANLEGEN", r.KnopfAnlegen);
+            r.KnopfVerwerfen = Text_("WRASTER_BTN_VERWERFEN", r.KnopfVerwerfen);
+            r.ZeileVorgabe = Text_("WRASTER_ZEILE_VORGABE", r.ZeileVorgabe);
+            r.BildTitel = Text_("WRASTER_BILD_TITEL", r.BildTitel);
+            r.BildAchseX = Text_("WRASTER_BILD_X", r.BildAchseX);
+            return u;
+        }
+
+        /// <summary>
+        /// Der Weg der hergeleiteten Vorgaben (Anlagenkopplung 8.4, H10): eine Quelle je Öffnen —
+        /// sie liest die Klimareihe des Projekts einmal — und je Aufruf ein Katalogsatz aus dem
+        /// Probestand des Dialogs. Ohne Projekt (≤ 0) oder ohne Klimaregion keine Zahl.
+        /// </summary>
+        internal static Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten> Herleitungsweg(int idProjekt)
+        {
+            var quelle = new UebergabeHerleitungsquelle(idProjekt);
+            return d =>
+            {
+                if (d == null) return null;
+                UebergabeHerleitung h = quelle.Herleiten(NachModell(d, new GebaeudeModel()));
+                return h == null ? null : new UebergabeHerleitungDaten(h.AuslegungAussenC, h.AuslegungsheizlastKw, h.Befund);
+            };
+        }
+
+        /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms — 168 Wochenstunden, gezeichnet im Kern.</summary>
+        internal static Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell> Wochenvorschau()
+        {
+            WaermeuebergabeTexte u = UebergabeTexte();
+            return werte => werte == null || werte.Length != AnlagenkopplungSchema.WOCHENWERTE
+                ? null
+                : ChartRenderer.StundenprofilModell(u.Raster.BildTitel, werte, 24, u.Raster.BildAchseX, "°C");
         }
 
         // =================================================================================
@@ -463,7 +566,23 @@ namespace WindowsFormsApplication1
                 KuehlungAktiv = m.Kuehlung_Aktiv,
                 KuehlSollwert = m.Kuehl_Sollwert,
                 KuehlleistungMax = m.Kuehlleistung_Max,
-                KuehlSollwertNacht = m.Kuehl_Sollwert_Nacht
+                KuehlSollwertNacht = m.Kuehl_Sollwert_Nacht,
+
+                // Stufe AK1 (AK-S1, Anlagenkopplung 9.1): die dreizehn Felder der Waermeuebergabe -
+                // NULL bleibt null.
+                HeizkreisAktiv = m.Heizkreis_Aktiv,
+                UebergabeArt = m.Uebergabe_Art,
+                UebergabeExponent = m.Uebergabe_Exponent,
+                UebergabeLeistungNennKw = m.Uebergabe_Leistung_Nenn,
+                AuslegungVorlauf = m.Auslegung_Vorlauf,
+                AuslegungRuecklauf = m.Auslegung_Ruecklauf,
+                AuslegungRaumtemperatur = m.Auslegung_Raumtemperatur,
+                AuslegungAussentemperatur = m.Auslegung_Aussentemperatur,
+                HeizkurveAktiv = m.Heizkurve_Aktiv,
+                HeizkurveNiveau = m.Heizkurve_Niveau,
+                HeizkurveSteilheit = m.Heizkurve_Steilheit,
+                ReglerProportionalband = m.Regler_Proportionalband,
+                Sollwertprofil = m.Sollwertprofil
             };
 
             d.Ferienbeginn = new[]
@@ -586,6 +705,23 @@ namespace WindowsFormsApplication1
             m.Kuehl_Sollwert = d.KuehlSollwert;
             m.Kuehlleistung_Max = d.KuehlleistungMax;
             m.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
+
+            // Stufe AK1 (AK-S1): die dreizehn Felder der Waermeuebergabe, NULL-erhaltend. Sie
+            // stehen HIER und nicht nur im geladenen Satz: "Speichern unter" legt einen NEUEN
+            // Satz an (vorher = leeres Modell) - ohne diese Zeilen verloere er die Kopplung.
+            m.Heizkreis_Aktiv = d.HeizkreisAktiv;
+            m.Uebergabe_Art = d.UebergabeArt;
+            m.Uebergabe_Exponent = d.UebergabeExponent;
+            m.Uebergabe_Leistung_Nenn = d.UebergabeLeistungNennKw;
+            m.Auslegung_Vorlauf = d.AuslegungVorlauf;
+            m.Auslegung_Ruecklauf = d.AuslegungRuecklauf;
+            m.Auslegung_Raumtemperatur = d.AuslegungRaumtemperatur;
+            m.Auslegung_Aussentemperatur = d.AuslegungAussentemperatur;
+            m.Heizkurve_Aktiv = d.HeizkurveAktiv;
+            m.Heizkurve_Niveau = d.HeizkurveNiveau;
+            m.Heizkurve_Steilheit = d.HeizkurveSteilheit;
+            m.Regler_Proportionalband = d.ReglerProportionalband;
+            m.Sollwertprofil = d.Sollwertprofil;
 
             return m;
         }

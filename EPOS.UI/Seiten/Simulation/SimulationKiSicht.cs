@@ -351,6 +351,42 @@ public sealed class SimulationKiSicht
     }
 
     /// <summary>
+    /// Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4) als Steuerwert
+    /// (<c>DbWerte.ANLAGENKOPPLUNG_*</c>) — geschrieben über denselben Delegaten wie die Wahl
+    /// (<c>AnlagenkopplungSchreiben</c>), sofort. Eine Stufe, deren Rechenweg nicht gebaut ist,
+    /// lehnt die Setzung benannt ab (<c>SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR</c>), wie die
+    /// gesperrten Einträge der Liste.
+    /// </summary>
+    public string Anlagenkopplung
+    {
+        get => Parameter?.Anlagenkopplung ?? WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AUS;
+        set
+        {
+            ParameterDaten? p = Parameter;
+            Func<string?, bool>? schreiben = Wege?.AnlagenkopplungSchreiben;
+            if (p is null || schreiben is null)
+                throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+            string stufe = string.IsNullOrWhiteSpace(value) ? WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AUS : value.Trim();
+            if (!WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen.Contains(stufe))
+                throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT, stufe));
+            if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe))
+                throw new InvalidOperationException(SimulationKonfigSeite.Kopplungsname(stufe) + ": " +
+                                                    Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR);
+            string? wert = stufe == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AUS ? null : stufe;
+            if (!schreiben(wert))
+                throw new InvalidOperationException(Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER);
+            p.Anlagenkopplung = wert;
+        }
+    }
+
+    /// <summary>Die wählbaren Stufen (Schlüssel = Steuerwert): nur die gebauten.</summary>
+    public IReadOnlyList<KiWahleintrag> AnlagenkopplungWahl
+        => WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen
+               .Where(WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut)
+               .Select(s => new KiWahleintrag(s, SimulationKonfigSeite.Kopplungsname(s)))
+               .ToList();
+
+    /// <summary>
     /// Die gewählte Karte mit Quellenwahl (Wärmepumpe oder Heizkessel) als
     /// <c>ID_Anlage</c>; 0 = keine. Setzen wählt die Karte — derselbe Weg wie der Knopf an
     /// einer Meldung (<c>KarteHervorheben</c>).

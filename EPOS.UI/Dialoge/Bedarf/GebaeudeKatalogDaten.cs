@@ -231,6 +231,54 @@ public sealed class GebaeudeKatalogDaten
     /// </summary>
     public double? KuehlSollwertNacht { get; set; }
 
+    // ------------------ Stufe AK1: Wärmeübergabe (Anlagenkopplung 8.1, 9.1; AK-S1, Schritt 122)
+    //
+    // Teil der VDI-Struktur und immer sichtbar (E20). NULL-erhaltend: Der Dialog schreibt null,
+    // nicht die Vorgabe — NULL heißt „ideal" (Art), „Vorgabe der Art" (Exponent, Auslegung),
+    // „hergeleitet" (Außentemperatur, Nennleistung) bzw. „die vier Bestandssollwerte" (Profil).
+
+    /// <summary>„Übergabe rechnen" (<c>Heizkreis_Aktiv</c>, 0/1-Spalte, <c>NOT NULL DEFAULT 0</c>).</summary>
+    public bool HeizkreisAktiv { get; set; }
+
+    /// <summary>Übergabeart (<c>Uebergabe_Art</c>, <c>DbWerte.UEBERGABE_*</c>); <c>null</c> = ideal.</summary>
+    public string? UebergabeArt { get; set; }
+
+    /// <summary>Exponent der Übergabe [–] (<c>Uebergabe_Exponent</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? UebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Übergabe [kW] (<c>Uebergabe_Leistung_Nenn</c>); <c>null</c> = hergeleitet (8.4).</summary>
+    public double? UebergabeLeistungNennKw { get; set; }
+
+    /// <summary>Auslegungsvorlauf [°C] (<c>Auslegung_Vorlauf</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? AuslegungVorlauf { get; set; }
+
+    /// <summary>Auslegungsrücklauf [°C] (<c>Auslegung_Ruecklauf</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? AuslegungRuecklauf { get; set; }
+
+    /// <summary>Raumtemperatur im Auslegungspunkt [°C] (<c>Auslegung_Raumtemperatur</c>); <c>null</c> = Soll am Tag.</summary>
+    public double? AuslegungRaumtemperatur { get; set; }
+
+    /// <summary>Auslegungs-Außentemperatur [°C] (<c>Auslegung_Aussentemperatur</c>); <c>null</c> = kältestes Tagesmittel (H10).</summary>
+    public double? AuslegungAussentemperatur { get; set; }
+
+    /// <summary>„Heizkurve fahren" (<c>Heizkurve_Aktiv</c>, 0/1-Spalte, <c>NOT NULL DEFAULT 0</c>).</summary>
+    public bool HeizkurveAktiv { get; set; }
+
+    /// <summary>Niveau der Heizkurve [K] (<c>Heizkurve_Niveau</c>); <c>null</c> = 0.</summary>
+    public double? HeizkurveNiveau { get; set; }
+
+    /// <summary>Steilheit der Heizkurve [–] (<c>Heizkurve_Steilheit</c>); <c>null</c> = 1,0.</summary>
+    public double? HeizkurveSteilheit { get; set; }
+
+    /// <summary>Proportionalband des Raumreglers [K] (<c>Regler_Proportionalband</c>); <c>null</c> = 1,0 K (H1, E25).</summary>
+    public double? ReglerProportionalband { get; set; }
+
+    /// <summary>
+    /// Sollwert-Zeitprogramm (<c>Sollwertprofil</c>): 168 Werte im Format von
+    /// <c>AnlagenkopplungSchema.WochenprofilSchreiben</c>; <c>null</c> = die vier Bestandssollwerte (4.3).
+    /// </summary>
+    public string? Sollwertprofil { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
     /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").
