@@ -56825,6 +56825,195 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung; die Eingaben der Wärmeübergabe gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_ALTWEG_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_ALTWEG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die hergeleitete Auslegungsheizlast ist nicht größer null ({0} W bei {1} °C außen und {2} °C innen); die Nennleistung der Übergabe lässt sich so nicht herleiten. Bitte eine Nennleistung eintragen. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegungs-Außentemperatur {0} °C liegt nicht unter der Auslegungs-Raumtemperatur {1} °C; die Heizkurve hat so keinen Auslegungspunkt. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Flächenheizung ohne Estrichmasse — die Masse der Heizfläche wird nicht gerechnet, die gerechnete Aufheizzeit ist deshalb zu kurz. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_FLAECHE_OHNE_ESTRICH {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_FLAECHE_OHNE_ESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kälteseite der Anlagenkopplung ist noch nicht gebaut; die Kühlung dieses Gebäudes rechnet weiter mit idealer Regelung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KAELTESEITE_VERTAGT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KAELTESEITE_VERTAGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Nennleistung der Übergabe ist fest eingetragen; mit Kopplung ist die Verbrauchs-Rückrechnung nicht mehr proportional. Der gerechnete Jahreswärmebedarf weicht um {1} % vom angegebenen Verbrauch ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_NENNLEISTUNG_NICHT_PROPORTIONAL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_NENNLEISTUNG_NICHT_PROPORTIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung der Übergabe {0} kW ist nicht größer null. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_NENNLEISTUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_NENNLEISTUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Wärmeübergabe ist eingeschaltet, das Projekt rechnet aber ohne Anlagenkopplung. Die Eingaben gelten, sobald die Stufe gesetzt ist; gerechnet wird mit idealer Regelung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_PROJEKTSTUFE_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_PROJEKTSTUFE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungsrücklauf {0} °C liegt nicht zwischen der Auslegungs-Raumtemperatur {1} °C und dem Auslegungsvorlauf {2} °C. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_RUECKLAUF_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_RUECKLAUF_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die fest eingetragene Nennleistung der Übergabe lässt sich nicht auf den Katalogbau umrechnen: Der Skalierungsfaktor {0} ist nicht bestimmbar (Fläche oder Verbrauch fehlt). ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_SKALIERUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_SKALIERUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenendtage des Laufs ergeben keinen Wochenkalender; das Sollwert-Zeitprogramm lässt sich keinem Wochentag zuordnen. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_SOLLWERTPROFIL_KALENDER {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_SOLLWERTPROFIL_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Sollwert-Zeitprogramm enthält an Stelle {0} keine Zahl (Dezimalpunkt, Trennzeichen „;“). Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_SOLLWERTPROFIL_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_SOLLWERTPROFIL_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Sollwert-Zeitprogramm hat an Stelle {0} den Wert {1} °C; zulässig sind {2} … {3} °C. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_SOLLWERTPROFIL_WERT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_SOLLWERTPROFIL_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Sollwert-Zeitprogramm hat {0} statt {1} Werte — kein Auffüllen, kein Abschneiden. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_SOLLWERTPROFIL_WERTZAHL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_SOLLWERTPROFIL_WERTZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Das Projekt steht auf der Stufe {0}; gebaut ist die Stufe AK1 — gerechnet wird der Heizkreis als Randbedingung (AK1). ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_STUFE_NICHT_GEBAUT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_STUFE_NICHT_GEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Wärmeübergabe ist eingeschaltet, die Übergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Regelung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_UEBERGABEART_IDEAL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_UEBERGABEART_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabeart „{0}“ ist unbekannt; bekannt sind Radiator, Flächenheizung und Konvektor. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_UEBERGABEART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_UEBERGABEART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Wärmeübergabe reicht in {1} Stunden nicht; die Raumtemperatur liegt dort bis zu {2} K unter dem Sollwert. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_UEBERGABE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_UEBERGABE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Heizkurve ist aus, und keine Anlage des Heizkanals führt einen Vorlauf; der feste Vorlauf ist der Auslegungsvorlauf {1} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_VORLAUF_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_VORLAUF_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungsvorlauf {0} °C liegt nicht über der Auslegungs-Raumtemperatur {1} °C — die Übergabe gäbe keine Wärme ab. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_VORLAUF_UNTER_RAUM {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_VORLAUF_UNTER_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} = {1} liegt außerhalb des zulässigen Bereichs {2} … {3}. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_WERT_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_WERT_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht. ähnelt.
         /// </summary>
         public static string SIMENG_BHKW_MAX_UEBERSCHRITTEN {
@@ -57838,6 +58027,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_KENNLINIEN_FEHLEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_KENNLINIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der gerechnete Vorlauf des Heizkreises lag in {1} Stunden über der obersten Kennlinien-Stützstelle {2} °C (gerechnet bis {3} °C); verwendet wurde die oberste Kennlinie — die Arbeitszahl dieser Stunden ist damit eher zu hoch (Extrapolation erlaubt). ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der gerechnete Vorlauf des Heizkreises {1} °C liegt über der obersten Kennlinien-Stützstelle {2} °C, und die Extrapolation ist in den Projekteinstellungen nicht erlaubt. Der Lauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kennlinie je Stunde am gerechneten Vorlauf des Heizkreises — Stunden je Stützstelle: {1}. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORLAUF_KENNLINIENWAHL {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORLAUF_KENNLINIENWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der gerechnete Vorlauf des Heizkreises lag in {1} Stunden unter der untersten Kennlinien-Stützstelle {2} °C (gerechnet bis {3} °C); verwendet wurde die unterste Kennlinie — die Arbeitszahl dieser Stunden ist damit eher zu niedrig. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN", resourceCulture);
             }
         }
         
@@ -69865,7 +70090,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen im Bericht; die Mappe rechnet alle drei Szenarien formelbasiert — mit sichtbaren Formeln auf ihre Spalte im Parameterblock. ähnelt.
         /// </summary>
         public static string WIRT_AE_11_STAND {
             get {
@@ -71746,6 +71971,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_IZF_NICHT_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_IZF_NICHT_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang in diesem Jahr [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_MJ_AMORT_HILFE {
@@ -71800,6 +72034,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „{0}“, in €: die Eingangswerte aus dem Lauf dieses Szenarios, die Formeln rechnen mit seiner Spalte im Parameterblock (Namen mit dem Anhang {1}). Jahre nach T = {2} a tragen keine Zahlung; ihre Formeln bleiben leer. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht der Zahlungsströme — Szenario „{0}“ (T = {1} a) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_VORZEICHEN {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_VORZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichenwechsel bis hier ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WECHSEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_DAUER {
@@ -71818,7 +72088,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen je Szenario mit seiner Spalte: „Erwartet“ mit den Namen Zins_i, Zeitraum_T, p_E, p_B, p_I, „Günstig“ und „Ungünstig“ mit denselben Namen und dem Anhang _Guenstig bzw. _Unguenstig. Zins und Preissteigerungen lassen sich dort ändern, Mehrjahrestabellen, Kennzahlen und Bandbreite des Szenarios ziehen mit. Die Jahreszeilen stehen fest und reichen bis zum längsten Betrachtungszeitraum der drei Szenarien; Jahre nach dem Zeitraum eines Szenarios bleiben leer — ein längerer Betrach [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_HINWEIS {
             get {
@@ -71971,7 +72241,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T [a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T_s je Szenario [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_ZEITRAUM {
             get {

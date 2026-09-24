@@ -211,6 +211,17 @@ namespace EPOS.Kern.Tests
                                              .Select(z => ws.Cell(z, 5).GetString()).Single());
         }
 
+        /// <summary>ETAPPE E14 — Punkt 11 (Nachvollziehbarkeit) nennt die Formelbasis: Die
+        /// Mappe rechnet alle drei Szenarien formelbasiert; der Punkt ist erfüllt.</summary>
+        [Fact]
+        public void Punkt_11_nennt_alle_drei_Szenarien_formelbasiert()
+        {
+            ChecklistenPunkt p = Punkt(new ChecklistenLage(), "11");
+            Assert.Equal(ChecklistenStand.Erfuellt, p.Stand);
+            Assert.Equal(R.WIRT_AE_11_STAND, p.StandText);
+            Assert.Contains("alle drei Szenarien formelbasiert", p.StandText);
+        }
+
         /// <summary>Die Zelle „Stand in EPOS" ist in allen drei Darstellungen dieselbe
         /// Zeile: Wort, Doppelpunkt, Erläuterung.</summary>
         [Fact]

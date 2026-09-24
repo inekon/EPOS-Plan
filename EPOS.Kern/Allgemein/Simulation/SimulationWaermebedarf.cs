@@ -212,6 +212,68 @@ namespace WindowsFormsApplication1
 
         private bool? _kuehlbetriebProjekt;
 
+        /// <summary>
+        /// Die Kopplungsstufe dieses Projekts (<c>Tab_Einstellungen.Anlagenkopplung</c>,
+        /// Schemaschritt 122, AK-S1) — gelesen EINMAL je Lauf und Auskunft (zurückgesetzt in
+        /// <see cref="KlimakalenderLesen"/>), dialogfrei; fehlende Zeile, fehlende Spalte und NULL
+        /// heißen „aus" (<c>null</c>). Sie wirkt im VDI-Weg (Übergabe je Gebäude, AK1) und über
+        /// den Heizkreis des Projekts auf die Kennlinienwahl der Wärmepumpe (6.1).
+        /// </summary>
+        internal string AnlagenkopplungProjekt
+        {
+            get
+            {
+                if (!_anlagenkopplungGelesen)
+                {
+                    _anlagenkopplungProjekt = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
+                    _anlagenkopplungGelesen = true;
+                }
+                return _anlagenkopplungProjekt;
+            }
+            set
+            {
+                _anlagenkopplungProjekt = value;
+                _anlagenkopplungGelesen = true;
+            }
+        }
+
+        private string _anlagenkopplungProjekt;
+        private bool _anlagenkopplungGelesen;
+
+        /// <summary>
+        /// Der projektierte Vorlauf des Heizkanals [°C] — der feste Vorlauf gekoppelter Gebäude
+        /// ohne Heizkurve (<see cref="WErzeugerCtrl.VorlaufDesHeizkanals"/>). Gelesen einmal je
+        /// Lauf und nur, wenn das Projekt eine Kopplungsstufe rechnet; NaN = keiner.
+        /// </summary>
+        internal double AnlagenVorlaufC
+        {
+            get
+            {
+                if (!_anlagenVorlaufGelesen)
+                {
+                    _anlagenVorlaufC = WErzeugerCtrl.VorlaufDesHeizkanals(m_ID_Projekt);
+                    _anlagenVorlaufGelesen = true;
+                }
+                return _anlagenVorlaufC;
+            }
+            set
+            {
+                _anlagenVorlaufC = value;
+                _anlagenVorlaufGelesen = true;
+            }
+        }
+
+        private double _anlagenVorlaufC = double.NaN;
+        private bool _anlagenVorlaufGelesen;
+
+        /// <summary>
+        /// <b>Der Heizkreis des Projekts</b> nach dem Bedarfslauf (Anlagenkopplung AK1, 6.1):
+        /// bedarfsgewichteter Vorlauf je Stunde für die Kennlinienwahl der Wärmepumpe und die
+        /// drei Größen der Ergebniszeile (Schritt 123). <c>null</c>, wenn kein Gebäude gekoppelt
+        /// rechnet — dann rechnet die Erzeugerseite wie im Bestand.
+        /// </summary>
+        internal HeizkreisProjekt Heizkreis { get; private set; }
+
         /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
         internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
 
@@ -353,6 +415,11 @@ namespace WindowsFormsApplication1
             }
 
             Anzahl_Gebaeude = ctrl.rows;
+
+            // ANLAGENKOPPLUNG (AK1, 6.1): der Heizkreis des Projekts aus den skalierten
+            // Ergebnissen - bedarfsgewichteter Vorlauf je Stunde für die Kennlinienwahl der
+            // Wärmepumpe und die drei Größen der Ergebniszeile. Ohne gekoppeltes Gebäude null.
+            Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
 
             //com.I_Watt_To_Kw(ref Waermebedarf);
             // K1: Der Heizkanal trägt an dieser Stelle genau das, was bisher der
@@ -727,6 +794,14 @@ namespace WindowsFormsApplication1
             // KÜHLUNG (K10): Der Projektschalter wird je Lauf bzw. Auskunft neu gelesen - hier,
             // im Vorbereitungsschritt, den beide rufen (siehe KuehlbetriebProjekt).
             _kuehlbetriebProjekt = null;
+
+            // ANLAGENKOPPLUNG (AK1): Stufe, Anlagenvorlauf und Heizkreis gelten je Lauf bzw.
+            // Auskunft - hier neu, aus demselben Grund.
+            _anlagenkopplungGelesen = false;
+            _anlagenkopplungProjekt = null;
+            _anlagenVorlaufGelesen = false;
+            _anlagenVorlaufC = double.NaN;
+            Heizkreis = null;
         }
 
         /// <summary>
@@ -778,11 +853,29 @@ namespace WindowsFormsApplication1
             // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
             _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
 
+            // ANLAGENKOPPLUNG (AK1, 6.1): die Projektstufe und - nur mit ihr - der feste Vorlauf
+            // der Anlage gehen an den VDI-Weg wie der Kühlschalter; das Modul liest keine
+            // Anlagendaten. Ohne Stufe rechnet jedes Gebäude wie bisher.
+            string stufe = AnlagenkopplungProjekt;
+            _vdi6007.Anlagenkopplung = stufe;
+            _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
+            _vdi6007.NennleistungSkalierung = 1.0;
+            _vdi6007.Probelauf = false;
+
             // Der VDI-Weg läuft EINMAL; Rückrechnung und Skalierung sind eine
             // Nachmultiplikation hinter der Weiche (F-Ü2, Rechenschritte 8.3). Der
             // Tagesbilanz-Weg geht unverändert den Bestandsweg darunter (zwei Aufrufe).
             if (!ReferenceEquals(weg, _altweg))
                 return EinLaufMitNachmultiplikation(weg, vorbereitung, item, index, ziel, gemeinsam);
+
+            // F-A18: Der Tagesbilanz-Weg rechnet keine Anlagenkopplung - benannt, nie still. Der
+            // Hinweis gilt für die Dauer des Übergangs und steht in der Löschliste der Stufe GA.
+            if (item.Heizkreis_Aktiv)
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "ak-altweg-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                  MyResource.Resource.SIMENG_AK_ALTWEG_OHNE_KOPPLUNG,
+                                  (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ")"));
 
             // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
             if (vorbereitung.IstFlaeche)
@@ -825,8 +918,29 @@ namespace WindowsFormsApplication1
                                                   ProjektGebaeudeModel item, int index, double[] ziel,
                                                   KlimakalenderGemeinsam gemeinsam)
         {
+            // ANLAGENKOPPLUNG, H7: Die Kopplung wirkt in beiden Läufen der Verhältnisrechnung.
+            // Mit hergeleiteter Nennleistung skaliert die Heizfläche mit dem Gebäude, und die
+            // Nachmultiplikation bleibt exakt - EIN Lauf wie bisher. Eine FEST eingetragene
+            // Nennleistung gilt dem wirklichen Gebäude: Bei Flächenangabe ist das Verhältnis vor
+            // dem Lauf bekannt (ein Lauf), bei Verbrauchsangabe entsteht es erst aus einem
+            // Probelauf mit hergeleiteter Nennleistung; der zweite Lauf rechnet dann mit der
+            // eingetragenen, und die Abweichung vom angegebenen Verbrauch wird benannt.
+            bool festeNennleistung = ReferenceEquals(weg, _vdi6007)
+                                     && Waermeuebergabe.KopplungWirksamFuer(item, _vdi6007.Anlagenkopplung)
+                                     && item.Uebergabe_Leistung_Nenn.HasValue;
+            bool zweiLaeufe = festeNennleistung && !vorbereitung.IstFlaeche;
+            if (festeNennleistung && vorbereitung.IstFlaeche)
+                _vdi6007.NennleistungSkalierung = item.Z_AuswahlWohnflaeche / item.Nutzflaeche;
+            if (zweiLaeufe)
+            {
+                _vdi6007.NennleistungSkalierung = double.NaN;
+                _vdi6007.Probelauf = true;
+            }
+
             double verbrauchAltKwh;
-            if (!weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh)) return false;
+            bool gerechnet = weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh);
+            _vdi6007.Probelauf = false;
+            if (!gerechnet) return false;
 
             double faktor;
             if (vorbereitung.IstFlaeche)
@@ -858,6 +972,23 @@ namespace WindowsFormsApplication1
                     (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ") — der Skalierungsfaktor nach E8 ist " +
                     "nicht bestimmbar (Fläche oder Verbrauch fehlt).");
                 return false;
+            }
+
+            if (zweiLaeufe)
+            {
+                // H7, zweiter Lauf: die eingetragene Nennleistung, auf den Katalogbau umgerechnet
+                // mit dem Verhältnis des Probelaufs; nachmultipliziert wird mit demselben Faktor.
+                _vdi6007.NennleistungSkalierung = faktor;
+                if (!weg.Rechnen(item, index, ziel, gemeinsam, out double verbrauchZweiterLaufKwh)) return false;
+                double abweichungProzent = vorbereitung.VerbrauchNeu > 0.0
+                    ? (faktor * verbrauchZweiterLaufKwh / vorbereitung.VerbrauchNeu - 1.0) * 100.0
+                    : double.NaN;
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "ak-nennleistung-verhaeltnis-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                  MyResource.Resource.SIMENG_AK_NENNLEISTUNG_NICHT_PROPORTIONAL,
+                                  (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ")",
+                                  abweichungProzent.ToString("0.0", System.Globalization.CultureInfo.CurrentCulture)));
             }
 
             for (int h = 0; h < 8760; h++) ziel[h] *= faktor;

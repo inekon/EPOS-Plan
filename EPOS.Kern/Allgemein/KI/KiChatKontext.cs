@@ -211,6 +211,7 @@ namespace WindowsFormsApplication1
             { "Form_ErgProzesswaerme",         B_PROZESSWAERME },
             { "Form_ErgStromverbraucher",      B_STROMVERBRAUCHER },
             { "Form_GanglinieImportOptionen",  B_STROMVERBRAUCHER },
+            { "Form_GebWohnflaeche",           B_GEBAEUDE },
             { "Form_Gebaeude",                 B_GEBAEUDE },
             { "Form_Gesetzesparameter",        B_ADMIN },
             { "Form_Heizkessel",               B_HEIZKESSEL },

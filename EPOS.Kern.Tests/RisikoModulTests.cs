@@ -588,7 +588,9 @@ namespace EPOS.Kern.Tests
             Mehrjahresbild m = Mehrjahresbild.Baue(serie);
 
             int kopf = naechste + 1;
-            MehrjahresTafel tafel = ExcelFormelmappe.Mehrjahrestabelle(ws, kopf, VARIANTE, m, serie, p, register);
+            MehrjahresTafel tafel = ExcelFormelmappe.Mehrjahrestabelle(ws, kopf, VARIANTE, m, serie,
+                                                                       p.FuerSzenario(ERWARTET), ERWARTET,
+                                                                       m.Jahre, register);
             Assert.NotNull(tafel);
             int spalte = ExcelFormelmappe.SpalteVon(m, Mehrjahresbild.RISIKO);
             Assert.True(spalte > 0);
