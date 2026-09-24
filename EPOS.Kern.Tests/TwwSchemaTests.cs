@@ -318,7 +318,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schemaschritt T3 (Schritt 121) auf einer Datenbank mit Stand 120: Die Tabellen aus T1
+        /// Der Schemaschritt T3 (Schritt 124) auf einer Datenbank mit Stand 120: Die Tabellen aus T1
         /// stehen samt einer Projekt- und einer Bedarfstagzeile, T3 legt die sechs Spalten daneben —
         /// wiederholbar, ohne eine Zeile zu ändern: die vorhandene Projektzeile rechnet mit
         /// <c>Personen_Auto</c> = 1 und sonst NULL. Die CHECK-Klauseln kommen aus den Wertemengen
@@ -370,25 +370,26 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 121 steht in der Migration der Schale NACH 120 (E10) und bedient sich derselben Quelle
-        /// (<see cref="TwwSchema.SpaltenT3"/>); das Ziel steht auf mindestens 121.
+        /// Der Schritt 124 steht in der Migration der Schale NACH 123 (Anlagenkopplung AK-S3) und
+        /// bedient sich derselben Quelle (<see cref="TwwSchema.SpaltenT3"/>); das Ziel steht auf
+        /// mindestens 124.
         /// </summary>
         [Fact]
-        public void Schritt_121_steht_in_der_Migration_nach_120()
+        public void Schritt_124_steht_in_der_Migration_nach_123()
         {
-            Assert.True(SchemaStand.Zielversion >= 121, "Zielstand " + SchemaStand.Zielversion + " liegt unter 121.");
+            Assert.True(SchemaStand.Zielversion >= 124, "Zielstand " + SchemaStand.Zielversion + " liegt unter 124.");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_121_ZAPFPROFIL_LAUFANGABEN = 121;", text, StringComparison.Ordinal);
-            int ort120 = text.IndexOf("new Schritt(SCHRITT_120_NUTZUNGSDAUER_SAETZE", StringComparison.Ordinal);
-            int ort121 = text.IndexOf("new Schritt(SCHRITT_121_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
-            Assert.True(ort120 > 0 && ort121 > ort120, "Schritt 121 steht nicht nach 120 in der Schrittliste.");
+            Assert.Contains("public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;", text, StringComparison.Ordinal);
+            int ort123 = text.IndexOf("new Schritt(SCHRITT_123_ANLAGENKOPPLUNG_ERGEBNIS", StringComparison.Ordinal);
+            int ort124 = text.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
+            Assert.True(ort123 > 0 && ort124 > ort123, "Schritt 124 steht nicht nach 123 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_121_ZapfprofilLaufangaben(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 121 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_124_ZapfprofilLaufangaben(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 124 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             Assert.Contains("TwwSchema.SpaltenT3", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }

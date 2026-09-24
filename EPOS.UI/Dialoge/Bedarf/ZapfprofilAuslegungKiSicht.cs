@@ -154,14 +154,14 @@ public sealed class ZapfprofilAuslegungKiSicht
         set => ZapfprofilKiRegeln.Setze(SensorhoeheSetzen, value);
     }
 
-    /// <summary>Die Erzeugerart am Speicher — gespeichert mit dem Projekt (Schritt 121).</summary>
+    /// <summary>Die Erzeugerart am Speicher — gespeichert mit dem Projekt (Schritt 124).</summary>
     public int? Erzeugerart
     {
         get => ErzeugerartLesen?.Invoke();
         set => ZapfprofilKiRegeln.Setze(ErzeugerartSetzen, value);
     }
 
-    /// <summary>Der Werkstoff des Übertragers — gespeichert mit dem Projekt (Schritt 121).</summary>
+    /// <summary>Der Werkstoff des Übertragers — gespeichert mit dem Projekt (Schritt 124).</summary>
     public int? Werkstoff
     {
         get => WerkstoffLesen?.Invoke();

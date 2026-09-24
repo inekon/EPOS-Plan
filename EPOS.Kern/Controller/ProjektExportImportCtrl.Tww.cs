@@ -65,12 +65,12 @@ namespace WindowsFormsApplication1
     /// beides. Eine Auslieferungszeile ist eine unveränderliche Version und wird nicht
     /// verglichen.</para>
     ///
-    /// <para><b>Schemaschritt 121 (T3).</b> Die Laufangaben der Auslegung an <c>Tab_TwwProjekt</c>
+    /// <para><b>Schemaschritt 124 (T3).</b> Die Laufangaben der Auslegung an <c>Tab_TwwProjekt</c>
     /// (Erzeugerart, Werkstoff, Personen, Bezug des Füllstands) und die Bezugsart am Bedarfstag
     /// reisen mit ihrer Zeile — Projektzeile bzw. Katalogkopf — und zählen im Inhaltsvergleich.
-    /// Führt die Zieldatenbank die Spalten noch nicht (Stand vor 121), läuft der Import durch wie
+    /// Führt die Zieldatenbank die Spalten noch nicht (Stand vor 124), läuft der Import durch wie
     /// bei einer Kindtabelle vor 115; der Bericht nennt je Spalte, wie viele Werte liegen bleiben
-    /// (<see cref="TwwSchritt121Melden"/>) — benannt, nie still.</para>
+    /// (<see cref="TwwSchritt124Melden"/>) — benannt, nie still.</para>
     /// </summary>
     public partial class ProjektExportImportCtrl
     {
@@ -228,12 +228,12 @@ namespace WindowsFormsApplication1
             katalog + ", die das Paket nicht führt - Import abgelehnt, nichts geändert.";
 
         /// <summary>
-        /// Meldet für jede Spalte des Schemaschritts 121 (<see cref="TwwSchema.SpaltenT3"/>), die das
-        /// Paket mit einem Wert trägt, die Zieldatenbank aber nicht führt (Stand vor 121), eine
+        /// Meldet für jede Spalte des Schemaschritts 124 (<see cref="TwwSchema.SpaltenT3"/>), die das
+        /// Paket mit einem Wert trägt, die Zieldatenbank aber nicht führt (Stand vor 124), eine
         /// Berichtszeile: Der Import läuft durch, der Wert bleibt liegen. Die Vorgabe der Spalte
         /// (<c>Personen_Auto</c> = 1) zählt nicht als Wert, der verloren ginge.
         /// </summary>
-        private void TwwSchritt121Melden(IEnumerable<Dictionary<string, List<Dictionary<string, JsonElement>>>> baeume,
+        private void TwwSchritt124Melden(IEnumerable<Dictionary<string, List<Dictionary<string, JsonElement>>>> baeume,
                                          Dictionary<string, List<Dictionary<string, JsonElement>>> katalogzeilen)
         {
             var quellen = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>(baeume ?? Enumerable.Empty<Dictionary<string, List<Dictionary<string, JsonElement>>>>());
@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
                 if (belegt == 0) continue;
                 HashSet<string> ziel = ZielSpalten(s.Tabelle);
                 if (ziel == null || ziel.Contains(s.Name)) continue;
-                _twwBericht.Add("Die Zieldatenbank fuehrt " + s.Tabelle + "." + s.Name + " noch nicht (Schemastand vor 121): " +
+                _twwBericht.Add("Die Zieldatenbank fuehrt " + s.Tabelle + "." + s.Name + " noch nicht (Schemastand vor 124): " +
                                 belegt.ToString(CultureInfo.InvariantCulture) + " Wert(e) bleiben beim Import liegen.");
             }
         }

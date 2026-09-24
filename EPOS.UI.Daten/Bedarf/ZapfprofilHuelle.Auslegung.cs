@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
     /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
     /// <see cref="AuslegungSpeichern"/> — Projektgrößen in <c>Tab_TwwProjekt</c>, ein
     /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart, Werkstoff, Personen und Bezug des
-    /// Füllstands stehen ab Schritt 121 als Projektgrößen darin; der Vorschlag des
+    /// Füllstands stehen ab Schritt 124 als Projektgrößen darin; der Vorschlag des
     /// Anlagenbestands bleibt ein Vorschlag (N10 (i)).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
@@ -130,7 +130,7 @@ namespace WindowsFormsApplication1
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
             StochastikRahmen(start);
-            // Die Wertemengen des Schemas (Schritt 121): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
+            // Die Wertemengen des Schemas (Schritt 124): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
             start.Bezugsarten = TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE)
                 .Select(b => new ZapfprofilKatalogeintragDaten { Id = b, Name = Bezugsgroesse((ZapfBezugsart)b) }).ToList();
             start.Fuellstandbezuege = TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE)
@@ -323,7 +323,7 @@ namespace WindowsFormsApplication1
                 Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“"),
                 ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart),
                 // Der Vorschlag des Projekts (N10 (i)): der eindeutige Anlagenbestand — eine Wahl, die der
-                // Anwender übernimmt; gespeichert wird sie erst mit ihr (Schritt 121).
+                // Anwender übernimmt; gespeichert wird sie erst mit ihr (Schritt 124).
                 ErzeugerartVorschlag = AlsErzeugerart(r.Bestand?.Vorschlag)
             };
 
@@ -623,7 +623,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Eingaben der Überlagerung aus dem Stand des Kerns: Projektgrößen (nullbar =
         /// Vorgabe) und ein noch ungespeicherter Entwurf; Erzeugerart und Werkstoff aus der
-        /// gespeicherten Wahl (Schritt 121), sonst „keine Angabe".
+        /// gespeicherten Wahl (Schritt 124), sonst „keine Angabe".
         /// </summary>
         internal static ZapfprofilAuslegungEingabeDaten AuslegungAusStand(ZapfprofilStand stand)
         {
@@ -647,7 +647,7 @@ namespace WindowsFormsApplication1
                 a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
                 a.RealisierungenAuslegung = p.RealisierungenAuslegung;
                 // Der Verfahrensvergleich (4.7; Stufe Z4): Ladeleistung, Ladefenster, Nutzanteil und
-                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 121).
+                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 124).
                 a.LadeAuto = p.LadeAuto;
                 a.LadeManuellKw = p.LadeManuellKw;
                 a.LadefensterH = p.LadefensterH;
@@ -745,7 +745,7 @@ namespace WindowsFormsApplication1
         {
             if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return null;
             ZapfprofilBedarfstagDaten t = a.Entwurf;
-            // Bezugsmenge und Bezugsart gehen mit dem Tag (Schritt 121, N10 (j)) — nur zusammen.
+            // Bezugsmenge und Bezugsart gehen mit dem Tag (Schritt 124, N10 (j)) — nur zusammen.
             bool mitBezug = t.Bezugsmenge.HasValue && t.Bezugsart.HasValue;
             return new BedarfstagKatalogzeile(ZapfprofilCtrl.ENTWURF_ID, (t.Bezeichner ?? "").Trim(), t.Katalogversion ?? "",
                 ZapfBedarfstagquelle.Konstruktor, mitBezug ? t.Bezugsmenge : null,
@@ -822,7 +822,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="ZapfprofilCtrl.FreierBedarfstagname"/>) und nennt einen freien; der
         /// Schreibweg prüft ihn erneut.
         ///
-        /// <para><b>Bezugsart und Bezugsmenge</b> (Schritt 121, N10 (j); Stufe Z4, Gruppe 2b) gehen
+        /// <para><b>Bezugsart und Bezugsmenge</b> (Schritt 124, N10 (j); Stufe Z4, Gruppe 2b) gehen
         /// nur zusammen mit dem Tag: beide leer = ein Tag des Projekts, der nie skaliert wird; eine
         /// Menge größer 0 samt Bezugsart aus der Wertemenge des Schemas = ein Tag, den die Auslegung
         /// auf die Bezugsmenge einer Gruppe derselben Bezugsart skaliert. Eine halbe Angabe lehnt der

@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
     /// Die Laufangaben der Auslegung (N10 (i), N11 (i)): Erzeugerart und Werkstoff des Übertragers.
     /// <c>null</c> = keine Angabe; dann gilt die gespeicherte Wahl des Projekts
     /// (<see cref="ProjektStand.Erzeugerart"/>, <see cref="ProjektStand.UebertragerWerkstoff"/>,
-    /// Schritt 121), und die Erzeugerart fällt zuletzt auf den Vorschlag des Anlagenbestands zurück
+    /// Schritt 124), und die Erzeugerart fällt zuletzt auf den Vorschlag des Anlagenbestands zurück
     /// (<see cref="ZapfErzeugerbestand.Vorschlag"/>), der Werkstoff nie.
     /// Dazu „Stochastisch rechnen" (4.5 b, Stufe Z3): zieht je Topologiegruppe das Ensemble des
     /// Bedarfstags (<see cref="Auslegungseingang.Stochastisch"/>); Seed, Perzentil und
@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
     /// <c>EIGENKONSTRUKTION</c>, neutrale Quelle, Quelle_Art Konstruktor — und hängt die
     /// Projektzeile an ihn.</para>
     ///
-    /// <para><b>Erzeugerart und Werkstoff</b> stehen ab Schritt 121 in <c>Tab_TwwProjekt</c>
+    /// <para><b>Erzeugerart und Werkstoff</b> stehen ab Schritt 124 in <c>Tab_TwwProjekt</c>
     /// (<c>Erzeugerart</c>, <c>Uebertrager_Werkstoff</c>): gespeichert wird die Wahl des Anwenders;
     /// der Vorschlag des Anlagenbestands bleibt ein Vorschlag und wird nie gespeichert
     /// (N10 (i)).</para>
@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dt.Rows)
                 {
                     int id = Ganz(r, "ID");
-                    // Schritt 121 (T3): die Bezugsart der Bezugsmenge; vor dem Schritt ohne Angabe.
+                    // Schritt 124 (T3): die Bezugsart der Bezugsmenge; vor dem Schritt ohne Angabe.
                     int? bezugsart = SpalteDa(r, TwwSchema.SPALTE_BEZUGSART) ? GanzOderNull(r, TwwSchema.SPALTE_BEZUGSART) : null;
                     liste.Add(new BedarfstagKatalogzeile(id, Text(r, "Bezeichner"), Text(r, "Katalogversion"),
                         (ZapfBedarfstagquelle)Ganz(r, "Quelle_Art"), ZahlOderNull(r, "Bezugsmenge"), Herkunft(r, ""),
@@ -301,7 +301,7 @@ namespace WindowsFormsApplication1
             Parametersatz ps = e.Parameter;
             Nenninhaltswahl nenn = Nenninhalte(ps);
             ZapfErzeugerbestand bestand = Erzeugerbestand(idProjekt);
-            // N10 (i), Schritt 121: die Laufangabe, sonst die gespeicherte Wahl des Projekts, sonst der
+            // N10 (i), Schritt 124: die Laufangabe, sonst die gespeicherte Wahl des Projekts, sonst der
             // Vorschlag des Anlagenbestands (nur, wenn er eindeutig ist; er wird nie gespeichert).
             ProjektStand gespeichert = stand.Projekt;
             ZapfErzeugerart? art = lauf?.Erzeugerart ?? gespeichert?.Erzeugerart ?? bestand.Vorschlag;
@@ -339,7 +339,7 @@ namespace WindowsFormsApplication1
         /// Parametersatzes (<c>A100.Kaltwasser.Auslegung</c>; N10 (j), Folge) und liefert ihn als
         /// Entwurf einer Katalogzeile — Quelle Konstruktor, Status <c>EIGEN</c>, Herkunftsart
         /// <c>EIGENKONSTRUKTION</c>. Ohne <paramref name="bezugsmenge"/> gilt der Tag für das Projekt
-        /// und wird nicht skaliert; mit ihr (positiv, samt <paramref name="bezugsart"/>, Schritt 121,
+        /// und wird nicht skaliert; mit ihr (positiv, samt <paramref name="bezugsart"/>, Schritt 124,
         /// N10 (j)) skaliert ein späterer Gebrauch auf die Menge derselben Bezugsart. Ohne Namen, ohne
         /// Zeile, mit einer ungültigen Zeile oder mit einer Bezugsmenge ohne Bezugsart die benannte
         /// Ablehnung (<see cref="ZapfAuslegungException"/>).
@@ -423,9 +423,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt den geprüften Entwurf als Katalogzeile an — Quelle_Art Konstruktor, Bezugsmenge und
-        /// (ab Schritt 121) Bezugsart des Entwurfs (ohne Bezugsmenge beide leer: der Tag gilt für das
+        /// (ab Schritt 124) Bezugsart des Entwurfs (ohne Bezugsmenge beide leer: der Tag gilt für das
         /// Projekt), neutrale Quelle, Herkunftsart <c>EIGENKONSTRUKTION</c>, Status <c>EIGEN</c>,
-        /// <c>ReadOnly</c> 0 — samt Ereignissen in ihrer Reihenfolge; liefert die Id. Vor Schritt 121
+        /// <c>ReadOnly</c> 0 — samt Ereignissen in ihrer Reihenfolge; liefert die Id. Vor Schritt 124
         /// fehlt die Spalte: Eine Bezugsart lehnt der Schreibweg dann benannt ab, statt sie still fallen
         /// zu lassen.
         /// </summary>

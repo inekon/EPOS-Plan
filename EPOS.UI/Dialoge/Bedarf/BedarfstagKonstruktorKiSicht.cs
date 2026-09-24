@@ -30,7 +30,7 @@ public sealed class BedarfstagKonstruktorKiSicht
     /// <summary>„Volumen direkt" und die Zapfregeln — die Wahl der Spalte „Zapfregel".</summary>
     public IReadOnlyList<KiWahleintrag> RegelWahl => RegelEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
-    // Der Bezug des Tags (Schritt 121, N10 (j); Zapfprofil Z4, Gruppe 2b)
+    // Der Bezug des Tags (Schritt 124, N10 (j); Zapfprofil Z4, Gruppe 2b)
     public Func<int?>? BezugsartLesen { get; init; }
     public Func<int?, string?>? BezugsartSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? BezugsartEintraege { get; init; }

@@ -11,7 +11,7 @@
    ERNEUT GEOEFFNET beginnt er mit den Zeilen des Entwurfs (Startzeilen, Kopien) und seinem
    Bezug. Den Namen prueft die Huelle schon beim OK lesend gegen den Katalog.
 
-   BEZUG (Schritt 121, N10 (j); Z4, Gruppe 2b). Bezugsart (Wertemenge des Schemas, "ohne Bezug"
+   BEZUG (Schritt 124, N10 (j); Z4, Gruppe 2b). Bezugsart (Wertemenge des Schemas, "ohne Bezug"
    voran) und Bezugsmenge gehoeren zusammen und gehen mit dem Tag: Mit Bezug skaliert die
    Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart, ohne Bezug gilt er,
    wie er ist. Die Menge ist nur mit Bezugsart bedienbar; "ohne Bezug" nimmt sie weg.
@@ -67,7 +67,7 @@
     <Formularraster>
         <KindInhalt>
             <Textfeld Bezeichnung="@Texte.KonstruktorName" Wert="@_name" WertChanged="v => _name = v ?? string.Empty" />
-            @* Der Bezug des Tags (Schritt 121, N10 (j)): Bezugsart aus der Wertemenge des Schemas und
+            @* Der Bezug des Tags (Schritt 124, N10 (j)): Bezugsart aus der Wertemenge des Schemas und
                Bezugsmenge gehoeren zusammen; ohne Bezug gilt der Tag, wie er ist. *@
             <Auswahlfeld Bezeichnung="@Texte.KonstruktorLabelBezugsart" Eintraege="@Bezugsartwahl"
                          Auswahl="@(_bezugsart ?? OHNE_BEZUG)" AuswahlChanged="BezugsartSetzen" />
@@ -165,7 +165,7 @@
     /// <summary>Der Konstruktor der Hülle — prüft und baut den Tag samt Bezug; kein Delegat = OK gesperrt.</summary>
     [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
 
-    /// <summary>Die Bezugsarten eines Tags (Wertemenge des Schemas, Schritt 121) mit ihrem Namen.</summary>
+    /// <summary>Die Bezugsarten eines Tags (Wertemenge des Schemas, Schritt 124) mit ihrem Namen.</summary>
     [Parameter] public IReadOnlyList<ZapfprofilKatalogeintragDaten> Bezugsarten { get; set; } = Array.Empty<ZapfprofilKatalogeintragDaten>();
 
     /// <summary>Die Bezugsart, mit der der Konstruktor öffnet (die des Entwurfs); <c>null</c> = ohne Bezug.</summary>
@@ -259,7 +259,7 @@
         ZeilenLesen = () => _zeilen.Select(KiZeile).ToList(),
         RegelEintraege = () => KiMaskenanmeldung.Eintraege(Regelwahl, e => e.Id, e => e.Text),
 
-        // Der Bezug des Tags (Schritt 121): Bezugsart als Wahl, Menge nur mit Bezugsart (wie das Feld).
+        // Der Bezug des Tags (Schritt 124): Bezugsart als Wahl, Menge nur mit Bezugsart (wie das Feld).
         BezugsartLesen = () => _bezugsart ?? OHNE_BEZUG,
         BezugsartSetzen = id =>
         {

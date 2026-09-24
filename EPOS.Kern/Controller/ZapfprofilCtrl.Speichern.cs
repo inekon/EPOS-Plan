@@ -194,7 +194,7 @@ namespace WindowsFormsApplication1
             else
             {
                 List<KeyValuePair<string, object>> werte = ProjektWerte(projektZeile, weg, jetzt);
-                // Schritt 121 (T3): die Laufangaben der Auslegung — vor dem Schritt fehlen die Spalten.
+                // Schritt 124 (T3): die Laufangaben der Auslegung — vor dem Schritt fehlen die Spalten.
                 // Eine gesetzte Angabe lehnt der Schreibweg dann benannt ab, statt sie still fallen zu lassen.
                 if (SpalteImVorgang(v, TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_PERSONEN_AUTO))
                     werte.AddRange(LaufangabenWerte(projektZeile));
@@ -284,7 +284,7 @@ namespace WindowsFormsApplication1
             else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = ZapfSatz.Neu("BEGRIFF_SPEICHERART");
             else if (p.BedarfstagQuelle.HasValue && !Enum.IsDefined(typeof(ZapfBedarfstagquelle), p.BedarfstagQuelle.Value))
                 grund = ZapfSatz.Neu("BEGRIFF_BEDARFSTAG_QUELLE");
-            // Schritt 121: die Wertemengen der DDL (TwwSchema, EINE Quelle).
+            // Schritt 124: die Wertemengen der DDL (TwwSchema, EINE Quelle).
             else if (p.Erzeugerart.HasValue && !TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE).Contains((int)p.Erzeugerart.Value))
                 grund = ZapfSatz.Neu("BEGRIFF_ERZEUGERART");
             else if (p.UebertragerWerkstoff.HasValue
@@ -550,7 +550,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Die Laufangaben der Auslegung (Schritt 121, <see cref="TwwSchema.SpaltenT3"/>) in ihren Spalten.</summary>
+        /// <summary>Die Laufangaben der Auslegung (Schritt 124, <see cref="TwwSchema.SpaltenT3"/>) in ihren Spalten.</summary>
         private static IEnumerable<KeyValuePair<string, object>> LaufangabenWerte(ProjektStand p)
         {
             yield return W(TwwSchema.SPALTE_ERZEUGERART, Enumwert(p.Erzeugerart));

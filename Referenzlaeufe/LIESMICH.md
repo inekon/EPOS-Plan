@@ -459,8 +459,8 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
 
-> **Nachtrag: Schemastand 121 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3) und drei Setzungen des
-> freien Paketteils, die Basis bleibt.** Migrationsschritt **121** (`SCHRITT_121_ZAPFPROFIL_LAUFANGABEN`;
+> **Nachtrag: Schemastand 124 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3) und drei Setzungen des
+> freien Paketteils, die Basis bleibt.** Migrationsschritt **124** (`SCHRITT_124_ZAPFPROFIL_LAUFANGABEN`;
 > Quelle `TwwSchema.SpaltenT3`, die Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an
 > `Tab_TwwProjekt` die Laufangaben der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2),
 > `Personen_Auto` (0/1, Vorgabe 1), `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an
@@ -474,7 +474,7 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (1,5), `Zapfprofil.Anzeigetemperatur` (45 °C) und
 > `Zapfprofil.Stundenschwelle` (0,1 kW) nach der Regel der Testdatenbank ein — Setzungen von INEKON zur
 > Bestätigung (ZU21) —, zusammen 3 angelegt, 1 nachgeführt; ein zweiter Lauf meldet 0/0. Zellvergleich
-> aller 132 Tabellen gegen die Fassung 120 (10 499 033 Zellen): `SchemaVersion` 120 → 121, die sechs neuen
+> aller 132 Tabellen gegen die Fassung 120 (10 499 033 Zellen): `SchemaVersion` 120 → 124, die sechs neuen
 > Spalten — `Tab_TwwProjekt` ohne Zeile, die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei
 > fiktiven Tagen NULL —, die drei Zeilen in `Tab_TwwParameter_STAMM` (samt `sqlite_sequence`), sonst
 > nichts; die 14 Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer,

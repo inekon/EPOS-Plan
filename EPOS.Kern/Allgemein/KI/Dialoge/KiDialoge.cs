@@ -3767,7 +3767,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgkNameName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgkNameErl),
 
-                    // ---- Der Bezug des Tags (Schritt 121, N10 (j); Z4, Gruppe 2b) ------
+                    // ---- Der Bezug des Tags (Schritt 124, N10 (j); Z4, Gruppe 2b) ------
                     new KiDialogFeld("bezugsart", KONSTRUKTOR_SICHT + ".Bezugsart",
                                      KiDialogTexte.ZpgkBezugsartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.ZpgkBezugsartErl, leerErlaubt: true),

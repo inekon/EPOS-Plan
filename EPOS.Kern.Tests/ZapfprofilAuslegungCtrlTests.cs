@@ -336,7 +336,7 @@ namespace EPOS.Kern.Tests
             Assert.False(gw.Empfehlung.Rechenbar);
             Assert.Contains("Werkstoff", gw.Empfehlung.GrundText);
 
-            // Schritt 121 (N10 (i)): Ohne Laufangabe gilt die gespeicherte Wahl des Projekts — der
+            // Schritt 124 (N10 (i)): Ohne Laufangabe gilt die gespeicherte Wahl des Projekts — der
             // Werkstoff aus der Projektzeile macht die Summenlinie rechenbar, die Erzeugerart der
             // Projektzeile geht dem Vorschlag des Anlagenbestands vor.
             ZapfprofilStand gewaehlt = mit with

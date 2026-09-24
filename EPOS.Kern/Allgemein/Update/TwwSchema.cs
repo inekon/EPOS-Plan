@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// (<c>Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c>,
     /// Abschnitte 3.1 und 3.2, Stufe Z0), Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
     /// Schritt 115, <see cref="AnweisungenT2"/>) und Schemaschritt T3 „Laufangaben der Auslegung
-    /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 121, <see cref="SpaltenT3"/>).
+    /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 124, <see cref="SpaltenT3"/>).
     ///
     /// <para><b>Eine Quelle für Migration und Testdatenbank.</b> Dieselben zehn Tabellen
     /// legen <c>SchemaMigration</c> beim Programmstart und <c>Werkzeuge/Testdatenbankschema</c>
@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
             System.Array.ConvertAll(PERZENTIL_WERTE.Split(','), s => int.Parse(s, System.Globalization.CultureInfo.InvariantCulture));
 
         /// <summary>
-        /// Wertemengen der Spalten des Schemaschritts T3 (Schritt 121) — EINE Quelle für die
+        /// Wertemengen der Spalten des Schemaschritts T3 (Schritt 124) — EINE Quelle für die
         /// CHECK-Klausel der DDL und die Prüfung des Schreibwegs, wie <see cref="PERZENTIL_WERTE"/>:
         /// Erzeugerart 1 Kessel, 2 Wärmepumpe; Werkstoff des Übertragers 1 Stahl, 2 Edelstahl;
         /// Bezug des Füllstands 1 Nenninhalt des Punkts, 2 Punkt, 3 Nenninhalt des Bands, 4 V_max;
@@ -537,7 +537,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Schemaschritt T3 (Schritt 121, Stufe Z4): Laufangaben der Auslegung
+        //  Schemaschritt T3 (Schritt 124, Stufe Z4): Laufangaben der Auslegung
         //  und Bezugsart am Bedarfstag
         // =================================================================
 
@@ -560,7 +560,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_BEZUGSART = "Bezugsart";
 
         /// <summary>
-        /// <b>Die Spalten des Schemaschritts T3</b> (Schritt 121; Umsetzungskonzept
+        /// <b>Die Spalten des Schemaschritts T3</b> (Schritt 124; Umsetzungskonzept
         /// Zapfprofilgenerator N10 (i)/(j), N11 (d)/(i)/(j)): an <c>Tab_TwwProjekt</c> die
         /// Laufangaben der Auslegung — Erzeugerart und Werkstoff des Übertragers (nullbar, CHECK
         /// der Wertemenge), Personen auto/manuell (0/1, <c>NOT NULL DEFAULT 1</c>, CHECK) samt
@@ -591,12 +591,12 @@ namespace WindowsFormsApplication1
         public static string SpalteAnlegen(TwwSpalte s)
             => "ALTER TABLE \"" + s.Tabelle + "\" ADD COLUMN \"" + s.Name + "\" " + s.Definition;
 
-        /// <summary>Steht Schritt 121? Alle Spalten von <see cref="SpaltenT3"/> stehen.</summary>
+        /// <summary>Steht Schritt 124? Alle Spalten von <see cref="SpaltenT3"/> stehen.</summary>
         public static bool T3Vollstaendig()
             => SpaltenT3.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
 
         /// <summary>
-        /// Führt Schritt 121 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// Führt Schritt 124 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
         /// die Testhelfer; die Migration der Schale geht denselben Weg über ihre eigenen Helfer, aus
         /// denselben Definitionen. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen;
         /// eine fehlende Tabelle (Stand vor 103) ebenso. <b>Kein DML.</b>

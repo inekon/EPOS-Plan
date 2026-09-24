@@ -433,7 +433,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohne.Bezugsmenge);
             Assert.Null(ohne.Bezugsart);
 
-            // Der Entwurf trägt den Bezug in den Kern (Schritt 121).
+            // Der Entwurf trägt den Bezug in den Kern (Schritt 124).
             BedarfstagKatalogzeile k = ZapfprofilHuelle.EntwurfAus(new ZapfprofilAuslegungEingabeDaten
             {
                 Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
