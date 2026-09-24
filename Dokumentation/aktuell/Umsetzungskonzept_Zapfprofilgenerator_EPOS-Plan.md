@@ -371,7 +371,8 @@ Der Rechenweg braucht keine Umgebung. Zwei Stellen berühren die Dienste (`EPOS.
 - **Import anwendereigener VDI-4655-Daten (Z4b, nach K3a und K8):** Datei über
   `IDateiDienst.DateiOeffnen`, Startordner aus `IEinstellungen.Lies("Zapfprofil.Importordner", "")`
   (Muster `VDI3805Path`); der Kern liest einen `Stream` (`Normformvektorleser.AusStrom`), prüft Struktur
-  und Summen und legt die Werte **im eigenen Datenmodell** `Tab_TwwTyptag_IMPORT` (T3, 3.2) ab — nicht
+  und Summen und legt die Werte **im eigenen Datenmodell** `Tab_TwwTyptag_IMPORT` (T3, 3.2; Paketformat
+  in N14 (b)) ab — nicht
   in den Katalogtabellen, deren vier Tagtypen die VDI-Typtagsystematik nicht fassen; auf iOS derselbe
   Weg.
 - **Lokale Testdaten:** Tests finden sie unter `Referenzlaeufe/Normzahlen/` relativ zur Repowurzel und
@@ -540,9 +541,11 @@ Drei Schritte, jeweils der **nächste freie Schritt nach `SchemaStand.Zielversio
 |---|---|---|
 | **T1 — Katalog, Zonen, Projekt** | Z0 | die zehn Tabellen aus 3.1; der Katalog der Testdatenbank nur fiktiv (Kapitel 6) |
 | **T2 — Zapfkategorien** | Z3 (Schritt 115, N12 (l)) | `Tab_TwwZapfkategorie_STAMM` |
-| **T3 — Typtage** | Z4b, nach K3a/K8 | `Tab_TwwTyptag_IMPORT` |
+| **T3 — Typtage** | Z4b (Schritt 125, N14 (a)) | `Tab_TwwTyptag_IMPORT` |
 
-T1 ist im Bestand Schritt 103 (N2 (a), N4); T2 und T3 bekommen den dann nächsten freien Schritt.
+T1 ist im Bestand Schritt 103 (N2 (a), N4), T2 Schritt 115 (N12 (l)), T3 „Typtage" Schritt 125
+(N14 (a)) — den Papiernamen T3 trägt dort auch Schritt 124 (die Laufangaben der Auslegung, N11);
+gemeint ist bei 124 die Spaltenerweiterung, bei 125 die Tabelle.
 
 Bauweise nach [`ADR-001`](ADR-001_Schema-Ausrollung.md) und den Regeln in
 `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Kommentar über `SCHRITTE_SQLITE`): erst
@@ -743,7 +746,9 @@ Richtlinie: `Q_TT = Q_a · (1/365 + N_Pers · F_TT)` (N_Pers Personen bzw. WE de
 `Q_TT ≥ 0` und Hinweis; `F_TT` stammt aus den eingespielten Daten, nie aus dem Produkt. Vorfragen: `Tab_Solar.Bedeckungsgrad` ist in
 der Testdatenbank überall leer, `Tab_Klimadaten.TagTyp_W` nur eine Näherung heiter/bewölkt
 (`KlimaImportAblauf.cs:982-995`), `Tab_Klimaregion` ohne TRY-Zone. Die Wetterkopplung ist deshalb ein
-eigener Unterpunkt Z4b mit Vorbedingung K3a/K8 (Kapitel 7).
+eigener Unterpunkt Z4b mit Vorbedingung K3a/K8 (Kapitel 7); die Vorfragen sind in **N14 (d)**
+beantwortet (Jahreszeitgrenzen und Bewölkungsschwelle als Kennwerte des eingespielten Pakets, Feiertag
+als Sonntag, Samstag als Werktag, kein Urlaubstag).
 
 ### 4.3 S5 — Zirkulation
 
@@ -1323,7 +1328,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z2 — Auslegung deterministisch** | Bedarfstag mit Vorgaberegel und Konstruktor, Wochenreihe, Summenlinie mit Speicherart, Übertrager, Einschaltpunkt, Wertepaarkurve, Monotonieprüfung und Ladezeit, Schnellpfad, Wohnungstabelle und DIN-4708-Kennzahl, DIN 1988-300 nachrichtlich, Speicherauslegung nach V4 mit Ladefenster, GLF, Plausibilitätsband und Warnliste, Großanlagenerkennung, Topologiegruppen; Überlagerung „Auslegung"; `SummenlinieModell` | Z1; K1/K8 für A100- und DIN-4708-Profil (ohne: Konstruktor) | `SummenlinieTests`, `Din4708KennzahlTests`, `SpeicherauslegungTests`, `AuslegungsergebnisTests`, `GrossanlageTests`, `ZapfprofilTrennungWacheTests`; `ChartProben` mit neuem Fall; Referenzlauf unberührt | 16–20 PT |
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
-| **Z4b — VDI-4655-Import mit Typtagzuordnung** | T3, `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Importdialog | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
+| **Z4b — VDI-4655-Import mit Typtagzuordnung** (Gruppe 1 umgesetzt, N14) | T3 (Schritt 125), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
@@ -2563,3 +2568,116 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
 | ZU21 | Setzungen des Paketteils (N12 (u) und oben) bestätigen | Anwender | vor der ersten Auslieferung |
 | Wiki | Bedienseite hochladen; Logbuch-Sätze (Versionsnummer) | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 11) | Anwender | nach dem Push |
+
+### N14 (24.09.2026) — Umsetzungsbefunde Z4b, Gruppe 1 (VDI-4655-Import mit Typtagzuordnung, Kern)
+
+**Anlass.** Stufe Z4b nach Kapitel 7, Gruppe 1: Schemaschritt T3 „Typtage", `Normformvektorleser`,
+`Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Schreibweg und Weiche. Ein Agent mit
+`model: opus` im Worktree `z4b`; der Importdialog ist Gruppe 2 und steht aus.
+
+- **(a) Schrittnummer von T3: 125.** Vor der Arbeit gemessen — `SchemaStand.Zielversion` stand auf
+  origin auf 124, `SCHRITT_125` war frei. **Namenskollision:** Den Papiernamen „T3" trägt im
+  Bestand schon Schritt 124 (die Laufangaben der Auslegung, N11); gemeint ist dort die
+  Spaltenerweiterung, hier die Tabelle der Typtage. Die Tabelle heißt im Code deshalb
+  `TwwSchema.AnweisungenT3Typtage`, die Spalten von 124 bleiben `TwwSchema.SpaltenT3`.
+- **(b) Das Paketformat.** Ein ZIP-Archiv (oder ein Ordner, den die Hülle liest) mit sechs Dateien,
+  UTF-8 (BOM erlaubt), Kopfzeile mit den Spaltennamen, Trenner `;` oder `,` **je Datei**, RFC 4180,
+  Zahlen in invarianter Kultur mit Punkt (Exponent erlaubt), leeres Feld = fehlt. Eine unbekannte
+  Spalte ist ein Fehler, keine stille Annahme.
+
+  | Datei | Spalten |
+  |---|---|
+  | `typtage.csv` | `code;jahreszeit;tagart;bewoelkung` (`uebergang`/`sommer`/`winter`, `werktag`/`sonntag`, `heiter`/`bewoelkt`/`ohne`) |
+  | `klimazonen.csv` | `zone;bezeichnung` (`bezeichnung` wahlfrei, nur für den Bericht) |
+  | `typtage_je_zone.csv` | `zone;gebaeudeart;typtag;anzahl` |
+  | `f_twe_tt.csv` | `gebaeudeart;zone;typtag;faktor` |
+  | `kennwerte.csv` | `schluessel;wert;text` |
+  | `tagesgaenge.csv` (wahlfrei) | `gebaeudeart;typtag;aufloesung_min;index;anteil` |
+
+  Pflichtkennwerte: `quelle` (Text), `wintergrenze`, je Gebäudeart `heizgrenze.<gebaeudeart>` und —
+  sobald eine Kategorie nach Bewölkung unterscheidet — `bewoelkung.schwelle` (Achtel). Wahlfrei:
+  `ausgabe` (Text) und `pruefsumme.toleranz`. **Jede Grenze des Verfahrens kommt aus dem Paket, nie
+  aus dem Quelltext** (Kapitel 6 (a)).
+- **(c) Eine Zeile je Wert, dazu die Spalte `Art`.** `Tab_TwwTyptag_IMPORT` führt elf Spalten
+  (`ID`, `Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Aufloesung_min`, `Zeilenindex`, `Wert`,
+  `Quelle`, `Ausgabe`, `Datum_Import`), natürlicher Schlüssel
+  (`Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Zeilenindex`), STRICT, kein `Status`, kein
+  `ReadOnly`, keine Provenienzgruppe. `Art` unterscheidet `KATEGORIE` (drei Zeilen je Typtag:
+  Jahreszeit, Tagart, Bewölkung als Zahl), `ANZAHL`, `FAKTOR`, `GANG` und `KENNWERT`; bei `KENNWERT`
+  trägt die Spalte `Typtag` den Schlüssel. `Klimazone` = 0 heißt „für jede Zone", `Gebaeudeart` = ""
+  „für jede Gebäudeart". Die Klimazonennamen des Pakets werden **nicht** gespeichert (die Rechnung
+  braucht nur die Nummer).
+- **(d) Die Vorfragen aus 4.2, beantwortet.**
+  - **Jahreszeitgrenzen:** Sommertag, wenn das Tagesmittel der Außentemperatur **über** der
+    Heizgrenze der Gebäudeart liegt; Wintertag **unter** der Wintergrenze; sonst Übergangstag. Beide
+    Grenzen kommen als Kennwert aus dem Paket (`heizgrenze.<gebaeudeart>`, `wintergrenze`) — der
+    Kern kennt keine Zahl.
+  - **Bewölkungsschwelle:** Das Tagesmittel des Bedeckungsgrads in **Achteln** (Quelle
+    `Tab_Solar.Bedeckungsgrad`, TRY-Größe `N`) gegen den Kennwert `bewoelkung.schwelle`:
+    **ab** der Schwelle bewölkt, darunter heiter. Die Schwelle ist ein Parameter des Pakets, keine
+    Zahl des Quelltexts. `Tab_Klimadaten.TagTyp_W` wird **nicht** benutzt — es ist der Diffusanteil
+    der Strahlung, nicht der Bedeckungsgrad. Unterscheidet das Paket nach Bewölkung und fehlen die
+    Tagesmittel, wird die Zone **benannt abgelehnt**; es gibt keinen stillen Rückfall.
+  - **Feiertage und Samstag:** Sonntag ist jeder Tag mit dem Kennzeichen „Wochenende oder Feiertag"
+    der Klimaregion, dessen Wochentag **nicht Samstag** ist — ein Feiertag zählt damit als Sonntag,
+    ein Samstag bleibt Werktag. **Abweichung, benannt:** Ein Feiertag, der auf einen Samstag fällt,
+    bleibt Werktag, weil der Klimakalender ihn nicht von einem gewöhnlichen Samstag unterscheidet
+    (A6 bringt den Feiertagskalender).
+  - **Ferien:** Der Urlaubstag der Richtlinie (kein Warmwasser) wird **nicht** umgesetzt; ein
+    Ferientag der Zone bleibt Werktag oder Sonntag seiner Jahreszeit, damit die Jahresenergie
+    erhalten bleibt. Ein Hinweis nennt das, sobald die Zone Ferienfenster trägt.
+  - **Bezugsart:** Der Typtagweg gilt nur für Wohngrößen (Personen, Wohneinheiten) — jede andere
+    Bezugsart wird benannt abgelehnt. Die Einheiten `n_E` sind die wirksame Bezugsmenge der Zone.
+- **(e) Der Faktor darf negativ sein** — Abweichung vom Auftrag („Faktoren ≥ 0"): `F_TWE,TT` ist eine
+  Schwankung um den Jahresmittelwert und in der Richtlinie teilweise negativ (Grundlagen 5,
+  Abschnitt 2.5). Geprüft wird deshalb nur, dass er endlich ist; positiv bleibt die **Tagesmenge**
+  (Klemmung auf `Q_TT ≥ 0` mit Warnung), und die Anteile eines Tagesgangs sind ≥ 0 mit Summe 1.
+- **(f) Energieerhaltung und Kontrolle.** Nach der Klemmung skaliert `Typtagzuordnung` die 365
+  Tagesmengen so, dass `Σ Q_d = Q_a` bleibt, und nennt den Faktor als Hinweis. Die gerechnete Zahl
+  der Kalendertage je Kategorie hält sie gegen die eingespielte Tabelle; eine Abweichung ist
+  erwartbar (das Wetter des Projekts und die Tabelle der Richtlinie stammen aus verschiedenen
+  Jahren) und ein **Hinweis**, keine Ablehnung.
+- **(g) Tagesgänge sind wahlfrei.** Führt das Paket zu jeder benutzten Kategorie einen Tagesgang,
+  trägt er auch die Tagesform (auf Stunden zusammengefasst); sonst bleibt der Tagesgangsatz der Zone
+  die Quelle, und ein Hinweis nennt das. Damit ist die Zeile „Tagesgangsatz … VDI 4655 nur über Z4b"
+  aus 5.3 erfüllt, ohne dass ein Tagesgangsatz im Katalog entsteht.
+- **(h) ZU19 für VDI 4655.** `Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py` rechnet beide
+  Normen (`--norm vdi6002|vdi4655|beide`); Ausgabe `Referenzlaeufe/Skripte/vdi4655_abgeleitet.json`
+  (committet, 756 Werte, Abweichung 1,16 % bis 50,00 %). Dieselbe Regel wie für VDI 6002, mit einer
+  **Ausnahme für ganze Zahlen:** Die Kalendertage je Klimazone weichen um mindestens einen und
+  höchstens max(2; 6 %) Tag(e) ab, bleiben ≥ 0, und die Zeilensumme ist wieder genau 365 — innerhalb
+  von 6 % ließe sich eine Zahl von drei Tagen nicht verändern (daher die 50 % im Band). Die Faktoren
+  werden **nicht renormiert**; die Prüfsumme des Originals gilt für die abgeleiteten Werte nicht
+  mehr, und der Kopf der Datei sagt das. **Codes, Zonennamen und Namen der Gebäudevarianten stehen
+  nicht in der Ausgabe:** Typtage heißen `TT01…`, Varianten `variante_1…`, von den Zonen bleibt die
+  Nummer. Die Wache `TwwKatalogWacheTests` hält die Datei gegen die lokalen Originale unter
+  `Referenzlaeufe/Normzahlen/vdi4655/` und schweigt ohne sie. **Die Testdatenbank bleibt ohne
+  Typtage** — `Tab_TwwTyptag_IMPORT` ist dort leer.
+- **(i) Die Weiche braucht keine Schemaspalte.** Sie steht als `Zapfprofileingang.Typtage`
+  (`Typtaganbindung`: Satz, Klimazone, Gebäudeart, 365 Tagesmittel der Temperatur und wahlfrei des
+  Bedeckungsgrads). `null` = Formvektor wie im Bestand; gesetzt, aber ohne eingespielte Typtage =
+  **benannte Ablehnung** (`ZapfEingabefehler.TyptageUngueltig`), nie ein stiller Rückfall. **Offen
+  für Gruppe 2:** Wo die Wahl des Anwenders (Typtagweg ja/nein, Klimazone, Gebäudeart) je Projekt
+  gespeichert wird — drei Spalten an `Tab_TwwProjekt` und damit ein weiterer Schemaschritt.
+- **(j) Die Auslegung bleibt unberührt.** Wochenreihe, Bedarfstag und Summenlinie rechnen weiter über
+  den Formvektor; die Referenzlastprofile sind ausdrücklich nicht für Auslegungsspitzen gedacht
+  (Grundlagen 5, Abschnitt 7.4).
+- **(k) Prüfnaht für den Rollback.** `TwwTyptagCtrl.Pruefnaht` ist ein `static Action` mit
+  folgenloser Vorbelegung, das allein die Probe des Rollbacks belegt (Muster der Test-Naht in
+  `SchemaMigration`).
+
+**Abnahme (Gruppe 1).** Kern-Filter 0 Fehler; Windows-Schale mit `-p:EnableWindowsTargeting=true`
+0 Fehler; `SqlDialektPruefer` 0 Fundstellen; Auslieferungsvorlage-Tests grün (132 STRICT-Tabellen);
+Referenzlauf der fünf CI-Projekte gegen `2026-09-24_R14_Kaelteerzeuger` **PASS und byte-gleich**;
+Testdatenbank auf Schemastand 125 (Tabelle leer, LFS-Zeiger 133 Byte); `ResourceDesigner` ohne Diff.
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| (a) | **Gruppe 2: Importdialog** — Datei über `Dienste.Datei` (Startordner `Zapfprofil.Importordner`, Muster `VDI3805Path`), Stand, Löschen, Bericht, Hülle und DTO, beide Sprachen, Hilfeschlüssel | Agent der Stufe Z4b | nächster Auftrag |
+| (b) | Speicherort der Wahl (Typtagweg, Klimazone, Gebäudeart) je Projekt: Schemaschritt mit drei Spalten an `Tab_TwwProjekt` | Agent der Gruppe 2 | Gruppe 2 |
+| (c) | `Tab_Solar.Bedeckungsgrad` ist in der Testdatenbank leer — ein Referenzfall der Wetterkopplung braucht einen TRY-Import (Muster `TryPaketLeser`) | Agent der Stufe Z5 | Z5 |
+| (d) | `Tab_Klimaregion` führt keine TRY-Zone: Die Klimazone wählt der Anwender im Dialog; eine Zuordnung über Ort/PLZ wäre eine eigene Karte | Folgeposten | nach K8 |
+| ZU22 | Auslieferung der abgeleiteten VDI-4655-Werte und Vervielfältigungsfrage der Richtlinie (VDI 4655 untersagt schon innerbetriebliche Kopien) | Anwender | mit K3a/K8 |
+| Wiki | Abschnitt „Typtage (VDI 4655)" der Seite Brauchwasser-Zapfprofil; Logbuch-Satz (Versionsnummer) | Anwender (Upload gebündelt) | nach Gruppe 2 |
