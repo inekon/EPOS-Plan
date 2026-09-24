@@ -231,7 +231,7 @@ und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschw
 >
 > **Nicht** betroffen sind Kühleingaben und Kälteerzeuger von Projekten außerhalb der Referenzliste.
 
-## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheid ZU19)
+## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
 — mit einer Ausnahme, die der Anwender am 23.09.2026 entschieden hat: **geringfügig abweichende
@@ -262,8 +262,26 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
   Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
   Meldung nennt Abweichungen, nie einen Absolutwert.
-- **Nicht abgeleitet** werden VDI 4655 (folgt mit Stufe Z4b unter derselben Regel) und die
-  DIN-Profile: A100-Referenzprofil und DIN-4708-Profil bleiben gesperrt (K1/K8).
+- **VDI 4655 läuft unter derselben Regel** (Anwenderentscheid ZU23, 24.09.2026). `--norm vdi4655`
+  liest die gitignorierten Originale unter `Normzahlen/vdi4655/` und schreibt
+  [`Skripte/vdi4655_abgeleitet.json`](Skripte/vdi4655_abgeleitet.json): Typtagkategorien,
+  Klimazonen, Typtage je Zone, Faktoren F_TWE,TT, Kennwerte und der Abschnitt `papierwerte` mit
+  allem, was allein das Grundlagenpapier braucht. Zwei Zusätze zur Regel: **ganze Zahlen** (Typtage
+  je Zone) weichen um mindestens einen und höchstens max(2; 6 %) Tag(e) ab und kommen je Zone
+  wieder auf 365; die **Faktoren** sind Schwankungen um einen Jahresmittelwert und werden
+  ausdrücklich **nicht** renormiert — die Prüfsumme des Originals gilt für sie nicht mehr. Codes,
+  Zonennamen und Gebäudebezeichnungen der Ausgabe sind neutral (TT01…, variante_1…, nur die
+  Zonennummer). Kein abgeleiteter Wert gleicht einem kennzeichnenden Originalwert, auch nicht dem
+  einer anderen Zelle.
+- **Auch das Grundlagenpapier trägt abgeleitete Werte** (ZU23):
+  [`Grundlagen_5_VDI-4655_Auswertung.md`](../Dokumentation/aktuell/Grundlagen_5_VDI-4655_Auswertung.md)
+  führt keinen Zahlenwert der Richtlinie mehr — Tabellen, Grenzwerte, Jahresbedarfe und die
+  Beispielrechnung stehen abgeleitet, ein Hinweisabsatz am Anfang sagt das. Fundstellen
+  (Abschnitt, Tabelle, Seite) und Geltungsangaben (Zahl der Zonen und Typtagkategorien, Personen-
+  und Wohneinheitengrenzen, Zeitauflösungen, Bezugskalenderjahr) bleiben unverändert; für die
+  Rechnung zählt allein das vom Anwender eingespielte Paket.
+- **Nicht abgeleitet** werden die DIN-Profile: A100-Referenzprofil und DIN-4708-Profil bleiben
+  gesperrt (K1/K8).
 - **Ergebnisneutral:** Kein Referenzprojekt steht auf dem Zapfprofilgenerator; die Basis bleibt.
 
 ## Der freie Paketteil (`Katalogpaket_frei/`)

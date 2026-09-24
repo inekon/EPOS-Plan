@@ -1612,6 +1612,7 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
 | ZU19 | Anwenderentscheid 23./24.09.2026: geringfügig abweichende VDI-Werte im Repositorium, Ableitung reproduzierbar (Rückrechenbarkeit zugelassen) — umgesetzt für VDI 6002 (N12) | Anwender (entschieden) | Z3 |
 | ZU20 | Auslieferung der abgeleiteten VDI-Werte: ja/nein (N12) | Anwender | nach K8 |
 | ZU21 | Setzungen des freien Paketteils bestätigen oder ändern (N12 (u), erweitert in N13) | Anwender | vor der ersten Auslieferung |
+| ZU23 | Anwenderentscheid 24.09.2026: auch die Originalwerte der VDI 4655 im Repositorium werden nach der Regel ZU19 abgeleitet aufgenommen — umgesetzt für die Ableitung und das Grundlagenpapier (Nachtrag N14, Absatz ZU23) | Anwender (entschieden) | Z4b |
 | P14 | ruht bis zum Ergebnis von K8 (N1) | Agent nach K8 | Z0, eigener Schritt |
 
 ### N3 (23.09.2026) — Nachbesserung der Abschlusspapiere Z0
@@ -2681,3 +2682,39 @@ Testdatenbank auf Schemastand 125 (Tabelle leer, LFS-Zeiger 133 Byte); `Resource
 | (d) | `Tab_Klimaregion` führt keine TRY-Zone: Die Klimazone wählt der Anwender im Dialog; eine Zuordnung über Ort/PLZ wäre eine eigene Karte | Folgeposten | nach K8 |
 | ZU22 | Auslieferung der abgeleiteten VDI-4655-Werte und Vervielfältigungsfrage der Richtlinie (VDI 4655 untersagt schon innerbetriebliche Kopien) | Anwender | mit K3a/K8 |
 | Wiki | Abschnitt „Typtage (VDI 4655)" der Seite Brauchwasser-Zapfprofil; Logbuch-Satz (Versionsnummer) | Anwender (Upload gebündelt) | nach Gruppe 2 |
+
+**ZU23 (24.09.2026, wörtlich: „modifiziere die VDI 4655 Originalwerte geringfügig und nehme auf").**
+Der Entscheid dehnt ZU19 auf jedes Papier des Repositoriums aus: Alle Originalwerte der VDI 4655,
+die im Repositorium stehen, werden durch geringfügig abweichende Werte nach der Regel ZU19 ersetzt;
+die Originale bleiben lokal und gitignoriert unter `Referenzlaeufe/Normzahlen/vdi4655/`. Umgesetzt:
+
+- **Die Ableitung** (`Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py`, `--norm vdi4655`)
+  führt neben den Rechenwerten den Abschnitt `papierwerte` mit allem, was allein das
+  Grundlagenpapier braucht: Jahresmittel der Außentemperatur je Klimazone, die beiden
+  Urlaubstaganteile, die Jahresstrombedarfe und die Beispielrechnung des Abschnitts 8. Jahres-TWW-
+  und Jahresstrombedarf des Beispiels und dessen zehn Tages-TWW-Energien werden nicht einzeln
+  gestört, sondern aus schon abgeleiteten Werten nach Gleichung (3) gerechnet, damit das Papier in
+  sich stimmt. Drei neue Wachen: kein abgeleiteter Wert gleicht einem kennzeichnenden Originalwert
+  (auch nicht dem einer anderen Zelle), die Reihe der Jahresstrombedarfe je Person fällt weiter,
+  und die Jahresmittel meiden zusätzlich den Satz ihrer eigenen Spalte. Die bisherigen Abschnitte
+  der JSON-Datei bleiben Wert für Wert gleich; zwei Läufe schreiben dieselben Bytes.
+- **`Dokumentation/aktuell/Grundlagen_5_VDI-4655_Auswertung.md`** trägt keinen Zahlenwert der
+  Richtlinie mehr: 450 Faktoren, 300 Typtagzahlen samt neu gerechneten Heiztagen, 15 Jahresmittel,
+  Tabelle 16 mit allen drei Spalten und den daraus gerechneten Anteilen, Jahresstrombedarfe,
+  Jahres-TWW-Kennwerte, Heiz- und Wintergrenze, Bewölkungsschwelle, Urlaubstaganteile. Ein
+  Hinweisabsatz am Anfang nennt Entscheid, Regel, Skript und Ausgabe. Abschnitt 3.3.4 sagt jetzt,
+  dass die Prüfsummen Σ n_TT·F_TWE,TT ≈ 0 für die Werte der Richtlinie gelten, nicht für die
+  abgeleiteten Zahlen des Papiers — geprüft wird das vom Anwender eingespielte Paket. Fundstellen
+  sowie Struktur- und Geltungsangaben bleiben unverändert.
+- **Nachweis:** 799 Tabellenzellen Zelle gegen Zelle gegen die lokalen Originale gehalten — kein
+  Feld gleich; keine der 461 kennzeichnenden Originalzahlen (nicht ganzzahlig, mindestens drei
+  signifikante Ziffern und zwei Nachkommastellen) und keine ihrer Schreibweisen mehr im Papier.
+  Kleine ganze Zahlen und Zahlen mit einer Nachkommastelle bleiben aus der Tokenprobe heraus: Sie
+  sind von Seiten-, Tabellen-, Abschnitts- und Fassungsnummern nicht zu unterscheiden; für sie
+  zählt die Probe Zelle gegen Zelle.
+- **Offen, dem Agenten der Gruppe 2 zugeschrieben:** Die Testproben halten die drei Grenzwerte noch
+  im Wortlaut der Richtlinie (`EPOS.Kern.Tests/Typtagpaketbauer.cs`,
+  `EPOS.Kern.Tests/TyptagzuordnungTests.cs`, `EPOS.Kern.Tests/NormformvektorleserTests.cs`,
+  `Werkzeuge/Auslieferungsvorlage.Tests/TwwVorlageTests.cs`) — sie sind auf erfundene Werte zu
+  stellen. Außerdem führt `Dokumentation/aktuell/Konzept_TWW-Zapfprofile_WP-Plan_1.md` die
+  Jahresanker und die Beispielrechnung noch im Original (Kapitel „VDI-4655-Anker").
