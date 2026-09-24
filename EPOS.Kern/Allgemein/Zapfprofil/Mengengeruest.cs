@@ -187,8 +187,21 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die wirksame Bezugsmenge: aus der Wohnungstabelle, wenn sie belegt ist und die
-        /// Bezugsart Wohneinheiten oder Personen trägt, sonst <see cref="ZonenStand.Bezugsmenge"/>.
+        /// <b>Ist die Wohnungstabelle für eine Nutzungsart mit der Bezugsart <paramref name="bezug"/>
+        /// wirksam</b> (Z4, Gruppe 2a Punkt 6) — die EINE Stelle, die das entscheidet: Wohneinheiten
+        /// oder Personen. Der Kalenderart „Wohnen" (<see cref="Nutzungsart.Wohnen"/> der Hülle) kommt
+        /// dabei keine Rolle zu — außerhalb dieser Bezugsarten wird eine Wohnungstabelle weder
+        /// gerechnet noch geprüft, auch wenn sie (verdeckt) noch Zeilen trägt.
+        /// </summary>
+        internal static bool WohnungstabelleWirksam(ZapfBezugsart bezug)
+            => bezug == ZapfBezugsart.Wohneinheiten || bezug == ZapfBezugsart.Personen;
+
+        /// <summary>Überladung mit der Nutzungsart selbst — <c>false</c> ohne Nutzungsart.</summary>
+        internal static bool WohnungstabelleWirksam(Nutzungsart n) => n != null && WohnungstabelleWirksam(n.Bezug);
+
+        /// <summary>
+        /// Die wirksame Bezugsmenge: aus der Wohnungstabelle, wenn sie belegt ist und
+        /// <see cref="WohnungstabelleWirksam(Nutzungsart)"/> gilt, sonst <see cref="ZonenStand.Bezugsmenge"/>.
         /// Bei Personen gilt je Wohnungstyp: eigene Personenzahl, sonst Belegung nach Raumzahl
         /// aus dem Katalog, sonst Personen je WE der Zone — sonst benannte Ablehnung.
         /// </summary>
@@ -201,7 +214,7 @@ namespace WindowsFormsApplication1
             double menge;
             string vermerk;
 
-            if (wohnungen.Count > 0 && (n.Bezug == ZapfBezugsart.Wohneinheiten || n.Bezug == ZapfBezugsart.Personen))
+            if (wohnungen.Count > 0 && WohnungstabelleWirksam(n))
             {
                 menge = 0.0;
                 foreach (WohnungstypStand w in wohnungen)
@@ -555,7 +568,7 @@ namespace WindowsFormsApplication1
         internal static void WohnungstabellePruefen(ZonenStand z, Nutzungsart n, double wirksam, ICollection<ZapfHinweis> hinweise)
         {
             if (hinweise == null || z.Wohnungen == null || z.Wohnungen.Count == 0) return;
-            if (n.Bezug != ZapfBezugsart.Wohneinheiten && n.Bezug != ZapfBezugsart.Personen) return;
+            if (!WohnungstabelleWirksam(n)) return;
             if (!(z.Bezugsmenge > 0) || Math.Abs(z.Bezugsmenge - wirksam) <= 1e-9 * Math.Max(1.0, Math.Abs(wirksam))) return;
             hinweise.Add(new ZapfHinweis(z.Name ?? "", HINWEIS_WOHNUNGSTABELLE,
                 ZapfSatz.Neu("HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE", z.Name ?? "", z.Bezugsmenge, wirksam,

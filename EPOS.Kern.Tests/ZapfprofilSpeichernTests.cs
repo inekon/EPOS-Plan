@@ -285,6 +285,26 @@ namespace EPOS.Kern.Tests
             Assert.Equal(wohnungenVorher, Zeilen().Wohnungen);
         }
 
+        /// <summary>
+        /// Z4, Gruppe 2a Punkt 6: Außerhalb der Bezugsart Wohneinheiten/Personen
+        /// (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>) bleibt eine
+        /// (verdeckte) Wohnungstabelle ungeprüft — eine Zeile ohne Anzahl (die das CHECK der
+        /// Datenbank ohnehin nie annähme) hält „OK" nicht an; geschrieben wird sie nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_verdeckte_Wohnungstabelle_ausserhalb_ihrer_Bezugsart_wird_nicht_geprueft()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZonenStand zoneB = ZoneB() with { Wohnungen = new[] { new WohnungstypStand { Anzahl = 0 } } };
+            ZapfprofilStand geschrieben = ZapfprofilCtrl.Speichern(PROJEKT,
+                new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zoneB }, null));
+
+            Assert.Single(geschrieben.Zonen);
+            Assert.Empty(ZapfprofilCtrl.Lies(PROJEKT).Zonen[0].Wohnungen);
+        }
+
         [Fact]
         public void Eine_benutzte_Katalogzeile_bleibt_gesperrt_bis_keine_Zone_sie_mehr_nutzt()
         {

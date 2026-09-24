@@ -240,24 +240,50 @@ namespace EPOS.Kern.Tests
             {
                 Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = 1, Bezugsmenge = 10, Angaben = a } }
             };
+            // Nutzungsart 1 mit Bezugsart Personen: ihre Wohnungstabelle ist wirksam (Z4, Gruppe 2a
+            // Punkt 6) — die Pflichtprüfung braucht den beim Öffnen geladenen Katalog dafür.
+            var katalog = new List<ZapfprofilNutzungsartDaten> { new() { Id = 1, Bezugsart = (int)ZapfBezugsart.Personen } };
 
-            string[] kennungen = ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung).ToArray();
+            string[] kennungen = ZapfprofilHuelle.Pruefen(e, katalog).Select(m => m.Kennung).ToArray();
             Assert.Equal(new[]
             {
                 "ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "ZPG_MSG_FERIEN_UNGUELTIG", "ZPG_MSG_FERIEN_UNGUELTIG",
                 "ZPG_MSG_MESSWERT_OHNE_EINHEIT", "ZPG_MSG_AUSLASTUNG_NEGATIV"
             }, kennungen);
-            Assert.Contains("Wohnungstyp 2", ZapfprofilHuelle.Pruefen(e)[0].Text);
-            Assert.Contains("Ferienzeitraum 3", ZapfprofilHuelle.Pruefen(e)[2].Text);
+            Assert.Contains("Wohnungstyp 2", ZapfprofilHuelle.Pruefen(e, katalog)[0].Text);
+            Assert.Contains("Ferienzeitraum 3", ZapfprofilHuelle.Pruefen(e, katalog)[2].Text);
+
+            // Ohne Katalog (die Wohnungstabelle gilt dann als nicht wirksam) bleibt die Zeile ungeprüft.
+            Assert.DoesNotContain("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung));
 
             a.JahresmesswertEinheit = ZapfprofilMesswerteinheit.KwhJeJahr;
-            Assert.Contains("ZPG_MSG_MESSWERT_OHNE_GRENZE", ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung));
+            Assert.Contains("ZPG_MSG_MESSWERT_OHNE_GRENZE", ZapfprofilHuelle.Pruefen(e, katalog).Select(m => m.Kennung));
             a.JahresmesswertBilanzgrenze = ZapfprofilBilanzgrenze.MitSpeicher;
-            Assert.Contains("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung));
+            Assert.Contains("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", ZapfprofilHuelle.Pruefen(e, katalog).Select(m => m.Kennung));
             a.JahresmesswertEinheit = ZapfprofilMesswerteinheit.KubikmeterJeJahr;
-            Assert.DoesNotContain("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung));
+            Assert.DoesNotContain("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", ZapfprofilHuelle.Pruefen(e, katalog).Select(m => m.Kennung));
             a.Jahresmesswert = 0.0;
-            Assert.Contains("ZPG_MSG_MESSWERT_NICHT_POSITIV", ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung));
+            Assert.Contains("ZPG_MSG_MESSWERT_NICHT_POSITIV", ZapfprofilHuelle.Pruefen(e, katalog).Select(m => m.Kennung));
+        }
+
+        /// <summary>
+        /// Z4, Gruppe 2a Punkt 6: Eine Zone einer Nicht-Wohnen-Nutzungsart (Bezugsart weder
+        /// Wohneinheiten noch Personen) zeigt keine Wohnungstabelle — trägt sie dennoch (verdeckte)
+        /// Zeilen ohne Anzahl, hält „OK" nicht an: Außerhalb der wirksamen Bezugsart wird die
+        /// Tabelle weder gerechnet noch geprüft.
+        /// </summary>
+        [Fact]
+        public void Eine_verdeckte_Wohnungstabelle_einer_Nicht_Wohnen_Zone_haelt_OK_nicht_an()
+        {
+            var a = new ZapfprofilZonenangabenDaten();
+            a.Wohnungen.Add(new ZapfprofilWohnungDaten());               // keine Anzahl — verdeckt, da nicht Wohnen
+            var e = new ZapfprofilEingabeDaten
+            {
+                Zonen = { new ZapfprofilZoneDaten { Name = "Büro", IdNutzungsart = 2, Bezugsmenge = 10, Angaben = a } }
+            };
+            var katalog = new List<ZapfprofilNutzungsartDaten> { new() { Id = 2, Bezugsart = (int)ZapfBezugsart.Beschaeftigte } };
+
+            Assert.Empty(ZapfprofilHuelle.Pruefen(e, katalog));
         }
 
         [Fact]

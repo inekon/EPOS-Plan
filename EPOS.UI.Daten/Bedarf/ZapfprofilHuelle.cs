@@ -94,16 +94,18 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt, ZapfprofilStand arbeitsstand)
         {
             ZapfprofilStand basis = arbeitsstand ?? ZapfprofilCtrl.Lies(idProjekt);
+            ZapfprofilDaten daten = Laden(idProjekt, basis);
             return new Dictionary<string, object>
             {
-                ["Daten"] = Laden(idProjekt, basis),
+                ["Daten"] = daten,
                 ["Texte"] = Texte(),
                 ["Vorschau"] = new Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>(e => Vorschau(idProjekt, e, basis)),
                 // Die stochastische Jahresreihe nebenläufig (5.1): auf einem Arbeitsfaden mit der Kultur
                 // des Aufrufers, abbrechbar — nie im Zeichenfaden.
                 ["Jahresreihe"] = new Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>(
                     (e, abbruch) => Kulturweitergabe.Starten(() => Jahresreihe(idProjekt, e, basis, abbruch), abbruch)),
-                ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
+                // Der Katalog kommt aus dem beim Öffnen geladenen Stand — kein neuer Datenbankzugriff je Tastendruck.
+                ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(e => Pruefen(e, daten.Katalog)),
                 // Der Schalter „Stochastisch rechnen" ist eine Laufangabe: aus bei „Auslegung…", an beim Fußknopf.
                 // Die Stufe des Dialogs reist als Laufangabe im Arbeitsstand mit (N11 (c): „Schnellauslegung"
                 // nur in der Stufe Einfach).
@@ -659,8 +661,11 @@ namespace WindowsFormsApplication1
                 // Die Vorgaben der höheren Stufen (Z4) — Bezug und Faktoren des Katalogs, nie ein Beleg.
                 Kalenderart = (int)n.Kalender,
                 Kalender = Kalendername(n.Kalender),
-                Wohnen = n.Kalender == ZapfKalenderart.Wohnen
-                         && (n.Bezug == ZapfBezugsart.Wohneinheiten || n.Bezug == ZapfBezugsart.Personen),
+                // Führt die Nutzungsart eine Wohnungstabelle? EIN Kriterium mit dem Kern
+                // (Mengengeruest.WohnungstabelleWirksam) — die Bezugsart allein, nicht der
+                // Kalender: Andernfalls wäre eine Wohnungstabelle bei abweichendem Kalender
+                // verdeckt, obwohl der Kern sie noch rechnet und prüft (Z4, Gruppe 2a Punkt 6).
+                Wohnen = Mengengeruest.WohnungstabelleWirksam(n.Bezug),
                 Bilanzgrenze = (int)n.Grenze,
                 ZapftemperaturC = n.Bezugstemperaturen?.ZapftemperaturC,
                 Monatsfaktoren = (double[])(n.Monatsfaktoren ?? new double[NutzungsartRaster.MONATE]).Clone(),
@@ -1154,8 +1159,14 @@ namespace WindowsFormsApplication1
         /// Die Pflichtprüfung des OK (5.2): mindestens eine Zone, jede mit Name, Nutzungsart und
         /// Bezugsmenge größer 0, und kein Name doppelt — das Laufprotokoll nennt die Zonen beim
         /// Namen. Leer = in Ordnung. Dieselbe Prüfung für jeden Weg, der übernimmt.
+        ///
+        /// <para><paramref name="katalog"/> ist der beim Öffnen geladene Katalog (<see cref="Gaben"/>
+        /// reicht ihn als Abschluss durch, KEIN neuer Datenbankzugriff je Tastendruck): Er entscheidet
+        /// je Zone, ob ihre Wohnungstabelle wirksam ist (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>,
+        /// Z4, Gruppe 2a Punkt 6) — ohne Katalog gilt keine als wirksam.</para>
         /// </summary>
-        internal static IReadOnlyList<ZapfprofilMeldung> Pruefen(ZapfprofilEingabeDaten eingabe)
+        internal static IReadOnlyList<ZapfprofilMeldung> Pruefen(ZapfprofilEingabeDaten eingabe,
+                                                                 IReadOnlyList<ZapfprofilNutzungsartDaten> katalog = null)
         {
             var m = new List<ZapfprofilMeldung>();
             if (eingabe == null || eingabe.Zonen.Count == 0)
@@ -1163,6 +1174,11 @@ namespace WindowsFormsApplication1
                 m.Add(Fehler("ZPG_MSG_KEINE_ZONE", "", Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt.")));
                 return m;
             }
+            // Bezugsart je Nutzungsart — EINE Stelle entscheidet, ob die Wohnungstabelle einer Zone
+            // wirksam ist (Mengengeruest.WohnungstabelleWirksam, Z4, Gruppe 2a Punkt 6); der
+            // Kalenderart „Wohnen" kommt dabei keine Rolle zu.
+            Dictionary<int, ZapfBezugsart> bezugJeNutzungsart = (katalog ?? Array.Empty<ZapfprofilNutzungsartDaten>())
+                .ToDictionary(n => n.Id, n => (ZapfBezugsart)n.Bezugsart);
             foreach (ZapfprofilZoneDaten z in eingabe.Zonen)
             {
                 string name = (z.Name ?? "").Trim();
@@ -1174,7 +1190,9 @@ namespace WindowsFormsApplication1
                 if (!(z.Bezugsmenge > 0) || double.IsInfinity(z.Bezugsmenge.Value))
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", name,
                         Format(Text_("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben."), name)));
-                if (z.Angaben != null) AngabenPruefen(z.Angaben, name, m);
+                bool wohnungstabelleWirksam = bezugJeNutzungsart.TryGetValue(z.IdNutzungsart, out ZapfBezugsart bezug)
+                                              && Mengengeruest.WohnungstabelleWirksam(bezug);
+                if (z.Angaben != null) AngabenPruefen(z.Angaben, name, wohnungstabelleWirksam, m);
             }
             foreach (string doppelt in eingabe.Zonen.Select(z => (z.Name ?? "").Trim())
                                                     .Where(n => n.Length > 0)
@@ -1197,18 +1215,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Pflichtprüfung der Angaben einer Zone (Stufen Erweitert und Experte): jeder Wohnungstyp
-        /// mit einer Anzahl größer 0, jeder begonnene Ferienzeitraum vollständig und ein Datum des
-        /// Rechenjahrs, ein Jahresmesswert größer 0 mit Einheit, bei kWh mit Bilanzgrenze und bei
-        /// Grenze 3 mit Speicherverlust (4.1), kein negativer Auslastungsfaktor. Dieselben Regeln, die
-        /// Rechenweg und Schreibweg benannt ablehnen — hier schon am OK des Zapfprofils.
+        /// mit einer Anzahl größer 0 — SOLANGE die Wohnungstabelle wirksam ist
+        /// (<paramref name="wohnungstabelleWirksam"/>, <see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>;
+        /// außerhalb bleibt eine verdeckte Zeile ungeprüft, Z4, Gruppe 2a Punkt 6) —, jeder begonnene
+        /// Ferienzeitraum vollständig und ein Datum des Rechenjahrs, ein Jahresmesswert größer 0 mit
+        /// Einheit, bei kWh mit Bilanzgrenze und bei Grenze 3 mit Speicherverlust (4.1), kein
+        /// negativer Auslastungsfaktor. Dieselben Regeln, die Rechenweg und Schreibweg benannt
+        /// ablehnen — hier schon am OK des Zapfprofils.
         /// </summary>
-        private static void AngabenPruefen(ZapfprofilZonenangabenDaten a, string name, List<ZapfprofilMeldung> m)
+        private static void AngabenPruefen(ZapfprofilZonenangabenDaten a, string name, bool wohnungstabelleWirksam,
+                                           List<ZapfprofilMeldung> m)
         {
-            for (int i = 0; i < (a.Wohnungen?.Count ?? 0); i++)
-                if (!(a.Wohnungen[i]?.Anzahl > 0))
-                    m.Add(Fehler("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", name,
-                        Format(Text_("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0."),
-                               name, i + 1)));
+            if (wohnungstabelleWirksam)
+                for (int i = 0; i < (a.Wohnungen?.Count ?? 0); i++)
+                    if (!(a.Wohnungen[i]?.Anzahl > 0))
+                        m.Add(Fehler("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", name,
+                            Format(Text_("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0."),
+                                   name, i + 1)));
 
             for (int i = 0; i < (a.Ferien?.Count ?? 0); i++)
             {

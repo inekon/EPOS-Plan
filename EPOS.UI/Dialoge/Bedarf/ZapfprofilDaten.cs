@@ -201,8 +201,10 @@ public sealed class ZapfprofilNutzungsartDaten
     public string Kalender { get; set; } = "";
 
     /// <summary>
-    /// Führt die Nutzungsart eine Wohnungstabelle (5.3: „nur Wohnen")? Kalender Wohnen und eine
-    /// Bezugsart, die die Tabelle trägt (Wohneinheiten oder Personen, 4.1).
+    /// Führt die Nutzungsart eine Wohnungstabelle (5.3: „nur Wohnen")? Allein die Bezugsart
+    /// entscheidet (Wohneinheiten oder Personen, 4.1) — dasselbe Kriterium wie der Kern
+    /// (<c>Mengengeruest.WohnungstabelleWirksam</c>, Z4, Gruppe 2a Punkt 6); der Kalender der
+    /// Nutzungsart spielt dabei keine Rolle.
     /// </summary>
     public bool Wohnen { get; set; }
 

@@ -340,6 +340,11 @@ namespace WindowsFormsApplication1
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.GebaeudeFremd, name,
                     ZapfSatz.Neu("SPEICHER_GEBAEUDE_FREMD", z.IdGebaeude.Value, name));
 
+            // Außerhalb der Bezugsart Wohneinheiten/Personen (Mengengeruest.WohnungstabelleWirksam) wird
+            // die Wohnungstabelle weder gerechnet noch geprüft — eine verdeckte Zeile bleibt ungeprüft
+            // und wird gar nicht erst geschrieben (WohnungenSchreiben verwirft sie ebenso, Z4, Gruppe
+            // 2a Punkt 6); nur das CHECK der Datenbank bliebe sonst die einzige, unbenannte Ablehnung.
+            if (!WohnungstabelleWirksamFuerNutzungsart(v, z.IdNutzungsart)) return;
             foreach (WohnungstypStand w in z.Wohnungen ?? new WohnungstypStand[0])
             {
                 if (w == null || w.Anzahl <= 0)
@@ -362,6 +367,19 @@ namespace WindowsFormsApplication1
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.AusstattungFehlt, name,
                         ZapfSatz.Neu("SPEICHER_AUSSTATTUNG_FEHLT", w.IdAusstattung.Value, name));
             }
+        }
+
+        /// <summary>
+        /// Ist die Wohnungstabelle für die Nutzungsart <paramref name="idNutzungsart"/> wirksam
+        /// (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>) — im laufenden Vorgang
+        /// gelesen, damit Prüfung und Schreiben denselben Stand sehen. <c>false</c> ohne Zeile.
+        /// </summary>
+        private static bool WohnungstabelleWirksamFuerNutzungsart(DbVorgang v, int idNutzungsart)
+        {
+            object roh = v.Skalar("SELECT Bezugsart FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
+                                  new DbParam("@id", idNutzungsart));
+            return roh != null && roh != DBNull.Value
+                && Mengengeruest.WohnungstabelleWirksam((ZapfBezugsart)Convert.ToInt32(roh, CultureInfo.InvariantCulture));
         }
 
         private static bool FerienImBereich(ZonenStand z)
@@ -394,7 +412,11 @@ namespace WindowsFormsApplication1
 
         private static IReadOnlyList<WohnungstypStand> WohnungenSchreiben(DbVorgang v, int idZone, ZonenStand z)
         {
-            IReadOnlyList<WohnungstypStand> liste = z.Wohnungen ?? new WohnungstypStand[0];
+            // Außerhalb der wirksamen Bezugsart (ZonePruefen) wird nichts geschrieben — eine
+            // verdeckte Wohnungstabelle verschwindet dann mit dem nächsten Speichern; ihre Werte
+            // wären ohnehin nie gerechnet oder geprüft worden (Z4, Gruppe 2a Punkt 6).
+            IReadOnlyList<WohnungstypStand> liste = WohnungstabelleWirksamFuerNutzungsart(v, z.IdNutzungsart)
+                ? (z.Wohnungen ?? new WohnungstypStand[0]) : new WohnungstypStand[0];
             var bekannt = new HashSet<int>();
             DataTable dt = v.Lese("SELECT ID FROM " + TwwSchema.TAB_TWW_WOHNUNGSTYP + " WHERE ID_Zone = ?",
                                   new DbParam("@zone", idZone));
