@@ -26375,4 +26375,43 @@ Do you want to allow this?</value>
   <data name="WIRT_SZ_PV_DIALOG_EINSPEISUNG" xml:space="preserve">
     <value>Scenario feed-in tariff (PV) without effect: the PV remuneration is calculated by the remuneration dialog — the direct-marketing fee and PPA price per scenario apply there.</value>
   </data>
+  <data name="WIRT_SZ_TRAEGERPREISE" xml:space="preserve">
+    <value>Energy carrier prices of this scenario: {0}</value>
+  </data>
+  <data name="WIRT_SZ_TP_ARBEIT" xml:space="preserve">
+    <value>energy price</value>
+  </data>
+  <data name="WIRT_SZ_TP_GRUND" xml:space="preserve">
+    <value>standing charge</value>
+  </data>
+  <data name="WIRT_SZ_TP_LEISTUNG" xml:space="preserve">
+    <value>demand charge</value>
+  </data>
+  <data name="WIRT_FM_PARAM_MENGE" xml:space="preserve">
+    <value>Quantities — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG" xml:space="preserve">
+    <value>Feed-in tariff PV [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Feed-in tariff CHP [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_ARBEIT" xml:space="preserve">
+    <value>Energy price {0} ({1}) per billing unit</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_GRUND" xml:space="preserve">
+    <value>Standing charge {0} ({1}) [€/a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_LEISTUNG" xml:space="preserve">
+    <value>Demand charge {0} ({1})</value>
+  </data>
+  <data name="WIRT_ANN_MENGE" xml:space="preserve">
+    <value>Change in quantities</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG" xml:space="preserve">
+    <value>Feed-in tariff PV</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Feed-in tariff CHP</value>
+  </data>
 </root>

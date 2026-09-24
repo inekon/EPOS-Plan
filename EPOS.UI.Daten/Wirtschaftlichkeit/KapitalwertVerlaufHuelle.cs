@@ -166,7 +166,26 @@ namespace WindowsFormsApplication1
 
             WirtschaftlichkeitVerlaufSzenarien laeufe;
             int horizont = _jahre > 0 ? _jahre : Horizont(p);
-            if (horizont == t)
+            if (WirtschaftlichkeitCtrl.ZeitraumJeSzenario(p))
+            {
+                // ETAPPE E9a (Schritt B): Ein Szenario trägt einen eigenen Betrachtungszeitraum
+                // — dann entstehen die drei Läufe je über IHREN Zeitraum (Gliederung „je
+                // Szenario mit eigener Länge"), unabhängig vom Horizont des Bildes, und werden
+                // wie die Läufe über T gemerkt.
+                string schluessel = Schluessel(k, t) + "|jeZeitraum|" +
+                    p.FuerSzenario(WirtschaftlichkeitSzenario.WORST).Betrachtungszeitraum + "|" +
+                    p.FuerSzenario(WirtschaftlichkeitSzenario.BEST).Betrachtungszeitraum;
+                if (!_rechnet &&
+                    (_ueberT == null || !string.Equals(_ueberTSchluessel, schluessel, StringComparison.Ordinal)))
+                {
+                    _daten.Sicht = k.Sicht != null && k.Sicht.IstPaar ? k.Sicht.Kopie() : null;
+                    _daten.IdGruppenreferenz = p.IdReferenzprojekt;
+                    _ueberT = _ctrl.BerechneVerlaufSzenarienJeZeitraum(_daten, p);
+                    _ueberTSchluessel = schluessel;
+                }
+                laeufe = _ueberT;
+            }
+            else if (horizont == t)
             {
                 if (!_rechnet &&
                     (_verlauf == null || !string.Equals(_schluessel, Schluessel(k), StringComparison.Ordinal)))

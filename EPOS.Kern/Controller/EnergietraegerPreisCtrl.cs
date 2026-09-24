@@ -215,6 +215,41 @@ namespace WindowsFormsApplication1
             catch { return false; }
         }
 
+        /// <summary>
+        /// ETAPPE E9a: die Trägerpreise je Szenario ALLER Träger eines Projekts, die einen
+        /// Wert tragen — Träger-Id und Satz, in der Reihenfolge der Träger-Id. Leer ohne
+        /// Spalten oder ohne gepflegten Wert. Grundlage der Nachweiszeile des Berichts
+        /// (<see cref="TraegerpreisSzenario.Nachweiszeile"/>).
+        /// </summary>
+        public static List<KeyValuePair<int, TraegerpreisSzenario>> SzenarioJeTraeger(int projektId)
+        {
+            var liste = new List<KeyValuePair<int, TraegerpreisSzenario>>();
+            if (projektId <= 0) return liste;
+            try
+            {
+                if (!SzenarioSpaltenVorhanden()) return liste;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [ID_Energieträger] AS Traeger, [" + SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST +
+                    "] FROM energy_project_settings WHERE ID_Projekt = ? ORDER BY [ID_Energieträger]",
+                    new DbParam("@p", projektId));
+                if (dt == null) return liste;
+                foreach (DataRow r in dt.Rows)
+                {
+                    double? traeger = Zahl(r, "Traeger");
+                    if (!traeger.HasValue || traeger.Value <= 0) continue;
+                    TraegerpreisSzenario sz = SzenarioAus(r);
+                    if (!sz.Leer) liste.Add(new KeyValuePair<int, TraegerpreisSzenario>((int)traeger.Value, sz));
+                }
+            }
+            catch { }
+            return liste;
+        }
+
         /// <summary>Die sechs Szenariopreise einer Zeile, tolerant (fehlende Spalte = leer);
         /// eine 0 wird leer — „NULL/0 heißt wie Erwartet".</summary>
         private static TraegerpreisSzenario SzenarioAus(DataRow row)

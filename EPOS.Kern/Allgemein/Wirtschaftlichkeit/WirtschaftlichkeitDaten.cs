@@ -339,13 +339,29 @@ namespace WindowsFormsApplication1
             // Satz indiziert die Ersatzbeschaffungen, und eine Bandbreite, deren
             // Annahmen nicht vollständig dastehen, ist keine offengelegte Annahme.
             double pi = p != null ? p.PreisInvestWirksam : 0;
-            return "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · p_E = " +
+            // ETAPPE E9a (vollständige Szenarioabdeckung): Der Betrachtungszeitraum und die
+            // Einspeisevergütung stehen IMMER da — sie sind Annahmen jedes Laufs, gepflegt
+            // oder nicht; die Vergütung KWK nur, wo das Projekt oder das Szenario eine
+            // führt. Der Mengenfaktor nur, wenn er gepflegt ist („wie Erwartet" wird nicht
+            // wiederholt); die gepflegten Trägerpreise nennt der Bericht je Stand
+            // (TraegerpreisSzenario.Nachweiszeile).
+            int t = p != null ? ZeitraumWirksam(p.Betrachtungszeitraum) : (Zeitraum ?? 0);
+            double ev = EinspeiseverguetungWirksam(p != null ? p.Einspeiseverguetung : 0);
+            double? evKwk = EinspeiseverguetungKwkWirksam(p != null ? p.EinspeiseverguetungKWK : null);
+            string zeile = "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · T = " +
+                   t.ToString(kultur) + " a · p_E = " +
                    PreisEnergieWirksam(pe).ToString("N1", kultur) + " %/a · p_B = " +
                    PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · p_I = " +
                    PreisInvestWirksam(pi).ToString("N1", kultur) + " %/a · Investition " +
                    InvestWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Erträge " +
                    ErtragWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Nutzungsdauer " +
-                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a";
+                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a · Einspeisevergütung " +
+                   ev.ToString("N3", kultur) + " €/kWh";
+            if (evKwk.HasValue && evKwk.Value != 0)
+                zeile += " · Einspeisevergütung KWK " + evKwk.Value.ToString("N3", kultur) + " €/kWh";
+            if (MengeGepflegt)
+                zeile += " · Mengen " + MengeWirksam.ToString("+0.#;-0.#;0", kultur) + " %";
+            return zeile;
         }
     }
 

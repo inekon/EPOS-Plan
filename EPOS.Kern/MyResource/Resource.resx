@@ -26382,4 +26382,43 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_SZ_PV_DIALOG_EINSPEISUNG" xml:space="preserve">
     <value>Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario.</value>
   </data>
+  <data name="WIRT_SZ_TRAEGERPREISE" xml:space="preserve">
+    <value>Trägerpreise dieses Szenarios: {0}</value>
+  </data>
+  <data name="WIRT_SZ_TP_ARBEIT" xml:space="preserve">
+    <value>Arbeitspreis</value>
+  </data>
+  <data name="WIRT_SZ_TP_GRUND" xml:space="preserve">
+    <value>Grundpreis</value>
+  </data>
+  <data name="WIRT_SZ_TP_LEISTUNG" xml:space="preserve">
+    <value>Leistungspreis</value>
+  </data>
+  <data name="WIRT_FM_PARAM_MENGE" xml:space="preserve">
+    <value>Mengen — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisevergütung PV [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Einspeisevergütung KWK [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_ARBEIT" xml:space="preserve">
+    <value>Arbeitspreis {0} ({1}) je Abrechnungseinheit</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_GRUND" xml:space="preserve">
+    <value>Grundpreis {0} ({1}) [€/a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_LEISTUNG" xml:space="preserve">
+    <value>Leistungspreis {0} ({1})</value>
+  </data>
+  <data name="WIRT_ANN_MENGE" xml:space="preserve">
+    <value>Mengenänderung</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisevergütung PV</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Einspeisevergütung KWK</value>
+  </data>
 </root>

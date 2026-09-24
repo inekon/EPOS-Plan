@@ -96,6 +96,45 @@ namespace WindowsFormsApplication1
         /// <summary>Flache Kopie.</summary>
         public TraegerpreisSzenario Kopie() { return (TraegerpreisSzenario)MemberwiseClone(); }
 
+        /// <summary>
+        /// ETAPPE E9a (Bericht, Norm 9 c) — die gepflegten Trägerpreise eines Szenarios als
+        /// EINE Nachweiszeile über die Stände: „Trägerpreise dieses Szenarios: ‹Stand›,
+        /// ‹Träger›: Arbeitspreis …, Grundpreis …, Leistungspreis …; …". Nur, was gepflegt
+        /// ist — „wie Erwartet" wird nicht wiederholt; ohne einen gepflegten Wert
+        /// <c>null</c>. Die Zahlen stehen in der Einheit der Trägerkarte.
+        /// </summary>
+        public static string Nachweiszeile(System.Collections.Generic.IEnumerable<VariantenDaten> staende,
+                                           string szenario, System.Globalization.CultureInfo kultur)
+        {
+            if (staende == null || (!string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal) &&
+                                    !string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal)))
+                return null;
+            var teile = new System.Collections.Generic.List<string>();
+            foreach (VariantenDaten v in staende)
+            {
+                if (v == null) continue;
+                foreach (System.Collections.Generic.KeyValuePair<int, TraegerpreisSzenario> kv in
+                         EnergietraegerPreisCtrl.SzenarioJeTraeger(v.IdProjekt))
+                {
+                    var preise = new System.Collections.Generic.List<string>();
+                    Teil(preise, MyResource.Resource.WIRT_SZ_TP_ARBEIT, kv.Value.Arbeitspreis(szenario), "N4", kultur);
+                    Teil(preise, MyResource.Resource.WIRT_SZ_TP_GRUND, kv.Value.Grundpreis(szenario), "N2", kultur);
+                    Teil(preise, MyResource.Resource.WIRT_SZ_TP_LEISTUNG, kv.Value.Leistungspreis(szenario), "N2", kultur);
+                    if (preise.Count == 0) continue;
+                    teile.Add((v.IstStamm ? "Stamm" : v.Anzeige) + ", " + Emissionsquelle.TraegerName(kv.Key) +
+                              ": " + string.Join(", ", preise));
+                }
+            }
+            return teile.Count == 0 ? null
+                 : string.Format(kultur, MyResource.Resource.WIRT_SZ_TRAEGERPREISE, string.Join("; ", teile));
+        }
+
+        private static void Teil(System.Collections.Generic.List<string> ziel, string titel, double? wert,
+                                 string format, System.Globalization.CultureInfo kultur)
+        {
+            if (wert.HasValue && wert.Value != 0) ziel.Add(titel + " " + wert.Value.ToString(format, kultur));
+        }
+
         private static bool Wert(double? w) { return w.HasValue && w.Value != 0; }
 
         private static double? Waehle(string szenario, double? best, double? worst)

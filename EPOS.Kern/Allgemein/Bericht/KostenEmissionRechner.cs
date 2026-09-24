@@ -1400,6 +1400,23 @@ namespace WindowsFormsApplication1
             leistungspreis = info.PreisLeistung;
         }
 
+        /// <summary>
+        /// ETAPPE E9a — die drei WIRKSAMEN Preise eines Trägers in einem Szenario (Arbeit je
+        /// Abrechnungseinheit, Grund in €/a, Leistung je Modus), genau so, wie die
+        /// Energiekosten sie ansetzen: Rückfallkette, dann die Szenariopreise. Nur ein zweiter
+        /// Leser (Parameterblock des Berichts), kein zweiter Rechenweg.
+        /// </summary>
+        internal static void PreisSatz(int idProjekt, int carrierId, string szenario,
+                                       out double? arbeit, out double? grund, out double? leistung)
+        {
+            arbeit = null; grund = null; leistung = null;
+            if (carrierId <= 0) return;
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId, szenario);
+            arbeit = info.PreisArbeit;
+            grund = info.Grundpreis;
+            leistung = info.PreisLeistung;
+        }
+
         /// <summary><c>energy_carrier.id</c> des Stromträgers des Projekts
         /// (<c>pricing_model = 'ELECTRICITY'</c>); 0 = keiner gepflegt.</summary>
         internal static int StromTraegerId(int idProjekt)
