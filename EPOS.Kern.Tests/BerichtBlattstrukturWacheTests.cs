@@ -289,7 +289,10 @@ namespace EPOS.Kern.Tests
                 // ETAPPE E5 Teil b (U10): Unter dem Fußtext der Bandbreite steht der
                 // Hinweistext der Szenarien — eine Zeile; alles darunter wandert um EINE
                 // Zeile. Die ZAHLEN sind unverändert.
-                Assert.StartsWith("Was ein Szenario heute variiert", w.Cell(P + 69, 1).GetString());
+                // ETAPPE E9b (Konzept § 2.11.7, E9b‑Q3): An seiner Stelle steht der Ausweis
+                // „n von m Parametern szenariert" — dieselbe EINE Zeile; die Anker darunter
+                // bleiben, wo sie waren.
+                Assert.Matches(@"^\d+ von \d+ Parametern szenariert", w.Cell(P + 69, 1).GetString());
 
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
                 //
