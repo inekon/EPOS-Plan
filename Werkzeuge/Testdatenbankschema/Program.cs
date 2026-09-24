@@ -1623,6 +1623,28 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 127 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS (128): der Heizkreis je Gebaeude
+            //      im Ergebnis (Anlagenkopplung AK1 Welle 3, Muster E30). NACH 127, braucht 107.
+            //      REIN DDL aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_128_ErgebnisHeizkreis bedient
+            //      (ErgebnisGebaeudeSchema.SpaltenHeizkreis): Uebergabe_Art, VorlaufMittel_C,
+            //      RuecklaufMittel_C, UebergabeBegrenzt_H an Tab_ErgebnisGebaeude, alle nullbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - NULL heisst "nicht gekoppelt gerechnet";
+            //      kein Referenzprojekt rechnet gekoppelt, und der Export liest die Tabelle nicht.
+            string nrHeizkreis = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHeizkreis + " - Heizkreis je Gebaeude im Ergebnis: " +
+                              (ErgebnisGebaeudeSchema.HeizkreisVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtHeizkreis = new List<string>();
+                angelegt += ErgebnisGebaeudeSchema.HeizkreisAlle(berichtHeizkreis);
+                foreach (string zeile in berichtHeizkreis)
+                    Console.WriteLine("Schritt " + nrHeizkreis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHeizkreis + " - vollstaendig: " + ErgebnisGebaeudeSchema.HeizkreisVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt WiederholperiodeSchema.SCHRITT: die Wiederholperiode je
             //      Kostenposition (Etappe E16, V-G3, DIN EN 17463 6.3.1 "alle n Jahre"). NACH
             //      127. REIN DDL aus DERSELBEN Quelle, aus der sich

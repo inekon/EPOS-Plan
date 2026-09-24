@@ -173,3 +173,6 @@ Checkliste, Ressourcentafel der Kategorie 8, Stand-Absatz), Update-Papier und di
 - **Abnahme am Gerät** A‑E15‑1 (drei Schritte oben).
 - **Gate auf `d176b378`**, der End-Merge und **CI** (Nachtrag).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
+
+**Entscheide 24.09.2026:** alle nach Empfehlung (E15‑Q4: a; Lesart c bleibt als spätere Erweiterung denkbar, ist nicht
+beauftragt), siehe Register R‑E15

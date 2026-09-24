@@ -162,3 +162,5 @@ Wiki-Quelle Wirtschaftlichkeit (Abschnitt `formelmappe`), Index (Reporting 128 �
 - **Abnahme am Gerät** A‑E14‑1 (vier Schritte oben).
 - **Gate auf dem End-Merge** und **CI** (Nachtrag).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
+
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E14
