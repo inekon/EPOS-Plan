@@ -991,6 +991,7 @@ namespace WindowsFormsApplication1
                 ctrl.Uebernehmen(daten);
                 ctrl.Name = name.Trim();
                 ctrl.ID = 0;                       // Insert vergibt die Id selbst
+                ctrl.WartungAusNutzungsdauertabelle();
 
                 if (ctrl.Exists(ctrl.Name))
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_BELEGT",
@@ -1009,6 +1010,40 @@ namespace WindowsFormsApplication1
                     "Fehler beim Speichern des Datensatzes!"), "");
             }
         }
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3; ND‑Q7 (b), Empfehlung E10‑Q2 (a)): Die VORBELEGUNG eines
+        /// NEUEN Katalogeintrags aus der Nutzungsdauertabelle — gerufen allein aus
+        /// <see cref="Anlegen"/>.
+        ///
+        /// <para><b>Nur wo die Einheit „%/a" ist</b> (<see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT"/>)
+        /// und der Eintrag noch keinen Betrag trägt: Dann ist die Wartung ein Anteil der
+        /// Investition je Jahr — dieselbe Größe wie der Wartungssatz der Tabelle an der
+        /// Standardzeile des Heizkessels. „€/a" und „€/kWh" haben keinen Gegenwert in der
+        /// Tabelle und bleiben unberührt. Bestehende Einträge überschreibt nichts; ein
+        /// Tabellenwert wird nur kopiert, nie verknüpft.</para>
+        ///
+        /// <para><b>Die Asymmetrie zum BHKW bleibt bestehen</b> (konsolidiertes Konzept § 6.3
+        /// Nr. 19, Empfehlung E10‑Q6 (a): dokumentieren, nicht beheben). Der BHKW-Katalog
+        /// führt seine Wartung fest in €/kWh el (<c>Wartungskosten_kwhel</c>); einen
+        /// Prozentsatz gibt es dort nicht, und deshalb auch keine Vorbelegung aus der
+        /// Tabelle. Der Kessel wählt seine Einheit je Eintrag.</para>
+        /// </summary>
+        internal void WartungAusNutzungsdauertabelle()
+        {
+            if (!string.Equals(HeizkesselCtrl.Einheit(Wartungskosten_Einheit),
+                               DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT, StringComparison.Ordinal))
+                return;
+            if (Wartungskosten > 0) return;
+
+            NutzungsdauerZeile standard = NutzungsdauerCtrl.Standard(KOSTENKOMPONENTE_HEIZKESSEL);
+            if (standard == null || !standard.WartungProzent.HasValue) return;
+            Wartungskosten = standard.WartungProzent.Value;
+        }
+
+        /// <summary>Die Kostenkomponente des Heizkessels (<c>Tab_KostenKomponente.ID</c>) —
+        /// die Technik seiner Zeilen in der Nutzungsdauertabelle.</summary>
+        private const int KOSTENKOMPONENTE_HEIZKESSEL = 2;
 
         /// <summary>
         /// Die drei Ablehnungsgruende von <see cref="Update"/> als RUECKGABE statt als
