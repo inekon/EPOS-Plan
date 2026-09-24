@@ -144,7 +144,8 @@ Wer eine weitere Hüllenform baut, hält sie alle ein.
   plattformfrei in `EPOS.UI/Dienste/Fenstermass.cs`, die Hülle besorgt nur den
   Arbeitsbereich; unter „Per Monitor V2" stehen `Screen.WorkingArea` und `Form.ClientSize` im
   selben Raum, ohne Skalierungsfaktor. `Dialogart.Fachdialog` ist die Vorgabe,
-  `Dialogart.Klein` wächst nicht mit.
+  `Dialogart.Klein` wächst nicht mit; die Verwaltungshüllen reichen das Wunschmaß ihrer
+  Import-Überlagerung an `ModulKatalogHuelle.Oeffnen` herein.
 - **(g) Nebenläufigkeit:** **Der Bedienfaden liest die Datenbank**, der Hintergrund rechnet
   (`Task.Run`), das Marshalling besorgt ein auf dem Bedienfaden erzeugtes `Progress<T>`;
   Meldungen aus paralleler Rechnung werden **gedrosselt**. Nach jedem `await` steht in

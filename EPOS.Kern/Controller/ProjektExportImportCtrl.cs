@@ -261,6 +261,12 @@ namespace WindowsFormsApplication1
                                         if (copySet.Contains(fk.RefTab) || konfigurierteKataloge.Contains(fk.RefTab)) continue;
                                         // Tww-Kataloge reisen nie über die Original-Id (Konzept 3.2).
                                         if (IstTwwStamm(fk.RefTab)) continue;
+                                        // Der Gebäudekatalog auch nicht (Schemaschritt 121): Der
+                                        // Verweis des Projektgebäudes wird am Ziel über den Namen
+                                        // neu gefunden (GebaeudeKatalogverweis.SqlNachtragProjekt).
+                                        // Aufgefüllt unter der Original-Id stieße ein Katalogsatz
+                                        // am eindeutigen Bezeichner eines anderen Satzes an.
+                                        if (IstGebaeudekatalog(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -771,6 +777,11 @@ namespace WindowsFormsApplication1
                         { berichte.Add("Hinweis: Verknüpfung \u201E" + link.projekt + "\u201C fehlgeschlagen: " + exLink.Message); }
                     }
 
+                    // Schemaschritt 121: Die importierten Projektgebäude finden ihren
+                    // Katalogsatz am ZIEL über den Namen — dieselbe Regel wie der Schritt
+                    // (genau ein Treffer); ohne Treffer bleibt der Verweis leer.
+                    VerweiseNachtragen(v, eigene.Values);
+
                     v.Commit();
                     fortschritt?.Report(new ProjektDuplizierenCtrl.Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
@@ -1146,6 +1157,26 @@ namespace WindowsFormsApplication1
             return res;
         }
 
+        // ---- Katalogverweis des Projektgebäudes (Schemaschritt 121) ----------------------
+
+        /// <summary>Ist das der Gebäudekatalog, auf den <c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> zeigt?</summary>
+        private static bool IstGebaeudekatalog(string tabelle) =>
+            string.Equals(tabelle, GebaeudeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Trägt den Katalogverweis der Gebäude der importierten Projekte nach — über den
+        /// Namen, im laufenden Vorgang. Ein Ziel ohne die Spalte (älterer Stand) bleibt
+        /// unberührt.
+        /// </summary>
+        private void VerweiseNachtragen(DbVorgang v, IEnumerable<int> projekte)
+        {
+            Dictionary<string, Type> typen = ZielTypen(GebaeudeKatalogverweis.TABELLE);
+            if (typen == null || !typen.ContainsKey(GebaeudeKatalogverweis.SPALTE)) return;
+            foreach (int id in projekte)
+                if (id > 0)
+                    v.Ausfuehren(GebaeudeKatalogverweis.SqlNachtragProjekt(), new DbParam("@projekt", id));
+        }
+
         // ---- Umschlüsselung ----------------------------------------------------------------
         private object Umschluessele(string tab, string col, string pk, JsonElement je,
             Dictionary<string, long> offset, Dictionary<string, long> katMap)
@@ -1155,6 +1186,14 @@ namespace WindowsFormsApplication1
 
             if (col.Equals(pk, StringComparison.OrdinalIgnoreCase))
                 return Convert.ToInt64(raw) + offset[tab];
+
+            // Der Katalogverweis des Projektgebäudes (Schemaschritt 121) reist nicht: Die Id
+            // eines fremden Katalogs sagt am Ziel nichts oder zeigt auf ein anderes Gebäude.
+            // Der Import trägt ihn nach dem Einfügen über den Namen nach (VerweiseNachtragen).
+            if (tab.Equals(GebaeudeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(GebaeudeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+
             if (col.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase) ||
                 col.Equals("ProjektID", StringComparison.OrdinalIgnoreCase))
                 return offset.ContainsKey("Tab_Projekt") ? Convert.ToInt64(raw) + offset["Tab_Projekt"] : raw;

@@ -820,6 +820,9 @@ public static class FlottenSimulator
 
     private static void PruefeEinheit(FlottenEinheit b)
     {
+        // ETAPPE E10: FlottenEinheit.RestwertEuro ist ein Altfeld, das keine Rechnung mehr
+        // liest (linearer Restwert aus dem Ersatzintervall) - es wird deshalb auch nicht
+        // mehr geprueft; ein unbrauchbarer Altwert haelt keinen Lauf mehr auf.
         if (string.IsNullOrWhiteSpace(b.Id) || string.IsNullOrWhiteSpace(b.Name) ||
             !IstEndlichPositiv(b.KapazitaetKWh) || !IstEndlichNichtNegativ(b.LadeleistungKw) ||
             !IstEndlichNichtNegativ(b.EntladeleistungKw) || !IstWirkungsgrad(b.Ladewirkungsgrad) ||
@@ -834,8 +837,7 @@ public static class FlottenSimulator
             !IstEndlichNichtNegativ(b.JaehrlicheOpexEuroProKWhKapazitaet) ||
             !IstEndlichNichtNegativ(b.JaehrlicheOpexEuroProKw) ||
             !IstEndlichNichtNegativ(b.DurchsatzkostenEuroProKWhEntladung) ||
-            !IstEndlichNichtNegativ(b.ErsatzkostenEuro) || b.ErsatzintervallJahre < 0 ||
-            !IstEndlichNichtNegativ(b.RestwertEuro))
+            !IstEndlichNichtNegativ(b.ErsatzkostenEuro) || b.ErsatzintervallJahre < 0)
             throw new ArgumentException($"Ungueltige Parameter fuer Speicher '{b.Id}'.");
     }
 

@@ -23,7 +23,7 @@
    Wert FERTIG FORMATIERT hereinkommt und hier nicht gerechnet wird. *@
 @if (Mehrzeilig)
 {
-    <label class="epos-feld epos-feld--breit">
+    <label class="epos-feld epos-feld--breit" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
         @if (!string.IsNullOrEmpty(Bezeichnung))
         {
             <span class="epos-feld-text">@Bezeichnung</span>
@@ -35,7 +35,7 @@
 }
 else
 {
-    <label class="epos-feld@(Kurz ? " epos-feld--kurz" : "")">
+    <label class="epos-feld@(Kurz ? " epos-feld--kurz" : "")" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
         @if (!string.IsNullOrEmpty(Bezeichnung))
         {
             <span class="epos-feld-text">@Bezeichnung</span>
@@ -54,6 +54,9 @@ else
 @code {
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Ein Vermerk zum Feld als Tooltip der Beschriftung; leer = keiner (siehe Zahlenfeld).</summary>
+    [Parameter] public string Titel { get; set; } = "";
 
     /// <summary>Der Text. Bindbar ueber @@bind-Wert.</summary>
     [Parameter] public string Wert { get; set; } = "";

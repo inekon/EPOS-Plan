@@ -16,8 +16,18 @@
         public const string StromspeicherAdmin = "Form_AdminStromspeicher";
         /// <summary>Lastspitzenkappung; Argument: Projekt-ID.</summary>
         public const string PeakShaving = "Form_PeakShaving";
-        /// <summary>Stammdaten Gebäude.</summary>
-        public const string GebaeudeAdmin = "Form_Gebaeude";
+        /// <summary>
+        /// Stammdaten Gebäude — die Gebäudeverwaltung (<c>GebaeudeAdminDialog</c>).
+        ///
+        /// <para><b>Der Schlüssel trägt einen Klassennamen, den es nie gab</b>, wie
+        /// <see cref="WechselrichterAdmin"/>: <c>Form_Gebaeude</c> war die Projektmaske und
+        /// ihre Betriebsart Admin zugleich. Seit die Verwaltung eine eigene Komponente ist,
+        /// ist ihr Schlüssel zugleich ihr Katalogschlüssel beim Hilfe-Assistenten
+        /// (<c>KiMaskennamen.GEBAEUDE_ADMIN</c>) — der Name <c>Form_Gebaeude</c> bleibt der
+        /// Projektmaske (<c>KiMaskennamen.GEBAEUDE</c>) und dem Hilfeschlüssel
+        /// <c>Form_Gebaeude.btn_Help</c>.</para>
+        /// </summary>
+        public const string GebaeudeAdmin = "Form_Gebaeude_Admin";
         /// <summary>Stammdaten Gebäudetypen.</summary>
         public const string GebaeudetypenAdmin = "Form_EingGebTyp";
         /// <summary>Stammdaten eingelesener Wärmebedarf.</summary>

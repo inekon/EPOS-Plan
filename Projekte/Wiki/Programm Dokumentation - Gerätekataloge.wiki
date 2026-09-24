@@ -35,7 +35,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 * '''Brennwertkessel''' – ein Schalter.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 
-Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, Nutzungsdauer (Jahre) und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers.
+Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, ''Nutzungsdauer (Gerätedaten)'' in Jahren und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers. Auch die Nutzungsdauer rechnet nicht; für Ersatzbeschaffung und Restwert der Wirtschaftlichkeit maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]], und der Kurztext am Feld sagt es. Ein neuer Kessel mit der Wartungseinheit %/a übernimmt den Wartungssatz dieser Tabelle, wenn sie für den Heizkessel einen führt.
 
 Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -53,7 +53,7 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 
-Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), Nutzungsdauer (Jahre) sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg).
+Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg). Auch die Nutzungsdauer rechnet nicht; maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]].
 
 Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -153,7 +153,7 @@ Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, d
 
 {{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
 
-Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme ist der erste neue Satz in der Liste gewählt, die Statuszeile nennt die Zahl der übernommenen Sätze.
+Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme sind die neuen Sätze in der Liste gewählt — mehrere über ihre Kästchen, sodass ''Vergleichen'', ''Schloss setzen…'' oder ''Löschen'' gleich auf sie wirken —, der erste steht im Stammblatt, und die Statuszeile nennt die Zahl der übernommenen Sätze.
 
 == Übernahme in ein Projekt ==
 {{Anker|uebernahme}}

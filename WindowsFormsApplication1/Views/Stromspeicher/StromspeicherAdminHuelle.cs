@@ -31,9 +31,11 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer)
         {
             // "Import..." (Konzept Administrationsdialoge 7.1 d) steht nur im eigenen
-            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs.
+            // Verwaltungsfenster, nicht in der Katalogueberlagerung eines Projektdialogs -
+            // und das Fenster oeffnet mindestens so gross wie der Import (1 180 x 700).
             return ModulKatalogHuelle.Oeffnen(besitzer, Profil(), KatalogBrowserHuelle.MitWegen(
-                Gaben(), Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Stromspeicher))));
+                Gaben(), Wege(() => KatalogImportHuelle.Gaben(KatalogImportArt.Stromspeicher))),
+                KatalogImportHuelle.Wunschmass(KatalogImportArt.Stromspeicher));
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>

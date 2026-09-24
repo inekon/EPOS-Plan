@@ -1,4 +1,4 @@
-﻿# Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung
+# Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung
 
 **Stand 09.09.2026, Rev. 3.** Rev. 1 (08.09.2026) beantwortete den Anwenderwunsch
 „Wie sind die Regeln, damit Module und Wechselrichter zusammenpassen; welche Meldungen kann es

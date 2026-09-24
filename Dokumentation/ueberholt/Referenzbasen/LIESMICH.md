@@ -1141,7 +1141,7 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 
 Der Abschnitt „Aktuelle Basis“ hat vom 23. bis zum 24.09.2026 die Basis R13 beschrieben — Anlass
 (Schlusswelle KU1 der Kühlung: E32 und Projekt 1017 als Referenzprojekt mit Kühlung), die Tabelle je
-Projekt gegen R12 und die Nachträge zu den Schemaständen 114, 115 und 119, mit denen die Basis
+Projekt gegen R12 und die Nachträge zu den Schemaständen 114 bis 121, mit denen die Basis
 ergebnisneutral geblieben ist. Er steht hier im Wortlaut, weil diese Nachträge die Ergebnisneutralität
 der Schritte belegen; die Verweise sind auf diesen Ort umgestellt.
 
@@ -1155,7 +1155,7 @@ steht im Abschnitt „Aktuelle Basis“ von [`Referenzlaeufe/LIESMICH.md`](../..
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`, Nachträge 114, 115 und 119 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+**113**, LFS-SHA-256 `769143e4…`, Nachträge 114 bis 121 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
 kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
@@ -1287,6 +1287,21 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `8a3bebaf…`).
 
+> **Nachtrag: Schemastände 116 bis 118 (Szenarioabdeckung der Wirtschaftlichkeit, Etappe E9a,
+> #461), die Basis bleibt.** Migrationsschritte **116** (`SCHRITT_116_SZENARIO_RAHMEN`: vier nullbare
+> Spalten `Szen_Best_/Szen_Worst_Zeitraum` und `…_Menge` an `Tab_ProjektWirtschaftlichkeit`), **117**
+> (`SCHRITT_117_TRAEGERPREIS_SZENARIO`: sechs nullbare Spalten `custom_price_work/base/power_best/_worst`
+> an `energy_project_settings`) und **118** (`SCHRITT_118_ERLOESSATZ_SZENARIO`: acht nullbare Spalten —
+> `Einspeiseverguetung(_KWK)_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_` und
+> `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`), **reines DDL**; NULL heißt „wie Erwartet". Mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
+> Fassung 115 (LFS-SHA-256 `fbc30835…`, 67 780 608 Byte) nachgezogen: 18 Spalten angelegt, Marker 118;
+> ein zweiter Lauf legt nichts an. Gegen 115 unterscheiden sich allein die drei Tabellen um die 18
+> neuen, leeren Spalten und `SchemaVersion` 115 → 118; `integrity_check` ok, `foreign_key_check` leer,
+> Größe 67 784 704 Byte (LFS-SHA-256 `e9748b7f…`). **Keine Einfrierregel ist berührt:** Keine Spalte
+> trägt einen gesäten Wert, und der Referenzlauf führt keine Wirtschaftlichkeitsgröße — er bleibt
+> byte-gleich.
+
 > **Nachtrag: Schemastand 119 (Kühlung, Stufe KU2, Welle 3), die Basis bleibt.** Migrationsschritt
 > **119** (`SCHRITT_119_KAELTESTROM`: `Tab_Energieanlagen.Kuehl_EigenerZaehler` — 0/1 mit `CHECK`, nullbar,
 > ohne Vorgabe, NULL = anteilig am Netzbezug, Entscheid E34 — und sieben nullbare Ergebnisspalten der
@@ -1303,6 +1318,51 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Spalten tragen keinen gesäten Wert; die Ergebnisspalten schreibt nur ein Lauf mit Kältekaskade, und kein
 > Referenzprojekt kühlt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
 > (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `6259b348…`).
+
+> **Nachtrag E10 (#463): Schemastand 120 und der Anschluss der Speicherflotte an die
+> Nutzungsdauertabelle, die Basis bleibt.** Migrationsschritt **120**
+> (`SCHRITT_120_NUTZUNGSDAUER_SAETZE`, Nutzungsdauer-Konzept Stufe S3), **reines DML** an
+> `Tab_Nutzungsdauer`: Die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+> Empfehlungsbereichs derselben Position der Betriebsvorlagen-Saat (Quelle `NutzungsdauerSaetze`) —
+> fünf Zellen `Instandsetzung_Prozent`: Heizkessel · Wärmeerzeuger 2,0, BHKW · Modul 6,0,
+> Wärmezentrale · Rohrleitungen 2,0, Stromeinspeisung · Netzanschluss 2,0, Bauliche Anlagen 1,25;
+> `Wartung_Prozent` bleibt überall leer. Mit `Werkzeuge/Testdatenbankschema` auf der Fassung 119
+> nachgezogen; ein zweiter Lauf setzt nichts (0/5). Zellvergleich gegen die Fassung 119: allein
+> `SchemaVersion` 119 → 120 und diese fünf Zellen; `integrity_check` ok, `foreign_key_check` leer,
+> Größe unverändert 67 784 704 Byte (LFS-SHA-256 `52c4729d…`). **Ergebnisneutral:** Ein Satz der
+> Tabelle rechnet erst, wenn der Anwender ihn über „Sätze vorbelegen…" oder die Übernahme einer
+> Kostenvorlage in eine Position schreibt; der Rechenweg liest weiter den Satz der Position.
+>
+> **Mit derselben Welle** rechnet die Wirtschaftlichkeit der Speicherflotten-STUDIE den Restwert je
+> Einheit linear aus ihrer Nutzungsdauer auf der Ersatzkette der Flotte (Betrag der letzten
+> Beschaffung × Restdauer ÷ Nutzungsdauer); eine Einheit ohne eigenes Ersatzintervall nimmt die
+> Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" (10 a), und der feste Restwert je
+> Einheit ist ein Altfeld, das nicht mehr rechnet. Der Projektlauf rechnet keine
+> Flottenwirtschaftlichkeit, und `aggregate.csv` führt für 1046 nur die Physik der Flotte — die
+> Referenz bewegt sich nicht (dritte Einfrierregel, Absatz „Anschluss an die Nutzungsdauertabelle").
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
+
+> **Nachtrag #468: Schemastand 121 (Katalogverweis des Projektgebäudes), die Basis bleibt.**
+> Migrationsschritt **121** (`SCHRITT_121_GEBAEUDE_KATALOGVERWEIS`, Konzept Administrationsdialoge
+> 7.1 (a), Quelle `GebaeudeKatalogverweis`): `Tab_Gebaeude.ID_Gebaeude_Stamm` (`INTEGER`, nullbar,
+> `REFERENCES Tab_Gebaeude_STAMM(ID) ON DELETE SET NULL`) samt Index `Tab_Gebaeude_ID_Gebaeude_Stamm`,
+> einmalig über den eindeutigen Gebäudenamen nachgetragen — alle **26** Projektgebäude der Testdatenbank
+> tragen danach den Verweis auf den Katalogsatz ihres Namens, keines bleibt ohne. Dazu die Reparatur
+> nach Schadensbild im Katalog (`GebaeudeSonstigeFlaeche`): Wo `Sonstige_Flaechen` > 0 bei U-Wert
+> „Sonstiges" 0 steht, wird die Fläche 0 — U · A war 0 und bleibt 0. Getroffen sind die vier
+> Katalogsätze 1 `AltenH-95-EnEV2016` und 6 `Pflegeheim-122-EnEV2016` (je 4,0 m²), 100
+> `SpH-Umkl-287-EnEV2016` und 103 `SpH-Umkl-NE` (je 2,2 m²); **keiner ist einem Projekt zugeordnet**.
+> Der fünfte regelwidrige Satz, 79 `Krankenhaus_92-EnEV2016` (U-Wert Fenster 0,09 bei 11 646 m²
+> Fensterfläche), ist nicht nach Schadensbild herzuleiten und bleibt unverändert. Mit
+> `Werkzeuge/Testdatenbankschema` auf der Fassung 120 nachgezogen; ein zweiter Lauf findet nichts offen.
+> Zellvergleich aller 132 Tabellen gegen die Fassung 120: `SchemaVersion` 120 → 121, die neue Spalte
+> (26/26 gesetzt), der neue Index und die vier Zellen `Sonstige_Flaechen`, sonst nichts; 14 Sichten
+> unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von 131 Fachtabellen STRICT, Größe
+> 67 792 896 Byte (LFS-SHA-256 `00fbbb8b…`). **Keine Einfrierregel ist berührt:** Der Verweis trägt keinen
+> Rechenwert und kein Rechenweg liest ihn; die geänderten Katalogflächen nutzt kein Referenzprojekt.
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und

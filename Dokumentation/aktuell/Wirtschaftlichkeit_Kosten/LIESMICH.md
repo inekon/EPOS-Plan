@@ -36,7 +36,7 @@ Wirtschaftlichkeit_Kosten/
     ├── 05_Verguetungen_BHKW.md          KWKG-Mischsatz, Mengentafel, Jahresreihe, Energie- und Stromsteuer
     ├── 06_Verguetungen_PV.md            anzulegender Wert, Marktprämie, § 51/51a, 60-%-Kappung
     ├── 07_Erloesrubrik.md               Block A zahlungswirksam, Block B Ausweis, vermiedene Kosten
-    └── 08_Wirtschaftlichkeit_Nutzungsdauer.md   Kapitalwert nach DIN EN 17463, Höfingen-Gegenprobe
+    └── 08_Wirtschaftlichkeit_Nutzungsdauer.md   Kapitalwert nach DIN EN 17463, Gegenprobe „Beispielprojekt B"
 ```
 
 Die Mockups dieses Themas liegen mit allen übrigen unter `../Mockups/`: das konsolidierte
@@ -102,7 +102,7 @@ und Degradation* — siehe `Rechenweg/03`.
 Jede Zahl des Mockups trägt eine von drei Klassen: **Beispielzahl** (aus `Beispielprojekt.md` oder
 daraus abgeleitet), **Beleg** (aus dem Datenbestand oder einer fremden Mappe nachgemessen:
 Kaskadenprobe Projekt 1042 mit Delta +20.927,61 €, Mischsatz 300 kW mit 5,5667 / 2,4167 ct/kWh,
-anzulegender Wert 300 kWp mit 6,04 ct/kWh, Aufschlagsmessung Projekt 1030, Höfingen-Kapitalwert
+anzulegender Wert 300 kWp mit 6,04 ct/kWh, Aufschlagsmessung Projekt 1030, Kapitalwert „Beispielprojekt B"
 65.259 €) und **abgeleitet** (allein für die Darstellung gebildet, etwa die interpolierten
 Zwischenwerte der beiden äußeren Verlaufskurven). Das Register steht im Anhang „Herkunft der Zahlen"
 des Mockups.

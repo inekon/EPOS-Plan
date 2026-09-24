@@ -1,10 +1,14 @@
 # Konzept: Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle
 
-Stand 23.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1 und S2
-sind umgesetzt**; S3 (Instandsetzung, Wartung, Gerätekataloge) steht aus und braucht einen eigenen
-Entscheid (Abschnitte 3 und 6). Codestand `41764ab0`, `SchemaStand.Zielversion` = **113** (neue
-Schritte ab 114). **ND‑S3 ist die Etappe E10** des Etappenplans E0–E12 im Analysepapier
+Stand 24.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1, S2 und
+S3 sind umgesetzt** — S3 (Instandsetzung, Wartung, Gerätekataloge, dazu Speicherflotte und Kennzeichnung der
+Gerätespalten) mit **#463**, der Etappe **E10** des Etappenplans E0–E12 im Analysepapier
 [`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
+Den eigenen Entscheid zu S3 vertreten die Fragen E10‑Q1 bis E10‑Q7 im
+[Entscheidungsregister](Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (R‑E10): gebaut
+ist jeweils die Empfehlung, sechs sind beim Anwender offen. Codestand `94521f2e`, `SchemaStand.Zielversion` = **120**
+(Schritt 120 sät die Instandsetzungssätze der Tabelle). Dieses Konzept wandert nach `ueberholt/`, sobald die Fragen
+aus E10 entschieden sind.
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
@@ -75,9 +79,9 @@ rechnen mit ihrer eigenen Nutzungsdauer (Vorgabe ± 2 Jahre). Der Betrachtungsze
 
 Administration → Kostenverwaltung führt „Kostenvorlagen" und „Energieträger" (`Menuetabelle.cs`). Die
 Menüwache zählt 59 Punkte, 8 Trenner, 13 klappbare und 46 nicht klappbare Knoten; ein neuer Punkt
-verschiebt diese Zahlen. Schemastand: **Zielversion 113** (Stand 23.09.2026), Schritte 90–113
-vergeben, **neue ab 114**; neue Fachtabellen sind STRICT und laufen als nummerierter Schritt über
-`SchemaMigration`.
+verschiebt diese Zahlen. Schemastand: **Zielversion 120** (Stand 24.09.2026), Schritte 90–120
+vergeben (120 = die Sätze der Nutzungsdauertabelle, S3), **neue ab 121**; neue Fachtabellen sind STRICT und laufen
+als nummerierter Schritt über `SchemaMigration`.
 
 ### 1.6 VDI 2067 im Bestand
 
@@ -85,7 +89,8 @@ Die Empfehlungsbereiche nach VDI 2067 stehen an der **Position einer Kostenvorla
 (`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`, gesät aus
 `SchemaKatalog.Schritt39_Vorlagen`): über die Vorlagenpflege änderbar und als Hinweis am Satzfeld des
 Komponenten-Kostendialogs sichtbar. Instandsetzungs- und Wartungssätze je Technik (VDI 2067 Blatt 1,
-Tabelle A2) gibt es im Datenmodell nicht.
+Tabelle A2) gab es im Datenmodell nicht; **mit S3 (#463)** führt sie die Tabelle 2.2, gesät aus eben diesen
+Empfehlungsbereichen (Abschnitt 3).
 
 ## 2. Zielbild
 
@@ -107,7 +112,7 @@ steuerliche Spalte zusätzlich führen (ND-Q1).
 | `IstStandard` | INTEGER CHECK (0,1) | genau eine Standardzeile je Technik — Rückfall, wenn eine Position keine Positionsart trägt |
 | `Nutzungsdauer_a` | REAL | rechnerische Nutzungsdauer in Jahren |
 | `AfA_steuerlich_a` | REAL, NULL erlaubt | steuerliche Nutzungsdauer, nur Anzeige (ND-Q1) |
-| `Instandsetzung_Prozent`, `Wartung_Prozent` | REAL, NULL erlaubt | VDI 2067 Blatt 1, Tabelle A2 — Stufe S3 (ND-Q6) |
+| `Instandsetzung_Prozent`, `Wartung_Prozent` | REAL, NULL erlaubt | VDI 2067 Blatt 1, Tabelle A2 — Stufe S3 (ND-Q6): % der Investition je Jahr, im Dialog sichtbar und gepflegt, an den Standardzeilen gesät (Schritt 120, #463); NULL = kein Satz |
 | `Quelle` | TEXT | „VDI 2067 Blatt 1, Tab. A2", „AfA-Tabelle AV", „eigener Wert" |
 | `ReadOnly` | INTEGER CHECK (0,1) | Auslieferungszeile: Wert editierbar, Zeile nicht löschbar (ND-Q5) |
 | `Sortierung` | INTEGER | Reihenfolge im Dialog |
@@ -147,7 +152,10 @@ Installation" → Montage). Der Vorlagenübernahme-Weg kopiert `NutzungsdauerID`
 4. **Vorlagenübernahme ins Projekt**: Vorlagenwert, sonst Wert der Tabelle; Worst/Best unverändert
    (± 2 Jahre um den Wert).
 5. Die Gerätekataloge (BHKW, Heizkessel, Stromspeicher) behalten ihre eigenen Nutzungsdauer-Spalten;
-   eine Vorbelegung dort ist Stufe S3 (ND-Q7).
+   eine Vorbelegung dort ist Stufe S3 (ND-Q7). **Mit S3 (#463):** Die Spalten von BHKW und Heizkessel heißen
+   „Nutzungsdauer (Gerätedaten)" und rechnen nicht (A8); ein neuer Kesseleintrag mit der Wartungseinheit „%/a" und
+   ohne Betrag übernimmt den Wartungssatz der Standardzeile Heizkessel als einmalige Kopie, bestehende Einträge und das
+   BHKW (€/kWh el) bleiben (E10‑Q2, E10‑Q6).
 
 ### 2.4a Tafel „Ersatz und Restwert" im Kostendialog
 
@@ -172,7 +180,8 @@ Fehlermeldung, und bleibt weg, wo es nichts zu prüfen gibt.
 
 Menüpunkt unter Administration → Kostenverwaltung als dritter Eintrag. Razor-Dialog nach dem Muster der
 Katalogverwaltungen: Zeilenraster, gruppiert nach Technik (Standardzeile zuerst), Spalten Technik ·
-Positionsart · Nutzungsdauer [a] · Quelle · (AfA steuerlich [a]) · Aktionen; Suchfeld über alle Felder;
+Positionsart · Nutzungsdauer [a] · Quelle · (AfA steuerlich [a]) · Aktionen, mit S3 (#463) dazu Instandsetzung [%/a]
+und Wartung [%/a] in Tabelle und Neuzeile samt einer leisen Zeile zur Quelle; Suchfeld über alle Felder;
 Knöpfe „Neu", „Löschen" (nur Zeilen ohne `ReadOnly`), „Auslieferungswerte wiederherstellen" (setzt die
 Werte der `ReadOnly`-Zeilen auf die Saat zurück, mit Rückfrage), „Speichern"/„OK". Ein Kern-Controller
 `NutzungsdauerCtrl` (Laden, Speichern, `Vorgabe(komponentenId, nutzungsdauerId)`) trägt die Datenbank-
@@ -227,9 +236,28 @@ Restwert nach VDI 2067. Die Herleitungszeile und der Bericht nennen die Quelle d
 |---|---|---|
 | **S1 Tabelle und Verwaltung** — **umgesetzt** | Schema-Schritt (Tabelle, Saat, Spalten `NutzungsdauerID` mit Saat-Zuordnung, Zielversion +1, Testdatenbank), `NutzungsdauerCtrl`, Razor-Dialog mit plattformfreier Hülle, Menüpunkt (Wächter 59 → 60, 46 → 47), Ressourcen de/en, Auslieferungsvorlage | Kern-/bunit-Tests, SqlDialektPruefer, Referenzlauf 13/13 byte-gleich |
 | **S2 Vorbelegung** — **umgesetzt** | Neue Position, Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Vorlagenübernahme, Herleitung je Zeile, Tafel „Ersatz und Restwert" samt Hinweis; Wiki „Programm Dokumentation/Kosten" | bunit-Fälle je Weg, Kern-Fall gegen die Kapitalwertrechnung, Referenzlauf byte-gleich |
-| **S3 Instandsetzung und Wartung** | Spalten in der Tabelle sichtbar, `BetriebskostenCtrl` liest Sätze je Technik statt Konstanten; Vorbelegung der Gerätekataloge | eigener Entscheid, Referenzlauf mit Abweichungen nur in Betriebskosten → neue Basis |
+| **S3 Instandsetzung und Wartung** — **umgesetzt #463** | Spalten in der Tabelle sichtbar, gesät mit Schritt 120 und gelesen von der Vorbelegung („Sätze vorbelegen…", Vorlagenübernahme) — der Rechenweg liest den Satz der Position; Vorbelegung neuer Kesseleinträge in %/a; dazu die Speicherflotte an der Tabelle und die Kennzeichnung der Gerätespalten (A7, A8) | A/B („Sätze vorbelegen…" auf einer Arbeitskopie, Speicherflotte 1046), Anker unverändert, Referenzlauf 13/13 byte-gleich — keine neue Basis |
 
-S3 nur nach Entscheid; es ist die Etappe **E10** des Etappenplans E0–E12.
+S3 ist die Etappe **E10** des Etappenplans E0–E12, gebaut mit **#463** (Merge `94521f2e`); ihre Fragen E10‑Q1 bis E10‑Q7
+stehen im Entscheidungsregister (R‑E10), gebaut ist jeweils die Empfehlung. **So gebaut:**
+
+- **Sätze:** Der Dialog „Nutzungsdauern (AfA)" zeigt „Instandsetzung [%/a]" und „Wartung [%/a]". Schritt 120 sät an
+  den Standardzeilen die Mitte des Empfehlungsbereichs der Betriebsvorlagen (Abschnitt 1.6) — Heizkessel 2,0, BHKW 6,0,
+  Wärmezentrale 2,0, Stromeinspeisung 2,0, Bauliche Anlagen 1,25 %; Wärmepumpe, Photovoltaik, Solarthermie, Strom- und
+  Pufferspeicher bleiben leer, Wartung überall (E10‑Q7).
+- **Die Tabelle rechnet nicht selbst** (E10‑Q1, Lesart a; ND‑Q4): Der Rechenweg nimmt den Satz der Position, wie er
+  gepflegt ist. In eine Position „Instandhaltung …"/„Wartung …" mit „% der Investition" kommt der Satz der Tabelle
+  ausdrücklich — mit der vom Anwender ausgelösten Übernahme einer Kostenvorlage oder mit dem Knopf „Sätze vorbelegen…"
+  der Betriebsseite (Muster des Knopfs „Nutzungsdauern vorbelegen…": leere füllen, belegte nach Rückfrage, geschrieben
+  mit „Speichern"); die automatische Anlage der Pflichtpositionen schreibt keinen. Zugeordnet wird über den Namen der
+  Position (Technik der Position, Zeile der Positionsart, sonst Standardzeile).
+- **Herkunft:** Gleicht ein Satz dem der Tabelle, steht unter dem Satzfeld „2 % · Satz aus Nutzungsdauertabelle:
+  Heizkessel · Wärmeerzeuger (Instandsetzung)"; Herleitung der Berichte und Formelmappe nennen „Satz aus
+  Nutzungsdauertabelle" (Nachweisfassung 10).
+- **Gerätekataloge:** Abschnitt 2.4, Punkt 5.
+- **Speicherflotte** (A7): Die Flottenstudie rechnet den Restwert je Einheit linear aus ihrer Nutzungsdauer (dem
+  Ersatzintervall); eine Einheit ohne eigenes Intervall nimmt die Standardzeile „Stromspeicher · Batterie" (10 a); der
+  feste Restwert der Einheit ist ein Altfeld.
 
 **Offen aus S2 — umgesetzt #431 (Merge `2cfee66b`):** Die Hülle der Kostenverwaltung liegt seit E3
 Schritt 5 plattformfrei in `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs`; die Windows-Schale behält
@@ -244,7 +272,10 @@ Dazu sind zwei Entscheide gefallen
 `Tab_Nutzungsdauer` angeschlossen, als eigener Auftrag mit Neueinfrieren der Referenzbasis (Projekt
 1046); **A8** — die geräteeigenen Nutzungsdauer-Spalten (`Tab_BHKW`, `Tab_Heizkessel`) werden **nicht
 jetzt** abgekündigt, sondern nur **gekennzeichnet**; die Speichervariante sollte die Positionsarten
-20/21 lesen. Ein Schemaschritt dafür (vormals „104") bekommt seine Nummer erst bei der Umsetzung.
+20/21 lesen. Ein Schemaschritt dafür (vormals „104") bekommt seine Nummer erst bei der Umsetzung. **Umgesetzt mit
+S3 (#463):** A7 — die Speicherflotte hängt an der Tabelle (Abschnitt 3), ohne Neueinfrieren, weil der Referenzlauf
+keine Flottenwirtschaftlichkeit führt und byte-gleich blieb; A8 — die Spalten von BHKW und Heizkessel sind als
+„Nutzungsdauer (Gerätedaten)" gekennzeichnet, kein Schemaschritt; offen bleibt der Halbsatz zur Speichervariante.
 Die Entkopplung von Ersatz und Restwert ist mit **A6** entschieden (Kennzeichen je **Position**,
 nullbar, NULL = wie bisher) und **umgesetzt #446** (E7c2, Schemaschritt 111): `ErsatzFuehren` und
 `RestwertAnsetzen` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, gepflegt im Zeileneditor
@@ -272,7 +303,8 @@ wiederherstellen" zurücksetzen; der Abgleich mit dem Wortlaut der Norm bleibt S
 ## 5. Nicht enthalten
 
 Zinssatz, Preissteigerung und Betrachtungszeitraum bleiben Projektgrößen im Dialog
-Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 bleiben bis S3 Konstanten.
+Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 stehen mit S3 in der Tabelle (#463);
+gerechnet wird mit dem Satz der Position.
 
 ## 6. Umsetzung
 
@@ -280,5 +312,5 @@ Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 blei
 |---|---|---|
 | A (Stufe S1) — **umgesetzt** | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
 | B (Stufe S2) — **umgesetzt** | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Herleitung je Zeile, Tafel „Ersatz und Restwert" mit Hinweis; Wiki „Programm Dokumentation/Kosten". Die Hülle der Kostenverwaltung liegt seit **E3 (#431)** plattformfrei in `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs` mit Fenster-Adapter `KostenKomponenteFenster` | nach A |
-| S3 | Instandsetzung/Wartung, Gerätekataloge | eigener Entscheid |
+| S3 (Etappe E10) — **umgesetzt #463** | Instandsetzung/Wartung (Satzspalten im Dialog, Schemaschritt 120, Vorbelegung über Kostenvorlage und „Sätze vorbelegen…", Herkunft am Satz), Gerätekataloge (neue Kesseleinträge in %/a, Kennzeichnung A8), Speicherflotte (A7) | eigener Entscheid — vertreten durch E10‑Q1 bis E10‑Q7 (R‑E10; gebaut ist jeweils die Empfehlung, sechs offen) |
 

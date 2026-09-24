@@ -253,6 +253,12 @@
                                         <Zahlenfeld Bezeichnung="@Texte.RestwertEinheit" Einheit="€" Wert="@einheit.RestwertEuro" Min="0" Aktiv="@Aktiv"
                                                     WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.RestwertEuro = x, v))" />
                                     </div>
+                                    @* ETAPPE E10 (Empfehlung E10-Q3 a): Das Intervall ist die Nutzungsdauer
+                                       der Einheit - 0 nimmt die der Nutzungsdauertabelle -, und aus ihm folgt
+                                       der lineare Restwert. Der feste Restwert bleibt als Geraetedatum stehen,
+                                       rechnet aber nicht mehr; beides sagen die zwei Zeilen. *@
+                                    <p class="epos-flotte-hinweis epos-flotte-ersatzvorgabe">@ErsatzintervallHinweis</p>
+                                    <p class="epos-flotte-hinweis epos-flotte-restwert-altfeld">@Texte.RestwertAltfeld</p>
                                 </div>
                             </div>
                         }
@@ -443,6 +449,23 @@
     /// dann entscheidet wie bisher allein die Referenz.
     /// </summary>
     [Parameter] public int Fassung { get; set; }
+
+    /// <summary>
+    /// ETAPPE E10 (Empfehlung E10-Q3 a): das Ersatzintervall [a], mit dem eine Einheit mit
+    /// Intervall 0 rechnet — die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher
+    /// (<c>SpeicherOptimierungVorgaben.ErsatzintervallVorgabeJahre</c>); 0 = die Tabelle
+    /// führt keine, <c>null</c> = der Wirt kennt sie nicht. Nur für die Hinweiszeile.
+    /// </summary>
+    [Parameter] public int? ErsatzintervallVorgabeJahre { get; set; }
+
+    /// <summary>Die Hinweiszeile unter „Ersatz und Restwert": was ein Intervall 0 bedeutet.</summary>
+    private string ErsatzintervallHinweis => ErsatzintervallVorgabeJahre switch
+    {
+        > 0 => string.Format(CultureInfo.CurrentCulture, Texte.ErsatzintervallVorgabe,
+                             ErsatzintervallVorgabeJahre.Value),
+        0 => Texte.ErsatzintervallOhneTabelle,
+        _ => Texte.ErsatzintervallTabelle
+    };
 
     /// <summary>Steuerwert der Optionsgruppe: eine Speicheranlage des Projekts.</summary>
     public const int QuelleAnlage = 0;
@@ -1075,6 +1098,18 @@
         public string Ersatzkosten { get; set; } = Resource.FLOTTE_ED_ERSATZKOSTEN;
         public string Ersatzintervall { get; set; } = Resource.FLOTTE_ED_ERSATZINTERVALL;
         public string RestwertEinheit { get; set; } = Resource.FLOTTE_ED_RESTWERT_EINHEIT;
+
+        /// <summary>ETAPPE E10: Intervall 0 = Nutzungsdauer der Tabelle ({0} = Jahre).</summary>
+        public string ErsatzintervallVorgabe { get; set; } = Resource.FLOTTE_ED_ERSATZINTERVALL_VORGABE;
+
+        /// <summary>ETAPPE E10: Intervall 0, die Tabelle kennt die Nutzungsdauer (Wert unbekannt).</summary>
+        public string ErsatzintervallTabelle { get; set; } = Resource.FLOTTE_ED_ERSATZINTERVALL_TABELLE;
+
+        /// <summary>ETAPPE E10: Intervall 0, die Tabelle führt keine Nutzungsdauer.</summary>
+        public string ErsatzintervallOhneTabelle { get; set; } = Resource.FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE;
+
+        /// <summary>ETAPPE E10: der feste Restwert ist Gerätedaten, nicht mehr rechenwirksam.</summary>
+        public string RestwertAltfeld { get; set; } = Resource.FLOTTE_ED_RESTWERT_ALTFELD;
         public string NetzUndPlanung { get; set; } = Resource.FLOTTE_ED_NETZ_PLANUNG;
         public string NetzbezugGrenze { get; set; } = Resource.FLOTTE_ED_BEZUGSGRENZE;
         public string NetzeinspeisungGrenze { get; set; } = Resource.FLOTTE_ED_EINSPEISEGRENZE;

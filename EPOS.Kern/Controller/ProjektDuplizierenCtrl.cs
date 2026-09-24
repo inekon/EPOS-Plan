@@ -99,7 +99,11 @@ namespace WindowsFormsApplication1
             // dieselbe Zeile; eine Projektkopie des Katalogs gibt es nicht. Die deklarierten
             // Beziehungen zielen ohnehin auf *_STAMM (nie im Plan) - der Eintrag haelt die
             // Regel auch dann, wenn die Schemaauskunft leer bleibt.
-            "ID_Nutzungsart", "ID_Tagesgangsatz", "ID_Bedarfstag", "ID_Ausstattung"
+            "ID_Nutzungsart", "ID_Tagesgangsatz", "ID_Bedarfstag", "ID_Ausstattung",
+            // Katalogverweis des Projektgebaeudes (Schemaschritt 121): Kopie und Variante
+            // zeigen auf DENSELBEN Katalogsatz. Die deklarierte Beziehung zielt auf
+            // Tab_Gebaeude_STAMM (nie im Plan) - der Eintrag haelt die Regel auch ohne sie.
+            GebaeudeKatalogverweis.SPALTE
         };
 
         // Interne Fremdschluessel mit eindeutigem Zielnamen (Spalte -> Zieltabelle).

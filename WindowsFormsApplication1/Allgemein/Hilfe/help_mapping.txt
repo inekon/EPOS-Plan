@@ -208,7 +208,7 @@ Form_KiChat.btn_Help                = Hilfe-Assistent
 # Die Werkzeugliste ("Aktionen von Hand ausfuehren") hat seit dem Anwenderbefund
 # W15b-E-4 einen eigenen Infoknopf. Er springt auf denselben Wiki-Abschnitt, den
 # das eingebaute Wissen unter "Aktionen des Assistenten" fuehrt.
-KiWerkzeugliste.btn_Help            = Hilfe-Assistent#Aktionen des Assistenten
+KiWerkzeugliste.btn_Help            = Hilfe-Assistent#setzen-und-rechnen
 
 # ---------------------------------------------------------------------------
 # Zielvorrat: die 23 Unterseiten der Rubrik
@@ -345,7 +345,7 @@ Form_Klimazonenkarte.btn_Help = Wärmequelle Erdreich
 Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
-Form_Gesetzesparameter.btn_Help = Gesetzesparameter
+Form_Gesetzesparameter.btn_Help = Kosten#gesetzliche-parameter
 Form_KatalogDubletten.btn_Help = Katalogpflege
 Form_Emissionskatalog.btn_Help = Emissionen
 

@@ -938,9 +938,63 @@ public class ModulKatalogDialogTests : EposBunitContext
         var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
         await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
 
+        // EIN neuer Satz ist als Fokuszeile allein die Wahl - kein Kästchen, die
+        // Auswahlleiste nennt ihn beim Namen (7.1 d).
         Assert.False(cut.Instance.ImportOffen);
         Assert.Equal("Speicher Neu", cut.Instance.Gewaehlt);
+        Assert.Empty(cut.Instance.Kaestchen);
+        Assert.Equal("Speicher Neu", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
         Assert.Equal("„Speicher Neu“ eingelesen.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Nach dem Stromspeicherimport sind alle neuen Sätze gewählt</b> (V14, Konzept
+    /// 7.1 d): Ein laufender Vergleich endet, die Kästchen von vorher fallen, die drei
+    /// neuen stehen gewählt, die Auswahlleiste zählt sie, der erste ist Fokuszeile im
+    /// Stammblatt, und die Statuszeile nennt die Zahl.
+    /// </summary>
+    [Fact]
+    public async Task Nach_dem_Stromspeicherimport_sind_alle_neuen_Saetze_gewaehlt()
+    {
+        var zeilen = Zeilen().ToList();
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => zeilen.ToArray(),
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            KatalogImportGaben = () => new Dictionary<string, object>
+            {
+                ["Art"] = KatalogImportArt.Stromspeicher,
+                ["ProfilVorgabe"] = KatalogImportProfil.Finde(KatalogImportArt.Stromspeicher,
+                                                              EPOS.UI.Dialoge.Import.Texte.Zu),
+                ["Meldungstext"] = new Func<SpeicherEngine.PruefMeldung, string>(EPOS.UI.Dialoge.Import.Texte.Zu),
+                ["Fortschrittstext"] = new Func<ImportFortschritt, string>(EPOS.UI.Dialoge.Import.Texte.Zu)
+            }
+        };
+        var cut = Aufbauen(wege: wege);
+
+        // Vorher: zwei Kästchen und ein laufender Vergleich.
+        cut.FindAll("td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll("td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Vergleichen").Click();
+        Assert.True(cut.Instance.Vergleicht);
+
+        cut.Find(".epos-importknopf").Click();
+        foreach ((int id, string name) in new[] { (7, "Speicher X"), (8, "Speicher Y"), (9, "Speicher Z") })
+            zeilen.Add(new Katalogfilterzeile(id, name).MitText(Katalogfilterprofil.SpBezeichner, name));
+        var liste = cut.FindComponent<EPOS.UI.Bausteine.Katalogliste>();
+        Assert.Equal(0, liste.Instance.Zeigeanlass);
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        // Die Übernahme ist der Liste ein Anlass, die neue Fokuszeile ins Bild zu rollen.
+        Assert.Equal(1, liste.Instance.Zeigeanlass);
+        Assert.False(cut.Instance.Vergleicht);
+        Assert.Equal(new[] { "Speicher X", "Speicher Y", "Speicher Z" }, cut.Instance.Kaestchen);
+        Assert.Equal("Speicher X", cut.Instance.Gewaehlt);
+        Assert.Equal("3 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+        Assert.Equal("Speicher X", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal(3, cut.FindAll("tbody td.epos-spalte-kaestchen input").Count(k => k.HasAttribute("checked")));
+        Assert.Equal("3 Sätze übernommen und gewählt.", cut.Instance.Status);
     }
 
     [Fact]
@@ -982,7 +1036,9 @@ public class ModulKatalogDialogTests : EposBunitContext
 
         Assert.False(cut.Instance.ImportOffen);
         Assert.Equal("Modul C", cut.Instance.Gewaehlt);
-        Assert.Equal("2 Sätze eingelesen.", cut.Instance.Status);
+        Assert.Equal(new[] { "Modul C", "Modul D" }, cut.Instance.Kaestchen);
+        Assert.Equal("2 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+        Assert.Equal("2 Sätze übernommen und gewählt.", cut.Instance.Status);
     }
     // =================================================================================
     // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)

@@ -975,6 +975,13 @@ a{color:var(--marine-hell)}
   Ergebnisseite und im Bericht unter demselben Schlüssel; die Photovoltaik bekommt ihn nicht, ihre Vorgabe (25 a)
   liegt über dem Betrachtungszeitraum. Er ist ein Prüfauftrag, keine Fehlermeldung: Eine Planungsleistung wird zu
   Recht nicht ersetzt — eine Hydraulik ohne gepflegte Dauer würde es zu Unrecht nicht.</p>
+  <p class="eng" style="margin-top:12px"><b>Speicherflotte und Gerätedaten</b> <span class="zk umg">umgesetzt U39</span>:
+  Derselbe lineare Restwert gilt für die Einheiten der Speicherflotte — die Flottenstudie der Stromspeicher-Auslegung
+  setzt ihn aus dem Ersatzintervall der Einheit an (Betrag der letzten Beschaffung × Restdauer ÷ n); eine Einheit ohne
+  eigenes Intervall nimmt die Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" (10 a), und der feste
+  „Restwert der Einheit (Gerätedaten)" steht im Flotten-Editor nur noch als Altfeld. Die Nutzungsdauer in den Katalogen
+  von Heizkessel und BHKW heißt „Nutzungsdauer (Gerätedaten)" und rechnet nicht; maßgeblich ist die
+  Nutzungsdauertabelle, aus der die Positionen ihre Dauer vorbelegt bekommen.</p>
 
   <div class="zone" id="invest-grundlage">Berechnungsgrundlage</div>
   <div class="normzeile">
@@ -1106,6 +1113,8 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Zeileneditor, Investitionsseite: Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:" mit „(leer — wie bisher)" · „ja" · „nein", Erklärzeile „Leer rechnet wie bisher …" und Herleitungszeile „Kennzeichen der Position — Ersatzbeschaffung: {0} · Restwert: {1}." <b>neu</b></td><td class="rs">ERK_LBL_ERSATZ · ERK_LBL_RESTWERT · ERK_LEER · ERK_JA · ERK_NEIN · ERK_WIE_BISHER · ERK_INFO · ERK_HERLEITUNG</td><td>Überlagerung des Stifts (U39)</td></tr>
         <tr><td>Tafel „Ersatz und Restwert": Zelle einer abgewählten Ersatzbeschaffung bzw. eines abgewählten Restwerts „— nein (Kennzeichen der Position)" <b>neu</b></td><td class="rs">ND_TAFEL_ERSATZ_AUS · ND_TAFEL_RESTWERT_AUS</td><td>Gruppe unter dem Raster (U39)</td></tr>
         <tr><td>Hilfe-Assistent: Namen und Erklärtexte der Felder <span class="mono">ersatz_fuehren</span> und <span class="mono">restwert_ansetzen</span> <b>neu</b></td><td class="rs">KI_DLG_VOP_ERSATZ_NAME · KI_DLG_VOP_ERSATZ_ERL · KI_DLG_VOP_RESTWERT_NAME · KI_DLG_VOP_RESTWERT_ERL</td><td>KI-Feldkatalog der Vorlagenposition</td></tr>
+        <tr><td>Flotten-Editor der Stromspeicher-Auslegung, Gruppe „Ersatz und Restwert": Hinweiszeile „Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). …" in drei Fassungen (mit Jahren, ohne Jahre, ohne Tabellenzeile) und die Altfeld-Zeile „Restwert der Einheit: Gerätedaten, nicht mehr rechenwirksam. …" <b>neu #463</b>; neu gefasst #463 die Beschriftung „Restwert der Einheit (Gerätedaten):" und die zwei Erklärtexte des Assistenten</td><td class="rs">FLOTTE_ED_ERSATZINTERVALL_VORGABE · FLOTTE_ED_ERSATZINTERVALL_TABELLE · FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE · FLOTTE_ED_RESTWERT_ALTFELD · FLOTTE_ED_RESTWERT_EINHEIT · KI_DLG_FLE_RESTWERT_ERL · KI_DLG_FLE_ERSATZINTERVALL_ERL</td><td>SpeicherFlottenEditor (U39)</td></tr>
+        <tr><td>Kataloge Heizkessel und BHKW, auch im Aufklapper „Alle Daten anzeigen": Tooltip „Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA))" <b>neu #463</b>; neu gefasst #463 die Beschriftung „Nutzungsdauer (Gerätedaten):" beider Kataloge und der Erklärtext des Assistenten</td><td class="rs">KBROW_ND_GERAETEDATEN_HINWEIS · HZKK_LBL_NUTZUNGSDAUER · BHKWK_LBL_NUTZUNGSDAUER · KI_DLG_KBROW_NUTZUNGSDAUER_ERL</td><td>Katalogfelder, KI-Feldkarte des Katalogs (U39)</td></tr>
         <tr><td>Parameter „Preissteigerung Investition [%/a]"</td><td class="rs">WPAR_PREIS_I</td><td>WirtschaftlichkeitParameterDialog</td></tr>
       </tbody>
     </table>
@@ -1137,7 +1146,11 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
   grau. Die Herleitungszeile unter dem Betrag <span class="zk umg">umgesetzt U28</span> — sie nennt hier keine
   Runde, weil die Betriebsseite keine Kaskade kennt; hinterlegte Pflichtzeilen
   mit Schloss, der Empfehlungsbereich als Zeile, der Laufstand über dem Raster, die Gruppe „Endenergie je
-  Komponente" und die Doppelpflege-Warnung <span class="zk umg">umgesetzt U31</span>.</p>
+  Komponente" und die Doppelpflege-Warnung <span class="zk umg">umgesetzt U31</span>. Der vierte Rasterknopf heißt
+  auf dieser Seite „Sätze vorbelegen…" <span class="zk umg">umgesetzt U39</span>: Er trägt die Instandsetzungs- und
+  Wartungssätze der Nutzungsdauertabelle in leere Positionen „Instandhaltung …"/„Wartung …" mit „% der Investition"
+  ein; gleicht ein Satz dem der Tabelle, nennt eine leise Zeile unter dem Satzfeld die Herkunft. Gezeichnet ist ein
+  gepflegter Satz, der vom Tabellensatz abweicht — er trägt keine Herkunftszeile.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung BHKW 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -1231,9 +1244,16 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <li><b>Ohne Simulationslauf</b> tragen die mengenbasierten
         Zeilen ein ⚠ im Betrag, und unter dem Raster steht „‚Wartung BHKW': kein Simulationslauf ·
         ‚Hilfsenergiekosten': kein Simulationslauf"; die investitionsbasierte Zeile rechnet sofort.</li>
+        <li><b>Sätze vorbelegen…</b> füllt die leeren Sätze der Positionen „Instandhaltung …" und „Wartung …" mit
+        „% der Investition" aus der Nutzungsdauertabelle (Administration › Kosten › Nutzungsdauern (AfA), Spalten
+        „Instandsetzung [%/a]" und „Wartung [%/a]"); tragen Positionen schon einen anderen Satz oder einen erfassten
+        Betrag, fragt der Knopf mit ihrer Anzahl nach, und die Statuszeile nennt die Zahl. Geschrieben wird erst mit
+        „Speichern" oder „OK". Die Tabelle rechnet nicht selbst: Ein Satz wirkt erst, wenn er in der Position steht —
+        dann steht unter dem Satzfeld etwa „6 % · Satz aus Nutzungsdauertabelle: BHKW · Modul (Instandsetzung)", und
+        Herleitung und Formelmappe nennen dieselbe Herkunft.</li>
       </ul></div>
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
-        <span class="f-knopf">Positionskatalog…</span></div>
+        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Sätze vorbelegen…</span> <span class="zk umg">umgesetzt U39</span></div>
 
       <div class="f-gruppe" style="margin-top:14px">
         <div class="f-titel">Endenergie je Komponente <span class="zk umg" style="margin-left:6px">umgesetzt U31</span></div>
@@ -1379,8 +1399,8 @@ Keine stillen Teilsummen
 
   <div class="zone" id="betrieb-schluessel">Beschriftungen und Ressourcenschlüssel</div>
   <p class="eng">Die Schlüssel tragen die Beschriftungen des Dialogs wörtlich; der als <b>neu</b> gekennzeichnete
-  ist noch keiner. Kopf, Kontextleiste, Reiter, Spalten, Abschlusszeile, Knöpfe und
-  Fußleiste sind dieselben Schlüssel wie in Kategorie 1.</p>
+  ist noch keiner, die mit <b>neu #463</b> gekennzeichneten sind mit E10 gebaut. Kopf, Kontextleiste, Reiter, Spalten,
+  Abschlusszeile, die ersten drei Knöpfe und Fußleiste sind dieselben Schlüssel wie in Kategorie 1.</p>
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
@@ -1396,6 +1416,8 @@ Keine stillen Teilsummen
         <tr><td>Gruppe „Endenergie je Komponente": Kopf, vier Spalten und der Hinweis auf die Bemessungen</td><td class="rs">KDLG_G_ENDENERGIE · KDLG_SP_ENDENERGIE_KOMP · KDLG_SP_ENDENERGIE_KWH · KDLG_SP_ENDENERGIE_EUR · KDLG_SP_ENDENERGIE_BASIS · KDLG_HINWEIS_ENDENERGIE</td><td>Gruppe unter dem Raster (U31)</td></tr>
         <tr><td>Doppelpflege Hilfsenergie — derselbe Text wie in der Kohärenzprüfung des BHKW-Dialogs</td><td class="rs">KOH_HILFSENERGIE_DOPPELT</td><td>BhkwWirtschaftlichkeitDialog und Kostendialog (U31)</td></tr>
         <tr><td>Gedankenstrich-Grund „gehört zu keinem Energieträger" <b>neu</b> · Warnung fehlender Kesselbrennstoff</td><td class="rs">WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER · WIRT_KESSELBRENNSTOFF_FEHLT</td><td>Ergebniszeile, Bericht, Dialog · Kohärenzprüfung</td></tr>
+        <tr><td>Knopf „Sätze vorbelegen…" mit Statuszeile „{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.", Rückfrage und Absage; Herkunftszeile unter dem Satzfeld „{0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3})" mit den Satzarten „Instandsetzung" · „Wartung"; die kurze Herkunft „Satz aus Nutzungsdauertabelle" in Herleitung und Formelmappe <b>neu #463</b></td><td class="rs">ND_SAETZE_VORBELEGEN_BTN · ND_SAETZE_VORBELEGEN_STATUS · ND_SAETZE_VORBELEGEN_FRAGE · ND_SAETZE_VORBELEGEN_KEINE · ND_SATZ_HERLEITUNG · ND_SATZART_INSTANDSETZUNG · ND_SATZART_WARTUNG · ND_SATZ_HERKUNFT</td><td>Leiste unter dem Raster · Zelle Satz · Herleitung der Berichte und der Formelmappe (U39)</td></tr>
+        <tr><td>Dialog „Nutzungsdauern (AfA)": Spalten „Instandsetzung [%/a]" · „Wartung [%/a]" in Tabelle und Neuzeile, die leise Zeile zur Quelle (VDI 2067 Blatt 1, Tabelle A2) und die Namen und Erklärtexte der vier Felder für den Hilfe-Assistenten <b>neu #463</b></td><td class="rs">ND_SP_INSTANDSETZUNG · ND_SP_WARTUNG · ND_SAETZE_HINWEIS · KI_DLG_NUD_INST_NAME · KI_DLG_NUD_INST_ERL · KI_DLG_NUD_WART_NAME · KI_DLG_NUD_WART_ERL · KI_DLG_NUD_NEUINST_NAME · KI_DLG_NUD_NEUINST_ERL · KI_DLG_NUD_NEUWART_NAME · KI_DLG_NUD_NEUWART_ERL</td><td>Administration › Kosten › Nutzungsdauern (AfA) (U39)</td></tr>
       </tbody>
     </table>
   </div>
@@ -1651,7 +1673,7 @@ Keine stillen Teilsummen
         der Erlösreihe — nicht auf diese Zeilen. Eine Quellenangabe dazu gibt es nirgends
         <span class="zk vor">Vorschlag U9</span>.</div>
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
-        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span></div>
+        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Sätze vorbelegen…</span> <span class="zk umg">umgesetzt U39</span></div>
       </div>
     </div>
     <div class="f-fuss">
@@ -4444,7 +4466,7 @@ Einstufung
   schon Erwartet nicht positiv         ⇒ nicht empfohlen</pre></div>
 
   <div class="zone" id="valeri-erlaeuterung">Berechnungserläuterung — die Gegenprobe an einer fremden Mappe</div>
-  <p class="eng">Die Höfingen-Mappe ist die externe Gegenprobe <span class="zk beleg">Beleg</span>: ein
+  <p class="eng">Die Mappe „Beispielprojekt B" ist die externe Gegenprobe <span class="zk beleg">Beleg</span>: ein
   <em>anderes</em> Projekt (Blockheizkraftwerk 20 kW<sub>el</sub> gegen Vergleichsheizung, i = 2,0 %,
   n = 13,3 a), dessen Zahlen ohne EPOS-Plan entstanden sind. Sie gehört nicht zum Musterprojekt und
   steht hier allein, um die Formel gegen eine unabhängige Rechnung zu halten. Die jahresscharfe
@@ -4617,7 +4639,7 @@ Einstufung
   ebenso auf (<span class="mono">−234.772 − 850.459 + 2.240.262 + 561.327 − 132.149 + 75.996</span>); die
   PV-Vergütung geht als Reihe der Kategorie 6 ein (nominal <span class="mono">150.118 €</span>, Barwert
   <span class="mono">113.800 €</span>). Die Bandbreite und der Verlauf tragen drei gerechnete Läufe; die
-  Restwert-Barwerte der drei Szenarien schließen die Verlaufsendwerte zu den Bandbreitenwerten. Die Höfingen-Mappe wird mit
+  Restwert-Barwerte der drei Szenarien schließen die Verlaufsendwerte zu den Bandbreitenwerten. Die Mappe „Beispielprojekt B" wird mit
   <span class="mono">65.259 €</span> jahresscharf getroffen, die Näherung liegt 0,3 % daneben. Bei
   Modus AUSWEIS enthält kein Erlösbarwert die Stromsteuer-Befreiung.</div>
   <div class="nach-oben"><a href="#top">&#9650; nach oben</a></div>
@@ -4725,8 +4747,16 @@ Einstufung
   Checkliste (Zone „Was ist angenommen?"). Die Ressourcentafel der Kategorie 8 nennt die 38 neuen Schlüssel, den
   gestrichenen <span class="mono">WIRT_SZEN_HINWEIS</span> und die zwei neu gefassten — je Sprache 9.020 Einträge
   (8.983 nach Dialog Design #458 Stufe 3a/3b). Einen Schemaschritt bringt E9b nicht; das Schema steht nach dem Merge bei 119 (die Kühlung KU2, Welle 3). E9 ist
-  damit abgeschlossen; die nächste Etappe ist <b>E10</b> (Nutzungsdauer S3 und Speicherflotte) — sie betrifft den
-  Rest von U39.</p>
+  damit abgeschlossen. <b>E10 (#463) erledigt U39</b> — Nutzungsdauer S3 und Speicherflotte: Die geräteeigene
+  Nutzungsdauer von BHKW und Kessel ist als „Nutzungsdauer (Gerätedaten)" gekennzeichnet, die Speicherflotte rechnet
+  den Restwert je Einheit linear aus ihrem Ersatzintervall (Kategorie 1, Zone „Ersatz und Restwert"), und die
+  Kostenverwaltung trägt die Instandsetzungs- und Wartungssätze der Nutzungsdauertabelle mit dem Knopf „Sätze
+  vorbelegen…" der Betriebsseite ein, mit der Herkunft unter dem Satzfeld (Kategorie 2); ohne Zutun rechnet kein Satz
+  der Tabelle. In Kategorie 3 trägt der vierte Knopf der Betriebsseite dieselbe Beschriftung — die Zeichnung zeigte
+  dort „Nutzungsdauern vorbelegen…", den es auf der Betriebsseite nicht gibt. Die Ressourcentafeln der Kategorien 1
+  und 2 nennen die 24 neuen und die sechs neu gefassten Schlüssel — je Sprache 9.044 Einträge (9.020 nach Dialog
+  Design #466). Das Schema steht bei 120: Schemaschritt 120 sät die Instandsetzungssätze der Standardzeilen. Offen
+  bleibt der Halbsatz aus A8 zur Speichervariante. Die nächste Etappe ist <b>E12</b> (Wiki-Runden); E11 entfällt.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4767,38 +4797,6 @@ Einstufung
             <td><span class="mono">PhotovoltaikVerguetungDialog</span> · <span class="mono">PvErloesRechner</span></td>
             <td>bunit: sieben Vorschauzeilen aus <span class="mono">PvErloesErgebnis</span>, Summe = Erlös Jahr 1 der
               Einzeilenvorschau; Jahresmarktwertzeile nennt Jahr und Quelle</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · teilweise #446 · Rest mit ND‑S3</span></td><td class="mono">U39</td><td>1 · 8</td>
-            <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
-              ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
-              (<span class="mono">Tab_BHKW</span>, <span class="mono">Tab_Heizkessel</span>,
-              <span class="mono">Tab_StromspeicherVariante</span>), der Anschluss der Speicherflotte mit ihrem
-              handgepflegten <span class="mono">ErsatzintervallJahre</span> und <span class="mono">RestwertEuro</span>.
-              <b>Hinweiszeile erledigt mit E5 (#434):</b> Zeitraumzeile und „k von n Positionen ohne Nutzungsdauer"
-              kommen aus dem Kern (<span class="mono">NutzungsdauerHinweisCtrl</span>) über die plattformfreie Hülle
-              in <span class="mono">EPOS.UI.Daten</span> und stehen auf der Seite und in Wort- und Tabellenbericht.
-              <b>Teilweise gebaut mit E7c2 (#446) — die Entkopplung von Ersatz und Restwert:</b> je Position (A6) die
-              nullbaren Kennzeichen <span class="mono">ErsatzFuehren</span> und <span class="mono">RestwertAnsetzen</span>
-              (Schemaschritt 111 an <span class="mono">Tab_ProjektWerte</span> und
-              <span class="mono">Tab_KostenVorlagePosition</span>; leer = wie bisher), im Zeileneditor „Position
-              bearbeiten" als Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:" (leer — wie bisher · ja ·
-              nein) mit Herleitungszeile; „nein" streicht das eine ohne das andere, die Tafel „Ersatz und Restwert" nennt
-              die Abwahl („— nein (Kennzeichen der Position)"); Vorlagenübernahme, Projektkopie und „Speichern unter"
-              tragen die Kennzeichen mit. <b>Grund für den Zuschnitt:</b> A6 hat die Entkopplung je Position als
-              Schritt E entschieden; die geräteeigenen Dauerspalten (A8: nur kennzeichnen) und die Speicherflotte (A7:
-              mit ND‑S3, Neueinfrieren wegen der Einfrierregel von 1046) sind eigene Stücke. <b>Gemessen mit E7c3
-              (#452), nicht gebaut:</b> <span class="mono">Tab_BHKW</span> führt eine Nutzungsdauer in 3 von 6 Zeilen
-              der Testdatenbank (Stamm 44 von 79), <span class="mono">Tab_Heizkessel</span> in 1 von 22 (Stamm 0 von 63) —
-              beide ohne Leser in der Wirtschaftlichkeit; <span class="mono">Tab_StromspeicherVariante</span> in 13 von
-              13, sie rechnet in Speicherwirtschaftlichkeit und Peak-Shaving; die Nutzungsdauer-Tabelle führt
-              BHKW-Modul 15 a und Batterie 10 a; die Flotte von 1046 zwei Einheiten mit Ersatzintervall 10 a und
-              Restwert 500 bzw. 300 €. Vorschlag für ND‑S3: die Gerätespalten nur als „Gerätedaten" kennzeichnen, die
-              Tabelle für Speichervariante und Flottenintervall nur als Vorgabe neuer Einträge, ein linearer Restwert
-              erst mit ND‑S3 und neu eingefrorener Basis. <b>Offen</b> — mit ND‑S3 (E10): die geräteeigenen
-              Dauerspalten und der Anschluss der Speicherflotte</td>
-            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> · <span class="mono">NutzungsdauerCtrl</span> ·
-              Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
-            <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
-              beiden Plattformen</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U45</td><td class="num">4</td>
             <td>Fuß der Überlagerung „Schnellwahl aus Katalog": Statuszeile „Ein Satz schreibt in das Feld
               seines Bestandteils …" und Knopf „Schließen" fehlen beide — geschlossen wird nur über × im
@@ -4912,7 +4910,7 @@ Einstufung
               jeher unabgezinst im Startwert. Die Mehrjahrestabelle bekommt die Spalte im Jahr 0,
               womit dort auch die Selbstprüfung „Summe der Positionsspalten = Netto nominal" in der
               Zeile 0 stimmt. Der Umschlag führt <span class="mono">KwkgPauschaleEur</span>
-              (Fassung 2; ein Umschlag der Fassung 1 lädt weiter)</td></tr>
+              (Fassung 2; ein Umschlag der Fassung 1 lädt weiter) <b>Wiki nachgezogen #470.</b></td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U18</td><td>8 · Bericht</td>
             <td>Zweites Verlaufsbild (kumulierter Barwert der Versionen <em>absolut</em>): auf der
               Seite oder nur im Wortbericht. Alle Versionen liegen tief im Negativen und nahezu
@@ -4995,7 +4993,7 @@ Einstufung
               Herkunft" und „Satz Eigenstrom · Herkunft" —, die nie in die Summe geht und die Wertspalten
               von Excel numerisch lässt. Eine eigene Spalte gibt es dort nicht. Ein leeres Feld ist nach BK1 ein
               eigener Wert von
-              0,0000 ct/kWh und wird auch so benannt</td></tr>
+              0,0000 ct/kWh und wird auch so benannt <b>Wiki nachgezogen #470.</b></td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U24</td><td>5 · 7 · 8</td>
             <td>Hilfsstrom-Netting des Beispiels: Mengentafel und Rechenkern nach einer Regel</td>
             <td><span class="mono">HilfsstromRechner.NettoSplit</span> ·
@@ -5131,7 +5129,7 @@ Einstufung
               nackte Zahlen, obwohl der Gesetzeskatalog sie führt
               (<span class="mono">EEG_AUSSCHREIBUNG_GRENZE_KW</span>, § 22 EEG ·
               <span class="mono">STROMST_GRENZE_BEFREIUNG_9_1_3_KW</span>, § 9 Abs. 1 Nr. 3 StromStG); der
-              Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine</td></tr>
+              Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine <b>Wiki nachgezogen #470.</b></td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U37</td><td class="num">8</td>
             <td>Vergleichssicht: Optionsgruppe „Alle Varianten gegen die Referenz | Zwei Stände" mit den
               Klapplisten A und B, Erklärzeile und Tauschknopf; Sicht 2 rechnet mit A als Referenz dieser Sicht —
@@ -5179,6 +5177,17 @@ Einstufung
               ob sie mitkam. Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich
               zur Stammzeile → dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende
               Variante, nicht die eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U39</td><td>1 · 8</td>
+            <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
+              ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
+              (<span class="mono">Tab_BHKW</span>, <span class="mono">Tab_Heizkessel</span>,
+              <span class="mono">Tab_StromspeicherVariante</span>), der Anschluss der Speicherflotte mit ihrem
+              handgepflegten <span class="mono">ErsatzintervallJahre</span> und <span class="mono">RestwertEuro</span></td>
+            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> · <span class="mono">NutzungsdauerCtrl</span> ·
+              <span class="mono">NutzungsdauerSatzCtrl</span> · <span class="mono">FlottenWirtschaftlichkeit</span> ·
+              <span class="mono">SpeicherFlottenEditor</span> · <span class="mono">KatalogBrowserProfil</span> ·
+              Konzept § 2.13 (3), § 3.4 · Konzept Nutzungsdauer Stufe S3</td>
+            <td class="grund"><b>erledigt mit E5 (#434), E7c2 (#446) und E10 (#463):</b> Die <b>Hinweiszeile</b> — Zeitraumzeile und „k von n Positionen ohne Nutzungsdauer" — kommt aus dem Kern (<span class="mono">NutzungsdauerHinweisCtrl</span>) über die plattformfreie Hülle und steht auf der Seite und in Wort- und Tabellenbericht (#434). Die <b>Entkopplung von Ersatz und Restwert</b> (A6): je Position die nullbaren Kennzeichen <span class="mono">ErsatzFuehren</span> und <span class="mono">RestwertAnsetzen</span> (Schemaschritt 111 an <span class="mono">Tab_ProjektWerte</span> und <span class="mono">Tab_KostenVorlagePosition</span>; leer = wie bisher), im Zeileneditor „Position bearbeiten" als Klapplisten „Ersatzbeschaffung führen:" und „Restwert ansetzen:" mit Herleitungszeile; „nein" streicht das eine ohne das andere, die Tafel „Ersatz und Restwert" nennt die Abwahl; Vorlagenübernahme, Projektkopie und „Speichern unter" tragen die Kennzeichen mit (#446). Gemessen mit E7c3 (#452): <span class="mono">Tab_BHKW</span> 3 von 6 gepflegt (Stamm 44 von 79), <span class="mono">Tab_Heizkessel</span> 1 von 22 (Stamm 0 von 63), beide ohne Leser; die Flotte von 1046 zwei Einheiten, Ersatzintervall 10 a, Restwert 500 bzw. 300 €. <b>Die zwei übrigen Stücke mit E10 (#463):</b> Die <b>Gerätespalten</b> von BHKW und Kessel heißen in Katalog und Aufklapper „Nutzungsdauer (Gerätedaten):" mit dem Tooltip „nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle", KI-Vermerk und Vermerk in der Parameterverwendung; entfernt ist keine (A8). Die <b>Speicherflotte</b> hängt an der Tabelle (A7): Die Flottenstudie rechnet den Restwert je Einheit linear aus dem Ersatzintervall (Betrag der letzten Beschaffung × Restdauer ÷ n), eine Einheit ohne eigenes Intervall nimmt die Standardzeile „Stromspeicher · Batterie" (10 a), <span class="mono">RestwertEuro</span> der Einheit ist Altfeld — im Flotten-Editor gekennzeichnet; 1046 in der Studie Restwert 800 → 7.000 € nominal, Kapitalwert +3.432,79 €; der Referenzlauf blieb byte-gleich, eine neue Basis entfiel. Mit derselben Etappe (ND‑S3) kamen die Sätze der Nutzungsdauertabelle in die Kostenverwaltung: die Spalten „Instandsetzung [%/a]" und „Wartung [%/a]" im Dialog „Nutzungsdauern (AfA)", gesät mit Schemaschritt 120, und der Knopf „Sätze vorbelegen…" der Betriebsseite mit der Herkunft am Satz (Kategorie 2) — ohne Zutun rechnet kein Satz der Tabelle. <b>Offen</b> bleibt allein der Halbsatz aus A8: <span class="mono">Tab_StromspeicherVariante</span> rechnet weiter mit ihrer eigenen Spalte, statt die Positionsarten 20/21 zu lesen; sechs Fragen aus E10 (E10‑Q1 bis E10‑Q4, Q6, Q7): Entscheid ausstehend. Abnahme am Gerät A‑E10‑1</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U40</td><td class="num">2</td>
             <td>Bemessungsart „% des Endenergiebedarfs" fehlte in der Vorlage „Standard" der
               Hilfsenergiekosten — ohne sie ließ sich der Vorschlag nicht von der gewählten Bemessung
@@ -5279,7 +5288,7 @@ Einstufung
         <tr><td>Aufschlagsmessung Projekt 1030</td><td class="r num">+360.603 €/a · −29,8 %</td>
             <td><span class="zk beleg">Beleg</span></td>
             <td>Datenbestand — zeigt, was ungepflegte Anteile anrichten würden</td></tr>
-        <tr><td>Kapitalwert der Höfingen-Mappe</td><td class="r num">65.259 €</td>
+        <tr><td>Kapitalwert „Beispielprojekt B"</td><td class="r num">65.259 €</td>
             <td><span class="zk beleg">Beleg</span></td>
             <td>fremde Mappe, anderes Projekt (20 kW<sub>el</sub>, i = 2,0 %, n = 13,3 a)</td></tr>
         <tr><td>Stromkennzahl σ des Beispiels</td><td class="r num">0,845</td>

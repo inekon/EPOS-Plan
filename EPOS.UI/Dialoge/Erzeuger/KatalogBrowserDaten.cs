@@ -32,6 +32,12 @@ public sealed class BrowserFeldwert
     /// <summary>Der Feldname, den eine Prüfmeldung nennt — die Beschriftung ohne „:".</summary>
     public string Feldname => (Bezeichnung ?? "").TrimEnd(' ', ':');
 
+    /// <summary>
+    /// ETAPPE E10 (Kennzeichnung A8): der Vermerk des Profils zum Feld
+    /// (<c>BrowserDetailfeld.Hinweis</c>), als Tooltip der Beschriftung; leer = keiner.
+    /// </summary>
+    public string Hinweis { get; init; } = "";
+
     /// <summary>Der Schalterwert; nur beim Feld „Brennwertkessel" belegt.</summary>
     public bool Schalterwert
     {

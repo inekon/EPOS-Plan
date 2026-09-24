@@ -117,6 +117,36 @@ public sealed class StromspeicherAuslegungCtrlTests
     }
 
     /// <summary>
+    /// ETAPPE E10 (Empfehlung E10‑Q3 a): Der Studienlauf setzt die Nutzungsdauer der
+    /// Nutzungsdauertabelle (Stromspeicher · Batterie, 10 a) in jede Einheit OHNE eigenes
+    /// Ersatzintervall ein — gelesen im Datenbankteil der Vorbereitung, eingesetzt im
+    /// Rechenteil — und rechnet den Restwert daraus linear: bei EINEM Projektjahr
+    /// neun Zehntel der Investition.
+    /// </summary>
+    [Fact]
+    public void Der_Flottenlauf_setzt_die_Nutzungsdauer_der_Tabelle_ein()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Dateistand(ctrl);
+        foreach (FlottenEinheit e in eingaben.Auslegung!.Flotte!.Einheiten) e.ErsatzintervallJahre = 0;
+
+        StromspeicherOptimierungVorbereitung vorbereitung = ctrl.FlotteVorbereiten(eingaben, out string meldung);
+        Assert.True(vorbereitung is not null, "Die Vorbereitung ist gescheitert: " + meldung);
+        Assert.Equal(10, vorbereitung!.ErsatzintervallVorgabeJahre);
+
+        SpeicherFlottenErgebnis ergebnis = ctrl.FlotteRechnen(vorbereitung, null, CancellationToken.None);
+        Assert.True(ergebnis.Erfolg, ergebnis.Meldung);
+        Assert.All(ergebnis.Konfiguration.Einheiten, e => Assert.Equal(10, e.ErsatzintervallJahre));
+
+        FlottenWirtschaftlichkeitErgebnis w = ergebnis.Studie!.Wirtschaftlichkeit;
+        Assert.Equal(0.9 * w.InvestitionEuro + ergebnis.Konfiguration.Wirtschaftlichkeit.RestwertEuro,
+                     w.RestwertEuro, 6);
+    }
+
+    /// <summary>
     /// Die VORPRÜFUNG läuft ohne Diagnose — sie sagt vor dem Lauf, was ihn entwertet.
     /// Ein unerreichbares Peak-Ziel ist ihr Hauptfall (Befund SP‑O‑10).
     /// </summary>

@@ -28,9 +28,11 @@ namespace WindowsFormsApplication1
         /// <summary>Zeigt die Verwaltung als eigenes Fenster (<c>Masken.WechselrichterAdmin</c>).</summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
-            // "Import..." (Konzept Administrationsdialoge 7.1 d) nur im eigenen Fenster.
+            // "Import..." (Konzept Administrationsdialoge 7.1 d) nur im eigenen Fenster -
+            // und das Fenster oeffnet mindestens so gross wie der Import (1 240 x 800).
             return ModulKatalogHuelle.Oeffnen(besitzer, Profil(),
-                Gaben(() => ModulImportHuelle.Gaben(ModulImportArt.Wechselrichter, "CEC")));
+                Gaben(() => ModulImportHuelle.Gaben(ModulImportArt.Wechselrichter, "CEC")),
+                ModulImportHuelle.Wunschmass);
         }
 
         /// <summary>Das übersetzte Profil der Ausprägung.</summary>

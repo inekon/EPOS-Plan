@@ -102,7 +102,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermepumpeReiter",              "SimulationSeite",             KiMaskennamen.SIMULATION),
 
         // Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite: Zeitraum und Haken.
-        new("KapitalwertVerlaufAbschnitt",    "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE)
+        new("KapitalwertVerlaufAbschnitt",    "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE),
+
+        // Welle #465: Hülle, Fenster, Kenngrößen und „Alle Daten" des Gebäude-Stammblatts -
+        // die Felder des Katalogeditors; die Verwaltung meldet sie als Form_Gebaeude_Admin an.
+        new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN)
     };
 
     // =====================================================================
@@ -131,6 +135,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WirtschaftlichkeitParameterDialog", 30),
         // ---- Ende ETAPPE E9b ----
 
+        // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----
+        // Die Nutzungsdauern (AfA) zeigen die zwei Saetze Instandsetzung und Wartung je
+        // Zeile und in der Neuzeile - vier Eingabestellen mehr. Die Feldkarte (KiDialoge,
+        // Maske Form_Nutzungsdauer) fuehrt sie mit: die Kopffelder neue_instandsetzung und
+        // neue_wartung, die Spalten instandsetzung und wartung (8 -> 12).
+        new("NutzungsdauerDialog", 12),
+        // ---- Ende ETAPPE E10 ----
+
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
@@ -149,10 +161,15 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ErgebnisReiter", 1),
         new("ErzeugerReiter", 1),
         new("ErtragBonus", 2),
-        new("GebaeudeAdminDialog", 5),
+        // Welle #465: die Kenndaten des Stammblatts samt Wohnfläche und Bauart (Katalogfelder
+        // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
+        // beschreibung); die übrigen Felder des Katalogeditors trägt GebaeudeStammblattFelder.
+        new("GebaeudeAdminDialog", 7),
         new("GebaeudeBedarfDialog", 2),
         new("GebaeudeDialog", 4),
         new("GebaeudeKatalogDialog", 45),
+        new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
+            "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
         new("GebaeudeWohnflaecheDialog", 4),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
@@ -170,7 +187,6 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LeistungspreisBlock", 2),
         new("LeistungspreisReiheDialog", 2),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
-        new("NutzungsdauerDialog", 8),
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),

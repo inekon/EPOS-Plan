@@ -949,6 +949,15 @@
         /// <summary>Die sechzehnte Maske (Welle KI-F3): der Gebaeude-Katalogeditor.</summary>
         internal static string MaskeGebaeudeKatalog => MyResource.Resource.KI_DLG_MASKE_GEBK;
 
+        /// <summary>
+        /// Die Gebaeudeverwaltung (Welle #465) — ihr Anzeigename ist ihr Fenstertitel, wie bei
+        /// den Verwaltungen der Erzeugerkataloge.
+        /// </summary>
+        internal static string MaskeGebaeudeAdmin => MyResource.Resource.GEBA_TITEL;
+
+        /// <summary>Der Name in der Gebaeudeverwaltung — nur lesbar (Welle #465).</summary>
+        internal static string GebaNameErl => MyResource.Resource.KI_DLG_GEBA_NAME_ERL;
+
         internal static string GebVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
         internal static string GebFilterArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
@@ -967,8 +976,6 @@
         internal static string GebWohnflaecheErl => MyResource.Resource.KI_DLG_GEB_WOHNFLAECHE_ERL;
         internal static string GebAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
         internal static string GebAngabeartErl => MyResource.Resource.KI_DLG_GEB_ANGABEART_ERL;
-        internal static string GebVerwaltungName => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_NAME;
-        internal static string GebVerwaltungErl => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_ERL;
 
         internal static string GebwBedarfsartName => MyResource.Resource.GEBW_LBL_BEDARFSART;
         internal static string GebwBedarfsartErl => MyResource.Resource.KI_DLG_GEBW_BEDARFSART_ERL;
@@ -1572,6 +1579,15 @@
         internal static string NudAfaErl => MyResource.Resource.KI_DLG_NUD_AFA_ERL;
         internal static string NudQuelleName => MyResource.Resource.KI_DLG_NUD_QUELLE_NAME;
         internal static string NudQuelleErl => MyResource.Resource.KI_DLG_NUD_QUELLE_ERL;
+        // ETAPPE E10 (Stufe S3): die zwei Saetze in Neuzeile und Tabelle.
+        internal static string NudNeuInstandsetzungName => MyResource.Resource.KI_DLG_NUD_NEUINST_NAME;
+        internal static string NudNeuInstandsetzungErl => MyResource.Resource.KI_DLG_NUD_NEUINST_ERL;
+        internal static string NudNeuWartungName => MyResource.Resource.KI_DLG_NUD_NEUWART_NAME;
+        internal static string NudNeuWartungErl => MyResource.Resource.KI_DLG_NUD_NEUWART_ERL;
+        internal static string NudInstandsetzungName => MyResource.Resource.KI_DLG_NUD_INST_NAME;
+        internal static string NudInstandsetzungErl => MyResource.Resource.KI_DLG_NUD_INST_ERL;
+        internal static string NudWartungName => MyResource.Resource.KI_DLG_NUD_WART_NAME;
+        internal static string NudWartungErl => MyResource.Resource.KI_DLG_NUD_WART_ERL;
 
         // ---- Form_VorlagenPosition
         internal static string MaskeVorlagenposition => MyResource.Resource.KI_DLG_MASKE_VOP;

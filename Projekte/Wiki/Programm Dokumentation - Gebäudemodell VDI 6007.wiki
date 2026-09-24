@@ -20,6 +20,8 @@ Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Progr
 
 Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien.
 
+Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit Raumtemperaturen, Ferien, Modellparametern, Rechenweg und Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
+
 Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
 
 Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert, sondern „leer".

@@ -3988,6 +3988,52 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_119_KAELTESTROM = 119;
 
+        /// <summary>
+        /// Schritt 120 — <b>die Sätze der Nutzungsdauertabelle</b> (Etappe E10, Stufe S3 des
+        /// Nutzungsdauer-Konzepts; Empfehlung E10‑Q1 (a)). Er folgt auf
+        /// <see cref="SCHRITT_119_KAELTESTROM"/> ohne Reihenfolgebedingung; er braucht die
+        /// Tabelle aus Schritt 75.
+        ///
+        /// <para><b>REIN DML</b> an <c>Tab_Nutzungsdauer</c>: Die leeren Satzzellen
+        /// <c>Instandsetzung_Prozent</c>/<c>Wartung_Prozent</c> der Standardzeilen bekommen die
+        /// Mitte des Empfehlungsbereichs derselben Position der Betriebsvorlagen-Saat — heute
+        /// fünf Zellen (Instandsetzung Heizkessel, BHKW, Wärmezentrale, Bauliche Anlagen,
+        /// Stromeinspeisung). Die Quelle ist <see cref="NutzungsdauerSaetze"/> — EINE Quelle
+        /// für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Wirkung:</b> Der Schritt setzt nur Tabellenwerte und ist ergebnisneutral;
+        /// rechenwirksam wird ein Satz erst, wenn die Vorbelegung ihn ausdrücklich in eine
+        /// Position schreibt („Sätze vorbelegen…", Übernahme einer Kostenvorlage — Etappe E10,
+        /// Fassung E10/9). Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar:</b> Gesetzt wird nur, was leer ist.</para>
+        /// </summary>
+        public const int SCHRITT_120_NUTZUNGSDAUER_SAETZE = 120;
+
+        /// <summary>
+        /// Schritt 121 — <b>der Katalogverweis des Projektgebäudes</b> (Welle #468,
+        /// Anwenderentscheid nach #465; Konzept Administrationsdialoge 7.1 (a)). Er folgt auf
+        /// <see cref="SCHRITT_120_NUTZUNGSDAUER_SAETZE"/> ohne Reihenfolgebedingung.
+        /// Anlass, Anweisungen, Wahl der Löschregel und Ergebnisneutralität stehen
+        /// vollständig bei <see cref="GebaeudeKatalogverweis"/>.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_Gebaeude</c> hing am Katalogsatz allein über den
+        /// Gebäudenamen. Die Löschsperre der Gebäudeverwaltung verlor ein benutztes Gebäude,
+        /// sobald sein Katalogsatz umbenannt wurde. Die Hausregel verlangt für neue
+        /// Beziehungen IDs, keine Textfelder.</para>
+        ///
+        /// <para><b>Vier Handgriffe in fester Reihenfolge:</b> Spalte
+        /// <c>ID_Gebaeude_Stamm</c> (<c>ADD COLUMN</c> mit <c>REFERENCES … ON DELETE SET
+        /// NULL</c>, ohne <c>DEFAULT</c>), Index, Nachtrag über den eindeutigen Namen, dann die
+        /// Reparatur der Katalogsätze, deren „Sonstige Fläche" keinen U-Wert trägt
+        /// (<see cref="GebaeudeSonstigeFlaeche"/>: Fläche → 0, <c>H_T</c> unverändert). Alle
+        /// Texte aus dem Kern.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest den Verweis; die reparierten
+        /// Flächen führten mit U = 0 nie Wärme. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar:</b> Jeder Handgriff fasst nur an, was noch offen ist.</para>
+        /// </summary>
+        public const int SCHRITT_121_GEBAEUDE_KATALOGVERWEIS = 121;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5614,6 +5660,30 @@ namespace WindowsFormsApplication1
                         "Kaeltestrom je Anlage nicht. KEIN Rechenergebnis aendert sich - alle Spalten " +
                         "bleiben leer, bis eine Waermepumpe kuehlt.",
                         Schritt_119_Kaeltestrom),
+
+            // ETAPPE E10 (Nutzungsdauer Stufe S3) - die Saetze der Nutzungsdauertabelle.
+            // REIN DML; die Quelle ist NutzungsdauerSaetze. Er steht NACH 119 ohne
+            // Reihenfolgebedingung und braucht 75 (Tab_Nutzungsdauer).
+            new Schritt(SCHRITT_120_NUTZUNGSDAUER_SAETZE,
+                        "Tab_Nutzungsdauer: Instandsetzungssaetze der Standardzeilen",
+                        "Die Nutzungsdauertabelle truege keine Instandsetzungssaetze, und eine " +
+                        "Betriebskostenposition 'Instandhaltung ...' mit der Bemessung '% der " +
+                        "Investition' ohne eigenen Satz fuehrte weiter 0 EUR/a. Gesetzt werden nur " +
+                        "leere Zellen, mit der Mitte des Empfehlungsbereichs der Kostenvorlage.",
+                        Schritt_120_NutzungsdauerSaetze),
+
+            // WELLE #468 (Konzept Administrationsdialoge 7.1 (a)) - der Katalogverweis des
+            // Projektgebaeudes samt Index und Nachtrag ueber den eindeutigen Namen, dazu die
+            // Reparatur der Sonstigen Flaeche ohne U-Wert im Katalog. Die Quelle ist
+            // GebaeudeKatalogverweis. Er steht NACH 120 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_121_GEBAEUDE_KATALOGVERWEIS,
+                        "Tab_Gebaeude bekommt den Katalogverweis ID_Gebaeude_Stamm samt Index; " +
+                        "nachgetragen wird er bei EINDEUTIGEM Gebaeudenamen",
+                        "Projektgebaeude und Katalogsatz haengen weiter allein am Namen. Die " +
+                        "Loeschsperre der Gebaeudeverwaltung verloere ein benutztes Gebaeude, sobald " +
+                        "sein Katalogsatz umbenannt ist, und Katalogsaetze mit einer Sonstigen Flaeche " +
+                        "ohne U-Wert liessen sich weder speichern noch im Stundenmodell rechnen.",
+                        Schritt_121_GebaeudeKatalogverweis),
         };
 
         /// <summary>
@@ -8980,6 +9050,121 @@ namespace WindowsFormsApplication1
                     "Stromverbrauch_Kuehlung, Kaeltestrom_Netzbezug, Kuehl_carrier_id und " +
                     "Kuehl_EigenerZaehler an Tab_ErgebnisWaermepumpeModul. KEIN DML: Alle Spalten " +
                     "bleiben leer; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 120 - die Saetze der Nutzungsdauertabelle (Etappe E10, Stufe S3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 120 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_120_NUTZUNGSDAUER_SAETZE"/>, Zuordnung und Saat bei
+        /// <see cref="NutzungsdauerSaetze"/>. <b>Die Nachprobe</b> fragt dasselbe wie die
+        /// Anweisungen: Steht danach noch ein Satz der Saat leer an seiner Standardzeile, ist
+        /// der Schritt nicht gelaufen.
+        /// </summary>
+        private static bool Schritt_120_NutzungsdauerSaetze(Lauf l)
+        {
+            NutzungsdauerSaetze.Bericht bericht;
+            try { bericht = NutzungsdauerSaetze.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("120: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = NutzungsdauerSaetze.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Satz/Saetze stehen nach dem Schritt weiter leer.";
+                l.Notiz("120: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("120: " + bericht.Text() + ". Gesetzt wird nur, was leer ist; der " +
+                    "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 121 - der Katalogverweis des Projektgebaeudes (Welle #468)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 121 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_121_GEBAEUDE_KATALOGVERWEIS"/> und ausführlich bei
+        /// <see cref="GebaeudeKatalogverweis"/>.
+        ///
+        /// <para><b>Vier Handgriffe in fester Reihenfolge:</b> Spalte (über
+        /// <see cref="SqliteSpalteAnlegen"/>, das die Spaltenprobe mitbringt), Index
+        /// (<c>IF NOT EXISTS</c>), Nachtrag (<c>ID_Gebaeude_Stamm IS NULL</c>), Reparatur
+        /// (nur Sätze mit dem Schadensbild). Jeder für sich wiederholbar.</para>
+        ///
+        /// <para><b>NICHT über <c>SchemaKatalog</c>.</b> Dessen Typübersetzung kennt nur
+        /// Access-Typnamen und schnitte das <c>REFERENCES</c> weg — dieselbe Lage wie in
+        /// Schritt 80. Die Typdefinition kommt wörtlich aus dem Kern.</para>
+        ///
+        /// <para><b>Die Nachprobe</b> fragt dasselbe wie die Anweisungen: Steht danach noch
+        /// eine Kopie mit eindeutigem Namen ohne Verweis oder ein Katalogsatz mit dem
+        /// Schadensbild, ist der Schritt nicht gelaufen.</para>
+        /// </summary>
+        private static bool Schritt_121_GebaeudeKatalogverweis(Lauf l)
+        {
+            if (!SqliteSpalteAnlegen(l, GebaeudeKatalogverweis.TABELLE,
+                                     GebaeudeKatalogverweis.SPALTE,
+                                     GebaeudeKatalogverweis.TYP_SPALTE))
+                return false;
+
+            if (!SqliteDdl(l, GebaeudeKatalogverweis.SQL_INDEX,
+                           "Index " + GebaeudeKatalogverweis.INDEX))
+                return false;
+
+            long offen = SqliteZahl(GebaeudeKatalogverweis.Zaehlung());
+            if (offen != 0 &&
+                !SqliteDml(l, GebaeudeKatalogverweis.SqlNachtrag(), "Katalogverweis nachtragen"))
+                return false;
+
+            IReadOnlyList<string> betroffene;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                betroffene = GebaeudeSonstigeFlaeche.Betroffene();
+                DataRepository.StilleFehlerAbholen();
+            }
+            long schaden = SqliteZahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG);
+            if (schaden != 0 &&
+                !SqliteDml(l, GebaeudeSonstigeFlaeche.SQL_REPARATUR,
+                           "Sonstige Flaeche ohne U-Wert im Gebaeudekatalog"))
+                return false;
+
+            long restVerweis = SqliteZahl(GebaeudeKatalogverweis.Zaehlung());
+            long restSchaden = SqliteZahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG);
+            if (restVerweis != 0 || restSchaden != 0)
+            {
+                l.LetzterFehler = "Nach dem Schritt stehen " +
+                                  restVerweis.ToString(CultureInfo.InvariantCulture) +
+                                  " Projektgebaeude mit eindeutigem Katalogsatz ohne Verweis und " +
+                                  restSchaden.ToString(CultureInfo.InvariantCulture) +
+                                  " Katalogsatz/-saetze mit Sonstiger Flaeche ohne U-Wert.";
+                l.Notiz("121: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            long ohne = SqliteZahl(GebaeudeKatalogverweis.ZaehlungOhneVerweis());
+            l.Notiz("121: " + GebaeudeKatalogverweis.TABELLE + "." + GebaeudeKatalogverweis.SPALTE +
+                    " steht; nachgetragen " +
+                    (offen < 0 ? "unbekannt" : offen.ToString(CultureInfo.InvariantCulture)) +
+                    " Projektgebaeude, ohne Verweis geblieben " +
+                    (ohne < 0 ? "unbekannt" : ohne.ToString(CultureInfo.InvariantCulture)) +
+                    " (kein Katalogsatz dieses Namens - dort sperrt weiter der Name). Sonstige " +
+                    "Flaeche ohne U-Wert auf 0 gesetzt: " +
+                    (schaden < 0 ? "unbekannt" : schaden.ToString(CultureInfo.InvariantCulture)) +
+                    " Katalogsatz/-saetze" +
+                    (betroffene.Count > 0 ? " (" + string.Join(", ", betroffene) + ")" : "") +
+                    ". KEIN Rechenweg liest den Verweis, KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

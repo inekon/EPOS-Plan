@@ -156,7 +156,7 @@ Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ 
 
 * '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Speicher A 1'', ''Speicher A 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
 * '''Vertritt eine Einheit schon eine Anlage''', gehen ihre Werte in '''diese''' Anlage zurück; nur weitere Stück entstehen daneben neu. Der Bezeichner der vorhandenen Anlage bleibt, wie er ist.
-* '''Vorher wird gefragt''' – die Rückfrage nennt die zwei Zahlen: ''„2 Speicheranlagen werden angelegt, 1 geändert — fortfahren?"''. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
+* '''Zuvor wird gefragt''' – die Rückfrage nennt, wie viele Speicheranlagen neu angelegt und wie viele in ihren Werten angepasst werden. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
 * '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.
 * Übernommen werden Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und der Hilfsverbrauch. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; die tragen Sie bei Bedarf in der Anlage nach.
 
@@ -219,7 +219,7 @@ Pauschalen, Prozentpositionen, Erlöse, Zuschüsse und erst später beginnende K
 
 Dieser Block sagt, '''über welchen Zeitraum und mit welchem Geld''' gerechnet wird. Er steht hier und nicht bei einer Einheit: Er betrifft die Studie, nicht eine Einheit.
 
-* '''Energie-Ausgleichswert''' in €/kWh – er bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende des Jahres. Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat; ohne den Ausgleichswert wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst geänderte Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
+* '''Energie-Ausgleichswert''' in €/kWh – er bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende des Jahres. Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat; ohne den Ausgleichswert wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst eingetragene Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
 * '''Kalkulationszins''' in % – damit werden die Jahreswerte auf heute abgezinst.
 * '''Projektionsart''' – ''ein bereitgestelltes Jahr einmal bewerten'' oder ''das Referenzjahr über n Jahre wiederholen''. Die '''finanzielle Projektlaufzeit''' ist stets sichtbar und änderbar; sie ist es, über die sich die Investition amortisieren muss.
 * '''Restwert der Studie''' in € – ein Betrag, der am '''Ende''' der Laufzeit als Einnahme angesetzt und abgezinst in den Kapitalwert eingeht, '''zusätzlich''' zu den Restwerten der einzelnen Einheiten. Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket.
@@ -249,7 +249,7 @@ Für die wirtschaftliche Jahresauslegung braucht jede gewählte Datei ein vollst
 
 Bei Mischung mit EPOS-Modellreihen wird die '''EPOS-Modelljahrzuordnung''' ausdrücklich eingeschaltet. Die eingelesenen Werte und Zeitstempel bleiben erhalten. EPOS-Werte werden nach Monat, Tag und Uhrzeit zugeordnet; am 29. Februar wird der EPOS-28. Februar verwendet, in der wiederholten Herbststunde derselbe EPOS-Ortsstundenwert erneut. Das Ergebnis nennt diese Annahme.
 
-Daneben steht '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''Projektjahre''' (für eine Mehrjahresbewertung) und '''archivierte Prognosen''' (für die planenden Betriebsziele) eingelesen – über denselben Spaltenzuordnungsdialog. Eine Prognose trägt eine Kennung, einen Zeitpunkt ''bekannt seit'' und einen Entscheidungszeitpunkt; was erst nach der Entscheidung bekannt war, darf nicht darin stehen.
+Daneben steht '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''Projektjahre''' (für eine Mehrjahresbewertung) und '''archivierte Prognosen''' (für die planenden Betriebsziele) eingelesen – über denselben Spaltenzuordnungsdialog. Eine Prognose trägt eine Kennung, einen Zeitpunkt ''bekannt seit'' und einen Planungszeitpunkt; was erst danach bekannt war, darf nicht darin stehen.
 
 ==== Profile und Vorgaben ====
 {{Anker|auslegung-profile}}
@@ -258,7 +258,7 @@ Daneben steht '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''
 
 '''Namen mit einem führenden @ sind für das Programm reserviert.''' Der Arbeitsstand heißt ''@Aktuell'', die für den Projektlauf freigegebene Flotte ''@Projektflotte''. Ein eigenes Profil bekommt deshalb einen gewöhnlichen Namen.
 
-Nach einer Änderung zeigt die Oberfläche das bisherige Ergebnis als '''veraltet'''. Berechnen Sie neu, bevor Sie den Bestpunkt übernehmen. Heatmap und Schnittkurve verwenden die gewählte Größenbasis; Kennzahlen und Rasterexport berücksichtigen die Betriebskosten. Die Übernahme des Bestpunkts übernimmt die Dimensionierung in die aktive Speicheranlage. Prüfen Sie für die anschließende Projektwirtschaftlichkeit auch die dort hinterlegten Kostenpositionen.
+Nach einer Änderung zeigt die Oberfläche das zuvor ermittelte Ergebnis als '''veraltet'''. Berechnen Sie neu, bevor Sie den Bestpunkt übernehmen. Heatmap und Schnittkurve verwenden die gewählte Größenbasis; Kennzahlen und Rasterexport berücksichtigen die Betriebskosten. Die Übernahme des Bestpunkts übernimmt die Dimensionierung in die aktive Speicheranlage. Prüfen Sie für die anschließende Projektwirtschaftlichkeit auch die dort hinterlegten Kostenpositionen.
 
 Die PV-Einspeisevergütung wird auch bei Dateiquellen aus dem Projekt gelesen. Eine reine Dateiauslegung verwendet Last und PV aus den Dateien, ohne zusätzliche BHKW-Erzeugung aus einem Simulationslauf.
 
@@ -423,7 +423,7 @@ Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusam
 
 '''Die Liste frischt sich in zwei Schritten auf.''' Was ohne Zeitreihen entscheidbar ist – die Kostenmeldung und der Start-Ladezustand –, erscheint unmittelbar mit Ihrer Eingabe; die beiden Meldungen zum Peak-Ziel brauchen den Lastgang und folgen kurz nach dem letzten getippten Zeichen, ebenso beim Öffnen der Ansicht, beim Wechsel des Blattes und beim Start des Laufs. Der Rechenknopf wartet darauf nicht: Er sperrt bei einem Eingabefehler im selben Augenblick.
 
-Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). Er steht '''unmittelbar unter dem Rechenknopf''' des Blattes ''„Optimierung"'' – dort, wo Sie den Lauf ausgelöst haben. '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
+Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). Er steht '''unmittelbar unter dem Rechenknopf''' des Blattes ''„Optimierung"'' – dort, wo Sie den Lauf ausgelöst haben. '''„Abbrechen"''' hält an, ohne den bereits erreichten Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
 
 '''Ein gelungener Lauf stellt Schritt 5 vor''' – dort stehen beide Ergebnisarten. Bricht der Lauf ab oder hält ihn ein Hinweis der Vorprüfung an, bleibt Schritt 4 stehen und nennt den Grund.
 
@@ -483,7 +483,7 @@ Die '''Schnittkurven''' und der '''Ausschnitt um das Optimum''' haben dagegen ei
 Von oben nach unten:
 
 # '''Diagnosebanner''' – nur, wenn es etwas zu sagen gibt (siehe unten).
-# '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze vorher → nachher (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie. Bei '''adaptivem''' Peak-Ziel nennt die Spitzenkachel statt „erreicht / nicht erreicht" den '''Startwert''' und die '''erreichte''' Schwelle – eine Schwelle, die auf das Erreichbare nachgezogen wird, kann nicht verfehlt werden.
+# '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze ungekappt → gekappt (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie. Bei '''adaptivem''' Peak-Ziel nennt die Spitzenkachel statt „erreicht / nicht erreicht" den '''Startwert''' und die '''erreichte''' Schwelle – eine Schwelle, die auf das Erreichbare nachgezogen wird, kann nicht verfehlt werden.
 # '''Die zwei Schwellen''' – darunter steht „'''kausal erreicht'''" mit der Zahl der Nachzüge (Intervalle, in denen die Anlage die Spitze nicht halten konnte). Haben Sie in Schritt 3 „Mit Vorausschau erreichbares Ziel bestimmen…" gefahren, steht daneben „'''mit Vorausschau erreichbar'''" und die Differenz der beiden: der '''Wert der Vorausschau'''. Ist er klein, würde ein Prognoseregler wenig bringen.
 # '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
 # '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf. Über dem Bild steht die Investition mit ihrer Herleitung je Einheit: fester Anteil, Kapazitätsanteil (kWh × €/kWh) und Leistungsanteil (kW × €/kW, mit der größeren der beiden Leistungen); bei mehreren Einheiten folgt die Summe.
@@ -513,14 +513,14 @@ Dazu bietet es die passende Abhilfe an:
 * '''„Peak-Ziel bestimmen…"''' – wenn das Ziel unter der Last liegt;
 * '''„Netzladung erlauben"''' – wenn der Ladedeckel am Netzladeverbot hing;
 * '''„Zu Schritt 3 Betriebsführung"''' – wenn die Einstellung im Ganzen zu prüfen ist;
-* '''„erklären lassen"''' – der Hilfe-Assistent mit einer vorbereiteten Frage zu genau diesem Befund.
+* '''„erklären lassen"''' – der Hilfe-Assistent mit einer vorbereiteten Frage zu genau dieser Diagnose.
 
 Ein Knopf erscheint nur, wenn seine Abhilfe an dieser Stelle überhaupt möglich ist.
 
 === Beim Verlassen ===
 {{Anker|auslegung-verlassen}}
 
-Haben Sie Eingaben geändert und nicht gespeichert, fragt die Ansicht beim Verlassen: '''Speichern / Verwerfen / Bleiben'''. ''Esc'' bedeutet ''Bleiben''. Danach kehrt das Programm dorthin zurück, woher Sie kamen.
+Haben Sie Eingaben bearbeitet und nicht gespeichert, fragt die Ansicht beim Verlassen: '''Speichern / Verwerfen / Bleiben'''. ''Esc'' bedeutet ''Bleiben''. Danach kehrt das Programm dorthin zurück, woher Sie kamen.
 
 '''← zurück''' und das Schließkreuz '''✕''' führen beide dorthin – sie tun dasselbe und stellen dieselbe Frage. '''Während einer Rechnung sind beide gesperrt''': Sie bleiben sichtbar, aber grau, bis der Lauf endet oder Sie ihn mit ''Abbrechen'' anhalten.
 
@@ -543,7 +543,9 @@ Die Ansicht gibt es auch auf dem iPad – mit '''einer''' Einschränkung: Die dr
 
 Die eigene Maske '''Lastspitzenkappung''' wertet einen Lastgang aus – eine Ganglinie des Projekts, eine aus dem Katalog oder eine eingelesene Datei. Sie rechnet gegen ein festes oder ein nachgezogenes Ziel, zeigt Spitzen, Monatswerte und den Lastgang als Bild und schreibt fünf Spalten als CSV.
 
-'''„In Variante übernehmen"''' schreibt das Ergebnis in die '''aktive Speichervariante''' des Projekts: Berechnungsart ''Lastspitzenkappung'', die '''erreichte''' Schwelle als Peak-Ziel und die Einstellung ''adaptiv''. Danach rechnet der Projektlauf genau diese Kappung. Führt die Variante eine andere Berechnungsart, kommt vorher eine Rückfrage – so tauschen Sie Ihren Rechenweg nicht versehentlich aus. Gerechnet muss sein: Ohne Ergebnis gibt es nichts zu übernehmen. Ohne Projekt steht der Knopf nicht da.
+Links steht die Liste der Lastgänge; die gewählte Zeile ist der Lastgang, den die Maske rechnet. Rechts stehen die Parameter in den Gruppen ''Speicher'', ''Schwelle'' und ''Kosten'', darunter ''Berechnen'' und das Ergebnis in drei Reitern. In der Werkzeugleiste über der Liste stehen nach der Suche '''„CSV-Export"''' und '''„In Variante übernehmen"'''; beide wirken auf das gerechnete Ergebnis und sind gesperrt, solange gerechnet wird. Die Fußleiste trägt ''Lastgang aus Datei…'' – die Datei erscheint als Zeile mit der Quelle ''Datei'' und wird nicht abgelegt – und ''Beenden''. Im schmalen Fenster liegt das Stammblatt über der Liste; ''‹ Liste'' führt zurück zur Werkzeugleiste, das Ergebnis bleibt dabei stehen.
+
+'''„In Variante übernehmen"''' schreibt das Ergebnis in die '''aktive Speichervariante''' des Projekts: Berechnungsart ''Lastspitzenkappung'', die '''erreichte''' Schwelle als Peak-Ziel und die Einstellung ''adaptiv''. Danach rechnet der Projektlauf genau diese Kappung. Führt die Variante eine andere Berechnungsart, kommt zuvor eine Rückfrage – so tauschen Sie Ihren Rechenweg nicht versehentlich aus. Gerechnet muss sein: Ohne Ergebnis gibt es nichts zu übernehmen. Ohne Projekt steht der Knopf nicht da.
 
 == Berechnung ==
 Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter

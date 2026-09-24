@@ -1192,7 +1192,46 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         Assert.False(cut.Instance.ImportOffen);
         Assert.Equal(3, cut.Instance.GewaehlteId);
+        Assert.Empty(cut.Instance.Kaestchen);
         Assert.Equal("„WP Gamma“ eingelesen.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Nach dem Wärmepumpenimport sind alle neuen Geräte gewählt</b> (V14, Konzept
+    /// 7.1 d): Das Kästchen von vorher fällt, die zwei neuen stehen gewählt, die
+    /// Auswahlleiste sagt „2 gewählt", die erste neue Wärmepumpe ist Fokuszeile im
+    /// Stammblatt, die Statuszeile nennt die Zahl.
+    /// </summary>
+    [Fact]
+    public async Task Nach_dem_Waermepumpenimport_sind_alle_neuen_Geraete_gewaehlt()
+    {
+        var zeilen = Liste.ToList();
+        var cut = Aufbauen(liste: () => zeilen.ToArray(),
+                           satz: id => id <= 2 ? Satz(id) : new WaermepumpeStammDaten
+                           {
+                               Id = id, Name = id == 3 ? "WP Gamma" : "WP Delta", Firma = "Gamma",
+                               Typ = "Luft-Wasser", Nennleistung = 9, NurLesen = false
+                           });
+        cut.Render(p => p.Add(x => x.ImportGaben, WpImportGaben));
+        cut.FindAll("td.epos-spalte-kaestchen input")[0].Change(true);
+        Assert.Single(cut.Instance.Kaestchen);
+
+        cut.Find(".epos-importknopf").Click();
+        zeilen.Add(new Katalogfilterzeile(3, "WP Gamma").MitText(Katalogfilterprofil.SpBezeichner, "WP Gamma"));
+        zeilen.Add(new Katalogfilterzeile(4, "WP Delta").MitText(Katalogfilterprofil.SpBezeichner, "WP Delta"));
+        var liste = cut.FindComponent<EPOS.UI.Bausteine.Katalogliste>();
+        Assert.Equal(0, liste.Instance.Zeigeanlass);
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        // Die Übernahme ist der Liste ein Anlass, die neue Fokuszeile ins Bild zu rollen.
+        Assert.Equal(1, liste.Instance.Zeigeanlass);
+        Assert.Equal(new[] { "WP Gamma", "WP Delta" }, cut.Instance.Kaestchen);
+        Assert.Equal(3, cut.Instance.GewaehlteId);
+        Assert.Equal("2 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+        Assert.Equal("WP Gamma", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal(2, cut.FindAll("tbody td.epos-spalte-kaestchen input").Count(k => k.HasAttribute("checked")));
+        Assert.Equal("2 Sätze übernommen und gewählt.", cut.Instance.Status);
     }
     // =================================================================================
     // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)

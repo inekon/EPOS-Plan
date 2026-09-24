@@ -2120,5 +2120,14 @@ namespace WindowsFormsApplication1
         /// insbesondere Schalt- und Sommerzeitbehandlung.
         /// </summary>
         public string ZeitachsenHinweis = "";
+
+        /// <summary>
+        /// ETAPPE E10 (Empfehlung E10-Q3 a): die Nutzungsdauer der Nutzungsdauertabelle
+        /// fuer Stromspeicher als ganzzahliges Ersatzintervall [a]; 0 = keine. Beschafft im
+        /// Datenbankteil (<c>SpeicherAuslegungCtrl.QuellenBeschaffen</c>), eingesetzt im
+        /// Rechenteil (<c>SpeicherFlottenStudieCtrl.Rechnen</c>) fuer jede Einheit ohne
+        /// eigenes Ersatzintervall.
+        /// </summary>
+        public int ErsatzintervallVorgabeJahre;
     }
 }

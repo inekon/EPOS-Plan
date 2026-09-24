@@ -536,7 +536,11 @@ namespace WindowsFormsApplication1
         #region --- COPY (STAMM -> Projekt) ---
 
         // Kopiert einen Gebaeude-Stammdatensatz (per Bezeichner) in die Projekt-Tabelle Tab_Gebaeude.
-        // Setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude (-> Z_ProjektGebaeude.ID).
+        // Setzt ID_Projekt, die Verknuepfung ID_ProjektGebaeude (-> Z_ProjektGebaeude.ID) und den
+        // Katalogverweis ID_Gebaeude_Stamm (-> Tab_Gebaeude_STAMM.ID, Schemaschritt 121).
+        // Der EINZIGE Weg Katalog -> Projekt: Assistent und Projekt-Gebaeudedialog gehen beide
+        // ueber WizardCtrl.Add_Projekt_ZuordungGebäude hierher; Duplizieren und Varianten
+        // kopieren die Projektzeile samt Verweis (ProjektDuplizierenCtrl).
         // Rueckgabe: neue Tab_Gebaeude.ID (>0) oder 0 bei Fehler / nicht gefunden.
         public int CopyFromStamm(string szBezeichner, int idProjekt, int idProjektGebaeude)
         {
@@ -548,7 +552,7 @@ namespace WindowsFormsApplication1
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -632,6 +636,10 @@ namespace WindowsFormsApplication1
                 new DbParam("@c71", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLLEISTUNG_MAX) },
                 new DbParam("@c72", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_KUEHLUNG_AKTIV) },
                 new DbParam("@c73", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT_NACHT) },
+                // Schemaschritt 121 (Welle #468): Die Kopie merkt sich, aus welchem
+                // Katalogsatz sie stammt - eine Umbenennung des Satzes zerreisst die Klammer
+                // der Loeschsperre dann nicht mehr (GebaeudeKatalogverweis).
+                new DbParam("@c74", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 
@@ -794,22 +802,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
-        /// nennt das Projekt) — je Bezeichner die Projektnamen, EINE Abfrage fuer die ganze
-        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>),
-        /// verknuepft ueber den Namen — derselbe Weg, auf dem die Waermepumpenverwaltung ihre
-        /// Loeschsperre findet (<c>WPStammCtrl.GesperrtDurchProjekt</c>). Gross/klein egal.
+        /// nennt das Projekt) — je KATALOGNAME die Projektnamen, EINE Abfrage fuer die ganze
+        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>).
+        ///
+        /// <para><b>Zuerst die ID, dann der Name</b> (Schemaschritt 121, Welle #468; Konzept
+        /// Administrationsdialoge 7.1 (a)). Traegt die Kopie ihren Katalogverweis
+        /// (<c>ID_Gebaeude_Stamm</c>), kommt der Schluessel aus dem KATALOGSATZ selbst — er
+        /// ueberlebt die Umbenennung des Satzes wie die der Kopie. Nur eine Kopie OHNE Verweis
+        /// (Altbestand, deren Name beim Nachtrag keinen Katalogsatz traf, ein geloeschter
+        /// Katalogsatz, ein Paket ohne Treffer am Ziel) sperrt weiter ueber ihren Namen —
+        /// gross/klein egal, wie bisher.</para>
         /// </summary>
         public static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung()
         {
             var sammlung = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT g.Gebaeudename, p.Projektname FROM [" + TABLE_PROJ + "] AS g " +
-                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt ORDER BY p.Projektname");
+                "SELECT COALESCE(s.Bezeichner, g.Gebaeudename) AS Katalogname, p.Projektname " +
+                "FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
+                "LEFT JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
+                "ORDER BY p.Projektname");
             if (dt != null)
             {
                 foreach (DataRow r in dt.Rows)
                 {
-                    string name = Spaltentext(r, "Gebaeudename").Trim();
+                    string name = Spaltentext(r, "Katalogname").Trim();
                     string projekt = Spaltentext(r, "Projektname");
                     if (name.Length == 0) continue;
                     if (!sammlung.TryGetValue(name, out List<string> projekte))
@@ -824,50 +841,33 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Kenndaten eines eigenen Satzes schreiben</b> (Stufe 5: das Stammblatt der
-        /// Gebaeudeverwaltung, direkt bedienbar) — genau die fuenf Spalten, die die Gruppe
-        /// Kenndaten fuehrt: Gebaeudetyp, Gebaeudeart, Verwendung (Steuerwert), Baualtersklasse
-        /// (Buchstabe) und Beschreibung.
-        ///
-        /// <para><b>Nur diese fuenf Spalten.</b> Flaechen, U-Werte und die Bauweise haengen
-        /// aneinander (Bauart × Nutzflaeche, Summe der Fensterflaechen) und bleiben dem
-        /// Katalogeditor, der ihre Regeln fuehrt; ein Rundlauf ueber das ganze Modell
-        /// schriebe abgeleitete Spalten neu, die der Anwender hier gar nicht sieht.</para>
-        ///
-        /// <para>Ein Auslieferungssatz wird nie geschrieben (<c>AND ReadOnly = 0</c>); die
-        /// Oberflaeche sperrt ihn vorher weich.</para>
+        /// <b>Die Loeschsperre eines Katalogsatzes</b>: die Projekte, die ihn fuehren — leer,
+        /// wenn keines. Dieselbe Wahrheit wie <see cref="Projektverwendung"/> (zuerst der
+        /// Katalogverweis, dann der Name); die Verwaltung nennt diese Projekte im Sperrgrund.
         /// </summary>
-        /// <returns><c>true</c>, wenn der Satz geschrieben wurde.</returns>
-        public static bool KenndatenSchreiben(string bezeichner, string typ, string gebaeudeart,
-                                              string verwendung, string baualtersklasse,
-                                              string beschreibung)
+        public static IReadOnlyList<string> Loeschsperre(string bezeichner)
         {
-            if (string.IsNullOrEmpty(bezeichner)) return false;
-            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
-
-            return DataRepository.ExecuteSQL(
-                "UPDATE [" + TABLE + "] SET [Typ] = ?, [Gebaeudeart] = ?, " +
-                "[Wohngebaeude_Nicht_Wohngebaeude] = ?, [Baualtersklasse] = ?, [Beschreibung] = ? " +
-                "WHERE Bezeichner = ? AND ReadOnly = 0",
-                new DbParam("@typ", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
-                new DbParam("@art", DbParamTyp.VarWChar) { Wert = (object)(gebaeudeart ?? "") },
-                new DbParam("@verw", DbParamTyp.VarWChar) { Wert = (object)(verwendung ?? "") },
-                new DbParam("@bak", DbParamTyp.VarWChar) { Wert = (object)(baualtersklasse ?? "") },
-                new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") },
-                new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)bezeichner });
+            if (string.IsNullOrWhiteSpace(bezeichner)) return Array.Empty<string>();
+            return Projektverwendung().TryGetValue(bezeichner.Trim(), out IReadOnlyList<string> projekte)
+                ? projekte : Array.Empty<string>();
         }
 
         /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
-        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze weich und
-        /// fragt vorher zurueck; <see cref="Delete"/> meldete die Sperre ueber
-        /// <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
+        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze und
+        /// benutzte Gebaeude weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
+        /// Sperre ueber <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
+        ///
+        /// <para><b>Die Sperre haelt auch hier</b> (Welle #468): Ein Satz, den ein Projekt
+        /// fuehrt (<see cref="Loeschsperre"/>), wird nicht geloescht — die Oberflaeche reicht
+        /// ihn ohnehin nicht herein, aber der Kern verlaesst sich nicht darauf.</para>
         /// </summary>
         /// <returns><c>true</c>, wenn der Satz geloescht wurde.</returns>
         public static bool Loeschen(string bezeichner)
         {
             if (string.IsNullOrEmpty(bezeichner)) return false;
             if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
+            if (Loeschsperre(bezeichner).Count > 0) return false;
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ? AND ReadOnly = 0",
                 new DbParam("@bez", bezeichner));

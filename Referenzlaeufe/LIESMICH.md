@@ -118,6 +118,18 @@ unmittelbar in die Referenz.
 > `@Projektflotte`: Sie erreichen den Projektlauf nicht. Die übrigen Projekte der
 > Testdatenbank führen gar keinen Flottenstand.
 
+**Anschluss an die Nutzungsdauertabelle (E10, #463).** Die Wirtschaftlichkeit der Flottenstudie
+rechnet den Restwert je Einheit linear aus ihrer Nutzungsdauer (Ersatzintervall) auf der
+Ersatzkette der Flotte; eine Einheit ohne eigenes Intervall nimmt die Nutzungsdauer der
+Standardzeile „Stromspeicher · Batterie" der Nutzungsdauertabelle, und der feste Restwert je Einheit
+ist ein Altfeld, das nicht mehr rechnet. Zur Regel gehören damit auch **Ersatzintervall und
+Ersatzkosten der Einheiten von `@Projektflotte`** und — sobald eine Einheit ohne eigenes Intervall
+rechnet — **die Nutzungsdauer der Zeile „Stromspeicher · Batterie"**. Die Basis führt heute keine
+Flottenwirtschaftlichkeit (`aggregate.csv` von 1046 trägt nur die Physik), eine Änderung dort
+bewegt sie also nicht; die Zahlen hält `EPOS.Kern.Tests/SpeicherFlottenNutzungsdauerTests`
+(1046: Restwert 800 → 7 000 €, Kapitalwert +3 432,79 €). Wer diese Größen ändert, zieht den
+Test nach, rechnet den Referenzlauf und friert neu ein, sobald die Basis sich bewegt.
+
 Das Projekt entsteht wiederholbar aus
 [`Skripte/pruefprojekt_1046_speicherflotte.py`](Skripte/pruefprojekt_1046_speicherflotte.py);
 Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen im
@@ -297,8 +309,9 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **119**,
-LFS-SHA-256 `63cc2d64…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **121**, LFS-SHA-256 `9acda529…`,
+Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 
@@ -375,9 +388,20 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > [Protokoll der Schlusswelle KU2](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_Schlusswelle_KU2.md)
 > und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
 
+> **Nachtrag: Schemastände 120 und 121 (Zusammenführung mit E10 #463 und #468), die Basis bleibt.** Die
+> Testdatenbank ist die Fassung von origin mit Schemastand **121** (LFS-SHA-256 `00fbbb8b…`; die
+> Schritte 120 und 121 stehen mit ihren Nachträgen beim R13-Abschnitt unter `ueberholt/`), auf die
+> [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py) erneut
+> angewandt ist; `kuehlung_1017_referenzprojekt.py` und `gebaeude_10612_233_bauweise.py` finden nichts zu
+> tun, ein zweiter Lauf des Skripts ändert nichts. Zellvergleich aller 132 Tabellen gegen die Fassung von
+> origin (10 499 019 Zellen): genau die vier Zellen, zehn Zeilen und die Sequenzzeile der vierten Welle;
+> 14 Sichten und 209 Indizes gleich, `integrity_check` ok, `foreign_key_check` leer, 67 792 896 Byte
+> (LFS-SHA-256 `9acda529…`). Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS**
+> (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
-> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114, 115 und 119 steht in
+> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 

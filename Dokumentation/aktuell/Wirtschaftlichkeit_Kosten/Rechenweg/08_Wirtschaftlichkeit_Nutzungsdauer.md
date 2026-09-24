@@ -12,8 +12,8 @@ die Integration ist eine Vervollständigungs- und Darstellungsaufgabe.
 
 ## Was die Ansicht zeigt
 
-Zahlen aus der realen Höfingen-Mappe `BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
-`Tab_kurz_KWKG2020` — 20-kW-BHKW-Erneuerung gegen benannte Vergleichsheizung.
+Zahlen aus der realen Mappe „Beispielprojekt B" (`BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
+`Tab_kurz_KWKG2020`) — 20-kW-BHKW-Erneuerung gegen benannte Vergleichsheizung.
 
 **Kopfzeile:** Vergleichsprojekt (Combo) „Variante 2 — Gas-Brennwertkessel (Bestand)" — die
 Referenz der Differenzrechnung, die Unterlassensalternative der Norm (8.1.2).
@@ -105,7 +105,7 @@ Sensitivität (nur „Erwartet", ceteris paribus, 7.2)
   Energiekosten inkl. CO₂ ± 10 % · „KWKG-Bonus entfällt" ; Ausweis mit Steigung €/% (V-G6)
 ```
 
-## Berechnungserläuterung an der Höfingen-Mappe
+## Berechnungserläuterung an der Mappe „Beispielprojekt B"
 
 Die Mappe ist die externe Gegenprobe: Ihre Zahlen entstanden ohne EPOS-Plan. Die jahresscharfe
 Nachrechnung mit der obigen Formel trifft ihren Kapitalwert von 65.259 € exakt; die Tafel zeigt die

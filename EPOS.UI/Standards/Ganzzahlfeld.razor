@@ -10,7 +10,7 @@
 
 @* epos-feld--kurz: kurzes Feld im Formularraster, Einheit direkt dahinter
    (iU8-E-2 / W14a-E-7). Siehe Zahlenfeld. *@
-<label class="epos-feld epos-feld--kurz">
+<label class="epos-feld epos-feld--kurz" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
@@ -31,6 +31,9 @@
 @code {
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Ein Vermerk zum Feld als Tooltip der Beschriftung; leer = keiner (siehe Zahlenfeld).</summary>
+    [Parameter] public string Titel { get; set; } = "";
 
     /// <summary>Der Wert; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
     [Parameter] public int? Wert { get; set; }

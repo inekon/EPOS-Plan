@@ -1461,11 +1461,18 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
     }
 
+    /// <summary>
+    /// <b>Nach einer Übernahme sind die neuen Sätze die Auswahl</b> (V14, Konzept 7.1 d):
+    /// Die Liste liest neu, die Kästchen der neuen Sätze stehen — und nur ihre, ein Kästchen
+    /// von vorher fällt —, die Auswahlleiste sagt „2 gewählt", der erste neue Satz ist
+    /// Fokuszeile und steht im Stammblatt, die Statuszeile nennt die Zahl.
+    /// </summary>
     [Fact]
-    public async Task Nach_einem_Import_liest_die_Liste_neu_und_waehlt_den_ersten_neuen_Satz()
+    public async Task Nach_einem_Import_sind_alle_neuen_Saetze_gewaehlt_und_der_erste_im_Fokus()
     {
         var zeilen = Zeilen(KatalogBrowserArt.Heizkessel).ToList();
         var cut = Aufbauen(wege: ImportWege(zeilen));
+        Kaestchen(cut, 0);                                  // ein Kästchen von vorher
         cut.Find(".epos-importknopf").Click();
 
         // Der Import schreibt zwei Saetze und schliesst mit "geschrieben".
@@ -1479,8 +1486,83 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.False(cut.Instance.ImportOffen);
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
         Assert.Equal(4, cut.Instance.Zeilen.Count);
+        Assert.Equal(new[] { "Kessel Neu 1", "Kessel Neu 2" }, cut.Instance.Kaestchen);
         Assert.Equal("Kessel Neu 1", cut.Instance.Gewaehlt);
-        Assert.Equal("2 Sätze eingelesen.", cut.Instance.Status);
+        Assert.Equal("2 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+        Assert.Equal("Kessel Neu 1", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal(new[] { false, false, true, true },
+                     cut.FindAll("tbody td.epos-spalte-kaestchen input").Select(k => k.HasAttribute("checked")));
+        Assert.Equal("2 Sätze übernommen und gewählt.", cut.Instance.Status);
+
+        // Die Handlungen der Auswahlleiste wirken auf die zwei: Vergleichen ist frei.
+        Assert.Null(Handlung(cut, "Vergleichen").GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// <b>Ein einzelner neuer Satz ist als Fokuszeile allein die Wahl</b> („Zeile ist Wahl",
+    /// wie nach dem Einlesen einer Klimaregion): kein Kästchen, die Auswahlleiste nennt
+    /// ihn beim Namen, Kästchen von vorher fallen.
+    /// </summary>
+    [Fact]
+    public async Task Nach_einem_Import_mit_einem_Satz_ist_er_Fokuszeile_ohne_Kaestchen()
+    {
+        var zeilen = Zeilen(KatalogBrowserArt.Heizkessel).ToList();
+        var cut = Aufbauen(wege: ImportWege(zeilen));
+        Kaestchen(cut, 0);
+        Kaestchen(cut, 1);
+        cut.Find(".epos-importknopf").Click();
+
+        zeilen.Add(new Katalogfilterzeile(7, "Kessel Neu 1")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 1"));
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        Assert.Empty(cut.Instance.Kaestchen);
+        Assert.Equal("Kessel Neu 1", cut.Instance.Gewaehlt);
+        Assert.Equal("Kessel Neu 1", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+        Assert.All(cut.FindAll("tbody td.epos-spalte-kaestchen input"), k => Assert.False(k.HasAttribute("checked")));
+        Assert.Equal("„Kessel Neu 1“ eingelesen.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Nach dem Import rollt die Liste zur neuen Fokuszeile</b> — über denselben Aufruf
+    /// wie ein Tastenschritt (<c>zeileZeigen</c> mit ihrer Stelle und dem Zeilenmaß 46).
+    /// Das Öffnen rollt nicht; in einer Liste von Tausenden stünde der neue Satz sonst
+    /// gewählt, aber außer Sicht.
+    /// </summary>
+    [Fact]
+    public async Task Nach_einem_Import_rollt_die_Liste_zur_neuen_Fokuszeile()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var zeilen = Zeilen(KatalogBrowserArt.Heizkessel).ToList();
+        var cut = Aufbauen(wege: ImportWege(zeilen));
+        cut.WaitForAssertion(() => Assert.Single(modul.Invocations, i => i.Identifier == "anmelden"));
+        cut.Find(".epos-importknopf").Click();
+
+        zeilen.Add(new Katalogfilterzeile(7, "Kessel Neu 1")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 1"));
+        zeilen.Add(new Katalogfilterzeile(8, "Kessel Neu 2")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 2"));
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        // Die Stelle der Fokuszeile in der gezeichneten Liste.
+        int stelle = cut.FindAll("tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Kessel Neu 1", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+            Assert.Equal(46f, zeigen[0].Arguments[2]);
+        });
     }
 
     [Fact]

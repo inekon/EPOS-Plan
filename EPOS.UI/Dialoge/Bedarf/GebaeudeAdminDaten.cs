@@ -4,14 +4,15 @@ namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// <b>Ein Gebäudesatz im Stammblatt der Verwaltung</b> (Konzept Administrationsdialoge,
-/// Stufe 5, V16; Bestand A9) — das plattformfreie Abbild eines Satzes aus
-/// <c>Tab_Gebaeude_STAMM</c>, so weit das Stammblatt ihn zeigt.
+/// Stufe 5, V16; Bestand A9; Welle #465) — das plattformfreie Abbild eines Satzes aus
+/// <c>Tab_Gebaeude_STAMM</c>.
 ///
-/// <para><b>Drei Teile.</b> Die KENNDATEN (Gebäudetyp, Gebäudeart, Verwendung, Baujahr,
-/// Beschreibung) sind im Stammblatt direkt bedienbar; Name und Wohnfläche sind Lesewerte —
-/// umbenannt wird über „Duplizieren…", die Wohnfläche hängt über die Bauweise an der Bauart
-/// und bleibt dem Katalogeditor. Die HÜLLE (Flächen und U-Werte der vier Bauteile) und
-/// „ALLE DATEN" stehen als fertige Name-Wert-Paare da; sie baut die Hülle aus dem Kern.</para>
+/// <para><b>Zwei Teile.</b> Der FELDSATZ (<see cref="Feldsatz"/>) ist der Satz des
+/// Katalogeditors — das Stammblatt bearbeitet ihn über denselben Arbeitsstand
+/// (<see cref="GebaeudeArbeitsstand"/>), prüft ihn mit denselben Regeln und schreibt ihn
+/// über denselben Weg. Die übrigen Eigenschaften sind ANZEIGE: Kopf, Kennzahlen, Vergleich
+/// und der Lesemodus eines Auslieferungssatzes (Hülle und „Alle Daten" als fertige
+/// Name-Wert-Paare aus dem Kern).</para>
 /// </summary>
 public sealed class GebaeudeStammblattDaten
 {
@@ -51,22 +52,32 @@ public sealed class GebaeudeStammblattDaten
     /// <summary>Ein Auslieferungssatz (<c>ReadOnly</c>) — nur lesbar, Duplizieren erlaubt.</summary>
     public bool Auslieferung { get; set; }
 
-    /// <summary>Die Gruppe „Hülle": je Bauteil Fläche und U-Wert, fertig formatiert.</summary>
+    /// <summary>Die Gruppe „Hülle" im Lesemodus: je Bauteil Fläche und U-Wert, fertig formatiert.</summary>
     public IReadOnlyList<Stammblattwert> Huelle { get; set; } = Stammblattwert.Keine;
 
-    /// <summary>„Alle Daten": die übrigen Felder des Katalogeditors, mit Abschnitten.</summary>
+    /// <summary>„Alle Daten" im Lesemodus: die übrigen Felder des Katalogeditors, mit Abschnitten.</summary>
     public IReadOnlyList<Stammblattwert> AlleDaten { get; set; } = Stammblattwert.Keine;
-}
 
-/// <summary>
-/// <b>Was „Speichern" im Stammblatt der Gebäudeverwaltung schreibt</b> (Stufe 5) — genau die
-/// fünf direkt bedienbaren Kenndaten des Satzes <paramref name="Name"/>.
-/// </summary>
-/// <param name="Name">Der Bezeichner des Satzes (nicht änderbar).</param>
-/// <param name="Typ">Der Gebäudetyp.</param>
-/// <param name="Gebaeudeart">Die Gebäudeart.</param>
-/// <param name="Verwendung">Die Verwendung als Steuerwert.</param>
-/// <param name="Baualtersklasse">Der Index der Baualtersklasse; <c>null</c> = keine.</param>
-/// <param name="Beschreibung">Die Beschreibung.</param>
-public sealed record GebaeudeKenndaten(string Name, string Typ, string Gebaeudeart, string Verwendung,
-                                       int? Baualtersklasse, string Beschreibung);
+    /// <summary>
+    /// <b>Der Feldsatz des Katalogeditors</b> (<c>GebaeudeKatalogHuelle.AusModell</c>, #465)
+    /// — der Ausgangspunkt des Arbeitsstands im Stammblatt; <c>null</c> = der Wirt reicht
+    /// keinen herein, dann entsteht er aus den Kenndaten oben (<see cref="FeldsatzOderKenndaten"/>).
+    /// </summary>
+    public GebaeudeKatalogDaten? Feldsatz { get; set; }
+
+    /// <summary>
+    /// Der Feldsatz — oder, ohne ihn, einer aus den Kenndaten dieses Satzes (Name, Typ,
+    /// Gebäudeart, Verwendung, Baujahr, Beschreibung, Fläche); die übrigen Felder bleiben
+    /// leer, und die Prüfung meldet sie beim Speichern.
+    /// </summary>
+    public GebaeudeKatalogDaten FeldsatzOderKenndaten() => Feldsatz ?? new GebaeudeKatalogDaten
+    {
+        Name = Name,
+        Typ = Typ,
+        Gebaeudeart = Gebaeudeart,
+        Verwendung = Verwendung,
+        Baualtersklasse = Baualtersklasse ?? 0,
+        Beschreibung = Beschreibung,
+        WohnflaecheGesamt = Wohnflaeche
+    };
+}

@@ -1,35 +1,45 @@
 # Wiki-Update 26.09.2026 — Vorbereitung des Sammel-Uploads
 
-Dieses Papier bereitet den gebündelten Wiki-Upload vom 26.09.2026 vor (Regel: Konzept
-Hilfesystem 13.3). Es listet die Seiten, deren Repo-Quelle seit dem letzten Upload (Version
-1.2.0.0, Auftrag #252) fortgeschrieben wurde, sammelt die dazu entworfenen Logbuch-Sätze
-geordnet nach Version und nennt, was zum Stichtag noch offen ist. Quelle aller Angaben ist
-[`Status_iOS_Migration.md`](Status_iOS_Migration.md); die Statusdatei selbst ist hier nicht
-geändert. Die Versionsnummern sind Vorschläge — beim Anwender zu bestätigen (Regel: Konzept
-Hilfesystem 13.3).
+Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
+Termin ist **nach Freigabe des Anwenders** — Vorschlag 26.09.2026 (dieses Papier, seit dem
+vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuletzt durchgehend den 28.09.2026;
+E12‑Q1 legt beide Lesarten dem Anwender zur Entscheidung vor (Empfehlung a: 26.09.2026). Mit E12
+sind die Repo-Quellen so weit nachgezogen, dass der Sammel-Upload nur noch diese Freigabe
+braucht (Abschnitt 3 nennt den Ablauf). Es listet die Seiten, deren Repo-Quelle seit dem letzten
+Upload (Version 1.2.0.0, Auftrag #252) fortgeschrieben wurde, sammelt die dazu entworfenen
+Logbuch-Sätze geordnet nach Version und nennt, was zum Stichtag noch offen ist. Quelle aller
+Angaben ist [`Status_iOS_Migration.md`](Status_iOS_Migration.md); die Statusdatei selbst ist
+hier nicht geändert. Die Versionsnummer ist ein Vorschlag — beim Anwender zu bestätigen (Regel:
+Konzept Hilfesystem 13.3; E12‑Q3, Empfehlung a: 1.2.0.4 für den ganzen Sammel-Upload).
 
 ## 1 Seiten für den Sammel-Upload
 
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
 | Programm Dokumentation/Klimadaten | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` | neue Seite: Quellenwahl PVGIS/DWD-Testreferenzjahr, Standort aus dem Dateikopf, Regionsvorschau, durchsuchbare Liste mit Quelle/Bezugsjahr/Szenario, Diagrammzoom | Statuszeilen #367, #368, #369, #371, #382, #396, #404, #413 |
-| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts; die Kältedeckung in der Übersicht (Block und dritter Ring, Anker `kaeltedeckung`) und der Block „Kälte" im Reiter Wärme-/Strombedarf | Statuszeilen #403, #411, #413, #418; Status der Gebäudesimulation, Stufe KU2 |
-| Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
-| Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
-| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Szenarioabdeckung und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`); die Betriebskostentabelle der Berichte mit der Bemessungsart jeder Position, „ab Jahr …" bei späterem Startjahr und dem Hinweis nur bei einer echten Lücke (neuer Anker `bericht-betriebskosten`); die weiteren Werte je Szenario — Betrachtungszeitraum, Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet —, gepflegt in den Zeilen 8 und 9 der Szenariotabelle und mit dem Knopf ± an Trägerkarte, Einspeisevergütungen, DV-Entgelt und PPA-Preis samt dem Fenster „Szenariowerte" (neuer Anker `szenariowerte`; `szenarien`, `einspeiseverguetung`, `bhkw-wirtschaftlichkeit`, `pv-verguetung`), dazu Szenariozeile, Annahmentafel, Verlauf, Annahmenzeilen und Parameterblock der Formelmappe mit Zeitraum und Einspeisevergütung (Anker `szenario`, `annahmen`, `verlauf`, `bericht`, `bericht-excel`, `formelmappe`) und unter der Annahmentafel, in Block 4, in beiden Berichten und in Punkt 9 der Checkliste die Szenarioabdeckung „n von m Parametern szenariert" (neuer Anker `szenarioabdeckung`; `valeri`, `checkliste`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462 |
-| Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise; neuer Punkt „Ersatzbeschaffung und Restwert je Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis (Anker `preisbasis`), Nm³ und kWh im Brennstoffkatalog (Anker `einheiten`), „% der Brennstoffkosten" und „% der Stromkosten" aus dem Simulationslauf (Anker `laufgroessen`) | Statuszeilen #439, #446 |
+| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts; die Kältedeckung in der Übersicht (Block und dritter Ring, Anker `kaeltedeckung`) und der Block „Kälte" im Reiter Wärme-/Strombedarf; mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Statuszeilen #403, #411, #413, #418; Status der Gebäudesimulation, Stufe KU2; E12 |
+| Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen); mit E12 eine Tabuwort-Bereinigung (neun Stellen, keine inhaltliche Änderung) | Statuszeilen #411, #413, #417; E12 |
+| Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6; mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Statuszeilen #416, #419; E12 |
+| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Szenarioabdeckung und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`); die Betriebskostentabelle der Berichte mit der Bemessungsart jeder Position, „ab Jahr …" bei späterem Startjahr und dem Hinweis nur bei einer echten Lücke (neuer Anker `bericht-betriebskosten`); die weiteren Werte je Szenario — Betrachtungszeitraum, Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet —, gepflegt in den Zeilen 8 und 9 der Szenariotabelle und mit dem Knopf ± an Trägerkarte, Einspeisevergütungen, DV-Entgelt und PPA-Preis samt dem Fenster „Szenariowerte" (neuer Anker `szenariowerte`; `szenarien`, `einspeiseverguetung`, `bhkw-wirtschaftlichkeit`, `pv-verguetung`), dazu Szenariozeile, Annahmentafel, Verlauf, Annahmenzeilen und Parameterblock der Formelmappe mit Zeitraum und Einspeisevergütung (Anker `szenario`, `annahmen`, `verlauf`, `bericht`, `bericht-excel`, `formelmappe`) und unter der Annahmentafel, in Block 4, in beiden Berichten und in Punkt 9 der Checkliste die Szenarioabdeckung „n von m Parametern szenariert" (neuer Anker `szenarioabdeckung`; `valeri`, `checkliste`); mit E12 die Satzherkunft-Zeilen der Erlösrubrik unter Einspeisung/Eigenstrom (U23, Anker `block-a`), beide PV-Anlagenwarnungen (U36, Anker `pv-verguetung`) und ein Verweis auf den nach Kosten verschobenen Abschnitt „Gesetzliche Parameter" (A18, Anker `gesetzliche-parameter` bleibt bestehen) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462; E12 |
+| Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise; neuer Punkt „Ersatzbeschaffung und Restwert je Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis (Anker `preisbasis`), Nm³ und kWh im Brennstoffkatalog (Anker `einheiten`), „% der Brennstoffkosten" und „% der Stromkosten" aus dem Simulationslauf (Anker `laufgroessen`); die Knöpfe ± der Trägerkarte (Anker `traegerkarte`); die Sätze für Instandsetzung und Wartung im Dialog Nutzungsdauern (AfA) (neuer Anker `nutzungsdauer-saetze`), der Knopf „Sätze vorbelegen…" der Betriebskostenseite und die Herkunft des Satzes (neuer Anker `saetze-vorbelegen`), Ersatz und Restwert der Einheiten einer Speicherflotte (neuer Anker `flotte-restwert`); mit E12 die Doppelpflege-Warnung der Hilfsenergie (Anker `laufgroessen`) und der volle Abschnitt „Gesetzliche Parameter" (A18, neuer Anker `gesetzliche-parameter`, von der Seite Wirtschaftlichkeit hierher verschoben) | Statuszeilen #439, #446, #462, #463; E12 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 | Programm Dokumentation/Gebäudemodell VDI 6007 | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | neue Seite: stündliches Gebäudemodell nach VDI 6007 als Vorgabe, Tagesbilanz als wählbarer Bestandsweg, Eingaben der Gebäudehülle, Luftwechsel mit Sommerlüftung, Strahlung auf die Außenbauteile, Kennzahlen und Raumtemperatur im Wärmebedarf, Vergleich der Rechenwege; Gebäude ohne Kühlung laufen im Sommer frei | Status der Gebäudesimulation, Stufen G1 + G2 und KU1 (E27–E32) |
 | Programm Dokumentation/Kühlung | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` | neue Seite: Kühlung je Projekt und Gebäude, Kühlsollwert und Kühlleistungsgrenze, Programmeinstellung „Neue Projekte mit Kühlung anlegen", Kältebedarf in Dialogen, Ergebnis und Bericht, sensible Kälte ohne Entfeuchtung; die Deckung durch die Wärmepumpe im Kühlbetrieb — Felder der Gruppe „Kühlbetrieb" (Anker `kuehlbetrieb`), Kälteleistung, Kältestrom und Jahresarbeitszahl Kälte (Anker `kaelteerzeugung`), Stromträger und Abrechnung des Kältestroms (Anker `abrechnung`) —, Kältedeckung in Übersicht und Bericht, Kältestrom in der Wirtschaftlichkeit samt Grund- und Leistungspreis eines eigenen Zählers, Grenzen | Status der Gebäudesimulation, Stufen KU1 und KU2 (E27, E31–E35) |
-| Programm Dokumentation/Gerätekataloge | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` | der Schalter „nur mit Kühlfunktion" filtert nach der Kühlleistung, gerechnet wird mit der Kühlkennlinie; die Importregel der Kühlkennlinien (Heizlage, vertauschte Achsen; Anker `import-kuehlkennlinien`) | Status der Gebäudesimulation, Stufe KU2 |
-| Programm Dokumentation/Simulation | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` | neuer Punkt „Kühlbetrieb der Wärmepumpe" in der Simulationskonfiguration (Anker `kuehlbetrieb`) | Status der Gebäudesimulation, Stufe KU2 |
+| Programm Dokumentation/Gerätekataloge | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` | der Schalter „nur mit Kühlfunktion" filtert nach der Kühlleistung, gerechnet wird mit der Kühlkennlinie; die Importregel der Kühlkennlinien (Heizlage, vertauschte Achsen; Anker `import-kuehlkennlinien`); die Nutzungsdauer von Heizkessel und BHKW als Gerätedaten, maßgeblich ist die Nutzungsdauertabelle | Status der Gebäudesimulation, Stufe KU2; Statuszeile #463 |
+| Programm Dokumentation/Simulation | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` | neuer Punkt „Kühlbetrieb der Wärmepumpe" in der Simulationskonfiguration (Anker `kuehlbetrieb`); mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Status der Gebäudesimulation, Stufe KU2; E12 |
+| Programm Dokumentation/Photovoltaik | `Projekte/Wiki/Programm Dokumentation - Photovoltaik.wiki` | mit E12 eine Tabuwort-Bereinigung der Ampel-Meldungen (drei Stellen „Befund" → „Diagnose"/„Meldung"; keine inhaltliche Änderung) | E12 |
+| Programm Dokumentation/Varianten | `Projekte/Wiki/Programm Dokumentation - Varianten.wiki` | mit E12 der Kohärenzhinweis „übernehmen ohne Stammprojekt" am Abschnitt PV-Vergütung der Variante (Anker `pv-verguetung`) | E12 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
 fortgeschrieben — Sammel-Upload 28.09.2026“ (das dort genannte Datum ist durch den
-vorliegenden Auftrag auf den 26.09.2026 vorgezogen). Eine gesonderte Seite zu Gerätekatalogen nennt
+vorliegenden Auftrag auf den 26.09.2026 vorgezogen; das Analysepapier nennt weiterhin durchgehend
+den 28.09.2026 — beide Termine stehen unter dem Vorbehalt der Freigabe des Anwenders, siehe
+Abschnitt 3). Eine gesonderte Seite zu Gerätekatalogen nennt
 keine der ausgewerteten Statuszeilen als upload-bereit; die Seite Kosten kommt mit #439 hinzu, die
-Seiten Gerätekataloge und Simulation kommen mit der dritten Welle der Stufe KU2 hinzu.
+Seiten Gerätekataloge und Simulation kommen mit der dritten Welle der Stufe KU2 hinzu; die Seiten
+Photovoltaik und Varianten kommen mit E12 hinzu (Tabuwort-Bereinigung der Ampel-Meldungen
+beziehungsweise Kohärenzhinweis am Abschnitt PV-Vergütung).
 
 **Hinweis zum Arbeitsstand:** Die Repo-Quelle der Seite Stromspeicher trägt seit diesem
 Auftrag zusätzlich einen neuen Abschnitt „Mögliche Optimierungen“ (Aufgabe A desselben
@@ -42,7 +52,14 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.0.4 — Anwenderentscheid 22.09.2026 („letzte Nummer erhöhen"; das Programm trägt heute 1.2.0.3 in `AssemblyInfo.cs`, die Anhebung gehört zur Auslieferung)
+### Version 1.2.0.4 — eine Version für den ganzen Sammel-Upload
+
+Anwenderentscheid 22.09.2026 („letzte Nummer erhöhen"; das Programm trägt heute 1.2.0.3 in
+`AssemblyInfo.cs`, die Anhebung gehört zur Auslieferung). E12‑Q3 (Empfehlung a): Die früher
+getrennt entworfenen Versionen 1.2.0.2 (05/§ 7, Statuszeilen #343–#367) und 1.2.0.3 (Statuszeilen
+#358–#403) stehen ab dieser Fassung zusammengeführt unter 1.2.0.4 — der Sammel-Upload
+veröffentlicht **eine** Version, nicht eine je Etappe; die eigene Versionsüberschrift „1.2.0.3"
+entfällt entsprechend weiter unten.
 
 Die Diagramm-Umstellung auf Vektorgrafik (DG-E3) ist mit Statuszeile #413 abgeschlossen. Die
 folgenden vier Sätze fassen die Zwischenstände aus #404 und #411 zusammen, die dieselbe
@@ -192,6 +209,15 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   und PPA-Preis tragen einen ±-Knopf für ihre Werte je Szenario. (#462)
 - Seit 26.09.2026: Unter der Annahmentafel, im Wort- und im Excelbericht steht statt des Hinweistexts der Ausweis
   ‚n von m Parametern szenariert' mit den gepflegten Größen. (#462)
+- Seit 26.09.2026: Der Dialog Nutzungsdauern (AfA) zeigt je Technik die Sätze für Instandsetzung und Wartung in % der
+  Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). (#463)
+- Seit 26.09.2026: Betriebskostenpositionen ‚Instandhaltung …' und ‚Wartung …' mit ‚% der Investition' bekommen den Satz
+  der Nutzungsdauertabelle über ‚Sätze vorbelegen…' oder die Übernahme einer Kostenvorlage; die Herkunft steht am
+  Satz. (#463)
+- Seit 26.09.2026: Die Speicherflotte rechnet den Restwert je Einheit linear aus ihrer Nutzungsdauer; ohne eigenes
+  Ersatzintervall gilt die Nutzungsdauer der Nutzungsdauertabelle. (#463)
+- Seit 26.09.2026: Die Nutzungsdauer in den Katalogen von Heizkessel und BHKW ist als Gerätedaten gekennzeichnet;
+  maßgeblich ist die Nutzungsdauertabelle. (#463)
 - Seit 26.09.2026: Der Wärmebedarf der Gebäude wird stündlich nach VDI 6007 gerechnet; der
   Wärmebedarf eines Gebäudes zeigt die Kennzahlen des Gebäudemodells, den Vergleich der
   Rechenwege und den Verlauf der Raumtemperatur. (Gebäudesimulation G1 + G2)
@@ -236,11 +262,54 @@ Ausweis (letzter Satz der Reihe). Ohne eigenen Satz bleiben aus #461 die Nachwei
 Betrachtungszeitraum und Einspeisevergütung nennt, und die drei Zeilen mehr im Parameterblock der Formelmappe, aus
 #462 das Warnzeichen bei einem Szenariopreis ohne Erwartet-Preis und die Zeilen zu Szenariowerten ohne Wirkung.
 
+*Zu #463 (Stichwörter `nutzungsdauern` und `kosten`):* Der Satz zu den Betriebskostenpositionen folgt dem gebauten
+Stand — die Sätze der Tabelle kommen über ‚Sätze vorbelegen…' oder die Übernahme einer Kostenvorlage in die Position,
+die Tabelle rechnet nicht selbst; der Satz zu den Katalogen sagt ‚maßgeblich' wie der Kurztext am Feld. Ohne eigenen
+Satz bleiben die Herkunftszeile in Herleitung und Formelmappe, der Wartungssatz für neue Kesseleinträge in %/a (die
+Auslieferung führt keinen) und die Kennzeichnung des festen Restwerts einer Flotteneinheit als Gerätedaten.
+
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
 beiden Sätze aus #411 zu „Wärmeproduktion/Stromproduktion“ sowie zu den Bedarfs- und
 Quellprofildialogen — sie beschreiben dieselbe Bedienung wie oben, nur an weniger Stellen.
 
-### Version 1.2.0.3
+**Die „14+1 Sätze" aus Protokoll 05/§ 7 (Statuszeilen #343–#367, E12‑Q2 Empfehlung a):** 14 der
+15 Sätze decken sich inhaltlich mit den Statuszeilen #358–#366 unten oder mit bereits
+veröffentlichten Sätzen; neun Themen hatten hier noch keinen eigenen Satz. Alle neun gegen die
+Tabuwort-Regex aus `CLAUDE.md` geprüft: 0 Treffer.
+
+- Seit 26.09.2026: Der Kostendialog zeigt unter jedem gerechneten Betrag die Herleitung und
+  weist im Summenfuß der Investitionsseite bei einer Zuschussposition Investition brutto,
+  Zuschuss und Anfangsinvestition getrennt aus. (#345)
+- Seit 26.09.2026: Die Betriebsseite der Kostenverwaltung kennzeichnet Pflichtpositionen mit
+  einem Schloss statt des Papierkorbs, zeigt eine Empfehlungszeile, den Stand des zugrunde
+  liegenden Simulationslaufs, die Endenergie je Komponente und einen Warnhinweis bei doppelt
+  gepflegter Hilfsenergie. (#347)
+- Seit 26.09.2026: Ein Elektrokessel zählt zur elektrischen Welt, bekommt wie Wärmepumpe und
+  Heizstab einen Stromträger zugeordnet und erscheint in der Kostenverwaltung mit seinem
+  Stromeinsatz als eigene Zeile bei der Endenergie je Komponente. (#349, #353)
+- Seit 26.09.2026: Die Betriebskosten der Photovoltaik lassen sich auch je kWp bemessen, der
+  Summenfuß weist dazu die Kennzahl in Euro je kWp mit ihrer Herleitung aus, und der
+  Vergütungsdialog warnt rechtzeitig vor der Ausschreibungs- und der Stromsteuer-Grenze. (#350)
+- Seit 26.09.2026: Die Erlösrubrik und der BHKW-Wirtschaftlichkeitsdialog zeigen den
+  angesetzten KWK-Satz mit seiner Herkunft, Vorschlag oder eigener Wert, und rechnen ihn
+  einheitlich auf vier Nachkommastellen. (#352)
+- Seit 26.09.2026: Die Betriebskosten lassen sich bei Wärmepumpe, Heizkessel, Photovoltaik,
+  Solarthermie, Stromspeicher, Pufferspeicher und Blockheizkraftwerk auch je Kilowatt Leistung
+  bemessen. (#356)
+- Seit 26.09.2026: Die Investitionsseite der Kostenverwaltung bietet einen Knopf, der leere
+  Nutzungsdauern aus der AfA-Tabelle vorbelegt, und zeigt darunter die Tafel „Ersatz und
+  Restwert" mit Ersatzbeschaffungen und Restwert je Position. (#357)
+- Seit 26.09.2026: Die Kostenvorlage „Standard" bemisst die Hilfsenergiekosten von
+  Blockheizkraftwerk, Heizkessel und Wärmepumpe nach dem Anteil am Endenergiebedarf statt an
+  den Endenergiekosten. (#365)
+- Seit 26.09.2026: Die Rasterkarte der Stromspeicher-Größen-Sicht zeigt den Zusatz zum
+  Feinraster-Ergebnis vollständig unter dem Hinweistext. (#361)
+
+*Ohne eigenen Satz (Kleinigkeit nach Regel 13.4, wie schon in 05/§ 7 vorgeschlagen):* #346
+(KWKG-Pauschale, Jahr 0 — seltener Randfall Kleinst-BHKW).
+
+Die restlichen fünf der 15 Sätze (#358, #359, #360, #363, #364) stehen inhaltsgleich unten unter
+den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Regel 13.4.
 
 - Seit 26.09.2026: Die Wirtschaftlichkeit vergleicht wahlweise alle Varianten gegen ein
   wählbares Referenzprojekt oder zwei Stände gegeneinander. (#358)
@@ -289,12 +358,13 @@ Quellprofildialogen — sie beschreiben dieselbe Bedienung wie oben, nur an weni
 - Seit 26.09.2026: Die Farben der Diagramme lassen sich in den Einstellungen je Größe ändern;
   der Bericht nimmt dieselben Farben. (#403)
 
-*Ohne ausformulierten Satz:* Statuszeile #377 zählt zu dieser Version „die Logbuch-Sätze 1–14
-(+ #361)“; für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher
-Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformulierter Satz vor
-— beim Anwender zu erfragen, ob er einen eigenen Eintrag will oder als Kleinigkeit gilt.
+*Mit E12 ergänzt:* Statuszeile #377 zählte zu dieser Version „die Logbuch-Sätze 1–14 (+ #361)“;
+für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher Zeilenschrift nicht
+mehr abgeschnitten) lag in der Statusdatei kein ausformulierter Satz vor — der Satz oben
+(„Zusatz zum Feinraster-Ergebnis … vollständig unter dem Hinweistext") übernimmt den in 05/§ 7
+vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erledigt.
 *Zurückgestellt:* der engere Klimadiagramm-Satz aus #396 — er geht in der Sache im Satz zu
-#404/#413 (Version 1.2.0.x oben) auf.
+#404/#413 (oben) auf.
 
 ## 3 Offene Punkte
 
@@ -316,7 +386,7 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
 - Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
   22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436, E7 Teil a #437, E7 Teil b #439, E7 Teil c1
-  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454, E8 Teil b #455, E8c #460, E9 Teil a #461, E9 Teil b #462). Die Repo-Quelle
+  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454, E8 Teil b #455, E8c #460, E9 Teil a #461, E9 Teil b #462, E10 #463). Die Repo-Quelle
   `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` ist mit den Papieren zu #436 auf
   die Ergebnisseite nach E5 und E6 nachgezogen (Umschalter, vier Abschnitte, Empfehlungskarten,
   Bandbreite mit Spannenbild, Verlauf mit drei Szenarien, „Bericht erzeugen", „Verlauf nach Excel…",
@@ -359,8 +429,13 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   „Leistungspreis-Staffel" (Anker `staffel`) und mit #446 um den Punkt „Ersatzbeschaffung und Restwert je
   Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis, Nm³ und kWh im
   Brennstoffkatalog und die Prozentarten der Brennstoff- und Stromkosten aus dem Lauf ergänzt
-  (Tabuwort-Regex 0 Treffer in beiden Quellen); die Logbuch-Sätze zu #432, #434, #436, #437, #439, #440, #446,
-  #452, #454, #455, #460, #461 und #462 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt;
+  (Tabuwort-Regex 0 Treffer in beiden Quellen), mit den Papieren zu #463 um die Knöpfe ± der Trägerkarte (aus #462),
+  die Sätze für Instandsetzung und Wartung im Dialog Nutzungsdauern (AfA), den Knopf „Sätze vorbelegen…" der
+  Betriebskostenseite mit der Herkunft des Satzes und Ersatz und Restwert der Einheiten einer Speicherflotte (neue Anker
+  `nutzungsdauer-saetze`, `saetze-vorbelegen`, `flotte-restwert`; Tabuwort-Regex 0 Treffer); die Repo-Quelle
+  `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` nennt mit #463 die Nutzungsdauer von Heizkessel und BHKW
+  als Gerätedaten (Tabuwort-Regex 0 Treffer); die Logbuch-Sätze zu #432, #434, #436, #437, #439, #440, #446,
+  #452, #454, #455, #460, #461, #462 und #463 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt;
   der Satz zum Rechenkern aus #461 ist mit #462 durch die zwei Sätze der Welle E9a ersetzt, dazu drei Sätze aus E9b;
   aus zwei Sätzen zu #434 ist der Hinweistext gestrichen). Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog (#437) und die
   Kohärenzzeile „Anlagenart fehlt" (#440) sind Kleinigkeiten ohne eigenen Satz; ebenso ohne eigenen Satz
@@ -373,3 +448,27 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
 - Ältere, mit „Version offen“ oder „Version 1.2.0.1“/„1.2.0.2“ vorbereitete Logbuch-Sätze aus
   Statuszeilen vor #358 sind für dieses Papier nicht erneut geprüft; vor dem Hochladen klären,
   ob sie in einer früheren Runde schon veröffentlicht wurden oder noch offen sind.
+
+## 4 Ablauf des Uploads
+
+Kein Skript und kein Werkzeug im Repository lädt eine Wiki-Seite hoch: Das Hochladen ist eine
+manuelle Handlung der Orchestrierung in der MediaWiki-Oberfläche von `wiki.epos-plan.de`, nicht
+eines Agenten (Regel 5 des Abschnitts „Bedienungsseiten mit Repo-Quelle unter `Projekte/Wiki/`“
+im Hilfesystem-Konzept). Ablauf in Stichworten, sobald die Freigabe (E12‑Q1) vorliegt:
+
+1. Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
+2. Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
+   Repo-Quelle vergleichen; ist der Live-Stand neuer, zuerst ihn in die Repo-Quelle übernehmen
+   und erst danach ergänzen (Regel 3 desselben Konzeptabschnitts) — für Photovoltaik und
+   Varianten (neu in der Liste) sowie für die drei bereits geführten Seiten mit reiner
+   Tabuwort-Bereinigung genügt der einfache Ersatz.
+3. Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
+   durch den vollständigen Text der Repo-Quelle ersetzen; die Zusammenfassungszeile nennt die
+   Statuszeile (hier #470).
+4. Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
+   Repo-Quelle, keine Parse-Fehler, Kategorien unverändert (Muster: „Dokumentationspflege
+   Speicherauslegung“, Hilfesystem-Konzept).
+5. Für alle Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
+   (eine Version, s. o.) auf der Live-Seite „Update-Logbuch“ ergänzen.
+6. In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
+   Hilfesystem-Konzept die neuen Revisionen nachtragen (Regel: Konzept Hilfesystem 13.3).

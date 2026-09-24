@@ -93,43 +93,88 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Kenndaten schreiben genau fünf Spalten</b> — Typ, Gebäudeart, Verwendung,
-        /// Baualtersklasse, Beschreibung; Flächen, U-Werte und Bauweise bleiben unberührt. Ein
-        /// Auslieferungssatz wird nicht geschrieben und nicht gelöscht.
+        /// <b>Das Stammblatt schreibt über den Weg des Katalogeditors</b> (Welle #465): Der
+        /// Feldsatz der Hülle geht durch denselben Arbeitsstand — Prüfung und Ableitungen —
+        /// und über <c>GebaeudeKatalogHuelle.Schreiben</c> in die Datenbank. Geschrieben sind
+        /// danach die geänderten Werte; jede Spalte, die weder bearbeitet noch abgeleitet wird,
+        /// bleibt, und die NULL-Spalten des Gebäudemodells bleiben NULL. Ein Auslieferungssatz
+        /// wird weder geschrieben noch gelöscht.
         /// </summary>
         [Fact]
-        public void Die_Kenndaten_schreiben_fuenf_Spalten_und_schonen_die_Auslieferung()
+        public void Das_Stammblatt_schreibt_ueber_den_Weg_des_Katalogeditors_und_schont_die_Auslieferung()
         {
             using (var db = new TestDatenbank())
+            using (new Kulturvorrichtung())
             {
                 if (!db.Vorhanden) return;
 
-                DataTable vorher = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude_STAMM ORDER BY ID LIMIT 2");
-                string name = Convert.ToString(vorher.Rows[0]["Bezeichner"]);
+                GebaeudePrueftexte prueftexte = GebaeudeKatalogHuelle.Prueftexte();
+                GebaeudeHuelleTexte huelltexte = GebaeudeKatalogHuelle.Texte();
 
-                Assert.True(GebaeudeStammCtrl.KenndatenSchreiben(name, "Hotel", "Schule",
-                                                                  "Nicht Wohngebaeude", "C", "Stufe 5"));
+                // Der erste Satz, der die Pruefung des Editors besteht - einzelne Saetze des
+                // Bestands tragen einen U-Wert ausserhalb des Bereichs und muessen erst
+                // berichtigt werden (dieselbe Regel wie im Editor).
+                DataTable vorher = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude_STAMM ORDER BY ID");
+                var arbeit = new GebaeudeArbeitsstand();
+                int zeile = -1;
+                GebaeudeStammblattDaten satz = null;
+                for (int i = 0; i < vorher.Rows.Count && zeile < 0; i++)
+                {
+                    satz = GebaeudeAdminHuelle.Satz(Convert.ToString(vorher.Rows[i]["Bezeichner"]));
+                    arbeit.Laden(satz.Feldsatz, neu: false);
+                    if (arbeit.Pruefen(false, prueftexte, huelltexte) is null) zeile = i;
+                }
+                Assert.True(zeile >= 0, "kein Satz besteht die Pruefung");
+                string name = satz.Name;
+                Assert.NotNull(satz.Feldsatz);
+                Assert.Equal(0, arbeit.Abweichungen(satz.Feldsatz));
 
-                DataTable nachher = DataRepository.GetDataTable(
-                    "SELECT * FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", new DbParam("@b", name));
-                DataRow n = nachher.Rows[0];
-                Assert.Equal("Hotel", n["Typ"]);
-                Assert.Equal("Schule", n["Gebaeudeart"]);
-                Assert.Equal("Nicht Wohngebaeude", n["Wohngebaeude_Nicht_Wohngebaeude"]);
-                Assert.Equal("C", n["Baualtersklasse"]);
-                Assert.Equal("Stufe 5", n["Beschreibung"]);
+                arbeit.Stand.Beschreibung = "Stufe #465";
+                arbeit.Stand.UWertAussenwand = 0.33;
+                arbeit.Stand.Luftwechselrate = 0.55;
+                Assert.Equal(3, arbeit.Abweichungen(satz.Feldsatz));
 
-                var geschrieben = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    { "Typ", "Gebaeudeart", "Wohngebaeude_Nicht_Wohngebaeude", "Baualtersklasse", "Beschreibung" };
+                GebaeudePruefbefund befund = arbeit.Pruefen(false, prueftexte, huelltexte);
+                Assert.True(befund is null, befund?.Meldung);
+                arbeit.Ableiten();
+                GebaeudeKatalogErgebnis ergebnis = GebaeudeKatalogHuelle.Schreiben(arbeit.Stand, false, name);
+                Assert.True(ergebnis.Erfolg, ergebnis.Meldung);
+
+                DataRow n = DataRepository.GetDataTable(
+                    "SELECT * FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", new DbParam("@b", name)).Rows[0];
+                Assert.Equal("Stufe #465", n["Beschreibung"]);
+                Assert.Equal(0.33, Convert.ToDouble(n["k_Wert_Außenwand"]), 6);
+                Assert.Equal(0.55, Convert.ToDouble(n["Luftwechselrate"]), 6);
+
+                // Geschrieben sind nur die bearbeiteten Spalten und die ABLEITUNGEN des
+                // Editors - alles andere steht wie vorher, auch jedes NULL.
+                var bearbeitet = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "Beschreibung", "k_Wert_Außenwand", "Luftwechselrate",
+                    // die Ableitungen (GebaeudeKatalogHuelle.NachModell, GebaeudeArbeitsstand.Ableiten)
+                    "Bewohner", "Flaeche_Nutzer", "gesamte_Fensterflaeche", "Nutzflaeche",
+                    "Fensterflaeche_Ost_West", "Maximaleraumtemperatur", "Wochenende", "Ferien",
+                    "WW_Bedarf", "Ferienbeginn_1", "Baualtersklasse", "Wohngebaeude_Nicht_Wohngebaeude",
+                    // zwei Bestandsspalten, die das Modell als double fuehrt: Der Weg des Editors
+                    // schreibt ein NULL als 0 zurueck - so wie die Projektkopie (CopyFromStamm)
+                    // es ohnehin liest.
+                    "spez_Waermeverbrauch", "Waermebedarf"
+                };
+                var abweichend = new List<string>();
                 foreach (DataColumn s in vorher.Columns)
-                    if (!geschrieben.Contains(s.ColumnName))
-                        Assert.True(Equals(vorher.Rows[0][s.ColumnName], n[s.ColumnName]), s.ColumnName);
+                    if (!bearbeitet.Contains(s.ColumnName) && !Gleich(vorher.Rows[zeile][s.ColumnName], n[s.ColumnName]))
+                        abweichend.Add(s.ColumnName + ": " + vorher.Rows[zeile][s.ColumnName] + " -> " + n[s.ColumnName]);
+                Assert.True(abweichend.Count == 0, string.Join(" | ", abweichend));
 
-                // Ein Auslieferungssatz: weder Kenndaten noch Loeschen.
-                string zweiter = Convert.ToString(vorher.Rows[1]["Bezeichner"]);
+                // Ein Auslieferungssatz: weder Schreiben noch Loeschen.
+                string zweiter = Convert.ToString(vorher.Rows[zeile == 0 ? 1 : 0]["Bezeichner"]);
                 DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 1 WHERE Bezeichner = ?",
                                           new DbParam("@b", zweiter));
-                Assert.False(GebaeudeStammCtrl.KenndatenSchreiben(zweiter, "Hotel", "", "", "", ""));
+                GebaeudeKatalogDaten geschuetzt = GebaeudeAdminHuelle.Satz(zweiter).Feldsatz;
+                geschuetzt.Beschreibung = "darf nicht stehen";
+                Assert.False(GebaeudeKatalogHuelle.Schreiben(geschuetzt, false, zweiter).Erfolg);
+                Assert.NotEqual("darf nicht stehen", Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT Beschreibung FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", new DbParam("@b", zweiter))));
                 Assert.False(GebaeudeStammCtrl.Loeschen(zweiter));
                 Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?",
                                        new DbParam("@b", zweiter)));
@@ -138,6 +183,14 @@ namespace EPOS.Kern.Tests
                 Assert.True(GebaeudeStammCtrl.Loeschen(name));
                 Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?",
                                        new DbParam("@b", name)));
+            }
+
+            static bool Gleich(object a, object b)
+            {
+                if (a == DBNull.Value || b == DBNull.Value) return a == DBNull.Value && b == DBNull.Value;
+                if (a is double or float or long or int && b is double or float or long or int)
+                    return Math.Abs(Convert.ToDouble(a) - Convert.ToDouble(b)) < 1e-9;
+                return Equals(a, b);
             }
         }
 
@@ -160,6 +213,15 @@ namespace EPOS.Kern.Tests
                 Assert.True(satz.AlleDaten.Count > 20);
                 Assert.Contains(satz.AlleDaten, w => w.IstAbschnitt);
                 Assert.NotNull(satz.HgesWK);
+
+                // #465: der Feldsatz des Katalogeditors - derselbe, den der Editor laedt.
+                Assert.NotNull(satz.Feldsatz);
+                Assert.Equal(name, satz.Feldsatz!.Name);
+                GebaeudeKatalogDaten editor = GebaeudeKatalogHuelle.AusModell(GebaeudeKatalogHuelle.Laden(name));
+                var arbeit = new GebaeudeArbeitsstand();
+                arbeit.Laden(editor, neu: false);
+                Assert.Equal(0, arbeit.Abweichungen(satz.Feldsatz));
+
                 Assert.Null(GebaeudeAdminHuelle.Satz("gibt es nicht"));
             }
         }

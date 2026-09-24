@@ -846,7 +846,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze eingelesen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze übernommen und gewählt. ähnelt.
         /// </summary>
         public static string ADM_MSG_IMPORTIERT {
             get {
@@ -3691,7 +3691,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer (Gerätedaten): ähnelt.
         /// </summary>
         public static string BHKWK_LBL_NUTZUNGSDAUER {
             get {
@@ -13856,6 +13856,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Die Nutzungsdauertabelle führt für Stromspeicher keine Nutzungsdauer — die Einheit wird nicht ersetzt und trägt keinen Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. Aus dem Intervall folgen Ersatz und linearer Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_TABELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_VORGABE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzkosten: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ERSATZKOSTEN {
@@ -14450,7 +14477,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit: Gerätedaten, nicht mehr rechenwirksam. Die Studie setzt den Restwert linear an — Betrag der letzten Beschaffung × Restdauer ÷ Nutzungsdauer. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RESTWERT_ALTFELD {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RESTWERT_ALTFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit (Gerätedaten): ähnelt.
         /// </summary>
         public static string FLOTTE_ED_RESTWERT_EINHEIT {
             get {
@@ -17519,15 +17555,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
-        /// </summary>
-        public static string GEBA_BTN_BEARBEITEN {
-            get {
-                return ResourceManager.GetString("GEBA_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen… ähnelt.
         /// </summary>
         public static string GEBA_BTN_GEBAEUDETYPEN {
@@ -17636,7 +17663,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kenndaten konnten nicht geschrieben werden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudesatz konnte nicht geschrieben werden. ähnelt.
         /// </summary>
         public static string GEBA_MSG_FEHLER {
             get {
@@ -17663,7 +17690,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen und U-Werte ändert „Bearbeiten…“; dort stehen auch Fenster je Himmelsrichtung, Raumtemperaturen, Ferien und Wärmebrücken. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche ist die Summe der vier Himmelsrichtungen unter „Alle Daten“; dort stehen auch Raumtemperaturen, Ferien, Modellparameter und Kühlung. ähnelt.
         /// </summary>
         public static string GEBA_SB_HUELLE_HINWEIS {
             get {
@@ -21090,7 +21117,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer (Gerätedaten): ähnelt.
         /// </summary>
         public static string HZKK_LBL_NUTZUNGSDAUER {
             get {
@@ -23984,6 +24011,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_MSG_WERT_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KBROW_MSG_WERT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)). ähnelt.
+        /// </summary>
+        public static string KBROW_ND_GERAETEDATEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KBROW_ND_GERAETEDATEN_HINWEIS", resourceCulture);
             }
         }
         
@@ -30338,7 +30374,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer dieser Einheit: nach wie vielen Jahren sie ersetzt wird; daraus folgt auch ihr linearer Restwert. 0 = die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. ähnelt.
         /// </summary>
         public static string KI_DLG_FLE_ERSATZINTERVALL_ERL {
             get {
@@ -30473,7 +30509,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Restwert dieser Einheit am Ende der Betrachtung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten, nicht mehr rechenwirksam: ein fester Restwert dieser Einheit, der nur noch gespeichert wird. Der Kapitalwert setzt den Restwert linear aus der Nutzungsdauer (Ersatzintervall) an. ähnelt.
         /// </summary>
         public static string KI_DLG_FLE_RESTWERT_ERL {
             get {
@@ -30505,6 +30541,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_FLE_SOC_START_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_FLE_SOC_START_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des gewählten Gebäudes – nur lesbar. Einen anderen Satz wählt das Feld „satz“; einen neuen Namen bekommt ein Satz über „Duplizieren...“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBA_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBA_NAME_ERL", resourceCulture);
             }
         }
         
@@ -31292,24 +31337,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht. ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_VERWENDUNG_ERL {
@@ -31733,7 +31760,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die erwartete Nutzungsdauer des Geräts in Jahren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer des Geräts laut Katalog in Jahren — Gerätedaten, nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)). ähnelt.
         /// </summary>
         public static string KI_DLG_KBROW_NUTZUNGSDAUER_ERL {
             get {
@@ -33362,6 +33389,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_INST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_INST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_INST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_INST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer des neuen Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_NEUAFA_ERL {
@@ -33376,6 +33421,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NUD_NEUAFA_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_NUD_NEUAFA_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUINST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUINST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUINST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUINST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWART_NAME", resourceCulture);
             }
         }
         
@@ -33439,6 +33520,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NUD_TECHNIK_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_NUD_TECHNIK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WART_NAME", resourceCulture);
             }
         }
         
@@ -47313,6 +47412,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Die Kostenverwaltung trägt sie mit „Sätze vorbelegen…“ in Betriebskostenpositionen „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage; gerechnet wird mit dem Satz der Position. Eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_HINWEIS {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze vorbelegen… ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_BTN {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder die Tabelle führt für diese Technik keinen. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_KEINE {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_STATUS {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung ähnelt.
+        /// </summary>
+        public static string ND_SATZART_INSTANDSETZUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZART_INSTANDSETZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung ähnelt.
+        /// </summary>
+        public static string ND_SATZART_WARTUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZART_WARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz aus Nutzungsdauertabelle ähnelt.
+        /// </summary>
+        public static string ND_SATZ_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ND_SATZ_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3}) ähnelt.
+        /// </summary>
+        public static string ND_SATZ_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZ_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich [a] ähnelt.
         /// </summary>
         public static string ND_SP_AFA {
@@ -47327,6 +47507,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_SP_AKTIONEN {
             get {
                 return ResourceManager.GetString("ND_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung [%/a] ähnelt.
+        /// </summary>
+        public static string ND_SP_INSTANDSETZUNG {
+            get {
+                return ResourceManager.GetString("ND_SP_INSTANDSETZUNG", resourceCulture);
             }
         }
         
@@ -47363,6 +47552,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_SP_TECHNIK {
             get {
                 return ResourceManager.GetString("ND_SP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung [%/a] ähnelt.
+        /// </summary>
+        public static string ND_SP_WARTUNG {
+            get {
+                return ResourceManager.GetString("ND_SP_WARTUNG", resourceCulture);
             }
         }
         

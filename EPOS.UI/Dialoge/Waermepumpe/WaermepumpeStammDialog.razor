@@ -123,7 +123,8 @@
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
                           Vergleichsparameter="@Uebersicht" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
-                          GewaehlteChanged="BeiKaestchen">
+                          GewaehlteChanged="BeiKaestchen"
+                          Zeigeanlass="@_auswahl.Uebernahmen">
                 <Werkzeug>
                     @* "NUR MIT KUEHLFUNKTION" (Konzept Administrationsdialoge 3.1, Zone 2;
                        Stufe 4): derselbe Schalter wie in der Katalogauswahl des
@@ -1355,8 +1356,9 @@
     }
 
     /// <summary>
-    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, die erste neue
-    /// Wärmepumpe ist gewählt, und die Statuszeile nennt die Zahl der neuen Sätze (V14).
+    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, und die neuen
+    /// Wärmepumpen sind die Auswahl (V14, 7.1 d): ab zweien über ihre Kästchen („n gewählt"),
+    /// die erste steht als Fokuszeile im Stammblatt; die Statuszeile nennt ihre Zahl.
     /// </summary>
     private void ImportFertig(bool geschrieben)
     {
@@ -1367,6 +1369,8 @@
         List<Katalogfilterzeile> neu = _liste.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
         if (neu.Count == 0) return;
 
+        _auswahl.Uebernommen(neu.Select(z => z.Schluessel));
+        _vergleichszeilen = null;
         ZeileWaehlen(neu[0]);
         _status = neu.Count == 1
             ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)

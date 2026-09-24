@@ -598,6 +598,17 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
                     SpalteSicherstellen(s);
 
+                // Schritt 120 (Etappe E10, Stufe S3): die Saetze der Nutzungsdauertabelle.
+                // Reines DML aus DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // (NutzungsdauerSaetze); wiederholbar - gesetzt wird nur, was leer ist.
+                NutzungsdauerSaetze.Ausfuehren();
+
+                // Schritt 121 (Welle #468): der Katalogverweis des Projektgebaeudes samt Index
+                // und Nachtrag, dazu die Reparatur der Sonstigen Flaeche ohne U-Wert. Aus
+                // DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // (GebaeudeKatalogverweis); jeder Handgriff wiederholbar.
+                GebaeudeKatalogverweis.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

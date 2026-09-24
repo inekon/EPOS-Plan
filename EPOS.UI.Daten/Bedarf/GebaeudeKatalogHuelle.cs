@@ -46,6 +46,7 @@ namespace WindowsFormsApplication1
             // Oeffnen der Ueberlagerung gelesen; das OK der Profilliste schreibt sie zurueck -
             // zusammen mit dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
             var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
+            GebaeudePrueftexte p = Prueftexte();
 
             return new Dictionary<string, object>
             {
@@ -121,37 +122,70 @@ namespace WindowsFormsApplication1
                 ["BtnSpeichernUnterText"] = Text_("GEBK_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnBrauchwasserText"] = Text_("GEBK_BTN_BRAUCHWASSER", "Brauchwasser..."),
 
-                ["MeldungZahlFehlt"] = Text_("GEBK_MSG_ZAHL", "Bitte {0} als Zahl eingeben."),
-                ["MeldungNameFehlt"] = Text_("GEBK_MSG_NAME_LEER", "Gebäudenamen eingeben!"),
-                ["MeldungFerienWinter"] = Text_(Ferienzeit.MELDUNG_WINTER,
-                    "Die Ferien müssen über die Jahresgrenze gehen!"),
-                ["MeldungFerienOstern"] = Text_(Ferienzeit.MELDUNG_OSTERN,
-                    "Fehler: Bei der Eingabe der Osterferien!"),
-                ["MeldungFerienSommer"] = Text_(Ferienzeit.MELDUNG_SOMMER,
-                    "Fehler: Bei der Eingabe der Sommerferien!"),
-                ["MeldungFerienHerbst"] = Text_(Ferienzeit.MELDUNG_HERBST,
-                    "Fehler: Bei der Eingabe der Herbstferien!"),
+                // Feldnamen und Meldungen der Pruefung - aus EINER Zuordnung (Prueftexte), die
+                // auch das Stammblatt der Gebaeudeverwaltung nimmt (#465).
+                ["MeldungZahlFehlt"] = p.MeldungZahlFehlt,
+                ["MeldungNameFehlt"] = p.MeldungNameFehlt,
+                ["MeldungFerienWinter"] = p.MeldungFerienWinter,
+                ["MeldungFerienOstern"] = p.MeldungFerienOstern,
+                ["MeldungFerienSommer"] = p.MeldungFerienSommer,
+                ["MeldungFerienHerbst"] = p.MeldungFerienHerbst,
 
-                ["FeldWohnflaeche"] = Text_("GEBK_FELD_WOHNFLAECHE", "Nutzfläche"),
-                ["FeldFlaecheNutzer"] = Text_("GEBK_FELD_FLAECHE_NUTZER", "Fläche / Nutzer"),
-                ["FeldWaermegewinne"] = Text_("GEBK_FELD_WAERMEGEWINNE", "Interne Wärmegewinne"),
-                ["FeldFensterdurchlassgrad"] =
-                    Text_("GEBK_FELD_FENSTERDURCHLASS", "Fensterdurchlaßgrad"),
-                ["FeldRaumhoehe"] = Text_("GEBK_FELD_RAUMHOEHE", "Raumhöhe"),
-                ["FeldFFSued"] = Text_("GEBK_FELD_FF_SUED", "Fensterfläche Süd"),
-                ["FeldFFNord"] = Text_("GEBK_FELD_FF_NORD", "Fensterfläche Nord"),
-                ["FeldFlaecheAussenwand"] = Text_("GEBK_FELD_FL_AUSSENWAND", "Fläche Außenwand"),
-                ["FeldDachflaeche"] = Text_("GEBK_FELD_DACHFLAECHE", "Gebäude Dachfläche"),
-                ["FeldGrundflaeche"] = Text_("GEBK_FELD_GRUNDFLAECHE", "Gebäude Grundfläche"),
-                ["FeldSonstigeFlaechen"] = Text_("GEBK_FELD_SONST_FLAECHEN", "sonstige Flächen"),
-                ["FeldUAussenwand"] = Text_("GEBK_FELD_U_AUSSENWAND", "U-Wert Außenwand"),
-                ["FeldUFenster"] = Text_("GEBK_FELD_U_FENSTER", "U-Wert Fenster"),
-                ["FeldUDachflaeche"] = Text_("GEBK_FELD_U_DACHFLAECHE", "U-Wert Dachfläche"),
-                ["FeldUGrundflaeche"] = Text_("GEBK_FELD_U_GRUNDFLAECHE", "U-Wert Grundfläche"),
-                ["FeldUSonstiges"] = Text_("GEBK_FELD_U_SONSTIGES", "U-Wert Sonstiges"),
+                ["FeldWohnflaeche"] = p.FeldWohnflaeche,
+                ["FeldFlaecheNutzer"] = p.FeldFlaecheNutzer,
+                ["FeldWaermegewinne"] = p.FeldWaermegewinne,
+                ["FeldFensterdurchlassgrad"] = p.FeldFensterdurchlassgrad,
+                ["FeldRaumhoehe"] = p.FeldRaumhoehe,
+                ["FeldFFSued"] = p.FeldFFSued,
+                ["FeldFFNord"] = p.FeldFFNord,
+                ["FeldFlaecheAussenwand"] = p.FeldFlaecheAussenwand,
+                ["FeldDachflaeche"] = p.FeldDachflaeche,
+                ["FeldGrundflaeche"] = p.FeldGrundflaeche,
+                ["FeldSonstigeFlaechen"] = p.FeldSonstigeFlaechen,
+                ["FeldUAussenwand"] = p.FeldUAussenwand,
+                ["FeldUFenster"] = p.FeldUFenster,
+                ["FeldUDachflaeche"] = p.FeldUDachflaeche,
+                ["FeldUGrundflaeche"] = p.FeldUGrundflaeche,
+                ["FeldUSonstiges"] = p.FeldUSonstiges,
 
                 ["HilfeSchluessel"] = "Form_Gebaeude1.btn_Help"
             };
+        }
+
+        /// <summary>
+        /// <b>Feldnamen und Meldungen der Prüfung</b> (<see cref="GebaeudeArbeitsstand.Pruefen"/>)
+        /// — die EINE Zuordnung zu den Ressourcen, für den Katalogeditor (<see cref="Gaben"/>)
+        /// und das Stammblatt der Gebäudeverwaltung (<c>GebaeudeAdminHuelle</c>, #465). Der
+        /// Rückfall ist der Vorgabewert des Bündels.
+        /// </summary>
+        internal static GebaeudePrueftexte Prueftexte()
+        {
+            var p = new GebaeudePrueftexte();
+            p.MeldungZahlFehlt = Text_("GEBK_MSG_ZAHL", p.MeldungZahlFehlt);
+            p.MeldungNameFehlt = Text_("GEBK_MSG_NAME_LEER", p.MeldungNameFehlt);
+            p.MeldungFerienWinter = Text_(Ferienzeit.MELDUNG_WINTER, p.MeldungFerienWinter);
+            p.MeldungFerienOstern = Text_(Ferienzeit.MELDUNG_OSTERN, p.MeldungFerienOstern);
+            p.MeldungFerienSommer = Text_(Ferienzeit.MELDUNG_SOMMER, p.MeldungFerienSommer);
+            p.MeldungFerienHerbst = Text_(Ferienzeit.MELDUNG_HERBST, p.MeldungFerienHerbst);
+
+            p.FeldWohnflaeche = Text_("GEBK_FELD_WOHNFLAECHE", p.FeldWohnflaeche);
+            p.FeldFlaecheNutzer = Text_("GEBK_FELD_FLAECHE_NUTZER", p.FeldFlaecheNutzer);
+            p.FeldWaermegewinne = Text_("GEBK_FELD_WAERMEGEWINNE", p.FeldWaermegewinne);
+            p.FeldFensterdurchlassgrad = Text_("GEBK_FELD_FENSTERDURCHLASS", p.FeldFensterdurchlassgrad);
+            p.FeldRaumhoehe = Text_("GEBK_FELD_RAUMHOEHE", p.FeldRaumhoehe);
+            p.FeldLuftwechsel = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_LUFTWECHSEL", p.FeldLuftwechsel));
+            p.FeldFFSued = Text_("GEBK_FELD_FF_SUED", p.FeldFFSued);
+            p.FeldFFNord = Text_("GEBK_FELD_FF_NORD", p.FeldFFNord);
+            p.FeldFlaecheAussenwand = Text_("GEBK_FELD_FL_AUSSENWAND", p.FeldFlaecheAussenwand);
+            p.FeldDachflaeche = Text_("GEBK_FELD_DACHFLAECHE", p.FeldDachflaeche);
+            p.FeldGrundflaeche = Text_("GEBK_FELD_GRUNDFLAECHE", p.FeldGrundflaeche);
+            p.FeldSonstigeFlaechen = Text_("GEBK_FELD_SONST_FLAECHEN", p.FeldSonstigeFlaechen);
+            p.FeldUAussenwand = Text_("GEBK_FELD_U_AUSSENWAND", p.FeldUAussenwand);
+            p.FeldUFenster = Text_("GEBK_FELD_U_FENSTER", p.FeldUFenster);
+            p.FeldUDachflaeche = Text_("GEBK_FELD_U_DACHFLAECHE", p.FeldUDachflaeche);
+            p.FeldUGrundflaeche = Text_("GEBK_FELD_U_GRUNDFLAECHE", p.FeldUGrundflaeche);
+            p.FeldUSonstiges = Text_("GEBK_FELD_U_SONSTIGES", p.FeldUSonstiges);
+            return p;
         }
 
         /// <summary>Das Textbündel der VDI-6007-Struktur — der Rückfall ist der Vorgabewert des Bündels.</summary>
@@ -566,7 +600,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static readonly string[] VERWENDUNGSWERTE = { "Wohngebaeude", "Nicht Wohngebaeude" };
 
-        private static string[] Verwendungen()
+        internal static string[] Verwendungen()
         {
             return new[]
             {
@@ -575,7 +609,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static string[] Bauarten()
+        internal static string[] Bauarten()
         {
             return new[]
             {
@@ -585,7 +619,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static string[] Ferienzeitraeume()
+        internal static string[] Ferienzeitraeume()
         {
             return new[]
             {

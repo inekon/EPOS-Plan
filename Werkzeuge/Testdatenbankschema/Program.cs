@@ -1461,6 +1461,50 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 120: die Saetze der Nutzungsdauertabelle (Etappe E10, Stufe S3 des
+            //      Nutzungsdauer-Konzepts). NACH 119; braucht 75 (Tab_Nutzungsdauer).
+            //      REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_120_NutzungsdauerSaetze bedient (NutzungsdauerSaetze):
+            //      die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+            //      Empfehlungsbereichs der Betriebsvorlagen-Saat - gesetzt wird nur, was leer ist.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Basis fuehrt keine Wirtschaftlichkeitsgroesse;
+            //      rechenwirksam wird ein Satz erst in der Satzermittlung der Betriebskosten.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 120 - Saetze der Nutzungsdauertabelle, offen vorher: " +
+                              NutzungsdauerSaetze.Offen() + ".");
+            if (!trocken)
+            {
+                NutzungsdauerSaetze.Bericht bericht120 = NutzungsdauerSaetze.Ausfuehren();
+                Console.WriteLine("Schritt 120 - " + bericht120.Text() + "; offen: " +
+                                  NutzungsdauerSaetze.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 121: der Katalogverweis des Projektgebaeudes (Welle #468, Konzept
+            //      Administrationsdialoge 7.1 (a)). NACH 120 ohne Reihenfolgebedingung.
+            //      Spalte Tab_Gebaeude.ID_Gebaeude_Stamm (REFERENCES Tab_Gebaeude_STAMM,
+            //      ON DELETE SET NULL), Index, Nachtrag ueber den EINDEUTIGEN Namen, dann die
+            //      Reparatur der Sonstigen Flaeche ohne U-Wert im Katalog - alles aus
+            //      GebaeudeKatalogverweis, DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_121_GebaeudeKatalogverweis bedient. NICHT ueber
+            //      SpalteSicherstellen: Dessen Typuebersetzung schnitte das REFERENCES weg.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest den Verweis; die reparierten
+            //      Katalogsaetze nutzt kein Projekt, und ihre Flaeche fuehrte mit U = 0 nie Waerme.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 121 - Katalogverweis des Projektgebaeudes: " +
+                              (GebaeudeKatalogverweis.SpalteVorhanden() ? "Spalte vorhanden" : "Spalte offen") +
+                              ", Sonstige Flaeche ohne U-Wert vorher " +
+                              Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG) + ".");
+            if (!trocken)
+            {
+                GebaeudeKatalogverweis.Bericht bericht121 = GebaeudeKatalogverweis.Ausfuehren();
+                if (bericht121.SpalteAngelegt) angelegt++;
+                Console.WriteLine("Schritt 121 - " + bericht121.Text() + "; offen: " +
+                                  Zahl(GebaeudeKatalogverweis.Zaehlung()) + " und " +
+                                  Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG) + " (erwartet 0 und 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -398,7 +398,9 @@ namespace EPOS.Kern.Tests
             // Energiesteuer-Vorschau je Wahl; die Vorzeichenwechsel reisen unverändert.
             // E8c (E8b‑Q3): alt 8, neu 9 — Fassung 9 trägt zusätzlich das Startjahr je
             // Betriebskostenposition; auch das ändert an den Vorzeichenwechseln nichts.
-            Assert.Equal(9, ErgebnisNachweisUmschlag.FASSUNG);
+            // E10 (Stufe S3): alt 9, neu 10 — Fassung 10 trägt zusätzlich die Herkunft des
+            // Satzes je Betriebskostenposition (Satz aus der Nutzungsdauertabelle).
+            Assert.Equal(10, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(
