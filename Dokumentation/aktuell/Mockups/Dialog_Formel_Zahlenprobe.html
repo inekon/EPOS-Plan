@@ -3573,7 +3573,28 @@ Zuordnung der Zeilen
         Einspeisevergütungen stehen; ihr Paar trägt der ±-Knopf an ihrem Feld in der Gruppe „Strom", die KWK-Vergütung
         im Dialog „BHKW-Wirtschaftlichkeit".</div>
       </div>
-      <div class="f-info"><b>Ausschnitt:</b> Der Dialog führt sechs Gruppen mit zwanzig Zahlenfeldern, drei
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Risiko (DIN EN 17463, 6.5) <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— ⓘ Hilfe · gebaut #478</span></div>
+        <div class="f-zeile eng"><label>Art der Risikoberücksichtigung:</label><span class="f-eingabe">aus — kein Risiko angesetzt ▾</span></div>
+        <div class="f-spalten">
+          <div>
+            <div class="f-zeile eng" style="opacity:.5"><label>Zinszuschlag</label><span class="f-eingabe num">—</span><span class="f-einheit">%-Punkte</span></div>
+          </div>
+          <div>
+            <div class="f-zeile eng" style="opacity:.5"><label>Rückflusseinbuße R<sub>loss</sub></label><span class="f-eingabe num">—</span><span class="f-einheit">€ je Periode</span></div>
+            <div class="f-zeile eng" style="opacity:.5"><label>Eintrittswahrscheinlichkeit p<sub>loss</sub></label><span class="f-eingabe num">—</span><span class="f-einheit">%</span></div>
+          </div>
+        </div>
+        <div class="f-info">Kein Risiko angesetzt (Vorgabe) — gerechnet wird mit dem Kalkulationszins und den Zahlungen,
+        wie sie sind. Die Klappliste bietet dazu „Zinszuschlag" und „Zahlungsstromabzug R<sub>loss</sub> × p<sub>loss</sub>
+        (Anhang F)"; die Felder der nicht gewählten Art sind gesperrt, nicht ausgeblendet (gezeichnet: alle drei gesperrt).
+        Der <b>Zinszuschlag</b> gilt in allen drei Szenarien — Kapitalwert, Annuität, Amortisation und Zinsfuß rechnen mit
+        i + Zuschlag. Der <b>Zahlungsstromabzug</b> zieht je Periode ab Jahr 1 R<sub>loss</sub> × p<sub>loss</sub> / 100
+        ab — nicht im Jahr 0, nicht vom Restwert —, bei jedem Stand außer der Referenz; rechnet die Gruppe nur einen
+        Stand, trägt er ihn selbst. R<sub>loss</sub> ist ein Betrag in € je Periode. Die Herleitungszeile nennt den
+        wirksamen Satz, z. B. „Abzug je Periode ab Jahr 1: 10.000 € × 10 % = 1.000 €".</div>
+      </div>
+      <div class="f-info"><b>Ausschnitt:</b> Der Dialog führt sieben Gruppen mit dreiundzwanzig Zahlenfeldern, vier
       Klapplisten und einem Schalter (Strom, BHKW, Brennstoff, Bilanz je eigene Gruppe); gezeichnet sind die
       Felder mit eigener Ressourcentafelzeile.</div>
     </div>
@@ -4362,7 +4383,10 @@ Zuordnung der Zeilen
       <div class="s-herleitung" style="margin-top:9px">0 von m Parametern szenariert</div>
       <div class="s-info">An der Stelle des Hinweistexts steht der Ausweis. Gezeichnet ohne Pflege; m zählt die
       Parameter der Vergleichsgruppe nach der Regel oben. Mit einer Pflege folgen die Größen, etwa „2 von 16
-      Parametern szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E" (ein Stand mit Strom und Erdgas).</div>
+      Parametern szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E" (ein Stand mit Strom und Erdgas).
+      Mit gepflegtem Risiko (gebaut #478) steht unter den Zeilen der Tafel die Zeile „Risiko (DIN EN 17463, 6.5)" —
+      Zinszuschlag oder Abzug R<sub>loss</sub> × p<sub>loss</sub>, in allen drei Spalten gleich; sie zählt nicht im
+      Ausweis, das Risiko ist kein Szenariowert.</div>
 
       <div class="zone" style="margin:18px 0 10px;color:#5A5A5A">Was daraus im Lauf wird</div>
       <div class="s-scroll">
@@ -4409,6 +4433,11 @@ Zuordnung der Zeilen
           berücksichtigt · Ertragsteuern nicht berücksichtigt · keine Abschreibungen als Zahlung ·
           Restwert linear — dokumentierte Abweichung von 6.4 · Risikozuschlag nicht angesetzt
           (6.5 optional).</div>
+          <div class="s-info">Gezeichnet ohne Risiko. Ist im Parameterdialog ein Risiko gepflegt (Gruppe „Risiko",
+          gebaut #478), heißt die letzte Deklaration „Risiko angesetzt (6.5): Zinszuschlag 1 %-Punkte" bzw. „Risiko
+          angesetzt (6.5): Abzug R<sub>loss</sub> × p<sub>loss</sub> = 10.000 € × 10 % = 1.000 € je Periode ab Jahr 1";
+          dieselben Worte stehen in der Nachweiszeile, in der Zeile „Risiko (DIN EN 17463, 6.5)" der Annahmentafel und in
+          Punkt 6 der Anhang-E-Checkliste („Risiko angesetzt: …; Degradation nicht gerechnet — deklariert").</div>
         </div>
       </details>
     </div>
@@ -4532,8 +4561,9 @@ Einstufung
         <tr><td>5 · Deklarationen</td>
             <td>nominal gerechnet · Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern
             nicht · keine Abschreibungen als Zahlung · Restwert linear (dokumentierte Abweichung von
-            6.4) · Risikozuschlag nicht angesetzt · nicht monetäre Wirkungen benannt</td>
-            <td>7 · 9 · Anhang E</td></tr>
+            6.4) · Risikozuschlag nicht angesetzt — mit gepflegtem Risiko „Risiko angesetzt (6.5): …" (gebaut #478) ·
+            nicht monetäre Wirkungen benannt</td>
+            <td>6.5 · 7 · 9 · Anhang E</td></tr>
       </tbody>
     </table>
   </div>
@@ -4575,6 +4605,11 @@ Einstufung
             rechnen für Erwartet, Günstig und Ungünstig mit Formeln auf die Spalte des Szenarios im Parameterblock —
             die Tabellen reichen bis zum längsten Zeitraum, Jahre nach T<sub>s</sub> bleiben über eine Schutzformel
             leer, ein mehrdeutiger Zinsfuß steht als Text „nicht eindeutig";
+            <b>Risikozeilen (ergänzt #478)</b>: mit gepflegtem Risiko trägt der Parameterblock beim Zinszuschlag
+            <span class="mono">Zins_Basis</span> und <span class="mono">Risiko_Zuschlag</span>, <span class="mono">Zins_i</span>
+            als ihre Summe, beim Zahlungsstromabzug <span class="mono">Risiko_Verlust</span>, <span class="mono">Risiko_p</span>
+            und <span class="mono">Risiko_Abzug</span> als Produkt; die Mehrjahrestabellen führen die Spalte „Risikoabzug" als
+            <span class="mono">=-Risiko_Abzug</span> ab Jahr 1;
             EPOS trägt zu jeder Formel den Wert des Rechenkerns ein,
             Excel rechnet beim Öffnen neu</td></tr>
         <tr><td>Was dauerhaft <b>Werte</b> bleibt</td>
@@ -4627,6 +4662,7 @@ Einstufung
         <tr><td>Formelmappe, Parameterblock: Titel „Parameter der Rechnung (je Szenario)", Spalte „Name in den Formeln", Zeilen „Kalkulationszins i" · „Betrachtungszeitraum T [a]" · „Preissteigerung Energie p_E (je Jahr)" · „Preissteigerung Betrieb p_B (je Jahr)" · „Preissteigerung Investition/Ersatz p_I (je Jahr)" · „Investition — Änderung gegenüber Erwartet" · „Erträge — Änderung gegenüber Erwartet" · „Nutzungsdauer — Änderung gegenüber Erwartet [a]", Hinweis zu den Formeln, Grenze der Mappe <b>neu #455</b></td><td class="rs">WIRT_FM_PARAM_TITEL · WIRT_FM_PARAM_NAME · WIRT_FM_PARAM_ZINS · WIRT_FM_PARAM_ZEITRAUM · WIRT_FM_PARAM_PREIS_E · WIRT_FM_PARAM_PREIS_B · WIRT_FM_PARAM_PREIS_I · WIRT_FM_PARAM_INVEST · WIRT_FM_PARAM_ERTRAG · WIRT_FM_PARAM_DAUER · WIRT_FM_PARAM_HINWEIS · WIRT_FM_GRENZE</td><td>Tabellenbericht, Blatt „Wirtschaftlichkeit" unter dem Parameternachweis</td></tr>
         <tr><td>Formelmappe, Mehrjahrestabellen und Betriebskosten: Hilfsspalten „Basis Betrieb mit p_B [€/a]" · „Basis Betrieb mit p_E [€/a]", Differenzreihe „Δ nominal gegenüber {0} (in T mit Restwert)" · „Δ Barwert gegenüber {0}" · „Δ kumuliert gegenüber {0}", Hilfsspalte „Nulldurchgang in diesem Jahr [a]", Spalten „Menge" · „Satz" <b>neu #455</b></td><td class="rs">WIRT_FM_MJ_BASIS_PB · WIRT_FM_MJ_BASIS_PE · WIRT_FM_MJ_DELTA_NOMINAL · WIRT_FM_MJ_DELTA_BARWERT · WIRT_FM_MJ_DELTA_KUMULIERT · WIRT_FM_MJ_AMORT_HILFE · WIRT_FM_BK_MENGE · WIRT_FM_BK_SATZ</td><td>Tabellenbericht, rechts neben den Mehrjahrestabellen; „Betriebskosten nach Kostenarten"</td></tr>
         <tr><td>Formelmappe je Szenario: Blocktitel „Mehrjahresübersicht der Zahlungsströme — Szenario „{0}" (T = {1} a)", Hinweiszeile „Nominale Zahlungen je Jahr im Szenario „{0}", in €: …", Hilfsspalten „Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht)" · „Vorzeichenwechsel bis hier", Zinsfuß „nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C)" <b>neu #477</b>; Parameterzeile „Betrachtungszeitraum T_s je Szenario [a]", Hinweis zu den Formeln je Szenario (Namen mit dem Anhang _Guenstig bzw. _Unguenstig, Jahreszeilen bis zum längsten Zeitraum), Punkt 11 der Checkliste „… die Mappe rechnet alle drei Szenarien formelbasiert …" <b>neu gefasst #477</b> (je Sprache 9.932 Einträge)</td><td class="rs">WIRT_FM_MJ_SZENARIO_TITEL · WIRT_FM_MJ_SZENARIO_HINWEIS · WIRT_FM_MJ_VORZEICHEN · WIRT_FM_MJ_WECHSEL · WIRT_FM_IZF_NICHT_EINDEUTIG · WIRT_FM_PARAM_ZEITRAUM · WIRT_FM_PARAM_HINWEIS · WIRT_AE_11_STAND</td><td>Tabellenbericht, Blatt „Wirtschaftlichkeit" unter den Tabellen von Erwartet und rechts neben den Differenzreihen; Parameterblock; Punkt 11 in Überlagerung, Abschlussseite und Blatt „Checkliste Anhang E"</td></tr>
+        <tr><td>Risikomodul (V‑G7): Gruppe „Risiko (DIN EN 17463, 6.5)", Klappliste „Art der Risikoberücksichtigung:" mit „aus — kein Risiko angesetzt" · „Zinszuschlag" · „Zahlungsstromabzug R_loss × p_loss (Anhang F)", Felder „Zinszuschlag [%-Punkte]:" · „Rückflusseinbuße R_loss [€ je Periode]:" · „Eintrittswahrscheinlichkeit p_loss [%]:", die Herleitungszeile in drei Fassungen (aus, Zuschlag, Abzug); Kurzfassungen „Zinszuschlag {0} %-Punkte" · „Abzug R_loss × p_loss = {0} € × {1} % = {2} € je Periode ab Jahr 1", Nachweiszeile „Risiko (DIN EN 17463, 6.5): {0}", Annahmenzeile „Risiko (DIN EN 17463, 6.5)", Deklaration „Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen benannt" bzw. „… keine benannt", Mehrjahresspalte „Risikoabzug", Gliederungszeile „Risikoabzug (Anhang F)", Punkt 6 der Checkliste „…; Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert.", Parameterblock der Formelmappe „Risikozuschlag auf den Zins (6.5)" · „Kalkulationszins mit Risikozuschlag" · „Rückflusseinbuße R_loss [€ je Periode]" · „Eintrittswahrscheinlichkeit p_loss" · „Risikoabzug je Periode ab Jahr 1 [€]", die vier Erläuterungen des Assistenten <b>neu #478</b> (29 Schlüssel, je Sprache 9.961 Einträge)</td><td class="rs">WPAR_G_RISIKO · WPAR_RISIKO_ART · WPAR_RISIKO_AUS · WPAR_RISIKO_ZINS · WPAR_RISIKO_ABZUG · WPAR_RISIKO_ZUSCHLAG · WPAR_RISIKO_VERLUST · WPAR_RISIKO_P · WIRT_RISIKO_HERLEITUNG_AUS · WIRT_RISIKO_HERLEITUNG_ZINS · WIRT_RISIKO_HERLEITUNG_ABZUG · WIRT_RISIKO_KURZ_ZINS · WIRT_RISIKO_KURZ_ABZUG · WIRT_RISIKO_NACHWEIS · WIRT_ANN_RISIKO · WIRT_DEKL_RISIKO_ANGESETZT · WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM · WIRT_MJ_RISIKO · WIRT_GL_RISIKO · WIRT_AE_6_STAND_RISIKO · WIRT_FM_PARAM_RISIKO_ZUSCHLAG · WIRT_FM_PARAM_ZINS_RISIKO · WIRT_FM_PARAM_RISIKO_VERLUST · WIRT_FM_PARAM_RISIKO_P · WIRT_FM_PARAM_RISIKO_ABZUG · KI_DLG_WPA_RISIKO_ART_ERL · KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL · KI_DLG_WPA_RISIKO_VERLUST_ERL · KI_DLG_WPA_RISIKO_P_ERL</td><td>Parameterdialog (Zone „Dialog — Parameter"); Szenariozeile, Annahmentafel und Block 5 der Seite; Gliederung, Mehrjahrestabelle und Parameterblock beider Berichte; Punkt 6 in Überlagerung, Abschlussseite und Blatt „Checkliste Anhang E"</td></tr>
         <tr><td>Betriebskostentabelle „Betriebskosten nach Kostenarten": Spalte „Bemessung" mit dem Text des Bemessungskatalogs — die fünf eigenen Texte „fester Betrag" · „% der Investition" · „je Betriebsstunde" · „je kWh" · „% der Brennstoffkosten" sind gestrichen —, Zusatz „ab Jahr {0}" in der Herleitungsspalte, Warnung „⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.", Hinweistext über der Tabelle mit dem Satz zum Startjahr <b>neu #460</b> (je Sprache 8.709 Einträge)</td><td class="rs">BM_* (Bemessungskatalog, unverändert) · WIRT_BK_AB_JAHR (neu) · WIRT_BK_ABWEICHUNG · WIRT_BK_HINWEIS (neu gefasst); gestrichen BEMESSUNG_BETRAG · BEMESSUNG_PROZENT_INVESTITION · BEMESSUNG_EUR_PRO_H · BEMESSUNG_EUR_PRO_KWH · BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN</td><td>Wort- und Tabellenbericht, „Betriebskosten nach Kostenarten"</td></tr>
         <tr><td>Vollständige Szenarioabdeckung im Kern (U15): Kohärenzzeilen „Szenario-Leistungspreis des Energieträgers „{0}" ohne Wirkung: …" (neben Staffel oder Saisonreihe) · „Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — …" · „Szenario-Einspeisevergütung ohne Wirkung: …" (Rollenmodell) · „Szenario-Einspeisevergütung (PV) ohne Wirkung: …" (PV-Vergütungsdialog); Nachweiszeile „Trägerpreise dieses Szenarios: {0}" mit „Arbeitspreis" · „Grundpreis" · „Leistungspreis"; Parameterblock der Formelmappe „Mengen — Änderung gegenüber Erwartet" · „Einspeisevergütung PV [€/kWh]" · „Einspeisevergütung KWK [€/kWh]" · „Arbeitspreis {0} ({1}) je Abrechnungseinheit" · „Grundpreis {0} ({1}) [€/a]" · „Leistungspreis {0} ({1})"; Annahmentafel „Mengenänderung" · „Einspeisevergütung PV" · „Einspeisevergütung KWK" (nur bei Pflege) <b>neu #461</b> (17 Schlüssel; je Sprache 8.848 Einträge)</td><td class="rs">WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG · WIRT_SZ_ROLLEN_STROMPREIS · WIRT_SZ_ROLLEN_EINSPEISUNG · WIRT_SZ_PV_DIALOG_EINSPEISUNG · WIRT_SZ_TRAEGERPREISE · WIRT_SZ_TP_ARBEIT · WIRT_SZ_TP_GRUND · WIRT_SZ_TP_LEISTUNG · WIRT_FM_PARAM_MENGE · WIRT_FM_PARAM_VERGUETUNG · WIRT_FM_PARAM_VERGUETUNG_KWK · WIRT_FM_PARAM_TP_ARBEIT · WIRT_FM_PARAM_TP_GRUND · WIRT_FM_PARAM_TP_LEISTUNG · WIRT_ANN_MENGE · WIRT_ANN_VERGUETUNG · WIRT_ANN_VERGUETUNG_KWK</td><td>Kohärenzzeilen der Ergebnisseite und beider Berichte; Annahmenzeilen in Wort- und Tabellenbericht; Parameterblock der Formelmappe; Annahmentafel „Was ist angenommen?"</td></tr>
         <tr><td>Szenarioabdeckung in den Dialogen (U15): Szenariotafel „Betrachtungszeitraum" · „Mengenänderung" samt den Erläuterungen des Assistenten; der Knopf-Dialog der Szenariowerte „Szenariowerte — {0}", „Erwartet: {0} {1}" · „Erwartet: kein Wert gepflegt", „Best (Günstig):" · „Worst (Ungünstig):", „Eingabe in % vom Erwartet-Wert" · „Eingabe absolut [{0}]" · „ergibt: Best {0} · Worst {1}", „Leer oder 0 heißt „wie Erwartet" …" · „wie Erwartet" · „gepflegt", am Knopf „Szenariowerte Best/Worst pflegen" · „Szenariowerte gepflegt — Best {0} · Worst {1}", Warnung „Kein Erwartet-Wert gepflegt: …" · „ohne Erwartet-Wert", die Kohärenzzeilen des PV-Vergütungsdialogs, die Absage des Assistenten an Nutzungsdauer, Startjahr und Zuschuss; an der Trägerkarte „Szenariopreise Best/Worst", Hinweis, „{0}: Szenariopreis ohne Erwartet-Preis — …", Speicherfehler; Annahmen „DV-Entgelt" · „PPA-Preis"; Punkt 9 der Checkliste „drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}." <b>neu #462</b> (38 Schlüssel mit den zwei des Ausweises oben; <span class="mono">WIRT_SZEN_HINWEIS</span> gestrichen, <span class="mono">WPAR_SZ_HINWEIS</span> und <span class="mono">WIRT_AE_9_TEILWEISE</span> neu gefasst; je Sprache 9.020 Einträge)</td><td class="rs">WPAR_SZ_ZEITRAUM · WPAR_SZ_MENGE · KI_DLG_WPA_SZ_ZEITRAUM_ERL · KI_DLG_WPA_SZ_MENGE_ERL · KI_DLG_CSE_GROESSE_NAME · KI_DLG_CSE_GROESSE_ERL · KI_DLG_CSE_ERWARTET_NAME · KI_DLG_CSE_ERWARTET_ERL · KI_DLG_CSE_EINHEIT_NAME · KI_DLG_CSE_EINHEIT_ERL · KI_DLG_CSE_NUR_KOSTEN · SZP_TITEL · SZP_ERWARTET · SZP_ERWARTET_LEER · SZP_LABEL_BEST · SZP_LABEL_WORST · SZP_PROZENT · SZP_ABSOLUT · SZP_UMRECHNUNG · SZP_LEER · SZP_WIE_ERWARTET · SZP_GEPFLEGT · SZP_KNOPF_KURZ · SZP_KNOPF_GEPFLEGT · SZP_OHNE_ERWARTET · SZP_OHNE_ERWARTET_KURZ · SZP_PV_INAKTIV · SZP_PV_DV_OHNE_WIRKUNG · SZP_PV_PPA_OHNE_WIRKUNG · ETV_SZ_TITEL · ETV_SZ_HINWEIS · ETV_SZ_OHNE_ERWARTET · ETV_SZ_SPEICHERFEHLER · WIRT_ANN_DV_ENTGELT · WIRT_ANN_PPA_PREIS · WIRT_AE_9_ABDECKUNG</td><td>Dialog „Parameter" (Szenariotafel), Knopf-Dialog der Szenariowerte an Trägerkarte, Parameterdialog, Dialog „BHKW-Wirtschaftlichkeit" und PV-Vergütungsdialog; Annahmentafel; Anhang-E-Checkliste</td></tr>
@@ -4780,7 +4816,15 @@ Einstufung
   E14‑Q3, gebaut jeweils die Empfehlung a, offen beim Anwender; E14‑Q2 a löst E8b‑Q1 a ab); Punkt 11 der Checkliste
   nennt „alle drei Szenarien formelbasiert" (Zone „Bericht und Ausgabe"). Die Ressourcentafel der Kategorie 8 nennt
   die fünf neuen und die drei neu gefassten Schlüssel — je Sprache 9.932 Einträge (9.927 vor E14). Keine
-  Rechenwirkung, kein Schemaschritt.</p>
+  Rechenwirkung, kein Schemaschritt. <b>E15 (#478) baut das Risikomodul</b> (Lücke V‑G7) — ohne eigene Zeile dieser
+  Tafel: Im Dialog „Parameter" steht die Gruppe „Risiko (DIN EN 17463, 6.5)" mit der Art (aus, Zinszuschlag,
+  Zahlungsstromabzug R<sub>loss</sub> × p<sub>loss</sub>) und drei Feldern, Vorgabe aus (Zone „Dialog — Parameter"); mit
+  gepflegtem Risiko nennen Nachweiszeile, Annahmentafel, die Deklaration 6.5 und Punkt 6 der Checkliste es (Zone „Was
+  ist angenommen?", Block 5), die Gliederung führt den Bestandteil „Risikoabzug (Anhang F)" und die Formelmappe die
+  Risikozeilen (Zone „Bericht und Ausgabe"); U43 bleibt erledigt (Punkt 6). Gezeichnet ist die Vorgabe aus, die
+  Zahlen der Zeichnung bleiben. Fragen E15‑Q1 bis E15‑Q4, gebaut jeweils die Empfehlung a, offen beim Anwender. Die
+  Ressourcentafel der Kategorie 8 nennt die 29 neuen Schlüssel — je Sprache 9.961 Einträge (9.932 vor E15). Das Schema
+  steht bei 125: Schemaschritt 125 legt die vier Spalten des Risikos an.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
