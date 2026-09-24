@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
                 HeizkreisErgebnis hk = vdi.Heizkreis;
                 if (hk != null)
                 {
+                    e.UebergabeArt = hk.UebergabeArt;
                     e.VorlaufMittelC = double.IsNaN(hk.VorlaufMittelC) ? (double?)null : hk.VorlaufMittelC;
                     e.RuecklaufMittelC = double.IsNaN(hk.RuecklaufMittelC) ? (double?)null : hk.RuecklaufMittelC;
                     e.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;

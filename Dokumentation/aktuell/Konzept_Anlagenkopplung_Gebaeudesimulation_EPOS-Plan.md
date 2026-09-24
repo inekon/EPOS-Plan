@@ -1171,6 +1171,13 @@ Kälteteil von `AK-S3` (F-A16) steht **nicht** in Schritt 123, obwohl KU1 steht 
 einem eigenen Schritt, sobald die Kälteseite von AK1 beauftragt ist (**H9**); keines seiner drei
 Gegenstücke steht bisher in einem Kühlschritt.
 
+**Vergeben mit der dritten Welle von AK1 (24.09.2026):** Schemaschritt **128** legt die Kennzahlen des
+Heizkreises **je Gebäude** nach dem Muster E30 in `Tab_ErgebnisGebaeude` — `Uebergabe_Art` (NULL = nicht
+gekoppelt gerechnet), `VorlaufMittel_C`, `RuecklaufMittel_C`, `UebergabeBegrenzt_H`, alle nullbar; der
+Bericht liest sie (9.4) und rechnet nichts nach. Die Definition und die Nummer stehen allein bei
+`ErgebnisGebaeudeSchema` (`SpaltenHeizkreis`, `SCHRITT_HEIZKREIS`); die Nummern 125 bis 127 waren beim
+Merge von anderen Vorhaben belegt.
+
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,
 **kein DDL-DEFAULT auf einem Fachwert** — **NULL ist die Vorgabe**. Jede Gebäudespalte entsteht in

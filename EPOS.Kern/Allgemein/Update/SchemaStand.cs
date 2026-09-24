@@ -520,11 +520,18 @@ namespace WindowsFormsApplication1
         /// SONSTIG ohne Beurteilung (<see cref="ProjektWirkungSchema"/>); er folgt auf die
         /// Gebäude-Katalogreparatur (126). <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
         /// bleibt byte-gleich.
+        /// Mit dem HEIZKREIS JE GEBÄUDE (Schritt <see cref="ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS"/>, Anlagenkopplung AK1 Welle 3; Konzept
+        /// Anlagenkopplung 8.3, 9.4, Muster E30) steht das Ziel auf <b>128</b>:
+        /// <c>Uebergabe_Art</c>, <c>VorlaufMittel_C</c>, <c>RuecklaufMittel_C</c> und
+        /// <c>UebergabeBegrenzt_H</c> an <c>Tab_ErgebnisGebaeude</c>
+        /// (<see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>), nullbar, NULL = nicht gekoppelt
+        /// gerechnet. <b>Reines DDL, ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und
+        /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 127;
+        public const int Zielversion = 128;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

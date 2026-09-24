@@ -637,6 +637,12 @@ namespace EPOS.Kern.Tests
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug (ProjektWirkungSchema); wiederholbar.
                 ProjektWirkungSchema.Ausfuehren();
 
+                // Schritt ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS (128; Anlagenkopplung AK1 Welle 3,
+                // Muster E30): der Heizkreis je Gebaeude an Tab_ErgebnisGebaeude - vier nullbare
+                // Spalten. Aus DERSELBEN Quelle wie Migration und Werkzeug
+                // (ErgebnisGebaeudeSchema.SpaltenHeizkreis); NACH 127, braucht 107; kein DML.
+                ErgebnisGebaeudeSchema.HeizkreisAlle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

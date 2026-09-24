@@ -310,7 +310,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **127**, LFS-SHA-256 `87e49ed1…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **128**, LFS-SHA-256 `81209c50…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -535,6 +535,22 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > und die Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf
 > aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer
 > `protokoll.txt`).
+
+> **Nachtrag AK1 Welle 3: Schemastand 128 (Heizkreis je Gebäude im Ergebnis, Anlagenkopplung), die Basis bleibt.**
+> Migrationsschritt **128** (`SCHRITT_128_ERGEBNIS_HEIZKREIS`; die Nummer steht allein bei
+> `ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS`, Quelle `ErgebnisGebaeudeSchema.SpaltenHeizkreis` für Migration, Werkzeug
+> und Testvorrichtung) hängt vier nullbare Spalten an `Tab_ErgebnisGebaeude` (Muster E30; Konzept Anlagenkopplung 8.3,
+> 9.4): `Uebergabe_Art` (CHECK `RADIATOR`/`FLAECHE`/`KONVEKTOR`; NULL = nicht gekoppelt gerechnet), `VorlaufMittel_C`,
+> `RuecklaufMittel_C` und `UebergabeBegrenzt_H` (0 … 8 760) — **reines DDL**. Vergeben beim Merge mit origin
+> (125 Risikomodul, 126 Katalogreparatur, 127 Wirkungen waren belegt); er steht nach **127**. Nachgezogen auf der
+> Fassung **127** (Nachtrag E17 oben, `87e49ed1…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: vier Spalten neu, alle
+> leer, Marker 128. Zellvergleich aller 133 Tabellen gegen die Fassung 127 (11 973 380 Zellen): allein `SchemaVersion`
+> 127 → 128 und der Tabellentext von `Tab_ErgebnisGebaeude`; `integrity_check` ok, `foreign_key_check` leer, 133 Tabellen
+> (132 STRICT), 14 Sichten, 210 Indizes. Größe 67 796 992 Byte (LFS-SHA-256 `81209c50…`). **Ergebnisneutral:** Kein
+> Referenzprojekt rechnet gekoppelt, und der Referenzlauf exportiert die Tabelle nicht. **Keine Einfrierregel ist
+> berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV
+> byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

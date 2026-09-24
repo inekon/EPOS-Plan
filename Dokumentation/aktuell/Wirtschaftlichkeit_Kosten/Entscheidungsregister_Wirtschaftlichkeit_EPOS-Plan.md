@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478) und E17 (#479) · Schwesterpapiere: das Konzept
+**Stand 24.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478) und E17 (#479) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -56,9 +56,9 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E9a | E9a‑Q1…Q7 — die Fragen aus E9a (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a; Befund 1 der Welle erledigt #477, E14; der Vermerk zu V‑G7 aus Q6 erledigt #478, E15) | Protokoll E9a; Statusdatei Nach #461 (a) | 7 |
 | R‑E9b | E9b‑Q1…Q5 — die Fragen aus E9b (entschieden 24.09.2026, nach Empfehlung; Q5 b, gebaut #474 (E13); gebaut sonst jeweils a) | Protokoll E9b; Statusdatei Nach #462 (a) | 5 |
 | R‑E10 | E10‑Q1…Q7 — die Fragen aus E10 (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a; E10‑Q5 erledigt) | Protokoll E10; Statusdatei Nach #463 (a) | 7 |
-| R‑E14 | E14‑Q1…Q3 — die Fragen aus E14 (entschieden 25.09.2026, nach Empfehlung; Q2 a löst E8b‑Q1 a ab) | Protokoll E14; Statusdatei Nach #477 (a) | 3 |
-| R‑E15 | E15‑Q1…Q4 — die Fragen aus E15, dem Risikomodul V‑G7 (entschieden 25.09.2026, nach Empfehlung; Q4 a, Lesart c als spätere Erweiterung nicht beauftragt) | Protokoll E15; Statusdatei Nach #478 (a) | 4 |
-| R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 25.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
+| R‑E14 | E14‑Q1…Q3 — die Fragen aus E14 (entschieden 24.09.2026, nach Empfehlung; Q2 a löst E8b‑Q1 a ab) | Protokoll E14; Statusdatei Nach #477 (a) | 3 |
+| R‑E15 | E15‑Q1…Q4 — die Fragen aus E15, dem Risikomodul V‑G7 (entschieden 24.09.2026, nach Empfehlung; Q4 a, Lesart c als spätere Erweiterung nicht beauftragt) | Protokoll E15; Statusdatei Nach #478 (a) | 4 |
+| R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 24.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -595,14 +595,14 @@ vertreten den eigenen Entscheid zu ND‑S3, den das Nutzungsdauer-Konzept vor S3
 Quelle: Protokoll
 [`E14_Formelmappe_je_Szenario_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E14_Formelmappe_je_Szenario_Protokoll.md),
 „Fragen aus der Welle", und die Statusdatei, Nach #477 (a). Die drei Fragen stellt der Auftrag der Welle E14 (Anwender
-24.09.2026, 18:35: „Formelmappe und Befund aus E9a: Auftrag"); der Anwender hat sie am 25.09.2026 entschieden, im
+24.09.2026, 18:35: „Formelmappe und Befund aus E9a: Auftrag"); der Anwender hat sie am 24.09.2026 entschieden, im
 Wortlaut: „E14: Empfehlung". Gebaut ist jeweils die Empfehlung a. E14‑Q2 a löst E8b‑Q1 a ab (→ R‑E8b).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E14‑Q1** | Länge der Mehrjahrestabellen je Szenario: (a) eine Tabelle je Stand und Szenario bis zum längsten Zeitraum der drei Szenarien, jenseits von T_s leer über eine Schutzformel, der Restwert am Ende von T_s; (b) drei Blätter, je Szenario eines | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/1) |
-| **E14‑Q2** | Kennzahltafel Günstig/Ungünstig: (a) Formeln statt Werte — Nettobarwert, Annuität, Zinsfuß, Amortisation und Bandbreite auf die Tabellen des Szenarios; ersetzt E8b‑Q1 a; (b) die Werte bleiben, die Formeln nur als Nebenblock | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/2) |
-| **E14‑Q3** | Interner Zinsfuß bei mehr als einem Vorzeichenwechsel der Differenzreihe: (a) Text „nicht eindeutig"; (b) `IRR` mit Schätzwert | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6; Anhang C der Norm | gebaut ist a (#477, E14/2) — gilt in allen drei Szenarien, auch im Block Erwartet (nur Ausweis, keine Prüfgruppe betroffen) |
+| **E14‑Q1** | Länge der Mehrjahrestabellen je Szenario: (a) eine Tabelle je Stand und Szenario bis zum längsten Zeitraum der drei Szenarien, jenseits von T_s leer über eine Schutzformel, der Restwert am Ende von T_s; (b) drei Blätter, je Szenario eines | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/1) |
+| **E14‑Q2** | Kennzahltafel Günstig/Ungünstig: (a) Formeln statt Werte — Nettobarwert, Annuität, Zinsfuß, Amortisation und Bandbreite auf die Tabellen des Szenarios; ersetzt E8b‑Q1 a; (b) die Werte bleiben, die Formeln nur als Nebenblock | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/2) |
+| **E14‑Q3** | Interner Zinsfuß bei mehr als einem Vorzeichenwechsel der Differenzreihe: (a) Text „nicht eindeutig"; (b) `IRR` mit Schätzwert | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.6; Anhang C der Norm | gebaut ist a (#477, E14/2) — gilt in allen drei Szenarien, auch im Block Erwartet (nur Ausweis, keine Prüfgruppe betroffen) |
 
 ---
 
@@ -612,16 +612,16 @@ Quelle: Protokoll
 [`E15_Risikomodul_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E15_Risikomodul_Protokoll.md),
 „Fragen aus der Welle", und die Statusdatei, Nach #478 (a). Die Fragen E15‑Q1 bis E15‑Q3 stellt der Auftrag der Welle
 E15 (Anwender 24.09.2026: „V‑G7 Risiko: eigener kleiner Auftrag ausführen"), E15‑Q4 der Phase‑1-Bericht der Welle;
-der Anwender hat sie am 25.09.2026 entschieden, im Wortlaut: „E15: Empfehlung". Gebaut ist jeweils die Empfehlung a.
+der Anwender hat sie am 24.09.2026 entschieden, im Wortlaut: „E15: Empfehlung". Gebaut ist jeweils die Empfehlung a.
 Die Lücke selbst steht in R‑V (V‑G7). Lesart c von E15‑Q4 (R_loss als Prozent der Differenzreihe, wie Anhang F
 Tabelle F.2) bleibt als spätere Erweiterung denkbar, ist mit diesem Entscheid aber nicht beauftragt.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E15‑Q1** | Risiko je Szenario: (a) ein Risiko, gleich in allen drei Szenarien; (b) Paare je Szenario wie die übrigen Szenariowerte | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.5 | gebaut ist a (#478, E15/3: `FuerSzenario` setzt den Zuschlag in allen Szenarien genau einmal) |
-| **E15‑Q2** | Worauf der Zahlungsstromabzug wirkt: (a) auf die Nettozahlung des Standes, als eigener Bestandteil RISIKO der Gliederung; (b) nur auf die Erlöse — bei einem Betrag in € zahlengleich | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.6 | gebaut ist a (#478, E15/3: Bestandteil RISIKO vor dem Restwert, Spalte „Risikoabzug" der Mehrjahrestabelle) |
-| **E15‑Q3** | Ausweis: (a) Nachweiszeile, Annahmentafel und Parameterblock, dazu die Deklaration 6.5 und Punkt 6 der Anhang-E-Checkliste; (b) ein eigener Block „Risiko" | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Ausweis im Bericht), § 2.11.6 | gebaut ist a (#478, E15/3) — nur bei Pflege; ohne Pflege bleibt die Deklaration „Risikozuschlag nicht angesetzt (6.5 optional)" |
-| **E15‑Q4** | Wen der Zahlungsstromabzug trifft: (a) jeden Stand außer der Referenz des Laufs, ein Einzelstand trägt ihn selbst; (b) alle Stände gleich — der Abzug kürzt sich dann in jeder Differenz heraus; (c) R_loss als Prozent der Differenzreihe, wie Anhang F Tabelle F.2 (ded_t = P_t × R_loss × p_loss) | **entschieden 25.09.2026**, nach Empfehlung: a — Lesart c bleibt als spätere Erweiterung denkbar, ist nicht beauftragt | 24.09.2026 gestellt (Phase‑1-Bericht) | § 2.11.2 (V‑G7) | gebaut ist a (#478, `RisikoModul.AbzugFuerStand`) — R_loss ist ein Betrag in € je Periode, keine Prozentangabe; der Stamm einer Gruppe zeigt seinen Kapitalwert ohne Abzug, 1030 ohne Varianten trägt ihn selbst |
+| **E15‑Q1** | Risiko je Szenario: (a) ein Risiko, gleich in allen drei Szenarien; (b) Paare je Szenario wie die übrigen Szenariowerte | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.5 | gebaut ist a (#478, E15/3: `FuerSzenario` setzt den Zuschlag in allen Szenarien genau einmal) |
+| **E15‑Q2** | Worauf der Zahlungsstromabzug wirkt: (a) auf die Nettozahlung des Standes, als eigener Bestandteil RISIKO der Gliederung; (b) nur auf die Erlöse — bei einem Betrag in € zahlengleich | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.6 | gebaut ist a (#478, E15/3: Bestandteil RISIKO vor dem Restwert, Spalte „Risikoabzug" der Mehrjahrestabelle) |
+| **E15‑Q3** | Ausweis: (a) Nachweiszeile, Annahmentafel und Parameterblock, dazu die Deklaration 6.5 und Punkt 6 der Anhang-E-Checkliste; (b) ein eigener Block „Risiko" | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Ausweis im Bericht), § 2.11.6 | gebaut ist a (#478, E15/3) — nur bei Pflege; ohne Pflege bleibt die Deklaration „Risikozuschlag nicht angesetzt (6.5 optional)" |
+| **E15‑Q4** | Wen der Zahlungsstromabzug trifft: (a) jeden Stand außer der Referenz des Laufs, ein Einzelstand trägt ihn selbst; (b) alle Stände gleich — der Abzug kürzt sich dann in jeder Differenz heraus; (c) R_loss als Prozent der Differenzreihe, wie Anhang F Tabelle F.2 (ded_t = P_t × R_loss × p_loss) | **entschieden 24.09.2026**, nach Empfehlung: a — Lesart c bleibt als spätere Erweiterung denkbar, ist nicht beauftragt | 24.09.2026 gestellt (Phase‑1-Bericht) | § 2.11.2 (V‑G7) | gebaut ist a (#478, `RisikoModul.AbzugFuerStand`) — R_loss ist ein Betrag in € je Periode, keine Prozentangabe; der Stamm einer Gruppe zeigt seinen Kapitalwert ohne Abzug, 1030 ohne Varianten trägt ihn selbst |
 
 ---
 
@@ -631,15 +631,15 @@ Quelle: Protokoll
 [`E17_Nicht_monetaere_Wirkungen_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E17_Nicht_monetaere_Wirkungen_Protokoll.md),
 „Fragen aus der Welle", und die Statusdatei, Nach #479 (a). Die Fragen E17‑Q1 bis E17‑Q3 stellt der Auftrag der Welle
 E17 (Anwender 24.09.2026: „V‑G11 … kleiner Dialog-und-Bericht-Auftrag ohne Rechenwirkung"), E17‑Q4 der Phase‑1-Bericht
-der Welle; der Anwender hat sie am 25.09.2026 entschieden, im Wortlaut: „E17: Empfehlung". Gebaut ist jeweils die
+der Welle; der Anwender hat sie am 24.09.2026 entschieden, im Wortlaut: „E17: Empfehlung". Gebaut ist jeweils die
 Empfehlung a. Die Lücke selbst steht in R‑V (V‑G11).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E17‑Q1** | Ablage der Wirkungen: (a) eine eigene Tabelle `Tab_ProjektWirkung` je Projekt, eine Zeile je Wirkung, Beziehung über die ID; (b) eine JSON-Spalte an `Tab_ProjektWirtschaftlichkeit` | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11), § 6.1 | gebaut ist a (#479, E17/1: Schemaschritt 127, STRICT, Fremdschlüssel mit Weitergabe) |
-| **E17‑Q2** | Skalen und Regel der Beurteilung (8.2): (a) Dauer 1–3 (kurz, mittel, lang), Wirkung je Bereich 0–3 (keine bis stark), Beurteilung = Dauer × stärkste der drei Wirkungen (0 bis 9); (b) Dauer × Summe der drei Wirkungen | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11) | gebaut ist a (#479, E17/2: `NichtMonetaereWirkungen.Beurteilung`, ohne Dauer oder ohne jeden Wirkungsgrad „nicht beurteilt") |
-| **E17‑Q3** | Der Freitext `Nicht_Monetaer`: (a) bleibt als Altfeld lesbar, die Migration übernimmt einen gepflegten Text als eine Wirkung „sonstig" ohne Beurteilung; (b) entfällt | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11), § 6.1 | gebaut ist a (#479, E17/1 und E17/3: nur nicht leere Texte, nur Projekte ohne Wirkung, wiederholbar; keine Maske schreibt das Feld mehr) |
-| **E17‑Q4** | Die Oberfläche nimmt die Kern-Datenklassen `ProjektWirkung` und `NichtMonetaereWirkungen` direkt, die UI-Regel sagt „keine Fachklassen des Kerns": (a) so lassen — wie E8b‑Q4, eine Quelle für Regel und Texte; (b) ein eigenes DTO der Oberfläche, die Hülle übersetzt | **entschieden 25.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑1-Bericht) | `EPOS.UI/CLAUDE.md`; Vorbild E8b‑Q4 (→ R‑E8b) | gebaut ist a (#479, E17/3: `WirkungenListe` und `WirtschaftlichkeitSeite`) |
+| **E17‑Q1** | Ablage der Wirkungen: (a) eine eigene Tabelle `Tab_ProjektWirkung` je Projekt, eine Zeile je Wirkung, Beziehung über die ID; (b) eine JSON-Spalte an `Tab_ProjektWirtschaftlichkeit` | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11), § 6.1 | gebaut ist a (#479, E17/1: Schemaschritt 127, STRICT, Fremdschlüssel mit Weitergabe) |
+| **E17‑Q2** | Skalen und Regel der Beurteilung (8.2): (a) Dauer 1–3 (kurz, mittel, lang), Wirkung je Bereich 0–3 (keine bis stark), Beurteilung = Dauer × stärkste der drei Wirkungen (0 bis 9); (b) Dauer × Summe der drei Wirkungen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11) | gebaut ist a (#479, E17/2: `NichtMonetaereWirkungen.Beurteilung`, ohne Dauer oder ohne jeden Wirkungsgrad „nicht beurteilt") |
+| **E17‑Q3** | Der Freitext `Nicht_Monetaer`: (a) bleibt als Altfeld lesbar, die Migration übernimmt einen gepflegten Text als eine Wirkung „sonstig" ohne Beurteilung; (b) entfällt | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G11), § 6.1 | gebaut ist a (#479, E17/1 und E17/3: nur nicht leere Texte, nur Projekte ohne Wirkung, wiederholbar; keine Maske schreibt das Feld mehr) |
+| **E17‑Q4** | Die Oberfläche nimmt die Kern-Datenklassen `ProjektWirkung` und `NichtMonetaereWirkungen` direkt, die UI-Regel sagt „keine Fachklassen des Kerns": (a) so lassen — wie E8b‑Q4, eine Quelle für Regel und Texte; (b) ein eigenes DTO der Oberfläche, die Hülle übersetzt | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑1-Bericht) | `EPOS.UI/CLAUDE.md`; Vorbild E8b‑Q4 (→ R‑E8b) | gebaut ist a (#479, E17/3: `WirkungenListe` und `WirtschaftlichkeitSeite`) |
 
 ---
 

@@ -222,4 +222,4 @@ Wirtschaftlichkeit (Anker `nicht-monetaer`, `checkliste`, Word- und Excel-Berich
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
 - Aus der Gap-Tafel des Konzepts bleibt **V‑G3** (Wiederholperiode je Kostenposition, E16, #484).
 
-**Entscheide 25.09.2026:** alle nach Empfehlung, siehe Register R‑E17
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E17
