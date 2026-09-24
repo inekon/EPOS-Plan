@@ -982,8 +982,8 @@ def vorbereite(sql, fuellung="0"):
 
 # Dateien, die Access-SQL sprechen duerfen - die Liste ist LEER: Im Programm gibt es
 # keinen Access-Zweig mehr. Wer sie erweitert, schreibt dazu, WARUM eine Datei Access
-# spricht. (Das Hauswerkzeug EposSqliteMigrator/ liegt ausserhalb von WURZELN und wird
-# ohnehin nicht geprueft.)
+# spricht. (Das fruehere Hauswerkzeug EposSqliteMigrator/ ist aus dem Repository entfernt;
+# die Windows-Suite Referenzlauf/ liegt ausserhalb von WURZELN und wird nicht geprueft.)
 AUSGENOMMEN = ()
 
 WURZELN = ("EPOS.Kern", "WindowsFormsApplication1", "EPOS.UI.Daten")

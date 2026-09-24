@@ -129,7 +129,7 @@ gibt es keine Sicherheitsaktualisierungen mehr. Der Bestand steht heute auf:
 | `SpeicherEngine`, `KiKern` | `net8.0` | ohne Support |
 | `SpeicherEngine.Tests`, `KiKern.Tests` | `net9.0` | ohne Support |
 | `CSExeCOMServer` | .NET Framework 4.0 | (Framework-Lebenszyklus, hier ohne Belang — totes Altgut) |
-| `EposSqliteMigrator.Kern` und `EposSqliteMigrator` (Konsole) | `net8.0` | ohne Support |
+| `EposSqliteMigrator.Kern` und `EposSqliteMigrator` (Konsole) | `net8.0` | ohne Support — Werkzeug am 13.09.2026 aus dem Repository entfernt, Access-Übernahme am 24.09.2026 eingestellt |
 | `ZugriffsschichtProben` | `net8.0-windows` | ohne Support |
 
 Dazu kommt seit `6486c36` **`Microsoft.Data.Sqlite 8.0.11`** — eine 8.x-Fassung, die beim Sprung
@@ -277,7 +277,7 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige (COM ist mit iU1-P1.1 entfallen) | **bleibt** — schrumpft über iU9; `ProjectReference` auf `EPOS.Kern` **und** `EPOS.UI`, SDK seit iU8-6 `Microsoft.NET.Sdk.Razor`. Von 585 `.cs` sind **356** übrig; unter `Allgemein/` und `Controller/` noch **62** von 133 |
 | `Referenzlauf` | Konsole | `net10.0-windows` | x64 | WinForms-App | **bleibt**, bis iU9 abgeschlossen ist |
 | `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 19 `.cs` (davon 12 Dienstadapter), **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml` **geführt** (Lauf 33748736894, 03.09.2026: Projekt 1030 **byte-gleich**), per Hand auszulösen |
-| `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
+| `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **entfernt** (13.09.2026, Sync-Commit `43aaf985`; Access-Übernahme am 24.09.2026 eingestellt, BETRIEB_SQLITE.md 1.1/7) — war Windows-Werkzeug (las `.accdb` über OleDb), nie Teil des iOS-Pfads |
 | `CSExeCOMServer` | — | — | — | — | ~~stilllegen (iU0)~~ — **erledigt** (`c3a8233`), aus dem Repo entfernt |
 | `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt seit iU9-1 an der lebenden **und erreichbaren** `Form_KostenKomponente` |
 | `Proben/ChartProben` | Konsole | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU7-3/iU7-6) — eigene `.sln`, `EnableWindowsTargeting=false`; zeichnet 9 Bilder und prüft Maße, Farben, Determinismus. Läuft in `kern.yml` auf ubuntu und macos |
@@ -870,7 +870,7 @@ Das ist der Beweis, für den das ganze Vorhaben vorne klein gehalten wird.
 
 | Inhalt | Detail |
 |---|---|
-| Datenstand | **liegt vor** — `Kenndaten.sqlite` als Werksvorgabe, `EposSqliteMigrator` für Kundenbestände. Daraus die CI-Testdatenbank mit den 13 Referenzprojekten schneiden |
+| Datenstand | **liegt vor** — `Kenndaten.sqlite` als Werksvorgabe; Kundenbestände aus Access gibt es nicht (Übernahme am 24.09.2026 eingestellt). Daraus die CI-Testdatenbank mit den 13 Referenzprojekten schneiden |
 | Kernauszug | **nur** `BhkwPlan`, `SimulationControl` und deren zwingende Abhängigkeiten — als Wegwerf-Auszug, nicht als `EPOS.Kern`. Ziel ist Erkenntnis, nicht Bestand |
 | Rechenlauf | Projekt 1030 headless im iPad-Simulator **und** auf `macos-latest` |
 | Vergleich | Ergebnis-CSV gegen `2026-08-30_B3-Kaskade/Projekt_1030` |
@@ -1157,7 +1157,7 @@ Kein Paket gilt als fertig, weil es gebaut ist. Es gilt als fertig, wenn sein Na
 | **iT7** | **Kulturtest** | `EPOS_REFLAUF_UICULTURE=en-US`: Ergebnisdateien **byte-identisch**. Der maschinelle Nachweis der Drei-Schichten-Regel | jede Etappe |
 | **iT8** | **Bedienbarkeit** | jede Komponente mit Maus **und** Finger abgenommen (M2) — sonst entsteht die zweite UI durch die Hintertür | iU8, iU9 |
 | **iT9** | **Kodierungsnachweis** | nach iU4 null Nicht-UTF-8-Dateien in den neuen Projekten | iU4 |
-| **iT10** | **Datenintegrität** | `PRAGMA foreign_key_check` + `integrity_check`, Zeilenzahlen und Prüfsummen je Tabelle — im `EposSqliteMigrator` bereits umgesetzt | iU6 |
+| **iT10** | **Datenintegrität** | `PRAGMA foreign_key_check` + `integrity_check`, Zeilenzahlen und Prüfsummen je Tabelle — war im `EposSqliteMigrator` umgesetzt (Werkzeug am 13.09.2026 entfernt) | iU6 |
 
 **Was die Nachweise nicht abdecken:** die manuelle Abnahme der x64-Umstellung (§ 3.7) und die
 Sichtabnahme der Masken. Beides bleibt Handarbeit.

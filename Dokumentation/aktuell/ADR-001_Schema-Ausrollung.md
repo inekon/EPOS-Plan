@@ -26,11 +26,14 @@ Arbeitsstand **gelöscht** — mitsamt dem gesamten Ordner `Allgemein/Update/` (
 Stand in Commit `6c2e4c8`, 350 Zeilen). Damit hat Paket 1 derzeit keinen Ausrollpfad,
 und Paket 7 kann seine Ergebnistabelle nicht anlegen.
 
-Die im Repo-Wurzelverzeichnis liegenden `migration.manuell.sql` und
-`migration.config.json` sind **kein** Ersatz: Sie migrieren Anwenderdaten aus einer
-alten Benutzerdatenbank in eine neue Versionsdatenbank (Ordner `DB_Migration` neben
-dem Repo) und lösen damit ein anderes Problem — Dateiaustausch statt In-Place-Änderung.
-Sie sind für dieses Vorhaben ausdrücklich ausgeschlossen.
+Die früher im Repo-Wurzelverzeichnis liegenden `migration.manuell.sql` und
+`migration.config.json` waren **kein** Ersatz: Sie migrierten Anwenderdaten aus einer
+alten Benutzerdatenbank in eine neue Versionsdatenbank — Access nach Access, Leser war das
+Werkzeug `AccessMigration` im Ordner `DB_Migration` neben dem Repo — und lösten damit ein
+anderes Problem: Dateiaustausch statt In-Place-Änderung. Mit der SQLite-Umstellung ist
+dieser Weg ohne Ziel; beide Dateien sind am 24.09.2026 mit der Einstellung der
+Access-Übernahme aus dem Repository entfernt worden (letzter Stand mit den Dateien:
+Commit `6d022f6d`). Sie waren für dieses Vorhaben ausdrücklich ausgeschlossen.
 
 ### Kräfte, die die Entscheidung formen
 

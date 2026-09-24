@@ -231,8 +231,8 @@ Hinweis "Herstellerdaten: $VdiMb MB in $VdiOrdner"
 #
 # Die ACCESS DATABASE ENGINE ist mit dem Anwenderentscheid #157-E-1 (Weg W3,
 # 09.09.2026) ENTFALLEN: Access wurde beim Kunden nie produktiv eingesetzt, die
-# Uebernahme eines Altbestands ist ein Hauswerkzeug (EposSqliteMigrator) und kein
-# Kundenweg. AccessDatabaseEngine_X64.exe wird weder in Setup\Voraussetzungen
+# Uebernahme eines Altbestands war danach ein Hauswerkzeug (EposSqliteMigrator) und ist
+# seit dem 24.09.2026 eingestellt. AccessDatabaseEngine_X64.exe wird weder in Setup\Voraussetzungen
 # noch in der Repowurzel gebraucht; eine liegengebliebene Datei schadet nicht,
 # wird aber nicht mehr mitgepackt.
 #
