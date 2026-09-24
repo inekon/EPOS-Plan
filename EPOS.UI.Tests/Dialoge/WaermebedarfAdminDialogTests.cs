@@ -67,11 +67,13 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         Action<bool>? geschlossen = null,
         IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
         Func<string, Task<Ganglinienansicht>>? ansicht = null,
-        IReadOnlyList<Katalogfilterzeile>? katalog = null)
+        IReadOnlyList<Katalogfilterzeile>? katalog = null,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
     {
         IReadOnlyList<Katalogfilterzeile> zeilen = katalog ?? Katalog();
         return Render<WaermebedarfAdminDialog>(p => p
             .Add(x => x.Katalogzeilen, () => Task.FromResult(zeilen))
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Waermebedarf))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => Task.FromResult(false)))
@@ -182,7 +184,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);   // "Auslieferung Standard"
         IElement knopf = Knopf(cut, "DB Ganglinie Löschen");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
-        Assert.Equal("Auslieferungssatz – Löschen gesperrt.", knopf.GetAttribute("title"));
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.", knopf.GetAttribute("title"));
 
         // Ohne Katalog gibt es keine Fokuszeile und keine Loeschhandlung.
         var leer = Aufbauen(katalog: Array.Empty<Katalogfilterzeile>());
@@ -631,5 +633,32 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         Knopf(cut, "Beenden").Click();
 
         Assert.True(ergebnis);
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss einer Zeitreihe aufheben</b> (AD-Q15): nach dem „Ja" ist die
+    /// Auslieferungszeile ein eigener Satz, „Löschen" ist frei, das Stammblatt trägt das Band.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Loeschen_frei()
+    {
+        IReadOnlyList<Katalogfilterzeile> zeilen = Katalog();
+        var schloss = new Schlosspruefung(2);
+        var cut = Aufbauen(katalog: zeilen, schloss: schloss.Weg(zeilen: zeilen));
+
+        Zeilenklick.Zeile(cut, 1);       // "Auslieferung Standard"
+        Assert.Equal("true", Knopf(cut, "DB Ganglinie Löschen").GetAttribute("aria-disabled"));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.StartsWith("Schloss von „Auslieferung Standard“ aufheben?", Schlosspruefung.Frage(cut));
+        Schlosspruefung.Ja(cut);
+
+        cut.WaitForAssertion(() => Assert.Null(Knopf(cut, "DB Ganglinie Löschen").GetAttribute("aria-disabled")),
+                             TimeSpan.FromSeconds(10));
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss von „Auslieferung Standard“ aufgehoben.", cut.Instance.Status);
     }
 }

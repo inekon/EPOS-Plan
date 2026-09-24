@@ -416,5 +416,95 @@ namespace EPOS.Kern.Tests
             Assert.True(hk.KenntFeld("vorlauf"));
             Assert.True(hk.KenntFeld("ruecklauf"));
         }
+
+        // ============== Die benannte Absage einer ausgenommenen Maske (Welle #458)
+
+        /// <summary>
+        /// Wird der Assistent aus einer Maske der AUSNAHMELISTE gerufen, sagt die Absage
+        /// „bewusst nicht steuerbar" mit dem Grund — statt der Liste aller Masken.
+        /// </summary>
+        [Fact]
+        public void Aus_einer_ausgenommenen_Maske_nennt_die_Absage_ihren_Grund()
+        {
+            string text = MitAufruf("Form_LizenzVerwaltung.btn_Help",
+                () => Grund("feld_setzen",
+                            new Dictionary<string, object> { ["feld"] = "gibtesnicht", ["wert"] = "1" }));
+
+            Assert.Equal(KiDialogAusnahmen.Absage("Form_LizenzVerwaltung.btn_Help"), text);
+            Assert.Contains(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.LizenzOderSchluessel),
+                            text, StringComparison.Ordinal);
+
+            // Die Liste der steuerbaren Masken faellt weg - sie beantwortet eine andere Frage.
+            Assert.DoesNotContain(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,
+                                  text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Eine OFFENE Ausnahme sagt „noch nicht", nicht „bewusst nicht" — sie ist nicht
+        /// ausgenommen, sondern noch nicht angebunden.
+        /// </summary>
+        [Fact]
+        public void Eine_offene_Ausnahme_sagt_noch_nicht_statt_bewusst_nicht()
+        {
+            string offen = KiDialogAusnahmen.Absage("Form_Zapfprofil.btn_Help");
+            string bewusst = KiDialogAusnahmen.Absage("Form_KiChat.btn_Help");
+
+            Assert.NotNull(offen);
+            Assert.NotNull(bewusst);
+            Assert.Contains(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.Offen), offen, StringComparison.Ordinal);
+            Assert.NotEqual(offen.Replace(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.Offen), ""),
+                            bewusst.Replace(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.Assistent), ""));
+        }
+
+        /// <summary>
+        /// Lassen die Felder eine Maske erkennen, steht ihr Weg HINTER dem Grund — der
+        /// Anwender erfährt beides: warum hier nicht, und wo sonst.
+        /// </summary>
+        [Fact]
+        public void Aus_einer_ausgenommenen_Maske_folgt_der_Weg_zur_gemeinten_Maske()
+        {
+            string text = MitAufruf("Form_KiChat.btn_Help",
+                () => Grund("feld_setzen",
+                            new Dictionary<string, object>
+                            { ["feld"] = "bereitschaftsverlust", ["wert"] = "1,5" }));
+
+            Assert.StartsWith(KiDialogAusnahmen.Absage("Form_KiChat.btn_Help"), text, StringComparison.Ordinal);
+            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN).Anzeigename,
+                            text, StringComparison.Ordinal);
+            Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die GEGENPROBEN: Ein Aufruf aus einer steuerbaren Maske, ohne Hilfeschlüssel
+        /// oder mit genannter Maske ändert an der Absage nichts.
+        /// </summary>
+        [Fact]
+        public void Ohne_Ausnahme_im_Aufruf_bleibt_die_Absage_wie_sie_war()
+        {
+            var werte = new Dictionary<string, object> { ["feld"] = "gibtesnicht", ["wert"] = "1" };
+            string ohneAufruf = MitAufruf(null, () => Grund("feld_setzen", werte));
+
+            Assert.Equal(ohneAufruf, MitAufruf("Form_Heizkessel.btn_Help", () => Grund("feld_setzen", werte)));
+            Assert.Equal(ohneAufruf, MitAufruf("", () => Grund("feld_setzen", werte)));
+            Assert.DoesNotContain(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.LizenzOderSchluessel),
+                                  ohneAufruf, StringComparison.Ordinal);
+
+            // Wer die Maske NENNT, meint sie - auch aus einer ausgenommenen Maske heraus.
+            var genannt = new Dictionary<string, object>
+            { ["maske"] = KiMaskennamen.HEIZKESSEL, ["feld"] = "vorlauf", ["wert"] = "60" };
+            string text = MitAufruf("Form_LizenzVerwaltung.btn_Help", () => Grund("feld_setzen", genannt));
+            Assert.DoesNotContain(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.LizenzOderSchluessel),
+                                  text ?? "", StringComparison.Ordinal);
+        }
+
+        /// <summary>Führt <paramref name="aktion"/> unter einem Aufruf aus und räumt ihn danach weg.</summary>
+        private static string MitAufruf(string hilfeschluessel, Func<string> aktion)
+        {
+            KiChatKontext.AufrufMelden(hilfeschluessel == null
+                                           ? null
+                                           : KiAufrufkontext.AusHilfeschluessel(hilfeschluessel));
+            try { return aktion(); }
+            finally { KiChatKontext.AufrufMelden(null); }
+        }
     }
 }

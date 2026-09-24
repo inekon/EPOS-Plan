@@ -348,6 +348,15 @@ namespace WindowsFormsApplication1
                    new Katalogkopie.Kindtabelle(TABLE_DATEN, "ID_TagV"));
 
         /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…" eines Gebäudetyps</b> (Entscheid AD-Q15).
+        /// Sein Schloss ist <c>ReadOnly</c> ODER nicht <c>Veraenderbar</c>
+        /// (<see cref="Katalogfilterzeilen"/>); geschaltet werden deshalb beide Spalten
+        /// (<see cref="KatalogDefinition.SchlossGegenspalte"/>), die Stundenwerte nicht.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
+
+        /// <summary>
         /// Schreibt die BESCHREIBUNG eines Typs (Stufe 5: Kenndaten direkt im Stammblatt). Ein
         /// Auslieferungstyp wird nie geschrieben — die Bedingung steht in der Anweisung.
         /// </summary>

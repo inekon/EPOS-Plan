@@ -56,12 +56,19 @@
    beschreibbar, mit Knopf.
 
    TASTATUR: Esc schliesst - erst die Rueckfrage, dann den Dialog. Enter ist
-   nicht belegt. *@
+   nicht belegt.
+
+   HILFE-ASSISTENT (Welle #458, Stufe 2): Der Dialog meldet sich an
+   (KiMaskennamen.EINSTELLUNGEN, Sichtklasse EinstellungenKiSicht) - die fuenf
+   Adressen, die Kuehlungsvorgabe neuer Projekte und die Diagrammfarben als
+   Feldtafel. Die Ordner, der Datenbankname und der KI-Abschalter bleiben beim
+   Anwender. Speichern ist der Weg von OK, ohne zu schliessen. *@
 
 @namespace EPOS.UI.Dialoge.Admin
 @using System.Linq
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <div class="epos-dialog epos-einstellungen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -448,6 +455,78 @@
         _kiAus = KiAbgeschaltet;
         if (!KiLesbar) Melden(KiFehlerText, WarnStufe.Warnung);
     }
+
+    protected override void OnInitialized()
+        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.EINSTELLUNGEN, () => KiSicht(), KiHaken());
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private EinstellungenKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf den ARBEITSSTAND: die sechs Werte am lebenden
+    /// <c>_satz</c>, die Farben über dieselben Wege wie das Farbfeld.
+    /// </summary>
+    private EinstellungenKiSicht KiSicht() => _kiSicht ??= new EinstellungenKiSicht
+    {
+        Satz = () => _satz,
+        FarbeLesen = schluessel => Farbrollen.FirstOrDefault(r => string.Equals(
+                         r.Schluessel, schluessel, StringComparison.OrdinalIgnoreCase)) is Farbrollengabe rolle
+                         ? Farbe(rolle) : null,
+        FarbeSetzen = (schluessel, hex) =>
+        {
+            FarbeGesetzt(schluessel, hex);
+            // Wie nach „Hausfarben": Das Feld verwirft eine stehengebliebene
+            // Fehleingabe und zeigt den gesetzten Ton.
+            _farbstand++;
+        },
+        Gesetzt = () => _meldung = ""
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Prüfen</b> meldet den Befund, der im Dialog steht — ein gescheitertes
+    /// Speichern (Ordner nicht anlegbar, Kühlungsvorgabe nicht schreibbar) oder einen
+    /// nicht lesbaren KI-Schalter. Eine eigene Plausibilitätsregel hat die Maske nicht;
+    /// eine ungültige Farbe nimmt schon die Feldtafel nicht an.</para>
+    /// <para><b>Speichern ist der Weg von „OK"</b> — derselbe Delegat mit demselben
+    /// Wertesatz und demselben KI-Schalter —, nur SCHLIESST er nicht: Der Dialog bleibt
+    /// offen und meldet „gespeichert"; Schließen bleibt beim Anwender.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => _meldungStufe is WarnStufe.Fehler or WarnStufe.Warnung ? _meldung : "",
+        Speichern = KiSpeichern
+    };
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
+
+        _satz.DiagrammFarben = Diagrammfarben.AlsText(Farbrollen, _farben);
+        SpeicherBefund befund = await Speichern(_satz, MaschinenRiegel ? KiAbgeschaltet : _kiAus);
+
+        if (!befund.Ok)
+        {
+            Melden(befund.Meldung, WarnStufe.Fehler);
+            _ = InvokeAsync(StateHasChanged);
+            return KiKern.KiErgebnis.Fehlgeschlagen(befund.Meldung);
+        }
+
+        Melden(GespeichertText, WarnStufe.Erfolg);
+        _ = InvokeAsync(StateHasChanged);
+        return KiKern.KiErgebnis.Ok(GespeichertText, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

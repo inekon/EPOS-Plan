@@ -1497,6 +1497,10 @@ namespace WindowsFormsApplication1
                 r++;
 
                 double summe = 0;
+                // ETAPPE E8c (E8b‑Q3, Lesart b): die Probe unten vergleicht nur die Positionen,
+                // die im ersten Jahr zahlen — eine Position mit späterem Startjahr steht in der
+                // Summe, aber nicht in den angesetzten Betriebskosten p. a.
+                double summeErstesJahr = 0;
                 bool bemessen = false;
                 foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
                 {
@@ -1512,13 +1516,14 @@ namespace WindowsFormsApplication1
 
                     foreach (KostenPositionNachweis n in block)
                     {
-                        string herleitung = WirtschaftlichkeitZeilen.Herleitung(n, BerichtTexte.Kultur);
-                        if (herleitung.Length == 0 && n.SzenarioGepflegt)
-                            herleitung = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+                        // ETAPPE E8c (E8b‑Q3): Herleitung oder Szenariokennzeichen, bei einem
+                        // späteren Startjahr mit „ab Jahr X".
+                        string herleitung = WirtschaftlichkeitZeilen.HerleitungZeile(n, BerichtTexte.Kultur);
 
                         ws.Cell(r, 1).Value = n.Bezeichnung;
                         ws.Cell(r, 2).Value = n.Gruppe;
-                        ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung);
+                        // ETAPPE E8c (E8b‑Q2): jede Bemessungsart mit ihrem Namen im Gewerk.
+                        ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung, n.Komponente);
                         ws.Cell(r, 4).Value = herleitung;
                         Zahl(ws, r, 5, n.BetragJahr, "#,##0");
                         // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): eine bemessene Position
@@ -1526,6 +1531,7 @@ namespace WindowsFormsApplication1
                         if (ExcelFormelmappe.Betriebskostenzeile(ws, r, n, formeln)) bemessen = true;
                         r++;
                         summe += n.BetragJahr;
+                        if (WirtschaftlichkeitZeilen.LaeuftImErstenJahr(n)) summeErstesJahr += n.BetragJahr;
                     }
                 }
                 if (bemessen) ExcelFormelmappe.BetriebskostenKopf(ws, kopfZeile);
@@ -1538,12 +1544,13 @@ namespace WindowsFormsApplication1
                 ExcelFormelmappe.BetriebskostenSumme(ws, r, kopfZeile + 1, r - 1, summe, summe, formeln);
                 r++;
 
-                if (e.BetriebskostenJahr.HasValue &&
-                    Math.Abs(summe - e.BetriebskostenJahr.Value) > 0.5)
+                // Probe gegen die Zahl, mit der die Kapitalwertrechnung gerechnet hat — die
+                // Positionen des ersten Jahres gegen die Betriebskosten p. a. (E8c).
+                string abweichung = WirtschaftlichkeitZeilen.GliederungAbweichung(
+                    summeErstesJahr, e.BetriebskostenJahr, BerichtTexte.Kultur);
+                if (abweichung.Length > 0)
                 {
-                    ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_BK_ABWEICHUNG,
-                        summe.ToString("N2", BerichtTexte.Kultur),
-                        e.BetriebskostenJahr.Value.ToString("N2", BerichtTexte.Kultur));
+                    ws.Cell(r, 1).Value = abweichung;
                     ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#B22222");
                     r++;
                 }

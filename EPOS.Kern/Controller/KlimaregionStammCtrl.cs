@@ -363,6 +363,15 @@ namespace WindowsFormsApplication1
         /// EINZELN gefragt: Eine Datenbank auf Stand 95 zeigt die Quelle, nur eben ohne
         /// Jahr und Szenario.</para>
         /// </summary>
+        /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…" einer Klimaregion</b> (Entscheid
+        /// AD-Q15): schaltet das Auslieferungskennzeichen der Regionen <paramref name="ids"/>
+        /// (<c>ID_Klimaregion</c>) — nur den Kopfsatz; Klimadaten und Solarwerte bleiben, wie
+        /// sie sind. Die Regel steht einmal in <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(TAB_REGION_STAMM, ids, gesperrt);
+
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
             var liste = new List<Katalogfilterzeile>();

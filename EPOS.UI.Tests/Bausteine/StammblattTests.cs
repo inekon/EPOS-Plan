@@ -110,7 +110,7 @@ public class StammblattTests : EposBunitContext
 
         var schloss = cut.Find(".epos-stammblatt-name .epos-schloss");
         Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren erlaubt", schloss.GetAttribute("title"));
-        Assert.Equal("Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.",
+        Assert.Equal("Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben.",
                      cut.Find(".epos-stammblatt-schutz").TextContent);
     }
 
@@ -432,7 +432,7 @@ public class StammblattTests : EposBunitContext
 
         Assert.Equal("", Ganglinienblatt.LoeschSperrgrund(Array.Empty<string>(), geschuetzt, verwendung));
         Assert.Equal("", Ganglinienblatt.LoeschSperrgrund(new[] { "Frei", "Messung 1" }, geschuetzt, verwendung));
-        Assert.Equal("Auslieferungssatz – Löschen gesperrt.",
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.",
                      Ganglinienblatt.LoeschSperrgrund(new[] { "Auslieferung" }, geschuetzt, verwendung));
         Assert.Equal("In Projekten verwendet („Projekt 1“, „Projekt 2“) – Löschen gesperrt; dort zuerst entfernen.",
                      Ganglinienblatt.LoeschSperrgrund(new[] { "Messung 1", "Messung 2", "Auslieferung" },

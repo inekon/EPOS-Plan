@@ -1,16 +1,18 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 23.09.2026** · Codestand `704356a4` · `SchemaStand.Zielversion` = 113 · Schemaschritte 90–113 vergeben, neue ab **114** · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `9ab55946` · `SchemaStand.Zielversion` = 114 · Schemaschritte 90–114 vergeben, 115 zugesagt, 116–118 an E9a vergeben · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
-Die Schritte 97 bis 101, 103 und 107 bis 110 gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
-Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
+Die Schritte 97 bis 101, 103, 107 bis 110 und 114 gehören nicht diesem Feld, ebenso der zugesagte 115: **97**
+Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
 BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
 Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten der Gebäudesimulation
 (`SCHRITT_101_GEBAEUDESPALTEN`), **103** Katalog, Zonen und Projekt des Zapfprofilgenerators
 (`SCHRITT_103_ZAPFPROFIL_KATALOG`, #438), **107** die Ergebnistabelle je Gebäude der Gebäudesimulation
 (`SCHRITT_107_ERGEBNIS_GEBAEUDE`, Entscheid E30), **108** bis **110** die Kühlung der Gebäudesimulation, Stufe
 KU1 (108 KU-S1 `SCHRITT_108_KUEHLUNG_GEBAEUDE`, 109 KU-S2 `SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG`, 110 KU-S4
-`SCHRITT_110_KUEHLUNG_ERGEBNIS`). An Tabellen dieses Feldes, aber nicht aus seinem Etappenplan:
+`SCHRITT_110_KUEHLUNG_ERGEBNIS`), **114** der Kühlbetrieb am Erzeuger, Stufe KU2 (KU-S3
+`SCHRITT_114_KUEHLUNG_ERZEUGER`), und **115**, der Zapfprofil-Stufe Z3 zugesagt (T2). An Tabellen dieses Feldes,
+aber nicht aus seinem Etappenplan:
 **106** — fremde Ergebnisverweise der Wirtschaftlichkeit werden NULL, eine Datenbereinigung der Welle #444
 (`SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS`). Diesem Feld gehören **102** — die leere `KWKG_Anlagenart` wird
 NULL (`SCHRITT_102_KWKG_ANLAGENART_LEER`, § 6.3 Nr. 30, #437) —, **104** — der Zeitzonentarif wird
@@ -19,7 +21,8 @@ abgelöst, die Leistungspreis-Staffel zieht an den Stromträger (`SCHRITT_104_ZE
 (`SCHRITT_105_KWKG_ABWAERMEABFUHR`, § 3.6, K‑1, #440) — und die drei Schritte der Etappe E7c2 (#446): **111** —
 Ersatz und Restwert je Position (`SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN`, § 2.13 (3), § 3.1) —, **112** — die
 Preisbasis der Trägerkarte als eigener Kartenzustand (`SCHRITT_112_PREISBASIS`, § 2.5) — und **113** — der
-Stammtext der Gase auf Nm³, des Brennstoffs 24 auf kWh (`SCHRITT_113_GASE_NM3`, § 5). Wer hier einen Schritt
+Stammtext der Gase auf Nm³, des Brennstoffs 24 auf kWh (`SCHRITT_113_GASE_NM3`, § 5). Für die Schritte B, C und D
+der Etappe E9 (§ 2.11.5) sind am 24.09.2026 **116**, **117** und **118** vergeben (Teil a, E9a). Wer hier einen Schritt
 plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
@@ -832,7 +835,7 @@ Arbeit.
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
 gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7 (#437, #439,
-#440, #446, #452) und E8 (#454, #455).*
+#440, #446, #452) und E8 (#454, #455; die Nachbesserung E8c #460).*
 
 *Entscheid A5 (Degradation) und die Entscheidungsfragen V-1 bis V-4: → Register R‑A (A5) und R‑V;
 der Entscheidweg zu A5: → Protokoll § 5.5.*
@@ -919,11 +922,15 @@ Stufe dieselben Werte zeigen; die Formelfassung wird gegen die Wertfassung gehal
   Kennzahlen der Blöcke Günstig und Ungünstig bleiben Werte — für sie gibt es keine Mehrjahrestabelle (E8b‑Q1,
   → Register R‑E8b).
 - **Stufe 3** — Menge und Satz einer bemessenen Position rechts des Betrags, der Betrag ihr Produkt (bei
-  Prozentbemessung ÷ 100, ein Erlös negativ; welche Rechnung gilt, sagt die Bemessung selbst,
-  `BetriebskostenCtrl.Betrag`); die Summe als Spaltensumme; der Δ%-Block als (Wert − Stamm) / |Stamm| · 100.
+  Prozentbemessung ÷ 100, ein Erlös negativ); welche Rechnung gilt, sagt der eine Rechenweg selbst:
+  `BetriebskostenCtrl.Bemessungsfaktor` — 1 für eine Art „Satz je Einheit", 0,01 für eine Prozentart, sonst fest —,
+  für jede der 16 bemessenen Arten; dieselbe Frage stellt die Herleitungsspalte (umgesetzt #460, § 3.4). Die Spalte
+  „Bemessung" nennt jede Art mit dem Text des Bemessungskatalogs. Die Summe als Spaltensumme; der Δ%-Block als
+  (Wert − Stamm) / |Stamm| · 100.
 - **Keine Formel ohne Gegenrechnung:** Jede Formel wird vor dem Schreiben in C# nachgerechnet; weicht ihr Ergebnis
   vom Wert ab, bleibt die Zelle ein Wert (`Formelregister`). Die Mappe zeigt damit nie eine Formel, die etwas anderes
-  rechnet als der Bericht sagt; in allen 13 Prüfgruppen gleicht die Formelfassung der Wertfassung.
+  rechnet als der Bericht sagt; in allen 13 Prüfgruppen gleicht die Formelfassung der Wertfassung (mit #460 über 15
+  Prüfgruppen nachgemessen: Beträge, Mengen, Sätze und Formeln unverändert, nur die Texte der Spalte „Bemessung").
 
 **Dauerhaft Werte bleiben**, weil sie am Stundenlauf, an Katalog- und Datenbankzugriff oder an
 Text hängen:
@@ -1687,6 +1694,30 @@ gibt es nicht mehr: **eine** Position mit sichtbarer Bemessungswahl.
 **Investitionskaskade** (`InvestKaskade.Summen`), stufig Anlage → Komponente → Projekt, **vor**
 Zuschussabzug — die abgeleiteten Beträge sind seit W5‑B‑8 enthalten (Befund B-5 erledigt).
 
+**Die Betriebskostentabelle der Berichte** — „Betriebskosten nach Kostenarten" in Wort- und Tabellenbericht, je
+Position Bezeichnung, Gruppe, Bemessung, Herleitung und Betrag (umgesetzt #460; E8b‑Q2 und E8b‑Q3, → Register R‑E8b;
+offen E8c‑Q1 und E8c‑Q2, → Register R‑E8c):
+
+- **Bemessung:** Jede Position nennt ihre Art mit dem Text des `BemessungKatalog` (Ressourcen `BM_*`, alle 18
+  Steuerwerte, beide Sprachen) — derselbe Text wie in Kostendialog und Kostenseite, in der Beschriftung des Gewerks
+  („je Liter" am Pufferspeicher, „je kW elektr. Leistung" am BHKW). „fester Betrag" steht nur bei `BETRAG` und bei
+  leerem oder unbekanntem Steuerwert, weil der Rechenweg beide wie `BETRAG` rechnet.
+- **Herleitung:** Menge × Satz nur an einer bemessenen Position — bemessen ist, wofür
+  `BetriebskostenCtrl.Bemessungsfaktor` einen Faktor liefert (1 je Einheit, 0,01 bei Prozent); feste Beträge, feste
+  Jahresbeträge, szenariogepflegte und unvollständige Positionen tragen keine. Die Formelmappe (§ 2.11.6, Stufe 3)
+  fragt denselben Faktor.
+- **Startjahr:** Eine Position mit Startjahr ≥ 2 (KD6) trägt in der Herleitungsspalte „ab Jahr X". Sie steht in der
+  Summe der Tabelle, zahlt aber erst ab ihrem Jahr (§ 3.1) und gehört nicht zu den angesetzten Betriebskosten p. a.;
+  der Hinweistext über der Tabelle sagt das in einem Satz.
+- **Probe der Gliederung:** Gegen die angesetzten Betriebskosten p. a. — die Jahr‑1-Zahl der Rechnung — wird die
+  Summe der **Positionen des ersten Jahres** gehalten; weichen beide um mehr als 0,50 € ab, steht der Hinweis
+  „Gliederung unvollständig" (`WIRT_BK_ABWEICHUNG`). Er trifft eine echte Lücke — eine Position der Rechnung, die in
+  keinem Block der Tabelle steht, oder eine abgebrochene Nachweisliste —, nicht ein Startjahr. Wort- und
+  Tabellenbericht rufen dieselbe Probe (`WirtschaftlichkeitZeilen.GliederungAbweichung`).
+- **Nachweis:** Das Startjahr reist je Position im Nachweisumschlag (Fassung 9, nur bei ≥ 2 geschrieben). Ein älterer
+  Umschlag liest seine Positionen als „ab dem ersten Jahr", die Probe vergleicht dort alle Positionen; das betrifft nur
+  den Rückfall des Berichts auf den gespeicherten Stand, denn der Bericht rechnet frisch.
+
 ## 3.5 Energiekosten und CO₂
 
 **Mengen:** `verbrauchJeTraeger[carrier] += Verbrauch [MWh/a]` je BHKW- und Kesselmodul; Menge ≤ 0
@@ -1997,8 +2028,8 @@ es. (5) Gepflegt wird in der Überlagerung „Sätze und Herkunft" (§ 2.2).
 
 Die Herleitung je Anlage nennt Fall, σ mit Herkunft, Nutzwärme (Wärmeproduktion − Anteil am Überschuss),
 KWK-Strom und Kürzung, davon Einspeisung und Eigenverbrauch; `KwkgModulNachweis` führt dazu sieben nullbare
-Felder ohne eigene Fassung (entschieden E7c1‑Q6, nach Empfehlung); die Fassung des Nachweisumschlags ist 8, seit er
-die Energiesteuer-Vorschau trägt (§ 3.7).
+Felder ohne eigene Fassung (entschieden E7c1‑Q6, nach Empfehlung); die Fassung des Nachweisumschlags ist 9 — 8 mit
+der Energiesteuer-Vorschau (§ 3.7), 9 mit dem Startjahr je Betriebskostenposition (§ 3.4, #460).
 
 **Die Vollbenutzungsstunden zählen in beiden Fällen brutto: Vbh = W_a ÷ P_Nenn** (Definition des Anwenders vom
 23.09.2026, die E7c1‑Q2 Lesart b präzisiert, → Register R‑E7c1; umgesetzt #452). W_a ist die jährlich erzeugte
@@ -2495,6 +2526,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E7c3 Vbh nach Definition, B‑6, Kapitalwert 1024, Vorschau** | Die Vollbenutzungsstunden als erzeugte Arbeit ÷ Nennleistung in beiden Fällen des § 2 Nr. 16 (E7c2/7 zurückgebaut); B‑6 in den fünf Prioritätsdateien mit strengem Leseweg und Warnzeilen; der Kapitalwert 1024 als Datenstand nachgerechnet, der Anker bleibt; die Energiesteuer-Vorschau je Wahl im Kern (Nachweisfassung 8) und die Wahlen der Überlagerung als Anzeigezeilen; `VpvCtKwh` ungerundet; Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt) — die dreizehn Basisprojekte unverändert (9.519 von 9.519 Werten). | #452 |
 | **E8a ValERI-Ansicht vollständig** (V‑C) | Die fünf Blöcke der Darstellung „ValERI-Bewertung" vollständig: Block 2 „Zahlungsreihen" je Stand und Szenario mit dem Zahlungsstrombild, Block 4 mit Spannenbild und Verlauf (E6‑Q1); in „Woraus entsteht die Zahl?" die Gliederung mit Nominalsumme und Differenzspalte und das Brückenbild zur Kapitalwertdifferenz, Brücke und Zahlungsstrom auch im Wortbericht; in „Was ist angenommen?" die Tafel „Was daraus im Lauf wird" und die Fußzeile zur Herkunft der Annahmen — keine Rechenwirkung, kein Schemaschritt. | #454 |
 | **E8b Formelmappe, Anhang E und Anhang D** (V‑D) | Der Tabellenbericht als Formelmappe in den Stufen 0 bis 3 — Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und Kennzahlen des Erwartungsfalls in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu; die Anhang-E-Checkliste als Abschlussseite beider Berichte und hinter einem Knopf der Ergebnisseite; die Gegenprobe an der Fallstudie des Anhangs D gegen den Rechenkern; die Fußzeile in der Knopfreihe — keine Rechenwirkung, kein Schemaschritt; E8 ist damit abgeschlossen. | #455 |
+| **E8c Bemessungstexte und Gliederungsprobe** (E8b‑Q2, E8b‑Q3) | Die Betriebskostentabelle beider Berichte nennt jede Bemessungsart mit dem Text des Bemessungskatalogs, Herleitung und Formelmappe fragen denselben Faktor; die Probe der Gliederung hält nur die Positionen des ersten Jahres gegen die angesetzten Betriebskosten, eine Position mit späterem Startjahr trägt „ab Jahr X" (Nachweisfassung 9); der Kommentar zu U42 berichtigt — keine Rechenwirkung, kein Schemaschritt. | #460 |
 
 ## 6.2 Regressionsanker
 
@@ -2505,9 +2537,11 @@ Berichtssammler (`BerichtsDatenSammler`, seit E3 in `EPOS.Kern/Allgemein/Bericht
 nachzubauen. Dazu kommen die Rechnerklassen
 `SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23), die
 Blattwache `BerichtBlattstrukturWacheTests` (13, über Excel- und Wortbericht samt den Stufen der Formelmappe), die
-Formatwache `WirtZeileFormatWacheTests` (4), die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe an
+Formatwache `WirtZeileFormatWacheTests` (4), die Befundwache `FormelmappeClosedXmlBefundTests` (2), die Gegenprobe an
 der Norm `AnhangDFallstudieTests` (10: die drei Sollwerte der Fallstudie, die Tafel D.5 und sechs Zeilen der Tafel
-D.6 gegen `KapitalwertRechner.Rechne`, § 2.11.2).
+D.6 gegen `KapitalwertRechner.Rechne`, § 2.11.2) und die zwei Klassen der Betriebskostentabelle (§ 3.4, #460):
+`BemessungstexteAlleArtenTests` (21, mit dem Wächter über alle Konstanten `DbWerte.BEMESSUNG_*` gegen den
+Bemessungskatalog) und `BetriebskostenStartjahrGliederungTests` (12, die Probe mit den Positionen des ersten Jahres).
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2703,13 +2737,17 @@ a (#454) und E8 Teil b (#455)** — **E7 und E8 sind damit abgeschlossen**: von 
 fünf Blöcken samt Block 2 und dem Zahlungsstrombild U42, der Gliederung mit Nominalsumme und Differenzspalte, dem
 Brückenbild, „Was daraus im Lauf wird", der Fußzeile und E6‑Q1 (§ 2.11.4), und V‑D — die Formelmappe in den Stufen 0
 bis 3 (§ 2.11.6), die Anhang-E-Checkliste (U43) und die Anhang-D-Gegenprobe (§ 2.11.2), dazu die Fußzeile in der
-Knopfreihe (E8a‑Q4); der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt **E9** (V‑E, die
-Szenarioabdeckung nach § 2.11.5): die Schemaschritte B (Betrachtungszeitraum und Mengenfaktor je Szenario), C
-(Trägerpreise best/worst) und D (Erlössätze best/worst) mit ihren Nummern bei der Umsetzung, der ±-Knopf an den neuen
-Orten, der Kern liest die Paare, der Hinweistext (§ 2.11.7) entfällt; ohne Degradation (A5), rechenwirksam je Pflege.
-Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3) und die sechs aus E8b (→ Register R‑E8b); nach ihrem
-Entscheid kommen der Rest von B‑6 (E7c3‑Q5), die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`,
-`Vorsorgewarnung` (E7c3‑Q6) und die zwei kleinen Aufträge zu E8b‑Q2 und E8b‑Q3 dazu. Aus der
+Knopfreihe (E8a‑Q4); aus E8b ist die Nachbesserung **E8c (#460)** gebaut — die zwei kleinen Aufträge zu E8b‑Q2 und
+E8b‑Q3, die Betriebskostentabelle der Berichte (§ 3.4); der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt.
+**E9** (V‑E, die Szenarioabdeckung nach § 2.11.5) läuft in zwei Wellen: **E9a** mit den Schemaschritten 116 (B,
+Betrachtungszeitraum und Mengenfaktor je Szenario), 117 (C, Trägerpreise best/worst) und 118 (D, Erlössätze
+best/worst) und dem Kern, der die Paare liest (voraussichtlich #461), danach **E9b** mit dem ±-Knopf an den neuen
+Orten, mit ihr entfällt der Hinweistext (§ 2.11.7; voraussichtlich #462); ohne Degradation (A5), rechenwirksam je
+Pflege. Offen
+sind die acht Fragen aus E7c3 (→ Register R‑E7c3) und die zwei aus E8c (→ Register R‑E8c); die sechs aus E8b sind
+entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
+(E7c3‑Q5) und die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6)
+dazu. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2763,6 +2801,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | Befund **B‑6** (§ 4) und § 6.2 Kapitalwert 1024 · E7c2‑Q5 b, Q8 b, Q4-Rest · E7c1‑Q2 b präzisiert, E7c1‑Q8 · U22 Anzeigezeilen · § 6.3 Nr. 9h gemessen | — | — | **#452** | E7 Teil c3: Vbh = W_a ÷ P_Nenn in beiden Fällen, B‑6 in den fünf Prioritätsdateien, Kapitalwert 1024 als Datenstand, die Energiesteuer-Vorschau je Wahl, die Wahlen als Anzeigezeilen, `VpvCtKwh` ungerundet, Katalog-Generation 9 |
 | **V-C** (§ 2.11.4) · E6‑Q1 · E5b‑4 (U41, U46–U48) · U42 (E8a‑Q1) | — | — | **#454** | E8 Teil a: Block 2 mit Zahlungsstrombild, Block 4 mit Spannenbild und Verlauf, Gliederung mit Nominalsumme und Differenzspalte, Brückenbild, „Was daraus im Lauf wird", Fußzeile |
 | **V-D** (§ 2.11.4) · V‑G10 · V‑G12 · Anhang D (§ 2.11.2) · Q18 (U43) · U12 · E8a‑Q4 | — | — | **#455** | E8 Teil b: Formelmappe Stufen 0 bis 3 mit Blattstruktur- und ClosedXML-Wache, Anhang-E-Checkliste in beiden Berichten und hinter dem Knopf der Ergebnisseite, Anhang-D-Gegenprobe, Fußzeile in der Knopfreihe |
+| E8b‑Q2 · E8b‑Q3 (§ 3.4) · Kommentar zu U42 | — | — | **#460** | E8c: Bemessungstexte aus dem Bemessungskatalog, `Bemessungsfaktor` für Herleitung und Formelmappe, Gliederungsprobe mit den Positionen des ersten Jahres, „ab Jahr X", Nachweisfassung 9 |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 |
 
@@ -2784,7 +2823,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E7** Teil c3 — Reste | Vbh = W_a ÷ P_Nenn in Fall 1 und Fall 2 (Rückbau von E7c2/7), `VpvCtKwh` ungerundet (E7c2‑Q5 b), Katalog-Generation 9 (Brennstoff 24 H_i = H_s = 1,0, zwei KWKG-Zeilen abgekündigt, E7c1‑Q8), Kapitalwert 1024 als Datenstand, B‑6 in den fünf Prioritätsdateien, die Energiesteuer-Vorschau je Wahl (E7c2‑Q8 b, Nachweisfassung 8), die Wahlen der Überlagerung als Anzeigezeilen (U22), Nr. 9h gemessen, Testdatenbank auf Generation 9 | **#452** (Merge `9c7a0023`, Nachtrag `387c2d9f`) |
 | **E8** Teil a — V‑C | die fünf Blöcke vollständig: Block 2 mit dem Zahlungsstrombild (U42), Block 4 mit Spannenbild und Verlauf (E6‑Q1, U49); die Gliederung mit Nominalsumme und Differenzspalte (U46), das Brückenbild (U41), „Was daraus im Lauf wird" (U47), die Fußzeile (U48) | **#454** (Merge `485052c6`) |
 | **E8** Teil b — V‑D | die Formelmappe Stufen 0 bis 3 (U12) samt Blattstruktur- und ClosedXML-Wache, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`, die Fußzeile in der Knopfreihe (E8a‑Q4) — E8 abgeschlossen | **#455** (Merge `704356a4`) |
-| **E9** … **E12** | V-E (Schritte B, C, D) · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E9** (offen die acht Fragen aus E7c3 und die sechs aus E8b, → Register R‑E7c3, R‑E8b) |
+| **E8c** — E8b‑Q2/Q3 | die Bemessungstexte aller Arten aus dem Bemessungskatalog, die Gliederungsprobe mit den Positionen des ersten Jahres („ab Jahr X", Nachweisfassung 9), der Kommentar zu U42 | **#460** (Merge `9ab55946`) |
+| **E9** … **E12** | V-E (Schritte B, C, D) · ND-S3 · Wiki (E11 entfällt) | **E9 läuft:** E9a mit den Schritten 116 bis 118 (voraussichtlich #461), dann E9b (voraussichtlich #462); offen die acht Fragen aus E7c3 (→ Register R‑E7c3) und die zwei aus E8c (→ Register R‑E8c); E8b entschieden und gebaut (→ Register R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

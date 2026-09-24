@@ -266,6 +266,8 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.NutzungsdauerVerwaltung:
                 case Seitenschluessel.Gesetzeskatalog:
                 case Seitenschluessel.ProjektAlsVariante:
+                // Welle #458, Stufe 2: die Programmeinstellungen (KiMaskenziele.EINSTELLUNGEN).
+                case Seitenschluessel.Einstellungen:
                     return HauptfensterHuelle.Aktuelle?.Springe(maske) ?? false;
 
                 // --- Die freien ANSICHTEN der Wurzel (Auftrag KI-F8) ------------------

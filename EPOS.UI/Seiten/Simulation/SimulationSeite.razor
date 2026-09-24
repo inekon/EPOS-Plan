@@ -671,9 +671,48 @@
                                          // der neun Reiterblaetter - die
                                          // Speicherkapazitaet der Autarkierechnung auf
                                          // dem Blatt "Ergebnis".
-                                         kwh => _ergebnisSeite?.SpeicherkapazitaetSetzen(kwh));
+                                         kwh => _ergebnisSeite?.SpeicherkapazitaetSetzen(kwh),
+                                         // Welle #458: Schritt ① selbst - er traegt die
+                                         // Werte JE ANLAGE (Quelle, Prioritaet,
+                                         // Betriebsmodus) samt den Vorpruefungen seiner
+                                         // Ueberlagerungen.
+                                         () => _konfigSeite)
+        {
+            // Welle #458, Stufe 2: das Blatt von Schritt ③ als Wahl und die
+            // Anzeigeschalter des offenen Blattes - beides nur, solange ③ vorn steht
+            // (der Schritt ③ bleibt montiert, wenn ① wieder vorn steht).
+            ReiterEintraege = KiReiterEintraege,
+            ReiterWaehlen = KiReiterWaehlen,
+            ErgebnisschalterLesen = () => _schritt == SimulationSchritt.Ergebnis && _ergebnisSeite is not null
+                ? _ergebnisSeite.Anzeige.Schalter
+                : Array.Empty<Anzeigeschalter>()
+        };
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>Die Titel der Blätter von Schritt ③; leer, solange ① vorn steht.</summary>
+    private IReadOnlyList<string> KiReiterEintraege()
+        => _schritt == SimulationSchritt.Ergebnis && _ergebnisSeite is not null
+            ? _ergebnisSeite.Blaetter.Select(b => b.Titel).ToList()
+            : Array.Empty<string>();
+
+    /// <summary>
+    /// Schlägt ein Blatt von Schritt ③ über seinen Titel auf — derselbe Weg wie die Marke
+    /// (<c>SimulationErgebnisSeite.BlattWaehlen</c>); in ① lehnt die Ansicht benannt ab.
+    /// </summary>
+    private void KiReiterWaehlen(string titel)
+    {
+        SimulationErgebnisSeite? seite = _ergebnisSeite;
+        if (_schritt != SimulationSchritt.Ergebnis || seite is null)
+            throw new InvalidOperationException(Resource.KI_DLG_SIM_REITER_NICHT_VORN);
+
+        foreach ((string Schluessel, string Titel) b in seite.Blaetter)
+            if (string.Equals(b.Titel, titel, StringComparison.CurrentCultureIgnoreCase))
+            {
+                _ = InvokeAsync(() => seite.BlattWaehlen(b.Schluessel));
+                return;
+            }
     }
 
     /// <summary>

@@ -58,12 +58,14 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Func<string, IProgress<ImportFortschritt>, Task<SolarganglinieImportErgebnis>>? einlesen = null,
         IReadOnlyList<Katalogfilterzeile>? katalog = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null)
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
     {
         IReadOnlyList<Katalogfilterzeile> liste = katalog ?? KATALOG;
 
         return Render<SolarganglinieAdminDialog>(p => p
             .Add(x => x.Katalogzeilen, () => Task.FromResult(liste))
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => Task.FromResult(false)))
@@ -514,5 +516,32 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog-zu").Click();
         Assert.True(antwort);
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss einer Zeitreihe aufheben</b> (AD-Q15): nach dem „Ja" ist die
+    /// Auslieferungszeile ein eigener Satz, „Löschen" ist frei, das Stammblatt trägt das Band.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Loeschen_frei()
+    {
+        IReadOnlyList<Katalogfilterzeile> zeilen = KATALOG;
+        var schloss = new Schlosspruefung(2);
+        var cut = Aufbauen(katalog: zeilen, schloss: schloss.Weg(zeilen: zeilen));
+
+        Zeilenklick.Zeile(cut, 1);       // "Auslieferung Sued"
+        Assert.Equal("true", Knopf(cut, "Ganglinie Löschen").GetAttribute("aria-disabled"));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.StartsWith("Schloss von „Auslieferung Sued“ aufheben?", Schlosspruefung.Frage(cut));
+        Schlosspruefung.Ja(cut);
+
+        cut.WaitForAssertion(() => Assert.Null(Knopf(cut, "Ganglinie Löschen").GetAttribute("aria-disabled")),
+                             TimeSpan.FromSeconds(10));
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss von „Auslieferung Sued“ aufgehoben.", cut.Instance.Status);
     }
 }

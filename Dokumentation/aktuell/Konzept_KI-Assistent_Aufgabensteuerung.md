@@ -1332,11 +1332,15 @@ als Ausnahmeliste. Nicht steuerbar bleiben:
 - jede Maske und jeder Knopf ohne Katalogeintrag.
 
 Die **Gebäude-Verwaltung** bleibt offen, solange ihre Hülle nur liest. Die Liste steht als Daten neben dem Katalog
-(`KiDialogAusnahmen.Alle` mit den Gruppen `KiAusnahmegrund`); welche Masken mit Einstellwerten noch nicht
-angemeldet sind, klärt eine Folgewelle nach Inventar, die auch den Wächter „jede Razor-Maske mit Eingabefeldern
-ist angemeldet oder steht auf der Ausnahmeliste" bringt. Masken, deren Eingabeprüfung noch nicht auf das
-Knopfmuster umgestellt ist, kommen erst nach ihrer Umstellung in den Katalog — die Umstellung selbst ist
-Bestandspflege außerhalb dieses Konzepts.
+(`KiDialogAusnahmen.Alle` mit den Gruppen `KiAusnahmegrund`: Anzeige, Verwaltung ohne Einstellwerte, Anlegen oder
+Entfernen, Import, Export, Datei, Rückfrage, Lizenz oder Schlüssel, Assistent, Aktion, Werkzeug, Feld des Wirts, Offen).
+**Regel:** Eine Razor-Maske mit Eingabefeldern ist angemeldet, gehört als Baustein zu einem anmeldenden Wirt oder steht
+mit Grund auf dieser Liste; eine offene Maske nennt den Auftrag, der sie anbindet. Der Wächter
+`EPOS.UI.Tests/Dialoge/Hilfe/KiMaskenabdeckungWacheTests` hält die Regel samt Eingabebilanz
+([Dialogintegration, Abschnitt 4](Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)). Aus einer ausgenommenen
+Maske gerufen, nennt der Assistent den Grund, statt die Liste aller Masken aufzuzählen. Masken, deren Eingabeprüfung
+noch nicht auf das Knopfmuster umgestellt ist, kommen erst nach ihrer Umstellung in den Katalog — die Umstellung
+selbst ist Bestandspflege außerhalb dieses Konzepts.
 
 ### 11.8 Der Aufrufknopf — dezenter Einstieg aus jeder Maske (Auftrag vom 20.08.2026)
 

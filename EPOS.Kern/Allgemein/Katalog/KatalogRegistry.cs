@@ -103,6 +103,24 @@ namespace WindowsFormsApplication1
         /// Leer (Vorgabe) = der Name allein ist der Schluessel.
         /// </summary>
         public string[] SchluesselZusatzSpalten = new string[0];
+
+        /// <summary>
+        /// <b>Eine Spalte, die das Schloss UMGEKEHRT fuehrt</b> (1 = aenderbar) — beim
+        /// Gebaeudetyp <c>Veraenderbar</c>: Dort ist ein Satz gesperrt, wenn er
+        /// <c>ReadOnly</c> traegt ODER nicht <c>Veraenderbar</c> ist
+        /// (<c>TagVCtrl.Katalogfilterzeilen</c>). <see cref="Auslieferungskennzeichen"/>
+        /// schaltet sie deshalb mit. Leer (Vorgabe) = das Schloss ist allein <c>ReadOnly</c>.
+        /// </summary>
+        public string SchlossGegenspalte = "";
+
+        /// <summary>
+        /// <b>Das Schloss folgt einem Freigabestatus</b> und laesst sich nicht von Hand
+        /// umschalten — die Tww-Kataloge: Ihr <c>ReadOnly</c> haengt an <c>Status</c>
+        /// (Auslieferung, eigener Satz, Freigabe mit Vier-Augen-Vermerk). Ein Umschalten
+        /// ginge an dieser Freigabe vorbei; <see cref="Auslieferungskennzeichen"/> lehnt
+        /// es benannt ab (Entscheid AD-Q15).
+        /// </summary>
+        public bool SchlossAusStatus;
     }
 
     public static class KatalogRegistry
@@ -319,6 +337,7 @@ namespace WindowsFormsApplication1
                 Schluessel = "TWW_NUTZUNGSART",
                 Tabelle = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
                 VerwendungSperrt = true,
+                SchlossAusStatus = true,
                 ImDublettendialog = false,
                 SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "ID_Vorlage", "Status", "Beleg", "Freigabe" },
@@ -333,6 +352,7 @@ namespace WindowsFormsApplication1
                 Schluessel = "TWW_TAGESGANGSATZ",
                 Tabelle = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
                 VerwendungSperrt = true,
+                SchlossAusStatus = true,
                 ImDublettendialog = false,
                 SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "Status", "Beleg" },
@@ -358,6 +378,7 @@ namespace WindowsFormsApplication1
                 Schluessel = "TWW_BEDARFSTAG",
                 Tabelle = TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
                 VerwendungSperrt = true,
+                SchlossAusStatus = true,
                 ImDublettendialog = false,
                 SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "Status", "Beleg" },
@@ -471,6 +492,9 @@ namespace WindowsFormsApplication1
                 Schluessel = "GEBAEUDETYP",
                 Tabelle = "Tab_DBTagV_STAMM",
                 AusschlussSpalten = new[] { "Veraenderbar" },
+                // Das Schloss des Gebaeudetyps ist ReadOnly ODER nicht Veraenderbar
+                // (TagVCtrl.Katalogfilterzeilen) - das Umschalten schaltet beide.
+                SchlossGegenspalte = "Veraenderbar",
                 VerwendungsPruefungen = new[]
                 {
                     // Gebaeude-Katalogsaetze verweisen per Typ = Bezeichner auf ihren Tagesverlauf

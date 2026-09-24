@@ -264,7 +264,7 @@
                    SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
                    Die Bandbreite zeigt die Spanne am Ende, der Verlauf, wie sie
                    entsteht. Ohne Datenseite steht nur der Platzhalter. *@
-                <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
                                              Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
 
                 @Sensitivitaetsteil
@@ -470,10 +470,10 @@
            Block 4 (Unsicherheit, seit E8a mit Spannenbild und Verlauf) und Block 5
            (Deklarationen). Block 2 zeigt die Zahlungsreihen je Jahr aus den
            Zahlungsbildern des Laufs dieser Sitzung; solange es keine gibt, steht an
-           seiner Stelle EINE benannte Hinweiszeile, kein leerer Rahmen. Das
-           Zahlungsstrombild (U42) ist nicht gebaut - Konzeptentscheid offen. Der
-           Normbezug steht als Untertitel im Balken (Mockup-Tafel "ValERI-Bewertung -
-           die fuenf Bloecke"). *@
+           seiner Stelle EINE benannte Hinweiszeile, kein leerer Rahmen. Unter der
+           Jahrestafel steht das Zahlungsstrombild (U42) desselben Standes im selben
+           Szenario (siehe Zahlungsreihenteil). Der Normbezug steht als Untertitel
+           im Balken (Mockup-Tafel "ValERI-Bewertung - die fuenf Bloecke"). *@
         <Gruppenkopf Titel="@Texte.Block1" Summe="@Texte.Norm1">
             <KindInhalt>
                 @if (_stand.Ansicht.Rahmen.Zeilen.Count > 0)
@@ -1048,8 +1048,9 @@
 
     /// <summary>
     /// Die Sicht des Assistenten: die fünf Wahlfelder, die entscheiden, WAS gegen WAS
-    /// unter welchem Szenario gerechnet wird, und der Freitext der nicht monetären
-    /// Wirkungen.
+    /// unter welchem Szenario gerechnet wird, der Freitext der nicht monetären
+    /// Wirkungen und die zwei Anzeigewahlen von Block 2 (Stand und Szenario der
+    /// Zahlungsreihen).
     /// </summary>
     /// <remarks>
     /// Jede Setzung läuft durch denselben Rückruf wie ein Griff in die Klappliste:
@@ -1087,9 +1088,37 @@
                 EintraegeB, z => z.Id, z => z.Text),
 
             WirkungLesen = () => _nichtMonetaer,
-            WirkungSetzen = wert => _nichtMonetaer = wert ?? ""
+            WirkungSetzen = wert => _nichtMonetaer = wert ?? "",
+
+            // Block 2 „Zahlungsreihen": zwei Anzeigewahlen. Gelesen wird die GEZEIGTE
+            // Tafel (mit ihrem Rückfall), gesetzt durch dieselben Rückrufe wie die
+            // Klapplisten — kein neuer Stand, kein Nachrechnen.
+            ZahlungsstandLesen = () => Zahlungsreihe?.IdStand,
+            ZahlungsstandSetzen = BeiZahlungsstand,
+            ZahlungsstandEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Ansicht.Zahlungsstaende, z => z.Id, z => z.Text),
+
+            ZahlungsszenarioLesen = () => Zahlungsreihe?.Szenario,
+            ZahlungsszenarioSetzen = BeiZahlungsszenario,
+            ZahlungsszenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Szenarien, z => z.Id, z => z.Text),
+
+            // Welle #458, Stufe 2: der Abschnitt „Verlauf" - Zeitraum und Haken, ueber
+            // die Wege des Abschnitts selbst.
+            VerlaufZeitraumLesen = () => _verlauf?.KiZeitraum,
+            VerlaufZeitraumSetzen = wert =>
+            {
+                if (_verlauf is null)
+                    throw new InvalidOperationException(Resource.KI_DLG_WIRT_VERLAUF_GESPERRT);
+                _verlauf.KiZeitraum = wert;
+            },
+            VerlaufschalterLesen = () => _verlauf?.KiSchalter
+                                         ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>()
         };
     }
+
+    /// <summary>Der Abschnitt „Verlauf" — der Wirt meldet seine Felder an (Welle #458, Stufe 2).</summary>
+    private KapitalwertVerlaufAbschnitt? _verlauf;
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).

@@ -204,6 +204,13 @@ Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvariant
 Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des
 Hauses und frei aenderbar.
 
+Ein schreibgeschuetzter Satz traegt in der Verwaltung ein Schloss. Wer ihn anpassen will,
+dupliziert ihn (''Duplizieren…'') oder hebt sein Schloss auf (''Schloss aufheben…'' in der
+Leiste ueber dem Stammblatt, nach einer Rueckfrage); danach gelten seine Werte als eigene, und
+ein Programm-Update stellt die ausgelieferten nicht wieder her. Umgekehrt sperrt
+''Schloss setzen…'' einen eigenen Satz als Auslieferungssatz, ohne seine Werte anzutasten. Das
+Wochen-Stundenprofil gehoert zum Typ und behaelt dessen eigenes Schloss.
+
 Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett,
 Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 
@@ -242,7 +249,7 @@ Waermebedarfs, in denen der Effekt schon steckt.
 * '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage, Betriebsferien und Belegungsschwankungen bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsnormierung glaettet.''' Wegen (4) und (5) verschiebt der Kalender innerhalb eines Monats nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
 * '''EINE Einheit fuer beide Wege.''' Die Brauchwassermenge steht nach (6) in MWh — im '''Lauf''' wie in der '''Vorschau''' der Bedarfsdialoge. Beide Wege gehen durch dieselbe Kernmethode, und die Anzeige rechnet nur noch von MWh auf die gewaehlte Anzeigeeinheit um.
-* '''Der Auslieferungskatalog kann bei einer Datenbankmigration verlorengehen''' — die neuen VDI-Typen sind kein Bestandteil des alten Migrationsskripts. Vor einer Migration Sicherung anlegen.
+* '''Ein Programm-Update laesst den Katalog, wie er ist.''' Setup und Programmstart ueberschreiben keinen Katalogsatz und saeen keinen nach: Ein angepasster oder entsperrter Satz bleibt, wie er ist, und neu ausgelieferte Profile kommen in eine bestehende Datenbank nicht von selbst. Die ausgelieferten Werte eines angepassten Satzes gibt es danach nur noch in einer Datenbanksicherung.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}

@@ -10,13 +10,19 @@ namespace EPOS.UI.Seiten.Berichte;
 /// entscheidet, WELCHE Stände gegeneinander gerechnet werden (Vergleichssicht,
 /// Referenz, Paar A und B), unter WELCHEM Szenario (Erwartet, Best, Worst) — und
 /// sie pflegt den Freitext der nicht monetären Wirkungen nach DIN EN 17463. Die
-/// Kennzahltabelle, die Herleitungszeilen und der Kapitalwertverlauf darunter sind
-/// gerechnete Anzeige und bleiben draußen.</para>
+/// Kennzahltabelle, die Herleitungszeilen und das Bild des Kapitalwertverlaufs
+/// darunter sind gerechnete Anzeige und bleiben draußen; die Bedienleiste des
+/// Verlaufs (Zeitraum, Haken je Stand und Szenario) ist drin.</para>
 ///
 /// <para><b>Warum ein Sichtmodell.</b> Jedes dieser Felder ist an der Seite ein
 /// WEG und kein Wert: Die Seite holt sich zu jeder Wahl einen NEUEN Stand aus der
 /// Hülle (<c>Uebernehmen</c>) und rechnet das Warnband nach. Ein Katalog am Stand
 /// schriebe die Zahl hin, und die Seite zeigte die Kennzahlen von vorhin.</para>
+///
+/// <para><b>Die Anzeigewahlen von Block 2 sind drin</b> (ValERI-Bewertung,
+/// „Zahlungsreihen"; KI‑D‑Q11): Stand und Szenario der Jahrestafel wählen nur, welche
+/// schon gelieferte Tafel die Seite zeigt — kein neuer Stand, kein Nachrechnen. Gelesen
+/// wird die GEZEIGTE Wahl (Vorgabe: die Leitversion im Erwartungsfall).</para>
 ///
 /// <para><b>Die Vergleichsgruppe bleibt draußen</b>: Welche Varianten angehakt
 /// sind, ist eine Menge von Verweisen und kein Feldwert.</para>
@@ -49,6 +55,14 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
     public Func<string>? WirkungLesen { get; init; }
     public Action<string>? WirkungSetzen { get; init; }
 
+    public Func<int?>? ZahlungsstandLesen { get; init; }
+    public Action<int?>? ZahlungsstandSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? ZahlungsstandEintraege { get; init; }
+
+    public Func<int?>? ZahlungsszenarioLesen { get; init; }
+    public Action<int?>? ZahlungsszenarioSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? ZahlungsszenarioEintraege { get; init; }
+
     // =====================================================================
     //  Die Wahllisten (KI-D-Q6)
     // =====================================================================
@@ -72,6 +86,14 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
     /// <summary>Die für B wählbaren Stände — ohne den, der auf A steht.</summary>
     public IReadOnlyList<KiWahleintrag> StandBWahl
         => BEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Stände, für die der Lauf Zahlungsreihen geliefert hat (Block 2).</summary>
+    public IReadOnlyList<KiWahleintrag> ZahlungsreihenStandWahl
+        => ZahlungsstandEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Szenarien der Zahlungsreihen (Block 2).</summary>
+    public IReadOnlyList<KiWahleintrag> ZahlungsreihenSzenarioWahl
+        => ZahlungsszenarioEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die Felder der Seite
@@ -124,4 +146,51 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
         get => WirkungLesen?.Invoke() ?? "";
         set => WirkungSetzen?.Invoke(value ?? "");
     }
+
+    /// <summary>
+    /// Der Stand, dessen Zahlungsreihen Block 2 zeigt — eine Anzeigewahl; <c>null</c> =
+    /// keine Jahresreihen in dieser Sitzung.
+    /// </summary>
+    public int? ZahlungsreihenStand
+    {
+        get => ZahlungsstandLesen?.Invoke();
+        set => ZahlungsstandSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Das Szenario, dessen Zahlungsreihen Block 2 zeigt — eine Anzeigewahl, unabhängig
+    /// vom Szenario der Kennzahlen.
+    /// </summary>
+    public int? ZahlungsreihenSzenario
+    {
+        get => ZahlungsszenarioLesen?.Invoke();
+        set => ZahlungsszenarioSetzen?.Invoke(value);
+    }
+
+    // =====================================================================
+    //  Der Abschnitt „Verlauf" (Welle #458, Stufe 2)
+    // =====================================================================
+
+    public Func<int?>? VerlaufZeitraumLesen { get; init; }
+    public Action<int?>? VerlaufZeitraumSetzen { get; init; }
+
+    /// <summary>Liefert die Haken des Verlaufs (je Stand, je Szenario); leer ohne Rechnung.</summary>
+    public Func<IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter>>? VerlaufschalterLesen { get; init; }
+
+    /// <summary>
+    /// Der Zeitraum des Kapitalwertverlaufs [Jahre] — derselbe Wert wie das Feld;
+    /// gerechnet wird erst mit „Aktualisieren".
+    /// </summary>
+    public int? VerlaufZeitraum
+    {
+        get => VerlaufZeitraumLesen?.Invoke();
+        set => VerlaufZeitraumSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Haken des Verlaufs — eine SPALTE, je Stand und je Szenario eine Zeile mit
+    /// seinem Namen als Kennzeichen. Ein Haken zeichnet nur neu.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Verlaufsschalter
+        => VerlaufschalterLesen?.Invoke() ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
 }

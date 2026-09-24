@@ -5,6 +5,7 @@ using EPOS.UI.Dialoge.Waermepumpe;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -384,5 +385,75 @@ public class KennlinienEditorDialogTests : EposBunitContext
         var kurz = cut.FindAll(".epos-formularraster .epos-feld--kurz");
         Assert.NotEmpty(kurz);
         Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Überlagerung meldet
+    /// ihren Arbeitsstand über <c>KennlinienKiSicht</c> an: Die Stufe ist ein Wahlfeld,
+    /// die Stützstellen der gewählten Stufe sind Spalten mit dem Kennzeichen
+    /// „Vorlauf/Temperatur", und gesetzt wird in genau die Zeilen, an denen die
+    /// Eingabefelder hängen. Mit dem Editor fällt die Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Der_Editor_meldet_Stufe_und_Stuetzstellen_beim_Assistenten_an()
+    {
+        List<KennlinienZeile> zeilen = Proben();
+        var cut = Aufbauen(zeilen);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KENNLINIEN));
+
+        WindowsFormsApplication1.KiFeldzugang vorlauf =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KENNLINIEN, "vorlauf");
+        Assert.NotNull(vorlauf);
+        Assert.Equal(35, vorlauf.Lesen());
+
+        // Zwei Stuetzstellen der Stufe 35 - die Zeile der Stufe 55 steht nicht im Raster.
+        WindowsFormsApplication1.KiFeldzugang cop1 =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KENNLINIEN, "cop_1");
+        Assert.NotNull(cop1);
+        Assert.Contains("35/-7", cop1.Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.KENNLINIEN, "cop_3"));
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(cop1, "3,1");
+        Assert.True(u.Ok, u.Grund);
+        cop1.Setzen(u.Wert);
+        Assert.Equal(3.1, zeilen[0].Cop);
+
+        // Die Stufe wechseln - derselbe Weg wie ein Klick in die Liste.
+        KiFeldumsetzung stufe = KiFeldwandler.Wandle(vorlauf, "55");
+        Assert.True(stufe.Ok, stufe.Grund);
+        vorlauf.Setzen(stufe.Wert);
+        cut.Render();
+        Assert.Equal(55, cut.Instance.Vorlauf);
+        Assert.Equal(1, Zeilenzahl(cut));
+
+        // Eine Stufe, die es nicht gibt, lehnt der Editor benannt ab.
+        Assert.Throws<InvalidOperationException>(() => vorlauf.Setzen(70));
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KENNLINIEN));
+    }
+
+    /// <summary>
+    /// Der Editor eines AUSLIEFERUNGSSATZES ist für den Assistenten schreibgeschützt —
+    /// mit dem Grund, den der Editor selbst zeigt; einen Speicherweg meldet er nie an
+    /// („OK" bleibt beim Anwender).
+    /// </summary>
+    [Fact]
+    public void Der_Editor_eines_Auslieferungssatzes_ist_schreibgeschuetzt_und_speichert_nicht()
+    {
+        var cut = Aufbauen(nurLesen: true);
+
+        WindowsFormsApplication1.KiMaskenhaken haken =
+            KiMaskenbruecke.Haken(KiMaskennamen.KENNLINIEN);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(cut.Instance.NurLesenText, haken.Schutzgrund());
+        Assert.Null(haken.Speichern);
+
+        cut.Instance.Dispose();
     }
 }

@@ -1891,32 +1891,47 @@ namespace WindowsFormsApplication1
             ""                                   // nicht eingeordnet
         };
 
-        /// <summary>Anzeigetext einer Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>).</summary>
-        public static string BemessungText(string steuerwert)
+        /// <summary>
+        /// Anzeigetext einer Bemessungsart (<c>DbWerte.BEMESSUNG_*</c>) in diesem Gewerk —
+        /// die Spalte „Bemessung" der Betriebskostentabelle in Wort- und Tabellenbericht.
+        ///
+        /// <para><b>ETAPPE E8c (E8b‑Q2): EINE Wahrheit.</b> Die Methode führte eine eigene
+        /// Liste und kannte 4 von 17 Arten; jede andere stand im Bericht als „fester
+        /// Betrag" — auch neben einer Menge-×-Satz-Formel der Formelmappe. Der Text kommt
+        /// jetzt aus dem <see cref="BemessungKatalog"/> (Ressourcen <c>BM_*</c>, beide
+        /// Sprachen), derselben Quelle wie Kostendialog und Kostenseite, samt der
+        /// gewerkeigenen Beschriftung („je Liter" am Pufferspeicher, „je kW elektr.
+        /// Leistung" am BHKW). Der Wächter <c>BemessungstexteAlleArtenTests</c> hält jede
+        /// Konstante <c>DbWerte.BEMESSUNG_*</c> gegen den Katalog.</para>
+        ///
+        /// <para>„fester Betrag" steht nur noch an einer festen Position: leerer Steuerwert,
+        /// BETRAG — und ein unbekannter Steuerwert, weil der Rechenweg ihn wie BETRAG
+        /// rechnet (<see cref="BetriebskostenCtrl.Betrag"/>: „nie stillschweigend 0").</para>
+        /// </summary>
+        /// <param name="komponente"><c>Tab_KostenKomponente.ID</c> der Position; 0 =
+        /// unbekannt, dann der allgemeine Name der Art.</param>
+        public static string BemessungText(string steuerwert, int komponente = 0)
         {
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_PROZENT_INVESTITION;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_EUR_PRO_H;
-            if (string.Equals(steuerwert, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal))
-                return MyResource.Resource.BEMESSUNG_EUR_PRO_KWH;
-            return MyResource.Resource.BEMESSUNG_BETRAG;
+            if (string.IsNullOrEmpty(steuerwert) || BemessungKatalog.Finde(steuerwert) == null)
+                steuerwert = DbWerte.BEMESSUNG_BETRAG;
+            return BemessungKatalog.Anzeige(steuerwert, komponente);
         }
 
         /// <summary>
         /// Herleitung einer Kostenposition als Klartext („1.500 h/a × 2,50 €/h").
-        /// Leer, wenn die Position ein fester Betrag ist oder ein Szenariowert die
-        /// Ableitung geschlagen hat — dann steht keine Herleitung dahinter.
+        /// Leer, wenn die Position fest ist (fester Betrag, fester Jahresbetrag, unbekannter
+        /// Steuerwert) oder ein Szenariowert die Ableitung geschlagen hat — dann steht keine
+        /// Herleitung dahinter.
         /// </summary>
         public static string Herleitung(KostenPositionNachweis n,
                                         System.Globalization.CultureInfo kultur)
         {
             if (n == null || n.SzenarioGepflegt) return "";
-            if (string.IsNullOrEmpty(n.Bemessung) ||
-                string.Equals(n.Bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
-                return "";
+            // ETAPPE E8c (E8b‑Q2): „bemessen" ist, was der Rechenweg als Menge × Satz rechnet —
+            // dieselbe Frage wie die Formelmappe (Stufe 3). Bis hierher galt nur BETRAG als
+            // fest; ein fester JAHRESBETRAG mit gepflegter Menge bekam eine Herleitung, nach
+            // der gar nicht gerechnet wird.
+            if (!BetriebskostenCtrl.Bemessungsfaktor(n.Bemessung).HasValue) return "";
             if (!n.Menge.HasValue || !n.Einheitpreis.HasValue) return "";
             // ANWENDERENTSCHEID 15.09.2026: Die Satzeinheit folgt der Bezugsgröße des
             // GEWERKS — am Pufferspeicher ist sie „€/Ltr.", nicht „€/kW".
@@ -1926,6 +1941,79 @@ namespace WindowsFormsApplication1
                    BetriebskostenCtrl.MengenEinheit(n.Bemessung, n.Komponente) + " × " +
                    n.Einheitpreis.Value.ToString("N3", kultur) + " " +
                    BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
+        }
+
+        // =====================================================================
+        // ETAPPE E8c (E8b‑Q3) — Positionen mit späterem Startjahr in der Gliederung
+        // =====================================================================
+
+        /// <summary>
+        /// Toleranz der Gliederungsprobe [€/a]: Weichen Positionen und angesetzte
+        /// Betriebskosten um mehr ab, warnt der Bericht (<see cref="GliederungAbweichung"/>).
+        /// </summary>
+        public const double GLIEDERUNG_TOLERANZ_EUR = 0.5;
+
+        /// <summary>
+        /// Zahlt die Position schon im ersten Jahr? Nein nur bei einem Startjahr ≥ 2 (KD6) —
+        /// dieselbe Grenze wie die Summenschleife der Rechnung
+        /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>, <c>start &gt; 1</c>).
+        /// </summary>
+        public static bool LaeuftImErstenJahr(KostenPositionNachweis n)
+        {
+            return n == null || !n.StartJahr.HasValue || n.StartJahr.Value <= 1;
+        }
+
+        /// <summary>
+        /// Die <b>Probe der Betriebskostengliederung</b> gegen die angesetzten Betriebskosten
+        /// p. a. — leer, wenn beide auf <see cref="GLIEDERUNG_TOLERANZ_EUR"/> übereinstimmen
+        /// oder keine Vergleichszahl vorliegt; sonst die Warnung „Gliederung unvollständig"
+        /// mit beiden Beträgen. Wort- und Tabellenbericht rufen dieselbe Probe.
+        ///
+        /// <para><b>Verglichen werden nur die Positionen des ersten Jahres</b> (Anwenderentscheid
+        /// 23.09.2026 zu E8b‑Q3, Lesart b). Die angesetzten Betriebskosten p. a.
+        /// (<see cref="WirtschaftlichkeitErgebnis.BetriebskostenJahr"/>) sind die Jahr-1-Zahl
+        /// der Rechnung; eine Position mit späterem Startjahr zahlt erst ab ihrem Jahr und
+        /// steckt nicht darin. Bis E8c ging sie trotzdem in den Vergleich, und der Bericht
+        /// meldete eine unvollständige Gliederung, wo nur ein Startjahr stand (2.400 gegen
+        /// 1.800 € — die Differenz war die Wartung ab Jahr 6). Eine echte Lücke — eine
+        /// Position der Rechnung, die in keinem Block der Tabelle steht, oder eine
+        /// abgebrochene Nachweisliste — trifft die Jahr-1-Zahl weiterhin und warnt.</para>
+        ///
+        /// <para><b>Warum nicht „die Warnung nennt Startjahr und Differenz".</b> Die zweite
+        /// Lesart warnte weiter, wo nichts fehlt — und eine echte Lücke neben einer
+        /// Startjahr-Position ginge in ihrer Aufzählung unter. Das Startjahr steht
+        /// stattdessen an der Position selbst (<see cref="HerleitungZeile"/>).</para>
+        /// </summary>
+        /// <param name="summeErstesJahr">Summe der Tabellenpositionen, die im ersten Jahr
+        /// zahlen [€/a] (<see cref="LaeuftImErstenJahr"/>).</param>
+        /// <param name="betriebskostenJahr">Die angesetzten Betriebskosten p. a. [€/a];
+        /// <c>null</c> = keine Vergleichszahl, keine Probe.</param>
+        public static string GliederungAbweichung(double summeErstesJahr, double? betriebskostenJahr,
+                                                  CultureInfo kultur)
+        {
+            if (!betriebskostenJahr.HasValue ||
+                Math.Abs(summeErstesJahr - betriebskostenJahr.Value) <= GLIEDERUNG_TOLERANZ_EUR)
+                return "";
+            return string.Format(MyResource.Resource.WIRT_BK_ABWEICHUNG,
+                                 summeErstesJahr.ToString("N2", kultur),
+                                 betriebskostenJahr.Value.ToString("N2", kultur));
+        }
+
+        /// <summary>
+        /// Die Spalte „Herleitung" einer Position in Wort- und Tabellenbericht: ihre
+        /// <see cref="Herleitung"/>, sonst — wo ein Szenariowert die Ableitung schlug — dessen
+        /// Kennzeichen, und bei einem Startjahr ≥ 2 dahinter „ab Jahr X". So bleibt sichtbar,
+        /// warum die Summe der Tabelle die angesetzten Betriebskosten p. a. übersteigen darf:
+        /// Die Position steht in der Summe, zahlt aber erst ab ihrem Jahr.
+        /// </summary>
+        public static string HerleitungZeile(KostenPositionNachweis n, CultureInfo kultur)
+        {
+            if (n == null) return "";
+            string text = Herleitung(n, kultur);
+            if (text.Length == 0 && n.SzenarioGepflegt) text = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+            if (LaeuftImErstenJahr(n)) return text;
+            string ab = string.Format(kultur, MyResource.Resource.WIRT_BK_AB_JAHR, n.StartJahr.Value);
+            return text.Length == 0 ? ab : text + " · " + ab;
         }
     }
 

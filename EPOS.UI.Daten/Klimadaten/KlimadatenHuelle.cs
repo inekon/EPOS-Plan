@@ -92,6 +92,8 @@ namespace WindowsFormsApplication1
                 ["RegionErmitteln"] = new Func<KlimaImportAuftrag,
                                                Task<KlimaVorschauErgebnis>>(RegionErmitteln),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus(KlimaregionStammCtrl.SchlossSetzen),
                 ["Ortsvorschlaege"] = Ortsvorschlaege(),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
             };

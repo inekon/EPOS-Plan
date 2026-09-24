@@ -146,6 +146,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE E8c (E8b‑Q2) — der <b>Faktor einer Bemessungsart</b>: 1 für eine Art
+        /// „Satz je Einheit" (Betrag = Menge × Satz), 0,01 für eine Prozentart (Betrag =
+        /// Menge × Satz / 100) und <c>null</c> für eine FESTE Art — fester Betrag, fester
+        /// Jahresbetrag, eine leere Spalte und ein unbekannter Steuerwert, die
+        /// <see cref="Betrag"/> alle mit dem erfassten Betrag rechnet.
+        ///
+        /// <para><b>Gefragt wird der EINE Rechenweg, keine zweite Liste.</b> Die Antwort ist
+        /// <see cref="Betrag"/> für Menge 1, Satz 1 und einen erfassten Betrag 0. Herleitung
+        /// und Formelmappe (Stufe 3) fragen hier; eine neue Art im Rechenweg kann so nicht an
+        /// ihnen vorbeilaufen — genau das war der Befund E8b‑Q2: Der Bemessungstext der
+        /// Berichte kannte 4 von 17 Arten und nannte die übrigen „fester Betrag".</para>
+        /// </summary>
+        internal static double? Bemessungsfaktor(string bemessung)
+        {
+            double faktor = Betrag(bemessung, 0.0, 1.0, 1.0, false);
+            if (faktor == 1.0) return 1.0;
+            if (Math.Abs(faktor - 0.01) < 1e-15) return 0.01;
+            return null;
+        }
+
+        /// <summary>
         /// Einheitenzeichen des SATZES einer Bemessungsart („%", „€/h", „€/kWh", „€").
         /// <b>Nicht lokalisiert</b> — reine Einheitenzeichen ohne Wortbestand, in beiden
         /// Sprachen gleich; dieselbe Ausnahme wie bei den typografischen Marken
