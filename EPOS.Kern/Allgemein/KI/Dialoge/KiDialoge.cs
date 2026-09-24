@@ -168,16 +168,25 @@ namespace WindowsFormsApplication1
         // Razor-Komponente heute mehrere von ihnen bedient.
 
         /// <summary>
-        /// Die Gebaeudemaske (<c>GebaeudeDialog</c>) — Projektliste und Katalog
-        /// nebeneinander.
+        /// Die Gebaeudemaske des PROJEKTS (<c>GebaeudeDialog</c>) — Projektliste und
+        /// Katalog nebeneinander, in den Betriebsarten Projekt und Assistent.
         /// </summary>
         /// <remarks>
-        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt fuehrt sie beide Listen, in
-        /// der Katalogverwaltung nur den Katalog; die Felder sind dieselben, und welche
-        /// Betriebsart gilt, steht als Feld darin. Ein zweiter Katalogeintrag haette
-        /// zwei Wahrheiten ueber ein und dieselbe gezeichnete Maske gefuehrt.
+        /// Die Gebaeudeverwaltung ist eine eigene Komponente mit eigenem Schluessel
+        /// (<see cref="GEBAEUDE_ADMIN"/>); das Feld „verwaltung" dieser Maske meldet deshalb
+        /// immer „nein".
         /// </remarks>
         public const string GEBAEUDE = "Form_Gebaeude";
+
+        /// <summary>
+        /// Die GEBAEUDEVERWALTUNG (<c>GebaeudeAdminDialog</c>, Welle #465) — Katalogliste
+        /// und Stammblatt; ihr Stammblatt fuehrt jedes Feld des Katalogeditors.
+        /// </summary>
+        /// <remarks>
+        /// Der Schluessel IST der Navigationsschluessel der Verwaltung — dieselbe Regel wie
+        /// bei den Verwaltungen der Erzeugerkataloge (<see cref="HEIZKESSEL_ADMIN"/>).
+        /// </remarks>
+        public const string GEBAEUDE_ADMIN = Masken.GebaeudeAdmin;
 
         /// <summary>
         /// Die Wohn-/Nutzflaechenangabe eines Projektgebaeudes
@@ -679,6 +688,7 @@ namespace WindowsFormsApplication1
                 Gebaeude(),
                 GebaeudeWohnflaeche(),
                 GebaeudeKatalog(),
+                GebaeudeVerwaltung(),
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
                 Typprofil(),
@@ -3854,11 +3864,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt stehen Projektliste und
-        /// Katalog nebeneinander, in der Katalogverwaltung nur der Katalog; gezeichnet
-        /// wird dieselbe Komponente mit denselben Bedienelementen. Welche Betriebsart
-        /// gilt, sagt das Feld <c>verwaltung</c> — so muss der Assistent nicht raten und
-        /// der Katalog nicht zweimal dasselbe fuehren.
+        /// <b>Die Maske des PROJEKTS.</b> Projektliste und Katalog stehen nebeneinander (in
+        /// den Betriebsarten Projekt und Assistent). Die Gebaeudeverwaltung ist eine eigene
+        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); das Feld
+        /// <c>verwaltung</c> meldet hier deshalb immer „nein".
         /// </para>
         /// <para>
         /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
@@ -4054,12 +4063,92 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.GEBAEUDE_KATALOG,
                 anzeigename: KiDialogTexte.MaskeGebaeudeKatalog,
-                felder: new[]
+                felder: GebaeudeKatalogFelder(verwaltung: false),
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("werte_uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfWerteUebernehmen),
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("speichern", "btn_Speichern",
+                                      KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gebaeude_Admin  ->  GebaeudeAdminDialog   (Welle #465)
+        // =====================================================================
+
+        /// <summary>
+        /// Die GEBAEUDEVERWALTUNG — das Wahlfeld <c>satz</c> und die Felder des
+        /// Katalogeditors aus DERSELBEN Liste (<see cref="GebaeudeKatalogFelder"/>) an
+        /// derselben Sichtklasse (<c>GebaeudeKatalogKiSicht</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Wahrheit, keine zweite Feldliste.</b> Das Stammblatt der Verwaltung fuehrt
+        /// jedes Feld, das der Katalogeditor bearbeitet, auf demselben Arbeitsstand
+        /// (<c>GebaeudeArbeitsstand</c>) mit derselben Pruefung und demselben Schreibweg; die
+        /// Feldkarte ist deshalb dieselbe. Zwei Unterschiede: Der NAME ist hier nur lesbar
+        /// (umbenannt wird ueber „Duplizieren…", einen anderen Satz waehlt <c>satz</c>), und
+        /// die BETRIEBSART des Editors gibt es in der Verwaltung nicht.
+        /// </para>
+        /// <para>
+        /// <b>Der Satz ist die Wahl der Liste</b> — dasselbe Muster wie die
+        /// Erzeugerverwaltungen (<see cref="ErzeugerVerwaltung"/>): SATZWAHL, frei auch aus
+        /// einem Auslieferungssatz heraus; ein Auslieferungssatz ist schreibgeschuetzt, die
+        /// Absage nennt „Duplizieren…" und „Schloss aufheben…".
+        /// </para>
+        /// <para>
+        /// <b>Nicht ueber den Assistenten</b> gehen „Neu…", „Duplizieren…", „Schloss
+        /// aufheben…" und „Loeschen" — sie legen Saetze an, nehmen sie weg oder heben einen
+        /// Schutz auf (KI-D-Q11, AD-Q15).
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeVerwaltung()
+        {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("satz", "GebaeudeKatalogKiSicht.Satz",
+                                 KiDialogTexte.KbrowSatzName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.KbrowSatzErl, satzwahl: true)
+            };
+            felder.AddRange(GebaeudeKatalogFelder(verwaltung: true));
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_ADMIN,
+                anzeigename: KiDialogTexte.MaskeGebaeudeAdmin,
+                felder: felder,
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("verwerfen", "btn_Verwerfen", KiDialogTexte.KnopfVerwerfen),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// <b>Die Felder eines Gebaeude-Katalogsatzes</b> — die EINE Liste fuer den
+        /// Katalogeditor (<see cref="KiMaskennamen.GEBAEUDE_KATALOG"/>) und die Verwaltung
+        /// (<see cref="KiMaskennamen.GEBAEUDE_ADMIN"/>).
+        /// </summary>
+        /// <param name="verwaltung">
+        /// <c>true</c>: der Name nur lesbar, ohne Betriebsart (siehe
+        /// <see cref="GebaeudeVerwaltung"/>).
+        /// </param>
+        private static List<KiDialogFeld> GebaeudeKatalogFelder(bool verwaltung)
+        {
+            var felder = new List<KiDialogFeld>
                 {
                     // ---- Kenngroessen ----------------------------------------------
-                    new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
-                                     KiDialogTexte.GebkNameName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkNameErl),
+                    verwaltung
+                        ? new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
+                                           KiDialogTexte.GebkNameName, KiParameterTyp.Text,
+                                           KiDialogTexte.GebaNameErl, leerErlaubt: true, nurLesen: true)
+                        : new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
+                                           KiDialogTexte.GebkNameName, KiParameterTyp.Text,
+                                           KiDialogTexte.GebkNameErl),
                     new KiDialogFeld("gebaeudetyp", "GebaeudeKatalogKiSicht.Typ",
                                      KiDialogTexte.GebkTypName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkTypErl, leerErlaubt: true),
@@ -4300,22 +4389,14 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
                     new KiDialogFeld("rechenweg", "GebaeudeKatalogKiSicht.Rechenweg",
                                      KiDialogTexte.GebkRechenwegName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkRechenwegErl, nurLesen: true),
+                                     KiDialogTexte.GebkRechenwegErl, nurLesen: true)
+                };
 
-                    new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
-                                     KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkBetriebsartErl, nurLesen: true)
-                },
-                knoepfe: new[]
-                {
-                    new KiDialogKnopf("werte_uebernehmen", "btn_Uebernehmen",
-                                      KiDialogTexte.KnopfWerteUebernehmen),
-                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
-                                      KiDialogTexte.KnopfUeberschreiben),
-                    new KiDialogKnopf("speichern", "btn_Speichern",
-                                      KiDialogTexte.KnopfSpeichern),
-                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
-                });
+            if (!verwaltung)
+                felder.Add(new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
+                                            KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
+                                            KiDialogTexte.GebkBetriebsartErl, nurLesen: true));
+            return felder;
         }
 
         // =====================================================================

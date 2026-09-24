@@ -139,6 +139,11 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeWohnflaecheKiSicht) },
         { KiMaskennamen.GEBAEUDE_KATALOG,
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) },
+
+        // Welle #465: die Gebaeudeverwaltung - DIESELBE Sichtklasse wie der Katalogeditor,
+        // dazu die Satzwahl (SatzWahl als Begleiteigenschaft).
+        { KiMaskennamen.GEBAEUDE_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) },
         { KiMaskennamen.GEBAEUDE_BEDARF,
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht) },
         { KiMaskennamen.GEBAEUDETYP,
@@ -386,7 +391,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_fuenfundsiebzig_Masken()
+    public void Der_Katalog_fuehrt_sechsundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -396,8 +401,8 @@ public class KiDialogkatalogTests : IDisposable
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
         // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
         // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil, seine Auslegung
-        // und deren Bedarfstag-Konstruktor.
-        Assert.Equal(75, katalog.Anzahl);
+        // und deren Bedarfstag-Konstruktor. Welle #465: die Gebaeudeverwaltung.
+        Assert.Equal(76, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -455,23 +460,27 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die Gebäudemaske IST die Gebäudeverwaltung</b> (Welle KI‑F3):
-    /// <c>Masken.GebaeudeAdmin</c> öffnet dieselbe Razor-Komponente in der Betriebsart
-    /// Admin, und der Katalogeditor geht aus ihr auf.
+    /// <b>Die Gebäudeverwaltung ist eine eigene Maske</b> (Welle #465): Ihr Katalogschlüssel
+    /// IST ihr Navigationsschlüssel (<c>Masken.GebaeudeAdmin</c>), und der Katalogeditor,
+    /// der aus ihr aufgeht, führt dorthin.
     /// </summary>
     /// <remarks>
-    /// Die Wohn-/Nutzflächenangabe dagegen hängt an einer gewählten Projektzeile und
-    /// geht über den Knopf „Ändern…" auf; ihr Ziel ist deshalb die Startseite — dieselbe
-    /// Begründung wie bei den Erzeugermasken des Projekts.
+    /// Die Gebäudemaske des PROJEKTS, die Wohn-/Nutzflächenangabe und der Wärmebedarf hängen
+    /// an einem offenen Projekt bzw. einer gewählten Projektzeile; ihr Ziel ist deshalb die
+    /// Startseite — dieselbe Begründung wie bei den Erzeugermasken des Projekts.
     /// </remarks>
     [Fact]
     public void Das_Ziel_der_Gebaeudemasken_ist_die_Gebaeudeverwaltung()
     {
         string ziel = WindowsFormsApplication1.Masken.GebaeudeAdmin;
 
-        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE));
+        Assert.Equal(ziel, KiMaskennamen.GEBAEUDE_ADMIN);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.GebaeudeAdmin, ziel);
+        Assert.NotEqual(KiMaskennamen.GEBAEUDE, ziel);
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_ADMIN));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_KATALOG));
 
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE));
         Assert.Equal(KiMaskenziele.STARTSEITE,
                      KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_WOHNFLAECHE));
         Assert.Equal(KiMaskenziele.STARTSEITE,
@@ -1134,6 +1143,48 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
+    /// <b>Die Gebäudeverwaltung führt die Felder des Katalogeditors</b> (Welle #465) — aus
+    /// DERSELBEN Liste, an derselben Sichtklasse, mit denselben Namen, Pfaden, Typen und
+    /// Grenzen; dazu die Satzwahl, ohne die Betriebsart des Editors, und der Name ist nur
+    /// lesbar.
+    /// </summary>
+    [Fact]
+    public void Die_Gebaeudeverwaltung_fuehrt_die_Felder_des_Katalogeditors()
+    {
+        KiDialog editor = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
+        KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_ADMIN)!;
+
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBA_TITEL, verwaltung.Anzeigename);
+        Assert.Equal(editor.Felder.Count, verwaltung.Felder.Count);   // + satz, − betriebsart
+
+        KiDialogFeld satz = verwaltung.FindeFeld("satz")!;
+        Assert.True(satz.IstWahl);
+        Assert.True(satz.Satzwahl);
+        Assert.False(satz.NurLesen);
+        Assert.False(verwaltung.KenntFeld("betriebsart"));
+        Assert.True(verwaltung.FindeFeld("name")!.NurLesen);
+        Assert.False(editor.FindeFeld("name")!.NurLesen);
+
+        foreach (KiDialogFeld e in editor.Felder)
+        {
+            if (e.Name is "betriebsart" or "name") continue;
+            KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
+            Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");
+            Assert.Equal(e.Eigenschaftspfad, v!.Eigenschaftspfad);
+            Assert.Equal(e.Anzeigename, v.Anzeigename);
+            Assert.Equal(e.Typ, v.Typ);
+            Assert.Equal(e.Einheit, v.Einheit);
+            Assert.Equal(e.NurLesen, v.NurLesen);
+            Assert.Equal(e.Min, v.Min);
+            Assert.Equal(e.Max, v.Max);
+            Assert.Equal(e.Erlaeuterung, v.Erlaeuterung);
+        }
+
+        Assert.Equal(new[] { "speichern", "verwerfen", "beenden" },
+                     verwaltung.Knoepfe.Select(k => k.Name).ToArray());
+    }
+
+    /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
     /// der Strangliste.
@@ -1350,6 +1401,10 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.GEBAEUDE_KATALOG] =
             "bindet über die Sichtklasse GebaeudeKatalogKiSicht auf BEIDE Reiterblätter; " +
             "Zeuge ist GebaeudeKatalogDialogTests",
+        [KiMaskennamen.GEBAEUDE_ADMIN] =
+            "bindet über dieselbe Sichtklasse GebaeudeKatalogKiSicht auf den Arbeitsstand des " +
+            "Stammblatts (Kenndaten und GebaeudeStammblattFelder) samt Satzwahl; Zeuge ist " +
+            "GebaeudeAdminDialogTests",
         [KiMaskennamen.GEBAEUDE_BEDARF] =
             "bindet über die Sichtklasse GebaeudeBedarfKiSicht auf den eingefrorenen " +
             "Satz und die zwei Bedienelemente; Zeuge ist GebaeudeBedarfDialogTests",

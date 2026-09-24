@@ -1,12 +1,12 @@
 ﻿@* Die VERWALTUNG der Gebaeude (Menue Administration > Gebaeude > Bearbeiten) -
-   Konzept Administrationsdialoge, Stufe 5, Vorschlag V16; Bestand A9.
+   Konzept Administrationsdialoge, Stufe 5, Vorschlag V16; Bestand A9; Welle #465.
 
    AUSGEGLIEDERT AUS GebaeudeDialog. Bis Stufe 5 war die Verwaltung die
    Betriebsart "Admin" des Projektdialogs: dieselbe Komponente, der Katalog
    allein in der Zweispaltenauswahl, darueber vier Vorfilter (Verwendung,
    Gebaeudeart, Baujahr, Suchmuster) und eine eigene Tabelle mit Name und
    "Typ/Wohnflaeche", darunter der lesende Detailblock. Projekt und Assistent
-   behalten ihre Anordnung (Konzept 3.6 Punkt 5); die Verwaltung steht jetzt im
+   behalten ihre Anordnung (Konzept 3.6 Punkt 5); die Verwaltung steht im
    Geruest der uebrigen Verwaltungen - eine eigene Komponente, damit der
    Projektdialog sich nicht aendert.
 
@@ -14,27 +14,33 @@
    Katalogfilterprofil.FuerGebaeude (Name, Gebaeudeart, Verwendung, Baujahr,
    Flaeche); Verwendung, Gebaeudeart und Baujahr tragen einen Trichter im
    Spaltenkopf, das Suchmuster ist die Suche ueber alle Spalten. Gefiltert wird
-   im Kern auf dem angezeigten Text - der zweideutige Filterzweig des
-   Vorlaeufers (Befund W9-B1) hat damit keinen Gegenstand mehr.
+   im Kern auf dem angezeigten Text.
 
-   DAS STAMMBLATT (V9) statt des Detailblocks:
-     * KENNDATEN, direkt bedienbar: Gebaeudetyp, Gebaeudeart, Baujahr,
-       Verwendung, Beschreibung; Name und Wohnflaeche sind Lesewerte (umbenannt
-       wird ueber Duplizieren..., die Wohnflaeche haengt ueber die Bauweise an
-       der Bauart). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die Verwaltung
-       Gebaeudetypen als Ueberlagerung (frueher "Gebaeudetyp in DB aendern...").
-     * HUELLE: Flaechen und U-Werte der vier Bauteile als Text; "Bearbeiten..."
-       im Kopf der Gruppe oeffnet den Katalogeditor als Ueberlagerung - seine
-       Regeln (U-Bereich, Bauweise je m², Summe der Fensterflaechen) passen
-       nicht in 340 bis 440 px (Konzept 3.6 Punkt 4).
-     * ALLE DATEN: der Rest des Katalogeditors als Text, aufklappbar.
-   Speichern und Verwerfen stehen in der Fussleiste wie bei den
-   Bedarfsprofilen; ein geaendertes Feld haelt Zeilenwechsel, Neu..., die
-   Ueberlagerungen und Beenden an.
+   DAS STAMMBLATT (V9) FUEHRT JEDES FELD DES KATALOGEDITORS (#465):
+     * KENNDATEN: Gebaeudetyp, Gebaeudeart, Baujahr, Verwendung, Wohn-/Nutzflaeche,
+       Bauart, Beschreibung; der Name ist Lesewert (umbenannt wird ueber
+       Duplizieren...). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die
+       Verwaltung Gebaeudetypen als Ueberlagerung.
+     * HUELLE, FENSTER, KENNGROESSEN und - aufklappbar - ALLE DATEN (Temperaturen,
+       Ferien, Modellparameter, Rechenweg, Kuehlung) zeichnet der Baustein
+       GebaeudeStammblattFelder.
+   EINE WAHRHEIT: Alle Felder schreiben in DENSELBEN Arbeitsstand wie der
+   Katalogeditor (GebaeudeArbeitsstand); "Speichern" prueft mit dessen Regeln,
+   leitet mit dessen Ableitungen ab und schreibt ueber den Weg der Huelle des
+   Editors (GebaeudeKatalogHuelle.Schreiben). Der Katalogeditor selbst erscheint
+   nur noch fuer "Neu..." als Ueberlagerung (wie beim Heizkessel, AD-Q6).
+   Speichern und Verwerfen stehen in der Fussleiste; ein geaendertes Feld haelt
+   Zeilenwechsel, Neu..., die Ueberlagerungen und Beenden an.
 
-   AUSWAHLLEISTE (V8): Vergleichen, Duplizieren..., Loeschen - Loeschen ist
-   weich gesperrt fuer Auslieferungssaetze und fuer Gebaeude, die ein Projekt
-   fuehrt (der Kurztext nennt das Projekt).
+   AUSWAHLLEISTE (V8): Vergleichen, Duplizieren..., Schloss aufheben.../setzen...,
+   Loeschen - Loeschen ist weich gesperrt fuer Auslieferungssaetze und fuer
+   Gebaeude, die ein Projekt fuehrt (der Kurztext nennt das Projekt; erkannt am
+   Namen, weil Z_ProjektGebaeude keinen Katalogverweis fuehrt).
+
+   DER HILFE-ASSISTENT (#465): eigene Maske Form_Gebaeude_Admin - das Wahlfeld
+   "satz" und die Feldliste des Katalogeditors an derselben Sichtklasse;
+   Pruefen und Speichern sind die Wege des Knopfes, ein Auslieferungssatz ist
+   schreibgeschuetzt.
 
    TASTATUR: Esc schliesst stufenweise (Ueberlagerung, schmales Blatt,
    Dialog); Enter ist nicht belegt - die Knoepfe schreiben sofort. *@
@@ -51,7 +57,7 @@
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
         <Schliesskreuz Geschlossen="Beenden" />
     </div>
 
@@ -87,7 +93,9 @@
                         VergleichZurueck="BeiVergleichZurueck">
                 <Gruppen>
                     @* KENNDATEN (V9): direkt bedienbar; ein Auslieferungssatz zeigt sie
-                       als TEXT (V13). "Gebaeudetypen..." vertieft die Gruppe. *@
+                       als TEXT (V13). "Gebaeudetypen..." vertieft die Gruppe. Wohnflaeche
+                       und Bauart gehen ueber die Wege des Arbeitsstands - beide ziehen die
+                       Bauweise nach wie im Katalogeditor. *@
                     <Stammblattgruppe Titel="@Resource.ADM_SB_KENNDATEN" Lesemodus="@_auslieferung"
                                       Werte="@(_auslieferung ? Kenndatenwerte : null)">
                         <Kopf>
@@ -102,65 +110,38 @@
                                 <KindInhalt>
                                     <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudetyp" Eintraege="@Typeintraege"
-                                                 Auswahl="@Index(_typen, _arbeitTyp)" AuswahlChanged="BeiTyp" />
+                                                 Auswahl="@Index(_typen, _arbeit.Stand.Typ)" AuswahlChanged="BeiTyp" />
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
-                                                 Auswahl="@Index(_arten, _arbeitArt)" AuswahlChanged="BeiArt" />
+                                                 Auswahl="@Index(_arten, _arbeit.Stand.Gebaeudeart)" AuswahlChanged="BeiArt" />
                                     <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
-                                                 Auswahl="@_arbeitKlasse" AuswahlChanged="BeiKlasse" />
+                                                 Auswahl="@_arbeit.Stand.Baualtersklasse" AuswahlChanged="BeiKlasse" />
                                     <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
-                                                 Auswahl="@Verwendungsindex(_arbeitVerwendung)"
+                                                 Auswahl="@_arbeit.Verwendungsindex(Verwendungswerte)"
                                                  AuswahlChanged="BeiVerwendung" />
-                                    <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@Flaechentext" NurLesen="true" />
-                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_arbeitBeschreibung"
+                                    <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
+                                                Feldname="@Prueftexte.FeldWohnflaeche" FehlerZustand="BeiFehlerzustand"
+                                                Wert="@_arbeit.Stand.WohnflaecheGesamt" WertChanged="BeiWohnflaeche" />
+                                    <Auswahlfeld Bezeichnung="@Beschriftungen.LabelBauart" Eintraege="@Bauarteintraege"
+                                                 Auswahl="@_arbeit.Stand.Bauart" AuswahlChanged="BeiBauart" />
+                                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_arbeit.Stand.Beschreibung"
                                               WertChanged="BeiBeschreibung" Mehrzeilig="true" Zeilen="3" />
                                 </KindInhalt>
                             </Formularraster>
                         </KindInhalt>
                     </Stammblattgruppe>
 
-                    @* HUELLE: Flaechen und U-Werte als Text; ihr Editor ist der
-                       Katalogeditor als Ueberlagerung (Konzept 3.6 Punkt 4). *@
-                    <Stammblattgruppe Titel="@GruppeHuelleText" Lesemodus="true"
-                                      Werte="@(_satz?.Huelle ?? Stammblattwert.Keine)">
-                        <Kopf>
-                            @if (KatalogGaben is not null)
-                            {
-                                @if (_auslieferung)
-                                {
-                                    <button type="button" class="epos-textknopf epos-gebaeude-bearbeiten" aria-disabled="true"
-                                            title="@MeldungSpeichernGesperrt" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                                }
-                                else
-                                {
-                                    <button type="button" class="epos-textknopf epos-gebaeude-bearbeiten"
-                                            @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                                }
-                            }
-                        </Kopf>
-                        <Nachsatz>
-                            <p class="epos-stammblatt-erklaerung">@HinweisHuelleText</p>
-                        </Nachsatz>
-                    </Stammblattgruppe>
-
-                    @* ALLE DATEN: aufklappbar - derselbe Knopf wie der Aufklapper der
-                       Parameteruebersicht (W14a-E-8), der Zustand gehoert dem Dialog
-                       und ueberlebt den Satzwechsel. *@
-                    @if (_satz is not null && _satz.AlleDaten.Count > 0)
+                    @* HUELLE, FENSTER, KENNGROESSEN, ALLE DATEN - der Baustein schreibt in
+                       denselben Arbeitsstand; im Lesemodus stehen Huelle und "Alle Daten"
+                       als Text, wie der Kern sie formatiert. *@
+                    @if (_satz is not null)
                     {
-                        <Stammblattgruppe Titel="@Resource.ADM_SB_ALLE_DATEN">
-                            <KindInhalt>
-                                <button type="button" class="epos-modulparameter-knopf"
-                                        aria-expanded="@(_alleDatenOffen ? "true" : "false")"
-                                        @onclick="() => _alleDatenOffen = !_alleDatenOffen">
-                                    <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_alleDatenOffen ? "▾" : "▸")</span>
-                                    <span>@Resource.ADM_SB_ALLE_DATEN</span>
-                                </button>
-                                @if (_alleDatenOffen)
-                                {
-                                    <Stammblattwerte Werte="@_satz.AlleDaten" />
-                                }
-                            </KindInhalt>
-                        </Stammblattgruppe>
+                        <GebaeudeStammblattFelder Arbeit="@_arbeit" Lesemodus="@_auslieferung"
+                                                  HuelleWerte="@_satz.Huelle" AlleDatenWerte="@_satz.AlleDaten"
+                                                  AlleDatenOffen="@_alleDatenOffen"
+                                                  AlleDatenOffenChanged="@(o => _alleDatenOffen = o)"
+                                                  Geaendert="Nachziehen"
+                                                  Texte="@HuellTexte" Prueftexte="@Prueftexte"
+                                                  Beschriftungen="@Beschriftungen" />
                     }
                 </Gruppen>
             </Stammblatt>
@@ -168,9 +149,9 @@
     </Katalograhmen>
 
     @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller
-       (Statuszeile) - Neu... - Beenden. Duplizieren... und Loeschen stehen in der
-       Auswahlleiste (V8: keine Handlung an zwei Orten); Gebaeudetypen... und
-       Bearbeiten... in den Koepfen ihrer Gruppen. *@
+       (Statuszeile) - Neu... - Beenden. Duplizieren..., das Schloss und Loeschen
+       stehen in der Auswahlleiste (V8: keine Handlung an zwei Orten);
+       Gebaeudetypen... im Kopf der Kenndaten. *@
     <div class="epos-leiste">
         @if (Speichern is not null)
         {
@@ -181,10 +162,10 @@
             }
             else
             {
-                <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                <button type="button" class="epos-knopf" disabled="@(!Geaendert)"
                         @onclick="BeiSpeichern">@BtnSpeichernText</button>
             }
-            <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+            <button type="button" class="epos-knopf" disabled="@(!Geaendert)"
                     @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         }
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
@@ -211,9 +192,9 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Der Katalogeditor (W9.1) - "Bearbeiten..." und "Neu..." ------------ *@
+    @* --- Der Katalogeditor (W9.1) - nur noch "Neu..." (AD-Q6, #465) --------- *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
-                   Titel="@(_editorNeu ? BtnNeuText : TitelEditorText)" Geschlossen="KatalogeditorFertig">
+                   Titel="@BtnNeuText" Geschlossen="KatalogeditorFertig">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
@@ -287,8 +268,22 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>? Verwendung { get; set; }
 
-    /// <summary>„Speichern" der Kenndaten (<c>GebaeudeStammCtrl.KenndatenSchreiben</c>); ohne ihn keine Knöpfe.</summary>
-    [Parameter] public Func<GebaeudeKenndaten, KatalogSpeicherErgebnis>? Speichern { get; set; }
+    /// <summary>
+    /// <b>„Speichern" — der Schreibweg des Katalogeditors</b> (<c>GebaeudeKatalogHuelle.Schreiben</c>,
+    /// #465): der Feldsatz, <c>false</c> (überschreiben) und der Bezeichner. Dieselbe Hülle
+    /// prüft die Auslieferungssperre. Ohne ihn weder Speichern noch Verwerfen.
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? Speichern { get; set; }
+
+    /// <summary>Die Texte der VDI-Struktur (<c>GebaeudeKatalogHuelle.Texte</c>) — dieselben wie im Editor.</summary>
+    [Parameter] public GebaeudeHuelleTexte HuellTexte { get; set; } = new();
+
+    /// <summary>Feldnamen und Meldungen der Prüfung (<c>GebaeudeKatalogHuelle.Prueftexte</c>).</summary>
+    [Parameter] public GebaeudePrueftexte Prueftexte { get; set; } = new();
+
+    /// <summary>Die übrigen Beschriftungen des Stammblatts — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public GebaeudeStammblattTexte Beschriftungen { get; set; } = new();
 
     /// <summary>Löscht einen Satz; <c>false</c> = er blieb stehen.</summary>
     [Parameter] public Func<string, bool>? Loeschen { get; set; }
@@ -307,10 +302,10 @@
     [Parameter] public Func<string, bool>? Exists { get; set; }
 
     /// <summary>
-    /// Der Parametersatz des Katalogeditors (<c>GebaeudeKatalogHuelle.Gaben</c>): leerer
-    /// Bezeichner = „Neu…", sonst „Bearbeiten…". Ohne ihn weder „Neu…" noch „Bearbeiten…".
+    /// Der Parametersatz des Katalogeditors im Modus Neu (<c>GebaeudeKatalogHuelle.Gaben</c>)
+    /// — „Neu…" legt einen Satz an; bearbeitet wird im Stammblatt (#465). Ohne ihn kein „Neu…".
     /// </summary>
-    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
 
     /// <summary>Der Parametersatz der Gebäudetypen-Verwaltung — ohne ihn kein „Gebäudetypen…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
@@ -333,11 +328,7 @@
     [Parameter] public string LabelWohnflaeche { get; set; } = Resource.GEBA_LBL_WOHNFLAECHE;
     [Parameter] public string LabelBeschreibung { get; set; } = Resource.GEBA_LBL_BESCHREIBUNG;
 
-    [Parameter] public string GruppeHuelleText { get; set; } = Resource.GEBA_SB_HUELLE;
-    [Parameter] public string HinweisHuelleText { get; set; } = Resource.GEBA_SB_HUELLE_HINWEIS;
-    [Parameter] public string BtnBearbeitenText { get; set; } = Resource.GEBA_BTN_BEARBEITEN;
     [Parameter] public string BtnGebaeudetypenText { get; set; } = Resource.GEBA_BTN_GEBAEUDETYPEN;
-    [Parameter] public string TitelEditorText { get; set; } = Resource.GEBK_TITEL;
     [Parameter] public string TitelGebaeudetypenText { get; set; } = Resource.GTYP_TITEL;
 
     [Parameter] public string BtnSpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
@@ -378,13 +369,15 @@
     private IReadOnlyDictionary<string, IReadOnlyList<string>> _verwendung =
         new Dictionary<string, IReadOnlyList<string>>();
 
-    // ---- der ARBEITSSTAND der direkt bedienbaren Kenndaten ----------------
-    private string _arbeitTyp = "";
-    private string _arbeitArt = "";
-    private string _arbeitVerwendung = "";
-    private int? _arbeitKlasse;
-    private string _arbeitBeschreibung = "";
-    private bool _geaendert;
+    // ---- der ARBEITSSTAND des Stammblatts (#465) --------------------------
+    /// <summary>
+    /// Der Arbeitsstand — derselbe, mit dem der Katalogeditor arbeitet: jedes Feld des
+    /// Stammblatts schreibt hinein, „Speichern" prüft, leitet ab und schreibt ihn.
+    /// </summary>
+    private readonly GebaeudeArbeitsstand _arbeit = new();
+
+    /// <summary>Der gespeicherte Feldsatz der Fokuszeile — gegen ihn zählt „geändert".</summary>
+    private GebaeudeKatalogDaten? _geladen;
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -404,7 +397,6 @@
     private string _duplizierQuelle = "";
 
     private IReadOnlyDictionary<string, object>? _katalogGaben;
-    private bool _editorNeu;
     private HashSet<string> _vorNeu = new(StringComparer.Ordinal);
     private bool _gebaeudetypOffen;
     private bool _alleDatenOffen;
@@ -428,8 +420,6 @@
     public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
     /// <summary>Der Filterstand der Liste (Prüfhilfe).</summary>
     public Katalogfilterstand Filterstand => _filterstand;
-    /// <summary>Trägt das Stammblatt geänderte Felder? (Prüfhilfe)</summary>
-    public bool Geaendert => _geaendert;
     /// <summary>Der Text des Warnbanners (Prüfhilfe).</summary>
     public string Meldung => _meldung;
     /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
@@ -447,7 +437,11 @@
     /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe)</summary>
     public bool Duplizierfrage => _duplizierfrage;
     /// <summary>Der Gebäudetyp im Arbeitsstand (Prüfhilfe).</summary>
-    public string ArbeitTyp => _arbeitTyp;
+    public string ArbeitTyp => _arbeit.Stand.Typ;
+    /// <summary>Der Feldsatz im Arbeitsstand (Prüfhilfe).</summary>
+    public GebaeudeKatalogDaten Arbeitsstand => _arbeit.Stand;
+    /// <summary>Ist „Alle Daten" aufgeklappt? (Prüfhilfe)</summary>
+    public bool AlleDatenOffen => _alleDatenOffen;
 
     // =====================================================================
     // Aufbau
@@ -470,7 +464,10 @@
 
         KatalogLaden();
 
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
+        // #465: eine EIGENE Maske - die Projektdialog-Sicht Form_Gebaeude bleibt beim
+        // Projektdialog. Die Feldkarte ist die des Katalogeditors (KiDialoge.GebaeudeVerwaltung),
+        // die Sicht dieselbe Klasse auf DEMSELBEN Arbeitsstand.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -481,68 +478,115 @@
     }
 
     // =================================================================================
-    // Der Hilfe-Assistent (Welle KI-F3) - dieselbe Sicht wie der Projektdialog
+    // Der Hilfe-Assistent (#465) - die Feldkarte des Katalogeditors auf dem Stammblatt
     // =================================================================================
 
     private KiMaskenanmeldung? _kiMaske;
-    private GebaeudeKiSicht? _kiSicht;
+    private GebaeudeKatalogKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten — dieselben zehn Felder wie im Projektdialog
-    /// (<c>KiDialoge.Gebaeude</c>). Die drei Filterfelder sind hier TRICHTER: Setzen legt
-    /// den Text des gewählten Eintrags in den Trichter seiner Spalte, „keiner" leert ihn.
+    /// <b>Die Sicht des Assistenten</b> — gebaut vom Arbeitsstand selbst
+    /// (<see cref="GebaeudeArbeitsstand.KiSicht"/>), wie im Katalogeditor: jedes Feld geht
+    /// über den Weg des Bedienelements (die Bauart und die Nutzfläche ziehen die Bauweise
+    /// nach, die Randbedingung hält NULL). Dazu die SATZWAHL: Sie wählt die Zeile wie ein
+    /// Klick; der Name ist hier nur lesbar.
     /// </summary>
-    private GebaeudeKiSicht KiSicht()
+    private GebaeudeKatalogKiSicht KiSicht()
     {
-        return _kiSicht ??= new GebaeudeKiSicht
+        return _kiSicht ??= _arbeit.KiSicht(new GebaeudeKiWege
         {
-            VerwendungLesen = () => TrichterIndex(Katalogfilterprofil.SpVerwendung, Verwendungen),
-            VerwendungSetzen = i => TrichterSetzen(Katalogfilterprofil.SpVerwendung, Verwendungen, i),
-            VerwendungEintraege = () => KiMaskenanmeldung.Eintraege(
-                Verwendungseintraege, e => e.Id, e => e.Text),
-
-            FilterGebaeudeartLesen = () => TrichterIndex(Katalogfilterprofil.SpGebaeudeart, _arten),
-            FilterGebaeudeartSetzen = i => TrichterSetzen(Katalogfilterprofil.SpGebaeudeart, _arten, i),
-            GebaeudeartEintraege = () => KiMaskenanmeldung.Eintraege(
-                Liste(_arten), e => e.Id, e => e.Text),
-
-            FilterBaujahrLesen = () => TrichterIndex(Katalogfilterprofil.SpBaujahr, Baualtersklassen),
-            FilterBaujahrSetzen = i => TrichterSetzen(Katalogfilterprofil.SpBaujahr, Baualtersklassen, i),
-            BaujahrEintraege = () => KiMaskenanmeldung.Eintraege(
-                Klasseneintraege, e => e.Id, e => e.Text),
-
-            SucheLesen = () => _filterstand.Suche,
-            SucheSetzen = muster => { _filterstand.Suche = muster ?? ""; },
-
             NameLesen = () => _gewaehlt,
-            GebaeudeartLesen = () => _arbeitArt,
-            BeschreibungLesen = () => _arbeitBeschreibung,
-            WohnflaecheLesen = () => Flaechentext,
-            AngabeartLesen = () => LabelWohnflaeche,
-            VerwaltungLesen = () => true
-        };
+            SatzLesen = () => _gewaehlt,
+            SatzSetzen = KiSatzWaehlen,
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(
+                _katalog, z => z.Schluessel, z => z.Bezeichner),
+
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(Typeintraege, e => e.Text, e => e.Text),
+            GebaeudeartEintraege = () => KiMaskenanmeldung.Eintraege(Arteintraege, e => e.Text, e => e.Text),
+            BaualtersklasseEintraege = () => KiMaskenanmeldung.Eintraege(Klasseneintraege, e => e.Id, e => e.Text),
+            BauartEintraege = () => KiMaskenanmeldung.Eintraege(Bauarteintraege, e => e.Id, e => e.Text),
+            VerwendungEintraege = KiVerwendungseintraege,
+            RandbedingungEintraege = () => KiMaskenanmeldung.Eintraege(new[]
+            {
+                HuellTexte.RandErdreich, HuellTexte.RandKeller, HuellTexte.RandAussenluft
+            }),
+            Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : ""
+        });
     }
 
-    private int? TrichterIndex(string spalte, IReadOnlyList<string> eintraege)
+    /// <summary>Die Verwendungen: Schlüssel ist der STEUERWERT, Text der Eintrag der Maske.</summary>
+    private IReadOnlyList<KiWahleintrag> KiVerwendungseintraege()
     {
-        string ausdruck = _filterstand.Ausdruck(spalte);
-        if (ausdruck.Length == 0) return null;
-        for (int i = 0; i < eintraege.Count; i++)
-            if (string.Equals(eintraege[i], ausdruck, StringComparison.Ordinal)) return i;
+        var liste = new List<KiWahleintrag>();
+        for (int i = 0; i < Verwendungswerte.Count && i < Verwendungen.Count; i++)
+            liste.Add(new KiWahleintrag(Verwendungswerte[i], Verwendungen[i]));
+        return liste;
+    }
+
+    /// <summary>
+    /// <b>Der Assistent wählt eine Zeile</b> — derselbe Weg wie ein Klick
+    /// (<see cref="BeiZeile"/>). Geänderte Felder halten den Wechsel an; der Assistent
+    /// bekommt dann denselben Satz, den das Warnband zeigt.
+    /// </summary>
+    private string? KiSatzWaehlen(string schluessel)
+    {
+        string neu = schluessel ?? "";
+        if (neu == _gewaehlt) return null;
+        if (_katalog.All(z => z.Schluessel != neu)) return null;
+
+        if (Geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Resource.ADM_MSG_UNGESPEICHERT;
+        }
+        BeiZeile(neu);
         return null;
     }
 
-    private void TrichterSetzen(string spalte, IReadOnlyList<string> eintraege, int? index)
-    {
-        string ausdruck = index is int i && i >= 0 && i < eintraege.Count ? eintraege[i] : "";
-        _filterstand.Setzen(spalte, ausdruck);
-    }
-
-    /// <summary>Nur Auffrischen — die Maske schreibt über ihre Knöpfe, nicht über den Assistenten.</summary>
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Schreibschutz</b> ist ein Auslieferungssatz (AD-Q11/AD-Q15): Solange er steht,
+    /// lehnt schon <c>feld_setzen</c> ab, und die Absage nennt die Wege über
+    /// „Duplizieren…" und „Schloss aufheben…". Die Wahl des Satzes bleibt frei.</para>
+    /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
+    /// (<see cref="GebaeudeArbeitsstand.Pruefen"/>), der Speicherweg DERSELBE
+    /// (<see cref="Schreiben"/>).</para>
+    /// <para><b>Nicht über den Assistenten</b>: Neu…, Duplizieren…, das Schloss, Löschen —
+    /// sie legen Sätze an, nehmen sie weg oder heben einen Schutz auf (KI-D-Q11).</para>
+    /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
-        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _auslieferung,
+        Schreibschutzgrund = () => Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt,
+        Pruefen = () => _arbeit.Pruefen(false, Prueftexte, HuellTexte)?.Meldung ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// <b>„Speichern" über den Assistenten</b> — derselbe Weg wie der Knopf; ein
+    /// Auslieferungssatz wird benannt abgelehnt, ebenso ein Aufruf ohne Satz oder ohne
+    /// Änderung.
+    /// </summary>
+    private KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
+
+        if (_gewaehlt.Length == 0 || _satz is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_SATZ.Replace("{0}", TitelText));
+
+        if (_auslieferung) return KiErgebnis.Abgelehnt(Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt);
+
+        if (!Geaendert)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_AENDERUNG.Replace("{0}", TitelText));
+
+        return Schreiben()
+            ? KiErgebnis.Ok(_status, anzahl: 1)
+            : KiErgebnis.Abgelehnt(_meldung);
+    }
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
@@ -572,7 +616,7 @@
     /// </summary>
     private void BeiZeile(string schluessel)
     {
-        if (_geaendert && schluessel != _gewaehlt)
+        if (Geaendert && schluessel != _gewaehlt)
         {
             Warnen(Resource.ADM_MSG_UNGESPEICHERT);
             return;
@@ -587,6 +631,7 @@
         _fokuszeile = _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt);
         _satz = _gewaehlt.Length > 0 ? Satz?.Invoke(_gewaehlt) : null;
         _auslieferung = _fokuszeile?.Geschuetzt == true || _satz?.Auslieferung == true;
+        _geladen = _satz?.FeldsatzOderKenndaten();
         Zuruecksetzen();
     }
 
@@ -596,19 +641,12 @@
         _fokuszeile = null;
         _satz = null;
         _auslieferung = false;
+        _geladen = null;
         Zuruecksetzen();
     }
 
     /// <summary>Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen).</summary>
-    private void Zuruecksetzen()
-    {
-        _arbeitTyp = _satz?.Typ ?? "";
-        _arbeitArt = _satz?.Gebaeudeart ?? "";
-        _arbeitVerwendung = _satz?.Verwendung ?? "";
-        _arbeitKlasse = _satz?.Baualtersklasse;
-        _arbeitBeschreibung = _satz?.Beschreibung ?? "";
-        _geaendert = false;
-    }
+    private void Zuruecksetzen() => _arbeit.Laden(_geladen, neu: false);
 
     // =====================================================================
     // Stammblatt: Kopf und Kenndaten
@@ -679,10 +717,11 @@
         return -1;
     }
 
-    private IReadOnlyList<(int Id, string Text)> Typeintraege => MitBestand(_typen, _arbeitTyp);
-    private IReadOnlyList<(int Id, string Text)> Arteintraege => MitBestand(_arten, _arbeitArt);
+    private IReadOnlyList<(int Id, string Text)> Typeintraege => MitBestand(_typen, _arbeit.Stand.Typ);
+    private IReadOnlyList<(int Id, string Text)> Arteintraege => MitBestand(_arten, _arbeit.Stand.Gebaeudeart);
     private IReadOnlyList<(int Id, string Text)> Klasseneintraege => Liste(Baualtersklassen);
     private IReadOnlyList<(int Id, string Text)> Verwendungseintraege => Liste(Verwendungen);
+    private IReadOnlyList<(int Id, string Text)> Bauarteintraege => Liste(Beschriftungen.Bauarten);
 
     private int? Verwendungsindex(string steuerwert)
     {
@@ -700,74 +739,94 @@
     private string Klassentext(int? index)
         => index is int i && i >= 0 && i < Baualtersklassen.Count ? Baualtersklassen[i] : "";
 
+    private string Bauarttext(int index)
+        => index >= 0 && index < Beschriftungen.Bauarten.Count ? Beschriftungen.Bauarten[index] : "";
+
+    // ---- Die Wege der Kenndaten: in den Arbeitsstand, dann Nachziehen ----------------
+
     private void BeiTyp(int? index)
     {
         if (_auslieferung) return;
-        if (index is null) _arbeitTyp = "";
-        else if (index.Value >= 0 && index.Value < _typen.Count) _arbeitTyp = _typen[index.Value];
+        _arbeit.Stand.Typ = GebaeudeArbeitsstand.Waehlen(_typen, index, _arbeit.Stand.Typ);
         Nachziehen();
     }
 
     private void BeiArt(int? index)
     {
         if (_auslieferung) return;
-        if (index is null) _arbeitArt = "";
-        else if (index.Value >= 0 && index.Value < _arten.Count) _arbeitArt = _arten[index.Value];
+        _arbeit.Stand.Gebaeudeart = GebaeudeArbeitsstand.Waehlen(_arten, index, _arbeit.Stand.Gebaeudeart);
         Nachziehen();
     }
 
     private void BeiKlasse(int? index)
     {
         if (_auslieferung) return;
-        _arbeitKlasse = index is int i && i >= 0 ? i : null;
+        _arbeit.Stand.Baualtersklasse = index ?? 0;
         Nachziehen();
     }
 
     private void BeiVerwendung(int? index)
     {
         if (_auslieferung) return;
-        if (index is int i && i >= 0 && i < Verwendungswerte.Count) _arbeitVerwendung = Verwendungswerte[i];
+        _arbeit.VerwendungWaehlen(Verwendungswerte, index);
+        Nachziehen();
+    }
+
+    /// <summary>Die Wohn-/Nutzfläche — die Bauweise folgt ihr beim Speichern (W9‑O‑2).</summary>
+    private void BeiWohnflaeche(double? wert)
+    {
+        if (_auslieferung) return;
+        _arbeit.NutzflaecheSetzen(wert);
+        Nachziehen();
+    }
+
+    /// <summary>Die Bauart — sie zieht die Bauweise sofort nach (W9‑O‑2).</summary>
+    private void BeiBauart(int? index)
+    {
+        if (_auslieferung) return;
+        _arbeit.BauartWaehlen(index);
         Nachziehen();
     }
 
     private void BeiBeschreibung(string wert)
     {
         if (_auslieferung) return;
-        _arbeitBeschreibung = wert ?? "";
+        _arbeit.Stand.Beschreibung = wert ?? "";
         Nachziehen();
     }
 
-    /// <summary>Nach einer Eingabe: geändert, solange der Arbeitsstand vom gespeicherten abweicht.</summary>
+    private void BeiFehlerzustand((string Feld, bool Fehlerhaft) e)
+    {
+        _arbeit.FehlerMelden(e);
+        Nachziehen();
+    }
+
+    /// <summary>
+    /// Nach einer Eingabe: Warnband und Statuszeile fallen; ob etwas geändert ist, sagt der
+    /// Vergleich mit dem gespeicherten Satz (<see cref="Geaendert"/>).
+    /// </summary>
     private void Nachziehen()
     {
-        _geaendert = GeaenderteFelder > 0;
         _meldung = "";
         _status = "";
     }
 
-    /// <summary>Wie viele der fünf Kenndaten vom gespeicherten Stand abweichen.</summary>
-    private int GeaenderteFelder
-    {
-        get
-        {
-            if (_satz is null) return 0;
-            int n = 0;
-            if (!string.Equals(_arbeitTyp, _satz.Typ, StringComparison.Ordinal)) n++;
-            if (!string.Equals(_arbeitArt, _satz.Gebaeudeart, StringComparison.Ordinal)) n++;
-            if (!string.Equals(_arbeitVerwendung, _satz.Verwendung, StringComparison.Ordinal)) n++;
-            if (_arbeitKlasse != _satz.Baualtersklasse) n++;
-            if (!string.Equals(_arbeitBeschreibung, _satz.Beschreibung, StringComparison.Ordinal)) n++;
-            return n;
-        }
-    }
+    /// <summary>
+    /// Wie viele Felder vom gespeicherten Satz abweichen — jedes Eingabefeld des Stammblatts
+    /// einmal (<see cref="GebaeudeArbeitsstand.Abweichungen"/>).
+    /// </summary>
+    private int GeaenderteFelder => _satz is null ? 0 : _arbeit.Abweichungen(_geladen);
+
+    /// <summary>Trägt das Stammblatt geänderte Felder? (auch Prüfhilfe)</summary>
+    public bool Geaendert => GeaenderteFelder > 0;
 
     /// <summary>Der Hinweis im Fuß des Stammblatts: „2 Felder geändert".</summary>
     private string Aenderungshinweis
     {
         get
         {
-            if (!_geaendert) return "";
             int n = GeaenderteFelder;
+            if (n == 0) return "";
             return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
                  : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
         }
@@ -782,35 +841,57 @@
         new Stammblattwert(LabelBaujahr, Klassentext(_satz?.Baualtersklasse)),
         new Stammblattwert(LabelVerwendung, Verwendungstext(_satz?.Verwendung ?? "")),
         new Stammblattwert(LabelWohnflaeche, Flaechentext),
+        new Stammblattwert(Beschriftungen.LabelBauart, Bauarttext(_arbeit.Stand.Bauart)),
         new Stammblattwert(LabelBeschreibung, _satz?.Beschreibung ?? "")
     };
 
     // =====================================================================
-    // Speichern, Verwerfen
+    // Speichern, Verwerfen — der Weg des Katalogeditors (#465)
     // =====================================================================
 
     /// <summary>
-    /// <b>„Speichern"</b> — schreibt die fünf Kenndaten über den Weg der Hülle; danach lädt
-    /// die Liste neu (Gebäudeart, Verwendung und Baujahr sind Spalten), und die Statuszeile
-    /// meldet es. Ein Auslieferungssatz ist weich gesperrt (AD-Q11).
+    /// <b>„Speichern"</b> — ein Auslieferungssatz ist weich gesperrt (AD-Q11); sonst
+    /// <see cref="Schreiben"/>.
     /// </summary>
     private void BeiSpeichern()
     {
         if (_auslieferung) { Warnen(MeldungSpeichernGesperrt); return; }
-        if (!_geaendert || Speichern is null || _gewaehlt.Length == 0) return;
+        if (!Geaendert || Speichern is null || _gewaehlt.Length == 0) return;
+        Schreiben();
+    }
 
-        KatalogSpeicherErgebnis erg = Speichern(new GebaeudeKenndaten(
-            _gewaehlt, _arbeitTyp, _arbeitArt, _arbeitVerwendung, _arbeitKlasse, _arbeitBeschreibung));
-        if (!erg.Ok)
+    /// <summary>
+    /// <b>Prüfen, Ableiten, Schreiben — die Regeln und der Weg des Katalogeditors.</b> Eine
+    /// verletzte Regel meldet das Warnband (und klappt „Alle Daten" auf, wenn ihr Feld dort
+    /// steht); geschrieben wird der ganze Feldsatz über den Weg der Hülle, der Bezeichner
+    /// bleibt. Danach liest die Liste neu (Gebäudeart, Verwendung, Baujahr und Fläche sind
+    /// Spalten), und die Statuszeile meldet es. Knopf und Assistent gehen diesen Weg.
+    /// </summary>
+    private bool Schreiben()
+    {
+        if (Speichern is null) return false;
+
+        GebaeudePruefbefund? befund = _arbeit.Pruefen(false, Prueftexte, HuellTexte);
+        if (befund is not null)
         {
-            Warnen(erg.Meldung.Length > 0 ? erg.Meldung : MeldungFehler);
-            return;
+            if (befund.Bereich != GebaeudePruefbereich.Huelle) _alleDatenOffen = true;
+            Warnen(befund.Meldung);
+            return false;
         }
 
-        _geaendert = false;
+        _arbeit.Ableiten();
+        GebaeudeKatalogErgebnis erg = Speichern(_arbeit.Stand, false, _gewaehlt);
+        if (!erg.Erfolg)
+        {
+            Warnen(erg.Meldung.Length > 0 ? erg.Meldung : MeldungFehler);
+            return false;
+        }
+
+        _arbeit.Geschrieben();
         KatalogLaden();
         _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
                                 DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+        return true;
     }
 
     /// <summary>„Verwerfen" — der Arbeitsstand wird wieder der gespeicherte.</summary>
@@ -1007,7 +1088,7 @@
     private void BeiDuplizieren()
     {
         if (Duplizieren is null) return;
-        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
         if (ziele.Count != 1) return;
 
@@ -1060,7 +1141,7 @@
     /// </summary>
     private void BeiSchloss()
     {
-        string? grund = _schloss.Fragen(Schloss, SchlossZiele, _geaendert);
+        string? grund = _schloss.Fragen(Schloss, SchlossZiele, Geaendert);
         if (grund is not null) { Warnen(grund); return; }
         _meldung = "";
     }
@@ -1089,37 +1170,26 @@
     // Überlagerungen: Katalogeditor und Gebäudetypen
     // =====================================================================
 
-    /// <summary>„Neu…" — der Katalogeditor im Modus Neu; der neue Satz ist danach gewählt.</summary>
+    /// <summary>
+    /// „Neu…" — der Katalogeditor im Modus Neu (AD-Q6: der Editor erscheint nur noch zum
+    /// Anlegen; bearbeitet wird im Stammblatt); der neue Satz ist danach gewählt.
+    /// </summary>
     private void BeiNeu()
     {
         if (KatalogGaben is null) return;
-        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         _meldung = "";
-        _editorNeu = true;
         _vorNeu = new HashSet<string>(_katalog.Select(z => z.Schluessel), StringComparer.Ordinal);
-        _katalogGaben = KatalogGaben("");
-    }
-
-    /// <summary>„Bearbeiten…" im Kopf der Gruppe Hülle — der Katalogeditor des gewählten Satzes.</summary>
-    private void BeiBearbeiten()
-    {
-        if (KatalogGaben is null || _gewaehlt.Length == 0) return;
-        if (_auslieferung) { Warnen(MeldungSpeichernGesperrt); return; }
-        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
-        _meldung = "";
-        _editorNeu = false;
-        _katalogGaben = KatalogGaben(_gewaehlt);
+        _katalogGaben = KatalogGaben();
     }
 
     /// <summary>Der Editor ist zu: Liste und Stammblatt lesen neu; ein neuer Satz wird gewählt.</summary>
     private void KatalogeditorFertig()
     {
         _katalogGaben = null;
-        bool neu = _editorNeu;
-        _editorNeu = false;
 
         IReadOnlyList<Katalogfilterzeile> zeilen = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
-        Katalogfilterzeile? angelegt = neu ? zeilen.FirstOrDefault(z => !_vorNeu.Contains(z.Schluessel)) : null;
+        Katalogfilterzeile? angelegt = zeilen.FirstOrDefault(z => !_vorNeu.Contains(z.Schluessel));
         if (angelegt is not null) _gewaehlt = angelegt.Schluessel;
         KatalogLaden();
         if (angelegt is not null)
@@ -1151,7 +1221,7 @@
     /// </summary>
     private Task Beenden()
     {
-        if (_geaendert)
+        if (Geaendert)
         {
             Warnen(Resource.ADM_MSG_UNGESPEICHERT);
             return Task.CompletedTask;

@@ -22003,6 +22003,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
     <value>Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird.</value>
   </data>
+  <data name="KI_DLG_GEBA_NAME_ERL" xml:space="preserve">
+    <value>Der Bezeichner des gewählten Gebäudes – nur lesbar. Einen anderen Satz wählt das Feld „satz“; einen neuen Namen bekommt ein Satz über „Duplizieren...“.</value>
+  </data>
   <data name="KI_DLG_GEBK_TYP_ERL" xml:space="preserve">
     <value>Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen des Verbrauchs mit.</value>
   </data>
@@ -26584,14 +26587,11 @@ Möchten Sie das zulassen?</value>
   <data name="GEBA_SB_HUELLE" xml:space="preserve">
     <value>Hülle</value>
   </data>
-  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Bearbeiten…</value>
-  </data>
   <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
     <value>Gebäudetypen…</value>
   </data>
   <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
-    <value>Flächen und U-Werte ändert „Bearbeiten…“; dort stehen auch Fenster je Himmelsrichtung, Raumtemperaturen, Ferien und Wärmebrücken.</value>
+    <value>Die Fensterfläche ist die Summe der vier Himmelsrichtungen unter „Alle Daten“; dort stehen auch Raumtemperaturen, Ferien, Modellparameter und Kühlung.</value>
   </data>
   <data name="GEBA_HUELLE_WERT" xml:space="preserve">
     <value>{0} m² · U {1} W/(m²K)</value>
@@ -26627,7 +26627,7 @@ Möchten Sie das zulassen?</value>
     <value>Beschreibung</value>
   </data>
   <data name="GEBA_MSG_FEHLER" xml:space="preserve">
-    <value>Die Kenndaten konnten nicht geschrieben werden.</value>
+    <value>Der Gebäudesatz konnte nicht geschrieben werden.</value>
   </data>
   <data name="GEBA_MSG_NEU" xml:space="preserve">
     <value>„{0}“ angelegt.</value>

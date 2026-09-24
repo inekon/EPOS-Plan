@@ -1,0 +1,431 @@
+﻿@* DIE FELDER DES GEBAEUDE-STAMMBLATTS (Welle #465; Konzept Administrationsdialoge 7.1 a)
+   - alles, was der Katalogeditor bearbeitet, in den Gruppen des Stammblatts der
+   Gebaeudeverwaltung. Die Kenndaten zeichnet der Wirt selbst (ihr Kopf traegt
+   "Gebaeudetypen..."); hier stehen die uebrigen Gruppen:
+
+     * HUELLE: das Huell-Raster (Bauteil, U bzw. psi, A bzw. L) - die Groesse der
+       Fensterzeile ist gerechnet -, darunter die Randbedingung der Bodenplatte
+       (mit der Kellertemperatur beim Keller) und die Waermeleitwerte als Zeile.
+       Die Spalte U*A des Editors faellt weg: 340 bis 440 px tragen drei Spalten,
+       die Summe steht in der Herleitungszeile.
+     * FENSTER NACH ORIENTIERUNG: Nord, Sued, Ost, West; die Summen gerechnet.
+     * KENNGROESSEN: Flaeche je Nutzer, innere Waermegewinne, Raumhoehe,
+       Fensterdurchlassgrad, Luftwechselrate.
+     * ALLE DATEN, aufklappbar: Raumtemperaturen, Ferien, die Modellparameter
+       (VDI 6007) samt Rechenweg und die Kuehlung.
+
+   EINE WAHRHEIT. Die Felder schreiben in den ARBEITSSTAND des Wirts
+   (GebaeudeArbeitsstand) ueber dieselben Wege wie der Katalogeditor - Bauart und
+   Nutzflaeche ziehen die Bauweise nach, die Randbedingung haelt NULL, die
+   Pflichtnamen der Pruefung sind dieselben Feldnamen. Geprueft, abgeleitet und
+   geschrieben wird beim Wirt (Speichern der Fussleiste), mit denselben Regeln.
+
+   IM LESEMODUS (Auslieferungssatz, V13) stehen Huelle und "Alle Daten" als Text
+   (Stammblattwerte), wie der Kern sie formatiert; Fenster und Kenngroessen stehen
+   dann in "Alle Daten".
+
+   DER BAUSTEIN MELDET NICHT AN - der Wirt meldet die Maske an (EPOS.UI/CLAUDE.md,
+   "der WIRT meldet an, nicht das Blatt darin"). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+
+@if (Lesemodus)
+{
+    <Stammblattgruppe Titel="@Beschriftungen.GruppeHuelle" Lesemodus="true"
+                      Werte="@(HuelleWerte ?? Stammblattwert.Keine)" />
+
+    @if (AlleDatenWerte is { Count: > 0 })
+    {
+        <Stammblattgruppe Titel="@Beschriftungen.AlleDaten">
+            <KindInhalt>
+                @Aufklapper
+                @if (AlleDatenOffen)
+                {
+                    <Stammblattwerte Werte="@AlleDatenWerte" />
+                }
+            </KindInhalt>
+        </Stammblattgruppe>
+    }
+}
+else
+{
+    @* ---- Huelle: Huell-Raster, Randbedingung, Waermeleitwerte ------------- *@
+    <Stammblattgruppe Titel="@Beschriftungen.GruppeHuelle">
+        <KindInhalt>
+            <div class="epos-raster-huelle epos-raster-huelle--frei">
+                <table class="epos-raster epos-huelltabelle epos-gebaeude-huellraster">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteBauteil</th>
+                            <th>@Texte.SpalteKennwert</th>
+                            <th>@Texte.SpalteGroesse</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Huellzeile zeile in Arbeit.Huellzeilen)
+                        {
+                            Huellzeile z = zeile;
+                            <tr @key="z.Bauteil" data-bauteil="@z.Bauteil">
+                                <th scope="row">@Texte.Zeile(z.Bauteil)</th>
+                                <td>
+                                    <Zahlenfeld Wert="@z.Kennwert"
+                                                Einheit="@(z.IstWaermebruecke ? "W/(mK)" : "W/(m²K)")"
+                                                Min="@(z.IstWaermebruecke ? 0.0 : Gebaeudehuellbilanz.U_MIN)"
+                                                Max="@(z.IstWaermebruecke ? 2.0 : Gebaeudehuellbilanz.U_MAX)"
+                                                Feldname="@Prueftexte.Kennwertname(z.Bauteil, Texte)"
+                                                FehlerZustand="FehlerMelden"
+                                                WertChanged="@(w => Setze(() => Arbeit.KennwertSetzen(z.Bauteil, w)))" />
+                                </td>
+                                <td>
+                                    @if (z.Bauteil == Huellbauteil.Fenster)
+                                    {
+                                        <span class="epos-zahl epos-fensterflaeche-gerechnet">@Zahl(z.Groesse, 2) m²</span>
+                                    }
+                                    else
+                                    {
+                                        <Zahlenfeld Wert="@z.Groesse" Min="0"
+                                                    Einheit="@(z.IstWaermebruecke ? "m" : "m²")"
+                                                    Feldname="@Prueftexte.Groessenname(z.Bauteil, Texte)"
+                                                    FehlerZustand="FehlerMelden"
+                                                    WertChanged="@(w => Setze(() => Arbeit.GroesseSetzen(z.Bauteil, w)))" />
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@(Texte.SpalteRandbedingung + " " + Texte.ZeileBodenplatte)"
+                                 Eintraege="@Randeintraege" Auswahl="@Arbeit.Randindex"
+                                 AuswahlChanged="@(i => Setze(() => Arbeit.RandbedingungWaehlen(i)))" />
+                    @if (Arbeit.Stand.GrundflaecheRandbedingung == DbWerte.GRUND_KELLER)
+                    {
+                        <Zahlenfeld Bezeichnung="@Feld(Texte.LabelKellertemperatur)" Einheit="°C"
+                                    Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.Kellertemperatur)"
+                                    Feldname="@Feld(Texte.LabelKellertemperatur)" FehlerZustand="FehlerMelden"
+                                    Wert="@Arbeit.Stand.Kellertemperatur"
+                                    WertChanged="@(w => Setze(() => Arbeit.Stand.Kellertemperatur = w))" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@Leitwertzeile" />
+            <Herleitungszeile Text="@Beschriftungen.HinweisHuelle" />
+        </KindInhalt>
+    </Stammblattgruppe>
+
+    @* ---- Fenster nach Orientierung ---------------------------------------- *@
+    <Stammblattgruppe Titel="@Beschriftungen.GruppeFenster">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelFFNord" Einheit="m²" Min="0"
+                                Feldname="@Prueftexte.FeldFFNord" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.FensterflaecheNord"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.FensterflaecheNord = w))" />
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelFFSued" Einheit="m²" Min="0"
+                                Feldname="@Prueftexte.FeldFFSued" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.FensterflaecheSued"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.FensterflaecheSued = w))" />
+                    <Zahlenfeld Bezeichnung="@Feld(Texte.LabelFFOst)" Einheit="m²" Min="0"
+                                Platzhalter="@Arbeit.OstWestPlatzhalter(Texte)"
+                                Feldname="@Texte.FeldFFOst" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.FensterflaecheOst"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.FensterflaecheOst = w))" />
+                    <Zahlenfeld Bezeichnung="@Feld(Texte.LabelFFWest)" Einheit="m²" Min="0"
+                                Platzhalter="@Arbeit.OstWestPlatzhalter(Texte)"
+                                Feldname="@Texte.FeldFFWest" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.FensterflaecheWest"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.FensterflaecheWest = w))" />
+                    <Textfeld Bezeichnung="@Feld(Texte.LabelFFSummeOstWest)" Einheit="m²"
+                              Wert="@Zahl(Arbeit.SummeOstWest, 2)" NurLesen="true" />
+                    <Textfeld Bezeichnung="@Feld(Texte.LabelFFGesamt)" Einheit="m²"
+                              Wert="@Zahl(Arbeit.Fenstergesamt, 2)" NurLesen="true" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Stammblattgruppe>
+
+    @* ---- Kenngroessen ----------------------------------------------------- *@
+    <Stammblattgruppe Titel="@Beschriftungen.GruppeKenngroessen">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelFlaecheNutzer" Einheit="m²" Min="0"
+                                Feldname="@Prueftexte.FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.FlaecheNutzer"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.FlaecheNutzer = w))" />
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelWaermegewinne" Einheit="W" Min="0"
+                                Feldname="@Prueftexte.FeldWaermegewinne" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.Waermegewinne"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.Waermegewinne = w))" />
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelRaumhoehe" Einheit="m" Min="0"
+                                Feldname="@Prueftexte.FeldRaumhoehe" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.Raumhoehe"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.Raumhoehe = w))" />
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelFensterdurchlassgrad" Min="0" Max="1"
+                                Feldname="@Prueftexte.FeldFensterdurchlassgrad" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.Fensterdurchlassgrad"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.Fensterdurchlassgrad = w))" />
+                    <Herleitungszeile Text="@Beschriftungen.HinweisFensterdurchlassgrad" />
+                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelLuftwechsel" Einheit="1/h" Min="0"
+                                Feldname="@Prueftexte.FeldLuftwechsel" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.Luftwechselrate"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.Luftwechselrate = w))" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Stammblattgruppe>
+
+    @* ---- Alle Daten: Temperaturen, Ferien, Modellparameter, Kuehlung ------ *@
+    <Stammblattgruppe Titel="@Beschriftungen.AlleDaten">
+        <KindInhalt>
+            @Aufklapper
+            @if (AlleDatenOffen)
+            {
+                <div class="epos-gebaeude-alledaten">
+                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeRaumtemperaturen</p>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelSollTag" Einheit="°C"
+                                        Feldname="@Beschriftungen.LabelSollTag" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.SollTag"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.SollTag = w))" />
+                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelNachtAbsenkung" Einheit="°C"
+                                        Feldname="@Beschriftungen.LabelNachtAbsenkung" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.NachtAbsenkung"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.NachtAbsenkung = w))" />
+                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelMaxTemperatur" Einheit="°C"
+                                        Feldname="@Beschriftungen.LabelMaxTemperatur" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.MaxTemperatur"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.MaxTemperatur = w))" />
+                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelWEAbsenkung" Einheit="°C"
+                                        Feldname="@Beschriftungen.LabelWEAbsenkung" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.WochenendAbsenkung"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.WochenendAbsenkung = w))" />
+                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelSollFerien" Einheit="°C"
+                                        Feldname="@Beschriftungen.LabelSollFerien" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.SollFerien"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.SollFerien = w))" />
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeFerienAnfang</p>
+                    <Formularraster>
+                        <KindInhalt>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                int n = i;
+                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + Beschriftungen.LabelTag)"
+                                              Min="1" Max="31" Wert="@Arbeit.BeginnTag[n]"
+                                              WertChanged="@(w => Setze(() => Arbeit.BeginnTag[n] = w))" />
+                                <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelMonat" Min="1" Max="12"
+                                              Wert="@Arbeit.BeginnMonat[n]"
+                                              WertChanged="@(w => Setze(() => Arbeit.BeginnMonat[n] = w))" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeFerienEnde</p>
+                    <Formularraster>
+                        <KindInhalt>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                int n = i;
+                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + Beschriftungen.LabelTag)"
+                                              Min="1" Max="31" Wert="@Arbeit.EndeTag[n]"
+                                              WertChanged="@(w => Setze(() => Arbeit.EndeTag[n] = w))" />
+                                <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelMonat" Min="1" Max="12"
+                                              Wert="@Arbeit.EndeMonat[n]"
+                                              WertChanged="@(w => Setze(() => Arbeit.EndeMonat[n] = w))" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeModellparameter</p>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelRahmenanteil)" Min="0" Max="0.99"
+                                        Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.Rahmenanteil)"
+                                        Feldname="@Feld(Texte.LabelRahmenanteil)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.Rahmenanteil"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.Rahmenanteil = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelVerschattung)" Min="0.01" Max="1"
+                                        Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.Verschattungsfaktor)"
+                                        Feldname="@Feld(Texte.LabelVerschattung)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.Verschattungsfaktor"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.Verschattungsfaktor = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelMasseanteil)" Min="0.05" Max="0.95"
+                                        Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.MasseanteilAussen)"
+                                        Feldname="@Feld(Texte.LabelMasseanteil)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.MasseanteilAussen"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.MasseanteilAussen = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelInnenflaechenfaktor)" Min="0.5" Max="10"
+                                        Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.Innenflaechenfaktor)"
+                                        Feldname="@Feld(Texte.LabelInnenflaechenfaktor)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.Innenflaechenfaktor"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.Innenflaechenfaktor = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelHeizungStrahlung)" Min="0" Max="1"
+                                        Platzhalter="@Vorgabe(Gebaeudemodellvorgaben.HeizungStrahlungsanteil)"
+                                        Feldname="@Feld(Texte.LabelHeizungStrahlung)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.HeizungStrahlungsanteil"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.HeizungStrahlungsanteil = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelHeizleistungMax)" Einheit="kW" Min="0.01"
+                                        Platzhalter="@Texte.VorgabeUnbegrenzt"
+                                        Feldname="@Feld(Texte.LabelHeizleistungMax)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.HeizleistungMax"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.HeizleistungMax = w))" />
+                            <Schalter Bezeichnung="@Texte.LabelAussenStrahlung"
+                                      Wert="@Arbeit.Stand.AussenbauteileStrahlung"
+                                      WertChanged="@(w => Setze(() => Arbeit.Stand.AussenbauteileStrahlung = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelInfiltration)" Einheit="1/h" Min="0.01" Max="10"
+                                        Platzhalter="@Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration, Texte)"
+                                        Feldname="@Feld(Texte.LabelInfiltration)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.LuftwechselInfiltration"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.LuftwechselInfiltration = w))" />
+                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelNutzerlueftung)" Einheit="1/h" Min="0" Max="10"
+                                        Platzhalter="@Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer, Texte)"
+                                        Feldname="@Feld(Texte.LabelNutzerlueftung)" FehlerZustand="FehlerMelden"
+                                        Wert="@Arbeit.Stand.LuftwechselNutzer"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.LuftwechselNutzer = w))" />
+                            <Schalter Bezeichnung="@Texte.LabelSommerlueftung"
+                                      Wert="@Arbeit.Stand.Sommerlueftung"
+                                      WertChanged="@(w => Setze(() => Arbeit.Stand.Sommerlueftung = w))" />
+                            <Auswahlfeld Bezeichnung="@Feld(Texte.LabelRechenweg)" Eintraege="@Rechenwegeintraege"
+                                         Auswahl="@(Arbeit.IstVdi6007 ? 0 : 1)"
+                                         AuswahlChanged="@(i => Setze(() => Arbeit.RechenwegWaehlen(i)))" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <Herleitungszeile Text="@Arbeit.Luftwechselzeile(Texte)" />
+                    @if (Arbeit.Stand.Sommerlueftung)
+                    {
+                        <Herleitungszeile Text="@GebaeudeArbeitsstand.Sommerlueftungszeile(Texte)" />
+                    }
+                    <Herleitungszeile Text="@Arbeit.Rechenwegzeile(Texte)" />
+                    <Herleitungszeile Text="@Texte.HinweisModellparameter" />
+
+                    <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeKuehlung</p>
+                    <Formularraster>
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Texte.LabelKuehlungAktiv"
+                                      Wert="@Arbeit.Stand.KuehlungAktiv"
+                                      WertChanged="@(w => Setze(() => Arbeit.KuehlungSetzen(w, Texte)))" />
+                            @if (Arbeit.Stand.KuehlungAktiv)
+                            {
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.LabelKuehlSollwert)" Einheit="°C"
+                                            Min="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"
+                                            Max="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"
+                                            Platzhalter="@Texte.VorgabeKuehlungAus"
+                                            Feldname="@Feld(Texte.LabelKuehlSollwert)" FehlerZustand="FehlerMelden"
+                                            Wert="@Arbeit.Stand.KuehlSollwert"
+                                            WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlSollwert = w))" />
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.LabelKuehlleistungMax)" Einheit="kW" Min="0.01"
+                                            Platzhalter="@Texte.VorgabeUnbegrenzt"
+                                            Feldname="@Feld(Texte.LabelKuehlleistungMax)" FehlerZustand="FehlerMelden"
+                                            Wert="@Arbeit.Stand.KuehlleistungMax"
+                                            WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlleistungMax = w))" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    <Herleitungszeile Text="@Arbeit.Kuehlungszeile(Texte)" />
+                    <Herleitungszeile Text="@Texte.ZeileKuehlungProjekt" />
+                    @if (!Arbeit.IstVdi6007)
+                    {
+                        <Herleitungszeile Text="@Texte.ZeileKuehlungBestandsweg" />
+                    }
+                </div>
+            }
+        </KindInhalt>
+    </Stammblattgruppe>
+}
+
+@code {
+    /// <summary>
+    /// Der ARBEITSSTAND des Wirts — die Felder schreiben unmittelbar hinein, über die Wege
+    /// des Arbeitsstands (<see cref="GebaeudeArbeitsstand"/>).
+    /// </summary>
+    [Parameter, EditorRequired] public GebaeudeArbeitsstand Arbeit { get; set; } = new();
+
+    /// <summary>
+    /// Der Lesemodus (Auslieferungssatz, V13): Hülle und „Alle Daten" als Text aus
+    /// <see cref="HuelleWerte"/> und <see cref="AlleDatenWerte"/>.
+    /// </summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Die Hülle als Text im Lesemodus.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert>? HuelleWerte { get; set; }
+
+    /// <summary>„Alle Daten" als Text im Lesemodus.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert>? AlleDatenWerte { get; set; }
+
+    /// <summary>Ist „Alle Daten" aufgeklappt? Der Zustand gehört dem Wirt — er überlebt den Satzwechsel.</summary>
+    [Parameter] public bool AlleDatenOffen { get; set; }
+
+    /// <summary>Der Aufklapper wurde bedient.</summary>
+    [Parameter] public EventCallback<bool> AlleDatenOffenChanged { get; set; }
+
+    /// <summary>Ein Feld hat den Arbeitsstand geändert — der Wirt führt Hinweis und Statuszeile nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Texte der VDI-Struktur (Hüll-Raster, Modellparameter, Kühlung, Rechenweg).</summary>
+    [Parameter] public GebaeudeHuelleTexte Texte { get; set; } = new();
+
+    /// <summary>Die Feldnamen der Prüfung — dieselben wie im Katalogeditor.</summary>
+    [Parameter] public GebaeudePrueftexte Prueftexte { get; set; } = new();
+
+    /// <summary>Die übrigen Beschriftungen des Stammblatts.</summary>
+    [Parameter] public GebaeudeStammblattTexte Beschriftungen { get; set; } = new();
+
+    /// <summary>Der Knopf, der „Alle Daten" auf- und zuklappt (derselbe wie der Aufklapper der Parameterübersicht).</summary>
+    private RenderFragment Aufklapper => @<button type="button" class="epos-modulparameter-knopf"
+                                                  aria-expanded="@(AlleDatenOffen ? "true" : "false")"
+                                                  @onclick="Umschalten">
+        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(AlleDatenOffen ? "▾" : "▸")</span>
+        <span>@Beschriftungen.AlleDaten</span>
+    </button>;
+
+    private Task Umschalten() => AlleDatenOffenChanged.InvokeAsync(!AlleDatenOffen);
+
+    /// <summary>Ein Weg des Arbeitsstands — danach erfährt es der Wirt.</summary>
+    private Task Setze(Action weg)
+    {
+        weg();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        Arbeit.FehlerMelden(e);
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>„H_T Transmission 123,4 W/K · H_ve Lüftung … · H_ges gesamt …".</summary>
+    private string Leitwertzeile
+        => Feld(Texte.LabelHT) + " " + Zahl(Arbeit.HT, 1) + " W/K · "
+           + Feld(Texte.LabelHVe) + " " + Zahl(Arbeit.HVe, 1) + " W/K · "
+           + Feld(Texte.LabelHGes) + " " + Zahl(Arbeit.HT + Arbeit.HVe, 1) + " W/K";
+
+    private IReadOnlyList<(int Id, string Text)> Randeintraege => new[]
+    {
+        (0, Texte.RandErdreich),
+        (1, Texte.RandKeller),
+        (2, Texte.RandAussenluft)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Rechenwegeintraege => new[]
+    {
+        (0, Texte.RechenwegVdi6007),
+        (1, Texte.RechenwegTagesbilanz)
+    };
+
+    private string Ferienname(int n)
+        => Beschriftungen.Ferienzeitraeume.Count > n ? Beschriftungen.Ferienzeitraeume[n] : "";
+
+    private string Vorgabe(double wert) => GebaeudeArbeitsstand.Vorgabe(wert, Texte);
+
+    private static string Zahl(double? wert, int stellen) => GebaeudeArbeitsstand.Zahl(wert, stellen);
+
+    private static string Feld(string beschriftung) => GebaeudeArbeitsstand.Feld(beschriftung);
+}

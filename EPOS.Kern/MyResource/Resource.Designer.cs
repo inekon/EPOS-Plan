@@ -17519,15 +17519,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
-        /// </summary>
-        public static string GEBA_BTN_BEARBEITEN {
-            get {
-                return ResourceManager.GetString("GEBA_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen… ähnelt.
         /// </summary>
         public static string GEBA_BTN_GEBAEUDETYPEN {
@@ -17636,7 +17627,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kenndaten konnten nicht geschrieben werden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudesatz konnte nicht geschrieben werden. ähnelt.
         /// </summary>
         public static string GEBA_MSG_FEHLER {
             get {
@@ -17663,7 +17654,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen und U-Werte ändert „Bearbeiten…“; dort stehen auch Fenster je Himmelsrichtung, Raumtemperaturen, Ferien und Wärmebrücken. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche ist die Summe der vier Himmelsrichtungen unter „Alle Daten“; dort stehen auch Raumtemperaturen, Ferien, Modellparameter und Kühlung. ähnelt.
         /// </summary>
         public static string GEBA_SB_HUELLE_HINWEIS {
             get {
@@ -30505,6 +30496,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_FLE_SOC_START_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_FLE_SOC_START_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des gewählten Gebäudes – nur lesbar. Einen anderen Satz wählt das Feld „satz“; einen neuen Namen bekommt ein Satz über „Duplizieren...“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBA_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBA_NAME_ERL", resourceCulture);
             }
         }
         

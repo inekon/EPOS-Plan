@@ -27,6 +27,9 @@ fünf Stufen steht in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnit
 **Mit AD-Q15 (23.09.2026) ist AD-Q11 abgelöst:** Das Schloss eines Auslieferungssatzes lässt sich in
 allen zehn Verwaltungen über die Auswahlleiste aufheben und wieder setzen, nach Rückfrage — umgesetzt
 am 23.09.2026 (Welle #459; Kern `Auslieferungskennzeichen`, Baustein `Schlossumschaltung`; 3.4, 6.2).
+**Mit #465 (24.09.2026) ist die Gebäudeverwaltung (A9) nachgezogen:** Ihr Stammblatt führt jedes Feld
+des Katalogeditors auf demselben Arbeitsstand, und beim Hilfe-Assistenten ist sie eine eigene Maske
+(7.1 a und e erledigt; die Löschsperre bleibt beim Namen, Schemavorschlag in 7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -323,7 +326,7 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
 | A6 | `WaermebedarfAdminDialog` (Wärmebedarf Lastgang) | Zeitreihen (4) | 3: Bezeichner, Jahresarbeit, Spitze | kein Diagramm; Einleseblock (Ordner, Datei, Formathinweis, Fortschritt) | Anzeigen · Einlesen · Löschen · Füller · Beenden | `GanglinienImportLauf` (CSV/Text, Excel; 8 760 oder 35 040 Werte); Löschsperre bei Projektzuordnung und Auslieferung | Ganglinie, Herkunft | keine — Stufe 4 setzt Einlesen als Überlagerung um (V14); die Gruppe Ganglinie ist neu (Baustein `GanglinienGrafik` gibt es); kein Neu…, kein Duplizieren, kein Umbenennen; „Anzeigen" bleibt statt „Originaldatei…", keine Spalte speichert den Quellpfad (7.1) |
 | A7 | `SolarganglinieAdminDialog` (Solarthermieganglinie) | Zeitreihen (1) | 4: Bezeichner, Beschreibung, Jahresarbeit, Spitze | wie A6, Fortschritt mit Anteil | Anzeigen · Einlesen · Löschen · Füller · OK | eigener Einleseweg (Textdatei mit Kopfzeile, 8 760 Werte), nicht `GanglinienImportLauf` | Ganglinie, Herkunft | wie A6 — Stufe 4 setzt Einlesen als Überlagerung um; OK heißt Beenden; der eigene Einleseweg bleibt (anderes Format) |
 | A8 | `StromganglinieAdminDialog` (Stromganglinie) | Zeitreihen (3) | 4: Bezeichner, Zeitintervall, Jahresarbeit, Spitze | kein Diagramm; Zeitintervall und Dateiwahl als Einleseblock | Löschen · Füller · OK; Einlesen über die Dateiwahl | `GanglinienImportLauf` mit drei Überlagerungen; `ReadOnly`-Sperre und Rückfrage | Ganglinie, Herkunft | trägt den `Katalograhmen` bereits seit Stufe 1 (vorgezogen); Stufe 4 setzt Einlesen als Überlagerung und OK/Beenden um; die Dateiwahl setzt nur den Pfad, „Datei einlesen…" startet den Import |
-| A9 | `GebaeudeDialog`, Betriebsart Verwaltung (Gebäude → Bearbeiten) | Gebäude (277) | eigene Tabelle: Name, „Typ/Wohnfläche"; vier Vorfilter darüber (Verwendung, Gebäudeart, Baujahr, Suche) | Gruppe „Gebäude: Verbrauch", lesend (Name, Gebäudeart, Beschreibung, Wohnfläche, Art der Angabe) | Gebäude in DB neu… · ändern… · löschen · Gebäudetyp in DB ändern… · Füller · Beenden | Katalogeditor mit zwei Reitern (Kenngrößen; Flächen, U-Werte, Raumtemperaturen, Ferien, Anschlussmaße) und Gebäudetypen-Verwaltung als Überlagerungen; dieselbe Komponente dient Projekt und Assistent | Kenndaten, Hülle, Alle Daten | **größte Abweichung**: Stufe 5 setzt V16 um — eigene Tabelle und Vorfilter → `Katalogliste` mit Profil `FuerGebaeude`, Name, Gebäudeart, Verwendung und Baujahr als Trichter; der Katalogeditor ist in Stammblattgruppen (Kenndaten, Hülle, Alle Daten) zerfallen; „Gebäudetyp in DB ändern…" ist „Gebäudetypen…" im Kopf der Gruppe Kenndaten; keine Kosten, kein Import; Projekt und Assistent behalten ihre Anordnung (3.6); Reste in 7.1 |
+| A9 | `GebaeudeDialog`, Betriebsart Verwaltung (Gebäude → Bearbeiten) | Gebäude (277) | eigene Tabelle: Name, „Typ/Wohnfläche"; vier Vorfilter darüber (Verwendung, Gebäudeart, Baujahr, Suche) | Gruppe „Gebäude: Verbrauch", lesend (Name, Gebäudeart, Beschreibung, Wohnfläche, Art der Angabe) | Gebäude in DB neu… · ändern… · löschen · Gebäudetyp in DB ändern… · Füller · Beenden | Katalogeditor mit zwei Reitern (Kenngrößen; Flächen, U-Werte, Raumtemperaturen, Ferien, Anschlussmaße) und Gebäudetypen-Verwaltung als Überlagerungen; dieselbe Komponente dient Projekt und Assistent | Kenndaten, Hülle, Alle Daten | **größte Abweichung**: Stufe 5 setzt V16 um — eigene Tabelle und Vorfilter → `Katalogliste` mit Profil `FuerGebaeude`, Name, Gebäudeart, Verwendung und Baujahr als Trichter; der Katalogeditor ist in Stammblattgruppen (Kenndaten, Hülle, Alle Daten) zerfallen; „Gebäudetyp in DB ändern…" ist „Gebäudetypen…" im Kopf der Gruppe Kenndaten; keine Kosten, kein Import; Projekt und Assistent behalten ihre Anordnung (3.6); seit #465 jedes Feld des Editors im Stammblatt bedienbar, der Editor nur noch für „Neu…", eigene KI-Maske `Form_Gebaeude_Admin` (7.1 a, e) |
 | A10 | `GebaeudetypDialog` (Gebäudetypen) | Typen (12) mit je fünf oder acht Tageskurven zu 24 Stunden | eine Spalte (Name) mit rundem Wahlknopf; daneben die Kurvenliste als zweite Liste | Beschreibung lesend, 24 Stundenfelder und das Tagesbild (`DiagrammSvg`) unter den Listen | Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden | Kopf-Detail-Modell; der Kurvenwechsel überträgt die 24 Felder still; ein Typ, der nicht „Veränderbar" ist, sperrt „Typ speichern" und sagt es in einer Herleitungszeile; Löschen fragt zurück | Tagesprofil, Kenndaten | **kein Gerätekatalog**: Stufe 5 setzt V16 um — die Kurvenliste ist die Klappliste „Kurve" der Gruppe Tagesprofil geworden, die 24 Felder öffnen als Überlagerung „Stundenwerte…", ein Kurvenwechsel mit Änderungen hält an; Schloss statt Herleitungszeile; Neu… fragt Name, Beschreibung und Kurvenzahl; keine Kosten, kein Import, kein „Alle Daten"; Reste in 7.1 |
 | A11 | `PeakShavingDialog` (Lastspitzenkappung) | Lastgänge: Stromganglinien aus Stamm und Projekt oder eine Datei, die nicht abgelegt wird | keine Liste: Optionsgruppe „Vorhandene Ganglinie \| Datei importieren", Klappliste, Dateiwahl | Parameterblock (Speicher, Zielschwelle mit „Minimale haltbare Schwelle ermitteln", Leistungs- und Bezugspreis, Kompatibilitätsmodus, fünf Wirtschaftlichkeitsfelder), darunter „Berechnen" und das Ergebnis in drei Reitern (Kennzahlen, Lastgang vorher/nachher, Monatsspitzen) | CSV-Export · In Variante übernehmen · Füller · Beenden | Rechenwerkzeug, legt nichts ab, braucht kein offenes Projekt; der Rechenlauf läuft nebenher mit Fortschritt; die Importkette zeigt Optionen und Protokoll als Überlagerungen | Speicher, Schwelle, Kosten, Ergebnis | **Rechenwerkzeug statt Katalog**: Stufe 5 setzt V16 um — die Liste zeigt die Lastgänge mit Quelle, Intervall und Jahresmaximum; die Datei kommt über „Lastgang aus Datei…" an der Stelle von Import…; „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis, der Stammblattfuß trägt keinen Knopf; Vergleichen rechnet über zwei bis drei Lastgänge; kein Neu…, Duplizieren, Löschen, kein Schloss; Reste in 7.1 |
 
@@ -347,7 +350,13 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
    Betriebsarten. Das Gerüst gilt für die Betriebsart Verwaltung; Projekt und Assistent derselben
    Komponente behalten ihre Anordnung (Abschnitt 8). Seit Stufe 5 trägt die Verwaltung ein Profil
    für die `Katalogliste` (V16); der Katalogeditor mit zwei Reitern ist in die Gruppen Kenndaten,
-   Hülle (Flächen und U-Werte) und Alle Daten zerfallen.
+   Hülle (Flächen und U-Werte) und Alle Daten zerfallen. Mit #465 (24.09.2026) sind alle Felder des
+   Editors im Stammblatt bedienbar — Kenndaten samt Wohnfläche und Bauart, Hülle (Hüll-Raster aus
+   Bauteil, Kennwert und Größe in drei Spalten, dazu Randbedingung und Wärmeleitwerte), Fenster nach
+   Orientierung, Kenngrößen und aufklappbar Alle Daten (Raumtemperaturen, Ferien, Modellparameter,
+   Rechenweg, Kühlung); Editor und Stammblatt teilen EINEN Arbeitsstand (`GebaeudeArbeitsstand`:
+   Prüfung, Ableitungen, Hüllrechnung) und den Schreibweg `GebaeudeKatalogHuelle.Schreiben`. Der
+   Editor erscheint nur noch für „Neu…" (wie beim Heizkessel, AD-Q6); Punkt 4 gilt für ihn nicht mehr.
 6. **Die Lastspitzenkappung ist ein Rechenwerkzeug.** Ihre Zeile ist ein Lastgang, ihr Stammblatt trägt
    Parameter und Ergebnis. „Berechnen" steht im Blatt zwischen den Parametern und dem Ergebnis — der
    Lesefluss Parameter → Rechnen → Ergebnis aus dem Entscheid DL-Q2 zu den Knopfleisten bleibt —, und
@@ -552,7 +561,7 @@ Menüpunkte, und Schloss, Vergleich und Import lassen sich an ihr zuerst zeigen.
 | 2 | ✔ **umgesetzt 23.09.2026** (Commits `5767e273`, `e2fbb829`, Merge `f6290028`) — V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` in den acht Verwaltungen; dazu V10 (Schloss) und V15 (Fußleiste); AD-Q11 mit `Katalogkopie.Duplizieren` | M + M + S + S | Stufe 1 |
 | 3 | ✔ **umgesetzt 23.09.2026** (Commits `d0660247`, `d8660fde`, Merge `f3957840`) — V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, dieselbe Komponente für BHKW, Wärmepumpen, Solarkollektoren, Pufferspeicher (A1, A3), PV-Module, Wechselrichter, Stromspeicher (A2) und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5); dazu aus Stufe 2 zurückgestellt: V6 (Leertaste und Kästchen der Mehrfachwahl), das weiche Sperren beim Löschen eines Auslieferungssatzes, Duplizieren für die Bedarfsprofile und die Änderungserkennung der Wärmepumpenverwaltung | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
 | 4 | ✔ **umgesetzt 23.09.2026** (Commits `5a46b0b1`, `b1569752`, Merge `df78272c`) — V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1); dazu aus Stufe 3 zurückgestellt und erledigt: Schalter „nur mit Kühlfunktion" in der Werkzeugleiste der Wärmepumpenverwaltung, direkt bedienbare Bedarfsfelder statt „Ändern…" (A5), eigene Kostengruppe bei der Wärmepumpe, die Felder eines Auslieferungssatzes als Text statt als gesperrte Eingaben (V13); offen bleibt „Import…" in der Fußleiste der Gerätekataloge (Zweitweg zu V14 bei A1 bis A3, siehe 7.1) | M | Stufe 3 |
-| 5 | ✔ **umgesetzt 23.09.2026** (Commits `9cb41354`, `7e7ecb9c`, `c938ed32`, Merge `b3fa8658`) — V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) im Gerüst mit Liste und Stammblatt; dazu 7.1 d erledigt — „Import…" als Zweitweg zu V14 in den Gerätekatalogen (A1 bis A3, nicht beim BHKW) über den neuen Baustein `ImportUeberlagerung` | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
+| 5 | ✔ **umgesetzt 23.09.2026** (Commits `9cb41354`, `7e7ecb9c`, `c938ed32`, Merge `b3fa8658`) — V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) im Gerüst mit Liste und Stammblatt; dazu 7.1 d erledigt — „Import…" als Zweitweg zu V14 in den Gerätekatalogen (A1 bis A3, nicht beim BHKW) über den neuen Baustein `ImportUeberlagerung`; **Nachtrag #465 (24.09.2026):** 7.1 (a) und (e) erledigt — das Stammblatt der Gebäudeverwaltung führt jedes Feld des Katalogeditors auf demselben Arbeitsstand und Schreibweg, die Verwaltung ist beim Assistenten eine eigene Maske | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
 
 **Warum diese Folge:** Die Gerätekataloge teilen sich zwei Komponenten (A1, A2) und gewinnen am
 meisten durch die Spaltenränge; die Profile folgen, weil ihr Stammblatt nur eine Gruppe hinzubekommt;
@@ -576,9 +585,25 @@ die Bedienungsseiten unter `Projekte/Wiki/` mit je einem Logbuch-Satz.
 
 ### 7.1 Offen nach Stufe 5
 
-(a) Gebäude (A9): Hülle und Wohnfläche stehen im Stammblatt nur lesbar (Bearbeiten im
-Katalogeditor); keine Gruppe Wärmebedarf, weil die Verwaltung weder Projekt noch Klima kennt; die
-Löschsperre erkennt eine Nutzung am Namen (`Z_ProjektGebaeude` ohne Katalogverweis). (b)
+(a) Gebäude (A9): ✔ **erledigt mit #465 (24.09.2026)** — Hülle und Wohnfläche sind im Stammblatt
+bedienbar, dazu jedes übrige Feld des Katalogeditors (3.6 Punkt 5); Speichern/Verwerfen in der
+Fußleiste, Prüfung, Ableitungen und Schreibweg sind die des Editors (`GebaeudeArbeitsstand`,
+`GebaeudeKatalogHuelle.Schreiben`), der Lesemodus eines Auslieferungssatzes zeigt Hülle und Alle Daten
+als Text; der Editor steht nur noch hinter „Neu…", „Bearbeiten…" entfällt. **Keine Gruppe
+Wärmebedarf — begründet:** Der Wärmebedarf eines Gebäudes ist keine Eigenschaft des Katalogsatzes. Der
+Kern rechnet ihn je Projektzuordnung (`GebaeudeBedarfCtrl.Rechnen(Projekt, Klimaregion, Zuordnung)`):
+mit der Klimaregion und dem Kalender des Projekts, der Angabe der Zuordnung (Wohnfläche oder
+Verbrauchsrückrechnung, Jahresnutzungsgrad) und dem Kühlbetrieb des Projekts; ein Kennwert „je
+Klimaregion-Vorgabe" bräuchte einen zweiten, projektfreien Rechenweg mit erfundenen Annahmen und ein
+Stundenmodell über 8 760 Stunden je Zeilenwahl — eine Zahl, die kein Projekt wiedergäbe. Die
+klimafreien Kennzahlen stehen im Blatt (H_ges im Kopf, H_T, H_ve und H_ges unter dem Hüll-Raster); den
+Wärmebedarf zeigt der Gebäudedialog des Projekts („Simulation…"). **Die Löschsperre erkennt eine
+Nutzung weiter am Namen:** `Z_ProjektGebaeude` führt keinen Katalogverweis, und die Projektkopie
+`Tab_Gebaeude` nur `ID_ProjektGebaeude` und `ID_Projekt`. Ein Verweis über die ID bräuchte einen
+Schemaschritt — Vorschlag (nicht angelegt, Nummer 122): Spalte `Tab_Gebaeude.ID_Gebaeude_Stamm`
+(`INTEGER`, Verweis auf `Tab_Gebaeude_STAMM(ID)`, `ON DELETE SET NULL`), gefüllt beim Übernehmen
+(`GebaeudeStammCtrl.CopyFromStamm`) und im Schritt einmalig über den Namen nachgetragen;
+`Projektverwendung` fragte dann die ID ab und nur ohne Verweis den Namen. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; ob CSV-Export und „In Variante
@@ -603,9 +628,14 @@ Verwaltungen sind steuerbar wie die Projektdialoge — erledigt für A1 (die vie
 wählen, jedes editierbare Feld des Stammblatts setzen, Speichern über den Weg des Knopfes) und A5 (Typ,
 Beschreibung und Monatswerte); A2, A3, A4, A8, A10 und A11 waren es schon. Auslieferungssätze bleiben
 geschützt, die Absage nennt „Duplizieren…"; Neu…, Duplizieren…, Löschen und Import… gehen nie über den
-Assistenten, A6 und A7 führen keine Einstellwerte. Offen bleibt die Gebäude-Verwaltung (A9): Die
-KI-Maske GEBAEUDE teilen sich Projekt- und Verwaltungsdialog, und die Verwaltung bleibt für den
-Assistenten offen, solange ihre Hülle nur liest.
+Assistenten, A6 und A7 führen keine Einstellwerte. ✔ **Die Gebäude-Verwaltung (A9) mit #465
+(24.09.2026):** eigene Maske `Form_Gebaeude_Admin` — ihr Schlüssel ist ihr Navigationsschlüssel
+(`Masken.GebaeudeAdmin`, bis dahin `Form_Gebaeude` und damit gleich der Projektmaske); Wahlfeld `satz`
+und die Feldliste des Katalogeditors aus derselben Methode (`KiDialoge.GebaeudeKatalogFelder`) an
+derselben Sichtklasse, der Name nur lesbar, ohne die Betriebsart des Editors; Prüfen und Speichern auf
+dem Weg des Knopfes, ein Auslieferungssatz schreibgeschützt mit „Duplizieren…" oder „Schloss
+aufheben…" als Weg. Die Projektmaske `Form_Gebaeude` gehört allein dem Projektdialog; ihr Ziel ist die
+Startseite.
 (f) Schloss (AD-Q15): Das Band „Schloss aufgehoben" kennt nur die Verwaltung, in
 der das Schloss aufgehoben wurde, solange sie offen ist (die Datenbank führt nur das Kennzeichen); im
 schmalen Fenster (400 × 624) bricht die Auswahlleiste mit vier Handlungen in drei statt zwei Zeilen um —
