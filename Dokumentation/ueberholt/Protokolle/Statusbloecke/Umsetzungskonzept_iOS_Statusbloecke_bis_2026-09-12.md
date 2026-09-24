@@ -9834,3 +9834,41 @@ Treffer.
 **Gate nach Merge auf `cf446092`.** `DokumentationLinkWacheTests`,
 `WikiProduktdatenWacheTests`, `HelpMappingAnkerWacheTests`,
 `RepositoryOrdnungWacheTests` 30/30 grün.
+
+## #480 — Hilfe: Nutzflächenangabe springt auf Gebäude#verbrauch (24.09.2026)
+
+Kern-Nachtrag aus #476 (offener Hilfeknopf
+`Form_GebWohnflaeche.btn_Help`), Anwenderentscheid
+„Kern-Nachtrag: Ja“. Commit (Zweig `worktree-agent-a0df67271573a2d81`,
+Basis `5ae3019f`): `0bca1e53` Hilfe: Nutzflächenangabe springt auf
+Gebäude#verbrauch. Merge in den Hauptbaum `957b9e3f`, konfliktfrei.
+
+**Umsetzung.** `EPOS.Kern/Allgemein/KI/KiChatKontext.BEREICH_JE_HILFEPRAEFIX`
+bekommt den Eintrag `{ "Form_GebWohnflaeche", B_GEBAEUDE }` (keine
+Kollision mit `Form_Gebaeude`). `WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt`
+bekommt die Zeile `Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch`
+nach `Form_Gebaeude2.btn_Help`, mit angepasstem Kommentar, BOM und CRLF
+erhalten. Der Dialog `GebaeudeWohnflaecheDialog.razor` meldet genau
+diesen Schlüssel (`HilfeSchluessel` über `InfoKnopf`); der KI-Kontext
+nennt „Bereich: Gebäude“ richtig. Der Anker `verbrauch` sitzt auf
+„Gebäude: Verbrauch“; der Punkt „Ändern“ folgt ohne eigenen Anker
+(Wiki unverändert).
+
+**Befund.** Weitere Gebäude-Hilfeschlüssel ohne Ziel gibt es nicht:
+`Form_EingGebTyp.btn_Help`, `Form_GebWohnflaeche.btn_Help`,
+`Form_Gebaeude.btn_Help`, `Form_Gebaeude.Berechnung` und
+`Form_Gebaeude1.btn_Help` sind alle zugeordnet.
+
+**Tests.** Neu `KiDialogaufrufTests.Der_Bereich_folgt_aus_dem_Maskenpraefix`
+(beide Schlüssel führen auf `B_GEBAEUDE`) und
+`HelpMappingAnkerWacheTests.Die_Nutzflaechenangabe_springt_auf_den_Abschnitt_Verbrauch`.
+Papiere unverändert (die Zuordnungstafel listet Masken, keine
+Schlüssel). Kein Logbuch-Eintrag.
+
+**Gate im Worktree des Umsetzungsagenten.** Gefiltert Kern 405, UI 619
+grün; Builds 0 Fehler.
+
+**Gate nach Merge auf `957b9e3f`.** Kern-Filter 0 Fehler; Kern 5 961,
+UI 5 996, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen), 0 rot; Windows-Schale 0 Fehler; kein Referenzlauf
+(kein Rechenweg), Schemastand 124.
