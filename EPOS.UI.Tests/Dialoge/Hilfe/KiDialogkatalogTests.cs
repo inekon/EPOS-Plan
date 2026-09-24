@@ -1256,8 +1256,9 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",
         [KiMaskennamen.BEDARFSPROFILE] =
-            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
-            "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
+            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock, " +
+            "Verbrauchseingabe und die Optionsgruppe „Rechenweg Brauchwasser“; Zeuge ist " +
+            "BedarfsProfileDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",

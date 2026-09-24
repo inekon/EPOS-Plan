@@ -1137,6 +1137,10 @@
         internal static string BpfSummeName => MyResource.Resource.BPF_LBL_SUMME_PROZ;
         internal static string BpfSummeErl => MyResource.Resource.KI_DLG_BPF_SUMME_ERL;
 
+        /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" (Welle #458, Stufe 3a).</summary>
+        internal static string BpfRechenwegName => MyResource.Resource.BPF_LBL_RECHENWEG_BW;
+        internal static string BpfRechenwegErl => MyResource.Resource.KI_DLG_BPF_RECHENWEG_ERL;
+
         internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
         internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
         internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;

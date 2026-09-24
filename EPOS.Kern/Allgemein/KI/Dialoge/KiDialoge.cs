@@ -3010,7 +3010,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Bedarfsprofile eines Projekts — acht Felder aus
+        /// Die Bedarfsprofile eines Projekts — neun Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3019,6 +3019,14 @@ namespace WindowsFormsApplication1
         /// rechts der Katalog; eingestellt wird der JAHRESVERBRAUCH der markierten
         /// Zuordnung, und der Knopf „Uebernehmen" schreibt ihn in die Zeile. Die
         /// ANZEIGEEINHEIT gilt dabei fuer Eingabe und Infoblock zugleich.
+        /// </para>
+        /// <para>
+        /// <b>Die Zapfprofil-Weiche</b> (Welle #458, Stufe 3a): Beim Brauchwasser eines
+        /// gespeicherten Projekts steht die Optionsgruppe „Rechenweg Brauchwasser"
+        /// (Bestandsprofile oder Zapfprofil); gesetzt wird sie ueber den Weg des Klicks,
+        /// „Zapfprofil" ohne Zone lehnt die Maske benannt ab. In den anderen
+        /// Auspraegungen ist das Feld leer und das Setzen nennt den Grund. Geschrieben
+        /// wird die Weiche mit dem OK dieser Maske, im selben Vorgang wie das Zapfprofil.
         /// </para>
         /// <para>
         /// <b>EINE Maske, DREI Auspraegungen</b> (Prozesswaerme, Stromverbraucher,
@@ -3045,6 +3053,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("neuer_wert", "BedarfsProfileKiSicht.NeuerWert",
                                      KiDialogTexte.BpfNeuerWertName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BpfNeuerWertErl, leerErlaubt: true),
+                    new KiDialogFeld("rechenweg", "BedarfsProfileKiSicht.Rechenweg",
+                                     KiDialogTexte.BpfRechenwegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfRechenwegErl),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,

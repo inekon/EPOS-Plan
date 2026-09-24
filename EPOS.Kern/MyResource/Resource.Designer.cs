@@ -29321,6 +29321,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Brauchwasserkanal der Simulation kommt: aus den Bestandsprofilen dieser Maske oder aus dem Zapfprofil des Projekts. Beim Umschalten bleiben die Zonen des Zapfprofils erhalten; „Zapfprofil“ braucht mindestens eine Zone. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_RECHENWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_RECHENWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Rechenweg Brauchwasser gibt es nur in den Brauchwasserprofilen eines gespeicherten Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_RECHENWEG_NUR_BW {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_RECHENWEG_NUR_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe über alle Profile, die diesem Projekt zugeordnet sind. ähnelt.
         /// </summary>
         public static string KI_DLG_BPF_SUMME_ERL {

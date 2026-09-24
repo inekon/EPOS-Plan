@@ -22171,6 +22171,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
   </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Woher der Brauchwasserkanal der Simulation kommt: aus den Bestandsprofilen dieser Maske oder aus dem Zapfprofil des Projekts. Beim Umschalten bleiben die Zonen des Zapfprofils erhalten; „Zapfprofil“ braucht mindestens eine Zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>Den Rechenweg Brauchwasser gibt es nur in den Brauchwasserprofilen eines gespeicherten Projekts.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
   </data>

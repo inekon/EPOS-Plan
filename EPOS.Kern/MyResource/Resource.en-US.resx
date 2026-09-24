@@ -22164,6 +22164,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>The total over all profiles assigned to this project.</value>
   </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Where the domestic hot water channel of the simulation comes from: the existing profiles of this form or the project’s draw-off profile. Switching keeps the zones of the draw-off profile; “Draw-off profile” needs at least one zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>The DHW calculation method is only available in the domestic hot water profiles of a saved project.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
   </data>

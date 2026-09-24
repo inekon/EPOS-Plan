@@ -125,7 +125,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
-        new("BedarfsProfileDialog", 3, "die Optionsgruppe „Rechenweg“ ist offen (#458 Stufe 3 nach Z3)"),
+        new("BedarfsProfileDialog", 3),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
