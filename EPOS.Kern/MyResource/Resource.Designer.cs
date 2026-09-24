@@ -90171,6 +90171,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe umfasst {0:0.#} Tage und ist auf {1} Tage hochgerechnet; der Jahreswert ist eine Hochrechnung, keine Messung. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bezugsmenge der Zone lässt sich kein Tagesbedarf je Einheit vorschlagen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gemessene Reihe trägt keine Menge; es gibt nichts zu kalibrieren. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gemessene Reihe ist nichts zu kalibrieren. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Reihe im Raster {0} min trägt keine Stundenwerte; ein Tagesgang lässt sich daraus nicht vorschlagen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Tagtyp der Messung trägt eine Menge; es gibt keinen Tagesgang vorzuschlagen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt {0:0.#} vollständige Tage; für einen Vorschlag sind mindestens {1} nötig. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_REIHE_ZU_KURZ {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_REIHE_ZU_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung trägt keinen vollständigen {0} mit Menge; für diesen Tagtyp gibt es keinen Vorschlag. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_TAGTYP_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_TAGTYP_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Wochentagen tragen keinen vollständigen Messtag; sie bekommen das Mittel der übrigen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Messreihe „{0}“ trägt den Beginn „{1}“, der kein Zeitpunkt ist. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSREIHENIMPORT_BEGINN_UNGUELTIG {
@@ -90455,6 +90536,168 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bandgrenzen {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gemessene Jahresenergie weicht um {0:0.0%} von der gerechneten ab. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang stimmt in der Form: mittlere Abweichung der Stundenanteile {0:0.0000} bei einer Schwelle von {1:0.0000}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang weicht in der Form ab: mittlere Abweichung der Stundenanteile {0:0.0000} über der Schwelle {1:0.0000}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_FORM_UEBER_SCHWELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_FORM_UEBER_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender der gerechneten Reihe muss {0} Tagtypen führen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_KALENDER_RASTER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_KALENDER_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne die Einheitenzahl der Zonen bleibt die √N-Skalierung ohne Vergleich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Stundenspitzen eines Ensembles lässt sich das Band der synthetischen Spitze nicht bilden. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung kennt keine Feiertage; sie zählen mit dem Tagesgang ihres Wochentags. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gemessene Reihe ist kein Vergleich zu rechnen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gerechnete Jahresreihe ist kein Vergleich zu rechnen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_RECHNUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe im Raster {0} min trägt keine vollständige Stunde; Spitze, √N-Skalierung und Tagesgang bleiben ohne Vergleich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung trägt keinen vollständigen Tag, den auch die Rechnung führt; der Formabgleich bleibt offen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gerechnete Jahresreihe trägt keine Menge; ein Verhältnis dazu wäre ohne Sinn. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gemessene Stundenspitze liegt mit {0:0.###} im Band {1:0.###} bis {2:0.###} der synthetischen Dauerlinie. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPITZE_IM_BAND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPITZE_IM_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gemessene Stundenspitze liegt mit {0:0.###} über der oberen Bandgrenze {1:0.###}: Die Rechnung unterschätzt die Spitze. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPITZE_UEBER_BAND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPITZE_UEBER_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gemessene Stundenspitze liegt mit {0:0.###} unter der unteren Bandgrenze {1:0.###}: Die Rechnung überschätzt die Spitze stärker als erwartet. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Volumenreihe braucht eine Spreizung θ_Zapf − θ_KW größer als 0; angegeben war {0:0.###} K. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT", resourceCulture);
             }
         }
         

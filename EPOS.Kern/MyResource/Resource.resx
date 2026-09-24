@@ -31021,4 +31021,85 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE" xml:space="preserve">
     <value>Die Messreihe „{0}“ hat eine Lücke im Zeilenindex bei {1}; sie wäre zeitlich verschoben.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG" xml:space="preserve">
+    <value>Die Bandgrenzen {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG" xml:space="preserve">
+    <value>Die gemessene Jahresenergie weicht um {0:0.0%} von der gerechneten ab.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN" xml:space="preserve">
+    <value>Der Tagesgang stimmt in der Form: mittlere Abweichung der Stundenanteile {0:0.0000} bei einer Schwelle von {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_UEBER_SCHWELLE" xml:space="preserve">
+    <value>Der Tagesgang weicht in der Form ab: mittlere Abweichung der Stundenanteile {0:0.0000} über der Schwelle {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_KALENDER_RASTER" xml:space="preserve">
+    <value>Der Kalender der gerechneten Reihe muss {0} Tagtypen führen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN" xml:space="preserve">
+    <value>Ohne die Einheitenzahl der Zonen bleibt die √N-Skalierung ohne Vergleich.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
+    <value>Ohne Stundenspitzen eines Ensembles lässt sich das Band der synthetischen Spitze nicht bilden.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
+    <value>Die Messung kennt keine Feiertage; sie zählen mit dem Tagesgang ihres Wochentags.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Ohne gemessene Reihe ist kein Vergleich zu rechnen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_RECHNUNG" xml:space="preserve">
+    <value>Ohne gerechnete Jahresreihe ist kein Vergleich zu rechnen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>Die Reihe im Raster {0} min trägt keine vollständige Stunde; Spitze, √N-Skalierung und Tagesgang bleiben ohne Vergleich.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG" xml:space="preserve">
+    <value>Die Messung trägt keinen vollständigen Tag, den auch die Rechnung führt; der Formabgleich bleibt offen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE" xml:space="preserve">
+    <value>Die gerechnete Jahresreihe trägt keine Menge; ein Verhältnis dazu wäre ohne Sinn.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
+    <value>Die gemessene Stundenspitze liegt mit {0:0.###} im Band {1:0.###} bis {2:0.###} der synthetischen Dauerlinie.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
+    <value>Die gemessene Stundenspitze liegt mit {0:0.###} über der oberen Bandgrenze {1:0.###}: Die Rechnung unterschätzt die Spitze.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
+    <value>Die gemessene Stundenspitze liegt mit {0:0.###} unter der unteren Bandgrenze {1:0.###}: Die Rechnung überschätzt die Spitze stärker als erwartet.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
+    <value>Eine Volumenreihe braucht eine Spreizung θ_Zapf − θ_KW größer als 0; angegeben war {0:0.###} K.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
+    <value>Die Reihe umfasst {0:0.#} Tage und ist auf {1} Tage hochgerechnet; der Jahreswert ist eine Hochrechnung, keine Messung.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Ohne Bezugsmenge der Zone lässt sich kein Tagesbedarf je Einheit vorschlagen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE" xml:space="preserve">
+    <value>Die gemessene Reihe trägt keine Menge; es gibt nichts zu kalibrieren.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Ohne gemessene Reihe ist nichts zu kalibrieren.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>Eine Reihe im Raster {0} min trägt keine Stundenwerte; ein Tagesgang lässt sich daraus nicht vorschlagen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_TAGESGANG" xml:space="preserve">
+    <value>Kein Tagtyp der Messung trägt eine Menge; es gibt keinen Tagesgang vorzuschlagen.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_REIHE_ZU_KURZ" xml:space="preserve">
+    <value>Die Reihe trägt {0:0.#} vollständige Tage; für einen Vorschlag sind mindestens {1} nötig.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Die Messung trägt keinen vollständigen {0} mit Menge; für diesen Tagtyp gibt es keinen Vorschlag.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
+    <value>{0} von {1} Wochentagen tragen keinen vollständigen Messtag; sie bekommen das Mittel der übrigen.</value>
+  </data>
 </root>

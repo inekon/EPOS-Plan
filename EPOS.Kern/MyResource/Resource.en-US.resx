@@ -31014,4 +31014,85 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE" xml:space="preserve">
     <value>The measured series “{0}” has a gap in its row index at {1}; it would be shifted in time.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG" xml:space="preserve">
+    <value>The band limits {0:0.###} and {1:0.###} are unusable — expected 0 &lt; lower &lt; upper &lt; 1.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG" xml:space="preserve">
+    <value>The measured annual energy deviates by {0:0.0%} from the calculated one.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN" xml:space="preserve">
+    <value>The daily profile matches in shape: mean deviation of the hourly shares {0:0.0000} against a threshold of {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_UEBER_SCHWELLE" xml:space="preserve">
+    <value>The daily profile deviates in shape: mean deviation of the hourly shares {0:0.0000} above the threshold {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_KALENDER_RASTER" xml:space="preserve">
+    <value>The calendar of the calculated series must carry {0} day types.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN" xml:space="preserve">
+    <value>Without the number of units of the zones the √N scaling stays without comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
+    <value>Without hourly peaks of an ensemble the band of the synthetic peak cannot be formed.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
+    <value>The measurement knows no public holidays; they count with the daily profile of their weekday.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series there is no comparison to compute.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_RECHNUNG" xml:space="preserve">
+    <value>Without a calculated annual series there is no comparison to compute.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>The series on a {0} min grid carries no complete hour; peak, √N scaling and daily profile stay without comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG" xml:space="preserve">
+    <value>The measurement carries no complete day that the calculation also has; the shape comparison stays open.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE" xml:space="preserve">
+    <value>The calculated annual series carries no quantity; a ratio to it would be meaningless.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies within the band {1:0.###} to {2:0.###} of the synthetic duration curve.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies above the upper band limit {1:0.###}: the calculation underestimates the peak.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies below the lower band limit {1:0.###}: the calculation overestimates the peak more than expected.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
+    <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
+    <value>The series covers {0:0.#} days and has been scaled up to {1} days; the annual value is an extrapolation, not a measurement.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Without the reference quantity of the zone no daily demand per unit can be proposed.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE" xml:space="preserve">
+    <value>The measured series carries no quantity; there is nothing to calibrate.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series there is nothing to calibrate.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>A series on a {0} min grid carries no hourly values; a daily profile cannot be proposed from it.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_TAGESGANG" xml:space="preserve">
+    <value>No day type of the measurement carries a quantity; there is no daily profile to propose.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_REIHE_ZU_KURZ" xml:space="preserve">
+    <value>The series carries {0:0.#} complete days; at least {1} are needed for a proposal.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_TAGTYP_FEHLT" xml:space="preserve">
+    <value>The measurement carries no complete {0} with a quantity; there is no proposal for this day type.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
+    <value>{0} of {1} weekdays carry no complete measured day; they receive the mean of the others.</value>
+  </data>
 </root>
