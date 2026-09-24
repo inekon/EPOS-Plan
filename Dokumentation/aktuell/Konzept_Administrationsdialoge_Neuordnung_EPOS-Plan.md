@@ -39,7 +39,8 @@ jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schrei
 (7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
 (7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
 Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
-die Löschsperre der Verwaltung (7.1 a).
+die Löschsperre der Verwaltung (7.1 a); **mit #490 (24.09.2026)** gleicht auch der Bearbeiten-Zweig
+des Assistenten seine übrigen Gewerke ab — ein Speichern ohne Eingabe schreibt nichts (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -650,8 +651,24 @@ angelegte Zeile der Liste ihre echte Zuordnungs-Id statt der vorläufigen ab 100
 (`WizardCtrl.EchteIdsUebernehmen`, im Assistenten nach dem Festschreiben seines Vorgangs; die Hülle
 `GebaeudeHuelle` zieht sie in die Anzeigezeile nach) — ein zweites Speichern derselben Liste legt
 nichts neu an, und eine Feld-Übernahme dazwischen bleibt stehen (#487; Nachweis
-`GebaeudelisteAbgleichTests`). Der Assistent setzt im Bearbeiten-Zweig das Änderungsdatum weiterhin
-bei jedem Speichern, weil er die übrigen Gewerke neu schreibt. Die Startseite schreibt in **einem**
+`GebaeudelisteAbgleichTests`). ✔ **Die übrigen Gewerke des Assistenten — erledigt mit #490
+(24.09.2026):** Der Bearbeiten-Zweig (`AssistentCtrl.Fortschreiben`) gleicht auch Erzeuger,
+Prozesswärme, Stromganglinie, externen Wärmebedarf und Stromverbraucher ab: `AssistentAbgleich` nimmt
+nach den Ladewegen und nach jedem gelungenen Speichern einen Abdruck je Gewerk — genau das, was der
+Schreibweg aus der Liste in die Datenbank trägt (Erzeuger über Reflexion ohne `ID`/`ID_Projekt`, samt
+Strangliste des PV-Dialogs; die Zuordnungen über Bezeichner, Summe bzw. Kanal, ohne Ids und
+Projektverweise, die der Add-Weg aus dem Bezeichner neu ableitet) —, und nur ein geändertes Gewerk wird
+gelöscht und neu angelegt. Ein unveränderter Erzeuger lässt Anlagenzeilen, Pufferzeilen, Senken,
+Stränge, Kostenanker, Projektgeräte und Trägersätze stehen; `NeueAnlagenSenkenNachziehen` läuft nur
+nach einem Neuschreiben der Anlagen. Der Projektsatz (`Update_Projekt`) wird nur geschrieben, wenn der
+Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). Damit setzt ein Speichern
+ohne Eingabe das Änderungsdatum nicht, und das letzte Simulationsergebnis bleibt aktuell; eine Eingabe
+in einem Gewerk schreibt genau dieses und setzt das Datum. Ohne Vergleichsstand (Ladekennzeichen
+zurückgesetzt) schreibt der Zweig jedes Gewerk. Die Ladewege füllen dafür, was die Seiten beim Aufbau
+nachtragen — die Stammfelder der Wärmepumpen-Projektkopie und den Kanal des Wärmebedarfs —, sodass
+schon das Betreten einer Seite keine Änderung ist und ein Lauf, der die Seite nie zeigt, weder leere
+Stammfelder in die Projektkopie noch jeden Kanal als Heizung zurückschreibt. Nachweis:
+`AssistentAbgleichTests`. Die Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
