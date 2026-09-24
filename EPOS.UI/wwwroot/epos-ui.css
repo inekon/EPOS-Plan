@@ -8221,6 +8221,29 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     padding-left: 0;
 }
 
+/* SCHMAL: "‹ Liste" und die Kopfhandlungen des Wirts (Lastspitzenkappung:
+   "CSV-Export", "In Variante uebernehmen" - breit in der Werkzeugleiste) in
+   EINER Zeile, die Handlungen rechts; wird es enger, rutschen sie als Gruppe in
+   die zweite Zeile. Breit weicht die ganze Zeile (epos-nur-schmal). */
+.epos-stammblatt-kopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-stammblatt-kopfzeile > .epos-stammblatt-zurliste {
+    align-self: center;
+}
+
+.epos-stammblatt-kopfhandlungen {
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-left: auto;
+}
+
 .epos-stammblatt-name {
     display: flex;
     align-items: center;

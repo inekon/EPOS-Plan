@@ -150,6 +150,32 @@ public class StammblattTests : EposBunitContext
         Assert.True(gerufen);
     }
 
+    /// <summary>
+    /// <b>Kopfhandlungen</b> stehen mit „‹ Liste" in EINER Zeile, und die ganze Zeile nur im
+    /// schmalen Fenster (<c>epos-nur-schmal</c>); ohne Fragment keine Zeile, „‹ Liste" bleibt
+    /// dann allein.
+    /// </summary>
+    [Fact]
+    public void Kopfhandlungen_stehen_schmal_in_der_Zeile_von_Zur_Liste()
+    {
+        Assert.Empty(Aufbauen(p => p.Add(x => x.ZurListe, EventCallback.Factory.Create(this, () => { })))
+                         .FindAll(".epos-stammblatt-kopfzeile"));
+
+        bool gerufen = false;
+        var cut = Aufbauen(p => p
+            .Add(x => x.ZurListe, EventCallback.Factory.Create(this, () => gerufen = true))
+            .Add(x => x.Kopfhandlungen, Text("handlung", "CSV")));
+
+        var zeile = cut.Find(".epos-stammblatt-kopf > .epos-stammblatt-kopfzeile");
+        Assert.Contains("epos-nur-schmal", zeile.ClassName ?? "");
+        Assert.Single(zeile.QuerySelectorAll(".epos-stammblatt-zurliste"));
+        Assert.NotNull(zeile.QuerySelector(".epos-stammblatt-kopfhandlungen #handlung"));
+        Assert.Single(cut.FindAll(".epos-stammblatt-zurliste"));
+
+        cut.Find(".epos-stammblatt-zurliste").Click();
+        Assert.True(gerufen);
+    }
+
     /// <summary>Ohne Gaben zeichnet das Blatt (Hausregel).</summary>
     [Fact]
     public void Ohne_Gaben_zeichnet_das_Blatt()
