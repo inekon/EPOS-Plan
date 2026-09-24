@@ -283,4 +283,41 @@ public sealed class WirtschaftlichkeitParameterKiSicht
         get => W?.DauerWirksam ?? 0;
         set => Worst(s => s.NutzungsdauerAenderung = value);
     }
+
+    // =====================================================================
+    //  ETAPPE E9b — Zeilen 8 und 9 der Szenariotafel
+    // =====================================================================
+    //
+    // Betrachtungszeitraum und Mengenänderung je Szenario haben KEINE Vorgabe (E9a-Q5):
+    // leer heißt „wie Erwartet". Anders als die vierzehn Felder darüber tragen sie
+    // deshalb den GEPFLEGTEN Wert — wie die Maske, deren Felder leer bleiben, solange
+    // nichts gepflegt ist; der Platzhalter dort nennt den Erwartungswert.
+
+    /// <summary>ETAPPE E9b: der gepflegte Betrachtungszeitraum des BEST-Falls [a]; leer = wie Erwartet.</summary>
+    public int? BestZeitraum
+    {
+        get => B?.Zeitraum;
+        set => Best(s => s.Zeitraum = value);
+    }
+
+    /// <summary>ETAPPE E9b: der gepflegte Betrachtungszeitraum des WORST-Falls [a]; leer = wie Erwartet.</summary>
+    public int? WorstZeitraum
+    {
+        get => W?.Zeitraum;
+        set => Worst(s => s.Zeitraum = value);
+    }
+
+    /// <summary>ETAPPE E9b: die gepflegte Mengenänderung des BEST-Falls [%]; leer = wie Erwartet.</summary>
+    public double? BestMenge
+    {
+        get => B?.Menge;
+        set => Best(s => s.Menge = value);
+    }
+
+    /// <summary>ETAPPE E9b: die gepflegte Mengenänderung des WORST-Falls [%]; leer = wie Erwartet.</summary>
+    public double? WorstMenge
+    {
+        get => W?.Menge;
+        set => Worst(s => s.Menge = value);
+    }
 }

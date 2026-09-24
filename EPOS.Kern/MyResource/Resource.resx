@@ -6880,7 +6880,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert.</value>
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
     <value>keine Bandbreite gerechnet.</value>
@@ -11064,7 +11064,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>{0}: Vorgaben — {1}</value>
   </data>
   <data name="WPAR_SZ_HINWEIS" xml:space="preserve">
-    <value>Erwartet rechnet unverändert mit den Projektparametern oben — die Spalte ist nur Anzeige. Best und Worst weichen davon ab: Zins und Preissteigerungen gelten absolut, Investition und Erträge als Änderung in Prozent, die Nutzungsdauer als Änderung in Jahren; + heißt jeweils mehr bzw. länger. Ein je Kostenzeile gepflegter Best-/Worst-Wert hat VORRANG — der pauschale Ausschlag greift nur dort, wo keiner steht. „Vorgaben“ stellt den Vorschlag wieder her (Zins und Preissteigerungen ∓ 1 Prozentpunkt, Investition ∓ 10 %, Erträge ± 10 %, Nutzungsdauer ± 2 Jahre). Die Vorgabe für p_I spannt sich um das WIRKSAME p_I des Erwartungsfalls: Folgt p_I dem Betriebssatz — der Regelfall —, ist das genau das p_B dieses Szenarios.</value>
+    <value>Erwartet rechnet unverändert mit den Projektparametern oben — die Spalte ist nur Anzeige. Best und Worst weichen davon ab: Zins und Preissteigerungen gelten absolut, Investition und Erträge als Änderung in Prozent, die Nutzungsdauer als Änderung in Jahren; + heißt jeweils mehr bzw. länger. Ein je Kostenzeile gepflegter Best-/Worst-Wert hat VORRANG — der pauschale Ausschlag greift nur dort, wo keiner steht. „Vorgaben“ stellt den Vorschlag wieder her (Zins und Preissteigerungen ∓ 1 Prozentpunkt, Investition ∓ 10 %, Erträge ± 10 %, Nutzungsdauer ± 2 Jahre). Die Vorgabe für p_I spannt sich um das WIRKSAME p_I des Erwartungsfalls: Folgt p_I dem Betriebssatz — der Regelfall —, ist das genau das p_B dieses Szenarios. Betrachtungszeitraum und Mengenänderung haben keine Vorgabe: Ein leeres Feld heißt „wie Erwartet“, der Platzhalter nennt den Wert, mit dem dann gerechnet wird. Ein längerer Betrachtungszeitraum ist nicht von selbst der günstigere — überwiegen die Kosten, senkt er den Kapitalwert. „Vorgaben“ leert alle achtzehn Felder der Tafel; die Einspeisevergütungen je Szenario pflegt der ±-Knopf an ihrem Feld.</value>
   </data>
   <data name="WPAR_SZ_INVEST" xml:space="preserve">
     <value>Investition</value>
@@ -16749,9 +16749,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
-  </data>
-  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
-    <value>Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung, Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze.</value>
   </data>
   <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
     <value>Rechnung nominal</value>
@@ -27168,6 +27165,120 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
     <value>Einspeisevergütung KWK</value>
+  </data>
+  <data name="WPAR_SZ_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum</value>
+  </data>
+  <data name="WPAR_SZ_MENGE" xml:space="preserve">
+    <value>Mengenänderung</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Betrachtungszeitraum dieses Szenarios in ganzen Jahren. Leer heißt „wie Erwartet“ — eine Vorgabe wie bei den Zeilen darüber gibt es nicht. Er wirkt auf Horizont, Restwert und Ersatzbeschaffungen.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_MENGE_ERL" xml:space="preserve">
+    <value>Die Mengenänderung dieses Szenarios in Prozent — ein Faktor auf die Mengen der Simulation (Erzeugung, Einspeisung, Bezug, Brennstoff). Leer heißt „wie Erwartet“; eine Vorgabe gibt es nicht.</value>
+  </data>
+  <data name="SZP_TITEL" xml:space="preserve">
+    <value>Szenariowerte — {0}</value>
+  </data>
+  <data name="SZP_LABEL_BEST" xml:space="preserve">
+    <value>Best (Günstig):</value>
+  </data>
+  <data name="SZP_LABEL_WORST" xml:space="preserve">
+    <value>Worst (Ungünstig):</value>
+  </data>
+  <data name="SZP_ABSOLUT" xml:space="preserve">
+    <value>Eingabe absolut [{0}]</value>
+  </data>
+  <data name="SZP_PROZENT" xml:space="preserve">
+    <value>Eingabe in % vom Erwartet-Wert</value>
+  </data>
+  <data name="SZP_UMRECHNUNG" xml:space="preserve">
+    <value>ergibt: Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_ERWARTET" xml:space="preserve">
+    <value>Erwartet: {0} {1}</value>
+  </data>
+  <data name="SZP_ERWARTET_LEER" xml:space="preserve">
+    <value>Erwartet: kein Wert gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET" xml:space="preserve">
+    <value>Kein Erwartet-Wert gepflegt: Günstig und Ungünstig rechnen mit ihrem Szenariowert, Erwartet zeigt die Datenlücke. Gespeichert wird trotzdem.</value>
+  </data>
+  <data name="SZP_LEER" xml:space="preserve">
+    <value>Leer oder 0 heißt „wie Erwartet“; ein Wert gleich dem Erwartet-Wert ist keine Pflege.</value>
+  </data>
+  <data name="SZP_KNOPF_KURZ" xml:space="preserve">
+    <value>Szenariowerte Best/Worst pflegen</value>
+  </data>
+  <data name="SZP_KNOPF_GEPFLEGT" xml:space="preserve">
+    <value>Szenariowerte gepflegt — Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_WIE_ERWARTET" xml:space="preserve">
+    <value>wie Erwartet</value>
+  </data>
+  <data name="SZP_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET_KURZ" xml:space="preserve">
+    <value>ohne Erwartet-Wert</value>
+  </data>
+  <data name="ETV_SZ_TITEL" xml:space="preserve">
+    <value>Szenariopreise Best/Worst</value>
+  </data>
+  <data name="ETV_SZ_HINWEIS" xml:space="preserve">
+    <value>± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; geschrieben wird mit der Karte.</value>
+  </data>
+  <data name="ETV_SZ_OHNE_ERWARTET" xml:space="preserve">
+    <value>{0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, Erwartet zeigt die Datenlücke.</value>
+  </data>
+  <data name="ETV_SZ_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Szenariopreise ließen sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_NAME" xml:space="preserve">
+    <value>Gepflegte Größe</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_ERL" xml:space="preserve">
+    <value>Was die Maske pflegt: in der Kostenverwaltung die Kosten einer Position, sonst ein Trägerpreis oder Erlössatz mit seinem Best- und Worst-Wert (Szenariopaar). Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_NAME" xml:space="preserve">
+    <value>Erwartet-Wert</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_ERL" xml:space="preserve">
+    <value>Der Wert des Szenarios Erwartet, gegen den Best und Worst stehen und auf den sich der Prozentmodus bezieht; leer = keiner gepflegt. Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_NUR_KOSTEN" xml:space="preserve">
+    <value>Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — sie pflegt nur den Best- und den Worst-Wert.</value>
+  </data>
+  <data name="WIRT_ANN_DV_ENTGELT" xml:space="preserve">
+    <value>DV-Entgelt</value>
+  </data>
+  <data name="WIRT_ANN_PPA_PREIS" xml:space="preserve">
+    <value>PPA-Preis</value>
+  </data>
+  <data name="SZP_PV_INAKTIV" xml:space="preserve">
+    <value>DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht angewendet (Schalter „Vergütung anwenden“).</value>
+  </data>
+  <data name="SZP_PV_DV_OHNE_WIRKUNG" xml:space="preserve">
+    <value>DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie.</value>
+  </data>
+  <data name="SZP_PV_PPA_OHNE_WIRKUNG" xml:space="preserve">
+    <value>PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA).</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG_LISTE" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert: {2}</value>
+  </data>
+  <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}.</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>

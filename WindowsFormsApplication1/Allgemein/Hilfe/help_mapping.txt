@@ -322,6 +322,11 @@ Form_WpFilterAuswahl.btn_Help = Wärmepumpe
 Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
 Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit#parameter
+# ETAPPE E9b: Der ±-Knopf an Traegerpreisen und Erloessaetzen oeffnet den
+# CaseEingabeDialog als Szenariopaar (Konzept § 2.11.5, Pflege). Die Kostenposition
+# behaelt Form_CaseEingabe; das Szenariopaar zeigt den Abschnitt "Weitere Werte je
+# Szenario" der Seite Wirtschaftlichkeit.
+Form_WirtschaftlichkeitSzenariowerte.btn_Help = Wirtschaftlichkeit#szenariowerte
 # W-E2: Der Dialog "BHKW-Wirtschaftlichkeit" hatte ueberhaupt keine Zeile - sein
 # Infoknopf fiel auf den Rubrikkopf zurueck. Der Anker traegt den Abschnitt mit
 # den Angaben je Anlage, den projektweiten KWK-Angaben und den Steuern.

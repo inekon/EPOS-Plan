@@ -10,8 +10,9 @@ namespace WindowsFormsApplication1
     //
     // Hier stehen die Modelle, die die Ergebnisseite und der Wort- und Tabellenbericht
     // GEMEINSAM lesen: die Bandbreite dreier Szenarien (U4) mit der Einstufung je Version
-    // (U5), der Hinweistext (U10), die Deklarationen (V‑A), die Nutzungsdauer-Hinweise
-    // (U39) und das Kennzeichen „Nachweis liegt mit der nächsten Rechnung vor" (Nr. 31).
+    // (U5), an der Stelle des Hinweistexts (U10) seit E9b der Ausweis „n von m Parametern
+    // szenariert", die Deklarationen (V‑A), die Nutzungsdauer-Hinweise (U39) und das
+    // Kennzeichen „Nachweis liegt mit der nächsten Rechnung vor" (Nr. 31).
     //
     // ALLES IN DIESER DATEI IST AUSGABE. Kein Kapitalwert, keine Reihe und keine
     // Kennzahl ändert sich dadurch; die Modelle lesen fertige Ergebnisse. Die Seite
@@ -254,8 +255,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// ETAPPE E5 — <b>die Bewertung einer Vergleichsgruppe</b>, wie Ergebnisseite und
     /// Bericht sie ausweisen: Bandbreite mit Einstufungen und Vorschlagssatz (U4, U5),
-    /// Hinweistext (U10), Deklarationen (V‑A), Nutzungsdauer-Hinweise (U39) und die
-    /// Stände ohne Nachweis (Nr. 31).
+    /// Ausweis der Szenarioabdeckung an der Stelle des Hinweistexts (U10, seit E9b),
+    /// Deklarationen (V‑A), Nutzungsdauer-Hinweise (U39) und die Stände ohne Nachweis
+    /// (Nr. 31).
     ///
     /// <para>Der Berichtsdatensammler legt sie an <see cref="BerichtsDaten.Bewertung"/>;
     /// die Hülle der Seite bildet dieselben Teile aus denselben Kernmethoden. Eine Zahl
@@ -270,8 +272,18 @@ namespace WindowsFormsApplication1
         /// <c>WIRT_EMPF_KEINE</c>), mit der Referenz beim Namen; leer ohne Grundlage.</summary>
         public string Vorschlagstext = "";
 
-        /// <summary>U10 — der Hinweistext unter der Annahmentafel (<c>WIRT_SZEN_HINWEIS</c>).</summary>
-        public string Szenariohinweis = "";
+        /// <summary>
+        /// U10 — an der Stelle des früheren Hinweistexts unter der Annahmentafel steht seit
+        /// ETAPPE E9b (Konzept § 2.11.7: „Der Hinweis entfällt mit der Etappe, die ihn
+        /// überflüssig macht"; E9b‑Q3, Lesart a) der AUSWEIS der Szenarioabdeckung:
+        /// „n von m Parametern szenariert" samt der gepflegten Größen
+        /// (<see cref="SzenarioAbdeckung.Satz"/>). Leer ohne Parametersatz.
+        /// </summary>
+        public string Szenarioabdeckung = "";
+
+        /// <summary>ETAPPE E9b: die Zählung hinter <see cref="Szenarioabdeckung"/> — dieselbe,
+        /// die Seite und Checkliste lesen.</summary>
+        public SzenarioAbdeckung Abdeckung = new SzenarioAbdeckung();
 
         /// <summary>V‑A — die Deklarationszeilen (<see cref="ValeriAusweis.Deklarationen"/>).</summary>
         public IReadOnlyList<ValeriDeklaration> Deklarationen = new List<ValeriDeklaration>();
@@ -375,7 +387,11 @@ namespace WindowsFormsApplication1
             b.Bandbreite = WirtschaftlichkeitBandbreite.Bilde(daten, alle);
             b.Vorschlagstext = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
                 b.Bandbreite.Urteile, kultur, b.Bandbreite.Referenzname);
-            b.Szenariohinweis = ValeriAusweis.Szenariohinweis(p, kultur);
+            // ETAPPE E9b (U10, E9b‑Q3): der Ausweis „n von m Parametern szenariert" an der
+            // Stelle des Hinweistexts — ein Lesefehler kostet die Zeile, nie den Bericht.
+            try { b.Abdeckung = SzenarioAbdeckung.Lesen(p, staende); }
+            catch { b.Abdeckung = new SzenarioAbdeckung(); }
+            b.Szenarioabdeckung = b.Abdeckung.Satz(kultur);
             b.Deklarationen = ValeriAusweis.Deklarationen(p != null ? p.NichtMonetaer : null);
             b.OhneNachweis = StaendeOhneNachweis(staende, alle);
             b.Sensitivitaet = Sensitivitaetszeilen(staende, sensitivitaet, b.Bandbreite.IdReferenz);

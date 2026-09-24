@@ -474,14 +474,15 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Tabellenbericht:</b> Unter dem Fußtext der Bandbreite steht der Hinweistext
-        /// (U10); die Bandbreite trägt die Zahlen und Stufen der Bewertung; die
+        /// <b>Tabellenbericht:</b> Unter dem Fußtext der Bandbreite steht der Ausweis „n von
+        /// m Parametern szenariert" (U10, seit ETAPPE E9b an der Stelle des Hinweistexts);
+        /// die Bandbreite trägt die Zahlen und Stufen der Bewertung; die
         /// Sensitivitätstafel führt die Steigung als ZAHL (Spalte 5) und ihre Einheit als
         /// Text daneben; am Ende des Blattes stehen die Deklarationen — ohne gepflegten
         /// Text mit „keine benannt" (Q5).
         /// </summary>
         [Fact]
-        public void Excel_traegt_Hinweistext_Steigung_und_Deklarationen_aus_der_Bewertung()
+        public void Excel_traegt_Ausweis_Steigung_und_Deklarationen_aus_der_Bewertung()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -496,7 +497,9 @@ namespace EPOS.Kern.Tests
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
 
-                // Bandbreite: Titel, Kopf, Referenzzeile, 1041, 1042, Fußtext, Hinweistext.
+                // Bandbreite: Titel, Kopf, Referenzzeile, 1041, 1042, Fußtext und — seit
+                // ETAPPE E9b an der Stelle des Hinweistexts — der Ausweis „n von m
+                // Parametern szenariert".
                 int titel = ZeileMitText(w, R.WIRT_SZ_BANDBREITE_TITEL);
                 Assert.True(titel > 0, "Die Bandbreitentafel fehlt.");
                 BandbreitenZeile a = daten.Bewertung.Bandbreite.Zeile(1041);
@@ -506,7 +509,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(a.Urteil.StufeText, w.Cell(titel + 3, 7).GetString());
                 Assert.StartsWith(string.Format(DE, R.WIRT_SZ_DELTA_FUSS, "").Substring(0, 10),
                                   w.Cell(titel + 5, 1).GetString());
-                Assert.Equal(daten.Bewertung.Szenariohinweis, w.Cell(titel + 6, 1).GetString());
+                Assert.False(string.IsNullOrEmpty(daten.Bewertung.Szenarioabdeckung));
+                Assert.Equal(daten.Bewertung.Szenarioabdeckung, w.Cell(titel + 6, 1).GetString());
 
                 // Sensitivität: Steigung als Zahl, Einheit als Text.
                 int kopf = 0;
@@ -533,13 +537,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Wortbericht:</b> Hinweistext unter den Annahmen, die Deklarationen in einer
+        /// <b>Wortbericht:</b> der Ausweis „n von m Parametern szenariert" unter den Annahmen
+        /// (seit ETAPPE E9b an der Stelle des Hinweistexts), die Deklarationen in einer
         /// Zeile, die Sensitivitätstafel mit der Spalte „Steigung", die Kennzahltafel mit
         /// dem Label „nachrichtlich" an der Amortisation (Q3) und ohne Label an der
         /// Annuität, und derselbe Vorschlagssatz wie die Bewertung.
         /// </summary>
         [Fact]
-        public void Word_traegt_Hinweistext_Steigung_und_Deklarationen_aus_der_Bewertung()
+        public void Word_traegt_Ausweis_Steigung_und_Deklarationen_aus_der_Bewertung()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -555,7 +560,9 @@ namespace EPOS.Kern.Tests
                 Body body = doc.MainDocumentPart.Document.Body;
 
                 List<string> absaetze = body.Elements<Paragraph>().Select(x => x.InnerText).ToList();
-                Assert.Contains(daten.Bewertung.Szenariohinweis, absaetze);
+                // ETAPPE E9b: der Ausweis an der Stelle des Hinweistexts.
+                Assert.False(string.IsNullOrEmpty(daten.Bewertung.Szenarioabdeckung));
+                Assert.Contains(daten.Bewertung.Szenarioabdeckung, absaetze);
                 Assert.Contains(daten.Bewertung.Vorschlagstext, absaetze);
                 Assert.Contains(absaetze, x => x.StartsWith(R.WIRT_DEKL_NOMINAL + " · ", StringComparison.Ordinal));
 
