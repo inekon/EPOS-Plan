@@ -4611,12 +4611,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Vertrieb</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2,05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0,05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der Anteile: {0} ct/kWh</value>
   </data>

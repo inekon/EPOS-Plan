@@ -51302,24 +51302,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 0,05 ähnelt.
-        /// </summary>
-        public static string PREIS_STROMSTEUER_REDUZIERT {
-            get {
-                return ResourceManager.GetString("PREIS_STROMSTEUER_REDUZIERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 2,05 ähnelt.
-        /// </summary>
-        public static string PREIS_STROMSTEUER_REGELFALL {
-            get {
-                return ResourceManager.GetString("PREIS_STROMSTEUER_REGELFALL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein produzierendes Gewerbe ähnelt.
         /// </summary>
         public static string PREIS_ST_ART_KEIN_PROD_GEWERBE {

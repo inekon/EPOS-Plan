@@ -4595,12 +4595,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Sales margin</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2.05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0.05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of the components: {0} ct/kWh</value>
   </data>
