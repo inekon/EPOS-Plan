@@ -322,8 +322,11 @@ namespace EPOS.Kern.Tests
             Assert.Empty(ctrl.Laden((int)ids[1]));            // Leerraum ist kein Text
             Assert.Single(ctrl.Laden((int)ids[2]));
 
-            // Das Altfeld bleibt stehen und lesbar.
-            Assert.Equal("  Versorgungssicherheit, Komfort  ", new WirtschaftlichkeitCtrl().LadeParameter((int)ids[0]).NichtMonetaer);
+            // Das Altfeld bleibt stehen und lesbar (die Spalte unverändert, der Leseweg trimmt).
+            Assert.Equal("  Versorgungssicherheit, Komfort  ", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Nicht_Monetaer FROM Tab_ProjektWirtschaftlichkeit WHERE ID_Projekt = ?",
+                new DbParam("@p", ids[0])), CultureInfo.InvariantCulture));
+            Assert.Equal("Versorgungssicherheit, Komfort", new WirtschaftlichkeitCtrl().LadeParameter((int)ids[0]).NichtMonetaer);
 
             // Wiederholbar: ein zweiter Lauf legt nichts an und übernimmt nichts doppelt —
             // auch nicht, wenn der Anwender die übernommene Wirkung geändert hat.
