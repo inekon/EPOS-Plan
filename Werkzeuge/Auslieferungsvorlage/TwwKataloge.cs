@@ -91,6 +91,13 @@ namespace Auslieferungsvorlage
         /// <summary>Die Typtag-Ablage des lizenzierten Anwenders (Schritt T3) — nie in der Vorlage.</summary>
         internal const string TAB_TYPTAG_IMPORT = TwwSchema.TAB_TWW_TYPTAG_IMPORT;
 
+        /// <summary>
+        /// Die Messreihen-Ablage des Anwenders (Schritt T4) — nie in der Vorlage. Sie hängt an
+        /// <c>ID_Projekt</c> und überlebte damit als Zeile eines Beispielprojekts; gemessene Daten
+        /// gehören aber dem Objekt (Konzept Kapitel 9 K5), nie der Auslieferung.
+        /// </summary>
+        internal const string TAB_MESSREIHE = TwwSchema.TAB_TWW_MESSREIHE;
+
         /// <summary>Die lokalen Normdaten (ZU11) — keine Eingabe des Laufs darf dort liegen.</summary>
         internal const string NORMZAHLEN = "Referenzlaeufe/Normzahlen/";
 
@@ -176,6 +183,12 @@ namespace Auslieferungsvorlage
             bool typtage = DataRepository.TabelleVorhanden(TAB_TYPTAG_IMPORT);
             if (typtage) anweisungen.Add(("DELETE FROM \"" + TAB_TYPTAG_IMPORT + "\"", new DbParam[0]));
 
+            // Die Messreihen des Anwenders (Schritt T4) - auch die eines Beispielprojekts: Sie
+            // haengen an ID_Projekt, wuerden also mit dem Beispielprojekt ueberleben. Gemessene
+            // Daten gehoeren dem Objekt (Konzept Kapitel 9 K5), nie der Auslieferung.
+            bool messreihen = DataRepository.TabelleVorhanden(TAB_MESSREIHE);
+            if (messreihen) anweisungen.Add(("DELETE FROM \"" + TAB_MESSREIHE + "\"", new DbParam[0]));
+
             // Was bleibt, ist Auslieferung — und die ist unveraenderlich (Konzept 3.1, 3.2, K7):
             // ReadOnly = 1, sonst waere eine ausgelieferte, noch unbenutzte Zeile beim Anwender
             // aenderbar und loeschbar.
@@ -207,6 +220,8 @@ namespace Auslieferungsvorlage
                            " Zeile(n) mit Status AUSLIEFERUNG (Auslieferung ist unveraenderlich)");
             if (typtage)
                 _bericht.Zeile(TAB_TYPTAG_IMPORT + " geleert (Typtage des lizenzierten Anwenders, nie in der Vorlage)");
+            if (messreihen)
+                _bericht.Zeile(TAB_MESSREIHE + " geleert (Messreihen des Anwenders, nie in der Vorlage - K5)");
             return true;
         }
 
@@ -781,6 +796,18 @@ namespace Auslieferungsvorlage
                 if (n > 0) normimport.Add(TAB_TYPTAG_IMPORT + ": " + n);
             }
             ok &= Posten(normimport, "keine Zeile aus einem Normimport (Herkunftsart IMPORT, " + TAB_TYPTAG_IMPORT + ")");
+
+            // (5b) Messdaten (K5): keine Messreihe in der Vorlage - auch nicht die eines
+            // Beispielprojekts. Eigener Posten, weil eine Messreihe kein Normimport ist,
+            // sondern Objektdaten des Anwenders.
+            var messdaten = new List<string>();
+            if (DataRepository.TabelleVorhanden(TAB_MESSREIHE))
+            {
+                long n = Zahl("SELECT COUNT(*) FROM \"" + TAB_MESSREIHE + "\"", null);
+                if (n > 0) messdaten.Add(TAB_MESSREIHE + ": " + n);
+            }
+            ok &= Posten(messdaten, "keine gemessene Reihe (" + TAB_MESSREIHE + ", K5: Messdaten " +
+                                    "gehoeren dem Objekt)");
 
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));

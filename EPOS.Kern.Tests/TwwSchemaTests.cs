@@ -33,6 +33,7 @@ namespace EPOS.Kern.Tests
             [TwwSchema.TAB_TWW_PROJEKT] = 40,
             [TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM] = 16,
             [TwwSchema.TAB_TWW_TYPTAG_IMPORT] = 11,
+            [TwwSchema.TAB_TWW_MESSREIHE] = 10,
         };
 
         [Fact]
@@ -45,7 +46,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(10, TwwSchema.Anweisungen.Count());
             Assert.Equal(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, Assert.Single(TwwSchema.AnweisungenT2).Key);
             Assert.Equal(TwwSchema.TAB_TWW_TYPTAG_IMPORT, Assert.Single(TwwSchema.AnweisungenT3Typtage).Key);
-            Assert.Equal(12, TwwSchema.AlleAnweisungen.Count());
+            Assert.Equal(TwwSchema.TAB_TWW_MESSREIHE, Assert.Single(TwwSchema.AnweisungenT4Messreihen).Key);
+            Assert.Equal(13, TwwSchema.AlleAnweisungen.Count());
             foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 string sql = Skalar(c, "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n",
@@ -57,9 +59,11 @@ namespace EPOS.Kern.Tests
             }
             Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
 
-            // Vier Indizes, je auf einer Fremdschluesselspalte ihrer Tabelle.
+            // Fuenf Indizes (vier aus T1, einer aus T4 "Messreihen"), je auf einer
+            // Fremdschluesselspalte ihrer Tabelle.
             Assert.Equal(4, TwwSchema.Indizes.Count());
-            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes)
+            Assert.Single(TwwSchema.IndizesT4Messreihen);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes.Concat(TwwSchema.IndizesT4Messreihen))
             {
                 string tabelle = Skalar(c, "SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = $n",
                                         ("$n", i.Key)) as string;
@@ -170,6 +174,11 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "0"),
             (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "1441"),
             (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Zeilenindex", "-1"),
+            (TwwSchema.TAB_TWW_MESSREIHE, "Groesse", "'FREMD'"),
+            (TwwSchema.TAB_TWW_MESSREIHE, "Aufloesung_min", "0"),
+            (TwwSchema.TAB_TWW_MESSREIHE, "Aufloesung_min", "1441"),
+            (TwwSchema.TAB_TWW_MESSREIHE, "Zeilenindex", "-1"),
+            (TwwSchema.TAB_TWW_MESSREIHE, "Wert", "-0.001"),
         };
 
         [Fact]
@@ -254,8 +263,9 @@ namespace EPOS.Kern.Tests
                     Assert.StartsWith("ID_", (string)fk[1], StringComparison.Ordinal);
                 }
             }
-            // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2, Zapfkategorie 1
-            Assert.Equal(13, beziehungen);
+            // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2,
+            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt 132)
+            Assert.Equal(14, beziehungen);
         }
 
         /// <summary>
@@ -472,6 +482,90 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Der Schritt 132 (T4 „Messreihen", Stufe Z5) steht in der Migration der Schale NACH 131
+        /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT4Messreihen"/>,
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>); das Ziel steht auf mindestens 132.
+        /// </summary>
+        [Fact]
+        public void Schritt_132_steht_in_der_Migration_nach_131()
+        {
+            Assert.True(SchemaStand.Zielversion >= 132, "Zielstand " + SchemaStand.Zielversion + " liegt unter 132.");
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_132_ZAPFPROFIL_MESSREIHEN = 132;", text, StringComparison.Ordinal);
+            int ort131 = text.IndexOf("new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
+            int ort132 = text.IndexOf("new Schritt(SCHRITT_132_ZAPFPROFIL_MESSREIHEN", StringComparison.Ordinal);
+            Assert.True(ort131 > 0 && ort132 > ort131, "Schritt 132 steht nicht nach 131 in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_132_ZapfprofilMessreihen(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 132 fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            string rumpf = text.Substring(methode, ende - methode);
+            Assert.Contains("TwwSchema.AnweisungenT4Messreihen", rumpf, StringComparison.Ordinal);
+            // Der Index auf ID_Projekt steht im SELBEN Schritt - er ist der Suchweg jedes Zugriffs.
+            Assert.Contains("TwwSchema.IndizesT4Messreihen", rumpf, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Die eingespielten Messreihen sind Bestandteil des Projekts</b> (Schritt 132, T4
+        /// „Messreihen", Stufe Z5; Konzept Kapitel 9 K5): <c>Tab_TwwMessreihe</c> führt
+        /// <c>ID_Projekt</c> mit <c>ON DELETE CASCADE</c> — damit reist sie mit einer Projektkopie
+        /// und einem <c>.wpx</c>-Paket und verschwindet mit dem Projekt —, trägt aber weder
+        /// <c>Status</c> noch <c>ReadOnly</c> noch eine Provenienzgruppe: Jede Zeile ist gemessen.
+        /// Ihr natürlicher Schlüssel ist (ID_Projekt, Bezeichnung, Zeilenindex), und ein negativer
+        /// Wert ist ausgeschlossen (eine Zapfung zählt nie rückwärts).
+        /// </summary>
+        [Fact]
+        public void Die_eingespielten_Messreihen_gehoeren_dem_Projekt()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            List<string> spalten = Spalten(c, TwwSchema.TAB_TWW_MESSREIHE);
+            Assert.Equal(new[] { "ID", "ID_Projekt", "Bezeichnung", "Groesse", "Aufloesung_min", "Beginn",
+                                 "Zeilenindex", "Wert", "Quelle", "Datum_Import" }, spalten);
+            foreach (string verboten in new[] { "Status", "ReadOnly", "Herkunftsart", "Version", "Katalogversion" })
+                Assert.DoesNotContain(verboten, spalten);
+            Assert.DoesNotContain("_STAMM", TwwSchema.TAB_TWW_MESSREIHE);
+
+            // Der einzige Fremdschluessel zeigt auf Tab_Projekt und raeumt mit ihm auf.
+            List<object[]> fk = Zeilen(c, "SELECT \"table\", \"from\", \"on_delete\" FROM pragma_foreign_key_list($t)",
+                                       ("$t", TwwSchema.TAB_TWW_MESSREIHE));
+            Assert.Single(fk);
+            Assert.Equal("Tab_Projekt", (string)fk[0][0]);
+            Assert.Equal("ID_Projekt", (string)fk[0][1]);
+            Assert.Equal("CASCADE", (string)fk[0][2]);
+
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            const string neu = "INSERT INTO \"Tab_TwwMessreihe\" (\"ID_Projekt\", \"Bezeichnung\", \"Groesse\", " +
+                               "\"Aufloesung_min\", \"Beginn\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\") " +
+                               "VALUES (1, 'Waermemengenzaehler (erfunden)', $g, 60, '2025-01-01T00:00', $i, 1.25, " +
+                               "'Probe (erfunden)', '2026-09-25')";
+            Ausfuehren(c, neu, ("$g", TwwSchema.MESSGROESSE_ENERGIE), ("$i", 0));
+            Assert.True(Wirft(c, neu, ("$g", TwwSchema.MESSGROESSE_ENERGIE), ("$i", 0)));   // natuerlicher Schluessel
+            Ausfuehren(c, neu, ("$g", TwwSchema.MESSGROESSE_ENERGIE), ("$i", 1));
+            Assert.Equal(2L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwMessreihe\""));
+
+            // Die drei Messgroessen der Konstanten sind genau die der Wertemenge.
+            Assert.Equal(TwwSchema.Messgroessen, TwwSchema.MESSGROESSE_WERTE.Split(',').Select(s => s.Trim('\'')).ToList());
+            Ausfuehren(c, "UPDATE \"Tab_TwwMessreihe\" SET \"Groesse\" = $g", ("$g", TwwSchema.MESSGROESSE_VOLUMEN));
+            Ausfuehren(c, "UPDATE \"Tab_TwwMessreihe\" SET \"Groesse\" = $g", ("$g", TwwSchema.MESSGROESSE_LEISTUNG));
+
+            // 0 geht (eine Stunde ohne Zapfung), ein negativer Wert nicht; STRICT weist Text ab.
+            Ausfuehren(c, "UPDATE \"Tab_TwwMessreihe\" SET \"Wert\" = 0.0");
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwMessreihe\" SET \"Wert\" = -0.001"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwMessreihe\" SET \"Wert\" = 'viel'"));   // STRICT
+
+            // Das Projekt raeumt seine Messreihen mit sich ab.
+            Ausfuehren(c, "DELETE FROM \"Tab_Projekt\" WHERE \"ID\" = 1");
+            Assert.Equal(0L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwMessreihe\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>
         /// Die eingespielten Typtage (T3 „Typtage", Stufe Z4b) tragen weder <c>Status</c> noch
         /// <c>ReadOnly</c> noch eine Provenienzgruppe, führen kein <c>ID_Projekt</c> und keinen
         /// Fremdschlüssel — damit wandern sie weder in eine Projektkopie noch in ein
@@ -604,7 +698,8 @@ namespace EPOS.Kern.Tests
         private static void Anlegen(SqliteConnection c)
         {
             foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen) Ausfuehren(c, a.Value);
-            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes) Ausfuehren(c, i.Value);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes.Concat(TwwSchema.IndizesT4Messreihen))
+                Ausfuehren(c, i.Value);
         }
 
         /// <summary>
@@ -668,6 +763,7 @@ namespace EPOS.Kern.Tests
                     "REAL" => "1.0",
                     _ => name == "Status" ? "'" + TwwSchema.STATUS_EIGEN + "'"
                        : name.EndsWith("Herkunftsart", StringComparison.Ordinal) ? "'" + TwwSchema.HERKUNFT_FIKTIV + "'"
+                       : name == "Groesse" ? "'" + TwwSchema.MESSGROESSE_ENERGIE + "'"
                        : name == "Art" ? (tabelle == TwwSchema.TAB_TWW_TYPTAG_IMPORT
                                               ? "'" + TwwSchema.TYPTAG_ART_KENNWERT + "'"
                                               : "'" + TwwSchema.DIN4708_ART_AUSSTATTUNG + "'")

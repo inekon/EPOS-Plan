@@ -4237,6 +4237,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;
 
+        /// <summary>
+        /// Schritt 132 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5, Schemaschritt T4 „Messreihen"). Er folgt
+        /// auf <see cref="SCHRITT_131_ZAPFPROFIL_TYPTAGE"/> (131) ohne Reihenfolgebedingung; die
+        /// Tabelle hängt allein an <c>Tab_Projekt</c>, das jede Datenbank führt.
+        ///
+        /// <para><b>REIN DDL</b>, eine Tabelle und ein Index: <c>Tab_TwwMessreihe</c> (STRICT, zehn
+        /// Spalten, eine Zeile je Wert, natürlicher Schlüssel
+        /// ID_Projekt/Bezeichnung/Zeilenindex, <c>ID_Projekt</c> mit <c>ON DELETE CASCADE</c>, kein
+        /// <c>Status</c>, kein <c>ReadOnly</c>) und der Index auf <c>ID_Projekt</c>. Die
+        /// Definitionen stehen bei <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
+        /// Zeile mit (Kapitel 9 K5: Messdaten gehören dem Objekt), und ohne eingespielte Messreihe
+        /// ist der Vergleich benannt nicht verfügbar. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c> und
+        /// <c>CREATE INDEX IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_132_ZAPFPROFIL_MESSREIHEN = 132;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6015,6 +6037,19 @@ namespace WindowsFormsApplication1
                         "Wahl steht auf 'aus', und ohne eingespielte Typtage ist der Typtagweg " +
                         "benannt nicht verfuegbar.",
                         Schritt_131_ZapfprofilTyptage),
+
+            // ZAPFPROFILGENERATOR Z5 (Schemaschritt T4 "Messreihen") - die eingespielten
+            // Messreihen eines Projekts: Tab_TwwMessreihe samt Index auf ID_Projekt. REIN DDL;
+            // die Quelle ist TwwSchema.AnweisungenT4Messreihen. Er steht NACH 131 ohne
+            // Reihenfolgebedingung; die Tabelle haengt allein an Tab_Projekt.
+            new Schritt(SCHRITT_132_ZAPFPROFIL_MESSREIHEN,
+                        "Zapfprofilgenerator: die eingespielten Messreihen eines Projekts " +
+                        "(Tab_TwwMessreihe) samt Index auf ID_Projekt",
+                        "Der Anwender koennte keine gemessene Reihe einspielen; Vergleichsbericht, " +
+                        "Validierungskennzahlen und die Kalibrierung gegen die Messung blieben ohne " +
+                        "Datenablage. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, " +
+                        "und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar.",
+                        Schritt_132_ZapfprofilMessreihen),
         };
 
         /// <summary>
@@ -9913,6 +9948,56 @@ namespace WindowsFormsApplication1
                     TwwSchema.TAB_TWW_PROJEKT + ". KEIN DML: Die Tabelle bleibt LEER - das Repositorium " +
                     "bringt keine Typtage mit -, die Wahl steht auf 'aus', und ohne eingespielte Typtage " +
                     "ist der Typtagweg benannt nicht verfuegbar; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 132 - die eingespielten Messreihen eines Projekts
+        // (Zapfprofilgenerator Stufe Z5, T4 "Messreihen")
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 132 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_132_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
+        /// <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>. <b>Nur <see cref="SqliteDdl"/></b>;
+        /// <b>wiederholbar</b> über <c>IF NOT EXISTS</c>. <b>Kein DML</b> — die Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_132_ZapfprofilMessreihen(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
+            {
+                bool stand = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!stand) angelegt++;
+            }
+
+            // Danach der Index auf ID_Projekt - er braucht seine Tabelle.
+            int indizes = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.IndizesT4Messreihen)
+            {
+                if (!SqliteDdl(l, i.Value, i.Key)) return false;
+                indizes++;
+            }
+
+            bool vollstaendig = true;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
+                vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle der eingespielten Messreihen steht nach dem Schritt nicht.";
+                l.Notiz("132: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("132: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+                    indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) angelegt - " +
+                    TwwSchema.TAB_TWW_MESSREIHE + " (eine Zeile je Wert, ID_Projekt mit ON DELETE " +
+                    "CASCADE, kein Status, kein ReadOnly). KEIN DML: Die Tabelle bleibt LEER - das " +
+                    "Repositorium bringt keine Messreihe mit (Konzept Kapitel 9 K5) -, und ohne " +
+                    "eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

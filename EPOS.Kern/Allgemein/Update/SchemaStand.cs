@@ -553,11 +553,22 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
         /// keine Zeile mit (Konzept Kapitel 6), und ohne eingespielte Typtage ist der
         /// Typtagweg benannt nicht verfügbar; der Referenzlauf bleibt byte-gleich.
+        /// Mit den EINGESPIELTEN MESSREIHEN EINES PROJEKTS (Schritt 132, Zapfprofilgenerator Stufe
+        /// Z5, Schemaschritt T4 „Messreihen") steht das Ziel auf <b>132</b>: die Tabelle
+        /// <c>Tab_TwwMessreihe</c> (STRICT, eine Zeile je Wert, <c>ID_Projekt</c> mit
+        /// <c>ON DELETE CASCADE</c>, kein <c>Status</c> und kein <c>ReadOnly</c>) samt ihrem Index
+        /// auf <c>ID_Projekt</c> — <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>. Sie ist Bestandteil des Projekts (Konzept
+        /// Kapitel 9 K5): Projektkopie und <c>.wpx</c>-Paket tragen sie mit, die
+        /// Auslieferungsvorlage leert sie.
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
+        /// keine Zeile mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht
+        /// verfügbar; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 131;
+        public const int Zielversion = 132;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
