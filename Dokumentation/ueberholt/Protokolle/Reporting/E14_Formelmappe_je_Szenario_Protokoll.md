@@ -163,4 +163,4 @@ Wiki-Quelle Wirtschaftlichkeit (Abschnitt `formelmappe`), Index (Reporting 128 �
 - **Gate auf dem End-Merge** und **CI** (Nachtrag).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
 
-**Entscheide 25.09.2026:** alle nach Empfehlung, siehe Register R‑E14
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E14
