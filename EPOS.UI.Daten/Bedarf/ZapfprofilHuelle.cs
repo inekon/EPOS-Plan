@@ -639,6 +639,7 @@ namespace WindowsFormsApplication1
                 Vorschlag = s.HatVorschlag ? s.Vorschlag : (double?)null,
                 Manuell = s.Manuell,
                 Angesetzt = s.Angesetzt,
+                Kalibriert = s.Kalibriert,
                 Einheit = s.Einheit ?? "",
                 Rechenweg = Satztext(s.Rechenweg)
             };

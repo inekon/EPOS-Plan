@@ -28599,4 +28599,10 @@ Do you want to allow this?</value>
   <data name="ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
     <value>Hour threshold invalid</value>
   </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT" xml:space="preserve">
+    <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — calibrated to the annual measured value: {5:0.#} kWh/d (factor {6:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>No catalogue proposal — calibrated to the annual measured value: {0:0.#} kWh/d (factor {1:0.###}).</value>
+  </data>
 </root>

@@ -28606,4 +28606,10 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
     <value>Stundenschwelle ungültig</value>
   </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT" xml:space="preserve">
+    <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — kalibriert auf den Jahresmesswert: {5:0.#} kWh/d (Faktor {6:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Ohne Vorschlag des Katalogs — kalibriert auf den Jahresmesswert: {0:0.#} kWh/d (Faktor {1:0.###}).</value>
+  </data>
 </root>

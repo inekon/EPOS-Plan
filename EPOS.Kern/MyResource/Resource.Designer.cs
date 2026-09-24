@@ -84141,6 +84141,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — kalibriert auf den Jahresmesswert: {5:0.#} kWh/d (Faktor {6:0.###}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Vorschlag des Katalogs — kalibriert auf den Jahresmesswert: {0:0.#} kWh/d (Faktor {1:0.###}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Vorschlag des Katalogs — angesetzt: {0:0.#} kWh/d ({1}). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG {

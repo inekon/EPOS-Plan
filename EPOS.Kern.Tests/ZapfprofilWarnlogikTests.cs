@@ -161,6 +161,40 @@ namespace EPOS.Kern.Tests
             Schaetzhilfe ohne = Schaetzhilfe.Tagesbedarf(false, 5.0, null, ZapfBezugsart.Personen);
             Assert.False(ohne.HatVorschlag);
             Assert.Equal("SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG", ohne.Rechenweg.Kennung);
+            Assert.False(ohne.Kalibriert);
+        }
+
+        /// <summary>
+        /// Mit Jahresmesswert gilt der kalibrierte Tagesbedarf (4.8): Die Schätzhilfe entsteht NACH der
+        /// Kalibrierung, angesetzt ist der Tagesbedarf des Messwerts — auch gegen einen manuellen Wert —,
+        /// und der Rechenweg nennt Vorschlag, Messwert und Faktor statt „angesetzt: … (auto/manuell)".
+        /// </summary>
+        [Fact]
+        public void Die_Schaetzhilfe_Tagesbedarf_folgt_der_Kalibrierung()
+        {
+            // Vorschlag 20 kWh/d (7300 kWh/a); Messwert 9125 kWh/a an der Zapfstelle: Faktor 1,25, 25 kWh/d.
+            ZonenStand gemessen = ZoneFlach() with
+            {
+                Jahresmesswert = 9125.0, JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
+                JahresmesswertBilanzgrenze = ZapfBilanzgrenze.Zapfstelle
+            };
+            Schaetzhilfe k = Rechnen(Projekt(), gemessen).JeZone[0].SchaetzhilfeTagesbedarf;
+            Assert.True(k.Kalibriert);
+            Assert.Equal(20.0, k.Vorschlag, 9);
+            Assert.Equal(25.0, k.Angesetzt, 9);
+            Assert.Equal("SCHAETZ_TAGESBEDARF_KALIBRIERT", k.Rechenweg.Kennung);
+            Assert.DoesNotContain("angesetzt", k.Rechenweg.Klartext);
+            Assert.Contains("1.25", k.Rechenweg.Klartext);
+
+            Schaetzhilfe km = Rechnen(Projekt(), gemessen with { TagesbedarfAuto = false, TagesbedarfManuellKwh = 30.0 })
+                .JeZone[0].SchaetzhilfeTagesbedarf;
+            Assert.True(km.Kalibriert);
+            Assert.False(km.IstManuell);
+            Assert.Equal(25.0, km.Angesetzt, 9);
+
+            Schaetzhilfe ohneVorschlag = Schaetzhilfe.Tagesbedarf(true, null, null, ZapfBezugsart.Personen, 25.0, 1.25);
+            Assert.Equal("SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG", ohneVorschlag.Rechenweg.Kennung);
+            Assert.Equal(25.0, ohneVorschlag.Angesetzt);
         }
 
         [Fact]

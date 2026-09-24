@@ -28,8 +28,15 @@ namespace WindowsFormsApplication1
         /// <summary>Art: Leistung der Zirkulation des Gebäudes [kW] (4.3).</summary>
         internal const string ZIRKULATION = "ZIRKULATION";
 
+        /// <summary>
+        /// Setzt ein Jahresmesswert den Wert an (Kalibrierung, 4.8)? Dann ist <see cref="Angesetzt"/>
+        /// der kalibrierte Wert — weder Vorschlag noch manueller Wert gilt, und der Rechenweg sagt es
+        /// („angesetzt" steht nur ohne Messwert).
+        /// </summary>
+        public bool Kalibriert { get; init; }
+
         /// <summary>Gilt der manuelle Wert?</summary>
-        internal bool IstManuell => !Auto && Manuell.HasValue;
+        internal bool IstManuell => !Auto && Manuell.HasValue && !Kalibriert;
 
         /// <summary>Hat das Verfahren einen Vorschlag (sonst ist <see cref="Vorschlag"/> NaN)?</summary>
         internal bool HatVorschlag => !double.IsNaN(Vorschlag);
@@ -43,25 +50,35 @@ namespace WindowsFormsApplication1
         /// Katalogwegs ÷ 365 (vor einer Kalibrierung), angesetzt der manuelle Wert, wenn die Zone auf
         /// „manuell" steht und einen trägt. Rechenweg <c>Bezugsmenge × spezifischer Bedarf × f_θ</c>;
         /// ist der Katalogweg nicht rechenbar (<paramref name="vorschlag"/> <c>null</c>), gibt es keinen
-        /// Vorschlag (NaN) und der Rechenweg sagt das.
+        /// Vorschlag (NaN) und der Rechenweg sagt das. Mit <paramref name="kalibriertKwh"/> (der
+        /// Tagesbedarf nach der Kalibrierung auf den Jahresmesswert, 4.8) und seinem
+        /// <paramref name="faktor"/> ist ER angesetzt (<see cref="Kalibriert"/>) — der Rechenweg nennt
+        /// Vorschlag, Messwert und Faktor statt „angesetzt: … (auto/manuell)".
         /// </summary>
-        internal static Schaetzhilfe Tagesbedarf(bool auto, double? manuellKwh, Mengenergebnis vorschlag, ZapfBezugsart bezug)
+        internal static Schaetzhilfe Tagesbedarf(bool auto, double? manuellKwh, Mengenergebnis vorschlag, ZapfBezugsart bezug,
+                                                 double? kalibriertKwh = null, double? faktor = null)
         {
             double v = vorschlag != null ? vorschlag.JahresenergieKwh / Zapfkalender.TAGE : double.NaN;
+            bool kalibriert = kalibriertKwh.HasValue;
             bool manuell = !auto && manuellKwh.HasValue;
-            double angesetzt = manuell ? manuellKwh.Value : v;
+            double angesetzt = kalibriert ? kalibriertKwh.Value : manuell ? manuellKwh.Value : v;
             ZapfSatz art = ZapfSatz.Neu(manuell ? "BEGRIFF_MANUELL" : "BEGRIFF_AUTO");
+            double f = faktor ?? double.NaN;
             ZapfSatz weg;
             if (vorschlag == null)
-                weg = ZapfSatz.Neu("SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG", angesetzt, art);
+                weg = kalibriert ? ZapfSatz.Neu("SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG", angesetzt, f)
+                                 : ZapfSatz.Neu("SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG", angesetzt, art);
             else
             {
                 double nenner = Zapfkalender.TAGE * vorschlag.Bezugsmenge * vorschlag.Temperaturfaktor;
                 double spez = nenner > 0 ? vorschlag.JahresenergieKwh / nenner : 0.0;
-                weg = ZapfSatz.Neu("SCHAETZ_TAGESBEDARF", vorschlag.Bezugsmenge, Einheitbegriff(bezug), spez,
+                weg = kalibriert
+                    ? ZapfSatz.Neu("SCHAETZ_TAGESBEDARF_KALIBRIERT", vorschlag.Bezugsmenge, Einheitbegriff(bezug), spez,
+                                   vorschlag.Temperaturfaktor, v, angesetzt, f)
+                    : ZapfSatz.Neu("SCHAETZ_TAGESBEDARF", vorschlag.Bezugsmenge, Einheitbegriff(bezug), spez,
                                    vorschlag.Temperaturfaktor, v, angesetzt, art);
             }
-            return new Schaetzhilfe(TAGESBEDARF, auto, v, manuellKwh, angesetzt, "kWh/d", weg);
+            return new Schaetzhilfe(TAGESBEDARF, auto, v, manuellKwh, angesetzt, "kWh/d", weg) { Kalibriert = kalibriert };
         }
 
         /// <summary>

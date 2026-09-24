@@ -54,6 +54,7 @@ namespace WindowsFormsApplication1
             internal Bilanzreihe Deterministisch;
             internal Jahreskonsistenz Konsistenz;
             internal Schaetzhilfe Tagesbedarf;
+            internal Mengenergebnis TagesbedarfVorschlag;
         }
 
         /// <summary>
@@ -105,9 +106,9 @@ namespace WindowsFormsApplication1
                     a.Temperaturen = Mengengeruest.Temperaturen(z, a.Art, e.Parameter, prot);
                     a.Menge = Mengengeruest.JahresenergieKwh(z, a.Art, a.Temperaturen, e.Parameter,
                                                              e.BelegungJeRaumzahl, prot, hinweise);
-                    a.Tagesbedarf = Schaetzhilfe.Tagesbedarf(z.TagesbedarfAuto, z.TagesbedarfManuellKwh,
-                        Mengengeruest.Vorschlag(z, a.Art, a.Temperaturen, e.Parameter, e.BelegungJeRaumzahl, a.Menge),
-                        a.Art.Bezug);
+                    a.TagesbedarfVorschlag = Mengengeruest.Vorschlag(z, a.Art, a.Temperaturen, e.Parameter, e.BelegungJeRaumzahl, a.Menge);
+                    a.Tagesbedarf = Schaetzhilfe.Tagesbedarf(z.TagesbedarfAuto, z.TagesbedarfManuellKwh, a.TagesbedarfVorschlag,
+                                                             a.Art.Bezug);
                     a.Struktur = Formvektor.Bilden(z, a.Art, satz, e.Parameter, prot, hinweise);
                     a.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(a.Temperaturen, a.Name);
                     a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, e.We, Zapfkalender.FensterDerZone(z));
@@ -171,6 +172,9 @@ namespace WindowsFormsApplication1
                         a.Kalibrierfaktor = k.Faktor;
                         a.ZapfungKwh = k.ZapfungKwh;
                         a.ZirkulationKwh = k.ZirkulationKwh;
+                        // Die Schätzhilfe nach der Kalibrierung: angesetzt ist der Tagesbedarf des Messwerts.
+                        a.Tagesbedarf = Schaetzhilfe.Tagesbedarf(a.Stand.TagesbedarfAuto, a.Stand.TagesbedarfManuellKwh,
+                            a.TagesbedarfVorschlag, a.Art.Bezug, a.ZapfungKwh / Zapfkalender.TAGE, k.Faktor);
                         string herkunft = "Messwert " + (a.Messwert.Quelle ?? "") + " " + (a.Messwert.Zeitraum ?? "")
                                           + ", Grenze " + (int)a.Messwert.Grenze;
                         prot.Vermerken(a.Name, ZapfFeld.KALIBRIERFAKTOR, k.Faktor, "-", Wertstatus.Kalibriert, null,

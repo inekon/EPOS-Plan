@@ -398,6 +398,9 @@ public sealed class ZapfprofilSchaetzhilfeDaten
     public double? Vorschlag { get; set; }
     public double? Manuell { get; set; }
     public double Angesetzt { get; set; }
+
+    /// <summary>Setzt ein Jahresmesswert den Wert an? Dann ist <see cref="Angesetzt"/> der kalibrierte Wert (die Zeile heißt nicht „angesetzt").</summary>
+    public bool Kalibriert { get; set; }
     public string Einheit { get; set; } = "";
     public string Rechenweg { get; set; } = "";
 }
