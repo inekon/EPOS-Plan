@@ -224,6 +224,11 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   zusätzliche Werkzeugleiste über den Schlitz `Werkzeug` entgegen — etwa den Schalter „nur mit
   Kühlfunktion“ der Wärmepumpenverwaltung —, statt dass der Wirt sie an der Liste vorbei ins
   Layout schiebt.
+- **Ausgabe und Übernahme eines Ergebnisses stehen im Schlitz WERKZEUG, nicht in der Fußleiste:**
+  Knöpfe, die auf das gerechnete Ergebnis einer Verwaltung wirken (Lastspitzenkappung:
+  „CSV-Export“, „In Variante übernehmen“), stehen nach der Suche in `.epos-werkzeughandlungen`,
+  beieinander und ohne Textumbruch; die Fußleiste bleibt dem Gerüst vorbehalten (Konzept
+  Knopfleisten, Abschnitt 1).
 - **Ein Import steht hinter EINEM Knopf, nicht im Block:** `button.epos-importknopf` in der
   Fußleiste öffnet eine `Ueberlagerung` mit Titel und Schließkreuz; ihr Inhalt (`.epos-einlesen`)
   bettet die vorhandene Einlesekette ein, nach dem Einlesen ist der neue Satz in der Liste
