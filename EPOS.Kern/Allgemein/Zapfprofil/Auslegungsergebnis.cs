@@ -147,6 +147,16 @@ namespace WindowsFormsApplication1
         public double? GleichzeitigkeitVolumen { get; init; }
         public IReadOnlyList<Ensemblezonenstatistik> Zonen { get; init; } = new Ensemblezonenstatistik[0];
         public double? WurzelNSchaetzungKw { get; init; }
+
+        /// <summary>
+        /// Wohnungsstation (4.5, N10 (d)): die Auslegungsgröße JE EINHEIT — das Perzentil p der
+        /// Minutenspitze einer Einheit [kW] der Zone, in der es am größten ist; <c>null</c> bei
+        /// jeder anderen Topologie.
+        /// </summary>
+        public double? SpitzeJeEinheitKw { get; init; }
+
+        /// <summary>Die Zone der Spitze je Einheit; leer ohne sie.</summary>
+        public string SpitzeJeEinheitZone { get; init; } = "";
     }
 
     /// <summary>

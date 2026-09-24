@@ -226,6 +226,14 @@
                                 {
                                     <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-nichtbelastbar-grund">@NichtBelastbarGrund(pz)</p>
                                 }
+                                @* Wohnungsstation (4.5, N10 (d)): die Auslegungsgröße je Einheit samt Zone. *@
+                                if (pz.SpitzeJeEinheitKw is double jeEinheit)
+                                {
+                                    <div class="epos-zapfausl-wert epos-zapfausl-je-einheit">
+                                        <span>@Format(Texte.SpitzeJeEinheit, pz.Perzentil)</span><b>@(Zahl(jeEinheit, "N1") + " kW")</b>
+                                    </div>
+                                    <p class="epos-leisezeile epos-zapfausl-je-einheit-zone">@Format(Texte.SpitzeJeEinheitZone, pz.SpitzeJeEinheitZone)</p>
+                                }
                                 <p class="epos-leisezeile">@Format(Texte.Streuband, pz.Realisierungen)</p>
                                 <table class="epos-raster epos-kennzahlen epos-zapfausl-streuband">
                                     <thead>

@@ -438,7 +438,9 @@ namespace WindowsFormsApplication1
                 StundenspitzeKw = p.StundenspitzeKw.Wert(p.Perzentil),
                 Gleichzeitigkeit = volumen ? p.GleichzeitigkeitVolumen : p.GleichzeitigkeitLeistung,
                 Einheiten = p.Zonen.Sum(z => z.Einheiten),
-                WurzelNKw = p.WurzelNSchaetzungKw
+                WurzelNKw = p.WurzelNSchaetzungKw,
+                SpitzeJeEinheitKw = p.SpitzeJeEinheitKw,
+                SpitzeJeEinheitZone = p.SpitzeJeEinheitZone ?? ""
             };
             foreach (int stufe in Perzentilwerte.Stufen)
                 d.Streuband.Add(new ZapfprofilPerzentilZeileDaten(stufe, w.Wert(stufe)));
@@ -919,6 +921,8 @@ namespace WindowsFormsApplication1
             t.GlfP = Text_("ZPG_AUS_GLF_P", t.GlfP);
             t.GlfPBezug = Text_("ZPG_AUS_GLF_P_BEZUG", t.GlfPBezug);
             t.WurzelN = Text_("ZPG_AUS_WURZEL_N", t.WurzelN);
+            t.SpitzeJeEinheit = Text_("ZPG_AUS_SPITZE_JE_EINHEIT", t.SpitzeJeEinheit);
+            t.SpitzeJeEinheitZone = Text_("ZPG_AUS_SPITZE_JE_EINHEIT_ZONE", t.SpitzeJeEinheitZone);
             t.KarteNorm = Text_("ZPG_AUS_KARTE_NORM", t.KarteNorm);
             t.KarteNormUnter = Text_("ZPG_AUS_KARTE_NORM_UNTER", t.KarteNormUnter);
             t.GewaehlterPunkt = Text_("ZPG_AUS_GEWAEHLTER_PUNKT", t.GewaehlterPunkt);

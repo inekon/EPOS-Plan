@@ -382,6 +382,13 @@ namespace EPOS.Kern.Tests
             double jeEinheit = Assert.Single(g.Perzentil.Zonen).SpitzeJeEinheitKw.P99;
             Assert.True(jeEinheit < g.Perzentil.MinutenspitzeKw.P99);
             Assert.True(jeEinheit * 20 > g.Perzentil.MinutenspitzeKw.P99, "Die Summe der Einzelspitzen übertrifft die gemeinsame Spitze.");
+            // Die Auslegungsgröße je Einheit steht als Wert samt Zone im Perzentil — nicht nur im Satz.
+            Assert.Equal(jeEinheit, g.Perzentil.SpitzeJeEinheitKw);
+            Assert.Equal("Wohnungen", g.Perzentil.SpitzeJeEinheitZone);
+            // Bei jeder anderen Topologie gibt es sie nicht.
+            Auslegungsgruppe d = Gruppe(ZapfprofilAuslegung.Rechnen(Eingang(MitTag()), Katalog, Zusatz()), ZapfTopologie.Durchfluss);
+            Assert.Null(d.Perzentil.SpitzeJeEinheitKw);
+            Assert.Equal("", d.Perzentil.SpitzeJeEinheitZone);
         }
 
         [Fact]

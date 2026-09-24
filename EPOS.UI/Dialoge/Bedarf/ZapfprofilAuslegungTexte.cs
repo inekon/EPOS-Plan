@@ -246,6 +246,12 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_GLF_P_BEZUG</c></summary>
     public string GlfPBezug { get; set; } = "Ergebnis, kein Eingabefaktor: P{0} der Minutenspitze der Gruppe ÷ Σ P{0} der Minutenspitze je Einheit (Σ n_E = {1})";
 
+    /// <summary><c>ZPG_AUS_SPITZE_JE_EINHEIT</c></summary>
+    public string SpitzeJeEinheit { get; set; } = "Minutenspitze P{0} je Wohnungsstation";
+
+    /// <summary><c>ZPG_AUS_SPITZE_JE_EINHEIT_ZONE</c></summary>
+    public string SpitzeJeEinheitZone { get; set; } = "Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.";
+
     /// <summary><c>ZPG_AUS_WURZEL_N</c></summary>
     public string WurzelN { get; set; } = "Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)";
 

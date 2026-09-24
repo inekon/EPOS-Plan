@@ -76563,6 +76563,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minutenspitze P{0} je Wohnungsstation ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SPITZE_JE_EINHEIT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SPITZE_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SPITZE_JE_EINHEIT_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SPITZE_JE_EINHEIT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennwert ähnelt.
         /// </summary>
         public static string ZPG_AUS_SP_KENNWERT {

@@ -1013,6 +1013,16 @@ public sealed class ZapfprofilPerzentilDaten
     /// <summary>Der Vergleich μ + z·σ/√N [kW]; <c>null</c> ohne Quantil im Parametersatz.</summary>
     public double? WurzelNKw { get; set; }
 
+    /// <summary>
+    /// Wohnungsstation (4.5, N10 (d)): das Perzentil p der Minutenspitze JE EINHEIT [kW] — die
+    /// Auslegungsgröße jeder Station, aus der Zone, in der sie am größten ist; <c>null</c> bei
+    /// jeder anderen Topologie.
+    /// </summary>
+    public double? SpitzeJeEinheitKw { get; set; }
+
+    /// <summary>Die Zone der Spitze je Einheit; leer ohne sie.</summary>
+    public string SpitzeJeEinheitZone { get; set; } = "";
+
     /// <summary>Ist der Konsistenzhinweis geprüft (nur Speicher, mit Schwelle im Parametersatz)?</summary>
     public bool KonsistenzGeprueft { get; set; }
 

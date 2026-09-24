@@ -212,6 +212,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(33.0, d.Maximum);
             Assert.Equal(0.4, d.Gleichzeitigkeit);                            // GLF_P am Durchfluss
             Assert.False(d.KonsistenzGeprueft);                              // nur Speicher
+            Assert.Null(d.SpitzeJeEinheitKw);
+
+            // Wohnungsstation (N10 (d)): die Spitze je Einheit samt Zone, wie der Kern sie ausweist.
+            var station = new Auslegungsgruppe
+            {
+                Topologie = ZapfTopologie.Wohnungsstation,
+                Perzentil = Ergebnis(ZapfTopologie.Wohnungsstation, true) with { SpitzeJeEinheitKw = 21.5, SpitzeJeEinheitZone = "Zone Nord" }
+            };
+            ZapfprofilPerzentilDaten w = ZapfprofilHuelle.PerzentilDaten(station);
+            Assert.Equal(21.5, w.SpitzeJeEinheitKw);
+            Assert.Equal("Zone Nord", w.SpitzeJeEinheitZone);
+            Assert.False(w.Volumen);
 
             Assert.Null(ZapfprofilHuelle.PerzentilDaten(new Auslegungsgruppe { Topologie = ZapfTopologie.Speicher }));
         }

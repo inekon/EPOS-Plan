@@ -898,6 +898,41 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zapfausl-konsistenz"));
     }
 
+    /// <summary>
+    /// Wohnungsstation (4.5, N10 (d)): Karte (b) zeigt die Minutenspitze P_p JE EINHEIT als eigene
+    /// Zeile samt maßgebender Zone — die Auslegungsgröße jeder Station neben der Spitze der Gruppe.
+    /// </summary>
+    [Fact]
+    public void Die_Wohnungsstation_zeigt_ihre_Spitze_je_Einheit_mit_Zone()
+    {
+        ZapfprofilPerzentilDaten pz = PerzentilErgebnis(volumen: false);
+        pz.SpitzeJeEinheitKw = 21.5;
+        pz.SpitzeJeEinheitZone = "Zone Nord";
+        var station = new ZapfprofilAuslegungsgruppeDaten
+        {
+            Topologie = "Wohnungsstation",
+            Zonen = { "Zone Nord" },
+            Hauptwert = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet },
+            Perzentil = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet, LeistungKw = 30 },
+            Empfehlung = new ZapfprofilEmpfehlungDaten { Rechenbar = true, LeistungKw = 30 },
+            PerzentilErgebnis = pz
+        };
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(station)));
+
+        IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
+        IElement zeile = b.QuerySelector(".epos-zapfausl-je-einheit")!;
+        Assert.Equal("Minutenspitze P99 je Wohnungsstation", zeile.QuerySelector("span")!.TextContent);
+        Assert.Equal("21,5 kW", zeile.QuerySelector("b")!.TextContent);
+        Assert.Equal("Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „Zone Nord“.",
+                     b.QuerySelector(".epos-zapfausl-je-einheit-zone")!.TextContent);
+
+        // Ohne Wert (jede andere Topologie) keine Zeile.
+        ZapfprofilAuslegungsgruppeDaten speicher = Speichergruppe();
+        speicher.PerzentilErgebnis = PerzentilErgebnis();
+        cut = Aufbauen(StartMitStochastik(Ergebnis(speicher)));
+        Assert.Empty(cut.FindAll(".epos-zapfausl-je-einheit"));
+    }
+
     [Fact]
     public void Der_Konsistenzhinweis_ist_nach_dem_Lauf_auffaellig_oder_ohne_Schwelle_benannt()
     {

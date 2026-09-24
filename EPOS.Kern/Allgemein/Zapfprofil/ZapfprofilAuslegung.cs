@@ -621,6 +621,10 @@ namespace WindowsFormsApplication1
                     Ensemblezonenstatistik groesste = null;
                     foreach (Ensemblezonenstatistik z in ens.Zonen)
                         if (groesste == null || z.SpitzeJeEinheitKw.Wert(perzentil) > groesste.SpitzeJeEinheitKw.Wert(perzentil)) groesste = z;
+                    ergebnis = ergebnis with
+                    {
+                        SpitzeJeEinheitKw = groesste.SpitzeJeEinheitKw.Wert(perzentil), SpitzeJeEinheitZone = groesste.Zone
+                    };
                     h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
                         "Die Wohnungsstation je Einheit: " + pp + " der Minutenspitze " + Auslegungstext.Z(groesste.SpitzeJeEinheitKw.Wert(perzentil))
                         + " kW (Zone „" + groesste.Zone + "“); die Summe der Gruppe " + pp + " "

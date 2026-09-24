@@ -26576,4 +26576,10 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN" xml:space="preserve">
     <value>The ensemble was cancelled — “Calculate stochastically” is off again.</value>
   </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT" xml:space="preserve">
+    <value>Minute peak P{0} per apartment station</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
+    <value>Design value of each apartment station; the governing zone is “{0}”.</value>
+  </data>
 </root>
