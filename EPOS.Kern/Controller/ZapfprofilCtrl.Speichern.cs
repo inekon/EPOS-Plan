@@ -203,6 +203,15 @@ namespace WindowsFormsApplication1
                          || projektZeile.FuellstandBezug.HasValue)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
                         ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_PERSONEN_AUTO));
+                // Schritt 131 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
+                // Spalten. Eine gesetzte Wahl lehnt der Schreibweg dann benannt ab, statt sie still
+                // fallen zu lassen; OHNE Wahl laeuft das Speichern durch wie vor dem Schritt.
+                if (SpalteImVorgang(v, TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_TYPTAGE_AKTIV))
+                    werte.AddRange(TyptagwahlWerte(projektZeile));
+                else if (projektZeile.TyptageAktiv || projektZeile.TyptageKlimazone.HasValue
+                         || !string.IsNullOrWhiteSpace(projektZeile.TyptageGebaeudeart))
+                    throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                        ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_TYPTAGE_AKTIV));
                 if (zeileDa)
                 {
                     idZeile = Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
@@ -295,6 +304,10 @@ namespace WindowsFormsApplication1
             else if (p.PersonenManuell.HasValue && (double.IsNaN(p.PersonenManuell.Value) || double.IsInfinity(p.PersonenManuell.Value)
                                                     || p.PersonenManuell.Value < 0))
                 grund = ZapfSatz.Neu("BEGRIFF_PERSONEN");
+            // Schritt 131: die Wahl des Typtagwegs - die Klimazone ist eine Nummer des Pakets > 0
+            // (Wertemenge der DDL, TwwSchema.SpaltenT3Typtage).
+            else if (p.TyptageKlimazone.HasValue && p.TyptageKlimazone.Value <= 0)
+                grund = ZapfSatz.Neu("BEGRIFF_TYPTAGE_KLIMAZONE");
             if (grund != null)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektUngueltig, "",
                     ZapfSatz.Neu("SPEICHER_WERTEMENGE", grund));
@@ -558,6 +571,19 @@ namespace WindowsFormsApplication1
             yield return W(TwwSchema.SPALTE_PERSONEN_AUTO, Bool(p.PersonenAuto));
             yield return W(TwwSchema.SPALTE_PERSONEN_MANUELL, p.PersonenManuell);
             yield return W(TwwSchema.SPALTE_FUELLSTAND_BEZUG, Enumwert(p.FuellstandBezug));
+        }
+
+        /// <summary>
+        /// Die Wahl des Typtagwegs (Schritt 131, <see cref="TwwSchema.SpaltenT3Typtage"/>) in ihren
+        /// Spalten: gespeichert wird die WAHL, nie ein Wert der Typtage. Eine leere Gebäudeart
+        /// wird als NULL geschrieben — „keine Wahl" ist genau ein Zustand.
+        /// </summary>
+        private static IEnumerable<KeyValuePair<string, object>> TyptagwahlWerte(ProjektStand p)
+        {
+            yield return W(TwwSchema.SPALTE_TYPTAGE_AKTIV, Bool(p.TyptageAktiv));
+            yield return W(TwwSchema.SPALTE_TYPTAGE_KLIMAZONE, p.TyptageKlimazone);
+            yield return W(TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART,
+                           string.IsNullOrWhiteSpace(p.TyptageGebaeudeart) ? null : p.TyptageGebaeudeart.Trim());
         }
 
         /// <summary><c>INSERT</c> mit den festen Spaltennamen und <c>?</c>-Parametern; liefert die neue Id.</summary>

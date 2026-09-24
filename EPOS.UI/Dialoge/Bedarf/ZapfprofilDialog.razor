@@ -653,6 +653,38 @@
                                                  GesperrteEintraege="@GesperrteTagesgangsaetze" GesperrtHinweise="@TagesgangsatzGruende"
                                                  AuswahlChanged="id => Angabe(zone, x => x.IdTagesgangsatz = id)" />
                                     <Herleitungszeile Text="@Texte.HinweisTagesgangsatz" />
+                                    @* DIE WAHL DES TYPTAGWEGS (4.2, 5.3; Stufe Z4b) - sie steht bei den
+                                       Fachwerten neben dem Tagesgangsatz, weil sie mit ihm den Jahres-
+                                       und Tagesgang bestimmt, gilt aber fuer das GANZE PROJEKT (die
+                                       Herleitungszeile sagt das). Ohne eingespielte Typtage ist der
+                                       Schalter gesperrt, und der Grund steht darunter. *@
+                                    <Formulargruppe Titel="@Texte.GruppeTyptage">
+                                        <KindInhalt>
+                                            <div class="epos-zapfprofil-gruppenhilfe">
+                                                <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.GruppeTyptage"
+                                                           Dialogname="@Texte.Titel" />
+                                            </div>
+                                            <Schalter Bezeichnung="@Texte.LabelTyptageAktiv" Wert="@_eingabe.TyptageAktiv"
+                                                      Aktiv="@TyptageDa" WertChanged="TyptageAktivSetzen" />
+                                            @if (_eingabe.TyptageAktiv)
+                                            {
+                                                <Auswahlfeld Bezeichnung="@Texte.LabelTyptageZone" Eintraege="@Typtagzonen"
+                                                             Auswahl="@_eingabe.TyptageKlimazone" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                             AuswahlChanged="TyptagzoneSetzen" />
+                                                <Auswahlfeld Bezeichnung="@Texte.LabelTyptageGebaeudeart" Eintraege="@Typtagarten"
+                                                             Auswahl="@TyptagartWahl" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                             AuswahlChanged="TyptagartSetzen" />
+                                            }
+                                            <Herleitungszeile Text="@(TyptageDa ? Texte.HinweisTyptage : Texte.HinweisTyptageOhne)" />
+                                            @if (TyptagGaben is not null)
+                                            {
+                                                <div class="epos-leiste epos-zapfprofil-typtagleiste">
+                                                    <button type="button" class="epos-knopf epos-zapfprofil-typtagknopf"
+                                                            @onclick="TyptageOeffnen">@Texte.KnopfTyptage</button>
+                                                </div>
+                                            }
+                                        </KindInhalt>
+                                    </Formulargruppe>
                                     <Formulargruppe Titel="@Texte.LabelAuslastungsgang">
                                         <KindInhalt>
                                             @for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
@@ -1003,6 +1035,17 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- Ueberlagerung: die eingespielten Typtage (Stufe Z4b) ---------------- *@
+    <Ueberlagerung Offen="@(_typtagGaben is not null)" Titel="@Texte.GruppeTyptage"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _typtagGaben = null">
+        <KindInhalt>
+            @if (_typtagGaben is not null)
+            {
+                <TwwTyptagImportDialog @attributes="_typtagGaben" TitelAnzeigen="false" Geschlossen="TyptageGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -1032,6 +1075,7 @@
     private const string HILFE_BELEGUNG = "Form_Zapfprofil.grp_Belegung";
     private const string HILFE_SCHAETZHILFEN = "Form_Zapfprofil.grp_Schaetzhilfen";
     private const string HILFE_FACHWERTE = "Form_Zapfprofil.grp_Fachwerte";
+    private const string HILFE_TYPTAGE = "Form_Zapfprofil.grp_Typtage";
     private const string HILFE_WARNLISTE = "Form_Zapfprofil.grp_Warnliste";
 
     // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
@@ -1097,6 +1141,13 @@
     [Parameter] public Func<ZapfprofilKatalogstandDaten>? Katalogstand { get; set; }
 
     /// <summary>
+    /// Der Parametersatz des Dialogs „VDI-4655-Typtage" (Stufe Z4b) — der Delegat der Hülle; kein
+    /// Delegat = der Knopf steht nicht da (ein Knopf, der nichts tut, ist eine Behauptung, die nicht
+    /// stimmt).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? TyptagGaben { get; set; }
+
+    /// <summary>
     /// Der Vorschlag der Ladeleistung zum Arbeitsstand (Schätzhilfe, 5.3/4.7) — der Delegat der Hülle,
     /// der die Auslegung deterministisch rechnet; entprellt mit der Vorschau, nur ab der Stufe
     /// Erweitert. Kein Delegat = kein Vorschlag, die leise Zeile nennt den Grund.
@@ -1133,6 +1184,7 @@
     /// <summary>Die Parametersätze der offenen Editoren (Experte); <c>null</c>, solange keiner steht.</summary>
     private IReadOnlyDictionary<string, object>? _tagesgangGaben;
     private IReadOnlyDictionary<string, object>? _kategorienGaben;
+    private IReadOnlyDictionary<string, object>? _typtagGaben;
 
     /// <summary>Die Zone, für die ein Editor offen steht — sein Ergebnis gilt ihr, auch wenn die Wahl inzwischen wechselte.</summary>
     private ZapfprofilZoneDaten? _editorZone;
@@ -1471,6 +1523,129 @@
 
     private IReadOnlyDictionary<int, string> TagesgangsatzGruende
         => Tagesgangsatzliste.Where(s => !s.Waehlbar).ToDictionary(s => s.Id, s => s.Sperrgrund);
+
+    // =====================================================================
+    // Die Wahl des Typtagwegs (4.2, Stufe Experte; Z4b)
+    // =====================================================================
+
+    /// <summary>Der eingespielte Stand der Typtage — nach dem Importdialog der neu gelesene.</summary>
+    private TwwTyptagStandDaten Typtagstand => _katalogstand?.Typtagstand ?? Daten.Typtagstand;
+
+    /// <summary>Sind Typtage eingespielt? Nur dann ist der Schalter bedienbar.</summary>
+    private bool TyptageDa => Typtagstand.Vorhanden;
+
+    /// <summary>Die Klimazonen des eingespielten Pakets als Wahlliste (Nummer = Id).</summary>
+    private IReadOnlyList<(int Id, string Text)> Typtagzonen
+    {
+        get
+        {
+            var liste = Typtagstand.Klimazonen.Select(z => (z, z.ToString(CultureInfo.CurrentCulture))).ToList();
+            // Eine gespeicherte Wahl, die das Paket nicht (mehr) führt, bleibt sichtbar — sonst
+            // stünde im Feld ein anderer Wert als in der Datenbank.
+            if (_eingabe.TyptageKlimazone is int z2 && liste.All(e => e.Item1 != z2))
+                liste.Insert(0, (z2, z2.ToString(CultureInfo.CurrentCulture)));
+            return liste;
+        }
+    }
+
+    /// <summary>Die Gebäudearten des eingespielten Pakets als Wahlliste (Platz in der Liste = Id).</summary>
+    private IReadOnlyList<(int Id, string Text)> Typtagarten
+    {
+        get
+        {
+            List<string> namen = Typtagartnamen;
+            return namen.Select((n, i) => (i + 1, n)).ToList();
+        }
+    }
+
+    /// <summary>Die Namen der Gebäudearten samt einer gespeicherten Wahl, die das Paket nicht führt.</summary>
+    private List<string> Typtagartnamen
+    {
+        get
+        {
+            var namen = new List<string>(Typtagstand.Gebaeudearten);
+            string wahl = _eingabe.TyptageGebaeudeart ?? "";
+            if (wahl.Length > 0 && !namen.Contains(wahl, StringComparer.Ordinal)) namen.Insert(0, wahl);
+            return namen;
+        }
+    }
+
+    /// <summary>Die gewählte Gebäudeart als Platz in der Wahlliste; <c>null</c> = keine Wahl.</summary>
+    private int? TyptagartWahl
+    {
+        get
+        {
+            string wahl = _eingabe.TyptageGebaeudeart ?? "";
+            if (wahl.Length == 0) return null;
+            int i = Typtagartnamen.FindIndex(n => string.Equals(n, wahl, StringComparison.Ordinal));
+            return i < 0 ? null : i + 1;
+        }
+    }
+
+    /// <summary>
+    /// Der Schalter „Typtage nach VDI 4655": Er gilt für das ganze Projekt. Beim Einschalten werden
+    /// Zone und Gebäudeart vorbelegt, wenn das Paket genau eine führt — eine Wahl, die es ohnehin
+    /// nur einmal gibt, muss niemand treffen.
+    /// </summary>
+    private void TyptageAktivSetzen(bool wert)
+    {
+        if (!TyptageDa) return;
+        if (_eingabe.TyptageAktiv == wert) return;
+        _eingabe.TyptageAktiv = wert;
+        if (wert)
+        {
+            if (_eingabe.TyptageKlimazone is null && Typtagstand.Klimazonen.Count == 1)
+                _eingabe.TyptageKlimazone = Typtagstand.Klimazonen[0];
+            if (string.IsNullOrEmpty(_eingabe.TyptageGebaeudeart) && Typtagstand.Gebaeudearten.Count == 1)
+                _eingabe.TyptageGebaeudeart = Typtagstand.Gebaeudearten[0];
+        }
+        Geaendert();
+    }
+
+    private void TyptagzoneSetzen(int? id)
+    {
+        if (_eingabe.TyptageKlimazone == id) return;
+        _eingabe.TyptageKlimazone = id;
+        Geaendert();
+    }
+
+    private void TyptagartSetzen(int? id)
+    {
+        List<string> namen = Typtagartnamen;
+        string wahl = id is int i && i >= 1 && i <= namen.Count ? namen[i - 1] : "";
+        if (string.Equals(_eingabe.TyptageGebaeudeart ?? "", wahl, StringComparison.Ordinal)) return;
+        _eingabe.TyptageGebaeudeart = wahl;
+        Geaendert();
+    }
+
+    /// <summary>„VDI-4655-Typtage…": die Überlagerung des Importdialogs.</summary>
+    private void TyptageOeffnen()
+    {
+        if (TyptagGaben is null) return;
+        _typtagGaben = TyptagGaben();
+    }
+
+    /// <summary>
+    /// Der Importdialog ist zu: Hat sich der eingespielte Stand geändert, wird der Katalogstand
+    /// neu gelesen (die Wahllisten ziehen nach), und eine Wahl, die es nicht mehr geben kann, fällt
+    /// benannt zurück auf den Bestandsweg — nie still auf eine Zone, die das Paket nicht führt.
+    /// </summary>
+    private void TyptageGeschlossen(bool geaendert)
+    {
+        _typtagGaben = null;
+        if (!geaendert) return;
+        bool vorher = _eingabe.TyptageAktiv;
+        KatalogNeuLesen();
+        if (!TyptageDa && _eingabe.TyptageAktiv)
+        {
+            _eingabe.TyptageAktiv = false;
+            _editorStatus = Texte.HinweisTyptageOhne;
+        }
+        // Der Punkt der Auslegung ist nur ueberholt, wenn der Typtagweg den Jahresgang traegt —
+        // vorher oder nachher; ein Einspielen ohne gewaehlten Typtagweg laesst ihn stehen.
+        if (vorher || _eingabe.TyptageAktiv) PunktUeberholen();
+        GeaendertNachEditor();
+    }
 
     /// <summary>Die Beschriftung eines Feldes der Wohnungstabelle: „Anzahl, Zeile 2".</summary>
     private string WohnFeld(string spalte, ZapfprofilZonenangabenDaten a, ZapfprofilWohnungDaten w)
@@ -2405,6 +2580,16 @@
         RechenwegSetzen = KiRechenweg,
         RechenwegEintraege = () => KiMaskenanmeldung.Eintraege(Rechenwege, e => e.Id, e => e.Text),
 
+        // Stufe Experte (Z4b): die Wahl des Typtagwegs - eine Groesse des Projekts.
+        TyptagewegLesen = () => _eingabe.TyptageAktiv,
+        TyptagewegSetzen = KiTyptageweg,
+        TyptagzoneLesen = () => _eingabe.TyptageKlimazone,
+        TyptagzoneSetzen = KiTyptagzone,
+        TyptagzoneEintraege = () => KiMaskenanmeldung.Eintraege(Typtagzonen, e => e.Id, e => e.Text),
+        TyptagartLesen = () => TyptagartWahl,
+        TyptagartSetzen = KiTyptagart,
+        TyptagartEintraege = () => KiMaskenanmeldung.Eintraege(Typtagarten, e => e.Id, e => e.Text),
+
         SeedLesen = () => _eingabe.Seed,
         SeedSetzen = KiSeed,
         RealisierungenLesen = () => _eingabe.Realisierungen,
@@ -2487,6 +2672,39 @@
         if (_stufe == ZapfprofilStufe.Einfach)
             return ZapfprofilKiRegeln.NurMit(Texte.LabelRechenwegJahresreihe, Texte.StufeErweitert);
         RechenwegSetzen(id);
+        return null;
+    }
+
+    /// <summary>
+    /// Der Typtagweg — Stufe Experte; ohne eingespielte Typtage benannt abgelehnt (dieselbe Sperre
+    /// wie am Schalter).
+    /// </summary>
+    private string? KiTyptageweg(bool wert)
+    {
+        if (_stufe != ZapfprofilStufe.Experte)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelTyptageAktiv, Texte.StufeExperte);
+        if (wert && !TyptageDa) return Texte.HinweisTyptageOhne;
+        TyptageAktivSetzen(wert);
+        return null;
+    }
+
+    /// <summary>Die Klimazone der Typtage — Stufe Experte, nur eine Nummer des eingespielten Pakets.</summary>
+    private string? KiTyptagzone(int? id)
+    {
+        if (_stufe != ZapfprofilStufe.Experte)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelTyptageZone, Texte.StufeExperte);
+        if (id is int z && Typtagzonen.All(e => e.Id != z)) return ZapfprofilKiRegeln.ZeileFehlt;
+        TyptagzoneSetzen(id);
+        return null;
+    }
+
+    /// <summary>Die Gebäudeart der Typtage — Stufe Experte, nur eine des eingespielten Pakets.</summary>
+    private string? KiTyptagart(int? id)
+    {
+        if (_stufe != ZapfprofilStufe.Experte)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelTyptageGebaeudeart, Texte.StufeExperte);
+        if (id is int i && Typtagarten.All(e => e.Id != i)) return ZapfprofilKiRegeln.ZeileFehlt;
+        TyptagartSetzen(id);
         return null;
     }
 

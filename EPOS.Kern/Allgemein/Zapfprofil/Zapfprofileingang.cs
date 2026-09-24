@@ -56,7 +56,16 @@ namespace WindowsFormsApplication1
         /// Einheitentage (<c>Zapfensemble.HOECHSTENS_EINHEITSTAGE</c>) oder das Jahr zum Seed trägt
         /// keine Zapfung.
         /// </summary>
-        StochastikUngueltig = 15
+        StochastikUngueltig = 15,
+
+        /// <summary>
+        /// Der Typtagweg des Jahresgangs ist nicht rechenbar (4.2, Stufe Z4b): Es sind keine
+        /// Typtage eingespielt, das Paket führt die gewählte Klimazone oder Gebäudeart nicht
+        /// oder nicht vollständig, ein Kennwert des Verfahrens fehlt, die Tagesmittel der
+        /// Temperatur oder des Bedeckungsgrads fehlen, oder die Bezugsart der Nutzungsart ist
+        /// keine Wohngröße (Personen oder Wohneinheiten).
+        /// </summary>
+        TyptageUngueltig = 16
     }
 
     /// <summary>
@@ -272,6 +281,20 @@ namespace WindowsFormsApplication1
         /// Kategorien einer Nutzungsart dort, lehnt die Zone benannt ab.
         /// </summary>
         public IReadOnlyList<Zapfkategorie> Zapfkategorien { get; init; } = new Zapfkategorie[0];
+
+        /// <summary>
+        /// <b>Die Weiche des Jahresgangs auf die eingespielten Typtage</b> (T3, 4.2, 5.3; Stufe
+        /// Z4b): <c>null</c> = der Jahresgang rechnet wie im Bestand über den Formvektor
+        /// (Monats-, Wochen- und Tagesfaktoren des Katalogs). Gesetzt rechnet er über die Typtage
+        /// des lizenzierten Anwenders — Jahreszeit aus der Tagesmitteltemperatur, Tagart aus dem
+        /// Zapfkalender, Bewölkung aus dem Tagesmittel des Bedeckungsgrads (4.2). Sind keine
+        /// Typtage eingespielt oder führt das Paket die gewählte Zone oder Gebäudeart nicht,
+        /// lehnt die Zone <b>benannt</b> ab (<see cref="ZapfEingabefehler.TyptageUngueltig"/>) —
+        /// nie still zurück auf den Bestandsweg. Die AUSLEGUNG bleibt unberührt (Wochenreihe,
+        /// Bedarfstag, Summenlinie): Die Referenzlastprofile sind nicht für Auslegungsspitzen
+        /// gedacht.
+        /// </summary>
+        public Typtaganbindung Typtage { get; init; }
 
         /// <summary>Der Eingang aus einem Arbeitsstand, dem Kalender und dem Parametersatz.</summary>
         internal static Zapfprofileingang Aus(ZapfprofilStand stand, int wochentagJan1, bool[] we, Parametersatz ps)

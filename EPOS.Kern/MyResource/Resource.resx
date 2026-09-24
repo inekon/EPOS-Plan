@@ -4662,12 +4662,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Vertrieb</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2,05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0,05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der Anteile: {0} ct/kWh</value>
   </data>
@@ -27643,6 +27637,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
     <value>Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster.</value>
   </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE" xml:space="preserve">
+    <value>Zone „{0}“: Der Typtageingang der gezogenen Jahresreihe trägt nicht 365 endliche, nicht negative Tagesmengen mit brauchbaren Tagesgängen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB" xml:space="preserve">
+    <value>Zone „{0}“: Auf dem Typtagweg zieht die Jahresreihe über die Tagesmengen der Typtage — die Entkopplung der Urlaube gilt dort nicht.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
     <value>Der Urlaubsversatz liegt nicht in 0 … 364 Tagen.</value>
   </data>
@@ -28735,11 +28735,374 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
     <value>Katalog der Zapfkategorien</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTYPTAG_IMPORT" xml:space="preserve">
+    <value>eingespielte Typtage</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
+    <value>Übergang</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_2" xml:space="preserve">
+    <value>Sommer</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_3" xml:space="preserve">
+    <value>Winter</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_1" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_2" xml:space="preserve">
+    <value>Sonntag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_0" xml:space="preserve">
+    <value>ohne Unterscheidung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_1" xml:space="preserve">
+    <value>heiter</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_2" xml:space="preserve">
+    <value>bewölkt</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR" xml:space="preserve">
+    <value>Das Paket der Typtage lässt sich nicht lesen: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_DATEI_FEHLT" xml:space="preserve">
+    <value>Im Paket der Typtage fehlt die Datei „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_KOPFZEILE" xml:space="preserve">
+    <value>Die Datei „{0}“ hat keine Kopfzeile.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_FEHLT" xml:space="preserve">
+    <value>In der Datei „{0}“ fehlt die Spalte „{1}“.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_UNBEKANNT" xml:space="preserve">
+    <value>Die Datei „{0}“ führt die unbekannte Spalte „{1}“.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_DOPPELT" xml:space="preserve">
+    <value>Die Datei „{0}“ führt die Spalte „{1}“ zweimal.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FELDZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} Felder statt {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FELD_LEER" xml:space="preserve">
+    <value>{0}, Zeile {1}: Das Feld „{2}“ ist leer.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KEINE_ZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ keine Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KEINE_GANZE_ZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ keine ganze Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIE_UNBEKANNT" xml:space="preserve">
+    <value>{0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ kein bekannter Wert.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_TYPTAG_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Den Typtag „{2}“ führt das Paket schon.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_TYPTAG_UNBEKANNT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Den Typtag „{2}“ nennt die Typtagtabelle des Pakets nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die Klimazone {2} führt das Paket schon.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die Klimazone {2} nennt die Zonentabelle des Pakets nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZEILE_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Diese Angabe steht im Paket schon.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ANZAHL_UNGUELTIG" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} ist keine mögliche Zahl von Kalendertagen.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Faktor ist keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SUMME_TAGE" xml:space="preserve">
+    <value>Klimazone {0}, Gebäudeart „{1}“: Die Typtage zählen {2} Kalendertage statt {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Klimazone {0}, Gebäudeart „{1}“: Zu diesen Typtagen fehlt eine Angabe: {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_TYPTAGE" xml:space="preserve">
+    <value>Das Paket nennt keinen Typtag.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_ZONEN" xml:space="preserve">
+    <value>Das Paket nennt keine Klimazone.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_WERTE" xml:space="preserve">
+    <value>Das Paket führt zu keiner Klimazone und Gebäudeart vollständige Werte.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_QUELLE_FEHLT" xml:space="preserve">
+    <value>Das Paket nennt seine Quelle nicht (Kennwert „quelle“).</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KENNWERT_FEHLT" xml:space="preserve">
+    <value>Im Paket fehlt der Kennwert „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE" xml:space="preserve">
+    <value>Das Paket nennt zu {0} und {1} keinen Typtag.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Typtag „{2}“ trägt dieselben Merkmale wie ein früherer ({3}, {4}, {5}) — der Dreier ist der Schlüssel der Zuordnung und muss eindeutig sein.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS" xml:space="preserve">
+    <value>Das Paket der Typtage ist zu groß: {0} Einträge (höchstens {1}) und {2} Byte entpackt (höchstens {3}).</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG" xml:space="preserve">
+    <value>Zu {0} und {1} führt das Paket {2} Typtage: Es braucht entweder einen ohne Unterscheidung oder je einen heiteren und einen bewölkten.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest, sind weder Teiler noch Vielfaches von 60 Minuten oder weichen von der Auflösung des Typtags ab.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Zeitabschnitt {2} liegt außerhalb des Tages.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX" xml:space="preserve">
+    <value>Gebäudeart „{0}“, Typtag „{1}“: Der Tagesgang braucht {2} Zeitabschnitte ohne Lücke, das Paket führt {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_SUMME" xml:space="preserve">
+    <value>Gebäudeart „{0}“, Typtag „{1}“: Die Anteile des Tagesgangs summieren sich auf {2:0.######} statt 1.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_ANTEIL" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Anteil ist negativ oder keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GAENGE_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Zeile(n) der Tagesgänge nennen einen Typtag, den das Paket nicht führt — sie sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PRUEFSUMME_OHNE_TOLERANZ" xml:space="preserve">
+    <value>Das Paket nennt keine Toleranz „{0}“ — die Prüfsumme der Faktoren bleibt ungeprüft.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PRUEFSUMME" xml:space="preserve">
+    <value>Klimazone {0}, Gebäudeart „{1}“: Die Prüfsumme der Faktoren beträgt {2:0.###E+0} statt 0 (Toleranz {3:0.###E+0}).</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_OHNE_WERTE" xml:space="preserve">
+    <value>Die Klimazone {0} steht im Paket, führt aber keine Werte.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>der Jahresgang über Typtage ist nicht verfügbar: Es sind keine Typtage eingespielt.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_ZONE_FEHLT" xml:space="preserve">
+    <value>die eingespielten Typtage führen die Klimazone {0} nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_GEBAEUDEART_FEHLT" xml:space="preserve">
+    <value>die eingespielten Typtage führen die Gebäudeart „{0}“ nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>die eingespielten Typtage sind zu Klimazone {0} und Gebäudeart „{1}“ unvollständig: {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KENNWERT_FEHLT" xml:space="preserve">
+    <value>den eingespielten Typtagen fehlt der Kennwert „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR" xml:space="preserve">
+    <value>der Jahresgang über Typtage braucht {0} Tagesmittel der Außentemperatur.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR_TAG" xml:space="preserve">
+    <value>das Tagesmittel der Außentemperatur des Tages {0} ist keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_FEHLT" xml:space="preserve">
+    <value>die eingespielten Typtage unterscheiden nach Bewölkung — dafür braucht der Jahresgang {0} Tagesmittel des Bedeckungsgrads.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_TAG" xml:space="preserve">
+    <value>das Tagesmittel des Bedeckungsgrads des Tages {0} ist keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KATEGORIE_FEHLT" xml:space="preserve">
+    <value>die eingespielten Typtage nennen zu {0}, {1} und {2} keinen Typtag.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_FAKTOR_FEHLT" xml:space="preserve">
+    <value>zum Typtag „{0}“ fehlt der Faktor der Klimazone {1} und Gebäudeart „{2}“.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEZUGSART" xml:space="preserve">
+    <value>der Jahresgang über Typtage gilt nur für Wohngebäude — die Bezugsart {0} trägt er nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN" xml:space="preserve">
+    <value>die Einheiten der Zone ({0:0.###}) sind keine positive Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG" xml:space="preserve">
+    <value>die Typtage der Zone „{0}“ verteilen keine Zapfung: Jede Tagesmenge ist 0.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>Zone „{0}“: Das Wetter des Projekts ordnet {1} Typtagkategorie(n) anders zu als die eingespielte Tabelle; am weitesten „{2}“ mit {3} statt {4} Kalendertagen.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Zone „{0}“: Für {1} Typtag(e) und damit {2} Kalendertag(e) wäre der Tagesbedarf negativ — ihr Faktor ist auf 0 gesetzt, der Tag trägt den Jahresmittelwert.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>Zone „{0}“: Die Tagesmengen der Typtage wurden mit {1:0.######} auf die Jahresmenge skaliert.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN" xml:space="preserve">
+    <value>Zone „{0}“: Auf dem Typtagweg wirken die Ferienfenster nicht — ein Ferientag bleibt Werktag oder Sonntag seiner Jahreszeit.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>Die eingespielten Typtage führen zur Gebäudeart „{0}“ keine Tagesgänge — die Tagesform kommt aus dem Tagesgangsatz der Zone.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT" xml:space="preserve">
+    <value>Diese Datenbank führt {0} nicht — die Typtage lassen sich nicht einspielen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ließ sich nicht lesen: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE" xml:space="preserve">
+    <value>die Klimazone der Typtage</value>
+  </data>
+  <data name="ZPGT_TITEL" xml:space="preserve">
+    <value>VDI-4655-Typtage</value>
+  </data>
+  <data name="ZPGT_HINWEIS_LIZENZ" xml:space="preserve">
+    <value>Das Programm bringt keine Werte der Richtlinie mit. Die Typtage spielt der lizenzierte Anwender aus seinem eigenen Paket ein; sie bleiben in dieser Datenbank und gehen weder in die Auslieferung noch in einen Projekttransfer.</value>
+  </data>
+  <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
+    <value>Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt.</value>
+  </data>
+  <data name="ZPGT_GRP_STAND" xml:space="preserve">
+    <value>Eingespielter Stand</value>
+  </data>
+  <data name="ZPGT_GRP_PRUEFUNG" xml:space="preserve">
+    <value>Prüfung des Pakets</value>
+  </data>
+  <data name="ZPGT_LEER" xml:space="preserve">
+    <value>Es sind keine Typtage eingespielt — ohne sie ist der Typtagweg des Jahresgangs nicht verfügbar.</value>
+  </data>
+  <data name="ZPGT_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPGT_LBL_AUSGABE" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
+  <data name="ZPGT_LBL_DATUM" xml:space="preserve">
+    <value>Eingespielt am</value>
+  </data>
+  <data name="ZPGT_LBL_ZONEN" xml:space="preserve">
+    <value>Klimazonen</value>
+  </data>
+  <data name="ZPGT_LBL_GEBAEUDEARTEN" xml:space="preserve">
+    <value>Gebäudearten</value>
+  </data>
+  <data name="ZPGT_LBL_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
+  </data>
+  <data name="ZPGT_LBL_AUFLOESUNG" xml:space="preserve">
+    <value>Zeitraster der Tagesgänge</value>
+  </data>
+  <data name="ZPGT_LBL_ZEILEN" xml:space="preserve">
+    <value>Zeilen</value>
+  </data>
+  <data name="ZPGT_SP_ANGABE" xml:space="preserve">
+    <value>Angabe</value>
+  </data>
+  <data name="ZPGT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE" xml:space="preserve">
+    <value>ohne Angabe</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
+    <value>keine — die Tagesform kommt aus dem Tagesgangsatz der Zone</value>
+  </data>
+  <data name="ZPGT_BTN_PAKET" xml:space="preserve">
+    <value>Paket wählen…</value>
+  </data>
+  <data name="ZPGT_BTN_EINSPIELEN" xml:space="preserve">
+    <value>Einspielen</value>
+  </data>
+  <data name="ZPGT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ZPGT_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ZPGT_DATEIFILTER" xml:space="preserve">
+    <value>Typtagpaket (*.zip;*.csv)|*.zip;*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="ZPGT_WAHL_TITEL" xml:space="preserve">
+    <value>Paket der Typtage wählen</value>
+  </data>
+  <data name="ZPGT_KEIN_PAKET" xml:space="preserve">
+    <value>Es ist kein Paket gewählt.</value>
+  </data>
+  <data name="ZPGT_ABBRUCH" xml:space="preserve">
+    <value>Das Paket ist abgelehnt: {0}</value>
+  </data>
+  <data name="ZPGT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Das Paket trägt {0} Klimazone(n), {1} Gebäudeart(en) und {2} Typtag(e) — {3} Zeile(n).</value>
+  </data>
+  <data name="ZPGT_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="ZPGT_FRAGE_ERSETZEN" xml:space="preserve">
+    <value>Ein Paket ist schon eingespielt ({0} Zeilen). Das neue ersetzt es vollständig. Einspielen?</value>
+  </data>
+  <data name="ZPGT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die eingespielten Typtage werden entfernt; danach ist der Typtagweg nicht mehr verfügbar. Löschen?</value>
+  </data>
+  <data name="ZPGT_MSG_EINGESPIELT" xml:space="preserve">
+    <value>{0} Zeile(n) eingespielt, {1} ersetzt.</value>
+  </data>
+  <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} Zeile(n) entfernt.</value>
+  </data>
+  <data name="ZPGT_MSG_STAND_NEU" xml:space="preserve">
+    <value>Der eingespielte Stand der Typtage ist jetzt ein anderer.</value>
+  </data>
+  <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
+    <value>Es war nichts zu löschen.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_QUELLE_ERL" xml:space="preserve">
+    <value>Die Quelle, die das eingespielte Paket nennt. Nur Anzeige; leer = es ist nichts eingespielt.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_AUSGABE_ERL" xml:space="preserve">
+    <value>Die Ausgabe, die das eingespielte Paket nennt. Nur Anzeige; leer = ohne Angabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_DATUM_ERL" xml:space="preserve">
+    <value>Der Tag, an dem das Paket eingespielt wurde. Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZONEN_ERL" xml:space="preserve">
+    <value>Die Klimazonen, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ARTEN_ERL" xml:space="preserve">
+    <value>Die Gebäudearten, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZEILEN_ERL" xml:space="preserve">
+    <value>Die Zahl der eingespielten Zeilen. Nur Anzeige; 0 = es ist nichts eingespielt.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_NAME" xml:space="preserve">
+    <value>Grund der Sperre</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_ERL" xml:space="preserve">
+    <value>Warum der Typtagweg nicht verfügbar ist. Nur Anzeige; leer = er ist verfügbar.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_BERICHT_ERL" xml:space="preserve">
+    <value>Was die Prüfung des gewählten Pakets ergeben hat — die Ablehnung mit Datei und Zeile oder die Zusammenfassung. Nur Anzeige; leer = es wurde nichts geprüft.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGEWEG_ERL" xml:space="preserve">
+    <value>Rechnet der Jahresgang jeder Zone über die eingespielten Typtage statt über die Faktoren des Katalogs? Eine Angabe des Projekts, nur in der Stufe Experte; ohne eingespielte Typtage abgelehnt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGZONE_ERL" xml:space="preserve">
+    <value>Die Klimazone des eingespielten Pakets, mit der das Projekt rechnet. Nur eine Nummer, die das Paket führt; Stufe Experte.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart des eingespielten Pakets, mit der das Projekt rechnet. Nur eine, die das Paket führt; Stufe Experte.</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen.</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Zirkulation groß gegenüber der Zapfung</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>Zahl der Typtage weicht ab</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Faktor eines Typtags auf 0 gesetzt</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>Tagesmengen auf die Jahresmenge skaliert</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Ferienfenster ohne Wirkung</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>Typtage ohne Tagesgang</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter.</value>
@@ -29214,6 +29577,27 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
     <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_GRP_TYPTAGE" xml:space="preserve">
+    <value>Typtage nach VDI 4655</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_AKTIV" xml:space="preserve">
+    <value>Typtage nach VDI 4655 rechnen</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_ZONE" xml:space="preserve">
+    <value>Klimazone</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE" xml:space="preserve">
+    <value>Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE_OHNE" xml:space="preserve">
+    <value>Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein.</value>
+  </data>
+  <data name="ZPG_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI-4655-Typtage…</value>
   </data>
   <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
     <value>Satz der Nutzungsart</value>
@@ -30012,6 +30396,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
     <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI-4655-Typtage…</value>
   </data>
   <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
@@ -30858,5 +31245,47 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_GEB_PROT_ZEILE_FEHLER" xml:space="preserve">
     <value>{0} ist als fehlerhaft markiert — bitte korrigieren oder den Haken entfernen.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ERFASST" xml:space="preserve">
+    <value>Erfasster Stromsteueranteil im Strompreis „{0}": {1} ct/kWh ({2}).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="BHW_S_STANTEIL_INAKTIV" xml:space="preserve">
+    <value>abgeschaltet</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEINER" xml:space="preserve">
+    <value>Im Strompreis „{0}" ist kein Stromsteueranteil erfasst.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEIN_TRAEGER" xml:space="preserve">
+    <value>Dem Projekt ist kein Strom-Energieträger zugeordnet — es ist kein Stromsteueranteil erfasst.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_NICHT_LESBAR" xml:space="preserve">
+    <value>Der erfasste Stromsteueranteil ließ sich nicht lesen: {0}</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REGEL" xml:space="preserve">
+    <value>Das ist der Regelsatz {0} ({1} ct/kWh, § 3 StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REDUZIERT" xml:space="preserve">
+    <value>Das ist der reduzierte Satz {0} ({1} ct/kWh, § 9b StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ABWEICHEND" xml:space="preserve">
+    <value>Das ist weder der Regelsatz ({0} ct/kWh) noch der reduzierte Satz ({1} ct/kWh) des Jahres {2}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REGEL" xml:space="preserve">
+    <value>Regelsatz</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REDUZIERT" xml:space="preserve">
+    <value>reduzierten Satz</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PASST" xml:space="preserve">
+    <value>Passt zur Unternehmensart: Sie legt den {0} nahe.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_VORSCHLAG" xml:space="preserve">
+    <value>Die Unternehmensart legt den {0} nahe — gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
+    <value>Gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
   </data>
 </root>

@@ -154,8 +154,10 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
     }
 
     private IRenderedComponent<TwwNutzungsartAdminDialog> Aufbauen(Pruefkatalog k, Action<bool>? geschlossen = null,
-                                                                   string paket = "C:/paket/Tab_TwwNutzungsart_STAMM.csv")
+                                                                   string paket = "C:/paket/Tab_TwwNutzungsart_STAMM.csv",
+                                                                   Func<IReadOnlyDictionary<string, object>>? typtagGaben = null)
         => Render<TwwNutzungsartAdminDialog>(p => p
+            .Add(x => x.TyptagGaben, typtagGaben)
             .Add(x => x.Katalogzeilen, k.Liste)
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerTwwNutzungsart(s => Resource.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
@@ -474,6 +476,48 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
 
         cut.Instance.Dispose();
         Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN));
+    }
+
+    // =================================================================================
+    // Die Überlagerung der VDI-4655-Typtage
+    // =================================================================================
+
+    /// <summary>Ein Gabensatz, mit dem der Importdialog der Typtage zeichnet (leerer Stand).</summary>
+    private static IReadOnlyDictionary<string, object> Typtaggaben()
+        => new Dictionary<string, object>
+        {
+            ["Stand"] = new Func<TwwTyptagStandDaten>(() => new TwwTyptagStandDaten()),
+            ["TitelAnzeigen"] = false
+        };
+
+    /// <summary>
+    /// Ohne den Delegaten steht der Knopf nicht da; mit ihm öffnet er die Überlagerung, und ein
+    /// geänderter Stand meldet sich mit EIGENEM Statustext — nicht mit dem Titel des Dialogs.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_der_Typtage_oeffnet_die_Ueberlagerung_und_meldet_den_neuen_Stand()
+    {
+        var ohne = Aufbauen(new Pruefkatalog());
+        Assert.Empty(ohne.FindAll("button").Where(b => b.TextContent.Trim() == "VDI-4655-Typtage…"));
+
+        var cut = Aufbauen(new Pruefkatalog(), typtagGaben: Typtaggaben);
+        Assert.Empty(cut.FindAll(".epos-tww-typtage"));
+
+        Knopf(cut, "VDI-4655-Typtage…").Click();
+        Assert.NotEmpty(cut.FindAll(".epos-tww-typtage"));
+        Assert.Equal("", cut.Instance.Status);
+
+        // Zu, ohne Änderung: die Statuszeile bleibt leer.
+        cut.InvokeAsync(() => cut.FindComponent<TwwTyptagImportDialog>().Instance.Geschlossen.InvokeAsync(false));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-tww-typtage")));
+        Assert.Equal("", cut.Instance.Status);
+
+        // Zu, mit Änderung: der eigene Satz des Bestands, nicht „VDI-4655-Typtage".
+        Knopf(cut, "VDI-4655-Typtage…").Click();
+        cut.InvokeAsync(() => cut.FindComponent<TwwTyptagImportDialog>().Instance.Geschlossen.InvokeAsync(true));
+        cut.WaitForAssertion(() => Assert.Equal(Resource.ZPGT_MSG_STAND_NEU, cut.Instance.Status));
+        Assert.Empty(cut.FindAll(".epos-tww-typtage"));
+        Assert.NotEqual(Resource.ZPGT_TITEL, cut.Instance.Status);
     }
 
     // =================================================================================

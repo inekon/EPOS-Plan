@@ -376,6 +376,278 @@ namespace EPOS.Kern.Tests
                                           verglichen + ":\n" + string.Join("\n", funde.Take(40)));
         }
 
+        /// <summary>Höchste Abweichung einer abgeleiteten GANZEN ZAHL in Tagen — mindestens zwei (ZU19, VDI 4655).</summary>
+        private const int GANZ_SPANNE = 2;
+
+        /// <summary>
+        /// Die Regel ZU19 für einen REELLEN Wert: mehr als <see cref="GLEICH"/> und höchstens
+        /// <see cref="BAND"/> vom Original entfernt. Jeder Verstoß hängt an <paramref name="funde"/>
+        /// — die Meldung nennt die Abweichung, nie einen Absolutwert.
+        /// </summary>
+        private static void ReellPruefen(ICollection<string> funde, string was, double abgeleitet, double original)
+        {
+            if (original == 0.0) { if (abgeleitet != 0.0) funde.Add(was + ": Null nicht Null"); return; }
+            double a = Math.Abs(abgeleitet / original - 1.0);
+            if (!(a > GLEICH)) funde.Add(was + ": gleich dem Original");
+            else if (a > BAND + GLEICH)
+                funde.Add(was + ": Abweichung " + (a * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %");
+        }
+
+        /// <summary>
+        /// Die Regel ZU19 für eine GANZE ZAHL: mindestens einen und höchstens
+        /// <c>max(<see cref="GANZ_SPANNE"/>; <see cref="GANZ_BAND"/> · w)</c> Tag(e) entfernt und
+        /// nicht negativ.
+        /// </summary>
+        private static void GanzPruefen(ICollection<string> funde, string was, int abgeleitet, int original)
+        {
+            int d = Math.Abs(abgeleitet - original);
+            int spanne = Math.Max(GANZ_SPANNE, (int)Math.Round(GANZ_BAND * original, MidpointRounding.AwayFromZero));
+            if (d == 0) funde.Add(was + ": gleich dem Original");
+            else if (d > spanne) funde.Add(was + ": " + d + " Tag(e) Abweichung, erlaubt " + spanne);
+            else if (abgeleitet < 0) funde.Add(was + ": negativ");
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe der Regel ZU19</b> (Nachbesserung Gruppe 1): Die beiden Proben schlagen
+        /// an, wenn ein Wert gleich dem Original, zu weit weg oder negativ ist — ohne sie wäre eine
+        /// Wache denkbar, die nichts mehr prüft und trotzdem grün ist. Sie läuft <b>immer</b>, auch
+        /// ohne die lokalen Originale, und hält damit auch in der CI.
+        /// </summary>
+        [Fact]
+        public void Die_Proben_der_ZU19_Regel_schlagen_an()
+        {
+            var funde = new List<string>();
+            ReellPruefen(funde, "gleich", 1.0, 1.0);
+            ReellPruefen(funde, "zu weit", 2.0, 1.0);
+            ReellPruefen(funde, "Null", 1.0, 0.0);
+            GanzPruefen(funde, "gleich", 40, 40);
+            GanzPruefen(funde, "zu weit", 40 + GANZ_SPANNE + 1, 40);        // 40 · 0,06 = 2,4 → Spanne 2
+            GanzPruefen(funde, "negativ", -1, 1);                           // in der Spanne, aber negativ
+            Assert.Equal(6, funde.Count);
+            Assert.Equal(2, funde.Count(f => f.EndsWith("gleich dem Original", StringComparison.Ordinal)));
+            Assert.Contains(funde, f => f.Contains("Abweichung 100.00 %", StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.EndsWith("Null nicht Null", StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.Contains("Tag(e) Abweichung, erlaubt " + GANZ_SPANNE, StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.EndsWith("negativ", StringComparison.Ordinal));
+
+            // Was die Regel erfüllt, meldet nichts: am Rand des Bandes und am Rand der Spanne.
+            var still = new List<string>();
+            ReellPruefen(still, "am Rand", 1.0 + BAND, 1.0);
+            ReellPruefen(still, "knapp daneben", 1.0 + 10 * GLEICH, 1.0);
+            GanzPruefen(still, "Spanne klein", 40 + GANZ_SPANNE, 40);
+            GanzPruefen(still, "Spanne gross", 100 + (int)Math.Round(GANZ_BAND * 100), 100);
+            Assert.Empty(still);
+        }
+
+        /// <summary>
+        /// Relative Spanne der abgeleiteten GANZEN ZAHLEN — <b>dieselbe Zahl wie im Skript</b>
+        /// (<c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c>: <c>max(2; 0,06 · w)</c>).
+        /// Sie ist bewusst nicht <see cref="BAND"/>: Das Skript stört REELLE Werte mit 0,059 und
+        /// lässt GANZE ZAHLEN bis 0,06 wandern; wer das eine ändert, ändert nicht still das andere.
+        /// </summary>
+        private const double GANZ_BAND = 0.06;
+
+        /// <summary>
+        /// <b>Lokaler Nachweis zu ZU19 (VDI 4655, Stufe Z4b):</b> Kein Wert von
+        /// <c>Referenzlaeufe/Skripte/vdi4655_abgeleitet.json</c> gleicht seinem Original.
+        /// <list type="bullet">
+        /// <item>REELLE Werte (Faktoren der Tagesenergie, Kennwerte): relativ mehr als 1e-9 und
+        /// höchstens 6 % entfernt.</item>
+        /// <item>GANZE ZAHLEN (Kalendertage je Klimazone): mindestens ein und höchstens
+        /// max(2; 6 %) Tag(e) entfernt, jeder ≥ 0, Zeilensumme wieder 365 — innerhalb von 6 %
+        /// ließe sich eine Zahl von drei Tagen nicht verändern (Regel des Skripts).</item>
+        /// <item>Codes, Zonennamen und Namen der Gebäudevarianten stehen nicht in der
+        /// Ausgabe: Die Typtage heißen TT01…, die Varianten variante_1…, von den Zonen bleibt
+        /// die Nummer.</item>
+        /// </list>
+        /// Nur, wenn <c>Referenzlaeufe/Normzahlen/vdi4655/</c> lokal liegt; sonst schweigt der
+        /// Fall. Die Meldung nennt Abweichungen, nie einen Absolutwert.
+        /// </summary>
+        [Fact]
+        public void Kein_abgeleiteter_Typtagwert_gleicht_dem_VDI_Original()
+        {
+            string originale = Vdi4655Originale();
+            if (originale == null) return;                      // lokal nicht beigestellt — schweigen
+            string json = AbgeleiteteTyptage();
+            Assert.NotNull(json);
+
+            var quellTyptage = Csv(Path.Combine(originale, "typtage.csv"));
+            var quellAnzahl = Csv(Path.Combine(originale, "typtage_je_zone.csv"));
+            var quellFaktoren = Csv(Path.Combine(originale, "f_twe_tt.csv"));
+            var quellKennwerte = Csv(Path.Combine(originale, "kennwerte.csv")).ToDictionary(r => r["schluessel"]);
+
+            var funde = new List<string>();
+            List<string> ziel = funde;                 // die Gegenprobe am Ende schreibt in eine eigene Liste
+            int verglichen = 0;
+
+            void Reell(string was, double abgeleitet, double original)
+            {
+                verglichen++;
+                ReellPruefen(ziel, was, abgeleitet, original);
+            }
+
+            void Ganz(string was, int abgeleitet, int original)
+            {
+                verglichen++;
+                GanzPruefen(ziel, was, abgeleitet, original);
+            }
+
+            using JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8));
+            JsonElement w = d.RootElement;
+
+            // --- 1. Die Codes sind neutral, die Merkmale stimmen ------------------------------
+            var codeAlt = new Dictionary<string, string>(StringComparer.Ordinal);
+            JsonElement typtage = w.GetProperty("typtage");
+            Assert.Equal(quellTyptage.Count, typtage.GetArrayLength());
+            int i = 0;
+            foreach (JsonElement t in typtage.EnumerateArray())
+            {
+                string code = t.GetProperty("code").GetString();
+                Assert.Matches("^TT[0-9]{2}$", code);
+                Assert.DoesNotContain(quellTyptage.Select(r => r["code"]), c => c == code);
+                codeAlt[code] = quellTyptage[i]["code"];
+                i++;
+            }
+
+            // --- 2. Die Varianten sind neutral ----------------------------------------------
+            var artAlt = new Dictionary<string, string>(StringComparer.Ordinal);
+            var reihenfolge = new List<string>();
+            foreach (Dictionary<string, string> r in quellFaktoren)
+                if (!reihenfolge.Contains(r["gebaeude"])) reihenfolge.Add(r["gebaeude"]);
+            JsonElement arten = w.GetProperty("gebaeudearten");
+            Assert.Equal(reihenfolge.Count, arten.GetArrayLength());
+            i = 0;
+            foreach (JsonElement a in arten.EnumerateArray())
+            {
+                string neu = a.GetString();
+                Assert.Matches("^variante_[0-9]+$", neu);
+                artAlt[neu] = reihenfolge[i];
+                i++;
+            }
+
+            // Die Vollständigkeit je Abschnitt: Was die Quelle führt, steht auch in der Ausgabe.
+            int anzahlTage = 0, anzahlFaktoren = 0, anzahlKennwerte = 0;
+            var benutzteQuellzeilen = new HashSet<string>(StringComparer.Ordinal);
+
+            // --- 3. Die Kalendertage je Zone: ganze Zahlen, Summe 365 -----------------------
+            foreach (JsonProperty art in w.GetProperty("typtage_je_zone").EnumerateObject())
+            {
+                string alt = artAlt[art.Name];
+                string variante = quellAnzahl.Select(r => r["variante"]).Distinct()
+                                             .First(v => alt.EndsWith(v, StringComparison.Ordinal));
+                foreach (JsonProperty zone in art.Value.EnumerateObject())
+                {
+                    Dictionary<string, string> quelle = quellAnzahl.Single(
+                        r => r["variante"] == variante && r["zone"] == zone.Name);
+                    int summe = 0;
+                    foreach (JsonProperty tt in zone.Value.EnumerateObject())
+                    {
+                        int neu = tt.Value.GetInt32();
+                        summe += neu;
+                        anzahlTage++;
+                        Ganz(art.Name + "/" + zone.Name + "/" + tt.Name, neu,
+                             int.Parse(quelle[codeAlt[tt.Name]], CultureInfo.InvariantCulture));
+                    }
+                    if (summe != 365) funde.Add(art.Name + "/" + zone.Name + ": Summe " + summe + " statt 365");
+                    benutzteQuellzeilen.Add(variante + "|" + zone.Name);
+                }
+            }
+
+            // --- 4. Die Faktoren: reell, dürfen negativ sein ------------------------------
+            var quellFaktor = quellFaktoren.ToDictionary(r => r["gebaeude"] + "|" + r["zone"] + "|" + r["typtag"],
+                                                        r => double.Parse(r["f_twe_tt"], CultureInfo.InvariantCulture),
+                                                        StringComparer.Ordinal);
+            foreach (JsonProperty art in w.GetProperty("f_twe_tt").EnumerateObject())
+                foreach (JsonProperty zone in art.Value.EnumerateObject())
+                    foreach (JsonProperty tt in zone.Value.EnumerateObject())
+                    {
+                        anzahlFaktoren++;
+                        Reell(art.Name + "/" + zone.Name + "/" + tt.Name, tt.Value.GetDouble(),
+                              quellFaktor[artAlt[art.Name] + "|" + zone.Name + "|" + codeAlt[tt.Name]]);
+                    }
+
+            // --- 5. Die Kennwerte -----------------------------------------------------------
+            foreach (JsonProperty kw in w.GetProperty("kennwerte").EnumerateObject())
+            {
+                string alt = kw.Name == "wintergrenze" ? "grenze_uebergang_winter"
+                           : kw.Name == "bewoelkung.schwelle" ? "grenze_bewoelkt_bedeckungsgrad"
+                           : kw.Name.StartsWith("heizgrenze.", StringComparison.Ordinal)
+                               ? "heizgrenztemperatur_" + quellAnzahl.Select(r => r["variante"]).Distinct()
+                                     .First(v => artAlt[kw.Name.Substring("heizgrenze.".Length)].EndsWith(v, StringComparison.Ordinal))
+                               : kw.Name;
+                Assert.True(quellKennwerte.ContainsKey(alt), "Kein Kennwert der Quelle zu " + kw.Name);
+                anzahlKennwerte++;
+                Reell("Kennwert " + kw.Name, kw.Value.GetDouble(), Kennwertzahl(quellKennwerte[alt]));
+            }
+
+            // --- 6. Vollständigkeit je Abschnitt gegen die Quelle ---------------------------
+            // Jeder Faktor der Quelle hat seine abgeleitete Zelle; jede (Variante, Zone) der
+            // Tabelle der Kalendertage ist benutzt; je Gebäudeart und Zone stehen alle Typtage.
+            // So fällt eine Zelle auf, die die Ableitung stillschweigend weggelassen hätte.
+            int artenzahl = w.GetProperty("gebaeudearten").GetArrayLength();
+            int zonenzahl = w.GetProperty("klimazonen").GetArrayLength();
+            int typtagzahl = w.GetProperty("typtage").GetArrayLength();
+            Assert.Equal(quellFaktor.Count, anzahlFaktoren);
+            Assert.Equal(artenzahl * zonenzahl * typtagzahl, anzahlFaktoren);
+            Assert.Equal(artenzahl * zonenzahl * typtagzahl, anzahlTage);
+            Assert.Equal(quellAnzahl.Count, benutzteQuellzeilen.Count);
+            Assert.Equal(quellAnzahl.Select(r => r["zone"]).Distinct().Count(), zonenzahl);
+            Assert.Equal(anzahlTage + anzahlFaktoren + anzahlKennwerte, verglichen);
+
+            Assert.True(verglichen > 0, "Nichts verglichen.");
+            Assert.True(funde.Count == 0, "Abgeleitete VDI-4655-Werte ausserhalb der Regel (ZU19), " + funde.Count +
+                                          " von " + verglichen + ":\n" + string.Join("\n", funde.Take(40)));
+
+            // Die Gegenprobe der beiden Regeln steht in `Die_Proben_der_ZU19_Regel_schlagen_an` —
+            // sie läuft auch ohne die lokalen Originale.
+        }
+
+        /// <summary>
+        /// Ein Kennwert der Quelle als Zahl. Ein Bruch <c>a/b</c> wird ausgerechnet; trägt er die
+        /// Einheit „Achtel", zählt er in Achteln (mal 8) — dieselbe Regel wie im Ableitungsskript.
+        /// </summary>
+        private static double Kennwertzahl(Dictionary<string, string> zeile)
+        {
+            string s = (zeile["wert"] ?? "").Trim();
+            if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double wert)) return wert;
+            string[] teile = s.Split('/');
+            Assert.True(teile.Length == 2, "Kennwert ist weder Zahl noch Bruch.");
+            double bruch = double.Parse(teile[0], CultureInfo.InvariantCulture)
+                           / double.Parse(teile[1], CultureInfo.InvariantCulture);
+            string einheit = zeile.TryGetValue("einheit", out string e) ? (e ?? "") : "";
+            return einheit.Trim().StartsWith("Achtel", StringComparison.OrdinalIgnoreCase) ? bruch * 8.0 : bruch;
+        }
+
+        /// <summary>Der lokale Ordner der VDI-4655-Originale (Muster <see cref="VdiOriginale"/>); sonst <c>null</c>.</summary>
+        private static string Vdi4655Originale([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            foreach (string start in new[] { Path.GetDirectoryName(eigeneDatei ?? ""), AppContext.BaseDirectory })
+            {
+                DirectoryInfo o = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                for (int i = 0; i < 8 && o != null; i++, o = o.Parent)
+                {
+                    string kandidat = Path.Combine(o.FullName, "Referenzlaeufe", "Normzahlen", "vdi4655");
+                    if (File.Exists(Path.Combine(kandidat, "typtage.csv"))) return kandidat;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>Die committete Datei <c>Referenzlaeufe/Skripte/vdi4655_abgeleitet.json</c>; sonst <c>null</c>.</summary>
+        private static string AbgeleiteteTyptage([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            foreach (string start in new[] { Path.GetDirectoryName(eigeneDatei ?? ""), AppContext.BaseDirectory })
+            {
+                DirectoryInfo o = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                for (int i = 0; i < 8 && o != null; i++, o = o.Parent)
+                {
+                    string kandidat = Path.Combine(o.FullName, "Referenzlaeufe", "Skripte", "vdi4655_abgeleitet.json");
+                    if (File.Exists(kandidat)) return kandidat;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Der lokale Ordner der VDI-6002-Originale: aufwärts gesucht nach
         /// <c>Referenzlaeufe/Normzahlen/vdi6002/bedarfskennwerte.csv</c> (Muster <see cref="Normzahlen"/>),

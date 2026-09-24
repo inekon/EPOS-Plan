@@ -61,6 +61,17 @@ public sealed class ZapfprofilKiSicht
     public Func<int?, string?>? RechenwegSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? RechenwegEintraege { get; init; }
 
+    public Func<bool>? TyptagewegLesen { get; init; }
+    public Func<bool, string?>? TyptagewegSetzen { get; init; }
+
+    public Func<int?>? TyptagzoneLesen { get; init; }
+    public Func<int?, string?>? TyptagzoneSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? TyptagzoneEintraege { get; init; }
+
+    public Func<int?>? TyptagartLesen { get; init; }
+    public Func<int?, string?>? TyptagartSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? TyptagartEintraege { get; init; }
+
     public Func<int?>? SeedLesen { get; init; }
     public Func<int?, string?>? SeedSetzen { get; init; }
 
@@ -127,6 +138,37 @@ public sealed class ZapfprofilKiSicht
         get => RechenwegLesen?.Invoke();
         set => ZapfprofilKiRegeln.Setze(RechenwegSetzen, value);
     }
+
+    /// <summary>
+    /// <b>Rechnet der Jahresgang über die eingespielten Typtage?</b> (Stufe Experte, 4.2; Z4b)
+    /// Eine Größe des PROJEKTS. Ohne eingespielte Typtage benannt abgelehnt — dieselbe Sperre wie
+    /// am Schalter des Dialogs.
+    /// </summary>
+    public bool Typtageweg
+    {
+        get => TyptagewegLesen?.Invoke() ?? false;
+        set => ZapfprofilKiRegeln.Setze(TyptagewegSetzen, value);
+    }
+
+    /// <summary>Die Klimazone der Typtage — nur eine Nummer des eingespielten Pakets; leer = keine Wahl.</summary>
+    public int? Typtagzone
+    {
+        get => TyptagzoneLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(TyptagzoneSetzen, value);
+    }
+
+    /// <summary>Die Gebäudeart der Typtage — nur eine des eingespielten Pakets; leer = keine Wahl.</summary>
+    public int? Typtagart
+    {
+        get => TyptagartLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(TyptagartSetzen, value);
+    }
+
+    /// <summary>Die Klimazonen des eingespielten Pakets (KI‑D‑Q6) — Schlüssel ist die Nummer.</summary>
+    public IReadOnlyList<KiWahleintrag> TyptagzoneWahl => TyptagzoneEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Gebäudearten des eingespielten Pakets (KI‑D‑Q6) — Schlüssel ist der Platz in der Liste.</summary>
+    public IReadOnlyList<KiWahleintrag> TyptagartWahl => TyptagartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     /// <summary>Die Zufallssaat; leer = Vorgabe.</summary>
     public int? Seed

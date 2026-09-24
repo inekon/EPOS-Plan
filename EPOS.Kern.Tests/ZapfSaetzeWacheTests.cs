@@ -40,7 +40,13 @@ namespace EPOS.Kern.Tests
                                         .Select(b => ZapfprofilAuslegung.Bezugsartbegriff(b).Kennung).ToArray(),
             ["BEGRIFF_EINHEIT_"] = Enum.GetValues(typeof(ZapfBezugsart)).Cast<ZapfBezugsart>()
                                       .Select(b => Schaetzhilfe.Einheitbegriff(b).Kennung).ToArray(),
-            ["BEGRIFF_TABELLE_"] = TwwSchema.AlleAnweisungen.Select(a => ((ZapfSatz)ZapfSatz.Tabelle(a.Key)).Kennung).ToArray()
+            ["BEGRIFF_TABELLE_"] = TwwSchema.AlleAnweisungen.Select(a => ((ZapfSatz)ZapfSatz.Tabelle(a.Key)).Kennung).ToArray(),
+            ["BEGRIFF_TYPTAG_JAHRESZEIT_"] = Enum.GetValues(typeof(Typtagjahreszeit)).Cast<Typtagjahreszeit>()
+                                                 .Select(j => Typtagzuordnung.Jahreszeitbegriff(j).Kennung).ToArray(),
+            ["BEGRIFF_TYPTAG_TAGART_"] = Enum.GetValues(typeof(Typtagart)).Cast<Typtagart>()
+                                             .Select(t => Typtagzuordnung.Tagartbegriff(t).Kennung).ToArray(),
+            ["BEGRIFF_TYPTAG_BEWOELKUNG_"] = Enum.GetValues(typeof(Typtagbewoelkung)).Cast<Typtagbewoelkung>()
+                                                 .Select(b => Typtagzuordnung.Bewoelkungsbegriff(b).Kennung).ToArray()
         };
 
         [Fact]
@@ -289,7 +295,10 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Quellen des Kerns, die Sätze bauen: Zapfprofil-Ordner und Controller.</summary>
         private static IEnumerable<string> Quellen()
             => new[] { Pfad("EPOS.Kern", "Allgemein", "Zapfprofil"), Pfad("EPOS.Kern", "Controller") }
-               .SelectMany(o => Directory.GetFiles(o, "*.cs"));
+               .SelectMany(o => Directory.GetFiles(o, "*.cs"))
+               // Der Leser der eingespielten Typtage (Stufe Z4b) liegt beim Import, nennt aber
+               // seine Ablehnungen als ZapfSatz - also gehoert er in den Quellenkreis.
+               .Concat(new[] { Pfad("EPOS.Kern", "Allgemein", "Import", "Normformvektorleser.cs") });
 
         private static string[] Platzhalter(string text)
             => Regex.Matches(text ?? "", @"\{\d+(:[^}]*)?\}").Select(m => m.Value).Distinct().OrderBy(s => s, StringComparer.Ordinal).ToArray();
