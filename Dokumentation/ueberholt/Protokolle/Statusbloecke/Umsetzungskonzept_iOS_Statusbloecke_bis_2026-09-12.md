@@ -10085,3 +10085,80 @@ offen; (b) Satz 79 `Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber
 keinen Katalogverweis fuehrt“) ist veraltet, nur Kommentar; (e)
 Änderungsdatum im Bearbeiten-Zweig des Assistenten und in
 `BrauchwasserFertig` bleibt weiter bei jedem Speichern.
+
+## #489 — Kleinreste zur Gebäudeliste: Wiki-Satz, Kopfkommentar, Änderungsdatum beim Brauchwasser-OK (24.09.2026)
+
+Anwenderauftrag „fahre fort“ (24.09.2026); Basis `39319322` (#484 E16,
+Schema 129), Fast-Forward-Merge, kein Schemaschritt, Testdatenbank
+unverändert. Commits (Opus 5.5): `5297f927` (Wiki), `80969ff0`
+(Kommentar), `676b500b` (Brauchwasser).
+
+**(1) Wiki-Quelle `Projekte/Wiki/Programm Dokumentation -
+Gebäude.wiki`.** Befund: `WizardCtrl.Schreibe_Projekt_ZuordungGebäude`
+schreibt die Zuordnungswerte einer bleibenden Zeile aus der Liste des
+Dialogs und nur bei Unterschied; aus dem Katalog kommt nur die Kopie
+eines neu hinzugekommenen Gebäudes. Umsetzung: Zeile 33 sagt das
+jetzt; Zeile 143 („Grenzen“) behauptete dasselbe Falsche („Änderung am
+Katalogsatz erreicht das Projekt erst, wenn die Gebäudeliste mit OK
+neu geschrieben wird“) und sagt jetzt: eine spätere Katalogänderung
+erreicht eine bleibende Zeile nicht, dafür Zeile entfernen und
+Katalogsatz neu übernehmen. Anker unverändert, Tabuwort-Muster 0
+Treffer. Upload ausstehend (Sammel-Upload).
+
+**(2) Kopfkommentar
+`EPOS.UI/Dialoge/Bedarf/GebaeudeAdminDialog.razor`.** Befund: der
+Kommentar nannte die Namenserkennung als einzigen Weg. Umsetzung:
+`GebaeudeStammCtrl.Projektverwendung` erkennt die Nutzung über
+`COALESCE(s.Bezeichner, g.Gebaeudename)`, also über den Katalogverweis
+`Tab_Gebaeude.ID_Gebaeude_Stamm`; der Name ist nur Rückfall für
+Altbestand ohne Verweis. Kommentar berichtigt, nur Kommentar geändert.
+
+**(3a) Brauchwasser-OK im Gebäudekatalog.** Befund: nicht nur
+`GebaeudeKatalogHuelle.BrauchwasserFertig` setzte das Änderungsdatum
+bei jedem OK — `ZapfprofilHuelle.BrauchwasserSchreiben` löschte und
+legte die Zuordnungen bei jedem OK neu an,
+`Del_`/`Add_Projekt_Brauchwasser` markieren das Projekt selbst.
+Umsetzung: neu `Z_ProjektBrauchwasserCtrl.GleichGespeichert(idProjekt,
+liste)` im Kern (gleich = Zeilenzahl, Reihenfolge, Bezeichner, Summe
+stimmen und die gespeicherte Zeile zeigt schon auf die Projektkopie
+ihres Bezeichners; im Zweifel ungleich → schreiben);
+`BrauchwasserSchreiben` löscht/legt nur bei ungleich neu an; gilt auch
+für den Brauchwasser-Weg der Startseite (derselbe Schreibweg); der
+Rückruf `BrauchwasserFertig` entfällt samt Parametereintrag
+(Razor-Parameter bleibt, nullable).
+
+**Tests.** +2 in `EPOS.Kern.Tests/ZapfprofilEinstiegTests`: OK ohne
+Änderung lässt Datum und Zuordnungs-Ids stehen, geänderte Summe
+schreibt und setzt das Datum; die Gleichheitsprobe meldet zusätzliche,
+fehlende und umbenannte Zeile als ungleich.
+
+**(3b) Bearbeiten-Zweig des Assistenten bleibt offen (Befund).**
+`AssistentCtrl.Fortschreiben` löscht und legt sechs Gewerke neu an
+(Wärmeerzeuger samt Projektgeräten, Energieträger, Prozess,
+Stromganglinie 8760 Werte, externer Wärmebedarf, Stromverbraucher);
+`WizardCtrl` markiert das Projekt an 21 Stellen;
+`ProjektkopfUebernehmen` setzt das Datum immer auf „jetzt“,
+`Update_Projekt` schreibt es. Weg: Schnappschuss der sechs Listen und
+des Kopfs beim Laden, wertgleicher Vergleich vor dem Schreiben
+(Modelle ohne Gleichheit, `Tab_Energieanlagen` 63 Spalten), jedes
+Del/Add-Paar wie beim Gebäude-Abgleich überspringen; Nebenwirkungen
+Pufferzeilen, `NeueAnlagenSenkenNachziehen`,
+`ProjektgeraeteNachziehen`. Geschätzt 1–2 Arbeitstage mit Tests,
+Risiko am Erzeugerzweig — nur auf Zuruf.
+
+**Gate (Agent-Worktree, Stand `676b500b` = Merge).** Kern-Filter 0
+Fehler; Tests EPOS.Kern 6119, EPOS.UI 6020, KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27 (1 übersprungen); Windows-Schale Debug x64 0
+Fehler; SqlDialektPruefer 1824 Texte, 0 Fundstellen; kein Referenzlauf
+(kein Rechenweg, Testdatenbank unverändert).
+
+**Logbuch.** Keiner (Kleinigkeit; der Satz aus #487 deckt die
+Gebäudeliste).
+
+**Offen / bewusst nicht angefasst (in „Nach #489“).** (a)
+Bearbeiten-Zweig des Assistenten wie unter (3b) beschrieben — nur auf
+Zuruf; (b) Satz 79 `Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber
+7.655,75 beim Ausgangssatz `KrankenH_NE` (Bestand, s. Nach #485 und
+Nach #487 (b)); (c) `Rang()`-Gewichtung Schlüssel gegen Anzeigename
+bleibt offener Anwenderentscheid (Empfehlung „Regel lassen“,
+unverändert aus Nach #487 (a)).
