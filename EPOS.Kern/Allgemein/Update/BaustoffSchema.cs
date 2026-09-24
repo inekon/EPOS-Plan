@@ -58,10 +58,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: Migration,
         /// Werkzeug und Nachweis lesen sie hier; S-B und S-C zählen von ihr aus weiter. Vergeben
-        /// am 24.09.2026 für die Welle G3-B — 129 (Wiederholperiode) und 130 (Anschlusslängen im
-        /// Gebäudekatalog) tragen parallele Schritte.
+        /// am 25.09.2026 für die Welle G3-B — 129 (Wiederholperiode), 130 (Anschlusslängen im
+        /// Gebäudekatalog) und 131 (Typtage des Zapfprofils) tragen parallele Schritte.
         /// </summary>
-        public const int SCHRITT = 131;
+        public const int SCHRITT = 132;
 
         // =================================================================
         //  Namen — sprachneutral und EINMAL
