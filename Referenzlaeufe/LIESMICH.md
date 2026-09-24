@@ -485,32 +485,28 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
 
-> **Nachtrag: Schemastand 121 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3), die Basis bleibt.**
-> Migrationsschritt **121** (`SCHRITT_121_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
-> Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an `Tab_TwwProjekt` die Laufangaben
-> der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2), `Personen_Auto` (0/1, Vorgabe 1),
-> `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an `Tab_TwwBedarfstag_STAMM` die
-> `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar. Nachgezogen auf der Fassung **120**
-> (Nachtrag E10 oben) mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
-> danach [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py): Es führt am
-> Ecodesign-Zapfprofil L des freien Paketteils die Bezugsart 2 (Wohneinheiten) nach (0 angelegt,
-> 1 nachgeführt); ein zweiter Lauf meldet 0/0. Zellvergleich aller 132 Tabellen gegen die Fassung 120
-> (10 498 997 Zellen): `SchemaVersion` 120 → 121, die sechs neuen Spalten — `Tab_TwwProjekt` ohne Zeile,
-> die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei fiktiven Tagen NULL —, sonst nichts; die
-> 14 Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von
-> 131 Fachtabellen STRICT, Größe unverändert 67 784 704 Byte. **Keine Einfrierregel ist berührt:** Kein
-> Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
-> Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `e9c9cac3…`).
-
-> **Nachtrag: drei Setzungen des freien Paketteils (Zapfprofilgenerator, Stufe Z4), Schemastand 121,
-> die Basis bleibt.** [`Katalogpaket_frei/Tab_TwwParameter_STAMM.csv`](Katalogpaket_frei/LIESMICH.md) trägt
+> **Nachtrag: Schemastand 121 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3) und drei Setzungen des
+> freien Paketteils, die Basis bleibt.** Migrationsschritt **121** (`SCHRITT_121_ZAPFPROFIL_LAUFANGABEN`;
+> Quelle `TwwSchema.SpaltenT3`, die Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an
+> `Tab_TwwProjekt` die Laufangaben der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2),
+> `Personen_Auto` (0/1, Vorgabe 1), `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an
+> `Tab_TwwBedarfstag_STAMM` die `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar.
+> Nachgezogen auf der Fassung **120** (Nachtrag E10 oben, `52c4729d…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (sechs Spalten
+> angelegt; ein zweiter Lauf legt nichts an), danach
+> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) mit `--stochastik`: Es führt am
+> Ecodesign-Zapfprofil L des freien Paketteils die Bezugsart 2 (Wohneinheiten) nach und spielt aus
+> [`Katalogpaket_frei/Tab_TwwParameter_STAMM.csv`](Katalogpaket_frei/LIESMICH.md) die drei Setzungen
 > `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (1,5), `Zapfprofil.Anzeigetemperatur` (45 °C) und
-> `Zapfprofil.Stundenschwelle` (0,1 kW) — Setzungen von INEKON zur Bestätigung (ZU21);
-> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) hat sie nach der Regel der
-> Testdatenbank eingespielt (3 angelegt, 0 nachgeführt; ein zweiter Lauf meldet 0/0). Zellvergleich aller
-> 132 Tabellen gegen die Fassung `e9c9cac3…`: allein die drei Zeilen in `Tab_TwwParameter_STAMM` (samt
-> `sqlite_sequence`). `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte.
-> **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator (LFS-SHA-256 `17cf3fc7…`).
+> `Zapfprofil.Stundenschwelle` (0,1 kW) nach der Regel der Testdatenbank ein — Setzungen von INEKON zur
+> Bestätigung (ZU21) —, zusammen 3 angelegt, 1 nachgeführt; ein zweiter Lauf meldet 0/0. Zellvergleich
+> aller 132 Tabellen gegen die Fassung 120 (10 499 033 Zellen): `SchemaVersion` 120 → 121, die sechs neuen
+> Spalten — `Tab_TwwProjekt` ohne Zeile, die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei
+> fiktiven Tagen NULL —, die drei Zeilen in `Tab_TwwParameter_STAMM` (samt `sqlite_sequence`), sonst
+> nichts; die 14 Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer,
+> 131 von 131 Fachtabellen STRICT, Größe unverändert 67 784 704 Byte. **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
+> diese Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `88e9c522…`).
 
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
