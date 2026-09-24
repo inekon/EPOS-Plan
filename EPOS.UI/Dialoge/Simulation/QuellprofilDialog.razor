@@ -559,8 +559,28 @@
         BetriebsartEintraege = Betriebsartwahl,
         ProfilLesen = () => _profil,
         ProfilSetzen = ProfilWaehlen,
-        ProfilEintraege = Profilwahl
+        ProfilEintraege = Profilwahl,
+        MonatswerteLesen = () => IstMonat ? (double?[])_monat.Clone() : null,
+        MonatswerteSetzen = KiMonatswerteSetzen
     };
+
+    /// <summary>
+    /// Der Assistent setzt die zwölf Monatswerte (Welle #458 Stufe 3b) — nur in der
+    /// Betriebsart „Monat", in der die Maske sie zeigt; sonst benannt abgelehnt.
+    /// </summary>
+    private void KiMonatswerteSetzen(double?[] werte)
+    {
+        if (!IstMonat)
+        {
+            int i = _betriebsart ?? 0;
+            string art = i >= 0 && i < BetriebsartTexte.Count ? BetriebsartTexte[i] : Betriebsart;
+            throw new InvalidOperationException(
+                string.Format(Resource.KI_DLG_QPROF_NICHT_MONAT, art));
+        }
+
+        for (int m = 0; m < 12 && m < werte.Length; m++) _monat[m] = werte[m] ?? _monat[m];
+        _modell = null;
+    }
 
     /// <summary>
     /// Die Betriebsarten für den Assistenten (KI-F1b): Schlüssel ist der STEUERWERT

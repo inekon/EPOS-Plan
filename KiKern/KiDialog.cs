@@ -69,6 +69,19 @@ namespace KiKern
         /// nicht - sonst liesse sich aus einem geschuetzten Satz heraus nie ein eigener
         /// waehlen, und genau dorthin fuehrt der Weg „Duplizieren…".
         /// </param>
+        /// <param name="reihe">
+        /// NUR fuer eine ZAHLENREIHE (<see cref="KiParameterTyp.ZahlListe"/>, Welle #458
+        /// Stufe 3b): Laenge und Stellennamen. Art und Form gehoeren zusammen - eine
+        /// Zahlenreihe ohne Form waere eine Liste unbekannter Laenge, eine Form ohne die
+        /// Art eine Angabe ohne Gegenstand.
+        /// </param>
+        /// <param name="min">
+        /// Untergrenze einschliesslich (nur Zahl, Ganzzahl, Zahlenreihe - bei der Reihe je
+        /// Wert). Sie steht dort, wo das Eingabefeld der Maske sie fuehrt (<c>Min</c> am
+        /// <c>Zahlenfeld</c>), und nirgends sonst: Eine Grenze, die die Maske nicht kennt,
+        /// wiese der Assistent ab, waehrend der Anwender sie eintippen koennte.
+        /// </param>
+        /// <param name="max">Obergrenze einschliesslich - dieselbe Regel wie <paramref name="min"/>.</param>
         public KiDialogFeld(string name,
                             string eigenschaftspfad,
                             string anzeigename,
@@ -79,7 +92,10 @@ namespace KiKern
                             string? hilfeSlug = null,
                             string? zeilenkennzeichen = null,
                             bool nurLesen = false,
-                            bool satzwahl = false)
+                            bool satzwahl = false,
+                            KiZahlenreihe? reihe = null,
+                            double? min = null,
+                            double? max = null)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -100,13 +116,35 @@ namespace KiKern
                 throw new ArgumentException(
                     "Das Feld '" + name + "' braucht eine Erlaeuterung in einem Satz.", nameof(erlaeuterung));
 
-            // Eine Zahlenliste hat auf einer Maske kein Control: gesetzt werden Textfeld,
+            // Eine Liste von IDs hat auf einer Maske kein Control: gesetzt werden Textfeld,
             // Haekchen und Auswahlliste (Fachkonzept 11.4). Was sich nicht setzen laesst,
             // soll sich auch nicht deklarieren lassen - sonst faellt es erst zur Laufzeit auf.
+            // Die Zahlenreihe (ZahlListe) ist die eine Liste, die eine Maske traegt - und
+            // nur MIT ihrer Form (Welle #458 Stufe 3b).
             if (typ == KiParameterTyp.GanzzahlListe)
                 throw new ArgumentException(
                     "Das Feld '" + name + "' kann keine Zahlenliste sein; ein Maskenfeld traegt genau einen Wert.",
                     nameof(typ));
+
+            if (typ == KiParameterTyp.ZahlListe && reihe == null)
+                throw new ArgumentException(
+                    "Die Zahlenreihe '" + name + "' braucht ihre Form (Laenge und Stellen).", nameof(reihe));
+            if (reihe != null && typ != KiParameterTyp.ZahlListe)
+                throw new ArgumentException(
+                    "Das Feld '" + name + "' fuehrt eine Reihenform, ist aber keine Zahlenreihe.", nameof(reihe));
+            if (reihe != null && KiEigenschaftspfad.IstSammlung(eigenschaftspfad))
+                throw new ArgumentException(
+                    "Die Zahlenreihe '" + name + "' kann keine Spalte sein; sie ist EIN Feld mit einer Liste.",
+                    nameof(eigenschaftspfad));
+
+            // Grenzen gibt es nur fuer Zahlen - und nur in der richtigen Reihenfolge.
+            if ((min.HasValue || max.HasValue) &&
+                typ != KiParameterTyp.Zahl && typ != KiParameterTyp.Ganzzahl && typ != KiParameterTyp.ZahlListe)
+                throw new ArgumentException(
+                    "Das Feld '" + name + "' fuehrt Grenzen, ist aber keine Zahl.", nameof(min));
+            if (min.HasValue && max.HasValue && min.Value > max.Value)
+                throw new ArgumentException(
+                    "Untergrenze groesser als Obergrenze beim Feld '" + name + "'.", nameof(min));
 
             // Ein Zeilenkennzeichen ohne Sammlung waere eine Angabe ohne Gegenstand -
             // und sie faellt sonst nie auf, weil sie schlicht nie gelesen wuerde.
@@ -128,6 +166,9 @@ namespace KiKern
             Zeilenkennzeichen = string.IsNullOrWhiteSpace(zeilenkennzeichen) ? "" : zeilenkennzeichen!.Trim();
             NurLesen = nurLesen;
             Satzwahl = satzwahl;
+            Reihe = reihe;
+            Min = min;
+            Max = max;
         }
 
         /// <summary>Logischer, sprachneutraler Schluessel des Feldes.</summary>
@@ -192,6 +233,24 @@ namespace KiKern
         /// </remarks>
         public bool IstWahl => Typ == KiParameterTyp.Wahl;
 
+        /// <summary>
+        /// Die Form einer ZAHLENREIHE (Welle #458 Stufe 3b); <c>null</c>, wenn das Feld
+        /// keine ist.
+        /// </summary>
+        public KiZahlenreihe? Reihe { get; }
+
+        /// <summary>Ist das Feld eine Zahlenreihe? Gesetzt wird sie mit <c>reihe_setzen</c>.</summary>
+        public bool IstReihe => Reihe != null;
+
+        /// <summary>Untergrenze einschliesslich (bei einer Reihe je Wert); <c>null</c> = keine.</summary>
+        public double? Min { get; }
+
+        /// <summary>Obergrenze einschliesslich (bei einer Reihe je Wert); <c>null</c> = keine.</summary>
+        public double? Max { get; }
+
+        /// <summary>Fuehrt das Feld eine Grenze?</summary>
+        public bool HatBereich => Min.HasValue || Max.HasValue;
+
         /// <summary>Fuehrt dieses Feld ueber eine Sammlung - ist es also eine SPALTE?</summary>
         public bool IstSpalte => KiEigenschaftspfad.IstSammlung(Eigenschaftspfad);
 
@@ -240,7 +299,10 @@ namespace KiKern
                 HilfeSlug.Length == 0 ? null : HilfeSlug,
                 Zeilenkennzeichen.Length == 0 ? null : Zeilenkennzeichen,
                 NurLesen,
-                Satzwahl);
+                Satzwahl,
+                Reihe,
+                Min,
+                Max);
         }
 
         /// <inheritdoc/>

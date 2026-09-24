@@ -1197,6 +1197,94 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Welle #458 Stufe 3b: das Hüll-Raster und die Ferien
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die Randbedingung der Bodenplatte ist ein Wahlfeld</b> auf dem Weg der
+    /// Klappliste im Hüll-Raster: „Keller" setzt den Steuerwert und bringt die
+    /// Kellertemperatur ins Raster. Kennwert und Größe jeder Rasterzeile sind die Felder
+    /// der U-Werte und Flächen — dieselben Eigenschaften, an die die Zellen binden.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Randbedingung_des_Huellrasters()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang rand =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "randbedingung")!;
+        Assert.Equal(0, rand.Lesen());
+        Assert.Equal(3, rand.Wahleintraege().Count);
+
+        KiFeldumsetzung keller = KiFeldwandler.Wandle(rand, "Keller");
+        Assert.True(keller.Ok, keller.Grund);
+        cut.InvokeAsync(() => rand.Setzen(keller.Wert));
+        cut.Render();
+
+        Assert.Equal(DbWerte.GRUND_KELLER, cut.Instance.Arbeitsstand.GrundflaecheRandbedingung);
+        Assert.Contains("Kellertemperatur", Zeile(cut, "Bodenplatte").TextContent);
+
+        // Kennwert der Zeile „Außenwand" ist das Feld u_aussenwand.
+        WindowsFormsApplication1.KiFeldzugang u =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "u_aussenwand")!;
+        cut.InvokeAsync(() => u.Setzen(0.25));
+        cut.Render();
+        Assert.Equal(0.25, cut.Instance.Arbeitsstand.UWertAussenwand);
+    }
+
+    /// <summary>
+    /// <b>Die Ferien sind eine TABELLE</b> — vier Zeilen (Zeiträume), vier Spalten (Beginn
+    /// und Ende je Tag und Monat). Der Assistent setzt einen Zeitraum Zelle für Zelle mit
+    /// den Grenzen der Eingabefelder; die vier Regeln prüft der Dialog, und im OK-Weg
+    /// werden die Zellen zu Jahrestagen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_einen_Ferienzeitraum_in_der_Tabelle()
+    {
+        GebaeudeKatalogDaten? geschrieben = null;
+        var cut = Aufbauen(speichern: (d, _, _) =>
+        {
+            geschrieben = d;
+            return new GebaeudeKatalogErgebnis(true, "");
+        });
+
+        void Setze(string feld, string wert)
+        {
+            WindowsFormsApplication1.KiFeldzugang zugang =
+                KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, feld)!;
+            Assert.NotNull(zugang);
+            KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, wert);
+            Assert.True(umsetzung.Ok, umsetzung.Grund);
+            cut.InvokeAsync(() => zugang.Setzen(umsetzung.Wert));
+        }
+
+        // Die Grenzen der Eingabefelder: Tag 1 bis 31, Monat 1 bis 12.
+        WindowsFormsApplication1.KiFeldzugang monat =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "ferien_beginn_monat_3")!;
+        Assert.False(KiFeldwandler.Wandle(monat, "13").Ok);
+        Assert.False(KiFeldwandler.Wandle(
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "ferien_ende_tag_3")!, "0").Ok);
+
+        // Der dritte Zeitraum: Ende vor Beginn - der Dialog meldet es.
+        Setze("ferien_beginn_tag_3", "31");
+        Setze("ferien_beginn_monat_3", "8");
+        Setze("ferien_ende_tag_3", "15");
+        Setze("ferien_ende_monat_3", "7");
+        Assert.NotEqual("", KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDE_KATALOG).Befund());
+
+        // Richtig herum, und der OK-Weg macht Jahrestage daraus.
+        Setze("ferien_beginn_tag_3", "15");
+        Setze("ferien_beginn_monat_3", "7");
+        Setze("ferien_ende_tag_3", "31");
+        Setze("ferien_ende_monat_3", "8");
+        Ok(cut);
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(Ferienzeit.Jahrestag(7, 15), geschrieben!.Ferienbeginn[2]);
+        Assert.Equal(Ferienzeit.Jahrestag(8, 31), geschrieben.Ferienende[2]);
+    }
+
+    // =================================================================================
     // Stufe KU1 — die Gruppe „Kühlung" (Kühlkonzept 8.1, 8.6 Maske 2; E20, E31)
     // =================================================================================
 

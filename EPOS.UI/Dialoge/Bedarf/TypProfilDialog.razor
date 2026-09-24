@@ -454,8 +454,46 @@
             WochentagEintraege = () => KiMaskenanmeldung.Eintraege(Wochentage),
 
             BeschreibungLesen = () => Daten.Beschreibung,
-            BeschreibungSetzen = t => Daten.Beschreibung = t ?? ""
+            BeschreibungSetzen = t => Daten.Beschreibung = t ?? "",
+            WochenwerteLesen = KiWochenwerte,
+            WochenwerteSetzen = KiWochenwerteSetzen
         };
+    }
+
+    /// <summary>Die 168 übernommenen Werte als Zahlenreihe (Welle #458 Stufe 3b).</summary>
+    private double?[] KiWochenwerte()
+    {
+        double[] reihe = Daten.Wochenreihe();
+        var werte = new double?[reihe.Length];
+        for (int i = 0; i < reihe.Length; i++) werte[i] = reihe[i];
+        return werte;
+    }
+
+    /// <summary>
+    /// Der Assistent setzt die ÜBERNOMMENEN Wochenwerte — denselben Stand, den Tippen und
+    /// „Änderungen Übernehmen" setzen und „Speichern in DB" schreibt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die 24 Felder ziehen nur nach, wenn sich IHR Tag ändert.</b> So bleibt eine noch
+    /// nicht übernommene Eingabe des gezeigten Tages stehen, wenn der Assistent einen
+    /// anderen Tag setzt — und ein gesetzter Tag steht sofort in den Feldern.
+    /// </remarks>
+    private void KiWochenwerteSetzen(double?[] werte)
+    {
+        bool gezeigterTag = false;
+        for (int t = 0; t < TypProfilDaten.TAGE; t++)
+            for (int s = 0; s < TypProfilDaten.STUNDEN; s++)
+            {
+                int i = t * TypProfilDaten.STUNDEN + s;
+                if (i >= werte.Length || werte[i] is not double w || Daten.Werte[t, s] == w) continue;
+
+                Daten.Werte[t, s] = w;
+                if (t == _tag) gezeigterTag = true;
+            }
+
+        if (gezeigterTag) TagWaehlen(_tag);
+        BildNeu();
+        _meldung = "";
     }
 
     /// <summary>

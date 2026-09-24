@@ -147,6 +147,8 @@
         internal static string BeispielFeldSetzen => MyResource.Resource.KI_REG_BEISPIEL_FELD_SETZEN;
         internal static string TitelFormularAusfuellen => MyResource.Resource.KI_REG_TITEL_FORMULAR_AUSFUELLEN;
         internal static string BeispielFormularAusfuellen => MyResource.Resource.KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN;
+        internal static string TitelReiheSetzen => MyResource.Resource.KI_REG_TITEL_REIHE_SETZEN;
+        internal static string BeispielReiheSetzen => MyResource.Resource.KI_REG_BEISPIEL_REIHE_SETZEN;
         internal static string TitelDialogAktion => MyResource.Resource.KI_REG_TITEL_DIALOG_AKTION;
         internal static string BeispielDialogAktion => MyResource.Resource.KI_REG_BEISPIEL_DIALOG_AKTION;
         internal static string TitelVarianteAnlegen => MyResource.Resource.KI_REG_TITEL_VARIANTE_ANLEGEN;
@@ -272,6 +274,7 @@
         internal static string ZweckDialogErklaeren => MyResource.Resource.KI_REG_ZWECK_DIALOG_ERKLAEREN;
         internal static string ZweckFeldSetzen => MyResource.Resource.KI_REG_ZWECK_FELD_SETZEN;
         internal static string ZweckFormularAusfuellen => MyResource.Resource.KI_REG_ZWECK_FORMULAR_AUSFUELLEN;
+        internal static string ZweckReiheSetzen => MyResource.Resource.KI_REG_ZWECK_REIHE_SETZEN;
         internal static string ZweckDialogAktion => MyResource.Resource.KI_REG_ZWECK_DIALOG_AKTION;
 
         internal static string MaskeName => MyResource.Resource.KI_REG_MASKE_NAME;
@@ -286,8 +289,14 @@
         internal static string ErlWerte => MyResource.Resource.KI_REG_ERL_WERTE;
         internal static string ErlKnopf => MyResource.Resource.KI_REG_ERL_KNOPF;
 
+        // Die Zahlenreihe (Welle #458 Stufe 3b): die Liste und die erste Stelle.
+        internal static string AbName => MyResource.Resource.KI_REG_AB_NAME;
+        internal static string ErlReihenwerte => MyResource.Resource.KI_REG_ERL_REIHENWERTE;
+        internal static string ErlAb => MyResource.Resource.KI_REG_ERL_AB;
+
         internal static string WirkungFeldSetzen => MyResource.Resource.KI_REG_WIRKUNG_FELD_SETZEN;
         internal static string WirkungFormularAusfuellen => MyResource.Resource.KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN;
+        internal static string WirkungReiheSetzen => MyResource.Resource.KI_REG_WIRKUNG_REIHE_SETZEN;
         internal static string WirkungDialogAktion => MyResource.Resource.KI_REG_WIRKUNG_DIALOG_AKTION;
 
         // ------------------------------- Etappe S3: Oeffnen, Speichern, Rechnen (#201)

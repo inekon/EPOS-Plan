@@ -830,4 +830,72 @@ public class TypProfilDialogTests : EposBunitContext
 
         Assert.Equal("Neuer Text", zugang.Lesen());
     }
+
+    // =====================================================================
+    //  Die Zahlenreihe „wochenwerte" (Welle #458 Stufe 3b)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die 168 übernommenen Wochenwerte sind EINE Zahlenreihe:</b> gelesen als Liste
+    /// (Montag Stunde 1 zuerst), gesetzt als Ausschnitt ab einem Tag und als ganze Woche.
+    /// Die 24 Felder des gezeigten Tages ziehen nur nach, wenn sich SEIN Tag ändert.
+    /// </summary>
+    [Fact]
+    public void Die_Wochenwerte_liest_und_setzt_der_Assistent_als_Reihe()
+    {
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.TYPPROFIL;
+
+        double?[] gelesen = Hilfe.KiReihenhilfe.Werte(maske, "wochenwerte");
+        Assert.Equal(168, gelesen.Length);
+        Assert.Equal(1.0, gelesen[0]);
+        Assert.Equal(168.0, gelesen[167]);
+
+        // Der Dienstag ist die Stelle 25 bis 48; gezeigt ist der Montag, er bleibt.
+        Hilfe.KiReihenhilfe.Setze(maske, "wochenwerte", Hilfe.KiReihenhilfe.Gleich(24, 0.5), ab: 25);
+        cut.Render();
+        double?[] danach = Hilfe.KiReihenhilfe.Werte(maske, "wochenwerte");
+        Assert.Equal(24.0, danach[23]);
+        Assert.Equal(0.5, danach[24]);
+        Assert.Equal(0.5, danach[47]);
+        Assert.Equal(49.0, danach[48]);
+        Assert.Equal(1.0, cut.Instance.Felder[0]);
+
+        // Die ganze Woche - der gezeigte Montag zieht nach.
+        Hilfe.KiReihenhilfe.Setze(maske, "wochenwerte", Hilfe.KiReihenhilfe.Gleich(168, 2.0));
+        cut.Render();
+        Assert.All(cut.Instance.Felder, f => Assert.Equal(2.0, f));
+
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "wochenwerte", new double[167]));
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "wochenwerte", new double[24], ab: 146));
+    }
+
+    /// <summary>
+    /// <b>„Speichern in DB" schreibt, was der Assistent gesetzt hat</b> — die gesetzten
+    /// Werte SIND der übernommene Stand; ein Auslieferungstyp bleibt geschützt.
+    /// </summary>
+    [Fact]
+    public async Task Die_gesetzten_Wochenwerte_schreibt_der_Speicherweg_der_Maske()
+    {
+        double[,]? geschrieben = null;
+        var cut = Aufbauen(speichern: (_, w, _) => { geschrieben = (double[,])w.Clone(); return true; });
+
+        Hilfe.KiReihenhilfe.Setze(KiMaskennamen.TYPPROFIL, "wochenwerte", Hilfe.KiReihenhilfe.Folge(168, 0.5));
+
+        KiKern.KiErgebnis ergebnis =
+            await cut.InvokeAsync(() => KiMaskenbruecke.Haken(KiMaskennamen.TYPPROFIL).Speichern());
+
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.NotNull(geschrieben);
+        Assert.Equal(0.5, geschrieben![0, 0]);
+        Assert.Equal(84.0, geschrieben[6, 23]);
+    }
+
+    [Fact]
+    public void Ein_Auslieferungstyp_schuetzt_auch_seine_Wochenwerte()
+    {
+        Aufbauen(istReadOnly: _ => true);
+
+        Assert.True(KiMaskenbruecke.Haken(KiMaskennamen.TYPPROFIL).IstSchreibgeschuetzt());
+    }
 }

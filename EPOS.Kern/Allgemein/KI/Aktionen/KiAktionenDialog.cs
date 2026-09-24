@@ -11,11 +11,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Sieben Aktionen, drei Gattungen.</b> <c>dialog_lesen</c>,
+    /// <b>Acht Aktionen, drei Gattungen.</b> <c>dialog_lesen</c>,
     /// <c>dialog_parameter_erklaeren</c> und <c>dialog_oeffnen</c> gehoeren zu
     /// <see cref="Schutzstufe.Lesen"/>: Sie fassen keine Daten an (auch das Oeffnen einer
     /// Maske nicht — die Verantwortung geht mit dem Oeffnen an den Anwender ueber,
-    /// Fachkonzept 4.1). <c>feld_setzen</c>, <c>formular_ausfuellen</c> und
+    /// Fachkonzept 4.1). <c>feld_setzen</c>, <c>formular_ausfuellen</c>,
+    /// <c>reihe_setzen</c> (Zahlenreihen, Welle #458 Stufe 3b) und
     /// <c>dialog_aktion_ausfuehren</c> sind FORMULARAKTIONEN der Stufe 2: Sie wirken in
     /// die offene Maske. <c>dialog_speichern</c> ist die einzige Aktion dieser Datei, die
     /// in die DATENBANK wirkt — sie traegt deshalb den Sicherungspunkt (KI‑D‑Q4).
@@ -120,7 +121,7 @@ namespace WindowsFormsApplication1
                             "wert", KiHilfe.Text(w.IstWahl ? Wahlwert(w) : w.Text),
                             "eintraege", KiHilfe.Text(KiWahl.Aufzaehlen(w.Eintraege)),
                             "bedienbar", w.Setzbar,
-                            "hinweis", KiHilfe.Text(w.Setzbar ? null : KiDialogTexte.NichtSetzbar)));
+                            "hinweis", KiHilfe.Text(Lesehinweis(w))));
                     }
 
                     foreach (KiDialogKnopf k in eintrag.Knoepfe)
@@ -176,7 +177,14 @@ namespace WindowsFormsApplication1
                 {
                     string grund = BrueckenGrund(a.Text("maske"), a.Text("feld"));
                     if (grund != null) return grund;
-                    return FeldzugangGrund(a.Text("maske"), a.Text("feld"));
+
+                    // Der Grund nur, wenn das Feld FEHLT (Befund der Welle #458 Stufe 3b):
+                    // FeldzugangGrund liefert immer einen Satz, und unbedingt gerufen lehnte
+                    // die Vorbedingung jede Erklaerung ab - auch die eines vorhandenen Feldes.
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    return KiMaskenbruecke.Feldzugang(maske, a.Text("feld")) == null
+                        ? FeldzugangGrund(a.Text("maske"), a.Text("feld"))
+                        : null;
                 },
                 ausfuehren: a =>
                 {
@@ -210,6 +218,8 @@ namespace WindowsFormsApplication1
                         "leer_erlaubt", feld.LeerErlaubt,
                         "leer_regel", KiHilfe.Text(leerregel),
                         "erlaeuterung", KiHilfe.Text(feld.Erlaeuterung),
+                        "reihe", KiHilfe.Text(feld.IstReihe ? feld.Reihe.Umfang() : ""),
+                        "bereich", KiHilfe.Text(KiFeldwandler.Bereichstext(feld)),
                         "wert", KiHilfe.Text(Feldtext(zugang)),
                         "eintraege", KiHilfe.Text(auswahl),
                         "bedienbar", zugang.Setzbar,
@@ -223,6 +233,16 @@ namespace WindowsFormsApplication1
                         " (" + Typname(feld.Typ) +
                         (feld.Einheit.Length > 0 ? ", " + feld.Einheit : "") + ") " +
                         feld.Erlaeuterung + " " + leerregel;
+
+                    // Eine ZAHLENREIHE nennt Laenge und Stellen, jedes Zahlenfeld mit
+                    // Grenze seinen Bereich (Welle #458 Stufe 3b) - „welche Werte nimmt
+                    // das Feld an?" ist bei beiden die halbe Frage.
+                    if (feld.IstReihe)
+                        satz += " " + string.Format(CultureInfo.CurrentCulture,
+                                                    KiDialogTexte.ReiheUmfang, feld.Reihe.Umfang());
+                    if (feld.HatBereich)
+                        satz += " " + string.Format(CultureInfo.CurrentCulture,
+                                                    KiDialogTexte.Bereich, KiFeldwandler.Bereichstext(feld));
 
                     if (auswahl.Length > 0)
                         satz += " " + string.Format(CultureInfo.CurrentCulture,
@@ -521,6 +541,117 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // reihe_setzen  (Welle #458 Stufe 3b)
+        // =====================================================================
+
+        /// <summary>
+        /// Traegt in eine ZAHLENREIHE der offenen Maske eine Liste von Zahlen ein - die
+        /// ganze Reihe oder einen Ausschnitt ab einer Stelle. Andockpunkt
+        /// <c>KiFeldzugang.Setzen</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum eine eigene Aktion und kein weiterer Weg durch <c>feld_setzen</c>.</b>
+        /// Dort ist <c>wert</c> ein Pflichttext (siehe dort, „leeren oder vergessen"), und
+        /// <c>formular_ausfuellen</c> trennt seine Zuweisungen mit dem Strichpunkt. Eine
+        /// Zahlenliste als Text haette beide Regeln aufgeweicht - und die Laenge der Reihe
+        /// liesse sich nicht mehr vor dem Setzen pruefen. Hier ist die Liste ein
+        /// typgeprueftes Zahlenfeld (<see cref="KiParameterTyp.ZahlListe"/>), die Stelle
+        /// eine Ganzzahl, und die Form der Reihe steht im Katalog.
+        /// </para>
+        /// <para>
+        /// <b>Ein Block, ein Klick, gekuerzt.</b> Die Vorschau zeigt die geaenderten
+        /// Stellen „alt → neu" und ihre Zahl (<see cref="KiFeldBlock.Reihe"/>); die
+        /// Protokollzeile traegt die volle Liste als Parameter.
+        /// </para>
+        /// <para>
+        /// <b>Kein Sicherungspunkt</b> - dieselbe Festlegung wie bei <c>feld_setzen</c>:
+        /// Die Aktion schreibt in den Stand der Maske; in die Datenbank kommt die Reihe
+        /// erst mit <c>dialog_speichern</c> oder dem Knopf des Anwenders.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion ReiheSetzen()
+        {
+            return new KiAktion(
+                name: "reihe_setzen",
+                zweck: KiAktionsTexte.ZweckReiheSetzen,
+                titel: KiAktionsTexte.TitelReiheSetzen,
+                beispiel: KiAktionsTexte.BeispielReiheSetzen,
+                stufe: Schutzstufe.Schreiben,
+                andockpunkt: "KiFeldzugang.Setzen",
+                formularaktion: true,
+                datenbankwirksam: false,
+                umkehrbar: true,
+                wirkung: KiAktionsTexte.WirkungReiheSetzen,
+                parameter: new[] { MaskeParameter(), FeldParameter(), ReihenwerteParameter(), AbParameter() },
+                vorbedingung: a => ReihenGrund(a),
+                vorschau: a =>
+                {
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+                    KiFeldumsetzung umsetzung = KiFeldwandler.WandleReihe(zugang, a.ZahlListe("werte"), Ab(a));
+
+                    return KiFeldBlock.Reihe(eintrag.Anzeigename, zugang.Feld.Anzeigename, zugang.Feld.Reihe,
+                                             KiFeldwandler.Reihenwerte(zugang),
+                                             KiZahlenreihe.Werte(umsetzung.Wert),
+                                             CultureInfo.CurrentCulture);
+                },
+                ausfuehren: a =>
+                {
+                    string grund = ReihenGrund(a);
+                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
+
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+                    KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+                    double[] werte = a.ZahlListe("werte");
+                    int ab = Ab(a);
+
+                    IReadOnlyList<double?> alt = KiFeldwandler.Reihenwerte(zugang);
+                    KiFeldumsetzung umsetzung = KiFeldwandler.WandleReihe(zugang, werte, ab);
+                    if (!umsetzung.Ok) return KiErgebnis.Abgelehnt(umsetzung.Grund);
+
+                    try { zugang.Setzen(umsetzung.Wert); }
+                    catch (Exception ex)
+                    {
+                        return KiErgebnis.Abgelehnt(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_FELD_SETZEN_FEHLER,
+                                          zugang.Feld.Anzeigename, ex.Message));
+                    }
+
+                    haken.Auffrischung();
+
+                    IReadOnlyList<double?> neu = KiFeldwandler.Reihenwerte(zugang);
+                    int erste = ab <= 0 ? 1 : ab;
+                    int letzte = erste + werte.Length - 1;
+
+                    var zeilen = KiHilfe.Liste();
+                    zeilen.Add(KiHilfe.Zeile(
+                        "maske", eintrag.Maskenname,
+                        "feld", zugang.Name,
+                        "feld_genannt", KiHilfe.Text(a.Text("feld")),
+                        "ab", erste,
+                        "anzahl", werte.Length,
+                        "laenge", zugang.Feld.Reihe.Laenge,
+                        "wert_vorher", KiHilfe.Text(KiZahlenreihe.Kurz(alt, CultureInfo.CurrentCulture)),
+                        "wert_nachher", KiHilfe.Text(KiZahlenreihe.Kurz(neu, CultureInfo.CurrentCulture))));
+
+                    KiErgebnis ergebnis = KiErgebnis.Ok(
+                        string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ReiheGesetzt,
+                                      zugang.Feld.Anzeigename, werte.Length, zugang.Feld.Reihe.Laenge,
+                                      zugang.Feld.Reihe.Stellenname(erste),
+                                      zugang.Feld.Reihe.Stellenname(letzte)) +
+                        Aufloesung(a.Text("feld"), zugang),
+                        zeilen, anzahl: werte.Length);
+
+                    return MitBefund(ergebnis, haken);
+                });
+        }
+
+        // =====================================================================
         // dialog_speichern  (Auftrag #201, Punkt 4 - Anwenderentscheid KI-D-Q4)
         // =====================================================================
 
@@ -719,6 +850,30 @@ namespace WindowsFormsApplication1
                                    KiAktionsTexte.ErlWerte,
                                    anzeigename: KiAktionsTexte.WerteName,
                                    maxLaenge: 2000);
+        }
+
+        /// <summary>
+        /// Die Zahlen einer Reihe - ein typgeprueftes Zahlenfeld (Welle #458 Stufe 3b).
+        /// </summary>
+        /// <remarks>
+        /// Grenzen stehen hier NICHT: Sie gehoeren dem Eingabefeld der Maske und stehen im
+        /// Katalog (<see cref="KiDialogFeld.Min"/>); die Laenge sagt die Form der Reihe.
+        /// </remarks>
+        private static KiParameter ReihenwerteParameter()
+        {
+            return new KiParameter("werte", KiParameterTyp.ZahlListe,
+                                   KiAktionsTexte.ErlReihenwerte,
+                                   anzeigename: KiAktionsTexte.WerteName);
+        }
+
+        /// <summary>Die Stelle des ersten Wertes - optional; ohne sie die ganze Reihe.</summary>
+        private static KiParameter AbParameter()
+        {
+            return new KiParameter("ab", KiParameterTyp.Ganzzahl,
+                                   KiAktionsTexte.ErlAb,
+                                   pflicht: false,
+                                   anzeigename: KiAktionsTexte.AbName,
+                                   min: 1, max: KiZahlenreihe.MaxLaenge);
         }
 
         private static KiParameter KnopfParameter()
@@ -1103,6 +1258,74 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Vorbedingung von <c>reihe_setzen</c> (Welle #458 Stufe 3b): Maske angemeldet,
+        /// Feld da, eine Zahlenreihe und setzbar, kein Lesemodus, kein Schreibschutz,
+        /// Laenge und Grenzen passend, mindestens eine echte Aenderung.
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Reihenfolge wie bei <see cref="EinzelfeldGrund"/> - die Vorbedingung
+        /// laeuft vor der Vorschau, und die Vorschau darf danach ohne weitere Pruefung auf
+        /// Katalogeintrag, Zugang und Umsetzung zugreifen.
+        /// </remarks>
+        private static string ReihenGrund(KiAufruf a)
+        {
+            string grund = BrueckenGrund(a.Text("maske"), a.Text("feld"));
+            if (grund != null) return grund;
+
+            string maske = Maskenschluessel(a.Text("maske"));
+
+            grund = Lesemodus();
+            if (grund != null) return grund;
+
+            KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+            if (zugang == null) return FeldzugangGrund(maske, a.Text("feld"));
+
+            if (!zugang.Feld.IstReihe)
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_KEINE_REIHE,
+                                     zugang.Feld.Anzeigename);
+
+            grund = FeldSetzbar(zugang);
+            if (grund != null) return grund;
+
+            grund = Schreibschutz(maske, zugang);
+            if (grund != null) return grund;
+
+            KiFeldumsetzung umsetzung = KiFeldwandler.WandleReihe(zugang, a.ZahlListe("werte"), Ab(a));
+            if (!umsetzung.Ok) return umsetzung.Grund;
+
+            // Ohne Aenderung kein Block - dieselbe Regel wie bei formular_ausfuellen.
+            IReadOnlyList<double?> alt = KiFeldwandler.Reihenwerte(zugang);
+            IReadOnlyList<double?> neu = KiZahlenreihe.Werte(umsetzung.Wert) ?? Array.Empty<double?>();
+            for (int i = 0; i < neu.Count; i++)
+            {
+                double? vorher = i < alt.Count ? alt[i] : null;
+                if (vorher != neu[i]) return null;
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ReiheOhneAenderung,
+                                 zugang.Feld.Anzeigename);
+        }
+
+        /// <summary>Die Stelle des ersten Wertes; <c>0</c> = nicht genannt, die ganze Reihe.</summary>
+        private static int Ab(KiAufruf a) => a.Hat("ab") ? a.Id("ab") : 0;
+
+        /// <summary>
+        /// Der Hinweis einer Zeile von <c>dialog_lesen</c>: bei einer Zahlenreihe Umfang und
+        /// Weg (Welle #458 Stufe 3b), bei einem nicht setzbaren Feld der Grund.
+        /// </summary>
+        private static string Lesehinweis(KiFeldwert w)
+        {
+            if (w.Feld.IstReihe)
+            {
+                string reihe = string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ReiheHinweis,
+                                             w.Feld.Reihe.Umfang());
+                return w.Setzbar ? reihe : reihe + " " + KiDialogTexte.NichtSetzbar;
+            }
+
+            return w.Setzbar ? null : KiDialogTexte.NichtSetzbar;
+        }
+
         /// <summary>Vorbedingung von <c>dialog_speichern</c>.</summary>
         private static string SpeicherGrund(KiAufruf a)
         {
@@ -1397,6 +1620,7 @@ namespace WindowsFormsApplication1
                 case KiParameterTyp.Wahrheitswert: return KiDialogTexte.TypWahrheit;
                 case KiParameterTyp.Aufzaehlung:
                 case KiParameterTyp.Wahl: return KiDialogTexte.TypAuswahl;
+                case KiParameterTyp.ZahlListe: return KiDialogTexte.TypZahlenreihe;
                 default: return KiDialogTexte.TypText;
             }
         }

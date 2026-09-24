@@ -670,4 +670,66 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Equal("Erdsonde tief", wert.Text);
         Assert.Equal("7", wert.Schluessel);
     }
+
+    // ================================================================== Zahlenreihe
+
+    /// <summary>
+    /// <b>Die zwölf Monatswerte sind EINE Zahlenreihe</b> (Welle #458 Stufe 3b): gelesen,
+    /// ganz und je Monat gesetzt — die Felder der Monatsseite zeigen danach genau das; eine
+    /// falsche Länge wird abgelehnt.
+    /// </summary>
+    [Fact]
+    public void Die_Monatswerte_liest_und_setzt_der_Assistent_als_Reihe()
+    {
+        var cut = Zeige(Neu(), new Pruefstand());
+        const string maske = KiMaskennamen.QUELLPROFIL;
+
+        Assert.All(Hilfe.KiReihenhilfe.Werte(maske, "monatswerte"), w => Assert.Equal(10.0, w));
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "monatswerte", Hilfe.KiReihenhilfe.Folge(12, 0.5)));
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "monatswerte", new[] { -2.0 }, ab: 1));
+        cut.Render();
+
+        Assert.Equal(-2.0, cut.Instance.Monatsfelder[0]);
+        Assert.Equal(6.0, cut.Instance.Monatsfelder[11]);
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatswerte", new double[3]));
+    }
+
+    /// <summary>
+    /// <b>Außerhalb der Betriebsart „Monat" steht die Reihe nicht auf der Maske:</b> Sie
+    /// liest leer, und das Setzen lehnt mit dem Grund der Maske ab.
+    /// </summary>
+    [Fact]
+    public void In_der_Betriebsart_Stunde_lehnt_die_Reihe_benannt_ab()
+    {
+        var cut = Zeige(Neu(), new Pruefstand());
+        KiFeldzugang betriebsart = KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLPROFIL, "betriebsart")!;
+        cut.InvokeAsync(() => betriebsart.Setzen(STUNDE));
+
+        KiFeldzugang reihe = KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLPROFIL, "monatswerte")!;
+        Assert.Null(reihe.Lesen());
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => reihe.Setzen(new double?[12]));
+        Assert.Contains("Monat", fehler.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>OK speichert die gesetzte Reihe</b> — der Dialog schreibt selbst; einen
+    /// Speicherweg für den Assistenten meldet er nicht an.
+    /// </summary>
+    [Fact]
+    public void OK_speichert_die_gesetzten_Monatswerte()
+    {
+        var stand = new Pruefstand { SpeicherErgebnis = 55 };
+        var cut = Zeige(Neu(), stand);
+
+        Bezeichner(cut, "Profil A");
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(KiMaskennamen.QUELLPROFIL, "monatswerte",
+                                                        Hilfe.KiReihenhilfe.Folge(12, 1.5)));
+        Ok(cut);
+
+        Assert.NotNull(stand.Gespeichert);
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(12, 1.5), stand.Gespeichert!.Werte);
+        Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.QUELLPROFIL).Speichern);
+    }
 }

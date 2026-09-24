@@ -893,8 +893,42 @@
             LuftwechselrateLesen = () => _stand.Luftwechselrate,
             LuftwechselrateSetzen = w => _stand.Luftwechselrate = w,
 
-            BetriebsartLesen = () => Modus.ToString()
+            BetriebsartLesen = () => Modus.ToString(),
+
+            // Welle #458 Stufe 3b: die Randbedingung des Hüll-Rasters und die Ferien.
+            RandbedingungLesen = () => Randindex,
+            RandbedingungSetzen = RandbedingungWaehlen,
+            RandbedingungEintraege = () => KiMaskenanmeldung.Eintraege(
+                Randeintraege, e => e.Id, e => e.Text),
+            FerienLesen = KiFerien
         };
+    }
+
+    private IReadOnlyList<GebaeudeFerienKiZeile>? _kiFerien;
+
+    /// <summary>
+    /// Die vier Ferienzeiträume als Zeilen (Welle #458 Stufe 3b) — einmal gebaut, denn
+    /// die vier Felderpaare der Maske bleiben dieselben; jede Zelle geht über ihren
+    /// Delegaten auf das Feld, an dem die Eingabe von Hand hängt.
+    /// </summary>
+    private IReadOnlyList<GebaeudeFerienKiZeile> KiFerien()
+    {
+        return _kiFerien ??= Enumerable.Range(0, 4).Select(i =>
+        {
+            int n = i;
+            return new GebaeudeFerienKiZeile
+            {
+                ZeitraumLesen = () => Ferienname(n),
+                BeginnTagLesen = () => _beginnTag[n],
+                BeginnTagSetzen = w => _beginnTag[n] = w,
+                BeginnMonatLesen = () => _beginnMonat[n],
+                BeginnMonatSetzen = w => _beginnMonat[n] = w,
+                EndeTagLesen = () => _endeTag[n],
+                EndeTagSetzen = w => _endeTag[n] = w,
+                EndeMonatLesen = () => _endeMonat[n],
+                EndeMonatSetzen = w => _endeMonat[n] = w
+            };
+        }).ToList();
     }
 
     /// <summary>Die Verwendungen: Schlüssel ist der STEUERWERT, Text der Eintrag der Maske.</summary>

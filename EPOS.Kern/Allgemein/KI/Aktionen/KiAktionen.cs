@@ -146,6 +146,11 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenDialog.DialogParameterErklaeren());
             register.Aufnehmen(KiAktionenDialog.FeldSetzen());
             register.Aufnehmen(KiAktionenDialog.FormularAusfuellen());
+
+            // ---- Die ZAHLENREIHEN einer Maske (Welle #458 Stufe 3b): Monats-, Stunden-
+            //      und Wochenwerte als EIN Feld mit einer Liste - ganz oder ab einer
+            //      Stelle, bestaetigt wie jede Formularaktion.
+            register.Aufnehmen(KiAktionenDialog.ReiheSetzen());
             register.Aufnehmen(KiAktionenDialog.DialogAktionAusfuehren());
 
             // ---- Der Weg IN eine Maske (Etappe S3, Auftrag #201 Punkt 3). Stufe 1:

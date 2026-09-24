@@ -935,6 +935,12 @@ namespace WindowsFormsApplication1
                 return b ? MyResource.Resource.KI_DIALOGDATEN_JA
                          : MyResource.Resource.KI_DIALOGDATEN_NEIN;
 
+            // Eine ZAHLENREIHE (Welle #458 Stufe 3b) steht VOLLSTAENDIG da, Strichpunkt
+            // getrennt - dieselbe Schreibweise in dialog_lesen, im Feldblock und in der
+            // Vorschau. Gekuerzt wird erst in der Bestaetigung (KiFeldBlock.Reihe).
+            IReadOnlyList<double?> reihe = KiZahlenreihe.Werte(wert);
+            if (reihe != null) return KiZahlenreihe.Liste(reihe, CultureInfo.CurrentCulture);
+
             if (wert is IFormattable f)
                 return f.ToString(null, CultureInfo.CurrentCulture);
 

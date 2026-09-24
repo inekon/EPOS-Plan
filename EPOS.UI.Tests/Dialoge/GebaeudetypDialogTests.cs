@@ -659,4 +659,78 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.False(Schlosspruefung.Band(cut));
         Assert.NotEmpty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
     }
+
+    // =================================================================================
+    // Die Zahlenreihe „stundenwerte" (Welle #458 Stufe 3b)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die 24 Stundenwerte der GEWÄHLTEN Kurve sind EINE Zahlenreihe</b> im
+    /// Arbeitsstand: gelesen, ganz und je Stunde gesetzt — und danach hält die Maske den
+    /// Kurvenwechsel an, bis gespeichert oder verworfen ist, wie nach einer Eingabe von
+    /// Hand.
+    /// </summary>
+    [Fact]
+    public void Die_Stundenwerte_der_gewaehlten_Kurve_liest_und_setzt_der_Assistent_als_Reihe()
+    {
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.GEBAEUDETYP;
+
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(24).Select(w => (double?)w),
+                     Hilfe.KiReihenhilfe.Werte(maske, "stundenwerte"));
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "stundenwerte", Hilfe.KiReihenhilfe.Gleich(24, 3.0)));
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "stundenwerte", new[] { 9.0 }, ab: 24));
+        cut.Render();
+
+        Assert.Equal(3.0, cut.Instance.Kurvenwerte[0]);
+        Assert.Equal(9.0, cut.Instance.Kurvenwerte[23]);
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "stundenwerte", new double[25]));
+
+        // Ungespeichert hält die Maske den Kurvenwechsel an.
+        WindowsFormsApplication1.KiFeldzugang kurve = KiMaskenbruecke.Feldzugang(maske, "kurve")!;
+        cut.InvokeAsync(() => kurve.Setzen(1));
+        Assert.Equal(0, cut.Instance.Kurvenwahl);
+    }
+
+    /// <summary>
+    /// <b>„Speichern" schreibt die gesetzte Kurve</b> — über den Weg der Maske; die übrigen
+    /// Kurven gehen unverändert mit.
+    /// </summary>
+    [Fact]
+    public async Task Speichern_schreibt_die_gesetzten_Stundenwerte()
+    {
+        var pr = new Protokoll();
+        var cut = Aufbauen(pr);
+
+        await cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(KiMaskennamen.GEBAEUDETYP, "stundenwerte",
+                                                              Hilfe.KiReihenhilfe.Folge(24, 0.5)));
+        KiKern.KiErgebnis ergebnis =
+            await cut.InvokeAsync(() => KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDETYP).Speichern());
+
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        double[,] verteilung = pr.Verteilungen.Single().Verteilung;
+        Assert.Equal(0.5, verteilung[0, 0]);
+        Assert.Equal(12.0, verteilung[0, 23]);
+        Assert.Equal(25.0, verteilung[1, 0]);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungstyp nimmt keine Reihe an</b> — der Haken meldet den Schutz, und
+    /// der Setzweg selbst lehnt mit dem Grund der Maske ab.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungstyp_nimmt_keine_Stundenwerte_an()
+    {
+        var cut = Aufbauen();
+        Zeilenklick.Zeile(cut, 2);
+
+        Assert.True(KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDETYP).IstSchreibgeschuetzt());
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDETYP, "stundenwerte")!;
+        double?[] vorher = Hilfe.KiReihenhilfe.Werte(KiMaskennamen.GEBAEUDETYP, "stundenwerte");
+
+        Assert.Throws<InvalidOperationException>(() => zugang.Setzen(new double?[24]));
+        Assert.Equal(vorher, Hilfe.KiReihenhilfe.Werte(KiMaskennamen.GEBAEUDETYP, "stundenwerte"));
+    }
 }

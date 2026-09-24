@@ -508,8 +508,40 @@
             KurveEintraege = () => KiMaskenanmeldung.Eintraege(_daten.Kurvennamen),
 
             BeschreibungLesen = () => _arbeitBeschreibung,
-            BeschreibungSetzen = BeiBeschreibung
+            BeschreibungSetzen = BeiBeschreibung,
+
+            StundenwerteLesen = () => _daten.Kurven > 0
+                ? Kurve(_verteilung, _kurve).Select(w => (double?)w).ToArray()
+                : null,
+            StundenwerteSetzen = KiStundenwerteSetzen
         };
+    }
+
+    /// <summary>
+    /// Der Assistent setzt die 24 Stundenwerte der gewählten Kurve (Welle #458 Stufe 3b) —
+    /// in den ARBEITSSTAND, wie „Übernehmen" der Überlagerung; geschrieben wird mit
+    /// „Speichern".
+    /// </summary>
+    /// <remarks>
+    /// Steht die Überlagerung „Stundenwerte…" offen, ziehen ihre Felder nach — sonst
+    /// schriebe ein späteres „Übernehmen" dort die Werte von vorhin zurück.
+    /// </remarks>
+    private void KiStundenwerteSetzen(double?[] werte)
+    {
+        if (_daten.Kurven == 0) throw new InvalidOperationException(Resource.KI_DLG_GTYP_OHNE_KURVE);
+        if (_auslieferung) throw new InvalidOperationException(HinweisGesperrt);
+
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN && s < werte.Length; s++)
+            if (werte[s] is double w) _verteilung[_kurve, s] = w;
+
+        if (_stundenOffen)
+        {
+            double[] kurve = Kurve(_verteilung, _kurve);
+            for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = kurve[s];
+        }
+
+        Nachziehen();
+        BildHolen();
     }
 
     /// <summary>

@@ -248,9 +248,9 @@
     private LeistungspreisReiheKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten: das JAHR der Reihe und zwei Anzeigen. Die zwölf
-    /// Monatssätze bleiben draußen — sie stehen als Schleife über ihren Index im
-    /// Markup und sind damit eine Wertetafel.
+    /// Die Sicht des Assistenten: das JAHR der Reihe, zwei Anzeigen und die zwölf
+    /// Monatssätze als Zahlenreihe (Welle #458 Stufe 3b) — dieselben Felder, in die die
+    /// Eingabe von Hand schreibt.
     /// </summary>
     private LeistungspreisReiheKiSicht KiSicht()
     {
@@ -259,8 +259,17 @@
             JahrLesen = () => _jahr,
             JahrSetzen = BeiJahr,
             EinheitLesen = () => Einheit,
-            KontextLesen = () => KontextText
+            KontextLesen = () => KontextText,
+            MonatssaetzeLesen = () => (double?[])_werte.Clone(),
+            MonatssaetzeSetzen = KiMonatssaetzeSetzen
         };
+    }
+
+    /// <summary>Die zwölf Sätze aus der Reihe — ein leeres Glied lässt das Feld stehen (A-7).</summary>
+    private void KiMonatssaetzeSetzen(double?[] werte)
+    {
+        for (int m = 0; m < 12 && m < werte.Length; m++) _werte[m] = werte[m] ?? _werte[m];
+        _meldung = "";
     }
 
     /// <summary>

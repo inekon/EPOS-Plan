@@ -221,6 +221,7 @@ public sealed class KiMaskenanmeldung : IDisposable
         KiParameterTyp.Zahl => typeof(double?),
         KiParameterTyp.Ganzzahl => typeof(int?),
         KiParameterTyp.Wahrheitswert => typeof(bool),
+        KiParameterTyp.ZahlListe => typeof(double?[]),
         _ => typeof(string)
     };
 
@@ -469,6 +470,12 @@ public sealed class KiMaskenanmeldung : IDisposable
                 continue;
             }
 
+            // Eine ZAHLENREIHE (Welle #458 Stufe 3b) haengt an einer Eigenschaft, die eine
+            // Zahlenliste traegt und annimmt - double?[] oder double[]. Eine andere
+            // Eigenschaft gleichen Namens loeste auf und naehme die Reihe doch nie an.
+            if (feld.IstReihe && !IstReihentyp(Eigenschaft(datentyp, feld)?.PropertyType))
+                fehlt.Add(feld.Eigenschaftspfad + " (" + REIHENZUSATZ + ")");
+
             // JEDES Wahlfeld muss seine Eintragsquelle aufloesen (KI-F1b, KI-D-Q6):
             // entweder die Begleiteigenschaft am Daten-Objekt oder ein Lieferant, den
             // der Dialog beim Anmelden hereinreicht. Ohne Quelle stuende ein Feld im
@@ -479,6 +486,15 @@ public sealed class KiMaskenanmeldung : IDisposable
 
         return fehlt;
     }
+
+    /// <summary>Vermerk des Wächters an einer Zahlenreihe mit falschem Eigenschaftstyp.</summary>
+    private const string REIHENZUSATZ = "Zahlenreihe";
+
+    /// <summary>
+    /// Trägt dieser Typ eine Zahlenreihe — <c>double?[]</c> oder <c>double[]</c>, les- und
+    /// setzbar über den Feldwandler des Kerns (<c>KiFeldwandler.WandleReihe</c>)?
+    /// </summary>
+    public static bool IstReihentyp(Type? typ) => typ == typeof(double?[]) || typ == typeof(double[]);
 
     /// <summary>Steht der Feldname unter den ausdrücklich gemeldeten Lieferanten?</summary>
     private static bool Genannt(string[] wahlquellen, string feldname)
