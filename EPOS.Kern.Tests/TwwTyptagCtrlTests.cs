@@ -116,7 +116,7 @@ namespace EPOS.Kern.Tests
                     Assert.True(bericht.Stand.Vorhanden);
                     Assert.Equal(10, bericht.Stand.Typtage.Count);
                 }
-                Assert.Equal(5.0, TwwTyptagCtrl.Lesen().Kennwert(Typtagkennwert.BEWOELKUNG_SCHWELLE));
+                Assert.Equal(Typtagpaketbauer.GRENZE_BEWOELKUNG, TwwTyptagCtrl.Lesen().Kennwert(Typtagkennwert.BEWOELKUNG_SCHWELLE));
             }
             finally
             {

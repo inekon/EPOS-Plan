@@ -42,8 +42,8 @@ namespace EPOS.Kern.Tests
             Assert.Empty(fehlend);
             Assert.Equal("Anwenderpaket (erfunden, Probe)", satz.Quelle);
             Assert.Equal("2026-09", satz.Ausgabe);
-            Assert.Equal(15.0, satz.Kennwert(Typtagkennwert.Heizgrenze("probehaus")));
-            Assert.Equal(5.0, satz.Kennwert(Typtagkennwert.WINTERGRENZE));
+            Assert.Equal(Typtagpaketbauer.GRENZE_HEIZEN, satz.Kennwert(Typtagkennwert.Heizgrenze("probehaus")));
+            Assert.Equal(Typtagpaketbauer.GRENZE_WINTER, satz.Kennwert(Typtagkennwert.WINTERGRENZE));
             Assert.Empty(satz.Gaenge);
 
             // Die Kategorie zu Jahreszeit, Tagart und Bewoelkung: "ohne" gilt fuer heiter wie bewoelkt.
@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
                 Assert.NotNull(satz);
                 Assert.Equal(10, satz.Kategorien.Count);
                 Assert.Equal(365, satz.Tagesumme(3, "probehaus"));
-                Assert.Equal(5.0, satz.Kennwert(Typtagkennwert.BEWOELKUNG_SCHWELLE));
+                Assert.Equal(Typtagpaketbauer.GRENZE_BEWOELKUNG, satz.Kennwert(Typtagkennwert.BEWOELKUNG_SCHWELLE));
             }
             finally
             {

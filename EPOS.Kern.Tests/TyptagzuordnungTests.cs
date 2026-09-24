@@ -99,16 +99,17 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Bewoelkungsschwelle_entscheidet_heiter_gegen_bewoelkt()
         {
-            Normformvektorsatz satz = Satz(Typtagpaketbauer.MitBewoelkung(ZONE, ART, 5.0));
+            const double schwelle = Typtagpaketbauer.GRENZE_BEWOELKUNG;
+            Normformvektorsatz satz = Satz(Typtagpaketbauer.MitBewoelkung(ZONE, ART, schwelle));
 
             Typtagjahr heiter = Typtagzuordnung.Zuordnen(
-                Anbindung(satz, bedeckung: Bedeckung(4.999)), 0, We(0), NAME);
+                Anbindung(satz, bedeckung: Bedeckung(schwelle - 0.001)), 0, We(0), NAME);
             Assert.DoesNotContain(heiter.Tage, t => t.Bewoelkung == Typtagbewoelkung.Bewoelkt);
             Assert.Contains(heiter.Tage, t => t.Bewoelkung == Typtagbewoelkung.Heiter);
 
             // Genau auf der Schwelle gilt bewoelkt (>=).
             Typtagjahr bewoelkt = Typtagzuordnung.Zuordnen(
-                Anbindung(satz, bedeckung: Bedeckung(5.0)), 0, We(0), NAME);
+                Anbindung(satz, bedeckung: Bedeckung(schwelle)), 0, We(0), NAME);
             Assert.DoesNotContain(bewoelkt.Tage, t => t.Bewoelkung == Typtagbewoelkung.Heiter);
             Assert.Contains(bewoelkt.Tage, t => t.Bewoelkung == Typtagbewoelkung.Bewoelkt);
 
@@ -346,8 +347,8 @@ namespace EPOS.Kern.Tests
                     luecke.KategorienSetzen(b.Kategorien.Select(k =>
                         new Typtagkategorie(k.Code, Typtagjahreszeit.Uebergang, Typtagart.Werktag, Typtagbewoelkung.Ohne)));
                     luecke.AnzahlSetzen(ZONE, ART, b.Kategorien[0].Code, 365);
-                    luecke.KennwertSetzen(Typtagkennwert.WINTERGRENZE, 5.0);
-                    luecke.KennwertSetzen(Typtagkennwert.Heizgrenze(ART), 15.0);
+                    luecke.KennwertSetzen(Typtagkennwert.WINTERGRENZE, Typtagpaketbauer.GRENZE_WINTER);
+                    luecke.KennwertSetzen(Typtagkennwert.Heizgrenze(ART), Typtagpaketbauer.GRENZE_HEIZEN);
                     a = a with { Daten = luecke };
                     break;
                 case "EINGABE_TYPTAGE_TEMPERATUR":

@@ -52,6 +52,24 @@ namespace EPOS.Kern.Tests
         internal List<(string Art, string Typtag, int AufloesungMin, double[] Anteile)> Gaenge { get; } = new();
 
         // =================================================================================
+        //  Die drei Grenzwerte der erfundenen Pakete (ZU23)
+        // =================================================================================
+        //
+        // ERFUNDEN, rund und bewusst weit weg — weder der Wert einer Richtlinie noch der
+        // abgeleitete Wert aus „Referenzlaeufe/Skripte/vdi4655_abgeleitet.json". Kein Fall haengt
+        // an ihrer Hoehe: Die Temperaturreihen der Proben liegen deutlich darunter und darueber.
+        // Wer die abgeleiteten Grenzen braucht, nimmt AusAbgeleiteterJson.
+
+        /// <summary>Wintergrenze der erfundenen Pakete [°C] — erfunden.</summary>
+        internal const double GRENZE_WINTER = 3.0;
+
+        /// <summary>Heizgrenze der erfundenen Pakete [°C] — erfunden.</summary>
+        internal const double GRENZE_HEIZEN = 18.0;
+
+        /// <summary>Bewölkungsschwelle der erfundenen Pakete [Achtel] — erfunden.</summary>
+        internal const double GRENZE_BEWOELKUNG = 6.0;
+
+        // =================================================================================
         //  Erfundene Pakete
         // =================================================================================
 
@@ -85,8 +103,8 @@ namespace EPOS.Kern.Tests
             b.PruefsummeSchliessen(zone, art);
             b.Texte["quelle"] = "Anwenderpaket (erfunden, Probe)";
             b.Texte["ausgabe"] = "2026-09";
-            b.Kennwerte["wintergrenze"] = 5.0;
-            b.Kennwerte["heizgrenze." + art] = 15.0;
+            b.Kennwerte["wintergrenze"] = GRENZE_WINTER;
+            b.Kennwerte["heizgrenze." + art] = GRENZE_HEIZEN;
             b.Kennwerte["pruefsumme.toleranz"] = 1e-9;
             return b;
         }
@@ -97,7 +115,7 @@ namespace EPOS.Kern.Tests
         /// Unterscheidung. Dazu die Schwelle als Kennwert.
         /// </summary>
         internal static Typtagpaketbauer MitBewoelkung(int zone = 3, string art = "probehaus",
-                                                       double schwelle = 5.0)
+                                                       double schwelle = GRENZE_BEWOELKUNG)
         {
             var b = new Typtagpaketbauer();
             b.Zonen.Add(zone);
@@ -124,8 +142,8 @@ namespace EPOS.Kern.Tests
             }
             b.PruefsummeSchliessen(zone, art);
             b.Texte["quelle"] = "Anwenderpaket (erfunden, Probe mit Bewoelkung)";
-            b.Kennwerte["wintergrenze"] = 5.0;
-            b.Kennwerte["heizgrenze." + art] = 15.0;
+            b.Kennwerte["wintergrenze"] = GRENZE_WINTER;
+            b.Kennwerte["heizgrenze." + art] = GRENZE_HEIZEN;
             b.Kennwerte["bewoelkung.schwelle"] = schwelle;
             return b;
         }

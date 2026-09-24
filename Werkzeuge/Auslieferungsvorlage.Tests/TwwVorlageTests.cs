@@ -390,7 +390,8 @@ namespace Auslieferungsvorlage.Tests
                     new DbParam("?", TwwSchema.TYPTAG_ART_ANZAHL)));
                 Assert.True(DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_TwwTyptag_IMPORT (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex, Wert, " +
-                    "Quelle, Datum_Import) VALUES (?, 0, '', 'wintergrenze', 0, 5.0, 'Anwenderpaket (erfunden)', '2026-09-24')",
+                    // Der Kennwert ist ERFUNDEN (ZU23): kein Wert einer Richtlinie im Repositorium.
+                    "Quelle, Datum_Import) VALUES (?, 0, '', 'wintergrenze', 0, 3.0, 'Anwenderpaket (erfunden)', '2026-09-24')",
                     new DbParam("?", TwwSchema.TYPTAG_ART_KENNWERT)));
             });
 
