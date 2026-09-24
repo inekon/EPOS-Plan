@@ -372,7 +372,10 @@ namespace WindowsFormsApplication1
             public bool Nacht;
         }
 
-        private static Sonnenstand Sonnengeometrie(double Lon, double Lat, int Tilt, int Azimuth,
+        // Neigung und Azimut als double (Einstrahlung auf beliebige Bauteilflächen, GebaeudeKlimaweg):
+        // Ein ganzzahliger Winkel wird verlustfrei gewandelt und geht in dieselben Multiplikationen
+        // ein — die int-Fassungen der Transposition rechnen damit bitgleich.
+        private static Sonnenstand Sonnengeometrie(double Lon, double Lat, double Tilt, double Azimuth,
                                                    int dayOfYear, double hour)
         {
             Sonnenstand s = new Sonnenstand();
@@ -497,6 +500,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
         public static double CalculateHourlyHayDavies(double Lon, double Lat, int Tilt, int Azimuth,
+                                                      double ghi, double dni, double dhi,
+                                                      int dayOfYear, double hour)
+            => CalculateHourlyHayDavies(Lon, Lat, (double)Tilt, (double)Azimuth, ghi, dni, dhi, dayOfYear, hour);
+
+        /// <summary>
+        /// <see cref="CalculateHourlyHayDavies(double, double, int, int, double, double, double, int, double)"/>
+        /// mit Neigung und Azimut als <c>double</c> — für Flächen mit nicht ganzzahligem Winkel
+        /// (Bauteile der Gebäudesimulation, Stufe G3). Für ganzzahlige Winkel bitgleich zur
+        /// <c>int</c>-Fassung, die hierher weiterreicht.
+        /// </summary>
+        public static double CalculateHourlyHayDavies(double Lon, double Lat, double Tilt, double Azimuth,
                                                       double ghi, double dni, double dhi,
                                                       int dayOfYear, double hour)
         {

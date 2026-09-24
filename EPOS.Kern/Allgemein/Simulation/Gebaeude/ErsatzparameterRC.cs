@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -324,6 +325,15 @@ namespace WindowsFormsApplication1
         /// <summary>U·A der Fenster [W/K] — Gewicht der äquivalenten Außentemperatur.</summary>
         internal double UA_Fenster_WK { get; }
 
+        /// <summary>Die Herleitung je Bauteil — nur im Bauteilweg; im Klassenweg leer.</summary>
+        internal IReadOnlyList<BauteilHerleitung> Bauteilherleitung { get; private init; } = Array.Empty<BauteilHerleitung>();
+
+        /// <summary>Der Weg der Außenbauteilgruppe (Klassenweg oder Bauteilweg, Mehrzonenkonzept 3.6).</summary>
+        internal Gruppenweg WegAussen { get; private init; }
+
+        /// <summary>Der Weg der Innenbauteilgruppe (Klassenweg oder Bauteilweg, Mehrzonenkonzept 3.6).</summary>
+        internal Gruppenweg WegInnen { get; private init; }
+
         // =====================================================================
         //  Fabrikweg 1: der Klassenweg (Stufe G1, Rechenschritte Schritt A)
         // =====================================================================
@@ -442,6 +452,395 @@ namespace WindowsFormsApplication1
             {
                 throw new GebaeudeModellException(ex.Grund, wer + ex.Message);
             }
+        }
+
+        // =====================================================================
+        //  Fabrikweg 2: der Bauteilweg (Stufe G3, Rechenschritte Schritt B)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Bauteilweg</b> für ein Gebäude (Stufe G3; Rechenschritte Kapitel 3,
+        /// Mehrzonenkonzept 2.2, 3.1–3.6): die RC-Größen aus einem Bauteilsatz statt aus den
+        /// U-Wert-/Flächenpaaren der Gebäudezeile. Die Lüftung kommt aus dem Eingang
+        /// (H_ve = n·A_f·H·c·ρ, Rechenschritte A7), Bauweise, Masseanteil und Innenflächenfaktor
+        /// für eine Gruppe, die mangels Schichten den Klassenweg rechnet. Der Gebäudewert Σψ·L gilt
+        /// im Bauteilweg <b>nicht</b> — die Wärmebrücken tragen die Bauteile.
+        /// Regeln: <see cref="AusBauteilweg(BauteilwegGebaeude, IReadOnlyList{BauteilEingang})"/>.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
+        internal static ErsatzparameterRC AusBauteilweg(GebaeudeModellEingang e, IReadOnlyList<BauteilEingang> bauteile)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            string wer = e.Bezeichnung;
+            Pflicht(wer, "A_f", e.Nutzflaeche_M2);
+            Pflicht(wer, "H", e.Raumhoehe_M);
+            Pflicht(wer, "n", e.Luftwechselrate_h);
+            double hVe = e.Luftwechselrate_h * e.Nutzflaeche_M2 * e.Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT;
+            return AusBauteilweg(new BauteilwegGebaeude(wer, e.Nutzflaeche_M2, e.Bauweise_WhK, e.MasseanteilAussen,
+                                                        e.Innenflaechenfaktor, hVe), bauteile);
+        }
+
+        /// <summary>
+        /// <b>Der Bauteilweg</b> mit ausdrücklichen Gebäudegrößen — die Rechnung selbst.
+        ///
+        /// <list type="bullet">
+        /// <item><b>Gruppen</b> (VDI 6007-1, 6.4; Mehrzonenkonzept 2.2): Außenbauteilgruppe = alle
+        /// opaken Bauteile an Außenluft, Erdreich und unbeheiztem Raum, einseitig reduziert
+        /// (R₁, C₁,korr nach Gl. (17)); Innenbauteilgruppe = Bauteile innerhalb der Zone,
+        /// symmetrisch (R₁, C₁; der volle Schichtaufbau geht in die Kettenmatrix, keine zweite
+        /// Halbierung an der Mittelebene); Fenster und Vorhangfassaden = Fensterzweig nach
+        /// Gl. (25)/(26), nach den Wänden parallel, die Kapazität der Wände bleibt.</item>
+        /// <item><b>Mit Schichten:</b> Bezugsperiode je Bauteil (10a)–(10d), Reduktion (12)–(17),
+        /// komplexe Parallelschaltung je Gruppe mit T_RA = 5 d (19)–(22). Der U-Wert eines
+        /// Bauteils folgt aus den Schichten; ein eingetragener U-Wert gilt vorrangig in Gl. (27),
+        /// der gerechnete steht in der Herleitung daneben (Mehrzonenkonzept 3.4). Der Rest der
+        /// Wände ist so gebildet, dass der Wandzweig mit seinem vollen U·A in Gl. (27) eingeht:
+        /// R_Rest,AW = 1/Σ(U·A)_opak − R₁,AW − R_α,i·A_AW,ges/A_AW,opak (Normweg; der R_si-Abzug
+        /// des Klassenwegs ist dessen benannte Abweichung, Rechenschritte A4).</item>
+        /// <item><b>Ohne Schichten — Grenzfall Klassenweg</b> (Mehrzonenkonzept 3.6): Trägt eine
+        /// Gruppe kein Bauteil mit Speichermasse, rechnet sie den Klassenweg aus den
+        /// Bauteilsummen — R₁ = 1/(h_ms·A), Kapazität aus der Bauweise nach a_AW bzw. 1 − a_AW,
+        /// R_si-Konvention wie A4. Fehlen Innenbauteile ganz, gilt A_IW = f_IW·A_f. Ein
+        /// Bauteilsatz ohne Schichten, der die U/A-Gruppen eines Gebäudes wiedergibt, gleicht so
+        /// dem Klassenweg.</item>
+        /// <item><b>Gemischte Außengruppe</b> (benannte EPOS-Regel; VDI 6007-1, 6.3 führt das
+        /// Außenfenster als Sonderfall mit C ≈ 0): ein masseloses opakes Bauteil geht wie ein
+        /// Fenster ein — R₁ = R/6 nach Gl. (25) sinngemäß, R aus Gl. (26) (mit Schichten aus
+        /// Σ d/λ), parallel nach den Wänden, ohne Kapazität, mit vollem U·A in Gl. (27). Es wird
+        /// dem Wandzweig zugeschlagen; weil die reelle Parallelschaltung nach der komplexen
+        /// assoziativ ist, ist das Ergebnis der Gruppe dasselbe wie im Fensterzweig, und
+        /// Σ(U·A)_opak behält sein opakes Gewicht für die äquivalente Außentemperatur.</item>
+        /// <item><b>Gemischte Innengruppe</b> (benannte EPOS-Regel, Grenzwert von Gl. (19) für
+        /// C → 0: Z → ∞): ein masseloses Innenbauteil trägt Fläche (Übergänge,
+        /// Strahlungsaustausch), aber weder R₁ noch C.</item>
+        /// <item><b>Übergänge:</b> R_conv,AW = 1/Σ(α_kon,i·A) über Außenbauteile und Fenster,
+        /// R_conv,IW = 1/Σ(α_kon,i·A) über die Innenbauteile (ohne sie α_kon,i·A_IW), R_rad wie im
+        /// Klassenweg; α_kon,i fehlt ⇒ <see cref="GebaeudeFestwerte.ALPHA_KON_INNEN"/>. Gl. (26)
+        /// nimmt 1/α_I = 1/(α_kon,i + α_str,i), ohne Angabe <see cref="GebaeudeFestwerte.R_SI"/>,
+        /// und 1/α_A = 1/(α_kon,a + α_str), ohne Angabe 1/<see cref="GebaeudeFestwerte.ALPHA_AUSSEN"/>
+        /// an Außenluft, 0 an Erdreich, R_SI an einem unbeheizten Raum. Der U-Wert aus Schichten
+        /// nimmt dieselben α-Werte, ohne Angabe die Bemessungswerte der DIN EN ISO 6946
+        /// (<see cref="Bauteilreduktion.Uebergangswiderstaende"/>). R_α,A der Gruppe für (28a) ist
+        /// 1/Σ(α_A·A) mit α_A = α_kon,a + α_str, ohne Angabe <see cref="GebaeudeFestwerte.ALPHA_AUSSEN"/>.</item>
+        /// <item><b>R_ext</b> = 1/(H_ve + Σψ·L der Bauteile); unendlich ohne Zweig.</item>
+        /// </list>
+        /// <para>Die Zusammenfassung zur Außenbauteilgruppe nach Gl. (27)–(28c) leistet der
+        /// Erbauer des Records. Welche Gruppe welchen Weg nahm, steht in <see cref="WegAussen"/>
+        /// und <see cref="WegInnen"/>, die Herleitung je Bauteil — gewählte Bezugsperiode,
+        /// gerechneter und wirksamer U-Wert, Hinweis bei mehr als 10 % Abweichung — in
+        /// <see cref="Bauteilherleitung"/>.</para>
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung, benannt.</exception>
+        internal static ErsatzparameterRC AusBauteilweg(BauteilwegGebaeude g, IReadOnlyList<BauteilEingang> bauteile)
+        {
+            string wer = string.IsNullOrEmpty(g.Bezeichnung) ? "—" : g.Bezeichnung;
+            if (bauteile == null || bauteile.Count == 0)
+                throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_KEINE_AUSSENBAUTEILE, wer));
+            if (!(g.Lueftungsleitwert_WK >= 0.0) || double.IsInfinity(g.Lueftungsleitwert_WK))
+                throw BauteilEingang.Bereich(GebaeudeModellFehler.ParameterUngueltig, wer, "H_ve", g.Lueftungsleitwert_WK, "[0; ∞) W/K");
+
+            // ---- Prüfen und Gruppen bilden ----
+            var aussen = new List<(BauteilEingang B, string Wer)>();
+            var fenster = new List<(BauteilEingang B, string Wer)>();
+            var innen = new List<(BauteilEingang B, string Wer)>();
+            double psiL = 0.0;
+            for (int i = 0; i < bauteile.Count; i++)
+            {
+                BauteilEingang b = bauteile[i] ?? throw new ArgumentException("Der Bauteilsatz enthält einen leeren Eintrag.", nameof(bauteile));
+                string werB = wer + ", " + (string.IsNullOrEmpty(b.Bezeichnung) ? "#" + (i + 1).ToString(CultureInfo.InvariantCulture) : b.Bezeichnung);
+                b.Pruefen(werB);
+                psiL += b.PsiL_WK;
+                switch (b.Gruppe)
+                {
+                    case Bauteilgruppe.Fenster: fenster.Add((b, werB)); break;
+                    case Bauteilgruppe.Innen: innen.Add((b, werB)); break;
+                    default: aussen.Add((b, werB)); break;
+                }
+            }
+            if (aussen.Count == 0)
+                throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_KEINE_AUSSENBAUTEILE, wer));
+
+            var herleitung = new List<BauteilHerleitung>();
+
+            // ---- Flächen und Übergänge im Raum (A2, A6) ----
+            double aOpak = 0.0, aFenster = 0.0, alphaAw = 0.0, alphaAussen = 0.0;
+            foreach ((BauteilEingang b, _) in aussen)
+            {
+                aOpak += b.Flaeche_M2;
+                alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
+                alphaAussen += AlphaAussenGesamt(b) * b.Flaeche_M2;
+            }
+            foreach ((BauteilEingang b, _) in fenster)
+            {
+                aFenster += b.Flaeche_M2;
+                alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
+                alphaAussen += AlphaAussenGesamt(b) * b.Flaeche_M2;
+            }
+            double aGes = aOpak + aFenster;
+
+            double aIw, rConvIw;
+            if (innen.Count > 0)
+            {
+                aIw = 0.0;
+                double alphaIw = 0.0;
+                foreach ((BauteilEingang b, _) in innen)
+                {
+                    aIw += b.Flaeche_M2;
+                    alphaIw += AlphaKonInnen(b) * b.Flaeche_M2;
+                }
+                rConvIw = 1.0 / alphaIw;
+            }
+            else
+            {
+                Pflicht(wer, "A_f", g.Nutzflaeche_M2);
+                Pflicht(wer, "f_IW", g.Innenflaechenfaktor);
+                aIw = g.Innenflaechenfaktor * g.Nutzflaeche_M2;
+                rConvIw = 1.0 / (GebaeudeFestwerte.ALPHA_KON_INNEN * aIw);
+            }
+            double rConvAw = 1.0 / alphaAw;
+            double rRad = 1.0 / (GebaeudeFestwerte.ALPHA_STR_INNEN * Math.Min(aGes, aIw));
+            double rAlphaI = 1.0 / (1.0 / rConvAw + 1.0 / rRad);
+
+            // ---- Außenbauteilgruppe ----
+            double uaOpak = 0.0;
+            var zweigeAw = new List<(double R1_KW, double C1_Jk)>();
+            var masseloseAw = new List<(BauteilEingang B, string Wer, double R_KW, double UGerechnet)>();
+            foreach ((BauteilEingang b, string werB) in aussen)
+            {
+                double uGerechnet = double.NaN;
+                Schichtkennwerte kennwerte = default;
+                if (b.HatSchichten)
+                {
+                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB);
+                    kennwerte = Bauteilreduktion.Kennwerte(b.Schichten, Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), rSi, rSe, werB);
+                    uGerechnet = kennwerte.U_WM2K;
+                }
+                double uWirksam = double.IsNaN(b.UWert_WM2K) ? uGerechnet : b.UWert_WM2K;
+                uaOpak += uWirksam * b.Flaeche_M2;
+
+                if (b.HatSchichten && kennwerte.Kapazitaet_JM2K > 0.0)
+                {
+                    Bezugsperiodenwahl wahl = Bauteilreduktion.BezugsperiodeWaehlen(b.Schichten, b.Flaeche_M2,
+                        Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), werB);
+                    Bauteilkennwerte k = wahl.Kennwerte;
+                    if (double.IsNaN(k.C1korr_Jk) || double.IsInfinity(k.C1korr_Jk) || k.C1korr_Jk <= 0.0)
+                        throw new GebaeudeModellException(GebaeudeModellFehler.BauteilreduktionUngueltig,
+                            Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_REDUKTION_UNGUELTIG, werB,
+                                                    Bauteilreduktion.Text(k.R1_KW), Bauteilreduktion.Text(k.C1korr_Jk)));
+                    zweigeAw.Add((k.R1_KW, k.C1korr_Jk));
+                    herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Aussen, false, wahl.Periode_d, wahl.R1rel, wahl.C1rel,
+                                                         k.R1_KW, k.C1korr_Jk, uGerechnet, uWirksam));
+                }
+                else
+                {
+                    double r = b.HatSchichten ? kennwerte.R_M2KW / b.Flaeche_M2 : WiderstandGl26(b, werB, GebaeudeModellFehler.BauteilUngueltig);
+                    masseloseAw.Add((b, werB, r, uGerechnet));
+                    herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Aussen, true, double.NaN, double.NaN, double.NaN,
+                                                         r / 6.0, double.NaN, uGerechnet, uWirksam));
+                }
+            }
+
+            double cAw, r1Aw, rRestAw;
+            Gruppenweg wegAussen;
+            if (zweigeAw.Count == 0)
+            {
+                // Grenzfall Klassenweg (A1, A4): kein Außenbauteil mit Speichermasse.
+                wegAussen = Gruppenweg.Klassenweg;
+                cAw = g.MasseanteilAussen * KapazitaetAusBauweise(g, wer);
+                r1Aw = 1.0 / (GebaeudeFestwerte.H_MS * aOpak);
+                rRestAw = 1.0 / uaOpak - r1Aw - GebaeudeFestwerte.R_SI / aOpak;
+            }
+            else
+            {
+                wegAussen = Gruppenweg.Bauteilweg;
+                (double r1Masse, double c) = Bauteilreduktion.Parallel(zweigeAw);
+                cAw = c;
+                // Masselose opake Bauteile: R₁ = R/6, reell parallel nach den Wänden (EPOS-Regel).
+                if (masseloseAw.Count == 0) r1Aw = r1Masse;
+                else
+                {
+                    double leitwert = 1.0 / r1Masse;
+                    foreach ((_, _, double r, _) in masseloseAw) leitwert += 1.0 / (r / 6.0);
+                    r1Aw = 1.0 / leitwert;
+                }
+                // Normweg: der Wandzweig geht mit seinem vollen U·A in Gl. (27) ein.
+                rRestAw = 1.0 / uaOpak - r1Aw - rAlphaI * aGes / aOpak;
+            }
+
+            // ---- Fensterzweig (Gl. (25), (26)) ----
+            double r1Af = double.PositiveInfinity, rRestAf = double.PositiveInfinity, uaFenster = 0.0;
+            if (fenster.Count > 0)
+            {
+                double leitwertAf = 0.0;
+                foreach ((BauteilEingang b, string werB) in fenster)
+                {
+                    double rAf = WiderstandGl26(b, werB, GebaeudeModellFehler.FensterzweigUngueltig);
+                    double r1 = rAf / 6.0;
+                    leitwertAf += 1.0 / r1;
+                    uaFenster += b.UWert_WM2K * b.Flaeche_M2;
+                    herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Fenster, true, double.NaN, double.NaN, double.NaN,
+                                                         r1, double.NaN, double.NaN, b.UWert_WM2K));
+                }
+                r1Af = 1.0 / leitwertAf;
+                rRestAf = 1.0 / uaFenster - r1Af - rAlphaI * aGes / aFenster;
+            }
+
+            // ---- Innenbauteilgruppe ----
+            var zweigeIw = new List<(double R1_KW, double C1_Jk)>();
+            foreach ((BauteilEingang b, string werB) in innen)
+            {
+                double uGerechnet = double.NaN;
+                bool mitMasse = false;
+                if (b.HatSchichten)
+                {
+                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB);
+                    Schichtkennwerte kennwerte = Bauteilreduktion.Kennwerte(b.Schichten,
+                        Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), rSi, rSe, werB);
+                    uGerechnet = kennwerte.U_WM2K;
+                    mitMasse = kennwerte.Kapazitaet_JM2K > 0.0;
+                }
+                double uWirksam = double.IsNaN(b.UWert_WM2K) ? uGerechnet : b.UWert_WM2K;
+                if (mitMasse)
+                {
+                    Bezugsperiodenwahl wahl = Bauteilreduktion.BezugsperiodeWaehlen(b.Schichten, b.Flaeche_M2,
+                        Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), werB);
+                    Bauteilkennwerte k = wahl.Kennwerte;
+                    zweigeIw.Add((k.R1_KW, k.C1_Jk));
+                    herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Innen, false, wahl.Periode_d, wahl.R1rel, wahl.C1rel,
+                                                         k.R1_KW, k.C1_Jk, uGerechnet, uWirksam));
+                }
+                else
+                {
+                    // Masseloses Innenbauteil: nur Fläche (EPOS-Regel, Gl. (19) mit C → 0).
+                    herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Innen, true, double.NaN, double.NaN, double.NaN,
+                                                         double.NaN, double.NaN, uGerechnet, uWirksam));
+                }
+            }
+
+            double cIw, r1Iw;
+            Gruppenweg wegInnen;
+            if (zweigeIw.Count == 0)
+            {
+                // Grenzfall Klassenweg (A1, A5): kein Innenbauteil mit Speichermasse.
+                wegInnen = Gruppenweg.Klassenweg;
+                cIw = (1.0 - g.MasseanteilAussen) * KapazitaetAusBauweise(g, wer);
+                r1Iw = 1.0 / (GebaeudeFestwerte.H_MS * aIw);
+            }
+            else
+            {
+                wegInnen = Gruppenweg.Bauteilweg;
+                (r1Iw, cIw) = Bauteilreduktion.Parallel(zweigeIw);
+            }
+
+            // ---- Lüftung und Wärmebrücken (A7) ----
+            double hExt = g.Lueftungsleitwert_WK + psiL;
+            double rExt = hExt > 0.0 ? 1.0 / hExt : double.PositiveInfinity;
+            double rAlphaAussen = 1.0 / alphaAussen;
+
+            ErsatzparameterRC p;
+            try
+            {
+                p = new ErsatzparameterRC(cAw, cIw, r1Aw, rRestAw, r1Iw, rConvAw, rConvIw, rRad, rExt,
+                                          aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen);
+            }
+            catch (GebaeudeModellException ex)
+            {
+                throw new GebaeudeModellException(ex.Grund, wer + ": " + ex.Message);
+            }
+            return p with { Bauteilherleitung = herleitung.AsReadOnly(), WegAussen = wegAussen, WegInnen = wegInnen };
+        }
+
+        /// <summary>Der konvektive Übergang raumseitig α_kon,i [W/(m²K)]: eingetragen, sonst <see cref="GebaeudeFestwerte.ALPHA_KON_INNEN"/>.</summary>
+        private static double AlphaKonInnen(BauteilEingang b)
+            => double.IsNaN(b.AlphaKonInnen_WM2K) ? GebaeudeFestwerte.ALPHA_KON_INNEN : b.AlphaKonInnen_WM2K;
+
+        /// <summary>
+        /// Der Gesamtübergang außen α_A [W/(m²K)] für R_α,A der Gruppe (Gl. (28a)): α_kon,a plus
+        /// Strahlungsanteil, ohne Angabe <see cref="GebaeudeFestwerte.ALPHA_AUSSEN"/> (wie im Klassenweg).
+        /// </summary>
+        private static double AlphaAussenGesamt(BauteilEingang b)
+        {
+            if (double.IsNaN(b.AlphaKonAussen_WM2K)) return GebaeudeFestwerte.ALPHA_AUSSEN;
+            return b.AlphaKonAussen_WM2K + (b.Rand == Bauteilrand.Aussenluft ? GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL
+                                                                             : GebaeudeFestwerte.ALPHA_STR_INNEN);
+        }
+
+        /// <summary>
+        /// Die Übergangswiderstände eines Bauteils [m²K/W]. Trägt es α_kon, gilt 1/(α_kon + α_str)
+        /// (α_str = <see cref="GebaeudeFestwerte.ALPHA_STR_INNEN"/> raumseitig und zu einem
+        /// Nachbarraum, <see cref="GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL"/> an Außenluft);
+        /// sonst für Gl. (26) die Vorgabe des Klassenwegs (1/α_I = R_SI, 1/α_A = 1/ALPHA_AUSSEN,
+        /// am unbeheizten Raum R_SI), für den U-Wert aus Schichten die Bemessungswerte der
+        /// DIN EN ISO 6946. An Erdreich gibt es keinen äußeren Übergang.
+        /// </summary>
+        private static (double R_si_M2KW, double R_se_M2KW) Uebergaenge(BauteilEingang b, bool gleichung26, string wer)
+        {
+            (double dinSi, double dinSe) = Bauteilreduktion.Uebergangswiderstaende(b.NeigungWirksamGrad, b.Rand, wer);
+            double rSi = !double.IsNaN(b.AlphaKonInnen_WM2K)
+                ? 1.0 / (b.AlphaKonInnen_WM2K + GebaeudeFestwerte.ALPHA_STR_INNEN)
+                : gleichung26 ? GebaeudeFestwerte.R_SI : dinSi;
+            double rSe;
+            switch (b.Rand)
+            {
+                case Bauteilrand.Erdreich:
+                    rSe = GebaeudeFestwerte.R_SE_ERDREICH;
+                    break;
+                case Bauteilrand.Aussenluft:
+                    rSe = !double.IsNaN(b.AlphaKonAussen_WM2K)
+                        ? 1.0 / (b.AlphaKonAussen_WM2K + GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL)
+                        : gleichung26 ? 1.0 / GebaeudeFestwerte.ALPHA_AUSSEN : dinSe;
+                    break;
+                default:
+                    rSe = !double.IsNaN(b.AlphaKonAussen_WM2K)
+                        ? 1.0 / (b.AlphaKonAussen_WM2K + GebaeudeFestwerte.ALPHA_STR_INNEN)
+                        : gleichung26 ? GebaeudeFestwerte.R_SI : dinSe;
+                    break;
+            }
+            return (rSi, rSe);
+        }
+
+        /// <summary>
+        /// Der Widerstand nach VDI 6007-1 Gl. (26): R = (1/U − 1/α_I − 1/α_A)/A [K/W] — der U-Wert
+        /// um beide Übergänge bereinigt, weil das Netz sie selbst führt. R ≤ 0 bricht benannt ab;
+        /// einen selbst gewählten Wert setzt EPOS nicht.
+        /// </summary>
+        private static double WiderstandGl26(BauteilEingang b, string wer, GebaeudeModellFehler grund)
+        {
+            (double rSi, double rSe) = Uebergaenge(b, gleichung26: true, wer);
+            double r = (1.0 / b.UWert_WM2K - rSi - rSe) / b.Flaeche_M2;
+            if (!(r > 0.0) || double.IsInfinity(r))
+                throw new GebaeudeModellException(grund,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_WIDERSTAND_GL26, wer, Bauteilreduktion.Text(r),
+                                            Bauteilreduktion.Text(b.UWert_WM2K)));
+            return r;
+        }
+
+        /// <summary>
+        /// Die Speichermasse aus der Bauweise C_ges = Bauweise · 3 600 [J/K] (A1) für eine Gruppe
+        /// im Klassenweg, mit den Prüfungen des Klassenwegs: A_f größer null, Bauweise je
+        /// Nutzfläche im Plausibilitätsband, Masseanteil außen in (0, 1).
+        /// </summary>
+        private static double KapazitaetAusBauweise(BauteilwegGebaeude g, string wer)
+        {
+            Pflicht(wer, "A_f", g.Nutzflaeche_M2);
+            double jeM2 = g.Bauweise_WhK / g.Nutzflaeche_M2;
+            if (!(jeM2 >= GebaeudeFestwerte.BAUWEISE_JE_M2_MIN && jeM2 <= GebaeudeFestwerte.BAUWEISE_JE_M2_MAX))
+                throw new GebaeudeModellException(GebaeudeModellFehler.BauweiseUnplausibel,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_BAUWEISE, wer, Bauteilreduktion.Text(jeM2),
+                                            Bauteilreduktion.Text(GebaeudeFestwerte.BAUWEISE_JE_M2_MIN),
+                                            Bauteilreduktion.Text(GebaeudeFestwerte.BAUWEISE_JE_M2_MAX)));
+            if (!(g.MasseanteilAussen > 0.0 && g.MasseanteilAussen < 1.0))
+                throw BauteilEingang.Bereich(GebaeudeModellFehler.ParameterUngueltig, wer, "a_AW", g.MasseanteilAussen, "(0; 1)");
+            return g.Bauweise_WhK * GebaeudeFestwerte.SEKUNDEN_JE_STUNDE;
+        }
+
+        private static void Pflicht(string wer, string groesse, double wert)
+        {
+            if (!IstPositivEndlich(wert))
+                throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_PFLICHT, wer, groesse, Bauteilreduktion.Text(wert)));
         }
 
         private static void UWert(string wer, string gruppe, double u, double flaeche)
