@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using EPOS.UI.Dialoge.Bedarf;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.Kern.Tests
@@ -12,7 +13,11 @@ namespace EPOS.Kern.Tests
     /// <b>Die Anlagenkopplung an der Oberfläche, Stufe AK1 Welle 3</b> (Konzept Anlagenkopplung 9,
     /// 12.1): die Datenseiten (Hüllen) der Masken, die der Kern speist. Der Katalogeditor bildet die
     /// dreizehn Felder der Wärmeübergabe NULL-erhaltend ab — auch beim „Speichern unter" (leerer
-    /// Vorgängersatz); die Texte der Gruppe kommen aus den Ressourcen.
+    /// Vorgängersatz); die Texte der Gruppe kommen aus den Ressourcen; der Bedarfsdialog eines
+    /// gekoppelten Gebäudes zeigt Kacheln, Bild und Ausweis aus dem Rechenweg des Laufs.
+    ///
+    /// <para>Die Fälle mit Datenbank koppeln an einer Arbeitskopie das Gebäude 10651 des Projekts
+    /// 1045 — kein Referenzprojekt rechnet gekoppelt.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class AnlagenkopplungOberflaecheTests : IDisposable
@@ -144,6 +149,71 @@ namespace EPOS.Kern.Tests
             Assert.Contains("{0}", u.MeldungVorlaufRaum);
             Assert.Contains("{1}", u.MeldungVorlaufRaum);
             Assert.Equal(GebaeudeKatalogHuelle.Texte().Uebergabe.Gruppe, u.Gruppe);
+        }
+
+        // =============================================================================
+        //  Bedarfsdialog Gebäude (9.4): Kacheln, Bild und Ausweis — die Zahlen des Laufs
+        // =============================================================================
+
+        private const int PROJEKT = 1045, GEBAEUDE = 10651;
+
+        private static GebaeudeProjektZeile Zeile(int projekt)
+        {
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(projekt);
+            IReadOnlyDictionary<string, object> liste = GebaeudeHuelle.Gaben(projekt, "", modelle, wizard: false);
+            return ((List<GebaeudeProjektZeile>)liste["Zeilen"])[0];
+        }
+
+        /// <summary>Koppelt das Gebäude der Arbeitskopie: Radiator mit Heizkurve, Projektstufe AK1.</summary>
+        private static void Koppeln()
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Gebaeude SET Heizkreis_Aktiv = 1, Uebergabe_Art = ?, Heizkurve_Aktiv = 1 WHERE ID = ?",
+                new DbParam("@art", DbWerte.UEBERGABE_RADIATOR), new DbParam("@id", GEBAEUDE)));
+            Assert.True(KonfigurationCtrl.AnlagenkopplungSchreiben(PROJEKT, DbWerte.ANLAGENKOPPLUNG_AK1));
+        }
+
+        /// <summary>
+        /// Ohne Kopplung: keine Kacheln, kein Bild, kein Ausweis. Gekoppelt: der Ausweis
+        /// „…, gekoppelt (AK1)", die Zeile mit Übergabeart und Auslegungspunkt, das Bild mit Lücken
+        /// in den Stunden ohne Heizbetrieb — und DIESELBEN Zahlen, die der Lauf in
+        /// <c>Tab_ErgebnisGebaeude</c> legt (Hausregel: eine Auskunft ruft den Rechenweg des Laufs).
+        /// </summary>
+        [Fact]
+        public void Der_Bedarfsdialog_zeigt_den_Heizkreis_mit_den_Zahlen_des_Laufs()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> ohne = GebaeudeBedarfHuelle.Gaben(Zeile(PROJEKT), PROJEKT);
+            var d0 = (GebaeudeBedarfDaten)ohne["Daten"];
+            Assert.False(d0.IstGekoppelt);
+            Assert.Null(d0.VorlaufMittelC);
+            Assert.Equal("", d0.Heizkreiszeile);
+            Assert.Null(ohne["BildauftragVorlauf"]);
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.GEB_RECHENWEG_GEKOPPELT, d0.Modelltext);
+
+            Koppeln();
+            IReadOnlyDictionary<string, object> mit = GebaeudeBedarfHuelle.Gaben(Zeile(PROJEKT), PROJEKT);
+            var d = (GebaeudeBedarfDaten)mit["Daten"];
+            Assert.True(d.IstGekoppelt);
+            Assert.EndsWith(", " + WindowsFormsApplication1.MyResource.Resource.GEB_RECHENWEG_GEKOPPELT, d.Modelltext);
+            Assert.Contains("Radiator", d.Heizkreiszeile);
+            Assert.Contains("55/45", d.Heizkreiszeile);
+
+            var lauf = new SimulationRunner();
+            Assert.True(lauf.SimuliereUndSpeichere(PROJEKT, out string fehler) > 0, fehler);
+            ErgebnisGebaeudeModel g = Assert.Single(new ErgebnisCtrl().Load(PROJEKT).Gebaeude);
+            Assert.True(g.IstGekoppelt);
+            Assert.Equal(g.VorlaufMittelC, d.VorlaufMittelC);
+            Assert.Equal(g.RuecklaufMittelC, d.RuecklaufMittelC);
+            Assert.Equal(g.UebergabeBegrenztStundenH, d.UebergabeBegrenztStundenH);
+
+            var bild = (Func<Zeichenmodell>)mit["BildauftragVorlauf"];
+            Zeichenmodell m = bild();
+            Assert.Equal(4, m.Reihen.Count);
+            Assert.Contains(m.Reihen[0].Werte, double.IsNaN);
+            Assert.Contains(m.Reihen[0].Werte, w => w > 20.0);
         }
 
         /// <summary>Die englische Fassung trägt jeden Schlüssel der Gruppe (N-A6).</summary>

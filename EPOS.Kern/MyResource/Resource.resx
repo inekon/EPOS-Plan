@@ -30676,4 +30676,49 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_SOLLWERTPROFIL_ERL" xml:space="preserve">
     <value>Sollwert-Zeitprogramm: genau 168 Werte in °C (0 bis 30), Montag 00 Uhr bis Sonntag 23 Uhr, getrennt durch „;“, Dezimalpunkt; leer = die Sollwerte des Gebäudes. Eine falsche Wertzahl wird abgelehnt, nicht aufgefüllt.</value>
   </data>
+  <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
+    <value>gekoppelt (AK1)</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Vorlauf / Rücklauf</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_QUELLE" xml:space="preserve">
+    <value>Mittel der Stunden mit Heizbetrieb — {0}, Auslegung {1}/{2} °C</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT" xml:space="preserve">
+    <value>Stunden mit begrenzter Übergabe</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Stunden, in denen die Übergabe weniger lieferte, als der Sollwert verlangte</value>
+  </data>
+  <data name="GEBB_BILD_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Vorlauf und Rücklauf</value>
+  </data>
+  <data name="GEBB_REIHE_VORLAUF" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="GEBB_REIHE_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Auslegung Vorlauf</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Auslegung Rücklauf</value>
+  </data>
+  <data name="GEBB_HRL_VORLAUF_LUECKEN" xml:space="preserve">
+    <value>Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf.</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Wärmeübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007.</value>
+  </data>
+  <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
+    <value>Übergabe rechnen</value>
+  </data>
+  <data name="ABW_MERKMAL_UEBERGABEART" xml:space="preserve">
+    <value>Übergabeart</value>
+  </data>
+  <data name="ABW_MERKMAL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Anlagenkopplung</value>
+  </data>
 </root>

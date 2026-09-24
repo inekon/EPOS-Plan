@@ -598,6 +598,16 @@ namespace WindowsFormsApplication1.Zeichnung
                 return sb.ToString();
             }
 
+            // Anlagenkopplung AK1 Welle 3: Eine Linie mit nicht endlichen Werten (einer LÜCKE - etwa
+            // der Vorlauf jenseits der Heizgrenze) bricht dort ab und setzt beim nächsten endlichen
+            // Wert mit eigenem "M" neu an. Eine Reihe ohne Lücke nimmt den Weg darunter, wörtlich wie
+            // bisher - ein "NaN" im Pfad machte den ganzen Pfad ungültig.
+            if (HatLuecke(reihe.Werte, ab, biss))
+            {
+                Lueckenzug(sb, reihe, rf, schritt, ab, biss, laenge, roh, spalten, hoehe, spanne);
+                return sb.ToString();
+            }
+
             if (roh)
             {
                 for (int i = ab; i <= biss; i++)
@@ -612,6 +622,65 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, i == 0, XStelle(reihe, rf, schritt, ab + gebuendelt[i].X),
                       Bildpunkt(gebuendelt[i].Y, rf, hoehe, spanne));
             return sb.ToString();
+        }
+
+        private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);
+
+        /// <summary>Trägt der Ausschnitt <paramref name="ab"/> … <paramref name="bis"/> einen nicht endlichen Wert?</summary>
+        private static bool HatLuecke(double[] werte, int ab, int bis)
+        {
+            for (int i = ab; i <= bis; i++)
+                if (!Endlich(werte[i])) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// <b>Der Pfad einer Linie mit Lücken</b> (AK1 Welle 3): je zusammenhängendem Stück endlicher
+        /// Werte ein Teilpfad mit eigenem <c>M</c> — roh jede Stützstelle, sonst nach
+        /// <see cref="Pfadregel"/> gebündelt, mit den Bildpunktspalten im Verhältnis der Stücklänge.
+        /// Ein Stück aus einem einzigen Wert ist ein bloßes <c>M x,y</c> — gültig, aber ohne Strich.
+        /// </summary>
+        private static void Lueckenzug(StringBuilder sb, Datenreihe reihe, Datenfenster rf, double schritt,
+                                       int ab, int bis, int laenge, bool roh, int spalten,
+                                       double hoehe, double spanne)
+        {
+            int i = ab;
+            while (i <= bis)
+            {
+                while (i <= bis && !Endlich(reihe.Werte[i])) i++;
+                if (i > bis) break;
+                int start = i;
+                while (i <= bis && Endlich(reihe.Werte[i])) i++;
+                int stueck = i - start;
+
+                if (sb.Length > 0) sb.Append(' ');
+                if (stueck == 1)
+                {
+                    sb.Append("M ").Append(Wert(XStelle(reihe, rf, schritt, start))).Append(',')
+                      .Append(Px(Bildpunkt(reihe.Werte[start], rf, hoehe, spanne)));
+                    continue;
+                }
+
+                if (roh)
+                {
+                    for (int k = start; k < start + stueck; k++)
+                        Punkt(sb, k == start, XStelle(reihe, rf, schritt, k),
+                              Bildpunkt(reihe.Werte[k], rf, hoehe, spanne));
+                    continue;
+                }
+
+                int teilspalten = (int)Math.Max(1.0, Math.Round((double)spalten * stueck / Math.Max(1, laenge)));
+                IReadOnlyList<Punkt> gebuendelt = Pfadregel.Gebuendelt(Teil(reihe.Werte, start, stueck), teilspalten);
+                if (gebuendelt.Count == 1)
+                {
+                    sb.Append("M ").Append(Wert(XStelle(reihe, rf, schritt, start + gebuendelt[0].X))).Append(',')
+                      .Append(Px(Bildpunkt(gebuendelt[0].Y, rf, hoehe, spanne)));
+                    continue;
+                }
+                for (int k = 0; k < gebuendelt.Count; k++)
+                    Punkt(sb, k == 0, XStelle(reihe, rf, schritt, start + gebuendelt[k].X),
+                          Bildpunkt(gebuendelt[k].Y, rf, hoehe, spanne));
+            }
         }
 
         /// <summary>

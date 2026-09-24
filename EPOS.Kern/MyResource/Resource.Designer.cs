@@ -61,11 +61,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ANLAGENKOPPLUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe rechnen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_HEIZKREIS {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_HEIZKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_HEIZSTAB {
             get {
                 return ResourceManager.GetString("ABW_MERKMAL_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_UEBERGABEART {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_UEBERGABEART", resourceCulture);
             }
         }
         
@@ -17717,6 +17744,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_VORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_VORLAUF_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string GEBB_EINHEIT_H {
@@ -17785,6 +17821,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_HRL_KAELTE_WIRKSAM {
             get {
                 return ResourceManager.GetString("GEBB_HRL_KAELTE_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_VORLAUF_LUECKEN {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_VORLAUF_LUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit begrenzter Übergabe ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Übergabe weniger lieferte, als der Sollwert verlangte ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_BEGRENZT_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_BEGRENZT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel der Stunden mit Heizbetrieb — {0}, Auslegung {1}/{2} °C ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_VORLAUF_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_VORLAUF_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf / Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_VORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_VORLAUF_RUECKLAUF", resourceCulture);
             }
         }
         
@@ -17897,6 +17978,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_AUSLEGUNG_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_AUSLEGUNG_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Vorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_AUSLEGUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_AUSLEGUNG_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert ähnelt.
         /// </summary>
         public static string GEBB_REIHE_HEIZSOLLWERT {
@@ -17929,6 +18028,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_REIHE_RAUMLUFT {
             get {
                 return ResourceManager.GetString("GEBB_REIHE_RAUMLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_VORLAUF", resourceCulture);
             }
         }
         
@@ -20526,11 +20643,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007. ähnelt.
+        /// </summary>
+        public static string GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG {
+            get {
+                return ResourceManager.GetString("GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) ähnelt.
         /// </summary>
         public static string GEB_PRODUKTAUSWEIS_VDI6007 {
             get {
                 return ResourceManager.GetString("GEB_PRODUKTAUSWEIS_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gekoppelt (AK1) ähnelt.
+        /// </summary>
+        public static string GEB_RECHENWEG_GEKOPPELT {
+            get {
+                return ResourceManager.GetString("GEB_RECHENWEG_GEKOPPELT", resourceCulture);
             }
         }
         

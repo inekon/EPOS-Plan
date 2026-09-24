@@ -191,6 +191,17 @@ namespace WindowsFormsApplication1
             /// </summary>
             public float Breite;
 
+            /// <summary>
+            /// <b>Lücken statt Unbrauchbarkeit</b> (Anlagenkopplung AK1 Welle 3, Bild „Vorlauf und
+            /// Rücklauf"): Ein nicht endlicher Wert ist eine LÜCKE — die Linie bricht dort ab und setzt
+            /// beim nächsten endlichen Wert neu an, im PNG wie im SVG. Ohne den Schalter (Vorgabe) macht
+            /// ein einziger nicht endlicher Wert die Reihe unbrauchbar, wie bisher; jedes Bild des
+            /// Bestands bleibt damit byte-gleich. Ein Vorlauf jenseits der Heizgrenze ist keine Zahl,
+            /// sondern „kein Heizbetrieb" — ihn mit einer erfundenen Zahl zu füllen, wäre eine Aussage,
+            /// die niemand getroffen hat. Nur der Verlauf (<see cref="VerlaufsbildModell"/>) wertet ihn aus.
+            /// </summary>
+            public bool Luecken;
+
             public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
 
             public Reihe(string n, double[] w, SKColor f, Stapelart gruppe,
@@ -5338,6 +5349,69 @@ namespace WindowsFormsApplication1
                                       yTitel: namen.Achse);
         }
 
+        /// <summary>
+        /// <b>VORLAUF UND RÜCKLAUF EINES GEBÄUDES</b> (Anlagenkopplung AK1 Welle 3; Konzept 9.4, 12.1):
+        /// der Jahresverlauf des gefahrenen Vorlaufs und des Rücklaufs zur gelieferten Leistung, dazu
+        /// gestrichelt der Auslegungspunkt — Auslegungsvorlauf und -rücklauf als waagerechte Linien; das
+        /// Band dazwischen ist die Spreizung, für die die Übergabe ausgelegt ist. Gezeichnet wie die
+        /// <see cref="Raumtemperatur"/>: vorzeichenfähige Achse über dem angezeigten Ausschnitt,
+        /// Mindestspanne 5 K, Datenzoom über <paramref name="fenster"/>.
+        ///
+        /// <para><b>Stunden ohne Heizbetrieb sind LÜCKEN</b> (<see cref="Reihe.Luecken"/>): Jenseits
+        /// der Heizgrenze gibt es keinen Vorlauf, und die Linie bricht dort ab, statt eine Zahl zu
+        /// erfinden. Eine fehlende Reihe (<c>null</c>) entfällt still, ein fehlender Auslegungswert
+        /// ebenso; ohne jede Reihe steht der Leerhinweis.</para>
+        /// </summary>
+        public static byte[] VorlaufRuecklauf(string titel, double[] vorlauf, double[] ruecklauf,
+                                              double? auslegungVorlauf, double? auslegungRuecklauf,
+                                              VorlaufRuecklaufnamen namen, Achsenfenster fenster = null)
+            => SkiaMaler.Png(VorlaufRuecklaufModell(titel, vorlauf, ruecklauf, auslegungVorlauf,
+                                                    auslegungRuecklauf, namen, fenster));
+
+        /// <summary>Dasselbe Bild als Zeichenmodell — der Weg der Oberfläche (<c>DiagrammSvg</c>).</summary>
+        public static Zeichenmodell VorlaufRuecklaufModell(string titel, double[] vorlauf, double[] ruecklauf,
+                                                           double? auslegungVorlauf, double? auslegungRuecklauf,
+                                                           VorlaufRuecklaufnamen namen, Achsenfenster fenster = null)
+        {
+            namen ??= new VorlaufRuecklaufnamen();
+            var reihen = new List<Reihe>();
+            if (vorlauf != null)
+                reihen.Add(new Reihe(namen.Vorlauf, vorlauf, Farbrolle.SERIE_1) { Luecken = true });
+            if (ruecklauf != null)
+                reihen.Add(new Reihe(namen.Ruecklauf, ruecklauf, Farbrolle.SERIE_2) { Luecken = true });
+            int laenge = vorlauf?.Length ?? ruecklauf?.Length ?? 0;
+            if (auslegungVorlauf is double av && Endlich(av) && laenge > 0)
+                reihen.Add(new Reihe(namen.AuslegungVorlauf, Konstant(laenge, av), Farbrolle.SERIE_3,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            if (auslegungRuecklauf is double ar && Endlich(ar) && laenge > 0)
+                reihen.Add(new Reihe(namen.AuslegungRuecklauf, Konstant(laenge, ar), Farbrolle.SERIE_4,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            return VerlaufsbildModell(titel, reihen, true, TEMPERATUR_MINDESTSPANNE, fenster,
+                                      yTitel: namen.Achse);
+        }
+
+        private static double[] Konstant(int laenge, double wert)
+        {
+            var werte = new double[laenge];
+            for (int i = 0; i < laenge; i++) werte[i] = wert;
+            return werte;
+        }
+
+        /// <summary>Die Legendennamen und der Achsentitel des Bildes „Vorlauf und Rücklauf" — die Texte reicht der Aufrufer.</summary>
+        public sealed class VorlaufRuecklaufnamen
+        {
+            /// <summary>Legende des gefahrenen Vorlaufs.</summary>
+            public string Vorlauf { get; init; } = "Vorlauf";
+            /// <summary>Legende des Rücklaufs.</summary>
+            public string Ruecklauf { get; init; } = "Rücklauf";
+            /// <summary>Legende des Auslegungsvorlaufs.</summary>
+            public string AuslegungVorlauf { get; init; } = "Auslegung Vorlauf";
+            /// <summary>Legende des Auslegungsrücklaufs.</summary>
+            public string AuslegungRuecklauf { get; init; } = "Auslegung Rücklauf";
+            /// <summary>Titel der y-Achse; <c>null</c> = keiner.</summary>
+            public string Achse { get; init; } = "°C";
+        }
+
         /// <summary>Die Legendennamen und der Achsentitel des Bildes „Raumtemperatur" — die Texte reicht der Aufrufer.</summary>
         public sealed class Raumtemperaturnamen
         {
@@ -5481,8 +5555,8 @@ namespace WindowsFormsApplication1
             double min = 0.0, max = 1.0;
             if (mitY1)
             {
-                min = minAuto ? gueltig.Min(r => r.Werte.Min()) : 0;
-                max = gueltig.Max(r => r.Werte.Max());
+                min = minAuto ? gueltig.Min(r => Kleinster(r)) : 0;
+                max = gueltig.Max(r => Groesster(r));
 
                 // MINDESTSPANNE (Temperatur: 5 K, woertlich aus
                 // SpeichertemperaturAnzeigen :2607-2620; Leistungsbilder: keine).
@@ -5540,7 +5614,7 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Strichart));
+                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Strichart, r.Luecken && !sortiert));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
@@ -5606,11 +5680,16 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static void VerlaufLinie(IZeichenziel z, SKRect rc, double[] werte,
                                          double min, double max, SKColor farbe,
-                                         float staerke, Strichart strichart)
+                                         float staerke, Strichart strichart, bool luecken = false)
         {
             if (werte == null || werte.Length < 2 || max - min <= 0.0) return;
 
             int schrittweite = Math.Max(1, werte.Length / (int)rc.Width);
+            if (luecken)
+            {
+                VerlaufLinieMitLuecken(z, rc, werte, min, max, farbe, staerke, strichart, schrittweite);
+                return;
+            }
             var punkte = new List<SKPoint>();
             for (int i = 0; i < werte.Length; i += schrittweite)
             {
@@ -5622,6 +5701,40 @@ namespace WindowsFormsApplication1
             Linienzug(z, punkte.ToArray(),
                       Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund));
         }
+
+        /// <summary>
+        /// Die Linie einer Reihe MIT LÜCKEN (<see cref="Reihe.Luecken"/>): je zusammenhängendem Stück
+        /// endlicher Werte ein eigener Linienzug, untertastet wie die Linie ohne Lücken. Ein Stück aus
+        /// einem einzigen Punkt zeichnet nichts — eine Linie braucht zwei.
+        /// </summary>
+        private static void VerlaufLinieMitLuecken(IZeichenziel z, SKRect rc, double[] werte,
+                                                   double min, double max, SKColor farbe,
+                                                   float staerke, Strichart strichart, int schrittweite)
+        {
+            var stift = Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund);
+            var punkte = new List<SKPoint>();
+            for (int i = 0; i < werte.Length; i += schrittweite)
+            {
+                if (!Endlich(werte[i]))
+                {
+                    if (punkte.Count >= 2) Linienzug(z, punkte.ToArray(), stift);
+                    punkte.Clear();
+                    continue;
+                }
+                float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
+                float y = (float)(rc.Bottom - (werte[i] - min) / (max - min) * rc.Height);
+                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+            }
+            if (punkte.Count >= 2) Linienzug(z, punkte.ToArray(), stift);
+        }
+
+        /// <summary>Der kleinste Wert einer Reihe — bei einer Reihe mit Lücken der kleinste endliche.</summary>
+        private static double Kleinster(Reihe r) => r.Luecken ? r.Werte.Where(Endlich).Min() : r.Werte.Min();
+
+        /// <summary>Der größte Wert einer Reihe — bei einer Reihe mit Lücken der größte endliche.</summary>
+        private static double Groesster(Reihe r) => r.Luecken ? r.Werte.Where(Endlich).Max() : r.Werte.Max();
+
+        private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);
 
         /// <summary>Mindestspanne der Temperaturachse [K] — woertlich aus dem Vorlaeufer.</summary>
         private const double TEMPERATUR_MINDESTSPANNE = 5.0;
@@ -6910,6 +7023,8 @@ namespace WindowsFormsApplication1
 
         private static bool Brauchbar(Reihe r)
         {
+            if (r != null && r.Luecken && r.Werte != null && r.Werte.Length >= 2)
+                return r.Werte.Count(Endlich) >= 2;
             return r != null && r.Werte != null && r.Werte.Length >= 2 &&
                    r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
         }
@@ -7698,6 +7813,7 @@ namespace WindowsFormsApplication1
                 ? new Reihe(r.Name, werte, r.Ton, r.Stapelgruppe, r.Strichart, r.Breite)
                 : new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Strichart, r.Breite);
             kopie.Farbe = r.Farbe;
+            kopie.Luecken = r.Luecken;
             return kopie;
         }
 

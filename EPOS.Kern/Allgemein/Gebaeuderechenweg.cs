@@ -195,6 +195,48 @@ namespace WindowsFormsApplication1
         /// <summary>Auslegungsvorlauf der Art [°C]; <c>null</c> für ideal oder unbekannt.</summary>
         public static double? Vorlauf(string art) => Zahl(Waermeuebergabe.VorgabeVorlaufC(art));
 
+        /// <summary>
+        /// Der ANZEIGENAME einer Übergabeart (Drei-Schichten-Regel: der Steuerwert bleibt deutsch und
+        /// eingefroren, angezeigt wird der Ressourcentext) — für Bedarfsdialog, Bericht und
+        /// Variantenvergleich aus EINER Stelle; NULL heißt „ideal", ein unbekannter Wert steht, wie er ist.
+        /// </summary>
+        public static string Anzeigename(string art)
+        {
+            switch (art)
+            {
+                case null:
+                case "":
+                case DbWerte.UEBERGABE_IDEAL: return Text("GEBK_UEBERGABE_IDEAL", "ideal (keine Übergabe)");
+                case DbWerte.UEBERGABE_RADIATOR: return Text("GEBK_UEBERGABE_RADIATOR", "Radiator");
+                case DbWerte.UEBERGABE_FLAECHE: return Text("GEBK_UEBERGABE_FLAECHE", "Flächenheizung");
+                case DbWerte.UEBERGABE_KONVEKTOR: return Text("GEBK_UEBERGABE_KONVEKTOR", "Konvektor");
+                default: return art;
+            }
+        }
+
+        /// <summary>Der Anzeigename einer Kopplungsstufe (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); NULL heißt „aus".</summary>
+        public static string Stufenname(string stufe)
+        {
+            switch (stufe)
+            {
+                case null:
+                case "":
+                case DbWerte.ANLAGENKOPPLUNG_AUS: return Text("SIMKONF_ANLAGENKOPPLUNG_AUS", "aus");
+                case DbWerte.ANLAGENKOPPLUNG_AK1: return Text("SIMKONF_ANLAGENKOPPLUNG_AK1", "Heizkreis (AK1)");
+                case DbWerte.ANLAGENKOPPLUNG_AK2: return Text("SIMKONF_ANLAGENKOPPLUNG_AK2", "Fahrplan (AK2)");
+                case DbWerte.ANLAGENKOPPLUNG_AK3: return Text("SIMKONF_ANLAGENKOPPLUNG_AK3", "geschlossener Kreis (AK3)");
+                default: return stufe;
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
         /// <summary>Auslegungsrücklauf der Art [°C]; <c>null</c> für ideal oder unbekannt.</summary>
         public static double? Ruecklauf(string art) => Zahl(Waermeuebergabe.VorgabeRuecklaufC(art));
 

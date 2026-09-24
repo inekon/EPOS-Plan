@@ -30669,4 +30669,49 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_SOLLWERTPROFIL_ERL" xml:space="preserve">
     <value>Set point schedule: exactly 168 values in °C (0 to 30), Monday 00:00 to Sunday 23:00, separated by “;”, decimal point; empty = the building's set points. A wrong number of values is rejected, not padded.</value>
   </data>
+  <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
+    <value>coupled (AK1)</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow / return</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_QUELLE" xml:space="preserve">
+    <value>Mean over the hours with heating — {0}, design {1}/{2} °C</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT" xml:space="preserve">
+    <value>Hours with limited heat emission</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Hours in which the heat emitter delivered less than the set point required</value>
+  </data>
+  <data name="GEBB_BILD_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow and return temperature</value>
+  </data>
+  <data name="GEBB_REIHE_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="GEBB_REIHE_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design flow</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design return</value>
+  </data>
+  <data name="GEBB_HRL_VORLAUF_LUECKEN" xml:space="preserve">
+    <value>Hours without heating stay empty in the chart — there is no flow temperature then.</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Heat emission, heating curve and room controller of the system coupling are extensions of EPOS-Plan, not part of VDI 6007.</value>
+  </data>
+  <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
+    <value>Calculate heat emission</value>
+  </data>
+  <data name="ABW_MERKMAL_UEBERGABEART" xml:space="preserve">
+    <value>Heat emitter type</value>
+  </data>
+  <data name="ABW_MERKMAL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling</value>
+  </data>
 </root>
