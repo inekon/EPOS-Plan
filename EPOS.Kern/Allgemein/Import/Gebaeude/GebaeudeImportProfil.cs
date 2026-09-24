@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
     /// (Softwarearchitektur 1.5, Regel 2): Die abgeleiteten Profile führen je Plattform eine
     /// Konstante, die Hülle belegt <see cref="MaxBytes"/>. Abgelehnt wird benannt, vor dem Lesen.</para>
     /// </summary>
-    public abstract class GebaeudeImportProfil
+    internal abstract class GebaeudeImportProfil
     {
         /// <summary>Zonenregel X1: nach <c>Zone</c> (gbXML), mit G6c wählbar.</summary>
         public const string ZONENREGEL_X1 = "X1";

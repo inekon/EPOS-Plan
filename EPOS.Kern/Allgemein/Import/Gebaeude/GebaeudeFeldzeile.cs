@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// invariant formatiert. Den Text holt erst die Oberfläche
     /// (<see cref="GebaeudeZuordnungsModell.BelegText"/>).
     /// </summary>
-    public sealed class GebaeudeBeleg
+    internal sealed class GebaeudeBeleg
     {
         /// <summary>Legt einen Beleg an.</summary>
         /// <param name="schluessel">Ressourcenschlüssel (<c>GIMP_BELEG_*</c>).</param>
@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Herkunft je Feld wird nicht persistiert</b> (Softwarearchitektur 2.7): Sie lebt
     /// nur bis zum Schließen des Dialogs.</para>
     /// </summary>
-    public sealed class GebaeudeFeldzeile
+    internal sealed class GebaeudeFeldzeile
     {
         /// <summary>Legt eine Zeile zu einem Zielfeld an; Gruppe und Einheit kommen aus <see cref="GebaeudeZielfelder"/>.</summary>
         public GebaeudeFeldzeile(string zielfeld)

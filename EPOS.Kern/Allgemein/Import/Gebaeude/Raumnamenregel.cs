@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     /// Kleinschreibung zählen nicht. Die Regel ist eine Vorbelegung: Der Dialog zeigt die
     /// Raumliste mit dem Haken, damit sie sichtbar und korrigierbar bleibt.
     /// </summary>
-    public static class Raumnamenregel
+    internal static class Raumnamenregel
     {
         private static readonly string[] _muster =
         {

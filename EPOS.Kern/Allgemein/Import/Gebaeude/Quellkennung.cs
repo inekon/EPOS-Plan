@@ -16,7 +16,7 @@ namespace WindowsFormsApplication1
     /// Kennungen mit gleichem Anfang bleiben unterscheidbar. Den Hinweis im Protokoll legt der Leser
     /// (<c>IMP_GBXML_PROT_KENNUNG_GEKUERZT</c>).</para>
     /// </summary>
-    public static class Quellkennung
+    internal static class Quellkennung
     {
         /// <summary>Größte Länge einer gespeicherten Kennung.</summary>
         public const int MAX_LAENGE = 64;

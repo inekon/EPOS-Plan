@@ -11,7 +11,7 @@
     /// aus dem Mehrzonenkonzept 6.4 gilt für beide Formate: <i>eine Zelle ohne Beleg ist eine
     /// Vorgabe.</i></para>
     /// </summary>
-    public enum Importherkunft
+    internal enum Importherkunft
     {
         /// <summary>Nichts gefunden, nichts vorbelegt.</summary>
         Leer = 0,
@@ -38,7 +38,7 @@
     /// <c>CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))</c>. Datenbankwerte,
     /// nie übersetzt (Glossar § 10).
     /// </summary>
-    public static class ImportherkunftWerte
+    internal static class ImportherkunftWerte
     {
         /// <summary>Persistenzwert „aus einer gbXML-Datei".</summary>
         public const string GBXML = "GBXML";

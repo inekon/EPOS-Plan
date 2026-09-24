@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>Die Vorgaben EINER Baualtersklasse (U12); <c>null</c> je Wert = die Klasse hat keinen.</summary>
-    public sealed class Baualtersvorgabe
+    internal sealed class Baualtersvorgabe
     {
         internal Baualtersvorgabe(char klasse, int katalogsaetze, double? uAussenwand, double? uFenster, double? uDach,
                                   double? uGrund, double? uSonstige, double? gWert, double? psiFensterWand,
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
     /// <c>GebaeudeVorgabenTests</c> rechnet die Mediane aus der Testdatenbank nach und gibt bei einer
     /// Abweichung die neue Tabelle aus — wer den Katalog ändert, zieht sie hier nach.</para>
     /// </summary>
-    public static class GebaeudeVorgaben
+    internal static class GebaeudeVorgaben
     {
         private static readonly Baualtersvorgabe[] _tabelle =
         {

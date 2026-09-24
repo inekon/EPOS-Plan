@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Zahlen</b> zeigt <see cref="WertText"/> in der Anzeigekultur; Belege und Meldungen
     /// tragen ihre Werte invariant (Muster <see cref="PruefMeldung"/>).</para>
     /// </summary>
-    public static class GebaeudeZuordnungsModell
+    internal static class GebaeudeZuordnungsModell
     {
         /// <summary>Beschriftung einer Herkunft — Anzeige, nie Steuerwert.</summary>
         public static string HerkunftText(Importherkunft herkunft)

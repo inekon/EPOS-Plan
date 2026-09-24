@@ -17,7 +17,7 @@
     /// Grad Fahrenheit bzw. Rankine als Temperaturdifferenz 5/9 K. Jede abgeleitete Einheit
     /// entsteht aus diesen, nicht aus einer gerundeten Tabellenzahl.</para>
     /// </summary>
-    public static class GbxmlEinheiten
+    internal static class GbxmlEinheiten
     {
         /// <summary>Fuß in Meter (Definition).</summary>
         public const double FUSS_M = 0.3048;

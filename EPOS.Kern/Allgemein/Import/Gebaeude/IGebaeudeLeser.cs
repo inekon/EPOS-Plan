@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
     /// Stufe Fehler im Abbild, keine Ausnahme. Einzig <see cref="OperationCanceledException"/>
     /// verlässt den Leser — der Abbruch des Anwenders. Der Strom wird gelesen, nicht geschlossen.</para>
     /// </summary>
-    public interface IGebaeudeLeser
+    internal interface IGebaeudeLeser
     {
         /// <summary>Liest eine Gebäudedatei in das normierte Abbild.</summary>
         /// <param name="quelle">Der Inhalt der Datei; wird nicht geschlossen.</param>

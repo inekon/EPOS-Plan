@@ -3,31 +3,11 @@ using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>Die Bauteilart im normierten Abbild — die acht Arten von <c>Tab_Bauteil.Bauteilart</c> und die Vorhangfassade des IFC-Wegs (Datenaustauschkonzept 3.5).</summary>
-    public enum Bauteilart
-    {
-        /// <summary>Außenwand, auch gegen Erdreich.</summary>
-        Aussenwand = 0,
-        /// <summary>Dach.</summary>
-        Dach = 1,
-        /// <summary>Bodenplatte bzw. Boden gegen Außenluft.</summary>
-        Bodenplatte = 2,
-        /// <summary>Fenster und Oberlicht (Öffnung).</summary>
-        Fenster = 3,
-        /// <summary>Tür (Öffnung).</summary>
-        Tuer = 4,
-        /// <summary>Innenwand.</summary>
-        Innenwand = 5,
-        /// <summary>Decke bzw. Innenboden.</summary>
-        Decke = 6,
-        /// <summary>Vorhangfassade (IFC-Weg).</summary>
-        Vorhangfassade = 7,
-        /// <summary>Stützen und alles Übrige — zählt nie zur Außenwand.</summary>
-        Sonstiges = 8,
-    }
+    // Die Bauteilart ist die EINE Kern-Aufzählung aus Simulation/Gebaeude/BauteilEingang.cs (G3):
+    // dieselben neun Werte in derselben Reihenfolge; das Abbild führt keine zweite.
 
     /// <summary>Die Randbedingung eines Bauteils, wie sie aus Typ und Nachbarschaft folgt (3.5).</summary>
-    public enum Randbedingung
+    internal enum Randbedingung
     {
         /// <summary>Außenluft.</summary>
         Aussenluft = 0,
@@ -42,7 +22,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Wie vollständig ein Aufbau aus der Datei ist (Datenaustauschkonzept 3.6).</summary>
-    public enum Aufbaustatus
+    internal enum Aufbaustatus
     {
         /// <summary>Jede Schicht mit Dicke, λ, ρ und c — U-Wert und Masse sind aus den Schichten bestimmbar.</summary>
         Vollstaendig = 0,
@@ -55,7 +35,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>In welcher Richtung die Schichten eines Aufbaus gezählt sind.</summary>
-    public enum Schichtrichtung
+    internal enum Schichtrichtung
     {
         /// <summary>Erste Schicht außen — die gbXML-Hausannahme (3.7).</summary>
         AussenNachInnen = 0,
@@ -64,7 +44,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Woraus die Entscheidung „beheizt/unbeheizt" eines Raums stammt (3.3).</summary>
-    public enum BeheiztQuelle
+    internal enum BeheiztQuelle
     {
         /// <summary>Aus dem Attribut der Datei (gbXML <c>Space/@conditionType</c>).</summary>
         Attribut = 0,
@@ -88,7 +68,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Der Nordwinkel wird gelesen, nie still angewandt</b> (3.2): Azimute stehen so im
     /// Abbild, wie die Datei sie schreibt.</para>
     /// </summary>
-    public class GebaeudeAbbild
+    internal class GebaeudeAbbild
     {
         /// <summary>Format des Abbilds (<see cref="GebaeudeQuelle.FORMAT_GBXML"/> bzw. <see cref="GebaeudeQuelle.FORMAT_IFC"/>).</summary>
         public string Format { get; set; } = "";
@@ -119,7 +99,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Ein Gebäude des Abbilds mit seinen Räumen und Bauteilen.</summary>
-    public sealed class AbbildGebaeude
+    internal sealed class AbbildGebaeude
     {
         /// <summary>Kennung aus der Datei, ungekürzt.</summary>
         public string Kennung { get; set; } = "";
@@ -156,7 +136,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Ein Raum des Abbilds.</summary>
-    public sealed class AbbildRaum
+    internal sealed class AbbildRaum
     {
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
@@ -211,7 +191,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>
-    public sealed class AbbildNachbar
+    internal sealed class AbbildNachbar
     {
         /// <summary>Legt einen Nachbarn an.</summary>
         public AbbildNachbar(string kennung, string sicht)
@@ -231,7 +211,7 @@ namespace WindowsFormsApplication1
     /// Ein Bauteil des Abbilds — eine Fläche (gbXML <c>Surface</c>) oder eine Öffnung darin
     /// (<c>Opening</c>).
     /// </summary>
-    public sealed class AbbildBauteil
+    internal sealed class AbbildBauteil
     {
         /// <summary>Kennung aus der Datei, ungekürzt.</summary>
         public string Kennung { get; set; } = "";
@@ -283,7 +263,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Ein Aufbau (gbXML <c>Construction</c>) mit seinen Schichten.</summary>
-    public sealed class AbbildAufbau
+    internal sealed class AbbildAufbau
     {
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
@@ -312,7 +292,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>Eine Schicht eines Aufbaus, Stoffwerte in SI.</summary>
-    public sealed class AbbildSchicht
+    internal sealed class AbbildSchicht
     {
         /// <summary>Kennung des Baustoffs (gbXML <c>Material/@id</c>).</summary>
         public string BaustoffKennung { get; set; } = "";

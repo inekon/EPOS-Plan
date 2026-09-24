@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>Ein Zielfeld des Gebäudeimports: Schlüssel, Gruppe, Einheit, Reihenfolge.</summary>
-    public sealed class GebaeudeZielfeld
+    internal sealed class GebaeudeZielfeld
     {
         internal GebaeudeZielfeld(string schluessel, string gruppe, string einheit, int reihenfolge,
                                   bool istText = false, bool nurPruefgroesse = false)
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
     /// alte Einzelspalte <c>Luftwechselrate</c> auch nicht — der Luftwechsel geht nach D12 auf die
     /// Infiltration.</para>
     /// </summary>
-    public static class GebaeudeZielfelder
+    internal static class GebaeudeZielfelder
     {
         // ------------------------------------------------------------------ Gruppen
 

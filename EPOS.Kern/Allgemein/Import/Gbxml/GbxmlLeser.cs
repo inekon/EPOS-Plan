@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
     /// Probe 21); im Polygon ist +y Norden und +x Osten, die Normale zeigt nach der Rechte-Hand-Regel
     /// vom ersten Nachbarraum weg; die erste Schicht eines Aufbaus liegt außen (3.7).</para>
     /// </summary>
-    public sealed class GbxmlLeser : IGebaeudeLeser
+    internal sealed class GbxmlLeser : IGebaeudeLeser
     {
         /// <summary>Der Namensraum von gbXML.</summary>
         public const string NAMENSRAUM = "http://www.gbxml.org/schema";

@@ -6,7 +6,7 @@
     /// Nordrichtung (<c>Location/CADModelAzimuth</c>) steht in
     /// <see cref="GebaeudeAbbild.NordwinkelGrad"/> und wird nie still angewandt (3.2).
     /// </summary>
-    public sealed class GbxmlAbbild : GebaeudeAbbild
+    internal sealed class GbxmlAbbild : GebaeudeAbbild
     {
         /// <summary>Legt ein leeres Abbild im Format gbXML an.</summary>
         public GbxmlAbbild()

@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>Unveränderlich; ohne Datenbank.</para>
     /// </summary>
-    public sealed class GebaeudeQuelle
+    internal sealed class GebaeudeQuelle
     {
         /// <summary>Persistenzwert des Formats gbXML (<c>Tab_Importquelle.Format</c>).</summary>
         public const string FORMAT_GBXML = "GBXML";

@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
     /// <c>Kulturweitergabe.Starten</c>, nie über <c>Task.Run</c> (Wächter
     /// <c>ParallelitaetWacheTests</c>). Deshalb nimmt <see cref="Lesen"/> Melder und Abbruch.</para>
     /// </summary>
-    public sealed class GebaeudeImportAblauf
+    internal sealed class GebaeudeImportAblauf
     {
         /// <summary>Präfix der formatfreien Meldungsschlüssel des Ablaufs und der Zuordnung.</summary>
         public const string MELDUNG = "IMP_GEB_PROT_";

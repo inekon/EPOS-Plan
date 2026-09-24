@@ -11,7 +11,7 @@
     /// Arbeitsspeicher. Die iOS-Zahl ist zu messen, nicht zu schätzen. Die Hülle belegt
     /// <see cref="GebaeudeImportProfil.MaxBytes"/> je Plattform mit einer der beiden Konstanten.</para>
     /// </summary>
-    public sealed class GbxmlImportProfil : GebaeudeImportProfil
+    internal sealed class GbxmlImportProfil : GebaeudeImportProfil
     {
         /// <summary>Größengrenze unter Windows: 25 MB (D15), Megabyte zu 1 024 × 1 024 Byte.</summary>
         public const long MAX_BYTES_WINDOWS = 25L * 1024 * 1024;

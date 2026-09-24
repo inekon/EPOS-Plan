@@ -5,7 +5,7 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>Worauf eine Quellentität gepaart wird — die fünf Fremdschlüssel von <c>Tab_Importzuordnung</c> (Datenaustauschkonzept 7.2).</summary>
-    public enum ImportZiel
+    internal enum ImportZiel
     {
         /// <summary><c>ID_Gebaeude</c> — in G4c (Zonenregel X4) das einzige Ziel.</summary>
         Gebaeude = 0,
@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
     /// <b>Eine Paarung Quellentität ↔ EPOS-Ziel</b> — später eine Zeile in
     /// <c>Tab_Importzuordnung</c> (7.2). Geschrieben wird in dieser Welle nichts.
     /// </summary>
-    public sealed class GebaeudeQuellzuordnung
+    internal sealed class GebaeudeQuellzuordnung
     {
         /// <summary>Legt eine Paarung an; die Kennung wird auf 64 Zeichen gekürzt (<see cref="Quellkennung.Kuerzen"/>).</summary>
         public GebaeudeQuellzuordnung(string quelltyp, string quellkennung, ImportZiel ziel)
@@ -55,7 +55,7 @@ namespace WindowsFormsApplication1
     /// <para>Der Satz beschreibt das ZIEL, nicht die Datei — deshalb ist er beiden Lesern gemeinsam
     /// (gbXML jetzt, IFC mit G4a). Er zeigt nichts an und schreibt nichts.</para>
     /// </summary>
-    public sealed class GebaeudeImportSatz
+    internal sealed class GebaeudeImportSatz
     {
         private readonly List<GebaeudeFeldzeile> _zeilen;
         private readonly List<PruefMeldung> _meldungen;
