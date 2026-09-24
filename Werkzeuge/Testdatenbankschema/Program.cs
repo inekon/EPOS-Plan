@@ -1623,6 +1623,23 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 127 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt WiederholperiodeSchema.SCHRITT: die Wiederholperiode je
+            //      Kostenposition (Etappe E16, V-G3, DIN EN 17463 6.3.1 "alle n Jahre"). NACH
+            //      127. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Wiederholperiode bedient (WiederholperiodeSchema):
+            //      Wiederholperiode_a (INTEGER, nullbar) an Tab_ProjektWerte und
+            //      Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "jaehrlich wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition),
+                                                WiederholperiodeSchema.SCHRITT, trocken);
+            if (!trocken)
+                Console.WriteLine("Schritt " + WiederholperiodeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
+                                  " - vollstaendig: " + WiederholperiodeSchema.Vollstaendig() + " (erwartet True).");
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

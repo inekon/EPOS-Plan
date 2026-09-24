@@ -637,6 +637,14 @@ namespace EPOS.Kern.Tests
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug (ProjektWirkungSchema); wiederholbar.
                 ProjektWirkungSchema.Ausfuehren();
 
+                // Schritt WiederholperiodeSchema.SCHRITT (Etappe E16, V-G3): die Wiederholperiode
+                // je Kostenposition an Tab_ProjektWerte und Tab_KostenVorlagePosition. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "jaehrlich wie bisher".
+                foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                    SpalteSicherstellen(s);
+                WiederholperiodeSchema.SpaltenStandVergessen();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
