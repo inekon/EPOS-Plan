@@ -28,8 +28,8 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
     erfundenen Zahlen.
 
-ABGELEITETE VDI-6002-WERTE (Anwenderentscheid ZU19 vom 23.09.2026, Stufe Z3). Neben dem fiktiven
-Katalog traegt die Testdatenbank vier Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten
+ABGELEITETE VDI-6002-WERTE (Anwenderentscheid ZU19 vom 23.09.2026, Stufe Z3; Katalogausbau Z5).
+Neben dem fiktiven Katalog traegt die Testdatenbank fuenf Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten
 (je ein eigener Tagesgangsatz; Bedarf, Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie
 allein aus tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von
 normzahlen_abgeleitet_bauen.py nach der dort dokumentierten Regel; die Originale braucht dieses
@@ -133,14 +133,28 @@ BEZUG_ZAPF_VDI = 60.0
 BEZUG_KALT_VDI = BEZUG_KALT          # Setzung (kein normativer Wert), wie die fiktiven Zeilen
 CW = 1.163                           # Wh/(l*K), wie Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K
 
-# (Nutzungsart der Quelle, Bezugsart, Kalenderart, Tagtypen 1..4 aus den Tagtypen der Quelle).
-# Nur die Nutzungsarten, deren Bezug das Schema kennt (Person, Bett) und die Profile tragen;
-# Tagtyp 4 (Ruhetag) nimmt den Sonntag - die Quelle behandelt Feiertage wie Sonntage.
+# (Nutzungsart der Quelle, Bezugsart, Kalenderart, Tagtypen 1..4 aus den Tagtypen der Quelle,
+#  Nutzungsart, deren Formen - Tagesgaenge, Wochenanteile, Monatsfaktoren - gelten; None: die eigenen).
+# Aufgenommen ist JEDE Nutzungsart der Originale, deren Bezug eine Bezugsart des Schemas trifft
+# (Person -> 1, Bett -> 3); Tagtyp 4 (Ruhetag) nimmt den Sonntag - die Quelle behandelt Feiertage
+# wie Sonntage. NICHT aufgenommen, benannt (Stufe Z5):
+#   - Campingplatz: Bezug "belegter Stellplatz" - keine der sieben Bezugsarten des Schemas;
+#   - Standardhallenbad und Gut ausgestattetes Hallenbad: Bezug "Besucher der sommerlichen
+#     Schwachlastperiode" - keine Bezugsart des Schemas, und die Richtlinie fuehrt fuer sie weder
+#     Tages- noch Wochenprofil.
+# Ein- und Zweifamilienhaus ist aufgenommen (Bezug Person), obwohl die Richtlinie ihm weder Profile
+# noch einen Mittelwert gibt. Dafuer zwei SETZUNGEN der Umsetzung (ZU21, kein neuer Zahlenwert):
+#   (1) Wochenanteile und Monatsfaktoren sind die des grossen Wohngebaeudes, und es TEILT dessen
+#       Tagesgangsatz - derselbe Kalender "Wohnen", dieselben abgeleiteten Werte, keine gedoppelte
+#       Zeile (der geteilte Satz macht die Setzung in der Oberflaeche sichtbar und sperrt das
+#       Bearbeiten auf eine Kopie);
+#   (2) der mittlere Bedarf ist die Mitte der abgeleiteten Spanne, (Minimum + Maximum) / 2.
 VDI_NUTZUNGSARTEN = [
-    ("Wohnen groß", 1, 1, ("werktag", "samstag", "sonntag", "sonntag")),
-    ("Studentenwohnheim", 1, 1, ("werktag", "samstag", "sonntag", "sonntag")),
-    ("Seniorenheim", 3, 4, ("werktag", "samstag", "sonntag", "sonntag")),
-    ("Krankenhaus", 3, 4, ("alle", "alle", "alle", "alle")),
+    ("Wohnen groß", 1, 1, ("werktag", "samstag", "sonntag", "sonntag"), None),
+    ("Ein- und Zweifamilienhaus", 1, 1, ("werktag", "samstag", "sonntag", "sonntag"), "Wohnen groß"),
+    ("Studentenwohnheim", 1, 1, ("werktag", "samstag", "sonntag", "sonntag"), None),
+    ("Seniorenheim", 3, 4, ("werktag", "samstag", "sonntag", "sonntag"), None),
+    ("Krankenhaus", 3, 4, ("alle", "alle", "alle", "alle"), None),
 ]
 WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
@@ -158,21 +172,26 @@ def abgeleitete_saetze_und_arten():
         d = json.load(f)
     bedarf = {b["nutzungsart"]: b for b in d["bedarf"]}
     saetze, arten = [], []
-    for (art, bezugsart, kalender, tagtypen) in VDI_NUTZUNGSARTEN:
+    for (art, bezugsart, kalender, tagtypen, formart) in VDI_NUTZUNGSARTEN:
         b = bedarf[art]
+        form = formart or art                      # Setzung (1): fremde Formen, wo die Quelle keine fuehrt
         quelle = "VDI 6002 Blatt %s (abgeleitet)" % b["blatt"]
         name = art + ZUSATZ_ABGELEITET
-        profile = d["tagesprofile"][art]
-        saetze.append((name, {t + 1: normiert(profile[tagtypen[t]], 1.0) for t in range(4)},
-                       quelle, AUSGABE_VDI, HERKUNFT_ABGELEITET))
+        satzname = form + ZUSATZ_ABGELEITET        # geliehene Formen teilen den Satz, statt ihn zu doppeln
+        profile = d["tagesprofile"][form]
+        if formart is None:
+            saetze.append((satzname, {t + 1: normiert(profile[tagtypen[t]], 1.0) for t in range(4)},
+                           quelle, AUSGABE_VDI, HERKUNFT_ABGELEITET))
         kwh = CW * (BEZUG_ZAPF_VDI - BEZUG_KALT_VDI) / 1000.0
+        # Setzung (2): ohne Mittelwert in der Quelle die Mitte der abgeleiteten Spanne.
+        mittel = b["mittel"] if b["mittel"] is not None else (b["minimum"] + b["maximum"]) / 2.0
         arten.append(dict(
             name=name, bezug=bezugsart,
-            bedarf=(b["minimum"] * kwh, b["mittel"] * kwh, b["maximum"] * kwh),
+            bedarf=(b["minimum"] * kwh, mittel * kwh, b["maximum"] * kwh),
             grenze=1, kalender=kalender, ferien=None,
-            monate=normiert([d["saisonfaktoren"][art][m] for m in MONATE], 12.0),
-            woche=normiert([d["wochenanteile"][art][t] for t in WOCHENTAGE], 1.0),
-            satz=name, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+            monate=normiert([d["saisonfaktoren"][form][m] for m in MONATE], 12.0),
+            woche=normiert([d["wochenanteile"][form][t] for t in WOCHENTAGE], 1.0),
+            satz=satzname, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
             quelle=quelle, ausgabe=AUSGABE_VDI, herkunft=HERKUNFT_ABGELEITET))
     return saetze, arten
 

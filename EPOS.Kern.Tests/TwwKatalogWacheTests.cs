@@ -70,6 +70,21 @@ namespace EPOS.Kern.Tests
         private const string QUELLE_ECODESIGN = "Verordnung (EU) Nr. 814/2013 Anhang III";
 
         /// <summary>
+        /// <b>Die Formsetzung des Katalogausbaus (Stufe Z5, ZU21):</b> Nutzungsarten, deren
+        /// Tagesgänge, Wochenanteile und Monatsfaktoren das Einspielskript von einer ANDEREN
+        /// Nutzungsart der Quelle nimmt, weil die Richtlinie ihnen keine gibt — das Ein- und
+        /// Zweifamilienhaus nimmt die des großen Wohngebäudes (derselbe Kalender „Wohnen"). Kein
+        /// neuer Zahlenwert: Die Werte sind dieselben abgeleiteten.
+        /// </summary>
+        private static readonly Dictionary<string, string> FORMQUELLE = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "Ein- und Zweifamilienhaus", "Wohnen groß" }
+        };
+
+        /// <summary>Die Nutzungsart, deren Formen für <paramref name="art"/> gelten (<see cref="FORMQUELLE"/>).</summary>
+        private static string Formquelle(string art) => FORMQUELLE.TryGetValue(art, out string f) ? f : art;
+
+        /// <summary>
         /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
         /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19, Herkunftsart
         /// <c>FIKTIV</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
@@ -308,17 +323,21 @@ namespace EPOS.Kern.Tests
                     string art = name.Substring(0, name.Length - " (abgeleitet)".Length);
                     Assert.True(bedarf.ContainsKey(art), "Keine Nutzungsart der Quelle zu " + name);
                     double proLiter = CW * (Convert.ToDouble(z["Bezug_Zapftemperatur"]) - Convert.ToDouble(z["Bezug_Kaltwasser"])) / 1000.0;
+                    string form = Formquelle(art);
                     Pruefen(name + " Bedarf_Niedrig", Convert.ToDouble(z["Bedarf_Niedrig"]) / proLiter, bedarf[art]["minimum"]);
-                    Pruefen(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]) / proLiter, bedarf[art]["mittel"]);
+                    // Ohne Mittelwert in der Quelle ist der mittlere Bedarf die Mitte der abgeleiteten
+                    // Spanne (Setzung des Katalogausbaus) — die Wache der JSON-Datei prüft sie.
+                    if (bedarf[art]["mittel"].Length > 0)
+                        Pruefen(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]) / proLiter, bedarf[art]["mittel"]);
                     Pruefen(name + " Bedarf_Hoch", Convert.ToDouble(z["Bedarf_Hoch"]) / proLiter, bedarf[art]["maximum"]);
                     string[] monate = { "jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez" };
                     for (int m = 0; m < 12; m++)
                         Pruefen(name + " Monat_" + (m + 1), Convert.ToDouble(z["Monat_" + (m + 1)]),
-                                saison.Single(s => s["nutzungsart"] == art && s["monat_oder_periode"] == monate[m])["faktor"]);
+                                saison.Single(s => s["nutzungsart"] == form && s["monat_oder_periode"] == monate[m])["faktor"]);
                     string[] tage7 = { "mo", "di", "mi", "do", "fr", "sa", "so" };
                     for (int w = 0; w < 7; w++)
                         Pruefen(name + " Woche_" + (w + 1), Convert.ToDouble(z["Woche_" + (w + 1)]),
-                                woche.Single(s => s["nutzungsart"] == art && s["wochentag"] == tage7[w])["anteil"]);
+                                woche.Single(s => s["nutzungsart"] == form && s["wochentag"] == tage7[w])["anteil"]);
 
                     // Die Tagtypen wie im Einspielskript: 1 Werktag, 2 Samstag, 3 und 4 Sonntag; „alle“ für jeden.
                     using SqliteCommand g = c.CreateCommand();
@@ -330,12 +349,12 @@ namespace EPOS.Kern.Tests
                     {
                         gaenge++;
                         int tagtyp = Convert.ToInt32(gr["Tagtyp"]);
-                        bool alle = tage.Any(s => s["nutzungsart"] == art && s["tagtyp"] == "alle");
+                        bool alle = tage.Any(s => s["nutzungsart"] == form && s["tagtyp"] == "alle");
                         string quelltyp = alle ? "alle" : tagtyp == 1 ? "werktag" : tagtyp == 2 ? "samstag" : "sonntag";
                         for (int h = 1; h <= 24; h++)
                             Pruefen(name + " Tagtyp " + tagtyp + " Anteil_" + h.ToString("00", CultureInfo.InvariantCulture),
                                     Convert.ToDouble(gr["Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)]),
-                                    tage.Single(s => s["nutzungsart"] == art && s["tagtyp"] == quelltyp &&
+                                    tage.Single(s => s["nutzungsart"] == form && s["tagtyp"] == quelltyp &&
                                                      s["stunde"] == (h - 1).ToString(CultureInfo.InvariantCulture))["anteil"]);
                     }
                     Assert.Equal(4, gaenge);
@@ -795,7 +814,7 @@ namespace EPOS.Kern.Tests
             List<Dictionary<string, object>> arten = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
                                                                 "\" WHERE \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)' ORDER BY \"ID\"", null);
             Assert.NotEmpty(arten);
-            var saetze = new HashSet<long>();
+            var saetze = new Dictionary<string, long>(StringComparer.Ordinal);
             foreach (Dictionary<string, object> z in arten)
             {
                 string name = Convert.ToString(z["Bezeichner"]);
@@ -807,18 +826,23 @@ namespace EPOS.Kern.Tests
                     if (Convert.ToString(z[g + "_Quelle"]) != quelle) funde.Add(name + ": " + g + "_Quelle weicht ab");
 
                 double proLiter = CW * (Convert.ToDouble(z["Bezug_Zapftemperatur"]) - Convert.ToDouble(z["Bezug_Kaltwasser"])) / 1000.0;
+                string form = Formquelle(art);
+                // Ohne Mittelwert in der Quelle die Mitte der abgeleiteten Spanne (Setzung, Stufe Z5).
+                double mittel = b.GetProperty("mittel").ValueKind == JsonValueKind.Null
+                    ? (b.GetProperty("minimum").GetDouble() + b.GetProperty("maximum").GetDouble()) / 2.0
+                    : b.GetProperty("mittel").GetDouble();
                 Gleich(name + " Bedarf_Niedrig", Convert.ToDouble(z["Bedarf_Niedrig"]), b.GetProperty("minimum").GetDouble() * proLiter);
-                Gleich(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]), b.GetProperty("mittel").GetDouble() * proLiter);
+                Gleich(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]), mittel * proLiter);
                 Gleich(name + " Bedarf_Hoch", Convert.ToDouble(z["Bedarf_Hoch"]), b.GetProperty("maximum").GetDouble() * proLiter);
 
-                double[] m = Normiert(monate.Select(x => wurzel.GetProperty("saisonfaktoren").GetProperty(art).GetProperty(x).GetDouble()), 12.0);
+                double[] m = Normiert(monate.Select(x => wurzel.GetProperty("saisonfaktoren").GetProperty(form).GetProperty(x).GetDouble()), 12.0);
                 for (int i = 0; i < 12; i++) Gleich(name + " Monat_" + (i + 1), Convert.ToDouble(z["Monat_" + (i + 1)]), m[i]);
-                double[] w = Normiert(tage.Select(x => wurzel.GetProperty("wochenanteile").GetProperty(art).GetProperty(x).GetDouble()), 1.0);
+                double[] w = Normiert(tage.Select(x => wurzel.GetProperty("wochenanteile").GetProperty(form).GetProperty(x).GetDouble()), 1.0);
                 for (int i = 0; i < 7; i++) Gleich(name + " Woche_" + (i + 1), Convert.ToDouble(z["Woche_" + (i + 1)]), w[i]);
 
                 long satz = Convert.ToInt64(z["ID_Tagesgangsatz"]);
-                if (!saetze.Add(satz)) funde.Add(name + ": Tagesgangsatz mit einer anderen abgeleiteten Nutzungsart geteilt");
-                JsonElement profile = wurzel.GetProperty("tagesprofile").GetProperty(art);
+                saetze[art] = satz;                       // die Zuordnung Satz ↔ Nutzungsart prüft der Block unten
+                JsonElement profile = wurzel.GetProperty("tagesprofile").GetProperty(form);
                 bool alle = profile.TryGetProperty("alle", out _);
                 List<Dictionary<string, object>> gaenge = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
                                                                     "\" WHERE \"ID_Tagesgangsatz\" = $w ORDER BY \"Tagtyp\"",
@@ -835,10 +859,24 @@ namespace EPOS.Kern.Tests
                                Convert.ToDouble(g["Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)]), soll[h - 1]);
                 }
             }
+            // Je abgeleitete Nutzungsart EIN eigener Tagesgangsatz — außer den Nutzungsarten mit
+            // geliehenen Formen (FORMQUELLE, Setzung Z5): Sie teilen den Satz ihrer Formquelle.
+            foreach (KeyValuePair<string, long> p in saetze)
+            {
+                string quelle = Formquelle(p.Key);
+                if (quelle != p.Key)
+                {
+                    if (!saetze.TryGetValue(quelle, out long geteilt) || geteilt != p.Value)
+                        funde.Add(p.Key + ": nicht der Tagesgangsatz von " + quelle);
+                }
+                else if (saetze.Any(q => q.Key != p.Key && Formquelle(q.Key) == q.Key && q.Value == p.Value))
+                    funde.Add(p.Key + ": Tagesgangsatz mit einer anderen abgeleiteten Nutzungsart geteilt");
+            }
+            int eigene = saetze.Keys.Count(a => Formquelle(a) == a);
             long abgeleiteteSaetze = Zahl(c, "SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
                                              "\" WHERE \"Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'", null);
-            if (abgeleiteteSaetze != arten.Count)
-                funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + arten.Count);
+            if (abgeleiteteSaetze != eigene)
+                funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + eigene);
 
             Assert.True(funde.Count == 0, "Die abgeleiteten Zeilen der Testdatenbank weichen von der JSON-Datei ab — " +
                                           "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py nachlaufen lassen:\n" +
