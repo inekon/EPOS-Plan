@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -100,26 +101,7 @@ namespace EPOS.Kern.Tests
                 WizardCtrl.Aktueller = new WizardCtrl();
                 Feldübernahme();
 
-                // Ein Bearbeitenlauf, gestellt wie in AssistentCtrlTests.Bearbeitenlauf.
-                const string NAME = "Laurentiuskirche";
-                AssistentCtrl a = new AssistentCtrl();
-                a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
-                a.ProjektId = PROJEKT;
-                a.Laden(NAME);
-
-                KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(PROJEKT);
-                for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
-                    a.SeiteSchalten(bestand[k].SeitenIndex, bestand[k].Vorhanden);
-
-                ProjektKopfDaten kopf = ProjektCtrl.Kopf(NAME);
-                Assert.NotNull(kopf);
-                a.Kopf[0].Name = kopf.Name;
-                a.Kopf[0].Beschreibung = kopf.Beschreibung;
-                a.Kopf[0].Kunde = kopf.Kunde;
-                a.Kopf[0].Bearbeiter = kopf.Bearbeiter;
-                a.Kopf[0].Erstelldatum = kopf.Erstelldatum;
-                a.Kopf[0].IdKlimaregion = kopf.IdKlimaregion;
-                a.Kopf[0].Klimaname = kopf.Klimaname;
+                AssistentCtrl a = Bearbeitenlauf();
 
                 Z_ProjGebModel zeile = Assert.Single(a.Gebaeude);
                 zeile.Wohnflaeche = 377.0;
@@ -203,15 +185,186 @@ namespace EPOS.Kern.Tests
 
             // Die Zeile eines fremden Projekts (1017).
             Z_ProjGebModel fremd = Assert.Single(Z_ProjGebCtrl.LiesProjekt(1017));
-            long fremdKopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", fremd.ID_Z);
+            int fremdId = fremd.ID_Z;
+            long fremdKopien = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", fremdId);
             Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, new List<Z_ProjGebModel> { neu, fremd }).Gelungen);
 
             List<Z_ProjGebModel> nachher = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
             Assert.Equal(2, nachher.Count);
             Assert.Contains(nachher, z => z.ID_Z == neu.ID_Z);
-            Assert.DoesNotContain(nachher, z => z.ID_Z == fremd.ID_Z);
-            Assert.Equal(1017L, Zahl("SELECT ID_Projekt FROM Z_ProjektGebaeude WHERE ID = ?", fremd.ID_Z));
-            Assert.Equal(fremdKopien, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", fremd.ID_Z));
+            Assert.DoesNotContain(nachher, z => z.ID_Z == fremdId);
+            Assert.Equal(1017L, Zahl("SELECT ID_Projekt FROM Z_ProjektGebaeude WHERE ID = ?", fremdId));
+            Assert.Equal(fremdKopien, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", fremdId));
+
+            // Die als neu angelegte Zeile traegt jetzt die Id IHRER neuen Zuordnung (#487).
+            Assert.NotEqual(fremdId, fremd.ID_Z);
+            Assert.Contains(nachher, z => z.ID_Z == fremd.ID_Z);
+        }
+
+        // =====================================================================
+        //  Zweimal speichern (#487): echte Ids, keine Doppel, Datum nur bei Änderung
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Nach dem Speichern trägt die neue Zeile ihre echte Id:</b> Ein zweites Speichern
+        /// derselben Liste legt nichts neu an — gleiche Zeilenzahl in <c>Tab_Gebaeude</c> und
+        /// <c>Z_ProjektGebaeude</c>, dieselben Ids —, und eine Feld-Übernahme in die neue Kopie
+        /// zwischen den beiden Speichervorgängen bleibt stehen.
+        /// </summary>
+        [Fact]
+        public void Zweimal_speichern_legt_nichts_doppelt_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var wizard = new WizardCtrl();
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            Z_ProjGebModel neu = Neu(NAME_GMH, STAMM_GMH);
+            liste.Add(neu);
+
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, liste).Gelungen);
+            Assert.NotEqual(VORLAEUFIG, neu.ID_Z);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID = ? AND ID_Projekt = ?", neu.ID_Z, PROJEKT));
+            long kopie = Zahl("SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", neu.ID_Z);
+            Assert.True(kopie > 0, "Die neue Zeile hat keine Projektkopie.");
+            int idNeu = neu.ID_Z;
+
+            // Eine Feld-Uebernahme in die neue Kopie, dann dieselbe Liste noch einmal.
+            Sql("UPDATE Tab_Gebaeude SET k_Wert_Außenwand = ? WHERE ID = ?", UWERT_UEBERNOMMEN, kopie);
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, liste).Gelungen);
+
+            Assert.Equal(idNeu, neu.ID_Z);
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", PROJEKT));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT));
+            Assert.Equal(kopie, Zahl("SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", idNeu));
+            Assert.Equal(UWERT_UEBERNOMMEN, Kommazahl("SELECT k_Wert_Außenwand FROM Tab_Gebaeude WHERE ID = ?", kopie), 9);
+            Assert.Equal(new[] { ZUORDNUNG_1007, idNeu },
+                         Z_ProjGebCtrl.LiesProjekt(PROJEKT).Select(z => z.ID_Z).OrderBy(i => i).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Ein Fehlschlag trägt keine Id ein:</b> Rollt der Vorgang zurück, behält die neue
+        /// Zeile ihre vorläufige Id — beim nächsten Speichern entsteht sie wieder neu.
+        /// </summary>
+        [Fact]
+        public void Ein_Fehlschlag_laesst_die_vorlaeufige_Id_stehen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Z_ProjGebModel neu = Neu(NAME_GMH, STAMM_GMH);
+            var liste = new List<Z_ProjGebModel> { neu, Neu("Kein Gebaeude dieses Namens (#487)", null) };
+
+            Assert.False(new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, liste).Gelungen);
+            Assert.Equal(VORLAEUFIG, neu.ID_Z);
+        }
+
+        /// <summary>
+        /// <b>Das Änderungsdatum nur bei echter Änderung:</b> Dieselbe Liste unverändert
+        /// gespeichert schreibt nichts und lässt das Projekt unberührt (das letzte Ergebnis
+        /// bleibt aktuell); ein geänderter Zuordnungswert setzt das Datum.
+        /// </summary>
+        [Fact]
+        public void Speichern_ohne_Aenderung_laesst_das_Aenderungsdatum_stehen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Sql("UPDATE Tab_Projekt SET Aenderungsdatum = ? WHERE ID = ?", "2020-01-01 00:00:00", PROJEKT);
+            DateTime? vorher = MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT);
+            string zuordnungVorher = Abbild("SELECT * FROM Z_ProjektGebaeude WHERE ID_Projekt = ?");
+
+            var wizard = new WizardCtrl();
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, liste).Gelungen);
+
+            Assert.Equal(vorher, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
+            Assert.Equal(zuordnungVorher, Abbild("SELECT * FROM Z_ProjektGebaeude WHERE ID_Projekt = ?"));
+
+            // Ein geaenderter Zuordnungswert ist eine Aenderung.
+            Assert.Single(liste).Jahresnutzungsgrad += 0.01;
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, liste).Gelungen);
+            DateTime? nachher = MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT);
+            Assert.True(nachher.HasValue && nachher.Value.Year > 2020, "Aenderungsdatum nicht gesetzt.");
+        }
+
+        /// <summary>
+        /// <b>Die Hülle zieht die echte Id in die Anzeigezeile nach</b> (Weg von Assistent
+        /// und Startseite): Nach dem Speichern trägt das Modell der Fachliste die echte Id;
+        /// die nächste Änderung im Dialog baut die Fachliste aus den Anzeigezeilen neu auf —
+        /// und die tragen sie jetzt auch, statt die vorläufige zurückzubringen. Ein zweites
+        /// Speichern legt nichts neu an.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_uebernimmt_die_echten_Ids_in_die_Zeilen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: true);
+            var zeilen = (List<GebaeudeProjektZeile>)gaben["Zeilen"];
+            var geaendert = (Action)gaben["Geaendert"];
+            var stammSatz = (Func<string, GebaeudeProjektZeile>)gaben["StammSatz"];
+
+            GebaeudeProjektZeile aufgenommen = stammSatz(NAME_GMH);
+            Assert.True(aufgenommen.IdZ >= VORLAEUFIG);
+            zeilen.Add(aufgenommen);
+            geaendert();
+
+            var wizard = new WizardCtrl();
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle).Gelungen);
+            int echt = modelle[1].ID_Z;
+            Assert.NotEqual(aufgenommen.IdZ, echt);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID = ? AND ID_Projekt = ?", echt, PROJEKT));
+
+            // Die naechste Aenderung im Dialog - etwa eine Flaeche - baut die Fachliste neu.
+            aufgenommen.Wohnflaeche = 321.0;
+            geaendert();
+            Assert.Equal(echt, aufgenommen.IdZ);
+            Assert.Equal(echt, modelle[1].ID_Z);
+
+            Assert.True(wizard.Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle).Gelungen);
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", PROJEKT));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT));
+            Assert.Equal(321.0, Kommazahl("SELECT Wohnflaeche_Waermebedarf FROM Z_ProjektGebaeude WHERE ID = ?", echt), 9);
+        }
+
+        /// <summary>
+        /// <b>Der Assistent speichert zweimal ohne Doppel:</b> Der BEARBEITEN-Zweig trägt nach
+        /// dem Festschreiben die echten Ids in seine Gebäudeliste ein; ein zweiter Lauf
+        /// desselben Assistenten legt keine zweite Kopie an.
+        /// </summary>
+        [Fact]
+        public void Der_Assistent_speichert_zweimal_ohne_Doppel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WizardCtrl vorher = WizardCtrl.Aktueller;
+            try
+            {
+                WizardCtrl.Aktueller = new WizardCtrl();
+                AssistentCtrl a = Bearbeitenlauf();
+
+                Z_ProjGebModel neu = Neu(NAME_GMH, STAMM_GMH);
+                a.Gebaeude.Add(neu);
+
+                AssistentErgebnis e = a.Speichern();
+                Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+                Assert.NotEqual(VORLAEUFIG, neu.ID_Z);
+                int idNeu = neu.ID_Z;
+                long kopie = Zahl("SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", idNeu);
+                Assert.True(kopie > 0);
+
+                e = a.Speichern();
+                Assert.True(e.Erfolg, "Zweites Speichern scheiterte an: " + e.Schritt);
+                Assert.Equal(idNeu, neu.ID_Z);
+                Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", PROJEKT));
+                Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Z_ProjektGebaeude WHERE ID_Projekt = ?", PROJEKT));
+                Assert.Equal(kopie, Zahl("SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?", idNeu));
+            }
+            finally { WizardCtrl.Aktueller = vorher; }
         }
 
         // =====================================================================
@@ -282,6 +435,31 @@ namespace EPOS.Kern.Tests
         // =====================================================================
         //  Helfer
         // =====================================================================
+
+        /// <summary>Ein Bearbeitenlauf des Assistenten auf Projekt 1007, gestellt wie in <c>AssistentCtrlTests.Bearbeitenlauf</c>.</summary>
+        private static AssistentCtrl Bearbeitenlauf()
+        {
+            const string NAME = "Laurentiuskirche";
+            AssistentCtrl a = new AssistentCtrl();
+            a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
+            a.ProjektId = PROJEKT;
+            a.Laden(NAME);
+
+            KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(PROJEKT);
+            for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
+                a.SeiteSchalten(bestand[k].SeitenIndex, bestand[k].Vorhanden);
+
+            ProjektKopfDaten kopf = ProjektCtrl.Kopf(NAME);
+            Assert.NotNull(kopf);
+            a.Kopf[0].Name = kopf.Name;
+            a.Kopf[0].Beschreibung = kopf.Beschreibung;
+            a.Kopf[0].Kunde = kopf.Kunde;
+            a.Kopf[0].Bearbeiter = kopf.Bearbeiter;
+            a.Kopf[0].Erstelldatum = kopf.Erstelldatum;
+            a.Kopf[0].IdKlimaregion = kopf.IdKlimaregion;
+            a.Kopf[0].Klimaname = kopf.Klimaname;
+            return a;
+        }
 
         private static Z_ProjGebModel Neu(string name, int? stamm) => new Z_ProjGebModel
         {

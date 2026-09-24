@@ -2624,7 +2624,7 @@ namespace WindowsFormsApplication1
 
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (var item in list)
-                if (!GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm)) return false;
+                if (GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm) <= 0) return false;
             return true;
         }
 
@@ -2635,7 +2635,8 @@ namespace WindowsFormsApplication1
         /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>;
         /// läuft in der Klammer des Aufrufers.
         /// </summary>
-        private static bool GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm)
+        /// <returns>Die Id der neuen Zuordnung (<c>Z_ProjektGebaeude.ID</c>); 0 bei einem Fehlschlag.</returns>
+        private static int GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm)
         {
             // 1) Projekt-Zuordnung (Z_ProjektGebaeude) mit eigener ID anlegen.
             int zID = DataRepository.GetMaxID("Z_ProjektGebaeude") + 1;
@@ -2649,15 +2650,15 @@ namespace WindowsFormsApplication1
                 new DbParam("@jng", DbParamTyp.Double) { Wert = item.Jahresnutzungsgrad },
                 new DbParam("@dez", DbParamTyp.Boolean) { Wert = item.DezentralWarmwasser }
             };
-            if (!DataRepository.ExecuteSQL(sqlZ, psZ)) return false;
+            if (!DataRepository.ExecuteSQL(sqlZ, psZ)) return 0;
 
             // 2) Gebaeude-Stammdatensatz in die Projekt-Tabelle Tab_Gebaeude kopieren
             //    (setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude = zID).
             //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
             //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
             //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
-            if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return false;
-            return true;
+            if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return 0;
+            return zID;
         }
 
         /// <summary>
@@ -2677,10 +2678,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="Del_Projekt_ZuordungGebäude(int, int, DbVorgang)"/>); jede übrige
         /// Zeile entsteht neu aus dem Katalog wie beim ersten Übernehmen.</para>
         ///
-        /// <para><b>Veraltung.</b> Das Änderungsdatum des Projekts wird gesetzt wie auf jedem
-        /// anderen Schreibweg (<see cref="MerkmalUebernahmeCtrl.MarkiereProjektGeaendert"/>);
-        /// damit gilt das letzte Ergebnis als veraltet — genau wie beim bisherigen Löschen und
-        /// Neuanlegen.</para>
+        /// <para><b>Veraltung nur bei echter Änderung.</b> Das Änderungsdatum des Projekts
+        /// (<see cref="MerkmalUebernahmeCtrl.MarkiereProjektGeaendert"/>) — und damit die
+        /// Veraltung des letzten Ergebnisses — wird nur gesetzt, wenn der Abgleich tatsächlich
+        /// etwas geschrieben hat: eine Zuordnung entfernt, eine neu angelegt oder die
+        /// Zuordnungswerte einer bleibenden geändert. Eine bleibende Zeile mit unveränderten
+        /// Werten wird gar nicht geschrieben; eine Liste ohne Änderung lässt das Projekt
+        /// unberührt.</para>
+        ///
+        /// <para><b>Echte Ids.</b> <paramref name="neueIds"/> nennt je neu angelegter Zeile
+        /// der Liste (Objektgleichheit, nicht ihre vorläufige Id) die Id ihrer neuen Zuordnung
+        /// (<c>Z_ProjektGebaeude.ID</c>). Der Aufrufer trägt sie erst nach dem Festschreiben
+        /// seines Vorgangs ein (<see cref="EchteIdsUebernehmen"/>) — danach erkennt ein
+        /// zweites Speichern derselben Liste die Zeilen als bleibend und legt nichts neu an.</para>
         ///
         /// <para><b>Kein eigener Vorgang.</b> Wer allein ruft, schreibt je Anweisung; die
         /// Klammer bringt der Aufrufer (Assistent) oder
@@ -2689,32 +2699,42 @@ namespace WindowsFormsApplication1
         /// einem Fehlschlag ohne Gebäudebezug.</para>
         /// </summary>
         public bool Schreibe_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list,
-                                                      DbVorgang vorgang, out string fehlgebaeude)
+                                                      DbVorgang vorgang, out string fehlgebaeude,
+                                                      out IReadOnlyDictionary<Z_ProjGebModel, int> neueIds)
         {
             fehlgebaeude = null;
+            var angelegt = new Dictionary<Z_ProjGebModel, int>(ReferenceEqualityComparer.Instance);
+            neueIds = angelegt;
 
             // Der hereingereichte Vorgang gilt fuer ALLES, was dieser Schritt schreibt und
             // liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
-            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
-
             // 1) Der Bestand: jede Zuordnung des Projekts mit Zahl, Katalogverweis und Namen
-            //    ihrer Projektkopie. Nur eine Zuordnung mit GENAU EINER Kopie kann bleiben.
+            //    ihrer Projektkopie und ihren Zuordnungswerten. Nur eine Zuordnung mit GENAU
+            //    EINER Kopie kann bleiben.
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT z.ID, COUNT(g.ID) AS Kopien, MIN(g.ID_Gebaeude_Stamm) AS Stamm, " +
-                "MIN(g.Gebaeudename) AS Name FROM Z_ProjektGebaeude z " +
+                "MIN(g.Gebaeudename) AS Name, MIN(z.Wohnflaeche_Waermebedarf) AS Flaeche, " +
+                "MIN(z.Einheit_Waermebedarf_Wohnflaeche) AS Einheit, " +
+                "MIN(z.Jahresnutzungsgrad) AS Jng, MIN(z.dezWarmwasserbereitung) AS Dez " +
+                "FROM Z_ProjektGebaeude z " +
                 "LEFT JOIN Tab_Gebaeude g ON g.ID_ProjektGebaeude = z.ID " +
                 "WHERE z.ID_Projekt = ? GROUP BY z.ID",
                 new DbParam("@pID", projektID));
             if (dt == null) return false;
 
-            var bestand = new Dictionary<int, (long Kopien, int? Stamm, string Name)>();
+            var bestand = new Dictionary<int, (long Kopien, int? Stamm, string Name, Zuordnungswerte Werte)>();
             foreach (DataRow r in dt.Rows)
                 bestand[Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture)] = (
                     r["Kopien"] == DBNull.Value ? 0L : Convert.ToInt64(r["Kopien"], CultureInfo.InvariantCulture),
                     Z_ProjGebCtrl.Verweis(r, "Stamm"),
-                    r["Name"] == DBNull.Value ? "" : r["Name"].ToString());
+                    r["Name"] == DBNull.Value ? "" : r["Name"].ToString(),
+                    new Zuordnungswerte(
+                        r["Flaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Flaeche"], CultureInfo.InvariantCulture),
+                        r["Einheit"] == DBNull.Value ? "" : r["Einheit"].ToString(),
+                        r["Jng"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Jng"], CultureInfo.InvariantCulture),
+                        r["Dez"] != DBNull.Value && Convert.ToBoolean(r["Dez"], CultureInfo.InvariantCulture)));
 
             // 2) Die Liste zuordnen: bleibt oder entsteht neu.
             var bleiben = new Dictionary<int, Z_ProjGebModel>();
@@ -2729,15 +2749,23 @@ namespace WindowsFormsApplication1
                     neu.Add(item);
             }
 
+            // Hat der Abgleich etwas geschrieben? Nur dann gilt das Projekt als geaendert.
+            bool geschrieben = false;
+
             // 3) Was nicht bleibt, geht - Zuordnung, Kopie und deren Tagesverteilung.
             foreach (int idZ in bestand.Keys)
-                if (!bleiben.ContainsKey(idZ) && !Del_Projekt_ZuordungGebäude(projektID, idZ, vorgang))
-                    return false;
+            {
+                if (bleiben.ContainsKey(idZ)) continue;
+                if (!Del_Projekt_ZuordungGebäude(projektID, idZ, vorgang)) return false;
+                geschrieben = true;
+            }
 
-            // 4) Die bleibenden: nur die Zuordnungswerte fortschreiben.
+            // 4) Die bleibenden: nur die Zuordnungswerte fortschreiben - und nur, wenn sie
+            //    sich geaendert haben.
             foreach (KeyValuePair<int, Z_ProjGebModel> paar in bleiben)
             {
                 Z_ProjGebModel item = paar.Value;
+                if (bestand[paar.Key].Werte.Gleich(item)) continue;
                 if (!DataRepository.ExecuteSQL(
                         "UPDATE Z_ProjektGebaeude SET Wohnflaeche_Waermebedarf = ?, " +
                         "Einheit_Waermebedarf_Wohnflaeche = ?, Jahresnutzungsgrad = ?, " +
@@ -2749,20 +2777,34 @@ namespace WindowsFormsApplication1
                         new DbParam("@id", DbParamTyp.Integer) { Wert = paar.Key },
                         new DbParam("@pid", DbParamTyp.Integer) { Wert = projektID }))
                     return false;
+                geschrieben = true;
             }
 
             // 5) Die neuen: aus dem Katalog wie beim ersten Uebernehmen.
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (Z_ProjGebModel item in neu)
             {
-                if (!GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm))
+                int zID = GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm);
+                if (zID <= 0)
                 {
                     fehlgebaeude = item.Gebaeudename ?? "";
                     return false;
                 }
+                angelegt[item] = zID;
+                geschrieben = true;
             }
+
+            if (geschrieben) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
             return true;
         }
+
+        /// <summary>
+        /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string, out IReadOnlyDictionary{Z_ProjGebModel, int})"/>
+        /// ohne die Liste der neuen Ids.
+        /// </summary>
+        public bool Schreibe_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list,
+                                                      DbVorgang vorgang, out string fehlgebaeude)
+            => Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out fehlgebaeude, out _);
 
         /// <summary>
         /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>
@@ -2770,6 +2812,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Schreibe_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list, DbVorgang vorgang = null)
             => Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out _);
+
+        /// <summary>
+        /// Trägt die echten Zuordnungs-Ids neu angelegter Zeilen in die Zeilen der Liste ein
+        /// (<see cref="Z_ProjGebModel.ID_Z"/>) — nach dem Festschreiben des Vorgangs, nie
+        /// davor: Rollt er zurück, behalten die Zeilen ihre vorläufige Id und entstehen beim
+        /// nächsten Speichern wieder neu.
+        /// </summary>
+        public static void EchteIdsUebernehmen(IReadOnlyDictionary<Z_ProjGebModel, int> neueIds)
+        {
+            if (neueIds == null) return;
+            foreach (KeyValuePair<Z_ProjGebModel, int> paar in neueIds)
+                if (paar.Key != null && paar.Value > 0) paar.Key.ID_Z = paar.Value;
+        }
+
+        /// <summary>
+        /// Die Zuordnungswerte einer Zeile in <c>Z_ProjektGebaeude</c>, so gelesen wie
+        /// <see cref="Z_ProjGebCtrl.LiesProjekt"/> (NULL wie 0, leer, nein).
+        /// </summary>
+        private readonly record struct Zuordnungswerte(double Flaeche, string Einheit, double Jahresnutzungsgrad, bool Dezentral)
+        {
+            /// <summary>Trägt die Listenzeile dieselben Werte? Genau verglichen — geschrieben wird, was abweicht.</summary>
+            public bool Gleich(Z_ProjGebModel item)
+                => Flaeche.Equals(item.Wohnflaeche)
+                   && string.Equals(Einheit ?? "", item.Einheit ?? "", StringComparison.Ordinal)
+                   && Jahresnutzungsgrad.Equals(item.Jahresnutzungsgrad)
+                   && Dezentral == item.DezentralWarmwasser;
+        }
 
         /// <summary>
         /// Zeigt die Listenzeile noch auf denselben Katalogsatz wie die vorhandene Kopie?
@@ -2788,10 +2857,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Speicherweg der Startseite</b> (Kachel „Gebäude"): die Gebäudeliste in EINEM
         /// Datenbankvorgang schreiben
-        /// (<see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>).
+        /// (<see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string, out IReadOnlyDictionary{Z_ProjGebModel, int})"/>).
         /// Scheitert ein Schritt oder wirft er, rollt alles zurück — das Projekt behält seine
         /// bisherigen Gebäude —, und der Ausgang nennt den Grund als Meldungstext für den
-        /// Anwender.
+        /// Anwender. Nach dem Festschreiben tragen neu angelegte Zeilen der Liste ihre echte
+        /// Zuordnungs-Id (<see cref="EchteIdsUebernehmen"/>).
         /// </summary>
         public (bool Gelungen, string Meldung) Speichere_Projekt_Gebaeudeliste(int projektID, List<Z_ProjGebModel> list)
         {
@@ -2799,9 +2869,10 @@ namespace WindowsFormsApplication1
             using (DbVorgang vorgang = DataRepository.Vorgang())
             {
                 bool gelungen;
+                IReadOnlyDictionary<Z_ProjGebModel, int> neueIds = null;
                 try
                 {
-                    gelungen = Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out fehlgebaeude);
+                    gelungen = Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out fehlgebaeude, out neueIds);
                     if (gelungen) vorgang.Commit();
                     else vorgang.Rollback();
                 }
@@ -2812,7 +2883,11 @@ namespace WindowsFormsApplication1
                     fehlgebaeude = null;
                 }
 
-                if (gelungen) return (true, "");
+                if (gelungen)
+                {
+                    EchteIdsUebernehmen(neueIds);
+                    return (true, "");
+                }
             }
 
             string meldung = string.IsNullOrEmpty(fehlgebaeude)
