@@ -15,8 +15,10 @@ Muster der Formelmappe: [`E8b_Formelmappe_AnhangE_D_Protokoll.md`](E8b_Formelmap
 von `105cdb31` (`origin` nach dem Push von #474), Opus 5.5 im Worktree `.claude/worktrees/e14`, zwei Phasen: `dd0ec440`
 (E14/1), `d29f6496` (E14/2), `7935316d` (E14/3), `172971e4` (E14/4) in Phase 1; in Phase 2 die Zusammenführung
 `f6727fdd` mit `origin` = `61efa054` (Anwender-Merge der Anlagenkopplung AK1, Welle 2, mit #476; Schemastand 124).
-Merge `f3f071d2` („Merge e14: Formelmappe je Szenario - Stufen 1 und 2 fuer Guenstig und Unguenstig (#477)") über
-`61efa054`, der Baum byte-gleich mit `f6727fdd`. Basis `2026-09-24_R14_Kaelteerzeuger`. **Kein Schemaschritt, keine
+Erster Merge `f3f071d2` („Merge e14: Formelmappe je Szenario - Stufen 1 und 2 fuer Guenstig und Unguenstig (#477)")
+über `61efa054`, der Baum byte-gleich mit `f6727fdd`; End-Merge `NACHTRAG-477-MERGE2` über `origin` = `83b10810` (#480
+Hilfe der Nutzflächenangabe auf `Gebäude#verbrauch`, CI-Nachzug des Zapfprofils Z4; ohne Schemaschritt, Testdatenbank
+unverändert). Basis `2026-09-24_R14_Kaelteerzeuger`. **Kein Schemaschritt, keine
 Rechenwirkung im Kern, keine neue Basis** — nur der Tabellenbericht ändert sich; die Kernwerte bleiben die Wahrheit.
 
 ## Befund vor der Welle
@@ -123,7 +125,10 @@ Gebaut ist jeweils Lesart a (die Empfehlung); offen beim Anwender (→ Register 
   `WP-Plan.Kern.slnf` **12.967 bestanden / 0 Fehler / 1 übersprungen** (EPOS.Kern.Tests 6.009, EPOS.UI.Tests 5.996,
   KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 und 1 übersprungen); Referenzlauf 13/13 (oben);
   SQL-Prüfer 1.807/0; Designer wiederholbar.
-- **Gate auf `f3f071d2`:** Nachtrag folgt (ChartProben gegen die Windows-Messlatte 151, voller Lauf, Wachen).
+- **Gate auf `f3f071d2`** (Worktree `pm14`, Log `GATE477.log`): Kern-Filter 0 Fehler; ChartProben 151/151 gleich der
+  Windows-Messlatte (E14 bringt kein Bild); voller Lauf 12.967 / 0 / 1 (Kern 6.009, UI 5.996, KiKern 549,
+  SpeicherEngine 386, SpeicherPlanung 27/1); Dokumentationswachen 29/29.
+- **Gate auf dem End-Merge `NACHTRAG-477-MERGE2`:** NACHTRAG-477-GATE2.
 - **CI:** steht aus (Push nach dem Gate).
 
 ## Abnahme am Gerät (A‑E14‑1, Windows)
@@ -155,5 +160,5 @@ Wiki-Quelle Wirtschaftlichkeit (Abschnitt `formelmappe`), Index (Reporting 128 �
 
 - **Fragen E14‑Q1…Q3** beim Anwender (gebaut jeweils a).
 - **Abnahme am Gerät** A‑E14‑1 (vier Schritte oben).
-- **Gate auf `f3f071d2`** und **CI** (Nachtrag).
+- **Gate auf dem End-Merge** und **CI** (Nachtrag).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
