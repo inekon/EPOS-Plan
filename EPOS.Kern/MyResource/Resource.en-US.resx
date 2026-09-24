@@ -28539,4 +28539,19 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Cooling mode cannot be set in this form.</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERART" xml:space="preserve">
+    <value>the generator type</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WERKSTOFF" xml:space="preserve">
+    <value>the heat exchanger material</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>the reference of the state of charge</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_SPALTE_FEHLT" xml:space="preserve">
+    <value>column {0} is missing in this database (schema version before 120).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
+    <value>Not computable — a constructed design day with a reference quantity needs a positive quantity and its reference type.</value>
+  </data>
 </root>

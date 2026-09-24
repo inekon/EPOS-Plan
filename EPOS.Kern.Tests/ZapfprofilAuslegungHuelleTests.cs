@@ -168,9 +168,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(58.0, zurueck.SpeicherC);
             Assert.Equal(ZapfprofilSpeicherart.GemischterSpeicher, zurueck.Speicherart);
             Assert.Equal(370.0, zurueck.PunktVolumenL);
-            // Laufangaben tragen keine Spalte — sie kommen nicht zurück.
-            Assert.Equal(ZapfprofilErzeugerart.KeineAngabe, zurueck.Erzeugerart);
-            Assert.Equal(ZapfprofilWerkstoff.KeineAngabe, zurueck.Werkstoff);
+            // Erzeugerart und Werkstoff sind Projektgrößen (Schritt 120) — sie kommen zurück.
+            Assert.Equal(ZapfErzeugerart.Waermepumpe, p.Erzeugerart);
+            Assert.Equal(ZapfUebertragerwerkstoff.Edelstahl, p.UebertragerWerkstoff);
+            Assert.Equal(ZapfprofilErzeugerart.Waermepumpe, zurueck.Erzeugerart);
+            Assert.Equal(ZapfprofilWerkstoff.Edelstahl, zurueck.Werkstoff);
 
             // Vorgaberegel und Stundenprofil tragen keinen Katalogtag.
             Assert.Null(ZapfprofilHuelle.MitAuslegung(basis, new ZapfprofilAuslegungEingabeDaten { IdBedarfstag = 17 }).BedarfstagQuelle);

@@ -421,6 +421,11 @@ namespace WindowsFormsApplication1
         {
             int? lage = GanzOderNull(r, "Zirk_Lage");
             int? quelle = GanzOderNull(r, "Bedarfstag_Quelle");
+            // Schritt 120 (T3): Vor dem Schritt fehlen die Spalten — dann gelten die DDL-Vorgaben.
+            int? erzeuger = SpalteDa(r, TwwSchema.SPALTE_ERZEUGERART) ? GanzOderNull(r, TwwSchema.SPALTE_ERZEUGERART) : null;
+            int? werkstoff = SpalteDa(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF)
+                ? GanzOderNull(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF) : null;
+            int? bezug = SpalteDa(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) ? GanzOderNull(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) : null;
 
             return new ProjektStand
             {
@@ -462,9 +467,17 @@ namespace WindowsFormsApplication1
                 IdBedarfstag = GanzOderNull(r, "ID_Bedarfstag"),
                 AuslegungVolumenL = ZahlOderNull(r, "Auslegung_Volumen_l"),
                 AuslegungLeistungKw = ZahlOderNull(r, "Auslegung_Leistung_Kw"),
-                Aenderungsdatum = TextOderNull(r, "Aenderungsdatum")
+                Aenderungsdatum = TextOderNull(r, "Aenderungsdatum"),
+                Erzeugerart = erzeuger.HasValue ? (ZapfErzeugerart)erzeuger.Value : (ZapfErzeugerart?)null,
+                UebertragerWerkstoff = werkstoff.HasValue ? (ZapfUebertragerwerkstoff)werkstoff.Value : (ZapfUebertragerwerkstoff?)null,
+                PersonenAuto = !SpalteDa(r, TwwSchema.SPALTE_PERSONEN_AUTO) || Wahr(r, TwwSchema.SPALTE_PERSONEN_AUTO),
+                PersonenManuell = SpalteDa(r, TwwSchema.SPALTE_PERSONEN_MANUELL) ? ZahlOderNull(r, TwwSchema.SPALTE_PERSONEN_MANUELL) : null,
+                FuellstandBezug = bezug.HasValue ? (ZapfFuellstandbezug)bezug.Value : (ZapfFuellstandbezug?)null
             };
         }
+
+        /// <summary>Führt die gelesene Zeile die Spalte (Stand nach dem Schemaschritt)?</summary>
+        internal static bool SpalteDa(DataRow r, string spalte) => r?.Table != null && r.Table.Columns.Contains(spalte);
 
         // =================================================================================
         // Lesehilfen — die DataTable liefert je nach Spalte long, int, bool oder double

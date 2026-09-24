@@ -28546,4 +28546,19 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Der Kühlbetrieb ist in dieser Maske nicht einstellbar.</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERART" xml:space="preserve">
+    <value>die Erzeugerart</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WERKSTOFF" xml:space="preserve">
+    <value>der Werkstoff des Übertragers</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>der Bezug des Füllstands</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_SPALTE_FEHLT" xml:space="preserve">
+    <value>die Spalte {0} fehlt in dieser Datenbank (Schemastand vor 120).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
+    <value>Nicht rechenbar — ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart.</value>
+  </data>
 </root>

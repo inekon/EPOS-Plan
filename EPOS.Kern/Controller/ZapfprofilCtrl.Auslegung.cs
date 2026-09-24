@@ -40,9 +40,11 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Die Laufangaben der Auslegung ohne eigene Spalte (N10 (i)): Erzeugerart und Werkstoff des
-    /// Übertragers. <c>null</c> = keine Angabe; die Erzeugerart fällt dann auf den Vorschlag des
-    /// Anlagenbestands zurück (<see cref="ZapfErzeugerbestand.Vorschlag"/>), der Werkstoff nie.
+    /// Die Laufangaben der Auslegung (N10 (i), N11 (i)): Erzeugerart und Werkstoff des Übertragers.
+    /// <c>null</c> = keine Angabe; dann gilt die gespeicherte Wahl des Projekts
+    /// (<see cref="ProjektStand.Erzeugerart"/>, <see cref="ProjektStand.UebertragerWerkstoff"/>,
+    /// Schritt 120), und die Erzeugerart fällt zuletzt auf den Vorschlag des Anlagenbestands zurück
+    /// (<see cref="ZapfErzeugerbestand.Vorschlag"/>), der Werkstoff nie.
     /// Dazu „Stochastisch rechnen" (4.5 b, Stufe Z3): zieht je Topologiegruppe das Ensemble des
     /// Bedarfstags (<see cref="Auslegungseingang.Stochastisch"/>); Seed, Perzentil und
     /// Realisierungen kommen aus den Projektgrößen des Stands. Die Abbruchmarke des nebenläufigen
@@ -78,9 +80,10 @@ namespace WindowsFormsApplication1
     /// <c>EIGENKONSTRUKTION</c>, neutrale Quelle, Quelle_Art Konstruktor — und hängt die
     /// Projektzeile an ihn.</para>
     ///
-    /// <para><b>Erzeugerart und Werkstoff</b> tragen keine Spalte in <c>Tab_TwwProjekt</c>; sie
-    /// sind Laufangaben (<see cref="Auslegungslauf"/>) und werden nicht gespeichert — kein
-    /// Schemaschritt in dieser Stufe (N10 (i), Folge für Z4).</para>
+    /// <para><b>Erzeugerart und Werkstoff</b> stehen ab Schritt 120 in <c>Tab_TwwProjekt</c>
+    /// (<c>Erzeugerart</c>, <c>Uebertrager_Werkstoff</c>): gespeichert wird die Wahl des Anwenders;
+    /// der Vorschlag des Anlagenbestands bleibt ein Vorschlag und wird nie gespeichert
+    /// (N10 (i)).</para>
     ///
     /// <para>Alle Zugriffe über <see cref="DataRepository"/> bzw. den <see cref="DbVorgang"/> mit
     /// <c>?</c>-Parametern.</para>
@@ -127,19 +130,21 @@ namespace WindowsFormsApplication1
 
             var liste = new List<BedarfstagKatalogzeile>();
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID, Bezeichner, Katalogversion, Quelle_Art, Bezugsmenge, Quelle, Ausgabe, Version, Herkunftsart, " +
-                "Status, ReadOnly FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " ORDER BY Bezeichner, Katalogversion, ID");
+                "SELECT * FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " ORDER BY Bezeichner, Katalogversion, ID");
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
                 {
                     int id = Ganz(r, "ID");
+                    // Schritt 120 (T3): die Bezugsart der Bezugsmenge; vor dem Schritt ohne Angabe.
+                    int? bezugsart = SpalteDa(r, TwwSchema.SPALTE_BEZUGSART) ? GanzOderNull(r, TwwSchema.SPALTE_BEZUGSART) : null;
                     liste.Add(new BedarfstagKatalogzeile(id, Text(r, "Bezeichner"), Text(r, "Katalogversion"),
                         (ZapfBedarfstagquelle)Ganz(r, "Quelle_Art"), ZahlOderNull(r, "Bezugsmenge"), Herkunft(r, ""),
                         ereignisse.TryGetValue(id, out List<Zapfereignis> e) ? e.AsReadOnly()
                                                                                : (IReadOnlyList<Zapfereignis>)new Zapfereignis[0])
                     {
                         Status = TwwWertemengen.Status(Text(r, "Status")),
-                        ReadOnly = Wahr(r, "ReadOnly")
+                        ReadOnly = Wahr(r, "ReadOnly"),
+                        Bezugsart = bezugsart.HasValue ? (ZapfBezugsart)bezugsart.Value : (ZapfBezugsart?)null
                     });
                 }
             return liste.AsReadOnly();
@@ -296,7 +301,11 @@ namespace WindowsFormsApplication1
             Parametersatz ps = e.Parameter;
             Nenninhaltswahl nenn = Nenninhalte(ps);
             ZapfErzeugerbestand bestand = Erzeugerbestand(idProjekt);
-            ZapfErzeugerart? art = lauf?.Erzeugerart ?? bestand.Vorschlag;
+            // N10 (i), Schritt 120: die Laufangabe, sonst die gespeicherte Wahl des Projekts, sonst der
+            // Vorschlag des Anlagenbestands (nur, wenn er eindeutig ist; er wird nie gespeichert).
+            ProjektStand gespeichert = stand.Projekt;
+            ZapfErzeugerart? art = lauf?.Erzeugerart ?? gespeichert?.Erzeugerart ?? bestand.Vorschlag;
+            ZapfUebertragerwerkstoff? werkstoff = lauf?.Werkstoff ?? gespeichert?.UebertragerWerkstoff;
 
             var a = new Auslegungseingang
             {
@@ -304,7 +313,7 @@ namespace WindowsFormsApplication1
                 Bedarfstage = tage.AsReadOnly(),
                 Nenninhalte = nenn.Liste,
                 Erzeugerart = art,
-                Uebertragerwerkstoff = lauf?.Werkstoff,
+                Uebertragerwerkstoff = werkstoff,
                 Stochastisch = lauf?.Stochastisch == true,
                 Abbruch = lauf?.Abbruch ?? CancellationToken.None,
                 Stufe = lauf?.Stufe
@@ -329,26 +338,34 @@ namespace WindowsFormsApplication1
         /// <b>Der Konstruktor:</b> baut aus den Zeilen einen Bedarfstag bei θ_KW,A des
         /// Parametersatzes (<c>A100.Kaltwasser.Auslegung</c>; N10 (j), Folge) und liefert ihn als
         /// Entwurf einer Katalogzeile — Quelle Konstruktor, Status <c>EIGEN</c>, Herkunftsart
-        /// <c>EIGENKONSTRUKTION</c>, ohne Bezugsmenge (der Tag gilt für das Projekt, er wird nicht
-        /// skaliert). Ohne Namen, ohne Zeile oder mit einer ungültigen Zeile die benannte
+        /// <c>EIGENKONSTRUKTION</c>. Ohne <paramref name="bezugsmenge"/> gilt der Tag für das Projekt
+        /// und wird nicht skaliert; mit ihr (positiv, samt <paramref name="bezugsart"/>, Schritt 120,
+        /// N10 (j)) skaliert ein späterer Gebrauch auf die Menge derselben Bezugsart. Ohne Namen, ohne
+        /// Zeile, mit einer ungültigen Zeile oder mit einer Bezugsmenge ohne Bezugsart die benannte
         /// Ablehnung (<see cref="ZapfAuslegungException"/>).
         /// </summary>
         internal static BedarfstagKatalogzeile BedarfstagKonstruieren(IReadOnlyList<Konstruktorzeile> zeilen, string bezeichner,
-                                                                      Parametersatz ps)
+                                                                      Parametersatz ps, double? bezugsmenge = null,
+                                                                      ZapfBezugsart? bezugsart = null)
         {
             if (ps == null) throw new ArgumentNullException(nameof(ps));
             string name = (bezeichner ?? "").Trim();
             if (name.Length == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
                     ZapfSatz.Neu("AUSLEGUNG_KONSTRUKTOR_OHNE_NAME"));
+            if (bezugsmenge.HasValue && (!(bezugsmenge.Value > 0) || double.IsInfinity(bezugsmenge.Value) || !bezugsart.HasValue
+                                         || !Enum.IsDefined(typeof(ZapfBezugsart), bezugsart.Value)))
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
+                    ZapfSatz.Neu("AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE"));
             double kwKatalog = ps.Wert(ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG);
             Bedarfstag tag = Bedarfstag.Konstruieren(zeilen, kwKatalog, name);
-            return new BedarfstagKatalogzeile(ENTWURF_ID, name, ps.Katalogversion, ZapfBedarfstagquelle.Konstruktor, null,
+            return new BedarfstagKatalogzeile(ENTWURF_ID, name, ps.Katalogversion, ZapfBedarfstagquelle.Konstruktor, bezugsmenge,
                 new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, ps.Katalogversion, Herkunftsart.Eigenkonstruktion),
                 tag.Ereignisse)
             {
                 Status = ZapfKatalogstatus.Eigen,
-                ReadOnly = false
+                ReadOnly = false,
+                Bezugsart = bezugsmenge.HasValue ? bezugsart : null
             };
         }
 
@@ -405,26 +422,37 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt den geprüften Entwurf als Katalogzeile an — Quelle_Art Konstruktor, ohne
-        /// Bezugsmenge, neutrale Quelle, Herkunftsart <c>EIGENKONSTRUKTION</c>, Status
-        /// <c>EIGEN</c>, <c>ReadOnly</c> 0 — samt Ereignissen in ihrer Reihenfolge; liefert die Id.
+        /// Legt den geprüften Entwurf als Katalogzeile an — Quelle_Art Konstruktor, Bezugsmenge und
+        /// (ab Schritt 120) Bezugsart des Entwurfs (ohne Bezugsmenge beide leer: der Tag gilt für das
+        /// Projekt), neutrale Quelle, Herkunftsart <c>EIGENKONSTRUKTION</c>, Status <c>EIGEN</c>,
+        /// <c>ReadOnly</c> 0 — samt Ereignissen in ihrer Reihenfolge; liefert die Id. Vor Schritt 120
+        /// fehlt die Spalte: Eine Bezugsart lehnt der Schreibweg dann benannt ab, statt sie still fallen
+        /// zu lassen.
         /// </summary>
         private static int BedarfstagAnlegen(DbVorgang v, BedarfstagKatalogzeile entwurf)
         {
             string version = string.IsNullOrWhiteSpace(entwurf.Herkunft?.Version) ? entwurf.Katalogversion : entwurf.Herkunft.Version;
+            bool mitBezugsart = SpalteImVorgang(v, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART);
+            if (entwurf.Bezugsart.HasValue && !mitBezugsart)
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                    ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "." + TwwSchema.SPALTE_BEZUGSART));
             int id = v.EinfuegenUndId(
                 "INSERT INTO " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " (Bezeichner, Katalogversion, Quelle_Art, Bezugsmenge, " +
-                "Quelle, Ausgabe, Version, Herkunftsart, Status, Beleg, ReadOnly) VALUES (?, ?, ?, NULL, ?, NULL, ?, ?, ?, NULL, 0)",
+                "Quelle, Ausgabe, Version, Herkunftsart, Status, Beleg, ReadOnly) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)",
                 new[]
                 {
                     new DbParam("@bezeichner", entwurf.Bezeichner.Trim()),
                     new DbParam("@version", entwurf.Katalogversion),
                     new DbParam("@art", (int)ZapfBedarfstagquelle.Konstruktor),
+                    new DbParam("@bezugsmenge", entwurf.Bezugsmenge.HasValue ? (object)entwurf.Bezugsmenge.Value : null),
                     new DbParam("@quelle", TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION),
                     new DbParam("@herkunftsversion", version),
                     new DbParam("@herkunft", TwwSchema.HERKUNFT_EIGENKONSTRUKTION),
                     new DbParam("@status", TwwSchema.STATUS_EIGEN)
                 });
+            if (mitBezugsart && entwurf.Bezugsart.HasValue)
+                v.Ausfuehren("UPDATE " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " SET " + TwwSchema.SPALTE_BEZUGSART + " = ? WHERE ID = ?",
+                             new DbParam("@bezugsart", (int)entwurf.Bezugsart.Value), new DbParam("@id", id));
             int reihenfolge = 0;
             foreach (Zapfereignis e in entwurf.Ereignisse)
                 v.Ausfuehren(

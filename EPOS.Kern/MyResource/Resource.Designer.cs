@@ -81279,6 +81279,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_FENSTER {
@@ -82233,6 +82242,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Erzeugerart ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_ERZEUGERART {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_ERZEUGERART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Erzeugerleistung ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_ERZEUGERLEISTUNG {
@@ -82283,6 +82301,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_4 {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Bezug des Füllstands ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG", resourceCulture);
             }
         }
         
@@ -82778,6 +82805,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_WB {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_WB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Werkstoff des Übertragers ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_WERKSTOFF {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_WERKSTOFF", resourceCulture);
             }
         }
         
@@ -84119,6 +84155,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_SPEICHER_PROJEKT_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_SPEICHER_PROJEKT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Spalte {0} fehlt in dieser Datenbank (Schemastand vor 120). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SPEICHER_SPALTE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SPEICHER_SPALTE_FEHLT", resourceCulture);
             }
         }
         

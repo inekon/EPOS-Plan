@@ -335,6 +335,22 @@ namespace EPOS.Kern.Tests
             Auslegungsgruppe gw = Assert.Single(ohneWerkstoff.Ergebnis.Gruppen);
             Assert.False(gw.Empfehlung.Rechenbar);
             Assert.Contains("Werkstoff", gw.Empfehlung.GrundText);
+
+            // Schritt 120 (N10 (i)): Ohne Laufangabe gilt die gespeicherte Wahl des Projekts — der
+            // Werkstoff aus der Projektzeile macht die Summenlinie rechenbar, die Erzeugerart der
+            // Projektzeile geht dem Vorschlag des Anlagenbestands vor.
+            ZapfprofilStand gewaehlt = mit with
+            {
+                Projekt = ZapfprofilCtrl.ProjektVorgabe() with
+                {
+                    Erzeugerart = ZapfErzeugerart.Kessel, UebertragerWerkstoff = ZapfUebertragerwerkstoff.Stahl
+                }
+            };
+            Auslegungsrechnung ausProjekt = ZapfprofilCtrl.Auslegung(PROJEKT, gewaehlt, jan1, we, new Auslegungslauf(null, null));
+            Assert.Equal(ZapfErzeugerart.Kessel, ausProjekt.Erzeugerart);
+            Assert.True(Assert.Single(ausProjekt.Ergebnis.Gruppen).Empfehlung.Rechenbar);
+            Assert.Equal(ZapfErzeugerart.Waermepumpe,
+                ZapfprofilCtrl.Auslegung(PROJEKT, gewaehlt, jan1, we, new Auslegungslauf(ZapfErzeugerart.Waermepumpe, null)).Erzeugerart);
         }
 
         // =================================================================================

@@ -40,8 +40,9 @@ namespace WindowsFormsApplication1
     /// in den Arbeitsstand des Dialogs (<see cref="ZapfprofilEingabeDaten.Auslegung"/>); das OK
     /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
     /// <see cref="AuslegungSpeichern"/> — Projektgrößen in <c>Tab_TwwProjekt</c>, ein
-    /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart und Werkstoff tragen keine Spalte
-    /// und werden nicht gespeichert (N10 (i)).</para>
+    /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart, Werkstoff, Personen und Bezug des
+    /// Füllstands stehen ab Schritt 120 als Projektgrößen darin; der Vorschlag des
+    /// Anlagenbestands bleibt ein Vorschlag (N10 (i)).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -595,8 +596,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Eingaben der Überlagerung aus dem Stand des Kerns: Projektgrößen (nullbar =
-        /// Vorgabe) und ein noch ungespeicherter Entwurf. Erzeugerart und Werkstoff tragen keine
-        /// Spalte — sie stehen auf „keine Angabe".
+        /// Vorgabe) und ein noch ungespeicherter Entwurf; Erzeugerart und Werkstoff aus der
+        /// gespeicherten Wahl (Schritt 120), sonst „keine Angabe".
         /// </summary>
         internal static ZapfprofilAuslegungEingabeDaten AuslegungAusStand(ZapfprofilStand stand)
         {
@@ -620,13 +621,17 @@ namespace WindowsFormsApplication1
                 a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
                 a.RealisierungenAuslegung = p.RealisierungenAuslegung;
                 // Der Verfahrensvergleich (4.7; Stufe Z4): Ladeleistung, Ladefenster, Nutzanteil und
-                // Zuschlag aus den Projektgrößen; Personen und Füllstandsbezug nur im Arbeitsstand (N13).
+                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 120).
                 a.LadeAuto = p.LadeAuto;
                 a.LadeManuellKw = p.LadeManuellKw;
                 a.LadefensterH = p.LadefensterH;
                 a.LadefensterBeginnH = p.LadefensterBeginnH;
                 a.Nutzanteil = p.Nutzanteil;
                 a.Zuschlag = p.Zuschlag;
+                a.Erzeugerart = AlsErzeugerart(p.Erzeugerart);
+                a.Werkstoff = p.UebertragerWerkstoff == ZapfUebertragerwerkstoff.Stahl ? ZapfprofilWerkstoff.Stahl
+                            : p.UebertragerWerkstoff == ZapfUebertragerwerkstoff.Edelstahl ? ZapfprofilWerkstoff.Edelstahl
+                            : ZapfprofilWerkstoff.KeineAngabe;
                 a.PersonenAuto = p.PersonenAuto;
                 a.PersonenManuell = p.PersonenManuell;
                 a.FuellstandBezug = p.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)p.FuellstandBezug.Value
@@ -693,6 +698,8 @@ namespace WindowsFormsApplication1
                 LadefensterBeginnH = a.LadefensterBeginnH,
                 Nutzanteil = a.Nutzanteil,
                 Zuschlag = a.Zuschlag,
+                Erzeugerart = AlsErzeugerart(a.Erzeugerart),
+                UebertragerWerkstoff = AlsWerkstoff(a.Werkstoff),
                 PersonenAuto = a.PersonenAuto,
                 PersonenManuell = a.PersonenManuell,
                 FuellstandBezug = a.FuellstandBezug == ZapfprofilFuellstandbezug.Vorgabe

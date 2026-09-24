@@ -248,6 +248,9 @@ namespace Auslieferungsvorlage.Tests
                         "SELECT * FROM Tab_TwwBedarfstag_STAMM WHERE Bezeichner = ?", new DbParam("?", z["Bezeichner"])).Rows.Cast<DataRow>());
                     Assert.Equal(long.Parse(z["Quelle_Art"], CultureInfo.InvariantCulture), Convert.ToInt64(r["Quelle_Art"]));
                     Assert.Equal(z["Quelle"], Convert.ToString(r["Quelle"]));
+                    // Bezugsmenge und Bezugsart (Schritt 120) wie die Datei; leeres Feld = NULL.
+                    foreach (string s in new[] { "Bezugsmenge", "Bezugsart" })
+                        Assert.Equal(z[s], r[s] == DBNull.Value ? "" : Convert.ToString(r[s], CultureInfo.InvariantCulture));
                     FreiUndGesperrt(r);
                     var soll = Paketteil(TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM).Where(x => x["ID_Bedarfstag"] == z["ID"])
                         .Select(x => x["Minute_Beginn"] + "|" + x["Dauer_min"] + "|" + x["Energie_Kwh"] + "|" + x["Reihenfolge"]).ToArray();

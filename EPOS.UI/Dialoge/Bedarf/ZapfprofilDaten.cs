@@ -649,7 +649,7 @@ public enum ZapfprofilBedarfstagquelle
     Ecodesign = 5
 }
 
-/// <summary>Die Erzeugerart am Speicher — eine Laufangabe, nicht gespeichert (N10 (i)).</summary>
+/// <summary>Die Erzeugerart am Speicher — die Wahl des Anwenders, gespeichert ab Schritt 120 (N10 (i)).</summary>
 public enum ZapfprofilErzeugerart
 {
     KeineAngabe = 0,
@@ -657,7 +657,7 @@ public enum ZapfprofilErzeugerart
     Waermepumpe = 2
 }
 
-/// <summary>Der Werkstoff des Übertragers — eine Laufangabe, nicht gespeichert (N10 (i)).</summary>
+/// <summary>Der Werkstoff des Übertragers — gespeichert ab Schritt 120 (N10 (i)).</summary>
 public enum ZapfprofilWerkstoff
 {
     KeineAngabe = 0,
@@ -849,11 +849,11 @@ public sealed class ZapfprofilAuslegungEingabeDaten
     public double? Nutzanteil { get; set; }
     public double? Zuschlag { get; set; }
 
-    /// <summary>Die Personen des Vergleichs auto (Mengengerüst) oder manuell — nur Arbeitsstand (N13).</summary>
+    /// <summary>Die Personen des Vergleichs auto (Mengengerüst) oder manuell (<c>Tab_TwwProjekt.Personen_Auto</c>, <c>Personen_Manuell</c>).</summary>
     public bool PersonenAuto { get; set; } = true;
     public double? PersonenManuell { get; set; }
 
-    /// <summary>Der Bezug des Füllstands (N10 (k), N11 (d)) — nur Arbeitsstand (N13).</summary>
+    /// <summary>Der Bezug des Füllstands (N10 (k), N11 (d); <c>Tab_TwwProjekt.Fuellstand_Bezug</c>).</summary>
     public ZapfprofilFuellstandbezug FuellstandBezug { get; set; }
 
     /// <summary>Die Quelle des Bedarfstags; <see cref="ZapfprofilBedarfstagquelle.Vorgaberegel"/> = Vorgaberegel.</summary>
@@ -880,10 +880,10 @@ public sealed class ZapfprofilAuslegungEingabeDaten
     /// <summary>Sensorhöhe h_sensor/h_sto [-]; <c>null</c> = Vorgabe.</summary>
     public double? SensorhoeheAnteil { get; set; }
 
-    /// <summary>Die Erzeugerart am Speicher (Laufangabe, nicht gespeichert).</summary>
+    /// <summary>Die Erzeugerart am Speicher (<c>Tab_TwwProjekt.Erzeugerart</c>); <see cref="ZapfprofilErzeugerart.KeineAngabe"/> = Vorschlag des Anlagenbestands.</summary>
     public ZapfprofilErzeugerart Erzeugerart { get; set; }
 
-    /// <summary>Der Werkstoff des Übertragers (Laufangabe, nicht gespeichert).</summary>
+    /// <summary>Der Werkstoff des Übertragers (<c>Tab_TwwProjekt.Uebertrager_Werkstoff</c>).</summary>
     public ZapfprofilWerkstoff Werkstoff { get; set; }
 
     /// <summary>Das Volumen des übernommenen Punkts [l]; <c>null</c> = keiner.</summary>

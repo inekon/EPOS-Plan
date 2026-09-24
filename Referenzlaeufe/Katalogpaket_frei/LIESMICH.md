@@ -35,7 +35,7 @@ Katalogpaket; der Prüfbericht meldet die Schlüsselgleichheit.
 
 | Datei | Zeilen | Inhalt | Quelle |
 |---|---|---|---|
-| `Tab_TwwBedarfstag_STAMM.csv` | 1 | Ecodesign-Zapfprofil L, Bedarfstag der Art 5, ohne Bezugsmenge (nicht skaliert) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofil L (ABl. L 239 vom 6.9.2013) — EU-Recht |
+| `Tab_TwwBedarfstag_STAMM.csv` | 1 | Ecodesign-Zapfprofil L, Bedarfstag der Art 5, Bezugsart Wohneinheiten (2, ab Schemastand 120: das Lastprofil beschreibt einen Haushalt), ohne Bezugsmenge (nicht skaliert) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofil L (ABl. L 239 vom 6.9.2013) — EU-Recht |
 | `Tab_TwwBedarfstagEreignis_STAMM.csv` | 24 | die 24 Zapfungen: Beginn, Dauer, Energie Q_tap; Tagessumme = Q_ref | wie oben; die Dauer ist eine Setzung der Umsetzung (siehe unten) |
 | `Tab_TwwParameter_STAMM.csv` | 5 | `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99 | Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 4 | Kurzzapfung, mittlere Zapfung, Wannenbad, Dusche: mittlerer Volumenstrom, Dauer, Anteil, Streuung | Jordan/Vajen, IEA SHC Task 26 — die Parametrik des Einfamilienhauses, wie sie das Protokoll der DHWcalc-Referenzdatei [im Testordner](../../EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/LIESMICH.md) ausweist; **Modellannahme bis Z5** |

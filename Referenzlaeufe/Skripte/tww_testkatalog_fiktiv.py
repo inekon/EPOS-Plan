@@ -57,8 +57,8 @@ Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "T
 und keine Zeile in Tab_TwwProjekt - kein Projekt steht auf dem Generator, der Referenzlauf bleibt
 unberuehrt.
 
-VORAUSSETZUNG. Schemastand 115 (die zehn Tww-Tabellen und die Zapfkategorien aus Schritt 115),
-nachgezogen mit
+VORAUSSETZUNG. Schemastand 120 (die zehn Tww-Tabellen, die Zapfkategorien aus Schritt 115 und die
+Bezugsart am Bedarfstag aus Schritt 120), nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
 WIEDERHOLBAR UND NACHFUEHREND. Jede Zeile wird ueber ihren natuerlichen Schluessel gesucht, fehlt
@@ -277,6 +277,8 @@ PARAMETER += [
 
 # (Bezeichner, Quelle_Art, Bezugsmenge, [(Minute_Beginn, Dauer_min, Energie_Kwh, Reihenfolge)])
 # Quelle_Art: 2 Referenztag, 3 Normtag, 4 Konstruktor - alle Ereignisse erfunden, kein Normprofil.
+# Die Bezugsart (Schritt 120) bleibt bei den fiktiven Tagen leer: Sie skalieren auf die eine
+# Bezugsart der Gruppe, wie die Faelle der Tests es erwarten.
 BEDARFSTAGE = [
     ("Testbedarfstag (fiktiv)", 4, 10.0, [
         (420, 10, 1.0, 1),
@@ -474,6 +476,10 @@ def main():
                   + (" (die Zapfkategorien brauchen den Schemaschritt T2, Schritt 115)" if TABELLE_KATEGORIEN in fehlend else "")
                   + ". Abbruch ohne Schreiben.")
             return 2
+        if "BEZUGSART" not in {k.upper() for k in spaltentypen(con, T_BEDARFSTAG)}:
+            print(f"Schemastand {stand}: {T_BEDARFSTAG}.Bezugsart fehlt - erst Werkzeuge/Testdatenbankschema "
+                  "(Schemaschritt T3, Schritt 120). Abbruch ohne Schreiben.")
+            return 2
 
         # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / ReadOnly 0 ist.
         fremd = 0
@@ -544,7 +550,8 @@ def main():
             # --- Bedarfstage samt Ereignissen: fiktiv, dann die des Paketteils --------------
             for (bezeichner, quelle_art, bezugsmenge, ereignisse) in BEDARFSTAGE:
                 id_tag = zaehlen(upsert(con, T_BEDARFSTAG, {"Bezeichner": bezeichner, "Katalogversion": VERSION},
-                                        {"Quelle_Art": quelle_art, "Bezugsmenge": bezugsmenge, "Quelle": QUELLE,
+                                        {"Quelle_Art": quelle_art, "Bezugsmenge": bezugsmenge, "Bezugsart": None,
+                                         "Quelle": QUELLE,
                                          "Ausgabe": None, "Version": VERSION, "Herkunftsart": HERKUNFT,
                                          "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
                 zaehlen(ereignisse_setzen(con, id_tag, [dict(zip(EREIGNISSPALTEN, e)) for e in ereignisse]))

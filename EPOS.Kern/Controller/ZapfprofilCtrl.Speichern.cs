@@ -194,6 +194,15 @@ namespace WindowsFormsApplication1
             else
             {
                 List<KeyValuePair<string, object>> werte = ProjektWerte(projektZeile, weg, jetzt);
+                // Schritt 120 (T3): die Laufangaben der Auslegung — vor dem Schritt fehlen die Spalten.
+                // Eine gesetzte Angabe lehnt der Schreibweg dann benannt ab, statt sie still fallen zu lassen.
+                if (SpalteImVorgang(v, TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_PERSONEN_AUTO))
+                    werte.AddRange(LaufangabenWerte(projektZeile));
+                else if (projektZeile.Erzeugerart.HasValue || projektZeile.UebertragerWerkstoff.HasValue
+                         || !projektZeile.PersonenAuto || projektZeile.PersonenManuell.HasValue
+                         || projektZeile.FuellstandBezug.HasValue)
+                    throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                        ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_PERSONEN_AUTO));
                 if (zeileDa)
                 {
                     idZeile = Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
@@ -275,6 +284,17 @@ namespace WindowsFormsApplication1
             else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = ZapfSatz.Neu("BEGRIFF_SPEICHERART");
             else if (p.BedarfstagQuelle.HasValue && !Enum.IsDefined(typeof(ZapfBedarfstagquelle), p.BedarfstagQuelle.Value))
                 grund = ZapfSatz.Neu("BEGRIFF_BEDARFSTAG_QUELLE");
+            // Schritt 120: die Wertemengen der DDL (TwwSchema, EINE Quelle).
+            else if (p.Erzeugerart.HasValue && !TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE).Contains((int)p.Erzeugerart.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_ERZEUGERART");
+            else if (p.UebertragerWerkstoff.HasValue
+                     && !TwwSchema.Werte(TwwSchema.WERKSTOFF_WERTE).Contains((int)p.UebertragerWerkstoff.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_WERKSTOFF");
+            else if (p.FuellstandBezug.HasValue && !TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE).Contains((int)p.FuellstandBezug.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_FUELLSTAND_BEZUG");
+            else if (p.PersonenManuell.HasValue && (double.IsNaN(p.PersonenManuell.Value) || double.IsInfinity(p.PersonenManuell.Value)
+                                                    || p.PersonenManuell.Value < 0))
+                grund = ZapfSatz.Neu("BEGRIFF_PERSONEN");
             if (grund != null)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektUngueltig, "",
                     ZapfSatz.Neu("SPEICHER_WERTEMENGE", grund));
@@ -355,6 +375,10 @@ namespace WindowsFormsApplication1
             }
             return true;
         }
+
+        /// <summary>Führt die Tabelle die Spalte? Im laufenden Vorgang gefragt (Stand vor oder nach einem Schemaschritt).</summary>
+        internal static bool SpalteImVorgang(DbVorgang v, string tabelle, string spalte)
+            => Anzahl(v, "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?", tabelle, spalte) > 0;
 
         private static long Anzahl(DbVorgang v, string sql, params object[] werte)
         {
@@ -502,6 +526,16 @@ namespace WindowsFormsApplication1
                 W("Auslegung_Leistung_Kw", p.AuslegungLeistungKw),
                 W("Aenderungsdatum", datum)
             };
+        }
+
+        /// <summary>Die Laufangaben der Auslegung (Schritt 120, <see cref="TwwSchema.SpaltenT3"/>) in ihren Spalten.</summary>
+        private static IEnumerable<KeyValuePair<string, object>> LaufangabenWerte(ProjektStand p)
+        {
+            yield return W(TwwSchema.SPALTE_ERZEUGERART, Enumwert(p.Erzeugerart));
+            yield return W(TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF, Enumwert(p.UebertragerWerkstoff));
+            yield return W(TwwSchema.SPALTE_PERSONEN_AUTO, Bool(p.PersonenAuto));
+            yield return W(TwwSchema.SPALTE_PERSONEN_MANUELL, p.PersonenManuell);
+            yield return W(TwwSchema.SPALTE_FUELLSTAND_BEZUG, Enumwert(p.FuellstandBezug));
         }
 
         /// <summary><c>INSERT</c> mit den festen Spaltennamen und <c>?</c>-Parametern; liefert die neue Id.</summary>
