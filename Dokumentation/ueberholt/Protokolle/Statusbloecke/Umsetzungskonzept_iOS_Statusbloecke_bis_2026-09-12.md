@@ -8968,3 +8968,81 @@ Aufklapper trägt. Wiki-Upload (Hilfe-Assistent) weiterhin ausstehend.
 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
 `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
 Werte in Toleranz).
+
+## #458 Stufe 3a — KI-Assistent: Zapfprofil-Dialoge und Rechenweg Brauchwasser angemeldet (24.09.2026)
+
+Anlass: Rest aus #458 Stufe 2 — das Zapfprofil-Trio und der
+Rechenweg Brauchwasser nach dem Z3-Merge (#453). Commits (Zweig
+`worktree-agent-ad741b786b99144de`, Basis `ea6f8608` = Z3):
+`35f7ec6d` Rechenweg Brauchwasser der Bedarfsprofile setzbar;
+`15a566fa` Zapfprofil und Auslegung angemeldet; `dd5a5a91`
+Bedarfstag-Konstruktor angemeldet, keine Maske mehr offen;
+`2e355650` Papiere. Merge in den Hauptbaum `6f2284ba`
+(konfliktfrei); danach Nachzug origin `0d296ca0` (E9a #461, Schema
+118, neue Testdatenbank) als `5c2e7b1d` (konfliktfrei; resx auto,
+Designer unverändert).
+
+**Umfang.** `ZapfprofilDialog.razor` (Maske `Form_Zapfprofil`,
+Sichtklasse `ZapfprofilKiSicht`, 11 Felder, davon 5 Spalten mit
+Zeilenkennzeichen Zonenname; neue Z3-Felder Rechenweg
+deterministisch/stochastisch, Seed, Realisierungen);
+`ZapfprofilAuslegungDialog.razor` (Maske `ZapfprofilAuslegung`,
+`ZapfprofilAuslegungKiSicht`, 12 Felder inkl. „Stochastisch
+rechnen", Perzentil P95/P99, Realisierungen);
+`BedarfstagKonstruktor.razor` (Maske `BedarfstagKonstruktor`,
+`BedarfstagKonstruktorKiSicht`, 8 Felder, davon 7 Spalten,
+Kennzeichen „6–8 h · Verbraucher"); `BedarfsProfileDialog.razor`
+(`Form_Prozesswaerme`, bestehende Sichtklasse, 9 Felder, neu
+Wahlfeld `rechenweg` als Zapfprofil-Weiche; die sechs
+`nurLesen`-Felder bleiben Anzeigen). Die drei neuen Dialoge sind
+Überlagerungen: angemeldet nur solange offen, danach die aktive
+Maske; Haken Auffrischen und Prüfen (dieselbe Prüfung wie am OK);
+kein Speicherweg, `dialog_speichern` lehnt benannt ab; Setzen
+nimmt die Wege der Handeingabe (Vorschau/Karten rechnen neu, ein
+übernommener Auslegungspunkt wird überholt); benannte Absagen für
+gerade nicht sichtbare Felder (Stufe Experte, Rechenweg
+stochastisch, Anzahl nur mit Zapfregel, Volumen/Temperatur nur bei
+„Volumen direkt") und für Gesperrtes (Stufe Erweitert, gesperrte
+Nutzungsart, gesperrter Bedarfstag), Zahlen außerhalb der
+Feldgrenzen werden abgewiesen; Öffnungsziel ist die Startseite,
+Reiter Wärmebedarf. Zapfprofil und Auslegung teilen den
+Hilfeschlüssel `Form_Zapfprofil.btn_Help`.
+
+**Wächter danach.** Katalog 72 → 75 Masken, 152 Komponenten, 69
+Anmeldungen, 29 Wirte, 22 Ausnahmen, keine mehr `Offen`, 84
+Dateien in der Zählliste (neu `ZapfprofilDialog` 9,
+`ZapfprofilAuslegungDialog` 11, `BedarfstagKonstruktor` 8 Felder),
+Vermerk „Rechenweg offen" gestrichen; neue Methode
+`KiDialogAusnahmen.AbsageFuer(KiAusnahme)` für den Test der „noch
+nicht steuerbar"-Absage.
+
+**Tests.** Im Worktree Kern 5 585, UI 5 783, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Kern-Filter und Windows-Schale 0 Fehler.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(Stufenzeile 3a, „Stand der Abdeckung": nur noch Zahlenfolgen
+offen → Stufe 3b); Wiki-Quelle `Projekte/Wiki/Programm
+Dokumentation - Hilfe-Assistent.wiki` (Zapfprofil mit Auslegung
+und Konstruktor, Rechenweg Brauchwasser, Absage für nicht
+bedienbare Felder; Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent bedient auch das Brauchwasser-Zapfprofil
+> samt Auslegung und Bedarfstag-Konstruktor.
+
+**Was offen bleibt.** Die Rechenwege `Vorschau`/`Rechnen` sind
+nicht als Haken gebaut — sie bräuchten eine eigene Aktion;
+„Stochastisch rechnen" und „Bedarfstag konstruieren…" bleiben
+Klicks. Spalten werden über die Zeilennummer gesetzt: eine
+weggefallene Zeile wird still übersprungen — das betrifft alle
+Spaltenmasken. Eine ungültige Handeingabe bleibt im Feld stehen,
+auch wenn der Assistent einen gültigen Wert setzt — ebenfalls alle
+Masken. Stufe 3b (Zahlenfolgen) läuft.
+
+**Gate nach Merge auf `5c2e7b1d`.** Kern-Filter 0 Fehler; Tests
+Kern 5 607, UI 5 783, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen), 0 rot; Windows-Schale 0
+Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz); Schemastand 118.
