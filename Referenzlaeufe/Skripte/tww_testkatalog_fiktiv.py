@@ -42,7 +42,8 @@ solange die Frage ZU20 (abgeleitete Werte in der Auslieferung?) beim Anwender of
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26; Modellannahme
 bis Z5), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
-(Zapfprofil.Zirkulation.Hinweisverhaeltnis, Zapfprofil.Anzeigetemperatur, Zapfprofil.Stundenschwelle)
+(Zapfprofil.Zirkulation.Hinweisverhaeltnis, Zapfprofil.Anzeigetemperatur, Zapfprofil.Stundenschwelle),
+die fuenf Setzungen der Validierung der Stufe Z5 (Zapfprofil.Validierung.*)
 und das Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
 im Paketformat N2 unter Referenzlaeufe/Katalogpaket_frei/ (Aufbau und Quellen in dessen
 LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Dieses
