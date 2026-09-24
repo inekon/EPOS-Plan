@@ -55,6 +55,33 @@ Zahlen, mit den versionierten Gegenwächtern für Prüfband, Vorzeichen und Such
   mit abgelegten Daten. Die Testausgabe nennt je Fall die Zahl der Zellen im Band und die
   größte Überschreitung, nie einen Absolutwert.
 
+## VDI 6007 Bauteiltabellen
+
+Der Normnachweis des Bauteilwegs (Stufe G3, `EPOS.Kern/Allgemein/Simulation/Gebaeude/Bauteilreduktion.cs`
+und `ErsatzparameterRC.AusBauteilweg`) braucht zusätzlich die **Bauteiltabellen** der zwölf
+Testbeispiele — Schichtaufbauten, Flächen, Übergangskoeffizienten, U-Werte der Fenster (Anhang A1
+der Richtlinie, Tabellen „Bauteildaten“). Sie kommen aus der lokalen PDF-Kopie der VDI 6007 Blatt 1
+und liegen danach unter `vdi6007/`, je Testbeispiel eine Datei `Testbeispiel<n>.csv`:
+
+```
+PYTHONIOENCODING=utf-8 py Referenzlaeufe/Skripte/vdi6007_bauteiltabellen.py <blatt1.pdf> Referenzlaeufe/Normzahlen/vdi6007
+```
+
+Das Skript (braucht `pypdf`) enthält selbst keine Normzahl; es liest die Tabellen zur Laufzeit,
+rechnet die spezifische Wärmekapazität in J/(kgK) um und nennt in seiner Ausgabe nur Zahlen von
+Bauteilen und Schichten. Format und Zuordnung der Spalten stehen in seinem Kopf. Die Textfassung
+der Richtlinie enthält die Tabellen nicht; es muss die PDF-Datei sein.
+
+Geprüft wird mit `dotnet test WP-Plan.Kern.slnf -c Release --filter BauteilreduktionNormTests`
+(`EPOS.Kern.Tests/BauteilreduktionNormTests.cs`): Je Testbeispiel wird der Bauteilweg aus der
+Tabelle gebaut und gegen den Parametersatz der AixLib gehalten (Innen- und Außenbauteilgruppe,
+Flächen, relativ ≤ 10⁻³); danach rechnet jeder Normfall mit diesen Parametern und muss dasselbe
+Bandergebnis bringen wie mit denen der AixLib. Die drei benannten Abweichungen — FB1 in der
+Innengruppe, ein Druckfehler in der Tabelle von Testbeispiel 4, der konvektive Übergang des
+Validierungsmodells von Testbeispiel 10 — beschreibt der Kopf der Testklasse. Fehlen `aixlib/`
+oder `vdi6007/`, schweigt der Nachweis. Die Ausgabe nennt Zählungen und relative Abweichungen, nie
+einen Absolutwert.
+
 ## Zapfprofilgenerator
 
 Die lokalen Normkopien des Zapfprofilgenerators liegen in drei Unterordnern: `vdi4655/` und
