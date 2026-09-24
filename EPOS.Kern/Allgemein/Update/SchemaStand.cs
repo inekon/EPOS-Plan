@@ -512,11 +512,19 @@ namespace WindowsFormsApplication1
         /// und acht unbenutzte Testreste — je Satz nach Bezeichner und Schadensbild, bei
         /// <see cref="GebaeudeKatalogReparatur"/>. <b>Ergebnisneutral:</b> Keinen der Sätze führt
         /// ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
+        /// Mit der LISTE DER NICHT MONETARISIERBAREN WIRKUNGEN (Schritt 127, Etappe E17; Konzept
+        /// Wirtschaftlichkeit § 2.11.2 V‑G11, DIN EN 17463 6.1 und 8.2) steht das Ziel auf
+        /// <b>127</b>: die STRICT-Tabelle <c>Tab_ProjektWirkung</c> (Kategorie, Beschreibung,
+        /// Dauer und drei Wirkungsgrade je Wirkung, Fremdschlüssel auf <c>Tab_Projekt</c>),
+        /// dazu die Übernahme eines gepflegten Freitexts als eine Wirkung der Kategorie
+        /// SONSTIG ohne Beurteilung (<see cref="ProjektWirkungSchema"/>); er folgt auf die
+        /// Gebäude-Katalogreparatur (126). <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
+        /// bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 126;
+        public const int Zielversion = 127;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

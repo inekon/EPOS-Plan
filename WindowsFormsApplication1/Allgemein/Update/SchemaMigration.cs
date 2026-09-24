@@ -4137,6 +4137,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GEBAEUDE_KATALOGREPARATUR = GebaeudeKatalogReparatur.SCHRITT;
 
+        /// <summary>
+        /// Schritt 127 — <b>die nicht monetarisierbaren Wirkungen als Liste je Projekt</b>
+        /// (Etappe E17; Konzept Wirtschaftlichkeit § 2.11.2 V‑G11, DIN EN 17463 6.1 und 8.2).
+        /// Er folgt auf <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/> (126) ohne
+        /// Reihenfolgebedingung und braucht Schritt 72 (die Freitextspalte).
+        ///
+        /// <para><b>DDL und DML:</b> die STRICT-Tabelle <c>Tab_ProjektWirkung</c> samt Index,
+        /// dann je Projekt mit gepflegtem Freitext und ohne eigene Wirkung EINE Wirkung der
+        /// Kategorie SONSTIG ohne Beurteilung. Die Anweisungen stehen bei
+        /// <see cref="ProjektWirkungSchema"/> — EINE Quelle für Migration, Werkzeug und
+        /// Testvorrichtung. Das Freitextfeld bleibt stehen (Altfeld, nur lesbar).</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5851,6 +5868,18 @@ namespace WindowsFormsApplication1
                         "Nordfenster. KEIN Rechenergebnis eines Projekts aendert sich - Projektkopien " +
                         "bleiben, wie sie sind.",
                         Schritt_GebaeudeKatalogreparatur),
+
+            // ETAPPE E17 (V-G11, DIN EN 17463 6.1/8.2) - die nicht monetarisierbaren Wirkungen
+            // als Liste je Projekt; der gepflegte Freitext wird eine Wirkung SONSTIG ohne
+            // Beurteilung. Die Quelle ist ProjektWirkungSchema. Er steht NACH 126 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN,
+                        "Tab_ProjektWirkung: nicht monetarisierbare Wirkungen je Projekt (Kategorie, " +
+                        "Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt); der Freitext wird " +
+                        "eine Wirkung der Kategorie 'sonstig'",
+                        "Die Wirkungen liessen sich weder einordnen noch beurteilen. KEIN Rechenergebnis " +
+                        "aendert sich - die Wirkungen fliessen nicht in den Kapitalwert.",
+                        Schritt_127_NichtMonetaereWirkungen),
         };
 
         /// <summary>
@@ -9538,6 +9567,50 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
                     "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 127 - die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17, V-G11)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 127 — Anlass und Wirkung stehen bei <see cref="SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN"/>,
+        /// die Anweisungen bei <see cref="ProjektWirkungSchema"/>. <b>Wiederholbar</b>; die
+        /// Nachprobe fragt <see cref="ProjektWirkungSchema.Vollstaendig"/> (Tabelle da, kein
+        /// Freitext mehr offen).
+        /// </summary>
+        private static bool Schritt_127_NichtMonetaereWirkungen(Lauf l)
+        {
+            ProjektWirkungSchema.Bericht bericht;
+            bool vollstaendig;
+            try
+            {
+                using (DataRepository.EngineModus())
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    bericht = ProjektWirkungSchema.Ausfuehren();
+                    vollstaendig = ProjektWirkungSchema.Vollstaendig();
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("127: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle " + ProjektWirkungSchema.TABELLE + " fehlt nach dem Schritt, " +
+                                  "oder ein gepflegter Freitext wurde nicht uebernommen.";
+                l.Notiz("127: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("127: " + bericht.Zeile() + ". Das Freitextfeld bleibt stehen (Altfeld); KEIN " +
+                    "Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

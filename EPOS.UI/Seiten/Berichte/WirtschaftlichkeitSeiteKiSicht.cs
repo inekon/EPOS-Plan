@@ -1,4 +1,7 @@
-﻿using KiKern;
+﻿using System.Globalization;
+using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Seiten.Berichte;
 
@@ -9,7 +12,8 @@ namespace EPOS.UI.Seiten.Berichte;
 /// <para><b>Diese Seite trägt Einstellwerte und ist deshalb drin.</b> Sie
 /// entscheidet, WELCHE Stände gegeneinander gerechnet werden (Vergleichssicht,
 /// Referenz, Paar A und B), unter WELCHEM Szenario (Erwartet, Best, Worst) — und
-/// sie pflegt den Freitext der nicht monetären Wirkungen nach DIN EN 17463. Die
+/// sie pflegt die nicht monetarisierbaren Wirkungen nach DIN EN 17463 als Liste
+/// (ETAPPE E17: Kategorie, Beschreibung, Dauer, drei Wirkungsgrade je Zeile). Die
 /// Kennzahltabelle, die Herleitungszeilen und das Bild des Kapitalwertverlaufs
 /// darunter sind gerechnete Anzeige und bleiben draußen; die Bedienleiste des
 /// Verlaufs (Zeitraum, Haken je Stand und Szenario) ist drin.</para>
@@ -52,8 +56,11 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
     public Action<int?>? BSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? BEintraege { get; init; }
 
-    public Func<string>? WirkungLesen { get; init; }
-    public Action<string>? WirkungSetzen { get; init; }
+    /// <summary>ETAPPE E17: die Zeilen der Wirkungsliste (Arbeitsstand der Seite).</summary>
+    public Func<IReadOnlyList<WirkungKiZeile>>? WirkungenLesen { get; init; }
+
+    /// <summary>ETAPPE E17: setzt die Zahl der Wirkungen (anhängen bzw. vom Ende entfernen).</summary>
+    public Action<int>? WirkungsanzahlSetzen { get; init; }
 
     public Func<int?>? ZahlungsstandLesen { get; init; }
     public Action<int?>? ZahlungsstandSetzen { get; init; }
@@ -137,15 +144,46 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
         set => BSetzen?.Invoke(value);
     }
 
+    // =====================================================================
+    //  ETAPPE E17 (V‑G11): die nicht monetarisierbaren Wirkungen als Liste
+    // =====================================================================
+
     /// <summary>
-    /// Die nicht monetären Wirkungen nach DIN EN 17463 — Freitext. Er wird auf Zuruf
-    /// geschrieben, nicht bei jedem Zeichen.
+    /// Die nicht monetarisierbaren Wirkungen nach DIN EN 17463 (6.1, 8.2) — je Wirkung eine
+    /// Zeile mit Kategorie, Beschreibung, Dauer, drei Wirkungsgraden und der Beurteilung als
+    /// Anzeige. Geschrieben wird auf Zuruf („Speichern"), nicht bei jedem Setzen.
     /// </summary>
-    public string NichtMonetaer
+    public IReadOnlyList<WirkungKiZeile> Wirkungen
+        => WirkungenLesen?.Invoke() ?? Array.Empty<WirkungKiZeile>();
+
+    /// <summary>
+    /// Die ZAHL der Wirkungen — der Weg, Zeilen anzulegen oder zu entfernen: Eine größere
+    /// Zahl hängt leere Zeilen der Kategorie „sonstig" an, eine kleinere nimmt Zeilen vom
+    /// Ende. Leere Zeilen schreibt der Speicherweg nicht.
+    /// </summary>
+    public int? Wirkungsanzahl
     {
-        get => WirkungLesen?.Invoke() ?? "";
-        set => WirkungSetzen?.Invoke(value ?? "");
+        get => Wirkungen.Count;
+        set => WirkungsanzahlSetzen?.Invoke(Math.Max(0, value ?? 0));
     }
+
+    /// <summary>Die drei Kategorien (Id = Listenplatz).</summary>
+    public IReadOnlyList<KiWahleintrag> KategorieWahl => Wahl(NichtMonetaereWirkungen.Kategorien());
+
+    /// <summary>Die Dauerstufen 1 kurz, 2 mittel, 3 lang.</summary>
+    public IReadOnlyList<KiWahleintrag> DauerWahl => Wahl(NichtMonetaereWirkungen.Dauerstufen());
+
+    /// <summary>Die Wirkungsgrade 0 keine … 3 stark — Organisation.</summary>
+    public IReadOnlyList<KiWahleintrag> OrganisationWahl => Wahl(NichtMonetaereWirkungen.Wirkungsgrade());
+
+    /// <summary>Dieselben Wirkungsgrade — Mitarbeiter.</summary>
+    public IReadOnlyList<KiWahleintrag> MitarbeiterWahl => Wahl(NichtMonetaereWirkungen.Wirkungsgrade());
+
+    /// <summary>Dieselben Wirkungsgrade — Umwelt.</summary>
+    public IReadOnlyList<KiWahleintrag> UmweltWahl => Wahl(NichtMonetaereWirkungen.Wirkungsgrade());
+
+    private static IReadOnlyList<KiWahleintrag> Wahl(IReadOnlyList<KeyValuePair<int, string>> stufen)
+        => KiMaskenanmeldung.Eintraege(stufen, s => s.Key, s => s.Value);
 
     /// <summary>
     /// Der Stand, dessen Zahlungsreihen Block 2 zeigt — eine Anzeigewahl; <c>null</c> =
@@ -193,4 +231,90 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
     /// </summary>
     public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Verlaufsschalter
         => VerlaufschalterLesen?.Invoke() ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
+}
+
+/// <summary>
+/// ETAPPE E17 (V‑G11) — eine Zeile der Wirkungsliste für den Hilfe-Assistenten. Sie
+/// schreibt in die Zeile des Arbeitsstands der Seite (<see cref="ProjektWirkung"/>) und
+/// lässt die Seite danach neu zeichnen; geschrieben in die Datenbank wird erst mit
+/// „Speichern". Die Kategorie läuft über ihren Listenplatz
+/// (<see cref="NichtMonetaereWirkungen.KATEGORIEN"/>), Dauer und Wirkungsgrade über ihren Wert.
+/// </summary>
+public sealed class WirkungKiZeile
+{
+    private readonly ProjektWirkung _zeile;
+    private readonly Action _geaendert;
+
+    public WirkungKiZeile(ProjektWirkung zeile, int nummer, Action geaendert)
+    {
+        _zeile = zeile;
+        Nummer = nummer;
+        _geaendert = geaendert;
+    }
+
+    /// <summary>Die laufende Nummer in der Liste (1, 2, 3 …).</summary>
+    public int Nummer { get; }
+
+    /// <summary>Das Kennzeichen der Zeile für den Assistenten: „Wirkung 2: Komfort".</summary>
+    public string Kennzeichen
+        => string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.WIRT_NM_KENNZEICHEN,
+                         Nummer, (_zeile.Beschreibung ?? "").Trim());
+
+    /// <summary>Die Kategorie als Listenplatz (0 Energiefluss, 1 finanziell, 2 sonstig).</summary>
+    public int? Kategorie
+    {
+        get
+        {
+            for (int i = 0; i < NichtMonetaereWirkungen.KATEGORIEN.Count; i++)
+                if (string.Equals(NichtMonetaereWirkungen.KATEGORIEN[i], _zeile.Kategorie, StringComparison.Ordinal))
+                    return i;
+            return null;
+        }
+        set
+        {
+            if (value is int i && i >= 0 && i < NichtMonetaereWirkungen.KATEGORIEN.Count)
+            {
+                _zeile.Kategorie = NichtMonetaereWirkungen.KATEGORIEN[i];
+                _geaendert();
+            }
+        }
+    }
+
+    /// <summary>Die Beschreibung der Wirkung.</summary>
+    public string Beschreibung
+    {
+        get => _zeile.Beschreibung ?? "";
+        set { _zeile.Beschreibung = value ?? ""; _geaendert(); }
+    }
+
+    /// <summary>Dauer 1 … 3; leer = nicht beurteilt.</summary>
+    public int? Dauer
+    {
+        get => _zeile.Dauer;
+        set { _zeile.Dauer = value; _geaendert(); }
+    }
+
+    /// <summary>Wirkung auf die Organisation 0 … 3; leer = nicht beurteilt.</summary>
+    public int? Organisation
+    {
+        get => _zeile.WirkungOrganisation;
+        set { _zeile.WirkungOrganisation = value; _geaendert(); }
+    }
+
+    /// <summary>Wirkung auf die Mitarbeiter 0 … 3; leer = nicht beurteilt.</summary>
+    public int? Mitarbeiter
+    {
+        get => _zeile.WirkungMitarbeiter;
+        set { _zeile.WirkungMitarbeiter = value; _geaendert(); }
+    }
+
+    /// <summary>Wirkung auf die Umwelt 0 … 3; leer = nicht beurteilt.</summary>
+    public int? Umwelt
+    {
+        get => _zeile.WirkungUmwelt;
+        set { _zeile.WirkungUmwelt = value; _geaendert(); }
+    }
+
+    /// <summary>Die Beurteilung nach 8.2 — Anzeige („6 von 9" bzw. „nicht beurteilt").</summary>
+    public string Beurteilung => NichtMonetaereWirkungen.BeurteilungText(_zeile);
 }

@@ -165,13 +165,14 @@ namespace WindowsFormsApplication1
             // Bandbreite und der Empfehlung, dann das, was die Zahl nicht fassen kann.
             // DIN EN 17463 verlangt beides nebeneinander.
             //
-            // OHNE GEPFLEGTEN TEXT ENTFÄLLT DER GANZE BLOCK — Überschrift eingeschlossen.
+            // OHNE GEPFLEGTE WIRKUNG ENTFÄLLT DER GANZE BLOCK — Überschrift eingeschlossen.
             // Eine leere Überschrift wäre keine Aussage, sondern eine Lücke mit Titel.
-            if (p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer))
-            {
-                k.Ueberschrift2Roh(MyResource.Resource.WIRT_NM_TITEL);
-                k.TextRoh(p.NichtMonetaer.Trim());
-            }
+            //
+            // ETAPPE E17 (V‑G11, DIN EN 17463 6.1 und 8.2): statt des Freitexts die TABELLE
+            // „Nicht monetarisierbare Wirkungen" — Kategorie, Beschreibung, Dauer, Wirkung auf
+            // Organisation, Mitarbeiter und Umwelt, Beurteilung. Quelle ist die Wirkungsliste
+            // der Bewertung (Stammprojekt); keine Zahl daraus fließt in den Kapitalwert.
+            SchreibeNichtMonetaereWirkungen(k, bewertung.Wirkungen);
 
             // ---------------- Sensitivitätsanalyse (W2, Normanforderung) ----------------
             // ETAPPE E5 Teil b (V‑A): aus der Bewertung des Laufs — in Sicht 2 also gegen A —
@@ -625,6 +626,58 @@ namespace WindowsFormsApplication1
         /// VDI 2067, je Position mit Bemessungsart und Herleitung Menge × Einheitpreis.
         /// Das ist der Zweck, für den Etappe E3 die Spalte <c>Kostenart</c> angelegt hat.
         /// </summary>
+        /// <summary>
+        /// ETAPPE E17 (V‑G11) — die Tabelle „Nicht monetarisierbare Wirkungen": Überschrift
+        /// (<c>WIRT_NM_TITEL</c>), ein Hinweis zu Skalen und Regel, dann je Wirkung eine
+        /// Zeile. Ohne benannte Wirkung entfällt der Block.
+        /// </summary>
+        internal static void SchreibeNichtMonetaereWirkungen(WordKontext k, IReadOnlyList<ProjektWirkung> wirkungen)
+        {
+            List<ProjektWirkung> zeilen = (wirkungen ?? new List<ProjektWirkung>())
+                .Where(w => w != null && !string.IsNullOrWhiteSpace(w.Beschreibung)).ToList();
+            if (zeilen.Count == 0) return;
+
+            k.Ueberschrift2Roh(MyResource.Resource.WIRT_NM_TITEL);
+            k.HinweisRoh(MyResource.Resource.WIRT_NM_TABELLE_HINWEIS);
+
+            int wKat = 1300, wDauer = 900, wGrad = 1150, wBeurt = 1200;
+            int wBeschr = WordBerichtGenerator.INHALT_B - wKat - wDauer - 3 * wGrad - wBeurt;
+            int[] w = { wKat, wBeschr, wDauer, wGrad, wGrad, wGrad, wBeurt };
+            string[] kopfTexte =
+            {
+                MyResource.Resource.WIRT_NM_SP_KATEGORIE, MyResource.Resource.WIRT_NM_SP_BESCHREIBUNG,
+                MyResource.Resource.WIRT_NM_SP_DAUER, MyResource.Resource.WIRT_NM_SP_ORGANISATION,
+                MyResource.Resource.WIRT_NM_SP_MITARBEITER, MyResource.Resource.WIRT_NM_SP_UMWELT,
+                MyResource.Resource.WIRT_NM_SP_BEURTEILUNG
+            };
+
+            Table t = k.NeueTabelle(w);
+            var kopf = new TableRow();
+            for (int i = 0; i < w.Length; i++)
+                kopf.Append(k.Zelle(kopfTexte[i], w[i], true, WordBerichtGenerator.HEAD_FILL,
+                                    i == 1 ? JustificationValues.Left : JustificationValues.Center, false,
+                                    WordBerichtGenerator.SCHRIFT_TABELLE));
+            t.Append(kopf);
+
+            foreach (ProjektWirkung z in zeilen)
+            {
+                string[] werte =
+                {
+                    NichtMonetaereWirkungen.KategorieText(z.Kategorie), z.Beschreibung.Trim(),
+                    NichtMonetaereWirkungen.DauerText(z.Dauer), NichtMonetaereWirkungen.WirkungText(z.WirkungOrganisation),
+                    NichtMonetaereWirkungen.WirkungText(z.WirkungMitarbeiter), NichtMonetaereWirkungen.WirkungText(z.WirkungUmwelt),
+                    NichtMonetaereWirkungen.BeurteilungText(z, k.Kultur)
+                };
+                var r = new TableRow();
+                for (int i = 0; i < w.Length; i++)
+                    r.Append(k.Zelle(werte[i], w[i], false, null,
+                                     i == 1 ? JustificationValues.Left : JustificationValues.Center, false,
+                                     WordBerichtGenerator.SCHRIFT_TABELLE));
+                t.Append(r);
+            }
+            k.Body.Append(t);
+        }
+
         private static void SchreibeBetriebskosten(WordKontext k, BerichtsDaten daten,
                                                    List<WirtschaftlichkeitErgebnis> alle)
         {

@@ -1604,6 +1604,25 @@ namespace Testdatenbankschema
                                   GebaeudeKatalogReparatur.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 127: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
+            //      V-G11). NACH 126 (GebaeudeKatalogReparatur).
+            //      DDL und DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_127_NichtMonetaereWirkungen bedient
+            //      (ProjektWirkungSchema): Tab_ProjektWirkung STRICT samt Index, dann je Projekt
+            //      mit gepflegtem Freitext eine Wirkung SONSTIG ohne Beurteilung.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabelle.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 127 - nicht monetarisierbare Wirkungen: " +
+                              (ProjektWirkungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                ProjektWirkungSchema.Bericht bericht127 = ProjektWirkungSchema.Ausfuehren();
+                if (bericht127.TabelleAngelegt) tabellen++;
+                Console.WriteLine("Schritt 127 - " + bericht127.Zeile() + ".");
+                Console.WriteLine("Schritt 127 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

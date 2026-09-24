@@ -178,10 +178,10 @@ namespace WindowsFormsApplication1
                                      IReadOnlyDictionary<string, object>>(Unterdialog),
                 ["Nachlauf"] = new Func<WirtschaftlichkeitSeite.Unterdialog, bool, string>(Nachlauf),
 
-                // AUFTRAG #325 (Anwenderentscheid 17.09.2026): Der Freitext der nicht
-                // monetären Wirkungen wird auf der SEITE gepflegt, nicht mehr im
-                // Parameterdialog. Der Schreibweg ist derselbe, den der Dialog nahm.
-                ["WirkungSpeichern"] = new Func<string, bool>(WirkungSpeichern),
+                // AUFTRAG #325 (Anwenderentscheid 17.09.2026): Die nicht monetären
+                // Wirkungen werden auf der SEITE gepflegt. ETAPPE E17 (V‑G11): als Liste
+                // je Wirkung (Tab_ProjektWirkung) statt als Freitext.
+                ["WirkungSpeichern"] = new Func<IReadOnlyList<ProjektWirkung>, bool>(WirkungSpeichern),
                 ["Speicherfehlerzeile"] = new Func<string>(Speicherfehlerzeile),
 
                 // KONZEPT § 2.9 und § 2.15: die waehlbare Referenz und die zwei
@@ -378,6 +378,12 @@ namespace WindowsFormsApplication1
                 ladefehler.Add(Fehlergrund.Text(ex));
             }
 
+            // ETAPPE E17 (V‑G11): die nicht monetarisierbaren Wirkungen des Stammprojekts -
+            // vor den Deklarationen, deren Risikozeile an ihnen haengt. Ein Lesefehler geht
+            // wie die uebrigen in die Statuszeile.
+            _wirkungen = _wirkungCtrl.Laden(_idStamm);
+            ladefehler.Add(_wirkungCtrl.Ladefehler);
+
             // KONZEPT § 2.15: In Sicht 2 rechnen die Differenzkennzahlen gegen A. Es ist
             // DERSELBE Rechenweg (WirtschaftlichkeitCtrl.Berechne) mit anderer Referenz -
             // nur ohne zu persistieren: Die Paarwahl ist ein Erkundungswerkzeug, der
@@ -464,6 +470,10 @@ namespace WindowsFormsApplication1
             // wie die zwei Zeilen darueber am PROJEKT und nicht an der Szenario-
             // oder Vergleichswahl.
             stand.NichtMonetaer = NichtMonetaer();
+
+            // ETAPPE E17 (V‑G11): die Liste der Wirkungen - eine KOPIE je Zeile, damit der
+            // Arbeitsstand der Seite den geladenen Stand nicht mitverändert.
+            stand.Wirkungen = _wirkungen.Select(w => w.Kopie()).ToList();
 
             return stand;
         }
@@ -621,10 +631,12 @@ namespace WindowsFormsApplication1
             try
             {
                 // ETAPPE E15 (V‑G7): mit dem Parametersatz, damit die Risikozeile ein
-                // gepflegtes Risiko nennt.
+                // gepflegtes Risiko nennt. ETAPPE E17 (V‑G11): „benannt" heißt: mindestens
+                // eine Wirkung der Liste trägt eine Beschreibung — das Altfeld zählt nicht mit.
                 WirtschaftlichkeitParameter p = null;
                 try { p = _ctrl.LadeParameter(_idStamm); } catch { p = null; }
-                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(NichtMonetaer(), p))
+                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(
+                             NichtMonetaereWirkungen.Kurztext(_wirkungen), p))
                     texte.Add(d.Text);
             }
             catch { }
@@ -671,21 +683,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// AUFTRAG #325: Schreibt den Freitext fort — <b>derselbe Weg, den der
-        /// Parameterdialog nahm</b>: den vollständigen Parametersatz frisch lesen, das
-        /// eine Feld setzen, <c>SpeichereParameter</c>. So bleibt alles Übrige
-        /// unverändert stehen, auch wenn es eine andere Maske zwischenzeitlich
-        /// geändert hat.
+        /// ETAPPE E17 (V‑G11): der Controller der nicht monetarisierbaren Wirkungen und die
+        /// zuletzt geladene Liste des Stammprojekts (Quelle der Deklaration „benannt").
         /// </summary>
-        private bool WirkungSpeichern(string text)
+        private readonly ProjektWirkungCtrl _wirkungCtrl = new ProjektWirkungCtrl();
+        private List<ProjektWirkung> _wirkungen = new List<ProjektWirkung>();
+
+        /// <summary>
+        /// ETAPPE E17 (V‑G11): Schreibt die Liste der nicht monetarisierbaren Wirkungen des
+        /// Stammprojekts (<see cref="ProjektWirkungCtrl.Speichern"/> ersetzt sie in einem
+        /// Vorgang). Das Freitextfeld (Altfeld) bleibt unberührt. Der Grund eines
+        /// Scheiterns — auch ein Prüfbefund wie „Jede Wirkung braucht eine Beschreibung" —
+        /// geht über <see cref="Speicherfehlerzeile"/> in die Statuszeile.
+        /// </summary>
+        private bool WirkungSpeichern(IReadOnlyList<ProjektWirkung> liste)
         {
             try
             {
-                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                if (p == null) return false;
-                p.NichtMonetaer = text ?? "";
-                if (!_ctrl.SpeichereParameter(p)) { _speicherfehler = _ctrl.Speicherfehler; return false; }
-                _parameterCache = p;
+                if (!_wirkungCtrl.Speichern(_idStamm, liste))
+                {
+                    _speicherfehler = _wirkungCtrl.Speicherfehler;
+                    return false;
+                }
+                _wirkungen = _wirkungCtrl.Laden(_idStamm);
                 return true;
             }
             catch (Exception ex) { _speicherfehler = Fehlergrund.Text(ex); return false; }

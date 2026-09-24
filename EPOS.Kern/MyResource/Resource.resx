@@ -6793,10 +6793,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“</value>
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
-    <value>als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen.</value>
+    <value>beschrieben; noch keine Wirkung nach Dauer und Wirkung beurteilt (8.2).</value>
   </data>
   <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
     <value>nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen.</value>
@@ -23288,7 +23288,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Stand B der Paarsicht. Die Liste führt A nicht — so sind A und B ohne Meldung verschieden.</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
-    <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+    <value>Die Beschreibung einer nicht monetarisierbaren Wirkung nach DIN EN 17463 — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Geschrieben wird auf Zuruf („Speichern“), nicht bei jedem Zeichen; im Bericht steht sie unverändert.</value>
   </data>
   <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
     <value>Zahlungsreihen: Stand</value>
@@ -30297,5 +30297,125 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
     <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert.</value>
+  </data>
+  <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
+    <value>Energiefluss</value>
+  </data>
+  <data name="WIRT_NM_KAT_FINANZIELL" xml:space="preserve">
+    <value>Finanziell</value>
+  </data>
+  <data name="WIRT_NM_KAT_SONSTIG" xml:space="preserve">
+    <value>Sonstig</value>
+  </data>
+  <data name="WIRT_NM_DAUER_1" xml:space="preserve">
+    <value>kurz</value>
+  </data>
+  <data name="WIRT_NM_DAUER_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_DAUER_3" xml:space="preserve">
+    <value>lang</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_0" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_1" xml:space="preserve">
+    <value>gering</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_3" xml:space="preserve">
+    <value>stark</value>
+  </data>
+  <data name="WIRT_NM_NICHT_BEURTEILT" xml:space="preserve">
+    <value>nicht beurteilt</value>
+  </data>
+  <data name="WIRT_NM_BEURTEILUNG_WERT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_KATEGORIE" xml:space="preserve">
+    <value>Unbekannte Kategorie einer nicht monetarisierbaren Wirkung: „{0}“.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_BESCHREIBUNG" xml:space="preserve">
+    <value>Jede nicht monetarisierbare Wirkung braucht eine Beschreibung.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_DAUER" xml:space="preserve">
+    <value>Die Dauer einer Wirkung liegt zwischen 1 (kurz) und 3 (lang).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_WIRKUNG" xml:space="preserve">
+    <value>Ein Wirkungsgrad liegt zwischen 0 (keine) und 3 (stark).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
+    <value>Die nicht monetarisierbaren Wirkungen brauchen ein Stammprojekt.</value>
+  </data>
+  <data name="WIRT_NM_SP_KATEGORIE" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="WIRT_NM_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WIRT_NM_SP_DAUER" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="WIRT_NM_SP_ORGANISATION" xml:space="preserve">
+    <value>Organisation</value>
+  </data>
+  <data name="WIRT_NM_SP_MITARBEITER" xml:space="preserve">
+    <value>Mitarbeiter</value>
+  </data>
+  <data name="WIRT_NM_SP_UMWELT" xml:space="preserve">
+    <value>Umwelt</value>
+  </data>
+  <data name="WIRT_NM_SP_BEURTEILUNG" xml:space="preserve">
+    <value>Beurteilung</value>
+  </data>
+  <data name="WIRT_NM_LEER" xml:space="preserve">
+    <value>Noch keine Wirkung erfasst.</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_NEU" xml:space="preserve">
+    <value>Wirkung hinzufügen</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Wirkung entfernen</value>
+  </data>
+  <data name="WIRT_NM_FELD" xml:space="preserve">
+    <value>{0}, Wirkung {1}</value>
+  </data>
+  <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
+    <value>Wirkung {0}: {1}</value>
+  </data>
+  <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
+    <value>DIN EN 17463 verlangt zu jeder Bewertung, was sich nicht in Euro fassen lässt (6.1, 8.2): je Wirkung die Kategorie, die Dauer (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark). Die Beurteilung ist Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen gehören zur Maßnahme als Ganzes, stehen im Bericht und fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_NM_ALTFELD" xml:space="preserve">
+    <value>Altfeld Freitext (nur lesbar, nicht mehr gepflegt): {0}</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_NAME" xml:space="preserve">
+    <value>Zahl der Wirkungen</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie viele nicht monetarisierbare Wirkungen die Liste trägt. Eine größere Zahl hängt leere Zeilen der Kategorie „sonstig“ an, eine kleinere nimmt Zeilen vom Ende; geschrieben wird erst mit „Speichern“, leere Zeilen werden nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL" xml:space="preserve">
+    <value>Die Kategorie der Wirkung nach DIN EN 17463, 6.1: Energiefluss, finanziell oder sonstig.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_DAUER_ERL" xml:space="preserve">
+    <value>Wie lange die Wirkung anhält: kurz, mittel oder lang; leer = nicht beurteilt.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_GRAD_ERL" xml:space="preserve">
+    <value>Wie stark die Wirkung auf diesen Bereich ist: keine, gering, mittel oder stark; leer = nicht beurteilt.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL" xml:space="preserve">
+    <value>Die Beurteilung nach DIN EN 17463, 8.2: Dauer × stärkste der drei Wirkungen (0 bis 9); nur Anzeige, sie wird nicht gespeichert und fließt nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="WIRT_NM_TABELLE_HINWEIS" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
+    <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
   </data>
 </root>

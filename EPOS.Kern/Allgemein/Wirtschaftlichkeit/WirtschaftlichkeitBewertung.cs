@@ -288,6 +288,16 @@ namespace WindowsFormsApplication1
         /// <summary>V‑A — die Deklarationszeilen (<see cref="ValeriAusweis.Deklarationen"/>).</summary>
         public IReadOnlyList<ValeriDeklaration> Deklarationen = new List<ValeriDeklaration>();
 
+        /// <summary>
+        /// ETAPPE E17 (V‑G11, DIN EN 17463 6.1 und 8.2) — die <b>nicht monetarisierbaren
+        /// Wirkungen</b> des Stammprojekts (<see cref="ProjektWirkungCtrl.Laden"/>). Wort- und
+        /// Tabellenbericht zeigen sie als Tabelle, die Anhang-E-Checkliste liest daraus
+        /// „erfasst" und „beurteilt", die Deklaration „benannt". <c>null</c> = nicht gelesen
+        /// (Bewertung ohne Berichtslauf) — dann gilt der Freitext wie bis E17.
+        /// <b>Keine Rechenwirkung.</b>
+        /// </summary>
+        public List<ProjektWirkung> Wirkungen;
+
         /// <summary>U39 — Zeitraumzeile und „k von n Positionen ohne Nutzungsdauer".</summary>
         public NutzungsdauerHinweise Nutzungsdauer = new NutzungsdauerHinweise();
 
@@ -392,8 +402,12 @@ namespace WindowsFormsApplication1
             try { b.Abdeckung = SzenarioAbdeckung.Lesen(p, staende); }
             catch { b.Abdeckung = new SzenarioAbdeckung(); }
             b.Szenarioabdeckung = b.Abdeckung.Satz(kultur);
+            // ETAPPE E17 (V‑G11): die Wirkungsliste des Stammprojekts - ein Lesefehler kostet
+            // die Tabelle, nie den Bericht (leere Liste). „benannt" folgt der Liste.
+            try { b.Wirkungen = new ProjektWirkungCtrl().Laden(daten.IdStamm); }
+            catch { b.Wirkungen = new List<ProjektWirkung>(); }
             // ETAPPE E15 (V‑G7): die Risikozeile nennt ein gepflegtes Risiko.
-            b.Deklarationen = ValeriAusweis.Deklarationen(p != null ? p.NichtMonetaer : null, p);
+            b.Deklarationen = ValeriAusweis.Deklarationen(NichtMonetaereWirkungen.Kurztext(b.Wirkungen), p);
             b.OhneNachweis = StaendeOhneNachweis(staende, alle);
             b.Sensitivitaet = Sensitivitaetszeilen(staende, sensitivitaet, b.Bandbreite.IdReferenz);
             try
