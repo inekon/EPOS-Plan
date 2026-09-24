@@ -29586,4 +29586,100 @@ Do you want to allow this?</value>
   <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
     <value>Hot water usage types</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>The file “{0}” cannot be read ({1}) — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>This database does not hold the catalogue of usage types (older schema) — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The database did not accept the import ({0}) — nothing changed.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG" xml:space="preserve">
+    <value>The delivered catalogue holds this catalogue version; it is immutable and stays as it is.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_VORHANDEN" xml:space="preserve">
+    <value>The catalogue already holds it with the same content.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
+    <value>The catalogue already holds its content as “{0}”.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
+    <value>It differs from the entry of the same name and is stored as “{0}”; the entry of the same name remains unchanged.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ZAHL" xml:space="preserve">
+    <value>{0}, line {1}, column {2}: “{3}” is not a number (decimal point) — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GANZZAHL" xml:space="preserve">
+    <value>{0}, line {1}, column {2}: “{3}” is not a whole number — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UEBERGANGEN" xml:space="preserve">
+    <value>The file “{0}” does not belong to the catalogue of usage types and has been skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE" xml:space="preserve">
+    <value>This database does not hold the draw-off categories (older schema); the categories of the package have been skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT" xml:space="preserve">
+    <value>The file “{0}” appears twice in the package — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KEINE_DATEI" xml:space="preserve">
+    <value>The package contains no file {0} — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: the ID {2} appears twice in the package — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET" xml:space="preserve">
+    <value>The package holds this usage type twice with the same catalogue version; only the first one is taken.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_UEBERGANGEN" xml:space="preserve">
+    <value>{0} draw-off categor(y/ies) refer to no usage type of the package and have been skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_UNBEKANNT" xml:space="preserve">
+    <value>{0}: the column “{1}” does not exist in {2} — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_DOPPELT" xml:space="preserve">
+    <value>{0}: the column “{1}” appears twice in the header — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FELDZAHL" xml:space="preserve">
+    <value>{0}, line {1}: {2} fields, the header names {3} — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_FEHLT" xml:space="preserve">
+    <value>{0}: the column “{1}” is missing — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_FEHLT" xml:space="preserve">
+    <value>{0}, line {1}: the column {2} is empty; the package links its rows through it — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_PFLICHT" xml:space="preserve">
+    <value>The daily-profile set “{0}” lacks the value {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} = “{1}” is outside the permitted values.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: day type {2} of the daily-profile set {3} appears twice in the package — nothing imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_ANGABE" xml:space="preserve">
+    <value>Daily-profile set “{0}”: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGANG" xml:space="preserve">
+    <value>The daily profile of day type {1} in the daily-profile set “{0}” is incomplete, holds a negative value or does not sum to 1.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGAENGE_UEBERGANGEN" xml:space="preserve">
+    <value>{0} daily profile(s) refer to no daily-profile set of the package and have been skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>The daily-profile set “{0}” does not hold all four day types.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIE_ANGABE" xml:space="preserve">
+    <value>Draw-off category “{0}”: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT" xml:space="preserve">
+    <value>The value {0} is missing.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_FEHLT" xml:space="preserve">
+    <value>The daily-profile set with the ID {0} is not in the package.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_RASTER" xml:space="preserve">
+    <value>The factors violate the catalogue rules: no negative values, weekly factors summing to 1, monthly factors averaging 1.</value>
+  </data>
 </root>

@@ -86499,6 +86499,294 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslieferung führt diese Katalogversion; sie ist unveränderlich und bleibt, wie sie ist. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ steht zweimal im Paket — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ gehört nicht zum Katalog der Nutzungsarten und ist übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DATEI_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ lässt sich nicht lesen ({1}) — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt diese Nutzungsart mit derselben Katalogversion zweimal; übernommen ist nur die erste. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank hat den Import nicht angenommen ({0}) — nichts geändert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Felder, die Kopfzeile nennt {3} — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_FELDZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_FELDZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}, Spalte {2}: „{3}“ ist keine ganze Zahl — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_GANZZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_GANZZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt ihren Inhalt schon als „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt sie schon mit gleichem Inhalt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_GLEICH_VORHANDEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_GLEICH_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Die ID {2} steht zweimal im Paket — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_ID_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ID_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Die Spalte {2} ist leer; über sie verknüpft das Paket seine Zeilen — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_ID_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ID_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt die Zapfkategorien nicht (älterer Schemastand); die Kategorien des Pakets sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zapfkategorie(n) verweisen auf keine Nutzungsart des Pakets und sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfkategorie „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_KATEGORIE_ANGABE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_KATEGORIE_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket enthält keine Datei {0} — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie weicht vom Eintrag gleichen Namens ab und steht als „{0}“ im Katalog; der Eintrag gleichen Namens bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Angabe {0} fehlt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Faktoren verletzen die Regeln des Katalogs: keine negativen Werte, Wochenfaktoren mit der Summe 1, Monatsfaktoren im Mittel 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_RASTER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgangsatz „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SATZ_ANGABE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SATZ_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz mit der ID {0} steht nicht im Paket. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Tagesgangsatz „{0}“ fehlt die Angabe {1}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SATZ_PFLICHT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SATZ_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz „{0}“ führt nicht alle vier Tagtypen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SATZ_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SATZ_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Spalte „{1}“ steht zweimal in der Kopfzeile — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SPALTE_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SPALTE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Spalte „{1}“ fehlt — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SPALTE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SPALTE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Spalte „{1}“ gibt es in {2} nicht — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_SPALTE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_SPALTE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand) — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_TABELLEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TABELLEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tagesgang/Tagesgänge verweisen auf keinen Tagesgangsatz des Pakets und sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_TAGESGAENGE_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TAGESGAENGE_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang des Tagtyps {1} im Tagesgangsatz „{0}“ ist unvollständig, trägt einen negativen Wert oder summiert nicht zu 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Tagtyp {2} des Tagesgangsatzes {3} steht zweimal im Paket — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} = „{1}“ liegt außerhalb der Wertemenge. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}, Spalte {2}: „{3}“ ist keine Zahl (Dezimalpunkt) — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_ZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ braucht einen Anteil, endlich und nicht negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATEGORIE_ANTEIL {

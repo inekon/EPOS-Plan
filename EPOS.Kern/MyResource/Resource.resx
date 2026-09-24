@@ -29593,4 +29593,100 @@ Möchten Sie das zulassen?</value>
   <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
     <value>Brauchwasser-Nutzungsarten</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>Die Datei „{0}“ lässt sich nicht lesen ({1}) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Datenbank hat den Import nicht angenommen ({0}) — nichts geändert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Die Auslieferung führt diese Katalogversion; sie ist unveränderlich und bleibt, wie sie ist.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_VORHANDEN" xml:space="preserve">
+    <value>Der Katalog führt sie schon mit gleichem Inhalt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
+    <value>Der Katalog führt ihren Inhalt schon als „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
+    <value>Sie weicht vom Eintrag gleichen Namens ab und steht als „{0}“ im Katalog; der Eintrag gleichen Namens bleibt unverändert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}, Spalte {2}: „{3}“ ist keine Zahl (Dezimalpunkt) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GANZZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}, Spalte {2}: „{3}“ ist keine ganze Zahl — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UEBERGANGEN" xml:space="preserve">
+    <value>Die Datei „{0}“ gehört nicht zum Katalog der Nutzungsarten und ist übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE" xml:space="preserve">
+    <value>Diese Datenbank führt die Zapfkategorien nicht (älterer Schemastand); die Kategorien des Pakets sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT" xml:space="preserve">
+    <value>Die Datei „{0}“ steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KEINE_DATEI" xml:space="preserve">
+    <value>Das Paket enthält keine Datei {0} — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die ID {2} steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET" xml:space="preserve">
+    <value>Das Paket führt diese Nutzungsart mit derselben Katalogversion zweimal; übernommen ist nur die erste.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Zapfkategorie(n) verweisen auf keine Nutzungsart des Pakets und sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_UNBEKANNT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ gibt es in {2} nicht — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_DOPPELT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ steht zweimal in der Kopfzeile — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FELDZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} Felder, die Kopfzeile nennt {3} — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_FEHLT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ fehlt — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_FEHLT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die Spalte {2} ist leer; über sie verknüpft das Paket seine Zeilen — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_PFLICHT" xml:space="preserve">
+    <value>Dem Tagesgangsatz „{0}“ fehlt die Angabe {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} = „{1}“ liegt außerhalb der Wertemenge.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Tagtyp {2} des Tagesgangsatzes {3} steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_ANGABE" xml:space="preserve">
+    <value>Tagesgangsatz „{0}“: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGANG" xml:space="preserve">
+    <value>Der Tagesgang des Tagtyps {1} im Tagesgangsatz „{0}“ ist unvollständig, trägt einen negativen Wert oder summiert nicht zu 1.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGAENGE_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Tagesgang/Tagesgänge verweisen auf keinen Tagesgangsatz des Pakets und sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Der Tagesgangsatz „{0}“ führt nicht alle vier Tagtypen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIE_ANGABE" xml:space="preserve">
+    <value>Zapfkategorie „{0}“: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT" xml:space="preserve">
+    <value>Die Angabe {0} fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Tagesgangsatz mit der ID {0} steht nicht im Paket.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_RASTER" xml:space="preserve">
+    <value>Die Faktoren verletzen die Regeln des Katalogs: keine negativen Werte, Wochenfaktoren mit der Summe 1, Monatsfaktoren im Mittel 1.</value>
+  </data>
 </root>

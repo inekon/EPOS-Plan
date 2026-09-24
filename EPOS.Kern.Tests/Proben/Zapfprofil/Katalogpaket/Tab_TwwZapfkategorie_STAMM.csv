@@ -1,0 +1,4 @@
+ID_Nutzungsart;Kategorie;Reihenfolge;Volumenstrom_l_min;Dauer_min;Anteil;Sigma;Kappung_l_min;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+;Kurz (erfunden);1;2;1;0.5;1;;Probepaket (erfunden);;PROBE-1;FREI;AUSLIEFERUNG;1
+;Lang (erfunden);2;8;10;0.5;2;;Probepaket (erfunden);;PROBE-1;FREI;AUSLIEFERUNG;1
+11;Eigen (erfunden);1;5;5;1;1;20;Probepaket (erfunden);;PROBE-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
