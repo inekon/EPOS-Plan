@@ -168,5 +168,100 @@
 
         /// <summary>Sichtfaktor einer waagerechten Fläche zum Himmel φ = (1 + cos 0°)/2 [–].</summary>
         internal const double SICHTFAKTOR_DACH = 1.0;
+
+        // ---- Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.1, 3.4, 4.4, 8.1, 9.1) ----
+        //
+        // Alle Zahlen dieses Blocks sind VORGABEN VON EPOS-PLAN, keine Normwerte, und jede ist
+        // am Gebäude einstellbar; NULL in der Spalte heißt „diese Vorgabe" (8.1, 8.4).
+
+        /// <summary>Exponent der Übergabeart Radiator [–] — EPOS-Vorgabe (3.1).</summary>
+        internal const double UEBERGABE_EXPONENT_RADIATOR = 1.3;
+
+        /// <summary>Exponent der Übergabeart Flächenheizung [–] — EPOS-Vorgabe (3.1).</summary>
+        internal const double UEBERGABE_EXPONENT_FLAECHE = 1.1;
+
+        /// <summary>Exponent der Übergabeart Konvektor [–] — EPOS-Vorgabe (3.1).</summary>
+        internal const double UEBERGABE_EXPONENT_KONVEKTOR = 1.4;
+
+        /// <summary>Auslegungsvorlauf von Radiator und Konvektor [°C] — EPOS-Vorgabe (3.1).</summary>
+        internal const double AUSLEGUNG_VORLAUF_RADIATOR = 55.0;
+
+        /// <summary>Auslegungsrücklauf von Radiator und Konvektor [°C] — EPOS-Vorgabe (3.1).</summary>
+        internal const double AUSLEGUNG_RUECKLAUF_RADIATOR = 45.0;
+
+        /// <summary>Auslegungsvorlauf der Flächenheizung [°C] — EPOS-Vorgabe (3.1).</summary>
+        internal const double AUSLEGUNG_VORLAUF_FLAECHE = 35.0;
+
+        /// <summary>Auslegungsrücklauf der Flächenheizung [°C] — EPOS-Vorgabe (3.1).</summary>
+        internal const double AUSLEGUNG_RUECKLAUF_FLAECHE = 28.0;
+
+        /// <summary>Strahlungsanteil der Übergabeart Radiator [–] — EPOS-Vorgabe (3.1, H12).</summary>
+        internal const double STRAHLUNGSANTEIL_RADIATOR = 0.3;
+
+        /// <summary>Strahlungsanteil der Übergabeart Flächenheizung [–] — EPOS-Vorgabe (3.1, H12).</summary>
+        internal const double STRAHLUNGSANTEIL_FLAECHE = 0.5;
+
+        /// <summary>Strahlungsanteil der Übergabeart Konvektor [–] — EPOS-Vorgabe (3.1, H12).</summary>
+        internal const double STRAHLUNGSANTEIL_KONVEKTOR = 0.1;
+
+        /// <summary>Proportionalband des Raumreglers bei NULL [K] — EPOS-Vorgabe (4.4, H1, E25).</summary>
+        internal const double VORGABE_REGLER_PROPORTIONALBAND_K = 1.0;
+
+        /// <summary>Niveau der Heizkurve bei NULL [K] (3.4).</summary>
+        internal const double VORGABE_HEIZKURVE_NIVEAU_K = 0.0;
+
+        /// <summary>Steilheit der Heizkurve bei NULL [–] — die Kurve durch den Auslegungspunkt (3.4).</summary>
+        internal const double VORGABE_HEIZKURVE_STEILHEIT = 1.0;
+
+        // Prüfregeln der Eingaben (Dialogtabelle 9.1) — der Kern prüft dieselben Grenzen hart,
+        // damit eine Eingabe, die am Dialog vorbei in die Datenbank kommt, benannt abbricht.
+
+        /// <summary>Kleinster zulässiger Exponent der Übergabe [–] (9.1).</summary>
+        internal const double UEBERGABE_EXPONENT_MIN = 1.0;
+
+        /// <summary>Größter zulässiger Exponent der Übergabe [–] (9.1).</summary>
+        internal const double UEBERGABE_EXPONENT_MAX = 1.6;
+
+        /// <summary>Kleinster zulässiger Auslegungsvorlauf [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_VORLAUF_MIN = 25.0;
+
+        /// <summary>Größter zulässiger Auslegungsvorlauf [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_VORLAUF_MAX = 90.0;
+
+        /// <summary>Kleinste zulässige Auslegungs-Raumtemperatur [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_RAUM_MIN = 15.0;
+
+        /// <summary>Größte zulässige Auslegungs-Raumtemperatur [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_RAUM_MAX = 26.0;
+
+        /// <summary>Kleinste zulässige eingegebene Auslegungs-Außentemperatur [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_AUSSEN_MIN = -30.0;
+
+        /// <summary>Größte zulässige eingegebene Auslegungs-Außentemperatur [°C] (9.1).</summary>
+        internal const double AUSLEGUNG_AUSSEN_MAX = 5.0;
+
+        /// <summary>Kleinstes zulässiges Niveau der Heizkurve [K] (9.1).</summary>
+        internal const double HEIZKURVE_NIVEAU_MIN = -10.0;
+
+        /// <summary>Größtes zulässiges Niveau der Heizkurve [K] (9.1).</summary>
+        internal const double HEIZKURVE_NIVEAU_MAX = 10.0;
+
+        /// <summary>Kleinste zulässige Steilheit der Heizkurve [–] (9.1).</summary>
+        internal const double HEIZKURVE_STEILHEIT_MIN = 0.2;
+
+        /// <summary>Größte zulässige Steilheit der Heizkurve [–] (9.1).</summary>
+        internal const double HEIZKURVE_STEILHEIT_MAX = 3.0;
+
+        /// <summary>Kleinstes zulässiges Proportionalband [K]; 0 = ideale Regelung mit Grenze (E25).</summary>
+        internal const double REGLER_PROPORTIONALBAND_MIN_K = 0.0;
+
+        /// <summary>Größtes zulässiges Proportionalband [K] (E25).</summary>
+        internal const double REGLER_PROPORTIONALBAND_MAX_K = 5.0;
+
+        /// <summary>Kleinster zulässiger Wert des Sollwert-Zeitprogramms [°C] — Plausibilitätsgrenze des Verwenders (4.3).</summary>
+        internal const double SOLLWERTPROFIL_MIN_C = 0.0;
+
+        /// <summary>Größter zulässiger Wert des Sollwert-Zeitprogramms [°C] — Plausibilitätsgrenze des Verwenders (4.3).</summary>
+        internal const double SOLLWERTPROFIL_MAX_C = 30.0;
     }
 }

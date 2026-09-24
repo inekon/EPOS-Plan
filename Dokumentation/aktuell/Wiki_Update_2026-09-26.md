@@ -30,6 +30,7 @@ Vorbehalt der Freigabe des Anwenders.
 | Programm Dokumentation/Simulation | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` | neuer Punkt „Kühlbetrieb der Wärmepumpe" in der Simulationskonfiguration (Anker `kuehlbetrieb`); mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Status der Gebäudesimulation, Stufe KU2; E12 |
 | Programm Dokumentation/Photovoltaik | `Projekte/Wiki/Programm Dokumentation - Photovoltaik.wiki` | mit E12 eine Tabuwort-Bereinigung der Ampel-Meldungen (drei Stellen „Befund" → „Diagnose"/„Meldung"; keine inhaltliche Änderung) | E12 |
 | Programm Dokumentation/Varianten | `Projekte/Wiki/Programm Dokumentation - Varianten.wiki` | mit E12 der Kohärenzhinweis „übernehmen ohne Stammprojekt" am Abschnitt PV-Vergütung der Variante (Anker `pv-verguetung`) | E12 |
+| Programm Dokumentation/Gebäude | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` | **Repo-Quelle neu angelegt** aus dem Live-Stand (`action=raw`, 3 654 Zeichen, zwölf Anker) und dem Ist-Zustand der Oberfläche: Projektdialog mit Übernahme ins Projekt (Kopie mit Katalogverweis, Neuschreiben der Liste mit „OK"), Katalogeditor mit seinen zwei Reitern, die Verwaltung Gebäude mit Liste, Auswahlleiste (Vergleichen, Duplizieren…, Schloss, Löschen mit Nutzungssperre), Stammblatt (Kenndaten, Hülle, Fenster, Kenngrößen, „Alle Daten"), Speichern/Verwerfen, Neu…, Schloss der Auslieferungssätze, Fußleiste, Hilfe-Assistent und Grenzen (kein Wärmebedarf ohne Projekt); die zwölf Live-Anker bleiben, 25 kommen dazu (u. a. `verwaltung`, `stammblatt`, `katalogeditor`, `gebaeudetypen`, `loeschen`, `schloss`, `assistent`, `grenzen`); `help_mapping.txt` zeigt mit `Form_Gebaeude1`/`Form_Gebaeude2` auf `katalogeditor` und mit `Form_EingGebTyp` auf `gebaeudetypen` | Statuszeilen #465, #468, #473; #476 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
@@ -236,6 +237,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Kältestrom samt Kosten und Emissionen stehen in Ergebnis und Bericht. (Kühlung KU2)
 - Seit 26.09.2026: Der Wärmepumpen-Import übernimmt keine Kühlkennlinien in Heizlage oder mit
   vertauschten Achsen und nennt sie im Leseprotokoll. (Kühlung KU2)
+- Seit 26.09.2026: Die Gebäudeverwaltung bearbeitet Hülle, Wohnfläche und alle übrigen
+  Gebäudedaten direkt im Stammblatt. (#465; Satz aus der Statuszeile, mit #476 hierher übernommen)
 
 Keinen eigenen Satz bekommt E35 (Grund- und Leistungspreis eines eigenen Zählers des Kältestroms):
 Die Kühlung erscheint mit dieser Version zum ersten Mal, und der Satz zu KU2 nennt die Kosten des
@@ -389,7 +392,8 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
 - Bedarfsergebnis, Quellprofil, Bedarfstyp, Gebäudetyp, Wärmebedarf extern, Stromganglinie,
   Gebäude — die „sieben Dialoge“ aus Statuszeile #411, deren Bedienung unbeschrieben ist
   (Wiki-Runde nötig: eigene Seiten oder Verweis auf „Die Diagramme bedienen“ der Seite
-  Simulationsergebnisse);
+  Simulationsergebnisse); die Seite „Gebäude“ hat mit #476 eine Repo-Quelle (Abschnitt 1) —
+  offen bleibt dort nur die Diagrammbedienung des Wärmebedarfs eines Gebäudes;
 - Gerätekataloge — ob eine eigene Seite „Programm Dokumentation/Gerätekataloge“ entsteht, ist
   laut Statuszeile #383 ein offener Anwenderentscheid.
 

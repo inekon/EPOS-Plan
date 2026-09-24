@@ -58,6 +58,15 @@ namespace WindowsFormsApplication1
                 e.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
                 e.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
                 e.ObereRaumtemperaturC = vdi.ThetaMax;
+
+                // Anlagenkopplung (AK1): die Kennzahlen des Heizkreises je Gebäude.
+                HeizkreisErgebnis hk = vdi.Heizkreis;
+                if (hk != null)
+                {
+                    e.VorlaufMittelC = double.IsNaN(hk.VorlaufMittelC) ? (double?)null : hk.VorlaufMittelC;
+                    e.RuecklaufMittelC = double.IsNaN(hk.RuecklaufMittelC) ? (double?)null : hk.RuecklaufMittelC;
+                    e.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
+                }
             }
             return e;
         }
