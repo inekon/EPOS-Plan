@@ -69991,7 +69991,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“ ähnelt.
         /// </summary>
         public static string WIRT_AE_2B_STELLE {
             get {
@@ -70405,6 +70405,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_NM_ERFUELLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_NM_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen. ähnelt.
         /// </summary>
         public static string WIRT_AE_NM_OFFEN {
@@ -70414,7 +70423,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die beschrieben; noch keine Wirkung nach Dauer und Wirkung beurteilt (8.2). ähnelt.
         /// </summary>
         public static string WIRT_AE_NM_TEILWEISE {
             get {
@@ -73632,6 +73641,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_NM_SP_UMWELT {
             get {
                 return ResourceManager.GetString("WIRT_NM_SP_UMWELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_TABELLE_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_NM_TABELLE_HINWEIS", resourceCulture);
             }
         }
         

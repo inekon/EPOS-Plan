@@ -6778,10 +6778,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“</value>
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
-    <value>als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen.</value>
+    <value>beschrieben; noch keine Wirkung nach Dauer und Wirkung beurteilt (8.2).</value>
   </data>
   <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
     <value>nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen.</value>
@@ -30234,5 +30234,11 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
     <value>Entfernen</value>
+  </data>
+  <data name="WIRT_NM_TABELLE_HINWEIS" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
+    <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
   </data>
 </root>

@@ -84,7 +84,10 @@
         return new ChecklistenLage
         {
             Gerechnet = s.Ansicht.Kennzahltafel.Zeilen.Count > 0,
-            NichtMonetaerErfasst = !string.IsNullOrWhiteSpace(s.NichtMonetaer),
+            // ETAPPE E17 (V‑G11): erfasst und beurteilt folgen der Wirkungsliste — dieselben
+            // Kernfunktionen wie im Bericht; das Altfeld zählt nicht.
+            NichtMonetaerErfasst = NichtMonetaereWirkungen.Benannt(s.Wirkungen),
+            NichtMonetaerBeurteilt = NichtMonetaereWirkungen.Beurteilt(s.Wirkungen),
             ZeitraumBegruendet = !string.IsNullOrEmpty(s.Zeitraumzeile),
             PositionenOhneNutzungsdauer = s.Nutzungsdauerhinweise.Count > 0,
             SensitivitaetGerechnet = s.Ansicht.Sensitivitaet.Zeilen.Count > 0,

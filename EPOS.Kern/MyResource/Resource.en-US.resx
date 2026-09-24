@@ -6762,10 +6762,10 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Effects without a quantity are described and their significance is assessed.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Word report: “Economic evaluation” › “Non-monetary effects” · Workbook: sheet “Economic evaluation”, line “Non-monetary effects”</value>
+    <value>Word report: “Economic evaluation” › “Non-monetary effects” (table) · Workbook: sheet “Economic evaluation”, table “Non-monetary effects”</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
-    <value>described as text; classification by type and assessment by duration and effect are missing.</value>
+    <value>described; no effect assessed by duration and effect yet (8.2).</value>
   </data>
   <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
     <value>not recorded — enter them in the evaluation block of the results page.</value>
@@ -30227,5 +30227,11 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
     <value>Remove</value>
+  </data>
+  <data name="WIRT_NM_TABELLE_HINWEIS" xml:space="preserve">
+    <value>Non-monetisable effects according to DIN EN 17463 (6.1, 8.2): category, duration (short, medium, long) and effect on the organisation, employees and environment (none to strong); assessment = duration × strongest effect (0 to 9). The effects do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
+    <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
   </data>
 </root>
