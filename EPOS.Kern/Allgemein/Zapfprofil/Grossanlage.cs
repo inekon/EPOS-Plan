@@ -4,10 +4,15 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Der Befund der Großanlagenerkennung (4.7): groß ja/nein, durch Speichervolumen und/oder
-    /// Leitungsinhalt, die geprüften Größen [l] (<c>null</c> = unbekannt) und ein Satz.
+    /// Leitungsinhalt, die geprüften Größen [l] (<c>null</c> = unbekannt) und der Satz als Kennung
+    /// und Werte (N11 (k)).
     /// </summary>
     internal sealed record Grossanlagenbefund(bool Gross, bool DurchSpeicher, bool DurchLeitung, double? VolumenL,
-                                              double? LeitungsinhaltL, string Satz);
+                                              double? LeitungsinhaltL, ZapfSatz Satz)
+    {
+        /// <summary>Der deutsche Wortlaut des Satzes.</summary>
+        public string Text => Satz?.Klartext ?? "";
+    }
 
     /// <summary>
     /// <b>Die Großanlagenerkennung nach DVGW W 551</b> (Umsetzungskonzept Zapfprofilgenerator
@@ -39,9 +44,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double? Leitungsinhalt(ProjektStand p, Parametersatz ps)
         {
-            if (p?.LeitungsinhaltL != null) return Auslegungspruefung.NichtNegativ(p.LeitungsinhaltL.Value, "der Leitungsinhalt");
+            if (p?.LeitungsinhaltL != null)
+                return Auslegungspruefung.NichtNegativ(p.LeitungsinhaltL.Value, ZapfSatz.Neu("BEGRIFF_LEITUNGSINHALT"));
             if (p?.ZirkLaengeM != null)
-                return Auslegungspruefung.NichtNegativ(p.ZirkLaengeM.Value, "die Länge der Zirkulationsleitung")
+                return Auslegungspruefung.NichtNegativ(p.ZirkLaengeM.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_LEITUNGSLAENGE"))
                        * ps.Wert(ZapfAuslegungParameter.W551_INHALT_JE_METER);
             return null;
         }
@@ -54,19 +60,17 @@ namespace WindowsFormsApplication1
             bool durchV = speichervolumenL.HasValue && speichervolumenL.Value > schwelleV;
             bool durchL = leitungsinhaltL.HasValue && leitungsinhaltL.Value > schwelleL;
             bool gross = durchV || durchL;
-            string satz;
-            if (gross)
-                satz = "Großanlage nach DVGW W 551"
-                       + (durchV ? ": Speichervolumen " + Auslegungstext.G(speichervolumenL.Value) + " l über "
-                                   + Auslegungstext.G(schwelleV) + " l" : "")
-                       + (durchV && durchL ? "," : durchL ? ":" : "")
-                       + (durchL ? " Leitungsinhalt " + Auslegungstext.Z(leitungsinhaltL.Value) + " l über "
-                                   + Auslegungstext.Z(schwelleL) + " l" : "")
-                       + " — Austrittstemperatur, Zirkulation und thermische Desinfektion nach DVGW W 551 einhalten.";
+            ZapfSatz satz;
+            if (durchV && durchL)
+                satz = ZapfSatz.Neu("AUSTEXT_GROSS_BEIDE", speichervolumenL.Value, schwelleV, leitungsinhaltL.Value, schwelleL);
+            else if (durchV)
+                satz = ZapfSatz.Neu("AUSTEXT_GROSS_SPEICHER", speichervolumenL.Value, schwelleV);
+            else if (durchL)
+                satz = ZapfSatz.Neu("AUSTEXT_GROSS_LEITUNG", leitungsinhaltL.Value, schwelleL);
             else if (!speichervolumenL.HasValue && !leitungsinhaltL.HasValue)
-                satz = "Großanlage nicht prüfbar — weder Speichervolumen noch Leitungsinhalt bekannt.";
+                satz = ZapfSatz.Neu("AUSTEXT_GROSS_NICHT_PRUEFBAR");
             else
-                satz = "Kleinanlage nach DVGW W 551.";
+                satz = ZapfSatz.Neu("AUSTEXT_KLEINANLAGE");
             return new Grossanlagenbefund(gross, durchV, durchL, speichervolumenL, leitungsinhaltL, satz);
         }
 
@@ -81,8 +85,7 @@ namespace WindowsFormsApplication1
             if (b == null || !b.Gross) return h.AsReadOnly();
             h.Add(new Auslegungshinweis(HINWEIS_GROSSANLAGE, b.Satz, true));
             if (!zirkulationJa)
-                h.Add(new Auslegungshinweis(HINWEIS_OHNE_ZIRKULATION,
-                    "Die Anlage ist eine Großanlage, aber keine Zone nimmt an der Zirkulation teil.", true));
+                h.Add(new Auslegungshinweis(HINWEIS_OHNE_ZIRKULATION, ZapfSatz.Neu("AUSHINWEIS_GROSS_OHNE_ZIRKULATION"), true));
             return h.AsReadOnly();
         }
     }

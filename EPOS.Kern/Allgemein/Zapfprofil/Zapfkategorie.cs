@@ -85,7 +85,10 @@ namespace WindowsFormsApplication1
         /// <see cref="ZapfEingabefehler.StochastikUngueltig"/>); die Werte sind Bezeichner und
         /// Katalogversion der Nutzungsart, getrennt (Platzhalter {0} und {1} des Textes).
         /// </summary>
-        internal const string KENNUNG_KATEGORIEN_FEHLEN = "STOCHASTIK_KATEGORIEN_FEHLEN";
+        internal const string KENNUNG_KATEGORIEN_FEHLEN = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN";
+
+        /// <summary>Kennung derselben Ablehnung, wenn die Nutzungsart nur ihre Id nennt (ohne Bezeichner).</summary>
+        internal const string KENNUNG_KATEGORIEN_FEHLEN_ID = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID";
 
         private readonly Zapfkategoriewert[] _werte;
 
@@ -132,39 +135,30 @@ namespace WindowsFormsApplication1
                 foreach (Zapfkategorie k in katalog)
                     if (k != null && k.IdNutzungsart == idNutzungsart) eigene.Add(k);
             if (eigene.Count == 0)
-            {
-                // Der Klartext des Kerns (Protokoll) ist deutsch; die Oberfläche baut den Satz aus
-                // Kennung und den getrennten Werten in ihrer Sprache.
-                string art = name == null
-                    ? idNutzungsart.ToString(CultureInfo.InvariantCulture)
-                    : "„" + name + "“" + (string.IsNullOrEmpty(version) ? "" : " (Katalogversion " + version + ")");
+                // Kennung und die getrennten Werte (Bezeichner, Katalogversion, Zone): Den Satz baut die
+                // Oberfläche in ihrer Sprache, der deutsche Wortlaut geht ins Protokoll.
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                    "Nicht rechenbar — für die Nutzungsart " + art + " der Zone „" + zone
-                    + "“ stehen keine Zapfkategorien im Katalog.")
-                {
-                    Kennung = name == null ? null : KENNUNG_KATEGORIEN_FEHLEN,
-                    Argumente = name == null ? null : new[] { name, version ?? "" }
-                };
-            }
+                    name == null ? ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN_ID, idNutzungsart, zone)
+                                 : ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN, name, version ?? "", zone));
 
             double summe = 0.0;
             foreach (Zapfkategorie k in eigene)
             {
-                string was = "Die Zapfkategorie „" + (k.Name ?? "") + "“ der Zone „" + zone + "“";
+                string kategorie = k.Name ?? "";
                 if (!Endlich(k.VolumenstromLJeMin) || k.VolumenstromLJeMin < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keinen gültigen Volumenstrom.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_VOLUMENSTROM", kategorie, zone));
                 if (!Endlich(k.StreuungLJeMin) || k.StreuungLJeMin < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine gültige Streuung.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_STREUUNG", kategorie, zone));
                 if (k.DauerMin < 1 || k.DauerMin > Bedarfstag.MINUTEN)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine Dauer von 1 bis 1440 Minuten.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_DAUER", kategorie, zone));
                 if (!Endlich(k.Anteil) || k.Anteil < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keinen gültigen Anteil.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_ANTEIL", kategorie, zone));
                 if (k.KappungLJeMin.HasValue && (!Endlich(k.KappungLJeMin.Value) || !(k.KappungLJeMin.Value > 0)))
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine positive Kappung.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_KAPPUNG", kategorie, zone));
                 summe += k.Anteil;
             }
             if (!(summe > 0))
-                throw Fehler(zone, "Nicht rechenbar — die Anteile der Zapfkategorien der Zone „" + zone + "“ summieren zu 0.");
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIEN_ANTEIL_NULL", zone));
 
             var werte = new Zapfkategoriewert[eigene.Count];
             for (int i = 0; i < werte.Length; i++)
@@ -172,8 +166,7 @@ namespace WindowsFormsApplication1
                 Zapfkategorie k = eigene[i];
                 double mittel = Zapfverteilung.GestutztesMittel(k.VolumenstromLJeMin, k.StreuungLJeMin, k.KappungLJeMin);
                 if (!(mittel > 0) && k.Anteil > 0)
-                    throw Fehler(zone, "Nicht rechenbar — die Zapfkategorie „" + (k.Name ?? "") + "“ der Zone „" + zone
-                                       + "“ hat kein positives gestutztes Mittel des Volumenstroms.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_MITTEL", k.Name ?? "", zone));
                 double energie = mittel * k.DauerMin * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K / Mengengeruest.WH_JE_KWH;
                 werte[i] = new Zapfkategoriewert(k, k.Anteil / summe, mittel, energie);
             }
@@ -182,8 +175,8 @@ namespace WindowsFormsApplication1
 
         private static bool Endlich(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
 
-        private static ZapfprofilEingabeException Fehler(string zone, string text)
-            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, text);
+        private static ZapfprofilEingabeException Fehler(string zone, ZapfSatz satz)
+            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, satz);
     }
 
     /// <summary>
@@ -296,7 +289,7 @@ namespace WindowsFormsApplication1
                     double flaeche = z.WohnflaecheJeWeM2 ?? ps.Wert(ZapfParameter.WOHNEN_FLAECHE_JE_WE);
                     if (!(flaeche > 0))
                         throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                            "Nicht rechenbar — die Wohnfläche je WE der Zone „" + zone + "“ ist nicht positiv; die Einheiten sind nicht bestimmbar.");
+                            ZapfSatz.Neu("EINGABE_EINHEITEN_FLAECHE", zone));
                     x = bezugsmenge / flaeche;
                     break;
                 default:
@@ -305,8 +298,7 @@ namespace WindowsFormsApplication1
             }
             if (double.IsNaN(x) || double.IsInfinity(x) || x < 0 || x > HOECHSTENS)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                    "Nicht rechenbar — die Zahl der Einheiten der Zone „" + zone + "“ ist nicht bestimmbar oder größer als "
-                    + HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
+                    ZapfSatz.Neu("EINGABE_EINHEITEN_UNBESTIMMT", zone, HOECHSTENS));
             int anzahl = (int)Math.Round(x, MidpointRounding.AwayFromZero);
             return anzahl < 1 ? 1 : anzahl;
         }

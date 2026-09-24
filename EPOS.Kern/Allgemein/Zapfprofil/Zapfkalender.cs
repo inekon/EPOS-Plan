@@ -142,10 +142,10 @@ namespace WindowsFormsApplication1
         {
             if (wochentagJan1 < 0 || wochentagJan1 >= WOCHENTAGE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.KalenderUngueltig, "",
-                    "Nicht rechenbar — der Wochentag des 1. Januar liegt nicht in 0 … 6.");
+                    ZapfSatz.Neu("EINGABE_WOCHENTAG_UNGUELTIG"));
             if (we == null || we.Length != TAGE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.KalenderUngueltig, "",
-                    "Nicht rechenbar — der Kalender der Klimaregion trägt nicht 365 Tage.");
+                    ZapfSatz.Neu("EINGABE_KALENDER_365"));
         }
 
         private static bool InFerien(IReadOnlyList<Ferienfenster> ferien, int tag)

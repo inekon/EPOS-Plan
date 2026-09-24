@@ -44,9 +44,9 @@ namespace WindowsFormsApplication1
             {
                 string k = ZapfAuslegungParameter.KONSTRUKTOR_REGEL + n + ".";
                 regeln.Add(new Zapfregel(n,
-                    Auslegungspruefung.Positiv(ps.Wert(k + "Volumenstrom"), "der Volumenstrom der Regel „" + n + "“"),
-                    Auslegungspruefung.Positiv(ps.Wert(k + "Dauer"), "die Dauer der Regel „" + n + "“"),
-                    Auslegungspruefung.Endlich(ps.Wert(k + "Temperatur"), "die Temperatur der Regel „" + n + "“")));
+                    Auslegungspruefung.Positiv(ps.Wert(k + "Volumenstrom"), ZapfSatz.Neu("BEGRIFF_REGEL_VOLUMENSTROM", n)),
+                    Auslegungspruefung.Positiv(ps.Wert(k + "Dauer"), ZapfSatz.Neu("BEGRIFF_REGEL_DAUER", n)),
+                    Auslegungspruefung.Endlich(ps.Wert(k + "Temperatur"), ZapfSatz.Neu("BEGRIFF_REGEL_TEMPERATUR", n))));
             }
             return regeln.AsReadOnly();
         }
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
                                                        string verbraucher = null)
         {
             if (regel == null) throw new ArgumentNullException(nameof(regel));
-            Auslegungspruefung.NichtNegativ(anzahl, "die Anzahl der Vorgänge");
+            Auslegungspruefung.NichtNegativ(anzahl, ZapfSatz.Neu("BEGRIFF_ANZAHL_VORGAENGE"));
             return new Konstruktorzeile(beginn, ende, anzahl * regel.VolumenJeVorgangL, regel.ZapftemperaturC,
                                         verbraucher ?? regel.Name);
         }
@@ -88,13 +88,14 @@ namespace WindowsFormsApplication1
             double zahl = ps.Wert(ZapfAuslegungParameter.DIN4708_PROFIL_BLOECKE);
             if (double.IsNaN(zahl) || zahl < 1 || zahl != Math.Floor(zahl) || zahl > Bedarfstag.MINUTEN)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl.");
+                    ZapfSatz.Neu("AUSLEGUNG_ZAPFBLOECKE_ZAHL"));
             var bloecke = new List<Zapfblock>();
             for (int k = 1; k <= (int)zahl; k++)
             {
                 string s = ZapfAuslegungParameter.DIN4708_PROFIL_BLOCK + k.ToString(CultureInfo.InvariantCulture) + ".";
                 bloecke.Add(new Zapfblock(Ganz(ps.Wert(s + "Beginn"), s + "Beginn"), Ganz(ps.Wert(s + "Dauer"), s + "Dauer"),
-                                          Auslegungspruefung.NichtNegativ(ps.Wert(s + "Anteil"), s + "Anteil")));
+                                          Auslegungspruefung.NichtNegativ(ps.Wert(s + "Anteil"),
+                                                                          ZapfSatz.Neu("BEGRIFF_PARAMETERWERT", s + "Anteil"))));
             }
             return bloecke.AsReadOnly();
         }
@@ -103,7 +104,7 @@ namespace WindowsFormsApplication1
         {
             if (double.IsNaN(w) || double.IsInfinity(w) || w != Math.Floor(w) || w < 0 || w > int.MaxValue)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — „" + was + "“ ist keine ganze Minutenzahl.");
+                    ZapfSatz.Neu("AUSLEGUNG_KEINE_MINUTENZAHL", was));
             return (int)w;
         }
     }
@@ -123,6 +124,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gehört die Zeile zur Auslieferung (<c>ReadOnly</c>)?</summary>
         public bool ReadOnly { get; init; }
+
+        /// <summary>
+        /// Die Bezugsart der <see cref="Bezugsmenge"/> (<c>Tab_TwwBedarfstag_STAMM.Bezugsart</c>, Schritt 119;
+        /// N10 (j)): Skaliert wird nur auf eine Menge derselben Bezugsart. <c>null</c> = ohne Angabe (ein
+        /// Tag ohne Bezugsmenge wird nie skaliert; ein Tag mit Bezugsmenge ohne Bezugsart skaliert auf
+        /// die eine Bezugsart der Gruppe).
+        /// </summary>
+        public ZapfBezugsart? Bezugsart { get; init; }
     }
 
     /// <summary>
@@ -154,10 +163,11 @@ namespace WindowsFormsApplication1
         private readonly Zapfereignis[] _ereignisse;
 
         private Bedarfstag(ZapfBedarfstagquelle? quelle, string bezeichner, Zapfereignis[] ereignisse, Provenienz herkunft,
-                           bool spitzenUnterschaetzt)
+                           bool spitzenUnterschaetzt, ZapfSatz benennung = null)
         {
             Quelle = quelle;
-            Bezeichner = bezeichner ?? "";
+            Benennung = benennung;
+            Bezeichner = benennung?.Klartext ?? bezeichner ?? "";
             Herkunft = herkunft;
             SpitzenUnterschaetzt = spitzenUnterschaetzt;
             _ereignisse = ereignisse;
@@ -195,8 +205,15 @@ namespace WindowsFormsApplication1
         /// <summary>Ist der Tag eine Realisierung des Auslegungsensembles (4.4)?</summary>
         internal bool Gezogen => !Quelle.HasValue;
 
-        /// <summary>Der neutrale Name des Tages.</summary>
+        /// <summary>Der neutrale Name des Tages (bei einem gebildeten Tag der deutsche Wortlaut seiner <see cref="Benennung"/>).</summary>
         internal string Bezeichner { get; }
+
+        /// <summary>
+        /// Der Name eines GEBILDETEN Tags als Satz (Kennung und Werte, N11 (k)) — Stundenprofil
+        /// „Tag d", DIN-4708-Profil „N = …"; <c>null</c> bei einem Katalogtag, dessen Bezeichner
+        /// ein Datum des Katalogs ist.
+        /// </summary>
+        internal ZapfSatz Benennung { get; }
 
         /// <summary>Die Provenienz des Tages; <c>null</c> beim Stundenprofil (es stammt aus der Zone).</summary>
         internal Provenienz Herkunft { get; }
@@ -225,11 +242,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der Tag mit allen Energien mal <paramref name="faktor"/> (Skalierung auf die Bezugsmenge).</summary>
         internal Bedarfstag Mal(double faktor)
         {
-            Auslegungspruefung.NichtNegativ(faktor, "der Skalierungsfaktor des Bedarfstags");
+            Auslegungspruefung.NichtNegativ(faktor, ZapfSatz.Neu("BEGRIFF_SKALIERUNGSFAKTOR"));
             var neu = new Zapfereignis[_ereignisse.Length];
             for (int i = 0; i < neu.Length; i++)
                 neu[i] = _ereignisse[i] with { EnergieKwh = _ereignisse[i].EnergieKwh * faktor };
-            return new Bedarfstag(Quelle, Bezeichner, neu, Herkunft, SpitzenUnterschaetzt);
+            return new Bedarfstag(Quelle, Bezeichner, neu, Herkunft, SpitzenUnterschaetzt, Benennung);
         }
 
         // =================================================================================
@@ -241,13 +258,15 @@ namespace WindowsFormsApplication1
         /// Tag, negative oder nicht endliche Energie und eine leere Liste werden benannt abgelehnt.
         /// </summary>
         internal static Bedarfstag AusEreignissen(ZapfBedarfstagquelle quelle, string bezeichner,
-                                                  IEnumerable<Zapfereignis> ereignisse, Provenienz herkunft)
+                                                  IEnumerable<Zapfereignis> ereignisse, Provenienz herkunft,
+                                                  ZapfSatz benennung = null)
         {
-            Zapfereignis[] liste = Geprueft(bezeichner, ereignisse);
+            string name = benennung?.Klartext ?? bezeichner;
+            Zapfereignis[] liste = Geprueft(name, ereignisse);
             if (liste.Length == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — der Bedarfstag „" + bezeichner + "“ trägt kein Ereignis.");
-            return new Bedarfstag(quelle, bezeichner, liste, herkunft, quelle == ZapfBedarfstagquelle.Stundenprofil);
+                    ZapfSatz.Neu("AUSLEGUNG_BEDARFSTAG_LEER", (object)benennung ?? name ?? ""));
+            return new Bedarfstag(quelle, bezeichner, liste, herkunft, quelle == ZapfBedarfstagquelle.Stundenprofil, benennung);
         }
 
         /// <summary>
@@ -268,12 +287,10 @@ namespace WindowsFormsApplication1
                 {
                     if (e == null || e.MinuteBeginn < 0 || e.MinuteBeginn >= MINUTEN || e.DauerMin < 1 || e.DauerMin > MINUTEN)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                            "Nicht rechenbar — ein Ereignis des Bedarfstags „" + bezeichner
-                            + "“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten).");
+                            ZapfSatz.Neu("AUSLEGUNG_EREIGNIS_AUSSERHALB", bezeichner ?? ""));
                     if (double.IsNaN(e.EnergieKwh) || double.IsInfinity(e.EnergieKwh) || e.EnergieKwh < 0)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                            "Nicht rechenbar — ein Ereignis des Bedarfstags „" + bezeichner
-                            + "“ trägt eine negative oder nicht endliche Energie.");
+                            ZapfSatz.Neu("AUSLEGUNG_EREIGNIS_ENERGIE", bezeichner ?? ""));
                     liste.Add(e);
                 }
             return liste.ToArray();
@@ -284,15 +301,15 @@ namespace WindowsFormsApplication1
         /// Tagesbedarf, gleichmäßig auf die 60 Minuten jeder Stunde verteilt. Trägt immer den
         /// Vermerk „Spitzen unterschätzt".
         /// </summary>
-        internal static Bedarfstag AusStunden(double[] stundenKwh, string bezeichner)
+        internal static Bedarfstag AusStunden(double[] stundenKwh, string bezeichner, ZapfSatz benennung = null)
         {
             if (stundenKwh == null || stundenKwh.Length != Zapfkalender.STUNDEN_TAG)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — das Stundenprofil des Bedarfstags trägt nicht 24 Stunden.");
+                    ZapfSatz.Neu("AUSLEGUNG_STUNDENPROFIL_RASTER"));
             var e = new Zapfereignis[Zapfkalender.STUNDEN_TAG];
             for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
                 e[h] = new Zapfereignis(h * MINUTEN_JE_STUNDE, MINUTEN_JE_STUNDE, stundenKwh[h]);
-            return AusEreignissen(ZapfBedarfstagquelle.Stundenprofil, bezeichner, e, null);
+            return AusEreignissen(ZapfBedarfstagquelle.Stundenprofil, bezeichner, e, null, benennung);
         }
 
         /// <summary>
@@ -304,7 +321,7 @@ namespace WindowsFormsApplication1
         {
             if (zeile == null)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — der gewählte Bedarfstag steht nicht im Katalog.");
+                    ZapfSatz.Neu("AUSLEGUNG_BEDARFSTAG_FEHLT"));
             Bedarfstag t = AusEreignissen(zeile.QuelleArt, zeile.Bezeichner, zeile.Ereignisse, zeile.Herkunft);
             return skalierung == 1.0 ? t : t.Mal(skalierung);
         }
@@ -316,7 +333,7 @@ namespace WindowsFormsApplication1
         internal static double Skalierung(BedarfstagKatalogzeile zeile, double? zielbezugsmenge)
         {
             if (zeile?.Bezugsmenge == null || !(zeile.Bezugsmenge.Value > 0) || !zielbezugsmenge.HasValue) return 1.0;
-            Auslegungspruefung.Positiv(zielbezugsmenge.Value, "die Bezugsmenge der Auslegung");
+            Auslegungspruefung.Positiv(zielbezugsmenge.Value, ZapfSatz.Neu("BEGRIFF_BEZUGSMENGE_AUSLEGUNG"));
             return zielbezugsmenge.Value / zeile.Bezugsmenge.Value;
         }
 
@@ -327,14 +344,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Bedarfstag Din4708(double wzKwh, IReadOnlyList<Zapfblock> bloecke, double kennzahlN)
         {
-            Auslegungspruefung.NichtNegativ(wzKwh, "der Wärmebedarf W_z");
+            Auslegungspruefung.NichtNegativ(wzKwh, ZapfSatz.Neu("BEGRIFF_WZ"));
             if (bloecke == null || bloecke.Count == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — das DIN-4708-Profil trägt keinen Zapfblock.");
+                    ZapfSatz.Neu("AUSLEGUNG_DIN_PROFIL_OHNE_BLOCK"));
             var e = new List<Zapfereignis>(bloecke.Count);
             foreach (Zapfblock b in bloecke) e.Add(new Zapfereignis(b.MinuteBeginn, b.DauerMin, b.AnteilWz * wzKwh));
-            return AusEreignissen(ZapfBedarfstagquelle.Din4708Profil,
-                "DIN-4708-Profil N = " + kennzahlN.ToString("0.##", CultureInfo.InvariantCulture), e, null);
+            return AusEreignissen(ZapfBedarfstagquelle.Din4708Profil, null, e, null,
+                                  ZapfSatz.Neu("AUSTEXT_TAG_DIN4708", kennzahlN));
         }
 
         /// <summary>
@@ -348,17 +365,17 @@ namespace WindowsFormsApplication1
         {
             if (zeilen == null || zeilen.Count == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — der Konstruktor trägt keine Zeile.");
+                    ZapfSatz.Neu("AUSLEGUNG_KONSTRUKTOR_OHNE_ZEILE"));
             var e = new List<Zapfereignis>(zeilen.Count);
             foreach (Konstruktorzeile z in zeilen)
             {
                 if (z == null || z.MinuteBeginn < 0 || z.MinuteBeginn >= MINUTEN || z.MinuteEnde <= z.MinuteBeginn
                     || z.MinuteEnde > MINUTEN)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                        "Nicht rechenbar — eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn < Ende ≤ 1440).");
-                Auslegungspruefung.NichtNegativ(z.VolumenL, "das Volumen der Zeile „" + z.Verbraucher + "“");
+                        ZapfSatz.Neu("AUSLEGUNG_KONSTRUKTOR_FENSTER"));
+                Auslegungspruefung.NichtNegativ(z.VolumenL, ZapfSatz.Neu("BEGRIFF_ZEILE_VOLUMEN", z.Verbraucher ?? ""));
                 double delta = Auslegungspruefung.Spreizung(z.ZapftemperaturC, kaltwasserAuslegungC,
-                    "der Zeile „" + z.Verbraucher + "“ (Zapftemperatur − Kaltwasser)");
+                    ZapfSatz.Neu("BEGRIFF_ZEILE_SPREIZUNG", z.Verbraucher ?? ""));
                 e.Add(new Zapfereignis(z.MinuteBeginn, z.MinuteEnde - z.MinuteBeginn, Mengengeruest.EnergieKwh(z.VolumenL, delta)));
             }
             return AusEreignissen(ZapfBedarfstagquelle.Konstruktor, bezeichner, e, null);
@@ -427,8 +444,15 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>Die Wahl des Bedarfstags einer Topologiegruppe (Vorgaberegel 4.5).</summary>
-    internal sealed record Bedarfstagwahl(ZapfBedarfstagquelle? Quelle, bool KonstruktorOeffnen, string Grund);
+    /// <summary>
+    /// Die Wahl des Bedarfstags einer Topologiegruppe (Vorgaberegel 4.5): Quelle, ob der
+    /// Konstruktor zu öffnen ist, und der Satz der Wahl als Kennung und Werte (N11 (k)).
+    /// </summary>
+    internal sealed record Bedarfstagwahl(ZapfBedarfstagquelle? Quelle, bool KonstruktorOeffnen, ZapfSatz Grund)
+    {
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string GrundText => Grund?.Klartext ?? "";
+    }
 
     /// <summary>
     /// <b>Die Vorgaberegel des Bedarfstags</b> (4.5): Eine ausdrückliche Wahl des Projekts gilt
@@ -453,30 +477,27 @@ namespace WindowsFormsApplication1
                 switch (projektwahl.Value)
                 {
                     case ZapfBedarfstagquelle.Stundenprofil:
-                        return new Bedarfstagwahl(ZapfBedarfstagquelle.Stundenprofil, false,
-                            "Stundenprofil ausdrücklich gewählt — Spitzen unterschätzt.");
+                        return new Bedarfstagwahl(ZapfBedarfstagquelle.Stundenprofil, false, ZapfSatz.Neu("AUSTEXT_WAHL_STUNDENPROFIL"));
                     case ZapfBedarfstagquelle.Din4708Profil:
                         if (!wohnen)
-                            return new Bedarfstagwahl(null, true,
-                                "Das DIN-4708-Profil gilt nur für Wohnen — bitte einen Tag konstruieren.");
+                            return new Bedarfstagwahl(null, true, ZapfSatz.Neu("AUSTEXT_WAHL_DIN_NUR_WOHNEN"));
                         if (!din4708Rechenbar)
-                            return new Bedarfstagwahl(null, true,
-                                "Das DIN-4708-Profil ist nicht rechenbar (Wohnungstabelle oder Katalogkonstanten fehlen) — bitte einen Tag konstruieren.");
-                        return new Bedarfstagwahl(ZapfBedarfstagquelle.Din4708Profil, false, "DIN-4708-Profil gewählt.");
+                            return new Bedarfstagwahl(null, true, ZapfSatz.Neu("AUSTEXT_WAHL_DIN_NICHT_RECHENBAR"));
+                        return new Bedarfstagwahl(ZapfBedarfstagquelle.Din4708Profil, false, ZapfSatz.Neu("AUSTEXT_WAHL_DIN"));
                     default:
                         if (gewaehlterTag != null && gewaehlterTag.QuelleArt == projektwahl.Value)
-                            return new Bedarfstagwahl(projektwahl.Value, false, "Katalogtag „" + gewaehlterTag.Bezeichner + "“ gewählt.");
-                        return new Bedarfstagwahl(null, true,
-                            "Der gewählte Bedarfstag fehlt im Katalog — bitte einen Tag wählen oder konstruieren.");
+                            return new Bedarfstagwahl(projektwahl.Value, false,
+                                ZapfSatz.Neu("AUSTEXT_WAHL_KATALOGTAG", gewaehlterTag.Bezeichner ?? ""));
+                        return new Bedarfstagwahl(null, true, ZapfSatz.Neu("AUSTEXT_WAHL_TAG_FEHLT"));
                 }
             }
             if (gewaehlterTag != null)
-                return new Bedarfstagwahl(gewaehlterTag.QuelleArt, false, "Katalogtag „" + gewaehlterTag.Bezeichner + "“ gewählt.");
+                return new Bedarfstagwahl(gewaehlterTag.QuelleArt, false,
+                    ZapfSatz.Neu("AUSTEXT_WAHL_KATALOGTAG", gewaehlterTag.Bezeichner ?? ""));
             if (wohnen && din4708Rechenbar)
-                return new Bedarfstagwahl(ZapfBedarfstagquelle.Din4708Profil, false, "Vorgabe Wohnen: DIN-4708-Profil.");
+                return new Bedarfstagwahl(ZapfBedarfstagquelle.Din4708Profil, false, ZapfSatz.Neu("AUSTEXT_WAHL_VORGABE_WOHNEN_DIN"));
             return new Bedarfstagwahl(null, true,
-                wohnen ? "Vorgabe Wohnen: Das DIN-4708-Profil ist nicht rechenbar — bitte einen Tag konstruieren."
-                       : "Vorgabe Nichtwohnen: Konstruktor — bitte einen Tag konstruieren.");
+                ZapfSatz.Neu(wohnen ? "AUSTEXT_WAHL_VORGABE_WOHNEN_KONSTRUKTOR" : "AUSTEXT_WAHL_VORGABE_NICHTWOHNEN"));
         }
     }
 }

@@ -24,9 +24,10 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Benannt statt still.</b> Ablehnungen des Kerns (<see cref="ZapfAuslegungException"/>,
     /// <see cref="ZapfprofilEingabeException"/>, <see cref="ParametersatzException"/>) kommen als
-    /// <see cref="ZapfprofilMeldung"/> mit Ressourcenschlüssel; die Warnliste trägt je Kennung des
-    /// Kerns einen Titel in der Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns
-    /// mit eingesetzten Zahlen.</para>
+    /// <see cref="ZapfprofilMeldung"/> mit dem Satz des Kerns (<see cref="ZapfSatz"/>) in der
+    /// Oberflächensprache; die Warnliste trägt je Kennung des Kerns einen Titel in der
+    /// Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns mit Zahlen in der Kultur
+    /// der Oberfläche (N11 (k)).</para>
     ///
     /// <para><b>Der Punkt ist Ergebnis, nicht Eingabe.</b> Der mit OK übernommene Punkt geht nur in
     /// Übernahme und Speichern; der Rechenweg der Überlagerung rechnet ohne ihn
@@ -120,7 +121,7 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             start.Verfuegbar = verfuegbar.Ja;
-            start.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar.Grund);
+            start.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar);
             if (!verfuegbar.Ja) return start;
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
@@ -138,7 +139,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException)
                 {
                     start.RegelnGrund = Format(Text_("ZPG_AUS_KON_REGELN_UNGUELTIG",
-                        "Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}"), ex.Message);
+                        "Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}"), Ausnahmetext(ex));
                 }
             }
             catch (ParametersatzException) { /* das Ergebnis nennt den Grund */ }
@@ -168,9 +169,9 @@ namespace WindowsFormsApplication1
                 foreach (int p in TwwSchema.Perzentile)
                     start.RealisierungenVorgabe[p] = Zapfensemble.RealisierungenAuslegung(null, p, ps);
             }
-            catch (ParametersatzException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
-            catch (ZapfAuslegungException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
-            catch (ZapfprofilEingabeException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
+            catch (ParametersatzException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
+            catch (ZapfAuslegungException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
+            catch (ZapfprofilEingabeException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
         }
 
         private static void OhneVorgabe(ZapfprofilAuslegungStartDaten start, string grund)
@@ -214,8 +215,8 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
-                                     Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar),
+                                     Verfuegbarkeitsgrund(verfuegbar), verfuegbar.Klartext);
             if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
                     Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
@@ -238,20 +239,11 @@ namespace WindowsFormsApplication1
                                        auslegung.Stochastisch, abbruch));
             }
             catch (OperationCanceledException) { throw; }
-            catch (ZapfprofilEingabeException ex)
+            catch (Exception ex) when (ex is ZapfprofilEingabeException || ex is ParametersatzException || ex is ZapfAuslegungException)
             {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
-            }
-            catch (ParametersatzException ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
-            }
-            catch (ZapfAuslegungException ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+                ZapfSatz satz = SatzAus(ex);
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Satzkennung(satz, "ZPG_AUS_MSG_UNERWARTET"),
+                                     Satztext(satz), ex.Message);
             }
             catch (Exception ex)
             {
@@ -329,7 +321,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    Format(Text_("ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"), a.Zone ?? "", a.Klartext ?? ""),
+                    Format(Text_("ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"), a.Zone ?? "", Satztext(a.Satz)),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -352,7 +344,7 @@ namespace WindowsFormsApplication1
                 Speicher = speicher,
                 Zonen = g.Zonen.ToList(),
                 Bedarfstag = g.Bedarfstag?.Bezeichner ?? "",
-                BedarfstagWahl = g.Bedarfstagwahl?.Grund ?? "",
+                BedarfstagWahl = Satztext(g.Bedarfstagwahl?.Grund),
                 KonstruktorOeffnen = g.Bedarfstagwahl?.KonstruktorOeffnen == true && g.Bedarfstag == null,
                 SpitzenUnterschaetzt = g.Bedarfstag?.SpitzenUnterschaetzt == true,
                 SpeicherC = g.Speichertemperatur?.SpeicherC,
@@ -375,8 +367,8 @@ namespace WindowsFormsApplication1
                     LeistungKw = e.LeistungKw,
                     NenninhaltL = e.NenninhaltL,
                     Schnellauslegung = e.Rechenbar && (e.Schnellauslegung || stufe == ZapfprofilStufe.Einfach),
-                    Vermerk = e.Vermerk ?? "",
-                    Grund = e.Grund ?? ""
+                    Vermerk = string.Join("; ", e.Vermerke.Select(Satztext)),
+                    Grund = Satztext(e.Grund)
                 };
 
             ZapfprofilAuslegungBildtexte bild = AuslegungBildtexte();
@@ -386,7 +378,7 @@ namespace WindowsFormsApplication1
                 d.LadezeitH = sl.Punkt?.LadezeitH;
                 d.ZeitkonstanteMin = sl.ZeitkonstanteMin;
                 d.Wertepaare = sl.Wertepaare.Count;
-                d.Vermerk = sl.Vermerk ?? "";
+                d.Vermerk = Satztext(sl.Vermerk);
                 Summenlinienkurven k = ZapfprofilBilder.SummenlinieKurven(g.Bedarfstag, sl.Nachweis);
                 if (k != null) d.SummenlinieModell = ZapfprofilBilder.SummenlinieModell(k.BedarfKwh, k.VersorgungKwh, k.BeruehrungMinute, bild);
                 if (sl.Wertepaare.Count >= 2)
@@ -483,17 +475,17 @@ namespace WindowsFormsApplication1
             VolumenL = w.VolumenL,
             LeistungKw = w.LeistungKw,
             Empfohlen = w.Empfohlen,
-            Text = AblehnungsSatz(w.Ablehnung) ?? w.Text ?? ""
+            Text = AblehnungsSatz(w.Ablehnung) ?? Satztext(w.Satz)
         };
 
         /// <summary>
         /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone,
-        /// wo sie eine trägt; <c>null</c> ohne Kennung oder ohne Ressource (dann gilt der Satz des Kerns).
+        /// wo sie eine trägt; <c>null</c> ohne Ablehnung oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
         {
-            string grund = GenauerGrund(a, out _);
-            if (grund == null) return null;
+            if (a?.Satz == null) return null;
+            string grund = Satztext(a.Satz);
             return string.IsNullOrEmpty(a.Zone) ? grund : Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), a.Zone, grund);
         }
 
@@ -510,14 +502,14 @@ namespace WindowsFormsApplication1
                 KennzahlN = din != null && din.Gueltig ? din.KennzahlN : null,
                 LadeleistungKw = sa.Ladeleistung.Angesetzt,
                 LadeManuell = sa.Ladeleistung.IstManuell,
-                LadeRechenweg = sa.LadeRechenweg ?? "",
+                LadeRechenweg = Satztext(sa.LadeRechenweg),
                 Personen = sa.Personen,
                 Nutzanteil = sa.Nutzanteil,
                 Zuschlag = sa.Zuschlag,
                 DmaxKwh = sa.DmaxKwh,
                 ProfilbasiertVorhanden = sa.ProfilbasiertVorhanden,
                 FuellstandBezugL = sa.FuellstandBezugL,
-                FuellstandBezug = sa.FuellstandBezug ?? "",
+                FuellstandBezug = sa.FuellstandBezug.HasValue ? Satztext(TwwSpeicherauslegung.Fuellstandbegriff(sa.FuellstandBezug.Value)) : "",
                 KapazitaetKwh = sa.KapazitaetKwh,
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
@@ -531,8 +523,8 @@ namespace WindowsFormsApplication1
                     ImBand = z.ImBand,
                     Groesster = z.ImBand && z.VolumenL.HasValue && sa.BandMaxL.HasValue && z.VolumenL.Value == sa.BandMaxL.Value,
                     Nachrichtlich = z.Verfahren == ZapfSpeicherverfahren.Klassisch,
-                    Kennwert = z.Kennwert ?? "",
-                    Rechenweg = z.Rechenweg ?? ""
+                    Kennwert = Satztext(z.Kennwert),
+                    Rechenweg = Satztext(z.Rechenweg)
                 });
 
             if (sa.ProfilbasiertVorhanden && sa.StundeDesTags.HasValue && sa.TagInWoche2.HasValue && sa.Wochentag.HasValue)
@@ -555,15 +547,13 @@ namespace WindowsFormsApplication1
         {
             string kennung = AuslegungsHinweisSchluessel(h.Code);
             string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
-            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? h.Text ?? "",
+            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? Satztext(h.Satz),
                                            h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
         }
 
         /// <summary>Der Ressourcenschlüssel des Titels einer Hinweiskennung der Auslegung: <c>ZPG_AUSHINW_</c> + Kennung.</summary>
         internal static string AuslegungsHinweisSchluessel(string code) => "ZPG_AUSHINW_" + (code ?? "");
 
-        /// <summary>Der Ressourcenschlüssel einer Ablehnung der Auslegung: <c>ZPG_AUSLEGUNG_…</c>.</summary>
-        internal static string Schluessel(ZapfAuslegungsfehler f) => "ZPG_AUSLEGUNG_" + Gross(f.ToString());
 
         private static string Speichertemperaturherkunft(Speichertemperaturquelle q)
         {
@@ -711,7 +701,7 @@ namespace WindowsFormsApplication1
             catch (ZapfAuslegungException ex)
             {
                 d.Waehlbar = false;
-                d.Sperrgrund = Text_(Schluessel(ex.Fehler), ex.Message);
+                d.Sperrgrund = Satztext(ex.Satz);
             }
             if (!entwurf && t.QuelleArt == ZapfBedarfstagquelle.Din4708Profil)
             {
@@ -762,7 +752,7 @@ namespace WindowsFormsApplication1
             try { ps = ZapfprofilCtrl.Parameter(); }
             catch (ParametersatzException ex)
             {
-                meldungen.Add(new ZapfprofilMeldung(Schluessel(ex.Fehler), "", Text_(Schluessel(ex.Fehler), ex.Message),
+                meldungen.Add(new ZapfprofilMeldung(Satzkennung(ex.Satz, ""), "", Satztext(ex.Satz),
                                                     ZapfprofilMeldungsart.Fehler, ex.Message));
                 return new ZapfprofilKonstruktorErgebnis(null, meldungen);
             }
@@ -827,19 +817,11 @@ namespace WindowsFormsApplication1
                 tag.Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList();
                 return new ZapfprofilKonstruktorErgebnis(tag, new ZapfprofilMeldung[0]);
             }
-            catch (ZapfAuslegungException ex)
+            catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException)
             {
-                string schluessel = Schluessel(ex.Fehler);
-                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
-                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
-                    ZapfprofilMeldungsart.Fehler, ex.Message));
-                return new ZapfprofilKonstruktorErgebnis(null, meldungen);
-            }
-            catch (ParametersatzException ex)
-            {
-                string schluessel = Schluessel(ex.Fehler);
-                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
-                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
+                ZapfSatz satz = SatzAus(ex);
+                meldungen.Add(new ZapfprofilMeldung(Satzkennung(satz, "ZPG_AUS_KON_NICHT_GEBAUT"), "",
+                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Satztext(satz)),
                     ZapfprofilMeldungsart.Fehler, ex.Message));
                 return new ZapfprofilKonstruktorErgebnis(null, meldungen);
             }

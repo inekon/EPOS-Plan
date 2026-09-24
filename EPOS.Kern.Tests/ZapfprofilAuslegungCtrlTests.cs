@@ -321,7 +321,7 @@ namespace EPOS.Kern.Tests
             Auslegungsgruppe g = Assert.Single(r.Ergebnis.Gruppen);
             Assert.Equal(ZapfBedarfstagquelle.Konstruktor, g.Bedarfstagwahl.Quelle);
             Assert.Equal("Probetag (fiktiv)", g.Bedarfstag.Bezeichner);
-            Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.Grund);
+            Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.GrundText);
             Assert.True(g.Empfehlung.VolumenL > 0);
             double nenn = g.Empfehlung.NenninhaltL.Value;
             Assert.True(AuslegungTestbau.NENNINHALTE.Contains(nenn), "Nenninhalt " + nenn + " l steht nicht in der Vorgabeliste.");
@@ -334,7 +334,7 @@ namespace EPOS.Kern.Tests
                 new Auslegungslauf(ZapfErzeugerart.Waermepumpe, null));
             Auslegungsgruppe gw = Assert.Single(ohneWerkstoff.Ergebnis.Gruppen);
             Assert.False(gw.Empfehlung.Rechenbar);
-            Assert.Contains("Werkstoff", gw.Empfehlung.Grund);
+            Assert.Contains("Werkstoff", gw.Empfehlung.GrundText);
         }
 
         // =================================================================================

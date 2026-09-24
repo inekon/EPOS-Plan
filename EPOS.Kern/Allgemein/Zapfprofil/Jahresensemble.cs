@@ -183,8 +183,7 @@ namespace WindowsFormsApplication1
         {
             if (k == null) throw new ArgumentNullException(nameof(k));
             if (double.IsNaN(k.Faktor) || double.IsInfinity(k.Faktor))
-                throw Fehler(Zone, "Nicht rechenbar — das gezogene Jahr zum Seed der Zone „" + Zone
-                                   + "“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar.");
+                throw Fehler(Zone, ZapfSatz.Neu("EINGABE_JAHR_ZUM_SEED_LEER", Zone));
             return JahrZumSeed.Mal(k.Faktor);
         }
 
@@ -206,17 +205,16 @@ namespace WindowsFormsApplication1
             if (z == null) throw new ArgumentNullException(nameof(z));
             string zone = z.Zone ?? "";
             if (realisierungen < 1 || realisierungen > HOECHSTENS)
-                throw Fehler(zone, "Nicht rechenbar — die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … "
-                                   + HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_REALISIERUNGEN_JAHRESREIHE", HOECHSTENS));
             if (z.Kategorien == null || z.Struktur == null || z.Einheiten < 1 || z.Index < 0)
-                throw Fehler(zone, "Nicht rechenbar — die Zone „" + zone + "“ der Jahresreihe ist unvollständig.");
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_JAHRESZONE_UNVOLLSTAENDIG", zone));
             if (z.Kalender == null || z.Kalender.Length != Zapfkalender.TAGE || z.We == null || z.We.Length != Zapfkalender.TAGE
                 || z.Kaltwasserfaktor == null || z.Kaltwasserfaktor.Length != Zapfkalender.MONATE
                 || z.SpreizungJeMonatK == null || z.SpreizungJeMonatK.Length != Zapfkalender.MONATE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    "Nicht rechenbar — Kalender, Kaltwasserfaktor oder Spreizung der Zone „" + zone + "“ haben nicht das Jahresraster.");
+                    ZapfSatz.Neu("EINGABE_JAHRESZONE_RASTER", zone));
             if (z.Urlaubsentkopplung && (z.UrlaubsversatzTage < 0 || z.UrlaubsversatzTage >= Zapfkalender.TAGE))
-                throw Fehler(zone, "Nicht rechenbar — der Urlaubsversatz liegt nicht in 0 … 364 Tagen.");
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_URLAUBSVERSATZ_BEREICH"));
 
             var vorbereitung = new Vorbereitung(z);
             var energien = new double[realisierungen];
@@ -347,7 +345,7 @@ namespace WindowsFormsApplication1
             return groesste;
         }
 
-        private static ZapfprofilEingabeException Fehler(string zone, string text)
-            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, text);
+        private static ZapfprofilEingabeException Fehler(string zone, ZapfSatz satz)
+            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, satz);
     }
 }

@@ -70,8 +70,9 @@ public enum ZapfprofilVorschauZustand
 
 /// <summary>
 /// Eine Meldung mit sprachneutraler <see cref="Kennung"/> (Hausregel „eine Meldung, die der
-/// Anwender nicht versteht, bekommt eine Kennung"): <c>ZPG_HINW_…</c>, <c>ZPG_EINGABE_…</c>,
-/// <c>ZPG_SPEICHER_…</c> oder <c>ZPG_MSG_…</c> — der Ressourcenschlüssel des Textes.
+/// Anwender nicht versteht, bekommt eine Kennung"): <c>ZPG_SATZ_…</c> (ein Satz des Kerns —
+/// Ablehnung, Hinweis, Grund des Schreibwegs) oder <c>ZPG_MSG_…</c>, <c>ZPG_AUS_…</c> (ein Satz
+/// der Hülle) — der Ressourcenschlüssel des Textes.
 /// </summary>
 /// <param name="Kennung">Der Ressourcenschlüssel der Meldung.</param>
 /// <param name="Zone">Die betroffene Zone; leer = Projekt bzw. Zirkulation.</param>

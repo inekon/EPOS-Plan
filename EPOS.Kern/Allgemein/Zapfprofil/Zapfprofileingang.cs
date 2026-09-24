@@ -66,11 +66,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class ZapfprofilEingabeException : Exception
     {
-        internal ZapfprofilEingabeException(ZapfEingabefehler fehler, string zone, string meldung)
-            : base(meldung)
+        internal ZapfprofilEingabeException(ZapfEingabefehler fehler, string zone, ZapfSatz satz)
+            : base(satz?.Klartext ?? "")
         {
             Fehler = fehler;
             Zone = zone ?? "";
+            Satz = satz;
         }
 
         /// <summary>Der Grund der Ablehnung.</summary>
@@ -80,33 +81,37 @@ namespace WindowsFormsApplication1
         internal string Zone { get; }
 
         /// <summary>
-        /// Die genauere Kennung innerhalb des Grundes (etwa
-        /// <see cref="Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN"/>); <c>null</c> = nur der Grund.
-        /// Die Hülle nimmt sie als Ressourcenschlüssel <c>ZPG_EINGABE_</c> + Kennung.
+        /// Der Satz der Ablehnung als Kennung und Werte (N11 (k)) — die Hülle baut daraus den Satz
+        /// der Oberflächensprache; die Meldung der Ausnahme ist sein deutscher Wortlaut.
         /// </summary>
-        internal string Kennung { get; init; }
+        internal ZapfSatz Satz { get; }
 
-        /// <summary>
-        /// Die Werte, die der Text der <see cref="Kennung"/> in seine Platzhalter {0}, {1}, …
-        /// einsetzt — sprachfrei, je Wert getrennt (etwa Bezeichner und Katalogversion der
-        /// Nutzungsart); sonst <c>null</c>. Den Satz baut die Hülle in der Oberflächensprache.
-        /// </summary>
-        internal IReadOnlyList<string> Argumente { get; init; }
+        /// <summary>Die Kennung des Satzes (<see cref="ZapfSatz.Kennung"/>); <c>null</c> ohne Satz.</summary>
+        internal string Kennung => Satz?.Kennung;
+
+        /// <summary>Die Werte des Satzes, sprachfrei und getrennt; <c>null</c> ohne Satz.</summary>
+        internal IReadOnlyList<object> Argumente => Satz?.Werte;
     }
 
-    /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>
-    internal sealed record ZapfHinweis(string Zone, string Code, string Text)
+    /// <summary>
+    /// Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung der Art
+    /// (<see cref="Code"/>, etwa <c>TAGESGANG_SUMME</c>) und der Satz als Kennung und Werte
+    /// (<see cref="Satz"/>, N11 (k)); <see cref="Text"/> ist sein deutscher Wortlaut.
+    /// </summary>
+    internal sealed record ZapfHinweis(string Zone, string Code, ZapfSatz Satz)
     {
         /// <summary>Kennung „Parameter fehlt" eines Parameters, der die Rechnung nicht entscheidet (N7).</summary>
         internal const string PARAMETER_FEHLT = "PARAMETER_FEHLT";
+
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string Text => Satz?.Klartext ?? "";
 
         /// <summary>
         /// Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt: Er nennt den
         /// Schlüssel und die Folge; ein Rückfallwert wird nicht gesetzt (Konzept 2.1, N7).
         /// </summary>
-        internal static ZapfHinweis ParameterFehlt(string schluessel, string folge)
-            => new ZapfHinweis("", PARAMETER_FEHLT,
-                               "Parameter fehlt: „" + (schluessel ?? "") + "“. " + (folge ?? ""));
+        internal static ZapfHinweis ParameterFehlt(string schluessel, ZapfSatz folge)
+            => new ZapfHinweis("", PARAMETER_FEHLT, ZapfSatz.Neu("HINWEIS_PARAMETER_FEHLT", schluessel ?? "", folge));
 
         /// <summary>Nimmt einen Hinweis nur auf, wenn derselbe noch nicht in der Liste steht.</summary>
         internal static void Einmal(ICollection<ZapfHinweis> liste, ZapfHinweis h)

@@ -149,7 +149,7 @@ namespace EPOS.Kern.Tests
                 // sprachfrei —; die Hülle übersetzt die Kennung.
                 Assert.Equal(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, a.Kennung);
                 Nutzungsart art = a.Zone == "Wohnhaus" ? Wohnen : Buero;
-                Assert.Equal(new[] { art.Name, art.Katalogversion ?? "" }, a.Argumente);
+                Assert.Equal(new object[] { art.Name, art.Katalogversion ?? "", a.Zone }, a.Argumente);
                 Assert.Contains("„" + art.Name + "“", a.Klartext);
             });
             Assert.Equal(0.0, s.Zapfung.JahressummeKwh);
@@ -200,7 +200,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex.Fehler);
             Assert.Equal("", ex.Zone);
             Assert.Equal(ZapfprofilRechner.KENNUNG_EINHEITSTAGE, ex.Kennung);
-            Assert.Equal(new[] { "10001000", "10000000" }, ex.Argumente);
+            Assert.Equal(new object[] { 10001000L, 10000000L }, ex.Argumente);
             Assert.Contains("höchstens 10000000 sind zulässig", ex.Message);
 
             // Deterministisch zieht nichts — die Schranke gilt nicht.
@@ -266,7 +266,7 @@ namespace EPOS.Kern.Tests
             Assert.All(r.Gruppen, g =>
             {
                 Assert.Equal(Auslegungsstatus.NichtGerechnet, g.Dreiergruppe[1].Status);
-                Assert.Equal(Dreiergruppe.PERZENTIL_OFFEN, g.Dreiergruppe[1].Text);
+                Assert.Equal(Dreiergruppe.PERZENTIL_OFFEN, g.Dreiergruppe[1].Satz.Kennung);
                 Assert.Null(g.Perzentil);
             });
         }

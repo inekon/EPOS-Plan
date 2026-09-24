@@ -208,7 +208,7 @@ namespace EPOS.Kern.Tests
                 PROJEKT, new List<Z_ProjektBrauchwasserModel>(), behaelter);
 
             Assert.False(e.Erfolg);
-            Assert.Equal("ZPG_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
+            Assert.Equal("ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
             Assert.StartsWith("Das Zapfprofil wurde nicht gespeichert — ", e.Meldung.Text);
             Assert.Equal(vorher, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Count);
             Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(PROJEKT));

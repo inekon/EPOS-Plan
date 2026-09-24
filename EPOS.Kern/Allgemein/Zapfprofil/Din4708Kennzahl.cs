@@ -35,8 +35,11 @@ namespace WindowsFormsApplication1
         /// <summary>Deckt die Kennzahl die ganze Gruppe (jede Zone Wohnen mit Speicher)?</summary>
         public bool Vollstaendig { get; init; }
 
-        /// <summary>Warum nicht gültig — „außerhalb des Gültigkeitsbereichs" oder „nicht rechenbar"; sonst leer.</summary>
-        public string Grund { get; init; } = "";
+        /// <summary>Warum nicht gültig — „außerhalb des Gültigkeitsbereichs" oder „nicht rechenbar" — als Satz; sonst <c>null</c>.</summary>
+        public ZapfSatz Grund { get; init; }
+
+        /// <summary>Der deutsche Wortlaut des Grundes; leer bei gültig.</summary>
+        public string GrundText => Grund?.Klartext ?? "";
 
         /// <summary>Der Grund als Kennung (<see cref="ZapfAuslegungsfehler"/>); <c>null</c> bei gültig.</summary>
         public ZapfAuslegungsfehler? Fehler { get; init; }
@@ -95,9 +98,6 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung: die Kennzahl deckt nur einen Teil der Gruppe.</summary>
         internal const string HINWEIS_TEILGUELTIG = "DIN4708_TEILGUELTIG";
 
-        /// <summary>Text „außerhalb des Gültigkeitsbereichs".</summary>
-        internal const string AUSSERHALB = "außerhalb des Gültigkeitsbereichs";
-
         // =================================================================================
         // Formeln
         // =================================================================================
@@ -127,8 +127,8 @@ namespace WindowsFormsApplication1
         /// <summary>N = Σ n · p · Σ v·w_v / (p_b · w_b).</summary>
         internal static double Kennzahl(IReadOnlyList<Din4708Zeile> zeilen, Parametersatz ps)
         {
-            double pb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_PB), "p_b");
-            double wb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_WB_ZAPFSTELLE), "w_b");
+            double pb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_PB), ZapfSatz.Neu("BEGRIFF_PB"));
+            double wb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_WB_ZAPFSTELLE), ZapfSatz.Neu("BEGRIFF_WB"));
             double summe = 0.0;
             foreach (Din4708Zeile z in zeilen) summe += z.Anzahl * z.Belegung * z.AusstattungWh;
             return summe / (pb * wb);
@@ -140,7 +140,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double WzKwh(double n, Parametersatz ps)
         {
-            Auslegungspruefung.NichtNegativ(n, "die Kennzahl N");
+            Auslegungspruefung.NichtNegativ(n, ZapfSatz.Neu("BEGRIFF_KENNZAHL_N"));
             double a1 = ps.Wert(ZapfAuslegungParameter.DIN4708_A1);
             double a2 = ps.Wert(ZapfAuslegungParameter.DIN4708_A2);
             double z = ps.Wert(ZapfAuslegungParameter.DIN4708_Z);
@@ -156,10 +156,10 @@ namespace WindowsFormsApplication1
         /// <summary>V_DIN [l] = W_z · 1000 / (c_w · Δθ_Speicher) / f_nutz — ohne Zuschlag.</summary>
         internal static double VolumenL(double wzKwh, double spreizungK, double nutzanteil)
         {
-            Auslegungspruefung.Positiv(nutzanteil, "der Nutzanteil");
+            Auslegungspruefung.Positiv(nutzanteil, ZapfSatz.Neu("BEGRIFF_NUTZANTEIL"));
             if (!(spreizungK > 0))
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.TemperaturUngueltig,
-                    "Nicht rechenbar — die Spreizung des Speichers ist nicht positiv.");
+                    ZapfSatz.Neu("AUSLEGUNG_SPREIZUNG_SPEICHER"));
             return wzKwh * Mengengeruest.WH_JE_KWH / (Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * spreizungK) / nutzanteil;
         }
 
@@ -181,7 +181,7 @@ namespace WindowsFormsApplication1
             {
                 if (w.Anzahl <= 0)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstypUngueltig,
-                        "Nicht rechenbar — ein Wohnungstyp der Zone „" + zone + "“ hat keine positive Anzahl.");
+                        ZapfSatz.Neu("EINGABE_WOHNUNGSTYP_ANZAHL", zone));
                 double p;
                 try
                 {
@@ -189,7 +189,7 @@ namespace WindowsFormsApplication1
                 }
                 catch (ZapfprofilEingabeException ex)
                 {
-                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstypUngueltig, ex.Message);
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstypUngueltig, ex.Satz);
                 }
                 double wert = wb;
                 bool vorgabe = true;
@@ -201,9 +201,8 @@ namespace WindowsFormsApplication1
                             if (k != null && k.Id == w.IdAusstattung.Value) a = k;
                     if (a == null)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstypUngueltig,
-                            "Nicht rechenbar — die Ausstattungsklasse " + w.IdAusstattung.Value + " eines Wohnungstyps der Zone „"
-                            + zone + "“ steht nicht im Katalog.");
-                    wert = Auslegungspruefung.NichtNegativ(a.WertWh, "Σ v·w_v der Ausstattung „" + a.Schluessel + "“");
+                            ZapfSatz.Neu("AUSLEGUNG_AUSSTATTUNG_FEHLT", w.IdAusstattung.Value, zone));
+                    wert = Auslegungspruefung.NichtNegativ(a.WertWh, ZapfSatz.Neu("BEGRIFF_AUSSTATTUNG_WERT", a.Schluessel ?? ""));
                     vorgabe = false;
                 }
                 zeilen.Add(new Din4708Zeile(zone, w.Anzahl, p, wert, vorgabe));
@@ -235,7 +234,7 @@ namespace WindowsFormsApplication1
                 return new Din4708Ergebnis
                 {
                     Gueltig = false, Fehler = ZapfAuslegungsfehler.NichtGueltig,
-                    Grund = "DIN 4708: " + AUSSERHALB + " — die Kennzahl gilt nur für Wohnen mit Speicher.",
+                    Grund = ZapfSatz.Neu("AUSTEXT_DIN_NUR_WOHNEN"),
                     ZonenAusserhalb = ausserhalb.AsReadOnly()
                 };
 
@@ -247,7 +246,7 @@ namespace WindowsFormsApplication1
                     IReadOnlyList<Din4708Zeile> eigene = Zeilen(z, katalog, ps);
                     if (eigene.Count == 0)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstabelleFehlt,
-                            "DIN 4708: nicht rechenbar — die Zone „" + z.Name + "“ trägt keine Wohnungstabelle.");
+                            ZapfSatz.Neu("AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE", z.Name ?? ""));
                     zeilen.AddRange(eigene);
                 }
             }
@@ -255,7 +254,7 @@ namespace WindowsFormsApplication1
             {
                 return new Din4708Ergebnis
                 {
-                    Gueltig = false, Fehler = ex.Fehler, Grund = ex.Message, ZonenAusserhalb = ausserhalb.AsReadOnly()
+                    Gueltig = false, Fehler = ex.Fehler, Grund = ex.Satz, ZonenAusserhalb = ausserhalb.AsReadOnly()
                 };
             }
 
@@ -270,13 +269,11 @@ namespace WindowsFormsApplication1
             }
             var hinweise = new List<Auslegungshinweis>
             {
-                new Auslegungshinweis(HINWEIS_WAERMEPUMPE,
-                    "Die Bedarfskennzahl nach DIN 4708 ist für die Vorlauftemperaturen einer Wärmepumpe kaum aussagefähig.")
+                new Auslegungshinweis(HINWEIS_WAERMEPUMPE, ZapfSatz.Neu("AUSHINWEIS_DIN4708_WAERMEPUMPE"))
             };
             if (ausserhalb.Count > 0)
                 hinweise.Add(new Auslegungshinweis(HINWEIS_TEILGUELTIG,
-                    "Die Kennzahl N = " + n.ToString("0.##", CultureInfo.InvariantCulture) + " deckt nur die Wohnzonen mit Speicher; "
-                    + AUSSERHALB + ": " + string.Join(", ", ausserhalb) + "."));
+                    ZapfSatz.Neu("AUSHINWEIS_DIN4708_TEILGUELTIG", n, ausserhalb.ToArray())));
             return new Din4708Ergebnis
             {
                 Gueltig = true,

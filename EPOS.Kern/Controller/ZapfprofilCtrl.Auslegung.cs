@@ -182,11 +182,10 @@ namespace WindowsFormsApplication1
             catch (Exception) { text = null; }
             if (!string.IsNullOrWhiteSpace(text))
             {
-                Nenninhaltsliste ausEinstellung = NenninhalteLesen(text, out string grund);
+                Nenninhaltsliste ausEinstellung = NenninhalteLesen(text, out ZapfSatz grund);
                 if (ausEinstellung != null) return new Nenninhaltswahl(ausEinstellung, Nenninhaltsquelle.Einstellung, null);
                 hinweis = new Auslegungshinweis(HINWEIS_NENNINHALTE_EINSTELLUNG,
-                    "Die Einstellung „" + EINSTELLUNG_NENNINHALTE + "“ ist keine gültige Liste (" + grund
-                    + ") — es gilt die Vorgabe des Katalogs.", true);
+                    ZapfSatz.Neu("AUSHINWEIS_NENNINHALTE_EINSTELLUNG", EINSTELLUNG_NENNINHALTE, grund), true);
             }
             try
             {
@@ -195,7 +194,7 @@ namespace WindowsFormsApplication1
             }
             catch (ZapfAuslegungException ex)
             {
-                hinweis ??= new Auslegungshinweis(HINWEIS_NENNINHALTE_PARAMETER, ex.Message, true);
+                hinweis ??= new Auslegungshinweis(HINWEIS_NENNINHALTE_PARAMETER, ex.Satz, true);
             }
             return new Nenninhaltswahl(null, Nenninhaltsquelle.Keine, hinweis);
         }
@@ -205,16 +204,16 @@ namespace WindowsFormsApplication1
         /// ein Glied keine Zahl ist oder die Folge nicht streng aufsteigend und positiv ist.
         /// Dezimalpunkt und -komma werden angenommen (invariant gelesen).
         /// </summary>
-        internal static Nenninhaltsliste NenninhalteLesen(string text, out string grund)
+        internal static Nenninhaltsliste NenninhalteLesen(string text, out ZapfSatz grund)
         {
-            grund = "";
+            grund = null;
             var werte = new List<double>();
             foreach (string teil in (text ?? "").Split(new[] { ';', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (!double.TryParse(teil.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
                     || double.IsNaN(w) || double.IsInfinity(w))
                 {
-                    grund = "„" + teil + "“ ist keine Zahl";
+                    grund = ZapfSatz.Neu("AUSTEXT_KEINE_ZAHL", teil);
                     return null;
                 }
                 werte.Add(w);
@@ -222,7 +221,7 @@ namespace WindowsFormsApplication1
             try { return Nenninhaltsliste.Aus(werte); }
             catch (ZapfAuslegungException ex)
             {
-                grund = ex.Message;
+                grund = ex.Satz;
                 return null;
             }
         }
@@ -337,7 +336,7 @@ namespace WindowsFormsApplication1
             string name = (bezeichner ?? "").Trim();
             if (name.Length == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — der konstruierte Bedarfstag braucht einen Namen.");
+                    ZapfSatz.Neu("AUSLEGUNG_KONSTRUKTOR_OHNE_NAME"));
             double kwKatalog = ps.Wert(ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG);
             Bedarfstag tag = Bedarfstag.Konstruieren(zeilen, kwKatalog, name);
             return new BedarfstagKatalogzeile(ENTWURF_ID, name, ps.Katalogversion, ZapfBedarfstagquelle.Konstruktor, null,
@@ -389,19 +388,16 @@ namespace WindowsFormsApplication1
             if (name.Length == 0 || entwurf.QuelleArt != ZapfBedarfstagquelle.Konstruktor
                 || string.IsNullOrWhiteSpace(entwurf.Katalogversion))
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagUngueltig, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — der konstruierte Bedarfstag trägt keinen Namen, "
-                    + "keine Katalogversion oder nicht die Quelle Konstruktor.");
+                    ZapfSatz.Neu("SPEICHER_ENTWURF_UNVOLLSTAENDIG"));
             try { Bedarfstag.AusKatalog(entwurf, 1.0); }
             catch (ZapfAuslegungException ex)
             {
-                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagUngueltig, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — " + ex.Message);
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagUngueltig, "", ex.Satz);
             }
             if (Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE Bezeichner = ? AND Katalogversion = ?",
                        name, entwurf.Katalogversion) > 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagNameBelegt, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — der Name „" + name + "“ des konstruierten Bedarfstags ist "
-                    + "in der Katalogversion „" + entwurf.Katalogversion + "“ schon vergeben.");
+                    ZapfSatz.Neu("SPEICHER_ENTWURF_NAME_BELEGT", name, entwurf.Katalogversion));
         }
 
         /// <summary>

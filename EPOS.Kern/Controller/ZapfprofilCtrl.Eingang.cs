@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = Verfuegbar();
             if (!verfuegbar.Ja && verfuegbar.Grund == ZapfVerfuegbarkeitsgrund.TabellenFehlen)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.NichtVerfuegbar, "", verfuegbar.Klartext);
+                throw new ZapfprofilEingabeException(ZapfEingabefehler.NichtVerfuegbar, "", verfuegbar.Satz);
 
             // Fehlt die Katalogversion, wirft Parameter() benannt (KeineKatalogversion).
             Parametersatz ps = Parameter();

@@ -47,8 +47,7 @@ namespace WindowsFormsApplication1
             string version = AktuelleKatalogversion();
             if (version == null)
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    "Nicht rechenbar — die Tabelle " + TwwSchema.TAB_TWW_PARAMETER_STAMM +
-                    " fehlt oder trägt keine Katalogversion.");
+                    ZapfSatz.Neu("PARAMETER_TABELLE_OHNE_VERSION", TwwSchema.TAB_TWW_PARAMETER_STAMM));
             return Parameter(version);
         }
 
@@ -60,10 +59,10 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(katalogversion))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    "Nicht rechenbar — es wurde keine Katalogversion der Brauchwasserparameter genannt.");
+                    ZapfSatz.Neu("PARAMETER_KEINE_VERSION_GENANNT"));
             if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, katalogversion, "",
-                    "Nicht rechenbar — die Tabelle " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " fehlt.");
+                    ZapfSatz.Neu("PARAMETER_TABELLE_FEHLT", TwwSchema.TAB_TWW_PARAMETER_STAMM));
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Schluessel, Wert, Einheit, Quelle, Ausgabe, Version, Herkunftsart " +
@@ -114,17 +113,15 @@ namespace WindowsFormsApplication1
                 if (!DataRepository.TabelleVorhanden(a.Key)) fehlend.Add(a.Key);
             if (fehlend.Count > 0)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.TabellenFehlen,
-                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen "
-                    + string.Join(", ", fehlend) + ".");
+                    ZapfSatz.Neu("VERFUEGBAR_TABELLEN_FEHLEN", fehlend.ToArray()));
 
             string version = AktuelleKatalogversion();
             if (version == null)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
-                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — "
-                    + TwwSchema.TAB_TWW_PARAMETER_STAMM + " trägt keine Katalogversion.");
+                    ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", TwwSchema.TAB_TWW_PARAMETER_STAMM));
 
             return new ZapfVerfuegbarkeit(true, ZapfVerfuegbarkeitsgrund.Verfuegbar,
-                "Der Zapfprofilgenerator ist verfügbar (Katalogversion „" + version + "“).");
+                ZapfSatz.Neu("VERFUEGBAR_JA", version));
         }
 
         // =================================================================================

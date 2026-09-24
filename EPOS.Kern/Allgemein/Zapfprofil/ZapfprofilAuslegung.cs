@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -42,6 +43,15 @@ namespace WindowsFormsApplication1
         /// Perzentil. Ohne Marke (Vorgabe) läuft die Rechnung durch.
         /// </summary>
         public CancellationToken Abbruch { get; init; }
+
+        /// <summary>
+        /// Die Stufe des Dialogs, aus dem die Auslegung rechnet (N11 (c)): In der Stufe
+        /// <see cref="ZapfStufe.Einfach"/> trägt jeder Punkt die Marke „Schnellauslegung"
+        /// (<see cref="Auslegungsempfehlung.Schnellauslegung"/>, 4.5) — ebenso jeder Punkt aus dem
+        /// Schnellpfad des Vereinfachungsverfahrens. <c>null</c> = ein Lauf ohne Dialog (Test,
+        /// Referenzlauf): Dann setzt allein der Schnellpfad die Marke.
+        /// </summary>
+        public ZapfStufe? Stufe { get; init; }
     }
 
     /// <summary>
@@ -95,11 +105,9 @@ namespace WindowsFormsApplication1
             a ??= new Auslegungseingang();
             Zapfkalender.Pruefen(e.WochentagJan1, e.We);
             if (e.Projekt == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — die Projektgrößen der Auslegung fehlen.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_PROJEKTGROESSEN_FEHLEN"));
             if (e.Parameter == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.ParameterFehlt,
-                    "Nicht rechenbar — der Parametersatz der Auslegung fehlt.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.ParameterFehlt, ZapfSatz.Neu("AUSLEGUNG_PARAMETERSATZ_FEHLT"));
             ProjektStand p = e.Projekt;
             Parametersatz ps = e.Parameter;
             var prot = new Herkunftsprotokoll();
@@ -116,21 +124,19 @@ namespace WindowsFormsApplication1
                 arbeit.Add(w);
                 if (z == null)
                 {
-                    Ablehnen(w, "Eine Zone ohne Angaben.", ablehnungen);
+                    Ablehnen(w, ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN"), ablehnungen);
                     continue;
                 }
                 try
                 {
                     w.Art = Suchen(katalog, z.IdNutzungsart)
                             ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.NutzungsartFehlt, w.Name,
-                                   "Nicht rechenbar — die Nutzungsart " + z.IdNutzungsart + " der Zone „" + w.Name
-                                   + "“ steht nicht im Katalog.");
+                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", z.IdNutzungsart, w.Name));
                     Tagesgangsatz satz = w.Art.Tagesgaenge;
                     if (z.IdTagesgangsatz.HasValue)
                         satz = SuchenSatz(e.Tagesgangsaetze, z.IdTagesgangsatz.Value)
                                ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, w.Name,
-                                      "Nicht rechenbar — der Tagesgangsatz " + z.IdTagesgangsatz.Value + " der Zone „"
-                                      + w.Name + "“ fehlt.");
+                                      ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_FEHLT", z.IdTagesgangsatz.Value, w.Name));
                     w.Temperaturen = Mengengeruest.Temperaturen(z, w.Art, ps, prot);
                     w.Menge = Mengengeruest.JahresenergieKwh(z, w.Art, w.Temperaturen, ps, belegung, prot, zapfHinweise);
                     w.Struktur = Formvektor.Bilden(z, w.Art, satz, ps, prot, zapfHinweise);
@@ -140,8 +146,8 @@ namespace WindowsFormsApplication1
                     w.InZ1 = z.Zirkulation && w.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     w.ZapfungKwh = w.Menge.JahresenergieKwh;
                 }
-                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Message, ablehnungen); }
-                catch (ParametersatzException ex) { Ablehnen(w, ex.Message, ablehnungen); }
+                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Satz, ablehnungen); }
+                catch (ParametersatzException ex) { Ablehnen(w, ex.Satz, ablehnungen); }
             }
 
             // --- 2. Zirkulation aus den Mengen vor der Kalibrierung (4.3) ----------------------
@@ -170,8 +176,8 @@ namespace WindowsFormsApplication1
                     catch (ParametersatzException) { }
                 }
             }
-            catch (ZapfprofilEingabeException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Message, true)); }
-            catch (ParametersatzException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Message, true)); }
+            catch (ZapfprofilEingabeException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Satz, true)); }
+            catch (ParametersatzException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Satz, true)); }
 
             // --- 3. Kalibrierung (4.1) ---------------------------------------------------------
             foreach (Zonenarbeit w in arbeit)
@@ -184,7 +190,7 @@ namespace WindowsFormsApplication1
                     w.ZirkulationKwh = k.ZirkulationKwh;
                     prot.Vermerken(w.Name, ZapfFeld.KALIBRIERFAKTOR, k.Faktor, "-", Wertstatus.Kalibriert, null);
                 }
-                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Message, ablehnungen); }
+                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Satz, ablehnungen); }
             }
 
             // --- 4. Laufzeitfenster: dieselben Stunden wie die Bilanz (4.3, N7 (g)) -------------
@@ -197,7 +203,8 @@ namespace WindowsFormsApplication1
 
             // --- 5. Tagesmengen der Auslegung bei θ_KW,Auslegung (4.2, 4.5) --------------------
             double kwAuslegung = ZapfAuslegungParameter.ProjektOderParameter(p.KaltwasserAuslegungC,
-                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C");
+                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C",
+                ZapfSatz.Neu("BEGRIFF_KALTWASSER_AUSLEGUNG"));
             foreach (Zonenarbeit w in arbeit)
             {
                 if (w.Abgelehnt) continue;
@@ -210,8 +217,8 @@ namespace WindowsFormsApplication1
                         Wochenreihe.TagesmengenAuslegung(w.ZapfungKwh, f, w.Struktur, w.Kalender, e.WochentagJan1, w.Name),
                         w.Struktur, w.Kalender);
                 }
-                catch (ZapfAuslegungException ex) { Ablehnen(w, ex.Message, ablehnungen); }
-                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Message, ablehnungen); }
+                catch (ZapfAuslegungException ex) { Ablehnen(w, ex.Satz, ablehnungen); }
+                catch (ZapfprofilEingabeException ex) { Ablehnen(w, ex.Satz, ablehnungen); }
             }
 
             // --- 6. je Topologiegruppe ---------------------------------------------------------
@@ -236,7 +243,7 @@ namespace WindowsFormsApplication1
                                    e.Zapfkategorien, prot));
             }
 
-            foreach (ZapfHinweis h in zapfHinweise) hinweise.Add(new Auslegungshinweis(h.Code, h.Text));
+            foreach (ZapfHinweis h in zapfHinweise) hinweise.Add(new Auslegungshinweis(h.Code, h.Satz));
             return new Auslegungsergebnis
             {
                 Gruppen = gruppen.AsReadOnly(),
@@ -260,7 +267,7 @@ namespace WindowsFormsApplication1
             internal Din4708Ergebnis Din;
             internal Speicherauslegungseingang Eingang;
             internal Summenlinienergebnis Summenlinie;
-            internal string Grund;
+            internal ZapfSatz Grund;
             internal double? NenninhaltL;
             internal Summenlinienparameter Parameter;
             internal readonly List<Auslegungshinweis> Hinweise = new List<Auslegungshinweis>();
@@ -297,7 +304,7 @@ namespace WindowsFormsApplication1
 
             // --- Speichergrößen, Großanlage vorab, die EINE Speichertemperatur (nur Speicher) -----
             double nutzanteil = 0.0, zuschlag = 0.0;
-            string speicherGrund = null;
+            ZapfSatz speicherGrund = null;
             double? leitung = null;
             Grossanlagenbefund vorab = null;
             bool grossPruefbar = false;
@@ -307,12 +314,12 @@ namespace WindowsFormsApplication1
                 try
                 {
                     nutzanteil = ZapfAuslegungParameter.ProjektOderParameter(p.Nutzanteil, ZapfAuslegungParameter.NUTZANTEIL,
-                        ps, prot, "Auslegung.Nutzanteil", "-");
+                        ps, prot, "Auslegung.Nutzanteil", "-", ZapfSatz.Neu("BEGRIFF_NUTZANTEIL"));
                     zuschlag = ZapfAuslegungParameter.ProjektOderParameter(p.Zuschlag, ZapfAuslegungParameter.ZUSCHLAG,
-                        ps, prot, "Auslegung.Zuschlag", "-");
+                        ps, prot, "Auslegung.Zuschlag", "-", ZapfSatz.Neu("BEGRIFF_ZUSCHLAG"));
                 }
-                catch (ParametersatzException ex) { speicherGrund = ex.Message; }
-                catch (ZapfAuslegungException ex) { speicherGrund = ex.Message; }
+                catch (ParametersatzException ex) { speicherGrund = ex.Satz; }
+                catch (ZapfAuslegungException ex) { speicherGrund = ex.Satz; }
 
                 // Großanlage vorab: Projektvolumen und Leitungsinhalt, noch ohne Summenlinie.
                 try
@@ -323,10 +330,9 @@ namespace WindowsFormsApplication1
                 }
                 catch (ParametersatzException ex)
                 {
-                    Auslegungshinweis.Einmal(h, new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
-                        ex.Message + " Die Großanlage wird nicht erkannt."));
+                    Auslegungshinweis.Einmal(h, Auslegungshinweis.ParameterFehlt(ex, ZapfSatz.Neu("FOLGE_GROSSANLAGE_NICHT_ERKANNT")));
                 }
-                catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("GROSSANLAGE_NICHT_RECHENBAR", ex.Message, true)); }
+                catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("GROSSANLAGE_NICHT_RECHENBAR", ex.Satz, true)); }
 
                 // Schnellpfad: Wohnen bis zur Anwendungsgrenze, das Projekt nennt weder Sensorhöhe noch Temperatur.
                 bool schnellpfad = false;
@@ -335,8 +341,7 @@ namespace WindowsFormsApplication1
                     try { schnellpfad = Summenlinie.SchnellpfadGilt(true, Wohneinheiten(zonen), ps); }
                     catch (ParametersatzException ex)
                     {
-                        Auslegungshinweis.Einmal(h, new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
-                            ex.Message + " Der Schnellpfad entfällt."));
+                        Auslegungshinweis.Einmal(h, Auslegungshinweis.ParameterFehlt(ex, ZapfSatz.Neu("FOLGE_SCHNELLPFAD_ENTFAELLT")));
                     }
                 }
                 if (speicherGrund == null)
@@ -344,10 +349,10 @@ namespace WindowsFormsApplication1
                     try
                     {
                         temperatur = Speichertemperaturwahl.Waehlen(p, ps, vorab?.Gross == true, schnellpfad, prot);
-                        Auslegungspruefung.Spreizung(temperatur.SpeicherC, kwAuslegung, "Speicher − Kaltwasser der Auslegung");
+                        Auslegungspruefung.Spreizung(temperatur.SpeicherC, kwAuslegung, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_SPEICHER"));
                     }
-                    catch (ParametersatzException ex) { speicherGrund = ex.Message; temperatur = null; }
-                    catch (ZapfAuslegungException ex) { speicherGrund = ex.Message; temperatur = null; }
+                    catch (ParametersatzException ex) { speicherGrund = ex.Satz; temperatur = null; }
+                    catch (ZapfAuslegungException ex) { speicherGrund = ex.Satz; temperatur = null; }
                 }
             }
 
@@ -365,7 +370,7 @@ namespace WindowsFormsApplication1
                     if (t != null && t.Id == p.IdBedarfstag.Value) gewaehlt = t;
             Bedarfstagwahl wahl = Bedarfstagregel.Waehlen(p.BedarfstagQuelle, wohnen, din.Gueltig && bloecke, gewaehlt);
             Bedarfstag tag = null;
-            string tagGrund = wahl.Grund;
+            ZapfSatz tagGrund = wahl.Grund;
             try
             {
                 switch (wahl.Quelle)
@@ -374,8 +379,8 @@ namespace WindowsFormsApplication1
                         break;
                     case ZapfBedarfstagquelle.Stundenprofil:
                         int d = Wochenreihe.GroessterTag(bausteine);
-                        tag = Bedarfstag.AusStunden(Wochenreihe.Tagesstunden(bausteine, d),
-                            "Stundenprofil, Tag " + d.ToString(CultureInfo.InvariantCulture));
+                        tag = Bedarfstag.AusStunden(Wochenreihe.Tagesstunden(bausteine, d), null,
+                            ZapfSatz.Neu("AUSTEXT_TAG_STUNDENPROFIL", d));
                         break;
                     case ZapfBedarfstagquelle.Din4708Profil:
                         tag = Bedarfstag.Din4708(din.WzKwh.Value, Zapfblock.AusParametern(ps), din.KennzahlN.Value);
@@ -385,13 +390,12 @@ namespace WindowsFormsApplication1
                         break;
                 }
             }
-            catch (ZapfAuslegungException ex) { tagGrund = ex.Message; }
-            catch (ParametersatzException ex) { tagGrund = ex.Message; }
+            catch (ZapfAuslegungException ex) { tagGrund = ex.Satz; }
+            catch (ParametersatzException ex) { tagGrund = ex.Satz; }
             if (tag == null)
                 h.Add(new Auslegungshinweis(wahl.KonstruktorOeffnen ? "KONSTRUKTOR_OEFFNEN" : "BEDARFSTAG_NICHT_RECHENBAR", tagGrund, true));
             else if (tag.SpitzenUnterschaetzt && !speicher)
-                h.Add(new Auslegungshinweis(Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT,
-                    "Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.", true));
+                h.Add(new Auslegungshinweis(Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT, ZapfSatz.Neu("AUSHINWEIS_SPITZEN_UNTERSCHAETZT"), true));
 
             Auslegungswert haupt;
             Auslegungsempfehlung empfehlung;
@@ -417,11 +421,9 @@ namespace WindowsFormsApplication1
                         try
                         {
                             Speichertemperaturwahl mindest = Speichertemperaturwahl.Waehlen(p, ps, true, false, prot);
-                            Auslegungspruefung.Spreizung(mindest.SpeicherC, kwAuslegung, "Speicher − Kaltwasser der Auslegung");
+                            Auslegungspruefung.Spreizung(mindest.SpeicherC, kwAuslegung, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_SPEICHER"));
                             h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE,
-                                "Mit " + Auslegungstext.Z(temperatur.SpeicherC) + " °C ergibt die Auslegung "
-                                + Auslegungstext.G(lauf.EmpfohlenL.Value) + " l — eine Großanlage nach DVGW W 551; die Gruppe rechnet "
-                                + "deshalb mit der Mindesttemperatur " + Auslegungstext.Z(mindest.SpeicherC) + " °C."));
+                                ZapfSatz.Neu("AUSHINWEIS_TEMPERATUR_GROSSANLAGE", temperatur.SpeicherC, lauf.EmpfohlenL.Value, mindest.SpeicherC)));
                             temperatur = mindest;
                             din = Normvergleich(topo, paare, a, ps, temperatur, kwAuslegung, nutzanteil, null);
                             lauf = SpeicherRechnen(p, ps, a, temperatur, din, true, tag, tagGrund, woche, kwAuslegung, nutzanteil,
@@ -430,13 +432,13 @@ namespace WindowsFormsApplication1
                         }
                         catch (ParametersatzException ex)
                         {
-                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE, ex.Message
-                                + " Die Gruppe bleibt bei " + Auslegungstext.Z(temperatur.SpeicherC) + " °C.", true));
+                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE,
+                                ZapfSatz.Neu("AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT", ex.Satz, temperatur.SpeicherC), true));
                         }
                         catch (ZapfAuslegungException ex)
                         {
-                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE, ex.Message
-                                + " Die Gruppe bleibt bei " + Auslegungstext.Z(temperatur.SpeicherC) + " °C.", true));
+                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE,
+                                ZapfSatz.Neu("AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT", ex.Satz, temperatur.SpeicherC), true));
                         }
                     }
                     h.AddRange(lauf.Hinweise);
@@ -454,29 +456,31 @@ namespace WindowsFormsApplication1
                                 Grossanlage = gross?.Gross
                             }, ps);
                         }
-                        catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
-                        catch (ParametersatzException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
+                        catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Satz, true)); }
+                        catch (ParametersatzException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Satz, true)); }
                     }
                 }
 
                 // --- Summenlinie: die Empfehlung ---------------------------------------------------
-                string slGrund = speicherGrund ?? lauf?.Grund ?? tagGrund;
+                ZapfSatz slGrund = speicherGrund ?? lauf?.Grund ?? tagGrund;
                 if (sl != null)
                 {
-                    string vermerk = Summenlinie.VERMERK_ENTWURF + (sl.Schnellpfad ? "; Schnellauslegung" : "")
-                                     + (tag.SpitzenUnterschaetzt ? "; Spitzen unterschätzt" : "");
+                    var vermerke = new List<ZapfSatz> { ZapfSatz.Neu(Summenlinie.VERMERK_ENTWURF) };
+                    if (sl.Schnellpfad) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"));
+                    if (tag.SpitzenUnterschaetzt) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SPITZEN"));
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.Gerechnet, sl.Punkt.VolumenL,
-                        sl.Punkt.LeistungKw, true, "Summenlinie: " + Auslegungstext.G(sl.Punkt.VolumenL) + " l bei "
-                        + Auslegungstext.Z(sl.Punkt.LeistungKw) + " kW, Ladezeit " + Auslegungstext.Z(sl.Punkt.LadezeitH) + " h/d");
+                        sl.Punkt.LeistungKw, true,
+                        ZapfSatz.Neu("AUSTEXT_SUMMENLINIE", sl.Punkt.VolumenL, sl.Punkt.LeistungKw, sl.Punkt.LadezeitH));
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, true, sl.Punkt.VolumenL,
-                        sl.Punkt.LeistungKw, lauf.NenninhaltL, sl.Schnellpfad, vermerk, "");
+                        sl.Punkt.LeistungKw, lauf.NenninhaltL, sl.Schnellpfad || a.Stufe == ZapfStufe.Einfach,
+                        vermerke.AsReadOnly(), null);
                 }
                 else
                 {
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.NichtRechenbar, null, null,
-                                               false, slGrund ?? "");
-                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false, "",
-                                                          slGrund ?? "");
+                                               false, slGrund);
+                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false,
+                                                          new ZapfSatz[0], slGrund);
                 }
 
                 // --- Großanlage ------------------------------------------------------------------
@@ -493,17 +497,18 @@ namespace WindowsFormsApplication1
                 if (tag != null)
                 {
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Minutenspitze, Auslegungsstatus.Gerechnet, null,
-                        tag.GroessteMinutenleistungKw, true, "Minutenspitze des Bedarfstags " + Auslegungstext.Z(tag.GroessteMinutenleistungKw)
-                        + " kW (größte Stundenleistung " + Auslegungstext.Z(tag.GroessteStundenleistungKw) + " kW nachrichtlich)");
+                        tag.GroessteMinutenleistungKw, true,
+                        ZapfSatz.Neu("AUSTEXT_MINUTENSPITZE", tag.GroessteMinutenleistungKw, tag.GroessteStundenleistungKw));
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Minutenspitze, true, null,
-                        tag.GroessteMinutenleistungKw, null, false, tag.SpitzenUnterschaetzt ? "Spitzen unterschätzt" : "", "");
+                        tag.GroessteMinutenleistungKw, null, a.Stufe == ZapfStufe.Einfach,
+                        tag.SpitzenUnterschaetzt ? new[] { ZapfSatz.Neu("AUSTEXT_VERMERK_SPITZEN") } : new ZapfSatz[0], null);
                 }
                 else
                 {
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Minutenspitze, Auslegungsstatus.NichtRechenbar, null, null,
-                                               false, tagGrund ?? "");
-                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Minutenspitze, false, null, null, null, false, "",
-                                                          tagGrund ?? "");
+                                               false, tagGrund);
+                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Minutenspitze, false, null, null, null, false,
+                                                          new ZapfSatz[0], tagGrund);
                 }
             }
 
@@ -513,8 +518,7 @@ namespace WindowsFormsApplication1
             if (a.Stochastisch)
                 perzentilwert = Stochastik(topo, zonen, bausteine, p, ps, kategorien, kwAuslegung, sl, slp, h, a.Abbruch, out perzentil);
             if (topo == ZapfTopologie.Wohnungsstation && perzentil == null)
-                h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
-                    "Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe."));
+                h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT", ZapfSatz.Neu("AUSHINWEIS_WOHNUNGSSTATION_SUMME")));
 
             IReadOnlyList<Auslegungswert> dreier = Dreiergruppe.Bilden(haupt, perzentilwert, Dreiergruppe.Normvergleich(din));
             h.AddRange(Dreiergruppe.Reihenfolge(topo, dreier[0], dreier[1], dreier[2]));
@@ -566,8 +570,7 @@ namespace WindowsFormsApplication1
             try
             {
                 if (speicher && (sl == null || slp == null))
-                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                        "Nicht rechenbar — das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N).");
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_PERZENTIL_OHNE_PUNKT"));
                 int perzentil = p.Perzentil;
                 int realisierungen = Zapfensemble.RealisierungenAuslegung(p.RealisierungenAuslegung, perzentil, ps);
                 int tag = Wochenreihe.GroessterTag(bausteine);
@@ -577,7 +580,7 @@ namespace WindowsFormsApplication1
                         Zapfeinheiten.Anzahl(w.Stand, w.Art, w.Menge.Bezugsmenge, ps),
                         Zapfkategoriensatz.Aus(kategorien, w.Art, w.Name),
                         w.Baustein.TagesmengenKwh[tag - 1],
-                        Auslegungspruefung.Spreizung(w.Temperaturen.ZapfC, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung"),
+                        Auslegungspruefung.Spreizung(w.Temperaturen.ZapfC, kwAuslegung, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG")),
                         Tageszeitdichte.Aus(w.Struktur, w.Kalender[tag - 1])));
                 // Bei Speicher rechnet jede Realisierung ihr Volumen beim Φ_N des Summenlinienpunkts gleich mit
                 // (Volumenauftrag) — das Ensemble bewahrt keine gezogenen Tage auf.
@@ -593,27 +596,21 @@ namespace WindowsFormsApplication1
                     GleichzeitigkeitLeistung = ens.GleichzeitigkeitLeistung, GleichzeitigkeitVolumen = volumen?.GleichzeitigkeitVolumen,
                     Zonen = ens.Zonen
                 };
-                string pp = "P" + perzentil.ToString(CultureInfo.InvariantCulture);
-                string r = "R = " + realisierungen.ToString(CultureInfo.InvariantCulture) + ", Seed " + p.Seed.ToString(CultureInfo.InvariantCulture);
-                string glf = (ergebnis.GleichzeitigkeitVolumen.HasValue ? "; GLF_V " + Auslegungstext.Z(ergebnis.GleichzeitigkeitVolumen.Value) : "")
-                             + (ergebnis.GleichzeitigkeitLeistung.HasValue ? "; GLF_P " + Auslegungstext.Z(ergebnis.GleichzeitigkeitLeistung.Value) : "");
-                string belastbar = ens.Belastbar ? "" : " — nicht belastbar";
+                ZapfSatz glf = GleichzeitigkeitTeil(ergebnis.GleichzeitigkeitVolumen, ergebnis.GleichzeitigkeitLeistung);
+                ZapfSatz belastbar = ens.Belastbar ? null : ZapfSatz.Neu("AUSTEXT_NICHT_BELASTBAR_TEIL");
                 if (!ens.Belastbar)
                     h.Add(new Auslegungshinweis("PERZENTIL_NICHT_BELASTBAR",
-                        "Das Perzentil " + pp + " stützt sich auf " + realisierungen.ToString(CultureInfo.InvariantCulture)
-                        + " Realisierungen; ein empirisches " + pp + " braucht mindestens "
-                        + Zapfensemble.Mindestzahl(perzentil).ToString(CultureInfo.InvariantCulture) + " — nicht belastbar.", true));
+                        ZapfSatz.Neu("AUSHINWEIS_PERZENTIL_NICHT_BELASTBAR", perzentil, realisierungen, Zapfensemble.Mindestzahl(perzentil)), true));
 
                 // Vergleich μ + z·σ/√N aus der Einzelstatistik (Konzept S4c) — nur ein Hinweis.
                 double? quantil = ZapfAuslegungParameter.Wahlweise(ps, ZapfStochastikParameter.QUANTIL + perzentil.ToString(CultureInfo.InvariantCulture),
-                    "Der Vergleich μ + z·σ/√N entfällt.", h);
+                    ZapfSatz.Neu("FOLGE_WURZEL_N_ENTFAELLT"), h);
                 if (quantil.HasValue)
                 {
                     ergebnis = ergebnis with { WurzelNSchaetzungKw = ens.WurzelNSchaetzungKw(quantil.Value) };
                     h.Add(new Auslegungshinweis("WURZEL_N_VERGLEICH",
-                        "Minutenspitze " + pp + " des Ensembles " + Auslegungstext.Z(ens.MinutenspitzeKw.Wert(perzentil))
-                        + " kW; die Einzelstatistik der Einheiten ergibt je Minute μ + z·σ/√N = "
-                        + Auslegungstext.Z(ergebnis.WurzelNSchaetzungKw.Value) + " kW (z = " + Auslegungstext.Z(quantil.Value) + ")."));
+                        ZapfSatz.Neu("AUSHINWEIS_WURZEL_N_VERGLEICH", perzentil, ens.MinutenspitzeKw.Wert(perzentil),
+                                     ergebnis.WurzelNSchaetzungKw.Value, quantil.Value)));
                 }
 
                 if (topo == ZapfTopologie.Wohnungsstation)
@@ -626,9 +623,8 @@ namespace WindowsFormsApplication1
                         SpitzeJeEinheitKw = groesste.SpitzeJeEinheitKw.Wert(perzentil), SpitzeJeEinheitZone = groesste.Zone
                     };
                     h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
-                        "Die Wohnungsstation je Einheit: " + pp + " der Minutenspitze " + Auslegungstext.Z(groesste.SpitzeJeEinheitKw.Wert(perzentil))
-                        + " kW (Zone „" + groesste.Zone + "“); die Summe der Gruppe " + pp + " "
-                        + Auslegungstext.Z(ens.MinutenspitzeKw.Wert(perzentil)) + " kW."));
+                        ZapfSatz.Neu("AUSHINWEIS_WOHNUNGSSTATION_JE_EINHEIT", perzentil, groesste.SpitzeJeEinheitKw.Wert(perzentil),
+                                     groesste.Zone ?? "", ens.MinutenspitzeKw.Wert(perzentil))));
                 }
 
                 if (speicher)
@@ -636,7 +632,7 @@ namespace WindowsFormsApplication1
                     double v = volumen.VolumenL.Wert(perzentil);
                     double phi = sl.Punkt.LeistungKw;
                     double? schwelle = ZapfAuslegungParameter.Wahlweise(ps, ZapfStochastikParameter.KONSISTENZSCHWELLE,
-                        "Der Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts) entfällt.", h);
+                        ZapfSatz.Neu("FOLGE_KONSISTENZ_ENTFAELLT"), h);
                     double spitze = ens.StundenspitzeKw.Wert(perzentil);
                     // Die Probe als Werte (N11 (k)): die Oberfläche baut ihren Satz daraus, nicht aus dem Satz des Kerns.
                     bool auffaellig = schwelle.HasValue && spitze > schwelle.Value * phi;
@@ -648,33 +644,36 @@ namespace WindowsFormsApplication1
                         };
                     if (auffaellig)
                         h.Add(new Auslegungshinweis("KONSISTENZ_STOCHASTISCHE_SPITZE",
-                            "Die stochastische Spitze (" + pp + " der größten Stundenleistung " + Auslegungstext.Z(spitze)
-                            + " kW) liegt über dem " + Auslegungstext.Z(schwelle.Value) + "-Fachen der Leistung des Summenlinienpunkts "
-                            + Auslegungstext.Z(phi) + " kW — Bedarfstag und Summenlinie prüfen.", true));
+                            ZapfSatz.Neu("AUSHINWEIS_KONSISTENZ_STOCHASTISCHE_SPITZE", perzentil, spitze, schwelle.Value, phi), true));
                     if (double.IsPositiveInfinity(v))
                         return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, phi, false,
-                            "Perzentil " + pp + ": nicht rechenbar — beim Φ_N " + Auslegungstext.Z(phi) + " kW findet die Summenlinie für "
-                            + volumen.OhneNachweis.ToString(CultureInfo.InvariantCulture) + " von "
-                            + realisierungen.ToString(CultureInfo.InvariantCulture) + " Realisierungen kein Volumen.");
-                    string band = double.IsPositiveInfinity(volumen.VolumenL.Maximum) ? "∞" : Auslegungstext.G(volumen.VolumenL.Maximum);
+                            ZapfSatz.Neu("AUSTEXT_PERZENTIL_KEIN_VOLUMEN", perzentil, phi, volumen.OhneNachweis, realisierungen));
+                    object band = double.IsPositiveInfinity(volumen.VolumenL.Maximum) ? "∞" : (object)volumen.VolumenL.Maximum;
                     return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, v, phi, false,
-                        "Perzentil " + pp + ": " + Auslegungstext.G(v) + " l bei " + Auslegungstext.Z(phi) + " kW (" + r
-                        + "; Streuband " + Auslegungstext.G(volumen.VolumenL.Minimum) + "–" + band + " l" + glf + ")" + belastbar);
+                        ZapfSatz.Neu("AUSTEXT_PERZENTIL_SPEICHER", perzentil, v, phi, realisierungen, p.Seed,
+                                     volumen.VolumenL.Minimum, band, glf, belastbar));
                 }
                 double pk = ens.MinutenspitzeKw.Wert(perzentil);
                 return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, null, pk, false,
-                    "Perzentil " + pp + ": Minutenspitze " + Auslegungstext.Z(pk) + " kW, größte Stundenleistung "
-                    + Auslegungstext.Z(ens.StundenspitzeKw.Wert(perzentil)) + " kW nachrichtlich (" + r + "; Streuband "
-                    + Auslegungstext.Z(ens.MinutenspitzeKw.Minimum) + "–" + Auslegungstext.Z(ens.MinutenspitzeKw.Maximum) + " kW" + glf + ")"
-                    + belastbar);
+                    ZapfSatz.Neu("AUSTEXT_PERZENTIL_MINUTE", perzentil, pk, ens.StundenspitzeKw.Wert(perzentil), realisierungen, p.Seed,
+                                 ens.MinutenspitzeKw.Minimum, ens.MinutenspitzeKw.Maximum, glf, belastbar));
             }
             // Die benannte Ablehnung des Rechenwegs reist mit Kennung und Werten weiter — nicht nur ihr Satz.
-            catch (ZapfprofilEingabeException ex) { return PerzentilNichtRechenbar(ex.Message, h, ZapfAblehnung.Aus(ex.Zone, ex)); }
-            catch (ParametersatzException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
-            catch (ZapfAuslegungException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
+            catch (ZapfprofilEingabeException ex) { return PerzentilNichtRechenbar(ex.Satz, h, ZapfAblehnung.Aus(ex.Zone, ex)); }
+            catch (ParametersatzException ex) { return PerzentilNichtRechenbar(ex.Satz, h, null); }
+            catch (ZapfAuslegungException ex) { return PerzentilNichtRechenbar(ex.Satz, h, null); }
         }
 
-        private static Auslegungswert PerzentilNichtRechenbar(string grund, List<Auslegungshinweis> h, ZapfAblehnung ablehnung)
+        /// <summary>Der Teil „; GLF_V … ; GLF_P …" der Karte (b) als Satz — <c>null</c> (leer) ohne Gleichzeitigkeit.</summary>
+        private static ZapfSatz GleichzeitigkeitTeil(double? glfV, double? glfP)
+        {
+            if (glfV.HasValue && glfP.HasValue) return ZapfSatz.Neu("AUSTEXT_GLF_TEIL_VP", glfV.Value, glfP.Value);
+            if (glfV.HasValue) return ZapfSatz.Neu("AUSTEXT_GLF_TEIL_V", glfV.Value);
+            if (glfP.HasValue) return ZapfSatz.Neu("AUSTEXT_GLF_TEIL_P", glfP.Value);
+            return null;
+        }
+
+        private static Auslegungswert PerzentilNichtRechenbar(ZapfSatz grund, List<Auslegungshinweis> h, ZapfAblehnung ablehnung)
         {
             h.Add(new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", grund, true) { Ablehnung = ablehnung });
             return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, null, false, grund)
@@ -690,14 +689,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Din4708Ergebnis Normvergleich(ZapfTopologie topo, List<(ZonenStand, Nutzungsart)> paare, Auslegungseingang a,
                                                      Parametersatz ps, Speichertemperaturwahl temperatur, double kwAuslegung,
-                                                     double nutzanteil, string speicherGrund)
+                                                     double nutzanteil, ZapfSatz speicherGrund)
         {
             bool speicher = topo == ZapfTopologie.Speicher;
             if (speicher && temperatur != null)
                 return Din4708Kennzahl.Rechnen(paare, a.Din4708, ps, temperatur.SpeicherC - kwAuslegung, nutzanteil);
             Din4708Ergebnis din = Din4708Kennzahl.Rechnen(speicher ? new (ZonenStand, Nutzungsart)[0] : paare, a.Din4708, ps, 1.0, 1.0);
             if (speicher)
-                din = din with { Grund = "DIN 4708: nicht rechenbar — " + speicherGrund, Fehler = ZapfAuslegungsfehler.ParameterFehlt };
+                din = din with
+                {
+                    Grund = ZapfSatz.Neu("AUSTEXT_DIN_NICHT_RECHENBAR_GRUND", (object)speicherGrund ?? ""),
+                    Fehler = ZapfAuslegungsfehler.ParameterFehlt
+                };
             return din;
         }
 
@@ -709,7 +712,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Speicherlauf SpeicherRechnen(ProjektStand p, Parametersatz ps, Auslegungseingang a,
                                                     Speichertemperaturwahl temperatur, Din4708Ergebnis din, bool? grossanlage,
-                                                    Bedarfstag tag, string tagGrund, Wochenreihe woche, double kwAuslegung,
+                                                    Bedarfstag tag, ZapfSatz tagGrund, Wochenreihe woche, double kwAuslegung,
                                                     double nutzanteil, double zuschlag, Schaetzwert zirk, Tagesfenster laufzeit,
                                                     bool wohnen, bool allePersonen, double personenBezug, Herkunftsprotokoll prot)
         {
@@ -721,12 +724,9 @@ namespace WindowsFormsApplication1
                 {
                     Woche = woche, SpeicherC = temperatur.SpeicherC, KaltwasserAuslegungC = kwAuslegung,
                     Nutzanteil = nutzanteil, Zuschlag = zuschlag,
-                    Ladefenster = new Tagesfenster(
-                        ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterBeginnH, ZapfAuslegungParameter.LADEFENSTER_BEGINN,
-                            ps, prot, "Auslegung.LadefensterBeginn", "h"),
-                        ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
-                            ps, prot, "Auslegung.Ladefenster", "h")),
+                    Ladefenster = Ladefenster(p, ps, prot),
                     LadeAuto = p.LadeAuto, LadeManuellKw = p.LadeManuellKw,
+                    PersonenAuto = p.PersonenAuto, PersonenManuell = p.PersonenManuell, FuellstandBezugWahl = p.FuellstandBezug,
                     Zirkulation = zirk, ZirkulationLaufzeit = laufzeit,
                     Din = din,
                     Personen = din.Gueltig ? din.Personen : allePersonen ? personenBezug : (double?)null,
@@ -738,12 +738,12 @@ namespace WindowsFormsApplication1
             catch (ZapfAuslegungException ex)
             {
                 lauf.Eingang = null;
-                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true));
+                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Satz, true));
             }
             catch (ParametersatzException ex)
             {
                 lauf.Eingang = null;
-                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true));
+                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Satz, true));
             }
 
             if (tag == null)
@@ -758,12 +758,12 @@ namespace WindowsFormsApplication1
                 if (temperatur.Schnellpfad) slp = Summenlinie.Schnellpfad(slp, ps);
                 lauf.Parameter = slp;
                 double? n = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.WERTEPAARE,
-                    "Die Wertepaarkurve der Summenlinie entfällt.", lauf.Hinweise);
+                    ZapfSatz.Neu("FOLGE_WERTEPAARKURVE_ENTFAELLT"), lauf.Hinweise);
                 lauf.Summenlinie = Summenlinie.Rechnen(tag, slp, n.HasValue && n.Value >= 1 ? (int)n.Value : 0);
                 lauf.Hinweise.AddRange(lauf.Summenlinie.Hinweise);
             }
-            catch (ZapfAuslegungException ex) { lauf.Grund = ex.Message; }
-            catch (ParametersatzException ex) { lauf.Grund = ex.Message; }
+            catch (ZapfAuslegungException ex) { lauf.Grund = ex.Satz; }
+            catch (ParametersatzException ex) { lauf.Grund = ex.Satz; }
 
             if (lauf.Summenlinie != null && a.Nenninhalte != null)
             {
@@ -772,8 +772,7 @@ namespace WindowsFormsApplication1
                 lauf.NenninhaltL = a.Nenninhalte.Runden(v, ps, lauf.Hinweise, out bool ueberEnde);
                 if (ueberEnde)
                     lauf.Hinweise.Add(new Auslegungshinweis("MEHRSPEICHER",
-                        "Der empfohlene Punkt " + Auslegungstext.G(v) + " l liegt über dem größten Nenninhalt "
-                        + Auslegungstext.G(a.Nenninhalte.GroessterL) + " l — Mehrspeicheranlage prüfen.", true));
+                        ZapfSatz.Neu("AUSHINWEIS_MEHRSPEICHER_PUNKT", v, a.Nenninhalte.GroessterL), true));
             }
             return lauf;
         }
@@ -801,10 +800,18 @@ namespace WindowsFormsApplication1
             {
                 if (bezugsmengen.Count != 1)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                        "Nicht rechenbar — der Katalogtag „" + zeile.Bezeichner + "“ wird auf die Bezugsmenge skaliert, die Zonen "
-                        + "der Gruppe tragen aber verschiedene Bezugsarten (" + string.Join(", ", bezugsmengen.Keys)
-                        + "); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren.");
-                foreach (double m in bezugsmengen.Values) ziel = m;
+                        ZapfSatz.Neu("AUSLEGUNG_KATALOGTAG_BEZUGSARTEN", zeile.Bezeichner ?? "",
+                                     bezugsmengen.Keys.Select(Bezugsartbegriff).ToArray()));
+                foreach (KeyValuePair<ZapfBezugsart, double> m in bezugsmengen)
+                {
+                    // Die Bezugsart des Tages (Schemaschritt 119, N10 (j)): Skaliert wird nur auf eine
+                    // Menge derselben Bezugsart; ein Tag ohne Bezugsart gilt wie bisher für jede.
+                    if (zeile.Bezugsart.HasValue && zeile.Bezugsart.Value != m.Key)
+                        throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
+                            ZapfSatz.Neu("AUSLEGUNG_KATALOGTAG_BEZUGSART", zeile.Bezeichner ?? "",
+                                         Bezugsartbegriff(zeile.Bezugsart.Value), Bezugsartbegriff(m.Key)));
+                    ziel = m.Value;
+                }
             }
             double faktor = Bedarfstag.Skalierung(zeile, ziel);
 
@@ -816,13 +823,11 @@ namespace WindowsFormsApplication1
                 {
                     if (zapf.HasValue && zapf.Value != w.Temperaturen.ZapfC)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                            "Nicht rechenbar — der Katalogtag „" + zeile?.Bezeichner + "“ gilt bei θ_KW,A "
-                            + Auslegungstext.Z(kwKatalog) + " °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, "
-                            + "die Umrechnung auf " + Auslegungstext.Z(kwAuslegung) + " °C ist nicht eindeutig.");
+                            ZapfSatz.Neu("AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN", zeile?.Bezeichner ?? "", kwKatalog, kwAuslegung));
                     zapf = w.Temperaturen.ZapfC;
                 }
-                double oben = Auslegungspruefung.Spreizung(zapf.Value, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung");
-                double unten = Auslegungspruefung.Spreizung(zapf.Value, kwKatalog, "Zapftemperatur − Kaltwasser des Katalogtags");
+                double oben = Auslegungspruefung.Spreizung(zapf.Value, kwAuslegung, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG"));
+                double unten = Auslegungspruefung.Spreizung(zapf.Value, kwKatalog, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG"));
                 double f = oben / unten;
                 prot?.Vermerken("", "Auslegung.Bedarfstagfaktor", f, "-", Wertstatus.Umgerechnet, zeile?.Herkunft,
                                 "(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = (" + Auslegungstext.Z(zapf.Value) + " − "
@@ -872,11 +877,26 @@ namespace WindowsFormsApplication1
             return we;
         }
 
-        private static void Ablehnen(Zonenarbeit w, string text, List<Auslegungsablehnung> liste)
+        private static void Ablehnen(Zonenarbeit w, ZapfSatz satz, List<Auslegungsablehnung> liste)
         {
             w.Abgelehnt = true;
-            liste.Add(new Auslegungsablehnung(w.Name, text));
+            liste.Add(new Auslegungsablehnung(w.Name, satz));
         }
+
+        /// <summary>Die Bezugsart als Begriff (<c>BEGRIFF_BEZUGSART_1</c> … <c>_7</c>).</summary>
+        internal static ZapfSatz Bezugsartbegriff(ZapfBezugsart b)
+            => ZapfSatz.Neu("BEGRIFF_BEZUGSART_" + ((int)b).ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Das Ladefenster der Speicherauslegung (4.7): Beginn und Länge aus dem Projekt, sonst aus dem
+        /// Parametersatz — derselbe Weg für die Auslegung und die Schätzhilfe der Ladeleistung.
+        /// </summary>
+        internal static Tagesfenster Ladefenster(ProjektStand p, Parametersatz ps, Herkunftsprotokoll prot)
+            => new Tagesfenster(
+                ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterBeginnH, ZapfAuslegungParameter.LADEFENSTER_BEGINN,
+                    ps, prot, "Auslegung.LadefensterBeginn", "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_BEGINN")),
+                ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
+                    ps, prot, "Auslegung.Ladefenster", "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_LAENGE")));
 
         private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)
         {

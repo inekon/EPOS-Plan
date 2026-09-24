@@ -21,10 +21,29 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Eine Zeile des Verfahrensvergleichs: Volumen [l] (<c>null</c> = nicht gerechnet), gültig,
-    /// im Plausibilitätsband, Kennwert und Rechenweg als Satz mit eingesetzten Zahlen.
+    /// im Plausibilitätsband, Kennwert und Rechenweg als Sätze (Kennung und Werte, N11 (k)).
     /// </summary>
     internal sealed record Verfahrensvolumen(ZapfSpeicherverfahren Verfahren, double? VolumenL, bool Gueltig, bool ImBand,
-                                             string Kennwert, string Rechenweg);
+                                             ZapfSatz Kennwert, ZapfSatz Rechenweg);
+
+    /// <summary>
+    /// Worauf sich der Füllstand der Stundenbilanz bezieht (4.7, N10 (k); wählbar nach N11 (d),
+    /// <c>Tab_TwwProjekt.Fuellstand_Bezug</c>). Die Zahlen sind die der Spalte.
+    /// </summary>
+    internal enum ZapfFuellstandbezug
+    {
+        /// <summary>Der Nenninhalt des empfohlenen Summenlinienpunkts (Vorgabe mit Punkt und Liste).</summary>
+        NenninhaltPunkt = 1,
+
+        /// <summary>Der empfohlene Punkt der Summenlinie selbst.</summary>
+        Punkt = 2,
+
+        /// <summary>Der Nenninhalt zu V_max des Plausibilitätsbands (Vorgabe ohne Punkt).</summary>
+        NenninhaltBand = 3,
+
+        /// <summary>V_max des Plausibilitätsbands.</summary>
+        BandMax = 4
+    }
 
     /// <summary>
     /// Die Liste der Speicher-Nenninhalte [l], aufsteigend und positiv — eine Einstellung
@@ -45,14 +64,13 @@ namespace WindowsFormsApplication1
             var liste = new List<double>();
             if (werteL != null) liste.AddRange(werteL);
             if (liste.Count == 0)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — die Liste der Nenninhalte ist leer.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_NENNINHALTE_LEER"));
             for (int i = 0; i < liste.Count; i++)
             {
-                Auslegungspruefung.Positiv(liste[i], "ein Nenninhalt");
+                Auslegungspruefung.Positiv(liste[i], ZapfSatz.Neu("BEGRIFF_NENNINHALT"));
                 if (i > 0 && !(liste[i] > liste[i - 1]))
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                        "Nicht rechenbar — die Nenninhalte steigen nicht streng auf.");
+                        ZapfSatz.Neu("AUSLEGUNG_NENNINHALTE_NICHT_AUFSTEIGEND"));
             }
             return new Nenninhaltsliste(liste.ToArray());
         }
@@ -74,7 +92,7 @@ namespace WindowsFormsApplication1
                 if (!int.TryParse(glied, System.Globalization.NumberStyles.None,
                                   System.Globalization.CultureInfo.InvariantCulture, out int k) || k < 1)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                        "Nicht rechenbar — der Parameter „" + s + "“ nennt keine Stelle der Nenninhaltsliste.");
+                        ZapfSatz.Neu("AUSLEGUNG_NENNINHALT_SCHLUESSEL", s));
                 werte[k] = ps.Wert(s);
             }
             return werte.Count == 0 ? null : Aus(werte.Values);
@@ -90,7 +108,7 @@ namespace WindowsFormsApplication1
             foreach (double w in _werteL)
                 if (w >= volumenL) return w;
             ueberEnde = true;
-            Auslegungspruefung.Positiv(rasterL, "das Raster über dem Ende der Nenninhalte");
+            Auslegungspruefung.Positiv(rasterL, ZapfSatz.Neu("BEGRIFF_NENNINHALT_RASTER"));
             return Math.Ceiling(volumenL / rasterL) * rasterL;
         }
 
@@ -109,7 +127,7 @@ namespace WindowsFormsApplication1
             ueberEnde = volumenL > GroessterL;
             if (!ueberEnde) return Naechster(volumenL, GroessterL, out _);
             double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
-                "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", hinweise);
+                ZapfSatz.Neu("FOLGE_NENNINHALT_NICHT_GERUNDET"), hinweise);
             return raster.HasValue ? Naechster(volumenL, raster.Value, out _) : (double?)null;
         }
     }
@@ -139,6 +157,22 @@ namespace WindowsFormsApplication1
         /// <summary>Personen der Gruppe aus dem Mengengerüst (Wohnungstabelle bzw. Bezugsmenge); <c>null</c> = unbekannt.</summary>
         public double? Personen { get; init; }
 
+        /// <summary>
+        /// Die Personen des Verfahrensvergleichs auto/manuell (N11 (d), <c>Tab_TwwProjekt.Personen_Auto</c>):
+        /// <c>true</c> = der Vorschlag <see cref="Personen"/> aus dem Mengengerüst.
+        /// </summary>
+        public bool PersonenAuto { get; init; } = true;
+
+        /// <summary>Der manuelle Wert der Personen (<c>Tab_TwwProjekt.Personen_Manuell</c>); wirkt nur bei <see cref="PersonenAuto"/> = false.</summary>
+        public double? PersonenManuell { get; init; }
+
+        /// <summary>
+        /// Der gewählte Bezug des Füllstands (N11 (d), <c>Tab_TwwProjekt.Fuellstand_Bezug</c>);
+        /// <c>null</c> = Vorgabe nach N10 (k). Ist der gewählte Bezug nicht bestimmbar, gilt die
+        /// Vorgabe und ein Hinweis nennt es.
+        /// </summary>
+        public ZapfFuellstandbezug? FuellstandBezugWahl { get; init; }
+
         /// <summary>Alle Zonen der Gruppe tragen Nutzungsart Wohnen.</summary>
         public bool Wohnen { get; init; }
 
@@ -167,7 +201,18 @@ namespace WindowsFormsApplication1
     {
         public Schaetzwert Ladeleistung { get; init; }
         public double LadeMindestKw { get; init; }
-        public string LadeRechenweg { get; init; } = "";
+
+        /// <summary>Der Rechenweg der Ladeleistung als Satz (Kennung und Werte, N11 (k)).</summary>
+        public ZapfSatz LadeRechenweg { get; init; }
+
+        /// <summary>
+        /// Die Schätzhilfe der Ladeleistung (4.7, 5.3): Kennung und Werte (größter Tagesbedarf,
+        /// Zirkulation, Laufzeit, Ladefenster, Vorschlag, manueller und angesetzter Wert).
+        /// </summary>
+        public Schaetzhilfe LadeSchaetzhilfe { get; init; }
+
+        /// <summary>Die Personen des Verfahrensvergleichs als auto/manuell-Größe; <c>null</c>, wenn weder Vorschlag noch Wert bekannt ist.</summary>
+        public Schaetzwert? PersonenWert { get; init; }
         public Schaetzwert Zirkulation { get; init; }
 
         /// <summary>Das Ladefenster der Stundenbilanz (für das Wochenbild der Oberfläche).</summary>
@@ -234,8 +279,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? FuellstandBezugL { get; init; }
 
-        /// <summary>Welches Volumen <see cref="FuellstandBezugL"/> ist — die Beschriftung der Anzeige.</summary>
-        public string FuellstandBezug { get; init; } = "";
+        /// <summary>Welches Volumen <see cref="FuellstandBezugL"/> ist; <c>null</c> ohne Bezug.</summary>
+        public ZapfFuellstandbezug? FuellstandBezug { get; init; }
 
         /// <summary>Speicherkapazität C_sp [kWh] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? KapazitaetKwh { get; init; }
@@ -313,7 +358,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Gleichzeitigkeitsfaktor der Vorlage GLF(N) = W_z(1) / W_z(N); GLF(1) = 1.</summary>
         internal static double Gleichzeitigkeitsfaktor(double n, Parametersatz ps)
         {
-            Auslegungspruefung.Positiv(n, "die Kennzahl N");
+            Auslegungspruefung.Positiv(n, ZapfSatz.Neu("BEGRIFF_KENNZAHL_N"));
             return Din4708Kennzahl.WzKwh(1.0, ps) / Din4708Kennzahl.WzKwh(n, ps);
         }
 
@@ -321,7 +366,7 @@ namespace WindowsFormsApplication1
         internal static double VolumenGlfL(double personen, double n, double spreizungK, double nutzanteil, double zuschlag,
                                            Parametersatz ps)
         {
-            double pb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_PB), "p_b");
+            double pb = Auslegungspruefung.Positiv(ps.Wert(ZapfAuslegungParameter.DIN4708_PB), ZapfSatz.Neu("BEGRIFF_PB"));
             double wz1 = Din4708Kennzahl.WzKwh(1.0, ps);
             return personen * wz1 / pb * Mengengeruest.WH_JE_KWH / (Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * spreizungK)
                    / nutzanteil * Gleichzeitigkeitsfaktor(n, ps) * (1.0 + zuschlag);
@@ -362,21 +407,19 @@ namespace WindowsFormsApplication1
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
             if (e.Topologie != ZapfTopologie.Speicher)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.NichtGueltig,
-                    "Die Speicherauslegung gilt nur für die Topologie Speicher.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.NichtGueltig, ZapfSatz.Neu("AUSLEGUNG_NUR_SPEICHER"));
             if (e.Woche == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — die Speicherauslegung braucht die Wochenreihe.");
-            double dT = Auslegungspruefung.Spreizung(e.SpeicherC, e.KaltwasserAuslegungC, "Speicher − Kaltwasser der Auslegung");
-            double fNutz = Auslegungspruefung.Positiv(e.Nutzanteil, "der Nutzanteil");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig, ZapfSatz.Neu("AUSLEGUNG_OHNE_WOCHENREIHE"));
+            double dT = Auslegungspruefung.Spreizung(e.SpeicherC, e.KaltwasserAuslegungC, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_SPEICHER"));
+            double fNutz = Auslegungspruefung.Positiv(e.Nutzanteil, ZapfSatz.Neu("BEGRIFF_NUTZANTEIL"));
             if (fNutz > 1)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, "Nicht rechenbar — der Nutzanteil liegt über 1.");
-            double zS = Auslegungspruefung.NichtNegativ(e.Zuschlag, "der Zuschlag");
-            Tagesfenster fenster = e.Ladefenster.Geprueft("Das Ladefenster");
-            Tagesfenster laufzeit = e.ZirkulationLaufzeit.Geprueft("Die Laufzeit der Zirkulation");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_NUTZANTEIL_UEBER_1"));
+            double zS = Auslegungspruefung.NichtNegativ(e.Zuschlag, ZapfSatz.Neu("BEGRIFF_ZUSCHLAG"));
+            Tagesfenster fenster = e.Ladefenster.Geprueft(ZapfSatz.Neu("BEGRIFF_LADEFENSTER"));
+            Tagesfenster laufzeit = e.ZirkulationLaufzeit.Geprueft(ZapfSatz.Neu("BEGRIFF_ZIRK_LAUFZEIT"));
             if (!(fenster.LaengeH > 0))
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, "Nicht rechenbar — das Ladefenster hat keine Länge.");
-            double zirk = Auslegungspruefung.NichtNegativ(e.Zirkulation.Angesetzt, "die Zirkulationsleistung");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_LADEFENSTER_OHNE_LAENGE"));
+            double zirk = Auslegungspruefung.NichtNegativ(e.Zirkulation.Angesetzt, ZapfSatz.Neu("BEGRIFF_ZIRK_LEISTUNG"));
             var hinweise = new List<Auslegungshinweis>();
 
             // --- Ladeleistung (Schätzhilfe) ---------------------------------------------------
@@ -384,16 +427,23 @@ namespace WindowsFormsApplication1
             double zirkTag = zirk * laufzeit.LaengeH;
             double vorschlag = (qdMax + zirkTag) / fenster.LaengeH;
             var lade = new Schaetzwert(e.LadeAuto, vorschlag, e.LadeManuellKw);
-            double pLade = Auslegungspruefung.NichtNegativ(lade.Angesetzt, "die Ladeleistung");
-            string ladeWeg = "(" + Auslegungstext.Z(qdMax) + " kWh + " + Auslegungstext.Z(zirk) + " kW · "
-                             + Auslegungstext.Z(laufzeit.LaengeH) + " h) / " + Auslegungstext.Z(fenster.LaengeH) + " h = "
-                             + Auslegungstext.Z(vorschlag) + " kW — angesetzt: " + Auslegungstext.Z(pLade) + " kW ("
-                             + (lade.IstManuell ? "manuell" : "auto") + ")";
+            double pLade = Auslegungspruefung.NichtNegativ(lade.Angesetzt, ZapfSatz.Neu("BEGRIFF_LADELEISTUNG"));
+            ZapfSatz ladeWeg = ZapfSatz.Neu("AUSTEXT_LADE_RECHENWEG", qdMax, zirk, laufzeit.LaengeH, fenster.LaengeH, vorschlag, pLade,
+                                            ZapfSatz.Neu(lade.IstManuell ? "BEGRIFF_MANUELL" : "BEGRIFF_AUTO"));
+            Schaetzhilfe ladeHilfe = Schaetzhilfe.Ladeleistung(lade, qdMax, zirk, laufzeit.LaengeH, fenster.LaengeH);
             if (pLade * fenster.LaengeH < qdMax + zirkTag)
                 hinweise.Add(new Auslegungshinweis("LADELEISTUNG_ZU_KLEIN",
-                    "Die Ladeleistung " + Auslegungstext.Z(pLade) + " kW deckt im Ladefenster von " + Auslegungstext.Z(fenster.LaengeH)
-                    + " h den größten Tag nicht; Mindestleistung " + Auslegungstext.Z(vorschlag)
-                    + " kW — Speichervolumen ersetzt keine Ladeleistung.", true));
+                    ZapfSatz.Neu("AUSHINWEIS_LADELEISTUNG_ZU_KLEIN", pLade, fenster.LaengeH, vorschlag), true));
+
+            // --- Personen (auto/manuell, N11 (d)) -----------------------------------------------
+            Schaetzwert? personenWert = null;
+            if (e.Personen.HasValue || (!e.PersonenAuto && e.PersonenManuell.HasValue))
+            {
+                if (e.PersonenManuell.HasValue) Auslegungspruefung.NichtNegativ(e.PersonenManuell.Value, ZapfSatz.Neu("BEGRIFF_PERSONEN"));
+                personenWert = new Schaetzwert(e.PersonenAuto, e.Personen ?? double.NaN, e.PersonenManuell);
+            }
+            double? personen = personenWert.HasValue && !double.IsNaN(personenWert.Value.Angesetzt)
+                ? personenWert.Value.Angesetzt : (double?)null;
 
             // --- Lindley über zwei Wochen ------------------------------------------------------
             double[] d = DefizitFeld(e.Woche, pLade, fenster, zirk, laufzeit);
@@ -408,14 +458,12 @@ namespace WindowsFormsApplication1
             // Summenkontrolle (Wochenreihe.Bilden): die Stundenwerte der Woche gegen die Tagesmengen ihres Fensters.
             if (!e.Woche.SummenkontrolleErfuellt)
                 hinweise.Add(new Auslegungshinweis("SUMMENKONTROLLE",
-                    "Die Stundenwerte der maßgebenden Woche (" + Auslegungstext.Z(e.Woche.WochensummeKwh)
-                    + " kWh) weichen von der Summe der Tagesmengen ihres Fensters (" + Auslegungstext.Z(e.Woche.FenstersummeKwh.Value)
-                    + " kWh) ab — ein Tagesgang summiert nicht zu 1.", true));
+                    ZapfSatz.Neu("AUSHINWEIS_SUMMENKONTROLLE", e.Woche.WochensummeKwh, e.Woche.FenstersummeKwh.Value), true));
 
             double? vProfil = null;
             int? tag = null, stunde = null, wochentag = null;
             ZapfTagtyp? tagtyp = null;
-            string profilWeg;
+            ZapfSatz profilWeg;
             if (dMax > 0)
             {
                 vProfil = Liter(dMax, dT) / fNutz * (1.0 + zS);
@@ -424,64 +472,51 @@ namespace WindowsFormsApplication1
                 stunde = h % Zapfkalender.STUNDEN_TAG;
                 wochentag = e.Woche.Wochentag(tag.Value - 1);
                 tagtyp = e.Woche.Tagtypen[tag.Value - 1];
-                profilWeg = "D_max " + Auslegungstext.Z(dMax) + " kWh am Tag " + tag + " der Woche 2 um " + stunde
-                            + " Uhr → " + Auslegungstext.G(vProfil.Value) + " l (Stundenbilanz — Zapfspitzen unter einer Stunde deckt DIN 4708)";
+                profilWeg = ZapfSatz.Neu("AUSTEXT_PROFIL_RECHENWEG", dMax, tag.Value, stunde.Value, vProfil.Value);
                 if (tagtyp != ZapfTagtyp.Werktag)
                     hinweise.Add(new Auslegungshinweis("MASSGEBEND_WOCHENENDE",
-                        "Der maßgebende Zeitpunkt liegt an einem Tag des Typs " + tagtyp + " (Tag " + tag + " der Woche 2)."));
+                        ZapfSatz.Neu("AUSHINWEIS_MASSGEBEND_WOCHENENDE", Formvektor.Tagtyp(tagtyp.Value), tag.Value)));
                 if (d[STUNDEN_ZWEI_WOCHEN - 1] > d[Wochenreihe.STUNDEN - 1] + 1e-9)
-                    hinweise.Add(new Auslegungshinweis("DEFIZIT_WAECHST",
-                        "Das Defizit wächst über die Woche — D_max ist dann kein Volumen, sondern ein Zeichen zu kleiner Ladeleistung.",
-                        true));
+                    hinweise.Add(new Auslegungshinweis("DEFIZIT_WAECHST", ZapfSatz.Neu("AUSHINWEIS_DEFIZIT_WAECHST"), true));
             }
             else
             {
-                profilWeg = "–";
-                hinweise.Add(new Auslegungshinweis(DMAX_NULL,
-                    "Profilbasiert: –. Die Ladeleistung deckt jede Stundenlast, es entsteht kein Defizit; maßgebend ist dann das DIN-4708-Verfahren."));
+                profilWeg = ZapfSatz.Neu("AUSTEXT_STRICH");
+                hinweise.Add(new Auslegungshinweis(DMAX_NULL, ZapfSatz.Neu("AUSHINWEIS_DMAX_NULL")));
             }
 
             // --- DIN 4708, GLF, klassisch ------------------------------------------------------
             bool dinGilt = e.Wohnen && e.Din != null && e.Din.Gueltig;
             double? vDin = dinGilt ? e.Din.VolumenL : null;
             bool dinImBand = dinGilt && e.Din.Vollstaendig;
-            string dinWeg = dinGilt
-                ? "N = " + Auslegungstext.Z(e.Din.KennzahlN.Value) + ", W_z = " + Auslegungstext.Z(e.Din.WzKwh.Value) + " kWh → "
-                  + Auslegungstext.G(vDin.Value) + " l (ohne Zuschlag)"
-                : e.Din?.Grund ?? "DIN 4708: " + Din4708Kennzahl.AUSSERHALB;
+            ZapfSatz dinWeg = dinGilt
+                ? ZapfSatz.Neu("AUSTEXT_DIN_RECHENWEG", e.Din.KennzahlN.Value, e.Din.WzKwh.Value, vDin.Value)
+                : e.Din?.Grund ?? ZapfSatz.Neu("AUSTEXT_DIN_AUSSERHALB");
             if (!e.Wohnen)
-                hinweise.Add(new Auslegungshinweis("GUELTIGKEIT_DIN_GLF",
-                    "DIN 4708 und das Gleichzeitigkeitsverfahren gelten nur für Wohnen mit Speicher; die Gruppe ist "
-                    + Din4708Kennzahl.AUSSERHALB + "."));
+                hinweise.Add(new Auslegungshinweis("GUELTIGKEIT_DIN_GLF", ZapfSatz.Neu("AUSHINWEIS_GUELTIGKEIT_DIN_GLF")));
 
             double? glf = null, vGlf = null;
             bool glfImBand = false;
-            string glfWeg = "nicht gerechnet";
-            if (dinGilt && e.Personen.HasValue && e.Din.KennzahlN.Value > 0)
+            ZapfSatz glfWeg = ZapfSatz.Neu("AUSTEXT_NICHT_GERECHNET");
+            if (dinGilt && personen.HasValue && e.Din.KennzahlN.Value > 0)
             {
                 double n = e.Din.KennzahlN.Value;
                 glf = Gleichzeitigkeitsfaktor(n, ps);
-                vGlf = VolumenGlfL(e.Personen.Value, n, dT, fNutz, zS, ps);
+                vGlf = VolumenGlfL(personen.Value, n, dT, fNutz, zS, ps);
                 double? grenze = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.GLF_GUELTIGKEITSGRENZE,
-                    "Die Gültigkeitsgrenze des Gleichzeitigkeitsverfahrens wird nicht geprüft.", hinweise);
+                    ZapfSatz.Neu("FOLGE_GLF_GRENZE_NICHT_GEPRUEFT"), hinweise);
                 glfImBand = e.Din.Vollstaendig && (!grenze.HasValue || n <= grenze.Value);
                 if (grenze.HasValue && n > grenze.Value)
-                    hinweise.Add(new Auslegungshinweis("GLF_GUELTIGKEITSGRENZE",
-                        "Das Gleichzeitigkeitsverfahren gilt bis N = " + Auslegungstext.Z(grenze.Value) + "; bei N = "
-                        + Auslegungstext.Z(n) + " steht es außerhalb des Bands."));
-                glfWeg = "GLF(" + Auslegungstext.Z(n) + ") = " + Auslegungstext.Z(glf.Value) + ", " + Auslegungstext.Z(e.Personen.Value)
-                         + " Personen → " + Auslegungstext.G(vGlf.Value) + " l (setzt die Wannen-Zapfperiode an)";
+                    hinweise.Add(new Auslegungshinweis("GLF_GUELTIGKEITSGRENZE", ZapfSatz.Neu("AUSHINWEIS_GLF_GUELTIGKEITSGRENZE", grenze.Value, n)));
+                glfWeg = ZapfSatz.Neu("AUSTEXT_GLF_RECHENWEG", n, glf.Value, personen.Value, vGlf.Value);
                 // Gültigkeitshinweis (4.7): ohne Wannen ist das Verfahren eingeschränkt.
-                hinweise.Add(new Auslegungshinweis(HINWEIS_GLF_WANNEN,
-                    "Das Gleichzeitigkeitsverfahren setzt die Wannen-Zapfperiode an; für Wohnungen ohne Badewanne ist es nur "
-                    + "eingeschränkt gültig."));
+                hinweise.Add(new Auslegungshinweis(HINWEIS_GLF_WANNEN, ZapfSatz.Neu("AUSHINWEIS_GLF_WANNEN")));
             }
 
-            double? vKlass = e.Personen.HasValue ? VolumenKlassischL(e.Personen.Value, dT, zS, ps) : (double?)null;
-            string klassWeg = vKlass.HasValue
-                ? Auslegungstext.Z(e.Personen.Value) + " Personen → " + Auslegungstext.G(vKlass.Value)
-                  + " l — nur nachrichtlich, unterstellt eine Speicherladung je Tag"
-                : "ohne Personenzahl nicht gerechnet";
+            double? vKlass = personen.HasValue ? VolumenKlassischL(personen.Value, dT, zS, ps) : (double?)null;
+            ZapfSatz klassWeg = vKlass.HasValue
+                ? ZapfSatz.Neu("AUSTEXT_KLASSISCH_RECHENWEG", personen.Value, vKlass.Value)
+                : ZapfSatz.Neu("AUSTEXT_KLASSISCH_OHNE_PERSONEN");
 
             // --- Band, Nenninhalt, Füllstand ---------------------------------------------------
             double? bandMin = null, bandMax = null;
@@ -503,31 +538,21 @@ namespace WindowsFormsApplication1
                 nenn = e.Nenninhalte.Runden(bandMax.Value, ps, hinweise, out mehr);
                 if (mehr)
                     hinweise.Add(new Auslegungshinweis("MEHRSPEICHER",
-                        "Das Band endet mit " + Auslegungstext.G(bandMax.Value) + " l über dem größten Nenninhalt "
-                        + Auslegungstext.G(e.Nenninhalte.GroessterL) + " l — Mehrspeicheranlage prüfen.", true));
+                        ZapfSatz.Neu("AUSHINWEIS_MEHRSPEICHER_BAND", bandMax.Value, e.Nenninhalte.GroessterL), true));
             }
             else if (bandMax.HasValue)
-                hinweise.Add(new Auslegungshinweis("NENNINHALTE_FEHLEN", "Ohne Liste der Nenninhalte wird nicht gerundet."));
+                hinweise.Add(new Auslegungshinweis("NENNINHALTE_FEHLEN", ZapfSatz.Neu("AUSHINWEIS_NENNINHALTE_FEHLEN")));
             if (dinGilt)
-                hinweise.Add(new Auslegungshinweis("NL_KRITERIUM",
-                    "Speicher mit Leistungskennzahl N_L ≥ " + Auslegungstext.Z(e.Din.KennzahlN.Value) + " wählen."));
+                hinweise.Add(new Auslegungshinweis("NL_KRITERIUM", ZapfSatz.Neu("AUSHINWEIS_NL_KRITERIUM", e.Din.KennzahlN.Value)));
 
-            // Füllstand beim empfohlenen Volumen (N10): Nenninhalt des Summenlinienpunkts, sonst der
-            // Punkt; ohne Punkt beim Nenninhalt des Bands, sonst bei V_max — die Größe steht im Ergebnis.
+            // Füllstand beim empfohlenen Volumen (N10 (k)): Nenninhalt des Summenlinienpunkts, sonst der
+            // Punkt; ohne Punkt beim Nenninhalt des Bands, sonst bei V_max — oder beim gewählten Bezug
+            // (N11 (d)), soweit er bestimmbar ist; die Größe und ihr Bezug stehen im Ergebnis.
             double? kap = null, minSoc = null, reserve = null;
-            double? bezug;
-            string bezugText;
-            if (e.SummenlinienpunktL.HasValue)
-            {
-                double? nennPunkt = e.Nenninhalte?.Runden(e.SummenlinienpunktL.Value, ps, hinweise, out _);
-                bezug = nennPunkt ?? e.SummenlinienpunktL.Value;
-                bezugText = nennPunkt.HasValue ? "Nenninhalt des empfohlenen Punkts" : "empfohlener Punkt der Summenlinie";
-            }
-            else
-            {
-                bezug = nenn ?? bandMax;
-                bezugText = nenn.HasValue ? "Nenninhalt des Bands" : bandMax.HasValue ? "V_max des Bands" : "";
-            }
+            double? nennPunkt = e.SummenlinienpunktL.HasValue
+                ? e.Nenninhalte?.Runden(e.SummenlinienpunktL.Value, ps, hinweise, out _) : null;
+            (double? bezug, ZapfFuellstandbezug? bezugArt) = Fuellstandbezug(e.FuellstandBezugWahl, nennPunkt, e.SummenlinienpunktL,
+                                                                             nenn, bandMax, hinweise);
             if (bezug.HasValue)
             {
                 var f = FuellstandAus(d, bezug.Value, fNutz, dT);
@@ -540,39 +565,36 @@ namespace WindowsFormsApplication1
             if (e.SummenlinienpunktL.HasValue && bandMin.HasValue
                 && (e.SummenlinienpunktL.Value < bandMin.Value || e.SummenlinienpunktL.Value > bandMax.Value))
                 hinweise.Add(new Auslegungshinweis("SUMMENLINIE_AUSSERHALB_BAND",
-                    "Der Summenlinienpunkt " + Auslegungstext.G(e.SummenlinienpunktL.Value) + " l liegt außerhalb des Bands "
-                    + Auslegungstext.G(bandMin.Value) + " … " + Auslegungstext.G(bandMax.Value) + " l."));
+                    ZapfSatz.Neu("AUSHINWEIS_SUMMENLINIE_AUSSERHALB_BAND", e.SummenlinienpunktL.Value, bandMin.Value, bandMax.Value)));
             if (vKlass.HasValue && bandMax.HasValue)
             {
                 double? faktor = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.KLASSISCH_WARNFAKTOR,
-                    "Der klassische Faustwert wird nicht gegen das Band geprüft.", hinweise);
+                    ZapfSatz.Neu("FOLGE_KLASSISCH_NICHT_GEPRUEFT"), hinweise);
                 if (faktor.HasValue && vKlass.Value > faktor.Value * bandMax.Value)
                     hinweise.Add(new Auslegungshinweis("KLASSISCH_WEIT_UEBER_BAND",
-                        "Der klassische Faustwert " + Auslegungstext.G(vKlass.Value) + " l liegt weit über dem Band (bis "
-                        + Auslegungstext.G(bandMax.Value) + " l) — er unterstellt eine Ladung je Tag."));
+                        ZapfSatz.Neu("AUSHINWEIS_KLASSISCH_WEIT_UEBER_BAND", vKlass.Value, bandMax.Value)));
             }
             // Die Mindesttemperatur nach DVGW W 551 gilt bei Großanlage (4.0); eine erkannte Kleinanlage prüft sie nicht.
             if (e.Grossanlage != false)
             {
                 double? mindest = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR,
-                    "Die Speichertemperatur wird nicht gegen die Mindesttemperatur geprüft.", hinweise);
+                    ZapfSatz.Neu("FOLGE_MINDESTTEMPERATUR_NICHT_GEPRUEFT"), hinweise);
                 if (mindest.HasValue && e.SpeicherC < mindest.Value)
                     hinweise.Add(new Auslegungshinweis("SPEICHERTEMPERATUR_UNTER_MINDEST",
-                        "Die Speichertemperatur " + Auslegungstext.Z(e.SpeicherC) + " °C liegt unter der Mindesttemperatur nach DVGW W 551 ("
-                        + Auslegungstext.Z(mindest.Value) + " °C)" + (e.Grossanlage == true ? " der Großanlage" : "")
-                        + " — thermische Desinfektion oder Frischwasserstation nachweisen.", true));
+                        ZapfSatz.Neu(e.Grossanlage == true ? "AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST_GROSS"
+                                                           : "AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST", e.SpeicherC, mindest.Value), true));
             }
 
             var verfahren = new[]
             {
                 new Verfahrensvolumen(ZapfSpeicherverfahren.Profilbasiert, vProfil, vProfil.HasValue, vProfil.HasValue,
-                    "D_max " + Auslegungstext.Z(dMax) + " kWh", profilWeg),
+                    ZapfSatz.Neu("AUSTEXT_KENNWERT_DMAX", dMax), profilWeg),
                 new Verfahrensvolumen(ZapfSpeicherverfahren.Din4708, vDin, dinGilt, dinImBand,
-                    dinGilt ? "W_z " + Auslegungstext.Z(e.Din.WzKwh.Value) + " kWh" : "–", dinWeg),
+                    dinGilt ? ZapfSatz.Neu("AUSTEXT_KENNWERT_WZ", e.Din.WzKwh.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), dinWeg),
                 new Verfahrensvolumen(ZapfSpeicherverfahren.Gleichzeitigkeit, vGlf, vGlf.HasValue, glfImBand,
-                    glf.HasValue ? "GLF " + Auslegungstext.Z(glf.Value) : "–", glfWeg),
+                    glf.HasValue ? ZapfSatz.Neu("AUSTEXT_KENNWERT_GLF", glf.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), glfWeg),
                 new Verfahrensvolumen(ZapfSpeicherverfahren.Klassisch, vKlass, vKlass.HasValue, false,
-                    "nur nachrichtlich", klassWeg)
+                    ZapfSatz.Neu("AUSTEXT_NUR_NACHRICHTLICH"), klassWeg)
             };
 
             return new Speicherauslegungsergebnis
@@ -580,12 +602,14 @@ namespace WindowsFormsApplication1
                 Ladeleistung = lade,
                 LadeMindestKw = vorschlag,
                 LadeRechenweg = ladeWeg,
+                LadeSchaetzhilfe = ladeHilfe,
+                PersonenWert = personenWert,
                 Zirkulation = e.Zirkulation,
                 Ladefenster = fenster,
                 ZirkulationLaufzeit = laufzeit,
                 Nutzanteil = fNutz,
                 Zuschlag = zS,
-                Personen = e.Personen,
+                Personen = personen,
                 DmaxKwh = dMax,
                 ProfilbasiertVorhanden = dMax > 0,
                 ZeitpunktStunde = dMax > 0 ? tMax : (int?)null,
@@ -605,12 +629,47 @@ namespace WindowsFormsApplication1
                 NenninhaltL = nenn,
                 Mehrspeicher = mehr,
                 FuellstandBezugL = bezug,
-                FuellstandBezug = bezugText,
+                FuellstandBezug = bezugArt,
                 KapazitaetKwh = kap,
                 MinFuellstandKwh = minSoc,
                 ReserveAnteil = reserve,
                 Hinweise = hinweise.AsReadOnly()
             };
+        }
+
+        /// <summary>Kennung des Hinweises: Der gewählte Bezug des Füllstands ist nicht bestimmbar, es gilt die Vorgabe.</summary>
+        internal const string HINWEIS_FUELLSTAND_BEZUG = "FUELLSTAND_BEZUG_VORGABE";
+
+        /// <summary>Der Bezug des Füllstands als Begriff (<c>BEGRIFF_FUELLSTAND_1</c> … <c>_4</c>) — sprachfrei für Sätze und Anzeige.</summary>
+        internal static ZapfSatz Fuellstandbegriff(ZapfFuellstandbezug b)
+            => ZapfSatz.Neu("BEGRIFF_FUELLSTAND_" + ((int)b).ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Der Bezug des Füllstands (N10 (k), N11 (d)): der gewählte, soweit bestimmbar — sonst die
+        /// Vorgabe (Nenninhalt des Punkts, sonst Punkt; ohne Punkt Nenninhalt des Bands, sonst V_max)
+        /// mit Hinweis, nie still. Ohne jedes Volumen kein Bezug.
+        /// </summary>
+        internal static (double? VolumenL, ZapfFuellstandbezug? Art) Fuellstandbezug(ZapfFuellstandbezug? wahl, double? nennPunktL,
+                                                                                    double? punktL, double? nennBandL, double? bandMaxL,
+                                                                                    ICollection<Auslegungshinweis> hinweise)
+        {
+            double? Wert(ZapfFuellstandbezug a) => a switch
+            {
+                ZapfFuellstandbezug.NenninhaltPunkt => nennPunktL,
+                ZapfFuellstandbezug.Punkt => punktL,
+                ZapfFuellstandbezug.NenninhaltBand => nennBandL,
+                _ => bandMaxL
+            };
+            if (wahl.HasValue && Wert(wahl.Value).HasValue) return (Wert(wahl.Value), wahl.Value);
+
+            ZapfFuellstandbezug? vorgabe = nennPunktL.HasValue ? ZapfFuellstandbezug.NenninhaltPunkt
+                : punktL.HasValue ? ZapfFuellstandbezug.Punkt
+                : nennBandL.HasValue ? ZapfFuellstandbezug.NenninhaltBand
+                : bandMaxL.HasValue ? ZapfFuellstandbezug.BandMax : (ZapfFuellstandbezug?)null;
+            if (wahl.HasValue)
+                hinweise?.Add(new Auslegungshinweis(HINWEIS_FUELLSTAND_BEZUG,
+                    ZapfSatz.Neu("AUSHINWEIS_FUELLSTAND_BEZUG_VORGABE", Fuellstandbegriff(wahl.Value))));
+            return vorgabe.HasValue ? (Wert(vorgabe.Value), vorgabe) : (null, null);
         }
     }
 }

@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             daten.Verfuegbar = verfuegbar.Ja;
-            daten.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar.Grund);
+            daten.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar);
 
             var projekt = new ProjektCtrl();
             if (idProjekt > 0) projekt.ReadSingle(idProjekt);
@@ -419,8 +419,8 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
-                return OhneVorschau(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
-                                    Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+                return OhneVorschau(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar),
+                                    Verfuegbarkeitsgrund(verfuegbar), verfuegbar.Klartext);
 
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(idProjekt);
@@ -465,8 +465,8 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
-                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
-                                       Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar),
+                                       Verfuegbarkeitsgrund(verfuegbar), verfuegbar.Klartext);
             if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
                 return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
                                        Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
@@ -480,14 +480,13 @@ namespace WindowsFormsApplication1
             catch (OperationCanceledException) { throw; }
             catch (ZapfprofilEingabeException ex)
             {
-                string grund = GenauerGrund(ZapfAblehnung.Aus(ex.Zone, ex), out string kennung);
-                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, kennung ?? Schluessel(ex.Fehler),
-                                       grund ?? Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, Satzkennung(ex.Satz, "ZPG_MSG_JAHRESREIHE_UNERWARTET"),
+                                       Satztext(ex.Satz), ex.Message);
             }
             catch (ParametersatzException ex)
             {
-                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                       Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, Satzkennung(ex.Satz, "ZPG_MSG_JAHRESREIHE_UNERWARTET"),
+                                       Satztext(ex.Satz), ex.Message);
             }
             catch (Exception ex) { return JahresreiheUnerwartet(ex.Message); }
 
@@ -859,7 +858,7 @@ namespace WindowsFormsApplication1
                 return string.Join(Environment.NewLine, v.Waerme.Zapfprofil.Ablehnungen.Select(a => Meldung(a).Text));
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
-            if (!verfuegbar.Ja) return Verfuegbarkeitsgrund(verfuegbar.Grund);
+            if (!verfuegbar.Ja) return Verfuegbarkeitsgrund(verfuegbar);
             if (v.Waerme == null)
                 return Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.");
             return Format(Text_("ZPG_MSG_UNERWARTET", "Die Vorschau konnte nicht gerechnet werden: {0}"),
@@ -962,78 +961,76 @@ namespace WindowsFormsApplication1
         // Meldungen: Kern -> Ressource
         // =================================================================================
 
-        /// <summary>Der Ressourcenschlüssel einer Ablehnung des Rechenwegs: <c>ZPG_EINGABE_…</c>.</summary>
-        internal static string Schluessel(ZapfEingabefehler f) => "ZPG_EINGABE_" + Gross(f.ToString());
+        /// <summary>
+        /// <b>Der Satz des Kerns in der Oberflächensprache</b> (N11 (k)): das Muster
+        /// <c>ZPG_SATZ_</c> + Kennung aus der Ressource, die Werte in der Kultur der Oberfläche
+        /// eingesetzt, verschachtelte Begriffe ebenso. Fehlt die Ressource, gilt das deutsche Muster,
+        /// dann die Kennung mit ihren Werten — benannt statt still. Leer ohne Satz.
+        /// </summary>
+        internal static string Satztext(ZapfSatz satz)
+            => satz == null ? "" : satz.Text(k => Text_(k, null), CultureInfo.CurrentCulture);
 
-        /// <summary>Der Ressourcenschlüssel einer Ablehnung des Schreibwegs: <c>ZPG_SPEICHER_…</c>.</summary>
-        internal static string Schluessel(ZapfSpeicherfehler f) => "ZPG_SPEICHER_" + Gross(f.ToString());
+        /// <summary>Die Kennung einer Meldung zu einem Satz: sein Ressourcenschlüssel <c>ZPG_SATZ_…</c>; ohne Satz die Rückfallkennung.</summary>
+        internal static string Satzkennung(ZapfSatz satz, string rueckfall) => satz?.Schluessel ?? rueckfall ?? "";
 
-        /// <summary>Der Ressourcenschlüssel eines Fehlers des Parametersatzes: <c>ZPG_PARAMETER_…</c>.</summary>
-        internal static string Schluessel(ParametersatzFehler f) => "ZPG_PARAMETER_" + Gross(f.ToString());
-
-        /// <summary>Der Ressourcenschlüssel eines Hinweises des Rechenwegs: <c>ZPG_HINW_</c> + Kennung des Kerns.</summary>
-        internal static string HinweisSchluessel(string code) => "ZPG_HINW_" + (code ?? "");
-
-        /// <summary>Die Ablehnung des Schreibwegs als Meldung — „nicht gespeichert — [Zone „…“:] Grund".</summary>
-        internal static ZapfprofilMeldung Meldung(ZapfprofilSpeicherException ex)
+        /// <summary>Der Satz einer benannten Ausnahme des Kerns; <c>null</c> bei einer fremden Ausnahme.</summary>
+        internal static ZapfSatz SatzAus(Exception ex)
         {
-            string schluessel = Schluessel(ex.Fehler);
-            string grund = Text_(schluessel, ex.Message);
-            if (!string.IsNullOrEmpty(ex.Zone))
-                grund = Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), ex.Zone, grund);
-            string text = Format(Text_("ZPG_MSG_NICHT_GESPEICHERT", "Das Zapfprofil wurde nicht gespeichert — {0}"), grund);
-            return new ZapfprofilMeldung(schluessel, ex.Zone ?? "", text, ZapfprofilMeldungsart.Fehler, ex.Message ?? "");
+            switch (ex)
+            {
+                case ZapfprofilEingabeException e: return e.Satz;
+                case ParametersatzException p: return p.Satz;
+                case ZapfAuslegungException a: return a.Satz;
+                case ZapfprofilSpeicherException s: return s.Satz;
+                default: return null;
+            }
         }
 
         /// <summary>
-        /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund. Trägt
-        /// die Ablehnung eine genauere Kennung (etwa fehlende Zapfkategorien einer Nutzungsart), ist
-        /// der Grund deren Text <c>ZPG_EINGABE_</c> + Kennung mit den Werten der Ablehnung; fehlt die
-        /// Ressource, bleibt der Wortlaut des Kerns.
+        /// Eine benannte Ausnahme des Kerns als Text der Oberflächensprache; eine fremde Ausnahme
+        /// behält ihren Wortlaut.
+        /// </summary>
+        internal static string Ausnahmetext(Exception ex)
+        {
+            ZapfSatz satz = SatzAus(ex);
+            return satz != null ? Satztext(satz) : ex?.Message ?? "";
+        }
+
+        /// <summary>
+        /// Die Ablehnung des Schreibwegs als Meldung: „Das Zapfprofil wurde nicht gespeichert — Grund"
+        /// mit dem Grund als Satz des Kerns in der Oberflächensprache; die Kennung ist die des Grundes.
+        /// </summary>
+        internal static ZapfprofilMeldung Meldung(ZapfprofilSpeicherException ex)
+            => new ZapfprofilMeldung(Satzkennung(ex.Grund, "ZPG_MSG_NICHT_GESPEICHERT"), ex.Zone ?? "",
+                                     Format(Text_("ZPG_MSG_NICHT_GESPEICHERT", "Das Zapfprofil wurde nicht gespeichert — {0}"),
+                                            Satztext(ex.Grund)),
+                                     ZapfprofilMeldungsart.Fehler, ex.Message ?? "");
+
+        /// <summary>
+        /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0 — mit dem Satz des
+        /// Kerns als Grund in der Oberflächensprache; die Kennung ist die des Satzes.
         /// </summary>
         internal static ZapfprofilMeldung Meldung(ZapfAblehnung a)
         {
-            string schluessel = Schluessel(a.Grund);
-            string grund = Text_(schluessel, a.Klartext);
-            string genauer = GenauerGrund(a, out string kennung);
-            if (genauer != null)
-            {
-                schluessel = kennung;
-                grund = genauer;
-            }
+            string grund = Satztext(a.Satz);
             string text = string.IsNullOrEmpty(a.Zone)
                 ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), grund)
                 : Format(Text_("ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}"), a.Zone, grund);
-            return new ZapfprofilMeldung(schluessel, a.Zone ?? "", text, ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? "");
+            return new ZapfprofilMeldung(Satzkennung(a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL"), a.Zone ?? "", text,
+                                         ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? "");
         }
 
-        /// <summary>
-        /// Ein Hinweis des Rechenwegs; eine Kennung ohne Ressource behält den Wortlaut des Kerns —
-        /// benannt statt still.
-        /// </summary>
+        /// <summary>Ein Hinweis des Rechenwegs: der Satz des Kerns in der Oberflächensprache, Kennung des Satzes.</summary>
         internal static ZapfprofilMeldung Meldung(ZapfHinweis h)
-        {
-            string schluessel = HinweisSchluessel(h.Code);
-            string muster = Text_(schluessel, null);
-            string text = muster == null ? h.Text : Format(muster, h.Zone ?? "");
-            return new ZapfprofilMeldung(schluessel, h.Zone ?? "", text, ZapfprofilMeldungsart.Hinweis, h.Text ?? "");
-        }
+            => new ZapfprofilMeldung(Satzkennung(h.Satz, "ZPG_SATZ_" + h.Code), h.Zone ?? "", Satztext(h.Satz),
+                                     ZapfprofilMeldungsart.Hinweis, h.Text ?? "");
 
-        private static string VerfuegbarkeitsKennung(ZapfVerfuegbarkeitsgrund g)
-            => g == ZapfVerfuegbarkeitsgrund.TabellenFehlen ? "ZPG_MSG_TABELLEN_FEHLEN" : "ZPG_MSG_KEINE_KATALOGVERSION";
+        /// <summary>Die Kennung der Nichtverfügbarkeit: die des Satzes.</summary>
+        private static string VerfuegbarkeitsKennung(ZapfVerfuegbarkeit v) => Satzkennung(v?.Satz, "ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN");
 
-        /// <summary>Der Grund der Nichtverfügbarkeit in der Oberflächensprache.</summary>
-        internal static string Verfuegbarkeitsgrund(ZapfVerfuegbarkeitsgrund g)
-        {
-            switch (g)
-            {
-                case ZapfVerfuegbarkeitsgrund.Verfuegbar: return "";
-                case ZapfVerfuegbarkeitsgrund.TabellenFehlen:
-                    return Text_("ZPG_MSG_TABELLEN_FEHLEN", "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen seine Tabellen.");
-                default:
-                    return Text_("ZPG_MSG_KEINE_KATALOGVERSION", "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — die Brauchwasserparameter tragen keine Katalogversion.");
-            }
-        }
+        /// <summary>Der Grund der Nichtverfügbarkeit in der Oberflächensprache (Satz des Kerns samt Tabellen bzw. Tabelle); leer, wenn verfügbar.</summary>
+        internal static string Verfuegbarkeitsgrund(ZapfVerfuegbarkeit v)
+            => v == null || v.Ja ? "" : Satztext(v.Satz);
 
         // =================================================================================
         // Kontext, Texte, Kalendernamen
@@ -1239,24 +1236,6 @@ namespace WindowsFormsApplication1
                 sb.Append(char.ToUpperInvariant(c));
             }
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Der Grund einer Ablehnung mit genauerer Kennung in der Oberflächensprache: der Text
-        /// <c>ZPG_EINGABE_</c> + Kennung, seine Platzhalter {0}, {1}, … aus den getrennten Werten der
-        /// Ablehnung (etwa Bezeichner und Katalogversion der Nutzungsart); <c>null</c> ohne Kennung
-        /// oder ohne Ressource — dann gilt der Wortlaut des Kerns.
-        /// </summary>
-        internal static string GenauerGrund(ZapfAblehnung a, out string schluessel)
-        {
-            schluessel = null;
-            if (a == null || string.IsNullOrEmpty(a.Kennung)) return null;
-            string genauer = "ZPG_EINGABE_" + a.Kennung;
-            string muster = Text_(genauer, null);
-            if (muster == null) return null;
-            schluessel = genauer;
-            object[] werte = (a.Argumente ?? new string[0]).Select(w => (object)(w ?? "")).ToArray();
-            return Format(muster, werte);
         }
 
         private static string Format(string muster, params object[] werte)
