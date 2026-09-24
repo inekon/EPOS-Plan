@@ -610,8 +610,8 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > über den Namen); die dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist
 > berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte).
 
-> **Nachtrag: Schemastand 130 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
-> bleibt.** Migrationsschritt **130** (`SCHRITT_130_ZAPFPROFIL_TYPTAGE`; Quelle
+> **Nachtrag: Schemastand 131 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
+> bleibt.** Migrationsschritt **131** (`SCHRITT_131_ZAPFPROFIL_TYPTAGE`; Quelle
 > `TwwSchema.AnweisungenT3Typtage`): die Tabelle `Tab_TwwTyptag_IMPORT` — STRICT, elf Spalten (`ID`,
 > `Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Aufloesung_min`, `Zeilenindex`, `Wert`, `Quelle`,
 > `Ausgabe`, `Datum_Import`), natürlicher Schlüssel (`Art`, `Klimazone`, `Gebaeudeart`, `Typtag`,
@@ -629,7 +629,7 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `tww_testkatalog_fiktiv.py --stochastik` (0 angelegt, 0 nachgeführt — der Testkatalog stand schon
 > vollständig da; zweiter Lauf 0/0). **Kein DML:** Die Tabelle ist und bleibt LEER, `Typtage_Aktiv`
 > steht auf 0 und beide Angaben auf NULL. Zellvergleich aller Tabellen gegen die Fassung 129
-> (10 502 791 Zellen): allein `SchemaVersion` 129 → 130, die drei neuen Spalten und der Tabellentext von
+> (10 502 791 Zellen): allein `SchemaVersion` 129 → 131, die drei neuen Spalten und der Tabellentext von
 > `Tab_TwwProjekt`; `integrity_check` ok, `foreign_key_check` leer, 134 Tabellen (133 STRICT) statt 133
 > (132), 14 Sichten und 211 Indizes unverändert. Größe 67 805 184 Byte (LFS-SHA-256 `819c4b3a…`).
 > **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator, und ohne

@@ -650,7 +650,7 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
                     SpalteSicherstellen(s);
                 WiederholperiodeSchema.SpaltenStandVergessen();
-                // Schritt 130 (Zapfprofilgenerator Stufe Z4b, T3 "Typtage"): die eingespielten
+                // Schritt 131 (Zapfprofilgenerator Stufe Z4b, T3 "Typtage"): die eingespielten
                 // Typtage des Anwenders. Reines DDL aus DERSELBEN Quelle wie Migration und
                 // Werkzeug (TwwSchema.AnweisungenT3Typtage); CREATE ... IF NOT EXISTS ist selbst
                 // wiederholbar. Die Tabelle bleibt LEER - das Repositorium bringt keine Typtage

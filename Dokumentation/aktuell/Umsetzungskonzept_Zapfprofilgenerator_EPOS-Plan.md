@@ -530,7 +530,7 @@ Lauf rechnet sie neu. Die Liste der Speicher-Nenninhalte ist keine Tabelle, sond
 `Dauer_min`, `Anteil`, `Sigma`, Provenienz, `Status`) und der Feiertags-/Ferienkalender
 **erst nach Entscheid A6**.
 
-`Tab_TwwTyptag_IMPORT` (T3) ist **umgesetzt** — Schritt 130 mit elf Spalten, Einzelheiten in
+`Tab_TwwTyptag_IMPORT` (T3) ist **umgesetzt** — Schritt 131 mit elf Spalten, Einzelheiten in
 **N14 (c)**; nie `ReadOnly`, nie in der Auslieferungsvorlage — samt der drei Projektspalten an
 `Tab_TwwProjekt` für die Wahl des Anwenders (Typtagweg, Klimazone, Gebäudeart) im selben
 Schritt (N14, Ergänzung).
@@ -545,11 +545,11 @@ Drei Schritte, jeweils der **nächste freie Schritt nach `SchemaStand.Zielversio
 |---|---|---|
 | **T1 — Katalog, Zonen, Projekt** | Z0 | die zehn Tabellen aus 3.1; der Katalog der Testdatenbank nur fiktiv (Kapitel 6) |
 | **T2 — Zapfkategorien** | Z3 (Schritt 115, N12 (l)) | `Tab_TwwZapfkategorie_STAMM` |
-| **T3 — Typtage** | Z4b (Schritt 130, N14 (a)) | `Tab_TwwTyptag_IMPORT` |
+| **T3 — Typtage** | Z4b (Schritt 131, N14 (a)) | `Tab_TwwTyptag_IMPORT` |
 
-T1 ist im Bestand Schritt 103 (N2 (a), N4), T2 Schritt 115 (N12 (l)), T3 „Typtage" Schritt 130
+T1 ist im Bestand Schritt 103 (N2 (a), N4), T2 Schritt 115 (N12 (l)), T3 „Typtage" Schritt 131
 (N14 (a)) — den Papiernamen T3 trägt dort auch Schritt 124 (die Laufangaben der Auslegung, N11);
-gemeint ist bei 124 die Spaltenerweiterung, bei 130 die Tabelle.
+gemeint ist bei 124 die Spaltenerweiterung, bei 131 die Tabelle.
 
 Bauweise nach [`ADR-001`](ADR-001_Schema-Ausrollung.md) und den Regeln in
 `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Kommentar über `SCHRITTE_SQLITE`): erst
@@ -1337,7 +1337,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z2 — Auslegung deterministisch** | Bedarfstag mit Vorgaberegel und Konstruktor, Wochenreihe, Summenlinie mit Speicherart, Übertrager, Einschaltpunkt, Wertepaarkurve, Monotonieprüfung und Ladezeit, Schnellpfad, Wohnungstabelle und DIN-4708-Kennzahl, DIN 1988-300 nachrichtlich, Speicherauslegung nach V4 mit Ladefenster, GLF, Plausibilitätsband und Warnliste, Großanlagenerkennung, Topologiegruppen; Überlagerung „Auslegung"; `SummenlinieModell` | Z1; K1/K8 für A100- und DIN-4708-Profil (ohne: Konstruktor) | `SummenlinieTests`, `Din4708KennzahlTests`, `SpeicherauslegungTests`, `AuslegungsergebnisTests`, `GrossanlageTests`, `ZapfprofilTrennungWacheTests`; `ChartProben` mit neuem Fall; Referenzlauf unberührt | 16–20 PT |
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
-| **Z4b — VDI-4655-Import mit Typtagzuordnung** (Gruppe 1 umgesetzt, N14) | T3 (Schritt 130), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
+| **Z4b — VDI-4655-Import mit Typtagzuordnung** (Gruppe 1 umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
@@ -2679,7 +2679,7 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
 **Abnahme (Gruppe 1).** Kern-Filter 0 Fehler; Windows-Schale mit `-p:EnableWindowsTargeting=true`
 0 Fehler; `SqlDialektPruefer` 0 Fundstellen; Auslieferungsvorlage-Tests grün (132 STRICT-Tabellen);
 Referenzlauf der fünf CI-Projekte gegen `2026-09-24_R14_Kaelteerzeuger` **PASS und byte-gleich**;
-Testdatenbank auf Schemastand 130 (Tabelle leer, LFS-Zeiger 133 Byte); `ResourceDesigner` ohne Diff.
+Testdatenbank auf Schemastand 131 (Tabelle leer, LFS-Zeiger 133 Byte); `ResourceDesigner` ohne Diff.
 
 **Folgen:**
 

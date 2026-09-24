@@ -4212,9 +4212,9 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN = GebaeudeAnschlusslaengenReparatur.SCHRITT;
 
         /// <summary>
-        /// Schritt 130 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
+        /// Schritt 131 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
         /// (Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Schemaschritt T3 „Typtage", Stufe
-        /// Z4b). Er folgt auf <see cref="SCHRITT_WIEDERHOLPERIODE"/> (129) ohne
+        /// Z4b). Er folgt auf <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/> (130) ohne
         /// Reihenfolgebedingung und braucht keinen früheren Schritt — die Tabelle steht für
         /// sich, ohne Fremdschlüssel.
         ///
@@ -4235,7 +4235,7 @@ namespace WindowsFormsApplication1
         /// nicht verfügbar. Der Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
         /// <c>CREATE TABLE IF NOT EXISTS</c>.</para>
         /// </summary>
-        public const int SCHRITT_130_ZAPFPROFIL_TYPTAGE = 130;
+        public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6004,9 +6004,9 @@ namespace WindowsFormsApplication1
 
             // ZAPFPROFILGENERATOR Z4b (Schemaschritt T3 "Typtage") - die eingespielten Typtage
             // des lizenzierten Anwenders: Tab_TwwTyptag_IMPORT. REIN DDL; die Quelle ist
-            // TwwSchema.AnweisungenT3Typtage. Er steht NACH 129 ohne Reihenfolgebedingung und
+            // TwwSchema.AnweisungenT3Typtage. Er steht NACH 130 ohne Reihenfolgebedingung und
             // braucht keinen frueheren Schritt (kein Fremdschluessel).
-            new Schritt(SCHRITT_130_ZAPFPROFIL_TYPTAGE,
+            new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE,
                         "Zapfprofilgenerator: die eingespielten Typtage des Anwenders " +
                         "(Tab_TwwTyptag_IMPORT) und die Wahl des Typtagwegs je Projekt",
                         "Der Anwender koennte seine eigenen Typtage nicht einspielen, und der " +
@@ -6014,7 +6014,7 @@ namespace WindowsFormsApplication1
                         "Wahl. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, die " +
                         "Wahl steht auf 'aus', und ohne eingespielte Typtage ist der Typtagweg " +
                         "benannt nicht verfuegbar.",
-                        Schritt_130_ZapfprofilTyptage),
+                        Schritt_131_ZapfprofilTyptage),
         };
 
         /// <summary>
@@ -9861,18 +9861,18 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 130 - die eingespielten Typtage des Anwenders
+        // Schritt 131 - die eingespielten Typtage des Anwenders
         // (Zapfprofilgenerator Stufe Z4b, T3 "Typtage")
         // =================================================================================
 
         /// <summary>
-        /// Schritt 130 — Anlass und Wirkung stehen bei
-        /// <see cref="SCHRITT_130_ZAPFPROFIL_TYPTAGE"/>, die DDL bei
+        /// Schritt 131 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_131_ZAPFPROFIL_TYPTAGE"/>, die DDL bei
         /// <see cref="TwwSchema.AnweisungenT3Typtage"/>. <b>Nur <see cref="SqliteDdl"/></b>;
         /// <b>wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c>. <b>Kein DML</b> — die
         /// Tabelle bleibt leer.
         /// </summary>
-        private static bool Schritt_130_ZapfprofilTyptage(Lauf l)
+        private static bool Schritt_131_ZapfprofilTyptage(Lauf l)
         {
             int angelegt = 0;
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
@@ -9901,11 +9901,11 @@ namespace WindowsFormsApplication1
             {
                 l.LetzterFehler = "Die Tabelle der eingespielten Typtage oder die Wahl des Typtagwegs " +
                                   "steht nach dem Schritt nicht.";
-                l.Notiz("130: FEHLER - " + l.LetzterFehler);
+                l.Notiz("131: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("130: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+            l.Notiz("131: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
                     spalten.ToString(CultureInfo.InvariantCulture) + " von " +
                     TwwSchema.SpaltenT3Typtage.Count.ToString(CultureInfo.InvariantCulture) +
                     " Spalte(n) angelegt - " + TwwSchema.TAB_TWW_TYPTAG_IMPORT +

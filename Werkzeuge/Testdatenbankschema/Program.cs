@@ -1683,10 +1683,10 @@ namespace Testdatenbankschema
                                   GebaeudeAnschlusslaengenReparatur.Offen() + " (erwartet 0).");
             }
 
-            // ---- Schritt 130: die eingespielten Typtage des lizenzierten Anwenders
+            // ---- Schritt 131: die eingespielten Typtage des lizenzierten Anwenders
             //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH dem Schritt
             //      der Anschlusslaengen. REIN DDL aus DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_130_ZapfprofilTyptage
+            //      SchemaMigration.Schritt_131_ZapfprofilTyptage
             //      bedient (TwwSchema.AnweisungenT3Typtage und TwwSchema.SpaltenT3Typtage):
             //      Tab_TwwTyptag_IMPORT und an Tab_TwwProjekt die Wahl des Typtagwegs
             //      (Typtage_Aktiv 0/1 mit Vorgabe 0, Typtage_Klimazone, Typtage_Gebaeudeart).
@@ -1696,16 +1696,16 @@ namespace Testdatenbankschema
             //      Kapitel 6); eingespielt werden sie allein beim lizenzierten Anwender.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
-                tabellen += TabelleSicherstellen(a.Key, a.Value, 130, trocken);
-            Console.WriteLine("Schritt 130 - Wahl des Typtagwegs je Projekt: " +
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 131, trocken);
+            Console.WriteLine("Schritt 131 - Wahl des Typtagwegs je Projekt: " +
                               (TwwSchema.T3TyptageVollstaendig() ? "steht bereits" : "offen") + ".");
             if (!trocken)
             {
-                var bericht130 = new List<string>();
-                angelegt += TwwSchema.T3TyptageAlle(bericht130);
-                foreach (string zeile in bericht130)
-                    Console.WriteLine("Schritt 130 - " + zeile + ".");
-                Console.WriteLine("Schritt 130 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
+                var bericht131 = new List<string>();
+                angelegt += TwwSchema.T3TyptageAlle(bericht131);
+                foreach (string zeile in bericht131)
+                    Console.WriteLine("Schritt 131 - " + zeile + ".");
+                Console.WriteLine("Schritt 131 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

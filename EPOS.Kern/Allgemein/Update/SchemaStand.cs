@@ -543,8 +543,8 @@ namespace WindowsFormsApplication1
         /// Außenwand–Keller) — je Satz, Spalte und Schadensbild bei
         /// <see cref="GebaeudeAnschlusslaengenReparatur"/>. <b>Ergebnisneutral:</b> Keinen der
         /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
-        /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 130, Zapfprofilgenerator Stufe
-        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>130</b>: die Tabelle
+        /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 131, Zapfprofilgenerator Stufe
+        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>131</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
         /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/> — und an
         /// <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt (<c>Typtage_Aktiv</c> 0/1 mit
@@ -557,7 +557,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 130;
+        public const int Zielversion = 131;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

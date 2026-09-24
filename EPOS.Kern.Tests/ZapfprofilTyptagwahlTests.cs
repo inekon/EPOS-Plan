@@ -8,12 +8,12 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die WAHL des Typtagwegs je Projekt</b> (Umsetzungskonzept Zapfprofilgenerator 4.2,
-    /// N14 (i); Schemaschritt T3 „Typtage", Schritt 130, Stufe Z4b, Gruppe 2): Sie steht in
+    /// N14 (i); Schemaschritt T3 „Typtage", Schritt 131, Stufe Z4b, Gruppe 2): Sie steht in
     /// <c>Tab_TwwProjekt</c> (<c>Typtage_Aktiv</c>, <c>Typtage_Klimazone</c>,
     /// <c>Typtage_Gebaeudeart</c>), der Schreibweg trägt sie, der Eingang macht daraus die Weiche
     /// <c>Zapfprofileingang.Typtage</c>, und der Rechenweg rechnet damit den Jahresgang — mit
     /// erhaltener Jahresenergie. Ohne eingespielte Typtage lehnt er die Zone BENANNT ab; eine
-    /// Datenbank vor 130 lehnt eine gesetzte Wahl benannt ab, läuft aber ohne Wahl durch.
+    /// Datenbank vor 131 lehnt eine gesetzte Wahl benannt ab, läuft aber ohne Wahl durch.
     ///
     /// <para><b>Kein Wert einer Richtlinie:</b> Die Typtage kommen aus einem ERFUNDENEN Paket
     /// (<see cref="Typtagpaketbauer"/>) und entstehen nur in der Arbeitskopie; die Testdatenbank
@@ -74,7 +74,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
-            Assert.True(TwwSchema.T3TyptageVollstaendig(), "Die Kopie steht nicht auf Schritt 130.");
+            Assert.True(TwwSchema.T3TyptageVollstaendig(), "Die Kopie steht nicht auf Schritt 131.");
 
             ZapfprofilCtrl.Speichern(PROJEKT, Stand(typtage: true));
             ProjektStand p = ZapfprofilCtrl.Lies(PROJEKT).Projekt;
@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Vor_Schritt_130_laeuft_das_Speichern_ohne_Wahl_durch_und_lehnt_eine_Wahl_ab()
+        public void Vor_Schritt_131_laeuft_das_Speichern_ohne_Wahl_durch_und_lehnt_eine_Wahl_ab()
         {
             using var db = new TwwTestdatenbank();
             Assert.False(TwwSchema.T3TyptageVollstaendig());

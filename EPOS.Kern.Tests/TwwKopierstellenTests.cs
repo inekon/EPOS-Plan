@@ -354,11 +354,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Schemaschritt 130 (T3 „Typtage", Stufe Z4b).</b> Die WAHL des Typtagwegs
+        /// <b>Schemaschritt 131 (T3 „Typtage", Stufe Z4b).</b> Die WAHL des Typtagwegs
         /// (<c>Typtage_Aktiv</c>, <c>Typtage_Klimazone</c>, <c>Typtage_Gebaeudeart</c>) reist mit der
         /// Projektzeile; die eingespielten Typtage selbst NIE — <c>Tab_TwwTyptag_IMPORT</c> führt
         /// kein <c>ID_Projekt</c>, endet nicht auf <c>_STAMM</c> und steht in keinem Transferplan
-        /// (Konzept Kapitel 6). In eine Datenbank VOR 130 läuft der Import durch, und der Bericht
+        /// (Konzept Kapitel 6). In eine Datenbank VOR 131 läuft der Import durch, und der Bericht
         /// nennt die Werte, die liegen bleiben — benannt, nie still.
         /// </summary>
         [Fact]
@@ -380,28 +380,28 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(TwwSchema.TAB_TWW_TYPTAG_IMPORT,
                                   new ProjektExportImportCtrl().Transferplan().Select(s => s.Tabelle));
 
-            string paket = ordner.Datei("tww130.wpx");
+            string paket = ordner.Datei("tww131.wpx");
             var io = new ProjektExportImportCtrl();
             Assert.True(io.Exportieren(PROJEKT, paket));
 
-            // Rundreise auf Stand 130: die WAHL kommt an.
-            int gleich = io.Importieren(paket, "Tww 130", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f1);
+            // Rundreise auf Stand 131: die WAHL kommt an.
+            int gleich = io.Importieren(paket, "Tww 131", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f1);
             Assert.True(gleich > 0, "Import fehlgeschlagen: " + f1);
             ProjektStand p = ZapfprofilCtrl.Lies(gleich).Projekt;
             Assert.True(p.TyptageAktiv);
             Assert.Equal(3, p.TyptageKlimazone);
             Assert.Equal("probehaus", p.TyptageGebaeudeart);
-            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Schemastand vor 130", StringComparison.Ordinal));
+            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Schemastand vor 131", StringComparison.Ordinal));
 
-            // Das Ziel steht vor 130: die Spalte fehlt, der Import laeuft durch, der Bericht nennt es.
+            // Das Ziel steht vor 131: die Spalte fehlt, der Import laeuft durch, der Bericht nennt es.
             DataRepository.ExecuteNonQuery("ALTER TABLE Tab_TwwProjekt DROP COLUMN Typtage_Klimazone");
             io = new ProjektExportImportCtrl();          // frischer Typenspeicher fuer das geaenderte Ziel
-            int alt = io.Importieren(paket, "Tww vor 130", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f2);
+            int alt = io.Importieren(paket, "Tww vor 131", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f2);
             Assert.True(alt > 0, "Import fehlgeschlagen: " + f2);
             Assert.Equal(1, Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", alt))));
             Assert.Contains(io.LetzterBericht, b => b.Contains("Tab_TwwProjekt.Typtage_Klimazone", StringComparison.Ordinal)
-                                                    && b.Contains("Schemastand vor 130", StringComparison.Ordinal));
+                                                    && b.Contains("Schemastand vor 131", StringComparison.Ordinal));
         }
 
         /// <summary>
