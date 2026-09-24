@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1286,7 +1286,8 @@ Papieren zu #461), in § 8.23 und § 8.24 **vor #463** (Stand `94521f2e`, der Me
 Design #466 samt den Papieren zu #462), in § 8.25 und § 8.26 **vor #474** (Stand `4b50b77b`, der erste Merge #474 über
 `3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026), in § 8.27
 und § 8.28 **vor #477** (Stand `61efa054`, der Anwender-Merge der Anlagenkopplung AK1, Welle 2, samt den Papieren zu
-#474 und #476) —, nicht vor dem Schnitt.*
+#474 und #476), in § 8.29 und § 8.30 **vor #478** (Stand `6d022f6d` = #477 samt seinen Papieren; der erste Merge #478,
+`d176b378`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2461,3 +2462,44 @@ Die Stellen, die mit E14 veraltet sind; „vorher" ist der Wortlaut vor #477 (St
 | § 6.1 | Kurztafel bis E13 (#474) | Zeile „E14 Formelmappe je Szenario" (#477) |
 | § 6.2 | endete mit „… E13 bewegt keinen Anker." | dazu die zwei Wachfälle in `BerichtBlattstrukturWacheTests`, `Punkt_11_nennt_alle_drei_Szenarien_formelbasiert` und „E14 bewegt keinen Anker" |
 | § 7 und Anhang | § 7: „Alle Fragen sind entschieden: …" (Z. 2899), der Absatz endete mit „… nicht gebaut). Aus der" (Z. 2904); Kürzeltafel bis #474; Mockup-Zeile „U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474)"; Etappenzeilen bis „E13 — kleine Bauwelle" | § 7 „Alle Fragen der Etappen bis E10 sind entschieden", dazu E14 (#477) mit drei offenen Fragen und die freigegebenen Aufträge E15, E16, E17; Kürzeltafel mit der Zeile der Welle (#477); „… Günstig und Ungünstig in Formeln, Punkt 11 #477"; Etappenzeile „E14 — Formelmappe je Szenario" = #477, die Zeile „E11 … E12" mit „E8b‑Q1 abgelöst … alle Fragen bis E10 entschieden" |
+
+### 8.29 E15 — Risikomodul nach DIN EN 17463: Zinszuschlag oder Zahlungsstromabzug, Schemaschritt 125 (#478)
+
+Protokoll [`E15_Risikomodul_Protokoll.md`](E15_Risikomodul_Protokoll.md); im Register die Zeile V‑G7 in R‑V, der
+Vermerk zu E9a‑Q6 (R‑E9a) und die neue Familie R‑E15. Die Welle folgt dem Auftrag des Anwenders vom 24.09.2026 („V‑G7
+Risiko: eigener kleiner Auftrag ausführen"); sie baut die Lücke V‑G7, die die Zeile V‑E mitnennt und E9 nicht gebaut
+hat (E9a‑Q6 a), und ist keine eigene Etappe des Plans E0–E12.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E15** (#478, erster Merge `d176b378` über `6d022f6d`, der Baum gleich `5eaed19c`; End-Merge `NACHTRAG-478-MERGE2`) | Schemaschritt 125 mit `Risiko_Art`, `Risiko_Zinszuschlag`, `Risiko_Verlust` und `Risiko_Wahrscheinlichkeit` an `Tab_ProjektWirtschaftlichkeit` (reines DDL, Testdatenbank 125); `RisikoModul` als eine Stelle der Regeln: Zinszuschlag in allen drei Szenarien über `FuerSzenario` (E15‑Q1 a) oder Zahlungsstromabzug R_loss × p_loss / 100 je Periode ab Jahr 1, nicht Jahr 0 und nicht der Restwert, als Bestandteil RISIKO (E15‑Q2 a) für jeden Stand außer der Referenz (E15‑Q4 a); Gruppe „Risiko (DIN EN 17463, 6.5)" im Parameterdialog mit Infoknopf auf `Wirtschaftlichkeit#risiko`, KI-Feldkarte; Ausweis nur bei Pflege (E15‑Q3 a) — Nachweiszeile, Annahmentafel, Deklaration 6.5, Punkt 6 der Checkliste, Gliederung, Mehrjahrestabelle, Risikozeilen der Formelmappe | ja, je Pflege; Vorgabe aus — ohne Pflege bitgleich (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich); A/B: Zuschlag 1 %-Punkt an 1030 wie ein Lauf mit i + 1 (−31.141.243 → −28.306.379 €), Abzug 1.000 €/a an 1030 −14.877 € im Erwartungsfall, 1024 gegen den Stamm −1.807.372 → −1.822.250 € |
+
+*§ 2.11.2, Gap-Tabelle, Zeile V‑G7 (Z. 789):*
+
+> | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
+
+**Umgesetzt mit E15 (#478):** „gebaut #478 (E15, Schemaschritt 125)" mit den vier Spalten, den zwei Wegen, dem Ausweis
+und der Lesart der Norm — Anhang F, Tabelle F.2 rechnet R_loss als Prozent des Nettorückflusses, gebaut ist ein
+Betrag in € je Periode (die Prozentlesart als E15‑Q4 c).
+
+*§ 2.11.4, Zeile V‑E, der Schluss der Spalte „geliefert durch" (Z. 847):*
+
+> Risiko (V-G7) und n-jährliche Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a)
+
+**Umgesetzt mit E15 (#478):** das Risiko gebaut mit dem eigenen Auftrag E15; V‑G3 offen, Auftrag E16.
+
+### 8.30 Berichtigungen im gültigen Stand (#478)
+
+Die Stellen, die mit E15 veraltet sind; „vorher" ist der Wortlaut vor #478 (Stand `6d022f6d`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) und Schrittabsatz (Z. 34) | Codestand `b9c660b9`, Zielversion 124, „Schemaschritte 90–124 vergeben"; der Absatz endete mit dem Schritt 120 der Etappe E10 | Codestand `NACHTRAG-478-MERGE2`, Zielversion 125, „90–125 vergeben … 125 das Risikomodul, Etappe E15"; dazu der Schritt **125** (`SCHRITT_125_RISIKOMODUL`) mit seinen vier Spalten |
+| § 2.11.2, Zeile V‑G7 (Z. 789) | „fehlt" | Wortlaut in § 8.29; „gebaut #478" samt der Lesart R_loss in € je Periode |
+| § 2.11.4, Zeile V‑E (Z. 847) und Fußnote (Z. 853) | Wortlaut in § 8.29; Stand „E9 — gebaut … E9 abgeschlossen"; Fußnote „… E13 (#474) und die Formelmappe je Szenario E14 (#477, ergänzt V‑D)" | „Risiko (V‑G7) gebaut #478 … V‑G3 offen — der Auftrag E16"; Stand dazu „Risiko gebaut #478 (E15), V‑G3 offen (E16)"; Fußnote mit „das Risikomodul E15 (#478, V‑G7 aus V‑E, Schemaschritt 125)" |
+| § 2.11.5, „Ausweis im Bericht" (Z. 930) | endete mit „… Einspeisevergütungen nur bei Pflege." | dazu der Absatz „Risiko (umgesetzt #478, V‑G7, E15‑Q3 a)" — Nachweiszeile, Annahmentafel, Deklaration, Punkt 6, Parameterblock; kein Szenariowert, zählt nicht im Ausweis „n von m" |
+| § 2.11.6, „Was die Mappe trägt", Stufe 0 (Z. 999) und Stufe 1 (Z. 1012) | ohne Risiko | Stufe 0 mit den Risikozeilen (`Zins_Basis`, `Risiko_Zuschlag`, `Zins_i` als Formel bzw. `Risiko_Verlust`, `Risiko_p`, `Risiko_Abzug`); Stufe 1 mit der Spalte „Risikoabzug" als `=-Risiko_Abzug` je Szenario und dem Bestandteil RISIKO der Gliederung |
+| § 6.1 | Kurztafel bis E14 (#477) | Zeile „E15 Risikomodul" (#478) mit Schemaschritt 125 |
+| § 6.2 (Z. 2722) | endete mit „… E14 bewegt keinen Anker." | dazu `RisikoModulTests` (25) und fünf Dialogproben; „E15 bewegt keinen Anker" |
+| § 7 (Z. 2930–2932) | „Freigegeben und im Bau sind die Lücken V‑G7 (Risikomodul, E15) und V‑G11 (…, E17); V‑G3 (…, E16) folgt nach E15" | „Die Lücke V‑G7 ist mit E15 (#478) gebaut … vier Fragen offen (→ Register R‑E15). Freigegeben und im Bau ist V‑G11 (E17); V‑G3 (E16) folgt nach E15" |
+| Anhang (Z. 2976, 2993, 3019) | Zeile V‑A…V‑E ohne Risiko; Mockup-Zeile „… Punkt 11 #477"; Etappenzeilen bis „E14 — Formelmappe je Szenario" | „aus V-E das Risiko V‑G7 = E15 (gebaut #478), V‑G3 = E16 (offen)"; „… Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478"; Kürzelzeile der Welle (#478) und Etappenzeile „E15 — Risikomodul (V‑G7)" = #478 |
