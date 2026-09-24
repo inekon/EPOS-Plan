@@ -370,6 +370,8 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.ZAPFPROFIL,           STARTSEITE },
                 { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, STARTSEITE },
                 { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, STARTSEITE },
+                { KiMaskennamen.TAGESGANG_EDITOR,     STARTSEITE },
+                { KiMaskennamen.ZAPFKATEGORIEN,       STARTSEITE },
 
                 // Die drei KATALOGVERWALTUNGEN sind selbst Navigationsziele des
                 // Menues - hier fallen Katalogschluessel und Navigationsschluessel
@@ -592,6 +594,8 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.ZAPFPROFIL,               REITER_WAERMEBEDARF },
                 { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG,     REITER_WAERMEBEDARF },
                 { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,   REITER_WAERMEBEDARF },
+                { KiMaskennamen.TAGESGANG_EDITOR,         REITER_WAERMEBEDARF },
+                { KiMaskennamen.ZAPFKATEGORIEN,           REITER_WAERMEBEDARF },
 
                 // KiMaskennamen.BEDARFSPROFILE steht hier BEWUSST NICHT: Dieselbe
                 // Maske geht aus den Kacheln ZWEIER Reiter auf („Waermebedarf" mit

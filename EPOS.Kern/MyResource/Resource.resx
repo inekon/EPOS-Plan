@@ -25336,9 +25336,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_HERL_SENSORHOEHE" xml:space="preserve">
     <value>leer = Vorgabe des Katalogs</value>
   </data>
-  <data name="ZPG_AUS_HERL_LAUFANGABE" xml:space="preserve">
-    <value>Laufangabe — wird nicht gespeichert; {0}</value>
-  </data>
   <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
     <value>{0} · Zonen: {1}</value>
   </data>
@@ -28726,9 +28723,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
     <value>Die Dauerlinie zeigt die Stufe Erweitert.</value>
   </data>
-  <data name="ZPG_GRUND_FOLGT" xml:space="preserve">
-    <value>Folgt mit der nächsten Fassung des Dialogs.</value>
-  </data>
   <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
     <value>Vorgabe · {0}</value>
   </data>
@@ -29244,5 +29238,353 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
     <value>Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert.</value>
+  </data>
+  <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
+    <value>Zuerst eine Nutzungsart wählen.</value>
+  </data>
+  <data name="ZPG_TGE_TITEL" xml:space="preserve">
+    <value>Tagesgang bearbeiten</value>
+  </data>
+  <data name="ZPG_TGE_KONTEXT" xml:space="preserve">
+    <value>Nutzungsart {0} · Tagesgangsatz {1}</value>
+  </data>
+  <data name="ZPG_TGE_GRP_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang je Tagtyp [%]</value>
+  </data>
+  <data name="ZPG_TGE_LBL_TAGTYP" xml:space="preserve">
+    <value>Tagtyp</value>
+  </data>
+  <data name="ZPG_TGE_FELD_STUNDE" xml:space="preserve">
+    <value>{0} · Stunde {1}</value>
+  </data>
+  <data name="ZPG_TGE_HERKUNFT" xml:space="preserve">
+    <value>Herkunft: {0}</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_OK" xml:space="preserve">
+    <value>summiert zu 100 %</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_ABWEICHEND" xml:space="preserve">
+    <value>Summe {0} % — korrigieren oder normieren; „OK“ normiert auf 100 %.</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_NULL" xml:space="preserve">
+    <value>Summe 0 % — ohne Anteile lässt sich nichts normieren.</value>
+  </data>
+  <data name="ZPG_TGE_VORSCHAU_NORMIERT" xml:space="preserve">
+    <value>Nach der Normierung: {0}</value>
+  </data>
+  <data name="ZPG_TGE_BTN_NORMIEREN" xml:space="preserve">
+    <value>Normieren</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Zuerst einen Tag kopieren.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_WOCHE" xml:space="preserve">
+    <value>Wochenfaktoren Mo–So [%]</value>
+  </data>
+  <data name="ZPG_TGE_HINW_WOCHE" xml:space="preserve">
+    <value>Anteil jedes Wochentags an der Wochenmenge (Σ 100 %); Sonn- und Feiertage rechnen mit dem Sonntag.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_VORLAGE" xml:space="preserve">
+    <value>Vorlage aus dem Katalog</value>
+  </data>
+  <data name="ZPG_TGE_LBL_VORLAGE" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_TGE_BTN_VORLAGE" xml:space="preserve">
+    <value>Vorlage laden</value>
+  </data>
+  <data name="ZPG_TGE_HINW_VORLAGE" xml:space="preserve">
+    <value>„Vorlage laden“ übernimmt die vier Tagesgänge des gewählten Satzes, die Wochenfaktoren bleiben; „Zurücksetzen“ stellt die Werte beim Öffnen wieder her.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_VORLAGE" xml:space="preserve">
+    <value>Zuerst einen Tagesgangsatz wählen.</value>
+  </data>
+  <data name="ZPG_TGE_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.</value>
+  </data>
+  <data name="ZPG_BTN_ZURUECKSETZEN" xml:space="preserve">
+    <value>Zurücksetzen</value>
+  </data>
+  <data name="ZPG_BTN_KOPIE" xml:space="preserve">
+    <value>Als eigene Kopie bearbeiten…</value>
+  </data>
+  <data name="ZPG_LBL_KATALOGVERSION_KOPIE" xml:space="preserve">
+    <value>Katalogversion der Kopie</value>
+  </data>
+  <data name="ZPG_HINW_KOPIE" xml:space="preserve">
+    <value>„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.</value>
+  </data>
+  <data name="ZPG_HINW_FREI" xml:space="preserve">
+    <value>„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.</value>
+  </data>
+  <data name="ZPG_HINW_NUR_LESEN" xml:space="preserve">
+    <value>Nur lesbar — bearbeiten lässt sich eine eigene Kopie.</value>
+  </data>
+  <data name="ZPG_KATEG_TITEL" xml:space="preserve">
+    <value>Zapfkategorien und Streuung</value>
+  </data>
+  <data name="ZPG_KATEG_KONTEXT" xml:space="preserve">
+    <value>Nutzungsart {0} · {1} Kategorien · Σ Anteile {2}</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_REGELN" xml:space="preserve">
+    <value>μ und σ ≥ 0 l/min, Dauer 1 … 1440 min, Anteil ≥ 0 mit Σ &gt; 0 (die Rechnung normiert auf 1), Kappung &gt; 0 oder leer; jeder Name einmal.</value>
+  </data>
+  <data name="ZPG_KATEG_SP_REIHENFOLGE" xml:space="preserve">
+    <value>Reihenfolge</value>
+  </data>
+  <data name="ZPG_KATEG_SP_NAME" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="ZPG_KATEG_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>Volumenstrom μ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_DAUER" xml:space="preserve">
+    <value>Dauer [min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_ANTEIL" xml:space="preserve">
+    <value>Anteil [–]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_STREUUNG" xml:space="preserve">
+    <value>Streuung σ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_KAPPUNG" xml:space="preserve">
+    <value>Kappung [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_KATEG_KAPPUNG_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_NEU" xml:space="preserve">
+    <value>Kategorie hinzufügen</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_HOCH" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_RUNTER" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_LETZTE" xml:space="preserve">
+    <value>Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RAND" xml:space="preserve">
+    <value>Die Kategorie steht schon am Rand der Liste.</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_VORGABE" xml:space="preserve">
+    <value>Vorgabesatz laden</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_VORGABE" xml:space="preserve">
+    <value>Der Vorgabesatz sind die frei dokumentierten Kategorien des Katalogs (Modellannahme); er ersetzt die Zeilen im Editor.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_OHNE_VORGABE" xml:space="preserve">
+    <value>Der Katalog führt keinen Vorgabesatz der Zapfkategorien.</value>
+  </data>
+  <data name="ZPG_KATEG_NEU_NAME" xml:space="preserve">
+    <value>Kategorie {0}</value>
+  </data>
+  <data name="ZPG_KATEG_LEER" xml:space="preserve">
+    <value>Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.</value>
+  </data>
+  <data name="ZPG_KATEG_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.</value>
+  </data>
+  <data name="ZPG_AUS_GRP_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Eingaben des Verfahrensvergleichs</value>
+  </data>
+  <data name="ZPG_AUS_HINW_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Sie wirken nur auf den Verfahrensvergleich (nachrichtlich), nicht auf den empfohlenen Punkt, und werden mit dem Projekt gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADE_MANUELL" xml:space="preserve">
+    <value>Ladeleistung manuell</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER" xml:space="preserve">
+    <value>Ladezeitfenster</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Beginn des Ladezeitfensters</value>
+  </data>
+  <data name="ZPG_AUS_LBL_NUTZANTEIL" xml:space="preserve">
+    <value>Nutzbarer Anteil</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ZUSCHLAG" xml:space="preserve">
+    <value>Zuschlag</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN_MANUELL" xml:space="preserve">
+    <value>Personen manuell</value>
+  </data>
+  <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>Bezug des Füllstands</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
+    <value>Vorgabe: Nenninhalt des Punkts, sonst der Punkt</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
+    <value>Angesetzt: {0} kW ({1}) · {2}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE_OHNE" xml:space="preserve">
+    <value>Einen Vorschlag gibt es erst mit einer gerechneten Speichergruppe.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADEFENSTER" xml:space="preserve">
+    <value>leer = Vorgabe des Katalogs; dieselben Werte wie „Ladezeitfenster“ im Zapfprofil</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERSONEN" xml:space="preserve">
+    <value>auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_ANGESETZT" xml:space="preserve">
+    <value>leer = Vorgabe des Katalogs; angesetzt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
+    <value>Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
+    <value>wird mit dem Projekt gespeichert; {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_WERKSTOFF" xml:space="preserve">
+    <value>kein Vorschlag aus dem Projekt; ohne Angabe braucht die Summenlinie U·A, die Fläche oder die Übertragerleistung</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG_WAEHLEN" xml:space="preserve">
+    <value>Vorschlag wählen</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus dem Projekt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_BEZUG" xml:space="preserve">
+    <value>ohne Bezug — der Tag gilt, wie er ist</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSMENGE" xml:space="preserve">
+    <value>Bezugsmenge</value>
+  </data>
+  <data name="ZPG_AUS_KON_HINW_BEZUG" xml:space="preserve">
+    <value>Mit Bezug skaliert die Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart; beides wird mit dem Tag gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Bezugsart und Bezugsmenge (größer 0) gehören zusammen.</value>
+  </data>
+  <data name="ZPG_TGE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Tagesgang wurde nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>die Nutzungsart steht nicht (mehr) im Katalog.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Die Nutzungsart oder ihr Tagesgangsatz gehört zur Auslieferung — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Eine Zone oder eine andere Nutzungsart benutzt den Tagesgang — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>die Nutzungsart oder ihr Tagesgangsatz steht in dieser Katalogversion schon.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>für die neue Katalogversion fehlt ihr Name.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>der Tagesgangsatz der Nutzungsart steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>die Tabellen der Brauchwasser-Nutzungsarten fehlen in dieser Datenbank.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>ein Tagesgang oder die Wochenfaktoren lassen sich nicht auf 100 % normieren (negativer Wert oder Summe 0).</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Der Tagesgangsatz führt nicht alle vier Tagtypen.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_TAGTYP_ERL" xml:space="preserve">
+    <value>Der Tagtyp, dessen 24 Stundenanteile der Editor zeigt: Werktag, Samstag, Sonn-/Feiertag oder Ruhetag.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_STUNDEN_ERL" xml:space="preserve">
+    <value>Die 24 Stundenanteile des gezeigten Tagtyps in Prozent, Stunde 1 bis 24; „OK“ normiert sie auf 100 %. Bearbeitbar, solange die Nutzungsart frei ist oder als eigene Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_WOCHENFAKTOREN_ERL" xml:space="preserve">
+    <value>Die sieben Wochenfaktoren Montag bis Sonntag in Prozent; „OK“ normiert sie auf 100 %.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_VORLAGE_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz des Katalogs, den „Vorlage laden“ übernimmt — das Laden bleibt ein Klick des Anwenders.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der eigenen Kopie — nur, wenn die Nutzungsart gesperrt ist und als Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der eigenen Kopie — nur, wenn die Nutzungsart gesperrt ist und als Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_NAME_ERL" xml:space="preserve">
+    <value>Der Name der Zapfkategorie — eindeutig innerhalb der Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Der mittlere Volumenstrom μ eines Zapfereignisses in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_DAUER_ERL" xml:space="preserve">
+    <value>Die Dauer eines Zapfereignisses in Minuten (1 bis 1440).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_ANTEIL_ERL" xml:space="preserve">
+    <value>Der Anteil der Kategorie an der Tagesmenge (≥ 0); die Rechnung normiert die Anteile auf 1.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_STREUUNG_ERL" xml:space="preserve">
+    <value>Die Streuung σ des Volumenstroms in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KAPPUNG_ERL" xml:space="preserve">
+    <value>Die obere Kappung des Volumenstroms in l/min (&gt; 0); leer = keine.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MODUS_ERL" xml:space="preserve">
+    <value>Die Ladeleistung des Verfahrensvergleichs: auto = Vorschlag aus größtem Tagesbedarf und Zirkulation über das Ladezeitfenster, manuell = eigener Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Ladeleistung in kW — sie wirkt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_ERL" xml:space="preserve">
+    <value>Die Länge des täglichen Ladezeitfensters in Stunden (0 bis 24); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>Der Beginn des Ladezeitfensters in Stunden (0 bis 24); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_NUTZANTEIL_ERL" xml:space="preserve">
+    <value>Der nutzbare Anteil des Speichervolumens (größer 0 bis 1); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Der Zuschlag auf das Volumen der Verfahren (≥ 0, 0,1 = 10 %); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
+    <value>Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Zonen, manuell = eigener Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Personenzahl — sie wirkt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
+    <value>Auf welches Volumen sich der Füllstand der Kachel bezieht: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
+    <value>Die Bezugsart des konstruierten Tags; ohne Bezug gilt der Tag, wie er ist.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>Die Bezugsmenge des konstruierten Tags (größer 0) — nur mit einer Bezugsart.</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Als manuellen Wert übernehmen</value>
+  </data>
+  <data name="ZPG_AUS_LBL_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag: {0} {1}</value>
   </data>
 </root>

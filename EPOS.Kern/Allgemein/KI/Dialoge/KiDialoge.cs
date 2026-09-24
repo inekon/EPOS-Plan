@@ -251,6 +251,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string BEDARFSTAG_KONSTRUKTOR = "BedarfstagKonstruktor";
 
+        /// <summary>
+        /// Die Ueberlagerung „Tagesgang bearbeiten" des Zapfprofils (<c>TagesgangEditor</c>,
+        /// Stufe Experte) — sie gehoert zum Katalog, ihr OK schreibt den Tagesgang.
+        /// </summary>
+        public const string TAGESGANG_EDITOR = "TagesgangEditor";
+
+        /// <summary>
+        /// Die Ueberlagerung „Zapfkategorien und Streuung" des Zapfprofils
+        /// (<c>ZapfkategorienEditor</c>, Stufe Experte) — sie gehoert zum Katalog.
+        /// </summary>
+        public const string ZAPFKATEGORIEN = "Zapfkategorien";
+
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
         // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
@@ -698,6 +710,8 @@ namespace WindowsFormsApplication1
                 Zapfprofil(),
                 ZapfprofilAuslegung(),
                 BedarfstagKonstruktor(),
+                TagesgangEditor(),
+                Zapfkategorien(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -3620,6 +3634,36 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgaWerkstoffName, KiParameterTyp.Wahl,
                                      KiDialogTexte.ZpgaWerkstoffErl),
 
+                    // ---- Die Eingaben des Verfahrensvergleichs (4.7, N11 (d); Z4, Gruppe 2b) --
+                    new KiDialogFeld("lade_modus", AUSLEGUNG_SICHT + ".LadeleistungModus",
+                                     KiDialogTexte.ZpgaLadeModusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaLadeModusErl),
+                    new KiDialogFeld("lade_manuell", AUSLEGUNG_SICHT + ".LadeleistungManuell",
+                                     KiDialogTexte.ZpgaLadeManuellName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadeManuellErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("ladefenster", AUSLEGUNG_SICHT + ".Ladefenster",
+                                     KiDialogTexte.ZpgaLadefensterName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadefensterErl, leerErlaubt: true),
+                    new KiDialogFeld("ladefenster_beginn", AUSLEGUNG_SICHT + ".LadefensterBeginn",
+                                     KiDialogTexte.ZpgaLadefensterBeginnName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadefensterBeginnErl, leerErlaubt: true),
+                    new KiDialogFeld("nutzanteil", AUSLEGUNG_SICHT + ".Nutzanteil",
+                                     KiDialogTexte.ZpgaNutzanteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaNutzanteilErl, leerErlaubt: true),
+                    new KiDialogFeld("zuschlag", AUSLEGUNG_SICHT + ".Zuschlag",
+                                     KiDialogTexte.ZpgaZuschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaZuschlagErl, leerErlaubt: true),
+                    new KiDialogFeld("personen_modus", AUSLEGUNG_SICHT + ".PersonenModus",
+                                     KiDialogTexte.ZpgaPersonenModusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaPersonenModusErl),
+                    new KiDialogFeld("personen_manuell", AUSLEGUNG_SICHT + ".PersonenManuell",
+                                     KiDialogTexte.ZpgaPersonenManuellName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaPersonenManuellErl, leerErlaubt: true),
+                    new KiDialogFeld("fuellstand_bezug", AUSLEGUNG_SICHT + ".FuellstandBezug",
+                                     KiDialogTexte.ZpgaFuellstandBezugName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaFuellstandBezugErl),
+
                     // ---- Die Stochastik des Bedarfstags (4.5 b) ------------------------
                     new KiDialogFeld("stochastisch", AUSLEGUNG_SICHT + ".Stochastisch",
                                      KiDialogTexte.ZpgaStochastischName, KiParameterTyp.Wahrheitswert,
@@ -3686,6 +3730,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgkNameName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgkNameErl),
 
+                    // ---- Der Bezug des Tags (Schritt 121, N10 (j); Z4, Gruppe 2b) ------
+                    new KiDialogFeld("bezugsart", KONSTRUKTOR_SICHT + ".Bezugsart",
+                                     KiDialogTexte.ZpgkBezugsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgkBezugsartErl, leerErlaubt: true),
+                    new KiDialogFeld("bezugsmenge", KONSTRUKTOR_SICHT + ".Bezugsmenge",
+                                     KiDialogTexte.ZpgkBezugsmengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkBezugsmengeErl, leerErlaubt: true),
+
                     // ---- Die Zeilen: SPALTEN mit Zeitfenster und Verbraucher -----------
                     new KiDialogFeld("beginn", KONSTRUKTOR_SICHT + ".Zeilen[].Beginn",
                                      KiDialogTexte.ZpgkBeginnName, KiParameterTyp.Zahl,
@@ -3715,6 +3767,129 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgkVerbraucherName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgkVerbraucherErl, leerErlaubt: true,
                                      zeilenkennzeichen: "Kennzeichen")
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // TagesgangEditor  ->  Dialoge.Bedarf.TagesgangEditor   (Zapfprofil Z4, Gruppe 2b)
+        // =====================================================================
+
+        /// <summary>Der Typname der Sichtklasse des Tagesgang-Editors (<c>EPOS.UI.Dialoge.Bedarf.TagesgangEditorKiSicht</c>).</summary>
+        private const string TAGESGANG_SICHT = "TagesgangEditorKiSicht";
+
+        /// <summary>
+        /// Der Tagesgang-Editor des Zapfprofils — fünf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TagesgangEditorKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung, die zum KATALOG gehoert</b>: Ihr „OK" schreibt den Tagesgang in einer
+        /// Transaktion (bei gesperrter Nutzungsart als neue Katalogversion) — das bleibt der Klick des
+        /// Anwenders. Angemeldet sind Auffrischen und Pruefen (die Fehleingabe, die das OK anhaelt),
+        /// KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Zahlenreihen</b>: die 24 Stundenanteile des gezeigten Tagtyps und die sieben
+        /// Wochenfaktoren, je in Prozent; „OK" normiert sie auf 100 %. Setzbar nur, solange die Maske
+        /// sie bedienbar zeigt — eine gesperrte Nutzungsart erst nach „Als eigene Kopie
+        /// bearbeiten…", das ein Klick des Anwenders bleibt, ebenso „Vorlage laden", „Normieren" und
+        /// „Zuruecksetzen".
+        /// </para>
+        /// </remarks>
+        private static KiDialog TagesgangEditor()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TAGESGANG_EDITOR,
+                anzeigename: KiDialogTexte.MaskeTagesgangEditor,
+                felder: new[]
+                {
+                    new KiDialogFeld("tagtyp", TAGESGANG_SICHT + ".Tagtyp",
+                                     KiDialogTexte.ZpgtTagtypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgtTagtypErl),
+                    new KiDialogFeld("stunden", TAGESGANG_SICHT + ".Stunden",
+                                     KiDialogTexte.ZpgtStundenName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.ZpgtStundenErl,
+                                     reihe: KiZahlenreihen.Stunden(), min: 0),
+                    new KiDialogFeld("wochenfaktoren", TAGESGANG_SICHT + ".Wochenfaktoren",
+                                     KiDialogTexte.ZpgtWochenfaktorenName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.ZpgtWochenfaktorenErl,
+                                     reihe: KiZahlenreihen.Wochentage(), min: 0),
+                    new KiDialogFeld("vorlage", TAGESGANG_SICHT + ".Vorlage",
+                                     KiDialogTexte.ZpgtVorlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgtVorlageErl, leerErlaubt: true),
+                    new KiDialogFeld("katalogversion", TAGESGANG_SICHT + ".Katalogversion",
+                                     KiDialogTexte.ZpgtKatalogversionName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtKatalogversionErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Zapfkategorien  ->  Dialoge.Bedarf.ZapfkategorienEditor   (Zapfprofil Z4, Gruppe 2b)
+        // =====================================================================
+
+        /// <summary>Der Typname der Sichtklasse des Kategorien-Editors (<c>EPOS.UI.Dialoge.Bedarf.ZapfkategorienEditorKiSicht</c>).</summary>
+        private const string KATEGORIEN_SICHT = "ZapfkategorienEditorKiSicht";
+
+        /// <summary>
+        /// Der Editor der Zapfkategorien des Zapfprofils — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfkategorienEditorKiSicht</c>, sechs davon SPALTEN des Rasters.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung, die zum KATALOG gehoert</b> (Katalogkopie, Status eigen): Ihr „OK"
+        /// schreibt die Kategorien in einer Transaktion — das bleibt der Klick des Anwenders. Angemeldet
+        /// sind Auffrischen und Pruefen (Fehleingabe und die Regeln des Kerns), KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Die Kategorien sind SPALTEN</b> mit ihrem Namen als Kennzeichen; die Grenzen sind die der
+        /// Felder (μ, σ ≥ 0, Dauer 1 … 1440 min, Anteil ≥ 0, Kappung ≥ 0 oder leer). Neu, Entfernen,
+        /// Reihenfolge, „Vorgabesatz laden" und „Als eigene Kopie bearbeiten…" bleiben Klicks des
+        /// Anwenders.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Zapfkategorien()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ZAPFKATEGORIEN,
+                anzeigename: KiDialogTexte.MaskeZapfkategorien,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogversion", KATEGORIEN_SICHT + ".Katalogversion",
+                                     KiDialogTexte.ZpgzKatalogversionName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgzKatalogversionErl, leerErlaubt: true),
+                    new KiDialogFeld("name", KATEGORIEN_SICHT + ".Zeilen[].Name",
+                                     KiDialogTexte.ZpgzNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgzNameErl, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("volumenstrom", KATEGORIEN_SICHT + ".Zeilen[].Volumenstrom",
+                                     KiDialogTexte.ZpgzVolumenstromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzVolumenstromErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("dauer", KATEGORIEN_SICHT + ".Zeilen[].Dauer",
+                                     KiDialogTexte.ZpgzDauerName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgzDauerErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 1, max: 1440),
+                    new KiDialogFeld("anteil", KATEGORIEN_SICHT + ".Zeilen[].Anteil",
+                                     KiDialogTexte.ZpgzAnteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzAnteilErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("streuung", KATEGORIEN_SICHT + ".Zeilen[].Streuung",
+                                     KiDialogTexte.ZpgzStreuungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzStreuungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("kappung", KATEGORIEN_SICHT + ".Zeilen[].Kappung",
+                                     KiDialogTexte.ZpgzKappungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzKappungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0)
                 },
                 knoepfe: new[]
                 {

@@ -1412,6 +1412,62 @@
         internal static string ZpgkTemperaturErl => MyResource.Resource.KI_DLG_ZPGK_TEMPERATUR_ERL;
         internal static string ZpgkVerbraucherName => MyResource.Resource.ZPG_AUS_KON_SP_VERBRAUCHER;
         internal static string ZpgkVerbraucherErl => MyResource.Resource.KI_DLG_ZPGK_VERBRAUCHER_ERL;
+        internal static string ZpgkBezugsartName => MyResource.Resource.ZPG_AUS_KON_LBL_BEZUGSART;
+        internal static string ZpgkBezugsartErl => MyResource.Resource.KI_DLG_ZPGK_BEZUGSART_ERL;
+        internal static string ZpgkBezugsmengeName => MyResource.Resource.ZPG_AUS_KON_LBL_BEZUGSMENGE;
+        internal static string ZpgkBezugsmengeErl => MyResource.Resource.KI_DLG_ZPGK_BEZUGSMENGE_ERL;
+
+        // Die Eingaben des Verfahrensvergleichs der Auslegung (Zapfprofil Z4, Gruppe 2b).
+        internal static string ZpgaLadeModusName => MyResource.Resource.ZPG_AUS_LBL_LADELEISTUNG;
+        internal static string ZpgaLadeModusErl => MyResource.Resource.KI_DLG_ZPGA_LADE_MODUS_ERL;
+        internal static string ZpgaLadeManuellName => MyResource.Resource.ZPG_AUS_LBL_LADE_MANUELL;
+        internal static string ZpgaLadeManuellErl => MyResource.Resource.KI_DLG_ZPGA_LADE_MANUELL_ERL;
+        internal static string ZpgaLadefensterName => MyResource.Resource.ZPG_AUS_LBL_LADEFENSTER;
+        internal static string ZpgaLadefensterErl => MyResource.Resource.KI_DLG_ZPGA_LADEFENSTER_ERL;
+        internal static string ZpgaLadefensterBeginnName => MyResource.Resource.ZPG_AUS_LBL_LADEFENSTER_BEGINN;
+        internal static string ZpgaLadefensterBeginnErl => MyResource.Resource.KI_DLG_ZPGA_LADEFENSTER_BEGINN_ERL;
+        internal static string ZpgaNutzanteilName => MyResource.Resource.ZPG_AUS_LBL_NUTZANTEIL;
+        internal static string ZpgaNutzanteilErl => MyResource.Resource.KI_DLG_ZPGA_NUTZANTEIL_ERL;
+        internal static string ZpgaZuschlagName => MyResource.Resource.ZPG_AUS_LBL_ZUSCHLAG;
+        internal static string ZpgaZuschlagErl => MyResource.Resource.KI_DLG_ZPGA_ZUSCHLAG_ERL;
+        internal static string ZpgaPersonenModusName => MyResource.Resource.ZPG_AUS_LBL_PERSONEN;
+        internal static string ZpgaPersonenModusErl => MyResource.Resource.KI_DLG_ZPGA_PERSONEN_MODUS_ERL;
+        internal static string ZpgaPersonenManuellName => MyResource.Resource.ZPG_AUS_LBL_PERSONEN_MANUELL;
+        internal static string ZpgaPersonenManuellErl => MyResource.Resource.KI_DLG_ZPGA_PERSONEN_MANUELL_ERL;
+        internal static string ZpgaFuellstandBezugName => MyResource.Resource.ZPG_AUS_LBL_FUELLSTAND_BEZUG;
+        internal static string ZpgaFuellstandBezugErl => MyResource.Resource.KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL;
+
+        /// <summary>Die Ueberlagerung „Tagesgang bearbeiten" des Zapfprofils.</summary>
+        internal static string MaskeTagesgangEditor => MyResource.Resource.ZPG_TGE_TITEL;
+
+        internal static string ZpgtTagtypName => MyResource.Resource.ZPG_TGE_LBL_TAGTYP;
+        internal static string ZpgtTagtypErl => MyResource.Resource.KI_DLG_ZPGT_TAGTYP_ERL;
+        internal static string ZpgtStundenName => MyResource.Resource.ZPG_TGE_GRP_TAGESGANG;
+        internal static string ZpgtStundenErl => MyResource.Resource.KI_DLG_ZPGT_STUNDEN_ERL;
+        internal static string ZpgtWochenfaktorenName => MyResource.Resource.ZPG_TGE_GRP_WOCHE;
+        internal static string ZpgtWochenfaktorenErl => MyResource.Resource.KI_DLG_ZPGT_WOCHENFAKTOREN_ERL;
+        internal static string ZpgtVorlageName => MyResource.Resource.ZPG_TGE_LBL_VORLAGE;
+        internal static string ZpgtVorlageErl => MyResource.Resource.KI_DLG_ZPGT_VORLAGE_ERL;
+        internal static string ZpgtKatalogversionName => MyResource.Resource.ZPG_LBL_KATALOGVERSION_KOPIE;
+        internal static string ZpgtKatalogversionErl => MyResource.Resource.KI_DLG_ZPGT_KATALOGVERSION_ERL;
+
+        /// <summary>Die Ueberlagerung „Zapfkategorien und Streuung" des Zapfprofils.</summary>
+        internal static string MaskeZapfkategorien => MyResource.Resource.ZPG_KATEG_TITEL;
+
+        internal static string ZpgzKatalogversionName => MyResource.Resource.ZPG_LBL_KATALOGVERSION_KOPIE;
+        internal static string ZpgzKatalogversionErl => MyResource.Resource.KI_DLG_ZPGZ_KATALOGVERSION_ERL;
+        internal static string ZpgzNameName => MyResource.Resource.ZPG_KATEG_SP_NAME;
+        internal static string ZpgzNameErl => MyResource.Resource.KI_DLG_ZPGZ_NAME_ERL;
+        internal static string ZpgzVolumenstromName => MyResource.Resource.ZPG_KATEG_SP_VOLUMENSTROM;
+        internal static string ZpgzVolumenstromErl => MyResource.Resource.KI_DLG_ZPGZ_VOLUMENSTROM_ERL;
+        internal static string ZpgzDauerName => MyResource.Resource.ZPG_KATEG_SP_DAUER;
+        internal static string ZpgzDauerErl => MyResource.Resource.KI_DLG_ZPGZ_DAUER_ERL;
+        internal static string ZpgzAnteilName => MyResource.Resource.ZPG_KATEG_SP_ANTEIL;
+        internal static string ZpgzAnteilErl => MyResource.Resource.KI_DLG_ZPGZ_ANTEIL_ERL;
+        internal static string ZpgzStreuungName => MyResource.Resource.ZPG_KATEG_SP_STREUUNG;
+        internal static string ZpgzStreuungErl => MyResource.Resource.KI_DLG_ZPGZ_STREUUNG_ERL;
+        internal static string ZpgzKappungName => MyResource.Resource.ZPG_KATEG_SP_KAPPUNG;
+        internal static string ZpgzKappungErl => MyResource.Resource.KI_DLG_ZPGZ_KAPPUNG_ERL;
 
         internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
         internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;

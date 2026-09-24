@@ -25329,9 +25329,6 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_HERL_SENSORHOEHE" xml:space="preserve">
     <value>empty = catalogue default</value>
   </data>
-  <data name="ZPG_AUS_HERL_LAUFANGABE" xml:space="preserve">
-    <value>run input — not saved; {0}</value>
-  </data>
   <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
     <value>{0} · zones: {1}</value>
   </data>
@@ -28719,9 +28716,6 @@ Do you want to allow this?</value>
   <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
     <value>The duration curve is shown at the Extended level.</value>
   </data>
-  <data name="ZPG_GRUND_FOLGT" xml:space="preserve">
-    <value>Follows with the next version of the dialog.</value>
-  </data>
   <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
     <value>Default · {0}</value>
   </data>
@@ -29237,5 +29231,353 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
     <value>The threshold from which the key figures count hours — not saved.</value>
+  </data>
+  <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
+    <value>Select a type of use first.</value>
+  </data>
+  <data name="ZPG_TGE_TITEL" xml:space="preserve">
+    <value>Edit daily profile</value>
+  </data>
+  <data name="ZPG_TGE_KONTEXT" xml:space="preserve">
+    <value>Type of use {0} · daily profile set {1}</value>
+  </data>
+  <data name="ZPG_TGE_GRP_TAGESGANG" xml:space="preserve">
+    <value>Daily profile per day type [%]</value>
+  </data>
+  <data name="ZPG_TGE_LBL_TAGTYP" xml:space="preserve">
+    <value>Day type</value>
+  </data>
+  <data name="ZPG_TGE_FELD_STUNDE" xml:space="preserve">
+    <value>{0} · hour {1}</value>
+  </data>
+  <data name="ZPG_TGE_HERKUNFT" xml:space="preserve">
+    <value>Origin: {0}</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_OK" xml:space="preserve">
+    <value>sums to 100 %</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_ABWEICHEND" xml:space="preserve">
+    <value>Sum {0} % — correct or normalise; “OK” normalises to 100 %.</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_NULL" xml:space="preserve">
+    <value>Sum 0 % — without shares nothing can be normalised.</value>
+  </data>
+  <data name="ZPG_TGE_VORSCHAU_NORMIERT" xml:space="preserve">
+    <value>After normalisation: {0}</value>
+  </data>
+  <data name="ZPG_TGE_BTN_NORMIEREN" xml:space="preserve">
+    <value>Normalise</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy day</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Paste day</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Copy a day first.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_WOCHE" xml:space="preserve">
+    <value>Weekly factors Mon–Sun [%]</value>
+  </data>
+  <data name="ZPG_TGE_HINW_WOCHE" xml:space="preserve">
+    <value>Share of each weekday in the weekly amount (Σ 100 %); Sundays and public holidays use Sunday.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_VORLAGE" xml:space="preserve">
+    <value>Template from the catalogue</value>
+  </data>
+  <data name="ZPG_TGE_LBL_VORLAGE" xml:space="preserve">
+    <value>Daily profile set</value>
+  </data>
+  <data name="ZPG_TGE_BTN_VORLAGE" xml:space="preserve">
+    <value>Load template</value>
+  </data>
+  <data name="ZPG_TGE_HINW_VORLAGE" xml:space="preserve">
+    <value>“Load template” takes over the four daily profiles of the selected set, the weekly factors remain; “Reset” restores the values at opening.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_VORLAGE" xml:space="preserve">
+    <value>Select a daily profile set first.</value>
+  </data>
+  <data name="ZPG_TGE_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Daily profile saved — zone “{0}” calculates with “{1}”.</value>
+  </data>
+  <data name="ZPG_BTN_ZURUECKSETZEN" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ZPG_BTN_KOPIE" xml:space="preserve">
+    <value>Edit as own copy…</value>
+  </data>
+  <data name="ZPG_LBL_KATALOGVERSION_KOPIE" xml:space="preserve">
+    <value>Catalogue version of the copy</value>
+  </data>
+  <data name="ZPG_HINW_KOPIE" xml:space="preserve">
+    <value>“OK” creates the type of use anew under this catalogue version (status own) and switches the zone to it; the locked one stays as it is.</value>
+  </data>
+  <data name="ZPG_HINW_FREI" xml:space="preserve">
+    <value>“OK” writes in place into the catalogue — in one transaction; the approval note of the type of use is dropped.</value>
+  </data>
+  <data name="ZPG_HINW_NUR_LESEN" xml:space="preserve">
+    <value>Read only — an own copy can be edited.</value>
+  </data>
+  <data name="ZPG_KATEG_TITEL" xml:space="preserve">
+    <value>Draw-off categories and spread</value>
+  </data>
+  <data name="ZPG_KATEG_KONTEXT" xml:space="preserve">
+    <value>Type of use {0} · {1} categories · Σ shares {2}</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_REGELN" xml:space="preserve">
+    <value>μ and σ ≥ 0 l/min, duration 1 … 1440 min, share ≥ 0 with Σ &gt; 0 (the calculation normalises to 1), cap &gt; 0 or empty; each name once.</value>
+  </data>
+  <data name="ZPG_KATEG_SP_REIHENFOLGE" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="ZPG_KATEG_SP_NAME" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ZPG_KATEG_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>Flow rate μ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_DAUER" xml:space="preserve">
+    <value>Duration [min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_ANTEIL" xml:space="preserve">
+    <value>Share [–]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_STREUUNG" xml:space="preserve">
+    <value>Spread σ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_KAPPUNG" xml:space="preserve">
+    <value>Cap [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPG_KATEG_KAPPUNG_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_NEU" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_HOCH" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_RUNTER" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_LETZTE" xml:space="preserve">
+    <value>The last category remains — without categories the zone does not calculate stochastically.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RAND" xml:space="preserve">
+    <value>The category is already at the edge of the list.</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_VORGABE" xml:space="preserve">
+    <value>Load default set</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_VORGABE" xml:space="preserve">
+    <value>The default set consists of the freely documented categories of the catalogue (model assumption); it replaces the rows in the editor.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_OHNE_VORGABE" xml:space="preserve">
+    <value>The catalogue has no default set of draw-off categories.</value>
+  </data>
+  <data name="ZPG_KATEG_NEU_NAME" xml:space="preserve">
+    <value>Category {0}</value>
+  </data>
+  <data name="ZPG_KATEG_LEER" xml:space="preserve">
+    <value>The type of use has no draw-off categories — “Load default set” or “Add category”.</value>
+  </data>
+  <data name="ZPG_KATEG_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Draw-off categories saved — zone “{0}” calculates with “{1}”.</value>
+  </data>
+  <data name="ZPG_AUS_GRP_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Inputs of the method comparison</value>
+  </data>
+  <data name="ZPG_AUS_HINW_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>They act only on the method comparison (for information), not on the recommended point, and are saved with the project.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADELEISTUNG" xml:space="preserve">
+    <value>Charging power</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADE_MANUELL" xml:space="preserve">
+    <value>Charging power, manual</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER" xml:space="preserve">
+    <value>Charging window</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Start of the charging window</value>
+  </data>
+  <data name="ZPG_AUS_LBL_NUTZANTEIL" xml:space="preserve">
+    <value>Usable share</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ZUSCHLAG" xml:space="preserve">
+    <value>Surcharge</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN" xml:space="preserve">
+    <value>Persons</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN_MANUELL" xml:space="preserve">
+    <value>Persons, manual</value>
+  </data>
+  <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>Reference of the fill level</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
+    <value>Default: nominal volume of the point, otherwise the point</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
+    <value>Applied: {0} kW ({1}) · {2}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE_OHNE" xml:space="preserve">
+    <value>A proposal exists only with a calculated storage group.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADEFENSTER" xml:space="preserve">
+    <value>empty = catalogue default; the same values as “Charging window” in the draw-off profile</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERSONEN" xml:space="preserve">
+    <value>auto = from the quantity framework of the zones: {0}; applied: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_ANGESETZT" xml:space="preserve">
+    <value>empty = catalogue default; applied: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
+    <value>The fill level of the tile refers to this volume; applied: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
+    <value>saved with the project; {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_WERKSTOFF" xml:space="preserve">
+    <value>no proposal from the project; without an entry the cumulative curve needs U·A, the area or the exchanger power</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG_WAEHLEN" xml:space="preserve">
+    <value>Choose proposal</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_VORSCHLAG" xml:space="preserve">
+    <value>Proposal from the project: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSART" xml:space="preserve">
+    <value>Reference type</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_BEZUG" xml:space="preserve">
+    <value>no reference — the day applies as it is</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSMENGE" xml:space="preserve">
+    <value>Reference quantity</value>
+  </data>
+  <data name="ZPG_AUS_KON_HINW_BEZUG" xml:space="preserve">
+    <value>With a reference, the design scales the day to the reference quantity of a group of the same reference type; both are saved with the day.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Reference type and reference quantity (greater than 0) belong together.</value>
+  </data>
+  <data name="ZPG_TGE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The daily profile was not saved — {0}</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>the type of use is no longer in the catalogue.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>The type of use or its daily profile set belongs to the delivery — a changed daily profile is created as a new catalogue version.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>A zone or another type of use uses the daily profile — a changed daily profile is created as a new catalogue version.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>the type of use or its daily profile set already exists in this catalogue version.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>the name of the new catalogue version is missing.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>the daily profile set of the type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>the tables of the domestic hot water types of use are missing in this database.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>the database did not accept the change.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>a daily profile or the weekly factors cannot be normalised to 100 % (negative value or sum 0).</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>The daily profile set does not contain all four day types.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_TAGTYP_ERL" xml:space="preserve">
+    <value>The day type whose 24 hourly shares the editor shows: working day, Saturday, Sunday/public holiday or rest day.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_STUNDEN_ERL" xml:space="preserve">
+    <value>The 24 hourly shares of the shown day type in percent, hour 1 to 24; “OK” normalises them to 100 %. Editable while the type of use is free or edited as an own copy.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_WOCHENFAKTOREN_ERL" xml:space="preserve">
+    <value>The seven weekly factors Monday to Sunday in percent; “OK” normalises them to 100 %.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_VORLAGE_ERL" xml:space="preserve">
+    <value>The catalogue daily profile set that “Load template” takes over — loading remains a click of the user.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>The catalogue version of the own copy — only if the type of use is locked and edited as a copy.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>The catalogue version of the own copy — only if the type of use is locked and edited as a copy.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_NAME_ERL" xml:space="preserve">
+    <value>The name of the draw-off category — unique within the type of use.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>The mean flow rate μ of a draw-off event in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_DAUER_ERL" xml:space="preserve">
+    <value>The duration of a draw-off event in minutes (1 to 1440).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_ANTEIL_ERL" xml:space="preserve">
+    <value>The share of the category in the daily amount (≥ 0); the calculation normalises the shares to 1.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_STREUUNG_ERL" xml:space="preserve">
+    <value>The spread σ of the flow rate in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KAPPUNG_ERL" xml:space="preserve">
+    <value>The upper cap of the flow rate in l/min (&gt; 0); empty = none.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MODUS_ERL" xml:space="preserve">
+    <value>The charging power of the method comparison: auto = proposal from the largest daily demand and circulation over the charging window, manual = own value.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MANUELL_ERL" xml:space="preserve">
+    <value>The manual charging power in kW — it acts only with “manual”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_ERL" xml:space="preserve">
+    <value>The length of the daily charging window in hours (0 to 24); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>The start of the charging window in hours (0 to 24); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_NUTZANTEIL_ERL" xml:space="preserve">
+    <value>The usable share of the storage volume (greater than 0 up to 1); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>The surcharge on the volume of the methods (≥ 0, 0.1 = 10 %); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
+    <value>The persons of the method comparison: auto = from the quantity framework of the zones, manual = own value.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
+    <value>The manual number of persons — it acts only with “manual”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
+    <value>Which volume the fill level of the tile refers to: default, nominal volume of the point, point, nominal volume of the band or V_max.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
+    <value>The reference type of the constructed day; without a reference the day applies as it is.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>The reference quantity of the constructed day (greater than 0) — only with a reference type.</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Adopt as manual value</value>
+  </data>
+  <data name="ZPG_AUS_LBL_VORSCHLAG" xml:space="preserve">
+    <value>Proposal: {0} {1}</value>
   </data>
 </root>
