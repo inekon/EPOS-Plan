@@ -87,7 +87,8 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         IReadOnlyList<WirtschaftlichkeitErgebnis>? ausLauf = null,
         Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ergebnisseLaden = null,
         Func<string, int, GesetzParameter>? katalog = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        IReadOnlyList<string>? kwkSzenarioHinweise = null)
     {
         return Render<BhkwWirtschaftlichkeitDialog>(p => p
             .Add(x => x.IdStamm, STAMM)
@@ -102,6 +103,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             .Add(x => x.SpeichereAnlage, speichereAnlage)
             .Add(x => x.SpeichereVorgaben, speichereVorgaben)
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
+            .Add(x => x.EinspeisungKwkSzenarioHinweise, kwkSzenarioHinweise ?? Array.Empty<string>())
             .Add(x => x.Geschlossen, beimSchliessen ?? (_ => { })));
     }
 
@@ -2125,5 +2127,140 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         sigma.Setzen(nullwert.Wert);
         cut.Render();
         Assert.Null(cut.Instance.AktuellerStand!.Stromkennzahl);
+    }
+
+    // =====================================================================
+    //  ETAPPE E9b — der ±-Knopf der Einspeisevergütung KWK (E9b‑Q1, E9a‑Q7)
+    // =====================================================================
+
+    /// <summary>
+    /// Der ±-Knopf steht DORT, wo der Erwartet-Wert gepflegt wird — in Gruppe 2 neben
+    /// dem Einspeisesatz. Er öffnet das Szenariopaar in einer Überlagerung; OK legt es
+    /// auf den ARBEITSSTAND, und erst der OK-Weg des Dialogs schreibt es in die zwei
+    /// Szenariosätze des Parametersatzes (Hausregel „Geschrieben wird im OK-Weg").
+    /// </summary>
+    [Fact]
+    public void Der_KWK_Knopf_pflegt_das_Paar_und_der_OK_Weg_schreibt_es()
+    {
+        var satz = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        var zaehler = new Schreibzaehler();
+        var cut = Aufbauen(parameter: satz, speichereVorgaben: zaehler.Vorgaben);
+
+        IElement knopf = Koerper(cut, 2).QuerySelector("button.epos-szenarioknopf")!;
+        Assert.Equal("± Einspeisevergütung KWK", knopf.GetAttribute("aria-label"));
+        knopf.Click();
+
+        Assert.True(cut.Instance.SzenarioOffen);
+        Assert.Equal("Szenariowerte — Einspeisevergütung KWK",
+                     cut.Find(".epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Contains(cut.FindAll(".epos-ueberlagerung .epos-herleitung-text"),
+                        e => e.TextContent == "Erwartet: 0,0900 €/kWh");
+
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[0].Input("0,1100");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.True(cut.Instance.EinspeisungKwkSzenarioGepflegt);
+        Assert.Contains("epos-szenarioknopf--gepflegt",
+                        Koerper(cut, 2).QuerySelector("button.epos-szenarioknopf")!.ClassName);
+        Assert.Null(satz.SatzBest);                          // bis zum OK unberührt
+
+        OkKnopf(cut).Click();
+
+        Assert.Equal(0.11, satz.SatzBest!.EinspeiseverguetungKwk);
+        Assert.Null(satz.SatzWorst!.EinspeiseverguetungKwk);
+        Assert.Equal(0.09, satz.EinspeiseverguetungKWK);     // der Erwartet-Wert bleibt
+        Assert.Contains("Vorgaben", zaehler.Wege);
+    }
+
+    /// <summary>Abbrechen verwirft auch das Paar — nichts wird geschrieben.</summary>
+    [Fact]
+    public void Abbrechen_verwirft_das_KWK_Paar()
+    {
+        var satz = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        var zaehler = new Schreibzaehler();
+        var cut = Aufbauen(parameter: satz, speichereVorgaben: zaehler.Vorgaben);
+
+        Koerper(cut, 2).QuerySelector("button.epos-szenarioknopf")!.Click();
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[1].Input("0,0700");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        AbbrechenKnopf(cut).Click();
+
+        Assert.Null(satz.SatzWorst);
+        Assert.Equal(0, zaehler.Zugriffe);
+    }
+
+    /// <summary>
+    /// E9a‑Q7: Ist das Tarif-Rollenmodell wirksam, bewertet es die Einspeisung mit seinem
+    /// Einspeisetarif — die Zeile der Hülle erscheint, sobald ein Paar gepflegt ist.
+    /// </summary>
+    [Fact]
+    public void Die_Rollenzeile_erscheint_mit_einem_gepflegten_KWK_Paar()
+    {
+        const string ROLLEN = "Szenario-Einspeisevergütung ohne Wirkung: Rollenmodell.";
+        Assert.DoesNotContain(Aufbauen(parameter: new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 },
+                                       kwkSzenarioHinweise: new[] { ROLLEN })
+                                  .FindAll(".epos-kohaerenz-text"),
+                              e => e.TextContent == ROLLEN);
+
+        var satz = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        satz.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        satz.SatzWorst.EinspeiseverguetungKwk = 0.07;
+        var cut = Aufbauen(parameter: satz, kwkSzenarioHinweise: new[] { ROLLEN });
+
+        Assert.Contains(Koerper(cut, 2).QuerySelectorAll(".epos-kohaerenz-text"), e => e.TextContent == ROLLEN);
+        Assert.Single(Koerper(cut, 2).QuerySelectorAll(".epos-szenarioknopf-kennzeichen"));
+    }
+
+    /// <summary>Esc gehört der obersten Ebene: erst das Paar, dann der Dialog.</summary>
+    [Fact]
+    public void Esc_schliesst_nur_die_Ueberlagerung_des_KWK_Paars()
+    {
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(parameter: new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 },
+                           beimSchliessen: e => ergebnis = e);
+
+        Koerper(cut, 2).QuerySelector("button.epos-szenarioknopf")!.Click();
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Der Arbeitsstand trägt das Paar hin und zurück: <c>Aus</c> liest es aus den zwei
+    /// Szenariosätzen, <c>Gleicht</c> sieht eine Änderung daran, <c>Anwenden</c> legt
+    /// fehlende Sätze an und schreibt NUR die zwei Felder — die übrigen Felder der Sätze
+    /// pflegt der Parameterdialog.
+    /// </summary>
+    [Fact]
+    public void Der_Vorgabenstand_traegt_das_KWK_Paar_hin_und_zurueck()
+    {
+        var p = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        BhkwVorgabenstand stand = BhkwVorgabenstand.Aus(p);
+        Assert.Null(stand.EinspeiseverguetungKwkBest);
+        Assert.True(stand.Gleicht(p));
+
+        stand.EinspeiseverguetungKwkBest = 0.12;
+        Assert.False(stand.Gleicht(p));
+
+        stand.Anwenden(p);
+        Assert.Equal(0.12, p.SatzBest!.EinspeiseverguetungKwk);
+        Assert.Null(p.SatzWorst!.EinspeiseverguetungKwk);
+        Assert.False(p.SatzBest.NurVorgaben);
+        Assert.True(BhkwVorgabenstand.Aus(p).Gleicht(p));
+
+        // Ein gepflegter Zins des Szenariosatzes bleibt unberührt.
+        p.SatzBest.Zinssatz = 2.0;
+        BhkwVorgabenstand zweiter = BhkwVorgabenstand.Aus(p);
+        zweiter.EinspeiseverguetungKwkBest = null;
+        zweiter.Anwenden(p);
+        Assert.Null(p.SatzBest.EinspeiseverguetungKwk);
+        Assert.Equal(2.0, p.SatzBest.Zinssatz);
     }
 }

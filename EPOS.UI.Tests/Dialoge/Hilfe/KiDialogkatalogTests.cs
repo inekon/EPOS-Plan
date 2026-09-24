@@ -1304,7 +1304,8 @@ public class KiDialogkatalogTests : IDisposable
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
         [KiMaskennamen.CASE_EINGABE] =
             "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +
-            "Felder; Zeuge ist CaseEingabeDialogTests",
+            "Felder und — ETAPPE E9b — drei Auskunftsfelder des Szenariopaars; Zeugen " +
+            "sind CaseEingabeDialogTests und CaseEingabeSzenariopaarTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER] =
             "bindet über die Sichtklasse WirtschaftlichkeitParameterKiSicht auf den " +
             "Parametersatz UND beide Szenariosätze; Zeuge ist " +
