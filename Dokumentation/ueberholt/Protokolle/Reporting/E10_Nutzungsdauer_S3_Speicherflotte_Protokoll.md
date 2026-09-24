@@ -365,7 +365,9 @@ wie der Tooltip, denn auch die Nutzungsdauer rechnet aus der Position, die Tabel
   `ios_migration_september` und `main`; der CI-Nachweis kommt mit der nächsten Papierwelle.
 - **Papiere mit der Statuszeile:** Register (Kopf, Familientafel, A7, A8, R‑ND mit ND‑Q4, ND‑Q6 und ND‑Q7, Nr. 20, neue
   Familie R‑E10, EZ‑9, EZ‑10), Konzept (Kopf, § 2.1, § 2.8, § 2.13 (3), § 3.4, § 6.1, § 6.2, § 6.3 Nr. 9h und 19, § 6.5,
-  § 7 und Anhang), Nutzungsdauer-Konzept (Kopf, § 1.5, § 1.6, § 2.2, § 2.4, § 2.5, § 3, § 5, § 6), Protokoll der
-  Entscheidwege (§ 0.5, Kopf von § 8, § 8.23, § 8.24), Analysepapier (Kopf, Nachtrag, § 0 Punkt 5, § 2.4, § 3.4 D4, § 4
-  A7/A8, § 5 mit der Zeile E10 und dem Stand der Etappen, § 6), Mockup (Kategorien 1 und 2, Ressourcentafeln, Anhang
-  U39, Stand-Absatz), die Logbuch-Sätze, die Wiki-Quellen Kosten und Gerätekataloge und der Index Reporting.
+  § 7 und Anhang), Nutzungsdauer-Konzept (Kopf, § 1.5, § 1.6, § 2.2, § 2.4, § 2.5, § 3 samt „Offen aus S2", § 5, § 6)
+  und seine Indexzeile, Protokoll der Entscheidwege (Kopf, § 0.5, Kopf von § 8, § 8.23, § 8.24), Analysepapier (Kopf,
+  Nachtrag, § 0 Punkt 5, § 2.4, § 3.4 D4, § 4 A7/A8, § 5 mit der Zeile E10, dem Stand der Etappen und der Begründung,
+  § 6), Mockup (Kategorien 1 bis 3 — in Kategorie 3 heißt der vierte Knopf der Betriebsseite jetzt „Sätze vorbelegen…" —,
+  Ressourcentafeln der Kategorien 1 und 2, Anhang U39, Stand-Absatz), die Logbuch-Sätze, die Wiki-Quellen Kosten und
+  Gerätekataloge und der Index Reporting.
