@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -34,12 +35,18 @@ namespace EPOS.Kern.Tests
         private static string Paketordner() => Path.Combine(ZapfZufallTests.Probenordner(), "Katalogpaket");
 
         /// <summary>Das Probepaket als Dateien — über den Leseweg des Kerns (Ordner).</summary>
+        /// <remarks>Die Probendateien liegen im Arbeitsbaum mit dem Zeilenende des Auscheckens
+        /// (CRLF unter Windows mit <c>core.autocrlf</c>, LF auf einem Linux-Läufer ohne — beide
+        /// über <c>text=auto</c> gültig); die Mutationen der Fälle unten gehen von CRLF aus, also
+        /// wird hier einmal auf CRLF vereinheitlicht, unabhängig vom Auscheck-Zeilenende.</remarks>
         private static List<TwwPaketdatei> Paket()
         {
             IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz fehler);
             Assert.Null(fehler);
-            return d.ToList();
+            return d.Select(x => x with { Inhalt = AufCrLf(x.Inhalt) }).ToList();
         }
+
+        private static string AufCrLf(string text) => text == null ? text : Regex.Replace(text, "\r\n|\r|\n", "\r\n");
 
         /// <summary>Das Paket mit einer Datei, deren Text <paramref name="aendern"/> umschreibt.</summary>
         private static List<TwwPaketdatei> PaketMit(string tabelle, Func<string, string> aendern)
