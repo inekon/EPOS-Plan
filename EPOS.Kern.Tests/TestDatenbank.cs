@@ -661,6 +661,11 @@ namespace EPOS.Kern.Tests
                 // (TwwSchema.SpaltenT3Typtage) - Typtage_Aktiv steht auf 0, beide Angaben auf NULL.
                 TwwSchema.T3TyptageAlle(null);
 
+                // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT (Welle #493): die
+                // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

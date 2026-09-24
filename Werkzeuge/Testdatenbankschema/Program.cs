@@ -1662,11 +1662,31 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + WiederholperiodeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
                                   " - vollstaendig: " + WiederholperiodeSchema.Vollstaendig() + " (erwartet True).");
 
-            // ---- Schritt 130: die eingespielten Typtage des lizenzierten Anwenders
-            //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH 124. REIN DDL
-            //      aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_130_ZapfprofilTyptage
-            //      bedient (TwwSchema.AnweisungenT3Typtage): Tab_TwwTyptag_IMPORT.
+            // ---- Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT: die Anschlusslaengen im
+            //      Gebaeudekatalog (Welle #493, Konzept Administrationsdialoge 7.1 (a)). NACH der
+            //      Wiederholperiode. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeAnschlusslaengen bedient
+            //      (GebaeudeAnschlusslaengenReparatur): Krankenhaussatz (Fenster-Wand,
+            //      Aussenwandflaeche) und die sechs Saetze mit 243,7 / 7 879 / 1 392,8 m - je Satz,
+            //      Spalte und Schadensbild.
             //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrAnschluss = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAnschluss + " - Anschlusslaengen im Gebaeudekatalog, offen vorher: " +
+                              GebaeudeAnschlusslaengenReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeAnschlusslaengenReparatur.Bericht berichtAnschluss = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrAnschluss + " - " + berichtAnschluss.Text() + "; offen: " +
+                                  GebaeudeAnschlusslaengenReparatur.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 130: die eingespielten Typtage des lizenzierten Anwenders
+            //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH dem Schritt
+            //      der Anschlusslaengen. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_130_ZapfprofilTyptage
             //      bedient (TwwSchema.AnweisungenT3Typtage und TwwSchema.SpaltenT3Typtage):
             //      Tab_TwwTyptag_IMPORT und an Tab_TwwProjekt die Wahl des Typtagwegs
             //      (Typtage_Aktiv 0/1 mit Vorgabe 0, Typtage_Klimazone, Typtage_Gebaeudeart).

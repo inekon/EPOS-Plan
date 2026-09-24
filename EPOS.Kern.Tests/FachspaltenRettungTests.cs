@@ -217,6 +217,11 @@ namespace EPOS.Kern.Tests
                 a.Kopf[0].IdKlimaregion = kopf.IdKlimaregion;
                 a.Kopf[0].Klimaname = kopf.Klimaname;
 
+                // #490: Ein Lauf ohne Eingabe schriebe die Anlagen gar nicht neu - die
+                // Rettung liefe nicht. Ohne Vergleichsstand schreibt der Bearbeiten-Zweig
+                // jedes Gewerk, genau den Weg, den diese Faelle nachweisen.
+                a.BereitsGeladen = false;
+
                 AssistentErgebnis e = a.Speichern();
                 Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
             }

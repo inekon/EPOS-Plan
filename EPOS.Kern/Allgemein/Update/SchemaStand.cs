@@ -529,12 +529,20 @@ namespace WindowsFormsApplication1
         /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
         /// Mit der WIEDERHOLPERIODE JE KOSTENPOSITION (Schritt
         /// <see cref="WiederholperiodeSchema.SCHRITT"/>, Etappe E16; Konzept Wirtschaftlichkeit
-        /// § 2.11.2 V‑G3, DIN EN 17463 6.3.1 „alle n Jahre") steht das Ziel auf diesem Schritt:
+        /// § 2.11.2 V‑G3, DIN EN 17463 6.3.1 „alle n Jahre") stand das Ziel auf <b>129</b>:
         /// die nullbare Spalte <c>Wiederholperiode_a</c> an <c>Tab_ProjektWerte</c> und
         /// <c>Tab_KostenVorlagePosition</c> (<see cref="WiederholperiodeSchema.Spalten"/>); er
         /// folgt auf den Heizkreis (128). Die Nummer steht allein bei <see cref="WiederholperiodeSchema.SCHRITT"/>.
         /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL, 0 und 1 heißen
         /// „jährlich wie bisher"; der Referenzlauf bleibt byte-gleich.
+        /// Mit der BERICHTIGUNG DER ANSCHLUSSLÄNGEN IM GEBÄUDEKATALOG (Schritt
+        /// <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/>, Welle #493; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf diesem Schritt: der Krankenhaussatz
+        /// (Anschlusslänge Fenster–Wand 1 800 → 4 812 m, Außenwand 12 094 → 13 214,4 m²) und die
+        /// sechs Sätze mit den Längen 243,7 / 7 879 / 1 392,8 m (Fenster–Wand, Wand–Dach,
+        /// Außenwand–Keller) — je Satz, Spalte und Schadensbild bei
+        /// <see cref="GebaeudeAnschlusslaengenReparatur"/>. <b>Ergebnisneutral:</b> Keinen der
+        /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
         /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 130, Zapfprofilgenerator Stufe
         /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>130</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein

@@ -3200,6 +3200,24 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) bleibt ohne Wirkung — Beginn und Ende ergeben keinen Ferientag.</value>
   </data>
+  <data name="SIMENG_G3_NEIGUNG" xml:space="preserve">
+    <value>{0}: Die Neigung {1}° liegt nicht in 0 … 180° (0° = waagerecht nach oben, 90° = senkrecht, 180° = waagerecht nach unten).</value>
+  </data>
+  <data name="SIMENG_G3_AUFBAU_LEER" xml:space="preserve">
+    <value>{0}: Der Schichtaufbau hat keine Schicht.</value>
+  </data>
+  <data name="SIMENG_G3_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>{0}, Schicht {1}: Die ruhende Luftschicht ist {2} m dick; DIN EN ISO 6946 Tabelle 8 gilt bis {3} m.</value>
+  </data>
+  <data name="SIMENG_G3_SCHICHT_STOFFWERT" xml:space="preserve">
+    <value>{0}, Schicht {1}: {2} = {3} {4} liegt nicht in {5} … {6} {4}; ein Stoffwert außerhalb des Plausibilitätsbands ist kein Wert.</value>
+  </data>
+  <data name="SIMENG_G3_REDUKTION_UNGUELTIG" xml:space="preserve">
+    <value>{0}: Die Reduktion des Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen endlichen, positiven Wert (R_1 = {1} K/W, C_1 = {2} J/K); ein Aufbau ohne wirksame Speichermasse ist als masseloses Bauteil zu führen.</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
+    <value>{0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>

@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die <b>Festwerte des Gebäudemodells</b> (Stufe G1; Rechenschritte 1.3, Vorgaben bei
@@ -263,5 +265,101 @@
 
         /// <summary>Größter zulässiger Wert des Sollwert-Zeitprogramms [°C] — Plausibilitätsgrenze des Verwenders (4.3).</summary>
         internal const double SOLLWERTPROFIL_MAX_C = 30.0;
+
+        // ---- Bauteilweg, Stufe G3 (Mehrzonenkonzept 3.1–3.5; Rechenschritte Kapitel 3) ----
+        //
+        // Bezugsperioden nach VDI 6007 Blatt 1 Gl. (10c)–(10e); die Kriterien (10a)/(10b) stehen
+        // als Gleichungskonstanten in Bauteilreduktion.
+
+        /// <summary>Sekunden eines Tages — Kreisfrequenz ω = 2π/(86 400 · T), VDI 6007-1 Gl. (9).</summary>
+        internal const double SEKUNDEN_JE_TAG = 86400.0;
+
+        /// <summary>Bezugsperiode eines Bauteils im Regelfall T_BT [d] — VDI 6007-1 Gl. (10d).</summary>
+        internal const double BEZUGSPERIODE_BAUTEIL_D = 7.0;
+
+        /// <summary>Bezugsperiode eines Bauteils mit raumseitig abgedeckter Speichermasse T_BT [d] — VDI 6007-1 Gl. (10c).</summary>
+        internal const double BEZUGSPERIODE_ABGEDECKT_D = 2.0;
+
+        /// <summary>Bezugsperiode der Zusammenfassung zum Raum T_RA [d] — VDI 6007-1 Gl. (10e).</summary>
+        internal const double BEZUGSPERIODE_RAUM_D = 5.0;
+
+        // Bemessungswerte der Wärmeübergangswiderstände, DIN EN ISO 6946:2018-03, 6.8, Tabelle 7.
+        // „Horizontal" gilt für Wärmeströme ±30° um die Waagerechte, also für Bauteilneigungen
+        // von 60° bis 120° (0° = waagerecht nach oben, 90° = senkrecht, 180° = waagerecht nach unten).
+
+        /// <summary>Innerer Wärmeübergangswiderstand bei Wärmestrom aufwärts R_si [m²K/W] — DIN EN ISO 6946, Tabelle 7.</summary>
+        internal const double R_SI_AUFWAERTS = 0.10;
+
+        /// <summary>Innerer Wärmeübergangswiderstand bei waagerechtem Wärmestrom R_si [m²K/W] — DIN EN ISO 6946, Tabelle 7.</summary>
+        internal const double R_SI_HORIZONTAL = 0.13;
+
+        /// <summary>Innerer Wärmeübergangswiderstand bei Wärmestrom abwärts R_si [m²K/W] — DIN EN ISO 6946, Tabelle 7.</summary>
+        internal const double R_SI_ABWAERTS = 0.17;
+
+        /// <summary>Äußerer Wärmeübergangswiderstand an Außenluft R_se [m²K/W] — DIN EN ISO 6946, Tabelle 7 (alle Richtungen).</summary>
+        internal const double R_SE_AUSSENLUFT = 0.04;
+
+        /// <summary>
+        /// Äußerer Wärmeübergangswiderstand an Erdreich R_se [m²K/W]: keiner — die Werte der
+        /// Tabelle 7 gelten nur für Oberflächen, die Luft berühren (DIN EN ISO 6946, Tabelle 7, Anmerkung 1).
+        /// </summary>
+        internal const double R_SE_ERDREICH = 0.0;
+
+        /// <summary>Kleinste Neigung mit waagerechtem Wärmestrom [°] — DIN EN ISO 6946, 6.8 (±30°).</summary>
+        internal const double NEIGUNG_HORIZONTAL_MIN_GRAD = 60.0;
+
+        /// <summary>Größte Neigung mit waagerechtem Wärmestrom [°] — DIN EN ISO 6946, 6.8 (±30°).</summary>
+        internal const double NEIGUNG_HORIZONTAL_MAX_GRAD = 120.0;
+
+        /// <summary>
+        /// Stützstellen der Dicke ruhender Luftschichten [mm] — DIN EN ISO 6946:2018-03, 6.9.2,
+        /// Tabelle 8; Zwischenwerte linear interpoliert (Anmerkung der Tabelle).
+        /// </summary>
+        internal static ReadOnlySpan<double> LUFTSCHICHT_DICKE_MM => new double[] { 0.0, 5.0, 7.0, 10.0, 15.0, 25.0, 50.0, 100.0, 300.0 };
+
+        /// <summary>Wärmedurchlasswiderstand ruhender Luftschichten bei Wärmestrom aufwärts [m²K/W] — DIN EN ISO 6946, Tabelle 8.</summary>
+        internal static ReadOnlySpan<double> LUFTSCHICHT_R_AUFWAERTS => new double[] { 0.00, 0.11, 0.13, 0.15, 0.16, 0.16, 0.16, 0.16, 0.16 };
+
+        /// <summary>Wärmedurchlasswiderstand ruhender Luftschichten bei waagerechtem Wärmestrom [m²K/W] — DIN EN ISO 6946, Tabelle 8.</summary>
+        internal static ReadOnlySpan<double> LUFTSCHICHT_R_HORIZONTAL => new double[] { 0.00, 0.11, 0.13, 0.15, 0.17, 0.18, 0.18, 0.18, 0.18 };
+
+        /// <summary>Wärmedurchlasswiderstand ruhender Luftschichten bei Wärmestrom abwärts [m²K/W] — DIN EN ISO 6946, Tabelle 8.</summary>
+        internal static ReadOnlySpan<double> LUFTSCHICHT_R_ABWAERTS => new double[] { 0.00, 0.11, 0.13, 0.15, 0.17, 0.19, 0.21, 0.22, 0.23 };
+
+        /// <summary>Größte Dicke einer ruhenden Luftschicht mit Tabellenwert [m] — DIN EN ISO 6946, 6.9.1.</summary>
+        internal const double LUFTSCHICHT_DICKE_MAX_M = 0.3;
+
+        // Plausibilitätsband der Stoffwerte (Mehrzonenkonzept 3.5): außerhalb ist ein Stoffwert
+        // „nicht geliefert" — der Kern bricht benannt ab, statt ihn zu übernehmen.
+
+        /// <summary>Kleinste Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
+        internal const double SCHICHT_DICKE_MIN_M = 0.001;
+
+        /// <summary>Größte Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
+        internal const double SCHICHT_DICKE_MAX_M = 1.0;
+
+        /// <summary>Kleinste Wärmeleitfähigkeit λ [W/(mK)] (Mehrzonenkonzept 3.5).</summary>
+        internal const double LAMBDA_MIN_WMK = 0.005;
+
+        /// <summary>Größte Wärmeleitfähigkeit λ [W/(mK)] (Mehrzonenkonzept 3.5).</summary>
+        internal const double LAMBDA_MAX_WMK = 500.0;
+
+        /// <summary>Kleinste Rohdichte ρ [kg/m³] (Mehrzonenkonzept 3.5); eine Luftschicht darf darunter liegen.</summary>
+        internal const double ROHDICHTE_MIN_KGM3 = 5.0;
+
+        /// <summary>Größte Rohdichte ρ [kg/m³] (Mehrzonenkonzept 3.5).</summary>
+        internal const double ROHDICHTE_MAX_KGM3 = 8000.0;
+
+        /// <summary>Kleinste spezifische Wärmekapazität c_p [J/(kgK)] (Mehrzonenkonzept 3.5).</summary>
+        internal const double CP_MIN_JKGK = 100.0;
+
+        /// <summary>Größte spezifische Wärmekapazität c_p [J/(kgK)] (Mehrzonenkonzept 3.5).</summary>
+        internal const double CP_MAX_JKGK = 5000.0;
+
+        /// <summary>
+        /// Relative Abweichung des eingetragenen vom gerechneten U-Wert, ab der die Herleitung
+        /// einen Hinweis trägt [–] (Mehrzonenkonzept 3.4: „mehr als 10 %").
+        /// </summary>
+        internal const double UWERT_ABWEICHUNG_HINWEIS = 0.10;
     }
 }

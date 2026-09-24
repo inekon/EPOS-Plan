@@ -4193,6 +4193,25 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/> — <b>die Berichtigung
+        /// der Anschlusslängen im Gebäudekatalog</b> (Welle #493, Konzept Administrationsdialoge
+        /// 7.1 (a)). Er folgt auf <see cref="SCHRITT_WIEDERHOLPERIODE"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Krankenhaussatz Anschlusslänge Fenster–Wand 1 800 → 4 812 m und
+        /// Außenwand 12 094 → 13 214,4 m²; die sechs Sätze mit 243,7 / 7 879 / 1 392,8 m
+        /// (Fenster–Wand, Wand–Dach, Außenwand–Keller) auf Laibung nach dem Verhältnis des
+        /// Ausgangssatzes und Umfang 313,8 m. Die Nummer steht allein bei
+        /// <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN = GebaeudeAnschlusslaengenReparatur.SCHRITT;
+
+        /// <summary>
         /// Schritt 130 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
         /// (Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Schemaschritt T3 „Typtage", Stufe
         /// Z4b). Er folgt auf <see cref="SCHRITT_WIEDERHOLPERIODE"/> (129) ohne
@@ -5969,6 +5988,20 @@ namespace WindowsFormsApplication1
                         "2 Jahre), liesse sich nicht fuehren. KEIN Rechenergebnis aendert sich - alle " +
                         "Zeilen stehen auf leer, und leer heisst 'jaehrlich wie bisher'.",
                         Schritt_Wiederholperiode),
+
+            // WELLE #493 (Konzept Administrationsdialoge 7.1 (a)) - die Anschlusslaengen im
+            // Gebaeudekatalog: Krankenhaussatz (Fenster-Wand, Aussenwandflaeche) und die sechs
+            // Saetze mit 243,7 / 7 879 / 1 392,8 m. REIN DML; die Quelle ist
+            // GebaeudeAnschlusslaengenReparatur. Er steht NACH der Wiederholperiode ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen (Fenster-Wand, Wand-Dach, Aussenwand-Keller) " +
+                        "von sieben Saetzen und Aussenwandflaeche des Krankenhaussatzes berichtigt",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (Laibung 0,08 m je m2 " +
+                        "Fenster, Dachkante 7 879 m bei 1 469 m2 Dach). KEIN Rechenergebnis eines Projekts " +
+                        "aendert sich - Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeAnschlusslaengen),
+
             // ZAPFPROFILGENERATOR Z4b (Schemaschritt T3 "Typtage") - die eingespielten Typtage
             // des lizenzierten Anwenders: Tab_TwwTyptag_IMPORT. REIN DDL; die Quelle ist
             // TwwSchema.AnweisungenT3Typtage. Er steht NACH 129 ohne Reihenfolgebedingung und
@@ -9783,6 +9816,47 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
                     "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT - die Anschlusslaengen (Welle #493)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Berichtigung der Anschlusslängen im Gebäudekatalog — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/>, Anweisungen, Schadensbilder und
+        /// Herleitungen bei <see cref="GebaeudeAnschlusslaengenReparatur"/>. Dieselbe Bauart wie
+        /// der Schritt <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/>: der ganze Schritt aus dem
+        /// Kern, danach die Nachprobe (<see cref="GebaeudeAnschlusslaengenReparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeAnschlusslaengen(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Anschlusslaenge(n) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
