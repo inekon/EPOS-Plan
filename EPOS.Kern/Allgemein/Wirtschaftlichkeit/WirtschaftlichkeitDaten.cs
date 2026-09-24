@@ -2125,6 +2125,19 @@ namespace WindowsFormsApplication1
         /// zuvor.</para>
         /// </summary>
         public int? StartJahr;
+
+        /// <summary>
+        /// ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1) — die <b>Wiederholperiode</b> der Position
+        /// (<c>Tab_ProjektWerte.Wiederholperiode_a</c>): n ≥ 2 = sie zahlt ab ihrem Startjahr
+        /// nur alle n Jahre; <c>null</c> = jährlich. <see cref="BetragJahr"/> bleibt der Betrag
+        /// je Zahlung (E16‑Q3 a); ob die Position im ersten Jahr zahlt, sagt allein das
+        /// Startjahr (<see cref="WirtschaftlichkeitZeilen.LaeuftImErstenJahr"/>).
+        ///
+        /// <para>Nachweisumschlag ab Fassung 11; <c>null</c> steht nicht im Umschlag
+        /// (<c>WhenWritingNull</c>) — eine jährliche Position schreibt sich wie zuvor, und ein
+        /// älterer Umschlag liest sich „jährlich".</para>
+        /// </summary>
+        public int? Wiederholperiode;
     }
 
     /// <summary>

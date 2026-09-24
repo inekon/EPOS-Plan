@@ -194,6 +194,10 @@ namespace WindowsFormsApplication1
                 if (p.ErsatzFuehren.HasValue || p.RestwertAnsetzen.HasValue)
                     ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_PROJEKTWERTE, id,
                                                        p.ErsatzFuehren, p.RestwertAnsetzen);
+                // ETAPPE E16 (V‑G3): die Wiederholperiode der Vorlagenposition wandert ebenso in
+                // die frische Projektzeile. Jährlich (leer) bleibt leer.
+                if (p.Wiederholperiode.HasValue)
+                    Wiederholperiode.Schreibe(SchemaKatalog.TAB_PROJEKTWERTE, id, p.Wiederholperiode);
                 if (idAnlage > 0) KostenProjektPositionenCtrl.AnlageZuordnen(id, idAnlage);
                 // ETAPPE H3: Das Pflichtmerkmal wandert bei JEDER Übernahme mit —
                 // die H1-Saat markierte nur den Bestand; ohne die Durchreichung
@@ -356,6 +360,10 @@ namespace WindowsFormsApplication1
                 ? ", [" + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + "], [" +
                   SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + "]"
                 : "";
+            // ETAPPE E16 (V‑G3): die Wiederholperiode der Quellzeile wandert ebenso mit —
+            // nur, wo es die Spalte gibt.
+            bool mitPeriode = WiederholperiodeSchema.SpalteVorhanden(SchemaKatalog.TAB_PROJEKTWERTE);
+            if (mitPeriode) kennzeichenSpalten += ", [" + WiederholperiodeSchema.SPALTE + "]";
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT StammID, EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
@@ -414,6 +422,7 @@ namespace WindowsFormsApplication1
                     werte.Add(Roh(r, SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN, DbParamTyp.Integer));
                     werte.Add(Roh(r, SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN, DbParamTyp.Integer));
                 }
+                if (mitPeriode) werte.Add(Roh(r, WiederholperiodeSchema.SPALTE, DbParamTyp.Integer));
 
                 int n = DataRepository.ExecuteNonQuery(
                     "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, " +
@@ -427,7 +436,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
                     SchemaKatalog.SPALTE_PW_STARTJAHR + "]" + kennzeichenSpalten + ") " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
-                    (mitKennzeichen ? ", ?, ?" : "") + ")",
+                    (mitKennzeichen ? ", ?, ?" : "") + (mitPeriode ? ", ?" : "") + ")",
                     werte.ToArray());
 
                 if (n == 1)

@@ -30418,4 +30418,28 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
   </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>alle {0} Jahre ab Jahr {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Zahlung alle:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Zahlung alle … Jahre</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Wiederholperiode einer Betriebsposition in Jahren: 1 = jährlich, n = die Position zahlt im Startjahr und danach alle n Jahre. Nur auf der Betriebsseite.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_E [€/a]</value>
+  </data>
 </root>

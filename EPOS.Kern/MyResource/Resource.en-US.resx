@@ -30411,4 +30411,28 @@ Do you want to allow this?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
   </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>every {0} years from year {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Payment every:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = every year. From 2 on, the item pays in its start year and every n years after that (EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Payment every … years</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Repeat period of an operating cost item in years: 1 = every year, n = the item pays in its start year and every n years after that. Operating side only.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Items every n years with p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Items every n years with p_E [€/a]</value>
+  </data>
 </root>

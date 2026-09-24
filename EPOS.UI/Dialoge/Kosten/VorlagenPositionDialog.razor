@@ -89,6 +89,21 @@
                 <Herleitungszeile Text="@InfoKennzeichen" />
             }
 
+            @* ETAPPE E16 (V-G3, DIN EN 17463 6.3.1): DIE WIEDERHOLPERIODE "alle ... Jahre" -
+               1 = jaehrlich. Nur auf der Betriebsseite und nur, wo die Datenbank die Spalte
+               fuehrt (Schemaschritt E16); sonst steht das Feld gar nicht erst da. Die
+               Herleitungszeile nennt "alle n Jahre ab Jahr X" - den Satz baut der Kern. *@
+            @if (MitWiederholperiode)
+            {
+                <Ganzzahlfeld Bezeichnung="@LabelWiederholperiode"
+                              Wert="@_periode"
+                              WertChanged="BeiPeriode"
+                              Einheit="@EinheitWiederholperiode"
+                              Min="1"
+                              Max="@WiederholperiodeMax" />
+                <Herleitungszeile Text="@InfoPeriode" />
+            }
+
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
 
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
@@ -178,6 +193,34 @@
     /// <summary>ETAPPE E7c: die Herleitungszeile unter beiden Klapplisten.</summary>
     [Parameter] public string InfoKennzeichen { get; set; } = "";
 
+    /// <summary>
+    /// ETAPPE E16 (V‑G3): Zeigt der Dialog das Ganzzahlfeld „alle … Jahre"? Die Huelle setzt
+    /// es auf der Betriebsseite, sofern die Datenbank die Spalte fuehrt.
+    /// </summary>
+    [Parameter] public bool MitWiederholperiode { get; set; }
+
+    /// <summary>ETAPPE E16: die Wiederholperiode beim Oeffnen [a]; 1 oder <c>null</c> = jaehrlich.</summary>
+    [Parameter] public int? Wiederholperiode { get; set; }
+
+    /// <summary>ETAPPE E16: die Obergrenze des Feldes [a].</summary>
+    [Parameter] public int? WiederholperiodeMax { get; set; } = 99;
+
+    /// <summary>ETAPPE E16: Beschriftung des Feldes.</summary>
+    [Parameter] public string LabelWiederholperiode { get; set; } = "Zahlung alle:";
+
+    /// <summary>ETAPPE E16: die Einheit hinter dem Feld.</summary>
+    [Parameter] public string EinheitWiederholperiode { get; set; } = "Jahre";
+
+    /// <summary>ETAPPE E16: die leise Zeile unter dem Feld — was 1 und n bedeuten.</summary>
+    [Parameter] public string InfoWiederholperiode { get; set; }
+        = "1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1).";
+
+    /// <summary>
+    /// ETAPPE E16: die Herleitung „alle n Jahre ab Jahr X" zu einer Periode — gebaut vom Kern
+    /// (Startjahr der Projektzeile); leer bei jaehrlich. <c>null</c> = keine Herleitung.
+    /// </summary>
+    [Parameter] public Func<int?, string>? WiederholperiodeHerleitung { get; set; }
+
     /// <summary>Das Ergebnis bei OK, <c>null</c> bei Abbrechen. Geschlossen wird von der Huelle.</summary>
     [Parameter] public EventCallback<VorlagenPositionErgebnis?> Geschlossen { get; set; }
 
@@ -236,7 +279,22 @@
     private int? _positionsart;
     private int? _ersatz;
     private int? _restwert;
+    private int? _periode = 1;
     private string _meldung = "";
+
+    /// <summary>ETAPPE E16: die eingegebene Wiederholperiode (Pruefhilfe fuer Tests).</summary>
+    public int? Periode => _periode;
+
+    /// <summary>ETAPPE E16: die Zeile unter dem Feld — Bedeutung und, bei n ≥ 2, die
+    /// Herleitung „alle n Jahre ab Jahr X".</summary>
+    private string InfoPeriode
+    {
+        get
+        {
+            string herleitung = WiederholperiodeHerleitung?.Invoke(_periode) ?? "";
+            return herleitung.Length > 0 ? InfoWiederholperiode + " " + herleitung : InfoWiederholperiode;
+        }
+    }
 
     /// <summary>ETAPPE E7c: die Wahl „Ersatzbeschaffung führen" (Pruefhilfe fuer Tests).</summary>
     public int? Ersatz => _ersatz;
@@ -266,6 +324,8 @@
             ? ErsatzAuswahl : null;
         _restwert = RestwertAuswahl.HasValue && KennzeichenBekannt(RestwertAuswahl.Value)
             ? RestwertAuswahl : null;
+        // ETAPPE E16: leer, 0 oder negativ heisst jaehrlich (1); ueber der Grenze wird geklemmt.
+        _periode = PeriodeGeklemmt(Wiederholperiode);
         // Wie SetControls: eine unbekannte Kostenart faellt auf "sonstige" zurueck.
         _kostenart = KostenartId.HasValue && Bekannt(KostenartId.Value)
             ? KostenartId : RueckfallKostenartId;
@@ -319,7 +379,11 @@
             RestwertSetzen = w => { if (MitKennzeichen) BeiRestwert(w); },
             KennzeichenEintraege = () => MitKennzeichen
                 ? KiMaskenanmeldung.Eintraege(Kennzeichen, z => z.Id, z => z.Text)
-                : Array.Empty<KiKern.KiWahleintrag>()
+                : Array.Empty<KiKern.KiWahleintrag>(),
+
+            // ETAPPE E16 (V‑G3): die Wiederholperiode — nur, wenn der Dialog das Feld zeigt.
+            WiederholperiodeLesen = () => MitWiederholperiode ? _periode : null,
+            WiederholperiodeSetzen = w => { if (MitWiederholperiode) BeiPeriode(w); }
         };
     }
 
@@ -386,6 +450,16 @@
 
     private void BeiRestwert(int? id) => _restwert = id.HasValue && KennzeichenBekannt(id.Value) ? id : null;
 
+    private void BeiPeriode(int? wert) => _periode = PeriodeGeklemmt(wert);
+
+    /// <summary>ETAPPE E16: leer, 0 und negative Zahlen heissen jaehrlich (1); die
+    /// Obergrenze klemmt.</summary>
+    private int? PeriodeGeklemmt(int? wert)
+    {
+        if (!wert.HasValue || wert.Value < 1) return 1;
+        return WiederholperiodeMax.HasValue ? Math.Min(wert.Value, WiederholperiodeMax.Value) : wert;
+    }
+
     private void BeiErloes(bool wert) => _istErloes = wert;
 
     private void BeiEmpfVon(double? wert) => _empfVon = wert;
@@ -417,7 +491,8 @@
             _empfBis,
             _positionsart,
             MitKennzeichen ? _ersatz : null,
-            MitKennzeichen ? _restwert : null));
+            MitKennzeichen ? _restwert : null,
+            MitWiederholperiode ? _periode : null));
     }
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch

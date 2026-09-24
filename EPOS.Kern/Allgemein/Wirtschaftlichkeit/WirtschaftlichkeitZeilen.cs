@@ -2018,6 +2018,10 @@ namespace WindowsFormsApplication1
             if (n == null) return "";
             string text = Herleitung(n, kultur);
             if (text.Length == 0 && n.SzenarioGepflegt) text = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+            // ETAPPE E16 (V‑G3): Eine Position „alle n Jahre" sagt es in derselben Spalte —
+            // „alle n Jahre ab Jahr X" statt „ab Jahr X"; X ist ohne Startjahr das Jahr 1.
+            string alle = Wiederholperiode.Herleitung(n.Wiederholperiode, n.StartJahr, kultur);
+            if (alle.Length > 0) return text.Length == 0 ? alle : text + " · " + alle;
             if (LaeuftImErstenJahr(n)) return text;
             string ab = string.Format(kultur, MyResource.Resource.WIRT_BK_AB_JAHR, n.StartJahr.Value);
             return text.Length == 0 ? ab : text + " · " + ab;
