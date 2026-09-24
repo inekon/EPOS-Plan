@@ -462,11 +462,19 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> Die Wahl wirkt nur bei abweichendem Kuehltraeger,
         /// die Ergebnisspalten schreibt nur ein Lauf mit Kaeltekaskade; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit den LAUFANGABEN DER ZAPFPROFIL-AUSLEGUNG UND DER BEZUGSART AM BEDARFSTAG (Schritt
+        /// 120, Zapfprofilgenerator Stufe Z4, Schemaschritt T3) steht das Ziel auf <b>120</b>:
+        /// <c>Erzeugerart</c>, <c>Uebertrager_Werkstoff</c>, <c>Personen_Auto</c>,
+        /// <c>Personen_Manuell</c> und <c>Fuellstand_Bezug</c> an <c>Tab_TwwProjekt</c>,
+        /// <c>Bezugsart</c> an <c>Tab_TwwBedarfstag_STAMM</c> (<see cref="TwwSchema.SpaltenT3"/>).
+        /// <b>Reines DDL, ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne
+        /// Spalte, und kein Referenzprojekt steht auf dem Generator; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 119;
+        public const int Zielversion = 120;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

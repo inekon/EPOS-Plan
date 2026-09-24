@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Die DDL des Zapfprofilgenerators</b> — Schemaschritt T1 „Katalog, Zonen, Projekt"
     /// (<c>Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c>,
-    /// Abschnitte 3.1 und 3.2, Stufe Z0) und Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
-    /// Schritt 115, <see cref="AnweisungenT2"/>).
+    /// Abschnitte 3.1 und 3.2, Stufe Z0), Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
+    /// Schritt 115, <see cref="AnweisungenT2"/>) und Schemaschritt T3 „Laufangaben der Auslegung
+    /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 120, <see cref="SpaltenT3"/>).
     ///
     /// <para><b>Eine Quelle für Migration und Testdatenbank.</b> Dieselben zehn Tabellen
     /// legen <c>SchemaMigration</c> beim Programmstart und <c>Werkzeuge/Testdatenbankschema</c>
@@ -142,6 +145,28 @@ namespace WindowsFormsApplication1
         /// <summary><see cref="PERZENTIL_WERTE"/> als Zahlen.</summary>
         public static readonly IReadOnlyList<int> Perzentile =
             System.Array.ConvertAll(PERZENTIL_WERTE.Split(','), s => int.Parse(s, System.Globalization.CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Wertemengen der Spalten des Schemaschritts T3 (Schritt 120) — EINE Quelle für die
+        /// CHECK-Klausel der DDL und die Prüfung des Schreibwegs, wie <see cref="PERZENTIL_WERTE"/>:
+        /// Erzeugerart 1 Kessel, 2 Wärmepumpe; Werkstoff des Übertragers 1 Stahl, 2 Edelstahl;
+        /// Bezug des Füllstands 1 Nenninhalt des Punkts, 2 Punkt, 3 Nenninhalt des Bands, 4 V_max;
+        /// Bezugsart eines Bedarfstags 1 … 7 wie die Bezugsart der Nutzungsart.
+        /// </summary>
+        public const string ERZEUGERART_WERTE = "1,2";
+
+        /// <summary>Wertemenge von <c>Tab_TwwProjekt.Uebertrager_Werkstoff</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
+        public const string WERKSTOFF_WERTE = "1,2";
+
+        /// <summary>Wertemenge von <c>Tab_TwwProjekt.Fuellstand_Bezug</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
+        public const string FUELLSTAND_BEZUG_WERTE = "1,2,3,4";
+
+        /// <summary>Wertemenge von <c>Tab_TwwBedarfstag_STAMM.Bezugsart</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
+        public const string BEZUGSART_WERTE = "1,2,3,4,5,6,7";
+
+        /// <summary>Eine Wertemenge als Zahlen — für die Prüfung des Schreibwegs.</summary>
+        public static IReadOnlyList<int> Werte(string wertemenge)
+            => System.Array.ConvertAll(wertemenge.Split(','), s => int.Parse(s, CultureInfo.InvariantCulture));
 
         /// <summary><see cref="REALISIERUNGEN_MINDESTENS"/> als Zahl.</summary>
         public static readonly int RealisierungenMindestens =
@@ -511,6 +536,103 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================
+        //  Schemaschritt T3 (Schritt 120, Stufe Z4): Laufangaben der Auslegung
+        //  und Bezugsart am Bedarfstag
+        // =================================================================
+
+        /// <summary><c>Tab_TwwProjekt.Erzeugerart</c> — die gewählte Erzeugerart am Speicher; NULL = keine Angabe (Vorschlag des Anlagenbestands).</summary>
+        public const string SPALTE_ERZEUGERART = "Erzeugerart";
+
+        /// <summary><c>Tab_TwwProjekt.Uebertrager_Werkstoff</c> — der Werkstoff des Übertragers; NULL = keine Angabe.</summary>
+        public const string SPALTE_UEBERTRAGER_WERKSTOFF = "Uebertrager_Werkstoff";
+
+        /// <summary><c>Tab_TwwProjekt.Personen_Auto</c> — Personen des Verfahrensvergleichs aus dem Mengengerüst (1) oder manuell (0).</summary>
+        public const string SPALTE_PERSONEN_AUTO = "Personen_Auto";
+
+        /// <summary><c>Tab_TwwProjekt.Personen_Manuell</c> — der manuelle Wert der Personen; wirkt nur bei <c>Personen_Auto</c> = 0.</summary>
+        public const string SPALTE_PERSONEN_MANUELL = "Personen_Manuell";
+
+        /// <summary><c>Tab_TwwProjekt.Fuellstand_Bezug</c> — der Bezug des Füllstands; NULL = Vorgabe.</summary>
+        public const string SPALTE_FUELLSTAND_BEZUG = "Fuellstand_Bezug";
+
+        /// <summary><c>Tab_TwwBedarfstag_STAMM.Bezugsart</c> — die Bezugsart der Bezugsmenge des Tags; NULL = ohne Angabe.</summary>
+        public const string SPALTE_BEZUGSART = "Bezugsart";
+
+        /// <summary>
+        /// <b>Die Spalten des Schemaschritts T3</b> (Schritt 120; Umsetzungskonzept
+        /// Zapfprofilgenerator N10 (i)/(j), N11 (d)/(i)/(j)): an <c>Tab_TwwProjekt</c> die
+        /// Laufangaben der Auslegung — Erzeugerart und Werkstoff des Übertragers (nullbar, CHECK
+        /// der Wertemenge), Personen auto/manuell (0/1, <c>NOT NULL DEFAULT 1</c>, CHECK) samt
+        /// manuellem Wert (≥ 0) und der Bezug des Füllstands (nullbar, CHECK) —, an
+        /// <c>Tab_TwwBedarfstag_STAMM</c> die Bezugsart der Bezugsmenge (nullbar, CHECK). Je
+        /// Spalte die SQLite-Definition hinter <c>ADD COLUMN</c> (STRICT-Typen <c>INTEGER</c> und
+        /// <c>REAL</c>); EINE Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c>, die
+        /// Testhelfer und den Nachweis. <b>Reines DDL, ergebnisneutral:</b> Nach dem Schritt stehen
+        /// alle Werte auf NULL bzw. <c>Personen_Auto</c> = 1 — so, wie der Kern ohne Spalte rechnete.
+        /// </summary>
+        public static readonly IReadOnlyList<TwwSpalte> SpaltenT3 = new[]
+        {
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_ERZEUGERART,
+                "INTEGER CHECK (\"" + SPALTE_ERZEUGERART + "\" IN (" + ERZEUGERART_WERTE + "))"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_UEBERTRAGER_WERKSTOFF,
+                "INTEGER CHECK (\"" + SPALTE_UEBERTRAGER_WERKSTOFF + "\" IN (" + WERKSTOFF_WERTE + "))"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_PERSONEN_AUTO,
+                "INTEGER NOT NULL DEFAULT 1 CHECK (\"" + SPALTE_PERSONEN_AUTO + "\" IN (0,1))"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_PERSONEN_MANUELL,
+                "REAL CHECK (\"" + SPALTE_PERSONEN_MANUELL + "\" >= 0)"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_FUELLSTAND_BEZUG,
+                "INTEGER CHECK (\"" + SPALTE_FUELLSTAND_BEZUG + "\" IN (" + FUELLSTAND_BEZUG_WERTE + "))"),
+            new TwwSpalte(TAB_TWW_BEDARFSTAG_STAMM, SPALTE_BEZUGSART,
+                "INTEGER CHECK (\"" + SPALTE_BEZUGSART + "\" IN (" + BEZUGSART_WERTE + "))"),
+        };
+
+        /// <summary>Die Anweisung, die eine Spalte von <see cref="SpaltenT3"/> anlegt (<c>ALTER TABLE … ADD COLUMN</c>).</summary>
+        public static string SpalteAnlegen(TwwSpalte s)
+            => "ALTER TABLE \"" + s.Tabelle + "\" ADD COLUMN \"" + s.Name + "\" " + s.Definition;
+
+        /// <summary>Steht Schritt 120? Alle Spalten von <see cref="SpaltenT3"/> stehen.</summary>
+        public static bool T3Vollstaendig()
+            => SpaltenT3.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+
+        /// <summary>
+        /// Führt Schritt 120 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// die Testhelfer; die Migration der Schale geht denselben Weg über ihre eigenen Helfer, aus
+        /// denselben Definitionen. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen;
+        /// eine fehlende Tabelle (Stand vor 103) ebenso. <b>Kein DML.</b>
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (höchstens sechs).</returns>
+        public static int T3Alle(IList<string> bericht)
+        {
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen Verbindung.
+            var fehlend = SpaltenT3.Where(s => DataRepository.TabelleVorhanden(s.Tabelle)
+                                               && !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+            int angelegt = 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (TwwSpalte s in fehlend)
+                    {
+                        v.Ausfuehren(SpalteAnlegen(s));
+                        angelegt++;
+                    }
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                         SpaltenT3.Count.ToString(CultureInfo.InvariantCulture) +
+                         " Spalte(n) angelegt (Laufangaben der Auslegung an Tab_TwwProjekt, Bezugsart an " +
+                         "Tab_TwwBedarfstag_STAMM)");
+            return angelegt;
+        }
+
         /// <summary>Alle Tww-Tabellen der Schritte T1 und T2 in Anlegereihenfolge.</summary>
         public static IEnumerable<KeyValuePair<string, string>> AlleAnweisungen
         {
@@ -551,4 +673,7 @@ namespace WindowsFormsApplication1
                 "CREATE INDEX IF NOT EXISTS \"" + name + "\" ON \"" + tabelle + "\" (\"" + spalte + "\")");
         }
     }
+
+    /// <summary>Eine Spalte eines Tww-Schemaschritts: Tabelle, Name und die SQLite-Definition hinter <c>ADD COLUMN</c>.</summary>
+    public sealed record TwwSpalte(string Tabelle, string Name, string Definition);
 }

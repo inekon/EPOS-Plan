@@ -598,6 +598,11 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
                     SpalteSicherstellen(s);
 
+                // Schritt 120 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
+                // Tab_TwwProjekt und die Bezugsart am Bedarfstag. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
+                TwwSchema.T3Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

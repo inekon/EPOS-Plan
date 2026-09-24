@@ -52,7 +52,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die zehn Tabellen und ihre Indizes — genau wie Schemaschritt T1 —, mit
-        /// <paramref name="mitT2"/> dazu die Zapfkategorien (Schemaschritt T2, Schritt 115).
+        /// <paramref name="mitT2"/> dazu die Zapfkategorien (Schemaschritt T2, Schritt 115) und die
+        /// Spalten des Schemaschritts T3 (Schritt 120).
         /// </summary>
         public static void SchemaAnlegen(bool mitT2 = true)
         {
@@ -63,6 +64,9 @@ namespace EPOS.Kern.Tests
             if (!mitT2) return;
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
                 DataRepository.ExecuteNonQuery(a.Value);
+            // Schemaschritt T3 (Schritt 120): die Laufangaben der Auslegung und die Bezugsart am Bedarfstag.
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3)
+                DataRepository.ExecuteNonQuery(TwwSchema.SpalteAnlegen(s));
         }
 
         public void Dispose()

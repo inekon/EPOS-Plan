@@ -3988,6 +3988,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_119_KAELTESTROM = 119;
 
+        /// <summary>
+        /// Schritt 120 — <b>die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
+        /// Bedarfstag</b> (Umsetzungskonzept Zapfprofilgenerator N10 (i)/(j), N11 (d)/(i)/(j),
+        /// Papiername T3, Stufe Z4). Er folgt auf <see cref="SCHRITT_119_KAELTESTROM"/> ohne
+        /// Reihenfolgebedingung; er braucht <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>, dessen
+        /// Tabellen er erweitert.
+        ///
+        /// <para><b>REIN DDL</b>, sechs Spalten: an <c>Tab_TwwProjekt</c> <c>Erzeugerart</c> und
+        /// <c>Uebertrager_Werkstoff</c> (nullbar, CHECK der Wertemenge), <c>Personen_Auto</c> (0/1,
+        /// <c>NOT NULL DEFAULT 1</c>, CHECK), <c>Personen_Manuell</c> (nullbar, ≥ 0) und
+        /// <c>Fuellstand_Bezug</c> (nullbar, CHECK); an <c>Tab_TwwBedarfstag_STAMM</c>
+        /// <c>Bezugsart</c> (nullbar, CHECK). Die Definitionen stehen bei
+        /// <see cref="TwwSchema.SpaltenT3"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne Spalte;
+        /// kein Projekt steht auf dem Generator. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_120_ZAPFPROFIL_LAUFANGABEN = 120;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5614,6 +5635,19 @@ namespace WindowsFormsApplication1
                         "Kaeltestrom je Anlage nicht. KEIN Rechenergebnis aendert sich - alle Spalten " +
                         "bleiben leer, bis eine Waermepumpe kuehlt.",
                         Schritt_119_Kaeltestrom),
+
+            // ZAPFPROFILGENERATOR Z4 (Schemaschritt T3) - die Laufangaben der Auslegung
+            // (Erzeugerart, Werkstoff, Personen, Bezug des Fuellstands) an Tab_TwwProjekt und
+            // die Bezugsart am Bedarfstag. REIN DDL; die Quelle ist TwwSchema.SpaltenT3. Er
+            // steht NACH 119 ohne Reihenfolgebedingung und braucht 103.
+            new Schritt(SCHRITT_120_ZAPFPROFIL_LAUFANGABEN,
+                        "Zapfprofilgenerator: Laufangaben der Auslegung (Tab_TwwProjekt) und " +
+                        "Bezugsart am Bedarfstag (Tab_TwwBedarfstag_STAMM)",
+                        "Erzeugerart, Werkstoff des Uebertragers, Personen und Bezug des Fuellstands " +
+                        "der Zapfprofil-Auslegung liessen sich nicht speichern, und ein Bedarfstag " +
+                        "truege keine Bezugsart. KEIN Rechenergebnis aendert sich - die Spalten stehen " +
+                        "auf 'keine Angabe' bzw. Personen automatisch.",
+                        Schritt_120_ZapfprofilLaufangaben),
         };
 
         /// <summary>
@@ -8980,6 +9014,54 @@ namespace WindowsFormsApplication1
                     "Stromverbrauch_Kuehlung, Kaeltestrom_Netzbezug, Kuehl_carrier_id und " +
                     "Kuehl_EigenerZaehler an Tab_ErgebnisWaermepumpeModul. KEIN DML: Alle Spalten " +
                     "bleiben leer; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 120 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag
+        // (Zapfprofilgenerator Stufe Z4, T3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 120 — Anlass und Wirkung stehen bei <see cref="SCHRITT_120_ZAPFPROFIL_LAUFANGABEN"/>,
+        /// die Spalten bei <see cref="TwwSchema.SpaltenT3"/>. Die SQLite-Definition steht dort
+        /// fertig (STRICT-Typ samt CHECK); <b>nur <see cref="SqliteSpalteAnlegen"/></b>.
+        /// <b>Wiederholbar</b>, eine vorhandene Spalte wird übergangen; die Nachprobe fragt
+        /// <see cref="TwwSchema.T3Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_120_ZapfprofilLaufangaben(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, s.Definition)) return false;
+                angelegt++;
+            }
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = TwwSchema.T3Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten der Laufangaben der Zapfprofil-Auslegung und die Bezugsart am " +
+                                  "Bedarfstag stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz("120: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("120: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Spalte(n) angelegt - Erzeugerart, " +
+                    "Uebertrager_Werkstoff, Personen_Auto (0/1, Vorgabe 1), Personen_Manuell und " +
+                    "Fuellstand_Bezug an " + TwwSchema.TAB_TWW_PROJEKT + ", Bezugsart an " +
+                    TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ". KEIN DML: Alles steht auf 'keine Angabe' " +
+                    "bzw. Personen automatisch; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
