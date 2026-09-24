@@ -216,6 +216,12 @@ namespace EPOS.Kern.Tests
                 d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_TYPTAGE,
                         string.Join("\n", Typtagpaketbauer.Inhalt(d, Normformvektorleser.DATEI_TYPTAGE)
                             .Split('\n').Where(z => !z.StartsWith("T06;", StringComparison.Ordinal))))),
+            // Zwei Typtage mit demselben Merkmalsdreier: Der Dreier ist der Schluessel der
+            // Zuordnung, der zweite bliebe still ungenutzt (Befund Gruppe 1).
+            ("Merkmalsdreier doppelt", "NORMVEKTOR_MERKMALE_DOPPELT",
+                d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_TYPTAGE,
+                        Typtagpaketbauer.Inhalt(d, Normformvektorleser.DATEI_TYPTAGE)
+                            .Replace("T02;uebergang;sonntag;ohne", "T02;uebergang;werktag;ohne", StringComparison.Ordinal))),
             ("Bewoelkung halb", "NORMVEKTOR_KATEGORIEN_BEWOELKUNG",
                 d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_TYPTAGE,
                         Typtagpaketbauer.Inhalt(d, Normformvektorleser.DATEI_TYPTAGE)
@@ -261,7 +267,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Jede Kennung <c>NORMVEKTOR_…</c>, die der Leser wirft, hat oben ihren Fall — bis auf
-        /// die vier, die kein Strukturfehler sind (Strom unlesbar, drei Hinweise).
+        /// die, die kein Strukturfehler EINER Datei sind (Strom unlesbar, Mengengrenze des Archivs,
+        /// drei Hinweise); sie haben ihren eigenen Fall weiter unten.
         /// </summary>
         [Fact]
         public void Jede_Ablehnung_des_Lesers_hat_ihren_Fall()
@@ -270,7 +277,7 @@ namespace EPOS.Kern.Tests
             if (quelle == null) return;
             var ohneFall = new[]
             {
-                "NORMVEKTOR_PAKET_UNLESBAR", "NORMVEKTOR_GAENGE_UEBERGANGEN",
+                "NORMVEKTOR_PAKET_UNLESBAR", "NORMVEKTOR_PAKET_ZU_GROSS", "NORMVEKTOR_GAENGE_UEBERGANGEN",
                 "NORMVEKTOR_PRUEFSUMME_OHNE_TOLERANZ", "NORMVEKTOR_PRUEFSUMME", "NORMVEKTOR_ZONE_OHNE_WERTE"
             };
             var gedeckt = new HashSet<string>(Faelle.Select(f => f.Kennung), StringComparer.Ordinal);
@@ -327,6 +334,37 @@ namespace EPOS.Kern.Tests
             // 720 Minuten = 12 Stunden: der erste Abschnitt verteilt 0,25 auf die Stunden 0..11.
             Assert.Equal(0.25 / 12.0, stunden[0], 12);
             Assert.Equal(0.75 / 12.0, stunden[12], 12);
+        }
+
+        /// <summary>
+        /// Die Mengengrenze des Archivs (Befund Gruppe 1): Eintragszahl und entpackte Größe werden
+        /// aus dem Zentralverzeichnis geprüft, bevor ein Byte entpackt wird — wie im TRY-Paketleser.
+        /// </summary>
+        [Fact]
+        public void Ein_Archiv_mit_zu_vielen_Eintraegen_wird_benannt_abgelehnt()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-typtagpaket-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(ordner);
+                string pfad = Path.Combine(ordner, "viele.zip");
+                using (FileStream fs = File.Create(pfad))
+                using (var zip = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Create))
+                {
+                    foreach (TwwPaketdatei d in Typtagpaketbauer.Erfunden().Dateien())
+                        using (var s = new StreamWriter(zip.CreateEntry(d.Name).Open(), new UTF8Encoding(false)))
+                            s.Write(d.Inhalt);
+                    for (int i = 0; i <= Normformvektorleser.HOECHSTENS_EINTRAEGE; i++)
+                        zip.CreateEntry("beilage_" + i + ".txt");
+                }
+                using FileStream lesen = File.OpenRead(pfad);
+                Assert.Null(Normformvektorleser.AusStrom(lesen, out ZapfSatz fehler));
+                Assert.Equal("NORMVEKTOR_PAKET_ZU_GROSS", fehler.Kennung);
+            }
+            finally
+            {
+                if (Directory.Exists(ordner)) Directory.Delete(ordner, true);
+            }
         }
 
         /// <summary>

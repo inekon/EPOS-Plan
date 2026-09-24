@@ -98,6 +98,21 @@ namespace WindowsFormsApplication1
         /// <summary>Die Minuten eines Tages — <c>aufloesung_min</c> muss sie ohne Rest teilen.</summary>
         internal const int MINUTEN_JE_TAG = 1440;
 
+        /// <summary>
+        /// <b>Höchstzahl der Einträge eines Pakets</b> (numerische Setzung): Das Format kennt sechs
+        /// Dateien; 200 Einträge lassen Ordner, Beilagen und Schreibweisen zu und fangen ein Archiv
+        /// ab, das nicht dieses Paket ist. Geprüft wird das Zentralverzeichnis, bevor ein Byte
+        /// entpackt wird.
+        /// </summary>
+        internal const int HOECHSTENS_EINTRAEGE = 200;
+
+        /// <summary>
+        /// <b>Höchste entpackte Gesamtgröße eines Pakets [Byte]</b> (numerische Setzung, 64 MB): Die
+        /// sechs Dateien tragen Text — 45 Faktorblöcke und Tagesgänge im Minutenraster bleiben weit
+        /// darunter. Die Grenze fängt das aufgeblähte Archiv ab, ohne es zu entpacken.
+        /// </summary>
+        internal const long HOECHSTENS_BYTE_ENTPACKT = 64L * 1024 * 1024;
+
         // =================================================================================
         //  Einlesen
         // =================================================================================
@@ -132,6 +147,16 @@ namespace WindowsFormsApplication1
                 using (kopie)
                 using (var zip = new ZipArchive(lesbar, ZipArchiveMode.Read, leaveOpen: true))
                 {
+                    // Die Mengengrenze VOR dem Entpacken, allein aus dem Zentralverzeichnis (wie im
+                    // TRY-Paketleser kein Byte eines Eintrags): Eintragszahl und entpackte Groesse.
+                    long entpackt = 0;
+                    foreach (ZipArchiveEntry e in zip.Entries) entpackt += e.Length;
+                    if (zip.Entries.Count > HOECHSTENS_EINTRAEGE || entpackt > HOECHSTENS_BYTE_ENTPACKT)
+                    {
+                        fehler = ZapfSatz.Neu("NORMVEKTOR_PAKET_ZU_GROSS", zip.Entries.Count, HOECHSTENS_EINTRAEGE,
+                                              entpackt, HOECHSTENS_BYTE_ENTPACKT);
+                        return null;
+                    }
                     dateien = new List<TwwPaketdatei>();
                     foreach (ZipArchiveEntry e in zip.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
                     {
@@ -198,13 +223,23 @@ namespace WindowsFormsApplication1
         {
             var liste = new List<Typtagkategorie>();
             var codes = new HashSet<string>(StringComparer.Ordinal);
+            var merkmale = new HashSet<(Typtagjahreszeit, Typtagart, Typtagbewoelkung)>();
             foreach (Paketzeile z in t.Zeilen)
             {
                 string code = t.Text(z, "code");
                 if (code.Length == 0) throw Abbruch(ZapfSatz.Neu("NORMVEKTOR_FELD_LEER", t.Datei, z.Nummer, "code"));
                 if (!codes.Add(code)) throw Abbruch(ZapfSatz.Neu("NORMVEKTOR_TYPTAG_DOPPELT", t.Datei, z.Nummer, code));
-                liste.Add(new Typtagkategorie(code,
-                    Jahreszeit(t, z), Tagart(t, z), Bewoelkung(t, z)));
+                Typtagjahreszeit js = Jahreszeit(t, z);
+                Typtagart ta = Tagart(t, z);
+                Typtagbewoelkung bw = Bewoelkung(t, z);
+                // Der Merkmalsdreier ist der SCHLÜSSEL der Zuordnung (Typtagzuordnung sucht damit):
+                // Zwei Kategorien mit demselben Dreier wären nicht unterscheidbar, und die zweite
+                // bliebe still ungenutzt. Benannt abgelehnt, nicht der Reihenfolge überlassen.
+                if (!merkmale.Add((js, ta, bw)))
+                    throw Abbruch(ZapfSatz.Neu("NORMVEKTOR_MERKMALE_DOPPELT", t.Datei, z.Nummer, code,
+                        Typtagzuordnung.Jahreszeitbegriff(js), Typtagzuordnung.Tagartbegriff(ta),
+                        Typtagzuordnung.Bewoelkungsbegriff(bw)));
+                liste.Add(new Typtagkategorie(code, js, ta, bw));
             }
             if (liste.Count == 0) throw Abbruch(ZapfSatz.Neu("NORMVEKTOR_OHNE_TYPTAGE"));
             satz.KategorienSetzen(liste);

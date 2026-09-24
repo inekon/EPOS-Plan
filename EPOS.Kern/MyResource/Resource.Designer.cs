@@ -89352,6 +89352,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Typtag „{2}“ trägt dieselben Merkmale wie ein früherer ({3}, {4}, {5}) — der Dreier ist der Schlüssel der Zuordnung und muss eindeutig sein. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat keine Kopfzeile. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_NORMVEKTOR_OHNE_KOPFZEILE {
@@ -89393,6 +89402,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket der Typtage ist zu groß: {0} Einträge (höchstens {1}) und {2} Byte entpackt (höchstens {3}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS", resourceCulture);
             }
         }
         

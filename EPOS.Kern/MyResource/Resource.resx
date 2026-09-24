@@ -28795,6 +28795,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE" xml:space="preserve">
     <value>Das Paket nennt zu {0} und {1} keinen Typtag.</value>
   </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Typtag „{2}“ trägt dieselben Merkmale wie ein früherer ({3}, {4}, {5}) — der Dreier ist der Schlüssel der Zuordnung und muss eindeutig sein.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS" xml:space="preserve">
+    <value>Das Paket der Typtage ist zu groß: {0} Einträge (höchstens {1}) und {2} Byte entpackt (höchstens {3}).</value>
+  </data>
   <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG" xml:space="preserve">
     <value>Zu {0} und {1} führt das Paket {2} Typtage: Es braucht entweder einen ohne Unterscheidung oder je einen heiteren und einen bewölkten.</value>
   </data>

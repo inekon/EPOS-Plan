@@ -28788,6 +28788,12 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE" xml:space="preserve">
     <value>The package names no type day for {0} and {1}.</value>
   </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: type day "{2}" carries the same characteristics as an earlier one ({3}, {4}, {5}) — the triple is the key of the assignment and must be unique.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS" xml:space="preserve">
+    <value>The type-day package is too large: {0} entries (at most {1}) and {2} bytes unpacked (at most {3}).</value>
+  </data>
   <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG" xml:space="preserve">
     <value>For {0} and {1} the package carries {2} type days: it needs either one without distinction or one clear and one cloudy.</value>
   </data>
