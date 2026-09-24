@@ -298,6 +298,11 @@ namespace EPOS.Kern.Tests
                                  Katalogfilterprofil.SpHerkunft, Katalogfilterprofil.SpKatalogversion, Katalogfilterprofil.SpStatus },
                          profil.Spalten.Select(s => s.Schluessel).ToArray());
             Assert.Equal("KFLT_SP_NUTZUNGSART", profil.Spalten[0].Titel);
+            // Der Rang (Katalogprobe N23): Nutzungsart und Bezugsart immer, Kalender und
+            // Katalogversion bei Platz, Herkunft und Status weichen als erste.
+            Assert.Equal(new[] { Katalogspaltenrang.Immer, Katalogspaltenrang.Immer, Katalogspaltenrang.BeiPlatz,
+                                 Katalogspaltenrang.Breit, Katalogspaltenrang.BeiPlatz, Katalogspaltenrang.Breit },
+                         profil.Spalten.Select(s => s.Rang).ToArray());
 
             var zeilen = TwwNutzungsartCtrl.Katalogfilterzeilen();
             Assert.Equal(new[] { eigen.ToString(), aus.ToString() }, zeilen.Select(z => z.Schluessel).ToArray());

@@ -11123,16 +11123,59 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-warn-text);
 }
 
-/* Der Konstruktor: Jedes Feld der Zeilentabelle traegt seine Beschriftung
-   ("Beginn [h], Zeile 2") fuer Sprachausgabe und Sammelmeldung; sichtbar
-   steht sie einmal im Tabellenkopf. */
-.epos-zapfausl-konstruktorzeilen .epos-feld-text {
+/* Der Konstruktor und die Wohnungstabelle des Zapfprofils (Stufe Z4): Jedes Feld
+   der Zeilentabelle traegt seine Beschriftung ("Beginn [h], Zeile 2") fuer
+   Sprachausgabe und Sammelmeldung; sichtbar steht sie einmal im Tabellenkopf. */
+.epos-zapfausl-konstruktorzeilen .epos-feld-text,
+.epos-zapfprofil-wohnungen .epos-feld-text,
+.epos-zapfprofil-kategorienraster .epos-feld-text {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+}
+
+/* ... und sie bleibt IN ihrer Zelle (Rasterprobe Z1 bis Z8, Stufe Z4): Ohne
+   positionierten Vorfahren nahm die versteckte Beschriftung die Ueberlagerung
+   (position: fixed) bzw. das Fenster als Bezugskasten - der Rollbereich des
+   Rasters schnitt sie nicht ab, und die Zellen jenseits seines rechten Randes
+   liessen die Ueberlagerung "Zapfkategorien" um 135 px (1 088 px) bzw. 795 px
+   (400 px) mitrollen: Rollbereich im Rollbereich. */
+.epos-zapfausl-konstruktorzeilen .epos-feld,
+.epos-zapfprofil-wohnungen .epos-feld,
+.epos-zapfprofil-kategorienraster .epos-feld {
+    position: relative;
+}
+
+/* Die Zeilentabellen des Zapfprofils stehen schmal: Ein Zahlenfeld ist so
+   breit wie seine Zahl (sonst 20 Zeichen, rund 165 px), der Name der
+   Kategorie 9em, die Pfeile der Reihenfolge ein Touchziel breit, und die
+   Spaltenkoepfe ("Volumenstrom [l/min]") und die Herkunft brechen um. So
+   rollt das Raster der Zapfkategorien in der Ueberlagerung bei 1 088 px nicht
+   mehr quer (vorher 560 px, "Entfernen" hinter dem rechten Rand); die
+   Wohnungstabelle im Eingabeblock (498 px) rollt 102 statt 348 px. */
+.epos-zapfprofil-wohnungen .epos-raster input.epos-eingabe,
+.epos-zapfprofil-kategorienraster .epos-raster input.epos-eingabe {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 5.5em;
+}
+
+.epos-zapfprofil-kategorienraster .epos-raster input.epos-eingabe:not([inputmode]) {
+    width: 9em;
+}
+
+.epos-zapfprofil-reihenfolge .epos-knopf {
+    min-width: var(--epos-touchziel);
+    padding-inline: 0;
+}
+
+.epos-zapfprofil-wohnungen .epos-raster th .col-title-text,
+.epos-zapfprofil-kategorienraster .epos-raster th .col-title-text,
+.epos-zapfprofil-kategorienraster .epos-raster--bearbeitbar td {
+    white-space: normal;
 }
 
 /* Die Stochastik des Zapfprofils (Stufe Z3): Die Konsistenzprobe der Jahresreihe
@@ -11149,6 +11192,45 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-warn-text);
     color: var(--epos-warn-text);
     font-weight: 600;
+}
+
+/* Die Stufen Erweitert und Experte des Zapfprofils (Stufe Z4): Der Titel einer
+   Tabelle im Eingabeblock (Wohnungstabelle) steht wie die Zwischenueberschrift
+   einer Formulargruppe; die Warnliste der Bilanz steht mit Abstand unter den
+   Reitern und nimmt die Stufenmarken der Auslegung. */
+.epos-zapfprofil-untertitel {
+    font-weight: 600;
+    margin: var(--epos-abstand) 0 4px 0;
+}
+
+.epos-zapfprofil-warnliste {
+    margin-block-start: var(--epos-abstand);
+}
+
+/* Der Infoknopf einer Gruppe steht rechts in ihrer ersten Zeile - bei der Warnliste
+   neben ihrer Ueberschrift. */
+.epos-zapfprofil-gruppenhilfe {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--epos-abstand);
+}
+
+.epos-zapfprofil-gruppenhilfe > h4 {
+    margin-inline-end: auto;
+}
+
+/* Die Editoren der Stufe Experte (Z4, Gruppe 2b): Die Reihenfolge einer Zapfkategorie
+   steht als Nummer mit den Knoepfen "Nach oben"/"Nach unten" in EINER Zeile - der
+   Flexkasten liegt IN der Zelle, nicht auf ihr. */
+.epos-zapfprofil-reihenfolge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-zapfprofil-reihenfolge > .epos-zahl {
+    min-width: 1.5rem;
 }
 
 @media (forced-colors: active) {

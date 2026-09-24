@@ -850,11 +850,11 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
 
-            if (!ctrl.Del_Projekt_ZuordungGebäude(ProjektId, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_ZuordungGebaeude");
-
-            if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_ZuordungGebaeude");
+            // Die Gebaeudeliste wird ABGEGLICHEN, nicht neu aufgebaut (Konzept
+            // Administrationsdialoge 7.1 (a)): Unveraenderte Zuordnungen behalten ihre
+            // Projektkopie samt Feld-Uebernahmen - derselbe Weg wie die Startseite.
+            if (!ctrl.Schreibe_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
+                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Schreibe_Projekt_ZuordungGebaeude");
 
             if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Prozess");

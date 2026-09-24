@@ -51,35 +51,26 @@ namespace WindowsFormsApplication1
                                    ? ps.Wert(ZapfParameter.FORMVEKTOR_WARNSCHWELLE) : (double?)null;
             if (!warnschwelle.HasValue)
                 ZapfHinweis.Einmal(hinweise, ZapfHinweis.ParameterFehlt(ZapfParameter.FORMVEKTOR_WARNSCHWELLE,
-                    "Die Summen der Wochenfaktoren und Tagesgänge werden nicht geprüft, nur normiert."));
+                    ZapfSatz.Neu("FOLGE_SUMMEN_NICHT_GEPRUEFT")));
 
             // --- Monate: Katalog, je Monat überschreibbar durch den Auslastungsgang ------------
-            double[] monateKatalog = Raster(n.Monatsfaktoren, Zapfkalender.MONATE, zone, "Monatsfaktoren");
+            Auslastungsgang gang = Auslastungsgang(z, n);
             var monate = new double[Zapfkalender.MONATE];
-            bool ueberschrieben = false;
-            for (int m = 0; m < Zapfkalender.MONATE; m++)
-            {
-                double? a = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
-                if (a.HasValue)
-                {
-                    monate[m] = NichtNegativ(a.Value, zone, "Auslastungsgang");
-                    ueberschrieben = true;
-                }
-                else monate[m] = monateKatalog[m];
-            }
+            for (int m = 0; m < Zapfkalender.MONATE; m++) monate[m] = gang.Wirksam[m];
+            bool ueberschrieben = gang.Ueberschrieben;
             p?.Vermerken(zone, ZapfFeld.MONATSFAKTOREN, null, "-",
                          ueberschrieben ? Wertstatus.Ueberschrieben : Wertstatus.Vorgabe,
                          ueberschrieben ? null : n.Herkunft?.Jahresgang,
                          ueberschrieben ? "Auslastungsgang der Zone" : "");
 
             // --- Woche: Σ 1 ---------------------------------------------------------------
-            double[] woche = Raster(n.Wochenfaktoren, Zapfkalender.WOCHENTAGE, zone, "Wochenfaktoren");
+            double[] woche = Raster(n.Wochenfaktoren, Zapfkalender.WOCHENTAGE, zone, ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"));
             double summeWoche = 0.0;
             for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) summeWoche += woche[i];
             if (!(summeWoche > 0))
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.KeineVerteilung, zone,
-                    "Nicht rechenbar — die Wochenfaktoren der Nutzungsart „" + n.Name + "“ summieren zu 0.");
-            SummeWarnen(summeWoche, warnschwelle, zone, "WOCHENFAKTOREN_SUMME", "Wochenfaktoren", hinweise);
+                    ZapfSatz.Neu("EINGABE_WOCHENFAKTOREN_NULL", n.Name ?? ""));
+            SummeWarnen(summeWoche, warnschwelle, zone, "WOCHENFAKTOREN_SUMME", ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"), hinweise);
             var wocheNormiert = new double[Zapfkalender.WOCHENTAGE];
             for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) wocheNormiert[i] = woche[i] / summeWoche;
             p?.Vermerken(zone, ZapfFeld.WOCHENFAKTOREN, summeWoche, "-", Wertstatus.Vorgabe, n.Herkunft?.Wochengang,
@@ -87,7 +78,7 @@ namespace WindowsFormsApplication1
 
             // --- Ferienfaktor ---------------------------------------------------------------
             double? ferien = n.Ferienfaktor;
-            if (ferien.HasValue) NichtNegativ(ferien.Value, zone, "Ferienfaktor");
+            if (ferien.HasValue) NichtNegativ(ferien.Value, zone, ZapfSatz.Neu("BEGRIFF_FERIENFAKTOR"));
             p?.Vermerken(zone, ZapfFeld.FERIENFAKTOR, ferien, "-", Wertstatus.Vorgabe, n.Herkunft?.Jahresgang,
                          ferien.HasValue ? "" : "wie Sonntag");
 
@@ -95,23 +86,23 @@ namespace WindowsFormsApplication1
             if (satz == null || !satz.Vollstaendig || satz.Anteile == null
                 || satz.Anteile.GetLength(0) != Tagesgangsatz.TAGTYPEN || satz.Anteile.GetLength(1) != Tagesgangsatz.STUNDEN)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, zone,
-                    "Nicht rechenbar — der Tagesgangsatz der Zone „" + zone + "“ fehlt oder trägt nicht alle vier Tagtypen.");
+                    ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG", zone));
             var gaenge = new double[Tagesgangsatz.TAGTYPEN, Tagesgangsatz.STUNDEN];
             var leer = new bool[Tagesgangsatz.TAGTYPEN];
             for (int t = 0; t < Tagesgangsatz.TAGTYPEN; t++)
             {
                 double s = 0.0;
                 for (int h = 0; h < Tagesgangsatz.STUNDEN; h++)
-                    s += NichtNegativ(satz.Anteile[t, h], zone, "Tagesgang");
+                    s += NichtNegativ(satz.Anteile[t, h], zone, ZapfSatz.Neu("BEGRIFF_TAGESGANG"));
                 if (s == 0.0)
                 {
                     leer[t] = true;
                     hinweise?.Add(new ZapfHinweis(zone, "TAGESGANG_LEER",
-                        "Der Tagesgang des Tagtyps " + (ZapfTagtyp)(t + 1) + " der Zone „" + zone
-                        + "“ ist leer; diese Tage tragen keine Zapfung."));
+                        ZapfSatz.Neu("HINWEIS_TAGESGANG_LEER", Tagtyp((ZapfTagtyp)(t + 1)), zone)));
                     continue;
                 }
-                SummeWarnen(s, warnschwelle, zone, "TAGESGANG_SUMME", "Tagesgang " + (ZapfTagtyp)(t + 1), hinweise);
+                SummeWarnen(s, warnschwelle, zone, "TAGESGANG_SUMME",
+                            ZapfSatz.Neu("BEGRIFF_TAGESGANG_TAGTYP", Tagtyp((ZapfTagtyp)(t + 1))), hinweise);
                 for (int h = 0; h < Tagesgangsatz.STUNDEN; h++) gaenge[t, h] = satz.Anteile[t, h] / s;
             }
             p?.Vermerken(zone, ZapfFeld.TAGESGANGSATZ, satz.Id, "ID",
@@ -119,6 +110,31 @@ namespace WindowsFormsApplication1
                          satz.JeTagtyp[0], satz.Bezeichner);
 
             return new Zeitstruktur(monate, wocheNormiert, ferien, gaenge, leer);
+        }
+
+        /// <summary>
+        /// <b>Der Auslastungsgang einer Zone</b> (Experte, 3.1 <c>Auslastung_01</c> … <c>_12</c>, 4.2):
+        /// je Monat der Faktor der Zone, sonst der des Katalogs; geprüft wie im Formvektor (zwölf
+        /// Werte, endlich, nicht negativ — sonst benannte Ablehnung). Dieselbe Regel für Rechnung und
+        /// Anzeige.
+        /// </summary>
+        internal static Auslastungsgang Auslastungsgang(ZonenStand z, Nutzungsart n)
+        {
+            string zone = z?.Name ?? "";
+            double[] katalog = Raster(n.Monatsfaktoren, Zapfkalender.MONATE, zone, ZapfSatz.Neu("BEGRIFF_MONATSFAKTOREN"));
+            var wirksam = new double[Zapfkalender.MONATE];
+            var zoneWert = new bool[Zapfkalender.MONATE];
+            for (int m = 0; m < Zapfkalender.MONATE; m++)
+            {
+                double? a = z?.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
+                if (a.HasValue)
+                {
+                    wirksam[m] = NichtNegativ(a.Value, zone, ZapfSatz.Neu("BEGRIFF_AUSLASTUNGSGANG"));
+                    zoneWert[m] = true;
+                }
+                else wirksam[m] = katalog[m];
+            }
+            return new Auslastungsgang(Array.AsReadOnly(wirksam), Array.AsReadOnly(katalog), Array.AsReadOnly(zoneWert));
         }
 
         /// <summary>Das Tagesgewicht w_T(d) nach Tagtyp (4.2).</summary>
@@ -147,10 +163,10 @@ namespace WindowsFormsApplication1
         {
             if (kalender == null || kalender.Length != Zapfkalender.TAGE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.KalenderUngueltig, zone,
-                    "Nicht rechenbar — der Kalender trägt nicht 365 Tage.");
+                    ZapfSatz.Neu("EINGABE_KALENDER_TAGE"));
             if (kaltwasserfaktor == null || kaltwasserfaktor.Length != Zapfkalender.MONATE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    "Nicht rechenbar — der Kaltwasserfaktor trägt nicht zwölf Monate.");
+                    ZapfSatz.Neu("EINGABE_KALTWASSERFAKTOR_RASTER"));
 
             var g = new double[Zapfkalender.TAGE];
             double summe = 0.0;
@@ -173,7 +189,7 @@ namespace WindowsFormsApplication1
             {
                 if (jahresKwh != 0.0)
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.KeineVerteilung, zone,
-                        "Nicht rechenbar — die Zeitstruktur der Zone „" + zone + "“ gibt keinem Tag ein Gewicht.");
+                        ZapfSatz.Neu("EINGABE_KEINE_VERTEILUNG", zone));
                 return mengen;
             }
             for (int d = 0; d < Zapfkalender.TAGE; d++) mengen[d] = jahresKwh * g[d] / summe;
@@ -212,36 +228,37 @@ namespace WindowsFormsApplication1
         // Hilfen
         // =================================================================================
 
-        private static double[] Raster(double[] werte, int laenge, string zone, string was)
+        private static double[] Raster(double[] werte, int laenge, string zone, ZapfSatz was)
         {
             if (werte == null || werte.Length != laenge)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    "Nicht rechenbar — " + was + " tragen nicht " + laenge + " Werte (Zone „" + zone + "“).");
+                    ZapfSatz.Neu("EINGABE_RASTER_LAENGE", was, laenge, zone));
             foreach (double w in werte) NichtNegativ(w, zone, was);
             return werte;
         }
 
-        private static double NichtNegativ(double w, string zone, string was)
+        private static double NichtNegativ(double w, string zone, ZapfSatz was)
         {
             if (double.IsNaN(w) || double.IsInfinity(w) || w < 0)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    "Nicht rechenbar — " + was + " der Zone „" + zone + "“ enthält einen negativen oder nicht endlichen Wert.");
+                    ZapfSatz.Neu("EINGABE_RASTER_NEGATIV", was, zone));
             return w;
         }
+
+        /// <summary>Der Tagtyp als Begriff (<c>BEGRIFF_TAGTYP_…</c>) — sprachfrei für die Sätze des Kerns.</summary>
+        internal static ZapfSatz Tagtyp(ZapfTagtyp t) => ZapfSatz.Neu("BEGRIFF_TAGTYP_" + ((int)t).ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
         /// Hinweis, wenn eine Summe über der Warnschwelle des Parametersatzes von 1 abweicht.
         /// Ohne Parameter keine Prüfung und kein Rückfallwert — den fehlenden Schlüssel nennt
         /// <see cref="Bilden"/> einmal als Hinweis (N7).
         /// </summary>
-        private static void SummeWarnen(double summe, double? schwelle, string zone, string code, string was,
+        private static void SummeWarnen(double summe, double? schwelle, string zone, string code, ZapfSatz was,
                                         ICollection<ZapfHinweis> hinweise)
         {
             if (!schwelle.HasValue) return;
             if (hinweise != null && Math.Abs(summe - 1.0) > schwelle.Value)
-                hinweise.Add(new ZapfHinweis(zone, code,
-                    was + " der Zone „" + zone + "“ summiert zu " + summe.ToString("0.######", CultureInfo.InvariantCulture)
-                    + " statt 1; vor dem Rechnen normiert."));
+                hinweise.Add(new ZapfHinweis(zone, code, ZapfSatz.Neu("HINWEIS_SUMME_NORMIERT", was, zone, summe)));
         }
     }
 }

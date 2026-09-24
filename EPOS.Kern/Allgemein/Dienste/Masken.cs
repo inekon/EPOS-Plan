@@ -71,6 +71,12 @@
         public const string PufferSpAdmin = "Form_PufferSp_Admin";
         /// <summary>Stammdaten Brauchwasser.</summary>
         public const string BrauchwasserAdmin = "Form_Brauchwasser_Admin";
+        /// <summary>
+        /// Der Katalog der Brauchwasser-Nutzungsarten des Zapfprofilgenerators
+        /// (<c>TwwNutzungsartAdminDialog</c>; Umsetzungskonzept Zapfprofilgenerator 5.4). Nur
+        /// unter Windows ein Fenster; auf iOS benannt abgelehnt wie <see cref="BrauchwasserAdmin"/>.
+        /// </summary>
+        public const string BrauchwasserNutzungsarten = "Form_Brauchwasser_Nutzungsarten";
         /// <summary>Herstellerdaten Solarkollektoren einlesen.</summary>
         public const string SolarkollektorenImport = "Form_SolarKollektoren_einlesen";
 

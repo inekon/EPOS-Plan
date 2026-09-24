@@ -77,6 +77,11 @@ namespace WindowsFormsApplication1
 
             titel = Titel(stammName);
 
+            // ETAPPE E13 (E7c3‑Q6 a): der Grund des zuletzt gescheiterten Schreibwegs —
+            // der Speicherfehler des Kerns, sonst der gefangene Fehler. Der Dialog liest
+            // ihn nach einem gescheiterten OK und nennt ihn neben der Meldung.
+            var speicher = new Speichergrund();
+
             return new Dictionary<string, object>
             {
                 ["IdStamm"] = idStamm,
@@ -100,14 +105,20 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>(
                         ids => ctrl.LadeErgebnisse(new List<int>(ids))),
 
+                // ETAPPE E13 (E7c3‑Q6 a): der Ladefehler des Kerns nach ErgebnisseLaden
+                // und die Warnung der Tabellenvorsorge beim Öffnen (LadeParameter oben).
+                ["Ladefehler"] = new Func<string>(() => ctrl.Ladefehler),
+                ["Vorsorgewarnung"] = WirtschaftlichkeitCtrl.Vorsorgewarnung ?? "",
+
                 // DIE ZWEI SCHREIBWEGE, je einer fuer eine Zeile und fuer die
                 // Projektvorgaben. Der Dialog ruft sie NUR im OK-Weg und weiss
                 // dadurch, welcher Schritt durch ist: Scheitert einer, bleibt er
                 // offen, und ein zweites OK wiederholt das Geschriebene nicht.
                 ["SpeichereAnlage"] = new Func<KwkgAnlagenAngabe, bool>(
-                    a => SpeichereAnlage(anlagenCtrl, a)),
+                    a => SpeichereAnlage(anlagenCtrl, a, speicher)),
                 ["SpeichereVorgaben"] = new Func<WirtschaftlichkeitParameter, bool>(
-                    p => SpeichereVorgaben(ctrl, p)),
+                    p => SpeichereVorgaben(ctrl, p, speicher)),
+                ["Speicherfehler"] = new Func<string>(speicher.Lesen),
 
                 // ETAPPE E9b (E9a-Q7): Ist das Tarif-Rollenmodell wirksam, bewertet es die
                 // Einspeisung mit seinem Einspeisetarif - eine Szenario-Einspeiseverguetung
@@ -146,10 +157,32 @@ namespace WindowsFormsApplication1
         /// dazu Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl). Die
         /// Gerätezeile (P_el, P_th) liest der Kern mit, geschrieben wird sie nie.
         /// </summary>
-        private static bool SpeichereAnlage(KwkgAnlagenCtrl anlagenCtrl, KwkgAnlagenAngabe anlage)
+        private static bool SpeichereAnlage(KwkgAnlagenCtrl anlagenCtrl, KwkgAnlagenAngabe anlage,
+                                            Speichergrund speicher)
         {
             try { return anlagenCtrl.Speichere(anlage, true); }
-            catch { return false; }
+            catch (Exception ex) { speicher.Setzen(Fehlergrund.Text(ex)); return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE E13 (E7c3‑Q6 a) — der Grund des zuletzt gescheiterten Schreibwegs des
+        /// Dialogs; <see cref="Lesen"/> gibt ihn einmal heraus (<c>null</c> = keiner).
+        /// </summary>
+        internal sealed class Speichergrund
+        {
+            private string _grund;
+
+            internal void Setzen(string grund)
+            {
+                if (!string.IsNullOrWhiteSpace(grund)) _grund = grund;
+            }
+
+            internal string Lesen()
+            {
+                string g = _grund;
+                _grund = null;
+                return g;
+            }
         }
 
         /// <summary>
@@ -164,10 +197,16 @@ namespace WindowsFormsApplication1
         /// dafuer bis B6 (M-3) keine Spalte.</para>
         /// </summary>
         private static bool SpeichereVorgaben(WirtschaftlichkeitCtrl ctrl,
-                                              WirtschaftlichkeitParameter parameter)
+                                              WirtschaftlichkeitParameter parameter,
+                                              Speichergrund speicher)
         {
-            try { return ctrl.SpeichereParameter(parameter); }
-            catch { return false; }
+            try
+            {
+                if (ctrl.SpeichereParameter(parameter)) return true;
+                speicher.Setzen(ctrl.Speicherfehler);   // ETAPPE E13: der Grund des Kerns
+                return false;
+            }
+            catch (Exception ex) { speicher.Setzen(Fehlergrund.Text(ex)); return false; }
         }
 
         /// <summary>Bereichstitel — derselbe Text wie in der Komponente.</summary>

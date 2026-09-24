@@ -4,7 +4,7 @@ Statuszeile #463 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migr
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](../../../aktuell/Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md)
 (§ 5 Zeile E10: „Instandsetzung/Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge; Speicherflotte an
 `Tab_Nutzungsdauer` mit Neueinfrieren der Basis; geräteeigene Spalten kennzeichnen (A8)"); Nutzungsdauer-Konzept
-[`Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](../../../aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (Stufe S3, ND‑Q6,
+[`Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](../../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (Stufe S3, ND‑Q6,
 ND‑Q7); Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](../../../aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 § 2.13 (3) (U39), § 3.4 und § 6.3 Nr. 9h und 19; Mockup `../../../aktuell/Mockups/Dialog_Formel_Zahlenprobe.html`,

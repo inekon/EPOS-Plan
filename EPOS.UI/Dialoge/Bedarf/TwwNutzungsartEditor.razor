@@ -1,0 +1,381 @@
+﻿@* Der EDITOR einer Brauchwasser-Nutzungsart (Umsetzungskonzept Zapfprofilgenerator 5.4, 3.2;
+   Stufe Z4, Gruppe 3) - die Ueberlagerung hinter "Neu…", "Aendern…" und "Speichern unter…" des
+   Katalogdialogs.
+
+   WAS ER TUT. Er zeigt die schreibbaren Werte einer Nutzungsart - Kennung, Bezugsart,
+   Tagesgangsatz, Bedarf je Niveau samt Bandbreite, Bezugstemperaturen, Bilanzgrenze, Kalenderart,
+   Ferienfaktor und Monatsfaktoren - und schreibt sie beim OK in EINER Transaktion ueber den
+   Delegaten der Huelle. Die Wochenfaktoren stehen nur als Text da: Sie bearbeitet "Tagesgang…".
+
+   DREI MODI. "Neu" legt eine eigene Zeile an (vorbelegt mit den Werten der gewaehlten Zeile);
+   "Aendern" schreibt eine freie Zeile an Ort und Stelle; "Speichern unter" legt eine neue Zeile mit
+   eigener Katalogversion an - der einzige Weg, eine Zeile der Auslieferung oder eine benutzte Zeile
+   abzuwandeln (3.2, K7). Den Modus setzt die Huelle; ein gesperrtes "Aendern" kommt als "Speichern
+   unter" mit dem Sperrgrund als Hinweis.
+
+   PRUEFUNG. Die Pflichtangaben prueft dieselbe Regel wie der Schreibweg (EntwurfLuecken der Huelle,
+   hier als Liste der leeren Felder); eine Fehleingabe faerbt ihr Feld und haelt das OK an. Die
+   Monatsfaktoren muessen nicht genau das Mittel 1 treffen - eine leise Zeile nennt das Mittel, und
+   der Kern normiert beim Speichern. Eine Ablehnung des Kerns steht benannt als Banner da, die
+   Ueberlagerung bleibt offen.
+
+   TASTATUR. Esc wirkt wie Abbrechen; Enter bleibt unbelegt (OK schreibt).
+
+   HILFE-ASSISTENT. Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.TWW_NUTZUNGSART_EDITOR), solange sie offen steht: die Felder ueber
+   TwwNutzungsartEditorKiSicht, gesetzt auf den Wegen der Felder. Pruefen ist der Befund des OK;
+   kein Speicherweg - OK bleibt beim Anwender. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-tww-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Titel" Dialogname="@Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (!Daten.Verfuegbar)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Grund" />
+    }
+    @if (Daten.Hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-tww-editor-hinweis">@Daten.Hinweis</p>
+    }
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" Kennung="@_kennung" />
+    }
+
+    <Gruppenkopf Titel="@Texte.EditorGruppeKennung">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@_e.Bezeichner"
+                              WertChanged="v => Setzen(() => _e.Bezeichner = v ?? string.Empty)" />
+                    <Textfeld Bezeichnung="@Texte.LabelKatalogversion" Wert="@_e.Katalogversion" Kurz="true"
+                              WertChanged="v => Setzen(() => _e.Katalogversion = v ?? string.Empty)" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelBezugsart" Eintraege="@Daten.Bezugsarten" Auswahl="@Wahl(_e.Bezugsart)"
+                                 Platzhalter="@Texte.EditorKeineWahl" AuswahlChanged="id => Setzen(() => _e.Bezugsart = id ?? 0)" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelTagesgangsatz" Eintraege="@Daten.Tagesgangsaetze" Auswahl="@Wahl(_e.IdTagesgangsatz)"
+                                 Platzhalter="@Texte.EditorKeineWahl" AuswahlChanged="id => Setzen(() => _e.IdTagesgangsatz = id ?? 0)" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@Texte.EditorGruppeBedarf">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    @for (int n = 0; n < TwwNutzungsartEntwurfDaten.NIVEAUS; n++)
+                    {
+                        int niveau = n;
+                        <Zahlenfeld @key="@("b" + niveau)" Bezeichnung="@Niveau(niveau)" Einheit="@Texte.EinheitBedarf" Min="0"
+                                    Feldname="@Niveau(niveau)" Wert="@_e.Bedarf[niveau]"
+                                    WertChanged="w => Setzen(() => _e.Bedarf[niveau] = w)" FehlerZustand="FehlerZustandMelden" />
+                        <Zahlenfeld @key="@("u" + niveau)" Bezeichnung="@Format(Texte.LabelUntereGrenze, Niveau(niveau))" Einheit="@Texte.EinheitBedarf"
+                                    Min="0" Feldname="@Format(Texte.LabelUntereGrenze, Niveau(niveau))" Wert="@_e.BedarfMin[niveau]"
+                                    WertChanged="w => Setzen(() => _e.BedarfMin[niveau] = w)" FehlerZustand="FehlerZustandMelden" />
+                        <Zahlenfeld @key="@("o" + niveau)" Bezeichnung="@Format(Texte.LabelObereGrenze, Niveau(niveau))" Einheit="@Texte.EinheitBedarf"
+                                    Min="0" Feldname="@Format(Texte.LabelObereGrenze, Niveau(niveau))" Wert="@_e.BedarfMax[niveau]"
+                                    WertChanged="w => Setzen(() => _e.BedarfMax[niveau] = w)" FehlerZustand="FehlerZustandMelden" />
+                    }
+                    <Zahlenfeld Bezeichnung="@Texte.LabelZapftemperatur" Einheit="@Texte.EinheitGrad" Feldname="@Texte.LabelZapftemperatur"
+                                Wert="@_e.Zapftemperatur" WertChanged="w => Setzen(() => _e.Zapftemperatur = w)" FehlerZustand="FehlerZustandMelden" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasser" Einheit="@Texte.EinheitGrad" Feldname="@Texte.LabelKaltwasser"
+                                Wert="@_e.Kaltwasser" WertChanged="w => Setzen(() => _e.Kaltwasser = w)" FehlerZustand="FehlerZustandMelden" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelBilanzgrenze" Eintraege="@Daten.Bilanzgrenzen" Auswahl="@Wahl(_e.Bilanzgrenze)"
+                                 Platzhalter="@Texte.EditorKeineWahl" AuswahlChanged="id => Setzen(() => _e.Bilanzgrenze = id ?? 0)" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@Texte.EditorGruppeZeit">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.LabelKalender" Eintraege="@Daten.Kalenderarten" Auswahl="@Wahl(_e.Kalenderart)"
+                                 Platzhalter="@Texte.EditorKeineWahl" AuswahlChanged="id => Setzen(() => _e.Kalenderart = id ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelFerienfaktor" Min="0" Feldname="@Texte.LabelFerienfaktor"
+                                Wert="@_e.Ferienfaktor" WertChanged="w => Setzen(() => _e.Ferienfaktor = w)" FehlerZustand="FehlerZustandMelden" />
+                    @for (int m = 0; m < TwwNutzungsartEntwurfDaten.MONATE; m++)
+                    {
+                        int monat = m;
+                        <Zahlenfeld @key="@("m" + monat)" Bezeichnung="@Monat(monat)" Min="0" Feldname="@(Texte.LabelMonatsfaktoren + " · " + Monat(monat))"
+                                    Wert="@_e.Monatsfaktoren[monat]" WertChanged="w => Setzen(() => _e.Monatsfaktoren[monat] = w)"
+                                    FehlerZustand="FehlerZustandMelden" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            <Kohaerenzzeile Text="@Monatstext" Zustand="@(MonateEins ? KohaerenzZustand.Ok : KohaerenzZustand.Abweichend)" />
+            <Herleitungszeile Text="@Format(Texte.EditorWoche, Daten.Wochenfaktoren)" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // --- Parameter (Schluessel wie ZapfprofilHuelle.KatalogGaben / EditorLaden) --------
+
+    /// <summary>Der Stand beim Öffnen: Modus, vorbelegter Entwurf, Wahllisten, Hinweis.</summary>
+    [Parameter] public TwwNutzungsartEditorDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen (Textbündel des Katalogdialogs).</summary>
+    [Parameter] public TwwNutzungsartAdminTexte Texte { get; set; } = new();
+
+    /// <summary>Der Schreibweg der Hülle — eine Transaktion; kein Delegat = „OK" schreibt nichts.</summary>
+    [Parameter] public Func<TwwEditorModus, TwwNutzungsartEntwurfDaten, TwwNutzungsartSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Hilfeschlüssel des Editors.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Brauchwasser_Nutzungsarten.grp_Editor";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: geschrieben (mit der Id der Zeile, die die Werte trägt) bei OK, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<TwwNutzungsartSpeicherErgebnis?> Geschlossen { get; set; }
+
+    // --- Stand -----------------------------------------------------------------------
+
+    /// <summary>Genauigkeit der Anzeige „Mittel 1" — die Anzeige, nicht die Regel des Kerns.</summary>
+    private const double TOLERANZ = 1e-6;
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private TwwNutzungsartEntwurfDaten _e = new();
+    private string _meldung = "";
+    private string _kennung = "";
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
+
+    /// <summary>Der Arbeitsstand des Editors — Prüfhilfe für die Tests.</summary>
+    public TwwNutzungsartEntwurfDaten Entwurf => _e;
+
+    /// <summary>Die Meldung eines abgelehnten OK — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Titel nach dem Modus.</summary>
+    public string Titel => Daten.Modus switch
+    {
+        TwwEditorModus.Neu => Texte.EditorTitelNeu,
+        TwwEditorModus.Aendern => Texte.EditorTitelAendern,
+        _ => Texte.EditorTitelSpeichernUnter
+    };
+
+    protected override void OnInitialized()
+    {
+        _e = (Daten.Entwurf ?? new TwwNutzungsartEntwurfDaten()).Kopie();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.TWW_NUTZUNGSART_EDITOR, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    private string Niveau(int n) => n switch { 0 => Texte.LabelBedarfNiedrig, 1 => Texte.LabelBedarfMittel, _ => Texte.LabelBedarfHoch };
+
+    /// <summary>Der Monatsname aus den Gaben (<c>ALLG_MONAT_n</c>); ohne Gaben die Nummer.</summary>
+    private string Monat(int m)
+        => m < Daten.Monatsnamen.Count ? Daten.Monatsnamen[m] : (m + 1).ToString(CultureInfo.CurrentCulture);
+
+    private static int? Wahl(int id) => id > 0 ? id : null;
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    /// <summary>Das Mittel der eingegebenen Monatsfaktoren (leere als 0); NaN ohne Werte.</summary>
+    private double Monatsmittel => _e.Monatsfaktoren.Length == 0 ? double.NaN : _e.Monatsfaktoren.Sum(m => m ?? 0.0) / _e.Monatsfaktoren.Length;
+
+    private bool MonateEins => Math.Abs(Monatsmittel - 1.0) <= TOLERANZ;
+
+    private string Monatstext => MonateEins
+        ? Texte.EditorMonateEins
+        : Format(Texte.EditorMonateMittel, Monatsmittel.ToString("0.###", CultureInfo.CurrentCulture));
+
+    // =================================================================================
+    // Bedienung
+    // =================================================================================
+
+    /// <summary>Eine Eingabe: setzt den Wert und verwirft die Meldung des letzten OK.</summary>
+    private void Setzen(Action weg)
+    {
+        weg();
+        _meldung = "";
+        _kennung = "";
+    }
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
+    }
+
+    // =================================================================================
+    // Ergebnis
+    // =================================================================================
+
+    /// <summary>
+    /// Der Befund des OK — Fehleingaben, dann die leeren Pflichtfelder; leer = in Ordnung. Dieselbe
+    /// Prüfung am Knopf und beim Assistenten.
+    /// </summary>
+    private string OkBefund()
+    {
+        if (!Daten.Verfuegbar) return Daten.Grund;
+        if (_fehlfelder.Count > 0) return Format(Texte.EditorFehleingabe, string.Join(", ", _fehlfelder));
+        var luecken = new List<string>();
+        if (string.IsNullOrWhiteSpace(_e.Bezeichner)) luecken.Add(Texte.LabelBezeichner);
+        if (string.IsNullOrWhiteSpace(_e.Katalogversion)) luecken.Add(Texte.LabelKatalogversion);
+        if (_e.Bezugsart <= 0) luecken.Add(Texte.LabelBezugsart);
+        if (_e.IdTagesgangsatz <= 0) luecken.Add(Texte.LabelTagesgangsatz);
+        for (int n = 0; n < TwwNutzungsartEntwurfDaten.NIVEAUS; n++)
+            if (!_e.Bedarf[n].HasValue) luecken.Add(Niveau(n));
+        if (!_e.Zapftemperatur.HasValue) luecken.Add(Texte.LabelZapftemperatur);
+        if (!_e.Kaltwasser.HasValue) luecken.Add(Texte.LabelKaltwasser);
+        if (_e.Bilanzgrenze <= 0) luecken.Add(Texte.LabelBilanzgrenze);
+        if (_e.Kalenderart <= 0) luecken.Add(Texte.LabelKalender);
+        if (_e.Monatsfaktoren.Any(m => !m.HasValue)) luecken.Add(Texte.LabelMonatsfaktoren);
+        return luecken.Count > 0 ? Format(Texte.EditorPflicht, string.Join(", ", luecken)) : "";
+    }
+
+    /// <summary>
+    /// „OK": prüfen, dann den Entwurf an den Schreibweg der Hülle (EINE Transaktion); eine Ablehnung
+    /// bleibt als Banner, die Überlagerung offen.
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+        string befund = OkBefund();
+        if (befund.Length > 0)
+        {
+            _meldung = befund;
+            _kennung = "ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG";
+            return;
+        }
+        if (Speichern is null)
+        {
+            _meldung = Texte.GrundOhneWeg;
+            return;
+        }
+        TwwNutzungsartSpeicherErgebnis e = Speichern(Daten.Modus, _e.Kopie());
+        if (!e.Ok)
+        {
+            _meldung = e.Meldung;
+            _kennung = e.Kennung;
+            return;
+        }
+        await Geschlossen.InvokeAsync(e);
+    }
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    // =================================================================================
+    // Der Hilfe-Assistent
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TwwNutzungsartEditorKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten — dieselben Wege wie die Felder, dieselben Grenzen.</summary>
+    private TwwNutzungsartEditorKiSicht KiSicht() => _kiSicht ??= new TwwNutzungsartEditorKiSicht
+    {
+        BezeichnerLesen = () => _e.Bezeichner,
+        BezeichnerSetzen = v => { Setzen(() => _e.Bezeichner = v ?? ""); return null; },
+        KatalogversionLesen = () => _e.Katalogversion,
+        KatalogversionSetzen = v => { Setzen(() => _e.Katalogversion = v ?? ""); return null; },
+        BezugsartLesen = () => Wahl(_e.Bezugsart),
+        BezugsartSetzen = id => WahlSetzen(id, Daten.Bezugsarten, Texte.LabelBezugsart, v => _e.Bezugsart = v),
+        BezugsartEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Bezugsarten, e => e.Id, e => e.Text),
+        TagesgangsatzLesen = () => Wahl(_e.IdTagesgangsatz),
+        TagesgangsatzSetzen = id => WahlSetzen(id, Daten.Tagesgangsaetze, Texte.LabelTagesgangsatz, v => _e.IdTagesgangsatz = v),
+        TagesgangsatzEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Tagesgangsaetze, e => e.Id, e => e.Text),
+        BilanzgrenzeLesen = () => Wahl(_e.Bilanzgrenze),
+        BilanzgrenzeSetzen = id => WahlSetzen(id, Daten.Bilanzgrenzen, Texte.LabelBilanzgrenze, v => _e.Bilanzgrenze = v),
+        BilanzgrenzeEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Bilanzgrenzen, e => e.Id, e => e.Text),
+        KalenderLesen = () => Wahl(_e.Kalenderart),
+        KalenderSetzen = id => WahlSetzen(id, Daten.Kalenderarten, Texte.LabelKalender, v => _e.Kalenderart = v),
+        KalenderEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Kalenderarten, e => e.Id, e => e.Text),
+        ZahlLesen = feld => Zahlweg(feld).Lesen(),
+        ZahlSetzen = (feld, w) =>
+        {
+            (Func<double?> lesen, Action<double?> setzen, string name, double? min) = Zahlweg(feld);
+            if (setzen is null) return ZapfprofilKiRegeln.Gesperrt(feld);
+            if (ZapfprofilKiRegeln.Bereich(name, w, min, null) is { } grund) return grund;
+            Setzen(() => setzen(w));
+            return null;
+        },
+        MonateLesen = () => (double?[])_e.Monatsfaktoren.Clone(),
+        MonateSetzen = r =>
+        {
+            if (r is null || r.Length != TwwNutzungsartEntwurfDaten.MONATE) return ZapfprofilKiRegeln.Gesperrt(Texte.LabelMonatsfaktoren);
+            for (int i = 0; i < r.Length; i++)
+                if (ZapfprofilKiRegeln.Bereich(Monat(i), r[i], 0, null) is { } grund) return grund;
+            Setzen(() => _e.Monatsfaktoren = (double?[])r.Clone());
+            return null;
+        }
+    };
+
+    /// <summary>Lese- und Setzweg eines Zahlenfelds nach seinem Namen in der Sichtklasse.</summary>
+    private (Func<double?> Lesen, Action<double?>? Setzen, string Name, double? Min) Zahlweg(string feld) => feld switch
+    {
+        TwwNutzungsartEditorKiSicht.BEDARF_NIEDRIG => (() => _e.Bedarf[0], w => _e.Bedarf[0] = w, Niveau(0), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_MITTEL => (() => _e.Bedarf[1], w => _e.Bedarf[1] = w, Niveau(1), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_HOCH => (() => _e.Bedarf[2], w => _e.Bedarf[2] = w, Niveau(2), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_NIEDRIG_MIN => (() => _e.BedarfMin[0], w => _e.BedarfMin[0] = w, Format(Texte.LabelUntereGrenze, Niveau(0)), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_NIEDRIG_MAX => (() => _e.BedarfMax[0], w => _e.BedarfMax[0] = w, Format(Texte.LabelObereGrenze, Niveau(0)), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_MITTEL_MIN => (() => _e.BedarfMin[1], w => _e.BedarfMin[1] = w, Format(Texte.LabelUntereGrenze, Niveau(1)), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_MITTEL_MAX => (() => _e.BedarfMax[1], w => _e.BedarfMax[1] = w, Format(Texte.LabelObereGrenze, Niveau(1)), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_HOCH_MIN => (() => _e.BedarfMin[2], w => _e.BedarfMin[2] = w, Format(Texte.LabelUntereGrenze, Niveau(2)), 0),
+        TwwNutzungsartEditorKiSicht.BEDARF_HOCH_MAX => (() => _e.BedarfMax[2], w => _e.BedarfMax[2] = w, Format(Texte.LabelObereGrenze, Niveau(2)), 0),
+        TwwNutzungsartEditorKiSicht.ZAPFTEMPERATUR => (() => _e.Zapftemperatur, w => _e.Zapftemperatur = w, Texte.LabelZapftemperatur, null),
+        TwwNutzungsartEditorKiSicht.KALTWASSER => (() => _e.Kaltwasser, w => _e.Kaltwasser = w, Texte.LabelKaltwasser, null),
+        TwwNutzungsartEditorKiSicht.FERIENFAKTOR => (() => _e.Ferienfaktor, w => _e.Ferienfaktor = w, Texte.LabelFerienfaktor, 0),
+        _ => (() => null, null, feld, null)
+    };
+
+    /// <summary>Eine Wahl setzen — nur ein Eintrag der Liste; leer setzt „keine".</summary>
+    private string? WahlSetzen(int? id, IReadOnlyList<(int Id, string Text)> liste, string feld, Action<int> weg)
+    {
+        if (id is int v && liste.All(e => e.Id != v)) return ZapfprofilKiRegeln.Gesperrt(feld);
+        Setzen(() => weg(id ?? 0));
+        return null;
+    }
+
+    /// <summary>Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen — kein Speicherweg.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = OkBefund
+    };
+}

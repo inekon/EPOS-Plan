@@ -279,7 +279,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Punkt 9 (Szenarioanalyse) nennt den Ausweis in seinem Stand, wo die Lage ihn kennt —
-        /// sonst der allgemeine Satz; ohne zwei gerechnete Szenarien bleibt er offen.
+        /// sonst der allgemeine Satz; ohne Lauf bleibt er offen.
         /// </summary>
         [Fact]
         public void Punkt_9_der_Checkliste_nennt_den_Ausweis()
@@ -292,12 +292,13 @@ namespace EPOS.Kern.Tests
                 Gerechnet = true, SzenarienGerechnet = true,
                 Szenarioabdeckung = "2 von 16 Parametern szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E"
             });
-            Assert.Equal(ChecklistenStand.Teilweise, mit.Stand);
+            // ETAPPE E13 (E9b‑Q5 b): beide Szenarien gerechnet heißt „erfüllt".
+            Assert.Equal(ChecklistenStand.Erfuellt, mit.Stand);
             Assert.Equal("drei vollständige Läufe, je Szenario mit eigenem Parametersatz; 2 von 16 "
                          + "Parametern szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E.", mit.StandText);
 
             ChecklistenPunkt ohne = Neun(new ChecklistenLage { Gerechnet = true, SzenarienGerechnet = true });
-            Assert.Equal(R.WIRT_AE_9_TEILWEISE, ohne.StandText);
+            Assert.Equal(R.WIRT_AE_9_ERFUELLT, ohne.StandText);
             Assert.Equal("drei vollständige Läufe, je Szenario mit eigenem Parametersatz.", ohne.StandText);
 
             ChecklistenPunkt offen = Neun(new ChecklistenLage { Szenarioabdeckung = "1 von 11 Parametern szenariert" });
@@ -390,6 +391,8 @@ namespace EPOS.Kern.Tests
         [InlineData("WIRT_SZ_ABDECKUNG")]
         [InlineData("WIRT_SZ_ABDECKUNG_LISTE")]
         [InlineData("WIRT_AE_9_ABDECKUNG")]
+        [InlineData("WIRT_AE_9_ERFUELLT")]
+        [InlineData("WIRT_AE_9_TEILWEISE_ABDECKUNG")]
         [InlineData("WIRT_ANN_DV_ENTGELT")]
         [InlineData("WIRT_ANN_PPA_PREIS")]
         [InlineData("WPAR_SZ_ZEITRAUM")]

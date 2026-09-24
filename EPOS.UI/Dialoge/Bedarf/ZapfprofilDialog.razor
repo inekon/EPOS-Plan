@@ -1,5 +1,5 @@
 ﻿@* Der Dialog "BRAUCHWASSER-ZAPFPROFIL" (Umsetzungskonzept Zapfprofilgenerator 5.1-5.3,
-   Stufe Z1) - Stufe EINFACH mit Vorschau.
+   Stufen Z1 bis Z4) - die Stufen EINFACH, ERWEITERT und EXPERTE mit Vorschau.
 
    WO ER STEHT. Als Ueberlagerung im Bedarfsprofil-Dialog der Auspraegung Brauchwasser
    (5.2): Knopf "Zapfprofil erzeugen..." im Aktionsschlitz der Fussleiste. Eingebettet
@@ -49,25 +49,50 @@
    eingeschaltetem Schalter; ihr Ensemble laeuft dort ebenso nebenlaeufig. Eine Fehleingabe in
    Seed oder Realisierungen haelt das OK an und wird benannt.
 
-   BENANNT GESPERRT. Die Stufe Erweitert und der Reiter Dauerlinie kommen mit spaeteren
-   Stufen: Sie stehen da, sind WEICH gesperrt (aria-disabled + Grund als title), und der
-   Versuch meldet den Grund als leise Zeile. Ohne Delegat der Auslegung gilt das auch fuer
-   "Auslegung...", ohne Auslegung und Jahresreihe fuer "Stochastisch rechnen".
+   STUFEN ERWEITERT UND EXPERTE (Stufe Z4, Gruppe 2a; 5.3). Die Stufe blendet nur ein und aus
+   - alle Angaben bleiben im Arbeitsstand, der Zaehler "n Werte ueberschrieben" zaehlt sie in
+   jeder Stufe (ZapfprofilDaten.UeberschriebenIn). Erweitert zeigt je Zone die aufgeklappte
+   Katalogauswahl, "Belegung und Anlage" (Wohnungstabelle nur bei Wohnen, Personen und Wohnflaeche
+   je WE, Topologie, Zirkulation, Kalender samt Gebaeude und vier Ferienzeitraeumen, Bundesland
+   gesperrt mit Grund, Jahresmesswert) und die Schaetzhilfen Tagesbedarf, Ladeleistung und
+   Zirkulation (auto/manuell, Vorschlag als Knopf am Feld, angesetzter Wert, Rechenweg - alles aus
+   der Vorschau des Kerns), dazu den Rechenweg der Jahresreihe (N12 (s)) und die Dauerlinie.
+   Experte zeigt die Fachwerte der Zone und des Gebaeudes, Seed und Realisierungen. Jede Angabe, die
+   die Auslegung aendert, macht deren Punkt ueberholt. Die wirksame Bezugsmenge einer
+   Wohnungstabelle uebernimmt das OK aus der Vorschau des Kerns in die Bezugsgroesse. Die
+   Schaetzhilfe der Ladeleistung zeigt den Vorschlag der Auslegung (Delegat "Ladevorschlag",
+   deterministisch, entprellt mit der Vorschau, nur ab Erweitert).
+
+   EDITOREN DER STUFE EXPERTE (Z4, Gruppe 2b). "Tagesgang bearbeiten..." und "Zapfkategorien und
+   Streuung..." oeffnen je eine Ueberlagerung zur Nutzungsart der gewaehlten Zone (TagesgangEditor,
+   ZapfkategorienEditor; Parametersatz ueber die Delegaten TagesgangGaben und KategorienGaben).
+   Die Editoren gehoeren zum KATALOG, nicht zum Arbeitsstand: Ihr OK schreibt sofort (eine
+   Transaktion); ist die Nutzungsart gesperrt, entsteht eine neue Katalogversion. Danach liest der
+   Dialog den Katalog neu (Delegat "Katalogstand"), stellt die Zone auf die Nutzungsart, die jetzt
+   die Werte traegt (eine Expertenwahl des Satzes folgt dem geschriebenen Satz), rechnet die
+   Vorschau neu und nennt es in einer leisen Zeile; ein uebernommener Punkt ist ueberholt. Ohne
+   Delegat oder ohne Nutzungsart stehen die Knoepfe weich gesperrt mit Grund.
+
+   BENANNT GESPERRT. Ohne Delegat der Auslegung steht "Auslegung..." weich gesperrt (aria-disabled +
+   Grund als title), ohne Auslegung und Jahresreihe "Stochastisch rechnen"; der Versuch meldet den
+   Grund als leise Zeile. Der Reiter Dauerlinie ist in der Stufe Einfach weich gesperrt.
 
    ENTPRELLT. Die Vorschau liest Katalog und Kalender aus der Datenbank; sie laeuft deshalb
    erst EntprellungMs nach der letzten Eingabe (Hausregel "Eine Pruefung je Tastendruck
    fragt keine Datenbank"), sofort beim Oeffnen (die Huelle bringt sie mit) und bei 0
    ohne Wartezeit (bunit).
 
-   TASTATUR. Esc schliesst wie Abbrechen - solange die Auslegung offen ist, schliesst Esc
-   nur sie; Enter bleibt unbelegt.
+   TASTATUR. Esc schliesst wie Abbrechen - solange eine Ueberlagerung (Auslegung, Tagesgang,
+   Zapfkategorien) offen ist, schliesst Esc nur sie; Enter bleibt unbelegt.
 
-   HILFE-ASSISTENT (Welle #458, Stufe 3a). Der Dialog meldet sich als EIGENE Maske an
+   HILFE-ASSISTENT (Welle #458, Stufe 3a; Z4). Der Dialog meldet sich als EIGENE Maske an
    (KiMaskennamen.ZAPFPROFIL), solange er offen steht - angemeldet ist sein Arbeitsstand
-   ueber ZapfprofilKiSicht: Stufe, Zonenwahl, die Zonen als Spalten, "Anzeigen fuer" und
-   die Stochastik der Stufe Experte, gesetzt auf den Wegen der Eingabefelder (Vorschau,
-   ueberholter Punkt). Pruefen ist der Befund des OK; kein Speicherweg - OK bleibt beim
-   Anwender, geschrieben wird mit dem OK der Bedarfsprofile. *@
+   ueber ZapfprofilKiSicht: Stufe, Zonenwahl, die Zonen als Spalten, "Anzeigen fuer", die
+   Angaben der gewaehlten Zone und des Gebaeudes der Stufen Erweitert und Experte samt
+   Wohnungstabelle und die Stochastik, gesetzt auf den Wegen der Eingabefelder (Vorschau,
+   ueberholter Punkt). Was die Stufe nicht zeigt, lehnt er benannt ab. Pruefen ist der Befund
+   des OK; kein Speicherweg - OK bleibt beim Anwender, geschrieben wird mit dem OK der
+   Bedarfsprofile. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -95,8 +120,7 @@
 
     <div class="epos-auswahlpaar epos-zapfprofil-stufe">
         <Optionsgruppe Bezeichnung="@Texte.LabelStufe" Eintraege="@Stufen"
-                       Auswahl="@((int)_stufe)" AuswahlChanged="StufeWaehlen"
-                       WeichGesperrt="@StufenGesperrt" Verweigert="_ => NochNicht()" />
+                       Auswahl="@((int)_stufe)" AuswahlChanged="StufeWaehlen" />
         @if (Daten.UeberschriebenIn(_eingabe) is > 0 and var ueberschrieben)
         {
             <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, ueberschrieben)</span>
@@ -141,7 +165,16 @@
                                     <th>@Texte.SpalteZone</th>
                                     <th>@Texte.SpalteNutzungsart</th>
                                     <th>@Texte.SpalteBezugsgroesse</th>
+                                    @if (AbErweitert)
+                                    {
+                                        <th>@Texte.SpalteTopologie</th>
+                                    }
                                     <th>@Texte.SpalteJahresbedarf</th>
+                                    @if (AbErweitert)
+                                    {
+                                        <th>@Texte.SpalteAnteil</th>
+                                        <th>@Texte.SpalteRechenweg</th>
+                                    }
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,7 +189,16 @@
                                         </td>
                                         <td>@NutzungsartName(z.IdNutzungsart)</td>
                                         <td>@Bezugstext(z)</td>
+                                        @if (AbErweitert)
+                                        {
+                                            <td>@Topologiename(z.Angaben?.Topologie ?? ZapfprofilTopologie.Speicher)</td>
+                                        }
                                         <td class="epos-zahl">@Zonenwert(index)</td>
+                                        @if (AbErweitert)
+                                        {
+                                            <td class="epos-zahl">@Zonenanteil(index)</td>
+                                            <td>@Zonenrechenweg(index)</td>
+                                        }
                                     </tr>
                                 }
                             </tbody>
@@ -164,8 +206,13 @@
                             {
                                 <tfoot>
                                     <tr>
-                                        <th scope="row" colspan="3">@Format(Texte.SummeZonen, _eingabe.Zonen.Count)</th>
+                                        <th scope="row" colspan="@(AbErweitert ? 4 : 3)">@Format(Texte.SummeZonen, _eingabe.Zonen.Count)</th>
                                         <td class="epos-zahl">@Zonensumme</td>
+                                        @if (AbErweitert)
+                                        {
+                                            <td class="epos-zahl">@Zonenanteilsumme</td>
+                                            <td></td>
+                                        }
                                     </tr>
                                 </tfoot>
                             }
@@ -204,6 +251,10 @@
                                             Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
                                             WertChanged="BezugsmengeSetzen" />
                                 <Herleitungszeile Text="@Texte.HinweisBezugsmengeEinheit" />
+                                @if (WirksameMenge(zone, art) is double wirksam)
+                                {
+                                    <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), art!.Bezugsgroesse)" />
+                                }
                                 <Optionsgruppe Bezeichnung="@Texte.LabelNiveau" Eintraege="@Niveaus"
                                                Auswahl="@((int)zone.Niveau)" AuswahlChanged="NiveauSetzen" />
                                 @if (art is not null)
@@ -212,6 +263,46 @@
                                 }
                             </KindInhalt>
                         </Formularraster>
+
+                        @* Die aufgeklappte Katalogauswahl (5.3, Stufe Erweitert): Bezugsart, Kalender, Herkunft,
+                           Status und Katalogversion je Eintrag; die Zeile waehlt die Nutzungsart. *@
+                        @if (AbErweitert)
+                        {
+                            <div class="epos-raster-huelle epos-zapfprofil-katalog">
+                                <table class="epos-raster">
+                                    <caption>@Texte.KatalogAufgeklappt</caption>
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.SpalteNutzungsart</th>
+                                            <th>@Texte.SpalteBezugsart</th>
+                                            <th>@Texte.SpalteKalender</th>
+                                            <th>@Texte.SpalteHerkunft</th>
+                                            <th>@Texte.SpalteStatus</th>
+                                            <th>@Texte.SpalteKatalogversion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (ZapfprofilNutzungsartDaten n in Katalogliste)
+                                        {
+                                            ZapfprofilNutzungsartDaten eintrag = n;
+                                            <tr @key="eintrag.Id" class="@(eintrag.Id == zone.IdNutzungsart ? "epos-zeile--markiert" : null)"
+                                                title="@(eintrag.Waehlbar ? null : eintrag.Sperrgrund)">
+                                                <td>
+                                                    <Zeilenwahl Gewaehlt="@(eintrag.Id == zone.IdNutzungsart)" Kurztext="@Texte.LabelNutzungsart"
+                                                                Beschriftung="@eintrag.Name" Aktiv="@eintrag.Waehlbar"
+                                                                Gewaehltwerden="() => NutzungsartSetzen(eintrag.Id)" />
+                                                </td>
+                                                <td>@eintrag.Bezugsgroesse</td>
+                                                <td>@eintrag.Kalender</td>
+                                                <td>@eintrag.Herkunft</td>
+                                                <td>@(eintrag.Waehlbar ? eintrag.Status : eintrag.Sperrgrund)</td>
+                                                <td>@eintrag.Katalogversion</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
 
                         @foreach (ZapfprofilMeldung m in ZonenMeldungen(_wahl))
                         {
@@ -225,9 +316,378 @@
                             }
                         }
 
-                        <p class="epos-leisezeile">@Texte.HinweisWeitereVorgabe</p>
+                        @* N9 (c): die leise Zeile verweist auf die naechste Stufe. *@
+                        @if (_stufe == ZapfprofilStufe.Einfach)
+                        {
+                            <p class="epos-leisezeile epos-zapfprofil-weitere">@Texte.HinweisWeitereErweitert</p>
+                        }
+                        else if (_stufe == ZapfprofilStufe.Erweitert)
+                        {
+                            <p class="epos-leisezeile epos-zapfprofil-weitere">@Texte.HinweisWeitereExperte</p>
+                        }
                     </KindInhalt>
                 </Gruppenkopf>
+
+                @if (AbErweitert)
+                {
+                    ZapfprofilZonenangabenDaten a = AngabenVon(zone);
+                    @* ---- Belegung und Anlage (5.3, Stufe Erweitert) ---------------------- *@
+                    <Gruppenkopf @key="@("belegung-" + _wahl)" Titel="@Texte.GruppeBelegung" Summe="@Texte.StufeErweitert">
+                        <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_BELEGUNG" StandardKurztext="@Texte.GruppeBelegung"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
+                            @if (art?.Wohnen == true)
+                            {
+                                <p class="epos-zapfprofil-untertitel">@Texte.LabelWohnungstabelle</p>
+                                @if (a.Wohnungen.Count == 0)
+                                {
+                                    <p class="epos-leisezeile">@Texte.HinweisWohnungstabelleLeer</p>
+                                }
+                                else
+                                {
+                                    <div class="epos-zapfprofil-wohnungen">
+                                        <Raster TZeile="ZapfprofilWohnungDaten" Zeilen="@a.Wohnungen.AsQueryable()" Bearbeitbar="true" Begrenzt="false">
+                                            <KindInhalt>
+                                                <TemplateColumn TGridItem="ZapfprofilWohnungDaten" Title="@Texte.LabelAnzahl">
+                                                    <Ganzzahlfeld Bezeichnung="@WohnFeld(Texte.LabelAnzahl, a, context)" Feldname="@WohnFeld(Texte.LabelAnzahl, a, context)"
+                                                                  Min="1" Wert="@context.Anzahl"
+                                                                  WertChanged="w => WohnungSetzen(zone, context, x => x.Anzahl = w)"
+                                                                  FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Erweitert)" />
+                                                </TemplateColumn>
+                                                <TemplateColumn TGridItem="ZapfprofilWohnungDaten" Title="@Texte.LabelRaumzahl">
+                                                    <Zahlenfeld Bezeichnung="@WohnFeld(Texte.LabelRaumzahl, a, context)" Feldname="@WohnFeld(Texte.LabelRaumzahl, a, context)"
+                                                                Min="0" Wert="@context.Raumzahl"
+                                                                WertChanged="w => WohnungSetzen(zone, context, x => x.Raumzahl = w)"
+                                                                FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Erweitert)" />
+                                                </TemplateColumn>
+                                                <TemplateColumn TGridItem="ZapfprofilWohnungDaten" Title="@Texte.LabelPersonen">
+                                                    <Zahlenfeld Bezeichnung="@WohnFeld(Texte.LabelPersonen, a, context)" Feldname="@WohnFeld(Texte.LabelPersonen, a, context)"
+                                                                Min="0" Wert="@context.Personen"
+                                                                WertChanged="w => WohnungSetzen(zone, context, x => x.Personen = w)"
+                                                                FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Erweitert)" />
+                                                </TemplateColumn>
+                                                <TemplateColumn TGridItem="ZapfprofilWohnungDaten" Title="@Texte.LabelAusstattung">
+                                                    <Auswahlfeld Bezeichnung="@WohnFeld(Texte.LabelAusstattung, a, context)" Eintraege="@Ausstattungswahl(context)"
+                                                                 Auswahl="@context.IdAusstattung" Platzhalter="@Texte.AusstattungVorgabe"
+                                                                 AuswahlChanged="id => WohnungSetzen(zone, context, x => x.IdAusstattung = id)" />
+                                                </TemplateColumn>
+                                                <TemplateColumn TGridItem="ZapfprofilWohnungDaten" Title="@Texte.SpalteAktion">
+                                                    <button type="button" class="epos-knopf epos-zapfprofil-wohnung-entfernen"
+                                                            @onclick="() => WohnungEntfernen(zone, context)">@Texte.KnopfWohnungEntfernen</button>
+                                                </TemplateColumn>
+                                            </KindInhalt>
+                                        </Raster>
+                                    </div>
+                                }
+                                <div class="epos-leiste epos-zapfprofil-wohnungsleiste">
+                                    <button type="button" class="epos-knopf" @onclick="() => WohnungNeu(zone)">@Texte.KnopfWohnungNeu</button>
+                                </div>
+                                <p class="epos-leisezeile">@Texte.HinweisWohnungstabelle</p>
+                            }
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelPersonenJeWe" Feldname="@Texte.LabelPersonenJeWe"
+                                                Einheit="@Texte.EinheitPersonenJeWe" Min="0" Wert="@a.PersonenJeWe"
+                                                WertChanged="w => Angabe(zone, x => x.PersonenJeWe = w)"
+                                                FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Erweitert)" />
+                                    <Herleitungszeile Text="@Texte.HinweisPersonenJeWe" />
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelWohnflaecheJeWe" Feldname="@Texte.LabelWohnflaecheJeWe"
+                                                Einheit="m²" Min="0" Wert="@a.WohnflaecheJeWeM2" Platzhalter="@Vorgabe(Daten.Vorgaben.WohnflaecheJeWeM2)"
+                                                WertChanged="w => Angabe(zone, x => x.WohnflaecheJeWeM2 = w)"
+                                                FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Erweitert)" />
+                                    <Herleitungszeile Text="@Format(Texte.HinweisWohnflaecheJeWe, Wert(Daten.Vorgaben.WohnflaecheJeWeM2))" />
+                                    <Auswahlfeld Bezeichnung="@Texte.LabelTopologie" Eintraege="@Topologien"
+                                                 Auswahl="@((int)a.Topologie)" AuswahlChanged="id => TopologieSetzen(zone, id)" />
+                                    <Herleitungszeile Text="@Texte.HinweisTopologie" />
+                                    <Optionsgruppe Bezeichnung="@Texte.LabelZirkulationVorhanden" Eintraege="@JaNein"
+                                                   Auswahl="@(a.Zirkulation ? JA : NEIN)"
+                                                   AuswahlChanged="id => Angabe(zone, x => x.Zirkulation = id != NEIN)" />
+                                    <Herleitungszeile Text="@Texte.HinweisZirkulationVorhanden" />
+                                    <Auswahlfeld Bezeichnung="@Texte.LabelKalender" Eintraege="@Kalenderwahl(art, a)"
+                                                 Auswahl="@(a.IdGebaeude ?? KALENDER_NUTZUNGSART)" AuswahlChanged="id => KalenderSetzen(zone, id)" />
+                                    <Herleitungszeile Text="@Texte.HinweisKalender" />
+                                    <Auswahlfeld Bezeichnung="@Texte.LabelBundesland" Eintraege="@KeineEintraege"
+                                                 Platzhalter="@Texte.BundeslandKlimaregion" Aktiv="false" />
+                                    <Herleitungszeile Text="@Texte.GrundBundesland" />
+
+                                    @for (int n = 0; n < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; n++)
+                                    {
+                                        int k = n;
+                                        ZapfprofilFerienDaten f = Ferienzeitraum(a, k);
+                                        <Formulargruppe Titel="@Format(Texte.LabelFerien, k + 1)">
+                                            <KindInhalt>
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelBeginnTag" Feldname="@FerienFeld(Texte.LabelBeginnTag, k)"
+                                                              Min="1" Max="31" Wert="@f.BeginnTag"
+                                                              WertChanged="w => FerienSetzen(zone, k, x => x.BeginnTag = w)"
+                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelBeginnMonat" Feldname="@FerienFeld(Texte.LabelBeginnMonat, k)"
+                                                              Min="1" Max="12" Wert="@f.BeginnMonat"
+                                                              WertChanged="w => FerienSetzen(zone, k, x => x.BeginnMonat = w)"
+                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelEndeTag" Feldname="@FerienFeld(Texte.LabelEndeTag, k)"
+                                                              Min="1" Max="31" Wert="@f.EndeTag"
+                                                              WertChanged="w => FerienSetzen(zone, k, x => x.EndeTag = w)"
+                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelEndeMonat" Feldname="@FerienFeld(Texte.LabelEndeMonat, k)"
+                                                              Min="1" Max="12" Wert="@f.EndeMonat"
+                                                              WertChanged="w => FerienSetzen(zone, k, x => x.EndeMonat = w)"
+                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                            </KindInhalt>
+                                        </Formulargruppe>
+                                    }
+                                    <Herleitungszeile Text="@Texte.HinweisFerien" />
+
+                                    <Formulargruppe Titel="@Texte.LabelJahresmesswert">
+                                        <KindInhalt>
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelJahresmesswert" Feldname="@Texte.LabelJahresmesswert"
+                                                        Einheit="@Messwerteinheit(a)" Min="0" Wert="@a.Jahresmesswert"
+                                                        WertChanged="w => MesswertSetzen(zone, w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                            <Optionsgruppe Bezeichnung="@Texte.LabelMesswertEinheit" Eintraege="@Messwerteinheiten"
+                                                           Auswahl="@((int?)a.JahresmesswertEinheit)" AuswahlChanged="id => MesswertEinheitSetzen(zone, id)" />
+                                            @if (a.JahresmesswertEinheit != ZapfprofilMesswerteinheit.KubikmeterJeJahr)
+                                            {
+                                                <Auswahlfeld Bezeichnung="@Texte.LabelMesswertGrenze" Eintraege="@Bilanzgrenzen"
+                                                             Auswahl="@((int?)a.JahresmesswertBilanzgrenze)" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                             AuswahlChanged="id => MesswertGrenzeSetzen(zone, id)" />
+                                            }
+                                            @if (a.JahresmesswertEinheit != ZapfprofilMesswerteinheit.KubikmeterJeJahr
+                                                 && a.JahresmesswertBilanzgrenze == ZapfprofilBilanzgrenze.MitSpeicher)
+                                            {
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelSpeicherverlust" Feldname="@Texte.LabelSpeicherverlust"
+                                                            Einheit="kWh/a" Min="0" Wert="@a.SpeicherverlustKwhJeJahr"
+                                                            WertChanged="w => Angabe(zone, x => x.SpeicherverlustKwhJeJahr = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                            }
+                                            <Textfeld Bezeichnung="@Texte.LabelMesswertQuelle" Wert="@a.JahresmesswertQuelle"
+                                                      WertChanged="w => Angabe(zone, x => x.JahresmesswertQuelle = w ?? string.Empty, auslegung: false)" />
+                                            <Textfeld Bezeichnung="@Texte.LabelMesswertZeitraum" Wert="@a.JahresmesswertZeitraum"
+                                                      WertChanged="w => Angabe(zone, x => x.JahresmesswertZeitraum = w ?? string.Empty, auslegung: false)" />
+                                            <Herleitungszeile Text="@Texte.HinweisJahresmesswert" />
+                                        </KindInhalt>
+                                    </Formulargruppe>
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    @* ---- Tagesbedarf, Ladeleistung, Zirkulation (5.3, Stufe Erweitert) ------ *@
+                    <Gruppenkopf @key="@("schaetz-" + _wahl)" Titel="@Texte.GruppeSchaetzhilfen" Summe="@Texte.StufeErweitert">
+                        <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_SCHAETZHILFEN" StandardKurztext="@Texte.GruppeSchaetzhilfen"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
+                            <p class="epos-leisezeile">@Texte.HinweisSchaetzhilfen</p>
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Formulargruppe Titel="@(Texte.LabelTagesbedarf + " · " + zone.Name)">
+                                        <KindInhalt>
+                                            <Optionsgruppe Bezeichnung="@Texte.LabelTagesbedarf" Eintraege="@AutoManuell"
+                                                           Auswahl="@(a.TagesbedarfAuto ? AUTO : MANUELL)"
+                                                           AuswahlChanged="id => Angabe(zone, x => x.TagesbedarfAuto = id != MANUELL)" />
+                                            @if (Tagesbedarfshilfe is { } th)
+                                            {
+                                                <Vorschlagszeile Text="@Vorschlagstext(th)" Knopftext="@Texte.KnopfVorschlag"
+                                                                 Erlaubt="@th.Vorschlag.HasValue" Sperrgrund="@Texte.HinweisVorschlagOhne"
+                                                                 Uebernommen="() => TagesbedarfUebernehmen(zone, th.Vorschlag)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@Texte.HinweisOhneVorschlag" />
+                                            }
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelTagesbedarfManuell" Feldname="@Texte.LabelTagesbedarfManuell"
+                                                        Einheit="kWh/d" Min="0" Wert="@a.TagesbedarfManuellKwh"
+                                                        WertChanged="w => Angabe(zone, x => x.TagesbedarfManuellKwh = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                            <Herleitungszeile Text="@Texte.HinweisManuell" />
+                                            @if (Tagesbedarfshilfe is { } angesetzt)
+                                            {
+                                                <Herleitungszeile Text="@Angesetzt(angesetzt)" />
+                                                <Herleitungszeile Text="@Format(Texte.LabelRechenweg, angesetzt.Rechenweg)" />
+                                            }
+                                        </KindInhalt>
+                                    </Formulargruppe>
+
+                                    <Formulargruppe Titel="@Texte.LabelLadeleistung">
+                                        <KindInhalt>
+                                            <Optionsgruppe Bezeichnung="@Texte.LabelLadeleistung" Eintraege="@AutoManuell"
+                                                           Auswahl="@(G.LadeAuto ? AUTO : MANUELL)"
+                                                           AuswahlChanged="id => Gebaeudeangabe(x => x.LadeAuto = id != MANUELL)" />
+                                            @* Der Vorschlag der Ladeleistung (4.7): aus dem Verfahrensvergleich der
+                                               deterministischen Auslegung zum Arbeitsstand, entprellt mit der Vorschau. *@
+                                            @if (Ladehilfe is { } lh)
+                                            {
+                                                <Vorschlagszeile Text="@Vorschlagstext(lh)" Knopftext="@Texte.KnopfVorschlag"
+                                                                 Erlaubt="@lh.Vorschlag.HasValue" Sperrgrund="@Texte.HinweisVorschlagOhne"
+                                                                 Uebernommen="() => LadeleistungUebernehmen(lh.Vorschlag)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@Texte.HinweisOhneVorschlag" />
+                                            }
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelLadeleistungManuell" Feldname="@Texte.LabelLadeleistungManuell"
+                                                        Einheit="kW" Min="0" Wert="@G.LadeManuellKw"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.LadeManuellKw = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelLadefenster" Feldname="@Texte.LabelLadefenster"
+                                                        Einheit="h/d" Min="0" Max="24" Wert="@G.LadefensterH" Platzhalter="@Vorgabe(Daten.Vorgaben.LadefensterH)"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.LadefensterH = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelLadefensterBeginn" Feldname="@Texte.LabelLadefensterBeginn"
+                                                        Einheit="h" Min="0" Max="24" Wert="@G.LadefensterBeginnH" Platzhalter="@Vorgabe(Daten.Vorgaben.LadefensterBeginnH)"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.LadefensterBeginnH = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            <Herleitungszeile Text="@Format(Texte.HinweisLadefenster, Wert(Daten.Vorgaben.LadefensterH), Wert(Daten.Vorgaben.LadefensterBeginnH))" />
+                                            @if (Ladehilfe is { } la)
+                                            {
+                                                <Herleitungszeile Text="@Angesetzt(la)" />
+                                                <Herleitungszeile Text="@Format(Texte.LabelRechenweg, la.Rechenweg)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@LadeAngesetzt" />
+                                            }
+                                            <Herleitungszeile Text="@Texte.HinweisLadeleistung" />
+                                        </KindInhalt>
+                                    </Formulargruppe>
+
+                                    <Formulargruppe Titel="@Texte.LabelZirkulation">
+                                        <KindInhalt>
+                                            <Optionsgruppe Bezeichnung="@Texte.LabelZirkulation" Eintraege="@AutoManuell"
+                                                           Auswahl="@(G.ZirkAuto ? AUTO : MANUELL)"
+                                                           AuswahlChanged="id => Gebaeudeangabe(x => x.ZirkAuto = id != MANUELL)" />
+                                            <Auswahlfeld Bezeichnung="@Texte.LabelZirkMethode" Eintraege="@Zirkulationsmethoden"
+                                                         Auswahl="@((int)G.ZirkMethode)" AuswahlChanged="ZirkMethodeSetzen" />
+                                            @if (G.ZirkMethode == ZapfprofilZirkulationsmethode.Leitungslaenge)
+                                            {
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkLaenge" Feldname="@Texte.LabelZirkLaenge"
+                                                            Einheit="m" Min="0" Wert="@G.ZirkLaengeM"
+                                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkLaengeM = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkVerlust" Feldname="@Texte.LabelZirkVerlust"
+                                                            Einheit="W/m" Min="0" Wert="@G.ZirkVerlustWJeM" Platzhalter="@Vorgabe(Daten.Vorgaben.ZirkVerlustWJeM)"
+                                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkVerlustWJeM = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            }
+                                            else if (G.ZirkMethode == ZapfprofilZirkulationsmethode.Anteil)
+                                            {
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkAnteil" Feldname="@Texte.LabelZirkAnteil"
+                                                            Einheit="–" Min="0" Wert="@G.ZirkAnteil" Platzhalter="@Vorgabe(Daten.Vorgaben.ZirkAnteil)"
+                                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkAnteil = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            }
+                                            else
+                                            {
+                                                <Auswahlfeld Bezeichnung="@Texte.LabelZirkLage" Eintraege="@Lagen"
+                                                             Auswahl="@((int?)G.ZirkLage)" Platzhalter="@Format(Texte.VorgabeEintrag, Lagename(Daten.Vorgaben.ZirkLage))"
+                                                             AuswahlChanged="id => Gebaeudeangabe(x => x.ZirkLage = id is int l ? (ZapfprofilLeitungslage)l : null)" />
+                                            }
+                                            <Herleitungszeile Text="@Format(Texte.HinweisZirkVorgaben, Wert(Daten.Vorgaben.ZirkVerlustWJeM), Wert(Daten.Vorgaben.ZirkAnteil))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkManuell" Feldname="@Texte.LabelZirkManuell"
+                                                        Einheit="kW" Min="0" Wert="@G.ZirkManuellKw"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkManuellKw = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            <Herleitungszeile Text="@Texte.HinweisManuell" />
+                                            @if (Zirkulationshilfe is { } zh)
+                                            {
+                                                <Vorschlagszeile Text="@Vorschlagstext(zh)" Knopftext="@Texte.KnopfVorschlag"
+                                                                 Erlaubt="@zh.Vorschlag.HasValue" Sperrgrund="@Texte.HinweisVorschlagOhne"
+                                                                 Uebernommen="() => ZirkulationUebernehmen(zh.Vorschlag)" />
+                                                <Herleitungszeile Text="@Angesetzt(zh)" />
+                                                <Herleitungszeile Text="@Format(Texte.LabelRechenweg, zh.Rechenweg)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@Texte.HinweisOhneVorschlag" />
+                                            }
+                                            <Herleitungszeile Text="@Texte.HinweisZirkulation" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelLeitungsinhalt" Feldname="@Texte.LabelLeitungsinhalt"
+                                                        Einheit="l" Min="0" Wert="@G.LeitungsinhaltL"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.LeitungsinhaltL = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
+                                            <Herleitungszeile Text="@Texte.HinweisLeitungsinhalt" />
+                                        </KindInhalt>
+                                    </Formulargruppe>
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Gruppenkopf>
+                }
+
+                @if (_stufe == ZapfprofilStufe.Experte)
+                {
+                    ZapfprofilZonenangabenDaten a = AngabenVon(zone);
+                    @* ---- Fachwerte der Zone (5.3, Stufe Experte) -------------------------- *@
+                    <Gruppenkopf @key="@("fachwerte-" + _wahl)" Titel="@Format(Texte.GruppeFachwerte, zone.Name)" Summe="@Texte.StufeExperte">
+                        <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Format(Texte.GruppeFachwerte, zone.Name)"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelBedarfSpez" Feldname="@Texte.LabelBedarfSpez"
+                                                Einheit="@BedarfEinheit(art)" Min="0" Wert="@a.BedarfSpezKwhJeEinheitTag" Platzhalter="@Vorgabe(Katalogbedarf(zone, art))"
+                                                WertChanged="w => Angabe(zone, x => x.BedarfSpezKwhJeEinheitTag = w)"
+                                                FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                    <Herleitungszeile Text="@Format(Texte.HinweisBedarfSpez, Wert(Katalogbedarf(zone, art)), art?.Einheit ?? "")" />
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelZapftemperatur" Feldname="@Texte.LabelZapftemperatur"
+                                                Einheit="°C" Wert="@a.ZapftemperaturC" Platzhalter="@Vorgabe(art?.ZapftemperaturC)"
+                                                WertChanged="w => Angabe(zone, x => x.ZapftemperaturC = w)"
+                                                FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                    <Herleitungszeile Text="@Format(Texte.HinweisZapftemperatur, Wert(art?.ZapftemperaturC))" />
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserMittel" Feldname="@Texte.LabelKaltwasserMittel"
+                                                Einheit="°C" Wert="@a.KaltwasserMittelC" Platzhalter="@Vorgabe(Daten.Vorgaben.KaltwasserMittelC)"
+                                                WertChanged="w => Angabe(zone, x => x.KaltwasserMittelC = w)"
+                                                FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                    <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserAmplitude" Feldname="@Texte.LabelKaltwasserAmplitude"
+                                                Einheit="K" Min="0" Wert="@a.KaltwasserAmplitudeK" Platzhalter="@Vorgabe(Daten.Vorgaben.KaltwasserAmplitudeK)"
+                                                WertChanged="w => Angabe(zone, x => x.KaltwasserAmplitudeK = w)"
+                                                FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                    <Herleitungszeile Text="@Format(Texte.HinweisKaltwasser, Wert(Daten.Vorgaben.KaltwasserMittelC), Wert(Daten.Vorgaben.KaltwasserAmplitudeK))" />
+                                    <Auswahlfeld Bezeichnung="@Texte.LabelTagesgangsatz" Eintraege="@Tagesgangsatzwahl(a)"
+                                                 Auswahl="@a.IdTagesgangsatz" Platzhalter="@Format(Texte.VorgabeEintrag, Texte.TagesgangsatzVorgabe)"
+                                                 GesperrteEintraege="@GesperrteTagesgangsaetze" GesperrtHinweise="@TagesgangsatzGruende"
+                                                 AuswahlChanged="id => Angabe(zone, x => x.IdTagesgangsatz = id)" />
+                                    <Herleitungszeile Text="@Texte.HinweisTagesgangsatz" />
+                                    <Formulargruppe Titel="@Texte.LabelAuslastungsgang">
+                                        <KindInhalt>
+                                            @for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
+                                            {
+                                                int k = m;
+                                                <Zahlenfeld Bezeichnung="@Monatsname(k)" Feldname="@(Texte.LabelAuslastungsgang + " · " + Monatsname(k))"
+                                                            Min="0" Wert="@Auslastung(a, k)" Platzhalter="@Vorgabe(Katalogfaktor(art, k))"
+                                                            WertChanged="w => AuslastungSetzen(zone, k, w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                            }
+                                            <Herleitungszeile Text="@Texte.HinweisAuslastungsgang" />
+                                        </KindInhalt>
+                                    </Formulargruppe>
+                                </KindInhalt>
+                            </Formularraster>
+                            @* Die Editoren der Stufe Experte (Z4, Gruppe 2b): Tagesgang und Zapfkategorien der
+                               Nutzungsart der Zone - Katalog, nicht Arbeitsstand; ohne Delegat oder ohne
+                               Nutzungsart weich gesperrt mit Grund. *@
+                            <div class="epos-leiste epos-zapfprofil-expertenleiste">
+                                <button type="button" class="epos-knopf epos-zapfprofil-tagesgangknopf"
+                                        aria-disabled="@(EditorGrund(TagesgangGaben is not null, zone) is null ? null : "true")"
+                                        title="@EditorGrund(TagesgangGaben is not null, zone)"
+                                        @onclick="() => TagesgangOeffnen(zone)">@Texte.KnopfTagesgang</button>
+                                <button type="button" class="epos-knopf epos-zapfprofil-kategorienknopf"
+                                        aria-disabled="@(EditorGrund(KategorienGaben is not null, zone) is null ? null : "true")"
+                                        title="@EditorGrund(KategorienGaben is not null, zone)"
+                                        @onclick="() => KategorienOeffnen(zone)">@Texte.KnopfKategorien</button>
+                            </div>
+                            @if (_editorStatus.Length > 0)
+                            {
+                                <p class="epos-leisezeile epos-zapfprofil-editorstatus" role="status">@_editorStatus</p>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                }
             }
 
             @* Die Stochastik der Jahresreihe (5.3, Stufe Experte; Groessen des Projekts, nicht der Zone). *@
@@ -268,6 +728,55 @@
                     </KindInhalt>
                 </Gruppenkopf>
             }
+
+            @* ---- Fachwerte des Gebaeudes (5.3, Stufe Experte; Groessen des Projekts) --------- *@
+            @if (_stufe == ZapfprofilStufe.Experte)
+            {
+                <Gruppenkopf Titel="@Texte.GruppeFachwerteGebaeude" Summe="@Texte.StufeExperte">
+                    <KindInhalt>
+                        <div class="epos-zapfprofil-gruppenhilfe">
+                            <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.GruppeFachwerteGebaeude"
+                                       Dialogname="@Texte.Titel" />
+                        </div>
+                        <Formularraster>
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserAuslegung" Feldname="@Texte.LabelKaltwasserAuslegung"
+                                            Einheit="°C" Wert="@G.KaltwasserAuslegungC" Platzhalter="@Vorgabe(Daten.Vorgaben.KaltwasserAuslegungC)"
+                                            WertChanged="w => Gebaeudeangabe(x => x.KaltwasserAuslegungC = w)"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Herleitungszeile Text="@Format(Texte.HinweisKaltwasserAuslegung, Wert(Daten.Vorgaben.KaltwasserAuslegungC))" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelSpeichertemperatur" Feldname="@Texte.LabelSpeichertemperatur"
+                                            Einheit="°C" Wert="@G.SpeicherC" Platzhalter="@Vorgabe(Daten.Vorgaben.SpeicherC)"
+                                            WertChanged="w => Gebaeudeangabe(x => x.SpeicherC = w)"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Herleitungszeile Text="@Format(Texte.HinweisSpeichertemperatur, Wert(Daten.Vorgaben.SpeicherC))" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkKennwert" Feldname="@Texte.LabelZirkKennwert"
+                                            Einheit="kWh/(m²·a)" Min="0" Wert="@G.ZirkKennwert" Platzhalter="@Vorgabe(Kennwertvorgabe)"
+                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkKennwert = w)"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkFlaeche" Feldname="@Texte.LabelZirkFlaeche"
+                                            Einheit="m²" Min="0" Wert="@G.ZirkFlaecheM2"
+                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkFlaecheM2 = w)"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelZirkLaufzeit" Feldname="@Texte.LabelZirkLaufzeit"
+                                            Einheit="h/d" Min="0" Max="24" Wert="@G.ZirkLaufzeitH" Platzhalter="@Vorgabe(Daten.Vorgaben.ZirkLaufzeitH)"
+                                            WertChanged="w => Gebaeudeangabe(x => x.ZirkLaufzeitH = w)"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Herleitungszeile Text="@Format(Texte.HinweisZirkExperte, Wert(Daten.Vorgaben.ZirkKennwertLage1), Wert(Daten.Vorgaben.ZirkKennwertLage2), Wert(Daten.Vorgaben.ZirkLaufzeitH))" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelAnzeigetemperatur" Feldname="@Texte.LabelAnzeigetemperatur"
+                                            Einheit="°C" Wert="@_eingabe.AnzeigetemperaturC" Platzhalter="@Vorgabe(Daten.Vorgaben.AnzeigetemperaturC)"
+                                            WertChanged="AnzeigetemperaturSetzen"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelStundenschwelle" Feldname="@Texte.LabelStundenschwelle"
+                                            Einheit="kW" Min="0" Wert="@_eingabe.SchwelleKw" Platzhalter="@Vorgabe(Daten.Vorgaben.SchwelleKw)"
+                                            WertChanged="SchwelleSetzen"
+                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                <Herleitungszeile Text="@Format(Texte.HinweisAnzeige, Wert(Daten.Vorgaben.AnzeigetemperaturC), Wert(Daten.Vorgaben.SchwelleKw))" />
+                            </KindInhalt>
+                        </Formularraster>
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
         </div>
 
         @* ------------------------------------------------ rechts: die Vorschau - *@
@@ -294,7 +803,7 @@
                         }
 
                         <Reiter Aktiv="@_reiter" AktivChanged="r => _reiter = r" Bezeichnung="@Texte.GruppeVorschau"
-                                Verweigert="_ => NochNicht()">
+                                Verweigert="ReiterGesperrt">
                             <KindInhalt>
                                 <Reiterblatt Schluessel="@REITER_TAG" Titel="@Texte.ReiterTagesgang">
                                     <KindInhalt>
@@ -318,8 +827,28 @@
                                         <p class="epos-leisezeile epos-zapfprofil-zirkulationsanteil">@Texte.KennzahlZirkulationsanteil @Prozent(a.Kennzahlen.Zirkulationsanteil)</p>
                                     </KindInhalt>
                                 </Reiterblatt>
+                                @* Die Dauerlinie (Stufe Z4, ab Erweitert): sortierte Stundenwerte der Bilanzreihe mit
+                                   den Perzentilmarken - ein Bilanzwert, keine Auslegungsgroesse. *@
                                 <Reiterblatt Schluessel="@REITER_DAUER" Titel="@Texte.ReiterDauerlinie"
-                                             Bedienbar="false" Sperrgrund="@Texte.GrundNochNicht" />
+                                             Bedienbar="@AbErweitert" Sperrgrund="@Texte.GrundDauerlinie">
+                                    <KindInhalt>
+                                        @if (a.Dauerlinie is { } dl)
+                                        {
+                                            <DiagrammSvg Modell="@dl.Modell" Kennung="@("zapf-dauer-" + _ansicht)"
+                                                         Bezeichnung="@Texte.UnterschriftDauerlinie" />
+                                            <p class="epos-leisezeile">@Texte.UnterschriftDauerlinie</p>
+                                            <p class="epos-leisezeile epos-zapfprofil-dauermarken">@Dauermarken(dl)</p>
+                                            @if (dl.StundenUeberSchwelle is int stunden && dl.SchwelleKw is double schwelleKw)
+                                            {
+                                                <p class="epos-leisezeile epos-zapfprofil-dauerschwelle">@Format(Texte.DauerlinieSchwelle, stunden.ToString("N0", CultureInfo.CurrentCulture), Zahl(schwelleKw, "N1"))</p>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <p class="epos-leisezeile">@Texte.DauerlinieOhne</p>
+                                        }
+                                    </KindInhalt>
+                                </Reiterblatt>
                                 <Reiterblatt Schluessel="@REITER_KENNZAHLEN" Titel="@Texte.ReiterKennzahlen">
                                     <KindInhalt>
                                         <table class="epos-raster epos-kennzahlen epos-zapfprofil-kennzahlen">
@@ -369,6 +898,32 @@
                         {
                             <p class="epos-leisezeile epos-zapfprofil-vorschau-deterministisch">@Texte.HinweisVorschauDeterministisch</p>
                         }
+
+                        @* Die Warnliste der Bilanz (Warnlogik Z4): Stufe, Titel und Satz des Kerns - nie blockierend. *@
+                        <section class="epos-zapfausl-warnungen epos-zapfprofil-warnliste" aria-label="@Texte.GruppeWarnliste">
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <h4>@Texte.GruppeWarnliste</h4>
+                                <InfoKnopf Schluessel="@HILFE_WARNLISTE" StandardKurztext="@Texte.GruppeWarnliste"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
+                            <p class="epos-leisezeile">@Texte.WarnlisteUnter</p>
+                            @if (Warnliste.Count == 0)
+                            {
+                                <p class="epos-leisezeile">@Texte.WarnlisteLeer</p>
+                            }
+                            else
+                            {
+                                <ul class="epos-zapfausl-warnliste">
+                                    @foreach (ZapfprofilWarnDaten w in Warnliste)
+                                    {
+                                        <li data-kennung="@w.Kennung" data-stufe="@(w.Stufe == ZapfprofilWarnstufe.Warnung ? "warnung" : "hinweis")">
+                                            <span class="epos-zapfausl-stufe @(w.Stufe == ZapfprofilWarnstufe.Warnung ? "epos-zapfausl-stufe--warnung" : "")">@(w.Stufe == ZapfprofilWarnstufe.Warnung ? Texte.StufeWarnung : Texte.StufeHinweis)</span>
+                                            <span><b>@w.Titel:</b> @w.Text</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </section>
                     }
 
                     @* Der nebenläufige Lauf der Jahresreihe (5.1): Status und Abbruch, nie im Zeichenfaden. *@
@@ -427,6 +982,27 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- Ueberlagerungen der Stufe Experte (Z4, Gruppe 2b): Tagesgang und Zapfkategorien ---- *@
+    <Ueberlagerung Offen="@(_tagesgangGaben is not null)" Titel="@Texte.TgeTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _tagesgangGaben = null">
+        <KindInhalt>
+            @if (_tagesgangGaben is not null)
+            {
+                <TagesgangEditor @attributes="_tagesgangGaben" TitelAnzeigen="false" Geschlossen="TagesgangGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_kategorienGaben is not null)" Titel="@Texte.KatTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _kategorienGaben = null">
+        <KindInhalt>
+            @if (_kategorienGaben is not null)
+            {
+                <ZapfkategorienEditor @attributes="_kategorienGaben" TitelAnzeigen="false" Geschlossen="KategorienGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -439,6 +1015,24 @@
     /// <summary>Die Einträge der Optionsgruppe „Rechenweg der Jahresreihe".</summary>
     private const int RECHENWEG_DETERMINISTISCH = 0;
     private const int RECHENWEG_STOCHASTISCH = 1;
+
+    /// <summary>Die Einträge der Umschalter auto/manuell (Schätzhilfen, 5.3).</summary>
+    private const int AUTO = 0;
+    private const int MANUELL = 1;
+
+    /// <summary>Die Einträge der Optionsgruppe „Zirkulation vorhanden".</summary>
+    private const int NEIN = 0;
+    private const int JA = 1;
+
+    /// <summary>Der Eintrag „Kalender der Nutzungsart" der Kalenderwahl (kein Gebäude gebunden).</summary>
+    private const int KALENDER_NUTZUNGSART = 0;
+
+    // Die Hilfeschluessel der Gruppen der hoeheren Stufen (5.8; help_mapping.txt: Anker der Bedienseite
+    // „Brauchwasser-Zapfprofil"); ihre Infoknoepfe bieten wie jeder Infoknopf den Assistenten an.
+    private const string HILFE_BELEGUNG = "Form_Zapfprofil.grp_Belegung";
+    private const string HILFE_SCHAETZHILFEN = "Form_Zapfprofil.grp_Schaetzhilfen";
+    private const string HILFE_FACHWERTE = "Form_Zapfprofil.grp_Fachwerte";
+    private const string HILFE_WARNLISTE = "Form_Zapfprofil.grp_Warnliste";
 
     // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
 
@@ -485,6 +1079,30 @@
     /// </summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz des Tagesgang-Editors zur Nutzungsart der Zone und ihrem Satz (Experte;
+    /// <c>null</c> = der Satz der Nutzungsart) — der Delegat der Hülle. Kein Delegat = der Knopf
+    /// „Tagesgang bearbeiten…" steht weich gesperrt mit Grund.
+    /// </summary>
+    [Parameter] public Func<int, int?, IReadOnlyDictionary<string, object>>? TagesgangGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Kategorien-Editors zur Nutzungsart der Zone; kein Delegat = weich gesperrt.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? KategorienGaben { get; set; }
+
+    /// <summary>
+    /// Der Katalog nach einem Schreibweg der Editoren (Nutzungsarten, Tagesgangsätze) — der Delegat
+    /// der Hülle; kein Delegat = der Katalog beim Öffnen bleibt (eine neue Katalogversion steht dann
+    /// als Id in der Auswahl).
+    /// </summary>
+    [Parameter] public Func<ZapfprofilKatalogstandDaten>? Katalogstand { get; set; }
+
+    /// <summary>
+    /// Der Vorschlag der Ladeleistung zum Arbeitsstand (Schätzhilfe, 5.3/4.7) — der Delegat der Hülle,
+    /// der die Auslegung deterministisch rechnet; entprellt mit der Vorschau, nur ab der Stufe
+    /// Erweitert. Kein Delegat = kein Vorschlag, die leise Zeile nennt den Grund.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten?>? Ladevorschlag { get; set; }
+
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
@@ -512,6 +1130,22 @@
     private IReadOnlyDictionary<string, object>? _auslegungGaben;
     private bool _auslegungStochastisch;
 
+    /// <summary>Die Parametersätze der offenen Editoren (Experte); <c>null</c>, solange keiner steht.</summary>
+    private IReadOnlyDictionary<string, object>? _tagesgangGaben;
+    private IReadOnlyDictionary<string, object>? _kategorienGaben;
+
+    /// <summary>Die Zone, für die ein Editor offen steht — sein Ergebnis gilt ihr, auch wenn die Wahl inzwischen wechselte.</summary>
+    private ZapfprofilZoneDaten? _editorZone;
+
+    /// <summary>Die leise Zeile nach einem Schreibweg der Editoren („… gespeichert — die Zone rechnet mit …").</summary>
+    private string _editorStatus = "";
+
+    /// <summary>Der Katalog nach einem Schreibweg der Editoren; <c>null</c> = der Katalog beim Öffnen.</summary>
+    private ZapfprofilKatalogstandDaten? _katalogstand;
+
+    /// <summary>Der Vorschlag der Ladeleistung zum Arbeitsstand der Vorschau; <c>null</c> ohne Vorschlag.</summary>
+    private ZapfprofilSchaetzhilfeDaten? _ladehilfe;
+
     /// <summary>Das Ergebnis des letzten Laufs der Jahresreihe zum aktuellen Arbeitsstand; <c>null</c> ohne Lauf.</summary>
     private ZapfprofilVorschauDaten? _stochastik;
 
@@ -523,6 +1157,15 @@
 
     /// <summary>Steht die Überlagerung „Auslegung"? Prüfhilfe für die Tests.</summary>
     public bool AuslegungOffen => _auslegungGaben is not null;
+
+    /// <summary>Steht der Tagesgang-Editor? Prüfhilfe für die Tests.</summary>
+    public bool TagesgangOffen => _tagesgangGaben is not null;
+
+    /// <summary>Steht der Kategorien-Editor? Prüfhilfe für die Tests.</summary>
+    public bool KategorienOffen => _kategorienGaben is not null;
+
+    /// <summary>Der Katalog, den der Dialog zeigt — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZapfprofilNutzungsartDaten> KatalogAktuell => Katalogliste;
 
     /// <summary>Öffnete die Überlagerung mit „Stochastisch rechnen"? Prüfhilfe für die Tests.</summary>
     public bool AuslegungStochastisch => _auslegungStochastisch;
@@ -606,11 +1249,8 @@
         ((int)ZapfprofilStufe.Experte, Texte.StufeExperte)
     };
 
-    /// <summary>Erweitert kommt mit einer späteren Stufe — weich gesperrt, mit Grund; Experte trägt die Stochastik (Z3).</summary>
-    private IReadOnlyDictionary<int, string> StufenGesperrt => new Dictionary<int, string>
-    {
-        [(int)ZapfprofilStufe.Erweitert] = Texte.GrundNochNicht
-    };
+    /// <summary>Zeigt der Dialog die Stufe Erweitert oder Experte?</summary>
+    private bool AbErweitert => _stufe != ZapfprofilStufe.Einfach;
 
     private IReadOnlyList<(int Id, string Text)> Rechenwege => new[]
     {
@@ -629,7 +1269,13 @@
         => _wahl >= 0 && _wahl < _eingabe.Zonen.Count ? _eingabe.Zonen[_wahl] : null;
 
     private ZapfprofilNutzungsartDaten? Nutzungsart(int id)
-        => id > 0 ? Daten.Katalog.FirstOrDefault(n => n.Id == id) : null;
+        => id > 0 ? Katalogliste.FirstOrDefault(n => n.Id == id) : null;
+
+    /// <summary>Die Nutzungsarten des Katalogs — nach einem Schreibweg der Editoren der neu gelesene Stand.</summary>
+    private List<ZapfprofilNutzungsartDaten> Katalogliste => _katalogstand?.Katalog ?? Daten.Katalog;
+
+    /// <summary>Die Tagesgangsätze des Katalogs — nach einem Schreibweg der Editoren der neu gelesene Stand.</summary>
+    private List<ZapfprofilKatalogeintragDaten> Tagesgangsatzliste => _katalogstand?.Tagesgangsaetze ?? Daten.Tagesgangsaetze;
 
     /// <summary>
     /// Die Einträge der Katalogauswahl: Name und Bezugsgröße. Eine Zone, deren Nutzungsart
@@ -640,7 +1286,7 @@
     {
         get
         {
-            var liste = Daten.Katalog
+            var liste = Katalogliste
                 .Select(n => (n.Id, string.IsNullOrEmpty(n.Bezugsgroesse) ? n.Name : n.Name + " · " + n.Bezugsgroesse))
                 .ToList();
             ZapfprofilZoneDaten? z = Gewaehlte;
@@ -651,10 +1297,10 @@
     }
 
     private IReadOnlyCollection<int> GesperrteNutzungsarten
-        => Daten.Katalog.Where(n => !n.Waehlbar).Select(n => n.Id).ToList();
+        => Katalogliste.Where(n => !n.Waehlbar).Select(n => n.Id).ToList();
 
     private string SperrhinweisNutzungsart
-        => Daten.Katalog.FirstOrDefault(n => !n.Waehlbar && n.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
+        => Katalogliste.FirstOrDefault(n => !n.Waehlbar && n.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
 
     private string NutzungsartName(int id) => Nutzungsart(id)?.Name ?? "";
 
@@ -695,6 +1341,237 @@
     private string ZonensummeKopf
         => _vorschauAktuell && _vorschau?.Summe is { } s
             ? Format(Texte.GruppeZonenSumme, Mwh(s.Kennzahlen.JahresbedarfZapfungKwh)) : "";
+
+    // --- Stufen Erweitert und Experte (Z4): Anzeige ------------------------------------
+
+    /// <summary>Die leeren Angaben — nur zum Zeichnen einer Zone, die keine trägt; geschrieben wird nie hinein.</summary>
+    private readonly ZapfprofilZonenangabenDaten _leereAngaben = new();
+
+    /// <summary>Die leeren Gebäudegrößen — nur zum Zeichnen, solange weder Arbeitsstand noch Vorgabe welche tragen.</summary>
+    private readonly ZapfprofilGebaeudeDaten _leeresGebaeude = new();
+
+    private static readonly IReadOnlyList<(int Id, string Text)> KeineEintraege = Array.Empty<(int Id, string Text)>();
+
+    /// <summary>Die Angaben einer Zone zum Zeichnen (ohne Angaben die leeren).</summary>
+    private ZapfprofilZonenangabenDaten AngabenVon(ZapfprofilZoneDaten z) => z.Angaben ?? _leereAngaben;
+
+    /// <summary>Die gebäudeweiten Größen zum Zeichnen: der Arbeitsstand, sonst die Vorgabe der DDL.</summary>
+    private ZapfprofilGebaeudeDaten G => _eingabe.Gebaeude ?? Daten.GebaeudeVorgabe ?? _leeresGebaeude;
+
+    /// <summary>Der Wert der Vorschau zur Zone an Position <paramref name="index"/>; <c>null</c> ohne aktuelle Vorschau.</summary>
+    private ZapfprofilZonenwertDaten? Zonenwertdaten(int index)
+        => _vorschauAktuell && _vorschau is not null ? _vorschau.Zonen.FirstOrDefault(z => z.Position == index) : null;
+
+    private string Zonenanteil(int index)
+        => Zonenwertdaten(index)?.Anteil is double anteil ? Prozent(anteil) : "–";
+
+    private string Zonenanteilsumme
+        => _vorschauAktuell && _vorschau is not null && _vorschau.Zonen.Any(z => z.Anteil.HasValue) ? Prozent(1.0) : "–";
+
+    private string Zonenrechenweg(int index)
+        => Zonenwertdaten(index)?.Rechenweg switch
+        {
+            ZapfprofilZonenrechenweg.Katalog => Texte.RechenwegKatalog,
+            ZapfprofilZonenrechenweg.Manuell => Texte.RechenwegManuell,
+            ZapfprofilZonenrechenweg.Messwert => Texte.RechenwegMesswert,
+            ZapfprofilZonenrechenweg.Abgelehnt => Texte.KennzahlAbgelehnt,
+            _ => "–"
+        };
+
+    /// <summary>
+    /// Die wirksame Bezugsmenge aus der Wohnungstabelle (Kern, Vorschau) — nur, wenn die Zone eine
+    /// Tabelle trägt, die bei ihrer Nutzungsart wirkt; sonst <c>null</c>.
+    /// </summary>
+    private double? WirksameMenge(ZapfprofilZoneDaten z, ZapfprofilNutzungsartDaten? art)
+    {
+        if (art is not { Wohnen: true } || z.Angaben is not { Wohnungen.Count: > 0 }) return null;
+        return Zonenwertdaten(_eingabe.Zonen.IndexOf(z))?.BezugsmengeWirksam;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Topologien => new[]
+    {
+        ((int)ZapfprofilTopologie.Speicher, Texte.TopologieSpeicher),
+        ((int)ZapfprofilTopologie.Frischwasserstation, Texte.TopologieFrischwasserstation),
+        ((int)ZapfprofilTopologie.Durchfluss, Texte.TopologieDurchfluss),
+        ((int)ZapfprofilTopologie.Wohnungsstation, Texte.TopologieWohnungsstation)
+    };
+
+    private string Topologiename(ZapfprofilTopologie t) => Topologien.FirstOrDefault(e => e.Id == (int)t).Text ?? "";
+
+    private IReadOnlyList<(int Id, string Text)> JaNein => new[] { (JA, Texte.OptionJa), (NEIN, Texte.OptionNein) };
+
+    private IReadOnlyList<(int Id, string Text)> AutoManuell => new[] { (AUTO, Texte.OptionAuto), (MANUELL, Texte.OptionManuell) };
+
+    private IReadOnlyList<(int Id, string Text)> Messwerteinheiten => new[]
+    {
+        ((int)ZapfprofilMesswerteinheit.KwhJeJahr, Texte.MesswertKwh),
+        ((int)ZapfprofilMesswerteinheit.KubikmeterJeJahr, Texte.MesswertM3)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Bilanzgrenzen => new[]
+    {
+        ((int)ZapfprofilBilanzgrenze.Zapfstelle, Texte.GrenzeZapfstelle),
+        ((int)ZapfprofilBilanzgrenze.MitVerteilung, Texte.GrenzeVerteilung),
+        ((int)ZapfprofilBilanzgrenze.MitSpeicher, Texte.GrenzeSpeicher)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Zirkulationsmethoden => new[]
+    {
+        ((int)ZapfprofilZirkulationsmethode.Leitungslaenge, Texte.ZirkMethodeLaenge),
+        ((int)ZapfprofilZirkulationsmethode.Anteil, Texte.ZirkMethodeAnteil),
+        ((int)ZapfprofilZirkulationsmethode.Flaechenkennwert, Texte.ZirkMethodeFlaeche)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Lagen => new[]
+    {
+        ((int)ZapfprofilLeitungslage.InnerhalbHuelle, Texte.LageInnen),
+        ((int)ZapfprofilLeitungslage.AusserhalbHuelle, Texte.LageAussen)
+    };
+
+    private string Lagename(int? lage) => lage is int l ? Lagen.FirstOrDefault(e => e.Id == l).Text ?? "" : "–";
+
+    /// <summary>Der Kennwert der Zirkulation, der ohne Eingabe gilt — nach der gewählten Lage, sonst der Vorgabelage.</summary>
+    private double? Kennwertvorgabe
+        => ((int?)G.ZirkLage ?? Daten.Vorgaben.ZirkLage) == (int)ZapfprofilLeitungslage.AusserhalbHuelle
+            ? Daten.Vorgaben.ZirkKennwertLage2 : Daten.Vorgaben.ZirkKennwertLage1;
+
+    /// <summary>
+    /// Die Kalenderwahl (5.3, A8): der Kalender der Nutzungsart oder die Ferien eines Gebäudes des
+    /// Projekts; ein gebundenes Gebäude, das die Liste nicht (mehr) führt, bleibt als Eintrag.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Kalenderwahl(ZapfprofilNutzungsartDaten? art, ZapfprofilZonenangabenDaten a)
+    {
+        var liste = new List<(int Id, string Text)> { (KALENDER_NUTZUNGSART, Format(Texte.KalenderNutzungsart, art?.Kalender ?? "")) };
+        liste.AddRange(Daten.Gebaeude.Select(g => (g.Id, Format(Texte.KalenderGebaeude, g.Name))));
+        if (a.IdGebaeude is int id && liste.All(e => e.Id != id))
+            liste.Add((id, Format(Texte.KalenderGebaeude, "#" + id.ToString(CultureInfo.InvariantCulture))));
+        return liste;
+    }
+
+    /// <summary>Die Ausstattungsklassen der Wohnungstabelle — neutrale Namen; ein unbekannter Wert bleibt als Eintrag.</summary>
+    private IReadOnlyList<(int Id, string Text)> Ausstattungswahl(ZapfprofilWohnungDaten w)
+    {
+        var liste = Daten.Ausstattungen.Select(x => (x.Id, x.Name)).ToList();
+        if (w.IdAusstattung is int id && liste.All(e => e.Id != id))
+            liste.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+        return liste;
+    }
+
+    /// <summary>Die Tagesgangsätze des Katalogs; ein unbekannter Wert bleibt als Eintrag.</summary>
+    private IReadOnlyList<(int Id, string Text)> Tagesgangsatzwahl(ZapfprofilZonenangabenDaten a)
+    {
+        var liste = Tagesgangsatzliste.Select(s => (s.Id, s.Name)).ToList();
+        if (a.IdTagesgangsatz is int id && liste.All(e => e.Id != id))
+            liste.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+        return liste;
+    }
+
+    private IReadOnlyCollection<int> GesperrteTagesgangsaetze
+        => Tagesgangsatzliste.Where(s => !s.Waehlbar).Select(s => s.Id).ToList();
+
+    private IReadOnlyDictionary<int, string> TagesgangsatzGruende
+        => Tagesgangsatzliste.Where(s => !s.Waehlbar).ToDictionary(s => s.Id, s => s.Sperrgrund);
+
+    /// <summary>Die Beschriftung eines Feldes der Wohnungstabelle: „Anzahl, Zeile 2".</summary>
+    private string WohnFeld(string spalte, ZapfprofilZonenangabenDaten a, ZapfprofilWohnungDaten w)
+        => Format(Texte.FeldZeile, spalte, a.Wohnungen.IndexOf(w) + 1);
+
+    /// <summary>Der Feldname eines Ferienfeldes: „Ferienzeitraum 2 · Beginn Tag".</summary>
+    private string FerienFeld(string spalte, int k) => Format(Texte.LabelFerien, k + 1) + " · " + spalte;
+
+    private static ZapfprofilFerienDaten Ferienzeitraum(ZapfprofilZonenangabenDaten a, int k)
+        => a.Ferien is not null && k < a.Ferien.Count && a.Ferien[k] is { } f ? f : new ZapfprofilFerienDaten();
+
+    private string Messwerteinheit(ZapfprofilZonenangabenDaten a)
+        => a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KubikmeterJeJahr ? Texte.MesswertM3 : Texte.MesswertKwh;
+
+    /// <summary>Der Katalogwert des spezifischen Bedarfs beim Niveau der Zone [kWh je Einheit und Tag].</summary>
+    private static double? Katalogbedarf(ZapfprofilZoneDaten z, ZapfprofilNutzungsartDaten? art)
+    {
+        int i = (int)z.Niveau - 1;
+        return art?.BedarfJeNiveauKwhJeEinheitTag is { } w && i >= 0 && i < w.Length ? w[i] : null;
+    }
+
+    private static string BedarfEinheit(ZapfprofilNutzungsartDaten? art)
+        => "kWh/(" + (string.IsNullOrEmpty(art?.Einheit) ? "…" : art!.Einheit) + "·d)";
+
+    private static double? Katalogfaktor(ZapfprofilNutzungsartDaten? art, int monat)
+        => art?.Monatsfaktoren is { } f && monat < f.Length ? f[monat] : null;
+
+    private static double? Auslastung(ZapfprofilZonenangabenDaten a, int monat)
+        => a.Auslastung is { } f && monat < f.Length ? f[monat] : null;
+
+    private string Monatsname(int monat)
+        => monat < Daten.Monatsnamen.Count && !string.IsNullOrEmpty(Daten.Monatsnamen[monat])
+            ? Daten.Monatsnamen[monat] : (monat + 1).ToString(CultureInfo.CurrentCulture);
+
+    /// <summary>Eine Vorgabe als Platzhalter im leeren Feld: „(80)"; ohne Vorgabe leer.</summary>
+    private static string Vorgabe(double? wert) => wert is double w ? "(" + w.ToString("0.###", CultureInfo.CurrentCulture) + ")" : "";
+
+    /// <summary>Ein Wert für einen Satz; ohne Wert „–".</summary>
+    private static string Wert(double? wert) => wert is double w ? w.ToString("0.###", CultureInfo.CurrentCulture) : "–";
+
+    /// <summary>Die Schätzhilfe des Tagesbedarfs der gewählten Zone — aus ihrer Ansicht der aktuellen Vorschau.</summary>
+    private ZapfprofilSchaetzhilfeDaten? Tagesbedarfshilfe
+        => _vorschauAktuell && _vorschau is not null && _wahl + 1 < _vorschau.Ansichten.Count && _wahl >= 0
+            ? _vorschau.Ansichten[_wahl + 1].Tagesbedarf : null;
+
+    /// <summary>Die Schätzhilfe der Zirkulation des Gebäudes — aus der aktuellen Vorschau.</summary>
+    private ZapfprofilSchaetzhilfeDaten? Zirkulationshilfe => _vorschauAktuell ? _vorschau?.Zirkulation : null;
+
+    private string Vorschlagstext(ZapfprofilSchaetzhilfeDaten h)
+        => h.Vorschlag is double v ? Format(Texte.LabelVorschlag, Zahl(v, "N1"), h.Einheit) : Texte.HinweisVorschlagOhne;
+
+    /// <summary>„Angesetzt: 100 kWh/d (auto)" — der Wert, der weitergeht; welcher, sagen die Zahlen des Kerns.</summary>
+    private string Angesetzt(ZapfprofilSchaetzhilfeDaten h)
+        => Format(Texte.LabelAngesetzt, Zahl(h.Angesetzt, "N1"), h.Einheit,
+                  h.Kalibriert ? Texte.AngesetztKalibriert
+                  : !h.Auto && h.Manuell.HasValue ? Texte.OptionManuell : Texte.OptionAuto);
+
+    /// <summary>Der Vorschlag der Ladeleistung zum aktuellen Arbeitsstand; <c>null</c> ohne Delegat, ohne Speichergruppe oder veraltet.</summary>
+    private ZapfprofilSchaetzhilfeDaten? Ladehilfe => _ladehilfeAktuell ? _ladehilfe : null;
+
+    /// <summary>Gehört <see cref="_ladehilfe"/> zum aktuellen Arbeitsstand?</summary>
+    private bool _ladehilfeAktuell;
+
+    /// <summary>
+    /// Rechnet den Vorschlag der Ladeleistung (die Auslegung deterministisch, Hülle) — nur ab der
+    /// Stufe Erweitert, wo die Schätzhilfe steht; die teure Stufe läuft mit der Vorschau entprellt.
+    /// </summary>
+    private void LadehilfeRechnen()
+    {
+        if (Ladevorschlag is null || !AbErweitert)
+        {
+            _ladehilfeAktuell = false;
+            return;
+        }
+        _ladehilfe = Ladevorschlag(MitStufe());
+        _ladehilfeAktuell = true;
+    }
+
+    /// <summary>„Als manuellen Wert übernehmen" an der Ladeleistung.</summary>
+    private void LadeleistungUebernehmen(double? vorschlag)
+    {
+        if (vorschlag is not double v) return;
+        Gebaeudeangabe(x =>
+        {
+            x.LadeManuellKw = v;
+            x.LadeAuto = false;
+        });
+    }
+
+    /// <summary>Die angesetzte Ladeleistung: der Vorschlag der Auslegung (auto) oder der manuelle Wert.</summary>
+    private string LadeAngesetzt
+        => !G.LadeAuto && G.LadeManuellKw is double kw ? Format(Texte.LadeAngesetztManuell, Zahl(kw, "N1")) : Texte.LadeAngesetztAuto;
+
+    /// <summary>Die Perzentilmarken der Dauerlinie als Zeile: „P99 · 13,5 kW (Rang 88) · …".</summary>
+    private string Dauermarken(ZapfprofilDauerlinieDaten d)
+        => string.Join(" · ", d.Marken.Select(m => Format(Texte.DauerlinieMarke, m.Perzentil, Zahl(m.LeistungKw, "N1"),
+                                                           m.Rang.ToString("N0", CultureInfo.CurrentCulture))));
+
+    /// <summary>Die Warnliste der aktuellen Vorschau; leer ohne.</summary>
+    private IReadOnlyList<ZapfprofilWarnDaten> Warnliste
+        => _vorschau is { Zustand: ZapfprofilVorschauZustand.Gerechnet } v ? v.Warnliste : Array.Empty<ZapfprofilWarnDaten>();
 
     // --- Vorschau ----------------------------------------------------------------------
 
@@ -866,9 +1743,12 @@
         get
         {
             if (_vorschau is null) return Array.Empty<ZapfprofilMeldung>();
+            // Die Hinweise des Rechenwegs stehen in der Warnliste (Z4) — dort mit Titel und Stufe, hier nicht noch einmal.
+            bool warnliste = Warnliste.Count > 0;
             return Meldungen.Where(m =>
-                m.Zone.Length == 0 ? _vorschau.Zustand == ZapfprofilVorschauZustand.Gerechnet
-                                   : !_vorschauAktuell || !GehoertZu(m, _wahl));
+                !(warnliste && m.Art == ZapfprofilMeldungsart.Hinweis)
+                && (m.Zone.Length == 0 ? _vorschau.Zustand == ZapfprofilVorschauZustand.Gerechnet
+                                       : !_vorschauAktuell || !GehoertZu(m, _wahl)));
         }
     }
 
@@ -907,10 +1787,10 @@
 
     private void StufeWaehlen(int? id)
     {
-        // Einfach und Experte sind waehlbar; Erweitert ist weich gesperrt und meldet ueber Verweigert.
-        // Die Stufe blendet nur ein und aus — die Werte bleiben; ein Feld, das verschwindet, nimmt
-        // seinen ungueltigen Text mit (der Arbeitsstand traegt den letzten gueltigen Wert).
-        if (id is not int n || (n != (int)ZapfprofilStufe.Einfach && n != (int)ZapfprofilStufe.Experte)) return;
+        // Alle drei Stufen sind waehlbar (Z4). Die Stufe blendet nur ein und aus — die Werte bleiben;
+        // ein Feld, das verschwindet, nimmt seinen ungueltigen Text mit (der Arbeitsstand traegt den
+        // letzten gueltigen Wert).
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilStufe), n)) return;
         _stufe = (ZapfprofilStufe)n;
         _hinweis = "";
         if (_stufe != ZapfprofilStufe.Experte)
@@ -919,6 +1799,253 @@
             _fehlfelder.Remove(Texte.LabelSeed);
             _fehlfelder.Remove(Texte.LabelRealisierungen);
         }
+        FehlfelderRaeumen(art => art.Stufe > _stufe);
+        if (_stufe == ZapfprofilStufe.Einfach && _reiter == REITER_DAUER) _reiter = REITER_TAG;
+        // Der Vorschlag der Ladeleistung steht ab Erweitert — zum Stand der aktuellen Vorschau einmal rechnen.
+        if (AbErweitert && _vorschauAktuell && !_ladehilfeAktuell) LadehilfeRechnen();
+    }
+
+    /// <summary>Ein gesperrter Reiter meldet seinen Grund als leise Zeile.</summary>
+    private void ReiterGesperrt(string reiter)
+        => _hinweis = reiter == REITER_DAUER ? Texte.GrundDauerlinie : Texte.GrundNochNicht;
+
+    // --- Die Editoren der Stufe Experte (Z4, Gruppe 2b) ----------------------------------
+
+    /// <summary>Warum ein Editor nicht aufgeht — ohne Delegat oder ohne Nutzungsart der Zone; <c>null</c>, wenn er aufgeht.</summary>
+    private string? EditorGrund(bool delegat, ZapfprofilZoneDaten zone)
+        => !delegat ? Texte.GrundNochNicht : zone.IdNutzungsart <= 0 ? Texte.GrundOhneNutzungsart : null;
+
+    /// <summary>„Tagesgang bearbeiten…": die Überlagerung zur Nutzungsart der Zone und ihrem Satz; gesperrt nennt die leise Zeile den Grund.</summary>
+    private void TagesgangOeffnen(ZapfprofilZoneDaten zone)
+    {
+        if (EditorGrund(TagesgangGaben is not null, zone) is { } grund)
+        {
+            _hinweis = grund;
+            return;
+        }
+        _hinweis = "";
+        _editorStatus = "";
+        _editorZone = zone;
+        _tagesgangGaben = TagesgangGaben!(zone.IdNutzungsart, zone.Angaben?.IdTagesgangsatz);
+    }
+
+    /// <summary>„Zapfkategorien und Streuung…": die Überlagerung zur Nutzungsart der Zone.</summary>
+    private void KategorienOeffnen(ZapfprofilZoneDaten zone)
+    {
+        if (EditorGrund(KategorienGaben is not null, zone) is { } grund)
+        {
+            _hinweis = grund;
+            return;
+        }
+        _hinweis = "";
+        _editorStatus = "";
+        _editorZone = zone;
+        _kategorienGaben = KategorienGaben!(zone.IdNutzungsart);
+    }
+
+    /// <summary>
+    /// Der Tagesgang ist geschrieben (Katalog, eine Transaktion): Der Katalog wird neu gelesen, die
+    /// Zone rechnet mit der Nutzungsart, die jetzt die Werte trägt — eine neue Katalogversion ersetzt
+    /// die gesperrte —, und eine Expertenwahl des Satzes folgt dem geschriebenen Satz. Die Vorschau
+    /// rechnet neu; ein übernommener Punkt ist überholt. Abbrechen (<c>null</c>) lässt alles, wie es war.
+    /// </summary>
+    private void TagesgangGeschlossen(ZapfprofilTagesgangErgebnis? e)
+    {
+        _tagesgangGaben = null;
+        ZapfprofilZoneDaten? zone = _editorZone;
+        _editorZone = null;
+        if (e is not { Ok: true } || zone is null || !_eingabe.Zonen.Contains(zone)) return;
+        KatalogNeuLesen();
+        zone.IdNutzungsart = e.IdNutzungsart;
+        if (zone.Angaben?.IdTagesgangsatz is not null && e.IdTagesgangsatz > 0) zone.Angaben.IdTagesgangsatz = e.IdTagesgangsatz;
+        _editorStatus = Format(Texte.TgeStatusGespeichert, zone.Name, NutzungsartKurz(e.IdNutzungsart));
+        PunktUeberholen();
+        GeaendertNachEditor();
+    }
+
+    /// <summary>Die Kategorien sind geschrieben: Katalog neu, die Zone auf die Nutzungsart, die sie jetzt trägt.</summary>
+    private void KategorienGeschlossen(ZapfprofilKategorienErgebnis? e)
+    {
+        _kategorienGaben = null;
+        ZapfprofilZoneDaten? zone = _editorZone;
+        _editorZone = null;
+        if (e is not { Ok: true } || zone is null || !_eingabe.Zonen.Contains(zone)) return;
+        KatalogNeuLesen();
+        zone.IdNutzungsart = e.IdNutzungsart;
+        _editorStatus = Format(Texte.KatStatusGespeichert, zone.Name, NutzungsartKurz(e.IdNutzungsart));
+        PunktUeberholen();
+        GeaendertNachEditor();
+    }
+
+    /// <summary>Der Katalog nach dem Schreibweg — über den Delegaten der Hülle; ohne ihn bleibt der Stand beim Öffnen.</summary>
+    private void KatalogNeuLesen()
+    {
+        if (Katalogstand is not null) _katalogstand = Katalogstand();
+    }
+
+    /// <summary>Die Nutzungsart als Kurztext „Name · Katalogversion"; unbekannt ihre Id.</summary>
+    private string NutzungsartKurz(int id)
+        => Nutzungsart(id) is { } n
+            ? (string.IsNullOrEmpty(n.Katalogversion) ? n.Name : n.Name + " · " + n.Katalogversion)
+            : "#" + id.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Wie <see cref="Geaendert"/>, aber die leise Zeile des Editors bleibt stehen.</summary>
+    private void GeaendertNachEditor()
+    {
+        string status = _editorStatus;
+        Geaendert();
+        _editorStatus = status;
+    }
+
+    // --- Fehleingaben der hoeheren Stufen ------------------------------------------------
+
+    /// <summary>Zu jedem gemeldeten Feld: die Stufe, in der es steht, und ob es zur gewählten Zone gehört.</summary>
+    private readonly Dictionary<string, (ZapfprofilStufe Stufe, bool Zone)> _feldart = new(StringComparer.Ordinal);
+
+    /// <summary>Ein Feld der höheren Stufen meldet seine Fehleingabe — mit Stufe und Zonenbezug, damit sie mit dem Feld verschwindet.</summary>
+    private void FeldMelden((string Feld, bool Fehlerhaft) f, ZapfprofilStufe stufe, bool zone = true)
+    {
+        _feldart[f.Feld] = (stufe, zone);
+        FehlerZustandMelden(f);
+    }
+
+    /// <summary>Nimmt die Fehleingaben der Felder, die verschwinden, aus der Sperre des OK.</summary>
+    private void FehlfelderRaeumen(Func<(ZapfprofilStufe Stufe, bool Zone), bool> verschwindet)
+    {
+        foreach (string feld in _fehlfelder.ToList())
+            if (_feldart.TryGetValue(feld, out var art) && verschwindet(art)) _fehlfelder.Remove(feld);
+    }
+
+    // --- Die Wege der Felder der hoeheren Stufen -----------------------------------------
+    // Jede Angabe, die die Auslegung aendert, macht deren Punkt ueberholt (N11 (h)); Quelle und
+    // Zeitraum eines Messwerts und die Laufangaben der Anzeige aendern sie nicht.
+
+    /// <summary>Setzt eine Angabe der Zone <paramref name="z"/> (Stufen Erweitert und Experte).</summary>
+    private void Angabe(ZapfprofilZoneDaten z, Action<ZapfprofilZonenangabenDaten> setzen, bool auslegung = true)
+    {
+        setzen(z.Angaben ??= new ZapfprofilZonenangabenDaten());
+        if (auslegung) PunktUeberholen();
+        Geaendert();
+    }
+
+    /// <summary>Setzt eine gebäudeweite Größe; ohne Projektzeile beginnt sie mit den Vorgaben der DDL.</summary>
+    private void Gebaeudeangabe(Action<ZapfprofilGebaeudeDaten> setzen, bool auslegung = true)
+    {
+        setzen(_eingabe.Gebaeude ??= Daten.GebaeudeVorgabe?.Kopie() ?? new ZapfprofilGebaeudeDaten());
+        if (auslegung) PunktUeberholen();
+        Geaendert();
+    }
+
+    private void TopologieSetzen(ZapfprofilZoneDaten z, int? id)
+    {
+        if (id is not int t || !Enum.IsDefined(typeof(ZapfprofilTopologie), t)) return;
+        Angabe(z, x => x.Topologie = (ZapfprofilTopologie)t);
+    }
+
+    /// <summary>Der Kalender: der Eintrag der Nutzungsart löst die Bindung, ein Gebäude bindet (A8).</summary>
+    private void KalenderSetzen(ZapfprofilZoneDaten z, int? id)
+        => Angabe(z, x => x.IdGebaeude = id is int g && g != KALENDER_NUTZUNGSART ? g : null);
+
+    private void FerienSetzen(ZapfprofilZoneDaten z, int k, Action<ZapfprofilFerienDaten> setzen)
+        => Angabe(z, x =>
+        {
+            x.Ferien ??= ZapfprofilZonenangabenDaten.NeueFerien();
+            while (x.Ferien.Count <= k) x.Ferien.Add(new ZapfprofilFerienDaten());
+            setzen(x.Ferien[k] ??= new ZapfprofilFerienDaten());
+        });
+
+    /// <summary>Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a.</summary>
+    private void MesswertSetzen(ZapfprofilZoneDaten z, double? wert)
+        => Angabe(z, x =>
+        {
+            x.Jahresmesswert = wert;
+            if (wert.HasValue && !x.JahresmesswertEinheit.HasValue) x.JahresmesswertEinheit = ZapfprofilMesswerteinheit.KwhJeJahr;
+        });
+
+    /// <summary>Die Einheit des Messwerts; ein Volumen gilt an der Zapfstelle — seine Grenze fällt weg.</summary>
+    private void MesswertEinheitSetzen(ZapfprofilZoneDaten z, int? id)
+    {
+        if (id is not int e || !Enum.IsDefined(typeof(ZapfprofilMesswerteinheit), e)) return;
+        Angabe(z, x =>
+        {
+            x.JahresmesswertEinheit = (ZapfprofilMesswerteinheit)e;
+            if (x.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KubikmeterJeJahr) x.JahresmesswertBilanzgrenze = null;
+        });
+    }
+
+    private void MesswertGrenzeSetzen(ZapfprofilZoneDaten z, int? id)
+        => Angabe(z, x => x.JahresmesswertBilanzgrenze = id is int g && Enum.IsDefined(typeof(ZapfprofilBilanzgrenze), g)
+                                                          ? (ZapfprofilBilanzgrenze)g : null);
+
+    private void AuslastungSetzen(ZapfprofilZoneDaten z, int monat, double? wert)
+        => Angabe(z, x =>
+        {
+            x.Auslastung ??= new double?[ZapfprofilZonenangabenDaten.MONATE];
+            if (monat < x.Auslastung.Length) x.Auslastung[monat] = wert;
+        });
+
+    /// <summary>„Als manuellen Wert übernehmen" am Tagesbedarf: der Vorschlag wird der manuelle Wert, der Umschalter „manuell".</summary>
+    private void TagesbedarfUebernehmen(ZapfprofilZoneDaten z, double? vorschlag)
+    {
+        if (vorschlag is not double v) return;
+        Angabe(z, x =>
+        {
+            x.TagesbedarfManuellKwh = v;
+            x.TagesbedarfAuto = false;
+        });
+    }
+
+    /// <summary>„Als manuellen Wert übernehmen" an der Zirkulation.</summary>
+    private void ZirkulationUebernehmen(double? vorschlag)
+    {
+        if (vorschlag is not double v) return;
+        Gebaeudeangabe(x =>
+        {
+            x.ZirkManuellKw = v;
+            x.ZirkAuto = false;
+        });
+    }
+
+    private void ZirkMethodeSetzen(int? id)
+    {
+        if (id is not int m || !Enum.IsDefined(typeof(ZapfprofilZirkulationsmethode), m)) return;
+        // Die Felder der alten Methode verschwinden — ihre Fehleingaben mit ihnen.
+        foreach (string feld in new[] { Texte.LabelZirkLaenge, Texte.LabelZirkVerlust, Texte.LabelZirkAnteil })
+            _fehlfelder.Remove(feld);
+        Gebaeudeangabe(x => x.ZirkMethode = (ZapfprofilZirkulationsmethode)m);
+    }
+
+    private void WohnungNeu(ZapfprofilZoneDaten z)
+        => Angabe(z, x => x.Wohnungen.Add(new ZapfprofilWohnungDaten()));
+
+    private void WohnungEntfernen(ZapfprofilZoneDaten z, ZapfprofilWohnungDaten w)
+    {
+        // Die Felder der Tabelle heissen nach ihrer Zeile — nach dem Entfernen verschieben sie sich:
+        // Die Fehleingaben der Tabelle fallen mit ihr weg, die übrigen Felder bleiben gesperrt.
+        ZapfprofilZonenangabenDaten a = AngabenVon(z);
+        foreach (ZapfprofilWohnungDaten zeile in a.Wohnungen)
+            foreach (string spalte in new[] { Texte.LabelAnzahl, Texte.LabelRaumzahl, Texte.LabelPersonen })
+                _fehlfelder.Remove(WohnFeld(spalte, a, zeile));
+        Angabe(z, x => x.Wohnungen.Remove(w));
+    }
+
+    private void WohnungSetzen(ZapfprofilZoneDaten z, ZapfprofilWohnungDaten w, Action<ZapfprofilWohnungDaten> setzen)
+        => Angabe(z, _ => setzen(w));
+
+    /// <summary>Die Temperatur der Literanzeige (Laufangabe, nur Kennzahlen).</summary>
+    private void AnzeigetemperaturSetzen(double? wert)
+    {
+        if (_eingabe.AnzeigetemperaturC == wert) return;
+        _eingabe.AnzeigetemperaturC = wert;
+        Geaendert();
+    }
+
+    /// <summary>Die Schwelle der Stundenzählung (Laufangabe, nur Kennzahlen).</summary>
+    private void SchwelleSetzen(double? wert)
+    {
+        if (_eingabe.SchwelleKw == wert) return;
+        _eingabe.SchwelleKw = wert;
+        Geaendert();
     }
 
     /// <summary>Die Optionsgruppe „Rechenweg der Jahresreihe": deterministisch oder stochastisch (die Vorschau bleibt deterministisch).</summary>
@@ -962,6 +2089,8 @@
 
     private void ZoneWaehlen(int index)
     {
+        // Die Felder der bisherigen Zone verschwinden — ihre Fehleingaben mit ihnen.
+        if (index != _wahl) FehlfelderRaeumen(art => art.Zone);
         _wahl = index;
         _hinweis = "";
     }
@@ -972,7 +2101,8 @@
         string name = Format(Texte.ZoneNameVorgabe, n);
         while (_eingabe.Zonen.Any(z => z.Name == name)) name = Format(Texte.ZoneNameVorgabe, ++n);
 
-        _eingabe.Zonen.Add(new ZapfprofilZoneDaten { Name = name });
+        _eingabe.Zonen.Add(new ZapfprofilZoneDaten { Name = name, Angaben = new ZapfprofilZonenangabenDaten() });
+        FehlfelderRaeumen(art => art.Zone);
         _wahl = _eingabe.Zonen.Count - 1;
         PunktUeberholen();
         Geaendert(ansichtZuruecksetzen: true);
@@ -986,6 +2116,7 @@
         kopie.IdVorlage = z.Id != 0 ? z.Id : z.IdVorlage;
         kopie.Name = Format(Texte.ZoneKopie, z.Name);
         _eingabe.Zonen.Insert(_wahl + 1, kopie);
+        FehlfelderRaeumen(art => art.Zone);
         _wahl++;
         PunktUeberholen();
         Geaendert(ansichtZuruecksetzen: true);
@@ -994,6 +2125,7 @@
     private void ZoneEntfernen()
     {
         if (Gewaehlte is null) return;
+        FehlfelderRaeumen(art => art.Zone);
         _eingabe.Zonen.RemoveAt(_wahl);
         if (_wahl >= _eingabe.Zonen.Count) _wahl = _eingabe.Zonen.Count - 1;
         PunktUeberholen();
@@ -1085,7 +2217,9 @@
         _okMeldung = "";
         _okKennung = null;
         _hinweis = "";
+        _editorStatus = "";
         _vorschauAktuell = false;
+        _ladehilfeAktuell = false;
         JahresreiheVerwerfen();
         if (ansichtZuruecksetzen) _ansicht = 0;
         VorschauEntprellen();
@@ -1142,6 +2276,7 @@
         _vorschau = Vorschau(_eingabe.Kopie());
         _vorschauAktuell = _vorschau is not null;
         if (_vorschau is not null && _ansicht >= _vorschau.Ansichten.Count) _ansicht = 0;
+        LadehilfeRechnen();
     }
 
     // =================================================================================
@@ -1161,6 +2296,15 @@
             return;
         }
 
+        // Die wirksame Bezugsmenge einer Wohnungstabelle rechnet der Kern (Vorschau): vor der Prüfung
+        // frisch rechnen — die teure Stufe läuft sofort vor dem Übernehmen — und in die Bezugsgröße nehmen.
+        if (!_vorschauAktuell && Vorschau is not null)
+        {
+            EntprellungAbbrechen();
+            VorschauRechnen();
+        }
+        WirksameMengenUebernehmen();
+
         (string befund, string? kennung) = OkBefund();
         if (befund.Length > 0)
         {
@@ -1177,6 +2321,21 @@
         await Geschlossen.InvokeAsync(new ZapfprofilErgebnisDaten(ergebnis));
     }
 
+    /// <summary>
+    /// Übernimmt die wirksame Bezugsmenge des Kerns für jede Zone, deren Wohnungstabelle bei ihrer
+    /// Nutzungsart wirkt (4.1: die Menge kommt aus der Tabelle) — die Bezugsgröße der Zone und die
+    /// gespeicherte Menge sagen dann dasselbe. Eine Übernahme ändert die Auslegung nicht: Der Kern
+    /// rechnete schon mit dieser Menge.
+    /// </summary>
+    private void WirksameMengenUebernehmen()
+    {
+        for (int i = 0; i < _eingabe.Zonen.Count; i++)
+        {
+            ZapfprofilZoneDaten z = _eingabe.Zonen[i];
+            if (WirksameMenge(z, Nutzungsart(z.IdNutzungsart)) is double wirksam && wirksam > 0) z.Bezugsmenge = wirksam;
+        }
+    }
+
     /// <summary>Abbrechen — von Esc, vom Schliesskreuz und vom Knopf gleichermaßen gerufen; verwirft ohne Prüfung.</summary>
     private Task Abbrechen()
     {
@@ -1187,7 +2346,8 @@
 
     /// <summary>Esc schließt nur, wenn keine Überlagerung offen ist — sonst schließt sie sich selbst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" && _auslegungGaben is null ? Abbrechen() : Task.CompletedTask;
+        => e.Key == "Escape" && _auslegungGaben is null && _tagesgangGaben is null && _kategorienGaben is null
+            ? Abbrechen() : Task.CompletedTask;
 
     /// <summary>
     /// Der Befund des OK — eine Fehleingabe (Seed, Realisierungen) oder die Fehler der
@@ -1232,7 +2392,7 @@
             Enumerable.Range(0, _eingabe.Zonen.Count), i => i + 1, i => _eingabe.Zonen[i].Name),
 
         ZonenLesen = () => _eingabe.Zonen.Select(KiZeile).ToList(),
-        NutzungsartEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Katalog, n => n.Id, n => n.Name),
+        NutzungsartEintraege = () => KiMaskenanmeldung.Eintraege(Katalogliste, n => n.Id, n => n.Name),
         NiveauEintraege = () => KiMaskenanmeldung.Eintraege(Niveaus, e => e.Id, e => e.Text),
 
         AnsichtLesen = () => Ansicht is null ? null
@@ -1248,7 +2408,14 @@
         SeedLesen = () => _eingabe.Seed,
         SeedSetzen = KiSeed,
         RealisierungenLesen = () => _eingabe.Realisierungen,
-        RealisierungenSetzen = KiRealisierungen
+        RealisierungenSetzen = KiRealisierungen,
+
+        // Stufen Erweitert und Experte (Z4): die gewählte Zone und das Gebäude, benannt nach der Eigenschaft.
+        AngabeLesen = KiAngabeLesen,
+        AngabeSetzen = KiAngabeSetzen,
+        AngabeWahl = KiAngabeWahl,
+        WohnungenLesen = KiWohnungen,
+        FerienLesen = KiFerien
     };
 
     /// <summary>Eine Zone als Zeile der Sicht — ihre Setzer nehmen den Weg der Eingabefelder.</summary>
@@ -1275,10 +2442,9 @@
         Pruefen = () => OkBefund().Text
     };
 
-    /// <summary>Die Stufe wie in der Optionsgruppe; „Erweitert" ist gesperrt und nennt den Grund.</summary>
+    /// <summary>Die Stufe wie in der Optionsgruppe (alle drei wählbar).</summary>
     private string? KiStufe(int? id)
     {
-        if (id == (int)ZapfprofilStufe.Erweitert) return Texte.GrundNochNicht;
         StufeWaehlen(id);
         return null;
     }
@@ -1315,11 +2481,11 @@
         return null;
     }
 
-    /// <summary>Der Rechenweg der Jahresreihe — er steht ab der Stufe Experte auf der Maske.</summary>
+    /// <summary>Der Rechenweg der Jahresreihe — er steht ab der Stufe Erweitert auf der Maske (N12 (s)).</summary>
     private string? KiRechenweg(int? id)
     {
         if (_stufe == ZapfprofilStufe.Einfach)
-            return ZapfprofilKiRegeln.NurMit(Texte.LabelRechenwegJahresreihe, Texte.StufeExperte);
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRechenwegJahresreihe, Texte.StufeErweitert);
         RechenwegSetzen(id);
         return null;
     }
@@ -1349,6 +2515,262 @@
         return null;
     }
 
+    // --- Die Angaben der Stufen Erweitert und Experte (Z4) --------------------------------
+
+    /// <summary>
+    /// Eine Angabe der höheren Stufen für den Assistenten: in welcher Stufe sie steht, ob sie der
+    /// gewählten Zone gehört, ihre Beschriftung, wann sie sonst noch sichtbar ist (<c>null</c> =
+    /// immer; sonst der Grund der Absage), Lesen, Setzen (Grund einer Ablehnung oder <c>null</c>)
+    /// und — bei einer Wahl — ihre Einträge.
+    /// </summary>
+    private sealed record KiAngabe(ZapfprofilStufe Stufe, bool Zone, string Beschriftung, Func<string?>? Sichtbar,
+                                   Func<ZapfprofilZoneDaten?, object?> Lesen, Func<ZapfprofilZoneDaten?, object?, string?> Setzen,
+                                   Func<IReadOnlyList<(int Id, string Text)>>? Wahl = null);
+
+    private Dictionary<string, KiAngabe>? _kiAngaben;
+
+    private IReadOnlyDictionary<string, KiAngabe> KiAngaben => _kiAngaben ??= KiAngabenBauen();
+
+    private object? KiAngabeLesen(string feld)
+    {
+        if (!KiAngaben.TryGetValue(feld, out KiAngabe? k)) return null;
+        if (k.Zone && Gewaehlte is null) return null;
+        return k.Lesen(Gewaehlte);
+    }
+
+    private string? KiAngabeSetzen(string feld, object? wert)
+    {
+        if (!KiAngaben.TryGetValue(feld, out KiAngabe? k)) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+        if (_stufe < k.Stufe)
+            return ZapfprofilKiRegeln.NurMit(k.Beschriftung, k.Stufe == ZapfprofilStufe.Experte ? Texte.StufeExperte : Texte.StufeErweitert);
+        if (k.Zone && Gewaehlte is null) return ZapfprofilKiRegeln.ZeileFehlt;
+        if (k.Sichtbar?.Invoke() is { } verdeckt) return verdeckt;
+        return k.Setzen(Gewaehlte, wert);
+    }
+
+    private IReadOnlyList<KiWahleintrag> KiAngabeWahl(string feld)
+    {
+        if (feld == nameof(ZapfprofilWohnungKiZeile.Ausstattung))
+            return KiMaskenanmeldung.Eintraege(Daten.Ausstattungen, e => e.Id, e => e.Name);
+        if (!KiAngaben.TryGetValue(feld, out KiAngabe? k) || k.Wahl is null) return Array.Empty<KiWahleintrag>();
+        return KiMaskenanmeldung.Eintraege(k.Wahl(), e => e.Id, e => e.Text);
+    }
+
+    /// <summary>Die Wohnungstabelle der gewählten Zone als Zeilen — ihre Setzer nehmen den Weg der Felder der Tabelle.</summary>
+    private IReadOnlyList<ZapfprofilWohnungKiZeile> KiWohnungen()
+    {
+        if (Gewaehlte is not { Angaben: { } a } z) return Array.Empty<ZapfprofilWohnungKiZeile>();
+        return a.Wohnungen.Select((w, i) => new ZapfprofilWohnungKiZeile(w, i + 1)
+        {
+            AnzahlSetzen = v => KiWohnung(z, w, Texte.LabelAnzahl, v, 1, x => x.Anzahl = v),
+            RaumzahlSetzen = v => KiWohnung(z, w, Texte.LabelRaumzahl, v, 0, x => x.Raumzahl = v),
+            PersonenSetzen = v => KiWohnung(z, w, Texte.LabelPersonen, v, 0, x => x.Personen = v),
+            AusstattungSetzen = v => KiWohnung(z, w, Texte.LabelAusstattung, null, null, x => x.IdAusstattung = v)
+        }).ToList();
+    }
+
+    /// <summary>Ein Feld der Wohnungstabelle: nur in Erweitert, bei Wohnen und solange Zone und Zeile stehen.</summary>
+    private string? KiWohnung(ZapfprofilZoneDaten z, ZapfprofilWohnungDaten w, string feld, double? wert, double? min,
+                              Action<ZapfprofilWohnungDaten> weg)
+    {
+        if (_stufe == ZapfprofilStufe.Einfach) return ZapfprofilKiRegeln.NurMit(Texte.LabelWohnungstabelle, Texte.StufeErweitert);
+        if (!_eingabe.Zonen.Contains(z) || z.Angaben is null || !z.Angaben.Wohnungen.Contains(w)) return ZapfprofilKiRegeln.ZeileFehlt;
+        if (Nutzungsart(z.IdNutzungsart) is not { Wohnen: true })
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelWohnungstabelle, Format(Texte.KalenderNutzungsart, Texte.LabelNutzungsart));
+        string? grund = ZapfprofilKiRegeln.Bereich(feld, wert, min, null);
+        if (grund is not null) return grund;
+        WohnungSetzen(z, w, weg);
+        return null;
+    }
+
+    /// <summary>Eine Zahl in den Grenzen des Feldes setzen — dieselben Grenzen, die das Eingabefeld trägt.</summary>
+    private static string? KiZahl(string feld, object? wert, double? min, double? max, Action<double?> weg)
+    {
+        double? v = wert as double?;
+        string? grund = ZapfprofilKiRegeln.Bereich(feld, v, min, max);
+        if (grund is not null) return grund;
+        weg(v);
+        return null;
+    }
+
+    /// <summary>Eine Wahl setzen — nur ein Eintrag der Liste; leer nur, wo das Feld leer sein darf.</summary>
+    private static string? KiWahl(string feld, object? wert, IReadOnlyList<(int Id, string Text)> eintraege, bool leer,
+                                  Action<int?> weg)
+    {
+        int? id = wert as int?;
+        if (id is null ? !leer : eintraege.All(e => e.Id != id.Value)) return ZapfprofilKiRegeln.Gesperrt(feld);
+        weg(id);
+        return null;
+    }
+
+    /// <summary>Die vier Ferienzeiträume der gewählten Zone als Zeilen — ihre Setzer nehmen den Weg der vier Felder.</summary>
+    private IReadOnlyList<ZapfprofilFerienKiZeile> KiFerien()
+    {
+        if (Gewaehlte is not { } z) return Array.Empty<ZapfprofilFerienKiZeile>();
+        ZapfprofilZonenangabenDaten a = AngabenVon(z);
+        return Enumerable.Range(0, ZapfprofilZonenangabenDaten.FERIENZEITRAEUME)
+            .Select(k => new ZapfprofilFerienKiZeile(Ferienzeitraum(a, k), k + 1)
+            {
+                BeginnTagSetzen = v => KiFerienteil(z, k, Texte.LabelBeginnTag, v, 31, f => f.BeginnTag = v),
+                BeginnMonatSetzen = v => KiFerienteil(z, k, Texte.LabelBeginnMonat, v, 12, f => f.BeginnMonat = v),
+                EndeTagSetzen = v => KiFerienteil(z, k, Texte.LabelEndeTag, v, 31, f => f.EndeTag = v),
+                EndeMonatSetzen = v => KiFerienteil(z, k, Texte.LabelEndeMonat, v, 12, f => f.EndeMonat = v)
+            }).ToList();
+    }
+
+    /// <summary>Ein Feld eines Ferienzeitraums: nur in Erweitert, solange die Zone steht, in den Grenzen des Feldes.</summary>
+    private string? KiFerienteil(ZapfprofilZoneDaten z, int k, string feld, int? wert, int hoechstens,
+                                 Action<ZapfprofilFerienDaten> weg)
+    {
+        if (_stufe == ZapfprofilStufe.Einfach) return ZapfprofilKiRegeln.NurMit(feld, Texte.StufeErweitert);
+        if (!_eingabe.Zonen.Contains(z)) return ZapfprofilKiRegeln.ZeileFehlt;
+        string? grund = ZapfprofilKiRegeln.Bereich(FerienFeld(feld, k), wert, 1, hoechstens);
+        if (grund is not null) return grund;
+        FerienSetzen(z, k, weg);
+        return null;
+    }
+
+    /// <summary>
+    /// <b>Die Feldliste der höheren Stufen</b> — EINE Stelle für Stufe, Sichtbarkeit, Grenzen und den
+    /// Weg des Eingabefeldes; die Namen sind die Eigenschaften von <see cref="ZapfprofilKiSicht"/>.
+    /// </summary>
+    private Dictionary<string, KiAngabe> KiAngabenBauen()
+    {
+        const ZapfprofilStufe E = ZapfprofilStufe.Erweitert;
+        const ZapfprofilStufe X = ZapfprofilStufe.Experte;
+        var d = new Dictionary<string, KiAngabe>(StringComparer.Ordinal);
+
+        void Zone(string name, ZapfprofilStufe stufe, string label, Func<ZapfprofilZonenangabenDaten, object?> lesen,
+                  Func<ZapfprofilZoneDaten, object?, string?> setzen, Func<IReadOnlyList<(int Id, string Text)>>? wahl = null,
+                  Func<string?>? sichtbar = null)
+            => d[name] = new KiAngabe(stufe, true, label, sichtbar, z => z is null ? null : lesen(AngabenVon(z)),
+                                      (z, w) => setzen(z!, w), wahl);
+
+        void Haus(string name, ZapfprofilStufe stufe, string label, Func<ZapfprofilGebaeudeDaten, object?> lesen,
+                  Func<object?, string?> setzen, Func<IReadOnlyList<(int Id, string Text)>>? wahl = null, Func<string?>? sichtbar = null)
+            => d[name] = new KiAngabe(stufe, false, label, sichtbar, _ => lesen(G), (_, w) => setzen(w), wahl);
+
+        ZapfprofilNutzungsartDaten? Art() => Gewaehlte is { } z ? Nutzungsart(z.IdNutzungsart) : null;
+
+        // ---- Belegung und Anlage (Erweitert)
+        Zone(nameof(ZapfprofilKiSicht.PersonenJeWe), E, Texte.LabelPersonenJeWe, a => a.PersonenJeWe,
+             (z, w) => KiZahl(Texte.LabelPersonenJeWe, w, 0, null, v => Angabe(z, x => x.PersonenJeWe = v)));
+        Zone(nameof(ZapfprofilKiSicht.WohnflaecheJeWe), E, Texte.LabelWohnflaecheJeWe, a => a.WohnflaecheJeWeM2,
+             (z, w) => KiZahl(Texte.LabelWohnflaecheJeWe, w, 0, null, v => Angabe(z, x => x.WohnflaecheJeWeM2 = v)));
+        Zone(nameof(ZapfprofilKiSicht.Topologie), E, Texte.LabelTopologie, a => (int?)(int)a.Topologie,
+             (z, w) => KiWahl(Texte.LabelTopologie, w, Topologien, false, id => TopologieSetzen(z, id)), () => Topologien);
+        Zone(nameof(ZapfprofilKiSicht.ZirkulationVorhanden), E, Texte.LabelZirkulationVorhanden, a => (int?)(a.Zirkulation ? JA : NEIN),
+             (z, w) => KiWahl(Texte.LabelZirkulationVorhanden, w, JaNein, false, id => Angabe(z, x => x.Zirkulation = id != NEIN)),
+             () => JaNein);
+        Zone(nameof(ZapfprofilKiSicht.Kalender), E, Texte.LabelKalender, a => (int?)(a.IdGebaeude ?? KALENDER_NUTZUNGSART),
+             (z, w) => KiWahl(Texte.LabelKalender, w, Kalenderwahl(Art(), AngabenVon(z)), false, id => KalenderSetzen(z, id)),
+             () => Gewaehlte is { } g ? Kalenderwahl(Art(), AngabenVon(g)) : KeineEintraege);
+        Zone(nameof(ZapfprofilKiSicht.Jahresmesswert), E, Texte.LabelJahresmesswert, a => a.Jahresmesswert,
+             (z, w) => KiZahl(Texte.LabelJahresmesswert, w, 0, null, v => MesswertSetzen(z, v)));
+        Zone(nameof(ZapfprofilKiSicht.MesswertEinheit), E, Texte.LabelMesswertEinheit, a => (int?)a.JahresmesswertEinheit,
+             (z, w) => KiWahl(Texte.LabelMesswertEinheit, w, Messwerteinheiten, false, id => MesswertEinheitSetzen(z, id)),
+             () => Messwerteinheiten);
+        Zone(nameof(ZapfprofilKiSicht.MesswertGrenze), E, Texte.LabelMesswertGrenze, a => (int?)a.JahresmesswertBilanzgrenze,
+             (z, w) => KiWahl(Texte.LabelMesswertGrenze, w, Bilanzgrenzen, true, id => MesswertGrenzeSetzen(z, id)), () => Bilanzgrenzen,
+             () => Gewaehlte is { } g && AngabenVon(g).JahresmesswertEinheit == ZapfprofilMesswerteinheit.KubikmeterJeJahr
+                   ? ZapfprofilKiRegeln.NurMit(Texte.LabelMesswertGrenze, Texte.MesswertKwh) : null);
+        Zone(nameof(ZapfprofilKiSicht.Speicherverlust), E, Texte.LabelSpeicherverlust, a => a.SpeicherverlustKwhJeJahr,
+             (z, w) => KiZahl(Texte.LabelSpeicherverlust, w, 0, null, v => Angabe(z, x => x.SpeicherverlustKwhJeJahr = v)), null,
+             () => Gewaehlte is { } g && AngabenVon(g) is var a
+                   && a.JahresmesswertEinheit != ZapfprofilMesswerteinheit.KubikmeterJeJahr
+                   && a.JahresmesswertBilanzgrenze == ZapfprofilBilanzgrenze.MitSpeicher
+                   ? null : ZapfprofilKiRegeln.NurMit(Texte.LabelSpeicherverlust, Texte.GrenzeSpeicher));
+        Zone(nameof(ZapfprofilKiSicht.MesswertQuelle), E, Texte.LabelMesswertQuelle, a => a.JahresmesswertQuelle,
+             (z, w) => { Angabe(z, x => x.JahresmesswertQuelle = w as string ?? "", auslegung: false); return null; });
+        Zone(nameof(ZapfprofilKiSicht.MesswertZeitraum), E, Texte.LabelMesswertZeitraum, a => a.JahresmesswertZeitraum,
+             (z, w) => { Angabe(z, x => x.JahresmesswertZeitraum = w as string ?? "", auslegung: false); return null; });
+
+        // ---- Tagesbedarf, Ladeleistung, Zirkulation (Erweitert)
+        Zone(nameof(ZapfprofilKiSicht.TagesbedarfModus), E, Texte.LabelTagesbedarf, a => (int?)(a.TagesbedarfAuto ? AUTO : MANUELL),
+             (z, w) => KiWahl(Texte.LabelTagesbedarf, w, AutoManuell, false, id => Angabe(z, x => x.TagesbedarfAuto = id != MANUELL)),
+             () => AutoManuell);
+        Zone(nameof(ZapfprofilKiSicht.TagesbedarfManuell), E, Texte.LabelTagesbedarfManuell, a => a.TagesbedarfManuellKwh,
+             (z, w) => KiZahl(Texte.LabelTagesbedarfManuell, w, 0, null, v => Angabe(z, x => x.TagesbedarfManuellKwh = v)));
+        Haus(nameof(ZapfprofilKiSicht.LadeleistungModus), E, Texte.LabelLadeleistung, g => (int?)(g.LadeAuto ? AUTO : MANUELL),
+             w => KiWahl(Texte.LabelLadeleistung, w, AutoManuell, false, id => Gebaeudeangabe(x => x.LadeAuto = id != MANUELL)),
+             () => AutoManuell);
+        Haus(nameof(ZapfprofilKiSicht.LadeleistungManuell), E, Texte.LabelLadeleistungManuell, g => g.LadeManuellKw,
+             w => KiZahl(Texte.LabelLadeleistungManuell, w, 0, null, v => Gebaeudeangabe(x => x.LadeManuellKw = v)));
+        Haus(nameof(ZapfprofilKiSicht.Ladefenster), E, Texte.LabelLadefenster, g => g.LadefensterH,
+             w => KiZahl(Texte.LabelLadefenster, w, 0, 24, v => Gebaeudeangabe(x => x.LadefensterH = v)));
+        Haus(nameof(ZapfprofilKiSicht.LadefensterBeginn), E, Texte.LabelLadefensterBeginn, g => g.LadefensterBeginnH,
+             w => KiZahl(Texte.LabelLadefensterBeginn, w, 0, 24, v => Gebaeudeangabe(x => x.LadefensterBeginnH = v)));
+        Haus(nameof(ZapfprofilKiSicht.ZirkulationModus), E, Texte.LabelZirkulation, g => (int?)(g.ZirkAuto ? AUTO : MANUELL),
+             w => KiWahl(Texte.LabelZirkulation, w, AutoManuell, false, id => Gebaeudeangabe(x => x.ZirkAuto = id != MANUELL)),
+             () => AutoManuell);
+        Haus(nameof(ZapfprofilKiSicht.ZirkMethode), E, Texte.LabelZirkMethode, g => (int?)(int)g.ZirkMethode,
+             w => KiWahl(Texte.LabelZirkMethode, w, Zirkulationsmethoden, false, ZirkMethodeSetzen), () => Zirkulationsmethoden);
+        string? NurMethode(ZapfprofilZirkulationsmethode m, string label, string methode)
+            => G.ZirkMethode == m ? null : ZapfprofilKiRegeln.NurMit(label, methode);
+        Haus(nameof(ZapfprofilKiSicht.ZirkLaenge), E, Texte.LabelZirkLaenge, g => g.ZirkLaengeM,
+             w => KiZahl(Texte.LabelZirkLaenge, w, 0, null, v => Gebaeudeangabe(x => x.ZirkLaengeM = v)), null,
+             () => NurMethode(ZapfprofilZirkulationsmethode.Leitungslaenge, Texte.LabelZirkLaenge, Texte.ZirkMethodeLaenge));
+        Haus(nameof(ZapfprofilKiSicht.ZirkVerlust), E, Texte.LabelZirkVerlust, g => g.ZirkVerlustWJeM,
+             w => KiZahl(Texte.LabelZirkVerlust, w, 0, null, v => Gebaeudeangabe(x => x.ZirkVerlustWJeM = v)), null,
+             () => NurMethode(ZapfprofilZirkulationsmethode.Leitungslaenge, Texte.LabelZirkVerlust, Texte.ZirkMethodeLaenge));
+        Haus(nameof(ZapfprofilKiSicht.ZirkAnteil), E, Texte.LabelZirkAnteil, g => g.ZirkAnteil,
+             w => KiZahl(Texte.LabelZirkAnteil, w, 0, null, v => Gebaeudeangabe(x => x.ZirkAnteil = v)), null,
+             () => NurMethode(ZapfprofilZirkulationsmethode.Anteil, Texte.LabelZirkAnteil, Texte.ZirkMethodeAnteil));
+        Haus(nameof(ZapfprofilKiSicht.ZirkLage), E, Texte.LabelZirkLage, g => (int?)g.ZirkLage,
+             w => KiWahl(Texte.LabelZirkLage, w, Lagen, true, id => Gebaeudeangabe(x => x.ZirkLage = id is int l ? (ZapfprofilLeitungslage)l : null)),
+             () => Lagen,
+             () => NurMethode(ZapfprofilZirkulationsmethode.Flaechenkennwert, Texte.LabelZirkLage, Texte.ZirkMethodeFlaeche));
+        Haus(nameof(ZapfprofilKiSicht.ZirkManuell), E, Texte.LabelZirkManuell, g => g.ZirkManuellKw,
+             w => KiZahl(Texte.LabelZirkManuell, w, 0, null, v => Gebaeudeangabe(x => x.ZirkManuellKw = v)));
+        Haus(nameof(ZapfprofilKiSicht.Leitungsinhalt), E, Texte.LabelLeitungsinhalt, g => g.LeitungsinhaltL,
+             w => KiZahl(Texte.LabelLeitungsinhalt, w, 0, null, v => Gebaeudeangabe(x => x.LeitungsinhaltL = v)));
+
+        // ---- Fachwerte (Experte)
+        Zone(nameof(ZapfprofilKiSicht.BedarfSpez), X, Texte.LabelBedarfSpez, a => a.BedarfSpezKwhJeEinheitTag,
+             (z, w) => KiZahl(Texte.LabelBedarfSpez, w, 0, null, v => Angabe(z, x => x.BedarfSpezKwhJeEinheitTag = v)));
+        Zone(nameof(ZapfprofilKiSicht.Zapftemperatur), X, Texte.LabelZapftemperatur, a => a.ZapftemperaturC,
+             (z, w) => KiZahl(Texte.LabelZapftemperatur, w, null, null, v => Angabe(z, x => x.ZapftemperaturC = v)));
+        Zone(nameof(ZapfprofilKiSicht.KaltwasserMittel), X, Texte.LabelKaltwasserMittel, a => a.KaltwasserMittelC,
+             (z, w) => KiZahl(Texte.LabelKaltwasserMittel, w, null, null, v => Angabe(z, x => x.KaltwasserMittelC = v)));
+        Zone(nameof(ZapfprofilKiSicht.KaltwasserAmplitude), X, Texte.LabelKaltwasserAmplitude, a => a.KaltwasserAmplitudeK,
+             (z, w) => KiZahl(Texte.LabelKaltwasserAmplitude, w, 0, null, v => Angabe(z, x => x.KaltwasserAmplitudeK = v)));
+        Zone(nameof(ZapfprofilKiSicht.Auslastungsgang), X, Texte.LabelAuslastungsgang,
+             a => Enumerable.Range(0, ZapfprofilZonenangabenDaten.MONATE).Select(m => Auslastung(a, m)).ToArray(),
+             (z, w) =>
+             {
+                 double?[] r = w as double?[] ?? new double?[ZapfprofilZonenangabenDaten.MONATE];
+                 if (r.Length != ZapfprofilZonenangabenDaten.MONATE) return ZapfprofilKiRegeln.Gesperrt(Texte.LabelAuslastungsgang);
+                 for (int m = 0; m < r.Length; m++)
+                     if (ZapfprofilKiRegeln.Bereich(Monatsname(m), r[m], 0, null) is { } grund) return grund;
+                 Angabe(z, x => x.Auslastung = (double?[])r.Clone());
+                 return null;
+             });
+        Zone(nameof(ZapfprofilKiSicht.Tagesgangsatz), X, Texte.LabelTagesgangsatz, a => a.IdTagesgangsatz,
+             (z, w) =>
+             {
+                 if (w is int id && Tagesgangsatzliste.FirstOrDefault(s => s.Id == id) is { Waehlbar: false } s)
+                     return s.Sperrgrund.Length > 0 ? s.Sperrgrund : ZapfprofilKiRegeln.Gesperrt(s.Name);
+                 return KiWahl(Texte.LabelTagesgangsatz, w, Tagesgangsatzwahl(AngabenVon(z)), true,
+                               v => Angabe(z, x => x.IdTagesgangsatz = v));
+             },
+             () => Gewaehlte is { } g ? Tagesgangsatzwahl(AngabenVon(g)) : KeineEintraege);
+        Haus(nameof(ZapfprofilKiSicht.KaltwasserAuslegung), X, Texte.LabelKaltwasserAuslegung, g => g.KaltwasserAuslegungC,
+             w => KiZahl(Texte.LabelKaltwasserAuslegung, w, null, null, v => Gebaeudeangabe(x => x.KaltwasserAuslegungC = v)));
+        Haus(nameof(ZapfprofilKiSicht.Speichertemperatur), X, Texte.LabelSpeichertemperatur, g => g.SpeicherC,
+             w => KiZahl(Texte.LabelSpeichertemperatur, w, null, null, v => Gebaeudeangabe(x => x.SpeicherC = v)));
+        Haus(nameof(ZapfprofilKiSicht.ZirkKennwert), X, Texte.LabelZirkKennwert, g => g.ZirkKennwert,
+             w => KiZahl(Texte.LabelZirkKennwert, w, 0, null, v => Gebaeudeangabe(x => x.ZirkKennwert = v)));
+        Haus(nameof(ZapfprofilKiSicht.ZirkFlaeche), X, Texte.LabelZirkFlaeche, g => g.ZirkFlaecheM2,
+             w => KiZahl(Texte.LabelZirkFlaeche, w, 0, null, v => Gebaeudeangabe(x => x.ZirkFlaecheM2 = v)));
+        Haus(nameof(ZapfprofilKiSicht.ZirkLaufzeit), X, Texte.LabelZirkLaufzeit, g => g.ZirkLaufzeitH,
+             w => KiZahl(Texte.LabelZirkLaufzeit, w, 0, 24, v => Gebaeudeangabe(x => x.ZirkLaufzeitH = v)));
+        Haus(nameof(ZapfprofilKiSicht.Anzeigetemperatur), X, Texte.LabelAnzeigetemperatur, _ => _eingabe.AnzeigetemperaturC,
+             w => KiZahl(Texte.LabelAnzeigetemperatur, w, null, null, AnzeigetemperaturSetzen));
+        Haus(nameof(ZapfprofilKiSicht.Stundenschwelle), X, Texte.LabelStundenschwelle, _ => _eingabe.SchwelleKw,
+             w => KiZahl(Texte.LabelStundenschwelle, w, 0, null, SchwelleSetzen));
+        return d;
+    }
+
     // =================================================================================
     // Auslegung (Stufe Z2)
     // =================================================================================
@@ -1371,13 +2793,24 @@
         }
     }
 
+    /// <summary>
+    /// Eine Kopie des Arbeitsstands mit der Stufe des Dialogs als Laufangabe — die Überlagerung setzt
+    /// die Marke „Schnellauslegung" nur in der Stufe Einfach (N11 (c)).
+    /// </summary>
+    private ZapfprofilEingabeDaten MitStufe()
+    {
+        ZapfprofilEingabeDaten kopie = _eingabe.Kopie();
+        kopie.Stufe = _stufe;
+        return kopie;
+    }
+
     /// <summary>Öffnet die Überlagerung zum aktuellen Arbeitsstand (Zonen und bisherige Auslegung).</summary>
     private void AuslegungOeffnen()
     {
         if (AuslegungGaben is null) return;
         _hinweis = "";
         _auslegungStochastisch = false;
-        _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), false);
+        _auslegungGaben = AuslegungGaben(MitStufe(), false);
     }
 
     // =================================================================================
@@ -1403,7 +2836,7 @@
         if (AuslegungGaben is not null)
         {
             _auslegungStochastisch = true;
-            _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), true);
+            _auslegungGaben = AuslegungGaben(MitStufe(), true);
         }
         else if (!jahresreihe)
             _hinweis = Texte.HinweisJahresreiheDeterministisch;
@@ -1483,6 +2916,8 @@
         if (auslegung is null) return;
         _eingabe.Auslegung = auslegung.Kopie();
         _eingabe.Auslegung.Stochastisch = false;             // eine Laufangabe — jedes Öffnen setzt sie neu
+        // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog: Das OK gleicht sie an.
+        _eingabe.Gebaeude?.AusAuslegung(_eingabe.Auslegung);
         _eingabe.PunktUeberholt = false;
         _okMeldung = "";
         _okKennung = null;

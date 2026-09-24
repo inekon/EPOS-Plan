@@ -211,7 +211,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilPerzentilDaten ohneSchwelle = ZapfprofilHuelle.PerzentilDaten(speicher with
             {
                 Perzentil = speicher.Perzentil with { KonsistenzSchwelle = null, KonsistenzSpitzeKw = null, KonsistenzGrenzeKw = null },
-                Hinweise = new[] { new Auslegungshinweis(ZapfprofilHuelle.HINWEIS_KONSISTENZ, "Satz mit " + ZapfStochastikParameter.KONSISTENZSCHWELLE, true) }
+                Hinweise = new[] { new Auslegungshinweis(ZapfprofilHuelle.HINWEIS_KONSISTENZ, ZapfSatz.Neu("HINWEIS_PARAMETER_FEHLT", ZapfStochastikParameter.KONSISTENZSCHWELLE, null), true) }
             });
             Assert.False(ohneSchwelle.KonsistenzGeprueft);
             Assert.False(ohneSchwelle.KonsistenzAuffaellig);
@@ -433,11 +433,11 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
             ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
-            Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
+            Assert.Equal("ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
             Assert.Equal("Probe", m.Zone);
             Assert.Equal(1, m.Position);
-            Assert.Equal("Zone „Probe“ trägt 0: Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
-                         + ") stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", m.Text);
+            Assert.Equal("Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
+                         + ") der Zone „Probe“ stehen keine Zapfkategorien im Katalog.", m.Text);
             Assert.True(v.Zonen[1].Abgelehnt);
             Assert.False(v.Zonen[0].Abgelehnt);
             Assert.Equal("Wohnen", Assert.Single(v.Summe.Konsistenzen).Zone);
@@ -468,7 +468,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(SATZ, v.Grund);
             Assert.Equal("Stochastik nicht gerechnet — " + SATZ, v.Status);
             ZapfprofilMeldung m = Assert.Single(v.Meldungen);
-            Assert.Equal("ZPG_EINGABE_" + ZapfprofilRechner.KENNUNG_EINHEITSTAGE, m.Kennung);
+            Assert.Equal(ZapfSatz.PRAEFIX + ZapfprofilRechner.KENNUNG_EINHEITSTAGE, m.Kennung);
             Assert.Equal(ZapfprofilMeldungsart.Fehler, m.Art);
 
             CultureInfo.CurrentUICulture = EN;
@@ -759,7 +759,7 @@ namespace EPOS.Kern.Tests
             CultureInfo.CurrentUICulture = EN;
             ZapfprofilAuslegungsgruppeDaten e = Assert.Single(ZapfprofilHuelle.Auslegung(PROJEKT, Zonen(), a, null, ZapfprofilStufe.Einfach).Gruppen);
             Assert.Equal(ZapfprofilKartenstand.NichtRechenbar, e.Perzentil.Stand);
-            Assert.Contains("the usage type “" + TESTNUTZUNG + "” (catalogue version " + VERSION + ")", e.Perzentil.Text);
+            Assert.Contains("type of use “" + TESTNUTZUNG + "” (catalogue version " + VERSION + ")", e.Perzentil.Text);
             ZapfprofilWarnDaten w = Assert.Single(e.Warnliste, x => x.Kennung == "ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR");
             foreach (string text in new[] { e.Perzentil.Text, w.Text })
             {

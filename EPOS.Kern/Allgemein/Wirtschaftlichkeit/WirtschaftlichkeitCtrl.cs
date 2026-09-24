@@ -338,6 +338,9 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public void StelleTabellenSicher()
         {
+            // ETAPPE E13 (E7c3‑Q6): Die Warnung gilt für DIESE Vorsorge — seit die
+            // Oberfläche sie zeigt, darf ein längst behobener Fehler nicht stehen bleiben.
+            Vorsorgewarnung = null;
             try
             {
                 // Der Block hielt bis S4b die eigene OleDbConnection; er bleibt als
@@ -713,6 +716,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="StelleTabellenSicher"/>, <see cref="SpalteSicher"/>); <c>null</c> =
         /// keiner. Die Vorsorge bleibt still (kein Dialog beim Start), aber der Grund ist
         /// abrufbar statt verschluckt; die Folgen nennen Laden und Speichern selbst.
+        /// ETAPPE E13: Jede Vorsorge setzt sie zu Beginn zurück; Statuszeile der
+        /// Ergebnisseite und BHKW-Dialog zeigen sie (<see cref="Fehlergrund.Anzeigezeilen"/>).
         /// </summary>
         public static string Vorsorgewarnung { get; private set; }
 
@@ -1299,6 +1304,10 @@ namespace WindowsFormsApplication1
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
+                // ETAPPE E13 (E7c3‑Q6): -1 = die Zugriffsschicht hat den Fehler schon gemeldet.
+                // Ein INSERT danach träfe den eindeutigen Index und meldete einen ZWEITEN,
+                // falschen Grund („UNIQUE constraint failed") — der Grund erscheint einmal.
+                if (rows < 0) return false;
 
                 int id = DataRepository.GetMaxID(TAB_PARAMETER, "ID") + 1;
                 return DataRepository.ExecuteSQL(
@@ -1445,6 +1454,9 @@ namespace WindowsFormsApplication1
         /// oder Tarif (<see cref="SpeichereParameter"/>, <c>SpeichereTarif</c>) scheiterte;
         /// die Methoden melden das Scheitern weiter über <c>false</c>, der Dialog kann den
         /// Grund daneben nennen. <c>null</c> = kein Fehler seit dem letzten Aufruf.
+        /// ETAPPE E13: Einen Fehler der Datenbankanweisung meldet die Zugriffsschicht selbst
+        /// (<c>DataRepository.FehlerMelden</c>) — dann bleibt die Eigenschaft <c>null</c>, damit
+        /// derselbe Grund nicht ein zweites Mal erscheint; sie trägt die übrigen Fehler.
         /// </summary>
         public string Speicherfehler { get; private set; }
 
@@ -1633,6 +1645,7 @@ namespace WindowsFormsApplication1
                     "UPDATE " + TAB_TARIF + " SET " + setzt + " WHERE ID_Projekt = ?",
                     update.ToArray());
                 if (rows > 0) return true;
+                if (rows < 0) return false;   // ETAPPE E13: gemeldet — kein zweiter Grund per INSERT
 
                 int id = DataRepository.GetMaxID(TAB_TARIF, "ID") + 1;
                 var insert = new List<DbParam>

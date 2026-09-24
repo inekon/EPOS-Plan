@@ -34,7 +34,14 @@ namespace WindowsFormsApplication1
         double Gewicht,
         double JahresverlustVorKalibrierungKwh,
         IReadOnlyList<double> AnteilJeZoneKwh,
-        double RestKwh);
+        double RestKwh)
+    {
+        /// <summary>
+        /// Der Rechenweg der Leistung nach der Methode (Schätzhilfe, 5.3) als Satz — Kennung und
+        /// Werte; <c>null</c> bei „manuell".
+        /// </summary>
+        public ZapfSatz Rechenweg { get; init; }
+    }
 
     /// <summary>
     /// <b>Schicht S5 — der Zirkulationskanal</b> (Umsetzungskonzept Zapfprofilgenerator 2.1,
@@ -85,7 +92,7 @@ namespace WindowsFormsApplication1
         {
             if (p == null)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ProjektFehlt, "",
-                    "Nicht rechenbar — die Projektgrößen der Zirkulation fehlen.");
+                    ZapfSatz.Neu("EINGABE_ZIRKULATION_PROJEKT_FEHLT"));
             zonen = zonen ?? new Zonenanteil[0];
 
             double summeAlle = 0.0, summeZ1 = 0.0;
@@ -115,17 +122,17 @@ namespace WindowsFormsApplication1
                                                    ZapfFeld.ZIRKULATION_LAUFZEIT, "h/d");
             if (double.IsNaN(laufzeit) || !(laufzeit > 0) || laufzeit > Zapfkalender.STUNDEN_TAG)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    "Nicht rechenbar — die Laufzeit der Zirkulation liegt nicht in (0; 24] h.");
+                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT"));
 
             ZapfZirkulationsmethode? methode;
             double leistung;
+            ZapfSatz weg = null;
             if (!p.ZirkAuto)
             {
                 methode = null;
-                if (!p.ZirkManuellKw.HasValue || double.IsNaN(p.ZirkManuellKw.Value)
-                    || double.IsInfinity(p.ZirkManuellKw.Value) || p.ZirkManuellKw.Value < 0)
+                if (!ManuellGueltig(p.ZirkManuellKw))
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                        "Nicht rechenbar — die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ.");
+                        ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL"));
                 leistung = p.ZirkManuellKw.Value;
                 prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, null, "", Wertstatus.Ueberschrieben, null, "manuell");
             }
@@ -139,7 +146,7 @@ namespace WindowsFormsApplication1
                 {
                     if (p.ZirkFlaecheM2.HasValue)
                     {
-                        flaecheN = NichtNegativ(p.ZirkFlaecheM2.Value, "Fläche der Zirkulation");
+                        flaecheN = NichtNegativ(p.ZirkFlaecheM2.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_FLAECHE"));
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Ueberschrieben, null,
                                         "gebäudeweit, mit α");
                     }
@@ -152,14 +159,13 @@ namespace WindowsFormsApplication1
                         if (flaecheN > 0)
                             foreach (string name in z1OhneFlaeche)
                                 hinweise?.Add(new ZapfHinweis(name, "ZIRKULATION_ZONE_OHNE_FLAECHE",
-                                    "Die Zone „" + name + "“ gehört zur Zirkulation, trägt aber keine Fläche; "
-                                    + "A_N enthält sie nicht."));
+                                    ZapfSatz.Neu("HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE", name)));
                     }
                     if (!(flaecheN > 0))
                     {
                         methode = ZapfZirkulationsmethode.Anteil;
                         hinweise?.Add(new ZapfHinweis("", "ZIRKULATION_OHNE_FLAECHE",
-                            "Keine Fläche für den Flächenkennwert der Zirkulation; gerechnet mit der Methode Anteil."));
+                            ZapfSatz.Neu("HINWEIS_ZIRKULATION_OHNE_FLAECHE")));
                     }
                 }
                 prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, (int)methode.Value, "",
@@ -172,22 +178,24 @@ namespace WindowsFormsApplication1
                     {
                         if (!p.ZirkLaengeM.HasValue)
                             throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                                "Nicht rechenbar — die Methode Leitungslänge braucht eine Leitungslänge.");
-                        double laenge = NichtNegativ(p.ZirkLaengeM.Value, "Leitungslänge");
+                                ZapfSatz.Neu("EINGABE_ZIRKULATION_LAENGE_FEHLT"));
+                        double laenge = NichtNegativ(p.ZirkLaengeM.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_LAENGE"));
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_LAENGE, laenge, "m", Wertstatus.Ueberschrieben, null);
                         double qStrich = ProjektOderParameter(p.ZirkVerlustWJeM, ZapfParameter.ZIRKULATION_VERLUST_JE_METER,
                                                               ps, prot, ZapfFeld.ZIRKULATION_VERLUST_JE_METER, "W/m");
-                        NichtNegativ(qStrich, "Verlust je Meter");
+                        NichtNegativ(qStrich, ZapfSatz.Neu("BEGRIFF_ZIRK_VERLUST_JE_METER"));
                         leistung = alpha * laenge * qStrich / W_JE_KW;
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_LEITUNG", alpha, laenge, qStrich, leistung);
                         break;
                     }
                     case ZapfZirkulationsmethode.Anteil:
                     {
                         double a = ProjektOderParameter(p.ZirkAnteil, ZapfParameter.ZIRKULATION_ANTEIL, ps, prot,
                                                         ZapfFeld.ZIRKULATION_ANTEIL, "-");
-                        NichtNegativ(a, "Anteil der Zirkulation");
+                        NichtNegativ(a, ZapfSatz.Neu("BEGRIFF_ZIRK_ANTEIL"));
                         double tagesbedarfZ1 = summeZ1 / Zapfkalender.TAGE;
                         leistung = a * tagesbedarfZ1 / laufzeit;
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_ANTEIL", a, tagesbedarfZ1, laufzeit, leistung);
                         break;
                     }
                     case ZapfZirkulationsmethode.Flaechenkennwert:
@@ -197,13 +205,14 @@ namespace WindowsFormsApplication1
                                             ? ZapfParameter.ZIRKULATION_KENNWERT_LAGE1 : ZapfParameter.ZIRKULATION_KENNWERT_LAGE2;
                         double k = ProjektOderParameter(p.ZirkKennwert, schluessel, ps, prot,
                                                         ZapfFeld.ZIRKULATION_KENNWERT, "kWh/(m²·a)");
-                        NichtNegativ(k, "Flächenkennwert");
+                        NichtNegativ(k, ZapfSatz.Neu("BEGRIFF_ZIRK_KENNWERT"));
                         leistung = gewichtFlaeche * k * flaecheN / (Zapfkalender.TAGE * laufzeit);
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_FLAECHE", gewichtFlaeche, k, flaecheN, laufzeit, leistung);
                         break;
                     }
                     default:
                         throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                            "Nicht rechenbar — unbekannte Methode der Zirkulation.");
+                            ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE"));
                 }
             }
 
@@ -228,15 +237,31 @@ namespace WindowsFormsApplication1
             else if (jahresverlust > 0)
             {
                 hinweise?.Add(new ZapfHinweis("", "ZIRKULATION_OHNE_ZONE",
-                    "Keine Zone trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen."));
+                    ZapfSatz.Neu("HINWEIS_ZIRKULATION_OHNE_ZONE")));
             }
 
             foreach (Zonenanteil z in zonen)
                 if (!z.InZ1 && z.JahresenergieKwh > 0)
                     hinweise?.Add(new ZapfHinweis(z.Zone, "ZIRKULATION_NICHT_IN_Z1",
-                        "Die Zone „" + z.Zone + "“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“)."));
+                        ZapfSatz.Neu("HINWEIS_ZIRKULATION_NICHT_IN_Z1", z.Zone)));
 
-            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, Array.AsReadOnly(anteile), rest);
+            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, Array.AsReadOnly(anteile), rest)
+            {
+                Rechenweg = weg
+            };
+        }
+
+        /// <summary>
+        /// Der Vorschlag der Methode, wenn die Zirkulation auf „manuell" steht (Schätzhilfe, 5.3):
+        /// derselbe Ansatz mit „auto" — ohne Protokoll und ohne Hinweise; <c>null</c>, wenn die
+        /// Methode mit den Angaben nicht rechenbar ist.
+        /// </summary>
+        internal static Zirkulationsansatz Vorschlag(ProjektStand p, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps)
+        {
+            if (p == null) return null;
+            try { return Ansetzen(p with { ZirkAuto = true }, zonen, ps, null, null); }
+            catch (ZapfprofilEingabeException) { return null; }
+            catch (ParametersatzException) { return null; }
         }
 
         /// <summary>
@@ -282,7 +307,7 @@ namespace WindowsFormsApplication1
         {
             if (double.IsNaN(laufzeitH) || !(laufzeitH > 0) || laufzeitH > Zapfkalender.STUNDEN_TAG)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    "Nicht rechenbar — die Laufzeit der Zirkulation liegt nicht in (0; 24] h.");
+                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT"));
             double beginn = Laufzeitbeginn(laufzeitH, tagesmitteH);
             double ende = beginn + laufzeitH;
             var fenster = new double[Zapfkalender.STUNDEN_TAG];
@@ -338,7 +363,7 @@ namespace WindowsFormsApplication1
             ZapfParameterwert pw = ps.Lies(ZapfParameter.ZIRKULATION_LAGE);
             if (pw.Wert != (int)ZapfLeitungslage.InnerhalbHuelle && pw.Wert != (int)ZapfLeitungslage.AusserhalbHuelle)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    "Nicht rechenbar — der Parameter der Leitungslage ist weder 1 noch 2.");
+                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAGE"));
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_LAGE, pw.Wert, "", Wertstatus.Vorgabe, pw.Herkunft,
                             "Parameter " + ZapfParameter.ZIRKULATION_LAGE);
             return (int)pw.Wert;
@@ -357,12 +382,19 @@ namespace WindowsFormsApplication1
             return pw.Wert;
         }
 
-        private static double NichtNegativ(double w, string was)
+        /// <summary>
+        /// Ist eine manuelle Zirkulationsleistung [kW] gültig — endlich, nicht negativ, gesetzt?
+        /// Dieselbe Regel wie oben (<c>EINGABE_ZIRKULATION_MANUELL</c>); EINE Stelle, damit die
+        /// Pflichtprüfung des Zapfprofil-Dialogs (Z4, Gruppe 2a Punkt 7) keine zweite Regel führt.
+        /// </summary>
+        internal static bool ManuellGueltig(double? wert)
+            => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) && wert.Value >= 0;
+
+        private static double NichtNegativ(double w, ZapfSatz was)
         {
             if (double.IsNaN(w) || double.IsInfinity(w) || w < 0)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    "Nicht rechenbar — " + was + " ist negativ oder keine endliche Zahl ("
-                    + w.ToString(CultureInfo.InvariantCulture) + ").");
+                    ZapfSatz.Neu("EINGABE_ZIRKULATION_WERT", was, w.ToString(CultureInfo.InvariantCulture)));
             return w;
         }
     }

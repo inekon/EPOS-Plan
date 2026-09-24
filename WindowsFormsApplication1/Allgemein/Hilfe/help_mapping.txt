@@ -149,6 +149,28 @@ Form_Waermebedarf.btn_Help_Import   = Wärmebedarf
 Form_Gebaeude.btn_Help              = Gebäude
 Form_Brauchwasser.btn_Help          = Brauchwasser
 Form_Prozesswaerme.btn_Help         = Prozesswärme
+# Das Brauchwasser-Zapfprofil (Umsetzungskonzept Zapfprofilgenerator 5.8): eine
+# Ueberlagerung des Bedarfsprofil-Dialogs mit eigener Bedienseite. Die Gruppen der
+# Stufen Erweitert und Experte und die Warnliste der Bilanz springen auf ihre Anker.
+Form_Zapfprofil.btn_Help            = Brauchwasser-Zapfprofil
+Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
+Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
+Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte
+Form_Zapfprofil.grp_Warnliste       = Brauchwasser-Zapfprofil#warnliste-bilanz
+# Die Infoknoepfe "Rechenweg": im Kopf des Zapfprofils der Abschnitt Stochastik
+# (wie die Jahresreihe entsteht), im Kopf der Auslegung ihr Abschnitt, im
+# Konstruktor dessen Abschnitt. Die Editoren der Stufe Experte (Ueberlagerungen
+# "Tagesgang bearbeiten" und "Zapfkategorien und Streuung") haben je einen Anker.
+Form_Zapfprofil_Berechnung          = Brauchwasser-Zapfprofil#stochastik
+Form_Zapfprofil.grp_Auslegung       = Brauchwasser-Zapfprofil#auslegung
+Form_Zapfprofil.grp_Konstruktor     = Brauchwasser-Zapfprofil#konstruktor
+Form_Zapfprofil.grp_Tagesgang       = Brauchwasser-Zapfprofil#tagesgang
+Form_Zapfprofil.grp_Kategorien      = Brauchwasser-Zapfprofil#kategorien
+# Der Katalog der Brauchwasser-Nutzungsarten (Menue Administration -> Brauchwasser):
+# ein Abschnitt derselben Seite; Editor und Katalogimport springen auf ihre Anker.
+Form_Brauchwasser_Nutzungsarten.btn_Help   = Brauchwasser-Zapfprofil#katalog
+Form_Brauchwasser_Nutzungsarten.grp_Editor = Brauchwasser-Zapfprofil#katalog-editor
+Form_Brauchwasser_Nutzungsarten.grp_Import = Brauchwasser-Zapfprofil#katalog-import
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher
@@ -230,9 +252,16 @@ Form_DBBHKW.btn_Help = BHKW
 Form_Brauchwasser_Admin.btn_Help = Brauchwasser
 Form_EingBrauchwasserTyp.btn_Help = Brauchwasser
 Form_ErgBrauchwasserwaerme.btn_Help = Brauchwasser
-Form_EingGebTyp.btn_Help = Gebäude
-Form_Gebaeude1.btn_Help = Gebäude
-Form_Gebaeude2.btn_Help = Gebäude
+# Gebaeude: Die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm
+# Dokumentation - Gebäude.wiki). Katalogeditor und Gebaeudetypen springen auf
+# ihren Abschnitt; der Schluessel Form_Gebaeude.btn_Help (Projektdialog,
+# Waermebedarf des Gebaeudes und die Verwaltung Gebaeude) zeigt weiter auf die
+# Seite als Ganzes. Die Nutzflaechen-/Verbrauchsangabe (Form_GebWohnflaeche)
+# hat noch keine Zeile: ihr Praefix braucht zuerst einen Bereich in
+# KiChatKontext.BEREICH_JE_HILFEPRAEFIX; ihr Ziel waere Gebäude#verbrauch.
+Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
+Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
+Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
 Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
@@ -254,8 +283,14 @@ Form_Kosten_Auswahl.btn_Help = Kosten
 # iU9-W1.1: Zeileneditor der Vorlagenposition, jetzt VorlagenPositionDialog.razor.
 # Die WinForms-Maske hatte keinen Infoknopf; die Komponente hat einen, und er
 # zeigt dieselbe Wikiseite wie die uebrigen Kostendialoge.
-Form_VorlagenPosition.btn_Help = Kosten
-Form_LeistungspreisReihe.btn_Help = Kosten
+# E13: Der Zeileneditor hinter dem Stift springt auf den Abschnitt, der ihn
+# beschreibt (Ersatzbeschaffung und Restwert je Position, darueber die
+# Positionsart); die saisonalen Leistungspreis-Saetze auf "Was die drei Preise
+# bewirken" (Saisonreihe mit zwoelf Monatssaetzen). Kostenprofil und
+# Spotpreis-Import bleiben auf Seitenebene: Die Seite nennt beide nur als
+# Preisquelle der Speichervariante, einen Abschnitt zu den Dialogen gibt es nicht.
+Form_VorlagenPosition.btn_Help = Kosten#ersatz-restwert-kennzeichen
+Form_LeistungspreisReihe.btn_Help = Kosten#preiswirkung
 Form_SpotpreisImport.btn_Help = Kosten
 Form_VorlagenUebernahme.btn_Help = Kosten#uebernahme-vorlage
 # W-E2: Die beiden Dialoge gehoeren fachlich auf die Seite Wirtschaftlichkeit -

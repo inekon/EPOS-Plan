@@ -661,6 +661,59 @@ public class StartseiteTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-warnbanner")));
     }
 
+    /// <summary>
+    /// <b>Der Fehlerhinweis eines Kachelwegs</b> — hier der zurückgerollte Speicherweg der
+    /// Gebäudeliste: Die Hülle merkt den Satz vor, das Auffrischen holt ihn EINMAL ab, und
+    /// er steht als Fehlerbanner ohne Selbstverfall. Ein zweites Auffrischen zeigt ihn nicht
+    /// erneut an (abgeholt ist abgeholt), er bleibt aber stehen, bis eine andere Meldung kommt.
+    /// </summary>
+    [Fact]
+    public void Der_Fehlerhinweis_steht_als_Fehlerbanner_ohne_Verfall()
+    {
+        const string SATZ = "Die Gebäudeliste wurde nicht gespeichert: Das Gebäude „Haus 1“ "
+                            + "ist im Gebäudekatalog nicht mehr zu finden. Das Projekt behält "
+                            + "seine bisherigen Gebäude.";
+        SeitenZustand zustand = new SeitenZustand();
+        string vorgemerkt = "";
+        int abgeholt = 0;
+        bool uhrGefragt = false;
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt") })
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.Uhr, (frist, marke) => { uhrGefragt = true; return Task.CompletedTask; })
+            .Add(x => x.Fehlerhinweis, () =>
+            {
+                abgeholt++;
+                string satz = vorgemerkt;
+                vorgemerkt = "";
+                return satz;
+            }));
+
+        // Ohne vorgemerkten Satz: kein Banner.
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+
+        vorgemerkt = SATZ;
+        cut.InvokeAsync(() => zustand.Auffrischen());
+
+        cut.WaitForAssertion(() =>
+        {
+            IElement banner = cut.Find(".epos-warnbanner");
+            Assert.Contains(SATZ, banner.TextContent, StringComparison.Ordinal);
+            Assert.Contains("fehler", banner.ClassName, StringComparison.OrdinalIgnoreCase);
+        });
+        Assert.False(uhrGefragt, "Ein Fehlerbanner verfällt nicht von selbst.");
+
+        int nachErstem = abgeholt;
+        cut.InvokeAsync(() => zustand.Auffrischen());
+        cut.WaitForAssertion(() => Assert.True(abgeholt > nachErstem));
+        Assert.Contains(SATZ, cut.Find(".epos-warnbanner").TextContent, StringComparison.Ordinal);
+        Assert.Equal("", vorgemerkt);
+    }
+
     // =====================================================================
     //  W16b-E-6: das FLUECHTIGE Banner nach dem Versuch
     // =====================================================================

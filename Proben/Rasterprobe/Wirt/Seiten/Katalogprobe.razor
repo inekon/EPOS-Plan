@@ -18,14 +18,16 @@
 
     Gaben ueber die Adresse:
       ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe|
-             stromganglinie|rahmen|gebaeude|gebaeudetyp|peak
+             stromganglinie|rahmen|gebaeude|gebaeudetyp|peak|
+             tww|wohnungen|kategorien  (Zapfprofilgenerator, Stufe Z4)
       ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
       ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
                    Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
       ?art=...     Die Auspraegung (Neuordnung Stufe 1): fuer browser
                    heizkessel|bhkw|solarkollektoren|pufferspeicher, fuer modul
                    photovoltaik|wechselrichter|stromspeicher, fuer bedarf
-                   brauchwasser|prozesswaerme|stromverbraucher. Ohne Angabe
+                   brauchwasser|prozesswaerme|stromverbraucher, fuer kategorien
+                   lesen (gesperrte Nutzungsart). Ohne Angabe
                    der Stand von KL-5 (BHKW, Photovoltaik, Stromverbraucher).
       ?voll=1      JEDE Spalte des Profils belegt, in den Textlaengen der
                    Testdatenbank (Zeilenbau.Voll) - die Breite der Liste ist
@@ -250,6 +252,42 @@
                                Geschlossen="@(b => { })" />
             break;
 
+        case "tww":
+            @* ZAPFPROFILGENERATOR (Stufe Z4, Gruppe 3): der Katalog der Brauchwasser-
+               Nutzungsarten - Katalogliste mit sechs Spalten (Profil FuerTwwNutzungsart),
+               Stammblatt mit Kennwerten und Vorschaubildern, Fuss Import/Neu/Beenden;
+               "Kategorien..." oeffnet das Raster der Zapfkategorien als Ueberlagerung. Die
+               Auslieferungszeilen tragen das Schloss; Zeilen und Werte erfunden. *@
+            <TwwNutzungsartAdminDialog Katalogzeilen="@(() => TwwZeilen)"
+                                       Katalogprofil="@Katalogfilterprofil.FuerTwwNutzungsart(Uebersetzt)"
+                                       Filterstandvorgabe="@_filterstand"
+                                       Detail="@TwwDetail"
+                                       EditorLaden="@((id, m) => new TwwNutzungsartEditorDaten { Modus = m })"
+                                       Speichern="@((m, e) => new TwwNutzungsartSpeicherErgebnis(true, e.IdBezug, "", ""))"
+                                       Loeschen="@(id => new TwwNutzungsartSpeicherErgebnis(true, id, "", ""))"
+                                       KategorienGaben="@(_ => new Dictionary<string, object> { ["Daten"] = KategorienDaten, ["Texte"] = new ZapfprofilTexte(), ["Pruefen"] = new Func<IReadOnlyList<ZapfprofilKategorieDaten>, ZapfprofilKategorienPruefungDaten>(KategorienPruefen) })"
+                                       PaketWaehlen="@(_ => Task.FromResult(""))"
+                                       Importieren="@(_ => new TwwImportberichtDaten())"
+                                       Geschlossen="@(b => { })" />
+            break;
+
+        case "wohnungen":
+            @* ZAPFPROFILGENERATOR (Stufe Z4, Gruppe 2a): die Wohnungstabelle der Stufe
+               Erweitert - ein bearbeitbares Raster ohne eigene Hoechsthoehe (Begrenzt=false)
+               im Gruppenkopf "Belegung und Anlage". Die Probe schaltet die Stufe per Klick. *@
+            <ZapfprofilDialog Daten="@ZapfDaten" Texte="@(new ZapfprofilTexte())"
+                              Pruefen="@(_ => Array.Empty<ZapfprofilMeldung>())" EntprellungMs="0"
+                              Geschlossen="@(e => { })" />
+            break;
+
+        case "kategorien":
+            @* ZAPFPROFILGENERATOR (Stufe Z4, Gruppe 2b): das Raster der Zapfkategorien -
+               bearbeitbar (Standard) oder lesend (art=lesen, gesperrte Nutzungsart), ohne
+               eigene Hoechsthoehe (Begrenzt=false). *@
+            <ZapfkategorienEditor Daten="@KategorienDaten" Texte="@(new ZapfprofilTexte())"
+                                  Pruefen="@KategorienPruefen" Geschlossen="@(e => { })" />
+            break;
+
         default:
             <p>unbekannte Maske: @_maske</p>
             break;
@@ -278,13 +316,14 @@
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("bilder", out var b)) _mitBildern = b.ToString() != "0";
         if (abfrage.TryGetValue("voll", out var v)) _voll = v.ToString() == "1";
-        if (abfrage.TryGetValue("art", out var a)) ArtSetzen(a.ToString());
+        if (abfrage.TryGetValue("art", out var a)) { _art = a.ToString(); ArtSetzen(_art); }
 
         _modell = Diagrammmodell();
     }
 
     // ------------------------------------------- Auspraegung (Stufe 1)
     private bool _voll;
+    private string _art = "";
     private KatalogBrowserArt _browserArt = KatalogBrowserArt.Bhkw;
     private ModulKatalogArt _modulArt = ModulKatalogArt.Photovoltaik;
     private BedarfsArt _bedarfArt = BedarfsArt.Stromverbraucher;
@@ -787,4 +826,178 @@
         MaxPtherm = 14,
         NurLesen = false
     };
+
+    // --------------------------------------- Zapfprofilgenerator (Stufe Z4)
+    // Der Katalog der Brauchwasser-Nutzungsarten, die Wohnungstabelle und das Raster
+    // der Zapfkategorien. Alle Namen und Werte erfunden; die Namenslaengen folgen der
+    // Testdatenbank (bis 30 Zeichen) mit laufender Nummer.
+    private static readonly string[] TwwNamen =
+    {
+        "Wohnen, Mehrfamilienhaus", "Studentenwohnheim (abgeleitet)", "Seniorenheim (abgeleitet)",
+        "Krankenhaus (abgeleitet)", "Buero und Verwaltung", "Hotel mit Restaurant", "Schule mit Sporthalle"
+    };
+
+    private static readonly string[] TwwBezugsarten =
+        { "Personen", "Wohneinheiten", "Betten", "Beschäftigte", "Mahlzeiten", "Nettogrundfläche" };
+
+    private static readonly string[] TwwKalender =
+        { "Wohnen", "Arbeitstage", "Schule", "Hotel/Heim", "Auslastungsgang" };
+
+    private static readonly string[] TwwHerkunft =
+        { "Verfahren", "Eigenkonstruktion", "frei", "Import", "fiktiv" };
+
+    private static readonly string[] TwwStatus = { "Auslieferung", "eigen", "Import" };
+
+    private IReadOnlyList<Katalogfilterzeile>? _twwZeilen;
+
+    private IReadOnlyList<Katalogfilterzeile> TwwZeilen => _twwZeilen ??=
+        Enumerable.Range(0, _anzahl).Select(i =>
+        {
+            string name = TwwNamen[i % TwwNamen.Length] + " " + (i + 1).ToString("D3", CultureInfo.InvariantCulture);
+            string status = TwwStatus[i % 7 == 0 ? 0 : 1 + i % 2];
+            return new Katalogfilterzeile(i + 1, name) { Schluessel = (i + 1).ToString(CultureInfo.InvariantCulture), Geschuetzt = i % 7 == 0 }
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpBezugsart, TwwBezugsarten[i % TwwBezugsarten.Length])
+                .MitText(Katalogfilterprofil.SpKalender, TwwKalender[i % TwwKalender.Length])
+                .MitText(Katalogfilterprofil.SpHerkunft, TwwHerkunft[i % TwwHerkunft.Length])
+                .MitText(Katalogfilterprofil.SpKatalogversion, "PROBE-" + (1 + i % 3))
+                .MitText(Katalogfilterprofil.SpStatus, status);
+        }).ToList();
+
+    private Zeichenmodell? _twwTagesgang;
+    private Zeichenmodell? _twwJahresgang;
+
+    private TwwNutzungsartDetailDaten? TwwDetail(int id)
+    {
+        Katalogfilterzeile? z = TwwZeilen.FirstOrDefault(x => x.Id == id);
+        if (z is null) return null;
+        _twwTagesgang ??= ZapfprofilBilder.TagesgangModell("",
+            Enumerable.Range(0, 24).Select(h => 0.2 + 1.8 * Math.Exp(-Math.Pow(h - 7, 2) / 4) + 1.2 * Math.Exp(-Math.Pow(h - 19, 2) / 6)).ToArray(),
+            Enumerable.Range(0, 24).Select(h => 0.2 + 1.4 * Math.Exp(-Math.Pow(h - 9, 2) / 5)).ToArray(),
+            Enumerable.Range(0, 24).Select(h => 0.2 + 1.2 * Math.Exp(-Math.Pow(h - 10, 2) / 6)).ToArray(),
+            null!, null!);
+        _twwJahresgang ??= ZapfprofilBilder.JahresgangModell(
+            Enumerable.Range(0, 12).Select(m => 60.0 + 12.0 * Math.Cos(2 * Math.PI * m / 12.0)).ToArray(), null!, "kWh", null!);
+        bool geschuetzt = z.Geschuetzt;
+        return new TwwNutzungsartDetailDaten
+        {
+            Id = id,
+            Name = z.Bezeichner,
+            Katalogversion = "PROBE-1",
+            Unterzeile = "PROBE-1 · " + (geschuetzt ? "Auslieferung" : "eigen") + " · Personen",
+            Auslieferung = geschuetzt,
+            AendernGrund = geschuetzt ? "Die Zeile gehört zur Auslieferung – Ändern legt eine neue Zeile an." : "",
+            LoeschGrund = geschuetzt ? "Die Zeile gehört zur Auslieferung." : "",
+            Kennzahlen = new[] { new Stammblattkennzahl("40", "Liter je P und Tag (mittel)"), new Stammblattkennzahl("2,3", "kWh je P und Tag") },
+            Kennwerte = new[]
+            {
+                new Stammblattwert("Bezugsart", "Personen"),
+                new Stammblattwert("Bedarf niedrig · mittel · hoch", "1,6 · 2,3 · 3,5", "kWh je Einheit und Tag"),
+                new Stammblattwert("Bandbreite mittel", "1,8 … 2,9", "kWh je Einheit und Tag"),
+                new Stammblattwert("Zapftemperatur · Kaltwasser", "45 · 10", "°C"),
+                new Stammblattwert("Bilanzgrenze", "Zapfstelle"),
+                new Stammblattwert("Kalender", "Wohnen"),
+                new Stammblattwert("Ferienfaktor", "1")
+            },
+            Gaenge = new[]
+            {
+                new Stammblattwert("Monatsfaktoren", "1,1 1,1 1,05 1 0,95 0,9 0,85 0,85 0,95 1 1,05 1,1"),
+                new Stammblattwert("Wochenfaktoren", "Werktag 1 · Samstag 1,1 · Sonn-/Feiertag 1,05")
+            },
+            Tagesgang = new[] { new Stammblattwert("Tagesgangsatz", "Probesatz · PROBE-1"), new Stammblattwert("Status", "vollständig") },
+            Kategorien = new[]
+            {
+                new Stammblattwert("Kurz", "V 2 · σ 1 · 1 min · Anteil 0,6"),
+                new Stammblattwert("Lang", "V 8 · σ 2 · 5 min · Anteil 0,4")
+            },
+            Herkunft = new[]
+            {
+                new Stammblattwert("Status", geschuetzt ? "Auslieferung" : "eigen"),
+                new Stammblattwert("Quelle der Bedarfswerte", "Verfahren · Probequelle"),
+                new Stammblattwert("Verwendet in", "keinem Projekt")
+            },
+            TagesgangModell = _twwTagesgang,
+            JahresgangModell = _twwJahresgang
+        };
+    }
+
+    private ZapfprofilDaten? _zapfDaten;
+
+    private static ZapfprofilNutzungsartDaten ZapfArt(int id, string name, bool wohnen) => new()
+    {
+        Id = id, Name = name, Bezugsart = wohnen ? 1 : 6,
+        Bezugsgroesse = wohnen ? "Personen" : "Beschäftigte", Einheit = wohnen ? "P" : "B",
+        BedarfJeNiveauKwhJeEinheitTag = new[] { 1.0, 2.0, 3.0 }, Herkunft = "fiktiv · Probequelle",
+        Status = "eigen", Katalogversion = "PROBE-1", Kalenderart = wohnen ? 1 : 2,
+        Kalender = wohnen ? "Wohnen" : "Arbeitstage", Wohnen = wohnen, Bilanzgrenze = 1,
+        ZapftemperaturC = 50, Monatsfaktoren = Enumerable.Repeat(1.0, 12).ToArray(), IdTagesgangsatz = 1
+    };
+
+    /// <summary>Der Zapfprofil-Dialog mit einer Wohnen-Zone und <c>zeilen</c> Wohnungstypen.</summary>
+    private ZapfprofilDaten ZapfDaten => _zapfDaten ??= new ZapfprofilDaten
+    {
+        IdProjekt = 7,
+        Kontext = new ZapfprofilKontextDaten { Projekt = "Probeprojekt" },
+        Katalog = { ZapfArt(1, "Wohnen A (erfunden)", true), ZapfArt(2, "Buero B (erfunden)", false) },
+        Eingabe = new ZapfprofilEingabeDaten
+        {
+            Weg = ZapfprofilWeg.Generator,
+            Zonen =
+            {
+                new ZapfprofilZoneDaten
+                {
+                    Id = 11, Name = "Wohnen", IdNutzungsart = 1, Bezugsmenge = 20,
+                    Angaben = new ZapfprofilZonenangabenDaten
+                    {
+                        Wohnungen = Enumerable.Range(0, _anzahl).Select(i => new ZapfprofilWohnungDaten
+                        {
+                            Id = i + 1, Anzahl = 2 + i % 5, Raumzahl = 1.5 + i % 4, Personen = 1.5 + (i % 3) * 0.5,
+                            IdAusstattung = i % 2 == 0 ? 3 : null
+                        }).ToList()
+                    }
+                },
+                new ZapfprofilZoneDaten { Id = 12, Name = "Büro", IdNutzungsart = 2, Bezugsmenge = 50, Angaben = new ZapfprofilZonenangabenDaten() }
+            },
+            Gebaeude = new ZapfprofilGebaeudeDaten()
+        },
+        Verfuegbar = true,
+        SeedVorgabe = 1, RealisierungenVorgabe = 10, RealisierungenMindestens = 1, RealisierungenHoechstens = 1000,
+        GebaeudeVorgabe = new ZapfprofilGebaeudeDaten(),
+        Vorgaben = new ZapfprofilVorgabenDaten
+        {
+            KaltwasserMittelC = 11, KaltwasserAmplitudeK = 3, WohnflaecheJeWeM2 = 80, ZirkLaufzeitH = 20, ZirkAnteil = 0.2,
+            ZirkVerlustWJeM = 8, ZirkLage = 1, ZirkKennwertLage1 = 5, ZirkKennwertLage2 = 10, KaltwasserAuslegungC = 12,
+            SpeicherC = 56, LadefensterH = 10, LadefensterBeginnH = 22, AnzeigetemperaturC = 45, SchwelleKw = 0.1
+        },
+        Tagesgangsaetze = { new ZapfprofilKatalogeintragDaten { Id = 1, Name = "Probesatz · PROBE-1" } },
+        Ausstattungen = { new ZapfprofilKatalogeintragDaten { Id = 3, Name = "Ausstattung A (erfunden)" } },
+        Monatsnamen = { "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" }
+    };
+
+    private ZapfprofilKategorienEditorDaten? _kategorienDaten;
+
+    private static ZapfprofilKategorieDaten ProbeKategorie(int i) => new()
+    {
+        Name = "Kategorie " + (i + 1) + " (erfunden)", VolumenstromLJeMin = 2 + i % 8, DauerMin = 1 + i % 10,
+        Anteil = 0.1, StreuungLJeMin = 0.5 + i % 3, KappungLJeMin = i % 3 == 0 ? 12 + i : null, Herkunft = "fiktiv · Probequelle"
+    };
+
+    /// <summary>Der Kategorien-Editor mit <c>zeilen</c> Kategorien; <c>art=lesen</c> = gesperrte Nutzungsart.</summary>
+    private ZapfprofilKategorienEditorDaten KategorienDaten => _kategorienDaten ??= new ZapfprofilKategorienEditorDaten
+    {
+        Nutzungsart = "Wohnen A (erfunden) · PROBE-1",
+        KatalogversionVorschlag = _art == "lesen" ? "PROBE-1-E1" : "",
+        Stand = new ZapfprofilKategorienDaten
+        {
+            IdNutzungsart = 7,
+            Frei = _art != "lesen",
+            Sperrgrund = _art == "lesen" ? "Die Nutzungsart gehört zur Auslieferung – bearbeitbar erst als Kopie." : "",
+            SummeAnteil = 0.1 * _anzahl,
+            Kategorien = Enumerable.Range(0, _anzahl).Select(ProbeKategorie).ToList(),
+            Vorgabe = Enumerable.Range(0, 3).Select(ProbeKategorie).ToList()
+        }
+    };
+
+    private static ZapfprofilKategorienPruefungDaten KategorienPruefen(IReadOnlyList<ZapfprofilKategorieDaten> k)
+        => new() { SummeAnteil = k.Sum(x => x.Anteil ?? 0) };
 }

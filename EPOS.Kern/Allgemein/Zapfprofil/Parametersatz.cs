@@ -29,19 +29,23 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die benannte Ablehnung „nicht rechenbar — Parameter fehlt" (Konzept 2.1): Es gibt
     /// keinen Rückfallwert, keine Vorgabe im Quelltext und keine stille Null. Der Grund
-    /// steht als <see cref="Fehler"/> (für die Oberfläche) und als Klartext in der
-    /// Meldung (für Protokoll und Test).
+    /// steht als <see cref="Fehler"/> und als <see cref="Satz"/> (Kennung und Werte, für die
+    /// Oberfläche) und als deutscher Wortlaut in der Meldung (für Protokoll und Test).
     /// </summary>
     internal sealed class ParametersatzException : Exception
     {
         internal ParametersatzException(ParametersatzFehler fehler, string katalogversion, string schluessel,
-                                        string meldung)
-            : base(meldung)
+                                        ZapfSatz satz)
+            : base(satz?.Klartext ?? "")
         {
             Fehler = fehler;
             Katalogversion = katalogversion ?? "";
             Schluessel = schluessel ?? "";
+            Satz = satz;
         }
+
+        /// <summary>Der Satz der Ablehnung als Kennung und Werte (N11 (k)); die Meldung ist sein deutscher Wortlaut.</summary>
+        internal ZapfSatz Satz { get; }
 
         /// <summary>Der Grund der Ablehnung.</summary>
         internal ParametersatzFehler Fehler { get; }
@@ -95,7 +99,7 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(katalogversion))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    "Nicht rechenbar — es gibt keine Katalogversion der Brauchwasserparameter.");
+                    ZapfSatz.Neu("PARAMETER_KEINE_KATALOGVERSION"));
 
             var werte = new Dictionary<string, ZapfParameterwert>(StringComparer.Ordinal);
             if (zeilen != null)
@@ -113,7 +117,7 @@ namespace WindowsFormsApplication1
 
             if (werte.Count == 0)
                 throw new ParametersatzException(ParametersatzFehler.KatalogversionFehlt, katalogversion, "",
-                    "Nicht rechenbar — die Katalogversion „" + katalogversion + "“ trägt keine Brauchwasserparameter.");
+                    ZapfSatz.Neu("PARAMETER_KATALOGVERSION_LEER", katalogversion));
 
             return new Parametersatz(katalogversion, werte.ToFrozenDictionary(StringComparer.Ordinal));
         }
@@ -129,8 +133,7 @@ namespace WindowsFormsApplication1
         {
             if (schluessel != null && _werte.TryGetValue(schluessel, out ZapfParameterwert p)) return p;
             throw new ParametersatzException(ParametersatzFehler.ParameterFehlt, Katalogversion, schluessel,
-                "Nicht rechenbar — Parameter fehlt: „" + (schluessel ?? "") + "“ steht nicht in der Katalogversion „"
-                + Katalogversion + "“ der Brauchwasserparameter.");
+                ZapfSatz.Neu("PARAMETER_SCHLUESSEL_FEHLT", schluessel ?? "", Katalogversion));
         }
 
         /// <summary>Der Zahlenwert zu einem Schlüssel; fehlt er, die benannte Ablehnung.</summary>

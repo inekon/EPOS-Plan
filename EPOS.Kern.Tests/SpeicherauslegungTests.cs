@@ -103,7 +103,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(r.Hinweise, h => h.Code == TwwSpeicherauslegung.HINWEIS_GLF_WANNEN && !h.Warnung);
             // Ohne Summenlinienpunkt bezieht sich der Füllstand auf den Nenninhalt des Bands.
             Assert.Equal(500.0, r.FuellstandBezugL);
-            Assert.Equal("Nenninhalt des Bands", r.FuellstandBezug);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltBand, r.FuellstandBezug);
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace EPOS.Kern.Tests
             // Empfohlener Punkt 250 l: Nenninhalt 300 l der Liste — dort steht der Füllstand, nicht beim Band.
             Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(Eingang(ps) with { SummenlinienpunktL = 250.0 }, ps);
             Assert.Equal(300.0, r.FuellstandBezugL);
-            Assert.Equal("Nenninhalt des empfohlenen Punkts", r.FuellstandBezug);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltPunkt, r.FuellstandBezug);
             double csp = 300.0 * FNUTZ * CW * DT / 1000.0;
             Assert.True(Relativ(r.KapazitaetKwh.Value, csp) < 1e-12);
             Assert.True(Relativ(r.MinFuellstandKwh.Value, Math.Max(0.0, csp - 18.0)) < 1e-12);
@@ -121,7 +121,7 @@ namespace EPOS.Kern.Tests
             // Ohne Liste: beim Punkt selbst.
             r = TwwSpeicherauslegung.Rechnen(Eingang(ps) with { SummenlinienpunktL = 250.0, Nenninhalte = null }, ps);
             Assert.Equal(250.0, r.FuellstandBezugL);
-            Assert.Equal("empfohlener Punkt der Summenlinie", r.FuellstandBezug);
+            Assert.Equal(ZapfFuellstandbezug.Punkt, r.FuellstandBezug);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("1235", Auslegungstext.G(1234.6));
             Parametersatz ps = Auslegungssatz();
             Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(Eingang(ps, null), ps);
-            Assert.Contains("1.25 kW", r.LadeRechenweg);
+            Assert.Contains("1.25 kW", r.LadeRechenweg.Klartext);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace EPOS.Kern.Tests
             Verfahrensvolumen profil = r.Verfahren.Single(v => v.Verfahren == ZapfSpeicherverfahren.Profilbasiert);
             Assert.Null(profil.VolumenL);
             Assert.False(profil.ImBand);
-            Assert.Equal("–", profil.Rechenweg);
+            Assert.Equal("–", profil.Rechenweg.Klartext);
             Assert.Contains(r.Hinweise, h => h.Code == TwwSpeicherauslegung.DMAX_NULL);
             // Das Band kommt dann aus DIN 4708 und GLF.
             Assert.Equal(Math.Min(r.VolumenDinL.Value, r.VolumenGlfL.Value), r.BandMinL.Value, 9);
@@ -207,10 +207,10 @@ namespace EPOS.Kern.Tests
             // Vorschlag: größter Tag 30 kWh über 24 h.
             Assert.True(Relativ(auto.Ladeleistung.Vorschlag, 30.0 / 24.0) < 1e-12);
             Assert.Equal(auto.Ladeleistung.Vorschlag, auto.Ladeleistung.Angesetzt);
-            Assert.Contains("(auto)", auto.LadeRechenweg);
+            Assert.Contains("(auto)", auto.LadeRechenweg.Klartext);
             Speicherauslegungsergebnis manuell = TwwSpeicherauslegung.Rechnen(e with { LadeAuto = false }, ps);
             Assert.Equal(99.0, manuell.Ladeleistung.Angesetzt);
-            Assert.Contains("(manuell)", manuell.LadeRechenweg);
+            Assert.Contains("(manuell)", manuell.LadeRechenweg.Klartext);
             Assert.Equal(new Schaetzwert(false, 3.0, null).Angesetzt, 3.0);
         }
 

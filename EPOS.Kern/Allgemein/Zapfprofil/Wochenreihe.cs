@@ -136,17 +136,17 @@ namespace WindowsFormsApplication1
         {
             if (stundenKwh == null || stundenKwh.Length != STUNDEN)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — die Wochenreihe trägt nicht 168 Stunden.");
+                    ZapfSatz.Neu("AUSLEGUNG_WOCHE_168"));
             foreach (double q in stundenKwh)
                 if (double.IsNaN(q) || double.IsInfinity(q) || q < 0)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                        "Nicht rechenbar — die Wochenreihe trägt einen negativen oder nicht endlichen Wert.");
+                        ZapfSatz.Neu("AUSLEGUNG_WOCHE_WERT"));
             if (wochentagErsterTag < 0 || wochentagErsterTag >= TAGE)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — der Wochentag des ersten Tages liegt nicht in 0 … 6.");
+                    ZapfSatz.Neu("AUSLEGUNG_WOCHE_WOCHENTAG"));
             if (tagtypen == null || tagtypen.Length != TAGE)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — die Wochenreihe trägt nicht sieben Tagtypen.");
+                    ZapfSatz.Neu("AUSLEGUNG_WOCHE_TAGTYPEN"));
             return new Wochenreihe((double[])stundenKwh.Clone(), ersterTag, wochentagErsterTag, (ZapfTagtyp[])tagtypen.Clone(),
                                    null);
         }
@@ -162,7 +162,7 @@ namespace WindowsFormsApplication1
             Pruefen(zonen);
             if (regionskalender == null || regionskalender.Length != Zapfkalender.TAGE)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — der Kalender der Klimaregion trägt nicht 365 Tage.");
+                    ZapfSatz.Neu("EINGABE_KALENDER_365"));
             double[] s = Tagessummen(zonen);
 
             int beste = 1;
@@ -225,8 +225,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double KaltwasserfaktorAuslegung(double zapfC, double kaltwasserAuslegungC, double kaltwasserMittelC)
         {
-            double oben = Auslegungspruefung.Spreizung(zapfC, kaltwasserAuslegungC, "Zapftemperatur − Kaltwasser der Auslegung");
-            double unten = Auslegungspruefung.Spreizung(zapfC, kaltwasserMittelC, "Zapftemperatur − Kaltwassermittel");
+            double oben = Auslegungspruefung.Spreizung(zapfC, kaltwasserAuslegungC, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG"));
+            double unten = Auslegungspruefung.Spreizung(zapfC, kaltwasserMittelC, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_MITTEL"));
             return oben / unten;
         }
 
@@ -258,12 +258,12 @@ namespace WindowsFormsApplication1
         {
             if (zonen == null || zonen.Count == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                    "Nicht rechenbar — die Wochenreihe hat keine Zone.");
+                    ZapfSatz.Neu("AUSLEGUNG_WOCHE_OHNE_ZONE"));
             foreach (Wochenbaustein z in zonen)
                 if (z == null || z.TagesmengenKwh == null || z.TagesmengenKwh.Length != Zapfkalender.TAGE
                     || z.Kalender == null || z.Kalender.Length != Zapfkalender.TAGE || z.Struktur == null)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
-                        "Nicht rechenbar — eine Zone der Wochenreihe trägt nicht 365 Tage.");
+                        ZapfSatz.Neu("AUSLEGUNG_WOCHE_ZONE_365"));
         }
     }
 }

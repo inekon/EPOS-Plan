@@ -89,8 +89,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Zone A", ex.Zone);
             Assert.Equal(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ex.Kennung);
             // Name und Katalogversion reisen getrennt und sprachfrei — den Satz baut die Hülle.
-            Assert.Equal(new[] { "Nutzung ohne Kategorien", "T1" }, ex.Argumente);
-            Assert.Contains("für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) der Zone „Zone A“", ex.Message);
+            Assert.Equal(new object[] { "Nutzung ohne Kategorien", "T1", "Zone A" }, ex.Argumente);
+            Assert.Contains("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) der Zone „Zone A“", ex.Message);
 
             ZapfAblehnung ab = ZapfAblehnung.Aus("Zone A", ex);
             Assert.Equal(ex.Kennung, ab.Kennung);
@@ -114,23 +114,23 @@ namespace EPOS.Kern.Tests
             ZapfprofilEingabeException ex = Assert.Throws<ZapfprofilEingabeException>(
                 () => Zapfkategoriensatz.Aus(ZapfprofilCtrl.Zapfkategorien(new[] { a }), art, "Zone A"));
             ZapfAblehnung ab = ZapfAblehnung.Aus("Zone A", ex);
-            var hinweis = new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", ex.Message, true) { Ablehnung = ab };
+            var hinweis = new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", ex.Satz, true) { Ablehnung = ab };
 
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-            Assert.Equal("Zone „Zone A“ trägt 0: Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) stehen keine "
-                         + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", ZapfprofilHuelle.Meldung(ab).Text);
-            Assert.Equal("Zone „Zone A“: Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) stehen keine "
-                         + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", ZapfprofilHuelle.Warnung(hinweis).Text);
+            Assert.Equal("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) "
+                         + "der Zone „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Meldung(ab).Text);
+            Assert.Equal("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) "
+                         + "der Zone „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Warnung(hinweis).Text);
 
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             string bilanz = ZapfprofilHuelle.Meldung(ab).Text, auslegung = ZapfprofilHuelle.Warnung(hinweis).Text;
             foreach (string text in new[] { bilanz, auslegung })
             {
-                Assert.Contains("the usage type “Nutzung ohne Kategorien” (catalogue version T1)", text);
+                Assert.Contains("type of use “Nutzung ohne Kategorien” (catalogue version T1)", text);
                 Assert.DoesNotContain("Katalogversion", text);
                 Assert.DoesNotContain("Zapfkategorien", text);
             }
-            Assert.Equal("ZPG_EINGABE_" + Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ZapfprofilHuelle.Meldung(ab).Kennung);
+            Assert.Equal(ZapfSatz.PRAEFIX + Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ZapfprofilHuelle.Meldung(ab).Kennung);
         }
 
         /// <summary>

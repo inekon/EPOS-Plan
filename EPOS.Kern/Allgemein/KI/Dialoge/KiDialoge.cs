@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using KiKern;
 
 namespace WindowsFormsApplication1
@@ -249,6 +250,31 @@ namespace WindowsFormsApplication1
         /// (<c>BedarfstagKonstruktor</c>).
         /// </summary>
         public const string BEDARFSTAG_KONSTRUKTOR = "BedarfstagKonstruktor";
+
+        /// <summary>
+        /// Die Ueberlagerung „Tagesgang bearbeiten" des Zapfprofils (<c>TagesgangEditor</c>,
+        /// Stufe Experte) — sie gehoert zum Katalog, ihr OK schreibt den Tagesgang.
+        /// </summary>
+        public const string TAGESGANG_EDITOR = "TagesgangEditor";
+
+        /// <summary>
+        /// Die Ueberlagerung „Zapfkategorien und Streuung" des Zapfprofils
+        /// (<c>ZapfkategorienEditor</c>, Stufe Experte) — sie gehoert zum Katalog.
+        /// </summary>
+        public const string ZAPFKATEGORIEN = "Zapfkategorien";
+
+        /// <summary>
+        /// Der Katalogdialog „Brauchwasser-Nutzungsarten" (<c>TwwNutzungsartAdminDialog</c>,
+        /// Zapfprofilgenerator 5.4) — Navigationsziel des Menues; Katalog- und
+        /// Navigationsschluessel fallen zusammen.
+        /// </summary>
+        public const string BRAUCHWASSER_NUTZUNGSARTEN = "Form_Brauchwasser_Nutzungsarten";
+
+        /// <summary>
+        /// Der Editor einer Nutzungsart (<c>TwwNutzungsartEditor</c>) — die Ueberlagerung hinter
+        /// „Neu…", „Aendern…" und „Speichern unter…" des Katalogdialogs.
+        /// </summary>
+        public const string TWW_NUTZUNGSART_EDITOR = "TwwNutzungsartEditor";
 
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
@@ -697,6 +723,10 @@ namespace WindowsFormsApplication1
                 Zapfprofil(),
                 ZapfprofilAuslegung(),
                 BedarfstagKonstruktor(),
+                TagesgangEditor(),
+                Zapfkategorien(),
+                BrauchwasserNutzungsarten(),
+                TwwNutzungsartEditor(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -3347,8 +3377,9 @@ namespace WindowsFormsApplication1
         private const string ZAPFPROFIL_SICHT = "ZapfprofilKiSicht";
 
         /// <summary>
-        /// Das Brauchwasser-Zapfprofil — elf Felder aus
-        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>, fuenf davon SPALTEN der Zonenliste.
+        /// Das Brauchwasser-Zapfprofil — die Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>: fuenf SPALTEN der Zonenliste, vier der
+        /// Wohnungstabelle der gewaehlten Zone und die Angaben der Stufen Erweitert und Experte.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -3368,11 +3399,13 @@ namespace WindowsFormsApplication1
         /// waehlt die Ansicht der Vorschau.
         /// </para>
         /// <para>
-        /// <b>Die Stochastik der Stufe Experte</b> (Rechenweg der Jahresreihe, Seed,
-        /// Realisierungen) ist nur setzbar, solange sie auf der Maske steht; sonst nennt die
-        /// Absage die Stufe bzw. den Rechenweg, der sie zeigt. Die Stufe „Erweitert" ist
-        /// gesperrt und nennt ihren Grund. Neu, Duplizieren und Entfernen einer Zone,
-        /// „Auslegung…" und „Stochastisch rechnen" bleiben Klicks des Anwenders.
+        /// <b>Die Stufen Erweitert und Experte</b> (Rechenweg der Jahresreihe ab Erweitert,
+        /// Seed und Realisierungen, Belegung und Anlage, Schaetzhilfen, Fachwerte) sind nur
+        /// setzbar, solange sie auf der Maske stehen; sonst nennt die Absage die Stufe, den
+        /// Rechenweg, die Nutzungsart, die Einheit oder die Methode, die sie zeigt. Die Angaben
+        /// einer Zone gelten der gewaehlten Zone. Neu, Duplizieren und Entfernen einer Zone oder
+        /// eines Wohnungstyps, „Auslegung…", „Stochastisch rechnen", der Tagesgang-Editor und die
+        /// Zapfkategorien bleiben Klicks des Anwenders.
         /// </para>
         /// </remarks>
         private static KiDialog Zapfprofil()
@@ -3427,12 +3460,141 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgRealisierungenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ZpgRealisierungenErl,
                                      einheit: KiDialogTexte.ZpgEinheitJahre, leerErlaubt: true)
-                },
+                }
+                .Concat(ZapfprofilHoehereStufen())
+                .ToArray(),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
                 });
+        }
+
+        /// <summary>
+        /// Die Felder der Stufen Erweitert und Experte des Zapfprofils (Stufe Z4, Gruppe 2a) — wie der
+        /// Eingabeblock gelten sie der GEWÄHLTEN Zone (Satzwahl „zone") und dem Gebäude; die
+        /// Wohnungstabelle der gewählten Zone steht als SPALTEN mit der Zeilennummer als Kennzeichen.
+        /// Ein Feld, das die Stufe (oder die Nutzungsart, die Einheit des Messwerts, die Methode der
+        /// Zirkulation) nicht zeigt, lehnt die Maske benannt ab. Die Grenzen sind die der Eingabefelder.
+        /// </summary>
+        private static IEnumerable<KiDialogFeld> ZapfprofilHoehereStufen()
+        {
+            // ---- Die Wohnungstabelle der gewählten Zone (Erweitert, nur Wohnen) ----------------
+            yield return new KiDialogFeld("wohnung_anzahl", ZAPFPROFIL_SICHT + ".Wohnungen[].Anzahl",
+                                          KiDialogTexte.ZpgWohnungAnzahlName, KiParameterTyp.Ganzzahl,
+                                          KiDialogTexte.ZpgWohnungAnzahlErl, zeilenkennzeichen: "Kennzeichen", min: 1);
+            yield return new KiDialogFeld("wohnung_raumzahl", ZAPFPROFIL_SICHT + ".Wohnungen[].Raumzahl",
+                                          KiDialogTexte.ZpgWohnungRaumzahlName, KiParameterTyp.Zahl,
+                                          KiDialogTexte.ZpgWohnungRaumzahlErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen", min: 0);
+            yield return new KiDialogFeld("wohnung_personen", ZAPFPROFIL_SICHT + ".Wohnungen[].Personen",
+                                          KiDialogTexte.ZpgWohnungPersonenName, KiParameterTyp.Zahl,
+                                          KiDialogTexte.ZpgWohnungPersonenErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen", min: 0);
+            yield return new KiDialogFeld("wohnung_ausstattung", ZAPFPROFIL_SICHT + ".Wohnungen[].Ausstattung",
+                                          KiDialogTexte.ZpgWohnungAusstattungName, KiParameterTyp.Wahl,
+                                          KiDialogTexte.ZpgWohnungAusstattungErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen");
+
+            // ---- Belegung und Anlage der gewählten Zone (Erweitert) ------------------------------
+            yield return Zahl("personen_je_we", "PersonenJeWe", KiDialogTexte.ZpgPersonenJeWeName,
+                              KiDialogTexte.ZpgPersonenJeWeErl, KiDialogTexte.ZpgEinheitPersonenJeWe, 0, null);
+            yield return Zahl("wohnflaeche_je_we", "WohnflaecheJeWe", KiDialogTexte.ZpgWohnflaecheJeWeName,
+                              KiDialogTexte.ZpgWohnflaecheJeWeErl, KiDialogTexte.EINHEIT_M2, 0, null);
+            yield return Wahl("topologie", "Topologie", KiDialogTexte.ZpgTopologieName, KiDialogTexte.ZpgTopologieErl, false);
+            yield return Wahl("zirkulation_vorhanden", "ZirkulationVorhanden", KiDialogTexte.ZpgZirkulationVorhandenName,
+                              KiDialogTexte.ZpgZirkulationVorhandenErl, false);
+            yield return Wahl("kalender", "Kalender", KiDialogTexte.ZpgKalenderName, KiDialogTexte.ZpgKalenderErl, false);
+            // Die vier Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen.
+            yield return Ferienspalte("ferien_beginn_tag", "BeginnTag", KiDialogTexte.ZpgFerienBeginnTagName, 31);
+            yield return Ferienspalte("ferien_beginn_monat", "BeginnMonat", KiDialogTexte.ZpgFerienBeginnMonatName, 12);
+            yield return Ferienspalte("ferien_ende_tag", "EndeTag", KiDialogTexte.ZpgFerienEndeTagName, 31);
+            yield return Ferienspalte("ferien_ende_monat", "EndeMonat", KiDialogTexte.ZpgFerienEndeMonatName, 12);
+            yield return Zahl("jahresmesswert", "Jahresmesswert", KiDialogTexte.ZpgJahresmesswertName,
+                              KiDialogTexte.ZpgJahresmesswertErl, null, 0, null);
+            yield return Wahl("messwert_einheit", "MesswertEinheit", KiDialogTexte.ZpgMesswertEinheitName,
+                              KiDialogTexte.ZpgMesswertEinheitErl, true);
+            yield return Wahl("messwert_grenze", "MesswertGrenze", KiDialogTexte.ZpgMesswertGrenzeName,
+                              KiDialogTexte.ZpgMesswertGrenzeErl, true);
+            yield return Zahl("speicherverlust", "Speicherverlust", KiDialogTexte.ZpgSpeicherverlustName,
+                              KiDialogTexte.ZpgSpeicherverlustErl, KiDialogTexte.EINHEIT_KWH_A, 0, null);
+            yield return new KiDialogFeld("messwert_quelle", ZAPFPROFIL_SICHT + ".MesswertQuelle",
+                                          KiDialogTexte.ZpgMesswertQuelleName, KiParameterTyp.Text,
+                                          KiDialogTexte.ZpgMesswertQuelleErl, leerErlaubt: true);
+            yield return new KiDialogFeld("messwert_zeitraum", ZAPFPROFIL_SICHT + ".MesswertZeitraum",
+                                          KiDialogTexte.ZpgMesswertZeitraumName, KiParameterTyp.Text,
+                                          KiDialogTexte.ZpgMesswertZeitraumErl, leerErlaubt: true);
+
+            // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Erweitert) -----
+            yield return Wahl("tagesbedarf_modus", "TagesbedarfModus", KiDialogTexte.ZpgTagesbedarfModusName,
+                              KiDialogTexte.ZpgTagesbedarfModusErl, false);
+            yield return Zahl("tagesbedarf_manuell", "TagesbedarfManuell", KiDialogTexte.ZpgTagesbedarfManuellName,
+                              KiDialogTexte.ZpgTagesbedarfManuellErl, KiDialogTexte.EINHEIT_KWH_D, 0, null);
+            yield return Wahl("ladeleistung_modus", "LadeleistungModus", KiDialogTexte.ZpgLadeleistungModusName,
+                              KiDialogTexte.ZpgLadeleistungModusErl, false);
+            yield return Zahl("ladeleistung_manuell", "LadeleistungManuell", KiDialogTexte.ZpgLadeleistungManuellName,
+                              KiDialogTexte.ZpgLadeleistungManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
+            yield return Zahl("ladefenster", "Ladefenster", KiDialogTexte.ZpgLadefensterName,
+                              KiDialogTexte.ZpgLadefensterErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
+            yield return Zahl("ladefenster_beginn", "LadefensterBeginn", KiDialogTexte.ZpgLadefensterBeginnName,
+                              KiDialogTexte.ZpgLadefensterBeginnErl, KiDialogTexte.EINHEIT_STUNDE, 0, 24);
+            yield return Wahl("zirkulation_modus", "ZirkulationModus", KiDialogTexte.ZpgZirkulationModusName,
+                              KiDialogTexte.ZpgZirkulationModusErl, false);
+            yield return Wahl("zirk_methode", "ZirkMethode", KiDialogTexte.ZpgZirkMethodeName, KiDialogTexte.ZpgZirkMethodeErl, false);
+            yield return Zahl("zirk_laenge", "ZirkLaenge", KiDialogTexte.ZpgZirkLaengeName,
+                              KiDialogTexte.ZpgZirkLaengeErl, KiDialogTexte.EINHEIT_METER, 0, null);
+            yield return Zahl("zirk_verlust", "ZirkVerlust", KiDialogTexte.ZpgZirkVerlustName,
+                              KiDialogTexte.ZpgZirkVerlustErl, KiDialogTexte.EINHEIT_W_M, 0, null);
+            yield return Zahl("zirk_anteil", "ZirkAnteil", KiDialogTexte.ZpgZirkAnteilName,
+                              KiDialogTexte.ZpgZirkAnteilErl, KiDialogTexte.EINHEIT_FAKTOR, 0, null);
+            yield return Wahl("zirk_lage", "ZirkLage", KiDialogTexte.ZpgZirkLageName, KiDialogTexte.ZpgZirkLageErl, true);
+            yield return Zahl("zirk_manuell", "ZirkManuell", KiDialogTexte.ZpgZirkManuellName,
+                              KiDialogTexte.ZpgZirkManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
+            yield return Zahl("leitungsinhalt", "Leitungsinhalt", KiDialogTexte.ZpgLeitungsinhaltName,
+                              KiDialogTexte.ZpgLeitungsinhaltErl, KiDialogTexte.EINHEIT_LITER, 0, null);
+
+            // ---- Fachwerte der gewählten Zone und des Gebäudes (Experte) -------------------------
+            yield return Zahl("bedarf_spez", "BedarfSpez", KiDialogTexte.ZpgBedarfSpezName,
+                              KiDialogTexte.ZpgBedarfSpezErl, null, 0, null);
+            yield return Zahl("zapftemperatur", "Zapftemperatur", KiDialogTexte.ZpgZapftemperaturName,
+                              KiDialogTexte.ZpgZapftemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("kaltwasser_mittel", "KaltwasserMittel", KiDialogTexte.ZpgKaltwasserMittelName,
+                              KiDialogTexte.ZpgKaltwasserMittelErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("kaltwasser_amplitude", "KaltwasserAmplitude", KiDialogTexte.ZpgKaltwasserAmplitudeName,
+                              KiDialogTexte.ZpgKaltwasserAmplitudeErl, KiDialogTexte.EINHEIT_KELVIN, 0, null);
+            yield return new KiDialogFeld("auslastungsgang", ZAPFPROFIL_SICHT + ".Auslastungsgang",
+                                          KiDialogTexte.ZpgAuslastungsgangName, KiParameterTyp.ZahlListe,
+                                          KiDialogTexte.ZpgAuslastungsgangErl, leerErlaubt: true,
+                                          reihe: KiZahlenreihen.Monate(), min: 0);
+            yield return Wahl("tagesgangsatz", "Tagesgangsatz", KiDialogTexte.ZpgTagesgangsatzName,
+                              KiDialogTexte.ZpgTagesgangsatzErl, true);
+            yield return Zahl("kaltwasser_auslegung", "KaltwasserAuslegung", KiDialogTexte.ZpgKaltwasserAuslegungName,
+                              KiDialogTexte.ZpgKaltwasserAuslegungErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("speichertemperatur", "Speichertemperatur", KiDialogTexte.ZpgSpeichertemperaturName,
+                              KiDialogTexte.ZpgSpeichertemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("zirk_kennwert", "ZirkKennwert", KiDialogTexte.ZpgZirkKennwertName,
+                              KiDialogTexte.ZpgZirkKennwertErl, KiDialogTexte.EINHEIT_KWH_M2A, 0, null);
+            yield return Zahl("zirk_flaeche", "ZirkFlaeche", KiDialogTexte.ZpgZirkFlaecheName,
+                              KiDialogTexte.ZpgZirkFlaecheErl, KiDialogTexte.EINHEIT_M2, 0, null);
+            yield return Zahl("zirk_laufzeit", "ZirkLaufzeit", KiDialogTexte.ZpgZirkLaufzeitName,
+                              KiDialogTexte.ZpgZirkLaufzeitErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
+            yield return Zahl("anzeigetemperatur", "Anzeigetemperatur", KiDialogTexte.ZpgAnzeigetemperaturName,
+                              KiDialogTexte.ZpgAnzeigetemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("stundenschwelle", "Stundenschwelle", KiDialogTexte.ZpgStundenschwelleName,
+                              KiDialogTexte.ZpgStundenschwelleErl, KiDialogTexte.EINHEIT_KW, 0, null);
+
+            static KiDialogFeld Zahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, string einheit,
+                                     double? min, double? max)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Zahl, erlaeuterung,
+                                    einheit: einheit, leerErlaubt: true, min: min, max: max);
+
+            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename, double max)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Ganzzahl,
+                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum", min: 1, max: max);
+
+            static KiDialogFeld Wahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, bool leer)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Wahl, erlaeuterung,
+                                    leerErlaubt: leer);
         }
 
         // =====================================================================
@@ -3446,7 +3608,7 @@ namespace WindowsFormsApplication1
         private const string AUSLEGUNG_SICHT = "ZapfprofilAuslegungKiSicht";
 
         /// <summary>
-        /// Die Auslegung Brauchwasser — zwoelf Felder aus
+        /// Die Auslegung Brauchwasser — einundzwanzig Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3462,7 +3624,10 @@ namespace WindowsFormsApplication1
         /// Bedarfstag ist eine Wahl aus Quelle UND Katalogtag in einem; gesperrte Quellen
         /// nennen ihren Grund. Perzentil und Realisierungen stehen nur mit „Stochastisch
         /// rechnen" auf der Maske und sind nur dann setzbar. Der empfohlene Punkt ist
-        /// Ergebnis und nur lesbar.
+        /// Ergebnis und nur lesbar. Die Eingaben des Verfahrensvergleichs (Ladeleistung und
+        /// Personen auto/manuell, Ladezeitfenster, nutzbarer Anteil, Zuschlag, Bezug des
+        /// Fuellstands) wirken nur auf den nachrichtlichen Vergleich; manuelle Werte sind nur
+        /// mit „manuell" wirksam.
         /// </para>
         /// <para>
         /// <b>„Bedarfstag konstruieren…" und „An Speicherauslegung uebergeben…" bleiben
@@ -3505,6 +3670,36 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgaWerkstoffName, KiParameterTyp.Wahl,
                                      KiDialogTexte.ZpgaWerkstoffErl),
 
+                    // ---- Die Eingaben des Verfahrensvergleichs (4.7, N11 (d); Z4, Gruppe 2b) --
+                    new KiDialogFeld("lade_modus", AUSLEGUNG_SICHT + ".LadeleistungModus",
+                                     KiDialogTexte.ZpgaLadeModusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaLadeModusErl),
+                    new KiDialogFeld("lade_manuell", AUSLEGUNG_SICHT + ".LadeleistungManuell",
+                                     KiDialogTexte.ZpgaLadeManuellName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadeManuellErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("ladefenster", AUSLEGUNG_SICHT + ".Ladefenster",
+                                     KiDialogTexte.ZpgaLadefensterName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadefensterErl, leerErlaubt: true),
+                    new KiDialogFeld("ladefenster_beginn", AUSLEGUNG_SICHT + ".LadefensterBeginn",
+                                     KiDialogTexte.ZpgaLadefensterBeginnName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaLadefensterBeginnErl, leerErlaubt: true),
+                    new KiDialogFeld("nutzanteil", AUSLEGUNG_SICHT + ".Nutzanteil",
+                                     KiDialogTexte.ZpgaNutzanteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaNutzanteilErl, leerErlaubt: true),
+                    new KiDialogFeld("zuschlag", AUSLEGUNG_SICHT + ".Zuschlag",
+                                     KiDialogTexte.ZpgaZuschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaZuschlagErl, leerErlaubt: true),
+                    new KiDialogFeld("personen_modus", AUSLEGUNG_SICHT + ".PersonenModus",
+                                     KiDialogTexte.ZpgaPersonenModusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaPersonenModusErl),
+                    new KiDialogFeld("personen_manuell", AUSLEGUNG_SICHT + ".PersonenManuell",
+                                     KiDialogTexte.ZpgaPersonenManuellName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaPersonenManuellErl, leerErlaubt: true),
+                    new KiDialogFeld("fuellstand_bezug", AUSLEGUNG_SICHT + ".FuellstandBezug",
+                                     KiDialogTexte.ZpgaFuellstandBezugName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaFuellstandBezugErl),
+
                     // ---- Die Stochastik des Bedarfstags (4.5 b) ------------------------
                     new KiDialogFeld("stochastisch", AUSLEGUNG_SICHT + ".Stochastisch",
                                      KiDialogTexte.ZpgaStochastischName, KiParameterTyp.Wahrheitswert,
@@ -3540,7 +3735,7 @@ namespace WindowsFormsApplication1
         private const string KONSTRUKTOR_SICHT = "BedarfstagKonstruktorKiSicht";
 
         /// <summary>
-        /// Der Konstruktor eines Bedarfstags nach A100 — acht Felder aus
+        /// Der Konstruktor eines Bedarfstags nach A100 — zehn Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>, sieben davon SPALTEN
         /// der Zeilentabelle.
         /// </summary>
@@ -3557,7 +3752,8 @@ namespace WindowsFormsApplication1
         /// Kennzeichen. Anzahl steht nur mit einer Zapfregel, Volumen und Zapftemperatur nur
         /// bei „Volumen direkt" auf der Maske — sonst nennt die Absage, was sie bedienbar
         /// macht. Zeitfenster und Mengen tragen die Grenzen ihrer Felder. Eine Zeile legt
-        /// der Anwender an oder entfernt sie.
+        /// der Anwender an oder entfernt sie. Bezugsart und Bezugsmenge gehoeren zusammen:
+        /// die Menge ist nur mit einer Bezugsart setzbar, „ohne Bezug" nimmt sie weg.
         /// </para>
         /// </remarks>
         private static KiDialog BedarfstagKonstruktor()
@@ -3570,6 +3766,14 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("name", KONSTRUKTOR_SICHT + ".Name",
                                      KiDialogTexte.ZpgkNameName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgkNameErl),
+
+                    // ---- Der Bezug des Tags (Schritt 124, N10 (j); Z4, Gruppe 2b) ------
+                    new KiDialogFeld("bezugsart", KONSTRUKTOR_SICHT + ".Bezugsart",
+                                     KiDialogTexte.ZpgkBezugsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgkBezugsartErl, leerErlaubt: true),
+                    new KiDialogFeld("bezugsmenge", KONSTRUKTOR_SICHT + ".Bezugsmenge",
+                                     KiDialogTexte.ZpgkBezugsmengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkBezugsmengeErl, leerErlaubt: true),
 
                     // ---- Die Zeilen: SPALTEN mit Zeitfenster und Verbraucher -----------
                     new KiDialogFeld("beginn", KONSTRUKTOR_SICHT + ".Zeilen[].Beginn",
@@ -3601,6 +3805,253 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgkVerbraucherErl, leerErlaubt: true,
                                      zeilenkennzeichen: "Kennzeichen")
                 },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // TagesgangEditor  ->  Dialoge.Bedarf.TagesgangEditor   (Zapfprofil Z4, Gruppe 2b)
+        // =====================================================================
+
+        /// <summary>Der Typname der Sichtklasse des Tagesgang-Editors (<c>EPOS.UI.Dialoge.Bedarf.TagesgangEditorKiSicht</c>).</summary>
+        private const string TAGESGANG_SICHT = "TagesgangEditorKiSicht";
+
+        /// <summary>
+        /// Der Tagesgang-Editor des Zapfprofils — fünf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TagesgangEditorKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung, die zum KATALOG gehoert</b>: Ihr „OK" schreibt den Tagesgang in einer
+        /// Transaktion (bei gesperrter Nutzungsart als neue Katalogversion) — das bleibt der Klick des
+        /// Anwenders. Angemeldet sind Auffrischen und Pruefen (die Fehleingabe, die das OK anhaelt),
+        /// KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Zahlenreihen</b>: die 24 Stundenanteile des gezeigten Tagtyps und die sieben
+        /// Wochenfaktoren, je in Prozent; „OK" normiert sie auf 100 %. Setzbar nur, solange die Maske
+        /// sie bedienbar zeigt — eine gesperrte Nutzungsart erst nach „Als eigene Kopie
+        /// bearbeiten…", das ein Klick des Anwenders bleibt, ebenso „Vorlage laden", „Normieren" und
+        /// „Zuruecksetzen".
+        /// </para>
+        /// </remarks>
+        private static KiDialog TagesgangEditor()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TAGESGANG_EDITOR,
+                anzeigename: KiDialogTexte.MaskeTagesgangEditor,
+                felder: new[]
+                {
+                    new KiDialogFeld("tagtyp", TAGESGANG_SICHT + ".Tagtyp",
+                                     KiDialogTexte.ZpgtTagtypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgtTagtypErl),
+                    new KiDialogFeld("stunden", TAGESGANG_SICHT + ".Stunden",
+                                     KiDialogTexte.ZpgtStundenName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.ZpgtStundenErl,
+                                     reihe: KiZahlenreihen.Stunden(), min: 0),
+                    new KiDialogFeld("wochenfaktoren", TAGESGANG_SICHT + ".Wochenfaktoren",
+                                     KiDialogTexte.ZpgtWochenfaktorenName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.ZpgtWochenfaktorenErl,
+                                     reihe: KiZahlenreihen.Wochentage(), min: 0),
+                    new KiDialogFeld("vorlage", TAGESGANG_SICHT + ".Vorlage",
+                                     KiDialogTexte.ZpgtVorlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgtVorlageErl, leerErlaubt: true),
+                    new KiDialogFeld("katalogversion", TAGESGANG_SICHT + ".Katalogversion",
+                                     KiDialogTexte.ZpgtKatalogversionName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtKatalogversionErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Zapfkategorien  ->  Dialoge.Bedarf.ZapfkategorienEditor   (Zapfprofil Z4, Gruppe 2b)
+        // =====================================================================
+
+        /// <summary>Der Typname der Sichtklasse des Kategorien-Editors (<c>EPOS.UI.Dialoge.Bedarf.ZapfkategorienEditorKiSicht</c>).</summary>
+        private const string KATEGORIEN_SICHT = "ZapfkategorienEditorKiSicht";
+
+        /// <summary>
+        /// Der Editor der Zapfkategorien des Zapfprofils — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfkategorienEditorKiSicht</c>, sechs davon SPALTEN des Rasters.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung, die zum KATALOG gehoert</b> (Katalogkopie, Status eigen): Ihr „OK"
+        /// schreibt die Kategorien in einer Transaktion — das bleibt der Klick des Anwenders. Angemeldet
+        /// sind Auffrischen und Pruefen (Fehleingabe und die Regeln des Kerns), KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Die Kategorien sind SPALTEN</b> mit ihrem Namen als Kennzeichen; die Grenzen sind die der
+        /// Felder (μ, σ ≥ 0, Dauer 1 … 1440 min, Anteil ≥ 0, Kappung ≥ 0 oder leer). Neu, Entfernen,
+        /// Reihenfolge, „Vorgabesatz laden" und „Als eigene Kopie bearbeiten…" bleiben Klicks des
+        /// Anwenders.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Zapfkategorien()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ZAPFKATEGORIEN,
+                anzeigename: KiDialogTexte.MaskeZapfkategorien,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogversion", KATEGORIEN_SICHT + ".Katalogversion",
+                                     KiDialogTexte.ZpgzKatalogversionName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgzKatalogversionErl, leerErlaubt: true),
+                    new KiDialogFeld("name", KATEGORIEN_SICHT + ".Zeilen[].Name",
+                                     KiDialogTexte.ZpgzNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgzNameErl, zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("volumenstrom", KATEGORIEN_SICHT + ".Zeilen[].Volumenstrom",
+                                     KiDialogTexte.ZpgzVolumenstromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzVolumenstromErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("dauer", KATEGORIEN_SICHT + ".Zeilen[].Dauer",
+                                     KiDialogTexte.ZpgzDauerName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgzDauerErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 1, max: 1440),
+                    new KiDialogFeld("anteil", KATEGORIEN_SICHT + ".Zeilen[].Anteil",
+                                     KiDialogTexte.ZpgzAnteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzAnteilErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("streuung", KATEGORIEN_SICHT + ".Zeilen[].Streuung",
+                                     KiDialogTexte.ZpgzStreuungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzStreuungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0),
+                    new KiDialogFeld("kappung", KATEGORIEN_SICHT + ".Zeilen[].Kappung",
+                                     KiDialogTexte.ZpgzKappungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgzKappungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", min: 0)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Brauchwasser_Nutzungsarten  ->  Dialoge.Bedarf.TwwNutzungsartAdminDialog   (Zapfprofil Z4, Gruppe 3)
+        // =====================================================================
+
+        /// <summary>Der Typname der Sichtklasse des Katalogdialogs (<c>EPOS.UI.Dialoge.Bedarf.TwwNutzungsartAdminKiSicht</c>).</summary>
+        private const string TWW_KATALOG_SICHT = "TwwNutzungsartAdminKiSicht";
+
+        /// <summary>
+        /// Der Katalogdialog „Brauchwasser-Nutzungsarten" — vier Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TwwNutzungsartAdminKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Verwaltung ohne Einstellwert</b>: Das Stammblatt ist lesend; geschrieben wird ueber
+        /// den Editor (eigene Maske <see cref="KiMaskennamen.TWW_NUTZUNGSART_EDITOR"/>), ueber
+        /// „Tagesgang…" und „Kategorien…" (die Editoren des Zapfprofils) und ueber Loeschen und
+        /// Import — Handlungen, die Zeilen anlegen oder wegnehmen und Klicks des Anwenders bleiben
+        /// (KI-D-Q11). Die WAHL der Zeile ist <c>satzwahl</c>; Katalogversion, Stand und Sperrgrund
+        /// der gewaehlten Zeile stehen als Anzeige daneben.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BrauchwasserNutzungsarten()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN,
+                anzeigename: KiDialogTexte.MaskeBrauchwasserNutzungsarten,
+                felder: new[]
+                {
+                    new KiDialogFeld("satz", TWW_KATALOG_SICHT + ".Satz",
+                                     KiDialogTexte.ZpgkSatzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgkSatzErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("katalogversion", TWW_KATALOG_SICHT + ".Katalogversion",
+                                     KiDialogTexte.ZpgkKatalogversionName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkKatalogversionErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("stand", TWW_KATALOG_SICHT + ".Stand",
+                                     KiDialogTexte.ZpgkStandName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkStandErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("sperrgrund", TWW_KATALOG_SICHT + ".Sperrgrund",
+                                     KiDialogTexte.ZpgkSperrgrundName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkSperrgrundErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>Der Typname der Sichtklasse des Editors einer Nutzungsart (<c>EPOS.UI.Dialoge.Bedarf.TwwNutzungsartEditorKiSicht</c>).</summary>
+        private const string TWW_EDITOR_SICHT = "TwwNutzungsartEditorKiSicht";
+
+        /// <summary>
+        /// Der Editor einer Nutzungsart — neunzehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TwwNutzungsartEditorKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung, die zum KATALOG gehoert</b>: Ihr „OK" schreibt die Nutzungsart in einer
+        /// Transaktion — das bleibt der Klick des Anwenders. Angemeldet sind Auffrischen und Pruefen
+        /// (Fehleingaben und Pflichtangaben), KEIN Speicherweg. Die Grenzen sind die der Felder:
+        /// Bedarf, Bandbreite, Ferienfaktor und Monatsfaktoren nicht negativ; eine Wahl nur aus ihrer
+        /// Liste. Die Wochenfaktoren bearbeitet „Tagesgang…" — hier stehen sie nicht.
+        /// </para>
+        /// </remarks>
+        private static KiDialog TwwNutzungsartEditor()
+        {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("bezeichner", TWW_EDITOR_SICHT + ".Bezeichner",
+                                 KiDialogTexte.ZpgkeBezeichnerName, KiParameterTyp.Text, KiDialogTexte.ZpgkeBezeichnerErl),
+                new KiDialogFeld("katalogversion", TWW_EDITOR_SICHT + ".Katalogversion",
+                                 KiDialogTexte.ZpgkKatalogversionName, KiParameterTyp.Text, KiDialogTexte.ZpgkeKatalogversionErl),
+                new KiDialogFeld("bezugsart", TWW_EDITOR_SICHT + ".Bezugsart",
+                                 KiDialogTexte.ZpgkeBezugsartName, KiParameterTyp.Wahl, KiDialogTexte.ZpgkeBezugsartErl),
+                new KiDialogFeld("tagesgangsatz", TWW_EDITOR_SICHT + ".Tagesgangsatz",
+                                 KiDialogTexte.ZpgkeTagesgangsatzName, KiParameterTyp.Wahl, KiDialogTexte.ZpgkeTagesgangsatzErl),
+                new KiDialogFeld("bilanzgrenze", TWW_EDITOR_SICHT + ".Bilanzgrenze",
+                                 KiDialogTexte.ZpgkeBilanzgrenzeName, KiParameterTyp.Wahl, KiDialogTexte.ZpgkeBilanzgrenzeErl),
+                new KiDialogFeld("kalender", TWW_EDITOR_SICHT + ".Kalender",
+                                 KiDialogTexte.ZpgkeKalenderName, KiParameterTyp.Wahl, KiDialogTexte.ZpgkeKalenderErl)
+            };
+            foreach ((string feld, string eigenschaft, string name) in new[]
+                     {
+                         ("bedarf_niedrig", "BedarfNiedrig", KiDialogTexte.ZpgkeBedarfNiedrigName),
+                         ("bedarf_mittel", "BedarfMittel", KiDialogTexte.ZpgkeBedarfMittelName),
+                         ("bedarf_hoch", "BedarfHoch", KiDialogTexte.ZpgkeBedarfHochName)
+                     })
+                felder.Add(new KiDialogFeld(feld, TWW_EDITOR_SICHT + "." + eigenschaft, name, KiParameterTyp.Zahl,
+                                            KiDialogTexte.ZpgkeBedarfErl, einheit: KiDialogTexte.ZpgkeEinheitBedarf, min: 0));
+            foreach ((string feld, string eigenschaft, string name) in new[]
+                     {
+                         ("bedarf_niedrig_min", "BedarfNiedrigMin", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfNiedrigName, false)),
+                         ("bedarf_niedrig_max", "BedarfNiedrigMax", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfNiedrigName, true)),
+                         ("bedarf_mittel_min", "BedarfMittelMin", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfMittelName, false)),
+                         ("bedarf_mittel_max", "BedarfMittelMax", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfMittelName, true)),
+                         ("bedarf_hoch_min", "BedarfHochMin", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfHochName, false)),
+                         ("bedarf_hoch_max", "BedarfHochMax", KiDialogTexte.ZpgkeGrenze(KiDialogTexte.ZpgkeBedarfHochName, true))
+                     })
+                felder.Add(new KiDialogFeld(feld, TWW_EDITOR_SICHT + "." + eigenschaft, name, KiParameterTyp.Zahl,
+                                            KiDialogTexte.ZpgkeBandbreiteErl, leerErlaubt: true,
+                                            einheit: KiDialogTexte.ZpgkeEinheitBedarf, min: 0));
+            felder.Add(new KiDialogFeld("zapftemperatur", TWW_EDITOR_SICHT + ".Zapftemperatur",
+                                        KiDialogTexte.ZpgkeZapftemperaturName, KiParameterTyp.Zahl,
+                                        KiDialogTexte.ZpgkeTemperaturErl, einheit: KiDialogTexte.EINHEIT_GRAD_C));
+            felder.Add(new KiDialogFeld("kaltwasser", TWW_EDITOR_SICHT + ".Kaltwasser",
+                                        KiDialogTexte.ZpgkeKaltwasserName, KiParameterTyp.Zahl,
+                                        KiDialogTexte.ZpgkeTemperaturErl, einheit: KiDialogTexte.EINHEIT_GRAD_C));
+            felder.Add(new KiDialogFeld("ferienfaktor", TWW_EDITOR_SICHT + ".Ferienfaktor",
+                                        KiDialogTexte.ZpgkeFerienfaktorName, KiParameterTyp.Zahl,
+                                        KiDialogTexte.ZpgkeFerienfaktorErl, leerErlaubt: true, min: 0));
+            felder.Add(new KiDialogFeld("monatsfaktoren", TWW_EDITOR_SICHT + ".Monatsfaktoren",
+                                        KiDialogTexte.ZpgkeMonatsfaktorenName, KiParameterTyp.ZahlListe,
+                                        KiDialogTexte.ZpgkeMonatsfaktorenErl, reihe: KiZahlenreihen.Monate(), min: 0));
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.TWW_NUTZUNGSART_EDITOR,
+                anzeigename: KiDialogTexte.MaskeTwwNutzungsartEditor,
+                felder: felder,
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),

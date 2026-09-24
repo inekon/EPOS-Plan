@@ -617,6 +617,11 @@ namespace EPOS.Kern.Tests
                 AnlagenkopplungSchema.UebergabeAlle(null);
                 AnlagenkopplungSchema.ErgebnisspaltenAlle(null);
 
+                // Schritt 124 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
+                // Tab_TwwProjekt und die Bezugsart am Bedarfstag. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
+                TwwSchema.T3Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

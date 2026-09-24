@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -36,11 +37,15 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Ein Wert der Dreiergruppe: Verfahren, Stand, Volumen [l] und/oder Leistung [kW],
-    /// empfohlen ja/nein, Text. Die drei Werte stehen nebeneinander, nie zu einer Zahl gemischt.
+    /// empfohlen ja/nein, der Satz der Karte (Rechenweg oder Grund) als Kennung und Werte
+    /// (N11 (k)). Die drei Werte stehen nebeneinander, nie zu einer Zahl gemischt.
     /// </summary>
     internal sealed record Auslegungswert(ZapfAuslegungsverfahren Verfahren, Auslegungsstatus Status, double? VolumenL,
-                                          double? LeistungKw, bool Empfohlen, string Text)
+                                          double? LeistungKw, bool Empfohlen, ZapfSatz Satz)
     {
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string Text => Satz?.Klartext ?? "";
+
         /// <summary>
         /// Die benannte Ablehnung hinter „nicht rechenbar" (etwa fehlende Zapfkategorien) mit
         /// Kennung und sprachfreien Werten — die Hülle baut daraus den Satz der Oberflächensprache;
@@ -52,14 +57,28 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die Empfehlung einer Topologiegruppe</b> — genau eine: bei Speicher der Punkt der
     /// Summenlinie samt nächstem Nenninhalt als Anzeige, sonst die Minutenspitze des Bedarfstags.
-    /// Nicht rechenbar mit Grund, wenn der Bedarfstag oder eine Eingabe fehlt.
+    /// Nicht rechenbar mit Grund, wenn der Bedarfstag oder eine Eingabe fehlt. Vermerke und Grund
+    /// sind Sätze als Kennung und Werte (N11 (k)). <see cref="Schnellauslegung"/> setzt der Kern:
+    /// im Schnellpfad des Vereinfachungsverfahrens und in der Stufe Einfach des Dialogs (N11 (c),
+    /// <see cref="Auslegungseingang.Stufe"/>).
     /// </summary>
     internal sealed record Auslegungsempfehlung(ZapfAuslegungsverfahren Verfahren, bool Rechenbar, double? VolumenL,
                                                 double? LeistungKw, double? NenninhaltL, bool Schnellauslegung,
-                                                string Vermerk, string Grund);
+                                                IReadOnlyList<ZapfSatz> Vermerke, ZapfSatz Grund)
+    {
+        /// <summary>Die Vermerke im deutschen Wortlaut, mit „; " verbunden (Protokoll, Test).</summary>
+        public string Vermerk => string.Join("; ", (Vermerke ?? new ZapfSatz[0]).Select(v => v.Klartext));
 
-    /// <summary>Eine Zone, die die Auslegung nicht rechnen kann, mit Grund.</summary>
-    internal sealed record Auslegungsablehnung(string Zone, string Klartext);
+        /// <summary>Der Grund im deutschen Wortlaut; leer, wenn rechenbar.</summary>
+        public string GrundText => Grund?.Klartext ?? "";
+    }
+
+    /// <summary>Eine Zone, die die Auslegung nicht rechnen kann, mit Grund als Satz (Kennung und Werte).</summary>
+    internal sealed record Auslegungsablehnung(string Zone, ZapfSatz Satz)
+    {
+        /// <summary>Der deutsche Wortlaut des Grundes.</summary>
+        public string Klartext => Satz?.Klartext ?? "";
+    }
 
     /// <summary>Das Ergebnis einer Topologiegruppe (ZU13: Topologie je Zone, Auslegung je Gruppe).</summary>
     internal sealed record Auslegungsgruppe
@@ -195,27 +214,27 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class Dreiergruppe
     {
-        /// <summary>Text des Perzentils, solange das Auslegungsensemble nicht gerechnet ist (4.5 b).</summary>
-        internal const string PERZENTIL_OFFEN = "noch nicht gerechnet — „Stochastisch rechnen“ zieht das Auslegungsensemble";
+        /// <summary>Kennung des Satzes des Perzentils, solange das Auslegungsensemble nicht gerechnet ist (4.5 b).</summary>
+        internal const string PERZENTIL_OFFEN = "AUSTEXT_PERZENTIL_OFFEN";
 
         /// <summary>Kennung der Reihenfolgeprüfung.</summary>
         internal const string HINWEIS_REIHENFOLGE = "REIHENFOLGE";
 
         /// <summary>Das Perzentil vor „Stochastisch rechnen": noch nicht gerechnet.</summary>
         internal static Auslegungswert PerzentilOffen()
-            => new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtGerechnet, null, null, false, PERZENTIL_OFFEN);
+            => new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtGerechnet, null, null, false,
+                                  ZapfSatz.Neu(PERZENTIL_OFFEN));
 
         /// <summary>Der Normvergleich als Wert: V_DIN [l] oder „außerhalb"/„nicht rechenbar".</summary>
         internal static Auslegungswert Normvergleich(Din4708Ergebnis d)
         {
             if (d != null && d.Gueltig)
                 return new Auslegungswert(ZapfAuslegungsverfahren.Normvergleich, Auslegungsstatus.Gerechnet, d.VolumenL, null, false,
-                    "DIN 4708: N = " + Auslegungstext.Z(d.KennzahlN.Value) + ", V_DIN = " + Auslegungstext.G(d.VolumenL.Value)
-                    + " l" + (d.Vollstaendig ? "" : " (nur Wohnzonen)"));
+                    ZapfSatz.Neu(d.Vollstaendig ? "AUSTEXT_NORMVERGLEICH" : "AUSTEXT_NORMVERGLEICH_TEIL", d.KennzahlN.Value, d.VolumenL.Value));
             bool ausserhalb = d == null || d.Fehler == ZapfAuslegungsfehler.NichtGueltig;
             return new Auslegungswert(ZapfAuslegungsverfahren.Normvergleich,
                 ausserhalb ? Auslegungsstatus.AusserhalbGueltigkeit : Auslegungsstatus.NichtRechenbar, null, null, false,
-                d?.Grund ?? "DIN 4708: " + Din4708Kennzahl.AUSSERHALB);
+                d?.Grund ?? ZapfSatz.Neu("AUSTEXT_DIN_AUSSERHALB"));
         }
 
         /// <summary>
@@ -245,19 +264,16 @@ namespace WindowsFormsApplication1
                 if (g(hauptwert) && g(norm) && hauptwert.VolumenL.HasValue && norm.VolumenL.HasValue
                     && !(hauptwert.VolumenL.Value < norm.VolumenL.Value))
                     h.Add(new Auslegungshinweis(HINWEIS_REIHENFOLGE,
-                        "Der Summenlinienpunkt " + Auslegungstext.G(hauptwert.VolumenL.Value) + " l liegt nicht unter V_DIN "
-                        + Auslegungstext.G(norm.VolumenL.Value) + " l."));
+                        ZapfSatz.Neu("AUSHINWEIS_REIHENFOLGE_DIN", hauptwert.VolumenL.Value, norm.VolumenL.Value)));
                 if (g(perzentil) && g(hauptwert) && perzentil.VolumenL.HasValue && hauptwert.VolumenL.HasValue
                     && perzentil.VolumenL.Value > hauptwert.VolumenL.Value)
                     h.Add(new Auslegungshinweis(HINWEIS_REIHENFOLGE,
-                        "Das Perzentil " + Auslegungstext.G(perzentil.VolumenL.Value) + " l liegt über dem Summenlinienpunkt "
-                        + Auslegungstext.G(hauptwert.VolumenL.Value) + " l."));
+                        ZapfSatz.Neu("AUSHINWEIS_REIHENFOLGE_PERZENTIL_V", perzentil.VolumenL.Value, hauptwert.VolumenL.Value)));
             }
             else if (g(perzentil) && g(hauptwert) && perzentil.LeistungKw.HasValue && hauptwert.LeistungKw.HasValue
                      && perzentil.LeistungKw.Value > hauptwert.LeistungKw.Value)
                 h.Add(new Auslegungshinweis(HINWEIS_REIHENFOLGE,
-                    "Die Perzentilleistung " + Auslegungstext.Z(perzentil.LeistungKw.Value) + " kW liegt über der Minutenspitze "
-                    + Auslegungstext.Z(hauptwert.LeistungKw.Value) + " kW des Bedarfstags."));
+                    ZapfSatz.Neu("AUSHINWEIS_REIHENFOLGE_PERZENTIL_P", perzentil.LeistungKw.Value, hauptwert.LeistungKw.Value)));
             return h.AsReadOnly();
         }
     }

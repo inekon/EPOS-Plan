@@ -1549,6 +1549,28 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 124: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
+            //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 123. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_124_ZapfprofilLaufangaben
+            //      bedient (TwwSchema.SpaltenT3): Erzeugerart, Uebertrager_Werkstoff, Personen_Auto
+            //      (0/1, Vorgabe 1), Personen_Manuell, Fuellstand_Bezug an Tab_TwwProjekt und
+            //      Bezugsart an Tab_TwwBedarfstag_STAMM.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - alles steht auf "keine Angabe" bzw.
+            //      Personen automatisch; kein Referenzprojekt steht auf dem Generator. Die Bezugsart
+            //      des Ecodesign-Zapfprofils spielt danach das Katalogskript aus dem Paketteil ein.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 124 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag: " +
+                              (TwwSchema.T3Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht124 = new List<string>();
+                angelegt += TwwSchema.T3Alle(bericht124);
+                foreach (string zeile in bericht124)
+                    Console.WriteLine("Schritt 124 - " + zeile + ".");
+                Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

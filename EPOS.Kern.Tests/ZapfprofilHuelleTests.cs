@@ -216,99 +216,98 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         [Fact]
-        public void Jede_Ablehnung_des_Kerns_hat_ihren_Text_in_beiden_Sprachen()
+        public void Jede_Bezugsart_hat_Groesse_und_Einheit_in_beiden_Sprachen()
         {
             var schluessel = new List<string>();
-            schluessel.AddRange(Enum.GetValues(typeof(ZapfEingabefehler)).Cast<ZapfEingabefehler>().Select(ZapfprofilHuelle.Schluessel));
-            schluessel.AddRange(Enum.GetValues(typeof(ZapfSpeicherfehler)).Cast<ZapfSpeicherfehler>().Select(ZapfprofilHuelle.Schluessel));
-            schluessel.AddRange(Enum.GetValues(typeof(ParametersatzFehler)).Cast<ParametersatzFehler>().Select(ZapfprofilHuelle.Schluessel));
             foreach (ZapfBezugsart b in Enum.GetValues(typeof(ZapfBezugsart)))
             {
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(15 + 14 + 3 + 14, schluessel.Count);
-            Assert.Contains("ZPG_EINGABE_KALENDER_UNGUELTIG", schluessel);
-            Assert.Contains("ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG", schluessel);
-            Assert.Contains("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", schluessel);
+            Assert.Equal(14, schluessel.Count);
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
             Assert.True(fehlend.Length == 0, "Ohne Text in beiden Sprachen: " + string.Join(", ", fehlend));
         }
 
         /// <summary>
-        /// Jede Hinweiskennung, die der Rechenweg vergibt, hat ihren Text — gelesen aus dem
-        /// QUELLTEXT des Zapfprofil-Ordners, damit eine neue Kennung auffällt.
+        /// Die Meldungen tragen den Satz des Kerns in der Oberflächensprache (N11 (k)): Kennung ist
+        /// sein Ressourcenschlüssel, die Werte setzt die Oberfläche in IHRER Kultur ein, der
+        /// Klartext bleibt der deutsche Satz in invarianter Kultur.
         /// </summary>
         [Fact]
-        public void Jede_Hinweiskennung_des_Rechenwegs_hat_ihren_Text()
+        public void Die_Meldungen_nennen_Zone_und_den_Satz_des_Kerns_in_der_Oberflaechensprache()
         {
-            string ordner = Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Zapfprofil");
-            var kennungen = new SortedSet<string>(StringComparer.Ordinal);
-            var muster = new Regex(@"(?:new ZapfHinweis\([^,]+,\s*|SummeWarnen\([^""]*)""(?<k>[A-Z][A-Z0-9_]+)""");
-            foreach (string datei in Directory.GetFiles(ordner, "*.cs"))
-                foreach (Match m in muster.Matches(File.ReadAllText(datei)))
-                    kennungen.Add(m.Groups["k"].Value);
-            kennungen.Add(ZapfHinweis.PARAMETER_FEHLT);
-
-            Assert.True(kennungen.Count >= 11, "Nur " + kennungen.Count + " Hinweiskennungen gefunden: " + string.Join(", ", kennungen));
-            string[] fehlend = kennungen.Select(ZapfprofilHuelle.HinweisSchluessel)
-                                        .Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
-            Assert.True(fehlend.Length == 0, "Ohne Text: " + string.Join(", ", fehlend));
-        }
-
-        [Fact]
-        public void Die_Meldungen_nennen_Zone_Grund_und_den_Wortlaut_des_Kerns()
-        {
-            ZapfprofilMeldung a = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.BezugsmengeFehlt, "Kern: Bezugsmenge 0"));
-            Assert.Equal("ZPG_EINGABE_BEZUGSMENGE_FEHLT", a.Kennung);
+            ZapfprofilMeldung a = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.BezugsmengeFehlt,
+                ZapfSatz.Neu("EINGABE_BEZUGSMENGE_NICHT_POSITIV", "Büro")));
+            Assert.Equal("ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV", a.Kennung);
             Assert.Equal(ZapfprofilMeldungsart.Ablehnung, a.Art);
-            Assert.Equal("Zone „Büro“ trägt 0: Die Bezugsgröße fehlt.", a.Text);
-            Assert.Equal("Kern: Bezugsmenge 0", a.Klartext);
+            // Der Satz nennt seine Zone selbst: kein Vorsatz, kein „Nicht rechenbar" (das sagt der Banner).
+            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Text);
+            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Klartext);
 
-            ZapfprofilMeldung z = ZapfprofilHuelle.Meldung(new ZapfAblehnung("", ZapfEingabefehler.ZirkulationUngueltig, "k"));
-            Assert.Equal("Die Zirkulation trägt 0: Die Angaben zur Zirkulation sind ungültig.", z.Text);
+            // Ein Satz ohne Zone bekommt den Vorsatz der Zone.
+            ZapfprofilMeldung ohneZone = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.RasterUngueltig,
+                ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UNGUELTIG")));
+            Assert.Equal("Zone „Büro“ trägt 0: Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.", ohneZone.Text);
 
-            ZapfprofilMeldung h = ZapfprofilHuelle.Meldung(new ZapfHinweis("Wohnen", "BEDARF_AUSSERHALB_BANDBREITE", "k"));
-            Assert.Equal("ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE", h.Kennung);
-            Assert.Equal("Zone „Wohnen“: Der spezifische Bedarf liegt außerhalb der Bandbreite des Niveaus.", h.Text);
+            ZapfprofilMeldung z = ZapfprofilHuelle.Meldung(new ZapfAblehnung("", ZapfEingabefehler.ZirkulationUngueltig,
+                ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")));
+            Assert.Equal("Die Zirkulation trägt 0: Unbekannte Methode der Zirkulation.", z.Text);
 
-            // Eine Kennung ohne Ressource behält den Wortlaut des Kerns - benannt statt still.
-            ZapfprofilMeldung u = ZapfprofilHuelle.Meldung(new ZapfHinweis("", "UNBEKANNT_NEU", "Wortlaut des Kerns"));
-            Assert.Equal("Wortlaut des Kerns", u.Text);
+            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Nutzungsart steht mit Namen, nie als Id.
+            Assert.Equal("Die Speichertemperatur ist negativ.",
+                         ZapfSatz.Neu("AUSLEGUNG_NEGATIV", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")).Klartext);
+            Assert.Equal("Die Nutzungsart der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+                         ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.NutzungsartFehlt,
+                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro"))).Text);
+
+            var hinweis = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE,
+                ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", "Wohnen", 1.5, 0.25, "–"));
+            ZapfprofilMeldung h = ZapfprofilHuelle.Meldung(hinweis);
+            Assert.Equal("ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", h.Kennung);
+            Assert.Equal(ZapfprofilMeldungsart.Hinweis, h.Art);
+            Assert.Equal("Der spezifische Bedarf der Zone „Wohnen“ (1,5 kWh je Einheit und Tag) liegt außerhalb der "
+                         + "Bandbreite des Niveaus (0,25 … –).", h.Text);
+            Assert.Contains("(1.5 kWh je Einheit und Tag)", h.Klartext);
+
+            CultureInfo.CurrentCulture = EN;
+            CultureInfo.CurrentUICulture = EN;
+            Assert.Equal("The specific demand of zone “Wohnen” (1.5 kWh per unit and day) lies outside the range of the level "
+                         + "(0.25 … –).", ZapfprofilHuelle.Meldung(hinweis).Text);
+            CultureInfo.CurrentCulture = DE;
+            CultureInfo.CurrentUICulture = DE;
+
+            // Eine Kennung ohne Muster: die Kennung mit ihren Werten — benannt statt still.
+            ZapfprofilMeldung u = ZapfprofilHuelle.Meldung(new ZapfHinweis("", "UNBEKANNT_NEU", ZapfSatz.Neu("UNBEKANNT_NEU", 3)));
+            Assert.Equal("UNBEKANNT_NEU (3)", u.Text);
 
             ZapfprofilMeldung s = ZapfprofilHuelle.Meldung(
-                new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneFremd, "Nord", "Kerntext"));
-            Assert.Equal("ZPG_SPEICHER_ZONE_FREMD", s.Kennung);
-            Assert.Equal("Das Zapfprofil wurde nicht gespeichert — Zone „Nord“: die Zone gehört zu einem anderen Projekt.", s.Text);
+                new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneFremd, "Nord", ZapfSatz.Neu("SPEICHER_ZONE_FREMD", "Nord")));
+            Assert.Equal("ZPG_SATZ_SPEICHER_ZONE_FREMD", s.Kennung);
+            Assert.Equal("Das Zapfprofil wurde nicht gespeichert — die Zone „Nord“ gehört zu einem anderen Projekt.", s.Text);
             Assert.Equal(ZapfprofilMeldungsart.Fehler, s.Art);
         }
 
         /// <summary>
         /// Fehlen einer stochastisch gerechneten Zone die Zapfkategorien ihrer Nutzungsart, nennt die
-        /// Meldung die Nutzungsart — mit dem genaueren Schlüssel, der in beiden Sprachen steht.
+        /// Meldung Nutzungsart, Katalogversion und Zone — in beiden Sprachen mit denselben Werten.
         /// </summary>
         [Fact]
         public void Fehlende_Zapfkategorien_nennen_die_Nutzungsart_in_beiden_Sprachen()
         {
-            var ablehnung = new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig, "Kernsatz")
-            {
-                Kennung = Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN,
-                Argumente = new[] { "Probe", "T1" }
-            };
+            var ablehnung = new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig,
+                ZapfSatz.Neu(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, "Probe", "T1", "Nord"));
             ZapfprofilMeldung m = ZapfprofilHuelle.Meldung(ablehnung);
-            Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
-            Assert.Equal("Zone „Nord“ trägt 0: Für die Nutzungsart „Probe“ (Katalogversion T1) stehen keine " +
-                         "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", m.Text);
-            Assert.Equal("Kernsatz", m.Klartext);
+            Assert.Equal("ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
+            Assert.Equal("Für die Nutzungsart „Probe“ (Katalogversion T1) der Zone „Nord“ "
+                         + "stehen keine Zapfkategorien im Katalog.", m.Text);
+            Assert.Equal(ablehnung.Klartext, m.Klartext);
             string en = Text(m.Kennung, EN);
             Assert.Contains("{0}", en);
             Assert.Contains("{1}", en);
+            Assert.Contains("{2}", en);
             Assert.Contains("draw-off categories", en);
-
-            // Ohne Kennung bleibt der allgemeine Grund.
-            ZapfprofilMeldung ohne = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig, "k"));
-            Assert.Equal("ZPG_EINGABE_STOCHASTIK_UNGUELTIG", ohne.Kennung);
         }
 
         /// <summary>
@@ -424,8 +423,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(s.Kennzahlen.JahresbedarfZapfungKwh, v.Zonen[0].JahresbedarfZapfungKwh, 6);
             ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
             Assert.Equal("Zone leer", m.Zone);
-            Assert.StartsWith("ZPG_EINGABE_", m.Kennung);
-            Assert.StartsWith("Zone „Zone leer“ trägt 0: ", m.Text);
+            Assert.StartsWith(ZapfSatz.PRAEFIX + "EINGABE_", m.Kennung);
+            Assert.Equal("Die Zone „Zone leer“ hat keine positive Bezugsmenge.", m.Text);
         }
 
         /// <summary>
@@ -443,7 +442,7 @@ namespace EPOS.Kern.Tests
             {
                 Zonen = { new ZapfprofilZoneDaten { Name = "Zone Probe", IdNutzungsart = Nutzungsart(), Bezugsmenge = 10 } }
             };
-            const string KENNUNG = "ZPG_HINW_NETZVERLUST_UND_ZIRKULATION";
+            const string KENNUNG = "ZPG_SATZ_HINWEIS_NETZVERLUST_UND_ZIRKULATION";
 
             ZapfprofilVorschauDaten ohne = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
             Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, ohne.Zustand);
@@ -458,7 +457,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilMeldung h = Assert.Single(mit.Meldungen, x => x.Kennung == KENNUNG);
             Assert.Equal(ZapfprofilMeldungsart.Hinweis, h.Art);
             Assert.Equal("", h.Zone);
-            Assert.StartsWith("Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation.", h.Text);
+            Assert.StartsWith("Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation (", h.Text);
         }
 
         [Fact]
@@ -540,7 +539,7 @@ namespace EPOS.Kern.Tests
                 ZapfprofilSpeicherergebnis e = behaelter.Schreiben(v);
                 Assert.False(e.Erfolg);
                 Assert.Null(e.Stand);
-                Assert.Equal("ZPG_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
+                Assert.Equal("ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
                 Assert.Equal(ZapfprofilMeldungsart.Fehler, e.Meldung.Art);
                 Assert.StartsWith("Das Zapfprofil wurde nicht gespeichert — ", e.Meldung.Text);
                 Assert.NotEqual("", e.Meldung.Klartext);
@@ -562,8 +561,10 @@ namespace EPOS.Kern.Tests
             e.Zonen.Add(new ZapfprofilZoneDaten { Name = "Z", IdNutzungsart = 1, Bezugsmenge = 1 });
             ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(1, e, null);
             Assert.Equal(ZapfprofilVorschauZustand.Abgebrochen, v.Zustand);
-            Assert.Equal("Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen seine Tabellen.", v.Grund);
-            Assert.Equal("ZPG_MSG_TABELLEN_FEHLEN", Assert.Single(v.Meldungen).Kennung);
+            Assert.StartsWith("Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen: Katalog der Tagesgangsätze, ", v.Grund);
+            Assert.Contains("Parameterkatalog des Zapfprofils", v.Grund);
+            Assert.DoesNotContain("Tab_", v.Grund);
+            Assert.Equal("ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN", Assert.Single(v.Meldungen).Kennung);
             Assert.Null(v.Summe);
         }
 
@@ -580,7 +581,7 @@ namespace EPOS.Kern.Tests
             => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel, kultur);
 
         private static string[] Platzhalter(string text)
-            => Regex.Matches(text ?? "", @"\{\d+\}").Select(m => m.Value).Distinct().OrderBy(s => s, StringComparer.Ordinal).ToArray();
+            => Regex.Matches(text ?? "", @"\{\d+(:[^}]*)?\}").Select(m => m.Value).Distinct().OrderBy(s => s, StringComparer.Ordinal).ToArray();
 
         private static Dictionary<string, string> Resx(string datei)
         {

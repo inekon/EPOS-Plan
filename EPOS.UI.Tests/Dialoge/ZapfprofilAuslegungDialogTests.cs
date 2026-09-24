@@ -21,7 +21,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Auslegung kommt aus einem Prüfdelegaten — der Dialog rechnet nicht; die Entprellung
 /// steht auf 0, außer im Fall, der sie selbst prüft. Kultur de-DE, alle Zahlen erfunden.</para>
 /// </summary>
-public class ZapfprofilAuslegungDialogTests : EposBunitContext
+public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
 {
     public ZapfprofilAuslegungDialogTests()
     {
@@ -120,7 +120,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     private IRenderedComponent<ZapfprofilAuslegungDialog> Aufbauen(
         ZapfprofilAuslegungStartDaten? daten = null,
         Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>? rechnen = null,
-        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? konstruieren = null,
+        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? konstruieren = null,
         Action<ZapfprofilAuslegungEingabeDaten?>? geschlossen = null,
         int entprellungMs = 0,
         Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>? stochastisch = null)
@@ -505,11 +505,14 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Der Konstruktor wie die Hülle: der Tag samt den Zeilen, aus denen er entstand.</summary>
-    private static ZapfprofilKonstruktorErgebnis Bauen(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen, string name)
+    private static ZapfprofilKonstruktorErgebnis Bauen(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen, string name,
+                                                       double? bezugsmenge, int? bezugsart)
         => new(new ZapfprofilBedarfstagDaten
         {
             Id = 0,
             Bezeichner = name,
+            Bezugsmenge = bezugsmenge,
+            Bezugsart = bezugsart,
             Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
             Herkunft = "Eigenkonstruktion",
             Ereignisse = zeilen.Select((z, i) => new ZapfprofilEreignisDaten((int)((z.BeginnH ?? 0) * 60), 10, 1.0 + i)).ToList(),
@@ -551,7 +554,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     public void Eine_Ablehnung_des_Konstruktors_steht_als_Banner_und_er_bleibt_offen()
     {
         var meldung = new ZapfprofilMeldung("ZPG_AUS_KON_ZEITFENSTER", "Zeile 1", "Zeile 1: Das Zeitfenster ist leer.", ZapfprofilMeldungsart.Ablehnung);
-        var cut = Aufbauen(konstruieren: (_, _) => new ZapfprofilKonstruktorErgebnis(null, new[] { meldung }));
+        var cut = Aufbauen(konstruieren: (_, _, _, _) => new ZapfprofilKonstruktorErgebnis(null, new[] { meldung }));
 
         Knopf(cut, "Bedarfstag konstruieren…").Click();
         IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
@@ -660,7 +663,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     public void Eine_Fehleingabe_im_Konstruktor_wird_mit_Feld_und_Zeile_genannt()
     {
         int gebaut = 0;
-        var cut = Aufbauen(konstruieren: (z, n) => { gebaut++; return Bauen(z, n); });
+        var cut = Aufbauen(konstruieren: (z, n, m, a) => { gebaut++; return Bauen(z, n, m, a); });
         Knopf(cut, "Bedarfstag konstruieren…").Click();
         IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
 
@@ -1374,7 +1377,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
 
     /// <summary>Der Konstruktor, unmittelbar gezeichnet — die Regeln des Stands, erfundene Zeilen.</summary>
     private IRenderedComponent<BedarfstagKonstruktor> Konstruktor(
-        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? konstruieren = null)
+        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? konstruieren = null)
         => Render<BedarfstagKonstruktor>(p => p
             .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
             .Add(x => x.Regeln, Start().Regeln)
@@ -1450,7 +1453,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     public void Der_Konstruktor_prueft_wie_sein_OK_und_ist_offen_die_aktive_Maske()
     {
         int gebaut = 0;
-        var k = Konstruktor((_, _) =>
+        var k = Konstruktor((_, _, _, _) =>
         {
             gebaut++;
             return new ZapfprofilKonstruktorErgebnis(null, new[]

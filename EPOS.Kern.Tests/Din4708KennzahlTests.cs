@@ -121,7 +121,7 @@ namespace EPOS.Kern.Tests
             Din4708Ergebnis e = Din4708Kennzahl.Rechnen(new[] { (buero, nichtwohnen) }, Katalog(), ps, 50.0, 0.75);
             Assert.False(e.Gueltig);
             Assert.Equal(ZapfAuslegungsfehler.NichtGueltig, e.Fehler);
-            Assert.Contains(Din4708Kennzahl.AUSSERHALB, e.Grund);
+            Assert.Equal("AUSTEXT_DIN_NUR_WOHNEN", e.Grund.Kennung);
             Assert.Equal(new[] { "Büro" }, e.ZonenAusserhalb);
 
             // Wohnen mit Durchfluss: außerhalb.
@@ -144,7 +144,7 @@ namespace EPOS.Kern.Tests
             Din4708Ergebnis e = Din4708Kennzahl.Rechnen(new[] { (Zone("Wohnen"), Art()) }, Katalog(), ps, 50.0, 0.75);
             Assert.False(e.Gueltig);
             Assert.Equal(ZapfAuslegungsfehler.WohnungstabelleFehlt, e.Fehler);
-            Assert.Contains("nicht rechenbar", e.Grund);
+            Assert.Contains("nicht rechenbar", e.GrundText);
             Assert.Null(e.KennzahlN);
 
             // Unbekannte Ausstattungsklasse und fehlende Belegung: benannt, nie geschätzt.

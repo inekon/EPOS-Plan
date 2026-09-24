@@ -598,6 +598,48 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): Scheitert das Schreiben, nennt die Statuszeile den
+    /// Speicherfehler des Kerns — einmal, mit dem Text des Kerns; das Band darüber sagt
+    /// weiter, DASS nicht gespeichert wurde.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_nennt_den_Speicherfehler_in_der_Statuszeile()
+    {
+        const string zeile = "Speichern gescheitert: SqliteException: SQLite Error 19: 'E13-Probe'.";
+        var cut = Zeige(p => p
+            .Add(x => x.WirkungSpeichern, (string _) => false)
+            .Add(x => x.Speicherfehlerzeile, () => zeile));
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.Find("textarea").Input("Komfort");
+        Speichernknopf(cut).Click();
+
+        Assert.Equal(zeile, cut.Instance.Status);
+        Assert.Single(cut.FindAll(".epos-status"), e => e.TextContent.Contains("E13-Probe", StringComparison.Ordinal));
+        Assert.Single(cut.FindAll(".epos-warnbanner"));
+        Assert.DoesNotContain("E13-Probe", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): Was die Hülle an Lade-, Speicher- und Vorsorgegründen in
+    /// die Statuszeile schreibt, zeigt die Seite genau so — ohne Warnzeichen, also ohne
+    /// den Anstoß „neu berechnen", der für einen Lesefehler nicht stimmt.
+    /// </summary>
+    [Fact]
+    public void Die_Statuszeile_zeigt_die_Gruende_des_Kerns()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Statuszeile = "Gespeicherte Ergebnisse vom 24.09.2026 17:20. "
+            + "Gespeicherte Ergebnisse nicht vollständig gelesen: FormatException: kaputt "
+            + "Tabellenvorsorge unvollständig: SqliteException: database is locked";
+        var cut = Zeige(stand: stand);
+
+        Assert.Equal(stand.Statuszeile, cut.Instance.Status);
+        Assert.Single(cut.FindAll(".epos-status"), e => e.TextContent.Contains("FormatException: kaputt", StringComparison.Ordinal));
+        Assert.DoesNotContain(ErgebnisMatrix.WARN_PRAEFIX.Trim(), cut.Instance.Status);
+    }
+
+    /// <summary>
     /// <b>AUFTRAG #328: Der Text steht je Zustand an genau EINER Stelle.</b>
     /// Zugeklappt weist der Kopf des Blocks ihn aus — mit dem vollen Text im
     /// <c>title</c>, damit er auch dann ganz lesbar ist, wenn der Browser

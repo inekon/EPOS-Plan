@@ -147,7 +147,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
         new("BedarfsProfileDialog", 3),
-        new("BedarfstagKonstruktor", 8),
+        new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
@@ -218,7 +218,15 @@ public sealed class KiMaskenabdeckungWacheTests
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
         new("StromspeicherReiter", 2),
+        // Zapfprofil Z4, Gruppe 2b: der Tagesgang-Editor (Tagtyp, Stundenanteile und Wochenfaktoren als
+        // Zahlenreihen, Vorlage, Katalogversion der Kopie).
+        new("TagesgangEditor", 5),
         new("TarifstrukturDialog", 13),
+        // Zapfprofil Z4, Gruppe 3: der Katalog der Nutzungsarten ist lesend (Stammblatt), sein Editor
+        // führt Kennung, Bezugsart, Tagesgangsatz, Bedarf samt Bandbreite, Bezugstemperaturen,
+        // Bilanzgrenze, Kalender, Ferienfaktor und Monatsfaktoren (Schleifen je einmal gezählt).
+        new("TwwNutzungsartAdminDialog", 0),
+        new("TwwNutzungsartEditor", 13),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
@@ -232,8 +240,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
             "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen"),
-        new("ZapfprofilAuslegungDialog", 11),
-        new("ZapfprofilDialog", 9)
+        // Zapfprofil Z4, Gruppe 2b: der Kategorien-Editor (Katalogversion und sechs Spalten des Rasters)
+        // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
+        new("ZapfkategorienEditor", 7),
+        new("ZapfprofilAuslegungDialog", 20),
+        new("ZapfprofilDialog", 55, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht")
     };
 
     /// <summary>
