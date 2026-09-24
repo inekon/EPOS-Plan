@@ -527,11 +527,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Scheitert der Schreibweg der Referenzwahl, nennt die Statuszeile des folgenden
-        /// Ladens den Speicherfehler des Kerns — und nur dieses eine Mal.
+        /// Scheitert der Schreibweg der Referenzwahl an der Datenbank, erscheint der Grund
+        /// EINMAL: Die Zugriffsschicht meldet ihn (<c>DataRepository.FehlerMelden</c>), und
+        /// die Statuszeile wiederholt ihn nicht. Vor E13 lief der Kern danach in ein INSERT,
+        /// das am eindeutigen Index scheiterte und einen zweiten, falschen Grund meldete.
         /// </summary>
         [Fact]
-        public void Die_Statuszeile_nennt_den_Speicherfehler_der_Referenzwahl_einmal()
+        public void Ein_Datenbankfehler_der_Referenzwahl_erscheint_einmal()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -545,12 +547,34 @@ namespace EPOS.Kern.Tests
             IReadOnlyDictionary<string, object> gaben = seite.Gaben();
             var referenz = (Func<int, WirtschaftlichkeitStand>)gaben["ReferenzGewaehlt"];
 
-            string status = referenz(PROJEKT).Statuszeile;
-            Assert.Contains("Speichern gescheitert: ", status);
-            Assert.Contains("E13-Probe", status);
+            IDialogDienst vorher = Dienste.Dialog;
+            var mitschrift = new Mitschrift();
+            string status;
+            try
+            {
+                Dienste.Dialog = mitschrift;
+                status = referenz(PROJEKT).Statuszeile;
+            }
+            finally { Dienste.Dialog = vorher; }
 
-            string danach = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Statuszeile;
-            Assert.DoesNotContain("Speichern gescheitert: ", danach);
+            Assert.Single(mitschrift.Zeilen, z => z.Contains("E13-Probe", StringComparison.Ordinal));
+            Assert.DoesNotContain(mitschrift.Zeilen, z => z.Contains("UNIQUE", StringComparison.Ordinal));
+            Assert.DoesNotContain("E13-Probe", status);
+            Assert.DoesNotContain("Speichern gescheitert: ", status);
+        }
+
+        /// <summary>Ein Dialogdienst, der nichts zeigt, sondern mitschreibt.</summary>
+        private sealed class Mitschrift : IDialogDienst
+        {
+            public readonly List<string> Zeilen = new List<string>();
+            public void Meldung(string text, string titel = null) { Zeilen.Add("Meldung|" + text); }
+            public void Warnung(string text, string titel = null) { Zeilen.Add("Warnung|" + text); }
+            public void Fehler(string text, string titel = null) { Zeilen.Add("Fehler|" + text); }
+            public bool Frage(string text, string titel = null, bool warnend = false, bool vorgabeNein = false)
+            { Zeilen.Add("Frage|" + text); return true; }
+            public JaNeinAbbruch Wahl(string text, string titel = null)
+            { Zeilen.Add("Wahl|" + text); return JaNeinAbbruch.Ja; }
+            public void Warten(bool an) { }
         }
 
         /// <summary>
@@ -585,9 +609,29 @@ namespace EPOS.Kern.Tests
                 " BEGIN SELECT RAISE(ABORT, 'E13-Probe'); END");
             var speichern = (Func<WirtschaftlichkeitParameter, bool>)gaben["SpeichereVorgaben"];
             var speicherfehler = (Func<string>)gaben["Speicherfehler"];
-            Assert.False(speichern((WirtschaftlichkeitParameter)gaben["Parameter"]));
-            Assert.Contains("E13-Probe", speicherfehler());
-            Assert.Null(speicherfehler());   // einmal gelesen
+
+            // Ein Datenbankfehler: Die Zugriffsschicht meldet ihn einmal, der Dialog
+            // bekommt keinen zweiten Grund (sonst stünde er zweimal da).
+            IDialogDienst vorher = Dienste.Dialog;
+            var mitschrift = new Mitschrift();
+            bool gespeichert;
+            try
+            {
+                Dienste.Dialog = mitschrift;
+                gespeichert = speichern((WirtschaftlichkeitParameter)gaben["Parameter"]);
+            }
+            finally { Dienste.Dialog = vorher; }
+            Assert.False(gespeichert);
+            Assert.Single(mitschrift.Zeilen, z => z.Contains("E13-Probe", StringComparison.Ordinal));
+            Assert.Null(speicherfehler());
+
+            // Der Träger des Grundes für Fehler außerhalb der Zugriffsschicht: einmal gelesen,
+            // leere Gründe überschreiben keinen.
+            var grund = new BhkwWirtschaftlichkeitHuelle.Speichergrund();
+            grund.Setzen("InvalidOperationException: E13-Probe");
+            grund.Setzen("  ");
+            Assert.Equal("InvalidOperationException: E13-Probe", grund.Lesen());
+            Assert.Null(grund.Lesen());
         }
 
         private static WirtschaftlichkeitStand Stand(WirtschaftlichkeitSeiteGaben seite)
