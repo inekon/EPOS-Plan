@@ -281,4 +281,31 @@ public class KaestchenTests : EposBunitContext
         Assert.NotSame(liste, a.Gewaehlte);
         Assert.Equal(new[] { "A" }, a.Gewaehlte);
     }
+
+    /// <summary>
+    /// <b>Nach einer Übernahme sind die neuen Zeilen die Auswahl</b> (Konzept 7.1 d): ab
+    /// zweien als Kästchen in ihrer Reihenfolge (doppelte und leere fallen), eine einzelne
+    /// als Fokuszeile allein — Kästchen von vorher fallen in beiden Fällen, ein Vergleich
+    /// endet, und die Instanz ist immer neu, damit die Liste nachzieht.
+    /// </summary>
+    [Fact]
+    public void Nach_einer_Uebernahme_sind_die_neuen_Zeilen_gewaehlt()
+    {
+        var a = new Zeilenauswahl();
+        a.Setzen(new[] { "A", "B" });
+        a.VergleichUmschalten();
+        var vorher = a.Gewaehlte;
+
+        a.Uebernommen(new[] { "N1", "N2", "N1", "", "N3" });
+        Assert.Equal(new[] { "N1", "N2", "N3" }, a.Gewaehlte);
+        Assert.NotSame(vorher, a.Gewaehlte);
+        Assert.False(a.Vergleich);
+        Assert.Equal(3, a.Anzahl);
+
+        vorher = a.Gewaehlte;
+        a.Uebernommen(new[] { "N4" });
+        Assert.Empty(a.Gewaehlte);
+        Assert.NotSame(vorher, a.Gewaehlte);
+        Assert.Equal(new[] { "N4" }, a.Ziele("N4"));
+    }
 }

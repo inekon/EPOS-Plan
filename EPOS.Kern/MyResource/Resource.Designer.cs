@@ -846,7 +846,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze eingelesen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze übernommen und gewählt. ähnelt.
         /// </summary>
         public static string ADM_MSG_IMPORTIERT {
             get {

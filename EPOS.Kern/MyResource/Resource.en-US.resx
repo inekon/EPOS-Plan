@@ -26716,7 +26716,7 @@ Do you want to allow this?</value>
     <value>“{0}” read – not stored.</value>
   </data>
   <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
-    <value>{0} records imported.</value>
+    <value>{0} records imported and selected.</value>
   </data>
   <data name="KI_DLG_KBROW_SATZ_NAME" xml:space="preserve">
     <value>Selected record</value>
