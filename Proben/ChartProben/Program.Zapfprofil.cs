@@ -146,7 +146,7 @@ namespace ChartProben
         /// <summary>
         /// Eine Dauerlinie aus 8760 Stunden: die Probewoche samt Zirkulation, über das Jahr
         /// wiederholt und absteigend geordnet; die Marken P50, P90, P95, P99 nach dem Rangverfahren
-        /// (aufsteigend Rang ⌈p/100 · 8760⌉), ihr Rang auf der absteigenden Linie.
+        /// (aufsteigend Rang ⌈p/100 · 8760⌉, ganzzahlig), ihr Rang auf der absteigenden Linie.
         /// </summary>
         private static (double[] Linie, int[] Perzentile, int[] Raenge, double[] Werte) Dauerlinienprobe(double[] woche,
                                                                                                          double[] zirk)
@@ -160,7 +160,7 @@ namespace ChartProben
             var marke = new double[perz.Length];
             for (int i = 0; i < perz.Length; i++)
             {
-                int rang = (int)Math.Ceiling(perz[i] / 100.0 * N);
+                int rang = (perz[i] * N + 99) / 100;              // ⌈p·N/100⌉ ganzzahlig, wie der Kern
                 marke[i] = werte[rang - 1];
                 raenge[i] = N - rang + 1;
             }

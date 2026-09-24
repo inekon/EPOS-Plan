@@ -68,7 +68,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Satz in einer Sprache: <paramref name="muster"/> liefert zu einem Ressourcenschlüssel
         /// das Muster (<c>null</c> = unbekannt, dann gilt das deutsche), <paramref name="kultur"/>
-        /// formatiert die Zahlen. Eingebettete Sätze folgen derselben Sprache.
+        /// formatiert die Zahlen. Eingebettete Sätze folgen derselben Sprache. Passt das Muster nicht
+        /// zu den Werten, wirft der Satz eine <see cref="FormatException"/> mit seinem Schlüssel — nie
+        /// das rohe Muster (die Wache <c>ZapfSaetzeWacheTests</c> hält Werte und Platzhalter gleich).
         /// </summary>
         internal string Text(Func<string, string> muster, IFormatProvider kultur)
         {
@@ -80,7 +82,13 @@ namespace WindowsFormsApplication1
                     : Kennung + " (" + string.Join("; ", werte.Select(w => Convert.ToString(w, kultur))) + ")";
             string satz;
             try { satz = string.Format(kultur, m, werte); }
-            catch (FormatException) { return m; }
+            catch (FormatException ex)
+            {
+                // Kein stilles Muster: Muster und Werte passen nicht zusammen (etwa ein Platzhalter {3}
+                // bei drei Werten) — ein Fehler des Quelltexts oder der Übersetzung, benannt mit Schlüssel.
+                throw new FormatException("Das Muster „" + Schluessel + "“ passt nicht zu seinen " + werte.Length
+                                          + " Wert(en): „" + m + "“.", ex);
+            }
             return GanzerSatz && m.StartsWith("{", StringComparison.Ordinal) ? GrossAnfang(satz, kultur) : satz;
         }
 

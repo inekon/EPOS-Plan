@@ -97,6 +97,63 @@ namespace EPOS.Kern.Tests
             Assert.True(funde.Count == 0, "Fertige Sätze statt ZapfSatz: " + string.Join(", ", funde));
         }
 
+        /// <summary>
+        /// <b>Je Aufruf so viele Werte wie Platzhalter</b>: Jedes <c>ZapfSatz.Neu(Kennung, w0, …)</c> im
+        /// Quelltext des Kerns trägt genau die Werte, deren Platzhalter <c>{0}</c> … <c>{n-1}</c> das
+        /// Muster in BEIDEN Sprachen benutzt — keiner fehlt, keiner bleibt übrig. Gezählt werden die
+        /// Argumente auf oberster Klammerebene (Zeichenketten und Kommentare ausgenommen); eine
+        /// Begriffsfamilie gilt für jedes ihrer Glieder.
+        /// </summary>
+        [Fact]
+        public void Jeder_Aufruf_traegt_so_viele_Werte_wie_sein_Muster_Platzhalter()
+        {
+            var konstanten = new Dictionary<string, string>(StringComparer.Ordinal);
+            string[] texte = Quellen().Select(File.ReadAllText).ToArray();
+            foreach (string t in texte)
+                foreach (Match m in Konstante.Matches(t))
+                    konstanten[m.Groups["n"].Value] = m.Groups["w"].Value;
+            Dictionary<string, string> de = Resx("Resource.resx");
+            Dictionary<string, string> en = Resx("Resource.en-US.resx");
+
+            var funde = new List<string>();
+            int aufrufe = 0;
+            const string AUFRUF = "ZapfSatz.Neu(";
+            foreach (string datei in Quellen())
+            {
+                string text = OhneKommentare(File.ReadAllText(datei));
+                for (int i = text.IndexOf(AUFRUF, StringComparison.Ordinal); i >= 0; i = text.IndexOf(AUFRUF, i + 1, StringComparison.Ordinal))
+                {
+                    List<string> args = Argumente(text, i + AUFRUF.Length);
+                    Assert.True(args != null && args.Count > 0, Path.GetFileName(datei) + ": ZapfSatz.Neu ohne schließende Klammer");
+                    int werte = args.Count - 1;
+                    aufrufe++;
+                    foreach (string k in Aufgeloest(args[0].Trim(), konstanten))
+                        foreach ((string sprache, Dictionary<string, string> d) in new[] { ("de", de), ("en", en) })
+                        {
+                            if (!d.TryGetValue(ZapfSatz.PRAEFIX + k, out string muster)) continue;   // Sache der ersten Wache
+                            int[] indizes = Regex.Matches(muster, @"\{(?<i>\d+)(?::[^}]*)?\}").Select(m => int.Parse(m.Groups["i"].Value))
+                                                 .Distinct().OrderBy(x => x).ToArray();
+                            if (!indizes.SequenceEqual(Enumerable.Range(0, werte)))
+                                funde.Add(Path.GetFileName(datei) + ": " + k + " (" + sprache + ") trägt " + werte + " Wert(e), das Muster {"
+                                          + string.Join(",", indizes) + "}");
+                        }
+                }
+            }
+            Assert.True(aufrufe >= 300, "Nur " + aufrufe + " Aufrufe gefunden.");
+            // Gegenprobe des Zählers: Kommas in Klammern, Zeichenketten und Kommentaren trennen nicht.
+            Assert.Equal(4, Argumente(OhneKommentare("\"K\", f(a, b), \"x, y\" /* c, d */, g[1, 2]) // e, f"), 0).Count);
+            Assert.True(funde.Count == 0, string.Join("\n", funde));
+        }
+
+        /// <summary>Ein Muster, das nicht zu seinen Werten passt, wirft benannt — kein stilles Muster.</summary>
+        [Fact]
+        public void Ein_unpassendes_Muster_wirft_mit_seinem_Schluessel()
+        {
+            FormatException ex = Assert.Throws<FormatException>(() => ZapfSatz.Neu("HINWEIS_ZIRKULATION_GROSS", 1.0).Klartext);
+            Assert.Contains("ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS", ex.Message);
+            Assert.Throws<FormatException>(() => ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN").Text(k => "{0} und {1}", CultureInfo.InvariantCulture));
+        }
+
         /// <summary>Der Klartext bleibt deutsch und invariant; die Oberfläche setzt ihre Kultur ein.</summary>
         [Fact]
         public void Klartext_ist_deutsch_und_invariant_die_Oberflaeche_formatiert_in_ihrer_Kultur()
@@ -145,6 +202,88 @@ namespace EPOS.Kern.Tests
                     else unaufgeloest.Add(a);
                 }
             return kennungen;
+        }
+
+        /// <summary>Die Kennungen des ersten Arguments: ein Literal, eine Familie (Literal mit „+"), eine Konstante.</summary>
+        private static IEnumerable<string> Aufgeloest(string a, Dictionary<string, string> konstanten)
+        {
+            Match l = Literal.Match(a);
+            if (l.Success)
+                return l.Groups["plus"].Success && Familien.TryGetValue(l.Groups["k"].Value, out string[] familie)
+                    ? familie : new[] { l.Groups["k"].Value };
+            Match b = Bezeichner.Match(a);
+            return b.Success && konstanten.TryGetValue(b.Groups["n"].Value, out string wert) ? new[] { wert } : new string[0];
+        }
+
+        /// <summary>Der Quelltext ohne Zeilen- und Blockkommentare (Zeichenketten bleiben).</summary>
+        private static string OhneKommentare(string t)
+        {
+            var s = new System.Text.StringBuilder(t.Length);
+            for (int i = 0; i < t.Length; i++)
+            {
+                char c = t[i];
+                if (c == '"' || c == '\'')
+                {
+                    int ende = Zeichenkette(t, i);
+                    s.Append(t, i, ende - i + 1);
+                    i = ende;
+                }
+                else if (c == '/' && i + 1 < t.Length && t[i + 1] == '/')
+                {
+                    while (i < t.Length && t[i] != '\n') i++;
+                    s.Append('\n');
+                }
+                else if (c == '/' && i + 1 < t.Length && t[i + 1] == '*')
+                {
+                    int ende = t.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                    i = ende < 0 ? t.Length : ende + 1;
+                }
+                else s.Append(c);
+            }
+            return s.ToString();
+        }
+
+        /// <summary>Das Ende einer Zeichenkette oder eines Zeichens ab <paramref name="i"/> (auch @"…" und $"…").</summary>
+        private static int Zeichenkette(string t, int i)
+        {
+            char q = t[i];
+            bool wort = q == '"' && i > 0 && (t[i - 1] == '@' || (t[i - 1] == '$' && i > 1 && t[i - 2] == '@'));
+            for (int j = i + 1; j < t.Length; j++)
+            {
+                if (!wort && t[j] == '\\') { j++; continue; }
+                if (t[j] == q)
+                {
+                    if (wort && j + 1 < t.Length && t[j + 1] == '"') { j++; continue; }
+                    return j;
+                }
+            }
+            return t.Length - 1;
+        }
+
+        /// <summary>Die Argumente eines Aufrufs ab der öffnenden Klammer (oberste Ebene, durch Kommas getrennt); <c>null</c> ohne Schluss.</summary>
+        private static List<string> Argumente(string t, int start)
+        {
+            var args = new List<string>();
+            int tiefe = 0, anfang = start;
+            for (int i = start; i < t.Length; i++)
+            {
+                char c = t[i];
+                if (c == '"' || c == '\'') { i = Zeichenkette(t, i); continue; }
+                if (c == '(' || c == '[' || c == '{') tiefe++;
+                else if ((c == ')' || c == ']' || c == '}') && tiefe > 0) tiefe--;
+                else if (c == ')')
+                {
+                    string letztes = t.Substring(anfang, i - anfang);
+                    if (letztes.Trim().Length > 0 || args.Count > 0) args.Add(letztes);
+                    return args;
+                }
+                else if (c == ',' && tiefe == 0)
+                {
+                    args.Add(t.Substring(anfang, i - anfang));
+                    anfang = i + 1;
+                }
+            }
+            return null;
         }
 
         /// <summary>Die Quellen des Kerns, die Sätze bauen: Zapfprofil-Ordner und Controller.</summary>

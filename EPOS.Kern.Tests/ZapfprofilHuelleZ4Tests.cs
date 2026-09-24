@@ -35,19 +35,43 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Jede Hinweiskennung des Bilanzrechenwegs — aus dem QUELLTEXT des Zapfprofil-Ordners und der
-        /// Controller (Literale in <c>new ZapfHinweis(…, "…"</c> und <c>SummeWarnen</c>) — steht in
-        /// <see cref="ZapfprofilHuelle.BILANZHINWEISE"/> und hat ihren Titel in beiden Sprachen.
+        /// Controller (Literale und benannte Konstanten in <c>new ZapfHinweis(…, …</c>, Literale in
+        /// <c>SummeWarnen</c>) — steht in <see cref="ZapfprofilHuelle.BILANZHINWEISE"/> und hat ihren
+        /// Titel in beiden Sprachen. Eine Konstante, die sich nicht auflösen lässt, schlägt an.
         /// </summary>
         [Fact]
         public void Jede_Hinweiskennung_der_Bilanz_hat_ihren_Titel_in_beiden_Sprachen()
         {
             var muster = new Regex(@"(?:new ZapfHinweis\([^,]+,\s*|SummeWarnen\([^""\r\n]*)""(?<k>[A-Z][A-Z0-9_]+)""");
+            var konstant = new Regex(@"new ZapfHinweis\([^,]+,\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<n>[A-Z][A-Z0-9_]*)\s*,");
+            var definiert = new Regex(@"const\s+string\s+(?<n>[A-Z][A-Z0-9_]*)\s*=\s*""(?<w>[^""]*)""");
+            string[] texte = new[] { Pfad("EPOS.Kern", "Allgemein", "Zapfprofil"), Pfad("EPOS.Kern", "Controller") }
+                             .SelectMany(o => Directory.GetFiles(o, "*.cs")).Select(File.ReadAllText).ToArray();
+            var konstanten = new Dictionary<string, SortedSet<string>>(StringComparer.Ordinal);
+            foreach (string t in texte)
+                foreach (Match m in definiert.Matches(t))
+                {
+                    if (!konstanten.TryGetValue(m.Groups["n"].Value, out SortedSet<string> w))
+                        konstanten[m.Groups["n"].Value] = w = new SortedSet<string>(StringComparer.Ordinal);
+                    w.Add(m.Groups["w"].Value);
+                }
             var kennungen = new SortedSet<string>(StringComparer.Ordinal);
-            foreach (string datei in new[] { Pfad("EPOS.Kern", "Allgemein", "Zapfprofil"), Pfad("EPOS.Kern", "Controller") }
-                                     .SelectMany(o => Directory.GetFiles(o, "*.cs")))
-                foreach (Match m in muster.Matches(File.ReadAllText(datei)))
-                    kennungen.Add(m.Groups["k"].Value);
-            Assert.True(kennungen.Count >= 8, "Nur " + kennungen.Count + " Kennungen: " + string.Join(", ", kennungen));
+            var unaufgeloest = new SortedSet<string>(StringComparer.Ordinal);
+            int ausKonstanten = 0;
+            foreach (string t in texte)
+            {
+                foreach (Match m in muster.Matches(t)) kennungen.Add(m.Groups["k"].Value);
+                foreach (Match m in konstant.Matches(t))
+                {
+                    if (konstanten.TryGetValue(m.Groups["n"].Value, out SortedSet<string> w)) { kennungen.UnionWith(w); ausKonstanten++; }
+                    else unaufgeloest.Add(m.Groups["n"].Value);
+                }
+            }
+            Assert.True(unaufgeloest.Count == 0, "Nicht auflösbare Konstanten in new ZapfHinweis: " + string.Join(", ", unaufgeloest));
+            Assert.True(ausKonstanten >= 8, "Nur " + ausKonstanten + " Kennungen aus Konstanten.");
+            Assert.True(kennungen.Count >= 18, "Nur " + kennungen.Count + " Kennungen: " + string.Join(", ", kennungen));
+            Assert.Contains(ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS, kennungen);
+            Assert.Contains(Mengengeruest.HINWEIS_BANDBREITE, kennungen);
 
             string[] ungelistet = kennungen.Where(k => !ZapfprofilHuelle.BILANZHINWEISE.Contains(k)).ToArray();
             Assert.True(ungelistet.Length == 0, "Nicht in BILANZHINWEISE: " + string.Join(", ", ungelistet));

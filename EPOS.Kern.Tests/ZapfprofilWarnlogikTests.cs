@@ -45,17 +45,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal(zapf.Sum() + zirk.Sum(), d.GesamtKw.Sum(), 6);
 
             Assert.Equal(new[] { 50, 90, 95, 99 }, d.Marken.Select(m => m.Perzentil).ToArray());
-            double[] auf = zapf.Select((z, i) => z + zirk[i]).OrderBy(x => x).ToArray();
-            foreach (Dauerlinienmarke m in d.Marken)
-            {
-                int rang = (int)Math.Ceiling(m.Perzentil / 100.0 * 8760);
-                Assert.Equal(auf[rang - 1], m.LeistungKw);
-                Assert.Equal(8760 - rang + 1, m.Rang);
-                Assert.Equal(m.LeistungKw, d.GesamtKw[m.Rang - 1]);
-            }
             // Über 90 kW liegen die Stunden mit h % 100 ≥ 90 (90,5 … 99,5 kW): 10 von 100.
             Assert.Equal(8760 / 100 * 10 + (8760 % 100 > 90 ? 8760 % 100 - 90 : 0), d.StundenUeberSchwelle);
             Assert.Null(Zapfauswertung.Dauerlinie(new Bilanzreihe(zapf), null, null).StundenUeberSchwelle);
+        }
+
+        /// <summary>
+        /// Die Dauerlinie gegen eine UNABHÄNGIG sortierte Reihe mit lauter verschiedenen Werten (eine
+        /// Permutation der Stunden): die Linie ist die absteigend sortierte Summe, und jede Marke steht
+        /// auf dem kleinsten Rang r mit r · 100 ≥ p · 8760 (durch Zählen bestimmt, nicht durch die
+        /// Formel des Kerns) — ein falscher Rang trifft hier einen anderen Wert.
+        /// </summary>
+        [Fact]
+        public void Die_Perzentilmarken_stehen_auf_dem_Rang_einer_unabhaengig_sortierten_Reihe()
+        {
+            const int n = 8760;
+            var zapf = new double[n];
+            var zirk = new double[n];
+            for (int h = 0; h < n; h++) { zapf[h] = (h * 7919L % n) * 0.001; zirk[h] = 0.25; }
+            Zapfdauerlinie d = Zapfauswertung.Dauerlinie(new Bilanzreihe(zapf), new Bilanzreihe(zirk), null);
+
+            var summe = new List<double>(n);
+            for (int h = 0; h < n; h++) summe.Add(zapf[h] + zirk[h]);
+            Assert.Equal(n, summe.Distinct().Count());
+            List<double> ab = summe.OrderByDescending(x => x).ToList();
+            Assert.Equal(ab, d.GesamtKw);
+
+            List<double> auf = summe.OrderBy(x => x).ToList();
+            foreach (Dauerlinienmarke m in d.Marken)
+            {
+                int r = 1;
+                while (r * 100 < m.Perzentil * n) r++;           // der kleinste Rang, der p % der Stunden deckt
+                Assert.Equal(auf[r - 1], m.LeistungKw);
+                Assert.Equal(n - r + 1, m.Rang);
+                Assert.Equal(m.LeistungKw, d.GesamtKw[m.Rang - 1]);
+            }
+            Assert.Equal(new[] { 4380, 7884, 8322, 8673 },
+                         d.Marken.Select(m => n - m.Rang + 1).ToArray());
         }
 
         [Fact]

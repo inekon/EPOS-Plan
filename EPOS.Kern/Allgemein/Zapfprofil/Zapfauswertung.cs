@@ -78,8 +78,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Eine Perzentilmarke der Dauerlinie: P_p der Stundenwerte nach dem Rangverfahren
-    /// (aufsteigend der Wert auf Rang ⌈p/100 · 8760⌉) und ihr Rang auf der absteigenden Linie
-    /// (1 = größte Stunde).
+    /// (aufsteigend der Wert auf Rang ⌈p/100 · 8760⌉, ganzzahlig gerechnet als (p · 8760 + 99) / 100)
+    /// und ihr Rang auf der absteigenden Linie (1 = größte Stunde).
     /// </summary>
     internal sealed record Dauerlinienmarke(int Perzentil, double LeistungKw, int Rang);
 
@@ -140,7 +140,7 @@ namespace WindowsFormsApplication1
             var marken = new List<Dauerlinienmarke>(DAUERLINIE_PERZENTILE.Count);
             foreach (int p in DAUERLINIE_PERZENTILE)
             {
-                int rang = (int)Math.Ceiling(p / 100.0 * n);      // 1 … n, aufsteigend
+                int rang = (p * n + 99) / 100;                    // ⌈p·n/100⌉ ganzzahlig: 1 … n, aufsteigend
                 if (rang < 1) rang = 1;
                 marken.Add(new Dauerlinienmarke(p, werte[rang - 1], n - rang + 1));
             }
