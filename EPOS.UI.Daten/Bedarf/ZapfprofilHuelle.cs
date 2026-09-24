@@ -981,7 +981,7 @@ namespace WindowsFormsApplication1
             "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE", "ZIRKULATION_NICHT_IN_Z1", ZapfprofilCtrl.HINWEIS_EINSTELLUNG_UNGUELTIG,
             ZapfprofilRechner.HINWEIS_ANZEIGETEMPERATUR, ZapfprofilRechner.HINWEIS_STUNDENSCHWELLE,
             // Stufe Z4b: der Jahresgang über die eingespielten Typtage (N14).
-            Typtagzuordnung.HINWEIS_ANZAHL, Typtagzuordnung.HINWEIS_KLEMMUNG, Typtagzuordnung.HINWEIS_SKALIERUNG,
+            Typtagzuordnung.HINWEIS_ANZAHL, Typtagzuordnung.HINWEIS_FAKTOR_NULL, Typtagzuordnung.HINWEIS_SKALIERUNG,
             Typtagzuordnung.HINWEIS_FERIEN, Typtagzuordnung.HINWEIS_OHNE_GANG
         };
 

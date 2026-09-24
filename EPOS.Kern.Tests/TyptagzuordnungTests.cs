@@ -11,7 +11,7 @@ namespace EPOS.Kern.Tests
     /// <b>Die Zuordnung der eingespielten Typtage zum Kalender</b> (Umsetzungskonzept
     /// Zapfprofilgenerator 4.2 „VDI-4655-Typtage (Z4b)", 5.3): 365 Tage, Jahreszeit aus der
     /// Tagesmitteltemperatur, Tagart aus dem Zapfkalender, Bewölkung aus dem Bedeckungsgrad;
-    /// die Tagesmengen nach der Gleichung, geklemmt und auf die Jahresmenge skaliert; die
+    /// die Tagesmengen nach der Gleichung, mit genullten Faktoren und auf die Jahresmenge skaliert; die
     /// Kontrolle gegen die eingespielte Tabelle; die Weiche im Rechner.
     ///
     /// <para><b>Alle Werte erfunden</b> (<see cref="Typtagpaketbauer.Erfunden"/>); kein Wert
@@ -181,7 +181,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(365, tage.Length);
             Assert.All(tage, q => Assert.True(q >= 0.0));
             Assert.True(Relativ(tage.Sum(), qa) < 1e-12);
-            Assert.DoesNotContain(hinweise, h => h.Code == Typtagzuordnung.HINWEIS_KLEMMUNG);
+            Assert.DoesNotContain(hinweise, h => h.Code == Typtagzuordnung.HINWEIS_FAKTOR_NULL);
 
             // Ein Tag mit groesserem Faktor traegt mehr als einer mit kleinerem.
             int gross = Array.IndexOf(jahr.Faktoren, jahr.Faktoren.Max());
@@ -189,38 +189,61 @@ namespace EPOS.Kern.Tests
             Assert.True(tage[gross] > tage[klein]);
         }
 
+        /// <summary>
+        /// Grundlagen 5, Abschnitt 2.5, Anmerkung zu Gl. (1)–(3): Nicht die Tagesmenge wird auf 0
+        /// geklemmt — der FAKTOR des betroffenen Typtags wird auf 0 gesetzt, sein Tag trägt dann
+        /// den Mittelwertanteil Q_a/365. Die Nullung gilt für JEDEN Tag dieses Typtags.
+        /// </summary>
         [Fact]
-        public void Eine_negative_Tagesmenge_wird_geklemmt_und_benannt()
+        public void Ein_negativer_Tagesbedarf_nullt_den_Faktor_des_Typtags()
         {
             Typtagpaketbauer b = Typtagpaketbauer.Erfunden();
-            b.Faktor[(ZONE, ART, b.Kategorien[0].Code)] = -0.01;      // 1/365 + 10 * (-0,01) < 0
+            string betroffen = b.Kategorien[0].Code;
+            b.Faktor[(ZONE, ART, betroffen)] = -0.01;                 // 1/365 + 10 * (-0,01) < 0
             Normformvektorsatz satz = Satz(b);
             Typtagjahr jahr = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, We(0), NAME);
 
             var hinweise = new List<ZapfHinweis>();
             double[] tage = Typtagzuordnung.Tagesmengen(1000.0, 10.0, jahr, NAME, hinweise);
 
-            Assert.Contains(hinweise, h => h.Code == Typtagzuordnung.HINWEIS_KLEMMUNG && h.Warnung);
-            Assert.Contains(hinweise, h => h.Code == Typtagzuordnung.HINWEIS_SKALIERUNG);
-            Assert.Contains(tage, q => q == 0.0);
+            ZapfHinweis h = Assert.Single(hinweise, x => x.Code == Typtagzuordnung.HINWEIS_FAKTOR_NULL);
+            Assert.True(h.Warnung);
+            Assert.Contains(hinweise, x => x.Code == Typtagzuordnung.HINWEIS_SKALIERUNG);
+
+            // Kein Tag traegt 0: der genullte Faktor gibt den Mittelwertanteil.
+            Assert.All(tage, q => Assert.True(q > 0.0));
             Assert.True(Relativ(tage.Sum(), 1000.0) < 1e-12);         // die Jahresmenge bleibt
+
+            // Jeder Tag des betroffenen Typtags traegt denselben Betrag — und zwar den kleinsten,
+            // weil jeder andere Typtag dieses Pakets einen positiven Faktor hat.
+            int[] seine = Enumerable.Range(0, 365).Where(i => jahr.Tage[i].Typtag == betroffen).ToArray();
+            Assert.NotEmpty(seine);
+            Assert.All(seine, i => Assert.Equal(tage[seine[0]], tage[i], 12));
+
+            // Der genullte Typtag traegt genau den Mittelwertanteil: Sein Verhaeltnis zu einem
+            // Typtag mit dem Faktor f ist (1/365) / (1/365 + n_E·f) — unabhaengig von der Skalierung.
+            string vergleich = b.Kategorien[2].Code;
+            double f = b.Faktor[(ZONE, ART, vergleich)];
+            int j = Enumerable.Range(0, 365).First(i => jahr.Tage[i].Typtag == vergleich);
+            Assert.Equal((1.0 / 365.0) / (1.0 / 365.0 + 10.0 * f), tage[seine[0]] / tage[j], 9);
         }
 
         [Fact]
         public void Ein_Jahr_ohne_Zapfung_verteilt_nichts_und_lehnt_benannt_ab()
         {
+            // 1/365 + 1 * (-1/365) ist genau 0: nichts wird genullt, und nichts wird verteilt.
             Typtagpaketbauer b = Typtagpaketbauer.Erfunden();
-            foreach (var k in b.Kategorien) b.Faktor[(ZONE, ART, k.Code)] = -1.0;
+            foreach (var k in b.Kategorien) b.Faktor[(ZONE, ART, k.Code)] = -1.0 / 365.0;
             Normformvektorsatz satz = Satz(b);
             Typtagjahr jahr = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, We(0), NAME);
 
             ZapfprofilEingabeException ex = Assert.Throws<ZapfprofilEingabeException>(
-                () => Typtagzuordnung.Tagesmengen(1000.0, 10.0, jahr, NAME));
+                () => Typtagzuordnung.Tagesmengen(1000.0, 1.0, jahr, NAME));
             Assert.Equal(ZapfEingabefehler.KeineVerteilung, ex.Fehler);
             Assert.Equal("EINGABE_TYPTAGE_KEINE_VERTEILUNG", ex.Kennung);
 
             // Ohne Jahresmenge bleibt alles 0 - ohne Ablehnung.
-            Assert.All(Typtagzuordnung.Tagesmengen(0.0, 10.0, jahr, NAME), q => Assert.Equal(0.0, q));
+            Assert.All(Typtagzuordnung.Tagesmengen(0.0, 1.0, jahr, NAME), q => Assert.Equal(0.0, q));
         }
 
         // =================================================================================

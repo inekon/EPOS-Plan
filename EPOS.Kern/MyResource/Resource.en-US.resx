@@ -27585,6 +27585,12 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
     <value>Calendar, cold water factor or temperature difference of zone “{0}” do not have the annual grid.</value>
   </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE" xml:space="preserve">
+    <value>Zone “{0}”: the type-day input of the drawn annual series does not carry 365 finite, non-negative daily amounts with usable daily profiles.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB" xml:space="preserve">
+    <value>Zone “{0}”: on the type-day path the annual series draws over the daily amounts of the type days — decoupling of holidays does not apply there.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
     <value>The holiday offset is not within 0 … 364 days.</value>
   </data>
@@ -28857,8 +28863,8 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL" xml:space="preserve">
     <value>Zone "{0}": the project's weather assigns {1} type-day categor(y/ies) differently than the imported table; furthest "{2}" with {3} instead of {4} calendar days.</value>
   </data>
-  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG" xml:space="preserve">
-    <value>Zone "{0}": on {1} day(s) the daily amount was negative and was set to 0.</value>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Zone "{0}": for {1} type day(s) and thus {2} calendar day(s) the daily demand would be negative — their factor is set to 0 and the day carries the annual mean.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG" xml:space="preserve">
     <value>Zone "{0}": the daily amounts of the type days were scaled by {1:0.######} to the annual amount.</value>
@@ -29025,8 +29031,8 @@ Do you want to allow this?</value>
   <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
     <value>number of type days differs</value>
   </data>
-  <data name="ZPG_WARN_TYPTAGE_KLEMMUNG" xml:space="preserve">
-    <value>daily amount set to 0</value>
+  <data name="ZPG_WARN_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>type day factor set to 0</value>
   </data>
   <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
     <value>daily amounts scaled to the annual amount</value>

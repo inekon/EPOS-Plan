@@ -136,6 +136,159 @@ namespace EPOS.Kern.Tests
             Assert.InRange(Relativ(a.Zapfung.JahressummeKwh, c.Zapfung.JahressummeKwh), 0.0, 1e-12);
         }
 
+        // =================================================================================
+        // Typtagweg und Stochastik zusammen (Stufe Z4b, Nachbesserung Gruppe 1)
+        // =================================================================================
+
+        private const int TYPTAGZONE = 3;
+        private const string TYPTAGART = "probehaus";
+
+        /// <summary>Tagesmittel: 100 kalte, 100 warme Tage, der Rest Übergang — erfunden.</summary>
+        private static double[] Tagesmittel()
+        {
+            var t = new double[365];
+            for (int i = 0; i < 365; i++) t[i] = i < 100 ? 0.0 : i < 200 ? 20.0 : 10.0;
+            return t;
+        }
+
+        /// <summary>
+        /// Ein erfundenes Typtagpaket mit starkem Gegensatz zwischen den Typtagen (±5e-5 bei 40
+        /// Einheiten: 1/365 + 40·F liegt zwischen 0,0007 und 0,0047) und wahlweise Tagesgängen, die
+        /// nur zwei Stunden tragen.
+        /// </summary>
+        private static Typtaganbindung Typtage(bool mitGaengen)
+        {
+            Typtagpaketbauer b = Typtagpaketbauer.Erfunden(TYPTAGZONE, TYPTAGART);
+            for (int i = 0; i < b.Kategorien.Count; i++)
+                b.Faktor[(TYPTAGZONE, TYPTAGART, b.Kategorien[i].Code)] = i % 2 == 0 ? 5e-5 : -5e-5;
+            if (mitGaengen)
+                foreach (var k in b.Kategorien)
+                    b.Gaenge.Add((TYPTAGART, k.Code, 60, Gang((5, 0.5), (17, 0.5))));
+            Normformvektorsatz satz = Normformvektorleser.AusDateien(b.Dateien(), out ZapfSatz fehler);
+            Assert.Null(fehler);
+            return new Typtaganbindung
+            {
+                Daten = satz, Klimazone = TYPTAGZONE, Gebaeudeart = TYPTAGART, TagesmittelC = Tagesmittel()
+            };
+        }
+
+        /// <summary>Nur die Wohnzone (40 Personen, 20 WE) — der Typtagweg gilt allein fürs Wohnen.</summary>
+        private static Zapfprofileingang NurWohnen(ProjektStand p, Typtaganbindung t)
+        {
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 40.0, 1) with
+            {
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
+            };
+            Zapfprofileingang e = ZapfprofilTestbau.Eingang(p, Satz(), wohnhaus) with { Zapfkategorien = Kategorien };
+            return t == null ? e : e with { Typtage = t };
+        }
+
+        /// <summary>Die Tagessummen einer Stundenreihe (365 Werte).</summary>
+        private static double[] Tagessummen(IReadOnlyList<double> stunden)
+        {
+            var tage = new double[365];
+            for (int d = 0; d < 365; d++)
+                for (int h = 0; h < 24; h++) tage[d] += stunden[d * 24 + h];
+            return tage;
+        }
+
+        /// <summary>
+        /// Der Befund der Gegenprüfung: Die Stochastik hat den Typtagweg still überschrieben — das
+        /// Ensemble zog über die Tagesmengen des Formvektors. Jetzt zieht es über die Tagesmengen
+        /// der Typtage: Die Jahresenergie bleibt die der Typtagreihe, und die Tagesmengen folgen
+        /// Typtag für Typtag.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Typtagweg_und_Stochastik_rechnen_zusammen(bool mitGaengen)
+        {
+            Typtaganbindung t = Typtage(mitGaengen);
+            ZapfprofilErgebnis det = ZapfprofilRechner.Rechnen(NurWohnen(Projekt(), t), Katalog);
+            ZapfprofilErgebnis sto = ZapfprofilRechner.Rechnen(NurWohnen(Stochastisch(seed: 7, realisierungen: 2), t), Katalog);
+            Assert.True(det.Vollstaendig, string.Join("; ", det.Ablehnungen.Select(a => a.Klartext)));
+            Assert.True(sto.Vollstaendig, string.Join("; ", sto.Ablehnungen.Select(a => a.Klartext)));
+
+            // 1. Die Jahresenergie bleibt die der Typtagreihe — die Energieprobe ist erfüllt.
+            Assert.InRange(Relativ(sto.Zapfung.JahressummeKwh, det.Zapfung.JahressummeKwh), 0.0, 1e-12);
+            Jahreskonsistenz k = sto.JeZone[0].Konsistenz;
+            Assert.NotNull(k);
+            Assert.True(k.Erfuellt, "Energieprobe gegen die Typtagreihe: " + k);
+            Assert.DoesNotContain(sto.Hinweise, h => h.Code == ZapfprofilRechner.HINWEIS_ENERGIEPROBE);
+
+            // 2. Die Tagesmengen folgen den Typtagen: je Typtag trägt die gezogene Reihe im Mittel
+            //    denselben Tagesbetrag wie die Typtagreihe. Über den Formvektor gezogen wäre der
+            //    Gegensatz der Typtage (Faktor über 5 zwischen größtem und kleinstem) verschwunden.
+            Typtagjahr jahr = Typtagzuordnung.Zuordnen(t, 0, We(0), "Wohnhaus");
+            double[] tageDet = Tagessummen(det.JeZone[0].Zapfung.StundenKwh);
+            double[] tageSto = Tagessummen(sto.JeZone[0].Zapfung.StundenKwh);
+            var mittelDet = new Dictionary<string, double>(StringComparer.Ordinal);
+            var mittelSto = new Dictionary<string, double>(StringComparer.Ordinal);
+            var anzahl = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int d = 0; d < 365; d++)
+            {
+                string code = jahr.Tage[d].Typtag;
+                mittelDet[code] = mittelDet.TryGetValue(code, out double a) ? a + tageDet[d] : tageDet[d];
+                mittelSto[code] = mittelSto.TryGetValue(code, out double b) ? b + tageSto[d] : tageSto[d];
+                anzahl[code] = anzahl.TryGetValue(code, out int n) ? n + 1 : 1;
+            }
+            foreach (string code in anzahl.Keys.ToArray())
+            {
+                mittelDet[code] /= anzahl[code];
+                mittelSto[code] /= anzahl[code];
+            }
+            Assert.True(mittelDet.Values.Max() / mittelDet.Values.Min() > 5.0, "Der Gegensatz der Typtage ist zu klein.");
+            foreach (string code in anzahl.Keys)
+                Assert.InRange(Relativ(mittelSto[code], mittelDet[code]), 0.0, 0.15);
+
+            // 3. Mit Tagesgängen im Paket trägt auch die gezogene Reihe die Tagesform des Typtags:
+            //    gezogen wird in den Stunden 5 und 17, ein Ereignis läuft höchstens in die nächste.
+            if (!mitGaengen) return;
+            double inBand = 0.0;
+            IReadOnlyList<double> reihe = sto.JeZone[0].Zapfung.StundenKwh;
+            for (int d = 0; d < 365; d++)
+                foreach (int h in new[] { 5, 6, 17, 18 }) inBand += reihe[d * 24 + h];
+            Assert.True(inBand > 0.99 * sto.JeZone[0].Zapfung.JahressummeKwh,
+                        "Nur " + (inBand / sto.JeZone[0].Zapfung.JahressummeKwh).ToString("P1") + " im Band des Tagesgangs.");
+        }
+
+        [Fact]
+        public void Der_Typtageingang_der_Jahresreihe_wird_benannt_geprueft()
+        {
+            Typtaganbindung t = Typtage(false);
+            Typtagjahr jahr = Typtagzuordnung.Zuordnen(t, 0, We(0), "Wohnhaus");
+            var zone = new Jahreszone
+            {
+                Index = 0, Zone = "Wohnhaus", Einheiten = 2,
+                Kategorien = Zapfkategoriensatz.Aus(Kategorien, Wohnen, "Wohnhaus"),
+                JahresmengeKwh = 1000.0, Struktur = ZapfereignisgeneratorTests.Struktur(),
+                Kalender = Zapfkalender.Bilden(0, We(0), null), We = We(0), WochentagJan1 = 0,
+                Kaltwasserfaktor = Enumerable.Repeat(1.0, 12).ToArray(),
+                SpreizungJeMonatK = Enumerable.Repeat(35.0, 12).ToArray(),
+                TyptagmengenKwh = Typtagzuordnung.Tagesmengen(1000.0, 40.0, jahr, "Wohnhaus")
+            };
+            // Der taugliche Eingang zieht.
+            Assert.NotNull(Jahresensemble.Ziehen(zone, 1, 1, parallel: false));
+
+            // Ein halbes Jahr, eine unendliche Tagesmenge, eine fehlende Dichte und die
+            // Entkopplung der Urlaube zugleich: jedes benannt abgelehnt, nie still.
+            double[] unendlich = (double[])zone.TyptagmengenKwh.Clone();
+            unendlich[3] = double.PositiveInfinity;
+            foreach (Jahreszone falsch in new[]
+                     {
+                         zone with { TyptagmengenKwh = new double[10] },
+                         zone with { TyptagmengenKwh = unendlich },
+                         zone with { TyptagdichteJeTag = new Tageszeitdichte[365] },
+                         zone with { Urlaubsentkopplung = true, UrlaubsversatzTage = 5 }
+                     })
+            {
+                ZapfprofilEingabeException ex = Assert.Throws<ZapfprofilEingabeException>(
+                    () => Jahresensemble.Ziehen(falsch, 1, 1, parallel: false));
+                Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex.Fehler);
+                Assert.StartsWith("EINGABE_JAHRESZONE_TYPTAGE", ex.Kennung);
+            }
+        }
+
         [Fact]
         public void Ohne_Zapfkategorien_traegt_die_Zone_benannt_null()
         {

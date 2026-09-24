@@ -27592,6 +27592,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
     <value>Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster.</value>
   </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE" xml:space="preserve">
+    <value>Zone „{0}“: Der Typtageingang der gezogenen Jahresreihe trägt nicht 365 endliche, nicht negative Tagesmengen mit brauchbaren Tagesgängen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB" xml:space="preserve">
+    <value>Zone „{0}“: Auf dem Typtagweg zieht die Jahresreihe über die Tagesmengen der Typtage — die Entkopplung der Urlaube gilt dort nicht.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
     <value>Der Urlaubsversatz liegt nicht in 0 … 364 Tagen.</value>
   </data>
@@ -28864,8 +28870,8 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL" xml:space="preserve">
     <value>Zone „{0}“: Das Wetter des Projekts ordnet {1} Typtagkategorie(n) anders zu als die eingespielte Tabelle; am weitesten „{2}“ mit {3} statt {4} Kalendertagen.</value>
   </data>
-  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG" xml:space="preserve">
-    <value>Zone „{0}“: An {1} Tag(en) war die Tagesmenge negativ und wurde auf 0 gesetzt.</value>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Zone „{0}“: Für {1} Typtag(e) und damit {2} Kalendertag(e) wäre der Tagesbedarf negativ — ihr Faktor ist auf 0 gesetzt, der Tag trägt den Jahresmittelwert.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG" xml:space="preserve">
     <value>Zone „{0}“: Die Tagesmengen der Typtage wurden mit {1:0.######} auf die Jahresmenge skaliert.</value>
@@ -29032,8 +29038,8 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
     <value>Zahl der Typtage weicht ab</value>
   </data>
-  <data name="ZPG_WARN_TYPTAGE_KLEMMUNG" xml:space="preserve">
-    <value>Tagesmenge auf 0 gesetzt</value>
+  <data name="ZPG_WARN_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Faktor eines Typtags auf 0 gesetzt</value>
   </data>
   <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
     <value>Tagesmengen auf die Jahresmenge skaliert</value>

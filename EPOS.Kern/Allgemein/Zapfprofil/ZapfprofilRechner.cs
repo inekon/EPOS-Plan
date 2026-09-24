@@ -56,6 +56,7 @@ namespace WindowsFormsApplication1
             internal Schaetzhilfe Tagesbedarf;
             internal Mengenergebnis TagesbedarfVorschlag;
             internal Typtagjahr Typtagjahr;
+            internal double[] Tagesmengen;
         }
 
         /// <summary>
@@ -197,7 +198,9 @@ namespace WindowsFormsApplication1
                     // rechnet der Formvektor wie im Bestand; mit ihnen trägt der Typtagweg die
                     // Tagesmengen (Jahreszeit, Tagart, Bewölkung) und - wenn das Paket Tagesgänge
                     // führt - auch die Tagesform. Kein stiller Rückfall: Was der Typtagweg nicht
-                    // rechnen kann, lehnt er benannt ab.
+                    // rechnen kann, lehnt er benannt ab. Auch die STOCHASTISCHE Jahresreihe zieht
+                    // dann über diese Tagesmengen (Stochastisch, Nachbesserung Gruppe 1) - der
+                    // Typtagweg wird nicht überschrieben.
                     double[] tage;
                     double[] stunden = null;
                     if (e.Typtage != null)
@@ -214,6 +217,7 @@ namespace WindowsFormsApplication1
                         tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
                                                       a.Kaltwasserfaktor, a.Name);
                     }
+                    a.Tagesmengen = tage;
                     a.Zapfreihe = new Bilanzreihe(stunden ?? Formvektor.Stundenreihe(tage, a.Struktur, a.Kalender));
                     if (e.Projekt.JahresreiheStochastisch) Stochastisch(a, e, hinweise, abbruch);
                 }
@@ -449,12 +453,20 @@ namespace WindowsFormsApplication1
         /// die R Jahre prüfen nur die Konsistenz. Die deterministische Reihe bleibt für das
         /// Laufzeitfenster und die Probe. Die Urlaube werden bei Kalenderart Wohnen je Einheit
         /// versetzt, wenn die Zone Ferien trägt (Parameter <see cref="ZapfStochastikParameter.URLAUBSVERSATZ"/>).
+        ///
+        /// <para><b>Auf dem Typtagweg zieht das Ensemble über die Tagesmengen der Typtage</b>
+        /// (Stufe Z4b, Nachbesserung Gruppe 1): Der Zapfereignisgenerator bekommt je Tag die
+        /// Tagesmenge des Typtagjahres statt der des Formvektors, und führt das Paket Tagesgänge,
+        /// auch die Tagesform des Typtags. So rechnen Typtagweg und Stochastik zusammen: Die
+        /// Energieprobe hält die gezogene Reihe gegen die Typtagreihe, nicht gegen den Formvektor.
+        /// Die Entkopplung der Urlaube entfällt dort — auf dem Typtagweg wirkt kein Ferienfenster
+        /// (<see cref="Typtagzuordnung.HINWEIS_FERIEN"/>).</para>
         /// </summary>
         private static void Stochastisch(Zonenarbeit a, Zapfprofileingang e, ICollection<ZapfHinweis> hinweise,
                                          CancellationToken abbruch)
         {
             IReadOnlyList<Ferienfenster> ferien = Zapfkalender.FensterDerZone(a.Stand);
-            bool entkoppeln = a.Art.Kalender == ZapfKalenderart.Wohnen && ferien.Count > 0;
+            bool entkoppeln = a.Art.Kalender == ZapfKalenderart.Wohnen && ferien.Count > 0 && a.Typtagjahr == null;
             int versatz = 0;
             if (entkoppeln)
             {
@@ -476,7 +488,10 @@ namespace WindowsFormsApplication1
                 Kategorien = Zapfkategoriensatz.Aus(e.Zapfkategorien, a.Art, a.Name),
                 JahresmengeKwh = a.ZapfungKwh, Struktur = a.Struktur, Kalender = a.Kalender, Ferien = ferien,
                 Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
-                WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz
+                WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz,
+                TyptagmengenKwh = a.Typtagjahr != null ? a.Tagesmengen : null,
+                TyptagdichteJeTag = a.Typtagjahr != null
+                                    ? Typtagzuordnung.Dichten(a.Typtagjahr, e.Typtage.Daten, e.Typtage.Gebaeudeart) : null
             };
             Jahresensemble ensemble = Jahresensemble.Ziehen(zone, e.Projekt.Seed, e.Projekt.Realisierungen, abbruch: abbruch);
             Jahreskonsistenz k = ensemble.Pruefen(a.Zapfreihe);

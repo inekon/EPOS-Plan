@@ -32,6 +32,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Größter Versatz der Ferienfenster je Einheit [d] (Parameter, nur mit Entkopplung).</summary>
         public int UrlaubsversatzTage { get; init; }
+
+        /// <summary>
+        /// <b>Die 365 Tagesmengen der Zone [kWh] vom Typtagweg</b> (Stufe Z4b, 4.2): Steht sie, zieht
+        /// das Ensemble über diese Tagesmengen statt über die des Formvektors — der Typtagweg trägt
+        /// die Jahresform auch stochastisch. <c>null</c> = Formvektorweg wie im Bestand. Die Menge
+        /// gilt für die ganze Zone; je Einheit geht sie durch <see cref="Einheiten"/>.
+        /// </summary>
+        public double[] TyptagmengenKwh { get; init; }
+
+        /// <summary>
+        /// Je Kalendertag die Tageszeitdichte aus dem Tagesgang des Pakets
+        /// (<see cref="Typtagzuordnung.Dichten"/>); <c>null</c> = die Dichte des Tagtyps aus der
+        /// Zeitstruktur der Zone. Nur mit <see cref="TyptagmengenKwh"/> sinnvoll.
+        /// </summary>
+        public Tageszeitdichte[] TyptagdichteJeTag { get; init; }
     }
 
     /// <summary>
@@ -67,7 +82,10 @@ namespace WindowsFormsApplication1
     /// Einheit i:   Q_d,i = Formvektor.Tagesmengen(Q_a / n_E, Zeitstruktur, Kalender_i, f_KW)   Σ_d Q_d,i = Q_a / n_E
     ///              Kalender_i = Kalender der Klimaregion mit den Ferien der Zone um δ_i versetzt,
     ///              δ_i ~ gleichverteilt in [−v; v] (Entkopplung der Urlaube, nur Wohnen), sonst der der Zone
+    ///              TYPTAGWEG (Z4b): Q_d,i = Q_TT(d) / n_E aus Typtagzuordnung.Tagesmengen — kein
+    ///              Formvektor, keine Entkopplung der Urlaube (dort wirkt kein Ferienfenster)
     /// je Tag d:    Ereignisse nach Zapfereignisgenerator mit Q_d,i, Δθ(m(d)), Dichte des Tagtyps
+    ///              (auf dem Typtagweg mit Tagesgängen im Paket: Dichte des Typtags dieses Tages)
     /// Minute:      E / Dauer je Minute, über Mitternacht in den nächsten Tag (Jahresende → Jahresanfang)
     /// Stunde:      q_h = Σ_{Minuten der Stunde} q_min
     /// Bilanz:      q_h = q_h,0 · E_det / E_0            (Realisierung zum Seed, Faktor der Energieprobe)
@@ -215,6 +233,23 @@ namespace WindowsFormsApplication1
                     ZapfSatz.Neu("EINGABE_JAHRESZONE_RASTER", zone));
             if (z.Urlaubsentkopplung && (z.UrlaubsversatzTage < 0 || z.UrlaubsversatzTage >= Zapfkalender.TAGE))
                 throw Fehler(zone, ZapfSatz.Neu("EINGABE_URLAUBSVERSATZ_BEREICH"));
+            // Der Typtagweg (Stufe Z4b): Die Tagesmengen kommen von dort, die Tagesform wahlweise
+            // auch. KEIN stiller Rückfall — ein unbrauchbarer Typtageingang wird benannt abgelehnt,
+            // und die Entkopplung der Urlaube gilt auf dem Typtagweg nicht (dort wirkt kein
+            // Ferienfenster, Typtagzuordnung setzt den Hinweis dazu).
+            if (z.TyptagmengenKwh != null)
+            {
+                if (z.Urlaubsentkopplung) throw Fehler(zone, ZapfSatz.Neu("EINGABE_JAHRESZONE_TYPTAGE_URLAUB", zone));
+                if (z.TyptagmengenKwh.Length != Zapfkalender.TAGE)
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_JAHRESZONE_TYPTAGE", zone));
+                foreach (double q in z.TyptagmengenKwh)
+                    if (double.IsNaN(q) || double.IsInfinity(q) || q < 0.0)
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_JAHRESZONE_TYPTAGE", zone));
+            }
+            if (z.TyptagdichteJeTag != null
+                && (z.TyptagmengenKwh == null || z.TyptagdichteJeTag.Length != Zapfkalender.TAGE
+                    || Array.Exists(z.TyptagdichteJeTag, d => d == null || d.Leer)))
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_JAHRESZONE_TYPTAGE", zone));
 
             var vorbereitung = new Vorbereitung(z);
             var energien = new double[realisierungen];
@@ -253,7 +288,14 @@ namespace WindowsFormsApplication1
                 for (int d = 1; d <= Zapfkalender.TAGE; d++) MonatJeTag[d - 1] = Zapfkalender.Monat(d) - 1;
                 for (int t = 0; t < Tagesgangsatz.TAGTYPEN; t++) Dichte[t] = Tageszeitdichte.Aus(z.Struktur, (ZapfTagtyp)(t + 1));
                 JeEinheitKwh = z.JahresmengeKwh / z.Einheiten;
-                if (!z.Urlaubsentkopplung)
+                if (z.TyptagmengenKwh != null)
+                {
+                    // Typtagweg: die Tagesmengen des Typtagjahres, auf die Einheit geteilt. Der
+                    // Formvektor bestimmt sie hier NICHT mehr (Nachbesserung Gruppe 1).
+                    GemeinsamKwh = new double[Zapfkalender.TAGE];
+                    for (int d = 0; d < Zapfkalender.TAGE; d++) GemeinsamKwh[d] = z.TyptagmengenKwh[d] / z.Einheiten;
+                }
+                else if (!z.Urlaubsentkopplung)
                     GemeinsamKwh = Formvektor.Tagesmengen(JeEinheitKwh, z.Struktur, z.Kalender, z.WochentagJan1, z.Kaltwasserfaktor, z.Zone);
             }
         }
@@ -279,8 +321,10 @@ namespace WindowsFormsApplication1
                 for (int d = 0; d < Zapfkalender.TAGE; d++)
                 {
                     ereignisse.Clear();
+                    Tageszeitdichte dichte = z.TyptagdichteJeTag != null
+                                             ? z.TyptagdichteJeTag[d] : v.Dichte[(int)kalender[d] - 1];
                     Zapfereignisgenerator.Ziehen(zufall, z.Kategorien, tage[d], z.SpreizungJeMonatK[v.MonatJeTag[d]],
-                                                 v.Dichte[(int)kalender[d] - 1], ereignisse);
+                                                 dichte, ereignisse);
                     int tagesbeginn = d * Bedarfstag.MINUTEN;
                     foreach (Zapfereignis e in ereignisse)
                     {

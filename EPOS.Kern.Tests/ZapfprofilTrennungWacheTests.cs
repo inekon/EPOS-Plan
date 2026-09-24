@@ -90,6 +90,9 @@ namespace EPOS.Kern.Tests
             ("Nenninhaltsliste", "Aus", "Bildet die Liste der Nenninhalte aus Werten (Einstellung), keine Zeitreihe."),
             ("Perzentilwerte", "Aus",
              "Perzentile einer Stichprobe je Realisierung des Auslegungsensembles (R Werte), keine Zeitreihe."),
+            ("Tageszeitdichte", "Aus",
+             "24 Stundenanteile eines eingespielten Typtags (Stufe Z4b) — eine TAGESFORM wie die des "
+             + "Tagesgangsatzes, keine Jahresreihe; die Dichte gibt nur Minuten heraus."),
         };
 
         /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Konstruktorparameter, Rückgabe, Eigenschaft und Feld.</summary>

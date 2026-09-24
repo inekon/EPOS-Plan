@@ -87786,6 +87786,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Typtageingang der gezogenen Jahresreihe trägt nicht 365 endliche, nicht negative Tagesmengen mit brauchbaren Tagesgängen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Auf dem Typtagweg zieht die Jahresreihe über die Tagesmengen der Typtage — die Entkopplung der Urlaube gilt dort nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ der Jahresreihe ist unvollständig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG {
@@ -88713,20 +88731,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Für {1} Typtag(e) und damit {2} Kalendertag(e) wäre der Tagesbedarf negativ — ihr Faktor ist auf 0 gesetzt, der Tag trägt den Jahresmittelwert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Auf dem Typtagweg wirken die Ferienfenster nicht — ein Ferientag bleibt Werktag oder Sonntag seiner Jahreszeit. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: An {1} Tag(en) war die Tagesmenge negativ und wurde auf 0 gesetzt. ähnelt.
-        /// </summary>
-        public static string ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG {
-            get {
-                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG", resourceCulture);
             }
         }
         
@@ -90711,20 +90729,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor eines Typtags auf 0 gesetzt ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_FAKTOR_NULL {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_FAKTOR_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ferienfenster ohne Wirkung ähnelt.
         /// </summary>
         public static string ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG {
             get {
                 return ResourceManager.GetString("ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesmenge auf 0 gesetzt ähnelt.
-        /// </summary>
-        public static string ZPG_WARN_TYPTAGE_KLEMMUNG {
-            get {
-                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_KLEMMUNG", resourceCulture);
             }
         }
         

@@ -77,8 +77,8 @@ namespace WindowsFormsApplication1
     ///               = Werktag    sonst (Montag bis Samstag)
     /// Bewölkung(d)  = bewölkt    Tagesmittel des Bedeckungsgrads ≥ Schwelle
     ///               = heiter     sonst;  entfällt, wo die Kategorie nicht unterscheidet
-    /// Q_TT(d) = Q_a · (1/365 + n_E · F_TT(d)),  danach auf Q_TT ≥ 0 geklemmt und so
-    ///           skaliert, dass Σ_d Q_d = Q_a bleibt
+    /// Q_TT(d) = Q_a · (1/365 + n_E · F_TT(d)),  F_TT eines Typtags mit negativem Ergebnis
+    ///           auf 0 gesetzt (dann Q_TT = Q_a/365), danach so skaliert, dass Σ_d Q_d = Q_a bleibt
     /// </code>
     ///
     /// <para><b>Jede Grenze kommt aus dem Paket</b> (Konzept Kapitel 6 (a)): Heizgrenze je
@@ -98,8 +98,12 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung des Hinweises: Die gerechnete Zahl der Typtage weicht von der eingespielten ab.</summary>
         internal const string HINWEIS_ANZAHL = "TYPTAGE_ANZAHL";
 
-        /// <summary>Kennung des Hinweises: Tagesmengen wurden auf 0 geklemmt (negativer Faktor, Konzept 4.2).</summary>
-        internal const string HINWEIS_KLEMMUNG = "TYPTAGE_KLEMMUNG";
+        /// <summary>
+        /// Kennung des Hinweises: Der Faktor eines Typtags ist auf 0 gesetzt, weil die Gleichung
+        /// für ihn einen negativen Tagesbedarf ergäbe (Grundlagen 5, Abschnitt 2.5, Anmerkung zu
+        /// Gl. (1)–(3)).
+        /// </summary>
+        internal const string HINWEIS_FAKTOR_NULL = "TYPTAGE_FAKTOR_NULL";
 
         /// <summary>Kennung des Hinweises: Die Tagesmengen mussten auf die Jahresmenge skaliert werden.</summary>
         internal const string HINWEIS_SKALIERUNG = "TYPTAGE_SKALIERUNG";
@@ -274,29 +278,47 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die 365 Tagesmengen</b> [kWh] nach der Methodik der Richtlinie:
-        /// <c>Q_TT = Q_a · (1/365 + n_E · F_TT)</c>, auf <c>Q_TT ≥ 0</c> geklemmt (Konzept 4.2)
-        /// und danach so skaliert, dass <c>Σ_d Q_d = Q_a</c> gilt. Klemmung und Skalierung nennt
-        /// je ein Hinweis; verteilt das Jahr bei positiver Jahresmenge nichts, wird benannt
-        /// abgelehnt.
+        /// <c>Q_TT = Q_a · (1/365 + n_E · F_TT)</c>, danach so skaliert, dass
+        /// <c>Σ_d Q_d = Q_a</c> gilt.
+        ///
+        /// <para><b>Nicht die Tagesmenge wird geklemmt, sondern der Faktor genullt</b>
+        /// (Grundlagen 5, Abschnitt 2.5, Anmerkung zu Gl. (1)–(3)): Ergäbe die Gleichung für eine
+        /// Typtagkategorie einen negativen Tagesbedarf, ist <c>F_TT = 0</c> zu setzen — jeder Tag
+        /// dieses Typtags trägt dann den Mittelwertanteil <c>Q_a/365</c>. Die Entscheidung fällt
+        /// je Typtag, nicht je Tag: Der Faktor ist innerhalb eines Typtags derselbe. Ein Hinweis
+        /// nennt die Nullung, ein zweiter die Skalierung; verteilt das Jahr bei positiver
+        /// Jahresmenge nichts, wird benannt abgelehnt.</para>
         /// </summary>
         internal static double[] Tagesmengen(double jahresKwh, double einheiten, Typtagjahr jahr, string zone,
                                              ICollection<ZapfHinweis> hinweise = null)
         {
             if (jahr == null || jahr.Tage.Count != Zapfkalender.TAGE)
                 throw Ablehnen(zone, ZapfSatz.Neu("EINGABE_TYPTAGE_NICHT_VERFUEGBAR"));
+
+            // Zuerst die Typtage sammeln, deren Faktor auf 0 zu setzen ist (§2.5): Der Faktor je
+            // Typtag entscheidet, nicht der einzelne Tag - so trifft die Nullung jeden Tag dieses
+            // Typtags gleich, und die Tagesform der Jahresreihe bleibt in sich stimmig.
+            var genullt = new HashSet<string>(StringComparer.Ordinal);
+            int tageMitNullung = 0;
+            foreach (Typtagtag t in jahr.Tage)
+                if (1.0 / Zapfkalender.TAGE + einheiten * t.Faktor < 0.0)
+                {
+                    genullt.Add(t.Typtag);
+                    tageMitNullung++;
+                }
+            if (genullt.Count > 0 && hinweise != null)
+                ZapfHinweis.Einmal(hinweise, new ZapfHinweis(zone, HINWEIS_FAKTOR_NULL,
+                    ZapfSatz.Neu("HINWEIS_TYPTAGE_FAKTOR_NULL", zone, genullt.Count, tageMitNullung)) { Warnung = true });
+
             var roh = new double[Zapfkalender.TAGE];
-            int geklemmt = 0;
             double summe = 0.0;
             for (int i = 0; i < roh.Length; i++)
             {
-                double q = jahresKwh * (1.0 / Zapfkalender.TAGE + einheiten * jahr.Tage[i].Faktor);
-                if (q < 0) { q = 0.0; geklemmt++; }
+                double f = genullt.Contains(jahr.Tage[i].Typtag) ? 0.0 : jahr.Tage[i].Faktor;
+                double q = jahresKwh * (1.0 / Zapfkalender.TAGE + einheiten * f);
                 roh[i] = q;
                 summe += q;
             }
-            if (geklemmt > 0 && hinweise != null)
-                ZapfHinweis.Einmal(hinweise, new ZapfHinweis(zone, HINWEIS_KLEMMUNG,
-                    ZapfSatz.Neu("HINWEIS_TYPTAGE_KLEMMUNG", zone, geklemmt)) { Warnung = true });
 
             if (jahresKwh == 0.0) return roh;
             if (summe <= 0.0)
@@ -345,6 +367,31 @@ namespace WindowsFormsApplication1
                     reihe[d * Zapfkalender.STUNDEN_TAG + h] = tagesmengen[d] * anteile[h];
             }
             return reihe;
+        }
+
+        /// <summary>
+        /// <b>Je Kalendertag die Tageszeitdichte seines Typtags</b> (365 Werte, Stufe Z4b): die
+        /// Tagesform des Pakets für die gezogene Jahresreihe (4.4). <c>null</c>, wenn das Paket zu
+        /// dieser Gebäudeart nicht jeden benutzten Typtag führt oder ein Tagesgang nichts trägt —
+        /// dann zieht das Ensemble über den Tagesgangsatz der Zone, genau wie die deterministische
+        /// Reihe (<see cref="Stundenreihe"/>, die den Hinweis dazu setzt).
+        /// </summary>
+        internal static Tageszeitdichte[] Dichten(Typtagjahr jahr, Normformvektorsatz satz, string gebaeudeart)
+        {
+            if (jahr == null || satz == null || jahr.Tage.Count != Zapfkalender.TAGE) return null;
+            var dichten = new Dictionary<string, Tageszeitdichte>(StringComparer.Ordinal);
+            foreach (Typtagtag t in jahr.Tage)
+            {
+                if (dichten.ContainsKey(t.Typtag)) continue;
+                Typtaggang g = satz.Gang(gebaeudeart, t.Typtag);
+                if (g == null) return null;
+                Tageszeitdichte d = Tageszeitdichte.Aus(g.Stundenanteile());
+                if (d.Leer) return null;
+                dichten[t.Typtag] = d;
+            }
+            var jeTag = new Tageszeitdichte[Zapfkalender.TAGE];
+            for (int i = 0; i < jeTag.Length; i++) jeTag[i] = dichten[jahr.Tage[i].Typtag];
+            return jeTag;
         }
 
         private static ZapfprofilEingabeException Ablehnen(string zone, ZapfSatz satz)
