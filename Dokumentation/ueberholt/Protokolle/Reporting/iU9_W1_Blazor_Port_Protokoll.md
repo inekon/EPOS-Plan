@@ -1,4 +1,4 @@
-﻿# iU9 Welle 1 — Port der Kostenvorlagen-Kleindialoge und des Kapitalwert-Verlaufs (Umsetzungsprotokoll)
+# iU9 Welle 1 — Port der Kostenvorlagen-Kleindialoge und des Kapitalwert-Verlaufs (Umsetzungsprotokoll)
 
 > Muster: [`B5b_Blazor_Port_Protokoll.md`](B5b_Blazor_Port_Protokoll.md) — Feldkarten-Abgleich je
 > Maske, Abweichungsliste A‑n, Entscheidungen, Windows-Abnahmepunkte.

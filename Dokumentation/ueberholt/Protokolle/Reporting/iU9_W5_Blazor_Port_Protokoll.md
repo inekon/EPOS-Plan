@@ -1,4 +1,4 @@
-﻿# iU9 Welle 5 — Port der Seiten „Berichte & Kosten" (Umsetzungsprotokoll)
+# iU9 Welle 5 — Port der Seiten „Berichte & Kosten" (Umsetzungsprotokoll)
 
 > Muster: [`iU9_W4_Blazor_Port_Protokoll.md`](iU9_W4_Blazor_Port_Protokoll.md),
 > [`iU9_W3_Blazor_Port_Protokoll.md`](iU9_W3_Blazor_Port_Protokoll.md),

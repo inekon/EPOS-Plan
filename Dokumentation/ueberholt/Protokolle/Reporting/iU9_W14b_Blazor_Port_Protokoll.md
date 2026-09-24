@@ -1,4 +1,4 @@
-﻿# iU9 Welle 14b — Bedarfs-Admin: Portprotokoll
+# iU9 Welle 14b — Bedarfs-Admin: Portprotokoll
 
 > Stand 04.09.2026. Vermessung: `iU9_W14ab_Vermessung.md` § 8–11, § 12.2, § 13, § 14.3, § 15.
 > Vorgänger: [`iU9_W13_Blazor_Port_Protokoll.md`](iU9_W13_Blazor_Port_Protokoll.md).

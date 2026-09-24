@@ -1,4 +1,4 @@
-﻿# Paket 1 — Schema und Migration: Umsetzungsprotokoll
+# Paket 1 — Schema und Migration: Umsetzungsprotokoll
 
 Umsetzung von [`ADR-001_Schema-Ausrollung.md`](../../../aktuell/ADR-001_Schema-Ausrollung.md) und der
 Datenmodell-Kapitel des [Konzepts Quellen/Senken](Konzept_Simulation_QuellenSenken.md)

@@ -1,4 +1,4 @@
-﻿# Nachweisliste iU9 — die Maskenwellen W0 bis W10a, Abnahme auf Windows
+# Nachweisliste iU9 — die Maskenwellen W0 bis W10a, Abnahme auf Windows
 
 **Stand 03.09.2026 · Branch `ios_migration` · W0…W4 `aef9509`..`740c73e` ·
 W5 `d95283c`..`f39b4a3` (Basis `740c73e`) · W6 bis W10a `740c73e`..`427fd59`**

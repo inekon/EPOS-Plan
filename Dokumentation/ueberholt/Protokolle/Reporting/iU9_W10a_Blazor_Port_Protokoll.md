@@ -1,4 +1,4 @@
-﻿# iU9 Welle 10a — Simulationskonfiguration I: die sieben Dialoge — Portprotokoll
+# iU9 Welle 10a — Simulationskonfiguration I: die sieben Dialoge — Portprotokoll
 
 > Umsetzung 03.09.2026 im Arbeitsbaum `agent-aa75b5c4740e1c9bd`, Basis
 > `04fc474` (nach dem Merge der Welle 9). Vorbild in Aufbau und Tiefe: die

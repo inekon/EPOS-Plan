@@ -1,4 +1,4 @@
-﻿# iU9 Welle 15a — Projekt: Auswahl, Löschen, Speichern unter, Export/Import, Assistentenkopf
+# iU9 Welle 15a — Projekt: Auswahl, Löschen, Speichern unter, Export/Import, Assistentenkopf
 
 > Umsetzungsprotokoll zur Vermessung `iU9_W15a_Vermessung.md` (2 088 Zeilen, Stand `fe22915`) und
 > zur Arbeitsanweisung `iU9_W15a_Arbeitsanweisung.md`. Basis der Umsetzung: `f7e2758`
