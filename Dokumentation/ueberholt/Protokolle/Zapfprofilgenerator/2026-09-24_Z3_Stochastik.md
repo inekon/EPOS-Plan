@@ -5,7 +5,7 @@ in Kapitel 7 und der Nachtrag N12 im
 [Umsetzungskonzept](../../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md); Abschnitt 10
 der [Übergabe](../../../aktuell/Zapfprofilgenerator/2026-09-23_Uebergabe_Zapfprofilgenerator.md);
 Vorstufe im Protokoll [Z2](2026-09-23_Z2_Auslegung_deterministisch.md). Zweig `z3` von `ffc27d18`,
-49 eigene Commits bis `1a2ec19e`; Merges von `origin` (`7a32b6f3` in `82002260`, `aab9896e` in
+49 eigene Commits bis `ea6f8608`; Merges von `origin` (`7a32b6f3` in `82002260`, `aab9896e` in
 ``6ad35b61``, `a1df2dbe` in `1a2ec19e`). Alle Gates im Worktree, ohne CI-Lauf bis zum Push.
 
 ## Auftrag
@@ -29,7 +29,7 @@ Nachbesserung; ohne Push und ohne CI-Lauf bis zum Abschluss.
 | 3 | Zapfprofil-Dialog: Stufe Experte, Gruppe „Stochastik · Jahresreihe" (Rechenweg, Seed, Realisierungen), Konsistenzprobe im Reiter Kennzahlen; Auslegung: „Stochastisch rechnen", P95/P99, Realisierungen, Karte (b) mit Streuband, GLF, „nicht belastbar", Konsistenzhinweis; DTO, 52 Ressourcenschlüssel je Sprache, Hülle; 12 Hüllen- und 16 bunit-Fälle | `4b364132`, `1cd10ce8`, `48eb0144`, `48bf4ecb` |
 | 2 Nachbesserung | Merge `aab9896e`, T2 → 115; Herkunftsart FIKTIV mit Quelle „VDI 6002 (abgeleitet)"; freier Paketteil `Referenzlaeufe/Katalogpaket_frei/` (Kategorien, Parameter, Ecodesign) in Vorlage und Testdatenbank; Kopierstellen und Sperre der Kategorien; Ablehnung sprachfest; Wache Testdatenbank = Paket; Importtest vor 115; Testdatenbank neu | `2b6ec9d4`, `b1491c3c`, `0fbba4c7`, `61c6b976`, `68ab6970`, `7eedbbc7`, Merge `6ad35b61` (`aab9896e`), `f01d5d8c` (T2 → 115), `43da5221`, `85f0381a`, `6a9cf6da` (Testdatenbank LFS `fbc30835…`, 82 Zeilen) |
 | 3 Nachbesserung | Kernschranke Einheitentage; Vorschau immer deterministisch; Jahresreihe und Auslegungsensemble nebenläufig mit Fortschritt und Abbruch (`Kulturweitergabe.Starten`, Abbruchmarke bis in den Kern); Seed in Experte immer; Erklärzeile; Spitze je Einheit der Wohnungsstation; Schalter aus `AuslegungGaben`; ∞ entfällt benannt; Konsistenzhinweis aus Werten; Datum; Regeln und Tests; 18 neue, 7 geänderte Schlüssel | `8f1d5635`, `f07bda40`, `f19953f9`, `f0cc7fb1`, `026c2ab3`, `a02e3d45`, `76a3ced1`, `0f71d96c`, `83a45c97`, `e4ff3168`, `9826dc7e`, `f53680f3` (13) |
-| Abschluss | Merge `origin` (aab9896e), Papiere (N12, Protokoll, Statuszeile, Übergabe, Wiki-Quelle), Gate | `1a2ec19e` (Merge), Testhärtung und Papiere danach |
+| Abschluss | Merge `origin` (aab9896e), Papiere (N12, Protokoll, Statuszeile, Übergabe, Wiki-Quelle), Gate | `1a2ec19e` (Merge), `58be82c9` (Papiere), `ea6f8608` (zwei nebenläufige bunit-Tests deterministisch: gesteuerte Läufe, `WaitForAssertion` 10 s, 10/10 grün unter Last); Push `ea6f8608`, Kern-Lauf 35941477369 grün |
 
 ## Gates
 
