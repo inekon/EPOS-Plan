@@ -59,6 +59,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>ETAPPE E7c (Schritt E): Restwert ansetzen? <c>null</c> = wie bisher.</summary>
         public bool? RestwertAnsetzen;
+
+        /// <summary>ETAPPE E16 (V‑G3, Schemaschritt <see cref="WiederholperiodeSchema.SCHRITT"/>):
+        /// die Wiederholperiode einer Betriebsposition [a] — n ≥ 2 = alle n Jahre ab dem
+        /// Startjahr; <c>null</c> = jährlich. Gelesen und geschrieben über
+        /// <see cref="WindowsFormsApplication1.Wiederholperiode"/>; in der Projektzeile steht
+        /// dieselbe Spalte an <c>Tab_ProjektWerte</c>.</summary>
+        public int? Wiederholperiode;
     }
 
     /// <summary>
@@ -231,6 +238,16 @@ namespace WindowsFormsApplication1
                 p.ErsatzFuehren = k.ErsatzFuehren;
                 p.RestwertAnsetzen = k.RestwertAnsetzen;
             }
+
+            // ETAPPE E16 (V‑G3): die Wiederholperiode je Position — eine eigene Abfrage wie
+            // bei den Kennzeichen; leer ohne Spalte oder ohne gepflegte Periode.
+            Dictionary<int, int> perioden = WindowsFormsApplication1.Wiederholperiode.LiesVorlage(vorlageId);
+            if (perioden.Count > 0)
+                foreach (KostenVorlagenPosition p in liste)
+                {
+                    int n;
+                    if (perioden.TryGetValue(p.Id, out n)) p.Wiederholperiode = n;
+                }
             return liste;
         }
 
@@ -530,6 +547,10 @@ namespace WindowsFormsApplication1
             if (n == 1 && (p.ErsatzFuehren.HasValue || p.RestwertAnsetzen.HasValue))
                 ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION, id,
                                                    p.ErsatzFuehren, p.RestwertAnsetzen);
+            // ETAPPE E16 (V‑G3): die Wiederholperiode wandert ebenso mit (Speichern unter).
+            if (n == 1 && p.Wiederholperiode.HasValue)
+                WindowsFormsApplication1.Wiederholperiode.Schreibe(
+                    SchemaKatalog.TAB_KOSTENVORLAGEPOSITION, id, p.Wiederholperiode);
             return n == 1 ? id : 0;
         }
 

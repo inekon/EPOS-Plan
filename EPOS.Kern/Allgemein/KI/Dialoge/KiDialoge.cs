@@ -2676,7 +2676,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.VopErsatzErl, leerErlaubt: true),
                     new KiDialogFeld("restwert_ansetzen", "VorlagenPositionKiSicht.RestwertAnsetzen",
                                      KiDialogTexte.VopRestwertName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.VopRestwertErl, leerErlaubt: true)
+                                     KiDialogTexte.VopRestwertErl, leerErlaubt: true),
+                    // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Wiederholperiode einer
+                    // Betriebsposition — 1 = jaehrlich, n = alle n Jahre ab dem Startjahr.
+                    new KiDialogFeld("wiederholperiode", "VorlagenPositionKiSicht.Wiederholperiode",
+                                     KiDialogTexte.VopWiederholperiodeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.VopWiederholperiodeErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {

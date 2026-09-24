@@ -369,6 +369,19 @@ namespace WindowsFormsApplication1
                     z.Raster.RestwertAnsetzen = k.RestwertAnsetzen;
                 }
             }
+
+            // ETAPPE E16 (V‑G3): die Wiederholperiode je Betriebsposition — eine Abfrage je
+            // Leseschleife; leer, wo es die Spalte nicht gibt oder keine Periode gepflegt ist.
+            if (kategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB && liste.Count > 0)
+            {
+                Dictionary<int, int> perioden = Wiederholperiode.LiesProjekt(projektId);
+                if (perioden.Count > 0)
+                    foreach (Zeile z in liste)
+                    {
+                        int n;
+                        if (perioden.TryGetValue(z.Raster.Id, out n)) z.Raster.Wiederholperiode = n;
+                    }
+            }
             return liste;
         }
 

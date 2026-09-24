@@ -1827,6 +1827,9 @@
         internal static string VopErsatzErl => MyResource.Resource.KI_DLG_VOP_ERSATZ_ERL;
         internal static string VopRestwertName => MyResource.Resource.KI_DLG_VOP_RESTWERT_NAME;
         internal static string VopRestwertErl => MyResource.Resource.KI_DLG_VOP_RESTWERT_ERL;
+        // ETAPPE E16 (V‑G3): die Wiederholperiode der Betriebsposition.
+        internal static string VopWiederholperiodeName => MyResource.Resource.KI_DLG_VOP_WDH_NAME;
+        internal static string VopWiederholperiodeErl => MyResource.Resource.KI_DLG_VOP_WDH_ERL;
 
         // ---- Form_CaseEingabe
         internal static string MaskeCaseEingabe => MyResource.Resource.KI_DLG_MASKE_CSE;

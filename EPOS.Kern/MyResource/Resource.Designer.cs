@@ -37430,6 +37430,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederholperiode einer Betriebsposition in Jahren: 1 = jährlich, n = die Position zahlt im Startjahr und danach alle n Jahre. Nur auf der Betriebsseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_WDH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_WDH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlung alle … Jahre ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_WDH_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_WDH_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
         /// </summary>
         public static string KI_DLG_WBX_GANGLINIE_ERL {
@@ -69978,6 +69996,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBX_TITEL_KOPIE {
             get {
                 return ResourceManager.GetString("WBX_TITEL_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string WDH_EINHEIT {
+            get {
+                return ResourceManager.GetString("WDH_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1). ähnelt.
+        /// </summary>
+        public static string WDH_INFO {
+            get {
+                return ResourceManager.GetString("WDH_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlung alle: ähnelt.
+        /// </summary>
+        public static string WDH_LBL_PERIODE {
+            get {
+                return ResourceManager.GetString("WDH_LBL_PERIODE", resourceCulture);
             }
         }
         
