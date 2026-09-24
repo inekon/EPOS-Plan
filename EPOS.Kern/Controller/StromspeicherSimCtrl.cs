@@ -1109,7 +1109,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Lastgang [kW] im Viertelstundenraster nach Fachkonzept 3.1:
-        /// <c>P_last = P_profil_oder_ganglinie + P_wp + P_heizstab + P_kesselstrom</c>.
+        /// <c>P_last = P_profil_oder_ganglinie + P_wp + P_heizstab + P_kesselstrom</c>, dazu der
+        /// Kältestrom der Stufenrechnung (Kühlkonzept 6.1, E34 — ohne den eines eigenen Zählers).
         /// </summary>
         /// <remarks>
         /// Dieselben Quellen und dieselbe Reihenfolge wie die Bestandskette in
@@ -1140,6 +1141,16 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationKessel && sim.simulation_spk != null)
             {
                 RasterAdapter.Addiere(last, RasterAdapter.ZuViertelstundenDouble(sim.simulation_spk.Stromverbrauch_stuendlich));
+            }
+
+            // KU2 Welle 3 (Kühlkonzept 6.1, E34): der Kältestrom, der durch die Stufenrechnung läuft -
+            // dieselbe Reihe, die der Lauf in den Rest gibt. Ohne sie sähen Stromspeicher und Flotte
+            // eine Last ohne Kälte, und der Netzbezug der Flotte verlöre den Kältestrom. Der
+            // Kältestrom über einen EIGENEN Zähler steht nicht darin: Er wird nicht aus dem Speicher
+            // gedeckt. Ohne gerechnete Kältekaskade ist die Reihe null - dann bleibt die Last, wie sie war.
+            if (sim.Kaeltestrom_Stufenrechnung_stuendlich != null)
+            {
+                RasterAdapter.Addiere(last, RasterAdapter.ZuViertelstundenDouble(sim.Kaeltestrom_Stufenrechnung_stuendlich));
             }
 
             return last;

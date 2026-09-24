@@ -32,6 +32,7 @@
 
 @using System.Globalization
 @using WindowsFormsApplication1
+@using EPOS.UI.Dialoge.Kosten
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -146,6 +147,28 @@
                 </KindInhalt>
             </Formularraster>
 
+            @* ETAPPE E9b (Konzept § 2.11.5, Pflege; E9b-Q1): je ein ±-Knopf an DV-Entgelt
+               und PPA-Preis - dasselbe Muster wie an der Kostenposition. Die Paare stehen
+               am Modell (DvEntgeltBest/Worst, PpaPreisBest/Worst, Schemaschritt 118) und
+               gehen mit "Uebernehmen" in die Zeile. Die Knoepfe folgen der Sperre ihres
+               Feldes; der Spot-Aufschlag und die Marktwertfelder sind nicht szenariert
+               (E9a-Q1). Ein gepflegtes Paar, das im Lauf nicht wirkt, nennt eine
+               Kohaerenzzeile. *@
+            <div class="epos-szenarioleiste">
+                <SzenarioKnopf Text="@_t.SzDv" Aktiv="@IstMarktpraemie" Gepflegt="@DvSzenarioGepflegt"
+                               Kurztext="@PvSzenarioKurztext(PV_DV)"
+                               GepflegtText="@_sz.Gepflegt" WarnungText="@_sz.OhneErwartetKurz"
+                               Angefordert="() => PvSzenarioOeffnen(PV_DV)" />
+                <SzenarioKnopf Text="@_t.SzPpa" Aktiv="@IstPpa" Gepflegt="@PpaSzenarioGepflegt"
+                               Kurztext="@PvSzenarioKurztext(PV_PPA)"
+                               GepflegtText="@_sz.Gepflegt" WarnungText="@_sz.OhneErwartetKurz"
+                               Angefordert="() => PvSzenarioOeffnen(PV_PPA)" />
+            </div>
+            @foreach (string zeile in PvSzenarioZeilen)
+            {
+                <Kohaerenzzeile Text="@zeile" Zustand="KohaerenzZustand.Abweichend" />
+            }
+
             <Herleitungszeile Text="@VermarktungHinweis" />
         </KindInhalt>
     </Gruppenkopf>
@@ -230,6 +253,21 @@
 
     <SpeichernLeiste OkText="@_t.BtnUebernehmen" AbbrechenText="@_t.BtnAbbrechen"
                      Ergebnis="BeiErgebnis" />
+
+    @* ETAPPE E9b: das Szenariopaar von DV-Entgelt bzw. PPA-Preis - der CaseEingabeDialog
+       als allgemeiner Baustein (E9b-Q1). Ein Titel, eine Stelle: Die Ueberlagerung traegt
+       Titel und Kreuz, TitelText="" steht RECHTS vom Satz. OK legt die Werte auf das
+       Modell; geschrieben wird mit "Uebernehmen". *@
+    <Ueberlagerung Offen="@(_szenarioGaben is not null)" Titel="@_szenarioTitel"
+                   Geschlossen="() => PvSzenarioFertig(null)">
+        <KindInhalt>
+            @if (_szenarioGaben is not null)
+            {
+                <CaseEingabeDialog @attributes="_szenarioGaben" TitelText=""
+                                   Geschlossen="PvSzenarioFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -576,6 +614,101 @@
     private string VermarktungHinweis => EvErlaubt ? _t.Hinweis21c : _t.EvGesperrt;
 
     // =====================================================================
+    // ETAPPE E9b — die ±-Knöpfe an DV-Entgelt und PPA-Preis
+    // =====================================================================
+
+    /// <summary>ETAPPE E9b: der Schlüssel des DV-Entgelts für <see cref="PvSzenarioOeffnen"/>.</summary>
+    public const string PV_DV = "DV";
+
+    /// <summary>ETAPPE E9b: der Schlüssel des PPA-Preises.</summary>
+    public const string PV_PPA = "PPA";
+
+    private readonly SzenariopaarTexte _sz = new();
+    private IReadOnlyDictionary<string, object>? _szenarioGaben;
+    private string _szenarioTitel = "";
+    private string _szenarioArt = "";
+
+    /// <summary>Steht die Überlagerung eines Szenariopaars? (Prüfhilfe für Tests)</summary>
+    public bool SzenarioOffen => _szenarioGaben is not null;
+
+    /// <summary>ETAPPE E9b: Trägt das DV-Entgelt ein gepflegtes Paar (1e−9-Regel)?</summary>
+    public bool DvSzenarioGepflegt =>
+        Szenariopaar.Gepflegt(Modell.DvEntgeltBest, Modell.DvEntgeltWorst, Modell.DvEntgelt ?? 0.0);
+
+    /// <summary>ETAPPE E9b: Trägt der PPA-Preis ein gepflegtes Paar?</summary>
+    public bool PpaSzenarioGepflegt =>
+        Szenariopaar.Gepflegt(Modell.PpaPreisBest, Modell.PpaPreisWorst, Modell.PpaPreis ?? 0.0);
+
+    private string PvSzenarioKurztext(string art) => art == PV_PPA
+        ? Szenariopaar.Kurztext(Modell.PpaPreisBest, Modell.PpaPreisWorst, Modell.PpaPreis ?? 0.0, "ct/kWh", 2)
+        : Szenariopaar.Kurztext(Modell.DvEntgeltBest, Modell.DvEntgeltWorst, Modell.DvEntgelt ?? 0.0, "ct/kWh", 2);
+
+    /// <summary>
+    /// ETAPPE E9b: die Kohärenzzeilen der zwei Paare — nur, was gepflegt ist und im Lauf
+    /// nicht wirkt: die Vergütung ist nicht angewendet, oder die Vermarktungsform liest den
+    /// Satz nicht (DV-Entgelt nur bei Marktprämie, PPA-Preis nur bei sonstiger
+    /// Direktvermarktung).
+    /// </summary>
+    public IReadOnlyList<string> PvSzenarioZeilen
+    {
+        get
+        {
+            var liste = new List<string>();
+            bool dv = DvSzenarioGepflegt, ppa = PpaSzenarioGepflegt;
+            if (!dv && !ppa) return liste;
+            if (!Modell.Aktiv)
+            {
+                liste.Add(_t.SzInaktiv);
+                return liste;
+            }
+            if (dv && !IstMarktpraemie) liste.Add(_t.SzDvOhneWirkung);
+            if (ppa && !IstPpa) liste.Add(_t.SzPpaOhneWirkung);
+            return liste;
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E9b: „±" an DV-Entgelt bzw. PPA-Preis — der <c>CaseEingabeDialog</c> als
+    /// Szenariopaar gegen den Wert des Feldes daneben (ct/kWh, zwei Stellen, Grenzen wie
+    /// das Feld). Keine Warnung ohne Erwartet-Wert: Ein fehlender Satz ist hier keine
+    /// Datenlücke. Die Kohärenzzeilen dieses Dialogs gehen mit hinein.
+    /// </summary>
+    private void PvSzenarioOeffnen(string art)
+    {
+        bool ppa = art == PV_PPA;
+        string feld = ppa ? _t.SzPpa : _t.SzDv;
+        _szenarioArt = ppa ? PV_PPA : PV_DV;
+        _szenarioTitel = Szenariopaar.Titel(feld);
+        _szenarioGaben = ppa
+            ? Szenariopaar.Gaben(feld, feld, "ct/kWh", Modell.PpaPreis, Modell.PpaPreisBest,
+                                 Modell.PpaPreisWorst, 2, 100, PvSzenarioZeilen, warnenOhneErwartet: false)
+            : Szenariopaar.Gaben(feld, feld, "ct/kWh", Modell.DvEntgelt, Modell.DvEntgeltBest,
+                                 Modell.DvEntgeltWorst, 2, 10, PvSzenarioZeilen, warnenOhneErwartet: false);
+        _hinweis = ""; _fehler = "";
+    }
+
+    /// <summary>ETAPPE E9b: das Ergebnis auf das Modell — 0 heißt „wie Erwartet".
+    /// Geschrieben wird mit „Übernehmen".</summary>
+    private void PvSzenarioFertig(CaseEingabeErgebnis? ergebnis)
+    {
+        string art = _szenarioArt;
+        _szenarioGaben = null;
+        _szenarioArt = "";
+        if (ergebnis is null) return;
+
+        if (art == PV_PPA)
+        {
+            Modell.PpaPreisBest = Szenariopaar.Wert(ergebnis.BestCase);
+            Modell.PpaPreisWorst = Szenariopaar.Wert(ergebnis.WorstCase);
+        }
+        else
+        {
+            Modell.DvEntgeltBest = Szenariopaar.Wert(ergebnis.BestCase);
+            Modell.DvEntgeltWorst = Szenariopaar.Wert(ergebnis.WorstCase);
+        }
+    }
+
+    // =====================================================================
     // § 51 / § 51a und Kappung
     // =====================================================================
 
@@ -764,8 +897,9 @@
     private Task Schliessen(PvSprung sprung) =>
         Geschlossen.InvokeAsync(new PvVerguetungErgebnis(_gespeichert, sprung));
 
+    /// <summary>Esc schließt. ETAPPE E9b: Steht ein Szenariopaar obenauf, gehört die Geste ihm.</summary>
     private Task BeiTaste(KeyboardEventArgs e) =>
-        e.Key == "Escape" ? Schliessen(PvSprung.Keiner) : Task.CompletedTask;
+        e.Key == "Escape" && !SzenarioOffen ? Schliessen(PvSprung.Keiner) : Task.CompletedTask;
     // =============================================================================
     // Der Hilfe-Assistent (Welle KI-F4)
     // =============================================================================

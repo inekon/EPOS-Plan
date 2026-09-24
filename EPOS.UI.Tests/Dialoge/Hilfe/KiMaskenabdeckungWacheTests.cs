@@ -122,6 +122,15 @@ public sealed class KiMaskenabdeckungWacheTests
     /// </summary>
     private static readonly Eingabestellen[] EINGABESTELLEN =
     {
+        // ---- ETAPPE E9b (vollständige Szenarioabdeckung, Pflege in den Dialogen) ----
+        // Ein eigener Block, damit die Nachzüge anderer Wellen an der Tafel konfliktarm
+        // bleiben. Die Szenariotafel des Parameterdialogs trägt zwei Zeilen mehr —
+        // Betrachtungszeitraum und Mengenänderung je Best/Worst, vier Eingabestellen —, und
+        // die Feldkarte (KiDialoge, Maske Form_WirtschaftlichkeitParameter) führt sie mit
+        // (best_zeitraum, worst_zeitraum, best_menge, worst_menge): 26 → 30.
+        new("WirtschaftlichkeitParameterDialog", 30),
+        // ---- Ende ETAPPE E9b ----
+
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
@@ -200,10 +209,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("VorlagenZeile", 4),
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 8),
+        new("WaermepumpeKonfiguration", 14, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld"),
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
-        new("WirtschaftlichkeitParameterDialog", 26),
+        // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
             "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen"),
         new("ZapfprofilAuslegungDialog", 11),

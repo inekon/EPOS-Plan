@@ -532,6 +532,11 @@ namespace WindowsFormsApplication1
 
             double bedarfKwh = 0;
             int getroffen = 0;
+            // KU2 WELLE 3 (Kühlkonzept 6.2): Der Kältestrom der reversiblen Maschine erhöht die
+            // Endenergie der Komponente Wärmepumpe — keine neue Komponente. Er trägt den Preis der
+            // Anlage, ein abweichender Kühlträger (E34) seinen eigenen Arbeitspreis.
+            double kaelteKwh = 0.0, kuehltraegerKwh = 0.0, kuehltraegerEuro = 0.0;
+            bool kuehltraegerOhnePreis = false;
             foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
             {
                 if (anlagenName != null &&
@@ -539,13 +544,49 @@ namespace WindowsFormsApplication1
                     continue;
                 getroffen++;
                 bedarfKwh += (m.Stromverbrauch + m.Heizstab) * 1000.0;
+
+                double kaelte = (m.Stromverbrauch_Kuehlung ?? 0.0) * 1000.0;
+                if (!(kaelte > 0)) continue;
+                if (m.Kuehl_CarrierId.HasValue && m.Kuehl_CarrierId.Value > 0)
+                {
+                    kuehltraegerKwh += kaelte;
+                    double? pk = Preis(m.Kuehl_CarrierId.Value);
+                    if (pk.HasValue) kuehltraegerEuro += kaelte * pk.Value;
+                    else kuehltraegerOhnePreis = true;
+                }
+                else kaelteKwh += kaelte;
             }
 
             if (anlagenName != null && getroffen == 0) return null;
-            if (bedarfKwh <= 0) return null;
 
             bool eigener;
             double? preis = Strompreis(idAnlage, out eigener);
+            if (kaelteKwh > 0 || kuehltraegerKwh > 0)
+            {
+                double gesamtKwh = bedarfKwh + kaelteKwh + kuehltraegerKwh;
+                if (gesamtKwh <= 0) return null;
+                double? kosten = null;
+                if (!kuehltraegerOhnePreis && (preis.HasValue || bedarfKwh + kaelteKwh <= 0))
+                    kosten = (preis.HasValue ? (bedarfKwh + kaelteKwh) * preis.Value : 0.0) + kuehltraegerEuro;
+                return new Groesse
+                {
+                    BedarfKwh = gesamtKwh,
+                    KostenEuro = kosten,
+                    // Zwei Träger an einer Anlage: Weg B bewertet mit dem Mittel, das Weg A ergibt —
+                    // derselbe Betrag auf beiden Wegen.
+                    BewertungspreisJeKwh = kuehltraegerKwh > 0
+                        ? (kosten.HasValue ? kosten.Value / gesamtKwh : (double?)null) : preis,
+                    EigenerStromtraeger = eigener || kuehltraegerKwh > 0,
+                    Basis = anlagenName != null
+                        ? string.Format(CultureInfo.CurrentCulture,
+                                        MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
+                                        MyResource.Resource.AUFLOESER_KOMP_WAERMEPUMPE, anlagenName)
+                        : MyResource.Resource.AUFLOESER_BASIS_ALLE_WP
+                };
+            }
+
+            if (bedarfKwh <= 0) return null;
+
             return new Groesse
             {
                 BedarfKwh = bedarfKwh,
@@ -637,9 +678,16 @@ namespace WindowsFormsApplication1
                             zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromproduktion });
                     break;
                 case KOMPONENTE_WAERMEPUMPE:
+                    // KU2 Welle 3 (Kühlkonzept 6.2): der bezogene Strom der Wärmepumpe samt Kältestrom.
                     if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
                         foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
-                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromverbrauch + m.Heizstab });
+                            zeilen.Add(new Brennstoffzeile
+                            {
+                                Modul = m.Modul,
+                                VerbrauchMWh = m.Stromverbrauch_Kuehlung.HasValue
+                                    ? m.Stromverbrauch + m.Heizstab + m.Stromverbrauch_Kuehlung.Value
+                                    : m.Stromverbrauch + m.Heizstab
+                            });
                     break;
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
                     // E1: Nur der ELEKTROKESSEL hat am Heizkessel eine elektrische
@@ -866,10 +914,38 @@ namespace WindowsFormsApplication1
         internal double? StromkostenProjektEuro()
         {
             double mwh = NetzbezugMWh();
-            if (mwh <= 0) return null;
-            double? preis = StrompreisJeKwh;
-            if (!preis.HasValue) return null;
-            return mwh * 1000.0 * preis.Value;
+
+            // KU2 WELLE 3 (Entscheid E34): Der Kältestrom eines abweichenden Kühlträgers trägt
+            // dessen Arbeitspreis — anteilig als Teil des Netzbezugs, über einen eigenen Zähler
+            // daneben. Dieselben Mengen wie im KostenEmissionRechner (Kaeltestromabrechnung);
+            // ohne abweichenden Kühlträger ist die Liste leer, und die Rechnung ist die alte.
+            List<Kaeltestromabrechnung.Anteil> kuehl = Kaeltestromabrechnung.Anteile(_ergebnis);
+            if (kuehl.Count == 0)
+            {
+                if (mwh <= 0) return null;
+                double? preis = StrompreisJeKwh;
+                if (!preis.HasValue) return null;
+                return mwh * 1000.0 * preis.Value;
+            }
+
+            double anteilig = 0.0, zaehler = 0.0, kuehlKosten = 0.0;
+            foreach (Kaeltestromabrechnung.Anteil a in kuehl)
+            {
+                if (a.EigenerZaehler) zaehler += a.MengeMwh; else anteilig += a.MengeMwh;
+                double? pk = Preis(a.Traeger);
+                if (!pk.HasValue) return null;   // Datenlücke - keine Teilsumme
+                kuehlKosten += a.MengeMwh * 1000.0 * pk.Value;
+            }
+            double projektMwh = Math.Max(0.0, mwh - anteilig);
+            if (projektMwh <= 0 && zaehler <= 0 && anteilig <= 0) return null;
+            double summe = kuehlKosten;
+            if (projektMwh > 0)
+            {
+                double? preis = StrompreisJeKwh;
+                if (!preis.HasValue) return null;
+                summe += projektMwh * 1000.0 * preis.Value;
+            }
+            return summe;
         }
 
         /// <summary>Der Netzbezug des Laufs [MWh/a] (<c>Energiebedarf.Stromrestbedarf</c>);

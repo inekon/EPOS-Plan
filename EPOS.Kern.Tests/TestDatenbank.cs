@@ -546,6 +546,12 @@ namespace EPOS.Kern.Tests
                 // dessen Typuebersetzung den Fremdschluessel verloere; wiederholbar, kein DML.
                 KuehlungSchema.ErzeugerspaltenAlle(null);
 
+                // Schritt 119 (Stufe KU2 Welle 3; Kuehlkonzept 6.1-6.4, 8.4; E34): die
+                // Abrechnungsart des Kaeltestroms an Tab_Energieanlagen (0/1, nullbar) und die
+                // sieben Ergebnisspalten der Kaelteseite der Waermepumpe. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; wiederholbar, kein DML.
+                KuehlungSchema.Schritt119Alle(null);
+
                 // Schritt 111 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
                 // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
                 // Tab_KostenVorlagePosition. Wie in der Migration ueber ADD COLUMN, aus

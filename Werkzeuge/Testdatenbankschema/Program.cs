@@ -1437,6 +1437,30 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 118, trocken);
 
+            // ---- Schritt 119: die Abrechnungsart des Kaeltestroms und die Kaelteseite der
+            //      Waermepumpenergebnisse (Kuehlkonzept 6.1-6.4, 8.4; Stufe KU2 Welle 3; E34). NACH 118.
+            //      REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_119_Kaeltestrom bedient (KuehlungSchema):
+            //      Tab_Energieanlagen.Kuehl_EigenerZaehler (0/1, nullbar, ohne Vorgabe) und sieben
+            //      nullbare Ergebnisspalten an Tab_ErgebnisWaermepumpe und
+            //      Tab_ErgebnisWaermepumpeModul.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - alle Spalten bleiben NULL; die Wahl wirkt
+            //      nur bei abweichendem Kuehltraeger, die Ergebnisspalten schreibt nur ein Lauf mit
+            //      Kaeltekaskade.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 119 - Abrechnungsart des Kaeltestroms und Kaelteseite der Ergebnisse: " +
+                              (KuehlungSchema.Schritt119Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht119 = new List<string>();
+                angelegt += KuehlungSchema.Schritt119Alle(bericht119);
+                foreach (string zeile in bericht119)
+                    Console.WriteLine("Schritt 119 - " + zeile + ".");
+                Console.WriteLine("Schritt 119 - vollstaendig: " + KuehlungSchema.Schritt119Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     internal static class AnlagenSql
     {
         /// <summary>
-        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 65 Spalten (gezaehlt).
+        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 66 Spalten (gezaehlt).
         ///
         /// <para>
         /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
@@ -76,6 +76,15 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// Schemaschritt 119 (Kuehlkonzept 6.1, Entscheid E34) hat <c>Kuehl_EigenerZaehler</c>
+        /// ergaenzt - die Abrechnungsart des Kaeltestroms bei abweichendem Kuehltraeger (NULL =
+        /// anteilig am Netzbezug, 1 = eigener Zaehler). Eine MODELLspalte wie
+        /// <c>Kuehl_ID_Carrier</c>, neben der sie steht: Der Erzeugerdialog schreibt sie, der
+        /// Kaeltestrom des Laufs liest sie. Sie ist nullbar und ohne Vorgabe; im Modell reist sie
+        /// durch Loeschen + Neuanlegen und braucht die Rettung nicht.
+        /// </para>
+        ///
+        /// <para>
         /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
@@ -101,7 +110,7 @@ namespace WindowsFormsApplication1
                          PV_WrWirkungsgrad, PV_Systemverluste,
                          PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
                          PV_Wechselrichterweg,
-                         Kuehl_ID_Carrier)
+                         Kuehl_ID_Carrier, Kuehl_EigenerZaehler)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
@@ -109,7 +118,7 @@ namespace WindowsFormsApplication1
                                 ?,?,
                                 ?,?,?,?,?,
                                 ?,
-                                ?)";
+                                ?,?)";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -236,7 +245,14 @@ namespace WindowsFormsApplication1
                         // energy_carrier.id; ein Verweis ins Leere faellt zu NULL, statt das
                         // INSERT nach dem DELETE des Speicherwegs scheitern zu lassen.
                         ProjektPuffer.Par("@kuehlcarrier", DbParamTyp.Integer,
-                            TraegerVerweisOderNull(item.Kuehl_ID_Carrier, item.Bezeichner))
+                            TraegerVerweisOderNull(item.Kuehl_ID_Carrier, item.Bezeichner)),
+
+                        // --- Abrechnungsart des Kaeltestroms (Schritt 119; E34) ----------
+                        // NULL = anteilig am Netzbezug (Vorgabe), 1 = eigener Zaehler. Nur 1
+                        // wird geschrieben, alles andere als NULL - die Spalte kennt keine
+                        // DDL-Vorgabe, und 0 hiesse dasselbe wie NULL.
+                        ProjektPuffer.Par("@kuehlzaehler", DbParamTyp.Integer,
+                            EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler))
                     };
         }
 
@@ -288,6 +304,17 @@ namespace WindowsFormsApplication1
                               id.Value + " zeigt auf keinen Pufferspeicher mehr - " +
                               "die Referenz wird als leer gespeichert.");
             return null;
+        }
+
+        /// <summary>
+        /// Die Abrechnungsart des Kaeltestroms fuer das INSERT und fuer
+        /// <c>WErzeugerCtrl.KonfigurationSchreiben</c> (Schemaschritt 119; E34): <c>true</c> -&gt; 1
+        /// (eigener Zaehler), sonst NULL (anteilig am Netzbezug, die Vorgabe). Eine 0 schreibt der
+        /// Speicherweg nie - sie hiesse dasselbe wie NULL.
+        /// </summary>
+        internal static object EigenerZaehlerOderNull(bool? eigenerZaehler)
+        {
+            return eigenerZaehler == true ? (object)1 : null;
         }
 
         /// <summary>

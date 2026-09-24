@@ -309,8 +309,8 @@ namespace WindowsFormsApplication1
             KopfZeile(ws, 1, deltaStart + varianten.Count - 1);
 
             int r = 2;
-            foreach (string gruppe in new[] { KennzahlenKatalog.GR_ENERGIE, KennzahlenKatalog.GR_EFFIZIENZ,
-                                              KennzahlenKatalog.GR_EMISSION, KennzahlenKatalog.GR_KOSTEN })
+            // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
+            foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
                 var zeilen = katalog.Where(x => x.Gruppe == gruppe)
                     .Where(x => daten.Varianten.Any(v =>
@@ -1350,11 +1350,12 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r++;
 
-            // ETAPPE E5 (U10): der Hinweistext — was ein Szenario heute variiert und was
-            // nicht; derselbe Text wie unter der Annahmentafel der Seite und im Wortbericht.
-            if (!string.IsNullOrEmpty(bewertung.Szenariohinweis))
+            // ETAPPE E9b (U10, E9b‑Q3): der Ausweis „n von m Parametern szenariert" an der
+            // Stelle des Hinweistexts (Konzept § 2.11.7) — derselbe Satz wie unter der
+            // Annahmentafel der Seite und im Wortbericht.
+            if (!string.IsNullOrEmpty(bewertung.Szenarioabdeckung))
             {
-                ws.Cell(r, 1).Value = bewertung.Szenariohinweis;
+                ws.Cell(r, 1).Value = bewertung.Szenarioabdeckung;
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
                 r++;
             }

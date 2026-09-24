@@ -133,6 +133,84 @@
                     @Kennzahl(Resource.SIMUEB_LBL_KAELTELAST, Zahl(kaelte.KaeltelastMaxKw, "N1"), "kW", false)
                     @Kennzahl(Resource.SIMUEB_LBL_KAELTE_UNGEDECKT, Zahl(kaelte.KaelterestbedarfMwh, "N2"), MWH, true)
                 </div>
+
+                @* STUFE KU2 WELLE 3 (Kuehlkonzept 8.4; E21, E34): DIE DECKUNG mit denselben
+                   Baendern wie die zwei Spalten darueber - Deckungsgrad, Ring mit Legende,
+                   eigene Kaelteerzeugertabelle (#32), dazu der Kaeltestrom mit seinem
+                   Netzbezug und die Jahresarbeitszahl Kaelte. Nur mit Kaelteerzeuger; ohne
+                   ihn steht allein der ungedeckte Bedarf mit seinem Satz. *@
+                @if (kaelte.Erzeuger.Count > 0)
+                {
+                    <div class="epos-simueb-kennzahlen">
+                        @Kennzahl(Resource.SIMUEB_LBL_DECKUNG, Zahl(kaelte.DeckungsgradProzent ?? 0.0, "N1"), "%", false)
+                        @Kennzahl(Resource.SIMUEB_LBL_KAELTESTROM, Zahl(kaelte.KaeltestromMwh ?? 0.0, "N2"), MWH, false)
+                        @Kennzahl(Resource.SIMUEB_LBL_JAZ_KAELTE,
+                                  kaelte.EerJahreswert is double eer ? Zahl(eer, "N2") : "—", "", false)
+                    </div>
+                    <p class="epos-simueb-eigenverbrauch">
+                        @string.Format(Resource.SIMUEB_KAELTESTROM_NETZ, Zahl(kaelte.KaeltestromNetzbezugMwh ?? 0.0, "N2"))
+                    </p>
+
+                    @if (RingKaelte is not null)
+                    {
+                        <div class="epos-simueb-ringzeile">
+                            <div class="epos-simueb-ring">
+                                <DiagrammSvg Modell="@RingKaelte" Kennung="simerg-ring-kaelte"
+                                             LegendeSchaltbar="false"
+                                             Bezeichnung="@Resource.SIMUEB_RING_KAELTE_TITEL" />
+                            </div>
+                            <div class="epos-simueb-legendenblock">
+                                <ul class="epos-simueb-legende">
+                                    @foreach (Ringanteil a in kaelte.Legende)
+                                    {
+                                        <li class="@(a.IstRest ? "epos-simueb-legende-rest" : null)">
+                                            <span class="epos-simueb-farbe" style="@("background:" + a.Farbe)"
+                                                  aria-hidden="true"></span>
+                                            <span class="epos-simueb-legende-name">@a.Name</span>
+                                            <span class="epos-simueb-legende-wert">@Zahl(a.Mwh, "N2") MWh</span>
+                                            <span class="epos-simueb-legende-anteil">@Zahl(a.Prozent, "N1") %</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+                    @* Dieselbe Tabellenform wie die Erzeugertabellen darueber: Name links,
+                       Zahlen rechts, die Einheit einmal im Kopf; der Stromtraeger ist Text
+                       und steht hinten. Die Huelle rollt quer, statt im schmalen Fenster
+                       Spalten abzuschneiden. *@
+                    <div class="epos-simueb-kaeltetabelle">
+                        <table class="epos-simueb-tabelle">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="epos-simueb-name">@Resource.SIMUEB_KAELTE_SP_ANLAGE</th>
+                                    <th scope="col">@Resource.SIMUEB_KAELTE_SP_VORLAUF<span class="epos-simueb-kopfeinheit">°C</span></th>
+                                    <th scope="col">@Resource.SIMUEB_KAELTE_SP_KAELTE<span class="epos-simueb-kopfeinheit">@MWH</span></th>
+                                    <th scope="col">@Resource.SIMUEB_KAELTE_SP_STROM<span class="epos-simueb-kopfeinheit">@MWH</span></th>
+                                    <th scope="col">@Resource.SIMUEB_KAELTE_SP_EER</th>
+                                    <th scope="col">@Resource.SIMUEB_KAELTE_SP_NETZ<span class="epos-simueb-kopfeinheit">@MWH</span></th>
+                                    <th scope="col" class="epos-simueb-text">@Resource.SIMUEB_KAELTE_SP_TRAEGER</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (KaelteerzeugerAnzeige z in kaelte.Erzeuger)
+                                {
+                                    <tr>
+                                        <td class="epos-simueb-name">@z.Anlage</td>
+                                        <td class="epos-simueb-zahl">@z.Vorlauf</td>
+                                        <td class="epos-simueb-zahl">@Zahl(z.KaelteMwh, "N2")</td>
+                                        <td class="epos-simueb-zahl">@Zahl(z.StromMwh, "N2")</td>
+                                        <td class="epos-simueb-zahl">@(z.Eer is double e ? Zahl(e, "N2") : "—")</td>
+                                        <td class="epos-simueb-zahl">@Zahl(z.NetzbezugMwh, "N2")</td>
+                                        <td class="epos-simueb-text">@z.Stromtraeger</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
                 @if (kaelte.Deckungshinweis.Length > 0)
                 {
                     <p class="epos-simerg-hinweis">@kaelte.Deckungshinweis</p>
@@ -203,6 +281,12 @@
 
     /// <summary>Der Ring „Stromdeckung".</summary>
     [Parameter] public Zeichenmodell? RingStrom { get; set; }
+
+    /// <summary>
+    /// Der Ring „Kältedeckung" (Stufe KU2 Welle 3; Kühlkonzept 8.4) — nur mit Kälteerzeuger; ohne
+    /// ihn steht im Kälteblock kein Ring.
+    /// </summary>
+    [Parameter] public Zeichenmodell? RingKaelte { get; set; }
 
     /// <summary>„Waermebedarf Uebersicht…" — ohne Rueckruf kein Knopf.</summary>
     [Parameter] public EventCallback BedarfDetails { get; set; }

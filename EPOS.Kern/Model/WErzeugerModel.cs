@@ -88,6 +88,31 @@
         /// </summary>
         public int? Kuehl_ID_Carrier;
 
+        /// <summary>
+        /// <c>Kuehl_EigenerZaehler</c> - die Abrechnungsart des Kaeltestroms dieser Anlage bei einem
+        /// abweichenden Kuehltraeger (Schemaschritt 119; Entscheid E34):
+        /// <b><c>null</c> = anteilig am Netzbezug (Vorgabe)</b>, <c>true</c> = eigener Zaehler
+        /// (der Kaeltestrom laeuft neben der Stufenrechnung und traegt ganz den Kuehltraeger);
+        /// <c>false</c> liest sich wie <c>null</c>. Wirkungslos, solange
+        /// <see cref="Kuehl_ID_Carrier"/> leer ist oder den Stromtraeger des Projekts nennt.
+        ///
+        /// <para>NULL-treu, eine MODELLspalte wie <see cref="Kuehl_ID_Carrier"/>: Der Speicherweg
+        /// Loeschen + Neuanlegen schreibt sie aus dem Modell zurueck
+        /// (<c>AnlagenSql.EigenerZaehlerOderNull</c>: nur 1 oder NULL).</para>
+        /// </summary>
+        public bool? Kuehl_EigenerZaehler;
+
+        /// <summary>
+        /// Tragen die drei GERÄTEfelder des Kühlbetriebs (<see cref="WPModel.Kuehlbetrieb"/>,
+        /// <see cref="WPModel.KuehlVorlauf"/>, <see cref="WPModel.KuehlHilfsstromanteil"/>) den Stand
+        /// des Geräts? Gesetzt von <c>WaermepumpeGeraeteCtrl.GeraetedatenFuellen</c> bzw.
+        /// <c>KuehlfelderFuellen</c> (Stufe KU2 Welle 3). Nur dann schreibt
+        /// <c>WaermepumpeGeraeteCtrl.ProjektgeraetNachziehen</c> sie in die Projektkopie — eine
+        /// Anlagenzeile, die sie nie gelesen hat, trüge die Vorgaben (aus, leer) und löschte einen
+        /// gesetzten Kühlbetrieb. Keine Spalte, ein Zustand des Modells.
+        /// </summary>
+        public bool KuehlfelderGeladen;
+
         // =============================================================================
         // Quellen-/Senken-Konfiguration (Paket 1, Konzept 5.3) - 27 Spalten
         // =============================================================================

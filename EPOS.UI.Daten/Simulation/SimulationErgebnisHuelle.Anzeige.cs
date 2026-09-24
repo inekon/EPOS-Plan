@@ -82,7 +82,7 @@ namespace WindowsFormsApplication1
                 hinweise.Add(string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
                                            k.StundenHeizenUndKuehlen, k.StundenHeizenUndKuehlenGebaeude));
 
-            return new KaelteDaten
+            var d = new KaelteDaten
             {
                 KaeltebedarfMwh = k.KaeltebedarfMwh,
                 KaeltelastMaxKw = k.KaeltelastMaxKw,
@@ -94,6 +94,34 @@ namespace WindowsFormsApplication1
                 GrenzeFeuchte = SimulationKaeltebedarf.GrenzeFeuchte,
                 Deckungshinweis = deckung
             };
+
+            // STUFE KU2 WELLE 3 (Kuehlkonzept 8.4; E21, E34): die Deckung der Kaelteerzeuger -
+            // Deckungsgrad, Kaeltestrom, EER-Jahreswert, Netzbezug, die Kaelteerzeugertabelle und
+            // die Legende des Kaelterings (dieselbe Segmentliste wie das Bild).
+            if (k.Erzeuger.Count > 0)
+            {
+                d.DeckungsgradProzent = k.DeckungsgradProzent;
+                d.KaeltestromMwh = k.KaeltestromMwh;
+                d.EerJahreswert = k.EerJahreswert;
+                d.KaeltestromNetzbezugMwh = k.KaeltestromNetzbezugMwh;
+                var zeilen = new List<KaelteerzeugerAnzeige>();
+                foreach (SimulationErgebnisCtrl.KaelteerzeugerZeile z in k.Erzeuger)
+                    zeilen.Add(new KaelteerzeugerAnzeige(z.Bezeichner, z.Vorlauf, z.KaelteMwh, z.StromMwh, z.Eer,
+                                                         z.NetzbezugMwh, KuehltraegerText(z)));
+                d.Erzeuger = zeilen;
+                d.Legende = Legende(SegmenteKaelte(k));
+            }
+            return d;
+        }
+
+        /// <summary>Der Stromträger des Kältestroms einer Zeile: der des Projekts, oder ein abweichender samt Abrechnungsart (E34).</summary>
+        private static string KuehltraegerText(SimulationErgebnisCtrl.KaelteerzeugerZeile z)
+        {
+            if (z == null || z.Kuehltraeger <= 0) return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
+            return string.Format(CultureInfo.CurrentCulture,
+                                 z.EigenerZaehler ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                  : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
+                                 Emissionsquelle.TraegerName(z.Kuehltraeger));
         }
 
         /// <summary>

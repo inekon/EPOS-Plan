@@ -16,17 +16,20 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
-| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`); die Betriebskostentabelle der Berichte mit der Bemessungsart jeder Position, „ab Jahr …" bei späterem Startjahr und dem Hinweis nur bei einer echten Lücke (neuer Anker `bericht-betriebskosten`); die weiteren Werte je Szenario — Betrachtungszeitraum, Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet, ohne Eingabefeld (neuer Anker `szenariowerte`), dazu Szenariozeile, Annahmentafel, Hinweistext, Verlauf, Annahmenzeilen und Parameterblock der Formelmappe mit Zeitraum und Einspeisevergütung (Anker `szenario`, `annahmen`, `szenariohinweis`, `verlauf`, `bericht`, `bericht-excel`, `formelmappe`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455, #460, #461 |
+| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Szenarioabdeckung und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`); die Betriebskostentabelle der Berichte mit der Bemessungsart jeder Position, „ab Jahr …" bei späterem Startjahr und dem Hinweis nur bei einer echten Lücke (neuer Anker `bericht-betriebskosten`); die weiteren Werte je Szenario — Betrachtungszeitraum, Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet —, gepflegt in den Zeilen 8 und 9 der Szenariotabelle und mit dem Knopf ± an Trägerkarte, Einspeisevergütungen, DV-Entgelt und PPA-Preis samt dem Fenster „Szenariowerte" (neuer Anker `szenariowerte`; `szenarien`, `einspeiseverguetung`, `bhkw-wirtschaftlichkeit`, `pv-verguetung`), dazu Szenariozeile, Annahmentafel, Verlauf, Annahmenzeilen und Parameterblock der Formelmappe mit Zeitraum und Einspeisevergütung (Anker `szenario`, `annahmen`, `verlauf`, `bericht`, `bericht-excel`, `formelmappe`) und unter der Annahmentafel, in Block 4, in beiden Berichten und in Punkt 9 der Checkliste die Szenarioabdeckung „n von m Parametern szenariert" (neuer Anker `szenarioabdeckung`; `valeri`, `checkliste`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462 |
 | Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise; neuer Punkt „Ersatzbeschaffung und Restwert je Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis (Anker `preisbasis`), Nm³ und kWh im Brennstoffkatalog (Anker `einheiten`), „% der Brennstoffkosten" und „% der Stromkosten" aus dem Simulationslauf (Anker `laufgroessen`) | Statuszeilen #439, #446 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 | Programm Dokumentation/Gebäudemodell VDI 6007 | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | neue Seite: stündliches Gebäudemodell nach VDI 6007 als Vorgabe, Tagesbilanz als wählbarer Bestandsweg, Eingaben der Gebäudehülle, Luftwechsel mit Sommerlüftung, Strahlung auf die Außenbauteile, Kennzahlen und Raumtemperatur im Wärmebedarf, Vergleich der Rechenwege; Gebäude ohne Kühlung laufen im Sommer frei | Status der Gebäudesimulation, Stufen G1 + G2 und KU1 (E27–E32) |
-| Programm Dokumentation/Kühlung | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` | neue Seite: Kühlung je Projekt und Gebäude, Kühlsollwert und Kühlleistungsgrenze, Programmeinstellung „Neue Projekte mit Kühlung anlegen", Kältebedarf in Dialogen, Ergebnis und Bericht, sensible Kälte ohne Entfeuchtung | Status der Gebäudesimulation, Stufe KU1 (E27, E31, E32) |
+| Programm Dokumentation/Kühlung | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` | neue Seite: Kühlung je Projekt und Gebäude, Kühlsollwert und Kühlleistungsgrenze, Programmeinstellung „Neue Projekte mit Kühlung anlegen", Kältebedarf in Dialogen, Ergebnis und Bericht, sensible Kälte ohne Entfeuchtung; die Deckung durch die Wärmepumpe im Kühlbetrieb — Felder der Gruppe „Kühlbetrieb" (Anker `kuehlbetrieb`), Kälteleistung, Kältestrom und Jahresarbeitszahl Kälte (Anker `kaelteerzeugung`), Stromträger und Abrechnung des Kältestroms (Anker `abrechnung`) —, Kältedeckung in Übersicht und Bericht, Kältestrom in der Wirtschaftlichkeit, Grenzen | Status der Gebäudesimulation, Stufen KU1 und KU2 (E27, E31–E34) |
+| Programm Dokumentation/Gerätekataloge | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` | der Schalter „nur mit Kühlfunktion" filtert nach der Kühlleistung, gerechnet wird mit der Kühlkennlinie; die Importregel der Kühlkennlinien (Heizlage, vertauschte Achsen; Anker `import-kuehlkennlinien`) | Status der Gebäudesimulation, Stufe KU2 |
+| Programm Dokumentation/Simulation | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` | neuer Punkt „Kühlbetrieb der Wärmepumpe" in der Simulationskonfiguration (Anker `kuehlbetrieb`) | Status der Gebäudesimulation, Stufe KU2 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
 fortgeschrieben — Sammel-Upload 28.09.2026“ (das dort genannte Datum ist durch den
 vorliegenden Auftrag auf den 26.09.2026 vorgezogen). Eine gesonderte Seite zu Gerätekatalogen nennt
-keine der ausgewerteten Statuszeilen als upload-bereit; die Seite Kosten kommt mit #439 hinzu.
+keine der ausgewerteten Statuszeilen als upload-bereit; die Seite Kosten kommt mit #439 hinzu, die
+Seiten Gerätekataloge und Simulation kommen mit der dritten Welle der Stufe KU2 hinzu.
 
 **Hinweis zum Arbeitsstand:** Die Repo-Quelle der Seite Stromspeicher trägt seit diesem
 Auftrag zusätzlich einen neuen Abschnitt „Mögliche Optimierungen“ (Aufgabe A desselben
@@ -112,12 +115,11 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   sich?", „Wie sicher ist das?", „Woraus entsteht die Zahl?" und „Was ist angenommen?". (#434)
 - Seit 26.09.2026: Jede Version bekommt eine Empfehlungskarte mit ihrer Einstufung, und die Bandbreite
   zeigt die Szenarien Ungünstig, Erwartet und Günstig nebeneinander mit ihrer Spanne. (#434)
-- Seit 26.09.2026: Die Sensitivitätstafel der Seite nennt je Einflussgröße die Steigung, und unter der
-  Annahmentafel steht, was ein Szenario verändert und was nicht. (#434)
+- Seit 26.09.2026: Die Sensitivitätstafel der Seite nennt je Einflussgröße die Steigung. (#434)
 - Seit 26.09.2026: Der Knopf „Bericht erzeugen" auf der Wirtschaftlichkeitsseite erzeugt den Bericht für
   die gewählte Vergleichsgruppe. (#434)
-- Seit 26.09.2026: Wort- und Tabellenbericht führen die Bandbreite mit Einstufung, den Hinweis zu den
-  Szenarien und die Deklarationen nach DIN EN 17463. (#434)
+- Seit 26.09.2026: Wort- und Tabellenbericht führen die Bandbreite mit Einstufung und die Deklarationen nach
+  DIN EN 17463. (#434)
 - Seit 26.09.2026: Die Wirtschaftlichkeitsseite zeigt den Kapitalwertverlauf aller drei Szenarien in einem
   Bild — Farbe je Variante, Strichart je Szenario —; der Dialog „Verlauf…" ist nicht mehr vorhanden. (#436)
 - Seit 26.09.2026: Der Knopf „Verlauf nach Excel…" speichert den Verlauf als Excel-Mappe. (#436)
@@ -179,9 +181,17 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Bemessungsart. (#460)
 - Seit 26.09.2026: Positionen mit späterem Startjahr tragen dort „ab Jahr …" und lösen keinen Hinweis auf eine
   unvollständige Gliederung mehr aus. (#460)
-- Seit 26.09.2026: Führt ein Projekt für die Szenarien Günstig und Ungünstig eigene Werte für Betrachtungszeitraum,
-  Mengen, Energieträgerpreise oder Erlössätze, rechnet jedes Szenario mit seinen Werten; ohne sie gilt der Wert von
-  Erwartet. (#461)
+- Seit 26.09.2026: Die Szenarien Günstig und Ungünstig können einen eigenen Betrachtungszeitraum, eine
+  Mengenänderung, eigene Energieträgerpreise sowie eigene Einspeisevergütungen, DV-Entgelte und PPA-Preise führen.
+  (#461, #462)
+- Seit 26.09.2026: Bericht und Formelmappe nennen je Szenario Betrachtungszeitraum, Mengenänderung,
+  Einspeisevergütungen und gepflegte Energieträgerpreise. (#461)
+- Seit 26.09.2026: Die Szenariotafel im Dialog ‚Parameter' führt zusätzlich Betrachtungszeitraum und Mengenänderung
+  je Szenario. (#462)
+- Seit 26.09.2026: Arbeits-, Grund- und Leistungspreis der Energieträger, die Einspeisevergütungen sowie DV-Entgelt
+  und PPA-Preis tragen einen ±-Knopf für ihre Werte je Szenario. (#462)
+- Seit 26.09.2026: Unter der Annahmentafel, im Wort- und im Excelbericht steht statt des Hinweistexts der Ausweis
+  ‚n von m Parametern szenariert' mit den gepflegten Größen. (#462)
 - Seit 26.09.2026: Der Wärmebedarf der Gebäude wird stündlich nach VDI 6007 gerechnet; der
   Wärmebedarf eines Gebäudes zeigt die Kennzahlen des Gebäudemodells, den Vergleich der
   Rechenwege und den Verlauf der Raumtemperatur. (Gebäudesimulation G1 + G2)
@@ -189,6 +199,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Spitzenwerte. (Gebäudesimulation, E30)
 - Seit 26.09.2026: Gebäude lassen sich kühlen — der Kältebedarf wird nach VDI 6007 stündlich
   gerechnet und in Dialogen, Ergebnis und Bericht ausgewiesen. (Kühlung KU1)
+- Seit 26.09.2026: Eine Wärmepumpe mit Kühlkennlinie kann auch kühlen; Kältedeckung und
+  Kältestrom samt Kosten und Emissionen stehen in Ergebnis und Bericht. (Kühlung KU2)
+- Seit 26.09.2026: Der Wärmepumpen-Import übernimmt keine Kühlkennlinien in Heizlage oder mit
+  vertauschten Achsen und nennt sie im Leseprotokoll. (Kühlung KU2)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
@@ -209,11 +223,14 @@ Mappe beim Öffnen und die Gegenprobe an der Fallstudie des Anhangs D der Norm �
 *Aus #460 ohne eigenen Satz:* die Nachweisfassung 9 (das Startjahr je Position reist mit dem Ergebnis) und der
 berichtigte Kommentar zum Zahlungsstrombild im Code — beides ohne sichtbare Änderung.
 
-*Aus #461 zurückgestellt:* Die Welle E9a baut die Werte je Szenario im Rechenkern, die Eingabe folgt mit E9b (#462).
-Ihre zwei Satzentwürfe — die Werte je Szenario und ihr Nachweis in Bericht und Formelmappe; Wortlaut im Protokoll E9a
-— gehen mit E9b ins Logbuch; bis dahin steht der eine Satz zum Rechenkern oben (Stichwort `szenarien`). Ohne eigenen
-Satz bleiben die Nachweiszeile je Szenario, die jetzt Betrachtungszeitraum und Einspeisevergütung nennt, und die drei
-Zeilen mehr im Parameterblock der Formelmappe.
+*Vor der Veröffentlichung ersetzt (#462):* Der Satz zum Rechenkern aus #461 („Führt ein Projekt für die Szenarien …
+gilt der Wert von Erwartet.") ist durch die zwei mit E9b veröffentlichten Sätze der Welle E9a ersetzt — die Werte je
+Szenario und ihr Nachweis in Bericht und Formelmappe (ein Thema, ein Eintrag); dazu kommen die drei Sätze aus E9b
+(Stichwörter `szenarien` und `wirtschaftlichkeit`). Aus den Sätzen zu #434 sind die Teile zum Hinweistext unter der
+Annahmentafel und in den Berichten gestrichen — beide noch nicht veröffentlicht; an seiner Stelle steht mit #462 der
+Ausweis (letzter Satz der Reihe). Ohne eigenen Satz bleiben aus #461 die Nachweiszeile je Szenario, die jetzt
+Betrachtungszeitraum und Einspeisevergütung nennt, und die drei Zeilen mehr im Parameterblock der Formelmappe, aus
+#462 das Warnzeichen bei einem Szenariopreis ohne Erwartet-Preis und die Zeilen zu Szenariowerten ohne Wirkung.
 
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
 beiden Sätze aus #411 zu „Wärmeproduktion/Stromproduktion“ sowie zu den Bedarfs- und
@@ -295,7 +312,7 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
 - Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
   22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436, E7 Teil a #437, E7 Teil b #439, E7 Teil c1
-  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454, E8 Teil b #455, E8c #460, E9 Teil a #461). Die Repo-Quelle
+  #440, E7 Teil c2 #446, E7 Teil c3 #452, E8 Teil a #454, E8 Teil b #455, E8c #460, E9 Teil a #461, E9 Teil b #462). Die Repo-Quelle
   `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` ist mit den Papieren zu #436 auf
   die Ergebnisseite nach E5 und E6 nachgezogen (Umschalter, vier Abschnitte, Empfehlungskarten,
   Bandbreite mit Spannenbild, Verlauf mit drei Szenarien, „Bericht erzeugen", „Verlauf nach Excel…",
@@ -328,13 +345,20 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   0 Treffer, 66 Anker eindeutig), mit den Papieren zu #461 um die weiteren Werte je Szenario — Betrachtungszeitraum,
   Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet, ohne Eingabefeld in den Dialogen (neuer Anker
   `szenariowerte`) — und um Szenariozeile, Annahmentafel, Hinweistext, Verlauf, Annahmenzeilen und Parameterblock mit
-  Zeitraum und Einspeisevergütung (Tabuwort-Regex 0 Treffer, 67 Anker eindeutig); die Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` ist mit #439 um den Punkt
+  Zeitraum und Einspeisevergütung (Tabuwort-Regex 0 Treffer, 67 Anker eindeutig), mit den Papieren zu #462 um die
+  Pflege in den Dialogen — Zeilen 8 und 9 der Szenariotabelle, „Vorgaben" für achtzehn Felder, der Knopf ± an
+  Trägerkarte, Einspeisevergütungen, DV-Entgelt und PPA-Preis, das Fenster „Szenariowerte" (Anker `szenariowerte`,
+  `szenarien`, `einspeiseverguetung`, `bhkw-wirtschaftlichkeit`, `pv-verguetung`) — und um die Szenarioabdeckung
+  „n von m Parametern szenariert" an der Stelle des entfallenen Hinweistexts (der Anker `szenariohinweis` heißt jetzt
+  `szenarioabdeckung`, er war noch nicht veröffentlicht; `valeri`, `checkliste`, `bericht`, `bericht-excel`)
+  (Tabuwort-Regex 0 Treffer, 67 Anker eindeutig, alle internen Verweise treffen); die Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` ist mit #439 um den Punkt
   „Leistungspreis-Staffel" (Anker `staffel`) und mit #446 um den Punkt „Ersatzbeschaffung und Restwert je
   Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis, Nm³ und kWh im
   Brennstoffkatalog und die Prozentarten der Brennstoff- und Stromkosten aus dem Lauf ergänzt
   (Tabuwort-Regex 0 Treffer in beiden Quellen); die Logbuch-Sätze zu #432, #434, #436, #437, #439, #440, #446,
-  #452, #454, #455, #460 und #461 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt;
-  zu #461 ein Satz zum Rechenkern, die zwei Entwürfe der Welle folgen mit E9b). Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog (#437) und die
+  #452, #454, #455, #460, #461 und #462 stehen oben (der Satz zu den Vollbenutzungsstunden aus #446 ist mit #452 ersetzt;
+  der Satz zum Rechenkern aus #461 ist mit #462 durch die zwei Sätze der Welle E9a ersetzt, dazu drei Sätze aus E9b;
+  aus zwei Sätzen zu #434 ist der Hinweistext gestrichen). Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog (#437) und die
   Kohärenzzeile „Anlagenart fehlt" (#440) sind Kleinigkeiten ohne eigenen Satz; ebenso ohne eigenen Satz
   bleiben aus #446 der Rundungsgrund winziger Kürzungen und der Hinweis bei fehlender Preisbasis-Spalte.
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,

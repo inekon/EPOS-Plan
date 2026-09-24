@@ -94,6 +94,7 @@ namespace WindowsFormsApplication1
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
             StelleKanalSpaltenSicher();     // Ergebnisspalten je Kanal (Schritt 52, Paket E1)
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
+            StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
@@ -238,8 +239,10 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
-                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?)";
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ", " +
+                            KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP + ", " +
+                            KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
@@ -255,15 +258,26 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Vollbenutzungsstunden) });
                             p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
                             KanalParameter(p, m.Waermepumpe.Deckung_Kanal, kaelteErhoben);
+                            // Schritt 119: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
+                            p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
+                            p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
                         if (m.Waermepumpe.Module != null && m.Waermepumpe.Module.Count > 0)
                         {
                             int modId = NextId(v, TAB_WP_MODUL);
+                            // Schritt 119 (E34): die Kaelteseite je Anlage - Kaelte, Kaeltestrom, sein
+                            // Netzbezug, ein abweichender Kuehltraeger und die Abrechnungsart. NULL,
+                            // solange keine Kaelteerzeugung gerechnet ist.
                             string sqlM = "INSERT INTO " + TAB_WP_MODUL + " (" +
-                                "ID, ID_ErgebnisWaermepumpe, Modul, Leistung, Waermeproduktion, Stromverbrauch, Heizstab, Betriebsstunden) " +
-                                "VALUES (?,?,?,?,?,?,?,?)";
+                                "ID, ID_ErgebnisWaermepumpe, Modul, Leistung, Waermeproduktion, Stromverbrauch, Heizstab, Betriebsstunden, " +
+                                KuehlungSchema.SPALTE_MODUL_KAELTEPRODUKTION + ", " +
+                                KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ", " +
+                                KuehlungSchema.SPALTE_KAELTESTROM_NETZBEZUG + ", " +
+                                KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER + ", " +
+                                KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?)";
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
@@ -276,6 +290,15 @@ namespace WindowsFormsApplication1
                                     p.Add(new DbParam("@s", DbParamTyp.Double) { Wert = R(mo.Stromverbrauch) });
                                     p.Add(new DbParam("@h", DbParamTyp.Double) { Wert = R(mo.Heizstab) });
                                     p.Add(new DbParam("@b", DbParamTyp.Double) { Wert = R(mo.Betriebsstunden) });
+                                    p.Add(new DbParam("@k1", DbParamTyp.Double) { Wert = WertOderNull(mo.Kaelteproduktion) });
+                                    p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = WertOderNull(mo.Stromverbrauch_Kuehlung) });
+                                    p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = WertOderNull(mo.Kaeltestrom_Netzbezug) });
+                                    p.Add(new DbParam("@k4", DbParamTyp.Integer)
+                                        { Wert = mo.Kuehl_CarrierId.HasValue && mo.Kuehl_CarrierId.Value > 0
+                                                     ? (object)mo.Kuehl_CarrierId.Value : DBNull.Value });
+                                    p.Add(new DbParam("@k5", DbParamTyp.Integer)
+                                        { Wert = mo.Kuehl_CarrierId.HasValue && mo.Kuehl_CarrierId.Value > 0
+                                                     ? (object)(mo.Kuehl_EigenerZaehler == true ? 1 : 0) : DBNull.Value });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -875,6 +898,9 @@ namespace WindowsFormsApplication1
                 if (rw.Table.Columns.Contains("Bivalenzpunkt") && rw["Bivalenzpunkt"] != DBNull.Value)
                     w.Bivalenzpunkt = Convert.ToDouble(rw["Bivalenzpunkt"]);
                 DeckungLesen(rw, w.Deckung_Kanal);   // PAKET E1
+                // Schritt 119: die Kaelteseite - NULL bleibt null ("keine Kaelteerzeugung gerechnet").
+                w.Kaelteproduktion_WP = DN(rw, KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP);
+                w.Stromverbrauch_Kuehlung = DN(rw, KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
@@ -889,6 +915,14 @@ namespace WindowsFormsApplication1
                         mo.Stromverbrauch = D(rm, "Stromverbrauch");
                         mo.Heizstab = D(rm, "Heizstab");
                         mo.Betriebsstunden = D(rm, "Betriebsstunden");
+                        mo.Kaelteproduktion = DN(rm, KuehlungSchema.SPALTE_MODUL_KAELTEPRODUKTION);
+                        mo.Stromverbrauch_Kuehlung = DN(rm, KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG);
+                        mo.Kaeltestrom_Netzbezug = DN(rm, KuehlungSchema.SPALTE_KAELTESTROM_NETZBEZUG);
+                        double? kuehltraeger = DN(rm, KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER);
+                        mo.Kuehl_CarrierId = kuehltraeger.HasValue && kuehltraeger.Value > 0
+                            ? (int?)Convert.ToInt32(kuehltraeger.Value) : null;
+                        double? zaehler = DN(rm, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);
+                        mo.Kuehl_EigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null;
                         w.Module.Add(mo);
                     }
 
@@ -1755,6 +1789,22 @@ namespace WindowsFormsApplication1
             try
             {
                 foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                    ErgaenzeSpalte(s.Tabelle, s.Name, s.TypDefinition);
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        /// <summary>
+        /// Rueckfallebene zu Schemaschritt 119 (Stufe KU2 Welle 3) nach demselben Muster: Die INSERT
+        /// der Waermepumpenzeile und ihrer Modulzeilen fuehren die sieben Spalten der Kaelteseite
+        /// NAMENTLICH auf - fehlen sie, scheiterte die ganze Ergebniszeile. Die Namen kommen aus
+        /// <see cref="KuehlungSchema.Kaelteerzeugerspalten"/>.
+        /// </summary>
+        private static void StelleKaelteerzeugerSpaltenSicher()
+        {
+            try
+            {
+                foreach (SchemaSpalte s in KuehlungSchema.Kaelteerzeugerspalten)
                     ErgaenzeSpalte(s.Tabelle, s.Name, s.TypDefinition);
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }

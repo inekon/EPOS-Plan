@@ -76,6 +76,23 @@ public sealed class PhotovoltaikVerguetungTexte
     public string EvGesperrt { get; } = T("PVW_EV_GESPERRT",
         "Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1).");
 
+    // ETAPPE E9b (Konzept § 2.11.5, Pflege): die ±-Knöpfe an DV-Entgelt und PPA-Preis
+    // und die Kohärenzzeilen, wenn ein gepflegtes Paar im Lauf nicht wirkt.
+    /// <summary>ETAPPE E9b: der Gegenstand des ±-Knopfes am DV-Entgelt.</summary>
+    public string SzDv { get; } = T("WIRT_ANN_DV_ENTGELT", "DV-Entgelt");
+    /// <summary>ETAPPE E9b: der Gegenstand des ±-Knopfes am PPA-Preis.</summary>
+    public string SzPpa { get; } = T("WIRT_ANN_PPA_PREIS", "PPA-Preis");
+    /// <summary>ETAPPE E9b: gepflegte Paare, während die Vergütung nicht angewendet wird.</summary>
+    public string SzInaktiv { get; } = T("SZP_PV_INAKTIV",
+        "DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht angewendet " +
+        "(Schalter „Vergütung anwenden“).");
+    /// <summary>ETAPPE E9b: ein gepflegtes DV-Paar außerhalb der Marktprämie.</summary>
+    public string SzDvOhneWirkung { get; } = T("SZP_PV_DV_OHNE_WIRKUNG",
+        "DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie.");
+    /// <summary>ETAPPE E9b: ein gepflegtes PPA-Paar außerhalb der sonstigen Direktvermarktung.</summary>
+    public string SzPpaOhneWirkung { get; } = T("SZP_PV_PPA_OHNE_WIRKUNG",
+        "PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA).");
+
     // ------------------------------------------------ § 51 / § 51a
     public string G51 { get; } = T("PVW_G_51", "Vergütungsausfall (§ 51 / § 51a)");
     public string Anwenden { get; } = T("PVW_ANWENDEN", "Anwenden:");

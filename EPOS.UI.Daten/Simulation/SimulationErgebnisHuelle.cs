@@ -719,7 +719,14 @@ namespace WindowsFormsApplication1
                     : (idAnlage, daten) =>
                         _wege.WaermepumpeKonfigSchreiben(m_ID_Projekt, idAnlage, daten),
 
-                WaermepumpeTraegerkatalog = _wege.WaermepumpeTraegerkatalog
+                WaermepumpeTraegerkatalog = _wege.WaermepumpeTraegerkatalog,
+
+                // STUFE KU2 WELLE 3 (Kuehlkonzept 8.2): die Kuehlgaben der Konfiguration -
+                // plattformfrei aus dem Kern gebaut, darum KEINE Naht. Nur mit dem Leseweg
+                // der Anlage: ohne ihn gibt es keine Konfiguration, in der sie stuenden.
+                WaermepumpeKuehlGaben = _wege.WaermepumpeKonfigLesen == null
+                    ? (Func<WaermepumpeKuehlGaben>)null
+                    : () => WaermepumpeKuehlGabenBau.Bauen(m_ID_Projekt)
             };
         }
 

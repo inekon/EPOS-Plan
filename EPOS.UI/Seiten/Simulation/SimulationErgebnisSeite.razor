@@ -119,6 +119,7 @@
                                           Bedarf="@_daten.Bedarf"
                                           RingWaerme="@(ErgebnisSteht ? Modell(Bilder.RingWaerme) : null)"
                                           RingStrom="@(ErgebnisSteht ? Modell(Bilder.RingStrom) : null)"
+                                          RingKaelte="@(ErgebnisSteht && (_daten.Bedarf?.Kaelte?.Erzeuger.Count ?? 0) > 0 ? Modell(Bilder.RingKaelte) : null)"
                                           BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                           StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
                                           Aufnehmen="@ErzeugerAufnehmen" />

@@ -6880,7 +6880,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert.</value>
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
     <value>keine Bandbreite gerechnet.</value>
@@ -11064,7 +11064,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>{0}: Vorgaben — {1}</value>
   </data>
   <data name="WPAR_SZ_HINWEIS" xml:space="preserve">
-    <value>Erwartet rechnet unverändert mit den Projektparametern oben — die Spalte ist nur Anzeige. Best und Worst weichen davon ab: Zins und Preissteigerungen gelten absolut, Investition und Erträge als Änderung in Prozent, die Nutzungsdauer als Änderung in Jahren; + heißt jeweils mehr bzw. länger. Ein je Kostenzeile gepflegter Best-/Worst-Wert hat VORRANG — der pauschale Ausschlag greift nur dort, wo keiner steht. „Vorgaben“ stellt den Vorschlag wieder her (Zins und Preissteigerungen ∓ 1 Prozentpunkt, Investition ∓ 10 %, Erträge ± 10 %, Nutzungsdauer ± 2 Jahre). Die Vorgabe für p_I spannt sich um das WIRKSAME p_I des Erwartungsfalls: Folgt p_I dem Betriebssatz — der Regelfall —, ist das genau das p_B dieses Szenarios.</value>
+    <value>Erwartet rechnet unverändert mit den Projektparametern oben — die Spalte ist nur Anzeige. Best und Worst weichen davon ab: Zins und Preissteigerungen gelten absolut, Investition und Erträge als Änderung in Prozent, die Nutzungsdauer als Änderung in Jahren; + heißt jeweils mehr bzw. länger. Ein je Kostenzeile gepflegter Best-/Worst-Wert hat VORRANG — der pauschale Ausschlag greift nur dort, wo keiner steht. „Vorgaben“ stellt den Vorschlag wieder her (Zins und Preissteigerungen ∓ 1 Prozentpunkt, Investition ∓ 10 %, Erträge ± 10 %, Nutzungsdauer ± 2 Jahre). Die Vorgabe für p_I spannt sich um das WIRKSAME p_I des Erwartungsfalls: Folgt p_I dem Betriebssatz — der Regelfall —, ist das genau das p_B dieses Szenarios. Betrachtungszeitraum und Mengenänderung haben keine Vorgabe: Ein leeres Feld heißt „wie Erwartet“, der Platzhalter nennt den Wert, mit dem dann gerechnet wird. Ein längerer Betrachtungszeitraum ist nicht von selbst der günstigere — überwiegen die Kosten, senkt er den Kapitalwert. „Vorgaben“ leert alle achtzehn Felder der Tafel; die Einspeisevergütungen je Szenario pflegt der ±-Knopf an ihrem Feld.</value>
   </data>
   <data name="WPAR_SZ_INVEST" xml:space="preserve">
     <value>Investition</value>
@@ -16749,9 +16749,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
-  </data>
-  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
-    <value>Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung, Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze.</value>
   </data>
   <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
     <value>Rechnung nominal</value>
@@ -26777,7 +26774,7 @@ Möchten Sie das zulassen?</value>
     <value>Wärmepumpe „{0}": Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
-    <value>Wärmepumpe „{0}": Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts.</value>
+    <value>Wärmepumpe „{0}“: Der Kältestrom trägt den Stromträger „{1}“ — {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
     <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}).</value>
@@ -26811,6 +26808,132 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ZAEHLER" xml:space="preserve">
+    <value>über einen eigenen Zähler, ohne Eigenstrom aus Photovoltaik und Stromspeicher</value>
+  </data>
+  <data name="SIMENG_KAELTE_KUEHLTRAEGER_MENGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“.</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM" xml:space="preserve">
+    <value>Kältestrom {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
+    <value>Kältestrom {0} (eigener Zähler)</value>
+  </data>
+  <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Der Stromträger der Kühlung „{0}“ trägt keinen Arbeitspreis. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ den Arbeitspreis pflegen oder im Wärmepumpendialog den Stromträger der Kühlung auf „wie Heizbetrieb“ stellen.</value>
+  </data>
+  <data name="WIRT_TARIF_KUEHLTRAEGER" xml:space="preserve">
+    <value>Rollentarif: {0} MWh/a Netzbezug des Kältestroms tragen den Stromträger der Kühlung und stehen nicht im Reststromtarif ({1} €/a).</value>
+  </data>
+  <data name="WPK_GRP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPK_CHK_KUEHLBETRIEB" xml:space="preserve">
+    <value>Maschine auch zum Kühlen benutzen</value>
+  </data>
+  <data name="WPK_HRL_NENNKUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPK_PH_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Vorgabe: kleinster Stützwert ({0} °C)</value>
+  </data>
+  <data name="WPK_HRL_UMSCHALTUNG" xml:space="preserve">
+    <value>Umschaltung je Tag: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt die Maschine an diesem Tag; Brauchwasser bleibt bedienbar.</value>
+  </data>
+  <data name="WPK_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil</value>
+  </data>
+  <data name="WPK_PH_HILFSSTROM" xml:space="preserve">
+    <value>Vorgabe: kein Zuschlag</value>
+  </data>
+  <data name="WPK_HRL_HILFSSTROM" xml:space="preserve">
+    <value>Pumpen und Ventilatoren des Kältekreises als Anteil an der Verdichterarbeit.</value>
+  </data>
+  <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
+    <value>Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.</value>
+  </data>
+  <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
+    <value>Stromträger des Kältestroms</value>
+  </data>
+  <data name="WPK_PH_KUEHLTRAEGER" xml:space="preserve">
+    <value>wie Heizbetrieb</value>
+  </data>
+  <data name="WPK_HRL_KUEHLTRAEGER_WEITERE" xml:space="preserve">
+    <value>Einen weiteren Stromträger ordnen Sie dem Projekt unter „Berichte &amp; Kosten › Energieträger“ zu.</value>
+  </data>
+  <data name="WPK_LBL_ABRECHNUNG" xml:space="preserve">
+    <value>Abrechnung des Kältestroms</value>
+  </data>
+  <data name="WPK_OPT_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug (Vorgabe)</value>
+  </data>
+  <data name="WPK_OPT_ZAEHLER" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="WPK_HRL_ANTEILIG" xml:space="preserve">
+    <value>Ein Netzanschluss: Der Netzbezug jeder Viertelstunde wird nach dem Anteil des Kältestroms geteilt; dieser Anteil trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers. Eigenstrom aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts.</value>
+  </data>
+  <data name="WPK_HRL_ZAEHLER" xml:space="preserve">
+    <value>Der ganze Kältestrom trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers; er wird nicht aus Photovoltaik oder Stromspeicher gedeckt.</value>
+  </data>
+  <data name="WPK_HRL_WIE_PROJEKT" xml:space="preserve">
+    <value>Der Kältestrom trägt Tarif und Emissionsfaktor des Stromträgers des Projekts.</value>
+  </data>
+  <data name="WPK_VORLAUF_HEIZLAGE" xml:space="preserve">
+    <value>Kennlinie in Heizlage — wird nicht gerechnet</value>
+  </data>
+  <data name="WPK_VORLAUF_ACHSEN" xml:space="preserve">
+    <value>Achsen der Kennlinie vertauscht — wird nicht gerechnet</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_PROJEKT" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ANTEILIG" xml:space="preserve">
+    <value>„{0}“, anteilig am Netzbezug</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ZAEHLER" xml:space="preserve">
+    <value>„{0}“, eigener Zähler</value>
+  </data>
+  <data name="SIMUEB_RING_KAELTE_TITEL" xml:space="preserve">
+    <value>Kältedeckung</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTESTROM" xml:space="preserve">
+    <value>Kältestrom</value>
+  </data>
+  <data name="SIMUEB_LBL_JAZ_KAELTE" xml:space="preserve">
+    <value>Jahresarbeitszahl Kälte</value>
+  </data>
+  <data name="SIMUEB_KAELTESTROM_NETZ" xml:space="preserve">
+    <value>davon Kältestrom aus dem Netz: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_ANLAGE" xml:space="preserve">
+    <value>Kälteerzeuger</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_STROM" xml:space="preserve">
+    <value>Kältestrom</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_EER" xml:space="preserve">
+    <value>EER (Jahr)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_NETZ" xml:space="preserve">
+    <value>aus dem Netz</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
+    <value>Stromträger</value>
   </data>
   <data name="WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG" xml:space="preserve">
     <value>Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt auch in diesem Szenario.</value>
@@ -26862,6 +26985,120 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
     <value>Einspeisevergütung KWK</value>
+  </data>
+  <data name="WPAR_SZ_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum</value>
+  </data>
+  <data name="WPAR_SZ_MENGE" xml:space="preserve">
+    <value>Mengenänderung</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Betrachtungszeitraum dieses Szenarios in ganzen Jahren. Leer heißt „wie Erwartet“ — eine Vorgabe wie bei den Zeilen darüber gibt es nicht. Er wirkt auf Horizont, Restwert und Ersatzbeschaffungen.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_MENGE_ERL" xml:space="preserve">
+    <value>Die Mengenänderung dieses Szenarios in Prozent — ein Faktor auf die Mengen der Simulation (Erzeugung, Einspeisung, Bezug, Brennstoff). Leer heißt „wie Erwartet“; eine Vorgabe gibt es nicht.</value>
+  </data>
+  <data name="SZP_TITEL" xml:space="preserve">
+    <value>Szenariowerte — {0}</value>
+  </data>
+  <data name="SZP_LABEL_BEST" xml:space="preserve">
+    <value>Best (Günstig):</value>
+  </data>
+  <data name="SZP_LABEL_WORST" xml:space="preserve">
+    <value>Worst (Ungünstig):</value>
+  </data>
+  <data name="SZP_ABSOLUT" xml:space="preserve">
+    <value>Eingabe absolut [{0}]</value>
+  </data>
+  <data name="SZP_PROZENT" xml:space="preserve">
+    <value>Eingabe in % vom Erwartet-Wert</value>
+  </data>
+  <data name="SZP_UMRECHNUNG" xml:space="preserve">
+    <value>ergibt: Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_ERWARTET" xml:space="preserve">
+    <value>Erwartet: {0} {1}</value>
+  </data>
+  <data name="SZP_ERWARTET_LEER" xml:space="preserve">
+    <value>Erwartet: kein Wert gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET" xml:space="preserve">
+    <value>Kein Erwartet-Wert gepflegt: Günstig und Ungünstig rechnen mit ihrem Szenariowert, Erwartet zeigt die Datenlücke. Gespeichert wird trotzdem.</value>
+  </data>
+  <data name="SZP_LEER" xml:space="preserve">
+    <value>Leer oder 0 heißt „wie Erwartet“; ein Wert gleich dem Erwartet-Wert ist keine Pflege.</value>
+  </data>
+  <data name="SZP_KNOPF_KURZ" xml:space="preserve">
+    <value>Szenariowerte Best/Worst pflegen</value>
+  </data>
+  <data name="SZP_KNOPF_GEPFLEGT" xml:space="preserve">
+    <value>Szenariowerte gepflegt — Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_WIE_ERWARTET" xml:space="preserve">
+    <value>wie Erwartet</value>
+  </data>
+  <data name="SZP_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET_KURZ" xml:space="preserve">
+    <value>ohne Erwartet-Wert</value>
+  </data>
+  <data name="ETV_SZ_TITEL" xml:space="preserve">
+    <value>Szenariopreise Best/Worst</value>
+  </data>
+  <data name="ETV_SZ_HINWEIS" xml:space="preserve">
+    <value>± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; geschrieben wird mit der Karte.</value>
+  </data>
+  <data name="ETV_SZ_OHNE_ERWARTET" xml:space="preserve">
+    <value>{0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, Erwartet zeigt die Datenlücke.</value>
+  </data>
+  <data name="ETV_SZ_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Szenariopreise ließen sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_NAME" xml:space="preserve">
+    <value>Gepflegte Größe</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_ERL" xml:space="preserve">
+    <value>Was die Maske pflegt: in der Kostenverwaltung die Kosten einer Position, sonst ein Trägerpreis oder Erlössatz mit seinem Best- und Worst-Wert (Szenariopaar). Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_NAME" xml:space="preserve">
+    <value>Erwartet-Wert</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_ERL" xml:space="preserve">
+    <value>Der Wert des Szenarios Erwartet, gegen den Best und Worst stehen und auf den sich der Prozentmodus bezieht; leer = keiner gepflegt. Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_NUR_KOSTEN" xml:space="preserve">
+    <value>Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — sie pflegt nur den Best- und den Worst-Wert.</value>
+  </data>
+  <data name="WIRT_ANN_DV_ENTGELT" xml:space="preserve">
+    <value>DV-Entgelt</value>
+  </data>
+  <data name="WIRT_ANN_PPA_PREIS" xml:space="preserve">
+    <value>PPA-Preis</value>
+  </data>
+  <data name="SZP_PV_INAKTIV" xml:space="preserve">
+    <value>DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht angewendet (Schalter „Vergütung anwenden“).</value>
+  </data>
+  <data name="SZP_PV_DV_OHNE_WIRKUNG" xml:space="preserve">
+    <value>DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie.</value>
+  </data>
+  <data name="SZP_PV_PPA_OHNE_WIRKUNG" xml:space="preserve">
+    <value>PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA).</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG_LISTE" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert: {2}</value>
+  </data>
+  <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}.</value>
   </data>
   <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
     <value>Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.</value>
@@ -28287,5 +28524,26 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_KATEG_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
     <value>die Kategorien verletzen eine Regel.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>An = die Wärmepumpe deckt auch Kältebedarf. Nur mit Kühlkennlinie im Projekt und ohne Quellspeicher — sonst ist der Schalter gesperrt und nennt den Grund; wirksam erst mit dem Projektschalter „Kühlung rechnen“.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur des Kaltwassers in °C, gewählt aus den Stützstellen der Kühlkennlinie; leer heißt „kleinster Stützwert“. Zwischenwerte gibt es nicht.</value>
+  </data>
+  <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 und weniger als 100, leer heißt „kein Zuschlag“.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
+    <value>Der Stromträger des Kältestroms; leer heißt „wie Heizbetrieb“. Ein anderer Stromträger des Projekts bepreist und bewertet den Kältestrom nach der Abrechnungsart.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_ERL" xml:space="preserve">
+    <value>Wie der Kältestrom bei einem abweichenden Stromträger eingeht: anteilig am Netzbezug (Vorgabe; Eigenstrom aus Photovoltaik und Stromspeicher bleibt gemeinsam) oder über einen eigenen Zähler (ganz mit dem gewählten Stromträger, ohne Eigenstrom). Wählbar nur mit abweichendem Stromträger.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER" xml:space="preserve">
+    <value>Die Abrechnungsart wirkt nur mit einem Stromträger des Kältestroms, der vom Stromträger des Projekts abweicht — zuerst einen anderen Stromträger wählen.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
+    <value>Der Kühlbetrieb ist in dieser Maske nicht einstellbar.</value>
   </data>
 </root>

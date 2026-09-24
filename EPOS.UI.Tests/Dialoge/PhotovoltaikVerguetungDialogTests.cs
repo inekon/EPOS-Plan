@@ -602,4 +602,129 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_VERGUETUNG, "vermarktungsform");
         Assert.Equal(4, form.Wahleintraege().Count);
     }
+
+    // =====================================================================
+    //  ETAPPE E9b — die ±-Knöpfe an DV-Entgelt und PPA-Preis (E9b‑Q1, E9a‑Q7)
+    // =====================================================================
+
+    private static AngleSharp.Dom.IElement Knopf(IRenderedComponent<PhotovoltaikVerguetungDialog> cut, string text)
+        => cut.FindAll("button.epos-szenarioknopf")
+              .First(b => b.QuerySelector(".epos-szenarioknopf-text")!.TextContent == text);
+
+    /// <summary>
+    /// Die zwei Knöpfe folgen der Sperre ihres Feldes: das DV-Entgelt nur bei der
+    /// Marktprämie, der PPA-Preis nur bei der sonstigen Direktvermarktung.
+    /// </summary>
+    [Fact]
+    public void Die_Knoepfe_an_DV_Entgelt_und_PPA_Preis_folgen_der_Vermarktungsform()
+    {
+        var ev = Aufbauen(Satz());                               // feste EV
+        Assert.True(Knopf(ev, "DV-Entgelt").HasAttribute("disabled"));
+        Assert.True(Knopf(ev, "PPA-Preis").HasAttribute("disabled"));
+
+        ProjektPhotovoltaikModel mp = Satz();
+        mp.Vermarktungsform = DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE;
+        var markt = Aufbauen(mp);
+        Assert.False(Knopf(markt, "DV-Entgelt").HasAttribute("disabled"));
+        Assert.True(Knopf(markt, "PPA-Preis").HasAttribute("disabled"));
+
+        markt.FindAll("input[type=radio]")[4].Change(true);     // "Sonstige Direktvermarktung / PPA"
+        Assert.True(Knopf(markt, "DV-Entgelt").HasAttribute("disabled"));
+        Assert.False(Knopf(markt, "PPA-Preis").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Der Knopf öffnet das Szenariopaar in einer Überlagerung (ct/kWh, zwei Stellen, ohne
+    /// Warnung); OK legt es auf das Modell, geschrieben wird mit „Übernehmen".
+    /// </summary>
+    [Fact]
+    public void Der_DV_Knopf_pflegt_das_Paar_am_Modell_und_Uebernehmen_schreibt_es()
+    {
+        ProjektPhotovoltaikModel m = Satz();                     // DV-Entgelt 0,40 ct/kWh
+        m.Vermarktungsform = DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE;
+        int gerufen = 0;
+        var cut = Aufbauen(m, speichern: () => { gerufen++; return true; });
+
+        Knopf(cut, "DV-Entgelt").Click();
+
+        Assert.True(cut.Instance.SzenarioOffen);
+        Assert.Equal("Szenariowerte — DV-Entgelt", cut.Find(".epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Contains(cut.FindAll(".epos-ueberlagerung .epos-herleitung-text"),
+                        e => e.TextContent == "Erwartet: 0,40 ct/kWh");
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung .epos-warnbanner"));
+
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[0].Input("0,30");
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[1].Input("0,60");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Equal(0.30, m.DvEntgeltBest);
+        Assert.Equal(0.60, m.DvEntgeltWorst);
+        Assert.Null(m.PpaPreisBest);
+        Assert.True(cut.Instance.DvSzenarioGepflegt);
+        Assert.Contains("epos-szenarioknopf--gepflegt", Knopf(cut, "DV-Entgelt").ClassName);
+        Assert.Equal("Szenariowerte gepflegt — Best 0,30 ct/kWh · Worst 0,60 ct/kWh",
+                     Knopf(cut, "DV-Entgelt").GetAttribute("title"));
+        Assert.Empty(cut.Instance.PvSzenarioZeilen);             // es wirkt: Marktprämie
+        Assert.Equal(0, gerufen);
+
+        cut.Find(".epos-knopf--primaer").Click();                // Übernehmen
+        Assert.Equal(1, gerufen);
+        Assert.Equal(0.30, m.DvEntgeltBest);
+    }
+
+    /// <summary>
+    /// E9a‑Q7: Ein gepflegtes Paar, das der Lauf nicht liest, nennt seine Kohärenzzeile —
+    /// die Vermarktungsform liest den Satz nicht, oder die Vergütung ist gar nicht
+    /// angewendet. Sie sperren nichts.
+    /// </summary>
+    [Fact]
+    public void Ein_gepflegtes_Paar_ohne_Wirkung_nennt_seine_Kohaerenzzeile()
+    {
+        ProjektPhotovoltaikModel m = Satz();                     // feste EV
+        m.DvEntgeltBest = 0.30;
+        var cut = Aufbauen(m);
+        Assert.Equal(new[] { "DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie." },
+                     cut.FindAll(".epos-kohaerenz-text").Select(e => e.TextContent)
+                        .Where(t => t.Contains("je Szenario")).ToArray());
+
+        ProjektPhotovoltaikModel ppa = Satz();
+        ppa.Vermarktungsform = DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE;
+        ppa.PpaPreis = 8;
+        ppa.PpaPreisWorst = 6;
+        Assert.Equal(new[] { "PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA)." },
+                     Aufbauen(ppa).Instance.PvSzenarioZeilen);
+
+        ProjektPhotovoltaikModel aus = Satz();
+        aus.Aktiv = false;
+        aus.DvEntgeltWorst = 0.5;
+        Assert.Equal(new[] { "DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht "
+                             + "angewendet (Schalter „Vergütung anwenden“)." },
+                     Aufbauen(aus).Instance.PvSzenarioZeilen);
+
+        // Ohne gepflegtes Paar keine Zeile.
+        Assert.Empty(Aufbauen(Satz()).Instance.PvSzenarioZeilen);
+    }
+
+    /// <summary>Esc gehört der obersten Ebene: erst das Paar, dann der Dialog.</summary>
+    [Fact]
+    public void Esc_schliesst_nur_die_Ueberlagerung_des_PV_Paars()
+    {
+        ProjektPhotovoltaikModel m = Satz();
+        m.Vermarktungsform = DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE;
+        PvVerguetungErgebnis? ergebnis = null;
+        var cut = Aufbauen(m, geschlossen: e => ergebnis = e);
+
+        Knopf(cut, "DV-Entgelt").Click();
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[0].Input("0,30");
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+        Assert.Null(m.DvEntgeltBest);
+    }
 }

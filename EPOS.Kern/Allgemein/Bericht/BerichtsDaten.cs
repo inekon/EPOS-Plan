@@ -306,6 +306,55 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? StrombedarfOhneVerwendungMWh;
 
+        // ---------------------------------------------------------------------------
+        // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
+        // KostenEmissionRechner aus dem gespeicherten Ergebnis. Alle null, solange der Lauf
+        // keinen Kältestrom gerechnet hat: ein Projekt ohne Kälteerzeuger zeigt keine Kältezahl.
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// Der Netzbezug des Kältestroms [MWh/a] — die Summe der Modulspalte
+        /// <c>Kaeltestrom_Netzbezug</c>: anteilig am Netzbezug sein Teil von <c>Stromrestbedarf</c>,
+        /// über einen eigenen Zähler der ganze Kältestrom. <c>null</c> = kein Kältestrom gerechnet.
+        /// </summary>
+        public double? KaeltestromNetzbezugMWh;
+
+        /// <summary>
+        /// Die Arbeitskosten des Kältestroms [€/a]: sein Netzbezug × Arbeitspreis des Trägers, der
+        /// ihn bepreist — des abweichenden Kühlträgers (E34), sonst des Projekts. Grund- und
+        /// Leistungspreis werden keiner Anlage zugerechnet (sie bleiben beim Stromträger des
+        /// Projekts). Ein AUSWEIS: In <see cref="Energiekosten"/> steht der Betrag genau einmal.
+        /// <c>null</c> = kein Kältestrom oder ein Träger ohne Arbeitspreis.
+        /// </summary>
+        public double? KaeltestromKosten;
+
+        /// <summary>
+        /// Die Emissionen des Kältestroms [t/a] (CO₂ bzw. im Modus CO2E das Äquivalent): sein
+        /// Netzbezug × Faktor des Trägers (<c>Emissionsquelle.Netzstrom</c>). Ein AUSWEIS wie
+        /// <see cref="KaeltestromKosten"/>; <c>null</c> = kein Kältestrom.
+        /// </summary>
+        public double? KaeltestromCO2t;
+
+        /// <summary>
+        /// Die Arbeitskosten der ABWEICHENDEN Kühlträger [€/a] (E34) — der Teil von
+        /// <see cref="Energiekosten"/>, der NICHT in <see cref="StromkostenNetz"/> steht. Ein
+        /// Rollentarif, der <see cref="StromkostenNetz"/> ersetzt, lässt ihn deshalb stehen. 0 ohne
+        /// abweichenden Kühlträger.
+        /// </summary>
+        public double StromkostenKuehltraeger;
+
+        /// <summary>
+        /// Die Teilmenge von <c>Stromrestbedarf</c> [MWh/a], die abweichende Kühlträger anteilig
+        /// tragen (E34, Wahl 1) — der Rollentarif bepreist sie nicht ein zweites Mal. 0 ohne.
+        /// </summary>
+        public double NetzbezugKuehltraegerMWh;
+
+        /// <summary>
+        /// Der Kältestrom über eigene Zähler [MWh/a] (E34, Wahl 2) — Strom aus dem Netz NEBEN
+        /// <c>Stromrestbedarf</c>; die Autarkie zählt ihn als Bezug. 0 ohne.
+        /// </summary>
+        public double KuehlzaehlerMWh;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides
