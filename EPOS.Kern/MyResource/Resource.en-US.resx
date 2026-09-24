@@ -30411,4 +30411,367 @@ Do you want to allow this?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
   </data>
+  <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
+    <value>Default value without usable layers ({0} of {1} constructions complete)</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_AUS_BAUART" xml:space="preserve">
+    <value>derived by the building editor from the construction type</value>
+  </data>
+  <data name="GIMP_BELEG_FENSTER_SEKTOR" xml:space="preserve">
+    <value>{0} windows</value>
+  </data>
+  <data name="GIMP_BELEG_FENSTER_SUMME" xml:space="preserve">
+    <value>Sum of the four orientations</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE" xml:space="preserve">
+    <value>{0} building components</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE_NETTO" xml:space="preserve">
+    <value>{0} building components: gross {1} m² minus windows and doors {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion {0} W: design power of lighting and equipment from {1} spaces — not a time-averaged gain, not imported</value>
+  </data>
+  <data name="GIMP_BELEG_KLASSE_ANWENDER" xml:space="preserve">
+    <value>Entered in the dialog</value>
+  </data>
+  <data name="GIMP_BELEG_LAENGE_LEER" xml:space="preserve">
+    <value>not in the file — please enter the junction length</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL" xml:space="preserve">
+    <value>volume-weighted from {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL_FLAECHE" xml:space="preserve">
+    <value>area-weighted from {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL_MITTEL" xml:space="preserve">
+    <value>mean of {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_NUTZERLUEFTUNG_LEER" xml:space="preserve">
+    <value>stays empty — the air change rate of the file is assigned entirely to infiltration</value>
+  </data>
+  <data name="GIMP_BELEG_PERSONEN" xml:space="preserve">
+    <value>{0} people in {1} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_RAEUME" xml:space="preserve">
+    <value>Sum of {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_RANDBEDINGUNG" xml:space="preserve">
+    <value>Ground {0} m², unheated {1} m²</value>
+  </data>
+  <data name="GIMP_BELEG_RAUMHOEHE" xml:space="preserve">
+    <value>Volume {0} m³ ÷ usable area {1} m²</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT" xml:space="preserve">
+    <value>Design heating temperature of the zones of {0} spaces</value>
+  </data>
+  <data name="GIMP_BELEG_U_GEWICHTET" xml:space="preserve">
+    <value>area-weighted from {0} building components ({1} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_U_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>File: {1} area-weighted, but no value for {0} % of the area — default of the building age class</value>
+  </data>
+  <data name="GIMP_BELEG_VORGABE_KLASSE" xml:space="preserve">
+    <value>Building age class {0}, median of {1} entries of the building catalogue</value>
+  </data>
+  <data name="GIMP_FELD_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Building age class</value>
+  </data>
+  <data name="GIMP_FELD_BAUART" xml:space="preserve">
+    <value>Construction type</value>
+  </data>
+  <data name="GIMP_FELD_BAUWEISE" xml:space="preserve">
+    <value>Thermal mass</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_GESAMT" xml:space="preserve">
+    <value>Total window area</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_NORD" xml:space="preserve">
+    <value>Window area north</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_OST" xml:space="preserve">
+    <value>Window area east</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_SUED" xml:space="preserve">
+    <value>Window area south</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_WEST" xml:space="preserve">
+    <value>Window area west</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_AUSSENWAND" xml:space="preserve">
+    <value>Area of external wall</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_DACH" xml:space="preserve">
+    <value>Roof area</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_GRUND" xml:space="preserve">
+    <value>Ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_JE_NUTZER" xml:space="preserve">
+    <value>Area per user</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_SONSTIGE" xml:space="preserve">
+    <value>Other areas</value>
+  </data>
+  <data name="GIMP_FELD_GRUND_RANDBEDINGUNG" xml:space="preserve">
+    <value>Boundary condition ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_G_WERT" xml:space="preserve">
+    <value>Window transmittance (g-value)</value>
+  </data>
+  <data name="GIMP_FELD_INNERE_GEWINNE" xml:space="preserve">
+    <value>Internal heat gains</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_AUSSENWAND_KELLER" xml:space="preserve">
+    <value>Length of junction external wall–basement</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_FENSTER_WAND" xml:space="preserve">
+    <value>Length of junction window–wall</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_WAND_DACH" xml:space="preserve">
+    <value>Length of junction wall–roof</value>
+  </data>
+  <data name="GIMP_FELD_LUFTWECHSEL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="GIMP_FELD_LUFTWECHSEL_NUTZER" xml:space="preserve">
+    <value>Occupant ventilation</value>
+  </data>
+  <data name="GIMP_FELD_NUTZFLAECHE" xml:space="preserve">
+    <value>Usable area</value>
+  </data>
+  <data name="GIMP_FELD_PSI_AUSSENWAND_KELLER" xml:space="preserve">
+    <value>ψ junction external wall–basement</value>
+  </data>
+  <data name="GIMP_FELD_PSI_FENSTER_WAND" xml:space="preserve">
+    <value>ψ junction window–wall</value>
+  </data>
+  <data name="GIMP_FELD_PSI_WAND_DACH" xml:space="preserve">
+    <value>ψ junction wall–roof</value>
+  </data>
+  <data name="GIMP_FELD_RAUMHOEHE" xml:space="preserve">
+    <value>Room height</value>
+  </data>
+  <data name="GIMP_FELD_SOLL_TAG" xml:space="preserve">
+    <value>Daytime heating setpoint</value>
+  </data>
+  <data name="GIMP_FELD_U_AUSSENWAND" xml:space="preserve">
+    <value>U-value external wall</value>
+  </data>
+  <data name="GIMP_FELD_U_DACH" xml:space="preserve">
+    <value>U-value roof</value>
+  </data>
+  <data name="GIMP_FELD_U_FENSTER" xml:space="preserve">
+    <value>U-value window</value>
+  </data>
+  <data name="GIMP_FELD_U_GRUND" xml:space="preserve">
+    <value>U-value ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_U_SONSTIGE" xml:space="preserve">
+    <value>U-value other areas</value>
+  </data>
+  <data name="GIMP_FELD_VOLUMEN" xml:space="preserve">
+    <value>Volume (check value)</value>
+  </data>
+  <data name="GIMP_GRP_AUSSENWAND" xml:space="preserve">
+    <value>External wall</value>
+  </data>
+  <data name="GIMP_GRP_DACH" xml:space="preserve">
+    <value>Roof</value>
+  </data>
+  <data name="GIMP_GRP_FENSTER" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="GIMP_GRP_GRUND" xml:space="preserve">
+    <value>Ground floor area</value>
+  </data>
+  <data name="GIMP_GRP_KENNGROESSEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="GIMP_GRP_LUEFTUNG" xml:space="preserve">
+    <value>Ventilation</value>
+  </data>
+  <data name="GIMP_GRP_SOLLWERTE" xml:space="preserve">
+    <value>Setpoints</value>
+  </data>
+  <data name="GIMP_GRP_SONSTIGE" xml:space="preserve">
+    <value>Other areas</value>
+  </data>
+  <data name="GIMP_GRP_WAERMEBRUECKEN" xml:space="preserve">
+    <value>Thermal bridges</value>
+  </data>
+  <data name="GIMP_HERKUNFT_GBXML" xml:space="preserve">
+    <value>gbXML file</value>
+  </data>
+  <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
+    <value>IFC file</value>
+  </data>
+  <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="GIMP_HERKUNFT_LEER" xml:space="preserve">
+    <value>Empty</value>
+  </data>
+  <data name="GIMP_HERKUNFT_MANUELL" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="GIMP_KOPF" xml:space="preserve">
+    <value>{0} · building "{1}" · building age class {2} · {3} values from the file, {4} default values, {5} empty</value>
+  </data>
+  <data name="GIMP_SCHEMA_GBXML" xml:space="preserve">
+    <value>gbXML version {0}</value>
+  </data>
+  <data name="GIMP_WERT_LEER" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="GIMP_ZEILE" xml:space="preserve">
+    <value>{0} · {1}: {2} {3} ({4})</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUFBAU_MASSELOS" xml:space="preserve">
+    <value>Construction {0}: at least one layer with an R-value only — U-value from the layers, no thermal mass.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUFBAU_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Construction {0}: at least one layer lacks a thermal resistance — neither U-value nor thermal mass from the layers.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>The unit "{1}" of {0} is unknown or missing — the value stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>Component {0}: neither rectangular nor usable polygon geometry — the area stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
+    <value>The file contains no constructions — the U-values are taken from the building age class.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEIN_CAMPUS" xml:space="preserve">
+    <value>The file contains no building (root "{0}" without Campus and Building) — it is not imported.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>The file states no north direction (CADModelAzimuth) — 0° is assumed.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KENNUNG_GEKUERZT" xml:space="preserve">
+    <value>The identifier of a {0} has {2} characters, more than 64, and is stored as "{1}".</value>
+  </data>
+  <data name="IMP_GBXML_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The gbXML file could not be read: {0}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>Surface {0}: the adjacent space "{1}" is not in the file — the surface is treated as adjoining an unheated space.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV" xml:space="preserve">
+    <value>Surface {0}: windows and doors ({2} m²) are larger than the wall ({1} m²) — the net area becomes 0.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NORDDREHUNG" xml:space="preserve">
+    <value>The file rotates the model by {0}° against north (CADModelAzimuth) — the value is not applied; please check the window orientations.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_AUFBAU" xml:space="preserve">
+    <value>{0} surfaces without a reference to a construction (e.g. {1}) — area and orientation only, no layers.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_NACHBAR" xml:space="preserve">
+    <value>Surface {0} ({1}) names no adjacent space — it is not assigned to any building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE" xml:space="preserve">
+    <value>Material {0}: {1} = {2} is not a valid value (≤ 0) — it stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TRENNFLAECHE_UNGLEICH" xml:space="preserve">
+    <value>The separating surface between {0} and {1} differs between the two sides ({2} m² and {3} m²) — the larger one counts.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TYP_UNBEKANNT" xml:space="preserve">
+    <value>Unknown type "{0}" at {1} — not counted.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UEBERGANGEN" xml:space="preserve">
+    <value>{1} surfaces or openings of type "{0}" skipped — they are not part of the building envelope.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UNBEHEIZT_NAME" xml:space="preserve">
+    <value>Space {0} "{1}" is treated as unheated because of its name ("{2}").</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERSION_UNBEKANNT" xml:space="preserve">
+    <value>The version value "{0}" is not in the gbXML version list — noted only, the file is read anyway.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERWEIS_LEER" xml:space="preserve">
+    <value>The reference {0} = "{1}" (at {2}) points to nothing — the chain stops there, the rest is read.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZAHL_UNLESBAR" xml:space="preserve">
+    <value>{0} = "{1}" (at {2}) is not a number — the value stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENVORSCHLAG" xml:space="preserve">
+    <value>The file suggests zoning rule {0} ({2} zones, {3} spaces, {4} storeys) — it is imported with {1}, one zone per building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The file is {0} bytes, larger than the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The zoning rule would produce {0} zones — more than {1} are not imported.</value>
+  </data>
+  <data name="IMP_GEB_PROT_BODEN_AUSSENLUFT" xml:space="preserve">
+    <value>{0} floors facing outdoor air ({1} m²) count as other areas.</value>
+  </data>
+  <data name="IMP_GEB_PROT_BODEN_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} floors above unheated spaces ({1} m²) count as ground floor area with the boundary condition unheated basement.</value>
+  </data>
+  <data name="IMP_GEB_PROT_DECKE_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} ceilings below unheated spaces ({1} m²) count as roof and are calculated against outdoor air.</value>
+  </data>
+  <data name="IMP_GEB_PROT_ERDREICH_ZUR_GRUNDFLAECHE" xml:space="preserve">
+    <value>{0} walls or ceilings against the ground ({1} m²) count as ground floor area — only it is calculated against the ground.</value>
+  </data>
+  <data name="IMP_GEB_PROT_FENSTER_OHNE_AZIMUT" xml:space="preserve">
+    <value>{0} windows ({1} m²) without orientation — distributed evenly to north, east, south and west.</value>
+  </data>
+  <data name="IMP_GEB_PROT_FLAECHEN" xml:space="preserve">
+    <value>Reading surfaces ({0} of {1}) …</value>
+  </data>
+  <data name="IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} surfaces facing unheated spaces ({1} m²) count as other areas and are calculated against outdoor air.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GELESEN" xml:space="preserve">
+    <value>{0} buildings read.</value>
+  </data>
+  <data name="IMP_GEB_PROT_G_AUSSERHALB" xml:space="preserve">
+    <value>The g-value {0} is not in the range above 0 up to 1.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Without a building age class there are no default values for U-values, g-value and thermal bridges.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KEINE_BEHEIZTEN_RAEUME" xml:space="preserve">
+    <value>Building "{0}" has no heated space — usable area and envelope stay empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KLASSE_OHNE_VORGABE" xml:space="preserve">
+    <value>The building catalogue holds no entry for building age class {0} — its default values stay empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_LESEN" xml:space="preserve">
+    <value>Reading building file {0} …</value>
+  </data>
+  <data name="IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} heated spaces state an air change rate, {1} do not — infiltration stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_PERSONEN_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} heated spaces state a number of people, {1} do not — the area per user stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_PFLICHT_FEHLT" xml:space="preserve">
+    <value>{0} is missing or not greater than zero — nothing is imported without this value.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RANDBEDINGUNG_GEMISCHT" xml:space="preserve">
+    <value>The ground floor area adjoins partly the ground ({0} m²), partly unheated spaces ({1} m²) — the larger one is used: {2}.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUMFLAECHE_FEHLT" xml:space="preserve">
+    <value>{0} heated spaces have no area ({1}) — the usable area stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_SOLLWERT_UNEINHEITLICH" xml:space="preserve">
+    <value>The heating setpoints of the zones are not uniform ({0} to {1} °C; {2} spaces with, {3} without a value) — the daytime heating setpoint stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_U_AUSSERHALB" xml:space="preserve">
+    <value>{0} = {1} W/(m²K) is outside {2} … {3} W/(m²K).</value>
+  </data>
+  <data name="IMP_GEB_PROT_U_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0}: the value is missing for {1} % of the area — the default of the building age class applies.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VOLUMEN_ABWEICHUNG" xml:space="preserve">
+    <value>The volume {0} m³ deviates by more than 20 % from usable area × room height ({1} m³).</value>
+  </data>
+  <data name="IMP_GEB_PROT_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0} is marked as faulty — please correct it or clear the tick.</value>
+  </data>
 </root>
