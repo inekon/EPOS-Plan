@@ -1571,6 +1571,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt 126: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
+            //      V-G11; vorlaeufige Nummer, 125 gehoert einem parallelen Schritt). NACH 124.
+            //      DDL und DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_126_NichtMonetaereWirkungen bedient
+            //      (ProjektWirkungSchema): Tab_ProjektWirkung STRICT samt Index, dann je Projekt
+            //      mit gepflegtem Freitext eine Wirkung SONSTIG ohne Beurteilung.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabelle.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 126 - nicht monetarisierbare Wirkungen: " +
+                              (ProjektWirkungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                ProjektWirkungSchema.Bericht bericht126 = ProjektWirkungSchema.Ausfuehren();
+                if (bericht126.TabelleAngelegt) tabellen++;
+                Console.WriteLine("Schritt 126 - " + bericht126.Zeile() + ".");
+                Console.WriteLine("Schritt 126 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

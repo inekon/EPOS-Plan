@@ -622,6 +622,11 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);
 
+                // Schritt 126 (Etappe E17, V-G11): die Liste der nicht monetarisierbaren Wirkungen
+                // (Tab_ProjektWirkung) samt Uebernahme des gepflegten Freitexts als Wirkung SONSTIG.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug (ProjektWirkungSchema); wiederholbar.
+                ProjektWirkungSchema.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
