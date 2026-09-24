@@ -392,7 +392,8 @@ namespace WindowsFormsApplication1
             try { b.Abdeckung = SzenarioAbdeckung.Lesen(p, staende); }
             catch { b.Abdeckung = new SzenarioAbdeckung(); }
             b.Szenarioabdeckung = b.Abdeckung.Satz(kultur);
-            b.Deklarationen = ValeriAusweis.Deklarationen(p != null ? p.NichtMonetaer : null);
+            // ETAPPE E15 (V‑G7): die Risikozeile nennt ein gepflegtes Risiko.
+            b.Deklarationen = ValeriAusweis.Deklarationen(p != null ? p.NichtMonetaer : null, p);
             b.OhneNachweis = StaendeOhneNachweis(staende, alle);
             b.Sensitivitaet = Sensitivitaetszeilen(staende, sensitivitaet, b.Bandbreite.IdReferenz);
             try

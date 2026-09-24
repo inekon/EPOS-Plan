@@ -418,6 +418,10 @@ namespace WindowsFormsApplication1
                 zeile += " · Einspeisevergütung KWK " + evKwk.Value.ToString("N3", kultur) + " €/kWh";
             if (MengeGepflegt)
                 zeile += " · Mengen " + MengeWirksam.ToString("+0.#;-0.#;0", kultur) + " %";
+            // ETAPPE E15 (V‑G7): das Risiko gilt in allen Szenarien gleich (E15‑Q1 a) und steht
+            // nur da, wenn es gepflegt ist — die Herleitungszeile des Dialogs nennt es in der
+            // eigenen Gruppe „Risiko".
+            if (!nurGepflegt && p != null) zeile += RisikoModul.Nachweis(p, kultur);
             return zeile;
         }
     }
@@ -658,6 +662,38 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string NichtMonetaer;
 
+        // ---- ETAPPE E15 — das Risikomodul (V‑G7, Schemaschritt 125) ----
+        //
+        // DIN EN 17463, 6.5: das Risiko als Zinszuschlag ODER als zusätzliche Auszahlung je
+        // Periode (Anhang F: R_loss × p_loss, nur t > 0). Jedes Feld ist nullbar, und die
+        // Vorgabe ist AUS: Ohne Art rechnet nichts davon. Gerechnet wird ausschließlich über
+        // RisikoModul (die EINE Stelle) — FuerSzenario für den Zins, der Abzug in
+        // KapitalwertRechner.Rechne.
+
+        /// <summary>Art der Risikoberücksichtigung: <c>null</c>/leer = kein Risiko,
+        /// <see cref="Risikoart.ZINS"/> oder <see cref="Risikoart.ABZUG"/>.</summary>
+        public string RisikoArt;
+
+        /// <summary>Risikozuschlag auf den Kalkulationszins [%-Punkte]; wirkt nur bei
+        /// <see cref="Risikoart.ZINS"/>.</summary>
+        public double? RisikoZinszuschlag;
+
+        /// <summary>Quantifizierte Rückflusseinbuße R_loss [€ je Periode]; wirkt nur bei
+        /// <see cref="Risikoart.ABZUG"/>.</summary>
+        public double? RisikoVerlust;
+
+        /// <summary>Eintrittswahrscheinlichkeit p_loss [%]; wirkt nur bei
+        /// <see cref="Risikoart.ABZUG"/>.</summary>
+        public double? RisikoWahrscheinlichkeit;
+
+        /// <summary>
+        /// ETAPPE E15: <c>true</c> an einer Kopie aus <see cref="FuerSzenario"/>, deren
+        /// <see cref="Zinssatz"/> den Risikozuschlag schon enthält — ein zweiter Aufruf von
+        /// <see cref="FuerSzenario"/> auf dieser Kopie schlägt ihn nicht noch einmal auf.
+        /// Nie gespeichert.
+        /// </summary>
+        public bool RisikoZinsEingerechnet;
+
         /// <summary>
         /// Das WIRKSAME p_I [%/a] des Erwartungsfalls: der gepflegte Satz, sonst p_B.
         /// Diese eine Stelle trägt die Nullsemantik — Rechenlauf, Dialog, Bericht und
@@ -718,13 +754,32 @@ namespace WindowsFormsApplication1
         /// Trägerpreise wirken auf die Mengen- und Preisbasis der Variante
         /// (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>), die PV-Erlössätze auf die
         /// Vergütungszeile (<c>ProjektPhotovoltaikCtrl.FuerSzenario</c>).</para>
+        ///
+        /// <para><b>ETAPPE E15 (V‑G7, Risikomodul):</b> Ist ein Zinszuschlag gepflegt
+        /// (<see cref="RisikoModul.ZinsAktiv"/>), trägt JEDES Szenario — auch Erwartet, dann
+        /// als Kopie — den Kalkulationszins plus Zuschlag (E15‑Q1, Lesart a: in allen drei
+        /// Szenarien gleich). Hier ist die eine Stelle, aus der alle Barwertrechnungen ihren
+        /// Zins lesen. Ohne Zuschlag bleibt Erwartet <c>this</c>, und nichts wird addiert.</para>
         /// </summary>
         public WirtschaftlichkeitParameter FuerSzenario(string szenario)
         {
             SzenarioSatz s = SatzFuer(szenario);
-            if (s == null) return this;
+            double zuschlag = RisikoZinsEingerechnet ? 0.0 : RisikoModul.Zinszuschlag(this);
+            if (s == null)
+            {
+                if (zuschlag == 0) return this;
+                WirtschaftlichkeitParameter e = Kopie();
+                e.Zinssatz = Zinssatz + zuschlag;
+                e.RisikoZinsEingerechnet = true;
+                return e;
+            }
             WirtschaftlichkeitParameter k = Kopie();
             k.Zinssatz = s.ZinsWirksam(Zinssatz);
+            if (zuschlag != 0)
+            {
+                k.Zinssatz += zuschlag;
+                k.RisikoZinsEingerechnet = true;
+            }
             k.PreissteigerungEnergie = s.PreisEnergieWirksam(PreissteigerungEnergie);
             k.PreissteigerungBetrieb = s.PreisBetriebWirksam(PreissteigerungBetrieb);
             // ETAPPE W5‑B‑12: p_I wird wie Zins und die beiden anderen Preissätze
@@ -792,6 +847,9 @@ namespace WindowsFormsApplication1
             if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
                 t += " · Einspeisevergütung KWK " +
                      EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
+            // ETAPPE E15 (V‑G7): das Risiko nur, wenn es gepflegt ist — ohne Pflege bleibt die
+            // Zeile Zeichen für Zeichen die von vorher.
+            t += RisikoModul.Nachweis(this, kultur);
             return t;
         }
 

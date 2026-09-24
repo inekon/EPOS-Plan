@@ -438,7 +438,8 @@ namespace WindowsFormsApplication1
             // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
             // ETAPPE E9a: mit Zeitraum, Menge und Erlössätzen je Szenario und — nur wo
             // gepflegt — den Trägerpreisen der Stände.
-            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten);
+            // ETAPPE E15 (V‑G7): mit Risiko die Risikozeilen, ihre Formeln über das Register.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten, formeln);
 
             if (!ausDiesemLauf)
             {

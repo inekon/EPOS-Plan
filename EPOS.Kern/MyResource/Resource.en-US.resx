@@ -30114,4 +30114,91 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Twelve monthly factors January to December; normalised to the mean 1 when saving.</value>
   </data>
+  <data name="WIRT_RISIKO_KURZ_ZINS" xml:space="preserve">
+    <value>interest surcharge {0} percentage points</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ABZUG" xml:space="preserve">
+    <value>deduction R_loss × p_loss = €{0} × {1} % = €{2} per period from year 1</value>
+  </data>
+  <data name="WIRT_RISIKO_NACHWEIS" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5): {0}</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_AUS" xml:space="preserve">
+    <value>No risk applied (default) — the calculation uses the discount rate and the payments as they are.</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ZINS" xml:space="preserve">
+    <value>All three scenarios use the discount rate plus surcharge: {0} % + {1} percentage points = {2} % in the expected case (net present value, annuity, payback, internal rate of return).</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ABZUG" xml:space="preserve">
+    <value>Deduction per period from year 1: €{0} × {1} % = €{2} — not in year 0, not on the residual value; in all three scenarios for every version except the reference (if the group has only one version, it carries the deduction).</value>
+  </data>
+  <data name="WIRT_ANN_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects named</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects: none named</value>
+  </data>
+  <data name="WIRT_MJ_RISIKO" xml:space="preserve">
+    <value>Risk deduction</value>
+  </data>
+  <data name="WIRT_GL_RISIKO" xml:space="preserve">
+    <value>Risk deduction (Annex F)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Risk surcharge on the rate (6.5)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS_RISIKO" xml:space="preserve">
+    <value>Discount rate including risk surcharge</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ABZUG" xml:space="preserve">
+    <value>Risk deduction per period from year 1 [€]</value>
+  </data>
+  <data name="WPAR_G_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WPAR_RISIKO_ART" xml:space="preserve">
+    <value>Risk treatment:</value>
+  </data>
+  <data name="WPAR_RISIKO_AUS" xml:space="preserve">
+    <value>off — no risk applied</value>
+  </data>
+  <data name="WPAR_RISIKO_ZINS" xml:space="preserve">
+    <value>Interest surcharge</value>
+  </data>
+  <data name="WPAR_RISIKO_ABZUG" xml:space="preserve">
+    <value>Cash-flow deduction R_loss × p_loss (Annex F)</value>
+  </data>
+  <data name="WPAR_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Interest surcharge [percentage points]:</value>
+  </data>
+  <data name="WPAR_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]:</value>
+  </data>
+  <data name="WPAR_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss [%]:</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ART_ERL" xml:space="preserve">
+    <value>Risk treatment per EN 17463 (6.5): empty = off (default), ZINS = surcharge on the discount rate, ABZUG = cash-flow deduction R_loss × p_loss per period from year 1.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Surcharge in percentage points on the discount rate of all three scenarios; applies only with type ZINS.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_VERLUST_ERL" xml:space="preserve">
+    <value>Quantified loss of return R_loss in euros per period; applies only with type ABZUG.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_P_ERL" xml:space="preserve">
+    <value>Probability of occurrence p_loss in percent; the deduction per period is R_loss × p_loss / 100, only with type ABZUG.</value>
+  </data>
+  <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
+    <value>three price change rates (energy, operation, investment/replacement); risk applied: {0}; no degradation — declared.</value>
+  </data>
 </root>
