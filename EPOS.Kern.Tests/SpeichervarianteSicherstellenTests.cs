@@ -329,6 +329,49 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// ETAPPE E13 (Register A8, „die Speichervariante sollte die Positionsarten 20/21
+        /// lesen"): Eine NEU angelegte Variante trägt die Nutzungsdauer der Standardzeile
+        /// „Stromspeicher · Batterie" (ausgeliefert 10 a); eine bestehende behält ihren
+        /// Wert, wenn sich die Tabelle ändert; ohne Wert in der Tabelle gilt die Konstante.
+        /// Der Rückfall des Rechenwegs (<c>new StromspeicherVarianteModel()</c>) bleibt 20 a.
+        /// </summary>
+        [Fact]
+        public void Eine_neue_Variante_nimmt_die_Nutzungsdauer_der_Tabelle()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            NutzungsdauerCtrl.ProbeVergessen();
+
+            NutzungsdauerZeile batterie = NutzungsdauerCtrl.Standard(5);
+            Assert.Equal("Batterie", batterie.Positionsart);
+            Assert.Equal(10.0, StromspeicherVarianteCtrl.NutzungsdauerVorgabe(), 6);
+            Assert.Equal(10.0, StromspeicherVarianteCtrl.NeueVariante().Nutzungsdauer, 6);
+            Assert.Equal(StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE,
+                         new StromspeicherVarianteModel().Nutzungsdauer, 6);   // Rückfall unverändert
+
+            // Der Wizard legt die Variante des neuen Speichers mit dem Tabellenwert an.
+            ProjektAnlegen();
+            var wizard = new WizardCtrl();
+            Assert.True(wizard.Add_WP_Waermeerzeuger(PROJEKT,
+                new List<WErzeugerModel> { SpEintrag(KATALOG_A) }));
+            StromspeicherVarianteModel neu = new StromspeicherVarianteCtrl().ReadAktiveVariante(PROJEKT);
+            Assert.NotNull(neu);
+            Assert.Equal(10.0, neu.Nutzungsdauer, 6);
+
+            // Die Tabelle ändert sich — die bestehende Zeile behält ihren Wert.
+            batterie.Nutzungsdauer = 12.5;
+            Assert.True(NutzungsdauerCtrl.Speichern(batterie, out string grund), grund);
+            Assert.Equal(12.5, StromspeicherVarianteCtrl.NutzungsdauerVorgabe(), 6);
+            Assert.Equal(10.0, new StromspeicherVarianteCtrl().ReadAktiveVariante(PROJEKT).Nutzungsdauer, 6);
+
+            // Ohne Wert in der Tabelle: die Konstante.
+            batterie.Nutzungsdauer = null;
+            Assert.True(NutzungsdauerCtrl.Speichern(batterie, out grund), grund);
+            Assert.Equal(StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE,
+                         StromspeicherVarianteCtrl.NutzungsdauerVorgabe(), 6);
+        }
+
+        /// <summary>
         /// <b>Regressionsschutz für die Rettung (AP9b).</b> Ein Projekt mit gepflegter
         /// aktiver Variante, derselbe Speicherweg noch einmal: Die Betriebsparameter
         /// stehen danach an der NEUEN Anlagenzeile, und sie ist wieder aktiv.
