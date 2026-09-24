@@ -265,6 +265,11 @@ ersetzt (ein Thema, ein Eintrag):
 - *wirtschaftlichkeit:* „Unter der Annahmentafel, im Wort- und im Excelbericht steht statt des Hinweistexts der Ausweis
   ‚n von m Parametern szenariert' mit den gepflegten Größen."
 
+Aus zwei Sätzen zu #434 derselben Version (Sensitivitätstafel; Wort- und Tabellenbericht) ist der Teil zum Hinweistext
+gestrichen — beide sind noch nicht veröffentlicht, der Hinweistext erreicht so kein veröffentlichtes Logbuch. Der
+letzte Satz oben nennt ihn trotzdem („statt des Hinweistexts"), wie der Bericht ihn formuliert; ob er ohne diesen
+Bezug stehen soll, klärt der Anwender mit der Versionsnummer.
+
 ## Befunde nebenbei
 
 - **CI-Nachweise zu #461** (Push `0d296ca0`): Kern-Lauf `ios_migration_september` 35945134055, Kern-Lauf `main`
