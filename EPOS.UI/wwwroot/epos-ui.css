@@ -2273,6 +2273,43 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     padding: 0;
 }
 
+/* ETAPPE E9b (Konzept § 2.11.5, Pflege): der ±-Knopf eines Szenariopaars
+   (Baustein SzenarioKnopf) an Traegerpreisen und Erloessaetzen. Anders als der
+   Zeilenknopf der Kostenposition traegt er seinen Gegenstand als Text ("±
+   Arbeitspreis") - er steht in einer Leiste, nicht in einer Spalte. Ist ein Paar
+   gepflegt, steht dahinter ein Punkt in der Hausfarbe; fehlt der Erwartet-Wert
+   zu einem gepflegten Paar (E9b-Q4), ein Warnzeichen. Beides ist Beiwerk: Die
+   Aussage traegt das aria-label bzw. der Kurztext. */
+.epos-szenarioknopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-szenarioknopf-zeichen {
+    font-weight: 700;
+}
+
+.epos-szenarioknopf-kennzeichen {
+    color: var(--epos-marke);
+    font-size: 0.75em;
+}
+
+.epos-szenarioknopf-warnung {
+    color: var(--epos-warn-text);
+}
+
+@media (forced-colors: active) {
+    .epos-szenarioknopf-kennzeichen {
+        color: Highlight;
+    }
+
+    .epos-szenarioknopf-warnung {
+        forced-color-adjust: none;
+        color: rgb(138, 91, 0);
+    }
+}
+
 .epos-zr-kette {
     margin-right: 4px;
     color: var(--epos-text-leise);

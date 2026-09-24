@@ -1,0 +1,83 @@
+﻿@* Der ±-KNOPF eines Szenariopaars (ETAPPE E9b, Konzept § 2.11.5 „Pflege").
+
+   WOZU. Die Kostenpositionen tragen ihr Best/Worst-Paar seit jeher über den
+   ±-Knopf ihrer Zeile (VorlagenZeile, CaseEingabeDialog). Mit der vollständigen
+   Szenarioabdeckung wandert DASSELBE MUSTER an jeden Ort, an dem ein Erwartet-Wert
+   gepflegt wird: an die Trägerpreise der Trägerkarte, an die Einspeisevergütungen
+   (Parameterdialog, BHKW-Wirtschaftlichkeit) und an DV-Entgelt und PPA-Preis des
+   PV-Vergütungsdialogs. Drei Wirte, ein Muster - deshalb ein Baustein.
+
+   WAS ER ZEIGT. Das Zeichen ± und den Gegenstand ("± Arbeitspreis"), dahinter
+   das KENNZEICHEN, sobald ein Paar gepflegt ist (ein Punkt in der Hausfarbe), und
+   ein WARNZEICHEN, wenn der Wirt es meldet (E9b-Q4: ein gepflegtes Paar ohne
+   Erwartet-Wert - gewarnt, nicht verweigert). Die Aussage selbst steht im
+   Kurztext und im aria-label; die Zeichen sind Beiwerk (aria-hidden).
+
+   WAS ER NICHT TUT. Er kennt weder Wert noch Einheit noch Dialog: Der Wirt
+   entscheidet, was "gepflegt" heisst (die 1e-9-Regel des Kerns) und oeffnet den
+   CaseEingabeDialog in seiner Ueberlagerung. Kein Delegat, kein Knopf. *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (Angefordert.HasDelegate)
+{
+    <button type="button"
+            class="epos-knopf epos-szenarioknopf@(Gepflegt ? " epos-szenarioknopf--gepflegt" : "")"
+            title="@Titel" aria-label="@AriaText" disabled="@(!Aktiv)"
+            @onclick="() => Angefordert.InvokeAsync()">
+        <span class="epos-szenarioknopf-zeichen" aria-hidden="true">±</span>
+        <span class="epos-szenarioknopf-text">@Text</span>
+        @if (Gepflegt)
+        {
+            <span class="epos-szenarioknopf-kennzeichen" aria-hidden="true">●</span>
+        }
+        @if (Warnung)
+        {
+            <span class="epos-szenarioknopf-warnung" aria-hidden="true">⚠</span>
+        }
+    </button>
+}
+
+@code {
+    /// <summary>Der Gegenstand des Paars, z. B. „Arbeitspreis" oder „DV-Entgelt".</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>Trägt das Paar einen gepflegten Wert (Best oder Worst)? Dann steht das
+    /// Kennzeichen am Knopf.</summary>
+    [Parameter] public bool Gepflegt { get; set; }
+
+    /// <summary>E9b‑Q4: ein gepflegtes Paar OHNE Erwartet-Wert — das Warnzeichen.</summary>
+    [Parameter] public bool Warnung { get; set; }
+
+    /// <summary>Der Kurztext (<c>title</c>): was der Knopf tut und, wenn gepflegt, die
+    /// gepflegten Werte.</summary>
+    [Parameter] public string Kurztext { get; set; } = "";
+
+    /// <summary>Das Wort, das das aria-label bei einem gepflegten Paar anhängt.</summary>
+    [Parameter] public string GepflegtText { get; set; } = "gepflegt";
+
+    /// <summary>Das Wort, das das aria-label bei gesetzter Warnung anhängt.</summary>
+    [Parameter] public string WarnungText { get; set; } = "ohne Erwartet-Wert";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt den Knopf — wie das Feld daneben, wenn es
+    /// gerade nicht gilt (DV-Entgelt nur bei Marktprämie, PPA-Preis nur bei sonstiger
+    /// Direktvermarktung).</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Der Wirt öffnet den CaseEingabeDialog für dieses Paar.</summary>
+    [Parameter] public EventCallback Angefordert { get; set; }
+
+    private string Titel => string.IsNullOrEmpty(Kurztext) ? Text : Kurztext;
+
+    /// <summary>Was die Sprachausgabe hört: „± Arbeitspreis (gepflegt)".</summary>
+    public string AriaText
+    {
+        get
+        {
+            string s = "± " + Text;
+            if (Gepflegt) s += " (" + GepflegtText + ")";
+            if (Warnung) s += " (" + WarnungText + ")";
+            return s;
+        }
+    }
+}

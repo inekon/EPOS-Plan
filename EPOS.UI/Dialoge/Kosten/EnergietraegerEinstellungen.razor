@@ -148,6 +148,44 @@
                         <Herleitungszeile Text="@HinweisStaffel" />
                     }
 
+                    @* ETAPPE E9b (Konzept § 2.11.5, Pflege; E9b-Q1): JE PREIS EIN ±-KNOPF -
+                       dasselbe Muster wie an der Kostenposition. Er oeffnet den
+                       CaseEingabeDialog als Szenariopaar in der Ueberlagerung des Wirts;
+                       geschrieben wird mit der Karte (Speichern/OK). Das Kennzeichen am
+                       Knopf sagt, ob ein Paar gepflegt ist; ein gepflegter Preis OHNE
+                       Erwartet-Preis traegt das Warnzeichen und eine Zeile darunter
+                       (E9b-Q4: warnen, nicht verweigern). Ein Szenario-Leistungspreis neben
+                       einer Staffel oder Saisonreihe bleibt ohne Wirkung - die
+                       Kohaerenzzeile sagt es (E9a-Q3). Nur im Projektkontext: Die
+                       Szenariopreise stehen an der Projektuebersteuerung. *@
+                    @if (Stand.MitSzenario && SzenarioPflegen.HasDelegate)
+                    {
+                        <div class="epos-leiste epos-szenarioleiste" role="group" aria-label="@TitelSzenario">
+                            <SzenarioKnopf Text="@LabelArbeitspreis" Gepflegt="@Stand.SzenarioArbeitGepflegt"
+                                           Warnung="@(Stand.SzenarioArbeitGepflegt && Stand.SzenarioArbeitOhneErwartet)"
+                                           Kurztext="@SzenarioKurztext(PREIS_ARBEIT)"
+                                           GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
+                                           Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_ARBEIT)" />
+                            <SzenarioKnopf Text="@LabelGrundpreis" Gepflegt="@Stand.SzenarioGrundGepflegt"
+                                           Kurztext="@SzenarioKurztext(PREIS_GRUND)"
+                                           GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
+                                           Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_GRUND)" />
+                            @if (Stand.MitLeistungspreis)
+                            {
+                                <SzenarioKnopf Text="@LabelLeistungspreis" Gepflegt="@Stand.SzenarioLeistungGepflegt"
+                                               Warnung="@(Stand.SzenarioLeistungGepflegt && Stand.SzenarioLeistungOhneErwartet)"
+                                               Kurztext="@SzenarioKurztext(PREIS_LEISTUNG)"
+                                               GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
+                                               Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_LEISTUNG)" />
+                            }
+                        </div>
+                        <Herleitungszeile Text="@HinweisSzenario" />
+                        @foreach (string zeile in SzenarioZeilen)
+                        {
+                            <Kohaerenzzeile Text="@zeile" Zustand="KohaerenzZustand.Abweichend" />
+                        }
+                    }
+
                     @* Die Effektivzeile steht bei Hi und Hs, nicht bei den Regeln: Sie
                        faellt AUS ihnen. *@
                     @if (!string.IsNullOrEmpty(Stand.EffektivText))
@@ -569,6 +607,81 @@
     /// Wirt legt die Kandidaten zur Bestätigung vor; diese Karte schreibt nichts.
     /// </summary>
     [Parameter] public EventCallback<string> LueckeUebernehmen { get; set; }
+
+    // ---- ETAPPE E9b: die ±-Knöpfe der Preise (Konzept § 2.11.5, Pflege) ------
+
+    /// <summary>ETAPPE E9b: der Schlüssel des Arbeitspreises für <see cref="SzenarioPflegen"/>.</summary>
+    public const string PREIS_ARBEIT = "ARBEIT";
+
+    /// <summary>ETAPPE E9b: der Schlüssel des Grundpreises.</summary>
+    public const string PREIS_GRUND = "GRUND";
+
+    /// <summary>ETAPPE E9b: der Schlüssel des Leistungspreises.</summary>
+    public const string PREIS_LEISTUNG = "LEISTUNG";
+
+    /// <summary>
+    /// ETAPPE E9b: „±" an einem Preis — mit dem Schlüssel der Preisart
+    /// (<see cref="PREIS_ARBEIT"/> …). Der Wirt öffnet den <c>CaseEingabeDialog</c> als
+    /// Szenariopaar; diese Karte schreibt nichts. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<string> SzenarioPflegen { get; set; }
+
+    /// <summary>ETAPPE E9b (ETV_SZ_TITEL): der Name der Knopfgruppe für die Sprachausgabe.</summary>
+    [Parameter] public string TitelSzenario { get; set; } = "Szenariopreise Best/Worst";
+
+    /// <summary>ETAPPE E9b (ETV_SZ_HINWEIS): die leise Zeile unter den ±-Knöpfen.</summary>
+    [Parameter] public string HinweisSzenario { get; set; }
+        = "± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; "
+        + "geschrieben wird mit der Karte.";
+
+    /// <summary>ETAPPE E9b (ETV_SZ_OHNE_ERWARTET): Kohärenzzeile eines gepflegten Paars ohne
+    /// Erwartet-Preis, <c>{0}</c> = die Preisart.</summary>
+    [Parameter] public string VorlageSzenarioOhneErwartet { get; set; }
+        = "{0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, "
+        + "Erwartet zeigt die Datenlücke.";
+
+    /// <summary>ETAPPE E9b (SZP_GEPFLEGT): das Wort im aria-label eines gepflegten Knopfes.</summary>
+    [Parameter] public string SzenarioGepflegtText { get; set; } = "gepflegt";
+
+    /// <summary>ETAPPE E9b (SZP_OHNE_ERWARTET_KURZ): das Wort im aria-label bei Warnung.</summary>
+    [Parameter] public string SzenarioWarnungText { get; set; } = "ohne Erwartet-Wert";
+
+    /// <summary>
+    /// ETAPPE E9b: der Kurztext eines ±-Knopfes — was er tut und, wenn gepflegt, die zwei
+    /// Werte in der Einheit des Feldes daneben.
+    /// </summary>
+    private string SzenarioKurztext(string preisart) => preisart switch
+    {
+        PREIS_GRUND => Szenariopaar.Kurztext(Stand.SzenarioGrundBest, Stand.SzenarioGrundWorst,
+                                             Stand.Grundpreis, Stand.EinheitGrundpreis, 2),
+        PREIS_LEISTUNG => Szenariopaar.Kurztext(Stand.SzenarioLeistungBest, Stand.SzenarioLeistungWorst,
+                                                Stand.Leistungspreis, Stand.EinheitLeistungspreis, 2),
+        _ => Szenariopaar.Kurztext(Stand.SzenarioArbeitBest, Stand.SzenarioArbeitWorst,
+                                   Stand.Arbeitspreis, Stand.EinheitArbeitspreis, 4)
+    };
+
+    /// <summary>
+    /// ETAPPE E9b: die Kohärenzzeilen unter den ±-Knöpfen — ein gepflegtes Paar ohne
+    /// Erwartet-Preis (E9b‑Q4) und ein Szenario-Leistungspreis neben Staffel oder
+    /// Saisonreihe (E9a‑Q3). Nur, was gepflegt ist, bekommt eine Zeile.
+    /// </summary>
+    public IReadOnlyList<string> SzenarioZeilen
+    {
+        get
+        {
+            var liste = new List<string>();
+            if (Stand.SzenarioArbeitGepflegt && Stand.SzenarioArbeitOhneErwartet)
+                liste.Add(string.Format(VorlageSzenarioOhneErwartet, LabelArbeitspreis));
+            if (Stand.MitLeistungspreis && Stand.SzenarioLeistungGepflegt)
+            {
+                if (Stand.SzenarioLeistungOhneErwartet)
+                    liste.Add(string.Format(VorlageSzenarioOhneErwartet, LabelLeistungspreis));
+                if (!string.IsNullOrEmpty(Stand.SzenarioLeistungOhneWirkung))
+                    liste.Add(Stand.SzenarioLeistungOhneWirkung);
+            }
+            return liste;
+        }
+    }
 
     /// <summary>Die Lückenzeilen der beiden Preise (Arbeits- und Leistungspreis).</summary>
     private IEnumerable<Wertluecke> Preisluecken => Luecken(false);

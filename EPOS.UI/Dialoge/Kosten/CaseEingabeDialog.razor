@@ -21,7 +21,23 @@
 
    TEXTE. Sechs Schluessel des Vorlaeufers werden weiterverwendet
    (KOSTEN_CASE_ABSOLUT, _PROZENT, _UMRECHNUNG, _STARTJAHR, KOSTEN_CHK_ZUSCHUSS,
-   _HINT); die Beschriftungen des Designers bekommen KCASE_* (W1.7). *@
+   _HINT); die Beschriftungen des Designers bekommen KCASE_* (W1.7).
+
+   ETAPPE E9b - DER ALLGEMEINE BAUSTEIN "SZENARIOPAAR" (Konzept § 2.11.5, Pflege;
+   Entscheid E9b-Q1, Lesart a). Derselbe Dialog pflegt seither auch das
+   Best/Worst-Paar eines TRAEGERPREISES (Traegerkarte) und eines ERLOESSATZES
+   (Einspeiseverguetung PV und KWK, DV-Entgelt, PPA-Preis). Mit Szenariopaar="true"
+   entfallen Nutzungsdauer, Startjahr, Zuschuss und die Erloeszeile; Einheit,
+   Grenzen und Nachkommastellen kommen vom Aufrufer, dazu die Erwartet-Zeile, die
+   Warnung "kein Erwartet-Wert" (E9b-Q4: warnen, nicht verweigern) und die
+   Kohaerenzzeilen (gepflegte Werte, die im Lauf ohne Wirkung bleiben). Der
+   Prozentmodus bleibt: Er rechnet gegen den Erwartet-Wert (Betrag) und rundet auf
+   die Nachkommastellen des Paars. 0 und leer heissen wie bei der Kostenposition
+   "nicht gepflegt" - fuer das Paar also "wie Erwartet".
+
+   OHNE Szenariopaar ist alles Zeichen fuer Zeichen die Kostenposition von vorher:
+   dieselben Felder, dieselben Grenzen, dieselbe Rundung, derselbe Hilfeschluessel
+   (Pruefmuster Form_CaseEingabe der Formularkarte). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using System.Globalization
@@ -42,6 +58,18 @@
         }
     </div>
 
+    @* ETAPPE E9b (Szenariopaar): ZUERST der Erwartet-Wert, gegen den das Paar
+       steht - er ist der Masstab beider Felder und die Basis des Prozentmodus. Fehlt
+       er, sagt es die Warnung darunter (E9b-Q4): Gepflegt werden darf trotzdem. *@
+    @if (Szenariopaar && !string.IsNullOrEmpty(ErwartetText))
+    {
+        <Herleitungszeile Text="@ErwartetText" />
+    }
+    @if (Szenariopaar && OhneErwartet && !string.IsNullOrEmpty(WarnungOhneErwartet))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@WarnungOhneErwartet" />
+    }
+
     <Optionsgruppe Bezeichnung="@LabelEingabeart"
                    Eintraege="@_eingabearten"
                    Auswahl="@(_prozentModus ? MODUS_PROZENT : MODUS_ABSOLUT)"
@@ -61,49 +89,68 @@
                 <KindInhalt>
                     <Zahlenfeld Bezeichnung="@LabelBestKosten" Einheit="@EinheitKosten"
                                 Wert="@_best" Min="@MinKosten" Max="@MaxKosten"
+                                Nachkommastellen="@Anzeigestellen"
                                 WertChanged="BeiBest" />
                     <Zahlenfeld Bezeichnung="@LabelWorstKosten" Einheit="@EinheitKosten"
                                 Wert="@_worst" Min="@MinKosten" Max="@MaxKosten"
+                                Nachkommastellen="@Anzeigestellen"
                                 WertChanged="BeiWorst" />
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
-    <Gruppenkopf Titel="@LabelNutzungsdauer">
-        <KindInhalt>
-            <Formularraster>
-                <KindInhalt>
-                    <Zahlenfeld Bezeichnung="@LabelBestNutzung" Wert="@_bestNutzung"
-                                Min="0" Max="99999" WertChanged="@(w => _bestNutzung = w ?? 0)" />
-                    <Zahlenfeld Bezeichnung="@LabelWorstNutzung" Wert="@_worstNutzung"
-                                Min="0" Max="99999" WertChanged="@(w => _worstNutzung = w ?? 0)" />
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
-
-    <Formularraster>
-        <KindInhalt>
-            <Ganzzahlfeld Bezeichnung="@LabelStartJahr" Wert="@_startJahr"
-                          Min="0" Max="50" WertChanged="@(w => _startJahr = w ?? 0)" />
-
-            @if (ZuschussMoeglich)
-            {
-                <Schalter Bezeichnung="@LabelZuschuss" Wert="@_istZuschuss"
-                          WertChanged="@(w => _istZuschuss = w)" />
-            }
-        </KindInhalt>
-    </Formularraster>
-
-    @if (ZuschussMoeglich)
+    @if (!Szenariopaar)
     {
-        <Herleitungszeile Text="@HinweisZuschuss" />
+        <Gruppenkopf Titel="@LabelNutzungsdauer">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@LabelBestNutzung" Wert="@_bestNutzung"
+                                    Min="0" Max="99999" WertChanged="@(w => _bestNutzung = w ?? 0)" />
+                        <Zahlenfeld Bezeichnung="@LabelWorstNutzung" Wert="@_worstNutzung"
+                                    Min="0" Max="99999" WertChanged="@(w => _worstNutzung = w ?? 0)" />
+                    </KindInhalt>
+                </Formularraster>
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Formularraster>
+            <KindInhalt>
+                <Ganzzahlfeld Bezeichnung="@LabelStartJahr" Wert="@_startJahr"
+                              Min="0" Max="50" WertChanged="@(w => _startJahr = w ?? 0)" />
+
+                @if (ZuschussMoeglich)
+                {
+                    <Schalter Bezeichnung="@LabelZuschuss" Wert="@_istZuschuss"
+                              WertChanged="@(w => _istZuschuss = w)" />
+                }
+            </KindInhalt>
+        </Formularraster>
+
+        @if (ZuschussMoeglich)
+        {
+            <Herleitungszeile Text="@HinweisZuschuss" />
+        }
+
+        @if (IstErloes)
+        {
+            <Herleitungszeile Text="@HinweisErloes" />
+        }
     }
-
-    @if (IstErloes)
+    else
     {
-        <Herleitungszeile Text="@HinweisErloes" />
+        @* ETAPPE E9b: was ein leeres Feld heisst, und die Kohaerenzzeilen des Wirts -
+           gepflegte Werte, die der Lauf nicht liest (Staffel, Rollenmodell,
+           PV-Verguetungsdialog). Sie sperren nichts. *@
+        @if (!string.IsNullOrEmpty(HinweisLeer))
+        {
+            <Herleitungszeile Text="@HinweisLeer" />
+        }
+        @foreach (string hinweis in Hinweise)
+        {
+            <Kohaerenzzeile Text="@hinweis" Zustand="KohaerenzZustand.Abweichend" />
+        }
     }
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
@@ -215,6 +262,72 @@
     /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_CaseEingabe.btn_Help";
 
+    // =====================================================================
+    // ETAPPE E9b — der allgemeine Baustein „Szenariopaar“ (Konzept § 2.11.5)
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E9b (E9b‑Q1, Lesart a): Pflegt der Dialog das Best/Worst-Paar eines
+    /// Trägerpreises oder Erlössatzes statt einer Kostenposition? Dann entfallen
+    /// Nutzungsdauer, Startjahr, Zuschuss und Erlöszeile; Einheit, Grenzen und
+    /// Nachkommastellen kommen vom Aufrufer, dazu Erwartet-Zeile, Warnung und
+    /// Kohärenzzeilen. Vorgabe <c>false</c>: die Kostenposition wie bisher.
+    /// </summary>
+    [Parameter] public bool Szenariopaar { get; set; }
+
+    /// <summary>ETAPPE E9b: was das Paar ist („Arbeitspreis Erdgas E") — die Auskunft
+    /// für den Assistenten; die Beschriftungen setzt der Aufrufer über
+    /// <see cref="LabelKosten"/> und die Feldtexte.</summary>
+    [Parameter] public string Groesse { get; set; } = "";
+
+    /// <summary>ETAPPE E9b: die Einheit der beiden Felder im Absolutmodus. Vorgabe „€“ —
+    /// die Einheit der Kostenposition.</summary>
+    [Parameter] public string Einheit { get; set; } = "€";
+
+    /// <summary>ETAPPE E9b: die Nachkommastellen des Paars — Anzeige der Felder und
+    /// Rundung der Prozentumrechnung. Nur im <see cref="Szenariopaar"/>; die
+    /// Kostenposition rundet wie bisher auf Cent und zeigt die Felder ohne feste
+    /// Stellen.</summary>
+    [Parameter] public int Nachkommastellen { get; set; } = 2;
+
+    /// <summary>ETAPPE E9b: kleinster Wert im Absolutmodus (Vorgabe 0 wie bisher).</summary>
+    [Parameter] public double MinWert { get; set; }
+
+    /// <summary>ETAPPE E9b: größter Wert im Absolutmodus (Vorgabe 99 999 wie bisher).</summary>
+    [Parameter] public double MaxWert { get; set; } = 99999;
+
+    /// <summary>ETAPPE E9b: die Zeile „Erwartet: 0,8400 €/Nm³“; leer = keine Zeile.</summary>
+    [Parameter] public string ErwartetText { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E9b (E9b‑Q4, Lesart a — warnen, nicht verweigern): der Satz, der steht,
+    /// solange kein Erwartet-Wert gepflegt ist (<see cref="Betrag"/> = 0). Günstig und
+    /// Ungünstig rechnen dann mit ihrem Szenariowert, Erwartet zeigt die Datenlücke.
+    /// </summary>
+    [Parameter] public string WarnungOhneErwartet { get; set; } = "";
+
+    /// <summary>ETAPPE E9b: was ein leeres Feld heißt („leer oder 0 = wie Erwartet“).</summary>
+    [Parameter] public string HinweisLeer { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E9b: die Kohärenzzeilen des Wirts — gepflegte Werte, die im Lauf ohne
+    /// Wirkung bleiben (E9a‑Q3: Staffel oder Saisonreihe neben einem
+    /// Szenario-Leistungspreis; E9a‑Q7: Rollenmodell bzw. PV-Vergütungsdialog neben einer
+    /// flachen Einspeisevergütung). Hinweise ohne Rechenwirkung; sie sperren nichts.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Hinweise { get; set; } = Array.Empty<string>();
+
+    /// <summary>ETAPPE E9b: Fehlt der Erwartet-Wert, gegen den das Paar steht?</summary>
+    public bool OhneErwartet => Szenariopaar && Betrag == 0;
+
+    /// <summary>Die Rundung der Prozentumrechnung: Cent bei der Kostenposition, die
+    /// Stellen des Paars sonst.</summary>
+    private int Rundung => Szenariopaar ? Math.Clamp(Nachkommastellen, 0, 6) : 2;
+
+    /// <summary>Feste Anzeigestellen der zwei Felder — nur im Szenariopaar, und im
+    /// Prozentmodus eine (die Rundung der Abweichung).</summary>
+    private int? Anzeigestellen => !Szenariopaar ? null : _prozentModus ? 1 : Rundung;
+
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
@@ -232,23 +345,42 @@
     /// <summary>Steht der Dialog im Prozentmodus? (Pruefhilfe fuer Tests.)</summary>
     public bool ProzentModus => _prozentModus;
 
-    /// <summary>Der Einheitenzusatz hinter den Kostenfeldern.</summary>
-    private string EinheitKosten => _prozentModus ? "%" : "€";
+    /// <summary>Der Einheitenzusatz hinter den Kostenfeldern — im Absolutmodus die
+    /// <see cref="Einheit"/> (Kostenposition: „€“).</summary>
+    private string EinheitKosten => _prozentModus ? "%" : Einheit;
 
     /// <summary>Grenzen der Kostenfelder — im Prozentmodus ±1000 (ProzentModusGewechselt),
-    /// sonst der Designerbereich 0…99 999.</summary>
-    private double MinKosten => _prozentModus ? -1000 : 0;
+    /// sonst der Designerbereich 0…99 999 bzw. die Grenzen des Szenariopaars.</summary>
+    private double MinKosten => _prozentModus ? -1000 : MinWert;
 
-    private double MaxKosten => _prozentModus ? 1000 : 99999;
+    private double MaxKosten => _prozentModus ? 1000 : MaxWert;
 
-    /// <summary>Die Umrechnungszeile des Prozentmodus (lblCaseUmrechnung).</summary>
-    private string Umrechnungstext => string.Format(CultureInfo.CurrentCulture, VorlageUmrechnung,
-        ProzentZuBetrag(_best ?? 0), ProzentZuBetrag(_worst ?? 0));
+    /// <summary>Die Umrechnungszeile des Prozentmodus (lblCaseUmrechnung). ETAPPE E9b: Im
+    /// Szenariopaar stehen die Werte fertig formatiert mit Stellen und Einheit darin —
+    /// „nicht gepflegt" als Gedankenstrich, nicht als 0, die wie ein Preis aussähe.</summary>
+    private string Umrechnungstext => Szenariopaar
+        ? string.Format(CultureInfo.CurrentCulture, VorlageUmrechnung,
+                        MitEinheit(ProzentZuBetrag(_best ?? 0)), MitEinheit(ProzentZuBetrag(_worst ?? 0)))
+        : string.Format(CultureInfo.CurrentCulture, VorlageUmrechnung,
+                        ProzentZuBetrag(_best ?? 0), ProzentZuBetrag(_worst ?? 0));
+
+    private string MitEinheit(double wert) => wert == 0
+        ? "—"
+        : wert.ToString("N" + Rundung.ToString(CultureInfo.InvariantCulture), CultureInfo.CurrentCulture)
+          + " " + Einheit;
+
+    /// <summary>ETAPPE E9b: die Werte, wie sie beim OK herausgingen — Beträge bzw.
+    /// Preise, nie Prozente (Prüfhilfe für Tests und die Auskunft des Kurztexts).</summary>
+    public (double Best, double Worst) Ausgabe =>
+        (_prozentModus ? Math.Max(0, ProzentZuBetrag(_best ?? 0)) : (_best ?? 0),
+         _prozentModus ? Math.Max(0, ProzentZuBetrag(_worst ?? 0)) : (_worst ?? 0));
 
     protected override void OnInitialized()
     {
-        _best = BestCase;
-        _worst = WorstCase;
+        // ETAPPE E9b: Im Szenariopaar ist 0 „nicht gepflegt" (wie Erwartet) — das Feld
+        // bleibt leer; die Kostenposition zeigt ihre 0 wie bisher.
+        _best = Szenariopaar && BestCase == 0 ? null : BestCase;
+        _worst = Szenariopaar && WorstCase == 0 ? null : WorstCase;
         _bestNutzung = BestNutzungsdauer;
         _worstNutzung = WorstNutzungsdauer;
         _startJahr = StartJahr;
@@ -286,6 +418,10 @@
     /// </remarks>
     private CaseEingabeKiSicht KiSicht()
     {
+        // ETAPPE E9b: Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr
+        // noch Zuschuss — ihre Setzwege bleiben dann leer (gesetzt wird nichts), und die
+        // zwei Auskunftsfelder sagen, WAS gepflegt wird und gegen welchen Erwartet-Wert.
+        bool kosten = !Szenariopaar;
         return _kiSicht ??= new CaseEingabeKiSicht
         {
             ProzentmodusLesen = () => _prozentModus,
@@ -296,16 +432,21 @@
             WorstLesen = () => _worst,
             WorstSetzen = w => _worst = w,
 
-            BestDauerLesen = () => _bestNutzung,
-            BestDauerSetzen = w => _bestNutzung = w,
-            WorstDauerLesen = () => _worstNutzung,
-            WorstDauerSetzen = w => _worstNutzung = w,
+            BestDauerLesen = () => kosten ? _bestNutzung : 0,
+            BestDauerSetzen = kosten ? new Action<double>(w => _bestNutzung = w) : null,
+            WorstDauerLesen = () => kosten ? _worstNutzung : 0,
+            WorstDauerSetzen = kosten ? new Action<double>(w => _worstNutzung = w) : null,
 
-            JahrLesen = () => _startJahr,
-            JahrSetzen = w => _startJahr = w,
+            JahrLesen = () => kosten ? _startJahr : 0,
+            JahrSetzen = kosten ? new Action<int>(w => _startJahr = w) : null,
 
-            ZuschussLesen = () => _istZuschuss,
-            ZuschussSetzen = w => _istZuschuss = w
+            ZuschussLesen = () => kosten && _istZuschuss,
+            ZuschussSetzen = kosten ? new Action<bool>(w => _istZuschuss = w) : null,
+
+            GroesseLesen = () => Szenariopaar && !string.IsNullOrEmpty(Groesse)
+                                 ? Groesse : LabelKosten.TrimEnd(':', ' '),
+            ErwartetLesen = () => Betrag == 0 ? null : Betrag,
+            EinheitLesen = () => Einheit
         };
     }
 
@@ -357,14 +498,25 @@
             _best = Math.Max(0, ProzentZuBetrag(_best ?? 0));
             _worst = Math.Max(0, ProzentZuBetrag(_worst ?? 0));
         }
+
+        // ETAPPE E9b: Im Szenariopaar heisst "nicht gepflegt" LEER - das Feld bleibt
+        // dann auch nach dem Umschalten leer, statt eine 0 zu zeigen, die wie ein Preis
+        // aussieht.
+        if (Szenariopaar)
+        {
+            if (_best == 0) _best = null;
+            if (_worst == 0) _worst = null;
+        }
         _prozentModus = prozent;
     }
 
-    /// <summary>Woertlich aus <c>ProzentZuBetrag</c>: 0 = nicht gepflegt.</summary>
+    /// <summary>Woertlich aus <c>ProzentZuBetrag</c>: 0 = nicht gepflegt. ETAPPE E9b: Das
+    /// Szenariopaar rundet auf seine eigenen Nachkommastellen (ein Arbeitspreis in €/kWh
+    /// verlöre auf Cent gerundet seine Aussage).</summary>
     private double ProzentZuBetrag(double prozent)
     {
         if (Betrag == 0 || prozent == 0) return 0;
-        return Math.Round(Betrag * (1.0 + prozent / 100.0), 2);
+        return Math.Round(Betrag * (1.0 + prozent / 100.0), Rundung);
     }
 
     private async Task BeiErgebnis(bool ok)
@@ -376,8 +528,7 @@
         }
 
         // btn_OK_Click: im %-Modus in Betraege uebersetzen, nie unter 0.
-        double best = _prozentModus ? Math.Max(0, ProzentZuBetrag(_best ?? 0)) : (_best ?? 0);
-        double worst = _prozentModus ? Math.Max(0, ProzentZuBetrag(_worst ?? 0)) : (_worst ?? 0);
+        (double best, double worst) = Ausgabe;
 
         await Geschlossen.InvokeAsync(new CaseEingabeErgebnis(
             best, worst, _bestNutzung, _worstNutzung,

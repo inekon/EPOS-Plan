@@ -1446,6 +1446,14 @@
         internal static string CseJahrErl => MyResource.Resource.KI_DLG_CSE_JAHR_ERL;
         internal static string CseZuschussName => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_NAME;
         internal static string CseZuschussErl => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_ERL;
+        // ---- ETAPPE E9b: der allgemeine Baustein (Szenariopaar) — nur lesbare Auskunft ----
+        internal static string CseGroesseName => MyResource.Resource.KI_DLG_CSE_GROESSE_NAME;
+        internal static string CseGroesseErl => MyResource.Resource.KI_DLG_CSE_GROESSE_ERL;
+        internal static string CseErwartetName => MyResource.Resource.KI_DLG_CSE_ERWARTET_NAME;
+        internal static string CseErwartetErl => MyResource.Resource.KI_DLG_CSE_ERWARTET_ERL;
+        internal static string CseEinheitName => MyResource.Resource.KI_DLG_CSE_EINHEIT_NAME;
+        internal static string CseEinheitErl => MyResource.Resource.KI_DLG_CSE_EINHEIT_ERL;
+        // ---- Ende ETAPPE E9b ----
 
         // ============================================ Wirtschaftlichkeit (Welle KI-F4)
 

@@ -26790,6 +26790,81 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_SZ_MENGE_ERL" xml:space="preserve">
     <value>The change in quantities of this scenario in percent — a factor on the quantities of the simulation (generation, feed-in, purchase, fuel). Empty means “as expected”; there is no default.</value>
   </data>
+  <data name="SZP_TITEL" xml:space="preserve">
+    <value>Scenario values — {0}</value>
+  </data>
+  <data name="SZP_LABEL_BEST" xml:space="preserve">
+    <value>Best (favourable):</value>
+  </data>
+  <data name="SZP_LABEL_WORST" xml:space="preserve">
+    <value>Worst (unfavourable):</value>
+  </data>
+  <data name="SZP_ABSOLUT" xml:space="preserve">
+    <value>Absolute entry [{0}]</value>
+  </data>
+  <data name="SZP_PROZENT" xml:space="preserve">
+    <value>Entry in % of the expected value</value>
+  </data>
+  <data name="SZP_UMRECHNUNG" xml:space="preserve">
+    <value>results in: best {0} · worst {1}</value>
+  </data>
+  <data name="SZP_ERWARTET" xml:space="preserve">
+    <value>Expected: {0} {1}</value>
+  </data>
+  <data name="SZP_ERWARTET_LEER" xml:space="preserve">
+    <value>Expected: no value maintained</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET" xml:space="preserve">
+    <value>No expected value maintained: favourable and unfavourable calculate with their scenario value, expected shows the data gap. It is saved anyway.</value>
+  </data>
+  <data name="SZP_LEER" xml:space="preserve">
+    <value>Empty or 0 means “as expected”; a value equal to the expected value is not a maintained value.</value>
+  </data>
+  <data name="SZP_KNOPF_KURZ" xml:space="preserve">
+    <value>Maintain best/worst scenario values</value>
+  </data>
+  <data name="SZP_KNOPF_GEPFLEGT" xml:space="preserve">
+    <value>Scenario values maintained — best {0} · worst {1}</value>
+  </data>
+  <data name="SZP_WIE_ERWARTET" xml:space="preserve">
+    <value>as expected</value>
+  </data>
+  <data name="SZP_GEPFLEGT" xml:space="preserve">
+    <value>maintained</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET_KURZ" xml:space="preserve">
+    <value>without expected value</value>
+  </data>
+  <data name="ETV_SZ_TITEL" xml:space="preserve">
+    <value>Scenario prices best/worst</value>
+  </data>
+  <data name="ETV_SZ_HINWEIS" xml:space="preserve">
+    <value>± per price: best (favourable) and worst (unfavourable) — empty means “as expected”; saved together with the card.</value>
+  </data>
+  <data name="ETV_SZ_OHNE_ERWARTET" xml:space="preserve">
+    <value>{0}: scenario price without expected price — favourable and unfavourable calculate with it, expected shows the data gap.</value>
+  </data>
+  <data name="ETV_SZ_SPEICHERFEHLER" xml:space="preserve">
+    <value>The scenario prices could not be saved.</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_NAME" xml:space="preserve">
+    <value>Maintained quantity</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_ERL" xml:space="preserve">
+    <value>What the form maintains: in the cost management the costs of an item, otherwise an energy carrier price or revenue rate with its best and worst value (scenario pair). Display only.</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_NAME" xml:space="preserve">
+    <value>Expected value</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_ERL" xml:space="preserve">
+    <value>The value of the expected scenario that best and worst are set against and that the percentage mode refers to; empty = none maintained. Display only.</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_NAME" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the two value fields in absolute mode (“€” for a cost item, otherwise the unit of the price or rate). Display only.</value>
+  </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>

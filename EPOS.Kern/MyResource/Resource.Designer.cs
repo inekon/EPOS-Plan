@@ -11831,6 +11831,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; geschrieben wird mit der Karte. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("ETV_SZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, Erwartet zeigt die Datenlücke. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_OHNE_ERWARTET {
+            get {
+                return ResourceManager.GetString("ETV_SZ_OHNE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Szenariopreise ließen sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("ETV_SZ_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariopreise Best/Worst ähnelt.
+        /// </summary>
+        public static string ETV_SZ_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_SZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preishistorie ähnelt.
         /// </summary>
         public static string ETV_TITEL_HISTORIE {
@@ -29407,6 +29443,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_CSE_BEST_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_CSE_BEST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_EINHEIT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_EINHEIT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert des Szenarios Erwartet, gegen den Best und Worst stehen und auf den sich der Prozentmodus bezieht; leer = keiner gepflegt. Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ERWARTET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ERWARTET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ERWARTET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ERWARTET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was die Maske pflegt: in der Kostenverwaltung die Kosten einer Position, sonst ein Trägerpreis oder Erlössatz mit seinem Best- und Worst-Wert (Szenariopaar). Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_GROESSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_GROESSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegte Größe ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_GROESSE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_GROESSE_NAME", resourceCulture);
             }
         }
         
@@ -65746,6 +65836,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SUCHAUSWAHL_PLATZHALTER {
             get {
                 return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe absolut [{0}] ähnelt.
+        /// </summary>
+        public static string SZP_ABSOLUT {
+            get {
+                return ResourceManager.GetString("SZP_ABSOLUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet: {0} {1} ähnelt.
+        /// </summary>
+        public static string SZP_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet: kein Wert gepflegt ähnelt.
+        /// </summary>
+        public static string SZP_ERWARTET_LEER {
+            get {
+                return ResourceManager.GetString("SZP_ERWARTET_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
+        /// </summary>
+        public static string SZP_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SZP_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte gepflegt — Best {0} · Worst {1} ähnelt.
+        /// </summary>
+        public static string SZP_KNOPF_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SZP_KNOPF_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte Best/Worst pflegen ähnelt.
+        /// </summary>
+        public static string SZP_KNOPF_KURZ {
+            get {
+                return ResourceManager.GetString("SZP_KNOPF_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Best (Günstig): ähnelt.
+        /// </summary>
+        public static string SZP_LABEL_BEST {
+            get {
+                return ResourceManager.GetString("SZP_LABEL_BEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst (Ungünstig): ähnelt.
+        /// </summary>
+        public static string SZP_LABEL_WORST {
+            get {
+                return ResourceManager.GetString("SZP_LABEL_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer oder 0 heißt „wie Erwartet“; ein Wert gleich dem Erwartet-Wert ist keine Pflege. ähnelt.
+        /// </summary>
+        public static string SZP_LEER {
+            get {
+                return ResourceManager.GetString("SZP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Erwartet-Wert gepflegt: Günstig und Ungünstig rechnen mit ihrem Szenariowert, Erwartet zeigt die Datenlücke. Gespeichert wird trotzdem. ähnelt.
+        /// </summary>
+        public static string SZP_OHNE_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_OHNE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string SZP_OHNE_ERWARTET_KURZ {
+            get {
+                return ResourceManager.GetString("SZP_OHNE_ERWARTET_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in % vom Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string SZP_PROZENT {
+            get {
+                return ResourceManager.GetString("SZP_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte — {0} ähnelt.
+        /// </summary>
+        public static string SZP_TITEL {
+            get {
+                return ResourceManager.GetString("SZP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ergibt: Best {0} · Worst {1} ähnelt.
+        /// </summary>
+        public static string SZP_UMRECHNUNG {
+            get {
+                return ResourceManager.GetString("SZP_UMRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Erwartet ähnelt.
+        /// </summary>
+        public static string SZP_WIE_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_WIE_ERWARTET", resourceCulture);
             }
         }
         

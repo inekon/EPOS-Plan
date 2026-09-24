@@ -26797,6 +26797,81 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_SZ_MENGE_ERL" xml:space="preserve">
     <value>Die Mengenänderung dieses Szenarios in Prozent — ein Faktor auf die Mengen der Simulation (Erzeugung, Einspeisung, Bezug, Brennstoff). Leer heißt „wie Erwartet“; eine Vorgabe gibt es nicht.</value>
   </data>
+  <data name="SZP_TITEL" xml:space="preserve">
+    <value>Szenariowerte — {0}</value>
+  </data>
+  <data name="SZP_LABEL_BEST" xml:space="preserve">
+    <value>Best (Günstig):</value>
+  </data>
+  <data name="SZP_LABEL_WORST" xml:space="preserve">
+    <value>Worst (Ungünstig):</value>
+  </data>
+  <data name="SZP_ABSOLUT" xml:space="preserve">
+    <value>Eingabe absolut [{0}]</value>
+  </data>
+  <data name="SZP_PROZENT" xml:space="preserve">
+    <value>Eingabe in % vom Erwartet-Wert</value>
+  </data>
+  <data name="SZP_UMRECHNUNG" xml:space="preserve">
+    <value>ergibt: Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_ERWARTET" xml:space="preserve">
+    <value>Erwartet: {0} {1}</value>
+  </data>
+  <data name="SZP_ERWARTET_LEER" xml:space="preserve">
+    <value>Erwartet: kein Wert gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET" xml:space="preserve">
+    <value>Kein Erwartet-Wert gepflegt: Günstig und Ungünstig rechnen mit ihrem Szenariowert, Erwartet zeigt die Datenlücke. Gespeichert wird trotzdem.</value>
+  </data>
+  <data name="SZP_LEER" xml:space="preserve">
+    <value>Leer oder 0 heißt „wie Erwartet“; ein Wert gleich dem Erwartet-Wert ist keine Pflege.</value>
+  </data>
+  <data name="SZP_KNOPF_KURZ" xml:space="preserve">
+    <value>Szenariowerte Best/Worst pflegen</value>
+  </data>
+  <data name="SZP_KNOPF_GEPFLEGT" xml:space="preserve">
+    <value>Szenariowerte gepflegt — Best {0} · Worst {1}</value>
+  </data>
+  <data name="SZP_WIE_ERWARTET" xml:space="preserve">
+    <value>wie Erwartet</value>
+  </data>
+  <data name="SZP_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="SZP_OHNE_ERWARTET_KURZ" xml:space="preserve">
+    <value>ohne Erwartet-Wert</value>
+  </data>
+  <data name="ETV_SZ_TITEL" xml:space="preserve">
+    <value>Szenariopreise Best/Worst</value>
+  </data>
+  <data name="ETV_SZ_HINWEIS" xml:space="preserve">
+    <value>± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; geschrieben wird mit der Karte.</value>
+  </data>
+  <data name="ETV_SZ_OHNE_ERWARTET" xml:space="preserve">
+    <value>{0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, Erwartet zeigt die Datenlücke.</value>
+  </data>
+  <data name="ETV_SZ_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Szenariopreise ließen sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_NAME" xml:space="preserve">
+    <value>Gepflegte Größe</value>
+  </data>
+  <data name="KI_DLG_CSE_GROESSE_ERL" xml:space="preserve">
+    <value>Was die Maske pflegt: in der Kostenverwaltung die Kosten einer Position, sonst ein Trägerpreis oder Erlössatz mit seinem Best- und Worst-Wert (Szenariopaar). Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_NAME" xml:space="preserve">
+    <value>Erwartet-Wert</value>
+  </data>
+  <data name="KI_DLG_CSE_ERWARTET_ERL" xml:space="preserve">
+    <value>Der Wert des Szenarios Erwartet, gegen den Best und Worst stehen und auf den sich der Prozentmodus bezieht; leer = keiner gepflegt. Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige.</value>
+  </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
   </data>
