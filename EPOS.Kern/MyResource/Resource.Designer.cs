@@ -89262,7 +89262,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest oder weichen von der Auflösung des Typtags ab. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest, sind weder Teiler noch Vielfaches von 60 Minuten oder weichen von der Auflösung des Typtags ab. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG {
             get {

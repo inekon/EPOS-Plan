@@ -70,6 +70,11 @@ namespace WindowsFormsApplication1
     /// <see cref="AufloesungMin"/> ist das Zeitraster, <see cref="Anteile"/> sind die
     /// 1440/<see cref="AufloesungMin"/> Anteile mit Summe 1. Ohne Tagesgang trägt der
     /// Tagesgangsatz der Zone die Tagesform.
+    ///
+    /// <para><b>Die Auflösung ist ein Teiler oder ein Vielfaches von 60 Minuten</b>
+    /// (<c>Normformvektorleser.AufloesungTauglich</c>): Nur dann fasst
+    /// <see cref="Stundenanteile"/> die Abschnitte verlustfrei zu Stunden zusammen. Der Leser und
+    /// der Controller lassen keine andere herein.</para>
     /// </summary>
     internal sealed record Typtaggang(string Gebaeudeart, string Typtag, int AufloesungMin, double[] Anteile)
     {

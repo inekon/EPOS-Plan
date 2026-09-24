@@ -503,7 +503,9 @@ namespace WindowsFormsApplication1
                 else if (string.Equals(art, TwwSchema.TYPTAG_ART_GANG, StringComparison.Ordinal))
                 {
                     int aufloesung = Ganz(r, "Aufloesung_min");
-                    if (aufloesung < 1) continue;
+                    // Dieselbe Schranke wie im Leser: Was sich nicht auf Stunden summieren laesst,
+                    // traegt keine Tagesform (Normformvektorleser.AufloesungTauglich).
+                    if (!Normformvektorleser.AufloesungTauglich(aufloesung)) continue;
                     string schluessel = gebaeudeart + "\u0001" + typtag;
                     if (!gaenge.TryGetValue(schluessel, out var g))
                     {

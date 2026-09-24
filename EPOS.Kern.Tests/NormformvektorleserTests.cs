@@ -223,6 +223,11 @@ namespace EPOS.Kern.Tests
             ("Gang: Aufloesung", "NORMVEKTOR_GANG_AUFLOESUNG",
                 d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_GAENGE,
                         "gebaeudeart;typtag;aufloesung_min;index;anteil\nprobehaus;T01;7;0;1\n")),
+            // 16 Minuten teilen den Tag (90 Abschnitte), lassen sich aber nicht auf Stunden
+            // summieren - weder Teiler noch Vielfaches von 60 (Befund Gruppe 1).
+            ("Gang: Aufloesung nicht stuendlich", "NORMVEKTOR_GANG_AUFLOESUNG",
+                d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_GAENGE,
+                        "gebaeudeart;typtag;aufloesung_min;index;anteil\nprobehaus;T01;16;0;1\n")),
             ("Gang: Index der Zeile", "NORMVEKTOR_GANG_INDEX_ZEILE",
                 d => Typtagpaketbauer.Ersetzen(d, Normformvektorleser.DATEI_GAENGE,
                         "gebaeudeart;typtag;aufloesung_min;index;anteil\nprobehaus;T01;720;5;1\n")),
@@ -322,6 +327,24 @@ namespace EPOS.Kern.Tests
             // 720 Minuten = 12 Stunden: der erste Abschnitt verteilt 0,25 auf die Stunden 0..11.
             Assert.Equal(0.25 / 12.0, stunden[0], 12);
             Assert.Equal(0.75 / 12.0, stunden[12], 12);
+        }
+
+        /// <summary>
+        /// Das Raster eines Tagesgangs muss sich auf Stunden summieren lassen: Teiler von 60 oder
+        /// Vielfaches von 60, und dabei Teiler von 1440. Alles andere wird benannt abgelehnt —
+        /// <c>Typtaggang.Stundenanteile()</c> gilt allein für diese Fälle (Befund Gruppe 1).
+        /// </summary>
+        [Fact]
+        public void Nur_ein_stuendlich_summierbares_Raster_taugt()
+        {
+            foreach (int gut in new[] { 1, 2, 5, 15, 30, 60, 120, 480, 720, 1440 })
+                Assert.True(Normformvektorleser.AufloesungTauglich(gut), gut + " Minuten sollten taugen.");
+            // Teiler von 1440, aber nicht von 60 und kein Vielfaches von 60: nicht stuendlich.
+            foreach (int schlecht in new[] { 8, 9, 16, 18, 24, 32, 36, 45, 48, 80, 90, 96, 144, 160, 288 })
+                Assert.False(Normformvektorleser.AufloesungTauglich(schlecht), schlecht + " Minuten duerfen nicht taugen.");
+            // Kein Teiler des Tages, kein Wert, negativ, zu gross.
+            foreach (int schlecht in new[] { 0, -15, 7, 1441, 2880 })
+                Assert.False(Normformvektorleser.AufloesungTauglich(schlecht), schlecht + " Minuten duerfen nicht taugen.");
         }
 
         [Fact]

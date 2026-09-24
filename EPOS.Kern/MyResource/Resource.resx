@@ -28799,7 +28799,7 @@ Möchten Sie das zulassen?</value>
     <value>Zu {0} und {1} führt das Paket {2} Typtage: Es braucht entweder einen ohne Unterscheidung oder je einen heiteren und einen bewölkten.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG" xml:space="preserve">
-    <value>{0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest oder weichen von der Auflösung des Typtags ab.</value>
+    <value>{0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest, sind weder Teiler noch Vielfaches von 60 Minuten oder weichen von der Auflösung des Typtags ab.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE" xml:space="preserve">
     <value>{0}, Zeile {1}: Der Zeitabschnitt {2} liegt außerhalb des Tages.</value>

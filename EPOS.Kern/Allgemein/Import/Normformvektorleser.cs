@@ -45,7 +45,8 @@ namespace WindowsFormsApplication1
     /// nach Bewölkung unterscheidet. Wahlfrei: <c>ausgabe</c> (Text) und
     /// <c>pruefsumme.toleranz</c>.</description></item>
     /// <item><term><c>tagesgaenge.csv</c> (wahlfrei)</term><description><c>gebaeudeart;typtag;aufloesung_min;index;anteil</c>
-    /// — der normierte Tagesgang je Kategorie: <c>aufloesung_min</c> teilt 1440 ohne Rest,
+    /// — der normierte Tagesgang je Kategorie: <c>aufloesung_min</c> teilt 1440 ohne Rest und ist
+    /// zugleich ein Teiler oder ein Vielfaches von 60 (<see cref="AufloesungTauglich"/>),
     /// <c>index</c> läuft von 0 bis 1440/<c>aufloesung_min</c> − 1 ohne Lücke, jeder
     /// <c>anteil</c> ist ≥ 0, ihre Summe 1 (Toleranz <see cref="SUMME_TOLERANZ"/>). Ohne diese
     /// Datei trägt der Tagesgangsatz der Zone die Tagesform.</description></item>
@@ -328,6 +329,20 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Taugt eine Auflösung des Tagesgangs?</b> Sie muss den Tag ohne Rest teilen UND sich
+        /// auf Stunden zusammenfassen lassen: entweder ein Teiler von 60 (1 … 60 Minuten je
+        /// Abschnitt, mehrere Abschnitte je Stunde) oder ein Vielfaches von 60 (ein Abschnitt
+        /// deckt ganze Stunden). Ein Wert wie 16 Minuten teilt den Tag (90 Abschnitte), lässt sich
+        /// aber nicht auf Stunden summieren — <see cref="Typtaggang.Stundenanteile"/> gilt allein
+        /// für diese beiden Fälle, und ein Gang, der sich nicht stündlich summieren lässt, wird
+        /// benannt abgelehnt statt still verrechnet. Die Richtlinie führt 1 min und 15 min
+        /// (Grundlagen 5, Abschnitt 2.6); 2 s lässt sich in Minuten nicht ausdrücken.
+        /// </summary>
+        internal static bool AufloesungTauglich(long aufloesungMin)
+            => aufloesungMin >= 1 && aufloesungMin <= MINUTEN_JE_TAG && MINUTEN_JE_TAG % aufloesungMin == 0
+               && (60 % aufloesungMin == 0 || aufloesungMin % 60 == 0);
+
         private static void Gaenge(Pakettabelle t, Normformvektorsatz satz, ICollection<ZapfSatz> hinweise)
         {
             // Je (Gebaeudeart, Typtag) die Abschnitte sammeln, dann Raster und Summe pruefen.
@@ -339,7 +354,7 @@ namespace WindowsFormsApplication1
                 string typtag = t.Text(z, "typtag");
                 if (satz.Kategorie(typtag) == null) { ohneKategorie++; continue; }
                 long aufloesung = t.Ganz(z, "aufloesung_min");
-                if (aufloesung < 1 || aufloesung > MINUTEN_JE_TAG || MINUTEN_JE_TAG % aufloesung != 0)
+                if (!AufloesungTauglich(aufloesung))
                     throw Abbruch(ZapfSatz.Neu("NORMVEKTOR_GANG_AUFLOESUNG", t.Datei, z.Nummer, aufloesung));
                 long index = t.Ganz(z, "index");
                 double anteil = t.Zahl(z, "anteil");

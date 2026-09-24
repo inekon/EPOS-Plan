@@ -28792,7 +28792,7 @@ Do you want to allow this?</value>
     <value>For {0} and {1} the package carries {2} type days: it needs either one without distinction or one clear and one cloudy.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG" xml:space="preserve">
-    <value>{0}, line {1}: {2} minutes do not divide the day without remainder, or differ from the type day's resolution.</value>
+    <value>{0}, line {1}: {2} minutes do not divide the day without remainder, are neither a divisor nor a multiple of 60 minutes, or differ from the type day's resolution.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE" xml:space="preserve">
     <value>{0}, line {1}: the time step {2} lies outside the day.</value>
