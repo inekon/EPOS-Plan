@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 24.09.2026, nach den Entscheiden E16–E35 und der Prüfung vom 17.09.2026.**
+**Stand 24.09.2026, nach den Entscheiden E16–E35 und E38 sowie der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -12,22 +12,23 @@ weiterhin im Konzept-Nachtrag und in der Statusdatei**: der ausführliche Entsch
 N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
-Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026) und die mit
-**E31** und **E33** (23.09.2026) entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren
-Kapiteln (Kapitel 9).
+Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026), die mit
+**E31** und **E33** (23.09.2026) und die mit **E38** (24.09.2026) entschiedenen Punkte stehen ausnahmsweise mit
+Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
 - **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 11 Punkte, die
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 8 Punkte, die
   noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
-  auch vor KU1 keiner, seit **E33** auch vor KU2 keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  auch vor KU1 keiner, seit **E33** auch vor KU2 keiner, seit **E38** auch vor G4 keiner. Wer wenig
+  Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
-  immer im selben Aufbau; die mit E27, E28, E31 oder E33 entschiedenen tragen unter der Überschrift
+  immer im selben Aufbau; die mit E27, E28, E31, E33 oder E38 entschiedenen tragen unter der Überschrift
   den Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026,
-  Konzept N1.33)**", „**Entschieden: E31 (23.09.2026, Konzept N1.36)**" bzw. „**Entschieden: E33
-  (23.09.2026, Konzept N1.38)**"; **Kapitel 7** hält
+  Konzept N1.33)**", „**Entschieden: E31 (23.09.2026, Konzept N1.36)**", „**Entschieden: E33
+  (23.09.2026, Konzept N1.38)**" bzw. „**Entschieden: E38 (24.09.2026, Konzept N1.43)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
@@ -39,9 +40,13 @@ Kapiteln (Kapitel 9).
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **11 offene Punkte** (Stand E33, 23.09.2026): 3 im Umsetzungskonzept
-(U13, U14, U15) und 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13); Konzept,
-Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **8 offene Punkte** (Stand E38, 24.09.2026), alle im Mehrzonenkonzept
+(M3, M5–M8, M11–M13); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und
+Kühlkonzept haben keinen offenen Punkt mehr.
+**E38** (24.09.2026) hat die drei vor G4 fälligen Punkte **U13, U14 und U15** nach Empfehlung
+entschieden — für beide Importwege, gbXML (G4c) und IFC (G4a) —, für G4a genau einen iOS-Lauf
+festgelegt, nur nach ausdrücklicher Rückfrage bei der Abnahme, und die Stufe G4 beauftragt (zuerst
+G4c, dann G4a); vor G4 ist damit kein Anwenderentscheid mehr offen.
 **E33** (23.09.2026) hat die vier vor KU2 fälligen Kühlpunkte **K8, K21 und K23** nach Empfehlung
 und **K9 abweichend von der Empfehlung** entschieden; vor KU2 ist damit kein Anwenderentscheid mehr
 offen. **E34** (23.09.2026) ergänzt K9 um die Regel für einen abweichenden Kühlträger (anteilig am
@@ -123,13 +128,14 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 11 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 8 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
 (23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
 und K23 (KU2) sind mit **E33** (23.09.2026, Konzept N1.38) nach Empfehlung entschieden, K9
-abweichend davon; vor KU2 ist keiner mehr offen. Nach Fälligkeit: **G4** U13, U14, U15; **G6b** M3,
-M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11.
+abweichend davon; vor KU2 ist keiner mehr offen. U13, U14 und U15 (G4) sind mit **E38**
+(24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. Nach
+Fälligkeit: **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -259,9 +265,9 @@ Vermerk und bleiben als Begründung stehen.
 
 Quelle: [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 4) und 1.5 (U17). Von den
-siebzehn Fragen sind nach **E27** (22.09.2026, N1.32) noch drei offen — **U13, U14,
-U15**; neun sind mit E27 entschieden und tragen den Vermerk (U1, U3, U5–U8, U10, U12, U17), **U4** und **U9** mit **E28** (22.09.2026, N1.33); **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
-(16.09.2026) beantwortet — alle drei hier gekürzt; **U17** ist mit der Prüfung vom 17.09.2026
+siebzehn Fragen ist seit **E38** (24.09.2026, N1.43) keine mehr offen: neun sind mit **E27**
+(22.09.2026, N1.32) entschieden und tragen den Vermerk (U1, U3, U5–U8, U10, U12, U17), **U4** und **U9** mit **E28** (22.09.2026, N1.33), **U13, U14** und **U15** mit **E38**; **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
+(16.09.2026) beantwortet — alle drei hier gekürzt, U16 trägt die Ergänzung aus E38; **U17** ist mit der Prüfung vom 17.09.2026
 hinzugekommen (F-Ü6).
 Vier von ihnen führt die Softwarearchitektur unter eigener Nummer als Sperrpunkt: **U1 = A4**,
 **U2 = A19**, **U3 = A5**, **U5 = A9** — entschieden werden sie unter der U-Nummer, damit nicht
@@ -538,6 +544,8 @@ iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abs
 
 ### U13 — mehrere Gebäude in einer IFC-Datei
 
+**Entschieden: E38 (24.09.2026, Konzept N1.43)** — (a) eines je Lauf, nach Empfehlung — bei mehreren Gebäuden in einer Datei bietet der Dialog eine Klappliste an, übernommen wird je Lauf eines; kein Anlegen aller auf einmal, also keine erzeugten Katalognamen und keine Dublettenlogik. Gilt für beide Importwege (IFC G4a, gbXML G4c).
+
 - **Frage:** Legt der Import bei mehreren Gebäuden in einer Datei **eines je Lauf** an (Klappliste)
   — oder alle auf einmal?
 - **Hintergrund:** „Alle auf einmal" müsste Katalognamen selbst erzeugen und zöge damit die
@@ -557,6 +565,8 @@ iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abs
 
 ### U14 — Fensterabzug an der Wandfläche
 
+**Entschieden: E38 (24.09.2026, Konzept N1.43)** — (a) abziehen, nach Empfehlung — die Wandfläche wird um Fenster und Außentüren vermindert. Wird die Differenz negativ, greift beim IFC-Weg `NetSideArea`, sonst Warnung und 0; beim gbXML-Weg A = 0, Zeile rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV`. Gilt für beide Importwege (IFC G4a, gbXML G4c).
+
 - **Frage:** Wird die Wandfläche beim Import um Fenster und Außentüren **vermindert** — oder
   bleiben die Öffnungen in der Bruttofläche, so wie die Datei sie liefert?
 - **Hintergrund:** Das Modell führt Wand und Fenster **getrennt** mit je eigenem U-Wert. Ohne
@@ -575,6 +585,8 @@ iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abs
   (dieselbe Regel für gbXML).
 
 ### U15 — Wärmebrückenwerte und Anschlusslängen beim Import
+
+**Entschieden: E38 (24.09.2026, Konzept N1.43)** — (a) Kennwerte als Vorgabe, Längen leer, nach Empfehlung — die drei ψ-Werte werden als Vorgabe je Baualtersklasse gesetzt, die drei Anschlusslängen bleiben leer; beide tragen die Herkunftsmarke `Vorgabe` bzw. `Leer`. Gilt für beide Importwege (IFC G4a, gbXML G4c).
 
 - **Frage:** Werden die drei Wärmebrücken-Kennwerte und die drei Anschlusslängen beim IFC-Import
   als **Vorgabe je Baualtersklasse** gesetzt oder **leer** gelassen?
@@ -599,6 +611,8 @@ iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abs
 **Mit E18 beantwortet (16.09.2026, Empfehlung angenommen): einmaliger Nachweis in G4 von Hand,
 nach Rückfrage; kein dauerhafter Gerätebau im Workflow.** Konzept N1.23, Statusdatei Abschnitt 1;
 hier gekürzt.
+
+**Ergänzt: E38 (24.09.2026, Konzept N1.43)** — genau ein iOS-Lauf (`ios.yml`) als Trimming- und Gerätenachweis für G4a, ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a; sonst keine iOS- oder macOS-Läufe, G4c also ohne iOS-Lauf. E38 öffnet keinen Punkt.
 
 ### U17 — Altweg-Gebäude ohne Tagesverteilung: Lauf abbrechen oder Gebäude benannt ablehnen
 
@@ -1996,10 +2010,11 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
-entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026) und die mit
-**E31** und **E33** (23.09.2026) entschiedenen Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026,
-Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)", „Entschieden: E31 (23.09.2026,
-Konzept N1.36)" bzw. „Entschieden: E33 (23.09.2026, Konzept N1.38)" weiter in ihren Kapiteln, weil ihre
+entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026), die mit
+**E31** und **E33** (23.09.2026) und die mit **E38** (24.09.2026) entschiedenen Punkte mit dem Vermerk
+„Entschieden: E27 (22.09.2026, Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)",
+„Entschieden: E31 (23.09.2026, Konzept N1.36)", „Entschieden: E33 (23.09.2026, Konzept N1.38)" bzw.
+„Entschieden: E38 (24.09.2026, Konzept N1.43)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
 (U6 — mit E29 erledigt —, K22 — mit der Prüfung vom 23.09.2026 erledigt —, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer

@@ -16,6 +16,13 @@
 > trifft die Endwahl zu U6 — der Zeitbezug der Sonnengeometrie ist der **Stundenanfang**, wie
 > Photovoltaik und Solarthermie (1.2, Kapitel 5).
 
+> **Nachgezogen 24.09.2026:** **Entscheid E38** ([Konzept N1.43](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md))
+> entscheidet U13, U14 und U15 nach Empfehlung — eines je Lauf, Fensterabzug an der Wandfläche, ψ
+> als Vorgabe je Baualtersklasse und Anschlusslängen leer, für den IFC- wie für den gbXML-Import —,
+> legt für G4a genau einen iOS-Lauf fest, nur nach ausdrücklicher Rückfrage bei der Abnahme, und
+> beauftragt die Stufe G4: zuerst G4c, dann G4a, G4b erst nach G3 und nachdem G4a im Feld war (3.4
+> bis 3.8, Kapitel 4 und 5). Damit ist keine Frage dieses Papiers mehr offen.
+
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Diese Fassung nimmt die Stufe **GA — Altweg
 > ablösen** als letzte Stufe ohne Termin wieder auf (Kapitel 4) und führt ihre **Löschliste** in
 > Kapitel 6; sie stellt den Vertrag des Vorbereitungsschritts, den zweiteiligen Klimakalender, den
@@ -57,7 +64,8 @@ entschieden: GA wird beauftragbar und fällig, sobald die vier Bedingungen des A
 **Q24** erfüllt sind (Kapitel 5), und ihr Umfang ist die **vollständige Ablösung** nach der
 **Löschliste** in Kapitel 6 (**Q25**). E27 beantwortet zugleich die offenen Fragen dieses Papiers
 (Kapitel 5) und die Architekturfragen, auf die es sich stützt; **E28** (22.09.2026, Konzept N1.33)
-entscheidet danach U4 und U9 nach Empfehlung. Die Festlegungen der Prüfung
+entscheidet danach U4 und U9 nach Empfehlung, **E38** (24.09.2026, Konzept N1.43) die letzten
+drei, U13, U14 und U15, und beauftragt die Stufe G4. Die Festlegungen der Prüfung
 vom 17.09.2026 (F-Ü1 … F-D1) stehen im
 [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 8.
 
@@ -1712,7 +1720,7 @@ jeweils die Vorlage.
 | `Baualtersklasse` | `Pset_BuildingCommon.YearOfConstruction` (**`IfcLabel`, also Text**) | erste vierstellige Zahl 1500…2100 aus dem Text („ca. 1965" → 1965), dann **A** vor 1919, **B** 1919–1948, **C** 1949–1957, **D** 1958–1968, **E** 1969–1978, **F** 1979–1983, **G** 1984–1994, **H** 1995–2000 (`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:112-119`) | ab 2001 ist die Klasse ein **Standard** (I = Niedrigenergie … U = BEG 40), kein Jahr — Feld bleibt, der Anwender wählt | Ifc / manuell |
 | `Baujahr` (neue Spalte) | dieselbe Quelle | die gezogene Jahreszahl, `INTEGER`, NULL = unbekannt | — | Ifc |
 | `Grundflaeche_Randbedingung` | Geschoss bzw. Raum unter der Bodenplatte | `IIfcBuildingStorey` mit `Elevation < 0` **oder** ein `IIfcSpace`, dessen Name auf Keller deutet → `KELLER` | `ERDREICH` | Ifc / Vorgabe |
-| drei ψ und drei Anschlusslängen | **nicht in IFC** | ψ steht in keinem Standard-Pset; Längen ohne Geometriekernel nicht ableitbar | Vorgabe je Klasse **oder** leer — Frage U15 | Vorgabe / leer |
+| drei ψ und drei Anschlusslängen | **nicht in IFC** | ψ steht in keinem Standard-Pset; Längen ohne Geometriekernel nicht ableitbar | Vorgabe je Klasse **oder** leer — Frage U15, **mit E38 (24.09.2026) nach Empfehlung entschieden:** ψ als Vorgabe je Klasse, Längen leer | Vorgabe / leer |
 | `Luftwechselrate` | `Pset_SpaceThermalLoad.AirExchangeRate` | **nicht benutzen** — im Schema als `IfcPowerMeasure` typisiert (Schemafehler); der Zahlenwert ist nicht verlässlich zu deuten | Vorgabe 0,7 1/h (G2: 0,3 + 0,4) | Vorgabe |
 | `Waermegewinne` | `Pset_SpaceOccupancyRequirements` | nur als **Vorschlag** angezeigt, nicht übernommen | Vorgabe je Gebäudeart (Wohnbau 5 W/m²) | Vorgabe |
 | Sollwerte | `Pset_SpaceThermalRequirements` (in IFC 4.3 entfallen) | nur lesen, wenn vorhanden | Vorgaben des Grundlagensatzes | Ifc / Vorgabe |
@@ -1756,7 +1764,7 @@ der Kontext mit `ContextType = 'Model'`.
 
 | # | Fall | Regel in G4a |
 |---|---|---|
-| 1 | **Mehrere `IfcBuilding`** | ein EPOS-Gebäude je `IfcBuilding`; der Dialog zeigt eine Klappliste, übernommen wird je Lauf **eines**. Zuordnung über `IIfcRelAggregates` bzw. `IIfcRelContainedInSpatialStructure`; was sich keinem zuordnen lässt, kommt in einen Sammelposten mit Warnung. Frage U13 |
+| 1 | **Mehrere `IfcBuilding`** | ein EPOS-Gebäude je `IfcBuilding`; der Dialog zeigt eine Klappliste, übernommen wird je Lauf **eines**. Zuordnung über `IIfcRelAggregates` bzw. `IIfcRelContainedInSpatialStructure`; was sich keinem zuordnen lässt, kommt in einen Sammelposten mit Warnung. Frage U13, **mit E38 (24.09.2026) nach Empfehlung entschieden** |
 | 2 | **Geschosse** | `IIfcBuildingStorey.Elevation` liefert nur Summenbildung und Reihenfolge — **relativ** gelesen, nie als absoluter Wert (drei Höhenbezüge sind optional) |
 | 3 | **Unbeheizte Räume** | `Pset_SpaceCommon.IsExternal = true` schließt aus; sonst entscheidet der Name (Treffer auf Keller, Garage, Carport, Dachboden, Speicher, Abstellraum, Technik, Schacht, Aufzug — englisch Basement, Garage, Attic, Shaft, Plant; Groß-/Kleinschreibung egal). **Der Dialog zeigt die Raumliste mit dem Haken**, damit die Regel sichtbar und korrigierbar ist |
 | 4 | **Archicad-Raumgrenzen** | die Dateien schreiben trotz IFC4 die **Basisklasse** `IfcRelSpaceBoundary` und tragen das Merkmal nur in `Name='2ndLevel'` / `Description='2a'` — der Leser prüft **beides**. Fehlt `IsExternal`, entscheidet `InternalOrExternalBoundary` der Raumgrenze (`EXTERNAL*` = außen, `EXTERNAL_EARTH` zugleich `Grundflaeche_Randbedingung = ERDREICH` ohne Namensraten); steht dort `NOTDEFINED`, gilt die Zählregel: außen, wenn **genau eine** Raumgrenze mit `PhysicalOrVirtualBoundary = PHYSICAL` auf sie zeigt |
@@ -1765,7 +1773,7 @@ der Kontext mit `ContextType = 'Model'`.
 | 7 | **IFC2x3 gegen IFC4** | der Leser arbeitet über die `IIfc*`-Schnittstellen und verzweigt an genau **zwei** Stellen: 2nd-Level-Erkennung (Nr. 4) und das in 4.3 entfallene `Pset_SpaceThermalRequirements` |
 | 8 | **`IfcZone`** | `RelatedObjects` erlaubt `IfcZone` und `IfcSpatialZone`; wer nicht entschachtelt, zählt Flächen doppelt. In G4a werden Zonen **gar nicht** gelesen — die Räume hängen am Geschoss, das genügt für eine Einzonenrechnung |
 | 9 | **Mehrschalige Wände** | zwei Wände mit derselben Achslage und derselben Raumgrenze sind **eine** Wand; ohne Achsauswertung Gruppierung über die gemeinsame Raumgrenze, sonst Warnung (`IMP_IFC_PROT_MEHRSCHALIG`) |
-| 10 | **Fensterabzug** | hier kreuzen sich Bruttomaß-Grundsatz und EPOS-Feldstruktur: `A_Wand = Σ GrossSideArea − Σ A_Fenster − Σ A_Außentür`; wird das negativ, greift `NetSideArea`, sonst Warnung und `A_Wand = 0`. Frage U14 |
+| 10 | **Fensterabzug** | hier kreuzen sich Bruttomaß-Grundsatz und EPOS-Feldstruktur: `A_Wand = Σ GrossSideArea − Σ A_Fenster − Σ A_Außentür`; wird das negativ, greift `NetSideArea`, sonst Warnung und `A_Wand = 0`. Frage U14, **mit E38 (24.09.2026) nach Empfehlung entschieden** |
 
 ### 3.6 Plattform, Paket und Lizenz
 
@@ -1825,7 +1833,10 @@ Und: **nie forken, nie patchen** (E3) — dann gibt es nichts offenzulegen.
   misst einen Gerätebau**; erst wenn `ExpressMetaData` dort Typen vermisst, kommt
   `EPOS.iOS/Pruefung/XbimRoots.xml` mit `preserve="all"` für die vier Assemblies dazu, eingebunden
   über `<TrimmerRootDescriptor …>`. Der Nachweis kostet einen macOS-Lauf (**zehnfaches
-  Kontingent — beim Anwender zu erfragen**). Frage U16.
+  Kontingent — beim Anwender zu erfragen**). Frage U16. **Mit E38 (24.09.2026,
+  [Konzept N1.43](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) festgelegt:** genau **ein**
+  iOS-Lauf (`ios.yml`) als Trimming- und Gerätenachweis für G4a, ausschließlich nach ausdrücklicher
+  Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a; sonst keine iOS- oder macOS-Läufe.
 
 ### 3.7 Tests und Importprobe
 
@@ -1863,7 +1874,8 @@ ein abgehakter Haken hält die Zeile aus dem Satz; die Herkunftstexte kommen aus
 **Abnahme G4a:** Kern-Filter grün und Importprobe bestanden; **Referenzlauf unverändert** (der
 Import schreibt nur auf Zuruf des Anwenders — und der Schemaschritt für `Baujahr` ist
 ergebnisneutral); Windows-Sichtabnahme (Datei wählen, Zuordnung prüfen, OK, Werte im Katalogeditor);
-iOS-Lauf **nach Rückfrage** mit Release-Bau, Trimming-Nachweis und der KIT-Datei im Prüfmodus;
+iOS-Lauf — nach E38 **genau einer**, ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum
+Zeitpunkt dieser Abnahme — mit Release-Bau, Trimming-Nachweis und der KIT-Datei im Prüfmodus;
 `SqlDialektPruefer` nur, wenn der Schemaschritt dazukommt.
 
 ### 3.8 Aufwand und Reihenfolge innerhalb G4
@@ -1877,7 +1889,7 @@ iOS-Lauf **nach Rückfrage** mit Release-Bau, Trimming-Nachweis und der KIT-Date
 | **G4-5** | Vorgabetabelle je Baualtersklasse (21 Klassen × 5 U-Werte + g), abgeleitet aus dem eigenen EPOS-Gebäudekatalog (U12, mit E27 entschieden) | 1–2 PT |
 | **G4-6** | Dialog + DTO + `IfcImportHuelle`, Knopf in beiden Gebäudedialogen, Texte in beiden `.resx`, `ResourceDesigner` | 2–3 PT |
 | **G4-7** | Importprobe, Quellenvermerk, Unit-Tests, Dialogtests | 1–2 PT |
-| **G4-8** | iOS: Dateifilter, Größenlimit **gemessen**, **Gerätebau** zum Trimming-Nachweis (erst danach ein `TrimmerRootDescriptor`, wenn er gebraucht wird), Lauf nach Rückfrage | 1–2 PT |
+| **G4-8** | iOS: Dateifilter, Größenlimit **gemessen**, **Gerätebau** zum Trimming-Nachweis (erst danach ein `TrimmerRootDescriptor`, wenn er gebraucht wird), **genau ein** Lauf (`ios.yml`, E38), ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a | 1–2 PT |
 | | **Summe G4a** | **13,5–21 PT** |
 | **G4b** | Anbindung an `Tab_Bauteil`/`Tab_Bauteilschicht` aus G3: je Bauteil eine Zeile mit Schichten, Azimut, Neigung, Herkunft `Ifc` — statt Nachmultiplikation | +4–6 PT |
 | **G4c** | **gbXML-Import** (Pflicht nach E9): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog, Beispieldateien — LINQ to XML, Versionswert `6.01` (Befund R) | **17–28 PT** — die Zahl führt das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10, seit die Persistenz der Zuordnung (Schemaschritt S-F) dorthin vorgezogen ist |
@@ -1900,6 +1912,11 @@ Befund R entschieden (einfacheres Format, geringerer Aufwand, dieselbe Zielstruk
 Reihenfolge G4-1 … G4-8 **innerhalb** von G4a bleibt davon unberührt. Die beiden **Exporte** nach gbXML und IFC sind nach E9 Stufe **G7** und stehen
 ebenfalls in jenem Papier.
 
+**Beauftragt mit E38 (24.09.2026, [Konzept N1.43](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)):**
+die Stufe G4 — zuerst **G4c** (gbXML), dann **G4a** (IFC); **G4b** erst nach G3 und nachdem G4a im
+Feld war. U13, U14 und U15 gelten für beide Importwege; für G4c gibt es keinen iOS-Lauf, für G4a
+genau einen (G4-8).
+
 ---
 
 ## 4. Reihenfolge und Abnahme je Stufe
@@ -1914,7 +1931,7 @@ ebenfalls in jenem Papier.
 | **G1.0 — Trennung der Rechenwege** (erster Schritt von G1, E20) | Modul `Simulation/Altweg/` anlegen und den Tagesbilanz-Weg **Zeichen für Zeichen** hineinschieben (drei Methoden aus `SimulationWaermebedarf.cs`, vier Physikfunktionen aus `BhkwPlan.cs` samt Vortemperatur; `BhkwPlan.cs` bleibt als Datei, seine neun Vektorhelfer wandern nicht); Fassade und Weiche in `HeizwaermeEinesGebaeudes`, **modellfreier Vorbereitungsschritt**, `IGebaeudeRechenweg`, `Modultrennungswache` (1.9); `BhkwPlanRueckgabeTests` nachziehen | gegen die GB-Basis **byte-gleich** — die Verschiebung ist ergebnisneutral, **kein Einfrieranlass**. Eine Abweichung ist ein Fehler der Verschiebung; nach der Anbindung des VDI-Wegs wäre sie nicht mehr von der Modellwirkung zu trennen. Kern-Filter grün, `SqlDialektPruefer` unberührt | **3–5 PT** |
 | **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test** (F-Ü7): bis zu diesem Merge auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, gegen die GB-Basis — die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs; **ab dem Einfrieren genau ein Referenzprojekt auf dem Altweg in der neuen Basis** (A15, mit E27 entschieden), das **bis zur Stufe GA** in der jeweils aktuellen Basis steht; der Rückweg-Test rechnet nur dieses Projekt. `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2) und (3), (4) in der in G0 neu bestimmten Fassung (F-S6); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
 | **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog samt **Zeile in `EPOS.UI/Bausteine/Menuetabelle.cs`** unter Administration (das Menü ist Daten; kein Untermenü mit nur einem Punkt), Bauteilweg mit Kettenmatrix-Reduktion, geneigte Fenster, echte Hülle statt Nachmultiplikation | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | 8–12 PT |
-| **G4a — IFC-Import** | Kapitel 3: Paket und Lizenzseite, Leser, Azimut, Zuordnung, Vorgabetabelle, Dialog und Hülle, Importprobe, iOS | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; iOS-Lauf nach Rückfrage | 13,5–21 PT |
+| **G4a — IFC-Import** | Kapitel 3: Paket und Lizenzseite, Leser, Azimut, Zuordnung, Vorgabetabelle, Dialog und Hülle, Importprobe, iOS | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; genau ein iOS-Lauf, ausschließlich nach ausdrücklicher Rückfrage bei der Abnahme (E38) | 13,5–21 PT |
 | **G4b — IFC auf Bauteilebene** | je Bauteil eine Zeile mit Schichten, Azimut, Neigung, Herkunft `Ifc` in `Tab_Bauteil` | nach G3 und erst, wenn G4a im Feld war | 4–6 PT |
 | **G4c — gbXML-Import** | **Pflicht nach E9** (Konzept N1.13): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog mit Herkunft je Feld, Beispieldateien; LINQ to XML statt `XmlSerializer`, Versionswert `6.01` | Importprobe bestanden; **Referenzlauf unverändert**; **vor G4a** (D1, mit E27 entschieden; 3.8) | **17–28 PT** nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10 (einschließlich der dorthin vorgezogenen Persistenz der Zuordnung) |
 | **G5 — Geometrieableitung** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug | nur bei Bedarf aus der Praxis | 30–60 PT |
@@ -1977,8 +1994,10 @@ U7, U8, U10, U12 und U17**; bei **U6** ist das **Verfahren** entschieden (in G1 
 messen), die Endwahl mit **E29** (23.09.2026): der Stundenanfang. **U11** und **U16**
 sind mit E18 entschieden, **U2** ist durch E20 überholt. Mit **E28** (22.09.2026, [Konzept N1.33](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) sind
 **U4** (vor G1) und **U9** (in GB) nach Empfehlung entschieden; vor G0, GB und G1 ist damit keine
-Frage dieses Papiers mehr offen. **Offen mit Empfehlung** bleiben **U13, U14 und U15** — sie sind
-an G4 gebunden und werden mit ihr entschieden (Register Kapitel 0 führt sie nicht). Die Tabelle bleibt als Begründung stehen; die rechte Spalte trägt den
+Frage dieses Papiers mehr offen. **U13, U14 und U15** — an G4 gebunden — sind mit **E38**
+(24.09.2026, [Konzept N1.43](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) nach Empfehlung
+entschieden und gelten für beide Importwege (G4a und G4c); damit ist keine Frage dieses Papiers
+mehr offen. Die Tabelle bleibt als Begründung stehen; die rechte Spalte trägt den
 Entscheidvermerk.
 
 | Nr. | Frage | Empfehlung und Stand (22.09.2026) |
@@ -1995,10 +2014,10 @@ Entscheidvermerk.
 | **U10** | Eine Lizenzhinweisseite im Installationspaket — und dann gleich für **alle** ausgelieferten Fremdanteile, nicht nur xBIM? | **Ja, mit G4-1 und für alle.** CDDL § 3.1 verlangt den Quellenverweis an den Empfänger; ohne die Seite ist der IFC-Import nicht auslieferbar. Die übrigen Fremdanteile sind ohnehin fällig — darunter **three.js (MIT)** des Gebäudebetrachters (E11, Konzept N1.16) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U11** | Größenlimit für IFC-Dateien: 50 MB Windows / 20 MB iOS — oder es versuchen und bei Speichermangel abbrechen? | **Benannt ablehnen**, nicht versuchen: `MemoryModel` hält das Modell im Arbeitsspeicher (10–20 MB je MB STEP-Text), ein Speicherabbruch auf dem iPad ist kein Fehlerbild, das man erklären kann. **Die iOS-Zahl ist in G4-8 zu messen**, nicht zu schätzen — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
 | **U12** | Woher die Vorgaben je Baualtersklasse? TABULA/IWU hat weder DOI noch Datensatzlizenz | **Eigene Werte aus dem EPOS-Gebäudekatalog ableiten** — die Testdatenbank führt Gebäude je Klasse. Lizenzfrei, hausgemacht, passt zu den übrigen EPOS-Vorgaben. Sonst nur A–H vorbelegen und den Rest leer lassen — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
-| **U13** | Mehrere `IfcBuilding` in einer Datei: Klappliste und **ein** Gebäude je Lauf — oder alle auf einmal anlegen? | **Eines je Lauf.** „Alle auf einmal" erzeugt Katalognamen automatisch und zöge die Dublettenlogik des Katalogimports nach; das ist ein eigener Schritt, nicht G4a |
-| **U14** | Fensterabzug: Wandfläche = `GrossSideArea` **minus** Fenster und Außentüren — oder die Öffnungen in der Wandfläche belassen, wie `GrossSideArea` sie liefert? | **Abziehen.** Das Modell führt Wand und Fenster getrennt mit je eigenem U-Wert; ohne Abzug zählt die Öffnung zweimal. Wird die Differenz negativ: `NetSideArea`, sonst Warnung und 0 |
-| **U15** | Die drei ψ-Werte und die drei Anschlusslängen beim IFC-Import als **Vorgabe je Baualtersklasse** setzen oder **leer** lassen? | **ψ als Vorgabe, Längen leer.** IFC liefert weder das eine noch das andere; eine geratene Anschlusslänge sähe aus wie eine gemessene, ein ψ-Vorgabewert ist als Klassenwert erkennbar. Beide tragen Herkunft `Vorgabe` bzw. `Leer` |
-| **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
+| **U13** | Mehrere `IfcBuilding` in einer Datei: Klappliste und **ein** Gebäude je Lauf — oder alle auf einmal anlegen? | **Eines je Lauf.** „Alle auf einmal" erzeugt Katalognamen automatisch und zöge die Dublettenlogik des Katalogimports nach; das ist ein eigener Schritt, nicht G4a — **mit E38 (24.09.2026) nach Empfehlung entschieden**, gilt auch für den gbXML-Import (G4c) |
+| **U14** | Fensterabzug: Wandfläche = `GrossSideArea` **minus** Fenster und Außentüren — oder die Öffnungen in der Wandfläche belassen, wie `GrossSideArea` sie liefert? | **Abziehen.** Das Modell führt Wand und Fenster getrennt mit je eigenem U-Wert; ohne Abzug zählt die Öffnung zweimal. Wird die Differenz negativ: `NetSideArea`, sonst Warnung und 0 — **mit E38 (24.09.2026) nach Empfehlung entschieden**, gilt auch für den gbXML-Import (G4c; dort A = 0, Zeile rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV`) |
+| **U15** | Die drei ψ-Werte und die drei Anschlusslängen beim IFC-Import als **Vorgabe je Baualtersklasse** setzen oder **leer** lassen? | **ψ als Vorgabe, Längen leer.** IFC liefert weder das eine noch das andere; eine geratene Anschlusslänge sähe aus wie eine gemessene, ein ψ-Vorgabewert ist als Klassenwert erkennbar. Beide tragen Herkunft `Vorgabe` bzw. `Leer` — **mit E38 (24.09.2026) nach Empfehlung entschieden**, gilt auch für den gbXML-Import (G4c) |
+| **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung — **mit E18 (16.09.2026) nach Empfehlung entschieden**; **mit E38 (24.09.2026) ergänzt:** genau ein iOS-Lauf (`ios.yml`) bei der Abnahme von G4a, ausschließlich nach ausdrücklicher Rückfrage beim Anwender |
 | **U17** | Ein Altweg-Gebäude ohne Tagesverteilung bricht heute den **ganzen** Lauf ab (`SimulationWaermebedarf.cs:197`, `:590-595`) — auch für die VDI-Gebäude desselben Projekts (1.5). Lauf abbrechen wie heute oder das Gebäude benannt ablehnen? | **Benannt ablehnen, aber erst mit GA** — bis dahin bleibt das Verhalten des Bestands, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt (F-Ü6) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 
 ---

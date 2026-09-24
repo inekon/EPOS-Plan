@@ -56,6 +56,12 @@ Nachgezogen am 24.09.2026 mit **E36** (N1.41): Die Rechenzeit der Anlagenkopplun
 bei **wirksamer Kopplung** und lautet dann **höchstens 100 ms je Gebäude und Jahr** — gemessen 21 bis
 31 ms; Gebäude ohne Kopplung bleiben beim Bestand. Nachgezogen mit der dritten Welle von AK1, das
 Register zählt weiter 11 offene Punkte.
+Nachgezogen am 24.09.2026 mit **E38** (N1.43): U13, U14 und U15 sind nach Empfehlung entschieden —
+mehrere Gebäude einer Datei kommen eines je Lauf, die Wandfläche wird um Fenster und Außentüren
+vermindert, ψ kommt als Vorgabe je Baualtersklasse, die Anschlusslängen bleiben leer, für gbXML und
+IFC gleich; für G4a gibt es genau einen iOS-Lauf, nur nach ausdrücklicher Rückfrage bei der Abnahme.
+Zugleich ist die Stufe G4 beauftragt (zuerst G4c, dann G4a); vor G4 ist kein Anwenderentscheid mehr
+offen, das Register zählt 8 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3584,3 +3590,46 @@ unverändert).
 **Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1
 (E36) und 2 (AK1); [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kopf und
 2.2 (N-A4); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.43 Entscheid E38 — U13, U14 und U15 nach Empfehlung; ein iOS-Lauf zur Abnahme von G4a
+
+**Entscheid E38 (Anwender, 24.09.2026).** Der Anwender entscheidet die drei Punkte **U13**, **U14**
+und **U15** des [Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+nach dessen Empfehlung und legt fest, wie der iOS-Nachweis des IFC-Imports aus **E18** (N1.23)
+läuft. Die drei waren nach E28 (N1.33) die letzten offenen Fragen des
+[Umsetzungskonzepts](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) und vor G4 fällig.
+Sie gelten für **beide Importwege** —
+den gbXML-Import (G4c) und den IFC-Import (G4a) —, weil beide über das gemeinsame Zuordnungsgerüst
+dieselben Zielfelder füllen ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+2.1). Wie in E27 und E28 gilt die Empfehlung im Wortlaut des jeweiligen Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt in |
+|---|---|---|
+| **U13** | Mehrere Gebäude in einer Datei: **eines je Lauf** — der Dialog bietet die Gebäude der Datei in einer Klappliste an, übernommen wird je Lauf eines. „Alle auf einmal" entfällt und mit ihm die erzeugten Katalognamen und die Dublettenlogik des Katalogimports | G4c (`Campus/Building`, Datenaustauschkonzept 3.4), G4a (`IfcBuilding`, Umsetzungskonzept 3.5 Nr. 1) |
+| **U14** | Die Wandfläche wird um Fenster und Außentüren **vermindert**: A_Wand = Σ Bruttowandfläche (IFC `GrossSideArea`, gbXML `RectangularGeometry`) − Σ A_Fenster − Σ A_Außentür; ohne Abzug zählte die Öffnung als Wand und als Fenster. Wird die Differenz negativ, greift beim IFC-Weg `NetSideArea`, sonst Warnung und A_Wand = 0; beim gbXML-Weg A = 0, Zeile rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV` | G4c (Datenaustauschkonzept 3.6), G4a (Umsetzungskonzept 3.5 Nr. 10) |
+| **U15** | Die drei Wärmebrückenkennwerte ψ werden **als Vorgabe je Baualtersklasse** gesetzt, die drei Anschlusslängen bleiben **leer** — eine geratene Länge sähe aus wie eine gemessene; beide tragen ihre Herkunftsmarke (`Vorgabe` bzw. `Leer`) | G4c (Datenaustauschkonzept 3.7), G4a (Umsetzungskonzept 3.4) |
+| **E18** (IFC auf iOS) | **Genau ein** iOS-Lauf (`ios.yml`) als Trimming- und Gerätenachweis für G4a — **ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a**; sonst gilt für die Sitzung „keine iOS-/macOS-Läufe". Für G4c heißt das: Abnahme ohne iOS-Lauf | G4a (G4-8, Abnahme) |
+
+**Beauftragung der Stufe G4.** Mit E38 beauftragt der Anwender zugleich die Stufe **G4**: zuerst
+**G4c** (gbXML-Import), dann **G4a** (IFC-Import) — die Reihenfolge aus D1 (E27, N1.32); **G4b**
+(IFC auf Bauteilebene) erst nach G3 und nachdem G4a im Feld war
+([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 3.8 und Kapitel 4).
+
+**Was offen bleibt.** Vor G4 ist **kein Anwenderentscheid mehr offen**; Konzept, Umsetzungskonzept,
+Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Registerpunkt mehr.
+Das Register zählt **8 offene Punkte** — M3, M5–M8 und M11–M13 (G6b bis G6d). Es bleibt die
+Folgeaufgabe **D6** aus E27 (das Gegenüber des IFC-Exports, vor der Stufe über die semantische
+hinaus). Weil G4c ohne iOS-Lauf abgenommen wird, bleibt die iOS-Zahl der gbXML-Größengrenze
+(Datenaustauschkonzept 11.2, D15) bis zur Abnahme von G4a ein Richtwert.
+
+**Betroffene Stufen:** G4c (U13, U14, U15), G4a (U13, U14, U15, der eine iOS-Lauf), G4b (erst nach
+G3 und nachdem G4a im Feld war).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf
+und Abschnitte 1 (E38), 2 (G4) und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+(Vermerk unter U13, U14 und U15, Ergänzung unter U16, Kopf, Kapitel 0, 2 und 9, Zählung 8);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf, Vorspann, 3.4
+bis 3.8, 4 und 5; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kopf, 3.4,
+3.6, 3.7 und 9; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
