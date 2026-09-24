@@ -1294,6 +1294,41 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
     </div>
   </div>
 
+  <div class="zone" id="betrieb-zeileneditor">Zeileneditor der Betriebsseite — Zahlung alle n Jahre <span class="zk umg" style="margin-left:6px">gebaut #484</span></div>
+  <p class="eng">Der Stift (✏️) einer Betriebsposition öffnet denselben Zeileneditor „Position bearbeiten" wie in
+  Kategorie 1. Auf der Betriebsseite steht unter der Positionsart das Ganzzahlfeld „Zahlung alle: [n] Jahre" (DIN EN
+  17463, 6.3.1): 1 heißt jährlich und ist die Vorgabe; ab 2 zahlt die Position im Startjahr und danach alle n Jahre bis
+  zum Ende des Betrachtungszeitraums. Die leise Zeile darunter erklärt das und nennt bei n ≥ 2 die Herleitung „alle n
+  Jahre ab Jahr X" (Startjahr der Projektzeile, ohne Startjahr Jahr 1). Gezeichnet ist eine Dichtheitsprüfung alle
+  2 Jahre ohne Startjahr.</p>
+  <div class="ueb-schleier">
+    <div class="ueb" style="max-width:560px">
+      <div class="ueb-kopf"><span class="ueb-titel">Position bearbeiten</span><span class="ueb-zu">×</span></div>
+      <div class="ueb-leib">
+        <div class="f-zeile eng"><label></label><span class="f-eingabe" title="Bezeichnung" style="min-width:260px">Dichtheitsprüfung</span></div>
+        <div class="f-zeile eng"><label>Kostenart:</label><span class="f-combo" style="min-width:260px">betriebsgebunden</span></div>
+        <div class="f-zeile eng"><span class="f-check"><i></i></span><span class="f-lab" style="min-width:0">Erlös/Zuschuss (negativer Ausweis)</span></div>
+        <div class="f-zeile eng"><label>Positionsart:</label><span class="f-combo" style="min-width:260px">— (keine)</span></div>
+        <div class="f-zeile eng"><label>Zahlung alle:</label><span class="f-eingabe num" title="1 … 99, Vorgabe 1">2</span><span class="f-einheit">Jahre</span></div>
+        <div class="f-herleitung">1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463,
+          6.3.1). alle 2 Jahre ab Jahr 1</div>
+        <div class="f-zeile eng"><label></label><span class="f-eingabe" title="Empfehlung von/bis">leer</span><span class="f-einheit">bis</span><span class="f-eingabe num leer">leer</span></div>
+      </div>
+      <div class="ueb-fuss">
+        <span class="f-status">Das Feld steht nur auf der Betriebsseite und nur, wo die Datenbank die Spalte führt</span>
+        <span class="f-knopf">Abbrechen</span><span class="f-knopf primaer">OK</span>
+      </div>
+    </div>
+  </div>
+  <p class="eng" style="margin-top:12px">Die Wirtschaftlichkeit rechnet die Position nur in ihren Zahlungsjahren
+  s, s + n, s + 2n … ≤ T — hier 1, 3, 5 … 19 —, mit dem Betrag des ersten Jahres, fortgeschrieben mit p<sub>B</sub> (im
+  Endenergie-Topf p<sub>E</sub>); die Regel ist eine Stelle im Kern (<span class="mono">KapitalwertRechner.ZahltImJahr</span>).
+  Zu den Betriebskosten p. a. gehört die Position, wenn sie im ersten Jahr zahlt. Leer, 0 oder 1 rechnet jährlich wie
+  jede andere Position. Die Kostenvorlagen führen dasselbe Feld, „Aus Vorlage übernehmen…" nimmt die Periode mit, aus
+  einer Vorlage wie aus einer anderen Anlage; der Hilfe-Assistent kennt das Feld <span class="mono">wiederholperiode</span>.
+  Eine Investition „alle n Jahre" ist die Ersatzkette über die Nutzungsdauer (Kategorie 1) — auf der Investitionsseite
+  steht das Feld nicht. Die Zahlen dieser Kategorie bleiben: Die gezeichneten Positionen des Rasters zahlen jährlich.</p>
+
   <p class="eng"><b>Der Elektrokessel.</b> Seine Endenergie ist <i>Strom</i>, nicht
   Brennstoff: Der Rechenkern führt ihn mit Nutzungsgrad 1 und bucht seine Nutzwärme auf den Stromzähler. Die
   Zeile zeigt deshalb diese Menge und bewertet sie mit dem Arbeitspreis des Stromträgers; die Herkunft nennt
@@ -1399,7 +1434,7 @@ Keine stillen Teilsummen
 
   <div class="zone" id="betrieb-schluessel">Beschriftungen und Ressourcenschlüssel</div>
   <p class="eng">Die Schlüssel tragen die Beschriftungen des Dialogs wörtlich; der als <b>neu</b> gekennzeichnete
-  ist noch keiner, die mit <b>neu #463</b> gekennzeichneten sind mit E10 gebaut. Kopf, Kontextleiste, Reiter, Spalten,
+  ist noch keiner, die mit <b>neu #463</b> gekennzeichneten sind mit E10 gebaut, die mit <b>neu #484</b> mit E16. Kopf, Kontextleiste, Reiter, Spalten,
   Abschlusszeile, die ersten drei Knöpfe und Fußleiste sind dieselben Schlüssel wie in Kategorie 1.</p>
   <div class="tafel-huelle">
     <table class="tafel">
@@ -1418,6 +1453,7 @@ Keine stillen Teilsummen
         <tr><td>Gedankenstrich-Grund „gehört zu keinem Energieträger" <b>neu</b> · Warnung fehlender Kesselbrennstoff</td><td class="rs">WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER · WIRT_KESSELBRENNSTOFF_FEHLT</td><td>Ergebniszeile, Bericht, Dialog · Kohärenzprüfung</td></tr>
         <tr><td>Knopf „Sätze vorbelegen…" mit Statuszeile „{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.", Rückfrage und Absage; Herkunftszeile unter dem Satzfeld „{0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3})" mit den Satzarten „Instandsetzung" · „Wartung"; die kurze Herkunft „Satz aus Nutzungsdauertabelle" in Herleitung und Formelmappe <b>neu #463</b></td><td class="rs">ND_SAETZE_VORBELEGEN_BTN · ND_SAETZE_VORBELEGEN_STATUS · ND_SAETZE_VORBELEGEN_FRAGE · ND_SAETZE_VORBELEGEN_KEINE · ND_SATZ_HERLEITUNG · ND_SATZART_INSTANDSETZUNG · ND_SATZART_WARTUNG · ND_SATZ_HERKUNFT</td><td>Leiste unter dem Raster · Zelle Satz · Herleitung der Berichte und der Formelmappe (U39)</td></tr>
         <tr><td>Dialog „Nutzungsdauern (AfA)": Spalten „Instandsetzung [%/a]" · „Wartung [%/a]" in Tabelle und Neuzeile, die leise Zeile zur Quelle (VDI 2067 Blatt 1, Tabelle A2) und die Namen und Erklärtexte der vier Felder für den Hilfe-Assistenten <b>neu #463</b></td><td class="rs">ND_SP_INSTANDSETZUNG · ND_SP_WARTUNG · ND_SAETZE_HINWEIS · KI_DLG_NUD_INST_NAME · KI_DLG_NUD_INST_ERL · KI_DLG_NUD_WART_NAME · KI_DLG_NUD_WART_ERL · KI_DLG_NUD_NEUINST_NAME · KI_DLG_NUD_NEUINST_ERL · KI_DLG_NUD_NEUWART_NAME · KI_DLG_NUD_NEUWART_ERL</td><td>Administration › Kosten › Nutzungsdauern (AfA) (U39)</td></tr>
+        <tr><td>Zeileneditor, Betriebsseite: Ganzzahlfeld „Zahlung alle:" mit der Einheit „Jahre" und der Zeile „1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1)."; Name „Zahlung alle … Jahre" und Erklärtext des Felds <span class="mono">wiederholperiode</span> für den Hilfe-Assistenten <b>neu #484</b></td><td class="rs">WDH_LBL_PERIODE · WDH_EINHEIT · WDH_INFO · KI_DLG_VOP_WDH_NAME · KI_DLG_VOP_WDH_ERL</td><td>Überlagerung des Stifts (Zone „Zeileneditor der Betriebsseite"); KI-Feldkatalog der Vorlagenposition</td></tr>
       </tbody>
     </table>
   </div>
@@ -4604,10 +4640,11 @@ Einstufung
             <td>„Betriebskosten nach Kostenarten" in Wort- und Tabellenbericht: je Position Bezeichnung, Gruppe, die
             Bemessungsart mit dem Text der Kostenverwaltung (Bemessungskatalog, im Gewerk benannt — „je Liter" am
             Pufferspeicher, „je kW elektr. Leistung" am BHKW), die Herleitung Menge × Satz und der Betrag; eine
-            Position mit späterem Startjahr trägt „ab Jahr X"</td>
+            Position mit späterem Startjahr trägt „ab Jahr X", eine Position mit Wiederholperiode „alle n Jahre ab Jahr X"</td>
             <td>die Probe hält die Summe der Positionen des ersten Jahres gegen die angesetzten Betriebskosten p. a.
             — der Hinweis „Gliederung unvollständig" nur bei einer echten Lücke; das Startjahr reist im
-            Nachweisumschlag (Fassung 9); <b>gebaut #460</b></td></tr>
+            Nachweisumschlag (Fassung 9); <b>gebaut #460</b>; eine Position „alle n Jahre" zählt zu den Positionen des ersten
+            Jahres, wenn sie im ersten Jahr zahlt, ihre Periode reist im Nachweisumschlag (Fassung 11); <b>gebaut #484</b></td></tr>
         <tr><td>Nicht monetarisierbare Wirkungen</td>
             <td>Tabelle „Nicht monetäre Wirkungen" in Wort- und Tabellenbericht, in dem Abschnitt, der den Freitext trug: je
             Wirkung Kategorie, Beschreibung, Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt und die Beurteilung
@@ -4633,6 +4670,11 @@ Einstufung
             als ihre Summe, beim Zahlungsstromabzug <span class="mono">Risiko_Verlust</span>, <span class="mono">Risiko_p</span>
             und <span class="mono">Risiko_Abzug</span> als Produkt; die Mehrjahrestabellen führen die Spalte „Risikoabzug" als
             <span class="mono">=-Risiko_Abzug</span> ab Jahr 1;
+            <b>Positionen „alle n Jahre" (ergänzt #484)</b>: je Topf, der eine Periode trägt, eine Hilfsspalte „Positionen
+            alle n Jahre mit p_B [€/a]" bzw. „… mit p_E [€/a]" mit
+            <span class="mono">IF(AND(Jahr&gt;=s,MOD(Jahr-s,n)=0),Betrag,0)</span> je Position, die Basisspalte trägt den
+            jährlichen Rest, die Betriebszelle rechnet <span class="mono">(Basis+Wiederholt)*(1+p)^(Jahr-1)</span>; ohne
+            Periode steht keine Spalte da;
             EPOS trägt zu jeder Formel den Wert des Rechenkerns ein,
             Excel rechnet beim Öffnen neu</td></tr>
         <tr><td>Was dauerhaft <b>Werte</b> bleibt</td>
@@ -4688,6 +4730,7 @@ Einstufung
         <tr><td>Formelmappe je Szenario: Blocktitel „Mehrjahresübersicht der Zahlungsströme — Szenario „{0}" (T = {1} a)", Hinweiszeile „Nominale Zahlungen je Jahr im Szenario „{0}", in €: …", Hilfsspalten „Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht)" · „Vorzeichenwechsel bis hier", Zinsfuß „nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C)" <b>neu #477</b>; Parameterzeile „Betrachtungszeitraum T_s je Szenario [a]", Hinweis zu den Formeln je Szenario (Namen mit dem Anhang _Guenstig bzw. _Unguenstig, Jahreszeilen bis zum längsten Zeitraum), Punkt 11 der Checkliste „… die Mappe rechnet alle drei Szenarien formelbasiert …" <b>neu gefasst #477</b> (je Sprache 9.932 Einträge)</td><td class="rs">WIRT_FM_MJ_SZENARIO_TITEL · WIRT_FM_MJ_SZENARIO_HINWEIS · WIRT_FM_MJ_VORZEICHEN · WIRT_FM_MJ_WECHSEL · WIRT_FM_IZF_NICHT_EINDEUTIG · WIRT_FM_PARAM_ZEITRAUM · WIRT_FM_PARAM_HINWEIS · WIRT_AE_11_STAND</td><td>Tabellenbericht, Blatt „Wirtschaftlichkeit" unter den Tabellen von Erwartet und rechts neben den Differenzreihen; Parameterblock; Punkt 11 in Überlagerung, Abschlussseite und Blatt „Checkliste Anhang E"</td></tr>
         <tr><td>Risikomodul (V‑G7): Gruppe „Risiko (DIN EN 17463, 6.5)", Klappliste „Art der Risikoberücksichtigung:" mit „aus — kein Risiko angesetzt" · „Zinszuschlag" · „Zahlungsstromabzug R_loss × p_loss (Anhang F)", Felder „Zinszuschlag [%-Punkte]:" · „Rückflusseinbuße R_loss [€ je Periode]:" · „Eintrittswahrscheinlichkeit p_loss [%]:", die Herleitungszeile in drei Fassungen (aus, Zuschlag, Abzug); Kurzfassungen „Zinszuschlag {0} %-Punkte" · „Abzug R_loss × p_loss = {0} € × {1} % = {2} € je Periode ab Jahr 1", Nachweiszeile „Risiko (DIN EN 17463, 6.5): {0}", Annahmenzeile „Risiko (DIN EN 17463, 6.5)", Deklaration „Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen benannt" bzw. „… keine benannt", Mehrjahresspalte „Risikoabzug", Gliederungszeile „Risikoabzug (Anhang F)", Punkt 6 der Checkliste „…; Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert.", Parameterblock der Formelmappe „Risikozuschlag auf den Zins (6.5)" · „Kalkulationszins mit Risikozuschlag" · „Rückflusseinbuße R_loss [€ je Periode]" · „Eintrittswahrscheinlichkeit p_loss" · „Risikoabzug je Periode ab Jahr 1 [€]", die vier Erläuterungen des Assistenten <b>neu #478</b> (29 Schlüssel, je Sprache 9.961 Einträge)</td><td class="rs">WPAR_G_RISIKO · WPAR_RISIKO_ART · WPAR_RISIKO_AUS · WPAR_RISIKO_ZINS · WPAR_RISIKO_ABZUG · WPAR_RISIKO_ZUSCHLAG · WPAR_RISIKO_VERLUST · WPAR_RISIKO_P · WIRT_RISIKO_HERLEITUNG_AUS · WIRT_RISIKO_HERLEITUNG_ZINS · WIRT_RISIKO_HERLEITUNG_ABZUG · WIRT_RISIKO_KURZ_ZINS · WIRT_RISIKO_KURZ_ABZUG · WIRT_RISIKO_NACHWEIS · WIRT_ANN_RISIKO · WIRT_DEKL_RISIKO_ANGESETZT · WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM · WIRT_MJ_RISIKO · WIRT_GL_RISIKO · WIRT_AE_6_STAND_RISIKO · WIRT_FM_PARAM_RISIKO_ZUSCHLAG · WIRT_FM_PARAM_ZINS_RISIKO · WIRT_FM_PARAM_RISIKO_VERLUST · WIRT_FM_PARAM_RISIKO_P · WIRT_FM_PARAM_RISIKO_ABZUG · KI_DLG_WPA_RISIKO_ART_ERL · KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL · KI_DLG_WPA_RISIKO_VERLUST_ERL · KI_DLG_WPA_RISIKO_P_ERL</td><td>Parameterdialog (Zone „Dialog — Parameter"); Szenariozeile, Annahmentafel und Block 5 der Seite; Gliederung, Mehrjahrestabelle und Parameterblock beider Berichte; Punkt 6 in Überlagerung, Abschlussseite und Blatt „Checkliste Anhang E"</td></tr>
         <tr><td>Nicht monetarisierbare Wirkungen (V‑G11): Kategorien „Energiefluss" · „Finanziell" · „Sonstig", Dauer „kurz" · „mittel" · „lang", Wirkung „keine" · „gering" · „mittel" · „stark", „nicht beurteilt", Beurteilung „{0} von {1}", Spaltenköpfe „Kategorie" · „Beschreibung" · „Dauer" · „Organisation" · „Mitarbeiter" · „Umwelt" · „Beurteilung" · „Entfernen", „Noch keine Wirkung erfasst.", „Wirkung hinzufügen" · „Wirkung entfernen", Feld- und Zeilenkennzeichen des Assistenten, Hinweiszeile der Liste, „Altfeld Freitext (nur lesbar, nicht mehr gepflegt): {0}", fünf Prüftexte (Kategorie, Beschreibung, Dauer, Wirkungsgrad, Stammprojekt), Hinweis unter der Berichtstabelle, Punkte 2b und 3b „erfüllt" <b>neu #479</b>; „Zahl der Wirkungen" und die Erläuterungen des Assistenten zu Anzahl, Kategorie, Dauer, Wirkungsgrad und Beurteilung <b>neu #479</b>; Punkt 2b/3b „teilweise", Stelle im Bericht und die Erläuterung der Beschreibung <b>neu gefasst #479</b> (40 neue Schlüssel, je Sprache 10.001 Einträge; der Designer führt 9.998 Eigenschaften)</td><td class="rs">WIRT_NM_KAT_ENERGIEFLUSS · WIRT_NM_KAT_FINANZIELL · WIRT_NM_KAT_SONSTIG · WIRT_NM_DAUER_1 … _3 · WIRT_NM_WIRKUNG_0 … _3 · WIRT_NM_NICHT_BEURTEILT · WIRT_NM_BEURTEILUNG_WERT · WIRT_NM_FEHLER_KATEGORIE · WIRT_NM_FEHLER_BESCHREIBUNG · WIRT_NM_FEHLER_DAUER · WIRT_NM_FEHLER_WIRKUNG · WIRT_NM_FEHLER_PROJEKT · WIRT_NM_SP_KATEGORIE · WIRT_NM_SP_BESCHREIBUNG · WIRT_NM_SP_DAUER · WIRT_NM_SP_ORGANISATION · WIRT_NM_SP_MITARBEITER · WIRT_NM_SP_UMWELT · WIRT_NM_SP_BEURTEILUNG · WIRT_NM_SP_ENTFERNEN · WIRT_NM_LEER · WIRT_NM_ZEILE_NEU · WIRT_NM_ZEILE_LOESCHEN · WIRT_NM_FELD · WIRT_NM_KENNZEICHEN · WIRT_NM_LISTE_HINWEIS · WIRT_NM_ALTFELD · WIRT_NM_TABELLE_HINWEIS · WIRT_AE_NM_ERFUELLT · KI_DLG_WSE_WIRKUNG_ANZAHL_NAME · KI_DLG_WSE_WIRKUNG_ANZAHL_ERL · KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL · KI_DLG_WSE_WIRKUNG_DAUER_ERL · KI_DLG_WSE_WIRKUNG_GRAD_ERL · KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL; neu gefasst WIRT_AE_NM_TEILWEISE · WIRT_AE_2B_STELLE · KI_DLG_WSE_WIRKUNG_ERL</td><td>Bewertungsblock der Seite (Zone „Was ist angenommen?"), Wort- und Tabellenbericht (Zone „Bericht und Ausgabe"); Punkte 2b und 3b in Überlagerung, Abschlussseite und Blatt „Checkliste Anhang E"</td></tr>
+        <tr><td>Wiederholperiode (V‑G3): Zusatz „alle {0} Jahre ab Jahr {1}" in der Herleitungsspalte der Betriebskostentabelle beider Berichte, Hilfsspalten der Formelmappe „Positionen alle n Jahre mit p_B [€/a]" · „Positionen alle n Jahre mit p_E [€/a]" <b>neu #484</b> (je Sprache 10.009 Einträge)</td><td class="rs">WIRT_BK_ALLE_N_JAHRE · WIRT_FM_MJ_WDH_PB · WIRT_FM_MJ_WDH_PE</td><td>Betriebskostentabelle in Wort- und Tabellenbericht; Mehrjahrestabellen der Formelmappe</td></tr>
         <tr><td>Betriebskostentabelle „Betriebskosten nach Kostenarten": Spalte „Bemessung" mit dem Text des Bemessungskatalogs — die fünf eigenen Texte „fester Betrag" · „% der Investition" · „je Betriebsstunde" · „je kWh" · „% der Brennstoffkosten" sind gestrichen —, Zusatz „ab Jahr {0}" in der Herleitungsspalte, Warnung „⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.", Hinweistext über der Tabelle mit dem Satz zum Startjahr <b>neu #460</b> (je Sprache 8.709 Einträge)</td><td class="rs">BM_* (Bemessungskatalog, unverändert) · WIRT_BK_AB_JAHR (neu) · WIRT_BK_ABWEICHUNG · WIRT_BK_HINWEIS (neu gefasst); gestrichen BEMESSUNG_BETRAG · BEMESSUNG_PROZENT_INVESTITION · BEMESSUNG_EUR_PRO_H · BEMESSUNG_EUR_PRO_KWH · BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN</td><td>Wort- und Tabellenbericht, „Betriebskosten nach Kostenarten"</td></tr>
         <tr><td>Vollständige Szenarioabdeckung im Kern (U15): Kohärenzzeilen „Szenario-Leistungspreis des Energieträgers „{0}" ohne Wirkung: …" (neben Staffel oder Saisonreihe) · „Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — …" · „Szenario-Einspeisevergütung ohne Wirkung: …" (Rollenmodell) · „Szenario-Einspeisevergütung (PV) ohne Wirkung: …" (PV-Vergütungsdialog); Nachweiszeile „Trägerpreise dieses Szenarios: {0}" mit „Arbeitspreis" · „Grundpreis" · „Leistungspreis"; Parameterblock der Formelmappe „Mengen — Änderung gegenüber Erwartet" · „Einspeisevergütung PV [€/kWh]" · „Einspeisevergütung KWK [€/kWh]" · „Arbeitspreis {0} ({1}) je Abrechnungseinheit" · „Grundpreis {0} ({1}) [€/a]" · „Leistungspreis {0} ({1})"; Annahmentafel „Mengenänderung" · „Einspeisevergütung PV" · „Einspeisevergütung KWK" (nur bei Pflege) <b>neu #461</b> (17 Schlüssel; je Sprache 8.848 Einträge)</td><td class="rs">WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG · WIRT_SZ_ROLLEN_STROMPREIS · WIRT_SZ_ROLLEN_EINSPEISUNG · WIRT_SZ_PV_DIALOG_EINSPEISUNG · WIRT_SZ_TRAEGERPREISE · WIRT_SZ_TP_ARBEIT · WIRT_SZ_TP_GRUND · WIRT_SZ_TP_LEISTUNG · WIRT_FM_PARAM_MENGE · WIRT_FM_PARAM_VERGUETUNG · WIRT_FM_PARAM_VERGUETUNG_KWK · WIRT_FM_PARAM_TP_ARBEIT · WIRT_FM_PARAM_TP_GRUND · WIRT_FM_PARAM_TP_LEISTUNG · WIRT_ANN_MENGE · WIRT_ANN_VERGUETUNG · WIRT_ANN_VERGUETUNG_KWK</td><td>Kohärenzzeilen der Ergebnisseite und beider Berichte; Annahmenzeilen in Wort- und Tabellenbericht; Parameterblock der Formelmappe; Annahmentafel „Was ist angenommen?"</td></tr>
         <tr><td>Szenarioabdeckung in den Dialogen (U15): Szenariotafel „Betrachtungszeitraum" · „Mengenänderung" samt den Erläuterungen des Assistenten; der Knopf-Dialog der Szenariowerte „Szenariowerte — {0}", „Erwartet: {0} {1}" · „Erwartet: kein Wert gepflegt", „Best (Günstig):" · „Worst (Ungünstig):", „Eingabe in % vom Erwartet-Wert" · „Eingabe absolut [{0}]" · „ergibt: Best {0} · Worst {1}", „Leer oder 0 heißt „wie Erwartet" …" · „wie Erwartet" · „gepflegt", am Knopf „Szenariowerte Best/Worst pflegen" · „Szenariowerte gepflegt — Best {0} · Worst {1}", Warnung „Kein Erwartet-Wert gepflegt: …" · „ohne Erwartet-Wert", die Kohärenzzeilen des PV-Vergütungsdialogs, die Absage des Assistenten an Nutzungsdauer, Startjahr und Zuschuss; an der Trägerkarte „Szenariopreise Best/Worst", Hinweis, „{0}: Szenariopreis ohne Erwartet-Preis — …", Speicherfehler; Annahmen „DV-Entgelt" · „PPA-Preis"; Punkt 9 der Checkliste „drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}." <b>neu #462</b> (38 Schlüssel mit den zwei des Ausweises oben; <span class="mono">WIRT_SZEN_HINWEIS</span> gestrichen, <span class="mono">WPAR_SZ_HINWEIS</span> und <span class="mono">WIRT_AE_9_TEILWEISE</span> neu gefasst; je Sprache 9.020 Einträge)</td><td class="rs">WPAR_SZ_ZEITRAUM · WPAR_SZ_MENGE · KI_DLG_WPA_SZ_ZEITRAUM_ERL · KI_DLG_WPA_SZ_MENGE_ERL · KI_DLG_CSE_GROESSE_NAME · KI_DLG_CSE_GROESSE_ERL · KI_DLG_CSE_ERWARTET_NAME · KI_DLG_CSE_ERWARTET_ERL · KI_DLG_CSE_EINHEIT_NAME · KI_DLG_CSE_EINHEIT_ERL · KI_DLG_CSE_NUR_KOSTEN · SZP_TITEL · SZP_ERWARTET · SZP_ERWARTET_LEER · SZP_LABEL_BEST · SZP_LABEL_WORST · SZP_PROZENT · SZP_ABSOLUT · SZP_UMRECHNUNG · SZP_LEER · SZP_WIE_ERWARTET · SZP_GEPFLEGT · SZP_KNOPF_KURZ · SZP_KNOPF_GEPFLEGT · SZP_OHNE_ERWARTET · SZP_OHNE_ERWARTET_KURZ · SZP_PV_INAKTIV · SZP_PV_DV_OHNE_WIRKUNG · SZP_PV_PPA_OHNE_WIRKUNG · ETV_SZ_TITEL · ETV_SZ_HINWEIS · ETV_SZ_OHNE_ERWARTET · ETV_SZ_SPEICHERFEHLER · WIRT_ANN_DV_ENTGELT · WIRT_ANN_PPA_PREIS · WIRT_AE_9_ABDECKUNG</td><td>Dialog „Parameter" (Szenariotafel), Knopf-Dialog der Szenariowerte an Trägerkarte, Parameterdialog, Dialog „BHKW-Wirtschaftlichkeit" und PV-Vergütungsdialog; Annahmentafel; Anhang-E-Checkliste</td></tr>
@@ -4860,7 +4903,16 @@ Einstufung
   und die drei neu gefassten Schlüssel — je Sprache 10.001 Einträge (9.961 vor E17), der Designer führt 9.998
   Eigenschaften. Das Schema steht bei 127: Schemaschritt 127 legt die Tabelle <span class="mono">Tab_ProjektWirkung</span>
   an und übernimmt einen gepflegten Freitext als eine Wirkung „sonstig" ohne Beurteilung; er folgt auf 126, die Reparatur
-  der Gebäude-Katalogsätze (#485).</p>
+  der Gebäude-Katalogsätze (#485). <b>E16 (#484) baut die Wiederholperiode je Kostenposition</b> (Lücke V‑G3) — ohne
+  eigene Zeile dieser Tafel: Der Zeileneditor der Betriebsseite führt das Feld „Zahlung alle: [n] Jahre" mit der
+  Herleitung „alle n Jahre ab Jahr X" (Kategorie 2, Zone „Zeileneditor der Betriebsseite"); die Betriebskostentabelle
+  beider Berichte nennt „alle n Jahre ab Jahr X", die Formelmappe rechnet die Zahlungsjahre in einer Hilfsspalte je Topf
+  (Kategorie 8, Zone „Bericht und Ausgabe"). Die Zahlen der Zeichnung bleiben — die gezeichneten Positionen zahlen
+  jährlich, und ohne Periode rechnet der Kern bitgleich. Fragen E16‑Q1 bis E16‑Q4, gebaut jeweils die Empfehlung a,
+  offen beim Anwender. Die Ressourcentafeln der Kategorien 2 und 8 nennen die acht neuen Schlüssel — je Sprache 10.009
+  Einträge (10.001 vor E16), der Designer führt 10.006 Eigenschaften. Das Schema steht bei 129: Schemaschritt 129 hängt
+  die Spalte <span class="mono">Wiederholperiode_a</span> an Projekt- und Vorlagenpositionen; er folgt auf 128, den
+  Heizkreis je Gebäude der Anlagenkopplung. Damit ist die Gap-Tafel V‑G des Konzepts (§ 2.11.2) geschlossen.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">

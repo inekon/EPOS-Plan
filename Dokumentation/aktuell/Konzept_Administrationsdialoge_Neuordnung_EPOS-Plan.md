@@ -37,7 +37,10 @@ Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäude
 Kopien über diesen Verweis an (7.1 a); **mit #475 (24.09.2026)** behält das Speichern der Gebäudeliste
 jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schreibt in einem Vorgang
 (7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
-(7.1 a).
+(7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
+Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
+die Löschsperre der Verwaltung (7.1 a); **mit #490 (24.09.2026)** gleicht auch der Bearbeiten-Zweig
+des Assistenten seine übrigen Gewerke ab — ein Speichern ohne Eingabe schreibt nichts (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -640,8 +643,32 @@ ihrer Tagesverteilung und den Verweisen darauf (Trinkwarmwasserzonen, Gebäudeer
 Zuordnungswerte (Fläche oder Verbrauch, Einheit, Jahresnutzungsgrad, dezentrales Warmwasser) werden
 fortgeschrieben. Eine Zuordnung, die in der Liste fehlt, wird samt Kopie gelöscht; jede übrige Zeile
 (neu übernommen oder mit geändertem Verweis) entsteht neu aus dem Katalog. Eine Umbenennung im Katalog
-berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts wird wie auf jedem
-Schreibweg gesetzt, das letzte Ergebnis gilt damit als veraltet. Die Startseite schreibt in **einem**
+berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts — und damit die
+Veraltung des letzten Ergebnisses — wird nur gesetzt, wenn der Abgleich tatsächlich geschrieben hat
+(eine Zuordnung entfernt oder neu angelegt, Zuordnungswerte einer bleibenden geändert); eine bleibende
+Zeile mit unveränderten Werten wird nicht geschrieben (#487). Nach dem Festschreiben trägt jede neu
+angelegte Zeile der Liste ihre echte Zuordnungs-Id statt der vorläufigen ab 100000
+(`WizardCtrl.EchteIdsUebernehmen`, im Assistenten nach dem Festschreiben seines Vorgangs; die Hülle
+`GebaeudeHuelle` zieht sie in die Anzeigezeile nach) — ein zweites Speichern derselben Liste legt
+nichts neu an, und eine Feld-Übernahme dazwischen bleibt stehen (#487; Nachweis
+`GebaeudelisteAbgleichTests`). ✔ **Die übrigen Gewerke des Assistenten — erledigt mit #490
+(24.09.2026):** Der Bearbeiten-Zweig (`AssistentCtrl.Fortschreiben`) gleicht auch Erzeuger,
+Prozesswärme, Stromganglinie, externen Wärmebedarf und Stromverbraucher ab: `AssistentAbgleich` nimmt
+nach den Ladewegen und nach jedem gelungenen Speichern einen Abdruck je Gewerk — genau das, was der
+Schreibweg aus der Liste in die Datenbank trägt (Erzeuger über Reflexion ohne `ID`/`ID_Projekt`, samt
+Strangliste des PV-Dialogs; die Zuordnungen über Bezeichner, Summe bzw. Kanal, ohne Ids und
+Projektverweise, die der Add-Weg aus dem Bezeichner neu ableitet) —, und nur ein geändertes Gewerk wird
+gelöscht und neu angelegt. Ein unveränderter Erzeuger lässt Anlagenzeilen, Pufferzeilen, Senken,
+Stränge, Kostenanker, Projektgeräte und Trägersätze stehen; `NeueAnlagenSenkenNachziehen` läuft nur
+nach einem Neuschreiben der Anlagen. Der Projektsatz (`Update_Projekt`) wird nur geschrieben, wenn der
+Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). Damit setzt ein Speichern
+ohne Eingabe das Änderungsdatum nicht, und das letzte Simulationsergebnis bleibt aktuell; eine Eingabe
+in einem Gewerk schreibt genau dieses und setzt das Datum. Ohne Vergleichsstand (Ladekennzeichen
+zurückgesetzt) schreibt der Zweig jedes Gewerk. Die Ladewege füllen dafür, was die Seiten beim Aufbau
+nachtragen — die Stammfelder der Wärmepumpen-Projektkopie und den Kanal des Wärmebedarfs —, sodass
+schon das Betreten einer Seite keine Änderung ist und ein Lauf, der die Seite nie zeigt, weder leere
+Stammfelder in die Projektkopie noch jeden Kanal als Heizung zurückschreibt. Nachweis:
+`AssistentAbgleichTests`. Die Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
@@ -653,7 +680,13 @@ Ziel nicht unter der Original-Id aufgefüllt, und der Import trägt den Verweis 
 Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die
 Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
 Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
-„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
+„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). ✔ **Die Löschsperre gilt auf
+beiden Wegen (#487):** „Gebäude in DB löschen" im Projekt-Gebäudedialog fragt vor der Rückfrage
+`GebaeudeStammCtrl.Loeschsperrgrund` — dieselbe Wahrheit wie die Verwaltung (`Loeschsperre` über
+Verweis und Namen, dazu `ReadOnly`) — und nennt einen gesperrten Satz benannt als Warnung
+(`ADM_AW_LOESCHEN_VERWENDET` mit den Projekten bzw. `BADM_MSG_SCHREIBGESCHUETZT` für einen
+Auslieferungssatz), ohne nachzufragen; gelöscht wird über `GebaeudeStammCtrl.Loeschen`, das die Sperre
+im Kern noch einmal hält, eine Ablehnung steht als Absage im Dialog. Mit demselben Schritt tragen vier
 Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert). ✔ **Die
 dem Anwender vorgelegten Sätze sind erledigt** (Anwenderentscheid „Empfehlung übernehmen", Welle #485,
 Schemaschritt 126, `GebaeudeKatalogReparatur`): Der Krankenhaussatz trägt U-Wert Fenster 1,3 statt 0,09
@@ -662,7 +695,25 @@ je Nutzer" (`EFH-BZ2`, `KrankenH-F-U-400`, `KMEH-M-U-54`, `Z-EFH-A-S-126`) trage
 Bewohner; die acht Testreste (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) sind gelöscht. Der Schritt trifft je Satz
 nur Bezeichner UND Schadensbild — ein schon berichtigter oder anderer Satz einer Kundendatenbank bleibt,
 ein benutzter Testrest ebenso (Protokoll). Alle 269 Katalogsätze bestehen jetzt die Prüfung des
-Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). (b)
+Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). ✔ **Der Satz
+`Krankenhaus_92-EnEV2016` ist ganz durchgesehen — geprüft, keine weitere Berichtigung (#491):** Jede
+Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abweichungen sind die Werte
+der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
+Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
+`gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
+313,8 m / 13,6 Geschosse ≈ 3,5 m). ✔ **Anschlusslängen berichtigt (#493, Schemaschritt
+`GebaeudeAnschlusslaengenReparatur.SCHRITT`, Anwenderentscheid „Ersetzt durch plausible Werte“):** Beim
+Krankenhaussatz steht die Anschlusslänge Fenster–Wand auf 4 812 m (Laibung je m² Fenster des
+Ausgangssatzes 2,538 × 1 895,9 m²) und die Außenwand auf 13 214,4 m² (Hüllfläche 15 110,3 m² der
+Geometrie minus Fensterfläche). Die Sätze `KrankenH-F-*`, `gr_Hotel-G-134` und `Kaufhaus`, die aus einer
+Quelle dieselben Längen 243,7 / 7 879 / 1 392,8 m trugen (Laibung 0,08 m je m² Fenster, Dachkante das
+51-Fache der Quadratkante), führen jetzt Laibung 7 879 m (Tausch mit der Dachkante, 2,573 m je m²) bzw.
+beim Kaufhaus 5 820,8 m (dasselbe Verhältnis × 2 262,36 m²) und Dach- und Kellerkante gleich dem
+Umfang 313,8 m der gemeinsamen Grundfläche 1 469 m². Der Schritt trifft je Satz und Spalte nur
+Bezeichner UND unplausiblen Wert; Projektkopien bleiben (Nachweis `GebaeudeAnschlusslaengenReparaturTests`,
+Herleitungen in `Referenzlaeufe/LIESMICH.md`). Weitere Sätze mit auffälligen Anschlusslängen (etwa
+185 / 985 m bei 540 m² Dach in den Altenheim-, Pflegeheim-, Schul- und Hallenbadsätzen, 5 380,8 m
+Dachkante bei `Hotel-F-228`) sind nicht Teil des Entscheids und bleiben, wie sie sind. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im

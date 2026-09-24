@@ -1645,6 +1645,44 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt WiederholperiodeSchema.SCHRITT: die Wiederholperiode je
+            //      Kostenposition (Etappe E16, V-G3, DIN EN 17463 6.3.1 "alle n Jahre"). NACH
+            //      128 (Heizkreis). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Wiederholperiode bedient (WiederholperiodeSchema):
+            //      Wiederholperiode_a (INTEGER, nullbar) an Tab_ProjektWerte und
+            //      Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "jaehrlich wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition),
+                                                WiederholperiodeSchema.SCHRITT, trocken);
+            if (!trocken)
+                Console.WriteLine("Schritt " + WiederholperiodeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
+                                  " - vollstaendig: " + WiederholperiodeSchema.Vollstaendig() + " (erwartet True).");
+
+            // ---- Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT: die Anschlusslaengen im
+            //      Gebaeudekatalog (Welle #493, Konzept Administrationsdialoge 7.1 (a)). NACH der
+            //      Wiederholperiode. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeAnschlusslaengen bedient
+            //      (GebaeudeAnschlusslaengenReparatur): Krankenhaussatz (Fenster-Wand,
+            //      Aussenwandflaeche) und die sechs Saetze mit 243,7 / 7 879 / 1 392,8 m - je Satz,
+            //      Spalte und Schadensbild.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrAnschluss = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAnschluss + " - Anschlusslaengen im Gebaeudekatalog, offen vorher: " +
+                              GebaeudeAnschlusslaengenReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeAnschlusslaengenReparatur.Bericht berichtAnschluss = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrAnschluss + " - " + berichtAnschluss.Text() + "; offen: " +
+                                  GebaeudeAnschlusslaengenReparatur.Offen() + " (erwartet 0).");
+            }
+
             // ---- Schritte S-A, S-B, S-C (Gebaeudesimulation Stufe G3, Welle B;
             //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Norm- und Herstellersaat, Bauteilaufbauten
             //      mit Schichten, Zonen und Bauteile - acht STRICT-Tabellen aus DENSELBEN Quellen, aus

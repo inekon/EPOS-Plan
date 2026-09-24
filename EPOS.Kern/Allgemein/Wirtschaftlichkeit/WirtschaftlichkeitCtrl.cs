@@ -2389,6 +2389,13 @@ namespace WindowsFormsApplication1
             /// nur noch den Sofort-Anteil.</summary>
             public List<KeyValuePair<double, int>> BetriebAbJahr =
                 new List<KeyValuePair<double, int>>();
+
+            /// <summary>ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Betriebspositionen
+            /// „alle n Jahre" beider Töpfe (<see cref="BetriebsTopfe.Wiederholt"/>) — sie
+            /// zahlen in der Kapitalwertreihe nur in ihren Zahlungsjahren; weder
+            /// <see cref="Betrieb"/> noch <see cref="Endenergie"/> tragen sie. Leer = keine.</summary>
+            public List<KapitalwertRechner.Wiederholposten> Wiederholt =
+                new List<KapitalwertRechner.Wiederholposten>();
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
@@ -2479,6 +2486,8 @@ namespace WindowsFormsApplication1
             // in der Sensitivität gelesen.
             e.InvestGekoppelt = topfe.InvestGekoppeltSofort;
             e.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;
+            // ETAPPE E16 (V‑G3): die Positionen „alle n Jahre" — eigene Liste, leer im Bestand.
+            e.Wiederholt = topfe.Wiederholt;
             List<KeyValuePair<double, int>> betriebAbJahr = topfe.BetriebAbJahr;
 
             // ETAPPE KD6 (§ 11, FK10): Sind Startjahre gesetzt, laufen Investition
@@ -2487,6 +2496,11 @@ namespace WindowsFormsApplication1
             // — die Simulation kennt keine Startjahre je Komponente; der Hinweis
             // macht die dokumentierte Vereinfachung sichtbar statt still.
             bool startjahre = betriebAbJahr.Count > 0 || e.EndenergieAbJahr.Count > 0;
+            // ETAPPE E16: Eine Position „alle n Jahre" mit Startjahr ≥ 2 ist ebenso eine
+            // Startjahr-Position — derselbe Hinweis auf die Energiekosten gilt für sie.
+            if (!startjahre)
+                foreach (KapitalwertRechner.Wiederholposten w in e.Wiederholt)
+                    if (w.StartJahr > 1) { startjahre = true; break; }
             if (!startjahre)
                 foreach (KapitalwertRechner.InvestPosition ip in e.Investitionen)
                     if (ip.StartJahr > 1) { startjahre = true; break; }
@@ -6287,6 +6301,24 @@ namespace WindowsFormsApplication1
                 endenergieAbJahr = skaliert;
             }
 
+            // ETAPPE E16 (V‑G3): Die Positionen „alle n Jahre" ziehen in der Sensitivität mit wie
+            // ihre jährlichen Nachbarn desselben Topfes — der Energiefaktor den p_E-Anteil
+            // (FX4-c), der Investitionsfaktor den investgekoppelten Anteil als additive
+            // Korrektur (FX5-a). Bei Faktor 1,0 bzw. ohne Liste wird nichts kopiert.
+            IList<KapitalwertRechner.Wiederholposten> wiederholt = e.Wiederholt;
+            if (wiederholt != null && wiederholt.Count > 0 && (investFaktor != 1.0 || energieFaktor != 1.0))
+            {
+                var skaliert = new List<KapitalwertRechner.Wiederholposten>(wiederholt.Count);
+                foreach (KapitalwertRechner.Wiederholposten w in wiederholt)
+                {
+                    double betrag = w.Betrag;
+                    if (w.Endenergie && energieFaktor != 1.0) betrag = w.Betrag * energieFaktor;
+                    else if (w.InvestGekoppelt && investFaktor != 1.0) betrag = w.Betrag + (investFaktor - 1.0) * w.Betrag;
+                    skaliert.Add(w.MitBetrag(betrag));
+                }
+                wiederholt = skaliert;
+            }
+
             // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): der dritte Preisaenderungssatz
             // p_I. Er steht am ENDE der Signatur und kommt aus DEM Parametersatz, mit dem
             // dieser Lauf rechnet - fuer Best/Worst hat FuerSzenario ihn dort bereits
@@ -6303,7 +6335,10 @@ namespace WindowsFormsApplication1
                 p.PreisInvestWirksam,
                 // ETAPPE E15 (V‑G7): der Risikoabzug dieses Standes — 0 ohne Risiko und für die
                 // Referenz des Laufs; dann rechnet der Kern Zeichen für Zeichen wie vorher.
-                e.Risikoabzug);
+                e.Risikoabzug,
+                // ETAPPE E16 (V‑G3): die Positionen „alle n Jahre" — leer im Bestand, dann
+                // betritt der Kern den Zweig nicht.
+                wiederholt);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -6449,6 +6484,9 @@ namespace WindowsFormsApplication1
                 // Basis, und die ausgewiesene Differenz enthielte sie.
                 Endenergie = e.Endenergie,
                 EndenergieAbJahr = e.EndenergieAbJahr,
+                // ETAPPE E16: die Positionen „alle n Jahre" gehören zur vollständigen Kopie —
+                // dieselbe Begründung wie beim Endenergie-Topf.
+                Wiederholt = e.Wiederholt,
                 Energie = e.Energie,
                 Erloes = e.Erloes,
                 Behg = e.Behg,
@@ -6659,6 +6697,11 @@ namespace WindowsFormsApplication1
             // der Fortschreibung über die Jahre, keine Frage der Jahr-1-Zahl; sie darf
             // die Betriebskostenzeile der Berichte nicht schrumpfen lassen.
             erg.BetriebskostenJahr = eingabe.Betrieb + eingabe.Endenergie;
+            // ETAPPE E16 (E16‑Q3 a): Die Jahr-1-Zahl bleibt die Jahr-1-Zahl — eine Position
+            // „alle n Jahre", die im ersten Jahr zahlt, gehört dazu, eine mit späterem Startjahr
+            // nicht. Ohne solche Position wird nichts addiert (bitgleich).
+            if (eingabe.Wiederholt != null && eingabe.Wiederholt.Count > 0)
+                erg.BetriebskostenJahr += ErstesJahr(eingabe.Wiederholt);
             erg.EnergiekostenJahr = eingabe.Energie;
             erg.EinspeiseerloesJahr = eingabe.Erloes;
             erg.CO2AbgabeJahr = eingabe.Behg;                 // W2: BEHG
@@ -7268,6 +7311,9 @@ namespace WindowsFormsApplication1
         /// wieder zu EINEM zusammen (Sicht vor FX3). Wer die Jahresreihe rechnet, nimmt
         /// <see cref="LiesBetriebskostenTopfe"/> — sonst wüchse der Endenergie-Anteil
         /// wieder mit p_B statt mit p_E.</para>
+        /// <para><b>ETAPPE E16:</b> Positionen „alle n Jahre" kennt diese Sicht nicht — sie
+        /// stehen allein in <see cref="BetriebsTopfe.Wiederholt"/>; ein (Betrag, Startjahr)-Paar
+        /// sagte „jedes Jahr ab X" und wäre falsch.</para>
         /// </summary>
         internal static double LiesBetriebskosten(int idProjekt, string szenario,
                                                   out List<KeyValuePair<double, int>> abJahr)
@@ -7367,13 +7413,35 @@ namespace WindowsFormsApplication1
             public List<KeyValuePair<double, int>> InvestGekoppeltAbJahr =
                 new List<KeyValuePair<double, int>>();
 
+            /// <summary>
+            /// ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Positionen <b>„alle n Jahre"</b>
+            /// (Wiederholperiode n ≥ 2) beider Töpfe — je mit Betrag, Startjahr, Periode und
+            /// Topf. Sie stehen NUR hier, nicht in den Sofort- und Startjahr-Anteilen; ohne
+            /// gepflegte Periode bleibt die Liste leer, und jede Zahl oben ist bitgenau die
+            /// von vorher.
+            /// </summary>
+            public List<KapitalwertRechner.Wiederholposten> Wiederholt =
+                new List<KapitalwertRechner.Wiederholposten>();
+
+            /// <summary>
+            /// ETAPPE E16 (E16‑Q3 a): der Anteil der Positionen „alle n Jahre", der im
+            /// ERSTEN Jahr zahlt (Startjahr ≤ 1) [€/a] — er gehört zur Jahr-1-Zahl der
+            /// Betriebskosten p. a., wie jede jährliche Position ab Jahr 1.
+            /// </summary>
+            public double WiederholtErstesJahr
+            {
+                get { return ErstesJahr(Wiederholt); }
+            }
+
             /// <summary>Betriebskosten p. a. GESAMT [€/a] — beide Töpfe, Sofort- und
             /// Startjahr-Anteil. Das ist die Zahl, die Anzeigen und Berichte als
             /// „Betriebskosten p. a." ausweisen; sie ist von FX3 unberührt.
             /// <para><b>PAKET FX5-a:</b> <see cref="InvestGekoppeltSofort"/> und
             /// <see cref="InvestGekoppeltAbJahr"/> gehen hier bewusst NICHT ein — sie
             /// sind eine Teilmenge der beiden Betriebsfelder und wären sonst doppelt
-            /// gezählt.</para></summary>
+            /// gezählt.</para>
+            /// <para><b>ETAPPE E16:</b> Die Positionen „alle n Jahre" zählen mit ihrem
+            /// Betrag je Zahlung — wie eine Startjahr-Position mit ihrem Jahresbetrag.</para></summary>
             public double Gesamt
             {
                 get
@@ -7381,9 +7449,24 @@ namespace WindowsFormsApplication1
                     double s = BetriebSofort + EndenergieSofort;
                     foreach (KeyValuePair<double, int> vb in BetriebAbJahr) s += vb.Key;
                     foreach (KeyValuePair<double, int> ve in EndenergieAbJahr) s += ve.Key;
+                    foreach (KapitalwertRechner.Wiederholposten w in Wiederholt) s += w.Betrag;
                     return s;
                 }
             }
+        }
+
+        /// <summary>
+        /// ETAPPE E16 (E16‑Q3 a): die Summe der Positionen „alle n Jahre", die im ERSTEN Jahr
+        /// zahlen [€/a] — dieselbe Regel wie der Rechenkern
+        /// (<see cref="KapitalwertRechner.ZahltImJahr"/> für t = 1). 0 ohne Liste.
+        /// </summary>
+        internal static double ErstesJahr(IList<KapitalwertRechner.Wiederholposten> wiederholt)
+        {
+            double s = 0;
+            if (wiederholt != null)
+                foreach (KapitalwertRechner.Wiederholposten w in wiederholt)
+                    if (w != null && KapitalwertRechner.ZahltImJahr(w.StartJahr, w.Periode, 1)) s += w.Betrag;
+            return s;
         }
 
         /// <summary>
@@ -7465,6 +7548,9 @@ namespace WindowsFormsApplication1
                 }
                 if (StartjahrSpalteVorhanden())
                     felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
+                // ETAPPE E16 (V‑G3): die Wiederholperiode — nur, wo es die Spalte gibt.
+                if (WiederholperiodeSchema.SpalteVorhanden(SchemaKatalog.TAB_PROJEKTWERTE))
+                    felder += ", [" + WiederholperiodeSchema.SPALTE + "]";
 
                 // ETAPPE E7c3 (B‑6): der strenge Leseweg — ein Abfragefehler erreicht den
                 // benannten Fang (topfe.Fehler), statt als leere Tabelle „keine
@@ -7549,6 +7635,26 @@ namespace WindowsFormsApplication1
                                                             D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                                                             erloes);
                         }
+                    }
+
+                    // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): Eine Position „alle n Jahre"
+                    // (n ≥ 2) geht in KEINEN der Akkumulatoren darunter, sondern mit Betrag,
+                    // Startjahr, Periode und Topf in die eigene Liste — der Rechenkern zählt sie
+                    // nur in ihren Zahlungsjahren. Jährliche Zeilen (NULL/0/1, der ganze
+                    // Bestand) laufen unverändert weiter; die Summationsreihenfolge der
+                    // Akkumulatoren bleibt die von vorher.
+                    int periode = Wiederholperiode.DerZeile(r);
+                    if (periode >= Wiederholperiode.MIN_WIEDERHOLT)
+                    {
+                        topfe.Wiederholt.Add(new KapitalwertRechner.Wiederholposten
+                        {
+                            Betrag = beitrag,
+                            StartJahr = start > 1 ? start : 1,
+                            Periode = periode,
+                            Endenergie = ausEnergiepreis,
+                            InvestGekoppelt = ausInvestition
+                        });
+                        continue;
                     }
 
                     // PAKET FX3 (R-2): Der Endenergie-Anteil wird in einem EIGENEN
@@ -7659,6 +7765,11 @@ namespace WindowsFormsApplication1
                     (StartjahrSpalteVorhanden()
                         ? ", w.[" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]"
                         : "") +
+                    // ETAPPE E16 (V‑G3): die Wiederholperiode — Herleitung „alle n Jahre ab
+                    // Jahr X" und die Probe der Gliederung (nur Positionen des ersten Jahres).
+                    (WiederholperiodeSchema.SpalteVorhanden(SchemaKatalog.TAB_PROJEKTWERTE)
+                        ? ", w.[" + WiederholperiodeSchema.SPALTE + "]"
+                        : "") +
                     " FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                     "ON w.StammID = f.StammID " +
                     "WHERE w.ProjektID = ? AND w.KategorieID = 2",
@@ -7731,7 +7842,10 @@ namespace WindowsFormsApplication1
                         SatzHerkunft = satzAusTabelle ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null,
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt,
-                        StartJahr = start > 1 ? start : (int?)null
+                        StartJahr = start > 1 ? start : (int?)null,
+                        // ETAPPE E16 (V‑G3): dieselbe Lesung wie in der Summenschleife —
+                        // null heißt jährlich.
+                        Wiederholperiode = Wiederholperiode.Normiert(Wiederholperiode.DerZeile(r))
                     };
                     n.BetragJahr =
                         string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal)

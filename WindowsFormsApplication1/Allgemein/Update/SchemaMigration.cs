@@ -4175,6 +4175,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_128_ERGEBNIS_HEIZKREIS = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS;
 
+        /// Schritt <see cref="WiederholperiodeSchema.SCHRITT"/> — <b>die Wiederholperiode je
+        /// Kostenposition</b> (Etappe E16; Konzept Wirtschaftlichkeit § 2.11.2 V‑G3, DIN EN 17463
+        /// 6.3.1 „alle n Jahre"). Er folgt auf <see cref="SCHRITT_128_ERGEBNIS_HEIZKREIS"/> (128)
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL:</b> die nullbare Spalte <c>Wiederholperiode_a</c> (INTEGER, Jahre)
+        /// an <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste steht bei
+        /// <see cref="WiederholperiodeSchema.Spalten"/>, die Nummer allein bei
+        /// <see cref="WiederholperiodeSchema.SCHRITT"/>: EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und die Testvorrichtung.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL, 0 und 1 heißen „jährlich wie bisher"; der
+        /// Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/> — <b>die Berichtigung
+        /// der Anschlusslängen im Gebäudekatalog</b> (Welle #493, Konzept Administrationsdialoge
+        /// 7.1 (a)). Er folgt auf <see cref="SCHRITT_WIEDERHOLPERIODE"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Krankenhaussatz Anschlusslänge Fenster–Wand 1 800 → 4 812 m und
+        /// Außenwand 12 094 → 13 214,4 m²; die sechs Sätze mit 243,7 / 7 879 / 1 392,8 m
+        /// (Fenster–Wand, Wand–Dach, Außenwand–Keller) auf Laibung nach dem Verhältnis des
+        /// Ausgangssatzes und Umfang 313,8 m. Die Nummer steht allein bei
+        /// <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN = GebaeudeAnschlusslaengenReparatur.SCHRITT;
+
         // ---- Gebäudesimulation Stufe G3, Welle B: die Schritte S-A, S-B, S-C --------------
 
         /// <summary>
@@ -5958,6 +5994,31 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - die Spalten bleiben leer, bis ein Lauf die " +
                         "Uebergabe rechnet.",
                         Schritt_128_ErgebnisHeizkreis),
+
+            // ETAPPE E16 (V-G3, DIN EN 17463 6.3.1) - die Wiederholperiode je Kostenposition
+            // ("alle n Jahre") an Tab_ProjektWerte und Tab_KostenVorlagePosition. REIN DDL; die
+            // Quelle ist WiederholperiodeSchema (Spalten und Nummer). Er steht NACH 128 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_WIEDERHOLPERIODE,
+                        "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die Wiederholperiode " +
+                        "Wiederholperiode_a (alle n Jahre)",
+                        "Eine Kostenposition, die nur alle n Jahre anfaellt (z. B. Dichtheitspruefung alle " +
+                        "2 Jahre), liesse sich nicht fuehren. KEIN Rechenergebnis aendert sich - alle " +
+                        "Zeilen stehen auf leer, und leer heisst 'jaehrlich wie bisher'.",
+                        Schritt_Wiederholperiode),
+
+            // WELLE #493 (Konzept Administrationsdialoge 7.1 (a)) - die Anschlusslaengen im
+            // Gebaeudekatalog: Krankenhaussatz (Fenster-Wand, Aussenwandflaeche) und die sechs
+            // Saetze mit 243,7 / 7 879 / 1 392,8 m. REIN DML; die Quelle ist
+            // GebaeudeAnschlusslaengenReparatur. Er steht NACH der Wiederholperiode ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen (Fenster-Wand, Wand-Dach, Aussenwand-Keller) " +
+                        "von sieben Saetzen und Aussenwandflaeche des Krankenhaussatzes berichtigt",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (Laibung 0,08 m je m2 " +
+                        "Fenster, Dachkante 7 879 m bei 1 469 m2 Dach). KEIN Rechenergebnis eines Projekts " +
+                        "aendert sich - Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeAnschlusslaengen),
 
             // GEBAEUDESIMULATION STUFE G3, WELLE B (Softwarearchitektur 2.2/2.4, W1) - die
             // Schritte S-A, S-B, S-C in fester Reihenfolge. Die Quellen sind BaustoffSchema,
@@ -9748,6 +9809,81 @@ namespace WindowsFormsApplication1
                     " Spalte(n) des Heizkreises an " + ErgebnisGebaeudeSchema.TAB + " angelegt - " +
                     "Uebergabe_Art, VorlaufMittel_C, RuecklaufMittel_C, UebergabeBegrenzt_H, alle nullbar. " +
                     "KEIN DML: NULL heisst 'nicht gekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt WiederholperiodeSchema.SCHRITT - die Wiederholperiode je Kostenposition (E16)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Wiederholperiode je Kostenposition — Anlass, Spalten und Ergebnisneutralität
+        /// stehen bei <see cref="SCHRITT_WIEDERHOLPERIODE"/> und bei
+        /// <see cref="WiederholperiodeSchema"/>. <b>Reines DDL</b>, dieselbe Schleife wie bei
+        /// Schritt 111. <b>Wiederholbar.</b> Danach vergisst der Kern seinen gemerkten
+        /// Spaltenstand, damit derselbe Prozess die Periode sofort liest.
+        /// </summary>
+        private static bool Schritt_Wiederholperiode(Lauf l)
+        {
+            string nr = SCHRITT_WIEDERHOLPERIODE.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            WiederholperiodeSchema.SpaltenStandVergessen();
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    WiederholperiodeSchema.Spalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + WiederholperiodeSchema.SPALTE + " (nullbar, Jahre) an " +
+                    SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                    ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
+                    "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT - die Anschlusslaengen (Welle #493)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Berichtigung der Anschlusslängen im Gebäudekatalog — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/>, Anweisungen, Schadensbilder und
+        /// Herleitungen bei <see cref="GebaeudeAnschlusslaengenReparatur"/>. Dieselbe Bauart wie
+        /// der Schritt <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/>: der ganze Schritt aus dem
+        /// Kern, danach die Nachprobe (<see cref="GebaeudeAnschlusslaengenReparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeAnschlusslaengen(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Anschlusslaenge(n) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

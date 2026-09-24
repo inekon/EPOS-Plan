@@ -173,7 +173,7 @@ Gebaut ist jeweils Lesart a (die Empfehlung); offen beim Anwender (→ Register 
   Referenzlauf 13/13 gegen R14; SQL-Prüfer 1.821/0.
 - **Gate auf `0462f92e`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte; der Testlauf abgebrochen, weil der Baum mit `079de7d7` (voller Lauf in Phase 2) übereinstimmt und das Gate auf dem End-Merge folgte (`GATE479.log`).
 - **Gate auf `52614c33`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 13.050 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.076, EPOS.UI 6.012, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE479b.log`, 24.09.2026 20:29–20:34 Uhr).
-- **CI:** steht aus (Beobachtung nach dem Push).
+- **CI auf `87dd9fd4`:** Windows `main` 36043214350 grün; Kern ubuntu rot (`main` 36043214345; der Lauf 36043208745 auf dem Arbeitszweig vom Nachfolger abgebrochen) — Ursache `Auslieferungsvorlage.Tests` 131 → 132 STRICT-Tabellen, behoben mit #488 (`3c2f1752`); danach grün: Kern `main` 36046805271 auf `132d37da` und alle drei Läufe auf `c778ab12` (Kern ubuntu 36048714077 Arbeitszweig, Kern `main` 36048721767, Windows `main` 36048721808).
 
 ## Abnahme am Gerät (A‑E17‑1, Windows)
 

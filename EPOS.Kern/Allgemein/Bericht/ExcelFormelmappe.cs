@@ -321,6 +321,48 @@ namespace WindowsFormsApplication1
         /// <summary>Überschrift der Hilfsspalte „Basis des Endenergie-Topfes".</summary>
         private static string KopfBasisPE { get { return MyResource.Resource.WIRT_FM_MJ_BASIS_PE; } }
 
+        /// <summary>ETAPPE E16: Überschrift der Hilfsspalte „Positionen alle n Jahre" im
+        /// Betriebs-Topf (p_B).</summary>
+        private static string KopfWiederholtPB { get { return MyResource.Resource.WIRT_FM_MJ_WDH_PB; } }
+
+        /// <summary>ETAPPE E16: dieselbe Hilfsspalte im Endenergie-Topf (p_E).</summary>
+        private static string KopfWiederholtPE { get { return MyResource.Resource.WIRT_FM_MJ_WDH_PE; } }
+
+        /// <summary>
+        /// ETAPPE E16 (V‑G3): der Betrag der Positionen „alle n Jahre", die im Jahr
+        /// <paramref name="t"/> zahlen [€/a], Preisstand Jahr 1 — dieselbe Regel wie der
+        /// Rechenkern (<see cref="KapitalwertRechner.ZahltImJahr"/>) und in derselben
+        /// Reihenfolge summiert.
+        /// </summary>
+        internal static double WiederholtImJahr(IList<KapitalwertRechner.Wiederholposten> liste, int t)
+        {
+            double s = 0;
+            if (liste != null)
+                foreach (KapitalwertRechner.Wiederholposten w in liste)
+                    if (w != null && KapitalwertRechner.ZahltImJahr(w.StartJahr, w.Periode, t)) s += w.Betrag;
+            return s;
+        }
+
+        /// <summary>
+        /// ETAPPE E16 (V‑G3): die Formel einer Zelle „Positionen alle n Jahre" — je Position
+        /// die Schutzformel <c>IF(AND(Jahr&gt;=s,MOD(Jahr-s,n)=0),Betrag,0)</c>, summiert. Sie
+        /// rechnet dieselben Zahlungsjahre wie <see cref="KapitalwertRechner.ZahltImJahr"/>.
+        /// </summary>
+        /// <param name="jahr">Der Bezug auf die Jahreszelle der Zeile.</param>
+        internal static string WiederholFormel(IList<KapitalwertRechner.Wiederholposten> liste, string jahr)
+        {
+            var teile = new List<string>();
+            foreach (KapitalwertRechner.Wiederholposten w in liste)
+            {
+                if (w == null) continue;
+                string s = (w.StartJahr > 1 ? w.StartJahr : 1).ToString(CultureInfo.InvariantCulture);
+                string n = Math.Max(1, w.Periode).ToString(CultureInfo.InvariantCulture);
+                teile.Add("IF(AND(" + jahr + ">=" + s + ",MOD(" + jahr + "-" + s + "," + n + ")=0)," +
+                          w.Betrag.ToString("R", CultureInfo.InvariantCulture) + ",0)");
+            }
+            return teile.Count == 0 ? "0" : string.Join("+", teile);
+        }
+
         /// <summary>
         /// Stufe 1 (Konzept § 2.11.6): legt die Formeln über die fertig geschriebene
         /// Mehrjahrestabelle EINES Projekts. Die Zellen tragen danach die Formel und — über
@@ -421,23 +463,58 @@ namespace WindowsFormsApplication1
                 bool mitEndenergie = false;
                 for (int t = 1; t <= T; t++) if (zb.EndenergieBasisJeJahr[t] != 0) mitEndenergie = true;
 
+                // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Positionen „alle n Jahre" je Topf.
+                // Sie bekommen je Topf eine EIGENE Hilfsspalte, deren Zelle die Periode als
+                // Formel trägt — je Position IF(AND(Jahr>=s,MOD(Jahr-s,n)=0),Betrag,0) —, und die
+                // Basisspalte des Topfes trägt nur noch den jährlichen Rest. Ohne solche
+                // Positionen entsteht keine Spalte, und jede Zelle ist die von vorher.
+                var wdhB = new List<KapitalwertRechner.Wiederholposten>();
+                var wdhE = new List<KapitalwertRechner.Wiederholposten>();
+                if (zb.Wiederholt != null)
+                    foreach (KapitalwertRechner.Wiederholposten w in zb.Wiederholt)
+                        if (w != null) (w.Endenergie ? wdhE : wdhB).Add(w);
+                if (wdhE.Count > 0) mitEndenergie = true;
+
                 int hB = tafel.FreieSpalte++;
+                int hWB = wdhB.Count > 0 ? tafel.FreieSpalte++ : -1;
                 int hE = mitEndenergie ? tafel.FreieSpalte++ : -1;
+                int hWE = wdhE.Count > 0 ? tafel.FreieSpalte++ : -1;
                 Kopf(ws, kopfZeile, hB, KopfBasisPB);
+                if (hWB > 0) Kopf(ws, kopfZeile, hWB, KopfWiederholtPB);
                 if (hE > 0) Kopf(ws, kopfZeile, hE, KopfBasisPE);
+                if (hWE > 0) Kopf(ws, kopfZeile, hWE, KopfWiederholtPE);
                 MehrjahresSpalte betrieb = bild.Spalten[cBetrieb - 2];
 
                 for (int t = 1; t <= T; t++)
                 {
                     int r = tafel.Zeile(t);
-                    Zahl(ws.Cell(r, hB), zb.BetriebBasisJeJahr[t]);
-                    if (hE > 0) Zahl(ws.Cell(r, hE), zb.EndenergieBasisJeJahr[t]);
-
                     string jahr = Bezug(r, 1);
+
+                    // Die Basis je Topf: ohne Positionen „alle n Jahre" die Zahl von vorher,
+                    // mit ihnen der jährliche Rest (Basis − Wiederholanteil des Jahres).
+                    double wB = WiederholtImJahr(wdhB, t);
+                    double wE = WiederholtImJahr(wdhE, t);
+                    Zahl(ws.Cell(r, hB), hWB > 0 ? zb.BetriebBasisJeJahr[t] - wB : zb.BetriebBasisJeJahr[t]);
+                    if (hE > 0) Zahl(ws.Cell(r, hE), hWE > 0 ? zb.EndenergieBasisJeJahr[t] - wE : zb.EndenergieBasisJeJahr[t]);
+                    if (hWB > 0)
+                    {
+                        Zahl(ws.Cell(r, hWB), wB);
+                        register.Formel(ws.Cell(r, hWB), WiederholFormel(wdhB, jahr), wB, wB);
+                    }
+                    if (hWE > 0)
+                    {
+                        Zahl(ws.Cell(r, hWE), wE);
+                        register.Formel(ws.Cell(r, hWE), WiederholFormel(wdhE, jahr), wE, wE);
+                    }
+
+                    string basisB = hWB > 0 ? "(" + Bezug(r, hB) + "+" + Bezug(r, hWB) + ")" : Bezug(r, hB);
+                    string basisE = hE > 0
+                        ? (hWE > 0 ? "(" + Bezug(r, hE) + "+" + Bezug(r, hWE) + ")" : Bezug(r, hE))
+                        : "";
                     string formel = hE > 0
-                        ? "-(" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)+" +
-                          Bezug(r, hE) + "*(1+" + nameE + ")^(" + jahr + "-1))"
-                        : "-" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)";
+                        ? "-(" + basisB + "*(1+" + nameB + ")^(" + jahr + "-1)+" +
+                          basisE + "*(1+" + nameE + ")^(" + jahr + "-1))"
+                        : "-" + basisB + "*(1+" + nameB + ")^(" + jahr + "-1)";
                     double nach = -(zb.BetriebBasisJeJahr[t] * Math.Pow(1.0 + pB, t - 1) +
                                     (hE > 0 ? zb.EndenergieBasisJeJahr[t] * Math.Pow(1.0 + pE, t - 1) : 0.0));
                     register.Formel(ws.Cell(r, cBetrieb), formel, betrieb.Wert(t), nach);

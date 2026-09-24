@@ -166,6 +166,54 @@ namespace WindowsFormsApplication1
             return i > 0.0 ? i : 0.0;
         }
 
+        // =====================================================================
+        //  Beliebige Flächen (Stufe G3, Bauteilweg) — noch ohne Verdrahtung im Eingangsbauer
+        // =====================================================================
+
+        /// <summary>
+        /// Die Einstrahlung auf eine beliebige Fläche je Stunde [W/m²], Ortszeit — dieselbe
+        /// Transposition nach Hay-Davies wie <see cref="Fassaden"/> (Rechenschritte E2), mit
+        /// Neigung und Azimut als Gleitkommawert. Für die vier senkrechten Richtungen bitgleich
+        /// zu <see cref="Fassaden"/>.
+        /// </summary>
+        /// <param name="azimutGrad">Azimut in der Konvention des Klimawegs [°]: Süd 0°, Ost −90°,
+        /// West +90°, Nord 180° (aus der Datenbank über <see cref="AzimutAusDatenbank"/>).</param>
+        /// <param name="neigungGrad">Neigung der Fläche [°]: 0° waagerecht nach oben, 90° senkrecht.</param>
+        internal static double[] Einstrahlung(IReadOnlyList<SolardatenModel> zeilen, double laengengrad, double breitengrad,
+                                              double azimutGrad, double neigungGrad, Zeitbezug bezug)
+        {
+            var e = new double[8760];
+            for (int h = 0; h < 8760; h++)
+            {
+                SolardatenModel z = zeilen[h];
+                double i = SolarCalculator.CalculateHourlyHayDavies(laengengrad, breitengrad, neigungGrad, azimutGrad,
+                    z.Globalstrahlung, z.Direktstrahlung, z.Diffusstrahlung, z.TagUtc, Stunde(z, bezug));
+                e[h] = i > 0.0 ? i : 0.0;
+            }
+            return e;
+        }
+
+        /// <summary>
+        /// Die Umrechnung der Azimutkonvention der Datenbank (0° = Nord, im Uhrzeigersinn: Ost 90°,
+        /// Süd 180°, West 270°) in die des Klimawegs (Süd 0°, Ost −90°, West +90°, Nord 180°) —
+        /// benannt, damit sie an genau einer Stelle steht. Ergebnis in (−180°, 180°].
+        /// </summary>
+        internal static double AzimutAusDatenbank(double azimutNordGrad)
+        {
+            double a = (azimutNordGrad - 180.0) % 360.0;
+            if (a <= -180.0) a += 360.0;
+            else if (a > 180.0) a -= 360.0;
+            return a;
+        }
+
+        /// <summary>
+        /// Der Sichtfaktor einer Fläche der Neigung β zum Himmel φ = (1 + cos β)/2 [–] —
+        /// VDI 6007 Blatt 1 Gl. (36a) für Δθ_lw; 0,5 für eine Wand, 1,0 für ein waagerechtes Dach
+        /// (<see cref="GebaeudeFestwerte.SICHTFAKTOR_WAND"/>, <see cref="GebaeudeFestwerte.SICHTFAKTOR_DACH"/>).
+        /// </summary>
+        internal static double SichtfaktorHimmel(double neigungGrad)
+            => (1.0 + Math.Cos(neigungGrad * Math.PI / 180.0)) / 2.0;
+
         /// <summary>
         /// Die Temperatur an der Grundfläche je Stunde [°C] nach der Randbedingung
         /// (Rechenschritte E6): Erdreich nach Kusuda in z = 1 m mit α = 0,06 m²/d, Keller mit

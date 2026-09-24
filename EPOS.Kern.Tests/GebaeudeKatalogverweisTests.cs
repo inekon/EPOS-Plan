@@ -289,6 +289,53 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>„Gebäude in DB löschen" des Projekt-Gebäudedialogs trägt dieselbe Sperre</b>
+        /// wie die Gebäudeverwaltung (#487): Der Sperrgrund nennt die Projekte, die den Satz
+        /// führen, bzw. den Auslieferungssatz; ein freier Satz hat keinen. Die Hülle reicht
+        /// genau diesen Grund und den Kernweg <c>Loeschen</c> herein — ein benutzter Satz
+        /// bleibt auch dann stehen, wenn die Oberfläche ihn doch hereinreicht.
+        /// </summary>
+        [Fact]
+        public void Der_Projektdialog_loescht_mit_der_Sperre_der_Verwaltung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const string FREI = "AltenH-95-EnEV2016";
+            Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE Bezeichner IN (?, ?)", NAME_GMH, FREI);
+
+            // Von einem Projekt gefuehrt: der Grund der Verwaltung, mit dem Projektnamen.
+            IReadOnlyList<string> projekte = GebaeudeStammCtrl.Loeschsperre(NAME_GMH);
+            Assert.NotEmpty(projekte);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                             WindowsFormsApplication1.MyResource.Resource.ADM_AW_LOESCHEN_VERWENDET,
+                             string.Join(", ", projekte)),
+                         GebaeudeStammCtrl.Loeschsperrgrund(NAME_GMH));
+
+            // Frei: kein Grund. Auslieferungssatz: der benannte Schreibschutz.
+            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(FREI));
+            Assert.Equal("", GebaeudeStammCtrl.Loeschsperrgrund(""));
+            Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 1 WHERE Bezeichner = ?", FREI);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT,
+                         GebaeudeStammCtrl.Loeschsperrgrund(FREI));
+
+            // Die Huelle des Projektdialogs: derselbe Grund, derselbe Kernweg.
+            IReadOnlyDictionary<string, object> gaben =
+                GebaeudeHuelle.Gaben(PROJEKT, PROJEKTNAME, Z_ProjGebCtrl.LiesProjekt(PROJEKT), false);
+            var sperre = (Func<string, string>)gaben["KatalogLoeschsperre"];
+            var loeschen = (Func<string, bool>)gaben["KatalogLoeschen"];
+            Assert.Equal(GebaeudeStammCtrl.Loeschsperrgrund(NAME_GMH), sperre(NAME_GMH));
+            Assert.False(loeschen(NAME_GMH));
+            Assert.False(loeschen(FREI));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE ID = ?", STAMM_GMH));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", FREI));
+
+            Sql("UPDATE Tab_Gebaeude_STAMM SET ReadOnly = 0 WHERE Bezeichner = ?", FREI);
+            Assert.True(loeschen(FREI));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Bezeichner = ?", FREI));
+        }
+
+        /// <summary>
         /// <b><c>ON DELETE SET NULL</c>:</b> Verschwindet ein Katalogsatz auf einem anderen
         /// Weg (Dublettenbereinigung, „Gebäude in DB löschen" des Projektdialogs), bleibt die
         /// Projektkopie mit allen Werten stehen; nur ihr Verweis wird leer.
@@ -381,7 +428,10 @@ namespace EPOS.Kern.Tests
             foreach (string name in new[] { "AltenH-95-EnEV2016", "Pflegeheim-122-EnEV2016",
                                             "SpH-Umkl-287-EnEV2016", "SpH-Umkl-NE",
                                             "Krankenhaus_92-EnEV2016", "EFH-BZ2", "KrankenH-F-U-400",
-                                            "KMEH-M-U-54", "Z-EFH-A-S-126" })
+                                            "KMEH-M-U-54", "Z-EFH-A-S-126",
+                                            // Welle #493: die berichtigten Anschlusslaengen.
+                                            "KrankenH-F-S-136", "KrankenH-F-TS-236", "KrankenH-F-U-400-Pinneberg",
+                                            "gr_Hotel-G-134", "Kaufhaus" })
                 Assert.Contains(name, frei);
         }
 

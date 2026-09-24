@@ -643,6 +643,18 @@ namespace EPOS.Kern.Tests
                 // (ErgebnisGebaeudeSchema.SpaltenHeizkreis); NACH 127, braucht 107; kein DML.
                 ErgebnisGebaeudeSchema.HeizkreisAlle(null);
 
+                // Schritt WiederholperiodeSchema.SCHRITT (Etappe E16, V-G3): die Wiederholperiode
+                // je Kostenposition an Tab_ProjektWerte und Tab_KostenVorlagePosition. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "jaehrlich wie bisher".
+                foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                    SpalteSicherstellen(s);
+                WiederholperiodeSchema.SpaltenStandVergessen();
+
+                // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT (Welle #493): die
+                // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenReparatur.Ausfuehren();
                 // Schritte S-A, S-B, S-C (Gebaeudesimulation G3, Welle B): Baustoffkatalog samt
                 // Norm- und Herstellersaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
                 // Quellen wie Migration und Werkzeug (BaustoffSchema, BauteilaufbauSchema,
