@@ -1367,17 +1367,26 @@ namespace WindowsFormsApplication1
         /// eine Ablehnung des Zapfprofils kommt als Meldung zurück. Nach dem Commit gilt der
         /// Behälter wieder als unverändert. Aufrufer: <see cref="Schreibweg"/> im OK des
         /// Bedarfsprofil-Dialogs (Startseite und Gebäudekatalog).
+        ///
+        /// <para><b>Nur bei echter Änderung.</b> Gleicht die Liste dem gespeicherten Stand
+        /// (<see cref="Z_ProjektBrauchwasserCtrl.GleichGespeichert"/>), bleiben die Zuordnungen
+        /// stehen; ein unveränderter Behälter schreibt ohnehin nichts. Ein OK ohne Änderung lässt
+        /// damit auch das Änderungsdatum des Projekts stehen — gesetzt wird es nur von den
+        /// Schreibwegen, die tatsächlich schreiben, im selben Vorgang.</para>
         /// </summary>
         internal static ZapfprofilSpeicherergebnis BrauchwasserSchreiben(int idProjekt,
                                                                          List<Z_ProjektBrauchwasserModel> liste,
                                                                          ZapfprofilBehaelter behaelter)
         {
             var wizctrl = new WizardCtrl();
+            liste ??= new List<Z_ProjektBrauchwasserModel>();
+            bool zuordnungenGleich = Z_ProjektBrauchwasserCtrl.GleichGespeichert(idProjekt, liste);
             ZapfprofilSpeicherergebnis e;
             using (DbVorgang v = DataRepository.Vorgang())
             {
-                if (!wizctrl.Del_Projekt_Brauchwasser(idProjekt, 0, v)
-                    || !wizctrl.Add_Projekt_Brauchwasser(idProjekt, liste ?? new List<Z_ProjektBrauchwasserModel>(), v))
+                if (!zuordnungenGleich
+                    && (!wizctrl.Del_Projekt_Brauchwasser(idProjekt, 0, v)
+                        || !wizctrl.Add_Projekt_Brauchwasser(idProjekt, liste, v)))
                     return new ZapfprofilSpeicherergebnis(false, null, null);
 
                 e = behaelter?.Schreiben(v) ?? new ZapfprofilSpeicherergebnis(true, null, null);

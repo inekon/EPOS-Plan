@@ -71,7 +71,10 @@ namespace WindowsFormsApplication1
                 ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
                     ? null
                     : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, modus)),
-                ["BrauchwasserFertig"] = new Action<bool>(BrauchwasserFertig),
+                // Kein "BrauchwasserFertig": Das OK der Profilliste schreibt Zuordnungen und
+                // Zapfprofil selbst, bevor sie schliesst (ZapfprofilHuelle.Schreibweg), und markiert
+                // das Projekt nur, wenn es tatsaechlich schreibt - ein OK ohne Aenderung laesst das
+                // Aenderungsdatum stehen.
 
                 // Stufe AK1 (Anlagenkopplung 8.4, 9.1, 9.2): die hergeleiteten Vorgaben der
                 // Waermeuebergabe aus dem Kern (Klimareihe des laufenden Projekts, einmal je
@@ -433,26 +436,6 @@ namespace WindowsFormsApplication1
             };
 
             return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil);
-        }
-
-        /// <summary>
-        /// Nach OK steht das Änderungsdatum des Projekts (<c>btn_Brauchwasser_Click</c>:246-254).
-        /// Die Zuordnung selbst — Löschen + Neuanlegen und im SELBEN Vorgang der Arbeitsstand des
-        /// Zapfprofils (5.2) — schreibt schon das OK der Profilliste, bevor sie schließt
-        /// (<see cref="ZapfprofilHuelle.Schreibweg"/>); lehnt es ab, bleibt die Liste offen und
-        /// dieser Rückruf kommt nicht. Der Katalog führt keinen Arbeitsstand: geschrieben wird
-        /// sofort.
-        /// </summary>
-        private static void BrauchwasserFertig(bool ok)
-        {
-            if (!ok) return;
-
-            string projektName = Dienste.Projekt.Name;
-
-            var projctrl = new ProjektCtrl();
-            projctrl.ReadSingle(projektName);
-            projctrl.m_Aenderungsdatum = DateTime.Now;
-            projctrl.Update();
         }
 
         /// <summary>Ein Katalogsatz nach Bezeichner — über den Kern-Controller, mit Parameter.</summary>
