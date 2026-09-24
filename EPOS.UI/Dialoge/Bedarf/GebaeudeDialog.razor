@@ -151,7 +151,7 @@
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
-                        @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
+                        @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
             </div>
         </Rechts>
 
@@ -309,6 +309,13 @@
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
     /// <summary>
+    /// Der Sperrgrund eines Katalogsatzes — dieselbe weiche Löschsperre wie in der
+    /// Gebäudeverwaltung (Auslieferungssatz, von einem Projekt geführt; der Text nennt die
+    /// Projekte). Leer heißt löschbar; ein Grund steht als Warnung, statt nachzufragen.
+    /// </summary>
+    [Parameter] public Func<string, string>? KatalogLoeschsperre { get; set; }
+
+    /// <summary>
     /// Meldet der Hülle, dass sich die Projektliste geändert hat — aufgenommen, entfernt
     /// oder eine Zeile bearbeitet.
     ///
@@ -440,6 +447,10 @@
 
     /// <summary>„Gebäude gelöscht!" — die Bestätigung nach dem Löschen.</summary>
     [Parameter] public string MeldungGeloescht { get; set; } = "Gebäude gelöscht!";
+
+    /// <summary>Das Löschen hat nicht geschrieben — die Absage nach dem „Ja".</summary>
+    [Parameter] public string MeldungLoeschFehler { get; set; } =
+        "Der Datensatz konnte nicht aus der Datenbank gelöscht werden.";
 
     /// <summary>„Gebäude in DB auswählen!" — ohne markierten Katalogsatz.</summary>
     [Parameter] public string MeldungKeineWahl { get; set; } = "Gebäude in DB auswählen!";
@@ -892,15 +903,37 @@
     private void BedarfFertig() => _bedarfGaben = null;
 
     /// <summary>
-    /// „Gebäude in DB löschen" — der Vorläufer fragte nach und meldete danach
-    /// „Gebäude gelöscht!" (<c>btn_GebLoeschen_DB_Click</c>:548-566).
+    /// „Gebäude in DB löschen" — ohne markierten Katalogsatz die Bitte um eine Wahl; ist
+    /// der Satz gesperrt (Auslieferungssatz, von einem Projekt geführt), steht der
+    /// benannte Grund als Warnung, und es wird nicht erst nachgefragt. Sonst die Rückfrage.
+    /// </summary>
+    private void BeiKatalogLoeschen()
+    {
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+
+        string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Name) ?? "";
+        if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung); return; }
+
+        _meldung = "";
+        _loeschfrage = true;
+    }
+
+    /// <summary>
+    /// Die Antwort auf die Rückfrage — nach dem Löschen „Gebäude gelöscht!"
+    /// (<c>btn_GebLoeschen_DB_Click</c>:548-566); lehnt der Schreibweg ab, steht die
+    /// Absage da, statt still nichts zu tun.
     /// </summary>
     private void LoeschenBeantwortet(bool? antwort)
     {
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Name)) return;
+        if (!KatalogLoeschen(_katalogzeile.Name))
+        {
+            string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Name) ?? "";
+            Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung);
+            return;
+        }
 
         _katalogzeile = null;
         KatalogLaden(_ausBaujahrwahl);
