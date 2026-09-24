@@ -1583,6 +1583,27 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 125, trocken);
 
+            // ---- Schritt GebaeudeKatalogReparatur.SCHRITT: die Reparatur der Gebaeude-
+            //      Katalogsaetze (Welle #485, Konzept Administrationsdialoge 7.1 (a)). NACH 125,
+            //      braucht 121. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeKatalogreparatur bedient
+            //      (GebaeudeKatalogReparatur): Krankenhaussatz (U-Wert Fenster, Nordfenster),
+            //      vier Saetze ohne Flaeche je Nutzer, acht Testreste - je Satz nach Bezeichner und
+            //      Schadensbild; ein Testrest nur, wenn keine Projektkopie ihn fuehrt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrReparatur = GebaeudeKatalogReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrReparatur + " - Reparatur der Gebaeude-Katalogsaetze, offen vorher: " +
+                              GebaeudeKatalogReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeKatalogReparatur.Bericht berichtReparatur = GebaeudeKatalogReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrReparatur + " - " + berichtReparatur.Text() + "; offen: " +
+                                  GebaeudeKatalogReparatur.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

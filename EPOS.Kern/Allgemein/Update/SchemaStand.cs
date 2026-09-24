@@ -505,11 +505,18 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ProjektWirtschaftlichkeit</c> (<see cref="SchemaKatalog.RisikomodulSpalten"/>).
         /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „kein Risiko
         /// angesetzt"; der Referenzlauf bleibt byte-gleich.
+        /// Mit der REPARATUR DER GEBÄUDE-KATALOGSÄTZE (Schritt
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/>, Welle #485; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf <b>126</b>: der Krankenhaussatz
+        /// mit U-Wert Fenster 0,09 und 10 000 m² Nordfenster, vier Sätze ohne „Fläche je Nutzer"
+        /// und acht unbenutzte Testreste — je Satz nach Bezeichner und Schadensbild, bei
+        /// <see cref="GebaeudeKatalogReparatur"/>. <b>Ergebnisneutral:</b> Keinen der Sätze führt
+        /// ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 125;
+        public const int Zielversion = 126;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

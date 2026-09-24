@@ -627,6 +627,11 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
                     SpalteSicherstellen(s);
 
+                // Schritt GebaeudeKatalogReparatur.SCHRITT (Welle #485): die Reparatur der
+                // Gebaeude-Katalogsaetze nach Bezeichner und Schadensbild. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; NACH 125, braucht 121; wiederholbar.
+                GebaeudeKatalogReparatur.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

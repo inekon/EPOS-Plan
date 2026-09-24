@@ -4117,6 +4117,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_125_RISIKOMODUL = 125;
 
+        /// <summary>
+        /// Schritt <see cref="GebaeudeKatalogReparatur.SCHRITT"/> — <b>die Reparatur der
+        /// Gebäude-Katalogsätze</b> (Welle #485, Konzept Administrationsdialoge 7.1 (a)). Er folgt
+        /// auf <see cref="SCHRITT_125_RISIKOMODUL"/> ohne Reihenfolgebedingung; er
+        /// braucht <see cref="SCHRITT_121_GEBAEUDE_KATALOGVERWEIS"/>, dessen Verweis die
+        /// Nutzungsprüfung der Testreste fragt.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz nach
+        /// Bezeichner UND Schadensbild: Krankenhaussatz U-Wert Fenster 0,09 → 1,3 und Nordfenster
+        /// 10 000 → 250 m² (gesamte Fensterfläche neu gebildet), vier Sätze ohne „Fläche je Nutzer"
+        /// (= Wohnfläche / Bewohner), acht Testreste gelöscht, sofern keine Projektkopie sie über
+        /// Verweis oder Namen führt. Die Nummer steht allein bei
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Ein Satz ohne sein Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_KATALOGREPARATUR = GebaeudeKatalogReparatur.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5817,6 +5837,20 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - die Spalten bleiben leer, und leer heisst " +
                         "'kein Risiko angesetzt'.",
                         Schritt_Risikomodul),
+
+            // WELLE #485 (Konzept Administrationsdialoge 7.1 (a)) - die Reparatur der
+            // Gebaeude-Katalogsaetze nach Bezeichner und Schadensbild: Krankenhaussatz (U-Wert
+            // Fenster, Nordfenster), vier Saetze ohne Flaeche je Nutzer, acht unbenutzte
+            // Testreste. REIN DML; die Quelle ist GebaeudeKatalogReparatur. Er steht NACH 125
+            // ohne Reihenfolgebedingung und braucht 121.
+            new Schritt(SCHRITT_GEBAEUDE_KATALOGREPARATUR,
+                        "Tab_Gebaeude_STAMM: Krankenhaussatz (U-Wert Fenster, Nordfenster), Flaeche " +
+                        "je Nutzer von vier Saetzen, unbenutzte Testreste geloescht",
+                        "Die Saetze liessen sich im Gebaeudekatalog nicht speichern (U-Wert unter 0,1, " +
+                        "Flaeche je Nutzer leer), und der Krankenhaussatz rechnete mit 10 000 m2 " +
+                        "Nordfenster. KEIN Rechenergebnis eines Projekts aendert sich - Projektkopien " +
+                        "bleiben, wie sie sind.",
+                        Schritt_GebaeudeKatalogreparatur),
         };
 
         /// <summary>
@@ -9462,6 +9496,48 @@ namespace WindowsFormsApplication1
                     " Spalte(n) angelegt - Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust und " +
                     "Risiko_Wahrscheinlichkeit an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT +
                     ". KEIN DML: Leer heisst 'kein Risiko angesetzt' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeKatalogReparatur.SCHRITT - die Gebaeude-Katalogsaetze (Welle #485)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Reparatur der Gebäude-Katalogsätze — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/>, die Anweisungen und Schadensbilder
+        /// bei <see cref="GebaeudeKatalogReparatur"/>. Dieselbe Bauart wie Schritt 120: der
+        /// ganze Schritt aus dem Kern, danach die Nachprobe
+        /// (<see cref="GebaeudeKatalogReparatur.Offen"/>). Ein benutzter Testrest bleibt mit
+        /// Absicht stehen und steht im Protokoll.
+        /// </summary>
+        private static bool Schritt_GebaeudeKatalogreparatur(Lauf l)
+        {
+            string nr = GebaeudeKatalogReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeKatalogReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeKatalogReparatur.Ausfuehren();
+                offen = GebaeudeKatalogReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Befund(e) im Gebaeudekatalog stehen nach dem Schritt weiter offen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
