@@ -20,13 +20,16 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise; neuer Punkt „Ersatzbeschaffung und Restwert je Position" (Anker `ersatz-restwert-kennzeichen`), die gespeicherte Preisbasis (Anker `preisbasis`), Nm³ und kWh im Brennstoffkatalog (Anker `einheiten`), „% der Brennstoffkosten" und „% der Stromkosten" aus dem Simulationslauf (Anker `laufgroessen`) | Statuszeilen #439, #446 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 | Programm Dokumentation/Gebäudemodell VDI 6007 | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | neue Seite: stündliches Gebäudemodell nach VDI 6007 als Vorgabe, Tagesbilanz als wählbarer Bestandsweg, Eingaben der Gebäudehülle, Luftwechsel mit Sommerlüftung, Strahlung auf die Außenbauteile, Kennzahlen und Raumtemperatur im Wärmebedarf, Vergleich der Rechenwege; Gebäude ohne Kühlung laufen im Sommer frei | Status der Gebäudesimulation, Stufen G1 + G2 und KU1 (E27–E32) |
-| Programm Dokumentation/Kühlung | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` | neue Seite: Kühlung je Projekt und Gebäude, Kühlsollwert und Kühlleistungsgrenze, Programmeinstellung „Neue Projekte mit Kühlung anlegen", Kältebedarf in Dialogen, Ergebnis und Bericht, sensible Kälte ohne Entfeuchtung | Status der Gebäudesimulation, Stufe KU1 (E27, E31, E32) |
+| Programm Dokumentation/Kühlung | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` | neue Seite: Kühlung je Projekt und Gebäude, Kühlsollwert und Kühlleistungsgrenze, Programmeinstellung „Neue Projekte mit Kühlung anlegen", Kältebedarf in Dialogen, Ergebnis und Bericht, sensible Kälte ohne Entfeuchtung; die Deckung durch die Wärmepumpe im Kühlbetrieb — Felder der Gruppe „Kühlbetrieb" (Anker `kuehlbetrieb`), Kälteleistung, Kältestrom und Jahresarbeitszahl Kälte (Anker `kaelteerzeugung`), Stromträger und Abrechnung des Kältestroms (Anker `abrechnung`) —, Kältedeckung in Übersicht und Bericht, Kältestrom in der Wirtschaftlichkeit, Grenzen | Status der Gebäudesimulation, Stufen KU1 und KU2 (E27, E31–E34) |
+| Programm Dokumentation/Gerätekataloge | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` | der Schalter „nur mit Kühlfunktion" filtert nach der Kühlleistung, gerechnet wird mit der Kühlkennlinie; die Importregel der Kühlkennlinien (Heizlage, vertauschte Achsen; Anker `import-kuehlkennlinien`) | Status der Gebäudesimulation, Stufe KU2 |
+| Programm Dokumentation/Simulation | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` | neuer Punkt „Kühlbetrieb der Wärmepumpe" in der Simulationskonfiguration (Anker `kuehlbetrieb`) | Status der Gebäudesimulation, Stufe KU2 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
 fortgeschrieben — Sammel-Upload 28.09.2026“ (das dort genannte Datum ist durch den
 vorliegenden Auftrag auf den 26.09.2026 vorgezogen). Eine gesonderte Seite zu Gerätekatalogen nennt
-keine der ausgewerteten Statuszeilen als upload-bereit; die Seite Kosten kommt mit #439 hinzu.
+keine der ausgewerteten Statuszeilen als upload-bereit; die Seite Kosten kommt mit #439 hinzu, die
+Seiten Gerätekataloge und Simulation kommen mit der dritten Welle der Stufe KU2 hinzu.
 
 **Hinweis zum Arbeitsstand:** Die Repo-Quelle der Seite Stromspeicher trägt seit diesem
 Auftrag zusätzlich einen neuen Abschnitt „Mögliche Optimierungen“ (Aufgabe A desselben
@@ -182,6 +185,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Spitzenwerte. (Gebäudesimulation, E30)
 - Seit 26.09.2026: Gebäude lassen sich kühlen — der Kältebedarf wird nach VDI 6007 stündlich
   gerechnet und in Dialogen, Ergebnis und Bericht ausgewiesen. (Kühlung KU1)
+- Seit 26.09.2026: Eine Wärmepumpe mit Kühlkennlinie kann auch kühlen; Kältedeckung und
+  Kältestrom samt Kosten und Emissionen stehen in Ergebnis und Bericht. (Kühlung KU2)
+- Seit 26.09.2026: Der Wärmepumpen-Import übernimmt keine Kühlkennlinien in Heizlage oder mit
+  vertauschten Achsen und nennt sie im Leseprotokoll. (Kühlung KU2)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.

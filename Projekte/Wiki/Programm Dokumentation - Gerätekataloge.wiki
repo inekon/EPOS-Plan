@@ -89,7 +89,7 @@ Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…
 == Wärmepumpen ==
 {{Anker|waermepumpen}}
 
-Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- und, soweit vorhanden, die Kühlkennlinie. Über der Liste engt der Schalter ''nur mit Kühlfunktion'' sie auf Pumpen mit hinterlegter Kühlkennlinie ein. Der Kenndatenblock zeigt:
+Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- und, soweit vorhanden, die Kühlkennlinie. Über der Liste engt der Schalter ''nur mit Kühlfunktion'' sie auf Pumpen mit einer Kühlleistung ein. Den Kühlbetrieb rechnen kann nur eine Pumpe mit Kühlkennlinie; eine Pumpe mit Kühlleistung, aber ohne Kühlkennlinie rechnet nur Wärme ([[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]). Der Kenndatenblock zeigt:
 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
@@ -150,6 +150,8 @@ Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''
 Fünf Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
 
 Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
+
+{{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
 
 Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme ist der erste neue Satz in der Liste gewählt, die Statuszeile nennt die Zahl der übernommenen Sätze.
 
