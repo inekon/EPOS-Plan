@@ -2381,6 +2381,30 @@ namespace WindowsFormsApplication1
         public const string ANLAGENKOPPLUNG_AK3 = "AK3";
 
         // =====================================================================
+        // Anlagenkopplung, Kaelteseite (Entscheid E37, Konzept Anlagenkopplung
+        //   8.1, KAK-S1). Persistenzwerte der Spalte
+        //   Tab_Gebaeude(_STAMM).Kuehl_Uebergabe_Art, eingefroren und ASCII.
+        //   Eigene Werte, nicht die der Heizseite: FLAECHE hiesse in Anzeige und
+        //   Variantenvergleich "Flaechenheizung".
+        // =====================================================================
+
+        /// <summary>
+        /// Kuehluebergabeart ideal — die Kaelteseite der Kopplung ist aus, die Kuehlung regelt
+        /// ideal (<c>Tab_Gebaeude(_STAMM).Kuehl_Uebergabe_Art</c>). <b>Auch NULL bedeutet
+        /// IDEAL.</b>
+        /// </summary>
+        public const string KUEHLUEBERGABE_IDEAL = "IDEAL";
+
+        /// <summary>Kuehluebergabeart Kuehldecke.</summary>
+        public const string KUEHLUEBERGABE_KUEHLDECKE = "KUEHLDECKE";
+
+        /// <summary>Kuehluebergabeart Flaechenkuehlung (Fussboden, Wand) - ohne Estrichmasse.</summary>
+        public const string KUEHLUEBERGABE_FLAECHENKUEHLUNG = "FLAECHENKUEHLUNG";
+
+        /// <summary>Kuehluebergabeart Geblaesekonvektor - sensibel, ohne Entfeuchtung (K5).</summary>
+        public const string KUEHLUEBERGABE_GEBLAESEKONVEKTOR = "GEBLAESEKONVEKTOR";
+
+        // =====================================================================
         // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)
         //   Persistenzwerte der Spalte Tab_Wechselrichter(_STAMM).Herkunft,
         //   eingefroren (Drei-Schichten-Regel).
