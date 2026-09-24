@@ -233,7 +233,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
             "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen"),
         new("ZapfprofilAuslegungDialog", 11),
-        new("ZapfprofilDialog", 9)
+        new("ZapfprofilDialog", 55, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht")
     };
 
     /// <summary>

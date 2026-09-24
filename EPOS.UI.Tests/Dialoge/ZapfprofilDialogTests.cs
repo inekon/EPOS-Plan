@@ -204,16 +204,20 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Vorschau_zeigt_vier_Reiter_und_die_Dauerlinie_benannt_gesperrt()
+    public void Die_Vorschau_zeigt_fuenf_Reiter_und_die_Dauerlinie_erst_ab_Erweitert()
     {
         var cut = Aufbauen();
 
         string[] reiter = cut.FindAll("[role=tab]").Select(b => b.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Tagesgang", "Wochenprofil", "Jahresgang", "Dauerlinie", "Kennzahlen" }, reiter);
 
+        // Die Dauerlinie gehört zur Stufe Erweitert (Mockup „Die drei Tiefen"): in Einfach weich gesperrt mit Grund.
         IElement dauer = cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Dauerlinie");
         Assert.Equal("true", dauer.GetAttribute("aria-disabled"));
-        Assert.Equal("In dieser Fassung noch nicht verfügbar.", dauer.GetAttribute("title"));
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", dauer.GetAttribute("title"));
+        dauer.Click();
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", cut.Instance.Hinweis);
+        Assert.Equal("tagesgang", cut.Instance.AktiverReiter);
 
         Assert.Contains("Unterschrift Tagesgang Summe aller Zonen", cut.Markup);
         Assert.Contains("Zapfung 70,0 MWh/a", cut.Find(".epos-zapfprofil-kurzkennzahlen").TextContent);
@@ -284,26 +288,27 @@ public class ZapfprofilDialogTests : EposBunitContext
     // Benannte Sperren
     // =================================================================================
 
-    /// <summary>Stufe Z3: Experte ist wählbar (Stochastik), Erweitert bleibt benannt gesperrt.</summary>
+    /// <summary>Stufe Z4: Alle drei Stufen sind wählbar — keine trägt mehr eine Sperre.</summary>
     [Fact]
-    public void Erweitert_ist_benannt_gesperrt_und_Experte_waehlbar()
+    public void Alle_drei_Stufen_sind_waehlbar()
     {
         var cut = Aufbauen();
 
-        IElement erweitert = Option(cut, "Erweitert");
-        Assert.Equal("true", erweitert.GetAttribute("aria-disabled"));
+        Assert.Null(Option(cut, "Erweitert").GetAttribute("aria-disabled"));
         Assert.Null(Option(cut, "Experte").GetAttribute("aria-disabled"));
         Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
 
-        erweitert.Change("1");
-
-        Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
-        Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
+        Option(cut, "Erweitert").Change("1");
+        Assert.Equal(ZapfprofilStufe.Erweitert, cut.Instance.Stufe);
+        Assert.True(Option(cut, "Erweitert").HasAttribute("checked"));
+        Assert.Equal("", cut.Instance.Hinweis);
 
         Option(cut, "Experte").Change("2");
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
         Assert.True(Option(cut, "Experte").HasAttribute("checked"));
-        Assert.Equal("", cut.Instance.Hinweis);
+
+        Option(cut, "Einfach").Change("0");
+        Assert.Equal(ZapfprofilStufe.Einfach, cut.Instance.Stufe);
     }
 
     [Fact]
@@ -1289,9 +1294,9 @@ public class ZapfprofilDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Was die Maske sperrt oder nicht zeigt, lehnt der Assistent benannt ab</b>: eine
-    /// gesperrte Nutzungsart mit ihrem Grund, die Stufe „Erweitert" mit dem ihren, Seed und
-    /// Realisierungen, solange Stufe bzw. Rechenweg sie nicht zeigen, und Werte außerhalb der
-    /// Grenzen des Feldes. In der Stufe Experte gehen sie durch.
+    /// gesperrte Nutzungsart mit ihrem Grund, Rechenweg, Seed und Realisierungen, solange Stufe
+    /// bzw. Rechenweg sie nicht zeigen, und Werte außerhalb der Grenzen des Feldes. In der Stufe
+    /// Experte gehen sie durch.
     /// </summary>
     [Fact]
     public void Gesperrtes_und_Verdecktes_lehnt_der_Assistent_benannt_ab()
@@ -1303,8 +1308,8 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal("Der Tagesgangsatz dieser Nutzungsart ist unvollständig.", gesperrt.Message);
         Assert.Equal(1, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
 
-        var erweitert = Assert.Throws<InvalidOperationException>(() => Zugang("stufe").Setzen((int)ZapfprofilStufe.Erweitert));
-        Assert.Equal(texte.GrundNochNicht, erweitert.Message);
+        var rechenweg = Assert.Throws<InvalidOperationException>(() => Zugang("rechenweg_jahresreihe").Setzen(1));
+        Assert.Contains(texte.StufeErweitert, rechenweg.Message, StringComparison.Ordinal);
 
         var seed = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
         Assert.Contains(texte.LabelSeed, seed.Message, StringComparison.Ordinal);

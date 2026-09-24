@@ -11097,10 +11097,11 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-warn-text);
 }
 
-/* Der Konstruktor: Jedes Feld der Zeilentabelle traegt seine Beschriftung
-   ("Beginn [h], Zeile 2") fuer Sprachausgabe und Sammelmeldung; sichtbar
-   steht sie einmal im Tabellenkopf. */
-.epos-zapfausl-konstruktorzeilen .epos-feld-text {
+/* Der Konstruktor und die Wohnungstabelle des Zapfprofils (Stufe Z4): Jedes Feld
+   der Zeilentabelle traegt seine Beschriftung ("Beginn [h], Zeile 2") fuer
+   Sprachausgabe und Sammelmeldung; sichtbar steht sie einmal im Tabellenkopf. */
+.epos-zapfausl-konstruktorzeilen .epos-feld-text,
+.epos-zapfprofil-wohnungen .epos-feld-text {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -11123,6 +11124,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-warn-text);
     color: var(--epos-warn-text);
     font-weight: 600;
+}
+
+/* Die Stufen Erweitert und Experte des Zapfprofils (Stufe Z4): Der Titel einer
+   Tabelle im Eingabeblock (Wohnungstabelle) steht wie die Zwischenueberschrift
+   einer Formulargruppe; die Warnliste der Bilanz steht mit Abstand unter den
+   Reitern und nimmt die Stufenmarken der Auslegung. */
+.epos-zapfprofil-untertitel {
+    font-weight: 600;
+    margin: var(--epos-abstand) 0 4px 0;
+}
+
+.epos-zapfprofil-warnliste {
+    margin-block-start: var(--epos-abstand);
 }
 
 @media (forced-colors: active) {
