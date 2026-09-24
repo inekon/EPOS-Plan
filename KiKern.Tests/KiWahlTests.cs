@@ -179,6 +179,37 @@ namespace KiKern.Tests
             Assert.False(t.Eindeutig);
             Assert.True(t.Mehrdeutig);
             Assert.Equal(2, t.Kandidaten.Count);
+            Assert.Equal(KiWahlstufe.Teil, t.Stufe);
+        }
+
+        /// <summary>
+        /// <b>Der Treffer nennt seine Stufe</b> (Welle #472) - auch der mehrdeutige; so
+        /// lassen sich Treffer VERSCHIEDENER Listen vergleichen (die gemeinte Maske).
+        /// </summary>
+        [Theory]
+        [InlineData("vorlauf", KiWahlstufe.Schluessel)]
+        [InlineData("VORLAUF", KiWahlstufe.SchluesselGefaltet)]
+        [InlineData("Rücklauf:", KiWahlstufe.Anzeigetext)]
+        [InlineData("vorlauftemperatur", KiWahlstufe.Anfang)]
+        [InlineData("Temperatur Vorlauf", KiWahlstufe.Teil)]
+        [InlineData("Kernfusion", KiWahlstufe.Keine)]
+        public void Der_Treffer_nennt_seine_Stufe(string genannt, KiWahlstufe stufe)
+        {
+            Assert.Equal(stufe, KiWahl.Treffer(Felder(), genannt).Stufe);
+        }
+
+        /// <summary>
+        /// <b>Ein Buchstabe ist kein Name:</b> Beginnt der genannte Text mit einem
+        /// Kandidaten, muss der mindestens drei Zeichen haben - dieselbe Untergrenze wie
+        /// beim enthaltenen Teil. Sonst traf „Außenwand" die Spalte „A".
+        /// </summary>
+        [Fact]
+        public void Ein_kurzer_Kandidat_ist_kein_Wortanfang_des_genannten_Textes()
+        {
+            var eintraege = new[] { new KiWahleintrag("stand_a", "A"), new KiWahleintrag("stand_b", "B") };
+
+            Assert.Equal(KiWahlstufe.Keine, KiWahl.Treffer(eintraege, "Außenwand").Stufe);
+            Assert.True(KiWahl.Treffer(eintraege, "a").Eindeutig);
         }
 
         /// <summary>

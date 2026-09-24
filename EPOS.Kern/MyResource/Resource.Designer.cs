@@ -32732,6 +32732,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_NICHT_OFFEN {

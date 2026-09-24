@@ -526,6 +526,55 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         Assert.Equal("jahr", cut.Instance.Gewaehlt);
     }
 
+    /// <summary>
+    /// <b>Nach dem Einlesen rollt die Liste zur neuen Fokuszeile</b> — derselbe Weg wie
+    /// jede Übernahme (<c>Zeilenauswahl.Uebernommen</c> → <c>Zeigeanlass</c>): die
+    /// Katalogliste ruft <c>zeileZeigen</c> mit der Stelle des neuen Lastgangs. Das
+    /// Öffnen rollt nicht.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Einlesen_rollt_die_Liste_zur_neuen_Fokuszeile()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var liste = new List<Katalogfilterzeile>(Katalog());
+        var cut = Aufbauen(
+            katalog: liste,
+            dateiWaehlen: _ => Task.FromResult<string?>(@"D:\quelle\Zeitreihe Neu.txt"),
+            ablegen: p => Task.FromResult(new AblageErgebnis(p)),
+            einlesen: (_, _, _) =>
+            {
+                liste.Add(Zeitreihenproben.Zeile(9, "Zeitreihe Neu", jahresarbeitMwh: 10.0, spitzeKw: 5.0));
+                return Task.FromResult(new GanglinienImportErgebnis
+                {
+                    Ausgang = ImportAusgang.Erfolg,
+                    Bezeichner = "Zeitreihe Neu",
+                    Meldung = ""
+                });
+            });
+        cut.WaitForAssertion(() => Assert.Contains(modul.Invocations, i => i.Identifier == "anmelden"));
+
+        ImportOeffnen(cut);
+        Knopf(cut, "Datei Auswählen...").Click();
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        Knopf(cut, "Datei in DB Einlesen...").Click();
+
+        Assert.Equal("Zeitreihe Neu", cut.Instance.Gewaehlt);
+        int stelle = cut.FindAll(".epos-katalogliste tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Zeitreihe Neu", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+        });
+    }
+
     /// <summary>Ein Fehler beim Import lässt Datei und Überlagerung stehen und meldet ihn dort.</summary>
     [Fact]
     public void Ein_Fehler_beim_Import_laesst_die_Datei_stehen()

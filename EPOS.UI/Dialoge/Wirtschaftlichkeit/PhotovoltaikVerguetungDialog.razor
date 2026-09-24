@@ -976,10 +976,13 @@
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <b>Kein Speicherweg.</b> „Übernehmen" schreibt das Vergütungsmodell in die
-    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
-    /// Sicherungspunkt. Der Marktwertimport ist ein LADEVORGANG und gehört ins
-    /// Aktionsregister.
+    /// <b>Kein Speicherweg — mit Absicht.</b> „Übernehmen" schreibt das Vergütungsmodell
+    /// in die Datenbank und schließt den Dialog; Schreiben und Schließen sind EIN Knopf,
+    /// wie bei den Überlagerungen mit eigenem Arbeitsstand (Konzept Dialogintegration,
+    /// Abschnitt 4). Der Assistent füllt die Felder, „Übernehmen" klickt der Anwender;
+    /// <c>dialog_speichern</c> lehnt hier benannt ab (<c>KI_AKTION_SPEICHERN_KEIN_WEG</c>).
+    /// KI‑D‑Q4 erlaubt das Speichern über den Speicherweg einer Maske — diese hat keinen.
+    /// Der Marktwertimport ist ein LADEVORGANG und gehört ins Aktionsregister.
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
