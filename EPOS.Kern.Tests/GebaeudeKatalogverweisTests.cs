@@ -428,11 +428,12 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Der Weg der Startseite</b> (<c>Z_ProjGebCtrl.LiesProjekt</c> →
-        /// <c>Del_Projekt_ZuordungGebäude</c> → <c>Add_Projekt_ZuordungGebäude</c>): Die Liste
-        /// trägt den Katalogverweis, und nach einer Umbenennung des Katalogsatzes entsteht die
-        /// neue Kopie aus DEMSELBEN Satz — mit dessen neuem Namen und den Zuordnungswerten der
-        /// Zeile.
+        /// <b>Der Neuaufbau</b> (<c>Z_ProjGebCtrl.LiesProjekt</c> →
+        /// <c>Del_Projekt_ZuordungGebäude</c> → <c>Add_Projekt_ZuordungGebäude</c>; Startseite
+        /// und Assistent gleichen die Liste ab und bauen nur geänderte Zeilen so neu auf,
+        /// <c>GebaeudelisteAbgleichTests</c>): Die Liste trägt den Katalogverweis, und nach
+        /// einer Umbenennung des Katalogsatzes entsteht die neue Kopie aus DEMSELBEN Satz — mit
+        /// dessen neuem Namen und den Zuordnungswerten der Zeile.
         /// </summary>
         [Fact]
         public void Neuschreiben_nach_der_Umbenennung_findet_den_Satz_ueber_die_Id()

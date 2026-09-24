@@ -453,6 +453,14 @@
     [Parameter] public Func<string>? Kurzhinweis { get; set; }
 
     /// <summary>
+    /// Ein einmaliger FEHLERHINWEIS der Hülle — derselbe Abholweg wie
+    /// <see cref="Kurzhinweis"/>, aber als Fehlerbanner ohne Selbstverfall: Ein
+    /// Kachelweg, dessen Schreibvorgang zurückgerollt wurde (Gebäudeliste), meldet
+    /// den Grund hier, statt still zu scheitern. Leer = keiner.
+    /// </summary>
+    [Parameter] public Func<string>? Fehlerhinweis { get; set; }
+
+    /// <summary>
     /// Die Uhr des Selbstverfalls — im Betrieb <c>Task.Delay</c>, im Prüfstand
     /// eine gesteuerte Fassung (dieselbe Bauart wie <c>Warnbanner.Uhr</c>).
     /// </summary>
@@ -822,6 +830,11 @@
 
             string satz = Kurzhinweis?.Invoke() ?? "";
             if (!string.IsNullOrEmpty(satz)) HinweisProjektGeoeffnet(satz);
+
+            // Ein Fehler schlaegt den Kurzhinweis: Er bleibt stehen, bis die naechste
+            // Meldung kommt - wie der Fehler beim Speichern der Klimaregion.
+            string fehler = Fehlerhinweis?.Invoke() ?? "";
+            if (!string.IsNullOrEmpty(fehler)) Melden(fehler, WarnStufe.Fehler, null);
 
             StateHasChanged();
         });

@@ -593,12 +593,12 @@ namespace EPOS.Kern.Tests
         // =========================================================================
 
         /// <summary>
-        /// <b>Der Assistent schreibt die Gebäudeliste über den Katalogverweis neu</b>
-        /// (Konzept Administrationsdialoge 7.1 (a)): Ist der Katalogsatz eines
-        /// Projektgebäudes inzwischen umbenannt, gelingt das Speichern trotzdem — die
-        /// neue Kopie entsteht aus demselben Satz (Id), trägt dessen neuen Namen, und die
-        /// Zuordnungswerte der Zeile bleiben stehen. Vorher fand die Kopie den Satz nur
-        /// über den alten Namen und brach den ganzen Lauf ab.
+        /// <b>Eine Umbenennung im Katalog stört das Speichern nicht</b> (Konzept
+        /// Administrationsdialoge 7.1 (a)): Die Gebäudeliste wird abgeglichen, nicht neu
+        /// aufgebaut — die unveränderte Zuordnung behält ihre Projektkopie (dieselbe Zeile,
+        /// derselbe Katalogverweis, ihr bisheriger Name), der Katalog wird dafür gar nicht
+        /// gelesen, und die Zuordnungswerte der Zeile bleiben stehen. Eine NEUE Kopie fände
+        /// ihren Satz über die Id (<c>GebaeudeKatalogverweisTests</c>, Abschnitt 7).
         /// </summary>
         [Fact]
         public void Nach_der_Umbenennung_im_Katalog_speichert_der_Assistent_die_Gebaeude_ueber_die_Id()
@@ -623,6 +623,9 @@ namespace EPOS.Kern.Tests
                     Assert.Equal(STAMM, zeile.ID_Gebaeude);
                     double flaeche = zeile.Wohnflaeche;
                     double nutzungsgrad = zeile.Jahresnutzungsgrad;
+                    string alterName = zeile.Gebaeudename;
+                    object kopieVorher = DataRepository.ExecuteScalar(
+                        "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ?", new DbParam("@p", ID));
 
                     Assert.True(DataRepository.ExecuteSQL(
                         "UPDATE Tab_Gebaeude_STAMM SET Bezeichner = ? WHERE ID = ?",
@@ -633,7 +636,11 @@ namespace EPOS.Kern.Tests
 
                     List<Z_ProjGebModel> nachher = Z_ProjGebCtrl.LiesProjekt(ID);
                     Z_ProjGebModel neu = Assert.Single(nachher);
-                    Assert.Equal(NEUER_NAME, neu.Gebaeudename);
+                    Assert.Equal(alterName, neu.Gebaeudename);
+                    Assert.NotEqual(NEUER_NAME, neu.Gebaeudename);
+                    Assert.Equal(zeile.ID_Z, neu.ID_Z);
+                    Assert.Equal(Convert.ToInt64(kopieVorher), Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ?", new DbParam("@p", ID))));
                     Assert.Equal(STAMM, neu.ID_Gebaeude_Stamm);
                     Assert.Equal(flaeche, neu.Wohnflaeche);
                     Assert.Equal(nutzungsgrad, neu.Jahresnutzungsgrad);
@@ -647,14 +654,15 @@ namespace EPOS.Kern.Tests
         /// danach nichts von diesem Lauf in der Datenbank.
         ///
         /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Der Bearbeiten-Zweig
-        /// schreibt vierzehn Schritte. Der fünfte — <c>Add_Projekt_ZuordungGebäude</c>
+        /// schreibt dreizehn Schritte. Der vierte — <c>Schreibe_Projekt_ZuordungGebäude</c>
         /// — meldet <c>false</c>, sobald eine Zeile ohne Katalogverweis einen
         /// Gebäudenamen trägt, der nicht im Katalog <c>Tab_Gebaeude_STAMM</c> steht
-        /// (<c>GebaeudeStammCtrl.CopyFromStamm</c> liefert dann 0). Zu diesem Zeitpunkt sind die vier Schritte davor
+        /// (<c>GebaeudeStammCtrl.CopyFromStamm</c> liefert dann 0). Zu diesem Zeitpunkt sind die drei Schritte davor
         /// GELAUFEN: die elf Anlagenzeilen des Projekts sind gelöscht und neu
-        /// angelegt, die Energieträgersätze geschrieben, die Gebäudezuordnung
-        /// gelöscht — und in der fehlgeschlagenen Methode selbst steht die neue
-        /// <c>Z_ProjektGebaeude</c>-Zeile bereits.</para>
+        /// angelegt, die Energieträgersätze geschrieben — und in der fehlgeschlagenen
+        /// Methode selbst ist die bisherige Gebäudezuordnung gelöscht (ihr Verweis hat
+        /// sich geändert, sie bleibt also nicht) und die neue
+        /// <c>Z_ProjektGebaeude</c>-Zeile steht bereits.</para>
         ///
         /// <para><b>Was der Fall belegt.</b> Vor W16a-O-1 blieb genau dieser Stand
         /// stehen: ein Projekt ohne Gebäude, mit frisch vergebenen Anlagen-Ids und
@@ -698,7 +706,7 @@ namespace EPOS.Kern.Tests
                     AssistentErgebnis e = a.Speichern();
 
                     Assert.Equal(AssistentAusgang.Fehlgeschlagen, e.Ausgang);
-                    Assert.Equal("Add_Projekt_ZuordungGebaeude", e.Schritt);
+                    Assert.Equal("Schreibe_Projekt_ZuordungGebaeude", e.Schritt);
                     Assert.False(a.Gespeichert);
 
                     // ... und danach steht nichts von dem Lauf in der Datenbank.
