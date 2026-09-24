@@ -321,4 +321,20 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_MSG_OST_WEST</c></summary>
     public string MeldungOstWest { get; set; }
         = "Fensterfläche Ost und West bitte beide eingeben oder beide leer lassen.";
+
+    /// <summary>
+    /// Der Zeilenname eines Bauteils des Hüll-Rasters — derselbe in der Tabelle des Editors,
+    /// im Stammblatt der Verwaltung und in der Meldung der Prüfung.
+    /// </summary>
+    public string Zeile(WindowsFormsApplication1.Huellbauteil b) => b switch
+    {
+        WindowsFormsApplication1.Huellbauteil.Aussenwand => ZeileAussenwand,
+        WindowsFormsApplication1.Huellbauteil.Fenster => ZeileFenster,
+        WindowsFormsApplication1.Huellbauteil.Dach => ZeileDach,
+        WindowsFormsApplication1.Huellbauteil.Bodenplatte => ZeileBodenplatte,
+        WindowsFormsApplication1.Huellbauteil.Sonstiges => ZeileSonstiges,
+        WindowsFormsApplication1.Huellbauteil.WaermebrueckeFensterWand => ZeileWbFenster,
+        WindowsFormsApplication1.Huellbauteil.WaermebrueckeAussenwandKeller => ZeileWbKeller,
+        _ => ZeileWbDach
+    };
 }

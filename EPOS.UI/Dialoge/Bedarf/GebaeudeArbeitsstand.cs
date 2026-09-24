@@ -1,0 +1,867 @@
+﻿using System.Globalization;
+using KiKern;
+using WindowsFormsApplication1;
+
+namespace EPOS.UI.Dialoge.Bedarf;
+
+/// <summary>
+/// <b>Der ARBEITSSTAND eines Gebäude-Katalogsatzes samt seinen Regeln</b> — die EINE Fassung,
+/// mit der der Katalogeditor (<c>GebaeudeKatalogDialog</c>) und das Stammblatt der
+/// Gebäudeverwaltung (<c>GebaeudeAdminDialog</c>, Welle #465) arbeiten.
+///
+/// <para><b>Eine Wahrheit.</b> Bis #465 standen Prüfung, Ableitungen und die Rechnung der
+/// Hülle im Editor allein, und die Verwaltung schrieb über einen eigenen, schmaleren Weg nur
+/// fünf Kenndaten. Jetzt bearbeiten beide Dialoge denselben Feldsatz
+/// (<see cref="GebaeudeKatalogDaten"/>), prüfen mit <see cref="Pruefen"/>, leiten mit
+/// <see cref="Ableiten"/> ab und schreiben über den Weg der Hülle
+/// (<c>GebaeudeKatalogHuelle.Schreiben</c>). Nur die Anordnung ist je Dialog eine andere:
+/// zwei Reiter im Editor, Gruppen im Stammblatt.</para>
+///
+/// <para><b>Geschrieben wird im Dialog, nicht hier.</b> Die Klasse kennt weder Datenbank noch
+/// Hülle; sie hält den Stand, bis der Dialog ihn über seinen Speicherweg gibt. Der
+/// hereingereichte Satz bleibt unberührt — <see cref="Laden"/> arbeitet auf einer tiefen
+/// Kopie.</para>
+/// </summary>
+public sealed class GebaeudeArbeitsstand
+{
+    // =====================================================================
+    //  Der Stand
+    // =====================================================================
+
+    /// <summary>Der Feldsatz, den die Felder bearbeiten — eine tiefe Kopie des geladenen Satzes.</summary>
+    public GebaeudeKatalogDaten Stand { get; private set; } = new();
+
+    /// <summary>Der Rechenweg beim Laden — der Schalter kehrt dorthin zurück, NULL bleibt NULL.</summary>
+    public string? ModellBeimLaden { get; private set; }
+
+    /// <summary>Die Randbedingung beim Laden — Erdreich bleibt NULL, wenn es NULL war.</summary>
+    public string? RandBeimLaden { get; private set; }
+
+    /// <summary>Soll die Bauweise vor dem Schreiben aus Bauart und Nutzfläche entstehen?</summary>
+    public bool BauweiseNachfuehren { get; private set; }
+
+    /// <summary>Die Felder, deren Text gerade keine gültige Zahl ist (Feldnamen der Meldung).</summary>
+    public HashSet<string> Fehlerfelder { get; } = new();
+
+    /// <summary>
+    /// Die Ferien als Tag und Monat — die Zerlegung der Jahrestage für die Anzeige; sie
+    /// wandern erst in <see cref="Ableiten"/> als Jahrestage in den Stand.
+    /// </summary>
+    public int?[] BeginnTag { get; } = new int?[4];
+
+    /// <summary>Der Monat des Ferienbeginns je Zeitraum.</summary>
+    public int?[] BeginnMonat { get; } = new int?[4];
+
+    /// <summary>Der Tag des Ferienendes je Zeitraum.</summary>
+    public int?[] EndeTag { get; } = new int?[4];
+
+    /// <summary>Der Monat des Ferienendes je Zeitraum.</summary>
+    public int?[] EndeMonat { get; } = new int?[4];
+
+    /// <summary>
+    /// Übernimmt einen Satz als Arbeitsstand — beim Öffnen, beim Satzwechsel und beim
+    /// Verwerfen. <paramref name="neu"/>: ein Satz, der erst entsteht; seine Bauweise folgt
+    /// dann immer der Bauart.
+    /// </summary>
+    public void Laden(GebaeudeKatalogDaten? satz, bool neu)
+    {
+        Stand = (satz ?? new GebaeudeKatalogDaten()).Kopie();
+        ModellBeimLaden = Stand.Modell;
+        RandBeimLaden = Stand.GrundflaecheRandbedingung;
+        BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
+        Fehlerfelder.Clear();
+        FerienZerlegen();
+    }
+
+    /// <summary>
+    /// Nach einem gelungenen Schreiben: Was geschrieben ist, ist der neue Ausgangspunkt der
+    /// beiden Schalter, die zu ihrem geladenen Wert zurückkehren.
+    /// </summary>
+    public void Geschrieben()
+    {
+        ModellBeimLaden = Stand.Modell;
+        RandBeimLaden = Stand.GrundflaecheRandbedingung;
+    }
+
+    private void FerienZerlegen()
+    {
+        for (int n = 0; n < 4; n++)
+        {
+            (BeginnTag[n], BeginnMonat[n]) = Ferienzeit.TagUndMonat(Stand.Ferienbeginn[n]);
+            (EndeTag[n], EndeMonat[n]) = Ferienzeit.TagUndMonat(Stand.Ferienende[n]);
+        }
+    }
+
+    // =====================================================================
+    //  Die Wege der Bedienelemente — für Hand, Stammblatt und Assistent dieselben
+    // =====================================================================
+
+    /// <summary>Wählt einen Eintrag einer Namensliste (Gebäudetyp, Gebäudeart); <c>null</c> leert.</summary>
+    public static string Waehlen(IReadOnlyList<string> quelle, int? index, string bisher)
+    {
+        if (index is null) return "";
+        return index.Value >= 0 && index.Value < quelle.Count ? quelle[index.Value] : bisher;
+    }
+
+    /// <summary>Die Bauartwahl — und mit ihr die BAUWEISE (Entscheid W9‑O‑2).</summary>
+    public void BauartWaehlen(int? index)
+    {
+        Stand.Bauart = index ?? 1;
+        BauweiseNachfuehren = true;
+        BauweiseBilden();
+    }
+
+    /// <summary>Die Nutzfläche — die Bauweise folgt ihr beim Schreiben.</summary>
+    public void NutzflaecheSetzen(double? wert)
+    {
+        Stand.WohnflaecheGesamt = wert;
+        BauweiseNachfuehren = true;
+    }
+
+    /// <summary><c>Bauweise = Nutzfläche × 20 / 50 / 100</c> aus der BAUART-Auswahl.</summary>
+    private void BauweiseBilden()
+        => Stand.Bauweise = Gebaeudebauweise.BauweiseAusBauart(Stand.Bauart, Stand.WohnflaecheGesamt ?? 0);
+
+    /// <summary>Die Verwendung über ihren Listenplatz; der Wert ist der STEUERWERT.</summary>
+    public void VerwendungWaehlen(IReadOnlyList<string> steuerwerte, int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= steuerwerte.Count) return;
+        Stand.Verwendung = steuerwerte[index.Value];
+    }
+
+    /// <summary>Der Listenplatz der Verwendung unter den Steuerwerten; <c>null</c> = keiner.</summary>
+    public int? Verwendungsindex(IReadOnlyList<string> steuerwerte)
+    {
+        for (int i = 0; i < steuerwerte.Count; i++)
+            if (string.Equals(steuerwerte[i], Stand.Verwendung, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    /// <summary>
+    /// Der Schalter „Rechenweg" (0 = VDI 6007, 1 = Tagesbilanz). Kehrt die Wahl zum Weg
+    /// zurück, den der geladene Spaltenwert ohnehin nimmt, bleibt der geladene Wert — NULL
+    /// bleibt NULL.
+    /// </summary>
+    public void RechenwegWaehlen(int? index)
+    {
+        if (index is null) return;
+        string gewaehlt = index.Value == 0 ? DbWerte.GEBAEUDE_MODELL_VDI6007 : DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+        Stand.Modell = gewaehlt == Gebaeuderechenweg.Wirksam(ModellBeimLaden) ? ModellBeimLaden : gewaehlt;
+    }
+
+    /// <summary>Die Randbedingung der Bodenplatte (0 Erdreich, 1 Keller, 2 Außenluft); Erdreich bleibt NULL, wenn es NULL war.</summary>
+    public void RandbedingungWaehlen(int? index)
+    {
+        string gewaehlt = index switch
+        {
+            1 => DbWerte.GRUND_KELLER,
+            2 => DbWerte.GRUND_AUSSENLUFT,
+            _ => DbWerte.GRUND_ERDREICH
+        };
+        string geladen = RandBeimLaden ?? DbWerte.GRUND_ERDREICH;
+        Stand.GrundflaecheRandbedingung = gewaehlt == geladen ? RandBeimLaden : gewaehlt;
+    }
+
+    /// <summary>Der Listenplatz der Randbedingung: 0 Erdreich, 1 Keller, 2 Außenluft.</summary>
+    public int Randindex => Stand.GrundflaecheRandbedingung switch
+    {
+        DbWerte.GRUND_KELLER => 1,
+        DbWerte.GRUND_AUSSENLUFT => 2,
+        _ => 0
+    };
+
+    /// <summary>Der Kennwert (U bzw. ψ) einer Zeile des Hüll-Rasters.</summary>
+    public void KennwertSetzen(Huellbauteil bauteil, double? wert)
+    {
+        switch (bauteil)
+        {
+            case Huellbauteil.Aussenwand: Stand.UWertAussenwand = wert; break;
+            case Huellbauteil.Fenster: Stand.UWertFenster = wert; break;
+            case Huellbauteil.Dach: Stand.UWertDachflaeche = wert; break;
+            case Huellbauteil.Bodenplatte: Stand.UWertGrundflaeche = wert; break;
+            case Huellbauteil.Sonstiges: Stand.UWertSonstiges = wert; break;
+            case Huellbauteil.WaermebrueckeFensterWand: Stand.WbvkFensterWand = wert; break;
+            case Huellbauteil.WaermebrueckeAussenwandKeller: Stand.WbvkAussenwandKeller = wert; break;
+            case Huellbauteil.WaermebrueckeWandDach: Stand.WbvkWandDach = wert; break;
+        }
+    }
+
+    /// <summary>Die Größe (A bzw. L) einer Zeile; die Fensterfläche ist gerechnet und hat keine.</summary>
+    public void GroesseSetzen(Huellbauteil bauteil, double? wert)
+    {
+        switch (bauteil)
+        {
+            case Huellbauteil.Aussenwand: Stand.FlaecheAussenwand = wert; break;
+            case Huellbauteil.Dach: Stand.Dachflaeche = wert; break;
+            case Huellbauteil.Bodenplatte: Stand.Grundflaeche = wert; break;
+            case Huellbauteil.Sonstiges: Stand.SonstigeFlaechen = wert; break;
+            case Huellbauteil.WaermebrueckeFensterWand: Stand.AnschlussFensterWand = wert; break;
+            case Huellbauteil.WaermebrueckeAussenwandKeller: Stand.AnschlussAussenwandKeller = wert; break;
+            case Huellbauteil.WaermebrueckeWandDach: Stand.AnschlussWandDach = wert; break;
+        }
+    }
+
+    /// <summary>
+    /// Der Haken „Gebäude wird gekühlt". Ohne Haken stehen Kühlsollwert und Grenze nicht da
+    /// — ihre Werte bleiben im Stand, eine Fehleingabe in einem ausgeblendeten Feld hält den
+    /// Speicherweg aber nicht mehr an.
+    /// </summary>
+    public void KuehlungSetzen(bool wert, GebaeudeHuelleTexte texte)
+    {
+        Stand.KuehlungAktiv = wert;
+        if (wert) return;
+        Fehlerfelder.Remove(Feld(texte.LabelKuehlSollwert));
+        Fehlerfelder.Remove(Feld(texte.LabelKuehlleistungMax));
+    }
+
+    /// <summary>Ein Eingabefeld meldet, ob sein Text eine gültige Zahl ist.</summary>
+    public void FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        if (e.Fehlerhaft) Fehlerfelder.Add(e.Feld); else Fehlerfelder.Remove(e.Feld);
+    }
+
+    // =====================================================================
+    //  Abgeleitet — gerechnet im Kern, hier nur zusammengesetzt
+    // =====================================================================
+
+    /// <summary>Rechnet der Stand auf dem VDI-Weg? (Anzeige = Rechnung, ADR-006)</summary>
+    public bool IstVdi6007 => Gebaeuderechenweg.IstVdi6007(Stand.Modell);
+
+    /// <summary>Summe Ost + West: die zwei Felder, sonst das Bestandsfeld; <c>null</c> = nur eines gesetzt.</summary>
+    public double? SummeOstWest => Gebaeudehuellbilanz.FensterOstWest(
+        Stand.FensterflaecheOst, Stand.FensterflaecheWest, Stand.FensterflaecheOstWest);
+
+    /// <summary>Die gesamte Fensterfläche = Süd + Ost + West + Nord (gerechnet, nie eingegeben).</summary>
+    public double Fenstergesamt
+        => (Stand.FensterflaecheSued ?? 0) + (SummeOstWest ?? 0) + (Stand.FensterflaecheNord ?? 0);
+
+    /// <summary>Die acht Zeilen des Hüll-Rasters.</summary>
+    public IReadOnlyList<Huellzeile> Huellzeilen => Gebaeudehuellbilanz.Zeilen(
+        Stand.UWertAussenwand, Stand.FlaecheAussenwand, Stand.UWertFenster, Fenstergesamt,
+        Stand.UWertDachflaeche, Stand.Dachflaeche, Stand.UWertGrundflaeche, Stand.Grundflaeche,
+        Stand.UWertSonstiges, Stand.SonstigeFlaechen,
+        Stand.WbvkFensterWand, Stand.AnschlussFensterWand,
+        Stand.WbvkAussenwandKeller, Stand.AnschlussAussenwandKeller,
+        Stand.WbvkWandDach, Stand.AnschlussWandDach);
+
+    /// <summary>H_T [W/K].</summary>
+    public double HT => Gebaeudehuellbilanz.TransmissionWK(Huellzeilen);
+
+    /// <summary>
+    /// H_ve [W/K] mit dem Luftwechsel des gewählten Rechenwegs: auf dem VDI-Weg der wirksame
+    /// (Infiltration + Nutzerlüftung, sonst Luftwechselrate), auf dem Tagesbilanz-Weg die
+    /// Luftwechselrate.
+    /// </summary>
+    public double HVe => Gebaeudehuellbilanz.LueftungWK(
+        IstVdi6007 ? WirksamerLuftwechsel : Stand.Luftwechselrate, Stand.WohnflaecheGesamt, Stand.Raumhoehe);
+
+    /// <summary>Der Luftwechsel des VDI-Wegs [1/h] — dieselbe Regel wie im Eingangsbauer des Kerns.</summary>
+    public double WirksamerLuftwechsel => Gebaeudemodellvorgaben.WirksamerLuftwechsel(
+        Stand.Luftwechselrate, Stand.LuftwechselInfiltration, Stand.LuftwechselNutzer);
+
+    /// <summary>
+    /// Der höchste Heizsollwert des Stands [°C] — über dieselbe Regel des Kerns, die der
+    /// Sollwertfahrplan des Stundenmodells kennt; leere Felder gelten wie beim Schreiben als 0.
+    /// </summary>
+    public double HoechsterHeizsollwert => Gebaeudemodellvorgaben.HoechsterHeizsollwert(
+        Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0, Stand.WochenendAbsenkung ?? 0,
+        Stand.SollFerien ?? 0, FerienAktiv);
+
+    /// <summary>Gilt der Ferienfahrplan? Feriensollwert gesetzt und mindestens ein Zeitraum eingetragen.</summary>
+    public bool FerienAktiv
+    {
+        get
+        {
+            if (!((Stand.SollFerien ?? 0) > 0)) return false;
+            int[] beginn = Ferienbeginne(), ende = Ferienenden();
+            for (int n = 0; n < 4; n++)
+                if (beginn[n] > 0 && beginn[n] < 366 && ende[n] > 0 && ende[n] < 366) return true;
+            return false;
+        }
+    }
+
+    /// <summary>Die vier Ferienbeginne als Jahrestage (aus Tag und Monat der Felder).</summary>
+    public int[] Ferienbeginne()
+    {
+        var b = new int[4];
+        for (int n = 0; n < 4; n++) b[n] = Ferienzeit.Jahrestag(BeginnMonat[n], BeginnTag[n]);
+        return b;
+    }
+
+    /// <summary>Die vier Ferienenden als Jahrestage.</summary>
+    public int[] Ferienenden()
+    {
+        var e = new int[4];
+        for (int n = 0; n < 4; n++) e[n] = Ferienzeit.Jahrestag(EndeMonat[n], EndeTag[n]);
+        return e;
+    }
+
+    // =====================================================================
+    //  Herleitungszeilen und Platzhalter — dieselben Sätze in Editor und Stammblatt
+    // =====================================================================
+
+    /// <summary>
+    /// Die Herleitungszeile unter dem Schalter „Rechenweg": der Weg, der rechnet, und — ohne
+    /// Angabe — dass die Vorgabe des Programms gilt (ADR-006).
+    /// </summary>
+    public string Rechenwegzeile(GebaeudeHuelleTexte t)
+    {
+        string zeile = IstVdi6007 ? t.ZeileRechenwegVdi6007 : t.ZeileRechenwegTagesbilanz;
+        if (Stand.Modell is not null) return zeile;
+        string vorgabe = Gebaeuderechenweg.IstVdi6007(null) ? t.RechenwegVdi6007 : t.RechenwegTagesbilanz;
+        return zeile + " " + t.ZeileRechenwegVorgabe.Replace("{0}", vorgabe);
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile der Gruppe „Kühlung" (Kühlkonzept 8.1) — sie nennt den Rückfall in
+    /// BEIDEN Stellungen des Hakens: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne
+    /// Haken die Maximalraumtemperatur, an der die Überhitzung des frei laufenden Gebäudes
+    /// gezählt wird (Entscheid E32).
+    /// </summary>
+    public string Kuehlungszeile(GebaeudeHuelleTexte t)
+    {
+        double maxTemperatur = Stand.MaxTemperatur ?? 0;
+        if (maxTemperatur < 1) maxTemperatur = 24;   // dieselbe Ableitung wie beim Schreiben
+        if (!Stand.KuehlungAktiv)
+            return string.Format(t.ZeileKuehlungAus, Zahl(maxTemperatur, 1));
+        return string.Format(t.ZeileKuehlungAn,
+                             Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0),
+                             Zahl(HoechsterHeizsollwert, 1),
+                             Zahl(maxTemperatur, 1));
+    }
+
+    /// <summary>Die Herleitungszeile des Luftwechsels: Wert und Herkunft.</summary>
+    public string Luftwechselzeile(GebaeudeHuelleTexte t)
+    {
+        double n = Gebaeudemodellvorgaben.WirksamerLuftwechsel(Stand.Luftwechselrate,
+            Stand.LuftwechselInfiltration, Stand.LuftwechselNutzer, out Luftwechselherkunft herkunft);
+        string quelle = herkunft switch
+        {
+            Luftwechselherkunft.InfiltrationUndNutzer => t.HerkunftInfiltrationNutzer,
+            Luftwechselherkunft.Luftwechselrate => t.HerkunftLuftwechselrate,
+            _ => t.HerkunftVorgabe
+        };
+        return string.Format(t.HinweisLuftwechsel, Zahl(n, 2), quelle);
+    }
+
+    /// <summary>Die Herleitungszeile der Sommerlüftungsregel.</summary>
+    public static string Sommerlueftungszeile(GebaeudeHuelleTexte t)
+        => string.Format(t.HinweisSommerlueftung,
+                         Zahl(Gebaeudemodellvorgaben.SommerlueftungSchwelle, 0),
+                         Zahl(Gebaeudemodellvorgaben.LuftwechselSommer, 1));
+
+    /// <summary>
+    /// Platzhalter der beiden Lüftungsfelder: Sind beide leer, rechnet der VDI-Weg mit der
+    /// Luftwechselrate — dann steht nichts da; sonst die Vorgabe des leeren Glieds.
+    /// </summary>
+    public string LuftwechselPlatzhalter(double vorgabe, GebaeudeHuelleTexte t)
+        => !Stand.LuftwechselInfiltration.HasValue && !Stand.LuftwechselNutzer.HasValue
+           && Stand.Luftwechselrate is double n && n > 0
+            ? ""
+            : Vorgabe(vorgabe, t);
+
+    /// <summary>Der Platzhalter von Ost und West: die Hälfte des Bestandsfelds Ost + West.</summary>
+    public string OstWestPlatzhalter(GebaeudeHuelleTexte t)
+        => Stand.FensterflaecheOstWest is double ow && !Stand.FensterflaecheOst.HasValue
+                                                    && !Stand.FensterflaecheWest.HasValue
+            ? Vorgabe(0.5 * ow, t)
+            : "";
+
+    /// <summary>„Vorgabe 0,3" — der Platzhalter eines leeren Feldes, das NULL speichert.</summary>
+    public static string Vorgabe(double wert, GebaeudeHuelleTexte t)
+        => t.VorgabeFormat.Replace("{0}", wert.ToString("0.###", CultureInfo.CurrentCulture));
+
+    // =====================================================================
+    //  Prüfen und Ableiten — der EINE Schreibweg (Konzept 4.8; E27/U1)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Prüfregeln — genau einmal</b>, für OK, „Speichern unter", „Speichern" im
+    /// Stammblatt und den Assistenten. Liefert die erste verletzte Regel, sonst <c>null</c>.
+    /// </summary>
+    /// <param name="mitName">Muss der Name gesetzt sein? (Anlegen)</param>
+    /// <param name="p">Feldnamen und Meldungen der Prüfung.</param>
+    /// <param name="t">Das Textbündel der VDI-Struktur (Meldungen und Zeilennamen).</param>
+    public GebaeudePruefbefund? Pruefen(bool mitName, GebaeudePrueftexte p, GebaeudeHuelleTexte t)
+    {
+        if (mitName && string.IsNullOrWhiteSpace(Stand.Name))
+            return Huelle(p.MeldungNameFehlt);
+
+        foreach (string feld in Fehlerfelder)
+            return Huelle(t.MeldungUngueltig.Replace("{0}", feld));
+
+        (double? wert, string name)[] pflicht =
+        {
+            (Stand.WohnflaecheGesamt, p.FeldWohnflaeche),
+            (Stand.FlaecheNutzer, p.FeldFlaecheNutzer),
+            (Stand.Waermegewinne, p.FeldWaermegewinne),
+            (Stand.Fensterdurchlassgrad, p.FeldFensterdurchlassgrad),
+            (Stand.Raumhoehe, p.FeldRaumhoehe),
+            (Stand.Luftwechselrate, p.FeldLuftwechsel),
+            (Stand.UWertAussenwand, p.FeldUAussenwand),
+            (Stand.FlaecheAussenwand, p.FeldFlaecheAussenwand),
+            (Stand.UWertFenster, p.FeldUFenster),
+            (Stand.UWertDachflaeche, p.FeldUDachflaeche),
+            (Stand.Dachflaeche, p.FeldDachflaeche),
+            (Stand.UWertGrundflaeche, p.FeldUGrundflaeche),
+            (Stand.Grundflaeche, p.FeldGrundflaeche),
+            (Stand.UWertSonstiges, p.FeldUSonstiges),
+            (Stand.SonstigeFlaechen, p.FeldSonstigeFlaechen),
+            (Stand.FensterflaecheNord, p.FeldFFNord),
+            (Stand.FensterflaecheSued, p.FeldFFSued)
+        };
+        foreach ((double? wert, string name) in pflicht)
+            if (wert is null) return Huelle(string.Format(p.MeldungZahlFehlt, name));
+
+        if (!(Stand.WohnflaecheGesamt > 0)) return Huelle(t.MeldungNutzflaeche);
+        if (!(Stand.FlaecheNutzer > 0)) return Huelle(t.MeldungFlaecheNutzer);
+        if (!(Stand.Raumhoehe > 0)) return Huelle(t.MeldungRaumhoehe);
+        if (!(Stand.Luftwechselrate > 0)) return Huelle(t.MeldungLuftwechsel);
+        if (!(Stand.Fensterdurchlassgrad > 0 && Stand.Fensterdurchlassgrad <= 1))
+            return Huelle(t.MeldungGWert);
+
+        // U-Werte nur fuer Bauteile, die eine Flaeche haben - ein Bauteil ohne Flaeche
+        // traegt keinen Waermestrom.
+        foreach (Huellzeile z in Huellzeilen)
+        {
+            if (z.IstWaermebruecke || !((z.Groesse ?? 0) > 0)) continue;
+            double u = z.Kennwert ?? 0;
+            if (u < Gebaeudehuellbilanz.U_MIN || u > Gebaeudehuellbilanz.U_MAX)
+                return Huelle(t.MeldungUBereich.Replace("{0}", t.Zeile(z.Bauteil)));
+        }
+
+        if (Gebaeudehuellbilanz.MittleresUOpak(Huellzeilen) is double uMittel
+            && uMittel >= Gebaeudehuellbilanz.U_OPAK_MITTEL_MAX)
+            return Huelle(t.MeldungRRest);
+
+        if (SummeOstWest is null) return Huelle(t.MeldungOstWest);
+
+        double bauweise = BauweiseNachfuehren
+            ? Gebaeudebauweise.BauweiseAusBauart(Stand.Bauart, Stand.WohnflaecheGesamt ?? 0)
+            : Stand.Bauweise;
+        double spezifisch = bauweise / (Stand.WohnflaecheGesamt ?? 1);
+        if (spezifisch < Gebaeudehuellbilanz.BAUWEISE_JE_M2_MIN || spezifisch > Gebaeudehuellbilanz.BAUWEISE_JE_M2_MAX)
+            return Huelle(t.MeldungBauweise);
+
+        // Stufe KU1 (Kuehlkonzept 8.1): die Regeln der Gruppe „Kuehlung" - nur mit Haken. Der
+        // Abstand zum hoechsten Heizsollwert ist DIESELBE Zahl, mit der der Loeser abbricht
+        // (Gebaeudemodellvorgaben.KuehlsollwertAbstand); ein leerer Sollwert heisst „Kuehlung
+        // aus" und ist erlaubt.
+        if (Stand.KuehlungAktiv)
+        {
+            if (Stand.KuehlSollwert is double soll)
+            {
+                if (soll < Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN || soll > Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX)
+                    return Kuehlung(string.Format(t.MeldungKuehlsollwertBereich,
+                                                Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, 0),
+                                                Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX, 0)));
+                double heizMax = HoechsterHeizsollwert;
+                if (soll < heizMax + Gebaeudemodellvorgaben.KuehlsollwertAbstand)
+                    return Kuehlung(string.Format(t.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
+                                                Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0)));
+            }
+            if (Stand.KuehlleistungMax is double grenze && !(grenze > 0))
+                return Kuehlung(t.MeldungKuehlleistung);
+        }
+
+        string? regel = Ferienzeit.Pruefen(Ferienbeginne(), Ferienenden());
+        if (regel is not null) return new GebaeudePruefbefund(p.Ferienmeldung(regel), GebaeudePruefbereich.Ferien);
+
+        return null;
+    }
+
+    private static GebaeudePruefbefund Huelle(string meldung) => new(meldung, GebaeudePruefbereich.Huelle);
+
+    private static GebaeudePruefbefund Kuehlung(string meldung) => new(meldung, GebaeudePruefbereich.Kuehlung);
+
+    /// <summary>
+    /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
+    /// der Hülle — unmittelbar vor dem Schreiben: leere Felder der Temperaturen gelten als 0,
+    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, WW_Bedarf 0,
+    /// Winterferienbeginn 0 → 366; dazu die Summe Ost + West und die Bauweise.
+    /// </summary>
+    public void Ableiten()
+    {
+        if (BauweiseNachfuehren) BauweiseBilden();
+
+        Stand.FensterflaecheOstWest = SummeOstWest ?? 0;
+
+        Stand.SollTag ??= 0;
+        Stand.NachtAbsenkung ??= 0;
+        double max = Stand.MaxTemperatur ?? 0;
+        Stand.MaxTemperatur = max < 1 ? 24 : max;
+        Stand.WochenendAbsenkung ??= 0;
+        Stand.Wochenende = (Stand.WochenendAbsenkung ?? 0) > 0 ? 1 : 0;
+        Stand.SollFerien ??= 0;
+        Stand.Ferien = (Stand.SollFerien ?? 0) > 0 ? 1 : 0;
+
+        Stand.WbvkFensterWand ??= 0;
+        Stand.WbvkAussenwandKeller ??= 0;
+        Stand.WbvkWandDach ??= 0;
+        Stand.AnschlussFensterWand ??= 0;
+        Stand.AnschlussWandDach ??= 0;
+        Stand.AnschlussAussenwandKeller ??= 0;
+
+        int[] beginn = Ferienbeginne();
+        beginn[0] = Ferienzeit.WinterbeginnGehoben(beginn[0]);
+        Stand.Ferienbeginn = beginn;
+        Stand.Ferienende = Ferienenden();
+
+        Stand.WwBedarf = 0;
+    }
+
+    // =====================================================================
+    //  Geändert? — der Vergleich mit dem geladenen Satz (Stammblatt)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Wie viele Felder vom geladenen Satz abweichen</b> — jedes Eingabefeld zählt einmal,
+    /// die sechzehn Ferienzahlen je Zahl; ein Feld mit ungültigem Text zählt als geändert
+    /// (sonst ginge es beim Satzwechsel still verloren). Abgeleitete Größen (Bauweise,
+    /// Summen) zählen nicht.
+    /// </summary>
+    public int Abweichungen(GebaeudeKatalogDaten? geladen)
+    {
+        if (geladen is null) return 0;
+        GebaeudeKatalogDaten a = Stand, g = geladen;
+        int n = Fehlerfelder.Count;
+
+        void T(string? x, string? y) { if (!string.Equals(x ?? "", y ?? "", StringComparison.Ordinal)) n++; }
+        void Z(double? x, double? y) { if (x != y) n++; }
+        void I(int? x, int? y) { if (x != y) n++; }
+        void B(bool x, bool y) { if (x != y) n++; }
+
+        T(a.Typ, g.Typ); T(a.Beschreibung, g.Beschreibung); T(a.Gebaeudeart, g.Gebaeudeart);
+        T(a.Verwendung, g.Verwendung); I(a.Baualtersklasse, g.Baualtersklasse); I(a.Bauart, g.Bauart);
+
+        Z(a.WohnflaecheGesamt, g.WohnflaecheGesamt); Z(a.FlaecheNutzer, g.FlaecheNutzer);
+        Z(a.Waermegewinne, g.Waermegewinne); Z(a.Fensterdurchlassgrad, g.Fensterdurchlassgrad);
+        Z(a.Raumhoehe, g.Raumhoehe); Z(a.Luftwechselrate, g.Luftwechselrate);
+
+        Z(a.FensterflaecheNord, g.FensterflaecheNord); Z(a.FensterflaecheSued, g.FensterflaecheSued);
+        Z(a.FensterflaecheOst, g.FensterflaecheOst); Z(a.FensterflaecheWest, g.FensterflaecheWest);
+        Z(a.FlaecheAussenwand, g.FlaecheAussenwand); Z(a.Dachflaeche, g.Dachflaeche);
+        Z(a.Grundflaeche, g.Grundflaeche); Z(a.SonstigeFlaechen, g.SonstigeFlaechen);
+
+        Z(a.UWertAussenwand, g.UWertAussenwand); Z(a.UWertFenster, g.UWertFenster);
+        Z(a.UWertDachflaeche, g.UWertDachflaeche); Z(a.UWertGrundflaeche, g.UWertGrundflaeche);
+        Z(a.UWertSonstiges, g.UWertSonstiges);
+
+        Z(a.WbvkFensterWand, g.WbvkFensterWand); Z(a.WbvkAussenwandKeller, g.WbvkAussenwandKeller);
+        Z(a.WbvkWandDach, g.WbvkWandDach); Z(a.AnschlussFensterWand, g.AnschlussFensterWand);
+        Z(a.AnschlussWandDach, g.AnschlussWandDach); Z(a.AnschlussAussenwandKeller, g.AnschlussAussenwandKeller);
+
+        Z(a.SollTag, g.SollTag); Z(a.NachtAbsenkung, g.NachtAbsenkung); Z(a.MaxTemperatur, g.MaxTemperatur);
+        Z(a.WochenendAbsenkung, g.WochenendAbsenkung); Z(a.SollFerien, g.SollFerien);
+
+        T(a.Modell, g.Modell); T(a.GrundflaecheRandbedingung, g.GrundflaecheRandbedingung);
+        Z(a.Kellertemperatur, g.Kellertemperatur);
+        Z(a.Rahmenanteil, g.Rahmenanteil); Z(a.Verschattungsfaktor, g.Verschattungsfaktor);
+        Z(a.MasseanteilAussen, g.MasseanteilAussen); Z(a.Innenflaechenfaktor, g.Innenflaechenfaktor);
+        Z(a.HeizungStrahlungsanteil, g.HeizungStrahlungsanteil); Z(a.HeizleistungMax, g.HeizleistungMax);
+        B(a.AussenbauteileStrahlung, g.AussenbauteileStrahlung);
+        Z(a.LuftwechselInfiltration, g.LuftwechselInfiltration); Z(a.LuftwechselNutzer, g.LuftwechselNutzer);
+        B(a.Sommerlueftung, g.Sommerlueftung);
+        B(a.KuehlungAktiv, g.KuehlungAktiv); Z(a.KuehlSollwert, g.KuehlSollwert);
+        Z(a.KuehlleistungMax, g.KuehlleistungMax);
+
+        for (int i = 0; i < 4; i++)
+        {
+            (int? bt, int? bm) = Ferienzeit.TagUndMonat(g.Ferienbeginn[i]);
+            (int? et, int? em) = Ferienzeit.TagUndMonat(g.Ferienende[i]);
+            I(BeginnTag[i], bt); I(BeginnMonat[i], bm); I(EndeTag[i], et); I(EndeMonat[i], em);
+        }
+        return n;
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent — EINE Sicht für Editor und Stammblatt
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Sicht des Assistenten auf diesen Stand</b> (Welle KI‑F3; #465). Jeder Weg geht
+    /// über den LEBENDEN Stand und über dieselben Methoden wie die Bedienelemente — die
+    /// Bauart zieht die Bauweise nach, die Nutzfläche ebenso, die Randbedingung hält NULL.
+    /// Was nur der Dialog kennt (Name, Betriebsart, die Einträge der Klapplisten, die
+    /// Satzwahl der Verwaltung), kommt über <paramref name="wege"/> herein.
+    /// </summary>
+    public GebaeudeKatalogKiSicht KiSicht(GebaeudeKiWege wege)
+    {
+        return new GebaeudeKatalogKiSicht
+        {
+            StandLesen = () => Stand,
+
+            NameLesen = wege.NameLesen,
+            NameSetzen = wege.NameSetzen,
+            BetriebsartLesen = wege.BetriebsartLesen,
+
+            SatzLesen = wege.SatzLesen,
+            SatzSetzen = wege.SatzSetzen,
+            SatzEintraege = wege.SatzEintraege,
+
+            BauartSetzen = BauartWaehlen,
+            WohnflaecheSetzen = NutzflaecheSetzen,
+
+            TypEintraege = wege.TypEintraege,
+            GebaeudeartEintraege = wege.GebaeudeartEintraege,
+            BaualtersklasseEintraege = wege.BaualtersklasseEintraege,
+            BauartEintraege = wege.BauartEintraege,
+            VerwendungEintraege = wege.VerwendungEintraege,
+
+            SollTagLesen = () => Stand.SollTag,
+            SollTagSetzen = w => Stand.SollTag = w,
+            NachtabsenkungLesen = () => Stand.NachtAbsenkung,
+            NachtabsenkungSetzen = w => Stand.NachtAbsenkung = w,
+            MaxTemperaturLesen = () => Stand.MaxTemperatur,
+            MaxTemperaturSetzen = w => Stand.MaxTemperatur = w,
+            WochenendabsenkungLesen = () => Stand.WochenendAbsenkung,
+            WochenendabsenkungSetzen = w => Stand.WochenendAbsenkung = w,
+            SollFerienLesen = () => Stand.SollFerien,
+            SollFerienSetzen = w => Stand.SollFerien = w,
+
+            WbvkFensterWandLesen = () => Stand.WbvkFensterWand,
+            WbvkFensterWandSetzen = w => Stand.WbvkFensterWand = w,
+            WbvkWandDachLesen = () => Stand.WbvkWandDach,
+            WbvkWandDachSetzen = w => Stand.WbvkWandDach = w,
+            WbvkAussenwandKellerLesen = () => Stand.WbvkAussenwandKeller,
+            WbvkAussenwandKellerSetzen = w => Stand.WbvkAussenwandKeller = w,
+
+            AnschlussFensterWandLesen = () => Stand.AnschlussFensterWand,
+            AnschlussFensterWandSetzen = w => Stand.AnschlussFensterWand = w,
+            AnschlussWandDachLesen = () => Stand.AnschlussWandDach,
+            AnschlussWandDachSetzen = w => Stand.AnschlussWandDach = w,
+            AnschlussAussenwandKellerLesen = () => Stand.AnschlussAussenwandKeller,
+            AnschlussAussenwandKellerSetzen = w => Stand.AnschlussAussenwandKeller = w,
+
+            LuftwechselrateLesen = () => Stand.Luftwechselrate,
+            LuftwechselrateSetzen = w => Stand.Luftwechselrate = w,
+
+            RandbedingungLesen = () => Randindex,
+            RandbedingungSetzen = RandbedingungWaehlen,
+            RandbedingungEintraege = wege.RandbedingungEintraege,
+            FerienLesen = () => _kiFerien ??= KiFerien(wege.Ferienname)
+        };
+    }
+
+    private IReadOnlyList<GebaeudeFerienKiZeile>? _kiFerien;
+
+    /// <summary>
+    /// Die vier Ferienzeiträume als Zeilen (Welle #458 Stufe 3b) — einmal gebaut, denn die
+    /// vier Felderpaare bleiben dieselben; jede Zelle geht über ihren Delegaten auf das Feld,
+    /// an dem die Eingabe von Hand hängt.
+    /// </summary>
+    private IReadOnlyList<GebaeudeFerienKiZeile> KiFerien(Func<int, string>? name)
+    {
+        return Enumerable.Range(0, 4).Select(i =>
+        {
+            int n = i;
+            return new GebaeudeFerienKiZeile
+            {
+                ZeitraumLesen = () => name?.Invoke(n) ?? "",
+                BeginnTagLesen = () => BeginnTag[n],
+                BeginnTagSetzen = w => BeginnTag[n] = w,
+                BeginnMonatLesen = () => BeginnMonat[n],
+                BeginnMonatSetzen = w => BeginnMonat[n] = w,
+                EndeTagLesen = () => EndeTag[n],
+                EndeTagSetzen = w => EndeTag[n] = w,
+                EndeMonatLesen = () => EndeMonat[n],
+                EndeMonatSetzen = w => EndeMonat[n] = w
+            };
+        }).ToList();
+    }
+
+    // =====================================================================
+    //  Hilfen
+    // =====================================================================
+
+    /// <summary>Die Beschriftung ohne den nachgestellten Doppelpunkt — als Feldname der Meldung.</summary>
+    public static string Feld(string? beschriftung) => (beschriftung ?? "").TrimEnd(' ', ':');
+
+    /// <summary>Eine Zahl in der laufenden Kultur; <c>null</c> wird „—".</summary>
+    public static string Zahl(double? wert, int stellen)
+        => wert.HasValue ? wert.Value.ToString("N" + stellen, CultureInfo.CurrentCulture) : "—";
+}
+
+/// <summary>
+/// Die erste verletzte Regel von <see cref="GebaeudeArbeitsstand.Pruefen"/>.
+/// </summary>
+/// <param name="Meldung">Der Text, den der Dialog meldet.</param>
+/// <param name="Bereich">Wo das Feld der Regel steht — der Dialog zeigt es dort.</param>
+public sealed record GebaeudePruefbefund(string Meldung, GebaeudePruefbereich Bereich)
+{
+    /// <summary>Hängt die Regel am zweiten Reiter des Editors (Temperaturen und Ferien)?</summary>
+    public bool Temperaturen => Bereich == GebaeudePruefbereich.Ferien;
+}
+
+/// <summary>
+/// Wo das Feld einer verletzten Regel steht: Der Editor springt auf den Reiter, das Stammblatt
+/// der Verwaltung klappt „Alle Daten" auf.
+/// </summary>
+public enum GebaeudePruefbereich
+{
+    /// <summary>Name, Kenngrößen, Hülle und Fenster — und ein Feld mit ungültigem Text.</summary>
+    Huelle,
+
+    /// <summary>Die Gruppe „Kühlung" (erster Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
+    Kuehlung,
+
+    /// <summary>Die Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
+    Ferien
+}
+
+/// <summary>
+/// Was der Dialog der Sicht des Assistenten beisteuert, das der Arbeitsstand nicht kennt —
+/// Name, Betriebsart, die Einträge der Klapplisten und (in der Verwaltung) die Satzwahl.
+/// </summary>
+public sealed class GebaeudeKiWege
+{
+    /// <summary>Liest den Namen des Satzes.</summary>
+    public Func<string>? NameLesen { get; init; }
+
+    /// <summary>Setzt den Namen; <c>null</c> = der Name ist hier nicht setzbar.</summary>
+    public Action<string>? NameSetzen { get; init; }
+
+    /// <summary>Die Betriebsart des Editors (Bearbeiten, Neu, Admin).</summary>
+    public Func<string>? BetriebsartLesen { get; init; }
+
+    /// <summary>Die Satzwahl der Verwaltung — der Bezeichner der Fokuszeile.</summary>
+    public Func<string>? SatzLesen { get; init; }
+
+    /// <summary>Wählt einen Satz; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? SatzSetzen { get; init; }
+
+    /// <summary>Die Sätze der Liste als Einträge des Wahlfeldes <c>satz</c>.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? SatzEintraege { get; init; }
+
+    /// <summary>Die Gebäudetypen der Klappliste.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? TypEintraege { get; init; }
+
+    /// <summary>Die Gebäudearten der Klappliste.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? GebaeudeartEintraege { get; init; }
+
+    /// <summary>Die Baualtersklassen (Schlüssel: Listenplatz).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BaualtersklasseEintraege { get; init; }
+
+    /// <summary>Die Bauarten (Schlüssel: Listenplatz).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BauartEintraege { get; init; }
+
+    /// <summary>Die Verwendungen (Schlüssel: Steuerwert).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? VerwendungEintraege { get; init; }
+
+    /// <summary>Die drei Randbedingungen der Bodenplatte (Schlüssel: Listenplatz).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? RandbedingungEintraege { get; init; }
+
+    /// <summary>Der Name des Ferienzeitraums je Zeile (Winter, Ostern, Sommer, Herbst).</summary>
+    public Func<int, string>? Ferienname { get; init; }
+}
+
+/// <summary>
+/// <b>Die Feldnamen und Meldungen der Prüfung</b> (<see cref="GebaeudeArbeitsstand.Pruefen"/>),
+/// die nicht im Bündel <see cref="GebaeudeHuelleTexte"/> stehen — der Rückfall ist der
+/// deutsche Text des Katalogeditors; die Hülle füllt es aus den Ressourcen
+/// (<c>GebaeudeKatalogHuelle.Prueftexte</c>).
+/// </summary>
+public sealed class GebaeudePrueftexte
+{
+    /// <summary><c>GEBK_MSG_NAME_LEER</c>.</summary>
+    public string MeldungNameFehlt { get; set; } = "Gebäudenamen eingeben!";
+
+    /// <summary><c>GEBK_MSG_ZAHL</c> — <c>{0}</c> ist der Feldname.</summary>
+    public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+
+    /// <summary><c>GEBK_MSG_FERIEN_WINTER</c>.</summary>
+    public string MeldungFerienWinter { get; set; } = "Die Ferien müssen über die Jahresgrenze gehen!";
+
+    /// <summary><c>GEBK_MSG_FERIEN_OSTERN</c>.</summary>
+    public string MeldungFerienOstern { get; set; } = "Fehler: Bei der Eingabe der Osterferien!";
+
+    /// <summary><c>GEBK_MSG_FERIEN_SOMMER</c>.</summary>
+    public string MeldungFerienSommer { get; set; } = "Fehler: Bei der Eingabe der Sommerferien!";
+
+    /// <summary><c>GEBK_MSG_FERIEN_HERBST</c>.</summary>
+    public string MeldungFerienHerbst { get; set; } = "Fehler: Bei der Eingabe der Herbstferien!";
+
+    /// <summary><c>GEBK_FELD_WOHNFLAECHE</c>.</summary>
+    public string FeldWohnflaeche { get; set; } = "Nutzfläche";
+
+    /// <summary><c>GEBK_FELD_FLAECHE_NUTZER</c>.</summary>
+    public string FeldFlaecheNutzer { get; set; } = "Fläche / Nutzer";
+
+    /// <summary><c>GEBK_FELD_WAERMEGEWINNE</c>.</summary>
+    public string FeldWaermegewinne { get; set; } = "Interne Wärmegewinne";
+
+    /// <summary><c>GEBK_FELD_FENSTERDURCHLASS</c>.</summary>
+    public string FeldFensterdurchlassgrad { get; set; } = "Fensterdurchlaßgrad";
+
+    /// <summary><c>GEBK_FELD_RAUMHOEHE</c>.</summary>
+    public string FeldRaumhoehe { get; set; } = "Raumhöhe";
+
+    /// <summary>Die Luftwechselrate — die Beschriftung <c>GEBK_LBL_LUFTWECHSEL</c> ohne Doppelpunkt.</summary>
+    public string FeldLuftwechsel { get; set; } = "Luftwechselrate";
+
+    /// <summary><c>GEBK_FELD_FF_SUED</c>.</summary>
+    public string FeldFFSued { get; set; } = "Fensterfläche Süd";
+
+    /// <summary><c>GEBK_FELD_FF_NORD</c>.</summary>
+    public string FeldFFNord { get; set; } = "Fensterfläche Nord";
+
+    /// <summary><c>GEBK_FELD_FL_AUSSENWAND</c>.</summary>
+    public string FeldFlaecheAussenwand { get; set; } = "Fläche Außenwand";
+
+    /// <summary><c>GEBK_FELD_DACHFLAECHE</c>.</summary>
+    public string FeldDachflaeche { get; set; } = "Gebäude Dachfläche";
+
+    /// <summary><c>GEBK_FELD_GRUNDFLAECHE</c>.</summary>
+    public string FeldGrundflaeche { get; set; } = "Gebäude Grundfläche";
+
+    /// <summary><c>GEBK_FELD_SONST_FLAECHEN</c>.</summary>
+    public string FeldSonstigeFlaechen { get; set; } = "sonstige Flächen";
+
+    /// <summary><c>GEBK_FELD_U_AUSSENWAND</c>.</summary>
+    public string FeldUAussenwand { get; set; } = "U-Wert Außenwand";
+
+    /// <summary><c>GEBK_FELD_U_FENSTER</c>.</summary>
+    public string FeldUFenster { get; set; } = "U-Wert Fenster";
+
+    /// <summary><c>GEBK_FELD_U_DACHFLAECHE</c>.</summary>
+    public string FeldUDachflaeche { get; set; } = "U-Wert Dachfläche";
+
+    /// <summary><c>GEBK_FELD_U_GRUNDFLAECHE</c>.</summary>
+    public string FeldUGrundflaeche { get; set; } = "U-Wert Grundfläche";
+
+    /// <summary><c>GEBK_FELD_U_SONSTIGES</c>.</summary>
+    public string FeldUSonstiges { get; set; } = "U-Wert Sonstiges";
+
+    /// <summary>Die Meldung zu einem Schlüssel aus <see cref="Ferienzeit.Pruefen"/>.</summary>
+    public string Ferienmeldung(string schluessel) => schluessel switch
+    {
+        Ferienzeit.MELDUNG_WINTER => MeldungFerienWinter,
+        Ferienzeit.MELDUNG_OSTERN => MeldungFerienOstern,
+        Ferienzeit.MELDUNG_SOMMER => MeldungFerienSommer,
+        _ => MeldungFerienHerbst
+    };
+
+    /// <summary>
+    /// Der Name, unter dem ein Kennwert des Hüll-Rasters in der Meldung steht — bei U-Werten
+    /// die Pflichtnamen, bei den Wärmebrücken Zeile + ψ.
+    /// </summary>
+    public string Kennwertname(Huellbauteil b, GebaeudeHuelleTexte t) => b switch
+    {
+        Huellbauteil.Aussenwand => FeldUAussenwand,
+        Huellbauteil.Fenster => FeldUFenster,
+        Huellbauteil.Dach => FeldUDachflaeche,
+        Huellbauteil.Bodenplatte => FeldUGrundflaeche,
+        Huellbauteil.Sonstiges => FeldUSonstiges,
+        _ => t.Zeile(b) + " ψ"
+    };
+
+    /// <summary>Der Name einer Größe des Hüll-Rasters in der Meldung (Fläche bzw. Zeile + L).</summary>
+    public string Groessenname(Huellbauteil b, GebaeudeHuelleTexte t) => b switch
+    {
+        Huellbauteil.Aussenwand => FeldFlaecheAussenwand,
+        Huellbauteil.Dach => FeldDachflaeche,
+        Huellbauteil.Bodenplatte => FeldGrundflaeche,
+        Huellbauteil.Sonstiges => FeldSonstigeFlaechen,
+        _ => t.Zeile(b) + " L"
+    };
+}

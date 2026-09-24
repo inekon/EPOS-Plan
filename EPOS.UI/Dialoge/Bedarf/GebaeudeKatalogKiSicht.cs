@@ -29,10 +29,35 @@ public sealed class GebaeudeKatalogKiSicht
     //  Der Satz des ERSTEN Reiterblatts
     // =====================================================================
 
-    /// <summary>Liefert den Satz, den die Maske gerade führt; darf <c>null</c> liefern.</summary>
-    public Func<GebaeudeKatalogDaten?>? SatzLesen { get; init; }
+    /// <summary>
+    /// Liefert den Feldsatz, den die Maske gerade führt (den ARBEITSSTAND,
+    /// <c>GebaeudeArbeitsstand.Stand</c>); darf <c>null</c> liefern.
+    /// </summary>
+    public Func<GebaeudeKatalogDaten?>? StandLesen { get; init; }
 
-    private GebaeudeKatalogDaten? Satz => SatzLesen?.Invoke();
+    private GebaeudeKatalogDaten? Daten => StandLesen?.Invoke();
+
+    // =====================================================================
+    //  Die Satzwahl der GEBÄUDEVERWALTUNG (Welle #465)
+    // =====================================================================
+
+    /// <summary>Der gewählte Satz der Verwaltung (Bezeichner der Fokuszeile).</summary>
+    public Func<string>? SatzLesen { get; init; }
+
+    /// <summary>
+    /// Wählt einen Satz der Verwaltung; Rückgabe: der Grund, warum der Dialog den Wechsel
+    /// ablehnt, sonst <c>null</c>.
+    /// </summary>
+    public Func<string, string?>? SatzSetzen { get; init; }
+
+    /// <summary>Die Sätze der Liste als Einträge des Wahlfeldes „satz".</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? SatzEintraege { get; init; }
+
+    /// <summary>
+    /// Setzt die Nutzfläche über den Weg des Eingabefeldes — die Bauweise folgt ihr beim
+    /// Schreiben; ohne Delegat geht der Wert unmittelbar in den Satz.
+    /// </summary>
+    public Action<double?>? WohnflaecheSetzen { get; init; }
 
     // =====================================================================
     //  Die Zugriffswege des ZWEITEN Reiterblatts und des Namens
@@ -144,32 +169,53 @@ public sealed class GebaeudeKatalogKiSicht
         set => NameSetzen?.Invoke(value ?? "");
     }
 
+    /// <summary>
+    /// <b>Der gewählte Satz der GEBÄUDEVERWALTUNG</b> (Wahlfeld <c>satz</c>, #465). Ihn zu
+    /// setzen wählt die Zeile der Liste — derselbe Weg wie ein Klick; ein abgelehnter
+    /// Wechsel (ungespeicherte Änderungen) kommt als benannte Ausnahme zurück, damit der
+    /// Assistent nicht „gesetzt" meldet, wo nichts geschah. Der Katalogeditor führt das
+    /// Feld nicht.
+    /// </summary>
+    public string Satz
+    {
+        get => SatzLesen?.Invoke() ?? "";
+        set
+        {
+            string? grund = SatzSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
+    /// <summary>Die Sätze der Liste (KI‑D‑Q6).</summary>
+    public IReadOnlyList<KiWahleintrag> SatzWahl
+        => SatzEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     /// <summary>Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen mit.</summary>
     public string Typ
     {
-        get => Satz?.Typ ?? "";
-        set { if (Satz is GebaeudeKatalogDaten d) d.Typ = value ?? ""; }
+        get => Daten?.Typ ?? "";
+        set { if (Daten is GebaeudeKatalogDaten d) d.Typ = value ?? ""; }
     }
 
     /// <summary>Der Freitext des Satzes.</summary>
     public string Beschreibung
     {
-        get => Satz?.Beschreibung ?? "";
-        set { if (Satz is GebaeudeKatalogDaten d) d.Beschreibung = value ?? ""; }
+        get => Daten?.Beschreibung ?? "";
+        set { if (Daten is GebaeudeKatalogDaten d) d.Beschreibung = value ?? ""; }
     }
 
     /// <summary>Die Gebäudeart (Einfamilienhaus, Bürogebäude …).</summary>
     public string Gebaeudeart
     {
-        get => Satz?.Gebaeudeart ?? "";
-        set { if (Satz is GebaeudeKatalogDaten d) d.Gebaeudeart = value ?? ""; }
+        get => Daten?.Gebaeudeart ?? "";
+        set { if (Daten is GebaeudeKatalogDaten d) d.Gebaeudeart = value ?? ""; }
     }
 
     /// <summary>Die Baualtersklasse als Platz in der Klappliste.</summary>
     public int Baualtersklasse
     {
-        get => Satz?.Baualtersklasse ?? 0;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
+        get => Daten?.Baualtersklasse ?? 0;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
     }
 
     /// <summary>
@@ -178,8 +224,8 @@ public sealed class GebaeudeKatalogKiSicht
     /// </summary>
     public string Verwendung
     {
-        get => Satz?.Verwendung ?? "";
-        set { if (Satz is GebaeudeKatalogDaten d) d.Verwendung = value ?? ""; }
+        get => Daten?.Verwendung ?? "";
+        set { if (Daten is GebaeudeKatalogDaten d) d.Verwendung = value ?? ""; }
     }
 
     /// <summary>
@@ -188,43 +234,47 @@ public sealed class GebaeudeKatalogKiSicht
     /// </summary>
     public int Bauart
     {
-        get => Satz?.Bauart ?? 0;
+        get => Daten?.Bauart ?? 0;
         set => BauartSetzen?.Invoke(value);
     }
 
     /// <summary>Die gesamte Wohn- oder Nutzfläche [m²].</summary>
     public double? WohnflaecheGesamt
     {
-        get => Satz?.WohnflaecheGesamt;
-        set { if (Satz is GebaeudeKatalogDaten d) d.WohnflaecheGesamt = value; }
+        get => Daten?.WohnflaecheGesamt;
+        set
+        {
+            if (WohnflaecheSetzen is not null) WohnflaecheSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.WohnflaecheGesamt = value;
+        }
     }
 
     /// <summary>Die Fläche je Nutzer [m²].</summary>
     public double? FlaecheNutzer
     {
-        get => Satz?.FlaecheNutzer;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FlaecheNutzer = value; }
+        get => Daten?.FlaecheNutzer;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FlaecheNutzer = value; }
     }
 
     /// <summary>Die inneren Wärmegewinne [W].</summary>
     public double? Waermegewinne
     {
-        get => Satz?.Waermegewinne;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Waermegewinne = value; }
+        get => Daten?.Waermegewinne;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Waermegewinne = value; }
     }
 
     /// <summary>Der Gesamtenergiedurchlassgrad der Fenster als Anteil (z. B. 0,4).</summary>
     public double? Fensterdurchlassgrad
     {
-        get => Satz?.Fensterdurchlassgrad;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Fensterdurchlassgrad = value; }
+        get => Daten?.Fensterdurchlassgrad;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Fensterdurchlassgrad = value; }
     }
 
     /// <summary>Die mittlere Raumhöhe [m].</summary>
     public double? Raumhoehe
     {
-        get => Satz?.Raumhoehe;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Raumhoehe = value; }
+        get => Daten?.Raumhoehe;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Raumhoehe = value; }
     }
 
     // =====================================================================
@@ -234,50 +284,50 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Die Fensterfläche nach Norden [m²].</summary>
     public double? FensterflaecheNord
     {
-        get => Satz?.FensterflaecheNord;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheNord = value; }
+        get => Daten?.FensterflaecheNord;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FensterflaecheNord = value; }
     }
 
     /// <summary>Die Fensterfläche nach Süden [m²].</summary>
     public double? FensterflaecheSued
     {
-        get => Satz?.FensterflaecheSued;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheSued = value; }
+        get => Daten?.FensterflaecheSued;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FensterflaecheSued = value; }
     }
 
     /// <summary>Die Fensterfläche nach Osten und Westen zusammen [m²].</summary>
     public double? FensterflaecheOstWest
     {
-        get => Satz?.FensterflaecheOstWest;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheOstWest = value; }
+        get => Daten?.FensterflaecheOstWest;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FensterflaecheOstWest = value; }
     }
 
     /// <summary>Die Außenwandfläche ohne Fenster [m²].</summary>
     public double? FlaecheAussenwand
     {
-        get => Satz?.FlaecheAussenwand;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FlaecheAussenwand = value; }
+        get => Daten?.FlaecheAussenwand;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FlaecheAussenwand = value; }
     }
 
     /// <summary>Die Dachfläche [m²].</summary>
     public double? Dachflaeche
     {
-        get => Satz?.Dachflaeche;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Dachflaeche = value; }
+        get => Daten?.Dachflaeche;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Dachflaeche = value; }
     }
 
     /// <summary>Die Grundfläche gegen Erdreich oder Keller [m²].</summary>
     public double? Grundflaeche
     {
-        get => Satz?.Grundflaeche;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Grundflaeche = value; }
+        get => Daten?.Grundflaeche;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Grundflaeche = value; }
     }
 
     /// <summary>Die übrigen wärmeübertragenden Flächen [m²].</summary>
     public double? SonstigeFlaechen
     {
-        get => Satz?.SonstigeFlaechen;
-        set { if (Satz is GebaeudeKatalogDaten d) d.SonstigeFlaechen = value; }
+        get => Daten?.SonstigeFlaechen;
+        set { if (Daten is GebaeudeKatalogDaten d) d.SonstigeFlaechen = value; }
     }
 
     // =====================================================================
@@ -287,36 +337,36 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Der U-Wert der Außenwand.</summary>
     public double? UWertAussenwand
     {
-        get => Satz?.UWertAussenwand;
-        set { if (Satz is GebaeudeKatalogDaten d) d.UWertAussenwand = value; }
+        get => Daten?.UWertAussenwand;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UWertAussenwand = value; }
     }
 
     /// <summary>Der U-Wert der Fenster.</summary>
     public double? UWertFenster
     {
-        get => Satz?.UWertFenster;
-        set { if (Satz is GebaeudeKatalogDaten d) d.UWertFenster = value; }
+        get => Daten?.UWertFenster;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UWertFenster = value; }
     }
 
     /// <summary>Der U-Wert der Dachfläche.</summary>
     public double? UWertDachflaeche
     {
-        get => Satz?.UWertDachflaeche;
-        set { if (Satz is GebaeudeKatalogDaten d) d.UWertDachflaeche = value; }
+        get => Daten?.UWertDachflaeche;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UWertDachflaeche = value; }
     }
 
     /// <summary>Der U-Wert der Grundfläche.</summary>
     public double? UWertGrundflaeche
     {
-        get => Satz?.UWertGrundflaeche;
-        set { if (Satz is GebaeudeKatalogDaten d) d.UWertGrundflaeche = value; }
+        get => Daten?.UWertGrundflaeche;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UWertGrundflaeche = value; }
     }
 
     /// <summary>Der U-Wert der übrigen Flächen.</summary>
     public double? UWertSonstiges
     {
-        get => Satz?.UWertSonstiges;
-        set { if (Satz is GebaeudeKatalogDaten d) d.UWertSonstiges = value; }
+        get => Daten?.UWertSonstiges;
+        set { if (Daten is GebaeudeKatalogDaten d) d.UWertSonstiges = value; }
     }
 
     // =====================================================================
@@ -418,92 +468,92 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Anteil des Fensterrahmens an der Fensterfläche (VDI 6007); leer = Vorgabe 0,3.</summary>
     public double? Rahmenanteil
     {
-        get => Satz?.Rahmenanteil;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Rahmenanteil = value; }
+        get => Daten?.Rahmenanteil;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Rahmenanteil = value; }
     }
 
     /// <summary>Pauschaler Verschattungsfaktor der Fenster (VDI 6007); leer = Vorgabe 0,9.</summary>
     public double? Verschattungsfaktor
     {
-        get => Satz?.Verschattungsfaktor;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Verschattungsfaktor = value; }
+        get => Daten?.Verschattungsfaktor;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Verschattungsfaktor = value; }
     }
 
     /// <summary>Anteil der Speichermasse in den Außenbauteilen (VDI 6007); leer = Vorgabe 0,3.</summary>
     public double? MasseanteilAussen
     {
-        get => Satz?.MasseanteilAussen;
-        set { if (Satz is GebaeudeKatalogDaten d) d.MasseanteilAussen = value; }
+        get => Daten?.MasseanteilAussen;
+        set { if (Daten is GebaeudeKatalogDaten d) d.MasseanteilAussen = value; }
     }
 
     /// <summary>Innenbauteilfläche je m² Nutzfläche (VDI 6007); leer = Vorgabe 2,5.</summary>
     public double? Innenflaechenfaktor
     {
-        get => Satz?.Innenflaechenfaktor;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Innenflaechenfaktor = value; }
+        get => Daten?.Innenflaechenfaktor;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Innenflaechenfaktor = value; }
     }
 
     /// <summary>Strahlungsanteil der Wärmeübergabe (VDI 6007); leer = Vorgabe 0,3.</summary>
     public double? HeizungStrahlungsanteil
     {
-        get => Satz?.HeizungStrahlungsanteil;
-        set { if (Satz is GebaeudeKatalogDaten d) d.HeizungStrahlungsanteil = value; }
+        get => Daten?.HeizungStrahlungsanteil;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizungStrahlungsanteil = value; }
     }
 
     /// <summary>Größte Heizleistung des Stundenmodells in kW; leer = unbegrenzt.</summary>
     public double? HeizleistungMax
     {
-        get => Satz?.HeizleistungMax;
-        set { if (Satz is GebaeudeKatalogDaten d) d.HeizleistungMax = value; }
+        get => Daten?.HeizleistungMax;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizleistungMax = value; }
     }
 
     /// <summary>Rechnet Sonneneinstrahlung und langwellige Abstrahlung auf die opaken Außenbauteile ein (VDI 6007).</summary>
     public bool AussenbauteileStrahlung
     {
-        get => Satz?.AussenbauteileStrahlung ?? false;
-        set { if (Satz is GebaeudeKatalogDaten d) d.AussenbauteileStrahlung = value; }
+        get => Daten?.AussenbauteileStrahlung ?? false;
+        set { if (Daten is GebaeudeKatalogDaten d) d.AussenbauteileStrahlung = value; }
     }
 
     /// <summary>Luftwechsel durch Undichtheiten (VDI 6007); sind Infiltration und Nutzerlüftung leer, gilt die Luftwechselrate.</summary>
     public double? LuftwechselInfiltration
     {
-        get => Satz?.LuftwechselInfiltration;
-        set { if (Satz is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value; }
+        get => Daten?.LuftwechselInfiltration;
+        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value; }
     }
 
     /// <summary>Luftwechsel durch Fensterlüftung der Nutzer (VDI 6007); zusammen mit der Infiltration der Luftwechsel des Stundenmodells.</summary>
     public double? LuftwechselNutzer
     {
-        get => Satz?.LuftwechselNutzer;
-        set { if (Satz is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value; }
+        get => Daten?.LuftwechselNutzer;
+        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value; }
     }
 
     /// <summary>Erhöhter Luftwechsel an warmen Tagen, wenn die Außenluft kühler ist (VDI 6007).</summary>
     public bool Sommerlueftung
     {
-        get => Satz?.Sommerlueftung ?? false;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Sommerlueftung = value; }
+        get => Daten?.Sommerlueftung ?? false;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Sommerlueftung = value; }
     }
 
     /// <summary>Fensterfläche nach Osten in m²; leer = die Hälfte von Ost + West.</summary>
     public double? FensterflaecheOst
     {
-        get => Satz?.FensterflaecheOst;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheOst = value; }
+        get => Daten?.FensterflaecheOst;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FensterflaecheOst = value; }
     }
 
     /// <summary>Fensterfläche nach Westen in m²; leer = die Hälfte von Ost + West.</summary>
     public double? FensterflaecheWest
     {
-        get => Satz?.FensterflaecheWest;
-        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheWest = value; }
+        get => Daten?.FensterflaecheWest;
+        set { if (Daten is GebaeudeKatalogDaten d) d.FensterflaecheWest = value; }
     }
 
     /// <summary>Temperatur des unbeheizten Kellers unter der Bodenplatte in °C; leer = Vorgabe 10 °C.</summary>
     public double? Kellertemperatur
     {
-        get => Satz?.Kellertemperatur;
-        set { if (Satz is GebaeudeKatalogDaten d) d.Kellertemperatur = value; }
+        get => Daten?.Kellertemperatur;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Kellertemperatur = value; }
     }
 
     /// <summary>
@@ -512,26 +562,26 @@ public sealed class GebaeudeKatalogKiSicht
     /// </summary>
     public bool KuehlungAktiv
     {
-        get => Satz?.KuehlungAktiv ?? false;
-        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlungAktiv = value; }
+        get => Daten?.KuehlungAktiv ?? false;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlungAktiv = value; }
     }
 
     /// <summary>Kühlsollwert in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert.</summary>
     public double? KuehlSollwert
     {
-        get => Satz?.KuehlSollwert;
-        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlSollwert = value; }
+        get => Daten?.KuehlSollwert;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlSollwert = value; }
     }
 
     /// <summary>Größte Kühlleistung in kW; leer = unbegrenzt.</summary>
     public double? KuehlleistungMax
     {
-        get => Satz?.KuehlleistungMax;
-        set { if (Satz is GebaeudeKatalogDaten d) d.KuehlleistungMax = value; }
+        get => Daten?.KuehlleistungMax;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlleistungMax = value; }
     }
 
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
-    public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Satz?.Modell);
+    public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 
     /// <summary>
     /// Die Betriebsart der Maske — Bearbeiten, Neu oder Katalogverwaltung. Sie
