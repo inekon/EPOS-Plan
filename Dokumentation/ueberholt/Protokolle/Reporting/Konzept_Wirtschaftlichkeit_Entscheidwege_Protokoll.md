@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1278,7 +1278,8 @@ jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`),
 #437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`), in § 8.7 und § 8.8 **vor
 #440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`), in § 8.11 und § 8.12 **vor #452**
 (Stand `9c7a0023`), in § 8.13 und § 8.14 **vor #454** (Stand `485052c6`), in § 8.15 und § 8.16 **vor #455** (Stand
-`09037a32`, der Merge `704356a4` samt den Papieren zu #454) —, nicht vor dem Schnitt.*
+`09037a32`, der Merge `704356a4` samt den Papieren zu #454), in § 8.17 und § 8.18 **vor #460** (Stand `9ab55946`, der
+Merge #460 über den Entscheid-Papieren zu E8b, `46023235`) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1956,3 +1957,62 @@ Zeile:
 | § 6.1 | Kurztafel bis E8a (#454) | Zeile E8b (#455) |
 | § 6.2 | „… die Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFormatWacheTests` (4)." | die Blattwache (13), die Formatwache (4), die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe `AnhangDFallstudieTests` (10); dazu die Ankerzeile „Fallstudie DIN EN 17463, Anhang D" |
 | § 7 und Anhang | „… und E8 Teil a (#454) — E7 ist damit abgeschlossen, von E8 die ValERI-Ansicht (V‑C) … Als Nächstes kommt **E8 Teil b** (V‑D): … Danach **E9**. Die acht Fragen aus E7c3 sind offen …"; Kürzeltafel „V-A = **#434**, V-C = **#454**" und „V-D = **E8** Teil b", Mockup-Anhang bis „U41, U42 und U46 bis U49 erledigt #454"; Etappenzeile „E8 Teil b … E12 — nächste Etappe: E8 Teil b" | bis E8 Teil b (#455), E7 und E8 abgeschlossen, als Nächstes E9 mit den Schritten B bis D; offen die Fragen aus E7c3 und E8b, dazu die zwei kleinen Aufträge zu E8b‑Q2 und E8b‑Q3; Kürzeltafel „V-D = **#455**" und „V-D = **E8** Teil b (gebaut #455)", neue Zeile = #455, „U12 und U43 erledigt #455"; Etappenzeilen „E8 Teil b — V‑D" = #455 und „E9 … E12 — nächste Etappe: E9" |
+
+### 8.17 E8c — Bemessungstexte und Gliederungsprobe der Betriebskosten (#460)
+
+Protokoll [`E8c_Bemessungstexte_Startjahr_Protokoll.md`](E8c_Bemessungstexte_Startjahr_Protokoll.md); E8b‑Q2 und
+E8b‑Q3 stehen im Register unter R‑E8b als erledigt, die zwei Fragen der Welle — offen, gebaut jeweils Lesart a — unter
+R‑E8c. Die Mini-Welle baut die zwei kleinen Aufträge, die der Anwender am 23.09.2026 aus E8b beschlossen hat („Fragen
+aus E8b: Empfehlung").
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E8c** (#460, Merge `9ab55946` auf dem Hilfszweig `pm7`) | E8b‑Q2: die Spalte „Bemessung" der Betriebskostentabelle aus dem Bemessungskatalog (alle 18 Steuerwerte, gewerkeigene Beschriftung), `BetriebskostenCtrl.Bemessungsfaktor` als gemeinsame Frage von Herleitung und Formelmappe (Stufe 3); E8b‑Q3 (Lesart b): die Probe der Gliederung nur mit den Positionen des ersten Jahres, „ab Jahr X" in der Herleitungsspalte, Nachweisumschlag Fassung 9; der Kommentar zu U42; fünf Ressourcenschlüssel gestrichen, einer neu, zwei neu gefasst | **keine** — Zellvergleich über 15 Prüfgruppen: geändert nur die Spalte „Bemessung" (54 Zellen), die Warnzeilen und der Hinweistext; die Ankertests unverändert, Referenzlauf gegen R13 13/13, 4.145.687 Werte in der Toleranz; Gate auf `9ab55946` grün |
+
+*§ 2.11.6, „Was die Mappe trägt", die Stufe 3 (Z. 921–923):*
+
+> - **Stufe 3** — Menge und Satz einer bemessenen Position rechts des Betrags, der Betrag ihr Produkt (bei
+>   Prozentbemessung ÷ 100, ein Erlös negativ; welche Rechnung gilt, sagt die Bemessung selbst,
+>   `BetriebskostenCtrl.Betrag`); die Summe als Spaltensumme; der Δ%-Block als (Wert − Stamm) / |Stamm| · 100.
+
+**Umgesetzt mit E8c (#460):** Die Stufe fragt `BetriebskostenCtrl.Bemessungsfaktor` — dieselbe Frage wie die
+Herleitungsspalte —, für jede der 16 bemessenen Arten; die Spalte „Bemessung" nennt jede Art mit dem Text des
+Bemessungskatalogs. Das Verhalten der Mappe ist gleich: Menge × Satz hatte sie schon für alle bemessenen Arten.
+
+*§ 3.6, der Satz zur Fassung des Nachweisumschlags (Z. 1999–2000):*
+
+> … die Fassung des Nachweisumschlags ist 8, seit er
+> die Energiesteuer-Vorschau trägt (§ 3.7).
+
+**Umgesetzt mit E8c (#460):** Fassung 9 — 8 mit der Energiesteuer-Vorschau, 9 mit dem Startjahr je
+Betriebskostenposition (§ 3.4).
+
+*§ 7, die Sätze zur nächsten Etappe (Z. 2706–2713):*
+
+> Als Nächstes kommt **E9** (V‑E, die
+> Szenarioabdeckung nach § 2.11.5): die Schemaschritte B (Betrachtungszeitraum und Mengenfaktor je Szenario), C
+> (Trägerpreise best/worst) und D (Erlössätze best/worst) mit ihren Nummern bei der Umsetzung, der ±-Knopf an den neuen
+> Orten, der Kern liest die Paare, der Hinweistext (§ 2.11.7) entfällt; ohne Degradation (A5), rechenwirksam je Pflege.
+> Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3); die sechs aus E8b sind entschieden (23.09.2026, nach
+> Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6 (E7c3‑Q5) und die Anzeige der drei
+> Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6) dazu; aus E8b kommt **E8c** mit den
+> zwei kleinen Aufträgen zu E8b‑Q2 und E8b‑Q3.
+
+**Umgesetzt mit E8c (#460):** E8c ist gebaut; E9 läuft in zwei Wellen — E9a mit den Schemaschritten 116, 117 und 118
+(Vergabe 24.09.2026), danach E9b; offen sind außerdem die zwei Fragen aus E8c.
+
+### 8.18 Berichtigungen im gültigen Stand (#460)
+
+Die Stellen, die mit E8c und der Schemaschritt-Vergabe vom 24.09.2026 veraltet sind; „vorher" ist der Wortlaut vor
+#460 (Stand `9ab55946`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Stand 23.09.2026, Codestand `704356a4`, `SchemaStand.Zielversion` = 113, „Schemaschritte 90–113 vergeben, neue ab **114**"; fremd „die Schritte 97 bis 101, 103 und 107 bis 110" | Stand 24.09.2026, Codestand `9ab55946`, Zielversion 114, „90–114 vergeben, 115 zugesagt, 116–118 an E9a vergeben"; fremd dazu 114 (Kühlung KU2, KU-S3) und der zugesagte 115 (Zapfprofil T2); ein Satz zur Vergabe von 116 bis 118 an die Schritte B, C und D |
+| § 2.11.4 | Fußnote „… und E8 (#454, #455)" | „… und E8 (#454, #455; die Nachbesserung E8c #460)" |
+| § 2.11.6 | Stufe 3: Wortlaut in § 8.17; „in allen 13 Prüfgruppen gleicht die Formelfassung der Wertfassung" | Stufe 3 mit `Bemessungsfaktor` und den Katalogtexten; dazu „mit #460 über 15 Prüfgruppen nachgemessen …" |
+| § 3.4 | kein Absatz zur Betriebskostentabelle der Berichte | neuer Absatz „Die Betriebskostentabelle der Berichte" — Bemessung, Herleitung, Startjahr, Probe der Gliederung, Nachweis |
+| § 3.6 | Wortlaut in § 8.17 | „… die Fassung des Nachweisumschlags ist 9 — 8 mit der Energiesteuer-Vorschau (§ 3.7), 9 mit dem Startjahr je Betriebskostenposition (§ 3.4, #460)." |
+| § 6.1 | Kurztafel bis E8b (#455) | Zeile E8c (#460) |
+| § 6.2 | „… die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe an der Norm `AnhangDFallstudieTests` (10 …)." | dazu die zwei Klassen der Betriebskostentabelle `BemessungstexteAlleArtenTests` (21) und `BetriebskostenStartjahrGliederungTests` (12) |
+| § 7 und Anhang | § 7: Wortlaut in § 8.17; Kürzeltafel bis #455; Etappenzeilen „E8c … offen — Entscheid 23.09.2026, nach Empfehlung" und „E9 … E12 — nächste Etappe: E9 (offen die acht Fragen aus E7c3 …; E8b entschieden …)" | § 7 mit E8c (#460) gebaut, E9 in zwei Wellen (E9a mit 116 bis 118, voraussichtlich #461; E9b, voraussichtlich #462), offen dazu die zwei Fragen aus E8c; neue Zeile der Kürzeltafel = #460; Etappenzeilen „E8c — E8b‑Q2/Q3" = #460 (Merge `9ab55946`) und „E9 … E12 — E9 läuft …" |
