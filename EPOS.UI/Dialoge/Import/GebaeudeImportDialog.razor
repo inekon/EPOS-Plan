@@ -1,0 +1,629 @@
+﻿@* Der GEBAEUDEIMPORT - EIN Zuordnungsdialog fuer jedes Gebaeudeformat (Stufe G4c, Welle 2;
+   Architekturentscheid A3/E27: formatfreier Name, Ordner Dialoge/Import neben dem
+   Katalogimport, dessen Ablauf er erbt; Softwarearchitektur 3.4, Datenaustauschkonzept 2.4).
+
+   WAS JE FORMAT VERSCHIEDEN IST, KOMMT ALS DATEN HEREIN (Softwarearchitektur 1.5, Regel 3):
+   Dateifilter, Groessengrenze, Formatname, Zonierungsregeln und Hilfeschluessel stehen in
+   GebaeudeImportProfilDaten, die Schemaanzeige im Kopf des Lesestands. Ein Formatname steht
+   in dieser Datei nirgends - eine Wache in den Tests liest den Quelltext.
+
+   DER ABLAUF LIEGT IM KERN, DIE DATENSEITE IN DER HUELLE (GebaeudeImportHuelle). Die
+   Komponente zeigt an und entscheidet, wann: Dateiwahl (die Huelle prueft die Groesse VOR dem
+   Lesen und lehnt benannt ab - dann steht ein Warnbanner der Stufe Fehler, gelesen wird
+   nicht), Lesen mit Fortschritt und Abbruch, Zuordnen, Pruefen, Uebernehmen.
+
+   DIE BAUALTERSKLASSE IST DAS ERSTE FELD. Sie steuert alle Vorgaben (U-Werte, g-Wert,
+   Waermebruecken); jeder Wechsel ordnet ueber den Delegaten neu zu. Ebenso ein Haken der
+   Raumliste ("beheizt"). HANDAENDERUNGEN BLEIBEN dabei stehen, wo das Zielfeld gleich ist:
+   ein geaenderter Wert (Herkunft "manuell", Markierung weg) und ein geaenderter Haken. Ein
+   Gebaeudewechsel und eine neue Datei sind echte Kontextwechsel - dort faellt beides weg.
+
+   OK PRUEFT UND UEBERNIMMT, ABBRECHEN VERWIRFT (Hausregel "Jeder Dialog traegt OK und
+   Abbrechen"). OK ruft den Pruefdelegaten (dieselbe Pruefung des Kerns wie am Schreibweg);
+   ein Fehler haelt den Dialog offen und steht im Warnbanner. Sonst wird uebernommen
+   (Uebernehmen, null = geschrieben, sonst der Grund) und Geschlossen bekommt das Ergebnis mit
+   ALLEN Zeilen. Abbrechen, das Kreuz und Esc liefern null und rufen Uebernehmen nie.
+   OHNE SCHREIBDELEGAT ist OK WEICH gesperrt (aria-disabled mit Grund, der Versuch meldet sich):
+   Ein OK, das schliesst, ohne zu uebernehmen, behauptete eine Uebernahme, die nicht stattfand.
+
+   WAEHREND EINES LAUFS steht KEIN Kreuz: Esc bricht dann den Lauf ab, statt zu schliessen
+   (Muster ImportUeberlagerung/KatalogImportDialog). Waehrend der Uebernahme ist Esc ohne
+   Wirkung. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using System.Globalization
+@implements IDisposable
+
+<div class="epos-dialog epos-gebimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!Beschaeftigt)
+        {
+            <Schliesskreuz Geschlossen="BeiAbbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@_klasse"
+                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt)" />
+            <Herleitungszeile Text="@Texte.KlasseHinweis" />
+            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@(Profil?.Dateifilter ?? "")"
+                       Pfad="@_dateianzeige" Waehlen="@Waehler" PfadChanged="BeiDatei" Aktiv="@(!Beschaeftigt)" />
+            @if (GrenzeText.Length > 0)
+            {
+                <Herleitungszeile Text="@GrenzeText" />
+            }
+        </KindInhalt>
+    </Formularraster>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                 Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
+                 AbbrechenText="@Texte.LaufAbbrechen" />
+
+    @if (_stand is not null && _lesestand is not null)
+    {
+        GebaeudeImportStand stand = _stand;
+
+        <Gruppenkopf Titel="@Texte.GruppeQuelle" />
+        @if (_lesestand.Kopf is GebaeudeImportKopf kopf)
+        {
+            <dl class="epos-gebimport-kopf">
+                <dt>@Texte.KopfDatei</dt><dd>@kopf.Dateiname</dd>
+                <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
+                <dt>@Texte.KopfSchema</dt><dd>@kopf.Schema</dd>
+                <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
+                <dt>@Texte.KopfZonenregel</dt><dd>@kopf.Zonenregel</dd>
+            </dl>
+        }
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+                @if (_lesestand.Gebaeude.Count > 1)
+                {
+                    <Auswahlfeld Bezeichnung="@Texte.Gebaeude" Eintraege="@Gebaeudeliste" Auswahl="@_gebaeudeIndex"
+                                 AuswahlChanged="BeiGebaeude" Aktiv="@(!Beschaeftigt)" />
+                }
+                <Textfeld Bezeichnung="@Texte.Name" Wert="@_name" WertChanged="BeiName" />
+            </KindInhalt>
+        </Formularraster>
+        <Herleitungszeile Text="@stand.Kopftext" />
+
+        <Gruppenkopf Titel="@Texte.GruppeRaeume" />
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-raeume">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteRaum</th>
+                        <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                        <th>@Texte.SpalteBeheizt</th>
+                        <th>@Texte.SpalteGrund</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < stand.Raeume.Count; i++)
+                    {
+                        GebaeudeRaumzeileDaten raum = stand.Raeume[i];
+                        <tr @key="i" class="@(raum.Uebersteuert ? "epos-gebimport-raum--umgestellt" : null)">
+                            <td title="@raum.Kennung">@raum.Name</td>
+                            <td class="epos-gebimport-zahl">@raum.Flaeche</td>
+                            <td>
+                                <Schalter Bezeichnung="@Format(Texte.BeheiztTitel, raum.Name)" Wert="@raum.Beheizt"
+                                          WertChanged="b => BeiBeheizt(raum, b)" Aktiv="@(!Beschaeftigt)" />
+                            </td>
+                            <td class="epos-gebimport-grund">@raum.Grund</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <Herleitungszeile Text="@Texte.RaeumeHinweis" />
+
+        <Gruppenkopf Titel="@Texte.GruppeZeilen" />
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-zeilen">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteGruppe</th>
+                        <th>@Texte.SpalteFeld</th>
+                        <th>@Texte.SpalteWert</th>
+                        <th>@Texte.SpalteEinheit</th>
+                        <th>@Texte.SpalteBeleg</th>
+                        <th class="epos-gebimport-zahl">@Texte.SpalteVorgabe</th>
+                        <th>@Texte.SpalteHerkunft</th>
+                        <th>@Texte.SpalteUebernehmen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ string vorigeGruppe = ""; }
+                    @foreach (GebaeudeFeldzeileDaten eintrag in _zeilen)
+                    {
+                        GebaeudeFeldzeileDaten z = eintrag;
+                        bool neueGruppe = !string.Equals(z.Gruppe, vorigeGruppe, StringComparison.Ordinal);
+                        vorigeGruppe = z.Gruppe;
+                        <tr @key="z.Zielfeld" class="@Zeilenklasse(z)" data-zielfeld="@z.Zielfeld">
+                            <td class="epos-gebimport-gruppe">@(neueGruppe ? z.Gruppe : "")</td>
+                            <td>@z.Feld</td>
+                            <td class="epos-gebimport-wert">
+                                @if (z.Eingebbar)
+                                {
+                                    <Zahlenfeld Bezeichnung="@z.Feld" Wert="@z.Wert"
+                                                WertChanged="w => BeiWert(z.Zielfeld, w)" Aktiv="@(!Beschaeftigt)" />
+                                }
+                                else
+                                {
+                                    <span class="epos-gebimport-werttext">@z.WertText</span>
+                                }
+                            </td>
+                            <td>@z.Einheit</td>
+                            <td class="epos-gebimport-beleg">@z.Beleg</td>
+                            <td class="epos-gebimport-zahl" title="@(z.VorgabeBeleg.Length > 0 ? z.VorgabeBeleg : null)">@z.Vorgabe</td>
+                            <td class="@Herkunftsklasse(z)">@z.HerkunftText</td>
+                            <td>
+                                <Schalter Bezeichnung="@Format(Texte.HakenTitel, z.Feld)" Wert="@z.Haken"
+                                          WertChanged="b => BeiHaken(z.Zielfeld, b)"
+                                          Aktiv="@(z.HakenSetzbar && !Beschaeftigt)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <Herleitungszeile Text="@Texte.ZeilenHinweis" />
+
+        <Gruppenkopf Titel="@Texte.GruppeMeldungen" />
+        @if (stand.Meldungen.Count == 0)
+        {
+            <p class="epos-leisezeile">@Texte.KeineMeldungen</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-gebimport-meldungen">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteStufe</th>
+                            <th>@Texte.SpalteMeldung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < stand.Meldungen.Count; i++)
+                        {
+                            GebaeudeImportMeldung m = stand.Meldungen[i];
+                            <tr @key="i" class="@Meldungsklasse(m)" data-kennung="@m.Kennung">
+                                <td>@m.Stufentext</td>
+                                <td class="epos-gebimport-meldungstext">@m.Text</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else if (!_laeuft)
+    {
+        <p class="epos-leisezeile epos-gebimport-leer">@Texte.Leer</p>
+    }
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" OkErlaubt="@(!Beschaeftigt)"
+                     OkSperrgrund="@OkSperrgrund" Ergebnis="BeiLeiste" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Was das Format ausmacht (Filter, Grenze, Formatname, Zonierungsregeln, Hilfeschlüssel); <c>null</c> = ohne Gaben.</summary>
+    [Parameter] public GebaeudeImportProfilDaten? Profil { get; set; }
+
+    /// <summary>Die 21 Baualtersklassen als Anzeigetexte, Index 0 = A … 20 = U.</summary>
+    [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die vorgewählte Baualtersklasse; <c>null</c> = keine.</summary>
+    [Parameter] public int? BaualtersklasseVorgabe { get; set; }
+
+    /// <summary>
+    /// Der Dateiwähler der Hülle samt Größenprüfung VOR dem Lesen; Parameter ist der Filter des
+    /// Profils. <c>null</c> = abgebrochen; ohne Delegat kein Knopf. Er öffnet Oberfläche der
+    /// Plattform und wird deshalb erwartet (<c>await</c>), nie synchron ausgewertet.
+    /// </summary>
+    [Parameter] public Func<string, Task<GebaeudeDateiwahl?>>? DateiWaehlen { get; set; }
+
+    /// <summary>Liest die gewählte Datei im Arbeitsfaden der Hülle — mit Fortschritt und Abbruch.</summary>
+    [Parameter] public Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>? Lesen { get; set; }
+
+    /// <summary>Ordnet ein Gebäude zu (Baualtersklasse, Haken der Raumliste) und liefert den Stand der Zeilen.</summary>
+    [Parameter] public Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>? Zuordnen { get; set; }
+
+    /// <summary>Die Prüfung am OK — dieselbe des Kerns wie am Schreibweg; ein Fehler sperrt die Übernahme.</summary>
+    [Parameter] public Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Der Schreibweg des Wirts — gerufen allein im OK-Weg nach bestandener Prüfung; <c>null</c>
+    /// als Antwort = übernommen, sonst der Grund (der Dialog bleibt offen). Ohne Delegat ist OK
+    /// weich gesperrt.
+    /// </summary>
+    [Parameter] public Func<GebaeudeImportErgebnis, Task<string?>>? Uebernehmen { get; set; }
+
+    /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
+    [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Die Beschriftungen (Bündel).</summary>
+    [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
+
+    // =====================================================================
+    // Zustand — ein Arbeitsstand; hereingereichte Objekte bleiben unberührt
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _klasse;
+    private string _pfad = "";
+    private string _dateianzeige = "";
+
+    private bool _laeuft;
+    private bool _schreibt;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    private GebaeudeLesestand? _lesestand;
+    private int _gebaeudeIndex;
+    private GebaeudeImportStand? _stand;
+    private List<GebaeudeFeldzeileDaten> _zeilen = new();
+
+    /// <summary>Die Haken der Raumliste, die von der Datei abweichen: Raumkennung → beheizt.</summary>
+    private readonly Dictionary<string, bool> _uebersteuert = new(StringComparer.Ordinal);
+
+    /// <summary>Die von Hand geänderten Werte je Zielfeld — sie überdauern ein Neuzuordnen.</summary>
+    private readonly Dictionary<string, double?> _handwerte = new(StringComparer.Ordinal);
+
+    /// <summary>Die von Hand gesetzten Haken je Zielfeld — sie überdauern ein Neuzuordnen.</summary>
+    private readonly Dictionary<string, bool> _handhaken = new(StringComparer.Ordinal);
+
+    private string _name = "";
+    private bool _nameGeaendert;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Stufe des Warnbanners (Prüfhilfe für Tests).</summary>
+    public WarnStufe MeldungStufe => _meldungStufe;
+
+    /// <summary>Die Zeilen des Arbeitsstands (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen => _zeilen;
+
+    private bool Beschaeftigt => _laeuft || _schreibt;
+
+    private string HilfeSchluessel => Profil?.HilfeSchluessel ?? "";
+
+    private string GrenzeText => string.IsNullOrEmpty(Profil?.Groessengrenze) ? "" : Format(Texte.Grenze, Profil.Groessengrenze);
+
+    private IReadOnlyList<(int Id, string Text)> Klassenliste
+        => Baualtersklassen.Select((text, index) => (index, text)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> Gebaeudeliste
+        => (_lesestand?.Gebaeude ?? Array.Empty<string>()).Select((text, index) => (index, text)).ToList();
+
+    /// <summary>Der Grund der weichen Sperre von OK — vor dem Lesen und ohne Schreibdelegat.</summary>
+    private string? OkSperrgrund
+        => Beschaeftigt ? null
+         : _stand is null ? Texte.OkOhneDatei
+         : Uebernehmen is null ? Texte.OkOhneWeg
+         : null;
+
+    private Func<string, Task<string?>>? Waehler => DateiWaehlen is null ? null : WaehlenUndPruefen;
+
+    private EventCallback AbbrechenCallback => EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        _klasse = GueltigeKlasse(BaualtersklasseVorgabe);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private int? GueltigeKlasse(int? index)
+        => index is int i && i >= 0 && i < Baualtersklassen.Count ? i : null;
+
+    // =====================================================================
+    // Quelle und Lesen
+    // =====================================================================
+
+    /// <summary>
+    /// Der Wähler hinter dem Baustein <c>Dateiwahl</c>: Die Hülle wählt und prüft die Größe; eine
+    /// Ablehnung steht VOR dem Lesen als Warnbanner der Stufe Fehler, und es wird nicht gelesen.
+    /// Zurück an die Dateiwahl geht nur der Dateiname — der Pfad bleibt hier.
+    /// </summary>
+    private async Task<string?> WaehlenUndPruefen(string filter)
+    {
+        if (DateiWaehlen is null || Beschaeftigt) return null;
+        GebaeudeDateiwahl? wahl = await DateiWaehlen(filter);
+        if (wahl is null) return null;                    // abgebrochen: nichts geschieht
+        if (wahl.Ablehnung is not null)
+        {
+            // Das Ereignis gehört dem Baustein Dateiwahl, nicht diesem Dialog — gezeichnet wird
+            // das Banner deshalb ausdrücklich.
+            Melden(wahl.Ablehnung, WarnStufe.Fehler);
+            StateHasChanged();
+            return null;
+        }
+        if (string.IsNullOrEmpty(wahl.Pfad)) return null;
+        _pfad = wahl.Pfad;
+        return string.IsNullOrEmpty(wahl.Dateiname) ? wahl.Pfad : wahl.Dateiname;
+    }
+
+    private Task BeiDatei(string anzeige)
+    {
+        _dateianzeige = anzeige ?? "";
+        return string.IsNullOrEmpty(_pfad) ? Task.CompletedTask : Einlesen(_pfad);
+    }
+
+    /// <summary>Eine neue Datei ist ein neuer Kontext: Stand, Haken und Handänderungen fallen weg.</summary>
+    private async Task Einlesen(string pfad)
+    {
+        if (Lesen is null || Beschaeftigt) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _meldung = "";
+        _lesestand = null;
+        _stand = null;
+        _zeilen = new List<GebaeudeFeldzeileDaten>();
+        _gebaeudeIndex = 0;
+        _uebersteuert.Clear();
+        _handwerte.Clear();
+        _handhaken.Clear();
+        _name = "";
+        _nameGeaendert = false;
+        _abbruch = new CancellationTokenSource();
+
+        try
+        {
+            var melder = new Progress<GebaeudeImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = f.Text ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            GebaeudeLesestand stand = await Lesen(pfad, melder, _abbruch.Token);
+            if (stand.Gelesen && stand.Gebaeude.Count > 0)
+            {
+                _lesestand = stand;
+                NeuZuordnen();
+            }
+            else
+            {
+                string text = string.Join(Environment.NewLine, stand.Meldungen.Select(m => m.Text));
+                Melden(text.Length > 0 ? text : Texte.NichtGelesen, WarnStufe.Fehler);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Der Anwender hat abgebrochen — still, nichts gelesen, nichts geschrieben.
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+    }
+
+    // =====================================================================
+    // Zuordnen — Klasse, Gebäude, Raumhaken; Handänderungen bleiben
+    // =====================================================================
+
+    private void NeuZuordnen()
+    {
+        if (Zuordnen is null || _lesestand is null) return;
+
+        GebaeudeImportStand stand = Zuordnen(new GebaeudeZuordnungsanfrage(
+            _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal)));
+        _stand = stand;
+        _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
+        if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
+    }
+
+    /// <summary>Legt die Handänderungen des Anwenders auf eine frisch zugeordnete Zeile.</summary>
+    private GebaeudeFeldzeileDaten MitHandaenderungen(GebaeudeFeldzeileDaten z, string manuellText)
+    {
+        if (z.Eingebbar && _handwerte.TryGetValue(z.Zielfeld, out double? wert))
+            z = z with
+            {
+                Wert = wert,
+                HerkunftSchluessel = GebaeudeHerkunftSchluessel.Manuell,
+                HerkunftText = manuellText,
+                Beleg = "",
+                Markierung = GebaeudeZeilenmarkierung.Keine,
+            };
+        if (z.HakenSetzbar && _handhaken.TryGetValue(z.Zielfeld, out bool haken))
+            z = z with { Haken = haken };
+        return z;
+    }
+
+    private void BeiKlasse(int? index)
+    {
+        _klasse = GueltigeKlasse(index);
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiGebaeude(int? index)
+    {
+        if (index is not int i || _lesestand is null || i < 0 || i >= _lesestand.Gebaeude.Count || i == _gebaeudeIndex) return;
+        // Ein anderes Gebäude ist ein Kontextwechsel — ohne Übertrag.
+        _gebaeudeIndex = i;
+        _uebersteuert.Clear();
+        _handwerte.Clear();
+        _handhaken.Clear();
+        _nameGeaendert = false;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiBeheizt(GebaeudeRaumzeileDaten raum, bool beheizt)
+    {
+        if (beheizt == raum.BeheiztLautDatei) _uebersteuert.Remove(raum.Kennung);
+        else _uebersteuert[raum.Kennung] = beheizt;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiName(string wert)
+    {
+        _name = wert ?? "";
+        _nameGeaendert = true;
+    }
+
+    /// <summary>Ein geänderter Wert: Herkunft „manuell", Markierung weg; ein eingetragener Wert setzt den Haken.</summary>
+    private void BeiWert(string zielfeld, double? wert)
+    {
+        int i = _zeilen.FindIndex(z => z.Zielfeld == zielfeld);
+        if (i < 0 || !_zeilen[i].Eingebbar) return;
+        _handwerte[zielfeld] = wert;
+        if (wert.HasValue && _zeilen[i].HakenSetzbar) _handhaken[zielfeld] = true;
+        _zeilen[i] = MitHandaenderungen(_zeilen[i], _stand?.ManuellHerkunftText ?? "");
+        _meldung = "";
+    }
+
+    private void BeiHaken(string zielfeld, bool haken)
+    {
+        int i = _zeilen.FindIndex(z => z.Zielfeld == zielfeld);
+        if (i < 0 || !_zeilen[i].HakenSetzbar) return;
+        _handhaken[zielfeld] = haken;
+        _zeilen[i] = _zeilen[i] with { Haken = haken };
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Schluss — OK prüft und übernimmt, Abbrechen verwirft
+    // =====================================================================
+
+    private GebaeudeImportErgebnis ErgebnisBauen()
+        => new(_gebaeudeIndex, _klasse, _name.Trim(),
+               new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
+               _zeilen.ToList());
+
+    private async Task BeiLeiste(bool ok)
+    {
+        if (!ok)
+        {
+            await BeiAbbrechen();
+            return;
+        }
+        if (Beschaeftigt) return;
+
+        // Die weiche Sperre meldet den Versuch.
+        if (_stand is null) { Melden(Texte.OkOhneDatei, WarnStufe.Hinweis); return; }
+        if (Uebernehmen is null) { Melden(Texte.OkOhneWeg, WarnStufe.Hinweis); return; }
+
+        GebaeudeImportErgebnis ergebnis = ErgebnisBauen();
+        IReadOnlyList<GebaeudeImportMeldung> befund = Pruefen?.Invoke(ergebnis) ?? Array.Empty<GebaeudeImportMeldung>();
+        List<GebaeudeImportMeldung> fehler = befund.Where(m => m.Stufe == WarnStufe.Fehler).ToList();
+        if (fehler.Count > 0)
+        {
+            Melden(Texte.Gesperrt + Environment.NewLine + string.Join(Environment.NewLine, fehler.Select(m => m.Text)),
+                   WarnStufe.Fehler);
+            return;
+        }
+
+        _schreibt = true;
+        _meldung = "";
+        string? grund;
+        try
+        {
+            grund = await Uebernehmen(ergebnis);
+        }
+        finally
+        {
+            _schreibt = false;
+        }
+
+        if (grund is not null)
+        {
+            Melden(grund, WarnStufe.Fehler);
+            return;
+        }
+        await Geschlossen.InvokeAsync(ergebnis);
+    }
+
+    /// <summary>Abbrechen, ✕ und Esc: verwirft, ohne zu prüfen und ohne zu übernehmen; ein Lesegang wird abgebrochen.</summary>
+    private async Task BeiAbbrechen()
+    {
+        if (_schreibt) return;
+        _abbruch?.Cancel();
+        await Geschlossen.InvokeAsync(null);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
+        if (_schreibt) return Task.CompletedTask;
+        return BeiAbbrechen();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    public void Dispose()
+    {
+        try { _abbruch?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    private static string? Zeilenklasse(GebaeudeFeldzeileDaten z) => z.Markierung switch
+    {
+        GebaeudeZeilenmarkierung.Gelb => "epos-gebimport-zeile--gelb",
+        GebaeudeZeilenmarkierung.Rot => "epos-gebimport-zeile--rot",
+        _ => null,
+    };
+
+    private static string Herkunftsklasse(GebaeudeFeldzeileDaten z)
+        => "epos-gebimport-herkunft epos-gebimport-herkunft--" + (z.HerkunftSchluessel ?? "").ToLowerInvariant();
+
+    private static string Meldungsklasse(GebaeudeImportMeldung m) => m.Stufe switch
+    {
+        WarnStufe.Fehler => "epos-gebimport-meldung--fehler",
+        WarnStufe.Warnung => "epos-gebimport-meldung--warnung",
+        _ => "epos-gebimport-meldung--hinweis",
+    };
+
+    private static string Format(string vorlage, params object?[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, vorlage ?? "", werte); }
+        catch (FormatException) { return vorlage ?? ""; }
+    }
+}

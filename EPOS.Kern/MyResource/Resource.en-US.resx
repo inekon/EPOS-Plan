@@ -31332,4 +31332,130 @@ Do you want to allow this?</value>
   <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
     <value>X4 – one zone per building</value>
   </data>
+  <data name="GIMP_DLG_TITEL" xml:space="preserve">
+    <value>Import building</value>
+  </data>
+  <data name="GIMP_DLG_KLASSE_KEINE" xml:space="preserve">
+    <value>— none —</value>
+  </data>
+  <data name="GIMP_DLG_KLASSE_HINWEIS" xml:space="preserve">
+    <value>The building age class controls all default values: U-values, g-value and thermal bridges.</value>
+  </data>
+  <data name="GIMP_DLG_DATEI" xml:space="preserve">
+    <value>Building file</value>
+  </data>
+  <data name="GIMP_DLG_DATEI_KNOPF" xml:space="preserve">
+    <value>Select file…</value>
+  </data>
+  <data name="GIMP_DLG_DATEI_TITEL" xml:space="preserve">
+    <value>Open building file</value>
+  </data>
+  <data name="GIMP_DLG_GRENZE" xml:space="preserve">
+    <value>Largest file: {0}</value>
+  </data>
+  <data name="GIMP_DLG_NICHT_GELESEN" xml:space="preserve">
+    <value>The file contains no building that could be applied.</value>
+  </data>
+  <data name="GIMP_DLG_LEER" xml:space="preserve">
+    <value>No file read yet — select the building age class and then a building file.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_DATEI" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_SCHEMA" xml:space="preserve">
+    <value>Schema</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_GROESSE" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_ZONENREGEL" xml:space="preserve">
+    <value>Zoning rule</value>
+  </data>
+  <data name="GIMP_DLG_GEBAEUDE" xml:space="preserve">
+    <value>Building in the file</value>
+  </data>
+  <data name="GIMP_DLG_NAME" xml:space="preserve">
+    <value>Name of the new building</value>
+  </data>
+  <data name="GIMP_DLG_GRP_RAEUME" xml:space="preserve">
+    <value>Spaces</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAUM" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="GIMP_DLG_SP_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="GIMP_DLG_SP_BEHEIZT" xml:space="preserve">
+    <value>Heated</value>
+  </data>
+  <data name="GIMP_DLG_SP_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="GIMP_DLG_BEHEIZT" xml:space="preserve">
+    <value>Heated: {0}</value>
+  </data>
+  <data name="GIMP_DLG_RAEUME_HINWEIS" xml:space="preserve">
+    <value>Only heated spaces form the zone; changing a tick re-assigns.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_ZEILEN" xml:space="preserve">
+    <value>Assignment</value>
+  </data>
+  <data name="GIMP_DLG_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="GIMP_DLG_SP_FELD" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="GIMP_DLG_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="GIMP_DLG_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="GIMP_DLG_SP_BELEG" xml:space="preserve">
+    <value>Derivation</value>
+  </data>
+  <data name="GIMP_DLG_SP_VORGABE" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="GIMP_DLG_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="GIMP_DLG_SP_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GIMP_DLG_HAKEN" xml:space="preserve">
+    <value>Apply: {0}</value>
+  </data>
+  <data name="GIMP_DLG_ZEILEN_HINWEIS" xml:space="preserve">
+    <value>A changed value counts as manual; without a tick the field of the new building stays as it is.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_MELDUNGEN" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="GIMP_DLG_SP_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="GIMP_DLG_SP_MELDUNG" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="GIMP_DLG_KEINE_MELDUNGEN" xml:space="preserve">
+    <value>No messages.</value>
+  </data>
+  <data name="GIMP_DLG_OK_OHNE_DATEI" xml:space="preserve">
+    <value>Applying is only possible once a building file has been read.</value>
+  </data>
+  <data name="GIMP_DLG_OK_OHNE_WEG" xml:space="preserve">
+    <value>Applying to the building catalogue is not yet connected in this version.</value>
+  </data>
+  <data name="GIMP_DLG_GESPERRT" xml:space="preserve">
+    <value>Not applied — please fix first:</value>
+  </data>
 </root>
