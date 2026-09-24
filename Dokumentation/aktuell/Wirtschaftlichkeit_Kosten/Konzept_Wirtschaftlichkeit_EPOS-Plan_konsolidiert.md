@@ -2876,7 +2876,9 @@ Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.1
 Speicherflotte, #463) ist gebaut: die Instandsetzungs- und Wartungssätze der Nutzungsdauertabelle mit Schemaschritt
 120, wirksam nur über die ausdrückliche Vorbelegung (§ 3.4, § 2.8), die Speicherflotte an der Tabelle und die
 Kennzeichnung der geräteeigenen Spalten (§ 2.13 (3)); den eigenen Entscheid zu ND‑S3 vertreten die Fragen aus E10.
-**Als Nächstes kommt E12** (Wiki-Runden); E11 entfällt — damit ist der Etappenplan bis auf E12 abgearbeitet. Offen
+**E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload selbst steht nach Freigabe
+des Anwenders aus; E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
+abgearbeitet. Offen
 sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
 (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs der sieben aus E10 (→ Register R‑E10; E10‑Q5 ist
 erledigt); die sechs aus E8b sind entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
