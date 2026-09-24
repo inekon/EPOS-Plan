@@ -288,6 +288,46 @@ public class ZeileIstWahlTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Ein neuer Zeigeanlass rollt die Fokuszeile ins Bild</b> (nach einer Übernahme aus
+    /// dem Import, <c>Zeilenauswahl.Uebernahmen</c>) — über denselben Aufruf
+    /// <c>zeileZeigen</c> wie ein Tastenschritt, mit der Stelle der Fokuszeile und dem
+    /// Zeilenmaß 46. Der erste Anlass rollt nicht, und ohne neuen Anlass rollt auch ein
+    /// Wechsel der Wahl von außen nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_neuer_Zeigeanlass_rollt_die_Fokuszeile_ins_Bild()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, Zeilen())
+            .Add(x => x.Filterstand, new Katalogfilterstand())
+            .Add(x => x.Gewaehlt, "Alpha")
+            .Add(x => x.ZeileIstWahl, true)
+            .Add(x => x.Zeigeanlass, 5));
+
+        cut.WaitForAssertion(() => Assert.Single(modul.Invocations, i => i.Identifier == "anmelden"));
+
+        // Derselbe Anlass, eine andere Wahl: kein Rollen.
+        cut.Render(p => p.Add(x => x.Gewaehlt, "Beta").Add(x => x.Zeigeanlass, 5));
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        // Ein NEUER Anlass: die Fokuszeile Gamma (Stelle 2) ins Bild.
+        cut.Render(p => p.Add(x => x.Gewaehlt, "Gamma").Add(x => x.Zeigeanlass, 6));
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(2, zeigen[0].Arguments[1]);
+            Assert.Equal(46f, zeigen[0].Arguments[2]);
+        });
+    }
+
+    /// <summary>
     /// <b>Der linke Balken weicht nicht mit der ersten Spalte</b>: Führt das Profil vor
     /// dem Namen eine Spalte mit Rang (die Wärmepumpe: Hersteller), trägt die erste immer
     /// stehende Spalte die Stufe der ersten als <c>epos-balken-ab-N</c> — das Stilblatt
