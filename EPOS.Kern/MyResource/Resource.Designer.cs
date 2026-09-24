@@ -3068,51 +3068,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_BETRAG {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_BETRAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die je Betriebsstunde ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_EUR_PRO_H {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_H", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die je kWh ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_EUR_PRO_KWH {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_EUR_PRO_KWH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die % der Brennstoffkosten ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die % der Investition ähnelt.
-        /// </summary>
-        public static string BEMESSUNG_PROZENT_INVESTITION {
-            get {
-                return ResourceManager.GetString("BEMESSUNG_PROZENT_INVESTITION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -68272,7 +68227,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
             get {
@@ -68281,7 +68236,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab Jahr {0} ähnelt.
+        /// </summary>
+        public static string WIRT_BK_AB_JAHR {
+            get {
+                return ResourceManager.GetString("WIRT_BK_AB_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten de [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_BK_HINWEIS {
             get {

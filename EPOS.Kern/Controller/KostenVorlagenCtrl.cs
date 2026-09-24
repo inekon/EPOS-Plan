@@ -599,7 +599,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Der Bemessungskatalog der Oberfläche (Konzept § 5.3) — EINE Wahrheit für
     /// Auswahlliste, Einheitenanzeige und Kopplungsregel (KL4/§ 5.4); auch die
-    /// Projektseite (KD3) liest hier.
+    /// Projektseite (KD3) liest hier, und die Spalte „Bemessung" der
+    /// Betriebskostentabelle in Wort- und Tabellenbericht
+    /// (<c>WirtschaftlichkeitZeilen.BemessungText</c>, ETAPPE E8c).
     /// </summary>
     public static class BemessungKatalog
     {
