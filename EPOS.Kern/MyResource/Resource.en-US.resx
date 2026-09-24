@@ -4613,12 +4613,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Sales margin</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2.05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0.05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of the components: {0} ct/kWh</value>
   </data>
@@ -30452,5 +30446,47 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
     <value>Items every n years with p_E [€/a]</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ERFASST" xml:space="preserve">
+    <value>Electricity tax share recorded in the electricity price "{0}": {1} ct/kWh ({2}).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="BHW_S_STANTEIL_INAKTIV" xml:space="preserve">
+    <value>switched off</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEINER" xml:space="preserve">
+    <value>No electricity tax share is recorded in the electricity price "{0}".</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEIN_TRAEGER" xml:space="preserve">
+    <value>No electricity energy carrier is assigned to the project — no electricity tax share is recorded.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_NICHT_LESBAR" xml:space="preserve">
+    <value>The recorded electricity tax share could not be read: {0}</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REGEL" xml:space="preserve">
+    <value>This is the standard rate {0} ({1} ct/kWh, § 3 StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REDUZIERT" xml:space="preserve">
+    <value>This is the reduced rate {0} ({1} ct/kWh, § 9b StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ABWEICHEND" xml:space="preserve">
+    <value>This is neither the standard rate ({0} ct/kWh) nor the reduced rate ({1} ct/kWh) of the year {2}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REGEL" xml:space="preserve">
+    <value>standard rate</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REDUZIERT" xml:space="preserve">
+    <value>reduced rate</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PASST" xml:space="preserve">
+    <value>Matches the company type: it suggests the {0}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_VORSCHLAG" xml:space="preserve">
+    <value>The company type suggests the {0} — the share is maintained under "Electricity price details" of the energy carrier; it is shown here for reference only.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
+    <value>The share is maintained under "Electricity price details" of the energy carrier; it is shown here for reference only.</value>
   </data>
 </root>

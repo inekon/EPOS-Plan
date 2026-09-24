@@ -181,7 +181,7 @@ namespace WindowsFormsApplication1
     /// aber auf <c>false</c> — gerechnet wird mit ihm erst, wenn der Anwender ihn setzt.
     /// Für Fall 4 (Satzvergleich mit dem Katalog) reicht das trotzdem nicht: Ob ein
     /// Stromsteueranteil wirklich GEPFLEGT ist, sagt nur die rohe Spalte, und
-    /// <see cref="StromsteuerRoh"/> liest sie eigens. Einen nie erfassten Wert mit dem
+    /// <see cref="StrompreisZerlegungCtrl.StromsteuerRoh"/> liest sie eigens. Einen nie erfassten Wert mit dem
     /// Katalog zu vergleichen wäre ein Vergleich des Katalogs mit sich selbst.</para>
     /// </summary>
     internal static class KohaerenzPruefung
@@ -1189,7 +1189,7 @@ namespace WindowsFormsApplication1
                 });
 
             // Fall 4: nur gegen einen WIRKLICH gepflegten Wert (siehe Klassenkommentar).
-            double? roh = StromsteuerRoh(idProjekt, carrier);
+            double? roh = StrompreisZerlegungCtrl.StromsteuerRoh(idProjekt, carrier);
             if (roh.HasValue) Fall4Strom(roh.Value, lauf.Jahr, kultur, liste);
         }
 
@@ -1331,36 +1331,9 @@ namespace WindowsFormsApplication1
         // Datenzugriff
         // =====================================================================
 
-        /// <summary>
-        /// Der ROHE Stromsteueranteil aus <c>energy_project_settings</c>;
-        /// <c>null</c> = nie gepflegt (oder Spalte/Zeile fehlt).
-        /// </summary>
-        /// <remarks>
-        /// <b>Warum nicht über <see cref="StrompreisZerlegungCtrl.Read"/>.</b> Dessen Leseweg
-        /// lässt den Vorschlagssatz als ZAHL im Feld stehen
-        /// (<c>StrompreisZerlegungModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh), auch wenn
-        /// ihn niemand erfasst hat; rechnen tut er dort erst mit gesetztem
-        /// Aktiv-Schalter. Für Fall 4 hilft das nicht: Der Rückfallwert IST der
-        /// Katalogsatz, der Vergleich wäre zirkulär. Hier zählt allein, ob die Spalte
-        /// einen Wert trägt.
-        /// </remarks>
-        private static double? StromsteuerRoh(int idProjekt, int carrierId)
-        {
-            // ETAPPE E7c3 (B‑6): ohne eigenes try und über den strengen Leseweg — ein
-            // Lesefehler wird zur Zeile „nicht ausführbar" der Teilprüfung Stromseite;
-            // bis E7c3 hieß er still „nie gepflegt".
-            DataTable dt = StilleDb.TabelleStreng(
-                "SELECT * FROM [" + StrompreisZerlegungCtrl.TABLE + "] " +
-                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new DbParam("@proj", idProjekt),
-                new DbParam("@eid", carrierId));
-
-            if (dt == null || dt.Rows.Count == 0) return null;
-            if (!dt.Columns.Contains(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER)) return null;
-
-            object v = dt.Rows[0][SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER];
-            return (v == null || v == DBNull.Value) ? (double?)null : Convert.ToDouble(v);
-        }
+        // ETAPPE E18 (E18‑Q6 a): Der rohe Leseweg des Stromsteueranteils steht jetzt in
+        // StrompreisZerlegungCtrl.StromsteuerRoh — derselbe Weg für Fall 4 und für die
+        // Anzeige im Dialog „BHKW-Wirtschaftlichkeit".
 
         /// <summary>Anzeigename eines Energieträgers; nicht lesbar = „#Id". ETAPPE E7c3
         /// (B‑6): ein benannter Anzeigerückfall — die Zeile, die den Namen trägt, erscheint

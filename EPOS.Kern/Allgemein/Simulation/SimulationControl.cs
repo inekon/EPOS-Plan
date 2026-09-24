@@ -1537,6 +1537,9 @@ namespace WindowsFormsApplication1
         {
             simulation_wp.wp_list.Clear();
 
+            // HB1-O1, offen: ungepflegt vor gepflegt — NULL-Prioritaet sortiert hier vorn
+            // (Ladeordnung.SqlAnlagenprio gilt nur für die Anzeige-Leser); ein Umbau ändert
+            // die Rechenreihenfolge und braucht einen eigenen Referenzlauf.
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
                 "ORDER BY Prioritaet, ID",
@@ -3403,6 +3406,7 @@ namespace WindowsFormsApplication1
         {
             if (kontext == null) return;
 
+            // HB1-O1, offen: ungepflegt vor gepflegt (siehe WP_Liste_Laden).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, ID_Type, Bezeichner, WQ_Typ, WQ_ID_Puffer " +
                 "FROM Tab_Energieanlagen " +
@@ -4178,6 +4182,7 @@ namespace WindowsFormsApplication1
         {
             List<int> ids = new List<int>();
 
+            // HB1-O1, offen: ungepflegt vor gepflegt (siehe WP_Liste_Laden).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
