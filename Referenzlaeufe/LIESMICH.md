@@ -310,7 +310,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **124**, LFS-SHA-256 `1d971b1a…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **125**, LFS-SHA-256 `6c4c32f9…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -481,6 +481,19 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > nichts; die 14 Sichten und alle 209 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer,
 > Größe unverändert 67 792 896 Byte (LFS-SHA-256 `1d971b1a…`). **Keine Einfrierregel ist berührt:**
 > Kein Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
+> diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E15 (#478): Schemastand 125 (Risikomodul der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **125** (`SCHRITT_125_RISIKOMODUL`; Quelle `SchemaKatalog.RisikomodulSpalten`), **reines DDL**
+> an `Tab_ProjektWirtschaftlichkeit`: `Risiko_Art` (TEXT(10); leer = kein Risiko, `ZINS`, `ABZUG`),
+> `Risiko_Zinszuschlag` [%-Punkte], `Risiko_Verlust` [€ je Periode] und `Risiko_Wahrscheinlichkeit` [%], nullbar,
+> ohne Vorgabe (DIN EN 17463, 6.5 und Anhang F; Konzept Wirtschaftlichkeit § 2.11.2, V‑G7). Nachgezogen auf der
+> Fassung **124** (Nachtrag oben, `1d971b1a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: vier Spalten angelegt,
+> keine Tabelle, Marker 125. `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 792 896 Byte
+> (LFS-SHA-256 `6c4c32f9…`); die vier Spalten sind in allen fünf Parameterzeilen leer. **Ergebnisneutral:** Leer
+> heißt „kein Risiko", und kein Referenzprojekt trägt eines; die Wirtschaftlichkeit geht ohnehin nicht in
+> `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
 > diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
