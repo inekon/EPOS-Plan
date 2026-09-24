@@ -114,6 +114,22 @@ namespace WindowsFormsApplication1
                 // Speicher kappt — deshalb misst die Zahl den Effekt der Kappung.
                 z.Bezugsspitze = Netzbezugsspitze.AusReihe(sim.Rest_Strombedarf_viertelstuendlich);
 
+                // ENTSCHEID E35 (Konzept Gebäudesimulation N1.40): Ein eigener Zähler des
+                // Kältestroms trägt den Leistungspreis seines Kühlträgers auf SEINE Spitze — sie
+                // entsteht hier aus der Stundenreihe der Anlage (je Stunde dieselbe Leistung in
+                // jeder Viertelstunde, die Viertelstundenspitze ist also die Stundenspitze).
+                // Anlagen, deren Kältestrom durch die Stufenrechnung läuft, stehen in der
+                // Bezugsspitze oben und bekommen keinen Eintrag.
+                Kaeltekaskade kaskade = runner.simulation_Kaeltebedarf != null
+                    ? runner.simulation_Kaeltebedarf.Kaskade : null;
+                if (kaskade != null && kaskade.Erzeuger != null)
+                    foreach (Kaelteerzeuger e in kaskade.Erzeuger)
+                        if (e != null && e.NebenDerStufenrechnung && e.Modulindex >= 0)
+                        {
+                            Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
+                            if (s != null) z.Kaeltestromspitzen[e.Modulindex] = s;
+                        }
+
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).
                 z.Reihen[ZeitreihenSatz.WAERMEREST] = D(sim.Rest_Waermebedarf_stuendlich);
 

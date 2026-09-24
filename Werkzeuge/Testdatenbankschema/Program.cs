@@ -1480,9 +1480,78 @@ namespace Testdatenbankschema
                                   NutzungsdauerSaetze.Offen() + " (erwartet 0).");
             }
 
-            // ---- Schritt 121: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
-            //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 120. REIN DDL aus
-            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_121_ZapfprofilLaufangaben
+            // ---- Schritt 121: der Katalogverweis des Projektgebaeudes (Welle #468, Konzept
+            //      Administrationsdialoge 7.1 (a)). NACH 120 ohne Reihenfolgebedingung.
+            //      Spalte Tab_Gebaeude.ID_Gebaeude_Stamm (REFERENCES Tab_Gebaeude_STAMM,
+            //      ON DELETE SET NULL), Index, Nachtrag ueber den EINDEUTIGEN Namen, dann die
+            //      Reparatur der Sonstigen Flaeche ohne U-Wert im Katalog - alles aus
+            //      GebaeudeKatalogverweis, DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_121_GebaeudeKatalogverweis bedient. NICHT ueber
+            //      SpalteSicherstellen: Dessen Typuebersetzung schnitte das REFERENCES weg.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest den Verweis; die reparierten
+            //      Katalogsaetze nutzt kein Projekt, und ihre Flaeche fuehrte mit U = 0 nie Waerme.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 121 - Katalogverweis des Projektgebaeudes: " +
+                              (GebaeudeKatalogverweis.SpalteVorhanden() ? "Spalte vorhanden" : "Spalte offen") +
+                              ", Sonstige Flaeche ohne U-Wert vorher " +
+                              Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG) + ".");
+            if (!trocken)
+            {
+                GebaeudeKatalogverweis.Bericht bericht121 = GebaeudeKatalogverweis.Ausfuehren();
+                if (bericht121.SpalteAngelegt) angelegt++;
+                Console.WriteLine("Schritt 121 - " + bericht121.Text() + "; offen: " +
+                                  Zahl(GebaeudeKatalogverweis.Zaehlung()) + " und " +
+                                  Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG) + " (erwartet 0 und 0).");
+            }
+
+            // ---- Schritt 122: AK-S1, die Waermeuebergabe an Tab_Gebaeude(_STAMM) und die
+            //      Kopplungsstufe des Projekts (Anlagenkopplung 8.1, Stufe AK1 Welle 1). REIN DDL:
+            //      Sicht verwerfen, 26 Spalten, Sicht Abfrage_Projektgebaeude neu, dann
+            //      Tab_Einstellungen.Anlagenkopplung mit Wertliste - DIESELBE Quelle
+            //      (AnlagenkopplungSchema, GebaeudeSchema), aus der sich
+            //      SchemaMigration.Schritt_122_AnlagenkopplungUebergabe bedient.
+            //
+            //      ER STEHT NACH 101 und 108, deren Sicht er erweitert.
+            //
+            //      ERGEBNISNEUTRAL: Die Spalten bleiben NULL (die Schalter 0), kein Rechenweg
+            //      liest sie; der Referenzlauf bleibt byte-gleich.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 122 - Waermeuebergabe und Kopplungsstufe (AK-S1): " +
+                              (AnlagenkopplungSchema.UebergabeVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht122 = new List<string>();
+                angelegt += AnlagenkopplungSchema.UebergabeAlle(bericht122);
+                foreach (string zeile in bericht122)
+                    Console.WriteLine("Schritt 122 - " + zeile + ".");
+                Console.WriteLine("Schritt 122 - vollstaendig: " + AnlagenkopplungSchema.UebergabeVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 123: AK-S3, Waermeteil - drei Ergebnisspalten an
+            //      Tab_ErgebnisEnergiebedarf (Anlagenkopplung 8.3). NACH 122. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_123_AnlagenkopplungErgebnis
+            //      bedient (AnlagenkopplungSchema.Ergebnisspalten).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Spalten bleiben NULL, und der Export nimmt sie
+            //      erst mit einem Wert auf (Referenzlauf/Ergebnisexport.cs).
+            Console.WriteLine();
+            Console.WriteLine("Schritt 123 - Ergebnisspalten der Waermeuebergabe (AK-S3, Waermeteil): " +
+                              (AnlagenkopplungSchema.ErgebnisspaltenVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht123 = new List<string>();
+                angelegt += AnlagenkopplungSchema.ErgebnisspaltenAlle(bericht123);
+                foreach (string zeile in bericht123)
+                    Console.WriteLine("Schritt 123 - " + zeile + ".");
+                Console.WriteLine("Schritt 123 - vollstaendig: " + AnlagenkopplungSchema.ErgebnisspaltenVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 124: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
+            //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 123. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_124_ZapfprofilLaufangaben
             //      bedient (TwwSchema.SpaltenT3): Erzeugerart, Uebertrager_Werkstoff, Personen_Auto
             //      (0/1, Vorgabe 1), Personen_Manuell, Fuellstand_Bezug an Tab_TwwProjekt und
             //      Bezugsart an Tab_TwwBedarfstag_STAMM.
@@ -1491,15 +1560,15 @@ namespace Testdatenbankschema
             //      Personen automatisch; kein Referenzprojekt steht auf dem Generator. Die Bezugsart
             //      des Ecodesign-Zapfprofils spielt danach das Katalogskript aus dem Paketteil ein.
             Console.WriteLine();
-            Console.WriteLine("Schritt 121 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag: " +
+            Console.WriteLine("Schritt 124 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag: " +
                               (TwwSchema.T3Vollstaendig() ? "stehen bereits" : "offen") + ".");
             if (!trocken)
             {
-                var bericht121 = new List<string>();
-                angelegt += TwwSchema.T3Alle(bericht121);
-                foreach (string zeile in bericht121)
-                    Console.WriteLine("Schritt 121 - " + zeile + ".");
-                Console.WriteLine("Schritt 121 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
+                var bericht124 = new List<string>();
+                angelegt += TwwSchema.T3Alle(bericht124);
+                foreach (string zeile in bericht124)
+                    Console.WriteLine("Schritt 124 - " + zeile + ".");
+                Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

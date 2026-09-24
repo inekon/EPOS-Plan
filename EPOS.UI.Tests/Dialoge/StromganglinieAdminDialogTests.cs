@@ -324,6 +324,55 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Nach dem Einlesen rollt die Liste zur neuen Fokuszeile</b> — derselbe Weg wie
+    /// jede Übernahme (<c>Zeilenauswahl.Uebernommen</c> → <c>Zeigeanlass</c>): die
+    /// Katalogliste ruft <c>zeileZeigen</c> mit der Stelle der neuen Ganglinie. Das
+    /// Öffnen rollt nicht.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Einlesen_rollt_die_Liste_zur_neuen_Fokuszeile()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var liste = new List<Katalogfilterzeile>(Katalog());
+        var cut = Zeige(
+            katalog: () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(liste.ToList()),
+            waehlen: f => Task.FromResult<string?>(@"C:\Daten\Lastgang Neu.csv"),
+            einlesen: (pfad, raster, r) =>
+            {
+                liste.Add(Zeitreihenproben.Zeile(99, "Lastgang Neu", jahresarbeitMwh: 1.0, spitzeKw: 2.0));
+                return Task.FromResult(new GanglinienImportErgebnis
+                {
+                    Ausgang = ImportAusgang.Erfolg,
+                    Bezeichner = "Lastgang Neu",
+                    Meldung = "fertig",
+                    MeldungStufe = PruefStufe.Info
+                });
+            });
+        cut.WaitForAssertion(() => Assert.Contains(modul.Invocations, i => i.Identifier == "anmelden"));
+
+        ImportOeffnen(cut);
+        cut.Find(".epos-dateiwahl button").Click();
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        EinleseKnopf(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.Equal("Lastgang Neu", cut.Instance.Gewaehlt));
+        int stelle = cut.FindAll(".epos-katalogliste tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Lastgang Neu", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+        });
+    }
+
+    /// <summary>
     /// Der Rückruf „Optionen" öffnet die Überlagerung; ihr „Abbrechen" löst die
     /// wartende Kette wieder auf.
     /// </summary>

@@ -21,6 +21,14 @@ namespace WindowsFormsApplication1
         public string Beschreibung;
         public string Gebaeudeart;
 
+        /// <summary>
+        /// Der Katalogsatz (<c>Tab_Gebaeude_STAMM.ID</c>), aus dem die Projektkopie stammt
+        /// bzw. entstehen soll — <c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> (Schemaschritt 121).
+        /// <c>null</c> = kein Verweis (Altbestand, gelöschter Katalogsatz); dann sucht
+        /// <c>WizardCtrl.Add_Projekt_ZuordungGebäude</c> über <see cref="Gebaeudename"/>.
+        /// </summary>
+        public int? ID_Gebaeude_Stamm;
+
         public Z_ProjGebModel()
         {
             items = null;

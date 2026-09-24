@@ -9303,3 +9303,400 @@ UI 5 893, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27
 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
 `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
 Toleranz), Schemastand 119.
+
+## #467 — Lastspitzenkappung: „CSV-Export“ und „In Variante übernehmen“ in der Werkzeugleiste (Konzept 7.1 c) (24.09.2026)
+
+Anwenderentscheid „Lastspitzenkappung: Werkzeugleiste“ zur offenen Frage 7.1
+(c) des Konzepts Administrationsdialoge. Beide Knöpfe standen in der Fußleiste
+von `EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor`; der Katalograhmen hat
+keinen eigenen Werkzeug-Schlitz, der Schlitz sitzt in der `Katalogliste`
+(`Werkzeug`, Suchzeile — bisher nur Wärmepumpe); `Katalogliste.razor` blieb
+unverändert. Commits (Zweig `worktree-agent-ac446611b02598f0e`, Basis
+`4a9d7449`): `f5366a4a` Lastspitzenkappung: CSV-Export und Übernahme in die
+Werkzeugleiste (Dialog, CSS, Tests); `ffdd658d` Papiere: Lastspitzenkappung
+Werkzeugleiste (Admin-Konzept 7.1 c). Merge in den Hauptbaum `8c68d21b`,
+konfliktfrei.
+
+**Umsetzung.** Beide Knöpfe stehen jetzt im Schlitz `Werkzeug` in einer neuen
+Gruppe `.epos-werkzeughandlungen` (Beschriftung, Sperre „solange gerechnet
+wird“ und Meldung „Bitte zuerst rechnen.“ unverändert; ohne Delegaten entsteht
+keine leere Zelle). Die Fußleiste trägt nur noch „Lastgang aus Datei…“, die
+Statuszeile und „Beenden“. Die Tabulatorfolge läuft Suche → CSV-Export → In
+Variante übernehmen → Liste → Fußleiste, nichts ist per CSS umsortiert. In
+`epos-ui.css` brechen die Knöpfe nicht um, das Suchfeld der Lastspitzenkappung
+beginnt mit 16rem statt 22rem. Die KI-Sicht `PEAK_SHAVING` und ihr Wächter sind
+unberührt — Knöpfe zählen nicht als Eingabestellen.
+
+**Messung** (Rasterprobe-Wirt, Chromium/Playwright 1.58). Bei 1 088 × 624:
+Werkzeugleiste eine Zeile, Liste 426 px/8 Zeilen, Fußleiste eine Zeile,
+Sucheingabe 124 px statt 309 px (Platzhalter abgeschnitten). Bei 400 × 624:
+Suchzeile 3 Zeilen/126 px statt 2/72 px, Fußleiste 1 Zeile/44 px statt 2/100
+px, Liste 283 px statt 281 px. Katalogprobe 60/60 ohne Überlagerung.
+
+**Tests.** Neue Fälle in `PeakShavingDialogTests` (Knöpfe stehen in der
+Werkzeugleiste, nicht in der Fußleiste; gesperrt während der Rechnung) und
+`PeakShavingVarianteTests`. Im Worktree 12 602 bestanden, 0 rot, 1 übersprungen
+(Kern 5 744, UI 5 903, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27);
+Kern-Filter und Windows-Schale 0 Fehler.
+
+**Papiere.** Konzept Administrationsdialoge (7.1 (c) entschieden und umgesetzt;
+3.1 Kopf/Zonen 2 und 6, 3.2 „Handlungen am Ergebnis“, 3.5 Zeile A11, 3.6 Punkt
+6, Stufe 5); Konzept Knopfleisten (neue Regel: Ausgabe- und Übernahmehandlungen
+gehören in die Werkzeugleiste, die Fußleiste bleibt dem Gerüst vorbehalten;
+Tabellenzeile 5); `EPOS.UI/CLAUDE.md` (Regel beim Schlitz WERKZEUG);
+Wiki-Quelle `Programm Dokumentation - Stromspeicher.wiki` (Abschnitt Maske
+Lastspitzenkappung; Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Lastspitzenkappung: „CSV-Export“ und „In Variante übernehmen“ stehen in der
+> Werkzeugleiste über der Liste der Lastgänge.
+
+**Was offen bleibt.** Im schmalen Fenster (unter 900 px, iPad hochkant) liegt
+das Stammblatt über Werkzeugleiste und Liste — wer im Blatt rechnet, erreicht
+die Knöpfe erst über „‹ Liste“ (vorher stand die Fußleiste immer sichtbar);
+Anwenderfrage. Bei gesetztem Spaltenfilter rückt „Filter zurücksetzen“ bei
+1 088 px in eine zweite Zeile (+54 px); das Suchfeld bleibt bei 124 px statt
+309 px. Der Widerspruch im Konzept 3.5 Zeile A11 („Vergleichen rechnet über
+zwei bis drei Lastgänge“) gegen 7.1 (c) und den Dialog („kein Vergleich“) ist
+unverändert.
+
+**Gate nach Merge auf `8c68d21b`.** Kern-Filter 0 Fehler; Kern 5 744, UI 5 903,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 120.
+
+## #468 — Schemaschritt 121: Katalogverweis im Projektgebäude, Löschsperre der Gebäudeverwaltung über die ID; vier regelwidrige Katalogsätze repariert (24.09.2026)
+
+Anwenderentscheid „Schemaschritt 122: vornehmen“ zum Löschsperre-Vorschlag aus
+#465; die Nummer 121 nach Absprache mit der parallelen Zapfprofil-Sitzung
+(Regel zwischen den Sitzungen: wer zuerst pusht, hat die Nummer). Commits
+(Zweig `worktree-agent-a9ccf106d1d862b70`, Basis `4a9d7449`): `881bb49f`
+Schritt 121 samt Reparatur und Testdatenbank; `0481b2c0` Übernahme,
+Löschsperre, Kopierwege, Transfer, Tests; `b21a5bab` Papiere. Merge in den
+Hauptbaum `6be906b0`, konfliktfrei.
+
+**Schema.** Spalte `Tab_Gebaeude.ID_Gebaeude_Stamm INTEGER REFERENCES
+Tab_Gebaeude_STAMM(ID) ON DELETE SET NULL`, Index
+`Tab_Gebaeude_ID_Gebaeude_Stamm`; eine Quelle für alle Wege
+`EPOS.Kern/Allgemein/Update/GebaeudeKatalogverweis.cs`. SET NULL statt
+RESTRICT: Die Projektkopie trägt alle Werte, die Simulation liest nur sie;
+RESTRICT würde die weiche Sperre der Verwaltung auf allen anderen Löschwegen
+(Dublettenbereinigung, „Gebäude in DB löschen“, Auslieferungsvorlage) zum
+harten Datenbankfehler machen und wäre in SQLite nur per Tabellenneubau
+rücknehmbar; Vorbild ist der Wärmepumpen-Verweis aus Schritt 80. Nachtrag in
+der Testdatenbank: 26/26 Projektgebäude tragen den Verweis; mehrdeutige Namen
+gibt es dort nicht (eindeutiger Index auf `Bezeichner`), ein Test prüft den
+Fall künstlich. Stellen mit der Nummer: `SchemaStand.cs` (Zielversion 121),
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`
+(`SCHRITT_121_GEBAEUDE_KATALOGVERWEIS`, `Schritt_121_GebaeudeKatalogverweis`),
+`Werkzeuge/Testdatenbankschema/Program.cs`, `EPOS.Kern.Tests/TestDatenbank.cs`,
+`GebaeudeKatalogverweisTests.cs`, Kommentare, `Referenzlaeufe/LIESMICH.md`,
+Konzept Administrationsdialoge. Marker `SchemaVersion = 121` in der
+Testdatenbank (LFS, oid `00fbbb8b…`, 67 792 896 Byte).
+
+**Übernahme, Kopierwege, Löschsperre.** `GebaeudeStammCtrl.CopyFromStamm`
+schreibt den Verweis — der einzige Weg vom Katalog ins Projekt (Assistent und
+Projekt-Gebäudedialog über `WizardCtrl.Add_Projekt_ZuordungGebäude`);
+Duplizieren und Varianten kopieren den Verweis mit (`KATALOG_SPALTEN` in
+`ProjektDuplizierenCtrl`). Beim Projekttransfer reist der Verweis nicht mit,
+der Import trägt ihn am Ziel über den Namen nach, ohne neuen Katalogsatz.
+`Projektverwendung` fragt zuerst den Verweis, nur für Kopien ohne Verweis den
+Namen; neu `Loeschsperre(name)`, `Loeschen` lehnt ein benutztes Gebäude auch im
+Kern ab. Die Sperre hält auch nach Umbenennung, der Sperrgrund-Text nennt
+weiterhin die Projekte.
+
+**Reparatur der Katalogsätze.** Die Editor-Grenze 0,1–6 W/(m²K) ist nicht zu
+eng (das Stundenmodell `ErsatzparameterRC.UWert` prüft dieselbe Grenze) — die
+Daten waren falsch, keiner der fünf beanstandeten Sätze war einem Projekt oder
+Referenzprojekt zugeordnet. Repariert (nur Katalog, unabhängig vom
+Schreibschutz): Satz 1 `AltenH-95-EnEV2016`, Satz 6 `Pflegeheim-122-EnEV2016`
+(je 4,0 m²), Satz 100 `SpH-Umkl-287-EnEV2016`, Satz 103 `SpH-Umkl-NE` (je
+2,2 m²) — alle vier hatten eine Sonstige Fläche mit U 0 → Fläche auf 0
+gesetzt (U·A war vorher schon 0, der Wärmeverlust ändert sich nicht). **Nicht
+repariert, Anwenderentscheid nötig:** Satz 79 `Krankenhaus_92-EnEV2016` —
+U-Wert Fenster 0,09 bei 11 646 m² Fensterfläche (10 000 m² davon Nord); die
+verwandten `KrankenH-F-*` führen U 1,3 bei rund 3 062 m².
+
+**Nachweise.** Zellvergleich über alle 132 Tabellen gegen Fassung 120 —
+geändert nur Schemaversion, die neue Spalte, der Index und die vier Flächen;
+`integrity_check` ok, `foreign_key_check` leer, 131/131 STRICT;
+SQL-Dialekt-Prüfer 1 772 Texte, 0 Fundstellen; Builds 0 Fehler; voller Testlauf
+Kern 5 756, UI 5 903, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen), Auslieferungsvorlage 30, 0 rot; 12 neue Kerntests
+`GebaeudeKatalogverweisTests` und ein bunit-Test. Referenzlauf 13/13 PASS gegen
+`2026-09-23_R13_Kuehlung`, 387/387 CSV byte-gleich — die Basis bleibt R13.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 121); Konzept
+Administrationsdialoge (Stand, 7.1 (a) abgeschlossen, SET-NULL-Begründung);
+`BETRIEB_SQLITE.md` und Wiki unverändert. Kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Anwenderentscheid zum Krankenhaus-Fenstersatz (79);
+zwölf weitere Katalogsätze mit leerem `Flaeche_Nutzer` (u. a. `EFH-BZ2`,
+`KrankenH-F-U-400`, `KMEH-M-U-54`, sieben `Z2-EFH-A-S*`); das Neuschreiben der
+Gebäudeliste läuft im Assistenten und auf der Startseite noch über den Namen
+(schlägt nach Umbenennung fehl) — mit dem neuen Verweis lösbar über
+`Z_ProjGebModel`/`GebaeudeProjektZeile`; „Gebäude in DB löschen“ im
+Projekt-Gebäudedialog bleibt ohne Nutzungssperre (Bestand); `Tab_WP.ID_Stamm`
+reist beim Transfer weiter unter der Original-Id mit; der Testdatenbank-Hash
+ändert sich je Werkzeuglauf (Sicht), nicht der Inhalt.
+
+**Gate nach Merge auf `6be906b0`.** Kern-Filter 0 Fehler; Kern 5 756, UI 5 904,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
+
+## #469 — Kleine Folgeaufträge: KI-Zielmaske nur über Schlüssel, Katalogliste rollt nach dem Import zur Fokuszeile, Aufräumen (24.09.2026)
+
+Anwenderentscheid „Kleine Folgeaufträge: ausführen“ zu drei offenen Punkten:
+der KI-Zielmaske-Toleranz (Fund am Beispiel
+`ladeleistung`/`speicher_ladeleistung`), dem Rollen der `Katalogliste` nach
+einem Import (Nach #466 (a)) und Aufräumen (Feld `verwaltung`, BOM in sieben
+Markdown-Papieren unter `aktuell/`, Kommentare an den KI-Haken). Commits (Zweig
+`worktree-agent-ab4b2df8a49023c62`, Basis `4a9d7449`): `a7678ceb` Zielmaske;
+`b67f24ea` Rollen nach Import; `86c15a78` Aufräumen; `0f4aaae0` Papiere. Merge
+in den Hauptbaum `eba29636`, konfliktfrei.
+
+**Befund und Umsetzung, Punkt 1 (KI-Zielmaske nur über Schlüssel).** Ursache:
+`KiAktionenDialog.ZielFuehrtFeld` suchte an der Zielmaske auch tolerant über
+deren Schlüssel (KiWahl-Stufen „Anfang“/„enthaltener Teil“, Unterstriche
+entfernt); `ladeleistung` traf `speicher_ladeleistung`, `wirkungsgrad` traf
+`wr_wirkungsgrad`. Behebung: die Zielmaske zählt nur bei gleichem Schlüssel
+oder ausdrücklich zugeordnetem Gegenstück (`KiDialoge.Zielfeldname`: Tabelle
+`VERWALTUNGSFELDER` und neu die Vorsilbe `katalog_` der „Alle Daten“-Felder;
+`katalog_breite` → `breite` war der einzige gewollte Toleranzfall); die
+Nachsicht für den Wortlaut des Modells bleibt an der gemeinten und an der
+offenen Maske. Ergebnis: die drei gemeldeten Fälle (`ladeleistung`,
+`wr_wirkungsgrad`, `ersatz_fuehren`) und zwei weitere (`quelltemperatur` traf
+`quelltemperatur_konstant`, `positionsart` traf `position`) nennen jetzt die
+richtige Maske; Abzug über alle Feldschlüssel/Anzeigenamen de/en: 7 Änderungen,
+alle Korrekturen.
+
+**Befund und Umsetzung, Punkt 2 (Katalogliste rollt nach dem Import zur
+Fokuszeile).** `Zeilenauswahl` zählt `Uebernahmen` (nur bei `Uebernommen`); die
+drei Import-Wirte (Katalogbrowser, Modulkatalog, Wärmepumpen-Stamm) reichen den
+Zähler als neuen Parameter `Zeigeanlass` an die `Katalogliste`; bei Wechsel
+rollt sie über denselben `zeileZeigen`-Aufruf wie bei Tastaturschritten (erster
+Wert rollt nicht); JS, Zeilenhöhe und Abstandshalter unverändert.
+
+**Befund und Umsetzung, Punkt 3 (Aufräumen).** (a) Feld `verwaltung` der
+KI-Maske `Form_Gebaeude` entfernt (Eigenschaft/Lesedelegat in
+`GebaeudeKiSicht`, zwei Texte in `KiDialogTexte`,
+`KI_DLG_GEB_VERWALTUNG_NAME/_ERL` beide Sprachen; Designer 9 043 Einträge,
+wiederholbar; `Form_Gebaeude` jetzt neun Felder). (b) BOM: 60 Markdown-Papiere
+tragen eins — bereinigt die 7 unter `aktuell/`
+(Konzept_KI-Assistent_Dialogintegration, Doku_PV_Strangauslegung,
+Doku_Simulationsergebnis_Darstellung, Konzept_Einheiten,
+Konzept_KI-Assistent_Aufgabensteuerung, Konzept_Simulationsablauf,
+Umsetzung_iU10_Nachweise), die 53 unter `ueberholt/` nicht. (c) Kommentare an
+den KI-Haken von Kostenprofil und Leistungspreisreihe berichtigt
+(OK/„Übernehmen“ klickt der Anwender, `dialog_speichern` lehnt benannt ab).
+
+**Messung.** Rasterprobe vorher/nachher mit Playwright im echten Chromium (Node
+aus dem NuGet-Paket Microsoft.Playwright 1.58, Chromium 1208; vorübergehende
+Hülle unter `Proben/Rasterprobe/node_modules/playwright`, gelöscht):
+Rasterprobe 0 (13 Fälle), Katalogprobe 0 (60 Fälle), Katalogprobe byte-gleich;
+Fall J/K (6 654 Zeilen): Ende → Zeile 6653 sichtbar, Pos1 → 0. Einschränkung:
+der Rollweg nach echtem Import ist nur per bunit belegt.
+
+**Tests.** `KiMaskenwegTests`: Theorie über die fünf Fälle de-DE/en-US,
+Gegenprobe `katalog_breite`, Wächter über den Katalog (genannte Maske führt das
+Feld oder sein Gegenstück); `KiKatalogKulturTests` grün. bunit:
+`ZeileIstWahlTests` (neuer Anlass → `zeileZeigen` mit Stelle und 46 px;
+gleicher Anlass rollt nicht), `KatalogBrowserDialogTests`, Modulkatalog,
+Wärmepumpe, `KaestchenTests`. Im Worktree Kern 5 757, UI 5 904, KiKern 542,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Kern-Filter und
+Windows-Schale 0 Fehler.
+
+**Papiere.** Konzept Dialogintegration Abschnitt 4 „Die Namensregel und der Weg
+zur Maske“ (KI‑D‑Q6 verweist darauf), Abschnitt „Stand der Abdeckung“:
+`Form_Gebaeude` neun Felder. Kein Logbuch-Eintrag (Kleinigkeiten).
+
+**Was offen bleibt.** Der tolerante Durchgang ohne offene Maske kann bei
+Anzeigenamen noch fremd treffen (Beispiele: en „With PV surplus“ → Simulation,
+„Position ist ein Erlös“ → Kostenverwaltung, „Außenwand“ →
+Wirtschaftlichkeitsseite, „Fensterfläche Ost + West“ → Quelle Erdreich;
+Vorschlag Folgewelle: beste KiWahl-Stufe über alle Masken, bei Mehrdeutigkeit
+absagen — braucht Stufenangabe in `KiWahltreffer`); dieselbe falsche Aussage
+„läuft über dialog_speichern“ in sechs weiteren Dialogen ohne Speicher-Haken
+(EnergietraegerVariante, KostenfaktorKatalog, BhkwWirtschaftlichkeit,
+PhotovoltaikVerguetung, Tarifstruktur, WirtschaftlichkeitParameter; berufen
+sich teils auf KI‑D‑Q4); Klimadaten und die drei Zeitreihen wählen nach dem
+Einlesen einen neuen Satz, gehen aber nicht über `Uebernommen` (rollen?); 53
+BOM-Dateien unter `ueberholt/`.
+
+**Gate nach Merge auf `eba29636`.** Kern-Filter 0 Fehler; Kern 5 769, UI 5 906,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
+
+## #473 — Gebäudeliste über den Katalogverweis, Wärmepumpen-Verweis beim Projekttransfer, BOM unter ueberholt/, Befund zu zwölf Katalogsätzen (24.09.2026)
+
+Folgeaufträge aus #468/#469, Anwenderentscheid „Kleine Folgeaufträge:
+ausführen“. Commits (Zweig `worktree-agent-a851d0af57684486c`, Basis
+`65cfa844`): `078b1d15` BOM aus 53 Papieren unter `ueberholt/`; `31ac2ee1`
+Gebäudeliste über den Katalogverweis; `197e3512` WP-Verweis beim Transfer;
+`1132a542` Papiere. Merge in den Hauptbaum `8d08091b`, konfliktfrei.
+
+**Punkt 1 — Gebäudeliste über den Katalogverweis.** `Z_ProjGebModel.ID_Gebaeude_Stamm`
+und `GebaeudeProjektZeile.IdKatalog` (int?) tragen den Verweis; gelesen in
+`Z_ProjGebCtrl.LiesProjekt`, `GebaeudeHuelle` reicht ihn durch und setzt ihn
+bei „◀“; neue Überladung `GebaeudeStammCtrl.CopyFromStamm(int? idStamm, name,
+projekt, idZ)` sucht zuerst über die Id, Name nur ohne Verweis oder bei
+gelöschtem Satz; `WizardCtrl.Add_Projekt_ZuordungGebäude` ruft sie;
+`AssistentCtrl.LadeGebaeude` liest über `LiesProjekt`. **Befund:** Neuschreiben
+(Assistent und Startseite) löschte schon vorher alle Kopien und kopierte neu —
+Feld-Übernahmen in die Kopie gehen dabei verloren (Bestand), Zuordnungswerte
+bleiben.
+
+**Punkt 2 — WP-Verweis beim Projekttransfer.** Export legt `Tab_WP_STAMM`
+nicht mehr unter `fill/` bei; `Umschluessele` setzt `Tab_WP.ID_Stamm` NULL;
+nach dem Import trägt `VerweiseNachtragen` mit
+`WaermepumpeKatalogverweis.SqlNachtragProjekt()` über den Bezeichner nach (nur
+eindeutiger Treffer, sonst NULL); `FuelleKatalog` legt keine Gebäude-/
+WP-Katalogsätze mehr an, auch nicht aus Altpaketen; FK `ON DELETE SET NULL`
+geprüft.
+
+**Punkt 3 — BOM.** 53 Papiere unter `Dokumentation/ueberholt/` je drei Bytes
+entfernt, CRLF erhalten, Wachen grün.
+
+**Punkt 4 — Befund, keine Änderung.** Zwölf `Tab_Gebaeude_STAMM`-Sätze mit
+leerem `Flaeche_Nutzer`, alle `ReadOnly = 0`, von keinem Projekt benutzt;
+Regel im Bestand: Fläche je Nutzer = Wohnfläche gesamt ÷ Bewohner.
+
+| Satz | Bezeichner | Wohnfläche/Bewohner | Fläche je Nutzer | Vergleich |
+|---|---|---|---|---|
+| 11 | `EFH-BZ2` | 240/6 | 40,0 | EFH-BZ 40,5 |
+| 82 | `KrankenH-F-U-400` | 18 012/360 | 50,03 | Geschwister 50,0 |
+| 187 | `KMEH-M-U-54` | 572/18 | 31,78 | Typ-Mittel 38,8 |
+| 274 | `Z-EFH-A-S-126` | 201/7 | 28,71 | — |
+| 275–281 | sieben `Z2-EFH-A-S*` | 201/7 | 28,71 | Namen deuten auf Testreste, Löschkandidaten |
+| 282 | „EFH-BZ2 XXX“ | 240/5,93 | 40,5 | Testrest? |
+
+Editor-Regel sinnvoll: Die Simulation braucht den Wert, der VDI-6007-Weg lehnt
+≤ 0 ab, `CopyFromStamm` macht NULL zu 0 → eine Projektkopie würde scheitern.
+**Nebenbefund:** `GebaeudeKatalogHuelle.Schreiben` ersetzt 0 still durch 35.
+**Krankenhaus 79** (von keinem Projekt benutzt): U-Wert Fenster 0,09
+(Geschwister 1,1–2,8), Nord 10 000 m² (Geschwister 250/296), Ost/West 400
+(Geschwister 1 520,4), gesamt 11 645,9 m² (Geschwister rund 3 016–3 062 m²) —
+vermutlich ein Tippfehler, Kandidaten U 0,9 oder 1,3, Nord 250; Entscheid beim
+Anwender.
+
+**Tests.** `GebaeudeKatalogverweisTests` Abschnitt 7 (Umbenennung →
+Neuschreiben gelingt, Altbestand ohne Verweis → Name, gelöschter Satz → Name,
+`GebaeudeHuelle` reicht durch); `AssistentCtrlTests` (Speichern nach
+Umbenennung über die Id); Rücknahme-Test angepasst; bunit `GebaeudeDialogTests`;
+`ProjekttransferTests` P14 (Projekt 1007: andere Katalog-Id und ein fremder
+Satz unter der Original-Id → Verweis auf den neuen Satz, Name unbekannt →
+NULL, Altpaket mit `fill/Tab_WP_STAMM.json` → kein neuer Katalogsatz, Katalog
+wächst nie).
+
+**Papiere.** Konzept Administrationsdialoge (Kopf, 7.1 (a): Neuanlage über
+Verweis, Überschreibverhalten, Transferregel `Tab_WP.ID_Stamm`); vorgelegte
+Sätze Krankenhaus 79 und die zwölf; `BETRIEB_SQLITE.md` und Wiki unverändert;
+kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Anwenderentscheid zu den zwölf Katalogsätzen und zu
+Krankenhaus 79 (die Einfrierregel gilt auch ohne Referenznutzung);
+`StartseiteHuelle.Gebaeude` ruft Del/Add ohne Vorgang und wertet die Rückgabe
+nicht aus (bei Altbestand ohne Verweis und Umbenennung stünde das Projekt ohne
+Gebäude; der Assistent nimmt den Fall über seinen Vorgang zurück); Neuschreiben
+verwirft Feld-Übernahmen in die Kopie (Bestand).
+
+**Gate im Worktree des Umsetzungsagenten.** Kern 5 790, UI 5 907, KiKern 542,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Builds 0
+Fehler; Referenzlauf 1030 und 1045 PASS gegen `2026-09-24_R14_Kaelteerzeuger`;
+SQL-Prüfer 1 773 Texte, 0 Fundstellen.
+
+**Gate nach Merge auf `8d08091b`.** Kern-Filter 0 Fehler; Kern 5 790, UI 5 907,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
+121.
+
+## #472 — KI-Assistent: gemeinte Maske über die beste Wahlstufe, Speichern-Kommentare der sechs Dialoge, Klimadaten und Zeitreihen rollen nach dem Einlesen (24.09.2026)
+
+Folgeaufträge aus #469: fremde Maskentreffer über Anzeigenamen ohne offene
+Maske, dieselbe falsche Aussage „läuft über dialog_speichern“ in sechs
+Dialogen ohne Speicher-Haken, Klimadaten und die drei Zeitreihen wählen
+nach dem Einlesen einen neuen Satz, rollen aber nicht. Commits (Zweig
+`worktree-agent-ae9dbf11d3321db87`, Basis `65cfa844`): `13f3dea9` gemeinte
+Maske über die beste Stufe; `9b19200a` Speicher-Kommentare der sechs
+Dialoge; `67e45cf2` Einlesen rollt die Liste; `d3a0c6c0` Papiere. Merge in
+den Hauptbaum `0bbd062a`, konfliktfrei.
+
+**Punkt 1 — gemeinte Maske über die beste Wahlstufe.** Ursache: beim
+toleranten Suchen zählte jede Maske, die den Namen auf irgendeiner Stufe
+eindeutig traf, gleichrangig — „With PV surplus“: Wärmesenke über
+Wortanfang und Simulation über enthaltenen Teil gleichrangig → Simulation
+genannt; „Außenwand“: umgekehrter Wortanfang ohne Mindestlänge traf Spalte
+„A“ der Wirtschaftlichkeitsseite. Umsetzung: `KiWahltreffer` nennt seine
+Stufe (`KiWahlstufe`); `GemeinteMaske` sucht rangweise über alle Masken
+(exakter Schlüssel, gleicher Name — gefalteter Schlüssel und Anzeigename
+gleichrangig —, Wortanfang, enthaltener Teil); mehrere Masken auf dem
+besten Rang ohne gemeinsamen Ort → benannte Absage mit „Anzeigename
+(Maskenname)“, neuer Text `KI_DLG_MASKE_MEHRDEUTIG` (de/en); umgekehrter
+Wortanfang mindestens 3 Zeichen.
+
+**Wächter vorher/nachher** über 5 083 Eingaben (Feldschlüssel,
+Anzeigenamen mit/ohne Doppelpunkt, de-DE und en-US): 2 424 richtige
+Treffer unverändert, 0 verloren, 17 Korrekturen, 3 benannte Absagen bei
+echter Mehrdeutigkeit (en „Operating cost“, „Energy tax relief“, „Fuel
+split power/heat“), 1 802 neu richtig (vorher keine Maske), 835 weiter
+ohne Maske, 2 regelgerecht „fremd“ (Bezugspreis → Peak-Shaving, Standby →
+Stromspeicher-Verwaltung, dort wörtliche Feldschlüssel). Die vier
+gemeldeten Beispiele jetzt richtig: „With PV surplus“ → Wärmesenke,
+„Position ist ein Erlös“ → Vorlagenposition, „Außenwand“ und
+„Fensterfläche Ost + West“ → Gebäudeverwaltung.
+
+**Punkt 2 — Speichern-Kommentare der sechs Dialoge.** KI‑D‑Q4 erlaubt
+Speichern nur über einen Speicherweg der Maske; keiner der sechs Dialoge
+sieht einen Haken vor, also nur die Kommentare berichtigt (OK/„Übernehmen“
+klickt der Anwender, `dialog_speichern` lehnt benannt ab,
+`KI_AKTION_SPEICHERN_KEIN_WEG`). Befund je Dialog: EnergietraegerVariante
+(OK legt neuen Katalogsatz an = „Neu…“), KostenfaktorKatalog (Neu/Löschen
+schreiben sofort, OK schließt), BhkwWirtschaftlichkeit (`Schreiben()`
+schreibt und schließt), PhotovoltaikVerguetung („Übernehmen“ schreibt und
+schließt), Tarifstruktur (OK schreibt und schließt, bei Warnung zweiter
+Klick), WirtschaftlichkeitParameter (OK schreibt und schließt).
+
+**Punkt 3 — Klimadaten und Zeitreihen rollen nach dem Einlesen.**
+`KlimadatenDialog`, `WaermebedarfAdminDialog`, `SolarganglinieAdminDialog`,
+`StromganglinieAdminDialog` rufen nach dem Einlesen
+`_auswahl.Uebernommen(new[] { _gewaehlt })` statt `Aufheben()` und reichen
+`Zeigeanlass="@_auswahl.Uebernahmen"` an die `Katalogliste`; Katalogliste,
+JS und Zeilenhöhe unverändert, keine Rasterprobe nötig.
+
+**Tests.** `KiMaskenwegTests`
+(`Ein_Anzeigename_meint_die_Maske_die_ihn_traegt` 8 Fälle,
+`Eine_mehrdeutige_beste_Stufe_nennt_ihre_Kandidaten`, dauerhafter Wächter
+`Kein_Anzeigename_fuehrt_in_eine_fremde_Maske` de/en, drei
+Mehrdeutigkeitstests angepasst), `KiWahlTests` (Stufe je Treffer, ein
+Buchstabe ist kein Wortanfang), `KiKatalogKulturTests` grün; bunit je Wirt
+der vier Katalog-/Ganglinien-Dialoge (Einlesen → genau ein `zeileZeigen`
+an der Stelle des neuen Satzes, Öffnen rollt nicht, Gegenprobe ohne Fix
+rot).
+
+**Papiere.** Konzept Dialogintegration Absatz „Die Namensregel und der Weg
+zur Maske“ neu gefasst (beste Stufe, Absage mit Kandidaten, Mindestlänge,
+Wächter); Zeile KI‑D‑Q4 mit dem Befund der sechs Dialoge;
+`EPOS.UI/CLAUDE.md` unverändert (Regel steht schon); kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Die Grenze „gefalteter Schlüssel = Anzeigename“ beim
+Vergleich über Masken hinweg ist eine Setzung des Agenten (macht z. B.
+„Preisquelle“ und „Quelltemperatur“ zu benannten Absagen statt dem
+Schlüssel einer anderen Maske den Vorzug zu geben; mit einer Zeile in
+`Rang()` umkehrbar, dann 12 statt 2 fremde Treffer über wörtliche
+Schlüssel); die Mindestlänge beim umgekehrten Wortanfang wirkt auch auf
+`feld_setzen` an der offenen Maske und auf Wahlwerte — Tests grün,
+Bedienung nicht geprüft.
+
+**Gate im Worktree des Umsetzungsagenten.** KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27 (1 übersprungen), UI 5 910, Kern 5 796, 0 rot;
+Builds 0 Fehler; kein Referenzlauf nötig.
+
+**Gate nach Merge auf `0bbd062a`.** Kern-Filter 0 Fehler; Kern 5 802, UI
+5 911, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+0 rot; Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
+121.

@@ -123,9 +123,10 @@ namespace EPOS.Kern.Tests
                 Assert.True(DataRepository.SpalteVorhanden(t, "Wohnflaeche_gesamt"), t);
             }
 
-            // Die Sicht in der Datei ist wortgleich die GELTENDE: seit Schritt 108 (KU-S1) die
-            // aus SQL_VIEW_KUEHLUNG, die die von M3 (SQL_VIEW_NEU) um die vier Kuehlspalten
-            // verlaengert - die 73 Spalten des Schritts 101 stehen weiter an 0..72.
+            // Die Sicht in der Datei ist wortgleich die GELTENDE: die des letzten Sichtneubaus
+            // (seit Schritt 122 die von AK-S1, die die von M3 um die vier Kuehlspalten und die
+            // dreizehn Uebergabespalten verlaengert) - die 73 Spalten des Schritts 101 stehen
+            // weiter an 0..72.
             string gespeichert = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);

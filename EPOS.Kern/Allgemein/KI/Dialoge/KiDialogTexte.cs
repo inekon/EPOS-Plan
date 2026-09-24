@@ -517,6 +517,12 @@
         /// </summary>
         internal static string MaskeNichtOffen => MyResource.Resource.KI_DLG_MASKE_NICHT_OFFEN;
 
+        /// <summary>
+        /// Keine Maske offen, und die genannten Felder treffen auf der besten Stufe der
+        /// Namensregel mehrere Masken (Welle #472). {0} = die Kandidaten.
+        /// </summary>
+        internal static string MaskeMehrdeutig => MyResource.Resource.KI_DLG_MASKE_MEHRDEUTIG;
+
         /// <summary>{0} = die offenen Masken.</summary>
         internal static string MehrereOffen => MyResource.Resource.KI_DLG_MEHRERE_OFFEN;
 
@@ -976,8 +982,6 @@
         internal static string GebWohnflaecheErl => MyResource.Resource.KI_DLG_GEB_WOHNFLAECHE_ERL;
         internal static string GebAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
         internal static string GebAngabeartErl => MyResource.Resource.KI_DLG_GEB_ANGABEART_ERL;
-        internal static string GebVerwaltungName => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_NAME;
-        internal static string GebVerwaltungErl => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_ERL;
 
         internal static string GebwBedarfsartName => MyResource.Resource.GEBW_LBL_BEDARFSART;
         internal static string GebwBedarfsartErl => MyResource.Resource.KI_DLG_GEBW_BEDARFSART_ERL;

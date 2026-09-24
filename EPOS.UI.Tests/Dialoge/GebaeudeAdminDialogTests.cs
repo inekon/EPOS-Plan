@@ -526,6 +526,38 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Empty(p.Geloescht);
     }
 
+    /// <summary>
+    /// <b>Der Sperrgrund nennt jedes Projekt</b> (Welle #468): Führen zwei Projekte das
+    /// Gebäude — der Kern findet sie über den Katalogverweis, auch nach einer Umbenennung
+    /// (<c>GebaeudeStammCtrl.Projektverwendung</c>) —, stehen beide im Kurztext. In einer
+    /// Mehrfachwahl mit einem freien Satz geht Löschen; das benutzte Gebäude bleibt stehen,
+    /// und die Rückfrage sagt es.
+    /// </summary>
+    [Fact]
+    public void Der_Sperrgrund_nennt_alle_Projekte_und_die_Mehrfachwahl_laesst_das_benutzte_stehen()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p, verwendung: new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["Haus A"] = new[] { "Projekt Nord", "Projekt Süd" }
+        });
+
+        IElement loeschen = Handlung(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        Assert.Contains("Projekt Nord, Projekt Süd", loeschen.GetAttribute("title"));
+
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);   // Haus A
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);   // Haus B
+        Handlung(cut, "Löschen").Click();
+
+        string frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("Haus B", frage);
+        Assert.Contains("Haus A", frage);
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { "Haus B" }, p.Geloescht);
+    }
+
     /// <summary>Löschen fragt zurück, schreibt nach dem „Ja" und nennt es in der Statuszeile.</summary>
     [Fact]
     public void Loeschen_fragt_zurueck_und_meldet_in_der_Statuszeile()

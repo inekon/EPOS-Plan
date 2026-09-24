@@ -139,8 +139,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Alle sieben Spalten stehen, jede Wärmepumpe steht auf „kein Kühlbetrieb", Vorlauf,
-        /// Hilfsstromanteil und Stromträgerwahl sind NULL; die Beziehung steht mit
-        /// <c>SET NULL</c>, der Schalter nimmt nur 0 und 1 an, und die Tabellen bleiben STRICT.
+        /// Hilfsstromanteil und Stromträgerwahl sind NULL — bis auf den Kälteerzeuger des
+        /// Referenzprojekts 1017 (Projektgerät 1017033: Kühlbetrieb, Vorlauf 18 °C, Hilfsstromanteil
+        /// 0,05; Einfrierregel „gesäte Kältedaten", <c>Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py</c>);
+        /// die Beziehung steht mit <c>SET NULL</c>, der Schalter nimmt nur 0 und 1 an, und die Tabellen
+        /// bleiben STRICT.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_steht_auf_114_und_alles_ist_aus_bzw_leer()
@@ -153,10 +156,17 @@ namespace EPOS.Kern.Tests
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehlbetrieb <> 0"));
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehl_Vorlauf IS NOT NULL " +
-                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehlbetrieb <> 0 AND ID <> " +
+                                      WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE (Kuehl_Vorlauf IS NOT NULL " +
+                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID <> " +
+                                      WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
             }
+            Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)) +
+                                      "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)) +
+                                      "|" + Convert.ToString(DataRepository.ExecuteScalar(
+                                          "SELECT Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)),
+                                          CultureInfo.InvariantCulture));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_ID_Carrier IS NOT NULL"));
 
             DataTable fk = DataRepository.GetDataTable(
@@ -174,7 +184,7 @@ namespace EPOS.Kern.Tests
                     "UPDATE Tab_WP SET Kuehlbetrieb = 2 WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture));
             }
             catch (Exception) { }
-            Assert.Equal(0L, Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
+            Assert.Equal(1L, Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
 
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM", "Tab_Energieanlagen" })
             {
@@ -550,12 +560,17 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <c>Last</c> in Modell, Leser und Schreiber: Einfügen mit und ohne Laststufe, Lesen über
         /// die Liste und den Einzelleser, Ändern auf NULL und zurück — NULL bleibt NULL, eine
-        /// gepflegte Stufe bleibt stehen.
+        /// gepflegte Stufe bleibt stehen. Das Gerät trägt schon die gesäte Kennlinie des
+        /// Referenzprojekts; die Probe zählt und liest deshalb nur ihre eigenen zwei Zeilen.
         /// </summary>
         [Fact]
         public void Die_Kuehlkennlinie_liest_und_schreibt_die_Laststufe_NULL_erhaltend()
         {
             if (!_db.Vorhanden) return;
+
+            var vorher = new KenndatenKuehlungCtrl();
+            vorher.ReadAll(WP_KOPIE);
+            int gesaet = vorher.items.Count;
 
             var mit = new KenndatenKuehlungCtrl
             {
@@ -571,9 +586,9 @@ namespace EPOS.Kern.Tests
 
             var liste = new KenndatenKuehlungCtrl();
             liste.ReadAll(WP_KOPIE);
-            Assert.Equal(2, liste.items.Count);
-            Assert.Equal(70, liste.items.Single(x => x.m_nVorlauf == 7).m_nLast);
-            Assert.Null(liste.items.Single(x => x.m_nVorlauf == 18).m_nLast);
+            Assert.Equal(gesaet + 2, liste.items.Count);
+            Assert.Equal(70, liste.items.Single(x => x.m_ID == mit.m_ID).m_nLast);
+            Assert.Null(liste.items.Single(x => x.m_ID == ohne.m_ID).m_nLast);
 
             var einzel = new KenndatenKuehlungCtrl();
             einzel.ReadSingle("SELECT * FROM Tab_Kenndaten_Kuehlung WHERE ID = " + mit.m_ID.ToString(CultureInfo.InvariantCulture));

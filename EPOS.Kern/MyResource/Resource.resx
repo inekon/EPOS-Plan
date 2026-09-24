@@ -8634,6 +8634,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
+    <value>Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen.</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern.</value>
   </data>
@@ -22000,12 +22003,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
     <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
   </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_NAME" xml:space="preserve">
-    <value>Katalogverwaltung</value>
-  </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_ERL" xml:space="preserve">
-    <value>Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht.</value>
-  </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
   </data>
@@ -26877,6 +26874,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
     <value>Kältestrom {0} (eigener Zähler)</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND" xml:space="preserve">
+    <value>Grundpreis Kältestromzähler {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG" xml:space="preserve">
+    <value>Leistungspreis Kältestromzähler {0}</value>
   </data>
   <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
     <value>Energiekosten nicht bestimmbar: Der Stromträger der Kühlung „{0}“ trägt keinen Arbeitspreis. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ den Arbeitspreis pflegen oder im Wärmepumpendialog den Stromträger der Kühlung auf „wie Heizbetrieb“ stellen.</value>

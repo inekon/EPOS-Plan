@@ -8627,6 +8627,9 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>No controllable form is open. Controllable are: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
+    <value>No controllable form is open, and the named fields fit several forms equally well: {0}. The action dialog_oeffnen with the key of the intended form leads there; the values can be set there.</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>The named fields belong to the form “{0}”. It is not open right now — the action dialog_oeffnen ({1}) leads there. In an administration the field “satz” selects the catalogue record; then the values can be set and saved with dialog_speichern.</value>
   </data>
@@ -21993,12 +21996,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
     <value>The kind of entry: living area, or a consumption figure the area is derived from.</value>
   </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_NAME" xml:space="preserve">
-    <value>Catalogue management</value>
-  </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_ERL" xml:space="preserve">
-    <value>Is the screen in catalogue management? Then it carries no project list, and the “Change…” and “Simulation…” buttons are absent.</value>
-  </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>The kind of entry for this building; it determines the unit and the calculation path of the figure beside it.</value>
   </data>
@@ -26870,6 +26867,12 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
     <value>Cooling electricity {0} (separate meter)</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND" xml:space="preserve">
+    <value>Standing charge, cooling meter {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG" xml:space="preserve">
+    <value>Demand charge, cooling meter {0}</value>
   </data>
   <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
     <value>Energy costs cannot be determined: the electricity carrier for cooling "{0}" has no energy price. Remedy: maintain the energy price under "Reports &amp; Costs › Energy carriers" or set the cooling electricity carrier to "as in heating mode" in the heat pump dialog.</value>

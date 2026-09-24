@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `94521f2e` · `SchemaStand.Zielversion` = 120 · Schemaschritte 90–120 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `94521f2e` · `SchemaStand.Zielversion` = 120 · Schemaschritte 90–120 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115 und 119 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -734,7 +734,8 @@ nichts Eigenes.
 
 *Quellen: der Normtext DIN EN 17463:2021-12 (vom Anwender bereitgestellt, vollständig ausgewertet —
 alle Anforderungen hier paraphrasiert, Abschnittsnummern der Norm in Klammern) und als reales
-Zahlenbeispiel die Altmappe `Quellen\BHKWPlan\BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
+Zahlenbeispiel (im Folgenden „Beispielprojekt B") die Altmappe
+`Quellen\BHKWPlan\BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
 `Tab_kurz_KWKG2020`. Mockups: siehe Artifact-Tabelle am Dokumentanfang.*
 
 ### 2.11.1 Die Kernaussage
@@ -809,7 +810,7 @@ Der Rechenweg ist unverändert.
 ### 2.11.3 Die fünf Darstellungsblöcke
 
 Andockung nach § 2.10 in der Wirtschaftlichkeitsseite (`WirtschaftlichkeitSeite.razor`), Referenz nach § 2.9. Alle Blöcke rendern
-vorhandene Größen; Beispielzahlen in den Mockups aus der Höfingen-Mappe (20-kW-BHKW-Erneuerung
+vorhandene Größen; Beispielzahlen in den Mockups aus der Mappe „Beispielprojekt B" (20-kW-BHKW-Erneuerung
 gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortisation 4,33 a).
 
 | Block | Inhalt | Normbezug |
@@ -1116,7 +1117,7 @@ Kennzahl €/kWp, Betriebsseite ohne Endenergie-Bemessung, Gruppe *Ertrag und De
 **Beispielprojekt** (durchgängig): BHKW 300 kW_el, Erdgas, η 38 / 45 / 83 %, 5.500 h/a → Brennstoff
 4.342,1 MWh/a, Strom brutto 1.650,0, netto 1.563,2 MWh/a · PV 300 kWp (750 × 400 Wp), 285,0 MWh/a ·
 Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegzahlen des Bestands
-(Kaskadenprobe 1042, Mischsatz 300 kW, AW 300 kWp, Höfingen) sind als solche gekennzeichnet.
+(Kaskadenprobe 1042, Mischsatz 300 kW, AW 300 kWp, Beispielprojekt B) sind als solche gekennzeichnet.
 
 | # | Kategorie | Rechenweg | Kernaussage der Zahlenprobe |
 |---|---|---|---|
@@ -1127,7 +1128,7 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 | 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 32.022 €; **Reihe endet nach zwölf Jahren** (291.111 €); § 53a 21.203 €/a |
 | 6 | **Vergütungen PV** | `06` | AW 6,04 ct; 159,6 von 199,5 MWh vergütet (§ 51: 20 % abgeregelt); Spot 7.182,00 + Prämie 2.457,84 − DV 638,40 = 9.001,44 €/a; § 51a 1.095,52 € im Jahr 20; Reihe nominal 150.118 €, Barwert 113.800 € |
 | 7 | Erlösrubrik | `07` | Block A 91.727,0 €/a; vermieden brutto 339.753,6 − entgangene § 9b 23.594,0 = effektiv 316.159,6 €/a |
-| 8 | Wirtschaftlichkeit über Nutzungsdauer | `08` | Musterprojekt: Kapitalwertdifferenz V1 +1.660.205 · V2 +182.491 · V3 +1.842.695 € (Bandbreite V3 1.636.035 … 2.048.635 €); Höfingen: Näherung 65.073 €, jahresscharf 65.259 €; IZF/Amortisation nachrichtlich |
+| 8 | Wirtschaftlichkeit über Nutzungsdauer | `08` | Musterprojekt: Kapitalwertdifferenz V1 +1.660.205 · V2 +182.491 · V3 +1.842.695 € (Bandbreite V3 1.636.035 … 2.048.635 €); Beispielprojekt B: Näherung 65.073 €, jahresscharf 65.259 €; IZF/Amortisation nachrichtlich |
 
 **Drei Darstellungen, die über den bisherigen Stand hinausgehen und in die Umsetzung gehören:**
 
@@ -2688,7 +2689,7 @@ Wiederholbarkeit, Werkzeug-Wache, Vorrang des gepflegten Satzes, Herkunft nur be
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-23_R13_Kuehlung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2808,7 +2809,7 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-23_R13_Kuehlung`); **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-24_R14_Kaelteerzeuger`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
@@ -2875,7 +2876,9 @@ Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.1
 Speicherflotte, #463) ist gebaut: die Instandsetzungs- und Wartungssätze der Nutzungsdauertabelle mit Schemaschritt
 120, wirksam nur über die ausdrückliche Vorbelegung (§ 3.4, § 2.8), die Speicherflotte an der Tabelle und die
 Kennzeichnung der geräteeigenen Spalten (§ 2.13 (3)); den eigenen Entscheid zu ND‑S3 vertreten die Fragen aus E10.
-**Als Nächstes kommt E12** (Wiki-Runden); E11 entfällt — damit ist der Etappenplan bis auf E12 abgearbeitet. Offen
+**E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload selbst steht nach Freigabe
+des Anwenders aus; E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
+abgearbeitet. Offen
 sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
 (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs der sieben aus E10 (→ Register R‑E10; E10‑Q5 ist
 erledigt); die sechs aus E8b sind entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
@@ -2963,7 +2966,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E9** Teil a — V‑E im Kern | die Schemaschritte 116 (Szenariorahmen), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare, `SzenarioParameterTests`, A/B über neun Größen, Testdatenbank 118 | **#461** (Merge `62613292`) |
 | **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `75d45630`) |
 | **E10** — Nutzungsdauer S3 und Speicherflotte | Schemaschritt 120 (Sätze der Nutzungsdauertabelle), die Sätze wirksam nur über die ausdrückliche Vorbelegung, die Herkunft am Satz (Nachweisfassung 10), neue Kesseleinträge in %/a, die Speicherflotte an der Tabelle (linearer Restwert je Einheit, `RestwertEuro` der Einheit Altfeld), die Kennzeichnung A8, `NutzungsdauerS3Tests`, Testdatenbank 120, Referenzlauf byte-gleich ohne neue Basis — E10 abgeschlossen | **#463** (Merge `94521f2e`) |
-| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **nächste Etappe: E12**; offen die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10); E8b entschieden und gebaut (→ Register R‑E8b) |
+| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **nächste Etappe: E12**; die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10) **entschieden 24.09.2026, nach Empfehlung; Bau offen: E9b‑Q5 b, E7c3‑Q6 a**; E8b entschieden und gebaut (→ Register R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

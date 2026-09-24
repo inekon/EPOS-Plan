@@ -197,8 +197,32 @@ namespace EPOS.Kern.Tests
             string text = Grund("feld_setzen",
                 new Dictionary<string, object> { ["feld"] = gesucht, ["wert"] = "1" });
 
+            // Keine EINE Maske samt Weg, sondern die Kandidaten (Welle #472).
             Assert.NotNull(text);
-            Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("dialog_oeffnen (", text, StringComparison.Ordinal);
+            AssertNenntDieKandidaten(gesucht, text);
+        }
+
+        /// <summary>
+        /// Die benannte Absage einer Mehrdeutigkeit (Welle #472): Sie nennt JEDE Maske,
+        /// die das Feld unter seinem Schluessel fuehrt, mit Anzeige- und Maskennamen - und
+        /// nicht die Liste aller Masken.
+        /// </summary>
+        private static void AssertNenntDieKandidaten(string feld, string text)
+        {
+            int genannt = 0, alle = 0;
+            foreach (KiDialog d in KiDialoge.Katalog.Alle)
+            {
+                alle++;
+                if (d.KenntFeld(feld))
+                {
+                    genannt++;
+                    Assert.Contains(d.Anzeigename + " (" + d.Maskenname + ")", text, StringComparison.Ordinal);
+                }
+            }
+
+            Assert.True(genannt > 1 && genannt < alle, "Der Fall braucht ein Feld mehrerer, nicht aller Masken.");
+            Assert.StartsWith(KiDialogTexte.MaskeMehrdeutig.Substring(0, 20), text, StringComparison.Ordinal);
         }
 
         // ============================ Der Schutz des Satzes (Welle #456)
@@ -267,9 +291,9 @@ namespace EPOS.Kern.Tests
         // ===================================================== Die Grenzen
 
         /// <summary>
-        /// <b>Mehrdeutig heisst schweigen.</b> <c>schritt</c> steht in mehr als einer
-        /// Katalogmaske (Stromspeicher-Auslegung und Simulation); dann darf die Absage
-        /// keine davon nennen, sondern faellt auf die Liste zurueck.
+        /// <b>Mehrdeutig heisst nicht raten.</b> <c>schritt</c> steht in mehr als einer
+        /// Katalogmaske (Stromspeicher-Auslegung und Simulation); dann nennt die Absage
+        /// keine davon als DEN Weg, sondern beide als Kandidaten (Welle #472).
         /// </summary>
         /// <remarks>
         /// Die Vorbedingung im Fall prueft, dass er seinen Gegenstand wirklich hat —
@@ -288,13 +312,14 @@ namespace EPOS.Kern.Tests
                 new Dictionary<string, object> { ["feld"] = "schritt", ["wert"] = "1" });
 
             Assert.NotNull(text);
-            Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("dialog_oeffnen (", text, StringComparison.Ordinal);
+            AssertNenntDieKandidaten("schritt", text);
         }
 
         /// <summary>
         /// <b>Der Vorlauf ist ein mehrdeutiges Feld</b> — er steht an fuenf Masken der
-        /// Erzeugerfamilien. Die Absage nennt deshalb keine von ihnen, sondern die
-        /// Liste; welche gemeint ist, sagt erst die OFFENE Maske.
+        /// Erzeugerfamilien. Die Absage nennt deshalb keine von ihnen als DEN Weg, sondern
+        /// alle als Kandidaten; welche gemeint ist, sagt erst die OFFENE Maske.
         /// </summary>
         [Fact]
         public void Der_Vorlauf_steht_an_mehreren_Masken_und_wird_nicht_geraten()
@@ -308,9 +333,10 @@ namespace EPOS.Kern.Tests
                 new Dictionary<string, object> { ["feld"] = "vorlauf", ["wert"] = "55" });
 
             Assert.NotNull(text);
-            Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("dialog_oeffnen (", text, StringComparison.Ordinal);
+            AssertNenntDieKandidaten("vorlauf", text);
 
-            // Die Liste nennt weiterhin ANZEIGENAMEN und keine Typnamen.
+            // Die Liste nennt ANZEIGENAMEN - den Typnamen nur in Klammern dahinter.
             Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_PROJEKT).Anzeigename,
                             text, StringComparison.Ordinal);
         }
@@ -532,6 +558,229 @@ namespace EPOS.Kern.Tests
             string text = MitAufruf("Form_LizenzVerwaltung.btn_Help", () => Grund("feld_setzen", genannt));
             Assert.DoesNotContain(KiDialogAusnahmen.Grundtext(KiAusnahmegrund.LizenzOderSchluessel),
                                   text ?? "", StringComparison.Ordinal);
+        }
+
+        // ============================ Nur erklärte Gegenstücke (Welle #469)
+
+        /// <summary>
+        /// <b>Ein ähnlicher Schlüssel der Zielmaske ist nicht dasselbe Feld.</b> Führt die
+        /// gemeinte Maske auf eine andere Katalogmaske (Pufferverwaltung → Ansicht
+        /// „Simulation", Photovoltaik → Modulkatalog, Vorlagenposition → Kostenverwaltung),
+        /// nennt die Absage diese nur, wenn sie das Feld unter demselben Schlüssel oder dem
+        /// ERKLÄRTEN Gegenstück führt — nie über eine Anfangs- oder Teilstringsuche.
+        /// </summary>
+        /// <remarks>
+        /// Die drei Fälle des Befunds aus dem Kulturfix (<c>ladeleistung</c> traf die
+        /// <c>speicher_ladeleistung</c> der Batterie, <c>wr_wirkungsgrad</c> den
+        /// Modulwirkungsgrad, <c>ersatz_fuehren</c> den <c>satz</c>) und zwei weitere
+        /// derselben Regel (<c>quelltemperatur</c> traf <c>quelltemperatur_konstant</c>,
+        /// <c>positionsart</c> die <c>position</c>). Jeder nennt jetzt die Maske, die das
+        /// Feld führt, samt ihrem Weg.
+        /// </remarks>
+        [Theory]
+        [InlineData("ladeleistung", KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, KiMaskennamen.SIMULATION, "de-DE")]
+        [InlineData("ladeleistung", KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, KiMaskennamen.SIMULATION, "en-US")]
+        [InlineData("wr_wirkungsgrad", KiMaskennamen.PHOTOVOLTAIK, KiMaskennamen.PV_MODULKATALOG, "de-DE")]
+        [InlineData("wr_wirkungsgrad", KiMaskennamen.PHOTOVOLTAIK, KiMaskennamen.PV_MODULKATALOG, "en-US")]
+        [InlineData("ersatz_fuehren", KiMaskennamen.VORLAGENPOSITION, KiMaskennamen.KOSTENVERWALTUNG, "de-DE")]
+        [InlineData("ersatz_fuehren", KiMaskennamen.VORLAGENPOSITION, KiMaskennamen.KOSTENVERWALTUNG, "en-US")]
+        [InlineData("quelltemperatur", KiMaskennamen.QUELLE_PUFFERSPEICHER, KiMaskennamen.SIMULATION, "de-DE")]
+        [InlineData("quelltemperatur", KiMaskennamen.QUELLE_PUFFERSPEICHER, KiMaskennamen.SIMULATION, "en-US")]
+        [InlineData("positionsart", KiMaskennamen.VORLAGENPOSITION, KiMaskennamen.KOSTENVERWALTUNG, "de-DE")]
+        [InlineData("positionsart", KiMaskennamen.VORLAGENPOSITION, KiMaskennamen.KOSTENVERWALTUNG, "en-US")]
+        public void Ein_aehnlicher_Schluessel_der_Zielmaske_ist_nicht_dasselbe_Feld(
+            string feld, string traeger, string zielmaske, string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+
+            // Vorbedingung: Die tragende Maske führt das Feld, sie führt auf die Zielmaske,
+            // und die Zielmaske führt es NICHT - nur einen ähnlich benannten Schlüssel.
+            KiDialog eigene = KiDialoge.Katalog.Finde(traeger);
+            KiDialog ziel = KiDialoge.Katalog.Finde(zielmaske);
+            Assert.True(eigene.KenntFeld(feld), traeger + " führt " + feld + " nicht mehr.");
+            Assert.Equal(zielmaske, KiDialoge.Katalog.Finde(KiMaskenziele.Ziel(traeger))?.Maskenname);
+            Assert.False(ziel.KenntFeld(KiDialoge.Zielfeldname(traeger, feld)),
+                         zielmaske + " führt " + feld + " - der Fall hat seinen Gegenstand verloren.");
+
+            Assert.Equal(traeger, KiAktionenDialog.GemeinteMaske("", new[] { feld })?.Maskenname);
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = feld, ["wert"] = "1" });
+
+            Assert.Contains("dialog_oeffnen (" + traeger + ")", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("(" + zielmaske + ")", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die Gegenprobe der erklärten Vorsilbe: Ein Feld des Aufklappers „Alle Daten"
+        /// (<c>katalog_breite</c>) steht im Modulkatalog unter dem Profilschlüssel
+        /// (<c>breite</c>) — die Absage nennt weiter den Modulkatalog.
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Ein_Feld_aus_Alle_Daten_fuehrt_weiter_in_den_Modulkatalog(string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+
+            Assert.Equal("breite", KiDialoge.Zielfeldname(KiMaskennamen.PHOTOVOLTAIK, "katalog_breite"));
+            Assert.Equal(KiMaskennamen.PV_MODULKATALOG,
+                         KiAktionenDialog.GemeinteMaske("", new[] { "katalog_breite" })?.Maskenname);
+        }
+
+        /// <summary>
+        /// <b>Wächter über den ganzen Katalog:</b> Die Maske, die die Absage für einen
+        /// Feldschlüssel nennt, führt ihn — unter demselben Schlüssel oder unter dem
+        /// erklärten Gegenstück einer Maske, die ihn führt (<see cref="KiDialoge.Zielfeldname"/>).
+        /// Eine Absage, die in eine Maske ohne das Feld schickt, ist schlimmer als die Liste.
+        /// </summary>
+        [Fact]
+        public void Die_genannte_Maske_fuehrt_das_Feld_unter_seinem_Schluessel_oder_dem_erklaerten()
+        {
+            var traeger = new SortedDictionary<string, List<KiDialog>>(StringComparer.Ordinal);
+            foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                foreach (KiDialogFeld f in d.Felder)
+                {
+                    if (!traeger.TryGetValue(f.Name, out List<KiDialog> liste))
+                        traeger[f.Name] = liste = new List<KiDialog>();
+                    liste.Add(d);
+                }
+
+            var falsch = new List<string>();
+            foreach (KeyValuePair<string, List<KiDialog>> t in traeger)
+            {
+                KiDialog genannt = KiAktionenDialog.GemeinteMaske("", new[] { t.Key });
+                if (genannt == null || genannt.KenntFeld(t.Key)) continue;
+
+                bool erklaert = false;
+                foreach (KiDialog d in t.Value)
+                    if (genannt.KenntFeld(KiDialoge.Zielfeldname(d.Maskenname, t.Key))) erklaert = true;
+
+                if (!erklaert) falsch.Add(t.Key + " → " + genannt.Maskenname);
+            }
+
+            Assert.True(falsch.Count == 0,
+                "Diese Feldschlüssel schickt die Absage in eine Maske, die sie nicht führt:\n" +
+                string.Join("\n", falsch));
+        }
+
+        // ============================ Die beste Stufe entscheidet (Welle #472)
+
+        /// <summary>
+        /// <b>Über alle Masken entscheidet die beste Stufe der Namensregel.</b> Ein
+        /// Anzeigename trifft die Maske, die ihn trägt - nicht eine andere, in der er nur
+        /// als Wortanfang oder enthaltener Teil vorkommt.
+        /// </summary>
+        /// <remarks>
+        /// Die vier Fälle des Befunds aus #469 und drei derselben Regel. Vorher: „With PV
+        /// surplus" → Simulation (enthält „PV surplus"), „Position ist ein Erlös" →
+        /// Kostenverwaltung („Position"), „Außenwand" → Wirtschaftlichkeitsseite (Spalte
+        /// „A"), „Fensterfläche Ost + West" → Quelle Erdreich („Fläche"). Die Gebäudefälle
+        /// nennen die Verwaltung: Katalogmaske und Verwaltung führen an denselben Ort.
+        /// </remarks>
+        [Theory]
+        [InlineData("With PV surplus", KiMaskennamen.WAERMESENKE, "en-US")]
+        [InlineData("With PV surplus:", KiMaskennamen.WAERMESENKE, "en-US")]
+        [InlineData("Position ist ein Erlös", KiMaskennamen.VORLAGENPOSITION, "de-DE")]
+        [InlineData("Position is a revenue", KiMaskennamen.VORLAGENPOSITION, "en-US")]
+        [InlineData("Außenwand", KiMaskennamen.GEBAEUDE_ADMIN, "de-DE")]
+        [InlineData("Fensterfläche Ost + West", KiMaskennamen.GEBAEUDE_ADMIN, "de-DE")]
+        [InlineData("Position ist ein Zuschuss", KiMaskennamen.CASE_EINGABE, "de-DE")]
+        [InlineData("eigene Einspeisehöhe", KiMaskennamen.WAERMESENKE, "de-DE")]
+        public void Ein_Anzeigename_meint_die_Maske_die_ihn_traegt(string genannt, string maske, string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+
+            Assert.Equal(maske, KiAktionenDialog.GemeinteMaske("", new[] { genannt })?.Maskenname);
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = genannt, ["wert"] = "1" });
+            Assert.Contains("dialog_oeffnen (" + maske + ")", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Ist die beste Stufe mehrdeutig, wird benannt abgesagt</b> - mit den Masken
+        /// dieser Stufe, nicht mit der Liste aller und nicht mit einer geratenen.
+        /// </summary>
+        /// <remarks>
+        /// „Operating cost" beginnt die Betriebskosten der Stromspeicherauslegung und die
+        /// Preissteigerung der Betriebskosten in den Wirtschaftlichkeitsparametern; beide
+        /// auf der Stufe Wortanfang. Vorher nannte die Absage die Parameter allein.
+        /// </remarks>
+        [Theory]
+        [InlineData("Operating cost", "en-US", KiMaskennamen.STROMSPEICHER_AUSLEGUNG, KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER)]
+        [InlineData("Energy tax relief", "en-US", KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, KiMaskennamen.ENERGIETRAEGER)]
+        public void Eine_mehrdeutige_beste_Stufe_nennt_ihre_Kandidaten(string genannt, string kultur,
+                                                                       string eine, string andere)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+
+            Assert.Null(KiAktionenDialog.GemeinteMaske("", new[] { genannt }, out IReadOnlyList<KiDialog> kandidaten));
+
+            var namen = new List<string>();
+            foreach (KiDialog d in kandidaten) namen.Add(d.Maskenname);
+            Assert.Contains(eine, namen);
+            Assert.Contains(andere, namen);
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = genannt, ["wert"] = "1" });
+            Assert.DoesNotContain("dialog_oeffnen (", text, StringComparison.Ordinal);
+            Assert.Contains("(" + eine + ")", text, StringComparison.Ordinal);
+            Assert.Contains("(" + andere + ")", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Wächter über alle Anzeigenamen (de-DE, en-US):</b> Die gemeinte Maske eines
+        /// Anzeigenamens - so wie er auf der Maske steht, und ohne den Doppelpunkt - ist
+        /// keine oder eine, die ihn führt: die Maske des Feldes, ihre Verwaltung (sofern sie
+        /// das Feld unter seinem Schlüssel führt) oder eine Maske, deren Feldschlüssel der
+        /// Name selbst ist.
+        /// </summary>
+        /// <remarks>
+        /// Die dritte Möglichkeit ist kein Raten: „Bezugspreis" steht als Beschriftung in
+        /// der Stromspeicherauslegung („Bezugspreis:") und als Schlüssel <c>bezugspreis</c>
+        /// im Peak-Shaving - der gleichnamige Schlüssel ist der genauere Treffer.
+        /// </remarks>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Kein_Anzeigename_fuehrt_in_eine_fremde_Maske(string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+
+            var traeger = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+            foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                foreach (KiDialogFeld f in d.Felder)
+                {
+                    string roh = f.Anzeigename ?? "";
+                    foreach (string name in new[] { roh.Trim(), roh.Trim().TrimEnd(':').Trim() })
+                    {
+                        if (name.Length == 0) continue;
+                        if (!traeger.TryGetValue(name, out HashSet<string> menge))
+                            traeger[name] = menge = new HashSet<string>(StringComparer.Ordinal);
+                        menge.Add(d.Maskenname);
+
+                        KiDialog ziel = KiDialoge.Katalog.Finde(KiMaskenziele.Ziel(d.Maskenname));
+                        if (ziel != null && ziel.KenntFeld(KiDialoge.Zielfeldname(d.Maskenname, f.Name)))
+                            menge.Add(ziel.Maskenname);
+                    }
+                }
+
+            var fremd = new List<string>();
+            foreach (KeyValuePair<string, HashSet<string>> t in traeger)
+            {
+                KiDialog gemeint = KiAktionenDialog.GemeinteMaske("", new[] { t.Key });
+                if (gemeint == null || t.Value.Contains(gemeint.Maskenname)) continue;
+
+                bool schluessel = false;
+                foreach (KiDialogFeld f in gemeint.Felder)
+                    if (KiWahl.Falte(f.Name) == KiWahl.Falte(t.Key)) schluessel = true;
+
+                if (!schluessel) fremd.Add("„" + t.Key + "“ (" + string.Join(", ", t.Value) + ") → " + gemeint.Maskenname);
+            }
+
+            Assert.True(fremd.Count == 0,
+                "Diese Anzeigenamen schickt die Absage in eine fremde Maske:\n" + string.Join("\n", fremd));
         }
 
         /// <summary>Führt <paramref name="aktion"/> unter einem Aufruf aus und räumt ihn danach weg.</summary>

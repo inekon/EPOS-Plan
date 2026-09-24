@@ -1,4 +1,4 @@
-﻿# iU9 Welle 16c — Das Hauptfenster: MDIMainForm, das Menü, der Rahmen — Portprotokoll
+# iU9 Welle 16c — Das Hauptfenster: MDIMainForm, das Menü, der Rahmen — Portprotokoll
 
 > Teilwelle **W16c** des Pakets iU9 (Welle 16 = der Rahmen K5 in drei Teilwellen)
 > und die **letzte** der drei. Grundlage: `iU9_W16_Vermessung.md` (1 907 Zeilen,

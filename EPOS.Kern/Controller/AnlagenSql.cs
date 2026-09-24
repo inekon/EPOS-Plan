@@ -89,10 +89,11 @@ namespace WindowsFormsApplication1
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
         /// ihren Fachcontrollern, nicht dem Modell (SchemaKatalog: "der Grund ist der
-        /// LESER"). Damit sie beim Loeschen + Neuanlegen nicht still auf NULL fallen
-        /// (Befund 02.09.2026), rettet der Speicherweg sie als KOMPLEMENT dieser
-        /// Anweisung: <c>WizardCtrl.FachspaltenSichern</c> vor dem DELETE,
-        /// <c>WizardCtrl.FachspaltenWiederherstellen</c> nach dem Add (Block FS1).
+        /// LESER"). Damit sie beim Loeschen + Neuanlegen nicht still auf NULL oder ihre
+        /// Vorgabe fallen (Befund 02.09.2026), rettet der Speicherweg sie als KOMPLEMENT
+        /// dieser Anweisung: <c>WizardCtrl.FachspaltenSichern</c> vor dem DELETE,
+        /// <c>WizardCtrl.FachspaltenWiederherstellen</c> nach dem Add auf genau die Zeilen,
+        /// die der Lauf angelegt hat (Block FS1).
         /// </para>
         /// </summary>
         public const string SQL_ANLAGE_INSERT = @"INSERT INTO Tab_Energieanlagen

@@ -603,7 +603,21 @@ namespace EPOS.Kern.Tests
                 // (NutzungsdauerSaetze); wiederholbar - gesetzt wird nur, was leer ist.
                 NutzungsdauerSaetze.Ausfuehren();
 
-                // Schritt 121 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
+                // Schritt 121 (Welle #468): der Katalogverweis des Projektgebaeudes samt Index
+                // und Nachtrag, dazu die Reparatur der Sonstigen Flaeche ohne U-Wert. Aus
+                // DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // (GebaeudeKatalogverweis); jeder Handgriff wiederholbar.
+                GebaeudeKatalogverweis.Ausfuehren();
+
+                // Schritte 122 und 123 (Anlagenkopplung Kapitel 8, Stufe AK1 Welle 1): AK-S1 - die
+                // dreizehn Spalten der Waermeuebergabe an Tab_Gebaeude(_STAMM), der dritte Neubau
+                // der Sicht und die Kopplungsstufe des Projekts; AK-S3 (Waermeteil) - drei
+                // Ergebnisspalten, nullbar. Aus DENSELBEN Quellen wie Migration und Werkzeug;
+                // wiederholbar, kein DML.
+                AnlagenkopplungSchema.UebergabeAlle(null);
+                AnlagenkopplungSchema.ErgebnisspaltenAlle(null);
+
+                // Schritt 124 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
                 // Tab_TwwProjekt und die Bezugsart am Bedarfstag. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);

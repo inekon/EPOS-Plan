@@ -78,14 +78,17 @@ public class PeakShavingVarianteTests : EposBunitContext
     private static IElement Rechenknopf(IRenderedComponent<PeakShavingDialog> cut)
         => cut.Find(".epos-peakshaving-rechnen button");
 
+    /// <summary>
+    /// Der Knopf steht in der WERKZEUGLEISTE (Schlitz <c>Werkzeug</c> der Suchzeile;
+    /// Konzept Administrationsdialoge 7.1 c), nicht in der Fußleiste.
+    /// </summary>
     private static IElement Uebernahmeknopf(IRenderedComponent<PeakShavingDialog> cut)
     {
-        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
-        foreach (IElement knopf in leisten[leisten.Count - 1].QuerySelectorAll("button"))
+        foreach (IElement knopf in cut.FindAll(".epos-katalog-suchzeile .epos-werkzeughandlungen button"))
             if (knopf.TextContent.Trim() == Resource.PEAK_BTN_VARIANTE) return knopf;
 
         throw new Xunit.Sdk.XunitException(
-            "Der Knopf fuer die Uebernahme in die Variante steht nicht in der Fussleiste.");
+            "Der Knopf fuer die Uebernahme in die Variante steht nicht in der Werkzeugleiste.");
     }
 
     // =====================================================================
@@ -99,13 +102,19 @@ public class PeakShavingVarianteTests : EposBunitContext
         Assert.DoesNotContain(Resource.PEAK_BTN_VARIANTE, cut.Markup);
     }
 
-    /// <summary>Mit Delegat steht er in der Fußleiste, neben „Schließen".</summary>
+    /// <summary>
+    /// Mit Delegat steht er in der Werkzeugleiste über der Liste — die Fußleiste trägt ihn
+    /// nicht mehr (dort stehen nur noch Statuszeile und „Beenden").
+    /// </summary>
     [Fact]
-    public void Mit_Delegat_steht_der_Knopf_in_der_Fussleiste()
+    public void Mit_Delegat_steht_der_Knopf_in_der_Werkzeugleiste()
     {
         var cut = Zeige();
 
         Assert.NotNull(Uebernahmeknopf(cut));
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        Assert.DoesNotContain(leisten[leisten.Count - 1].QuerySelectorAll("button"),
+                              b => b.TextContent.Trim() == Resource.PEAK_BTN_VARIANTE);
     }
 
     /// <summary>

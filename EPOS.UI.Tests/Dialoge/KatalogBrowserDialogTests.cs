@@ -1524,6 +1524,47 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Equal("„Kessel Neu 1“ eingelesen.", cut.Instance.Status);
     }
 
+    /// <summary>
+    /// <b>Nach dem Import rollt die Liste zur neuen Fokuszeile</b> — über denselben Aufruf
+    /// wie ein Tastenschritt (<c>zeileZeigen</c> mit ihrer Stelle und dem Zeilenmaß 46).
+    /// Das Öffnen rollt nicht; in einer Liste von Tausenden stünde der neue Satz sonst
+    /// gewählt, aber außer Sicht.
+    /// </summary>
+    [Fact]
+    public async Task Nach_einem_Import_rollt_die_Liste_zur_neuen_Fokuszeile()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var zeilen = Zeilen(KatalogBrowserArt.Heizkessel).ToList();
+        var cut = Aufbauen(wege: ImportWege(zeilen));
+        cut.WaitForAssertion(() => Assert.Single(modul.Invocations, i => i.Identifier == "anmelden"));
+        cut.Find(".epos-importknopf").Click();
+
+        zeilen.Add(new Katalogfilterzeile(7, "Kessel Neu 1")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 1"));
+        zeilen.Add(new Katalogfilterzeile(8, "Kessel Neu 2")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Kessel Neu 2"));
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
+        await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
+
+        // Die Stelle der Fokuszeile in der gezeichneten Liste.
+        int stelle = cut.FindAll("tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Kessel Neu 1", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+            Assert.Equal(46f, zeigen[0].Arguments[2]);
+        });
+    }
+
     [Fact]
     public void Kreuz_und_Esc_des_Imports_schliessen_nur_die_Ueberlagerung()
     {

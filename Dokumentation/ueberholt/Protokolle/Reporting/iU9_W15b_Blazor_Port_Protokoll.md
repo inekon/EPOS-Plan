@@ -1,4 +1,4 @@
-﻿# iU9 Welle 15b — Hilfe und KI: Portprotokoll
+# iU9 Welle 15b — Hilfe und KI: Portprotokoll
 
 > Vermessung `iU9_W15b_Vermessung.md` (2 013 Z., 04.09.2026), Arbeitsanweisung
 > `iU9_W15b_Arbeitsanweisung.md`. Form nach `iU9_W15a_Blazor_Port_Protokoll.md`.

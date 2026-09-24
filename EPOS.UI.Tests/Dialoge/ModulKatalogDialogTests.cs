@@ -981,9 +981,13 @@ public class ModulKatalogDialogTests : EposBunitContext
         cut.Find(".epos-importknopf").Click();
         foreach ((int id, string name) in new[] { (7, "Speicher X"), (8, "Speicher Y"), (9, "Speicher Z") })
             zeilen.Add(new Katalogfilterzeile(id, name).MitText(Katalogfilterprofil.SpBezeichner, name));
+        var liste = cut.FindComponent<EPOS.UI.Bausteine.Katalogliste>();
+        Assert.Equal(0, liste.Instance.Zeigeanlass);
         var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
         await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
 
+        // Die Übernahme ist der Liste ein Anlass, die neue Fokuszeile ins Bild zu rollen.
+        Assert.Equal(1, liste.Instance.Zeigeanlass);
         Assert.False(cut.Instance.Vergleicht);
         Assert.Equal(new[] { "Speicher X", "Speicher Y", "Speicher Z" }, cut.Instance.Kaestchen);
         Assert.Equal("Speicher X", cut.Instance.Gewaehlt);

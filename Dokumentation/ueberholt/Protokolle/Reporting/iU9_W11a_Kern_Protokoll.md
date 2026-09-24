@@ -1,4 +1,4 @@
-﻿# iU9 Welle 11a — Simulationsergebnis I: Kern, Renderer, Fortschritt
+# iU9 Welle 11a — Simulationsergebnis I: Kern, Renderer, Fortschritt
 
 > Umsetzung 04.09.2026 auf `ios_migration` (Basis `427fd59`, danach `cd849f8`
 > und **`a398c9a` mit der ganzen Welle 10b** eingemergt — siehe § 11).

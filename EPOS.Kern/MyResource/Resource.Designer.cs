@@ -31382,24 +31382,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht. ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_VERWENDUNG_ERL {
@@ -32791,6 +32773,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_LPR {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_LPR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_MEHRDEUTIG", resourceCulture);
             }
         }
         
@@ -71211,6 +71202,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ENK_KAELTESTROM_ZAEHLER {
             get {
                 return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis Kältestromzähler {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis Kältestromzähler {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG", resourceCulture);
             }
         }
         

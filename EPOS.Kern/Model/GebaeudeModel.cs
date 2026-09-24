@@ -92,7 +92,26 @@ namespace WindowsFormsApplication1
         public double? Kuehlleistung_Max;
         public bool Kuehlung_Aktiv;
         public double? Kuehl_Sollwert_Nacht;
- 
+
+        // ---- AK-S1, die Waermeuebergabe (Schemaschritt 122, Anlagenkopplung 8.1) --------
+        // NULL-ERHALTEND wie die Bloecke darueber: Uebergabe_Art NULL heisst "ideal" (Kopplung
+        // aus), jede andere NULL-Zahl "Vorgabe" bzw. "hergeleitet" (8.4), Sollwertprofil NULL
+        // "die vier Bestandssollwerte"; die zwei Schalter kennen kein NULL. Kein Rechenweg
+        // liest die Felder in der ersten Welle von AK1. Namen: GebaeudeSchema.SPALTE_*.
+        public bool Heizkreis_Aktiv;
+        public string Uebergabe_Art;
+        public double? Uebergabe_Exponent;
+        public double? Uebergabe_Leistung_Nenn;
+        public double? Auslegung_Vorlauf;
+        public double? Auslegung_Ruecklauf;
+        public double? Auslegung_Raumtemperatur;
+        public double? Auslegung_Aussentemperatur;
+        public bool Heizkurve_Aktiv;
+        public double? Heizkurve_Niveau;
+        public double? Heizkurve_Steilheit;
+        public double? Regler_Proportionalband;
+        public string Sollwertprofil;
+
         public GebaeudeModel()
         {
             ID = 0;

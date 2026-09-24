@@ -220,9 +220,11 @@
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <b>Kein Speicherweg.</b> „Neu" und „Löschen" schreiben unmittelbar in den
-    /// Katalog; beide sind datenbankwirksam und laufen über <c>dialog_speichern</c>
-    /// samt Rückfrage und Sicherungspunkt.
+    /// <b>Kein Speicherweg — mit Absicht.</b> „Neu" und „Löschen" schreiben unmittelbar
+    /// in den Katalog, das OK schließt nur; es gibt keinen Arbeitsstand, den ein
+    /// Speichern schreiben könnte. Anlegen und Löschen bleiben beim Anwender (Löschen
+    /// nie über den Assistenten, Aufgabensteuerung 5.4); <c>dialog_speichern</c> lehnt
+    /// hier benannt ab (<c>KI_AKTION_SPEICHERN_KEIN_WEG</c>).
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {

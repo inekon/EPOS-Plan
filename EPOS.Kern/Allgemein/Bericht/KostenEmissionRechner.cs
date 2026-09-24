@@ -579,9 +579,12 @@ namespace WindowsFormsApplication1
             //    bepreist den Rest — samt Grund- und Leistungspreis, die Bezugsspitze bleibt die
             //    des ganzen Anschlusses.
             //  - EIGENER ZÄHLER: die Menge liegt NEBEN Stromrestbedarf und trägt ganz den
-            //    Kühlträger.
-            // Grund- und Leistungspreis des Kühlträgers setzt die Regel nicht an (Kühlkonzept 6.1:
-            // Arbeitspreis und CO₂-Faktor). Ohne abweichenden Kühlträger ist die Liste leer, und
+            //    Kühlträger — Arbeitspreis und CO₂-Faktor, dazu (Entscheid E35, Konzept
+            //    Gebäudesimulation N1.40) Grund- und Leistungspreis des Kühlträgers: je Zähler (je
+            //    Anlage) einen Grundpreis und den Leistungspreis auf die EIGENE Spitze des
+            //    Kältestroms dieser Anlage, nach derselben Regel wie beim Projektträger.
+            // Anteilig setzt die Regel Grund- und Leistungspreis des Kühlträgers nicht an (E34: sie
+            // bleiben beim Projektträger). Ohne abweichenden Kühlträger sind beide Listen leer, und
             // jede Zahl unten entsteht Zeichen für Zeichen wie ohne diesen Block.
             List<Kaeltestromabrechnung.Anteil> kuehlAnteile = stromOhneVerwendung
                 ? new List<Kaeltestromabrechnung.Anteil>() : Kaeltestromabrechnung.Anteile(m);
@@ -666,35 +669,22 @@ namespace WindowsFormsApplication1
                     // Stromanteil ersetzte. Bemessen an der JAHRESspitze der
                     // Viertelstundenreihe, in €/(kW·a), gleich welcher Modus am Träger
                     // steht: min(S, Grenze) × Preis 1 + max(0, S − Grenze) × Preis 2.
-                    bool leistungStrom = preistraeger.Staffel.Gepflegt ||
-                                         preistraeger.ReiheJeKW != null ||
-                                         preistraeger.PreisLeistung.HasValue;
-                    if (leistungStrom)
+                    //
+                    // E35: Dieselbe Regel bepreist die eigene Spitze eines Kältestromzählers
+                    // (LeistungsanteilStrom, unten beim Kältestrom) — eine Regel, zwei Spitzen.
+                    if (LeistungspreisStrom(preistraeger))
                     {
                         Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
                         if (spitze != null && spitze.JahrKW > 0)
                         {
-                            double anteilStrom;
-                            if (preistraeger.Staffel.Gepflegt)
-                                anteilStrom = preistraeger.Staffel.Betrag(spitze.JahrKW);
-                            else if (preistraeger.ReiheJeKW != null)
-                            {
-                                anteilStrom = 0;
-                                for (int mo = 0; mo < 12; mo++)
-                                    anteilStrom += preistraeger.ReiheJeKW[mo] * spitze.MonatKW[mo];
-                            }
-                            else if (string.Equals(preistraeger.LeistungsModus,
-                                         DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
-                                anteilStrom = preistraeger.PreisLeistung.Value * spitze.MonatssummeKW;
-                            else
-                                anteilStrom = preistraeger.PreisLeistung.Value * spitze.JahrKW;
+                            double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
 
                             stromKosten += anteilStrom;
                             leistungsAnteil += anteilStrom;
                             leistungGepflegt = true;
                         }
                         else
-                            v.LeistungspreisOhneSpitze = TraegerName(stromCarrierKosten);
+                            LeistungspreisOhneSpitzeVermerken(v, stromCarrierKosten);
                     }
 
                     // Der Vermerk steht NUR, wenn der Rückfall auch wirklich einen
@@ -765,6 +755,66 @@ namespace WindowsFormsApplication1
             }
             netzCO2t += kuehlCO2t;
 
+            // ---- ENTSCHEID E35: GRUND- UND LEISTUNGSPREIS DES EIGENEN ZÄHLERS ----
+            //
+            // Je Zähler — je Anlage mit abweichendem Kühlträger und eigenem Zähler, auch ohne
+            // Kältestrom im Jahr — der Grundpreis des Kühlträgers, und, wenn der Träger einen
+            // Leistungspreis führt, dieser auf die eigene Spitze des Kältestroms der Anlage
+            // (Zeitreihen.Kaeltestromspitzen, Viertelstundenraster) — Staffel, Saisonreihe, Satz je
+            // Jahr oder je Monat, wie beim Projektträger (LeistungsanteilStrom). Fehlt die Spitze,
+            // weil der Lauf keine Zeitreihen geführt hat, wird der Träger benannt statt still
+            // übergangen (dieselbe Fahne wie beim Projektträger). E9a: im Szenariolauf mit den
+            // wirksamen Szenariopreisen des Kühlträgers; ein Szenario-Leistungspreis neben Staffel
+            // oder Saisonreihe bleibt ohne Wirkung und wird benannt.
+            List<Kaeltestromabrechnung.Zaehler> kuehlZaehler = stromOhneVerwendung
+                ? new List<Kaeltestromabrechnung.Zaehler>() : Kaeltestromabrechnung.EigeneZaehler(m);
+            var zaehlerZeilen = new List<EnergieAnlageNachweis>();
+            foreach (Kaeltestromabrechnung.Zaehler z in kuehlZaehler)
+            {
+                TraegerInfo kt = LadeTraeger(v.IdProjekt, z.Traeger, szenario);
+                if (kt.LeistungSzenarioGepflegt && (kt.Staffel.Gepflegt || kt.ReiheJeKW != null))
+                    SzenarioLeistungOhneWirkung(v, z.Traeger);
+
+                if (kt.Grundpreis.HasValue && kt.Grundpreis.Value > 0)
+                {
+                    kuehlKosten += kt.Grundpreis.Value;
+                    zaehlerZeilen.Add(new EnergieAnlageNachweis
+                    {
+                        Anlage = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND, z.Anlage),
+                        Traeger = TraegerName(z.Traeger),
+                        MengeAbrechnung = 1.0,
+                        Einheit = "a",
+                        PreisJeEinheit = kt.Grundpreis.Value,
+                        KostenEur = kt.Grundpreis.Value
+                    });
+                }
+
+                if (!LeistungspreisStrom(kt)) continue;
+                Netzbezugsspitze eigene = null;
+                if (v.Zeitreihen == null || v.Zeitreihen.Kaeltestromspitzen == null ||
+                    !v.Zeitreihen.Kaeltestromspitzen.TryGetValue(z.Modulindex, out eigene) || eigene == null)
+                {
+                    LeistungspreisOhneSpitzeVermerken(v, z.Traeger);
+                    continue;
+                }
+                if (!(eigene.JahrKW > 0)) continue;      // kein Kältestrom - keine Spitze, kein Anteil
+
+                double anteil = LeistungsanteilStrom(kt, eigene);
+                kuehlKosten += anteil;
+                leistungsAnteil += anteil;
+                leistungGepflegt = true;
+                double basis = LeistungsbasisKW(kt, eigene);
+                zaehlerZeilen.Add(new EnergieAnlageNachweis
+                {
+                    Anlage = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG, z.Anlage),
+                    Traeger = TraegerName(z.Traeger),
+                    MengeAbrechnung = basis,
+                    Einheit = "kW",
+                    PreisJeEinheit = basis > 0 ? anteil / basis : 0.0,
+                    KostenEur = anteil
+                });
+            }
+
             v.StromkostenKuehltraeger = kuehlOhnePreis.Count == 0 ? kuehlKosten : 0.0;
             v.NetzbezugKuehltraegerMWh = kuehlAnteiligMWh;
             v.KuehlzaehlerMWh = kuehlZaehlerMWh;
@@ -817,6 +867,10 @@ namespace WindowsFormsApplication1
                                                  : MyResource.Resource.WIRT_ENK_KAELTESTROM,
                                 string.Join(", ", a.Anlagen)),
                             a.Traeger, a.MengeMwh, szenario);
+            // E35: Grund- und Leistungspreis eines eigenen Zählers gehören genau einer Anlage — sie
+            // stehen deshalb (anders als die trägerweiten Fixbeträge des Projekts) je Zähler als
+            // eigene Zeile, mit der Herleitung „1 a × Grundpreis" bzw. „Spitze × Satz".
+            jeAnlage.AddRange(zaehlerZeilen);
             v.EnergiekostenJeAnlage = jeAnlage;
 
             // ---------------- Kennzahlen setzen ----------------
@@ -829,11 +883,13 @@ namespace WindowsFormsApplication1
             // eines eigenen Zählers ist Verbrauch auch ohne Netzbezug am Hauptanschluss, und die
             // Kosten der abweichenden Kühlträger kommen hinzu — fehlt einem der Arbeitspreis, bleibt
             // die Summe aus (Fehlgrund unten).
+            // E35: Ein eigener Zähler trägt auch ohne Kältestrom seinen Grundpreis.
             double? energie = (kostenVollstaendig && stromKosten.HasValue)
                 ? (double?)(brennstoffKosten + stromKosten.Value)
-                : (kostenVollstaendig && (verbrauchJeTraeger.Count > 0 || kuehlZaehlerMWh > 0) && netzbezugBewertet <= 0
+                : (kostenVollstaendig && (verbrauchJeTraeger.Count > 0 || kuehlZaehlerMWh > 0 || kuehlZaehler.Count > 0) &&
+                   netzbezugBewertet <= 0
                     ? (double?)brennstoffKosten : null);
-            if (energie.HasValue && kuehlAnteile.Count > 0)
+            if (energie.HasValue && (kuehlAnteile.Count > 0 || kuehlZaehler.Count > 0))
                 energie = kuehlOhnePreis.Count > 0 ? (double?)null : energie.Value + kuehlKosten;
             v.Energiekosten = energie;
 
@@ -903,6 +959,72 @@ namespace WindowsFormsApplication1
         /// sonst direkt je kWh. Ohne Träger, ohne Menge oder ohne Arbeitspreis entsteht
         /// KEINE Zeile — die Aufschlüsselung soll erklären, nicht behaupten.
         /// </summary>
+        // ------------------------------------------- Der Leistungspreis eines Stromträgers
+
+        /// <summary>
+        /// Führt ein Stromträger einen Leistungspreis — zweistufige Staffel (Q11), Saisonreihe (FK6a)
+        /// oder Satz (Projektwert vor Katalogwert, 0 = nicht gepflegt)? Dieselbe Frage für den
+        /// Projektträger (Bezugsspitze des Anschlusses) und für den Kühlträger eines eigenen Zählers
+        /// (E35, seine eigene Spitze).
+        /// </summary>
+        private static bool LeistungspreisStrom(TraegerInfo t)
+        {
+            return t != null && (t.Staffel.Gepflegt || t.ReiheJeKW != null || t.PreisLeistung.HasValue);
+        }
+
+        /// <summary>
+        /// <b>Die Leistungspreisregel eines Stromträgers</b> [€/a] auf eine Spitze im
+        /// Viertelstundenraster — EINE Regel für den Netzbezug des Anschlusses (SP-E-1, Q11, FK6a) und
+        /// für den eigenen Zähler des Kältestroms (E35): Die Staffel geht vor und bemisst sich an der
+        /// Jahresspitze; dann die Saisonreihe (Monatssatz × Monatsspitze); dann der Satz je Monat
+        /// (× Summe der Monatsspitzen) oder je Jahr (× Jahresspitze). Nur für einen Träger mit
+        /// <see cref="LeistungspreisStrom"/>.
+        /// </summary>
+        private static double LeistungsanteilStrom(TraegerInfo t, Netzbezugsspitze spitze)
+        {
+            if (t.Staffel.Gepflegt)
+                return t.Staffel.Betrag(spitze.JahrKW);
+            if (t.ReiheJeKW != null)
+            {
+                double anteil = 0;
+                for (int mo = 0; mo < 12; mo++)
+                    anteil += t.ReiheJeKW[mo] * spitze.MonatKW[mo];
+                return anteil;
+            }
+            if (string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return t.PreisLeistung.Value * spitze.MonatssummeKW;
+            return t.PreisLeistung.Value * spitze.JahrKW;
+        }
+
+        /// <summary>
+        /// Die Bemessungsgröße derselben Regel [kW] — für den Ausweis „Spitze × Satz": die
+        /// Jahresspitze bei Staffel und Satz je Jahr, die Summe der Monatsspitzen bei Saisonreihe und
+        /// Satz je Monat.
+        /// </summary>
+        private static double LeistungsbasisKW(TraegerInfo t, Netzbezugsspitze spitze)
+        {
+            if (t.Staffel.Gepflegt) return spitze.JahrKW;
+            if (t.ReiheJeKW != null ||
+                string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return spitze.MonatssummeKW;
+            return spitze.JahrKW;
+        }
+
+        /// <summary>
+        /// Vermerkt einen Stromträger, dessen Leistungspreis mangels Spitze nicht gerechnet werden
+        /// konnte (<see cref="VariantenDaten.LeistungspreisOhneSpitze"/>) — je Name einmal, mehrere
+        /// durch Komma getrennt (Projektträger und Kühlträger eines eigenen Zählers, E35).
+        /// </summary>
+        private static void LeistungspreisOhneSpitzeVermerken(VariantenDaten v, int carrierId)
+        {
+            string name = TraegerName(carrierId);
+            if (string.IsNullOrEmpty(name)) return;
+            if (string.IsNullOrEmpty(v.LeistungspreisOhneSpitze)) { v.LeistungspreisOhneSpitze = name; return; }
+            foreach (string vorhanden in v.LeistungspreisOhneSpitze.Split(new[] { ", " }, StringSplitOptions.None))
+                if (string.Equals(vorhanden, name, StringComparison.Ordinal)) return;
+            v.LeistungspreisOhneSpitze += ", " + name;
+        }
+
         private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,
                                         string anlage, int carrierId, double mengeMWh, string szenario)
         {
@@ -1224,18 +1346,52 @@ namespace WindowsFormsApplication1
             {
                 int traeger = Emissionsquelle.StromTraeger(idProjekt);
                 if (traeger <= 0) traeger = StandardStromTraeger(idProjekt);
-                if (traeger <= 0) return false;
+                if (traeger > 0 && LeistungspreisMitSzenario(idProjekt, traeger)) return true;
 
-                TraegerInfo info = LadeTraeger(idProjekt, traeger);
-                // Q11: Auch die zweistufige Staffel bemisst sich an der Bezugsspitze.
-                if (info.Staffel.Gepflegt || info.ReiheJeKW != null || info.PreisLeistung.HasValue)
-                    return true;
-                // ETAPPE E9a (Schritt C): Ein Leistungspreis, den nur ein SZENARIO trägt,
-                // braucht die Bezugsspitze ebenso — sonst fehlte er im Szenariolauf still.
-                TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, traeger);
-                return (sz.LeistungspreisBest ?? 0) > 0 || (sz.LeistungspreisWorst ?? 0) > 0;
+                // ENTSCHEID E35 (Konzept Gebäudesimulation N1.40): Der Kühlträger eines eigenen
+                // Zählers bepreist die eigene Spitze des Kältestroms — auch sie gibt es nur aus
+                // dem frischen Lauf. Gefragt wird an der Anlagenkonfiguration, vor jedem Lauf.
+                foreach (int kuehltraeger in KuehltraegerEigenerZaehler(idProjekt, traeger))
+                    if (LeistungspreisMitSzenario(idProjekt, kuehltraeger)) return true;
+                return false;
             }
             catch { return false; }
+        }
+
+        /// <summary>
+        /// Trägt der Träger einen Leistungspreis — gepflegt (Staffel, Saisonreihe, Satz) oder allein
+        /// in einem Szenario (ETAPPE E9a, Schritt C: sonst fehlte er im Szenariolauf still)?
+        /// </summary>
+        private static bool LeistungspreisMitSzenario(int idProjekt, int traeger)
+        {
+            TraegerInfo info = LadeTraeger(idProjekt, traeger);
+            // Q11: Auch die zweistufige Staffel bemisst sich an der Bezugsspitze.
+            if (LeistungspreisStrom(info)) return true;
+            TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, traeger);
+            return (sz.LeistungspreisBest ?? 0) > 0 || (sz.LeistungspreisWorst ?? 0) > 0;
+        }
+
+        /// <summary>
+        /// Die Kühlträger der Anlagen mit eigenem Zähler (E34, E35) — nur Wärmepumpen im Kühlbetrieb
+        /// und nur ein vom Projektträger abweichender Träger (sonst wirkt die Abrechnungsart nicht).
+        /// </summary>
+        private static List<int> KuehltraegerEigenerZaehler(int idProjekt, int projekttraeger)
+        {
+            var liste = new List<int>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT DISTINCT ea.Kuehl_ID_Carrier AS traeger FROM Tab_Energieanlagen AS ea " +
+                "INNER JOIN Tab_WP AS wp ON wp.ID = ea.ID_WP " +
+                "WHERE ea.ID_Projekt = ? AND ea.Kuehl_EigenerZaehler = 1 AND wp.Kuehlbetrieb = 1 " +
+                "AND ea.Kuehl_ID_Carrier IS NOT NULL ORDER BY ea.Kuehl_ID_Carrier",
+                new DbParam("@p", idProjekt));
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+            {
+                if (r["traeger"] == DBNull.Value) continue;
+                int k = Convert.ToInt32(r["traeger"], System.Globalization.CultureInfo.InvariantCulture);
+                if (Kaeltestromabrechnung.Abweichend(k, projekttraeger)) liste.Add(k);
+            }
+            return liste;
         }
 
         /// <summary>

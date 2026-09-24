@@ -575,6 +575,294 @@ namespace EPOS.Kern.Tests
                          ProjektbeschreibungBaustein.KuehltraegerText(zaehler.Modul));
         }
 
+        // =============================================================================
+        //  Teil 4 — Entscheid E35 und die Reste von E34 (KU2 Welle 4; Konzept N1.40)
+        // =============================================================================
+
+        /// <summary>Phantasiewerte des Kühlträgers für E35: Grundpreis [€/a] und Leistungspreis [€/(kW·a)].</summary>
+        private const double GRUND_KUEHLUNG = 120.0, LEISTUNG_KUEHLUNG = 100.0;
+
+        /// <summary>Ein Lauf samt den Zeitreihen des frischen Laufs (Bezugsspitze, eigene Spitzen des Kältestroms).</summary>
+        private sealed class StandMitReihen
+        {
+            public SimulationRunner Lauf;
+            public ZeitreihenSatz Reihen;
+            public ErgebnisModel Ergebnis;
+            public ErgebnisWaermepumpeModulModel Modul;
+            public Kaelteerzeuger Erzeuger;
+
+            /// <summary>Kosten und Emissionen aus dem gespeicherten Ergebnis — mit oder ohne Zeitreihen, im Szenario.</summary>
+            public VariantenDaten Rechne(bool mitReihen, string szenario = null)
+            {
+                var v = new VariantenDaten { IdProjekt = PROJEKT, Ergebnis = Ergebnis, Zeitreihen = mitReihen ? Reihen : null };
+                KostenEmissionRechner.Berechne(v, szenario);
+                return v;
+            }
+        }
+
+        private StandMitReihen RechnenMitReihen()
+        {
+            var lauf = new SimulationRunner();
+            int kopf = lauf.SimuliereUndSpeichere(PROJEKT, out string fehler);
+            Assert.True(kopf > 0, fehler);
+            ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
+            Assert.NotNull(erg);
+            return new StandMitReihen
+            {
+                Lauf = lauf,
+                Reihen = ZeitreihenExtraktor.AusLauf(lauf),
+                Ergebnis = erg,
+                Modul = Assert.Single(erg.Waermepumpe.Module),
+                Erzeuger = Assert.Single(lauf.simulation_Kaeltebedarf.Kaskade.Erzeuger)
+            };
+        }
+
+        /// <summary>Grund- und Leistungspreis des Kühlträgers als Projektübersteuerung (Phantasiewerte).</summary>
+        private static void KuehltraegerFestpreise(double grund, double leistung)
+        {
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE energy_project_settings SET custom_price_base = ?, custom_price_power = ? " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@g", grund), new DbParam("@l", leistung),
+                new DbParam("@p", PROJEKT), new DbParam("@c", KUEHLTRAEGER)));
+        }
+
+        /// <summary>
+        /// <b>E35 an 1045 — der eigene Zähler trägt Grund- und Leistungspreis seines Kühlträgers.</b>
+        /// Handrechnung: Kosten des Kühlträgers = Kältestrom × Arbeitspreis + Grundpreis (je Zähler) +
+        /// Leistungspreis × eigene Jahresspitze des Kältestroms; die Spitze ist die höchste Stunde der
+        /// Kältestromreihe der Anlage (je Stunde dieselbe Leistung in jeder Viertelstunde), die
+        /// Monatsspitzen je Monat ebenso. Ohne Zeitreihen: Grundpreis ja, der Leistungspreis wird
+        /// benannt. Die Staffel geht dem Satz vor. Anteilig bleibt es bei E34 — Grund- und
+        /// Leistungspreis beim Projektträger.
+        /// </summary>
+        [Fact]
+        public void E35_der_eigene_Zaehler_traegt_Grund_und_Leistungspreis_seines_Kuehltraegers()
+        {
+            if (!_db.Vorhanden) return;
+            Einrichten();
+            KuehltraegerFestpreise(GRUND_KUEHLUNG, LEISTUNG_KUEHLUNG);
+
+            // Anteilig am Netzbezug: kein Grund- und kein Leistungspreis des Kühlträgers.
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER, KuehlEigenerZaehler: false)).Ok);
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT),
+                "Anteilig bepreist der Kühlträger keine Spitze - kein frischer Lauf nötig.");
+            StandMitReihen anteilig = RechnenMitReihen();
+            Assert.Empty(anteilig.Reihen.Kaeltestromspitzen);
+            VariantenDaten va = anteilig.Rechne(true);
+            double m = anteilig.Modul.Kaeltestrom_Netzbezug.Value;
+            Assert.Equal(m * 1000.0 * PREIS_KUEHLUNG, va.StromkostenKuehltraeger, 6);
+            Assert.Null(va.EnergieLeistungsanteil);
+            Assert.DoesNotContain(va.EnergiekostenJeAnlage, z => z.Anlage.Contains("Kältestromzähler"));
+
+            // Eigener Zähler.
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlEigenerZaehler: true)).Ok);
+            Assert.True(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT),
+                "Der Kühlträger eines eigenen Zählers bepreist seine eigene Spitze - sie gibt es nur aus dem frischen Lauf.");
+            StandMitReihen s = RechnenMitReihen();
+            double k = s.Modul.Kaeltestrom_Netzbezug.Value;
+            Assert.Equal(s.Modul.Stromverbrauch_Kuehlung.Value, k);
+
+            // Die eigene Spitze von Hand: die höchste Stunde, je Monat und im Jahr [kW].
+            Netzbezugsspitze spitze = Assert.Single(s.Reihen.Kaeltestromspitzen).Value;
+            Assert.Equal(s.Erzeuger.Modulindex, Assert.Single(s.Reihen.Kaeltestromspitzen).Key);
+            double jahr = s.Erzeuger.Strom_stuendlich.Max();
+            Assert.True(jahr > 0);
+            Assert.Equal(jahr, spitze.JahrKW);
+            int h0 = 0;
+            for (int mo = 0; mo < 12; mo++)
+            {
+                int stunden = Netzbezugsspitze.TageJeMonat[mo] * 24;
+                double monat = 0;
+                for (int h = h0; h < h0 + stunden; h++) monat = Math.Max(monat, s.Erzeuger.Strom_stuendlich[h]);
+                Assert.Equal(monat, spitze.MonatKW[mo]);
+                h0 += stunden;
+            }
+
+            // Mit Zeitreihen: Arbeit + Grundpreis + Leistungspreis × Jahresspitze.
+            VariantenDaten v = s.Rechne(true);
+            double arbeit = k * 1000.0 * PREIS_KUEHLUNG;
+            double leistung = LEISTUNG_KUEHLUNG * jahr;
+            Assert.Equal(arbeit + GRUND_KUEHLUNG + leistung, v.StromkostenKuehltraeger, 6);
+            Assert.Equal(arbeit + GRUND_KUEHLUNG + leistung, v.KaeltestromKosten.Value, 6);
+            Assert.Equal(leistung, v.EnergieLeistungsanteil.Value, 9);            // der Projektträger führt keinen
+            Assert.Null(v.LeistungspreisOhneSpitze);
+            EnergieAnlageNachweis grundZeile = Assert.Single(v.EnergiekostenJeAnlage,
+                z => z.Anlage == string.Format(CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND, s.Modul.Modul));
+            Assert.Equal(GRUND_KUEHLUNG, grundZeile.KostenEur, 9);
+            EnergieAnlageNachweis leistungZeile = Assert.Single(v.EnergiekostenJeAnlage,
+                z => z.Anlage == string.Format(CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG, s.Modul.Modul));
+            Assert.Equal(leistung, leistungZeile.KostenEur, 9);
+            Assert.Equal(jahr, leistungZeile.MengeAbrechnung, 12);
+            Assert.Equal(LEISTUNG_KUEHLUNG, leistungZeile.PreisJeEinheit, 9);
+
+            // Ohne Zeitreihen: der Grundpreis steht, der Leistungspreis fehlt - benannt.
+            VariantenDaten ohne = s.Rechne(false);
+            Assert.Equal(arbeit + GRUND_KUEHLUNG, ohne.StromkostenKuehltraeger, 6);
+            Assert.Equal(Emissionsquelle.TraegerName(KUEHLTRAEGER), ohne.LeistungspreisOhneSpitze);
+            Assert.Equal(leistung, v.Energiekosten.Value - ohne.Energiekosten.Value, 6);   // genau einmal in den Energiekosten
+            Assert.Equal(v.StromkostenNetz.Value, ohne.StromkostenNetz.Value);               // der Anschluss bleibt, wie er ist
+
+            // Der Grundpreis steht genau einmal in den Energiekosten.
+            KuehltraegerFestpreise(0.0, LEISTUNG_KUEHLUNG);
+            VariantenDaten ohneGrund = s.Rechne(true);
+            Assert.Equal(GRUND_KUEHLUNG, v.Energiekosten.Value - ohneGrund.Energiekosten.Value, 6);
+            Assert.DoesNotContain(ohneGrund.EnergiekostenJeAnlage, z => z.Anlage == grundZeile.Anlage);
+            KuehltraegerFestpreise(GRUND_KUEHLUNG, LEISTUNG_KUEHLUNG);
+
+            // Die Staffel geht dem Satz vor: min(S, 1 kW) × 50 + max(0, S − 1 kW) × 200.
+            Assert.True(EnergietraegerPreisCtrl.StaffelSchreiben(PROJEKT, KUEHLTRAEGER,
+                new LeistungspreisStaffel { GrenzeKW = 1.0, Preis1EurKWa = 50.0, Preis2EurKWa = 200.0 }));
+            VariantenDaten staffel = s.Rechne(true);
+            double betrag = Math.Min(jahr, 1.0) * 50.0 + Math.Max(0.0, jahr - 1.0) * 200.0;
+            Assert.Equal(arbeit + GRUND_KUEHLUNG + betrag, staffel.StromkostenKuehltraeger, 6);
+
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "1045 E35: Kältestrom {0:F3} MWh/a über den eigenen Zähler, eigene Spitze {1:F3} kW; " +
+                "Kühlträger anteilig {2:F2} €/a; eigener Zähler: Arbeit {3:F2} + Grund {4:F2} + Leistung {5:F2} = {6:F2} €/a " +
+                "(ohne Zeitreihen {7:F2} €/a, Leistungspreis benannt); Staffel {8:F2} €/a",
+                k, jahr, va.StromkostenKuehltraeger, arbeit, GRUND_KUEHLUNG, leistung, v.StromkostenKuehltraeger,
+                ohne.StromkostenKuehltraeger, betrag));
+        }
+
+        /// <summary>
+        /// Zwei Anlagen mit demselben Kühlträger und eigenem Zähler sind zwei Zähler (E35, N1.40): je
+        /// Zähler ein Grundpreis — auch ohne Kältestrom im Jahr; der Leistungspreis braucht Kältestrom.
+        /// Ohne Datenbank über ein gespeichertes Ergebnis mit zwei Modulzeilen.
+        /// </summary>
+        [Fact]
+        public void E35_zwei_eigene_Zaehler_sind_zwei_Grundpreise()
+        {
+            var m = new ErgebnisModel { Waermepumpe = new ErgebnisWaermepumpeModel() };
+            m.Waermepumpe.Module.Add(new ErgebnisWaermepumpeModulModel
+            {
+                Modul = "WP 1", Kaeltestrom_Netzbezug = 0.4, Kuehl_CarrierId = 58, Kuehl_EigenerZaehler = true
+            });
+            m.Waermepumpe.Module.Add(new ErgebnisWaermepumpeModulModel
+            {
+                Modul = "WP 2", Kaeltestrom_Netzbezug = 0.0, Kuehl_CarrierId = 58, Kuehl_EigenerZaehler = true
+            });
+            m.Waermepumpe.Module.Add(new ErgebnisWaermepumpeModulModel
+            {
+                Modul = "WP 3", Kaeltestrom_Netzbezug = 0.3, Kuehl_CarrierId = 58, Kuehl_EigenerZaehler = false
+            });
+
+            List<Kaeltestromabrechnung.Zaehler> z = Kaeltestromabrechnung.EigeneZaehler(m);
+            Assert.Equal(2, z.Count);
+            Assert.Equal(new[] { 0, 1 }, z.Select(x => x.Modulindex));
+            Assert.Equal(new[] { "WP 1", "WP 2" }, z.Select(x => x.Anlage));
+            Assert.Equal(0.4, z[0].MengeMwh);
+            Assert.Equal(0.0, z[1].MengeMwh);
+
+            // Die Mengen je Träger fassen dagegen zusammen - und lassen den leeren Zähler aus.
+            List<Kaeltestromabrechnung.Anteil> a = Kaeltestromabrechnung.Anteile(m);
+            Assert.Equal(2, a.Count);
+            Assert.Equal(0.4, Kaeltestromabrechnung.EigenerZaehlerMwh(m), 12);
+            Assert.Equal(0.3, Kaeltestromabrechnung.AnteiligMwh(m), 12);
+        }
+
+        /// <summary>
+        /// <b>Die Reste von E34 — der Preis des vermiedenen Bezugs</b>: Er ist der Arbeitspreis des
+        /// Stromträgers, der den Netzbezug bepreist (die Wärmepumpe wählt ihn), nicht der des
+        /// Kühlträgers — auch wenn die Zuordnung des Kühlträgers vorn steht und er die kleinere
+        /// Kennung trägt (die eigene Abfrage las früher per LIMIT 1 die zuerst zugeordnete Zeile).
+        /// Im Szenario mit dem wirksamen Szenariopreis (E9a).
+        /// </summary>
+        [Fact]
+        public void Der_vermiedene_Bezug_traegt_den_Preis_des_Projekttraegers_nicht_des_Kuehltraegers()
+        {
+            if (!_db.Vorhanden) return;
+            Einrichten();
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER, KuehlEigenerZaehler: true)).Ok);
+            // Die Zuordnung des Projektträgers neu schreiben: Danach steht die des Kühlträgers vorn -
+            // nach Zeile und nach Kennung.
+            Traeger(PROJEKTTRAEGER, PREIS_PROJEKT, CO2_PROJEKT);
+            Assert.True(KUEHLTRAEGER < PROJEKTTRAEGER);
+            Assert.Equal((long)KUEHLTRAEGER, Zahl(
+                "SELECT s.[ID_Energieträger] FROM energy_project_settings AS s INNER JOIN energy_carrier AS ec " +
+                "ON s.[ID_Energieträger] = ec.id WHERE s.ID_Projekt = 1045 AND ec.pricing_model = 'ELECTRICITY' ORDER BY s.ID LIMIT 1"));
+            Assert.Equal(PROJEKTTRAEGER, Kaeltestromabrechnung.Projekttraeger(PROJEKT));
+
+            Assert.Equal(PREIS_PROJEKT, WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(PROJEKT).Value, 12);
+            Assert.Equal(PREIS_PROJEKT, WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET).Value, 12);
+
+            Assert.True(EnergietraegerPreisCtrl.SzenarioSchreiben(PROJEKT, PROJEKTTRAEGER,
+                new TraegerpreisSzenario { ArbeitspreisBest = 0.25 }));
+            Assert.True(EnergietraegerPreisCtrl.SzenarioSchreiben(PROJEKT, KUEHLTRAEGER,
+                new TraegerpreisSzenario { ArbeitspreisBest = 0.10 }));
+            Assert.Equal(0.25, WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(PROJEKT, WirtschaftlichkeitSzenario.BEST).Value, 12);
+            Assert.Equal(PREIS_PROJEKT, WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(PROJEKT, WirtschaftlichkeitSzenario.WORST).Value, 12);
+        }
+
+        /// <summary>
+        /// <b>Die Reste von E34 — die Bemessungsmenge der Entlastung nach § 9b StromStG</b>: der
+        /// Netzbezug des Anschlusses und der Kältestrom eines eigenen Zählers genau einmal; anteilig
+        /// steht der Kältestrom schon im Netzbezug; ohne Verwendung 0.
+        /// </summary>
+        [Fact]
+        public void Die_Bemessungsmenge_nach_9b_zaehlt_den_eigenen_Zaehler_genau_einmal()
+        {
+            if (!_db.Vorhanden) return;
+            Einrichten();
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER, KuehlEigenerZaehler: false)).Ok);
+            Stand anteilig = Rechnen();
+            Assert.Equal(anteilig.NetzbezugMwh, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(anteilig.Daten, null));
+
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlEigenerZaehler: true)).Ok);
+            Stand zaehler = Rechnen();
+            double k = zaehler.Modul.Kaeltestrom_Netzbezug.Value;
+            Assert.True(k > 0);
+            Assert.Equal(zaehler.NetzbezugMwh + k, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(zaehler.Daten, null), 12);
+            var matrix = new StromMatrix { BezugGesamtMWh = 10.0 };
+            Assert.Equal(10.0 + k, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(zaehler.Daten, matrix), 12);
+
+            zaehler.Daten.StrombedarfOhneVerwendungMWh = zaehler.NetzbezugMwh;
+            Assert.Equal(0.0, WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer(zaehler.Daten, matrix));
+        }
+
+        /// <summary>
+        /// <b>E9a — ein Mengenszenario verliert den Kältestrom nicht</b>: Der skalierte Ergebnisbaum
+        /// trägt die Kälteseite der Wärmepumpe samt Kühlträger und Abrechnungsart, die eigenen Spitzen
+        /// folgen dem Faktor; der Grundpreis (ein Festbetrag) bleibt.
+        /// </summary>
+        [Fact]
+        public void Ein_Mengenszenario_skaliert_den_Kaeltestrom_und_behaelt_Kuehltraeger_und_Zaehler()
+        {
+            if (!_db.Vorhanden) return;
+            Einrichten();
+            KuehltraegerFestpreise(GRUND_KUEHLUNG, LEISTUNG_KUEHLUNG);
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER, KuehlEigenerZaehler: true)).Ok);
+            StandMitReihen s = RechnenMitReihen();
+            var v = new VariantenDaten { IdProjekt = PROJEKT, Ergebnis = s.Ergebnis, Zeitreihen = s.Reihen };
+
+            const double f = 1.1;
+            VariantenDaten kopie = SzenarioMengen.Variante(v, f);
+            ErgebnisWaermepumpeModulModel mo = Assert.Single(kopie.Ergebnis.Waermepumpe.Module);
+            Assert.Equal(s.Modul.Kaeltestrom_Netzbezug.Value * f, mo.Kaeltestrom_Netzbezug.Value, 12);
+            Assert.Equal(s.Modul.Stromverbrauch_Kuehlung.Value * f, mo.Stromverbrauch_Kuehlung.Value, 12);
+            Assert.Equal(s.Modul.Kaelteproduktion.Value * f, mo.Kaelteproduktion.Value, 12);
+            Assert.Equal(KUEHLTRAEGER, mo.Kuehl_CarrierId);
+            Assert.Equal(true, mo.Kuehl_EigenerZaehler);
+            Assert.Equal(s.Ergebnis.Waermepumpe.Stromverbrauch_Kuehlung.Value * f,
+                         kopie.Ergebnis.Waermepumpe.Stromverbrauch_Kuehlung.Value, 12);
+            double jahr = s.Reihen.Kaeltestromspitzen[s.Erzeuger.Modulindex].JahrKW;
+            Assert.Equal(jahr * f, kopie.Zeitreihen.Kaeltestromspitzen[s.Erzeuger.Modulindex].JahrKW, 12);
+
+            KostenEmissionRechner.Berechne(kopie);
+            double k = s.Modul.Kaeltestrom_Netzbezug.Value * f;
+            Assert.Equal(k, kopie.KuehlzaehlerMWh, 12);
+            Assert.Equal(k * 1000.0 * PREIS_KUEHLUNG + GRUND_KUEHLUNG + LEISTUNG_KUEHLUNG * jahr * f,
+                         kopie.StromkostenKuehltraeger, 6);
+        }
+
         /// <summary>Schreibt einen Baustein in ein Dokument im Speicher und liefert dessen Text.</summary>
         private static string Schreibe(IBerichtsBaustein baustein, BerichtsDaten daten)
         {

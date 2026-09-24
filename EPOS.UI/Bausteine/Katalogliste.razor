@@ -524,6 +524,26 @@
     /// <summary>Die Kästchen haben sich geändert — mit der neuen Liste der gewählten Schlüssel.</summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> GewaehlteChanged { get; set; }
 
+    /// <summary>
+    /// <b>Anlass, die Fokuszeile ins Bild zu rollen</b> — eine Fassungsnummer des Wirts,
+    /// in den Verwaltungen <c>Zeilenauswahl.Uebernahmen</c>. Wechselt sie, rollt die Liste
+    /// nach dem nächsten Zeichnen die Zeile <see cref="Gewaehlt"/> in den sichtbaren
+    /// Bereich — über DENSELBEN Weg wie nach einem Tastenschritt (<c>zeileZeigen</c>),
+    /// auch virtualisiert. Der erste Wert rollt nicht: Beim Öffnen steht die Liste, wo sie
+    /// steht. Blendet ein Filter die Fokuszeile aus, rollt nichts.
+    /// </summary>
+    [Parameter] public int Zeigeanlass { get; set; }
+
+    /// <summary>Der zuletzt gesehene <see cref="Zeigeanlass"/>; <c>null</c> vor dem ersten.</summary>
+    private int? _zeigeanlass;
+
+    /// <summary>Hat der Wirt einen neuen Anlass gereicht? Dann nach dem Zeichnen rollen.</summary>
+    private void ZeigeanlassNachziehen()
+    {
+        if (_zeigeanlass is not null && _zeigeanlass != Zeigeanlass) _zeigen = true;
+        _zeigeanlass = Zeigeanlass;
+    }
+
     /// <summary>Wirken die Kästchen? Nur, wo die Zeile die Wahl ist.</summary>
     private bool KaestchenAktiv => Kaestchen && ZeilenwahlAktiv;
 
@@ -611,7 +631,10 @@
     private IJSObjectReference? _modul;
     private bool _angemeldet;
 
-    /// <summary>Nach einem Tastenschritt die gewählte Zeile in den sichtbaren Bereich rollen.</summary>
+    /// <summary>
+    /// Nach einem Tastenschritt oder einem neuen <see cref="Zeigeanlass"/> die gewählte
+    /// Zeile in den sichtbaren Bereich rollen.
+    /// </summary>
     private bool _zeigen;
 
     protected override void OnInitialized()
@@ -714,7 +737,8 @@
 
     /// <summary>
     /// Nach dem Zeichnen: das Skript einmal an die Hülle hängen (es hält die vier Tasten
-    /// vom Rollen ab) und nach einem Tastenschritt die gewählte Zeile zeigen. Wer das
+    /// vom Rollen ab) und nach einem Tastenschritt oder einem neuen Zeigeanlass (eine
+    /// Übernahme aus dem Import) die gewählte Zeile zeigen. Wer das
     /// Modul nicht laden kann, wählt trotzdem per Tastatur — nur rollt die Liste dann
     /// nicht mit.
     /// </summary>
@@ -960,6 +984,7 @@
     protected override void OnParametersSet()
     {
         GewaehlteNachziehen();
+        ZeigeanlassNachziehen();
         Neuberechnen();
     }
 

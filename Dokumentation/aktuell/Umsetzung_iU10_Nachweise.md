@@ -1,4 +1,4 @@
-﻿# Nachweisliste iU10 — die iOS-Hülle
+# Nachweisliste iU10 — die iOS-Hülle
 
 **Stand 03.09.2026 · Branch `ios_migration` · ab `d4d5e20` (Basis `6f67a32`) —
 sieben Schritte iU10-1…iU10-7, dazu die Doku iU10-8**

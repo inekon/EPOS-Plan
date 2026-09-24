@@ -224,20 +224,26 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   zusätzliche Werkzeugleiste über den Schlitz `Werkzeug` entgegen — etwa den Schalter „nur mit
   Kühlfunktion“ der Wärmepumpenverwaltung —, statt dass der Wirt sie an der Liste vorbei ins
   Layout schiebt.
+- **Ausgabe und Übernahme eines Ergebnisses stehen im Schlitz WERKZEUG, nicht in der Fußleiste:**
+  Knöpfe, die auf das gerechnete Ergebnis einer Verwaltung wirken (Lastspitzenkappung:
+  „CSV-Export“, „In Variante übernehmen“), stehen nach der Suche in `.epos-werkzeughandlungen`,
+  beieinander und ohne Textumbruch; die Fußleiste bleibt dem Gerüst vorbehalten (Konzept
+  Knopfleisten, Abschnitt 1).
 - **Ein Import steht hinter EINEM Knopf, nicht im Block:** `button.epos-importknopf` in der
   Fußleiste öffnet eine `Ueberlagerung` mit Titel und Schließkreuz; ihr Inhalt (`.epos-einlesen`)
   bettet die vorhandene Einlesekette ein, nach dem Einlesen ist der neue Satz in der Liste
   gewählt.
 - **`ImportUeberlagerung` bündelt denselben Herstellerimport für mehrere Wirte an einer Stelle**
-  (`EPOS.UI/Dialoge/Import/`): KatalogBrowserDialog, ModulKatalogDialog und
-  `WaermepumpeStammDialog` reichen ihren Import-Parametersatz herein (BHKW hat keinen
-  Herstellerimport, also keinen Knopf). Ihre `Ueberlagerung` trägt hier KEINEN eigenen Kopf —
-  der Importdialog darin führt Titel und Kreuz selbst, weil er sein Kreuz während eines
-  laufenden Imports wegnimmt und Esc dann als „Lauf abbrechen" deutet; ein Kreuz der
-  `Ueberlagerung` schlösse mitten im Lauf. Nach einer Übernahme sind alle neuen Sätze gewählt
-  (`Zeilenauswahl.Uebernommen`), der erste ist Fokuszeile; ein einzelner neuer Satz ist allein
-  die Wahl. Ein Fenster, das einen Import als Überlagerung trägt, wünscht mindestens dessen
-  Maß (`Fenstermass.MitUeberlagerung`).
+  (`EPOS.UI/Dialoge/Import/`): KatalogBrowserDialog, ModulKatalogDialog und `WaermepumpeStammDialog`
+  reichen ihren Import-Parametersatz herein (BHKW hat keinen Herstellerimport, also keinen Knopf).
+  Ihre `Ueberlagerung` trägt hier KEINEN eigenen Kopf — der Importdialog darin führt Titel und Kreuz
+  selbst, weil er sein Kreuz während eines laufenden Imports wegnimmt und Esc dann als „Lauf
+  abbrechen" deutet; ein Kreuz der `Ueberlagerung` schlösse mitten im Lauf. Nach einer Übernahme
+  sind alle neuen Sätze gewählt (`Zeilenauswahl.Uebernommen`), der erste ist Fokuszeile; ein
+  einzelner neuer Satz ist allein die Wahl. Nach einer Übernahme rollt die Liste zur neuen
+  Fokuszeile: der Wirt reicht `Zeilenauswahl.Uebernahmen` als `Zeigeanlass` an die `Katalogliste`,
+  die denselben Rollweg wie bei Tastaturschritten nimmt. Ein Fenster, das einen Import als
+  Überlagerung trägt, wünscht mindestens dessen Maß (`Fenstermass.MitUeberlagerung`).
 - **Eine Zeitreihe zeigt ihren Verlauf über GANGLINIENBLATTGRUPPE, nicht als Diagramm im
   Detailblock:** `Ganglinienblattgruppe` und `Ganglinienblatt` bringen Jahresverlauf und Herkunft
   (mit „Verwendet in“) ins Stammblatt; eine im Projekt verwendete Zeitreihe ist weich gegen

@@ -938,11 +938,14 @@ namespace WindowsFormsApplication1
                 // ZUERST der Weg, dann die Liste: Wenn sich aus den genannten Feldern
                 // (oder aus dem genannten Maskennamen) EINE Maske erschliessen laesst,
                 // ist die Liste der uebrigen sechs nur Rauschen.
-                KiDialog gemeint = GemeinteMaske(gesucht, felder);
-                string weg = gemeint == null
-                    ? null
-                    : string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNichtOffen,
-                                    gemeint.Anzeigename, gemeint.Maskenname);
+                KiDialog gemeint = GemeinteMaske(gesucht, felder, out IReadOnlyList<KiDialog> kandidaten);
+                string weg = gemeint != null
+                    ? string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNichtOffen,
+                                    gemeint.Anzeigename, gemeint.Maskenname)
+                    : kandidaten.Count > 1
+                        ? string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeMehrdeutig,
+                                        Aufzaehlen(Beschriftungen(kandidaten)))
+                        : null;
 
                 // Welle #458: Kam der Aufruf aus einer Maske der AUSNAHMELISTE, sagt die
                 // Absage das zuerst - mit ihrem Grund statt der Liste aller Masken.
@@ -1008,7 +1011,32 @@ namespace WindowsFormsApplication1
         /// </para>
         /// </remarks>
         internal static KiDialog GemeinteMaske(string genannt, string[] felder)
+            => GemeinteMaske(genannt, felder, out _);
+
+        /// <summary>
+        /// Wie <see cref="GemeinteMaske(string, string[])"/>; ist die Maske mehrdeutig,
+        /// stehen in <paramref name="kandidaten"/> die Masken, zwischen denen nicht geraten
+        /// wird (sonst ist die Liste leer).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ueber ALLE Masken entscheidet die beste Stufe der Namensregel</b>
+        /// (<see cref="KiWahlstufe"/>, Welle #472). Gesucht wird Stufe fuer Stufe -
+        /// exakter Schluessel, gefalteter Schluessel, Anzeigename, Wortanfang, enthaltener
+        /// Teil -, und die erste Stufe, auf der IRGENDEINE Maske etwas findet, entscheidet.
+        /// Masken, die den Namen erst auf einer schwaecheren Stufe treffen, zaehlen nicht
+        /// mehr mit. Vorher genuegte jeder Maske ein eindeutiger Treffer auf IRGENDEINER
+        /// Stufe: „With PV surplus" traf in der Waermesenke den Anfang ihres Anzeigenamens
+        /// „With PV surplus:" und in der Ansicht „Simulation" den enthaltenen Teil
+        /// „PV surplus" - beide zaehlten gleich, beide fuehren an denselben Ort, und die
+        /// Absage schickte in die Simulation, die das Feld nicht hat. Findet die
+        /// entscheidende Stufe mehrere Masken, die nicht an einen Ort fuehren, wird
+        /// benannt abgesagt: mit genau diesen Masken, nicht mit der Liste aller.
+        /// </remarks>
+        internal static KiDialog GemeinteMaske(string genannt, string[] felder,
+                                               out IReadOnlyList<KiDialog> kandidaten)
         {
+            kandidaten = Array.Empty<KiDialog>();
+
             if (genannt.Length > 0)
             {
                 KiDialog ausName = KiDialoge.Katalog.Finde(genannt);
@@ -1017,18 +1045,76 @@ namespace WindowsFormsApplication1
 
             if (felder == null) return null;
 
-            // ZWEI Durchgaenge, und der buchstabengetreue geht vor (KI-F1b): Ein Name,
-            // den GENAU EINE Maske als Schluessel fuehrt, ist eindeutig - auch wenn eine
-            // andere Maske einen aehnlichen traegt („bereitschaftsverlust" gegen
-            // „bereitschaftsverluste"). Erst wenn kein Schluessel passt, wird tolerant
-            // gesucht; dann meint „vorlauftemperatur" das Feld „vorlauf".
-            return Gemeint(felder, (d, f) => d.KenntFeld(f))
-                   ?? Gemeint(felder, (d, f) => d.KenntFeldTolerant(f));
+            // Stufe fuer Stufe, und der buchstabengetreue Schluessel geht vor (KI-F1b):
+            // Ein Name, den GENAU EINE Maske als Schluessel fuehrt, ist eindeutig - auch
+            // wenn eine andere Maske einen aehnlichen traegt („bereitschaftsverlust" gegen
+            // „bereitschaftsverluste"). Erst wenn keine Maske den Namen auf einer Stufe
+            // trifft, wird die naechste befragt; dann meint „vorlauftemperatur" das Feld
+            // „vorlauf".
+            for (int rang = 1; rang <= RANG_TEIL; rang++)
+            {
+                List<KiDialog> treffer = Treffer(felder, rang);
+                if (treffer.Count > 0) return Gemeint(treffer, felder, out kandidaten);
+            }
+
+            return null;
+        }
+
+        /// <summary>Der schwaechste Rang von <see cref="Rang"/>.</summary>
+        private const int RANG_TEIL = 4;
+
+        /// <summary>
+        /// Der Rang einer Stufe im Vergleich UEBER Masken: exakter Schluessel (1) vor
+        /// gleichem Namen (2) vor Wortanfang (3) vor enthaltenem Teil (4); 0 = nichts.
+        /// </summary>
+        /// <remarks>
+        /// <b>Gefalteter Schluessel und Anzeigename stehen gleich.</b> Innerhalb EINER Maske
+        /// geht der Schluessel vor (<see cref="KiWahl.Treffer"/>); zwischen zwei Masken
+        /// aber ist „Preisquelle" als Beschriftung der Ansicht „Simulation" nicht weniger
+        /// gemeint als <c>preisquelle</c> als Schluessel der Stromspeicherauslegung - das
+        /// ist eine echte Mehrdeutigkeit, und sie wird benannt, nicht zugunsten des
+        /// Schluessels entschieden.
+        /// </remarks>
+        private static int Rang(KiWahlstufe stufe) => stufe switch
+        {
+            KiWahlstufe.Schluessel => 1,
+            KiWahlstufe.SchluesselGefaltet => 2,
+            KiWahlstufe.Anzeigetext => 2,
+            KiWahlstufe.Anfang => 3,
+            KiWahlstufe.Teil => RANG_TEIL,
+            _ => 0,
+        };
+
+        /// <summary>
+        /// Die Masken, in denen einer der genannten Namen auf genau dem Rang
+        /// <paramref name="rang"/> (<see cref="Rang"/>) etwas trifft - ein Feld oder mehrere.
+        /// </summary>
+        /// <remarks>
+        /// <b>Auch mehrere Felder in EINER Maske bestimmen die Maske.</b> „Außenwand"
+        /// passt im Gebaeude auf die Außenwand und die Außenwand zum Keller; welches Feld
+        /// gemeint ist, klaert die offene Maske (<see cref="KiMaskenbruecke.Feldsuche"/>
+        /// nennt dann die Kandidaten) - welche MASKE gemeint ist, steht aber fest. Zaehlte
+        /// eine solche Maske nicht mit, gewaenne eine schwaechere Stufe einer fremden Maske
+        /// (vorher: die Wirtschaftlichkeitsseite).
+        /// </remarks>
+        private static List<KiDialog> Treffer(string[] felder, int rang)
+        {
+            var treffer = new List<KiDialog>();
+
+            foreach (string feld in felder)
+            {
+                if (string.IsNullOrWhiteSpace(feld)) continue;
+
+                foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                    if (Rang(d.Feldsuche(feld.Trim()).Stufe) == rang && !treffer.Contains(d)) treffer.Add(d);
+            }
+
+            return treffer;
         }
 
         /// <summary>
-        /// Die EINE Maske, die die genannten Felder nach dieser Regel meint;
-        /// <c>null</c> bei keinem oder mehrdeutigem Treffer.
+        /// Die EINE Maske unter den Treffern der entscheidenden Stufe; <c>null</c> bei
+        /// mehrdeutigem Treffer - dann stehen die Treffer in <paramref name="kandidaten"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -1039,30 +1125,33 @@ namespace WindowsFormsApplication1
         /// zwar auch an einen Ort, sind aber zwei Masken; dort wird weiter nicht geraten.
         /// </para>
         /// </remarks>
-        private static KiDialog Gemeint(string[] felder, Func<KiDialog, string, bool> kennt)
+        private static KiDialog Gemeint(List<KiDialog> treffer, string[] felder,
+                                        out IReadOnlyList<KiDialog> kandidaten)
         {
-            var treffer = new List<KiDialog>();
+            kandidaten = Array.Empty<KiDialog>();
 
-            foreach (string feld in felder)
-            {
-                if (string.IsNullOrWhiteSpace(feld)) continue;
-
-                foreach (KiDialog d in KiDialoge.Katalog.Alle)
-                    if (kennt(d, feld.Trim()) && !treffer.Contains(d)) treffer.Add(d);
-            }
-
-            if (treffer.Count == 0) return null;
             if (treffer.Count == 1) return Zielmaske(treffer[0], felder);
 
             // Mehrere Treffer: EIN Ziel, und dessen Maske ist dabei - sonst mehrdeutig.
             string ziel = Zielschluessel(treffer[0]);
+            bool einZiel = true;
             foreach (KiDialog d in treffer)
-                if (!string.Equals(Zielschluessel(d), ziel, StringComparison.OrdinalIgnoreCase)) return null;
+                if (!string.Equals(Zielschluessel(d), ziel, StringComparison.OrdinalIgnoreCase)) einZiel = false;
 
-            foreach (KiDialog d in treffer)
-                if (string.Equals(d.Maskenname, ziel, StringComparison.OrdinalIgnoreCase)) return d;
+            if (einZiel)
+                foreach (KiDialog d in treffer)
+                    if (string.Equals(d.Maskenname, ziel, StringComparison.OrdinalIgnoreCase)) return d;
 
+            kandidaten = treffer;
             return null;
+        }
+
+        /// <summary>„Anzeigename (Maskenschluessel)" je Maske - fuer die benannte Absage.</summary>
+        private static IReadOnlyList<string> Beschriftungen(IReadOnlyList<KiDialog> masken)
+        {
+            var namen = new List<string>(masken.Count);
+            foreach (KiDialog d in masken) namen.Add(d.Anzeigename + " (" + d.Maskenname + ")");
+            return namen;
         }
 
         /// <summary>
@@ -1123,10 +1212,21 @@ namespace WindowsFormsApplication1
         /// Kennt die gemeinte Maske den Namen gar nicht, bleibt nur der Schluessel selbst.
         /// </para>
         /// <para>
-        /// <b>Die Nachsicht an der Zielmaske gilt nur ihren SCHLUESSELN</b>
-        /// (<see cref="KiWahl"/> ueber Paare aus Schluessel und Schluessel): Das Feld
-        /// <c>katalog_breite</c> des Aufklappers „Alle Daten" steht im Modulkatalog als
-        /// <c>breite</c>. Ihre Beschriftungen nimmt sie nicht in die Suche.
+        /// <b>An der Zielmaske gibt es KEINE Nachsicht</b> (Welle #469): Sie fuehrt den
+        /// Schluessel buchstabengetreu oder als erklaertes Gegenstueck - sonst nicht. Die
+        /// Frage ist die IDENTITAET zweier Werte, und die folgt nicht aus einem aehnlichen
+        /// Namen. Eine Anfangs- oder Teilstringsuche ueber die Schluessel der Zielmaske
+        /// (<see cref="KiWahl"/>, Stufen 4 und 5) traf <c>wr_wirkungsgrad</c> des
+        /// Wechselrichters auf den <c>wirkungsgrad</c> des Moduls im Modulkatalog,
+        /// <c>ladeleistung</c> des Puffers auf die <c>speicher_ladeleistung</c> der
+        /// Batterie in der Ansicht „Simulation" und <c>ersatz_fuehren</c> der
+        /// Vorlagenposition auf den <c>satz</c> der Kostenverwaltung - jedesmal hiess die
+        /// Absage den Anwender eine Maske oeffnen, die das gemeinte Feld nicht hat. Der
+        /// einzige Fall, den sie treffen sollte (<c>katalog_breite</c> des Aufklappers
+        /// „Alle Daten" steht im Modulkatalog als <c>breite</c>), ist jetzt die erklaerte
+        /// Vorsilbe in <see cref="KiDialoge.Zielfeldname"/>. Die Nachsicht fuer den
+        /// Wortlaut des MODELLS bleibt, wo sie hingehoert: beim Aufloesen an der gemeinten
+        /// Maske (oben) und an der offenen Maske (<see cref="KiMaskenbruecke.Feldsuche"/>).
         /// </para>
         /// </remarks>
         private static bool ZielFuehrtFeld(KiDialog gemeint, KiDialog ziel, string feld)
@@ -1136,12 +1236,7 @@ namespace WindowsFormsApplication1
                 ? feld
                 : KiDialoge.Zielfeldname(gemeint.Maskenname, eigenes.Name);
 
-            if (ziel.KenntFeld(schluessel)) return true;
-
-            var schluesselpaare = new List<KiWahleintrag>(ziel.Felder.Count);
-            foreach (KiDialogFeld f in ziel.Felder) schluesselpaare.Add(new KiWahleintrag(f.Name));
-
-            return KiWahl.Treffer(schluesselpaare, schluessel).Eindeutig;
+            return ziel.KenntFeld(schluessel);
         }
 
         /// <summary>

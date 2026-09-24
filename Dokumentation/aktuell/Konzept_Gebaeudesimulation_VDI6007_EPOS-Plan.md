@@ -47,6 +47,11 @@ Kühlbetrieb einen anderen Stromträger als das Projekt, ist je Anlage wählbar,
 Kosten und Emissionen eingeht — **anteilig am Netzbezug** (Vorgabe; PV-Eigenverbrauch gemeinsam,
 Leistungspreis beim Projektträger) oder über einen **eigenen Zähler**; umgesetzt mit der dritten
 Welle von KU2, das Register zählt weiter 11 offene Punkte.
+Nachgezogen am 24.09.2026 mit **E35** (N1.40), Ergänzung zu E34: Ein **eigener Zähler** des
+Kältestroms trägt zusätzlich **Grund- und Leistungspreis seines Stromträgers** — je Zähler (je Anlage)
+einen Grundpreis und den Leistungspreis auf die eigene Spitze des Kältestroms der Anlage; anteilig am
+Netzbezug bleibt es bei E34; umgesetzt mit der vierten Welle von KU2, das Register zählt weiter 11
+offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -1885,7 +1890,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-23_R13_Kuehlung`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -3476,3 +3481,63 @@ Emissionen, Erzeugerdialog; Welle 2: nur der benannte Übergang).
 Abschnitt 1 (E34) und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk
 unter K9, Kopf); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 6.1, 6.3 und
 12.1; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.40 Entscheid E35 — Ein eigener Zähler des Kältestroms trägt Grund- und Leistungspreis seines Stromträgers
+
+**Entscheid E35 (Anwender, 24.09.2026).** Ergänzung zu **E34** (N1.39): Wählt eine Wärmepumpe mit
+abweichendem Kühlträger die Abrechnungsart **„eigener Zähler"** (`Tab_Energieanlagen.Kuehl_EigenerZaehler
+= 1`), trägt ihr Kältestrom **zusätzlich Grund- und Leistungspreis seines Stromträgers**:
+
+1. **Grundpreis je Zähler.** Der Grundpreis des Kühlträgers fällt je Jahr einmal je Zähler an.
+2. **Leistungspreis auf die eigene Spitze.** Führt der Kühlträger einen Leistungspreis, bemisst er sich
+   an der **eigenen Spitze des Kältestroms dieser Anlage** — nach der Leistungspreisregel des Trägers,
+   wie beim Netzbezug des Projekts: die zweistufige Staffel (`Leistungspreis_Staffel*`) vor der
+   Saisonreihe, danach der Satz je Monat oder je Jahr.
+
+Bei **„anteilig am Netzbezug"** bleibt alles wie E34: Grund- und Leistungspreis beim Stromträger des
+Projekts. Beauftragt und umgesetzt mit der vierten Welle von KU2.
+
+**Was damit gilt.**
+
+| Fall | Regel |
+|---|---|
+| `Kuehl_ID_Carrier` leer (NULL) oder gleich dem Stromträger des Projekts | unverändert (E33, E34): Tarif und Faktor des Projekts; Grund- und Leistungspreis des Projektträgers, der Leistungspreis auf die Spitze des Anschlusses |
+| anderer Kühlträger, anteilig am Netzbezug — **Vorgabe** | unverändert (E34): Arbeitspreis und CO₂-Faktor des Kühlträgers für seinen Anteil am Netzbezug; Grund- und Leistungspreis beim Projektträger |
+| anderer Kühlträger, eigener Zähler | Arbeitspreis und CO₂-Faktor des Kühlträgers für den ganzen Kältestrom (E34), **dazu** je Zähler der Grundpreis des Kühlträgers und — wenn gepflegt — sein Leistungspreis auf die eigene Spitze des Kältestroms der Anlage |
+
+**Ein Zähler je Anlage — geprüft und benannt.** Die Abrechnungsart steht je Anlage (E34), und das
+Datenmodell kennt keinen Zähler, den mehrere Anlagen teilen. Zwei Anlagen mit demselben Kühlträger und
+eigenem Zähler sind deshalb **zwei Zähler**: zwei Grundpreise, zwei eigene Spitzen. Ein gemeinsamer
+Zähler mehrerer Anlagen ist nicht abbildbar; er käme mit einer eigenen Zählerzuordnung an der
+Anlagenzeile. Der Grundpreis gehört zum Zähler, nicht zur Menge — er steht auch in einem Jahr ohne
+Kältestrom; ein Leistungspreis ohne Kältestrom ist 0.
+
+**Die eigene Spitze.** Der Kältestrom geht je Stunde mit derselben Leistung in jede der vier
+Viertelstunden, wie in der Stufenrechnung; die Viertelstundenspitze der Anlage ist damit ihre
+Stundenspitze, Jahres- und Monatsspitzen nach derselben Monatseinteilung wie die Bezugsspitze des
+Anschlusses (`ZeitreihenSatz.Kaeltestromspitzen`). Wie die Bezugsspitze gibt es sie nur aus einem
+frischen Lauf: Ob ein Lauf die Zeitreihen braucht, fragt `KostenEmissionRechner.StromLeistungspreisGepflegt`
+jetzt auch für den Kühlträger eines eigenen Zählers; fehlen sie doch, steht der Grundpreis, und der
+Leistungspreis wird mit dem Namen des Trägers als fehlend benannt, nicht still übergangen.
+
+**Szenarien (E9a).** Im Szenariolauf gelten die wirksamen Szenariopreise des Kühlträgers — Grund- und
+Leistungspreis wie der Arbeitspreis; ein Szenario-Leistungspreis neben Staffel oder Saisonreihe bleibt
+ohne Wirkung und wird benannt. Ein Mengenszenario skaliert Kältestrom und eigene Spitze; der Grundpreis
+bleibt als Festbetrag stehen.
+
+**Ausweis.** In den Energiekosten je Anlage stehen neben „Kältestrom … (eigener Zähler)" je Zähler die
+Zeilen „Grundpreis Kältestromzähler …" (1 a × Grundpreis) und „Leistungspreis Kältestromzähler …" (Spitze
+× Satz); die Kosten des Kältestroms in Kennzahlen und Bericht enthalten beide, der Leistungsanteil der
+Energiekosten den Leistungspreis. Ein Rollentarif lässt beide stehen — sie gehören nicht zum Stromanteil
+des Anschlusses.
+
+**Was offen bleibt.** Das Register zählt weiter **11 offene Punkte**; E35 beantwortet die Frage, die das
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.2 an den Anwender gestellt hatte, und
+öffnet keine.
+
+**Betroffene Stufen:** KU2 (Welle 4: Kosten des eigenen Zählers, eigene Spitze, Ausweis).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1
+(E35) und 2 (KU2); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter K9,
+Kopf); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.1, 6.2, 6.3 und 11.1; die
+Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

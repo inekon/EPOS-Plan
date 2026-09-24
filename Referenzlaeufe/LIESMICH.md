@@ -196,10 +196,11 @@ mehr mit `BauweiseUnplausibel` abgelehnt.
 Dieselbe Klasse von Falle, fünfter Ort, und wie die Gebäudedaten nach ihrem Gegenstand benannt, nicht
 durchgezählt (Systementwurf Gebäudesimulation 8.3). Den Kühlkanal eines Referenzprojekts rechnet die
 Gebäudesimulation aus den Kühleingaben seiner Gebäude, und nur, wenn der Projektschalter steht;
-ohne wirksame Kühlung läuft ein Gebäude frei (E32). Eine einzige geänderte Zelle schaltet damit die
-Kälteseite eines Projekts ein oder aus, verschiebt seine Raumtemperatur, seine Heizwärme in der
-Übergangszeit und seine Überhitzungsstunden — und lässt Dateien und Schlüssel im Export entstehen
-oder verschwinden.
+ohne wirksame Kühlung läuft ein Gebäude frei (E32). Gedeckt wird er von den Wärmepumpen im
+Kühlbetrieb, über ihre Kühlkennlinie. Eine einzige geänderte Zelle schaltet damit die Kälteseite
+eines Projekts ein oder aus, verschiebt seine Raumtemperatur, seine Heizwärme in der Übergangszeit
+und seine Überhitzungsstunden, seine Kältedeckung, seinen Kältestrom und mit ihm Netzbezug, Kosten
+und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschwinden.
 
 > **Wer gesäte Kältedaten der Testdatenbank ändert, friert im selben Schritt die Basis neu ein und
 > begründet den Wechsel hier.**
@@ -208,16 +209,27 @@ oder verschwinden.
 > Referenzprojekts, an den Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`,
 > `Kuehl_Sollwert_Nacht`, `Kuehlleistung_Max` in `Tab_Gebaeude`; in `Tab_Gebaeude_STAMM`, sobald
 > ein Katalogsatz in ein Referenzprojekt übernommen wird) und an der Kanalzuordnung „Kühlung“ eines
-> Lastgangs eines Referenzprojekts (`Z_ProjektWaermebedarf.Kanal`) — und, sobald ein Kälteerzeuger
-> rechnet, an der gesäten Kühlleistung, der Kühlkennlinie samt ihren Vorlauf-Stützstellen und dem
-> `Kuehl_Vorlauf` einer Anlage eines Referenzprojekts.
+> Lastgangs eines Referenzprojekts (`Z_ProjektWaermebedarf.Kanal`) — und an seiner
+> **Kälteerzeugung**: am Kaskadenplatz einer Wärmepumpe (`Tab_Einstellungen.Tool_1` bis `Tool_4`),
+> an ihrem Kühlbetrieb, Kühl-Vorlauf und Hilfsstromanteil (`Kuehlbetrieb`, `Kuehl_Vorlauf`,
+> `Kuehl_Hilfsstromanteil` in `Tab_WP`), an Kühlträger und Abrechnungsart ihrer Anlagenzeile
+> (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler` in `Tab_Energieanlagen`) und an der Kühlkennlinie
+> des Projektgeräts samt Vorlauf-Stützstellen, Temperaturen, EER, Kälteleistung und Laststufe
+> (`Tab_Kenndaten_Kuehlung`); in `Tab_WP_STAMM` und `Tab_Kenndaten_Kuehlung_STAMM`, sobald ein
+> Katalogsatz in ein Referenzprojekt übernommen wird.
 >
 > **Rechenwirkung hat allein Projekt 1017:** Projektschalter ein, Gebäude 10599 mit Haken,
 > Kühlsollwert 24 °C und Kühlleistungsgrenze 15 kW — vier Zellen aus
-> [`Skripte/kuehlung_1017_referenzprojekt.py`](Skripte/kuehlung_1017_referenzprojekt.py). Die
-> übrigen zwölf Referenzprojekte stehen auf 0; ihre Gebäude laufen frei.
+> [`Skripte/kuehlung_1017_referenzprojekt.py`](Skripte/kuehlung_1017_referenzprojekt.py); dazu
+> der Kälteerzeuger — die Wärmepumpe (Anlage 10211, Projektgerät 1017033) auf Kaskadenplatz 3, im
+> Kühlbetrieb mit Kühl-Vorlauf 18 °C und Hilfsstromanteil 5 %, ohne Kühlträger und
+> Abrechnungsart, mit einer gesäten Kühlkennlinie aus zehn Zeilen (Vorlauf 7 und 18 °C, 20 bis 40 °C,
+> Laststufe 100) — vier Zellen und zehn Zeilen aus
+> [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py).
+> Die übrigen zwölf Referenzprojekte stehen auf 0; ihre Gebäude laufen frei, keine ihrer
+> Wärmepumpen kühlt.
 >
-> **Nicht** betroffen sind Kühleingaben von Projekten außerhalb der Referenzliste.
+> **Nicht** betroffen sind Kühleingaben und Kälteerzeuger von Projekten außerhalb der Referenzliste.
 
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheid ZU19)
 
@@ -272,7 +284,7 @@ im selben Schritt auf die Testdatenbank laufen.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-23_R13_Kuehlung`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-24_R14_Kaelteerzeuger`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Skripte` und `LIESMICH.md` stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -281,10 +293,11 @@ lassen") und seit dem Umschreiben der Git-Geschichte (**AUF‑Q1**, 12.09.2026) 
 mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselben Muster
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
-22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026** (30 Basen, alle sechs Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
+`2026-09-23_R13_Kuehlung` am 24.09.2026** (31 Basen, alle sieben Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 30 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 31 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -294,155 +307,116 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
-1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`, Nachträge 114 bis 121 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
-kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
-1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
-`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
-**einzige** Basis im Arbeitsbaum.
+**`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **123**, LFS-SHA-256 `1ba28e23…`,
+Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
+Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Nachtrag Schemastand 115 (Zapfprofilgenerator, Stufe Z3, Schemaschritt T2).** Die
-> Testdatenbank steht auf Schemastand **115** (LFS-SHA-256 `fbc30835…`): Auf der Fassung mit
-> Schemastand 114 (Kühlung, Nachtrag unten) hat Werkzeuge/Testdatenbankschema
-> `Tab_TwwZapfkategorie_STAMM` angelegt (Schritt 115), und
-> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) hat 82 Katalogzeilen
-> ergänzt — vier aus VDI 6002 abgeleitete Nutzungsarten samt Tagesgangsätzen (Herkunftsart `FIKTIV`,
-> ZU19, Abschnitt „Abgeleitete VDI-Werte im Tww-Testkatalog“) und aus dem freien Paketteil
-> (Abschnitt „Der freie Paketteil“) das Ecodesign-Zapfprofil L mit 24 Ereignissen, die fünf Parameter
-> der Stochastik und den Vorgabesatz der Zapfkategorien an jeder der sieben Nutzungsarten (28 Zeilen,
-> Herkunftsart `FREI`). Ein zweiter Skriptlauf meldet 0/0; `integrity_check` ok, `foreign_key_check`
-> leer. Kein Referenzprojekt steht auf dem Generator: Der Referenzlauf der fünf CI-Projekte gegen
-> diese Basis ist **byte-gleich**, die Basis bleibt.
-
-> **Anlass: die vierte und letzte Welle der Stufe KU1 der Kühlung** (vom Anwender am 23.09.2026
-> beauftragt). Zwei Änderungen, eine davon an den Daten:
+> **Anlass: die vierte und letzte Welle der Stufe KU2 der Kühlung** (vom Anwender am 24.09.2026 samt
+> dem Einfrieren beauftragt). Eine Änderung an den Daten, zwei an der Wirtschaftlichkeit:
 >
-> 1. **Entscheid E32 — Gebäude ohne wirksame Kühlung laufen frei**
->    ([Konzept Gebäudesimulation](../Dokumentation/aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
->    N1.37). Ein Gebäude, dessen Kühlung nicht wirksam ist (Projektschalter „Kühlung rechnen" aus,
->    `Kuehlung_Aktiv` = 0 oder kein Kühlsollwert), wird nicht mehr an `Maximaleraumtemperatur`
->    gekappt: Die Raumtemperatur darf darüber steigen, es wird keine Wärme abgeführt, und die
->    Überhitzungsstunden zählen die Stunden darüber im freien Lauf. Eine Kühlreihe gibt es für ein
->    solches Gebäude nicht mehr — der Ergebnisexport schreibt `kuehlbedarf_<n>.csv`,
->    `Geb[n].KuehlenergieMwh` und `Geb[n].StundenMitKuehlbedarf` nur noch bei wirksamer Kühlung.
-> 2. **Testdatenbank: das Referenzprojekt mit Kühlung** (Kühlkonzept 10.4, Einfrierregel „gesäte
->    Kältedaten" oben): Projekt **1017** rechnet Kälte — genau vier Zellen über
->    [`Skripte/kuehlung_1017_referenzprojekt.py`](Skripte/kuehlung_1017_referenzprojekt.py):
->    `Tab_Einstellungen.Kuehlbetrieb` 0 → 1, Gebäude 10599 `Kuehlung_Aktiv` 0 → 1,
->    `Kuehl_Sollwert` NULL → 24,0 °C, `Kuehlleistung_Max` NULL → 15,0 kW. Sicherung vorher außerhalb
->    des Repositoriums; der Zellvergleich aller 130 Tabellen (10 496 533 Zellen) zeigt genau diese
->    vier Zellen, `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 751 936 Byte,
->    ein zweiter Lauf des Skripts ändert nichts.
+> 1. **Testdatenbank: das Referenzprojekt mit Kälteerzeuger** (Kühlkonzept 10.4, Einfrierregel „gesäte
+>    Kältedaten" oben): Die Wärmepumpe von 1017 kühlt — vier Zellen und zehn Zeilen über
+>    [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py):
+>    `Tab_Einstellungen.Tool_3` leer → „Wärmepumpe" (Kaskadenplatz 3), Projektgerät 1017033
+>    `Kuehlbetrieb` 0 → 1, `Kuehl_Vorlauf` NULL → 18, `Kuehl_Hilfsstromanteil` NULL → 0,05, dazu die
+>    zehn Zeilen der gesäten Kühlkennlinie in `Tab_Kenndaten_Kuehlung` (die Tabelle war leer; SQLite
+>    führt dazu die Zeile der Tabelle in `sqlite_sequence`). Sicherung vorher außerhalb des
+>    Repositoriums; der Zellvergleich aller 132 Tabellen (10 498 993 Zellen) zeigt genau diese vier
+>    Zellen, zehn Zeilen und die Sequenzzeile, die 14 Sichten und 208 Indizes gleich;
+>    `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte, ein zweiter Lauf
+>    des Skripts ändert nichts.
+> 2. **E35 und die Reste von E34** — Grund- und Leistungspreis eines eigenen Zählers, der Preis des
+>    vermiedenen Bezugs, die Bemessungsmenge nach § 9b StromStG, das Mengenszenario — ändern Kosten,
+>    nicht die Simulation; der Referenzlauf führt keine Kosten, und kein Referenzprojekt trägt einen
+>    Kühlträger. Vor der Datenänderung waren alle dreizehn Projekte gegen R13 byte-gleich.
 >
-> **Warum 1017.** Ein Einzelgebäude-Projekt auf dem VDI-Weg (Gebäude „GMH-D-S-118", 744,4 m²,
-> Skalierung fast 1) mit genau einer Wärmepumpe — sie bekommt mit KU2 den Kühlbetrieb — und mit PV
-> und Stromspeicher, der üblichen Umgebung einer reversiblen Wärmepumpe; und 1017 gehört zu den
-> fünf Projekten der CI, die Kühlung ist damit bei jedem Push im Netz. Nicht 1040 (Tagesbilanz-Weg,
-> A15), nicht 1045 (die Kühltests schalten die Kühlung an dessen Gebäude auf Arbeitskopien ein und
-> aus), nicht 1046 (Flottenstand eingefroren), nicht 1007 (Gebäude wie 1046, Skalierung 4,6).
-> **Die Werte:** Der Kühlsollwert ist die Maximaleraumtemperatur des Gebäudes — die Anlage hält die
-> Grenze, gegen die die Überhitzungsstunden zählen, und er liegt mehr als 1 K über dem höchsten
-> Heizsollwert; die Grenze 15 kW liegt unter der Spitze ohne Grenze (rund 21 kW), sodass die Basis
-> auch den Betriebsfall „Kühlgrenze" trägt.
+> **Warum so** — Kaskadenplatz 3 hinter BHKW und Elektrokessel (ohne Platz rechnet die Maschine nicht,
+> auf Platz 3 bleibt die Wärmeseite fast unverändert), Kühl-Vorlauf 18 °C (Flächenkühlung, sensible
+> Kälte), Hilfsstromanteil 5 % (die Basis trägt den Zuschlag), kein Kühlträger (der Referenzfall ohne
+> den Sonderweg aus E34), eine gesäte Kühlkennlinie aus runden, erfundenen Werten (der Katalogsatz des
+> Geräts trägt keine), die Nennkühlleistung bleibt leer: Kühlkonzept 10.4.
 >
-> **Elf Projekte bewegen sich, zwei bleiben byte-gleich:** **1030** (kein Gebäude) und **1040**
-> (Tagesbilanz-Weg), alle Dateien byte-gleich gegen R12. Die Wärmelast `Waermelast_Max` bleibt in
-> allen Projekten gleich.
+> **Allein 1017 bewegt sich, zwölf Projekte bleiben byte-gleich** (alle Dateien):
 >
-> | Projekt | Gebäudewärme R12 → R13 [MWh/a] | relativ | `Waermebedarf_Gesamt` R12 → R13 [MWh/a] | Überhitzungsstunden je Gebäude R12 → R13 [h] | Dateien R12 → R13 |
-> |---|---:|---:|---:|---|---:|
-> | 1007, 1046 | 69,07 → 68,97 | −0,145 % | 73,13 → 73,03 | 469 → 600 | 36 → 35, 40 → 39 |
-> | 1008 | 104,20 → 104,14 | −0,058 % | 104,20 → 104,14 | 295 → 440; 469 → 600 | 31 → 29 |
-> | **1017 (gekühlt)** | 90,19 → 90,19 | −0,0001 % | 90,19 → 90,19 | 305 → 306 | 24 → 25 |
-> | 1018 | 68,27 → 68,25 | −0,032 % | 68,27 → 68,25 | 154 → 233 | 25 → 24 |
-> | 1023, 1024 | 450,56 → 449,90 | −0,145 % | 510,56 → 509,90 | 628 → 840 | 28 → 27, 29 → 28 |
-> | 1039 | 597,72 → 597,02 | −0,117 % | 618,72 → 618,02 | 72 → 102; 264 → 308; 628 → 840 | 34 → 31 |
-> | 1041 | 75,98 → 75,94 | −0,050 % | 176,41 → 176,37 | 277 → 331 | 30 → 29 |
-> | 1042 | 75,98 → 75,94 | −0,050 % | 105,98 → 105,94 | 277 → 331 | 37 → 36 |
-> | 1045 | 75,98 → 75,94 | −0,050 % | 80,98 → 80,94 | 277 → 331 | 33 → 32 |
-> | 1040 (Tagesbilanz-Weg) | 59,35 → 59,35 | ±0 | unverändert | — | 30, byte-gleich |
-> | 1030 (ohne Gebäude) | — | — | unverändert | — | 22, byte-gleich |
+> | 1017 | R13 | R14 |
+> |---|---:|---:|
+> | Kältebedarf [MWh/a] | 2,52 | 2,52 |
+> | Kältedeckung durch die Wärmepumpe [MWh/a] | — | 2,48 (98,4 %) |
+> | ungedeckte Kälte `Kaelterestbedarf` [MWh/a] | 2,52 | 0,04 |
+> | Kältestrom, davon Hilfsstrom [MWh/a] | — | 0,55; 0,03 |
+> | Jahresarbeitszahl Kälte (EER-Jahreswert) | — | 4,52 |
+> | Kühltage | — | 43 |
+> | Wärme der Wärmepumpe auf Platz 3 [MWh/a] | — | 0,04 |
+> | Restwärme [MWh/a] | 0,14 | 0,10 |
+> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,31 | 655,88 |
 >
-> (Gebäudewärme = `Vektor.waermebedarf_gebaeude.Summe`, in MWh umgerechnet.)
+> Der Kältestrom kommt ganz aus dem Netz (0,5487 von 0,5487 MWh/a): In den Kühlstunden deckt die
+> Eigenerzeugung schon den übrigen Strombedarf nicht — Stromspeicher, BHKW und Elektrokessel bleiben
+> Zeichen für Zeichen, wie sie waren; 1017 führt keine Photovoltaik. Kosten und CO₂ führt der
+> Referenzlauf nicht; gerechnet (`ReferenzprojektKaelteerzeugerTests`) steigen die Stromkosten des
+> Anschlusses um 283,55 €/a, der Kältestrom trägt 273,60 €/a und 0,24 t/a CO₂.
 >
-> **Auffälligkeiten, erklärt:**
+> **Dateien und Schlüssel:** 1017 bekommt die sieben Dateien der Wärmepumpe (`heizstab.csv`,
+> `wp_produktion.csv`, `wp_quellentemperatur.csv`, `wp_restwaerme.csv`, `wp_strom.csv`,
+> `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`) und 42 Skalare (`Kaelte.*`, `Kaelte[0].*`,
+> `Waermepumpe.*`, `WaermepumpeModul[0].*`, sieben Vektorsummen) — 387 → 394 CSV, 2 207 → 2 249
+> Skalare. Gegen R13 meldet der Vergleich 1 689 Abweichungen, alle in 1017: die neuen Dateien und
+> Schlüssel, die geänderten Skalare und die Reihen `reststrom_viertelstunde.csv` (1 660 geänderte
+> Viertelstunden) und `restwaerme.csv` (19 geänderte Stunden).
 >
-> - **Die Heizwärme sinkt um höchstens 0,15 %** (E32): Die Wärme, die die Kappung im Sommer
->   abführte, bleibt in den Speichermassen und senkt den Heizbedarf der Übergangszeit ein wenig. Mit
->   ihr sinkt die ungedeckte Restwärme leicht (1023 229,95 → 229,88, 1024 166,36 → 166,32, 1039
->   131,75 → 131,74 MWh/a), und die Erzeugerreihen der betroffenen Projekte verschieben sich im
->   selben Maß.
-> - **Die Überhitzungsstunden steigen um 17 bis 51 %:** Im freien Lauf liegt die operative
->   Temperatur in mehr Stunden über der Maximaleraumtemperatur als unter der Kappung, die nur die
->   Raumluft hielt; die Raumluft erreicht bis 33,4 °C (die Referenzgebäude führen keine
->   Sommerlüftung).
-> - **1017 bleibt fast bei R12:** gekühlt auf 24 °C ist die frühere Kappung — bis auf die 25
->   Stunden an der Grenze von 15 kW, in denen die Raumluft bis 25,0 °C steigt (Heizwärme
->   −0,0001 %, Überhitzung 305 → 306 h, 525 Werte außerhalb der Toleranz gegen R12). **Neu ist die
->   Kälteseite:** Kältebedarf 2,52 MWh/a in 402 Stunden, Kältelast 14,99 kW (die Grenze des
->   Katalogbaus mal der Skalierung 744/744,4), ungedeckt (`Kaelterestbedarf` 2,52 MWh/a, die Warnung
->   „Kältebedarf ohne Kälteerzeuger" ist gewollt — KU1 hat keinen Kälteerzeuger). Dazu die Kanaldatei
->   `waermebedarf_kuehlung.csv` und sechs der neun Kältespalten (`Waermebedarf_Kuehlung`,
->   `Kaeltebedarf_Gesamt`, `Kaeltelast_Max`, `Kaelterestbedarf`, `Deckung_Kuehlung` von BHKW und
->   Heizkessel mit 0); Wärmepumpe, Solarthermie und Pufferspeicher schreiben in 1017 keine
->   Ergebniszeile bzw. bleiben nach K7 leer.
-> - **Dateien und Schlüssel:** 13 Gebäude ohne wirksame Kühlung verlieren `kuehlbedarf_<n>.csv` und
->   je drei Skalare (`Geb[n].KuehlenergieMwh`, `Geb[n].StundenMitKuehlbedarf`,
->   `Vektor.kuehlbedarf_<n>.Summe`); 1017 behält seine Kühlreihe und bekommt eine Datei und sieben
->   Skalare dazu — 399 → 387 CSV, 2 239 → 2 207 Skalare.
+> **Kein Fehlschlag, kein NaN, keine Ablehnung:** 13/13 Projekte gerechnet.
 >
-> **Kein Fehlschlag, kein NaN, keine Ablehnung:** 13/13 Projekte gerechnet; keine Datei führt `NaN`
-> oder `Inf`.
->
-> **Einfrierregeln:** Mit dieser Einfrierung entsteht die Regel „gesäte Kältedaten" (vier Zellen in
-> 1017). E32 ist eine Änderung des Rechenwegs, keine Datenänderung; Emissionsfaktoren,
+> **Einfrierregeln:** Die Regel „gesäte Kältedaten" umfasst jetzt die Kälteerzeugung. Emissionsfaktoren,
 > PV-Modulkoeffizienten, Flottenstand 1046 und gesäte Gebäudedaten sind nicht berührt.
 >
-> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (387/387 CSV),
-> Laufzeit 4 s für alle dreizehn Projekte; ebenso byte-gleich ein Lauf auf der Testdatenbank vor dem
-> Zusammenführen mit dem Zapfprofil-Testkatalog Z2 — der Testkatalog bewegt kein Referenzprojekt.
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (394/394 CSV) und
+> **GESAMT: PASS** gegen diese Basis (4 207 049 Werte); ebenso byte-gleich ein Lauf vor dem Zusammenführen
+> mit der Szenariopflege E9b (#462) — sie bewegt kein Referenzprojekt.
 >
 > ```bash
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
->   --ziel Referenzlaeufe/2026-09-23_R13_Kuehlung
+>   --ziel Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
-> [Protokoll der Schlusswelle KU1](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-23_Schlusswelle_KU1.md)
+> [Protokoll der Schlusswelle KU2](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_Schlusswelle_KU2.md)
 > und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
 
-> **Nachtrag: Schemastand 114 (Kühlung, Stufe KU2, Welle 1), die Basis bleibt.** Migrationsschritt
-> **114** (`SCHRITT_114_KUEHLUNG_ERZEUGER`, KU-S3: `Kuehlbetrieb` (0/1, Vorgabe 0), `Kuehl_Vorlauf` und
-> `Kuehl_Hilfsstromanteil` an `Tab_WP` und `Tab_WP_STAMM`, dazu `Tab_Energieanlagen.Kuehl_ID_Carrier` mit
-> Beziehung auf `energy_carrier.id` und `ON DELETE SET NULL`; Quelle `KuehlungSchema`), **reines DDL**
-> (Kühlkonzept 7.3, Entscheide E15 und E33). Nachgezogen mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
-> Fassung 113; ein zweiter Lauf legt nichts an. Zellvergleich aller 130 Tabellen gegen die Fassung 113
-> (10 496 532 Zellen): `SchemaVersion` 113 → 114 und die sieben neuen Spalten — `Kuehlbetrieb` 0, die
-> übrigen NULL —, sonst nichts; die 14 Sichten unverändert. `integrity_check` ok, `foreign_key_check`
-> leer, 130 von 130 Tabellen STRICT, Größe unverändert 67 751 936 Byte. **Keine Einfrierregel ist
-> berührt:** Die neuen Spalten tragen keinen gesäten Wert, und kein Rechenweg liest sie. Referenzlauf
-> aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 145 687 Werte, 387/387 CSV
-> byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `8a3bebaf…`).
+> **Nachtrag: Schemastände 120 und 121 (Zusammenführung mit E10 #463 und #468), die Basis bleibt.** Die
+> Testdatenbank ist die Fassung von origin mit Schemastand **121** (LFS-SHA-256 `00fbbb8b…`; die
+> Schritte 120 und 121 stehen mit ihren Nachträgen beim R13-Abschnitt unter `ueberholt/`), auf die
+> [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py) erneut
+> angewandt ist; `kuehlung_1017_referenzprojekt.py` und `gebaeude_10612_233_bauweise.py` finden nichts zu
+> tun, ein zweiter Lauf des Skripts ändert nichts. Zellvergleich aller 132 Tabellen gegen die Fassung von
+> origin (10 499 019 Zellen): genau die vier Zellen, zehn Zeilen und die Sequenzzeile der vierten Welle;
+> 14 Sichten und 209 Indizes gleich, `integrity_check` ok, `foreign_key_check` leer, 67 792 896 Byte
+> (LFS-SHA-256 `9acda529…`). Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS**
+> (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
-> **Nachtrag: Schemastände 116 bis 118 (Szenarioabdeckung der Wirtschaftlichkeit, Etappe E9a,
-> #461), die Basis bleibt.** Migrationsschritte **116** (`SCHRITT_116_SZENARIO_RAHMEN`: vier nullbare
-> Spalten `Szen_Best_/Szen_Worst_Zeitraum` und `…_Menge` an `Tab_ProjektWirtschaftlichkeit`), **117**
-> (`SCHRITT_117_TRAEGERPREIS_SZENARIO`: sechs nullbare Spalten `custom_price_work/base/power_best/_worst`
-> an `energy_project_settings`) und **118** (`SCHRITT_118_ERLOESSATZ_SZENARIO`: acht nullbare Spalten —
-> `Einspeiseverguetung(_KWK)_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_` und
-> `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`), **reines DDL**; NULL heißt „wie Erwartet". Mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
-> Fassung 115 (LFS-SHA-256 `fbc30835…`, 67 780 608 Byte) nachgezogen: 18 Spalten angelegt, Marker 118;
-> ein zweiter Lauf legt nichts an. Gegen 115 unterscheiden sich allein die drei Tabellen um die 18
-> neuen, leeren Spalten und `SchemaVersion` 115 → 118; `integrity_check` ok, `foreign_key_check` leer,
-> Größe 67 784 704 Byte (LFS-SHA-256 `e9748b7f…`). **Keine Einfrierregel ist berührt:** Keine Spalte
-> trägt einen gesäten Wert, und der Referenzlauf führt keine Wirtschaftlichkeitsgröße — er bleibt
-> byte-gleich.
+> **Nachtrag: Schemastände 122 und 123 (Anlagenkopplung, Stufe AK1 Welle 1), die Basis bleibt.** Die
+> Testdatenbank steht über `Werkzeuge/Testdatenbankschema` auf Schemastand **123**: Schritt 122
+> (`AK-S1`) legt die dreizehn Spalten der Wärmeübergabe an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`
+> und baut `Abfrage_Projektgebaeude` ein drittes Mal neu (90 Spalten), dazu
+> `Tab_Einstellungen.Anlagenkopplung` (Wertliste AUS/AK1/AK2/AK3, NULL = aus); Schritt 123 (`AK-S3`,
+> Wärmeteil) die drei nullbaren Ergebnisspalten `Vorlauf_Mittel`, `Ruecklauf_Mittel` und
+> `Uebergabe_Begrenzt_Stunden` an `Tab_ErgebnisEnergiebedarf`. Reines DDL: Sicherung vorher außerhalb
+> des Repositoriums; der Zellvergleich aller 132 Tabellen gegen die Fassung 121 (10 499 091 Zellen)
+> zeigt allein `SchemaVersion` 121 → 123, die 30 neuen Spalten sind leer (die vier Schalter 0), und
+> nur die DDL der vier Tabellen und der Sicht hat sich geändert; 14 Sichten und 209 Indizes, 131 von
+> 132 Tabellen STRICT, `integrity_check` ok, `foreign_key_check` leer, 67 792 896 Byte (LFS-SHA-256
+> `1ba28e23…`). Ein zweiter Lauf des Werkzeugs legt nichts an; die Migration der Schale ergibt aus der
+> Fassung 121 dieselbe DDL und dieselben Zellen. Kein Rechenweg liest die Spalten, und die drei
+> Ergebnisspalten gehen erst mit einem Wert in `aggregate.csv` (`Referenzlauf/Ergebnisexport.cs`).
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 207 049 Werte, 394/394 CSV
+> byte-gleich, außer `protokoll.txt`). Einfrierregeln sind nicht berührt; die Regel „gesäte
+> Auslegungsdaten der Übergabe" (Anlagenkopplung 11.4) entsteht erst mit dem Referenzprojekt der
+> Kopplung.
 
 > **Nachtrag: Schemastand 119 (Kühlung, Stufe KU2, Welle 3), die Basis bleibt.** Migrationsschritt
 > **119** (`SCHRITT_119_KAELTESTROM`: `Tab_Energieanlagen.Kuehl_EigenerZaehler` — 0/1 mit `CHECK`, nullbar,
@@ -508,9 +482,9 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Kein Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
 > diese Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `88e9c522…`).
 
-> **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
-> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
-> den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in
+> **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
+> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
+> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -682,7 +656,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-23_R13_Kuehlung`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-24_R14_Kaelteerzeuger`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell

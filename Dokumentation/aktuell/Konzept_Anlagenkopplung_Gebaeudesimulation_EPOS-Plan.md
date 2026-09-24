@@ -28,6 +28,11 @@
 > ist auch **Q24** entschieden: Die Stufe GA wird fällig, sobald ihre vier Bedingungen erfüllt
 > sind — eine davon ist die Abnahme von KU1 und, falls beauftragt, von AK1 (11.4). Kapitel 0, 1.2,
 > 12 und 13 tragen den entschiedenen Stand.
+>
+> **Nachzug 24.09.2026 — AK0 abgeschlossen:** 8.1 und 8.5 nennen den Ort der Zonenspalten aus
+> `AK-S1` nach dem [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Rev. 3: `Tab_Zone`
+> entsteht mit dem Schritt S-C der Stufe G3, der die drei Übergabespalten gleich mit anlegt;
+> gerechnet wird die Übergabe je Zone weiter ab G6.
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -35,7 +40,7 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 22.09.2026 (Nachzug E27). **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und
+**Stand:** 24.09.2026 (Nachzug AK0). **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und
 **E26** fortgeschrieben, **E27** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
@@ -617,7 +622,10 @@ Kopierweg, kein neuer Registereintrag (**H8**).
 - **Der Parser ist streng, nicht tolerant.** 168 Werte oder benannter Fehler — anders als beim
   Knappheitsparser (K14 des Kühlkonzepts) gibt es hier keinen sinnvollen Rückfall: Ein Profil mit
   167 Werten ist ein Datenfehler, und ein stillschweigend ergänzter Wert wäre eine erfundene
-  Betriebszeit.
+  Betriebszeit. Jeder Wert ist eine endliche Zahl mit **Punkt** als Dezimaltrennzeichen (Leerraum
+  um einen Wert ist erlaubt); geschrieben wird mit höchstens zwei Nachkommastellen, damit 168 Werte
+  sicher in `TEXT(1400)` passen. Leser und Schreiber stehen einmal, bei `AnlagenkopplungSchema`,
+  und dienen in AK2 auch dem Zeitprogramm des Erzeugers.
 - **Das Profil ist eine Eingabe, kein Ergebnis.** Es wird nicht aus dem Gebäudetyp hergeleitet;
   Nutzungsprofile für Nichtwohngebäude bleiben ausgeschlossen (1.3).
 
@@ -1150,11 +1158,18 @@ Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
 Die Schemaschritte tragen in diesem Papier **Papiernamen** (`AK-S1` …). **Die Nummer vergibt der
 Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigration`, wie ADR-001 und
 die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4 es verlangen
-(**A11**, mit E27 entschieden). **Die Nummer steht in diesem Papier an keiner Stelle**, denn die Gebäude-, Zonen- und
-Kühlschritte entstehen parallel und würden kollidieren; sie wird **bei der Beauftragung** an
-`SchemaStand.Zielversion` abgelesen. Zur Einordnung, nicht zur Verwendung — eine Momentaufnahme
-mit Datum: Am Arbeitsbaum (Stand 22.09.2026) steht der Zielstand auf **100**, die nächste freie
-Nummer ist **101** (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`).
+(**A11**, mit E27 entschieden). **Eine Nummer steht in diesem Papier erst, wenn der Schritt
+beauftragt und vergeben ist**, denn die Gebäude-, Zonen- und Kühlschritte entstehen parallel und
+würden kollidieren; sie wird **bei der Beauftragung** an `SchemaStand.Zielversion` abgelesen.
+
+**Vergeben mit der ersten Welle von AK1 (24.09.2026):** `AK-S1` ist Schemaschritt **122**, der
+Wärmeteil von `AK-S3` Schemaschritt **123** — zwei Schritte, nicht verschmolzen, wie bei der
+Kühlung. Die Definitionen stehen bei `GebaeudeSchema` (die dreizehn Gebäudespalten samt drittem
+Sichtneubau) und `AnlagenkopplungSchema` (Projektspalte, Ergebnisspalten, Format und strenger Leser
+des Wochenprofils). `AK-S2` und der Komfortteil von `AK-S3` bekommen ihre Nummern mit AK2. Der
+Kälteteil von `AK-S3` (F-A16) steht **nicht** in Schritt 123, obwohl KU1 steht (8.3): Er kommt in
+einem eigenen Schritt, sobald die Kälteseite von AK1 beauftragt ist (**H9**); keines seiner drei
+Gegenstücke steht bisher in einem Kühlschritt.
 
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,
@@ -1165,9 +1180,13 @@ Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boole
 
 Dreizehn Spalten je Gebäudetabelle — `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also **26
 `SchemaSpalte`-Einträge** — und **eine Projektspalte** in `Tab_Einstellungen`, zusammen **27
-Einträge**. Dazu kommen in `Tab_Zone`, sobald es sie gibt (G6), **allein die drei Übergabespalten**
+Einträge**. Dazu kommen in `Tab_Zone`, sobald es sie gibt, **allein die drei Übergabespalten**
 `Uebergabe_Art`, `Uebergabe_Exponent` und `Uebergabe_Leistung_Nenn` nach der Rollenteilung aus 6.5;
-Heizkurve, Auslegungspunkt, Proportionalband und Sollwertprofil bleiben beim Gebäude.
+Heizkurve, Auslegungspunkt, Proportionalband und Sollwertprofil bleiben beim Gebäude. **`Tab_Zone`
+entsteht mit dem Schritt S-C der Stufe G3**, und weil `AK-S1` dann steht, legt S-C die drei Spalten
+gleich mit an ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2 und 4.4,
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4); **gerechnet** wird
+die Übergabe je Zone erst ab G6 (6.5, **H3**).
 
 | Spalte | Typangabe | SQLite | NULL bedeutet | Stufe |
 |---|---|---|---|---|
@@ -1294,7 +1313,7 @@ Dialog sagt das in der Herleitungszeile. Eine Heizlastberechnung als Nachweis bl
 
 ```mermaid
 erDiagram
-    Tab_Gebaeude ||--o{ Tab_Zone : "hat Zonen ab G6"
+    Tab_Gebaeude ||--o{ Tab_Zone : "Tabelle ab G3, Zonenrechnung ab G6"
     Tab_Gebaeude {
         real Raumsolltemperatur_Tag "Bestand"
         real Maximaleraumtemperatur "Bestand"
@@ -1315,9 +1334,9 @@ erDiagram
         text Sollwertprofil "AK-S1 168 Wochenwerte"
     }
     Tab_Zone {
-        text Uebergabe_Art "AK-S1 ab G6 NULL gleich Wert des Gebaeudes"
-        real Uebergabe_Exponent "AK-S1 ab G6 NULL gleich Wert des Gebaeudes"
-        real Uebergabe_Leistung_Nenn "AK-S1 ab G6 NULL gleich Anteil der Zonenflaeche"
+        text Uebergabe_Art "AK-S1 angelegt mit S-C NULL gleich Wert des Gebaeudes"
+        real Uebergabe_Exponent "AK-S1 angelegt mit S-C NULL gleich Wert des Gebaeudes"
+        real Uebergabe_Leistung_Nenn "AK-S1 angelegt mit S-C NULL gleich Anteil der Zonenflaeche"
     }
     Tab_Einstellungen {
         text Anlagenkopplung "AK-S1 Projektspalte NULL gleich AUS"

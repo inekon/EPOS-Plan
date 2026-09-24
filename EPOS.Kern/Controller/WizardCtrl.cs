@@ -1518,9 +1518,8 @@ namespace WindowsFormsApplication1
         // =================================================================================
         //
         // DIESELBE FALLE EIN DRITTES MAL - diesmal IN der Anlagenzeile selbst (Befund der
-        // Paket-A-Erkundung, 02.09.2026). SQL_ANLAGE_INSERT fuehrt 63 Spalten
-        // (58 vor Paket A, +2 mit Schritt 62, +5 mit Schritt 63), Tab_Energieanlagen nach
-        // Schritt 63 deren 78. Die 14 uebrigen (ohne ID) sind FACHSPALTEN:
+        // Paket-A-Erkundung, 02.09.2026). Tab_Energieanlagen fuehrt neben den Spalten von
+        // SQL_ANLAGE_INSERT (und ID) die FACHSPALTEN:
         // Ihre Fachcontroller pflegen sie per zielgenauem UPDATE, und WErzeugerModel kennt
         // sie mit Absicht nicht (SchemaKatalog.Alle: "der Grund ist der LESER, nicht die
         // Tabelle"):
@@ -1532,11 +1531,15 @@ namespace WindowsFormsApplication1
         //   Schritt 61  Energiesteuer_Wahl,            WirtschaftlichkeitCtrl.LiesAnlagen
         //               Aufteilung_Methode,            (Leser), Pflege ueber das
         //               Hilfsenergie_Anteil            Wirtschaftlichkeitsmodul
+        //   Schritt 89  KWKG_Kostenanteil              KwkgAnlagenCtrl.Speichere
+        //   Schritt 105 KWKG_Abwaermeabfuhr,           dito
+        //               KWKG_Stromkennzahl
         //
         // Loeschen + Neuanlegen schreibt die Zeile aus dem Modell neu - jede Spalte, die
-        // das Modell nicht traegt, steht danach auf NULL. Jedes Speichern ueber Karte,
-        // Kontextmenue oder Wizard loeschte damit still die KWKG-Angaben des BHKW, die
-        // Steuerwahl je Anlage und die Quell-Einstellungen der Kesselkopplung.
+        // das Modell nicht traegt, steht danach auf NULL oder ihrer Vorgabe (DEFAULT).
+        // Jedes Speichern ueber Karte, Kontextmenue oder Wizard loeschte damit still die
+        // KWKG-Angaben des BHKW, die Steuerwahl je Anlage und die Quell-Einstellungen der
+        // Kesselkopplung.
         //
         // WARUM RETTEN STATT DIE ANWEISUNG ERWEITERN. Die Fachspalten gehoeren nicht in
         // das Modell: Der Rechenkern liest die KWKG- und Steuerspalten nirgends
@@ -1561,26 +1564,46 @@ namespace WindowsFormsApplication1
         // zugeordnet: die n-te alte auf die n-te neue Zeile. Umbenennen im Dialog verliert
         // die Werte - dieselbe Grenze wie bei den beiden Nachbarn.
         //
-        // GESCHRIEBEN wird nur, was alt NICHT NULL war, und nur auf neue Zeilen, deren
-        // Fachspalten saemtlich NULL sind. Damit ist die Methode idempotent, sie
-        // ueberschreibt nichts, was ein Einfuegeweg bereits gesetzt hat, und die stehen
-        // gebliebenen Puffer-Anlagenzeilen (FR-1) bleiben unangetastet. BEST EFFORT wie
-        // S1 - ein gelungenes Speichern scheitert daran nicht.
+        // GESCHRIEBEN wird nur auf die Zeilen, die DIESER Speicherlauf angelegt hat -
+        // Add_WP_Waermeerzeuger reicht ihre Ids herein, wie bei ST1 (strangGeschrieben).
+        // Die stehen gebliebenen Puffer-Anlagenzeilen (FR-1) und jede andere Zeile des
+        // Projekts bleiben unangetastet, ohne dass ihr INHALT befragt wird. Zurueck kommt
+        // die GANZE alte Belegung, NULL eingeschlossen: Die neue Zeile ist dieselbe
+        // Anlage, und eine Spalte mit Vorgabe (DEFAULT) truege sonst ihre Vorgabe statt
+        // des alten Werts. BEST EFFORT wie S1 - ein gelungenes Speichern scheitert daran
+        // nicht.
+        //
+        // WARUM NICHT NACH NULL GEFRAGT WIRD (Befund 23.09.2026). Die Rettung schrieb
+        // zuerst nur auf neue Zeilen, deren Fachspalten saemtlich NULL waren. Seit
+        // Schritt 105 traegt jede neue Zeile KWKG_Abwaermeabfuhr = 0 (NOT NULL DEFAULT
+        // 0), galt damit als "schon belegt", und jedes Speichern ueber Assistent, Kachel
+        // oder Kontextmenue verlor die Fachwerte aller Anlagen. Ob eine Zeile neu ist,
+        // sagt deshalb der ZEITPUNKT ihres Anlegens, nicht ihr Inhalt - eine kuenftige
+        // Fachspalte mit Vorgabe aendert daran nichts.
 
-        /// <summary>Eine gesicherte Anlagenzeile: Wiedererkennungsmerkmal + belegte Fachspalten.</summary>
+        /// <summary>Eine gesicherte Anlagenzeile: Wiedererkennungsmerkmal + ihre Fachspalten.</summary>
         private sealed class FachspaltenSicherung
         {
             public int ID_Type;
             public string Bezeichner = "";
+
+            /// <summary>JEDE Fachspalte der alten Zeile, NULL eingeschlossen.</summary>
             public Dictionary<string, object> Werte = new Dictionary<string, object>();
+
             public bool Verbraucht;
+
+            /// <summary>Wie viele der <see cref="Werte"/> belegt sind - fuer das Protokoll.</summary>
+            public int Belegt()
+            {
+                int n = 0;
+                foreach (object w in Werte.Values)
+                    if (w != null && w != DBNull.Value) n++;
+                return n;
+            }
         }
 
         /// <summary>Die Sicherung des laufenden Speichervorgangs; <c>null</c> = nichts zu retten.</summary>
         private List<FachspaltenSicherung> m_FachspaltenSicherung;
-
-        /// <summary>Die Fachspalten, mit denen <see cref="m_FachspaltenSicherung"/> gelesen wurde.</summary>
-        private List<string> m_FachspaltenListe;
 
         /// <summary>Das Projekt, zu dem <see cref="m_FachspaltenSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
         private int m_FachspaltenProjekt;
@@ -1633,15 +1656,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Sichert die belegten Fachspalten der Anlagenzeilen, die der folgende
-        /// Loeschbefehl trifft - <b>nur im Arbeitsspeicher</b>, es wird nichts geschrieben.
+        /// Sichert die Fachspalten der Anlagenzeilen, die der folgende Loeschbefehl
+        /// trifft - <b>nur im Arbeitsspeicher</b>, es wird nichts geschrieben.
         /// </summary>
         /// <param name="nType">Der zu loeschende Typ oder <see cref="TYP_ALLE"/> (typloser
         /// Weg - der verschont die Puffer, FR-1).</param>
         private void FachspaltenSichern(int projektID, int nType)
         {
             m_FachspaltenSicherung = null;
-            m_FachspaltenListe = null;
             m_FachspaltenProjekt = 0;
 
             if (projektID <= 0) return;
@@ -1671,27 +1693,23 @@ namespace WindowsFormsApplication1
                         ID_Type = SpZahl(r, "ID_Type"),
                         Bezeichner = SpText(r, "Bezeichner")
                     };
+                    // JEDE Fachspalte, auch NULL - die neue Zeile truege sonst die Vorgabe
+                    // ihrer Spalte statt des alten Werts (Block oben).
                     foreach (string spalte in fach)
-                        if (dt.Columns.Contains(spalte) && r[spalte] != DBNull.Value)
+                        if (dt.Columns.Contains(spalte))
                             s.Werte[spalte] = r[spalte];
 
-                    // Nur belegte Zeilen - NULL braucht keine Rettung.
-                    if (s.Werte.Count > 0) sicherung.Add(s);
+                    sicherung.Add(s);
                 }
 
-                if (sicherung.Count > 0)
-                {
-                    m_FachspaltenSicherung = sicherung;
-                    m_FachspaltenListe = fach;
-                    m_FachspaltenProjekt = projektID;
-                }
+                m_FachspaltenSicherung = sicherung;
+                m_FachspaltenProjekt = projektID;
             }
             catch (Exception ex)
             {
                 // Wie bei den Nachbarn: eine misslungene Sicherung fuehrt auf das Verhalten
                 // vor diesem Block zurueck, nicht auf einen abgebrochenen Speichervorgang.
                 m_FachspaltenSicherung = null;
-                m_FachspaltenListe = null;
                 m_FachspaltenProjekt = 0;
                 Console.WriteLine("Die Fachspalten der Anlagen konnten vor dem Loeschen nicht " +
                                   "gesichert werden: " + ex.Message);
@@ -1699,21 +1717,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die gesicherten Fachspalten auf die NEUEN Anlagenzeilen zurueck -
-        /// je Zeile EIN UPDATE mit genau den Spalten, die alt belegt waren.
+        /// Schreibt die gesicherten Fachspalten auf die Anlagenzeilen zurueck, die DIESER
+        /// Speicherlauf angelegt hat - je Zeile EIN UPDATE mit der ganzen alten Belegung.
         /// <b>BEST EFFORT</b> - ein gelungenes Speichern scheitert nicht daran.
         /// </summary>
-        private void FachspaltenWiederherstellen(int projektID)
+        /// <param name="angelegt">Die Ids der Anlagenzeilen, die <see cref="Add_WP_Waermeerzeuger"/>
+        /// in diesem Lauf angelegt hat; jede andere Zeile des Projekts bleibt unangetastet.</param>
+        private void FachspaltenWiederherstellen(int projektID, HashSet<int> angelegt)
         {
             List<FachspaltenSicherung> sicherung = m_FachspaltenSicherung;
-            List<string> fach = m_FachspaltenListe;
             int projektDerSicherung = m_FachspaltenProjekt;
 
             m_FachspaltenSicherung = null;            // eine Sicherung, ein Wiederherstellen
-            m_FachspaltenListe = null;
             m_FachspaltenProjekt = 0;
 
-            if (sicherung == null || sicherung.Count == 0 || fach == null || projektID <= 0) return;
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
 
             if (projektDerSicherung != projektID)
             {
@@ -1725,8 +1743,9 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DataTable dt = DataRepository.GetDataTable(FachspaltenSelect(fach) + " ORDER BY ID",
-                                                           new DbParam("@pID", projektID));
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new DbParam("@pID", projektID));
                 if (dt == null || dt.Rows.Count == 0) return;
 
                 int zeilen = 0, werte = 0;
@@ -1735,17 +1754,13 @@ namespace WindowsFormsApplication1
                     int idAnlage = SpZahl(r, "ID");
                     if (idAnlage <= 0) continue;
 
-                    // Fuehrt die Zeile schon eine Fachspalte, ist sie kein Neuling dieses
-                    // Speicherlaufs (stehen gebliebener Puffer, oder ein Einfuegeweg hat
-                    // sie bereits gesetzt) - nichts anfassen.
-                    bool belegt = false;
-                    foreach (string spalte in fach)
-                        if (dt.Columns.Contains(spalte) && r[spalte] != DBNull.Value) { belegt = true; break; }
-                    if (belegt) continue;
+                    // Nur eine Zeile, die DIESER Lauf angelegt hat - stehen gebliebene
+                    // Puffer (FR-1) und die Zeilen anderer Typen bleiben unangetastet.
+                    if (angelegt == null || !angelegt.Contains(idAnlage)) continue;
 
                     FachspaltenSicherung treffer = FachspaltenTreffer(sicherung, SpZahl(r, "ID_Type"),
                                                                      SpText(r, "Bezeichner"));
-                    if (treffer == null) continue;
+                    if (treffer == null || treffer.Werte.Count == 0) continue;
                     treffer.Verbraucht = true;
 
                     string set = "";
@@ -1761,7 +1776,7 @@ namespace WindowsFormsApplication1
                                                   ps.ToArray()))
                     {
                         zeilen++;
-                        werte += treffer.Werte.Count;
+                        werte += treffer.Belegt();
                     }
                     else
                     {
@@ -1771,9 +1786,9 @@ namespace WindowsFormsApplication1
                 }
 
                 foreach (FachspaltenSicherung s in sicherung)
-                    if (!s.Verbraucht)
+                    if (!s.Verbraucht && s.Belegt() > 0)
                         Console.WriteLine("Fachspalten-Rettung: \"" + s.Bezeichner + "\" (Typ " + s.ID_Type +
-                                          ") kommt nach dem Speichern nicht mehr vor - " + s.Werte.Count +
+                                          ") kommt nach dem Speichern nicht mehr vor - " + s.Belegt() +
                                           " Fachwert(e) verfallen.");
 
                 if (zeilen > 0)
@@ -1796,7 +1811,6 @@ namespace WindowsFormsApplication1
             if (m_FachspaltenSicherung == null) return;
 
             m_FachspaltenSicherung = null;
-            m_FachspaltenListe = null;
             m_FachspaltenProjekt = 0;
             Console.WriteLine("Fachspalten-Rettung nicht ausgefuehrt (" + grund + ") - KWKG-, Steuer- und " +
                               "Quellangaben der Anlagen sind verloren.");
@@ -1857,6 +1871,11 @@ namespace WindowsFormsApplication1
                 // Der Zustand gehoert dem LAUF und endet mit ihm - StraengeWiederherstellen
                 // bekommt ihn unten als Argument, nicht als Feld (Begruendung dort).
                 HashSet<int> strangGeschrieben = new HashSet<int>();
+
+                // FS1: Die Anlagenzeilen, die DIESER Lauf anlegt - nur auf sie schreibt
+                // FachspaltenWiederherstellen die gesicherten Fachspalten zurueck. Wie
+                // strangGeschrieben gehoert die Menge dem LAUF und geht als Argument.
+                HashSet<int> angelegt = new HashSet<int>();
 
                 // S2: Der gemerkte Bestand gehoert DIESEM Lauf - eine Sicherung, ein
                 // Schreiben (wie bei der Senkenrettung). Ohne Bestand fuer dieses Projekt
@@ -2046,7 +2065,10 @@ namespace WindowsFormsApplication1
                         object neuAnlage = DataRepository.ExecuteScalar(
                             "SELECT MAX(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektID);
                         if (neuAnlage != null && neuAnlage != DBNull.Value)
+                        {
                             item.ID = Convert.ToInt32(neuAnlage);
+                            angelegt.Add(item.ID);
+                        }
                     }
                     catch { }
 
@@ -2230,9 +2252,10 @@ namespace WindowsFormsApplication1
                 StraengeWiederherstellen(projektID, strangGeschrieben);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
-                // Quell-Einstellungen) auf die NEUEN Anlagenzeilen zurueck - ebenfalls
-                // VOR dem Aufraeumlauf (Block ueber FachspaltenSichern).
-                FachspaltenWiederherstellen(projektID);
+                // Quell-Einstellungen) auf die Anlagenzeilen zurueck, die dieser Lauf
+                // angelegt hat - ebenfalls VOR dem Aufraeumlauf (Block ueber
+                // FachspaltenSichern).
+                FachspaltenWiederherstellen(projektID, angelegt);
 
                 // ETAPPE H3 (H1-3): Pflichtpositionen der Standardvorlagen an jeder
                 // Anlagenzeile sicherstellen - NACH ZuordnungReparieren/AnkerNachziehen
@@ -2617,7 +2640,10 @@ namespace WindowsFormsApplication1
 
                 // 2) Gebaeude-Stammdatensatz in die Projekt-Tabelle Tab_Gebaeude kopieren
                 //    (setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude = zID).
-                if (ctrlStamm.CopyFromStamm(item.Gebaeudename, projektID, zID) <= 0) return false;
+                //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
+                //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
+                //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
+                if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return false;
             }
             return true;
         }

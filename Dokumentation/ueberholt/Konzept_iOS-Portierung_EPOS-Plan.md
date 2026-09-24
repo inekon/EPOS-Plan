@@ -1,4 +1,4 @@
-﻿# Konzept: EPOS-Plan autonom auf dem iPad
+# Konzept: EPOS-Plan autonom auf dem iPad
 
 **Rev. 1 — 30.08.2026 — zur Abnahme durch Philipp**
 

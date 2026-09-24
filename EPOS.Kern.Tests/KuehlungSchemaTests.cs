@@ -82,8 +82,9 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s.Key, GebaeudeSchema.SQL_VIEW_KUEHLUNG, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s.Key, GebaeudeSchema.SQL_VIEW_NEU, StringComparison.Ordinal);
             }
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht ist seit Schritt 122 (AK-S1) die dritte; sie beginnt mit den
+            // 77 Spalten von KU-S1 an ihren Stellen (AnlagenkopplungSchemaTests).
+            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SICHT_AKTUELL.Take(77));
         }
 
         /// <summary>KU-S2 nach Kühlkonzept 7.2: eine Spalte in <c>Tab_Einstellungen</c>, 0/1, Vorgabe 0.</summary>
@@ -160,8 +161,10 @@ namespace EPOS.Kern.Tests
             string sicht = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUNG, sicht);
-            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SichtSpalten());
+            // Die Sicht ist die GELTENDE (seit Schritt 122 die von AK-S1); die 77 Spalten von
+            // KU-S1 stehen darin an ihren Stellen.
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
+            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SichtSpalten().Take(77));
 
             string ausser = " AND NOT ('{0}' = 'Tab_Gebaeude' AND ID = " +
                             GEBAEUDE_MIT_KUEHLUNG.ToString(CultureInfo.InvariantCulture) + ")";

@@ -1,4 +1,4 @@
-﻿# Referenzlauf-Protokoll
+# Referenzlauf-Protokoll
 
 **Zeitpunkt:** 27.08.2026 22:07:29
 

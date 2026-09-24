@@ -2341,6 +2341,46 @@ namespace WindowsFormsApplication1
         public const string GRUND_AUSSENLUFT = "AUSSENLUFT";
 
         // =====================================================================
+        // Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.1 und 8.1,
+        //   Schemaschritt 122 = AK-S1). Persistenzwerte, eingefroren und ASCII
+        //   (in SQL verglichen). Welche Vorgaben eine Art mitbringt (Exponent,
+        //   Auslegungspunkt, Strahlungsanteil), sagt der Rechenweg, nicht die Datenbank.
+        // =====================================================================
+
+        /// <summary>
+        /// Uebergabeart ideal — die Kopplung ist aus, das Gebaeude rechnet mit idealer
+        /// Regelung (<c>Tab_Gebaeude(_STAMM).Uebergabe_Art</c>). <b>Auch NULL bedeutet
+        /// IDEAL.</b>
+        /// </summary>
+        public const string UEBERGABE_IDEAL = "IDEAL";
+
+        /// <summary>Uebergabeart Radiator (Glieder- und Plattenheizkoerper).</summary>
+        public const string UEBERGABE_RADIATOR = "RADIATOR";
+
+        /// <summary>Uebergabeart Flaechenheizung (Fussboden, Wand) - ohne Estrichmasse (3.6).</summary>
+        public const string UEBERGABE_FLAECHE = "FLAECHE";
+
+        /// <summary>Uebergabeart Konvektor (Geblaese, Unterflur).</summary>
+        public const string UEBERGABE_KONVEKTOR = "KONVEKTOR";
+
+        /// <summary>
+        /// Kopplungsstufe des Projekts: aus (<c>Tab_Einstellungen.Anlagenkopplung</c>).
+        /// <b>Auch NULL bedeutet AUS</b> — kein DDL-DEFAULT auf einem Fachwert.
+        /// </summary>
+        public const string ANLAGENKOPPLUNG_AUS = "AUS";
+
+        /// <summary>Kopplungsstufe AK1 — der Heizkreis als Randbedingung.</summary>
+        public const string ANLAGENKOPPLUNG_AK1 = "AK1";
+
+        /// <summary>Kopplungsstufe AK2 — der Erzeugerfahrplan als Verfuegbarkeit. Die Spalte laesst den
+        /// Wert zu; angeboten wird er erst mit dem Rechenweg (Kuehlkonzept K7).</summary>
+        public const string ANLAGENKOPPLUNG_AK2 = "AK2";
+
+        /// <summary>Kopplungsstufe AK3 — der geschlossene Kreis. Zugelassen wie <see cref="ANLAGENKOPPLUNG_AK2"/>,
+        /// angeboten erst mit dem Rechenweg.</summary>
+        public const string ANLAGENKOPPLUNG_AK3 = "AK3";
+
+        // =====================================================================
         // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)
         //   Persistenzwerte der Spalte Tab_Wechselrichter(_STAMM).Herkunft,
         //   eingefroren (Drei-Schichten-Regel).

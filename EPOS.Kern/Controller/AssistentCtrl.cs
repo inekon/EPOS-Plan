@@ -477,47 +477,28 @@ namespace WindowsFormsApplication1
         /// Die Gebäudezuordnungen samt Namen — der Verbund über
         /// <c>Tab_Gebaeude.ID_ProjektGebaeude</c>, den <c>Z_ProjektGebaeude</c> seit
         /// dem Schemawechsel braucht.
+        ///
+        /// <para>Gelesen über <see cref="Z_ProjGebCtrl.LiesProjekt"/> — denselben
+        /// parametrisierten Verbund wie Startseite und Gebäudedialog; er bringt den
+        /// Katalogverweis <c>ID_Gebaeude_Stamm</c> mit, über den das Neuschreiben der
+        /// Liste den Katalogsatz auch nach einer Umbenennung wiederfindet.</para>
         /// </summary>
         public void LadeGebaeude(string projekt)
         {
             if (string.IsNullOrEmpty(projekt)) return;
 
             ProjektCtrl projctrl = new ProjektCtrl();
-            RecordSet rs = new RecordSet();
-
             projctrl.ReadSingle(projekt);
 
-            string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.[ID_Projekt], " +
-                "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
-                "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID" +
-                " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
-
-            rs.Open(sql);
             Gebaeude.Clear();
-
-            while (rs.Next())
+            foreach (Z_ProjGebModel item in Z_ProjGebCtrl.LiesProjekt(projctrl.m_ID))
             {
-                Z_ProjGebModel item = new Z_ProjGebModel();
-
-                item.ID_Z = (int)rs.Read("ID");
-                item.ID_Projekt = projctrl.m_ID;
-                item.Gebaeudename = (string)rs.Read("Gebaeudename");
-                // ID_Gebaeude = Katalog-ID (Tab_Gebaeude_STAMM)
-                item.ID_Gebaeude = DataRepository.GetIdByName("Tab_Gebaeude_STAMM", "Bezeichner", item.Gebaeudename);
-                item.Wohnflaeche = (double)rs.Read("Wohnflaeche_Waermebedarf");
-                item.Einheit = (string)rs.Read("Einheit_Waermebedarf_Wohnflaeche");
-                item.Jahresnutzungsgrad = (double)rs.Read("Jahresnutzungsgrad");
-                item.DezentralWarmwasser = (bool)rs.Read("dezWarmwasserbereitung");
-                item.Gebaeudeart = (string)rs.Read("Gebaeudeart");
-                item.Beschreibung = (string)rs.Read("Beschreibung");
-
+                // ID_Gebaeude = Katalog-ID (Tab_Gebaeude_STAMM): der Verweis der Kopie,
+                // ohne ihn wie bisher der Katalogsatz gleichen Namens.
+                item.ID_Gebaeude = item.ID_Gebaeude_Stamm
+                    ?? DataRepository.GetIdByName("Tab_Gebaeude_STAMM", "Bezeichner", item.Gebaeudename);
                 Gebaeude.Add(item);
             }
-
-            // iU9-W16a.4: Der Vorlaeufer liess dieses RecordSet offen stehen - wie
-            // LoadWBedarfFromDB (Befund W16-B18). Die fuenf Geschwister schlossen es.
-            rs.Close();
         }
 
         /// <summary>Die Prozesswärmezuordnungen.</summary>

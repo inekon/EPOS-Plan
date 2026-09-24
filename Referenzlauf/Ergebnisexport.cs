@@ -51,6 +51,10 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Schemaschritt 119 (Stufe KU2 Welle 3): die Kaelteseite der Waermepumpe - dieselbe
             // Regel, sie steht erst mit einer gerechneten Kaeltekaskade in aggregate.csv.
             foreach (SchemaSpalte s in KuehlungSchema.Kaelteerzeugerspalten) namen.Add(s.Name);
+            // Schemaschritt 123 (AK-S3, Waermeteil; Anlagenkopplung 8.3, 11.4): Vorlauf- und
+            // Ruecklaufmittel und die Stunden mit begrenzter Uebergabe - dieselbe Regel, sie
+            // stehen erst in aggregate.csv, wenn ein Lauf die Uebergabe rechnet.
+            foreach (SchemaSpalte s in AnlagenkopplungSchema.Ergebnisspalten) namen.Add(s.Name);
             return namen;
         }
 

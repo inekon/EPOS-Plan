@@ -52,16 +52,56 @@ namespace KiKern
     }
 
     /// <summary>
+    /// Die Stufe der Namensregel, auf der ein Treffer (oder eine Mehrdeutigkeit)
+    /// gefunden wurde - je kleiner, desto genauer (<see cref="KiWahl.Treffer"/>).
+    /// </summary>
+    /// <remarks>
+    /// Die Stufe macht Treffer VERSCHIEDENER Listen vergleichbar: Trifft ein Name in der
+    /// einen Maske ein Feld wortgleich und in einer anderen nur als enthaltener Teil, ist
+    /// die erste gemeint (<c>KiAktionenDialog.GemeinteMaske</c>).
+    /// </remarks>
+    public enum KiWahlstufe
+    {
+        /// <summary>Nichts gefunden.</summary>
+        Keine = 0,
+
+        /// <summary>Der Schluessel, buchstabengetreu.</summary>
+        Schluessel = 1,
+
+        /// <summary>Der Schluessel, gefaltet.</summary>
+        SchluesselGefaltet = 2,
+
+        /// <summary>Der Anzeigetext, gefaltet.</summary>
+        Anzeigetext = 3,
+
+        /// <summary>Der Anfang, in beide Richtungen.</summary>
+        Anfang = 4,
+
+        /// <summary>Der enthaltene Teil.</summary>
+        Teil = 5,
+    }
+
+    /// <summary>
     /// Das Ergebnis einer toleranten Namenssuche: der eine gemeinte Eintrag, oder die
     /// Kandidaten, zwischen denen NICHT geraten wird.
     /// </summary>
     public sealed class KiWahltreffer
     {
-        internal KiWahltreffer(int stelle, IReadOnlyList<string> kandidaten)
+        internal KiWahltreffer(int stelle, IReadOnlyList<string> kandidaten, KiWahlstufe stufe)
         {
             Stelle = stelle;
             Kandidaten = kandidaten;
+            Stufe = stufe;
         }
+
+        /// <summary>
+        /// Die Stufe, auf der die Suche etwas fand - einen Eintrag oder mehrere;
+        /// <see cref="KiWahlstufe.Keine"/>, wenn nichts passt.
+        /// </summary>
+        public KiWahlstufe Stufe { get; }
+
+        /// <summary>Wie viele Eintraege auf der entscheidenden Stufe passen (0, 1 oder mehr).</summary>
+        public int Anzahl => Stelle >= 0 ? 1 : Kandidaten.Count;
 
         /// <summary>Die Stelle des Treffers in der uebergebenen Liste; <c>-1</c> = keiner.</summary>
         public int Stelle { get; }
@@ -97,7 +137,9 @@ namespace KiKern
     /// „vorlauftemperatur" beginnt mit „vorlauf"), eindeutig enthaltener Teil. Findet
     /// eine Stufe mehrere, wird NICHT zur naechsten weitergegangen: Mehrdeutig bleibt
     /// mehrdeutig, und die Absage nennt die Kandidaten
-    /// (Bestandsregel, <c>EPOS.Kern.Tests/KiMaskenwegTests</c>).
+    /// (Bestandsregel, <c>EPOS.Kern.Tests/KiMaskenwegTests</c>). Der Treffer nennt die
+    /// Stufe, auf der er fiel (<see cref="KiWahltreffer.Stufe"/>); ueber mehrere Listen
+    /// hinweg - die gemeinte Maske - entscheidet die beste.
     /// </para>
     /// <para>
     /// <b>Gefaltet wird gross/klein, Umlaut, Unterstrich und Leerzeichen</b>
@@ -167,27 +209,30 @@ namespace KiKern
             for (int i = 0; i < eintraege.Count; i++)
                 if (eintraege[i] != null &&
                     string.Equals(eintraege[i].Schluessel, roh, StringComparison.Ordinal))
-                    return new KiWahltreffer(i, Array.Empty<string>());
+                    return new KiWahltreffer(i, Array.Empty<string>(), KiWahlstufe.Schluessel);
 
             string gesucht = Falte(roh);
             if (gesucht.Length == 0) return Keiner;
 
             // ---- Stufe 2: der Schluessel, gefaltet.
-            KiWahltreffer stufe = Stufe(eintraege, e => Falte(e.Schluessel) == gesucht);
+            KiWahltreffer stufe = Stufe(eintraege, KiWahlstufe.SchluesselGefaltet,
+                                        e => Falte(e.Schluessel) == gesucht);
             if (stufe != null) return stufe;
 
             // ---- Stufe 3: der Anzeigetext, gefaltet.
-            stufe = Stufe(eintraege, e => Falte(e.Text) == gesucht);
+            stufe = Stufe(eintraege, KiWahlstufe.Anzeigetext, e => Falte(e.Text) == gesucht);
             if (stufe != null) return stufe;
 
             // ---- Stufe 4: der eindeutige Anfang, in beide Richtungen.
-            stufe = Stufe(eintraege, e => Anfang(Falte(e.Schluessel), gesucht) ||
-                                          Anfang(Falte(e.Text), gesucht));
+            stufe = Stufe(eintraege, KiWahlstufe.Anfang,
+                          e => Anfang(Falte(e.Schluessel), gesucht) ||
+                               Anfang(Falte(e.Text), gesucht));
             if (stufe != null) return stufe;
 
             // ---- Stufe 5: der eindeutig enthaltene Teil.
-            return Stufe(eintraege, e => Enthalten(Falte(e.Schluessel), gesucht) ||
-                                         Enthalten(Falte(e.Text), gesucht))
+            return Stufe(eintraege, KiWahlstufe.Teil,
+                         e => Enthalten(Falte(e.Schluessel), gesucht) ||
+                              Enthalten(Falte(e.Text), gesucht))
                    ?? Keiner;
         }
 
@@ -232,13 +277,14 @@ namespace KiKern
         // ================================================================== Hilfen
 
         private static readonly KiWahltreffer Keiner =
-            new KiWahltreffer(-1, Array.Empty<string>());
+            new KiWahltreffer(-1, Array.Empty<string>(), KiWahlstufe.Keine);
 
         /// <summary>
         /// Wendet EINE Stufe an: genau ein Treffer wird geliefert, mehrere werden als
         /// Kandidaten benannt, keiner fuehrt auf die naechste Stufe (<c>null</c>).
         /// </summary>
         private static KiWahltreffer? Stufe(IReadOnlyList<KiWahleintrag> eintraege,
+                                            KiWahlstufe stufe,
                                             Func<KiWahleintrag, bool> passt)
         {
             int stelle = -1;
@@ -258,16 +304,22 @@ namespace KiKern
                 mehrere.Add(e.Beschriftung);
             }
 
-            if (mehrere != null) return new KiWahltreffer(-1, mehrere);
-            return stelle < 0 ? null : new KiWahltreffer(stelle, Array.Empty<string>());
+            if (mehrere != null) return new KiWahltreffer(-1, mehrere, stufe);
+            return stelle < 0 ? null : new KiWahltreffer(stelle, Array.Empty<string>(), stufe);
         }
 
         /// <summary>Beginnt einer der beiden Texte mit dem anderen?</summary>
+        /// <remarks>
+        /// Beginnt der GENANNTE Text mit dem Kandidaten, gilt dieselbe Untergrenze wie beim
+        /// enthaltenen Teil (<see cref="MINDESTLAENGE_ENTHALTEN"/>): Sonst traf „Außenwand"
+        /// die Spalte „A" der Wirtschaftlichkeitsseite - ein Buchstabe ist kein Name.
+        /// </remarks>
         private static bool Anfang(string kandidat, string gesucht)
         {
             if (kandidat.Length == 0) return false;
             return kandidat.StartsWith(gesucht, StringComparison.Ordinal) ||
-                   gesucht.StartsWith(kandidat, StringComparison.Ordinal);
+                   (kandidat.Length >= MINDESTLAENGE_ENTHALTEN &&
+                    gesucht.StartsWith(kandidat, StringComparison.Ordinal));
         }
 
         /// <summary>Enthaelt einer der beiden Texte den anderen?</summary>

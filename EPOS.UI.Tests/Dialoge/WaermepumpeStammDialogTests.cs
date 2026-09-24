@@ -1219,9 +1219,13 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         cut.Find(".epos-importknopf").Click();
         zeilen.Add(new Katalogfilterzeile(3, "WP Gamma").MitText(Katalogfilterprofil.SpBezeichner, "WP Gamma"));
         zeilen.Add(new Katalogfilterzeile(4, "WP Delta").MitText(Katalogfilterprofil.SpBezeichner, "WP Delta"));
+        var liste = cut.FindComponent<EPOS.UI.Bausteine.Katalogliste>();
+        Assert.Equal(0, liste.Instance.Zeigeanlass);
         var import = cut.FindComponent<EPOS.UI.Dialoge.Import.KatalogImportDialog>();
         await cut.InvokeAsync(() => import.Instance.Geschlossen.InvokeAsync(true));
 
+        // Die Übernahme ist der Liste ein Anlass, die neue Fokuszeile ins Bild zu rollen.
+        Assert.Equal(1, liste.Instance.Zeigeanlass);
         Assert.Equal(new[] { "WP Gamma", "WP Delta" }, cut.Instance.Kaestchen);
         Assert.Equal(3, cut.Instance.GewaehlteId);
         Assert.Equal("2 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());

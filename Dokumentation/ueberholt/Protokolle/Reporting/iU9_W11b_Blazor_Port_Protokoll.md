@@ -1,4 +1,4 @@
-﻿# iU9 Welle 11b — Simulationsergebnis II: die Ergebnisseite — Portprotokoll
+# iU9 Welle 11b — Simulationsergebnis II: die Ergebnisseite — Portprotokoll
 
 > Umsetzung 04.09.2026 im Arbeitsbaum `agent-af078f97ed75c2ba6`, Basis `81a04ec`
 > (`ios_migration` nach dem Merge der Welle 11a). Vorbild in Aufbau und Tiefe: die

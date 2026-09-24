@@ -470,8 +470,29 @@ namespace WindowsFormsApplication1
         /// gesetzt wird nur, was leer ist. <b>Ergebnisneutral:</b> Ein Satz der Tabelle rechnet
         /// erst, wenn die Vorbelegung ihn in eine Position schreibt; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit dem KATALOGVERWEIS DES PROJEKTGEBÄUDES (Schritt 121, Welle #468; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf <b>121</b>:
+        /// <c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> (nullbar, Verweis auf
+        /// <c>Tab_Gebaeude_STAMM</c> mit <c>ON DELETE SET NULL</c>) samt Index, einmalig über
+        /// den eindeutigen Namen nachgetragen; dazu die Reparatur der Katalogsätze, deren
+        /// „Sonstige Fläche" keinen U-Wert trägt (Fläche → 0, <c>H_T</c> unverändert) — beides
+        /// bei <see cref="GebaeudeKatalogverweis"/>. <b>Ergebnisneutral:</b> Kein Rechenweg liest
+        /// den Verweis, und die reparierten Sätze nutzt kein Referenzprojekt; der Referenzlauf
+        /// bleibt byte-gleich.
+        /// Mit den ZWEI SCHEMASCHRITTEN DER ANLAGENKOPPLUNG, Stufe AK1 Welle 1 (Konzept
+        /// Anlagenkopplung Kapitel 8; Entscheide E22, E24, E25, beauftragt am 24.09.2026) steht
+        /// das Ziel auf <b>123</b>: Schritt 122 (AK-S1) legt die dreizehn Spalten der
+        /// Wärmeübergabe an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> und baut die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> ein drittes Mal neu
+        /// (<see cref="GebaeudeSchema.Uebergabespalten"/>), dazu die Projektspalte
+        /// <c>Tab_Einstellungen.Anlagenkopplung</c> (Wertliste AUS/AK1/AK2/AK3, NULL = aus);
+        /// Schritt 123 (AK-S3, Wärmeteil) die drei Ergebnisspalten <c>Vorlauf_Mittel</c>,
+        /// <c>Ruecklauf_Mittel</c> und <c>Uebergabe_Begrenzt_Stunden</c> an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> — beide bei <see cref="AnlagenkopplungSchema"/>.
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Schalter stehen auf 0, alles übrige auf NULL,
+        /// und kein Rechenweg liest die Spalten; <b>der Referenzlauf bleibt byte-gleich</b>.
         /// Mit den LAUFANGABEN DER ZAPFPROFIL-AUSLEGUNG UND DER BEZUGSART AM BEDARFSTAG (Schritt
-        /// 121, Zapfprofilgenerator Stufe Z4, Schemaschritt T3) steht das Ziel auf <b>121</b>:
+        /// 124, Zapfprofilgenerator Stufe Z4, Schemaschritt T3) steht das Ziel auf <b>124</b>:
         /// <c>Erzeugerart</c>, <c>Uebertrager_Werkstoff</c>, <c>Personen_Auto</c>,
         /// <c>Personen_Manuell</c> und <c>Fuellstand_Bezug</c> an <c>Tab_TwwProjekt</c>,
         /// <c>Bezugsart</c> an <c>Tab_TwwBedarfstag_STAMM</c> (<see cref="TwwSchema.SpaltenT3"/>).
@@ -482,7 +503,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 121;
+        public const int Zielversion = 124;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

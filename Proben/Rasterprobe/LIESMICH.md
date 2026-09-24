@@ -359,6 +359,13 @@ NODE_PATH=<ordner mit playwright> \
   katalogprobe.mjs --url http://127.0.0.1:5299 --nur N
 ```
 
+**Alternative ohne Verzeichnisverbindung.** Statt der Verzeichnisverbindung genügt eine
+vorübergehende Hülle `node_modules/playwright` neben den `.mjs`-Skripten (Kopie oder
+Verzeichnisverbindung auf denselben Ordner `.playwright/package`); `node.exe` aus dem
+NuGet-Cache findet die Bibliothek dann über die gewöhnliche Modulsuche, ohne `NODE_PATH`. Die
+Hülle bleibt außerhalb des Repositoriums (`.gitignore`) und wird nach der Messung wieder
+gelöscht; der Wirt-Port ist frei wählbar (`--url`, siehe oben).
+
 **Was die Fälle N zusätzlich messen** (Funktion `STUFE1`, Sollwerte in `pruefe`):
 
 | | Größe | Sollwert |

@@ -1,4 +1,4 @@
-﻿# iU9 Welle 7 — Wärmepumpe und Solarthermie — Portprotokoll
+# iU9 Welle 7 — Wärmepumpe und Solarthermie — Portprotokoll
 
 > Umsetzung 03.09.2026 auf `ios_migration`, Basis `198506f` (nach dem Merge der
 > Welle 6), zusammengeführt mit `origin/ios_migration` (`98ebe81`). Vorbild in Aufbau

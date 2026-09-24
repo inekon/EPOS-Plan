@@ -83,7 +83,8 @@
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
-                          GewaehlteChanged="BeiKaestchen" />
+                          GewaehlteChanged="BeiKaestchen"
+                          Zeigeanlass="@_auswahl.Uebernahmen" />
         </Liste>
 
         <Auswahl>
@@ -790,9 +791,11 @@
         {
             _pfad = "";
             _importOffen = false;
-            _auswahl.Aufheben();
-            _vergleichszeilen = null;
+            // Die neue Zeitreihe ist die Wahl - derselbe Weg wie jede Uebernahme
+            // (Zeilenauswahl.Uebernommen): Die Liste rollt sie ins Bild (Zeigeanlass).
             _gewaehlt = erg.Bezeichner ?? "";
+            _auswahl.Uebernommen(new[] { _gewaehlt });
+            _vergleichszeilen = null;
             _ansicht = null;
             await KatalogLaden();
             _status = erg.Meldung.Length > 0

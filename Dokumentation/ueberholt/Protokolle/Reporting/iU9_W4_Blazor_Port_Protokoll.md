@@ -1,4 +1,4 @@
-﻿# iU9 Welle 4 — Port der Kostenverwaltung und des Energieträgerkatalogs (Umsetzungsprotokoll)
+# iU9 Welle 4 — Port der Kostenverwaltung und des Energieträgerkatalogs (Umsetzungsprotokoll)
 
 > Muster: [`iU9_W3_Blazor_Port_Protokoll.md`](iU9_W3_Blazor_Port_Protokoll.md),
 > [`iU9_W2_Blazor_Port_Protokoll.md`](iU9_W2_Blazor_Port_Protokoll.md) und

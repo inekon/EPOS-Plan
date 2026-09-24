@@ -436,6 +436,20 @@ namespace WindowsFormsApplication1
                 new DbParam("@b68", DbParamTyp.Double) { Wert = Wert(m.Kuehlleistung_Max) },
                 new DbParam("@b69", DbParamTyp.Boolean) { Wert = m.Kuehlung_Aktiv },
                 new DbParam("@b70", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Sollwert_Nacht) },
+                // AK-S1 (Schemaschritt 122): NULL-erhaltend, die zwei Schalter 0/1
+                new DbParam("@b71", DbParamTyp.Boolean) { Wert = m.Heizkreis_Aktiv },
+                new DbParam("@b72", DbParamTyp.VarWChar) { Wert = Wert(m.Uebergabe_Art) },
+                new DbParam("@b73", DbParamTyp.Double) { Wert = Wert(m.Uebergabe_Exponent) },
+                new DbParam("@b74", DbParamTyp.Double) { Wert = Wert(m.Uebergabe_Leistung_Nenn) },
+                new DbParam("@b75", DbParamTyp.Double) { Wert = Wert(m.Auslegung_Vorlauf) },
+                new DbParam("@b76", DbParamTyp.Double) { Wert = Wert(m.Auslegung_Ruecklauf) },
+                new DbParam("@b77", DbParamTyp.Double) { Wert = Wert(m.Auslegung_Raumtemperatur) },
+                new DbParam("@b78", DbParamTyp.Double) { Wert = Wert(m.Auslegung_Aussentemperatur) },
+                new DbParam("@b79", DbParamTyp.Boolean) { Wert = m.Heizkurve_Aktiv },
+                new DbParam("@b80", DbParamTyp.Double) { Wert = Wert(m.Heizkurve_Niveau) },
+                new DbParam("@b81", DbParamTyp.Double) { Wert = Wert(m.Heizkurve_Steilheit) },
+                new DbParam("@b82", DbParamTyp.Double) { Wert = Wert(m.Regler_Proportionalband) },
+                new DbParam("@b83", DbParamTyp.LongVarWChar) { Wert = Wert(m.Sollwertprofil) },
             };
         }
 
@@ -450,7 +464,7 @@ namespace WindowsFormsApplication1
         public bool Insert(GebaeudeModel m)
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
-            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             var ps = new List<DbParam>();
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
@@ -467,7 +481,7 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ? WHERE Bezeichner = ?";
+            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ? WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
@@ -478,9 +492,10 @@ namespace WindowsFormsApplication1
         #region --- Gebaeudespalten-Schritt M3 (NULL-erhaltend) ---
 
         /// <summary>
-        /// Liest die fuenfzehn Spalten des Gebaeudespalten-Schritts M3 (Schemaschritt 101)
-        /// und die vier Kuehleingaben aus KU-S1 (Schemaschritt 108) NULL-ERHALTEND in das
-        /// Modell: NULL bleibt <c>null</c>, die drei Schalter werden 0/1. Fehlt eine Spalte
+        /// Liest die fuenfzehn Spalten des Gebaeudespalten-Schritts M3 (Schemaschritt 101),
+        /// die vier Kuehleingaben aus KU-S1 (Schemaschritt 108) und die dreizehn Spalten der
+        /// Waermeuebergabe aus AK-S1 (Schemaschritt 122) NULL-ERHALTEND in das Modell: NULL
+        /// bleibt <c>null</c>, die fuenf Schalter werden 0/1. Fehlt eine Spalte
         /// (Datenbank vor dem Schritt), bleibt das Feld auf seiner Vorbelegung. Gerufen fuer
         /// Katalog (hier) und Projekt (<c>GebaeudeCtrl</c>).
         /// </summary>
@@ -508,6 +523,22 @@ namespace WindowsFormsApplication1
             item.Kuehlleistung_Max = Zahl(row, GebaeudeSchema.SPALTE_KUEHLLEISTUNG_MAX);
             item.Kuehlung_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLUNG_AKTIV);
             item.Kuehl_Sollwert_Nacht = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT_NACHT);
+
+            // AK-S1 (Schemaschritt 122, Anlagenkopplung 8.1): die dreizehn Spalten der
+            // Waermeuebergabe, ebenso NULL-ERHALTEND; die zwei Schalter werden 0/1.
+            item.Heizkreis_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_HEIZKREIS_AKTIV);
+            item.Uebergabe_Art = Text(row, GebaeudeSchema.SPALTE_UEBERGABE_ART);
+            item.Uebergabe_Exponent = Zahl(row, GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT);
+            item.Uebergabe_Leistung_Nenn = Zahl(row, GebaeudeSchema.SPALTE_UEBERGABE_LEISTUNG_NENN);
+            item.Auslegung_Vorlauf = Zahl(row, GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF);
+            item.Auslegung_Ruecklauf = Zahl(row, GebaeudeSchema.SPALTE_AUSLEGUNG_RUECKLAUF);
+            item.Auslegung_Raumtemperatur = Zahl(row, GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR);
+            item.Auslegung_Aussentemperatur = Zahl(row, GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR);
+            item.Heizkurve_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_HEIZKURVE_AKTIV);
+            item.Heizkurve_Niveau = Zahl(row, GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU);
+            item.Heizkurve_Steilheit = Zahl(row, GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT);
+            item.Regler_Proportionalband = Zahl(row, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND);
+            item.Sollwertprofil = Text(row, GebaeudeSchema.SPALTE_SOLLWERTPROFIL);
         }
 
         private static object Roh(DataRow row, string spalte)
@@ -536,19 +567,40 @@ namespace WindowsFormsApplication1
         #region --- COPY (STAMM -> Projekt) ---
 
         // Kopiert einen Gebaeude-Stammdatensatz (per Bezeichner) in die Projekt-Tabelle Tab_Gebaeude.
-        // Setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude (-> Z_ProjektGebaeude.ID).
+        // Setzt ID_Projekt, die Verknuepfung ID_ProjektGebaeude (-> Z_ProjektGebaeude.ID) und den
+        // Katalogverweis ID_Gebaeude_Stamm (-> Tab_Gebaeude_STAMM.ID, Schemaschritt 121).
+        // Der EINZIGE Weg Katalog -> Projekt: Assistent und Projekt-Gebaeudedialog gehen beide
+        // ueber WizardCtrl.Add_Projekt_ZuordungGebäude hierher; Duplizieren und Varianten
+        // kopieren die Projektzeile samt Verweis (ProjektDuplizierenCtrl).
         // Rueckgabe: neue Tab_Gebaeude.ID (>0) oder 0 bei Fehler / nicht gefunden.
         public int CopyFromStamm(string szBezeichner, int idProjekt, int idProjektGebaeude)
+            => CopyFromStamm(null, szBezeichner, idProjekt, idProjektGebaeude);
+
+        /// <summary>
+        /// Dieselbe Kopie, aber der Katalogsatz wird ZUERST über seine Id gesucht
+        /// (<c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> der bisherigen Projektkopie, Schemaschritt
+        /// 121) und erst ohne Id — oder wenn es den Satz dieser Id nicht mehr gibt — über den
+        /// Namen. So übersteht das Neuschreiben der Gebäudeliste eines Projekts eine
+        /// Umbenennung des Katalogsatzes; der Name ist nur noch der Rückfall für Altbestand
+        /// ohne Verweis (Konzept Administrationsdialoge 7.1 (a)).
+        /// </summary>
+        public int CopyFromStamm(int? idStamm, string szBezeichner, int idProjekt, int idProjektGebaeude)
         {
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new DbParam("@cbez", szBezeichner ?? (object)DBNull.Value));
+            DataTable dt = null;
+            if (idStamm.HasValue && idStamm.Value > 0)
+                dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + TABLE + "] WHERE ID = ?",
+                    new DbParam("@cid", idStamm.Value));
+            if (dt == null || dt.Rows.Count == 0)
+                dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@cbez", szBezeichner ?? (object)DBNull.Value));
             if (dt == null || dt.Rows.Count == 0) return 0;
             DataRow r = dt.Rows[0];
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -632,6 +684,26 @@ namespace WindowsFormsApplication1
                 new DbParam("@c71", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLLEISTUNG_MAX) },
                 new DbParam("@c72", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_KUEHLUNG_AKTIV) },
                 new DbParam("@c73", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT_NACHT) },
+                // AK-S1 (Schemaschritt 122): dieselbe Regel - NULL bleibt NULL (ideal, Vorgabe
+                // der Uebergabeart, hergeleitet, Bestandssollwerte); aus einem leeren Exponenten
+                // wird kein 0,0. Die zwei Schalter gehen als 0/1 hinueber.
+                new DbParam("@c74", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_HEIZKREIS_AKTIV) },
+                new DbParam("@c75", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_UEBERGABE_ART) },
+                new DbParam("@c76", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT) },
+                new DbParam("@c77", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_UEBERGABE_LEISTUNG_NENN) },
+                new DbParam("@c78", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF) },
+                new DbParam("@c79", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_AUSLEGUNG_RUECKLAUF) },
+                new DbParam("@c80", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR) },
+                new DbParam("@c81", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR) },
+                new DbParam("@c82", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_HEIZKURVE_AKTIV) },
+                new DbParam("@c83", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU) },
+                new DbParam("@c84", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT) },
+                new DbParam("@c85", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND) },
+                new DbParam("@c86", DbParamTyp.LongVarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_SOLLWERTPROFIL) },
+                // Schemaschritt 121 (Welle #468): Die Kopie merkt sich, aus welchem
+                // Katalogsatz sie stammt - eine Umbenennung des Satzes zerreisst die Klammer
+                // der Loeschsperre dann nicht mehr (GebaeudeKatalogverweis).
+                new DbParam("@c87", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 
@@ -794,22 +866,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
-        /// nennt das Projekt) — je Bezeichner die Projektnamen, EINE Abfrage fuer die ganze
-        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>),
-        /// verknuepft ueber den Namen — derselbe Weg, auf dem die Waermepumpenverwaltung ihre
-        /// Loeschsperre findet (<c>WPStammCtrl.GesperrtDurchProjekt</c>). Gross/klein egal.
+        /// nennt das Projekt) — je KATALOGNAME die Projektnamen, EINE Abfrage fuer die ganze
+        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>).
+        ///
+        /// <para><b>Zuerst die ID, dann der Name</b> (Schemaschritt 121, Welle #468; Konzept
+        /// Administrationsdialoge 7.1 (a)). Traegt die Kopie ihren Katalogverweis
+        /// (<c>ID_Gebaeude_Stamm</c>), kommt der Schluessel aus dem KATALOGSATZ selbst — er
+        /// ueberlebt die Umbenennung des Satzes wie die der Kopie. Nur eine Kopie OHNE Verweis
+        /// (Altbestand, deren Name beim Nachtrag keinen Katalogsatz traf, ein geloeschter
+        /// Katalogsatz, ein Paket ohne Treffer am Ziel) sperrt weiter ueber ihren Namen —
+        /// gross/klein egal, wie bisher.</para>
         /// </summary>
         public static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung()
         {
             var sammlung = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT g.Gebaeudename, p.Projektname FROM [" + TABLE_PROJ + "] AS g " +
-                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt ORDER BY p.Projektname");
+                "SELECT COALESCE(s.Bezeichner, g.Gebaeudename) AS Katalogname, p.Projektname " +
+                "FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
+                "LEFT JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
+                "ORDER BY p.Projektname");
             if (dt != null)
             {
                 foreach (DataRow r in dt.Rows)
                 {
-                    string name = Spaltentext(r, "Gebaeudename").Trim();
+                    string name = Spaltentext(r, "Katalogname").Trim();
                     string projekt = Spaltentext(r, "Projektname");
                     if (name.Length == 0) continue;
                     if (!sammlung.TryGetValue(name, out List<string> projekte))
@@ -824,16 +905,33 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Loeschsperre eines Katalogsatzes</b>: die Projekte, die ihn fuehren — leer,
+        /// wenn keines. Dieselbe Wahrheit wie <see cref="Projektverwendung"/> (zuerst der
+        /// Katalogverweis, dann der Name); die Verwaltung nennt diese Projekte im Sperrgrund.
+        /// </summary>
+        public static IReadOnlyList<string> Loeschsperre(string bezeichner)
+        {
+            if (string.IsNullOrWhiteSpace(bezeichner)) return Array.Empty<string>();
+            return Projektverwendung().TryGetValue(bezeichner.Trim(), out IReadOnlyList<string> projekte)
+                ? projekte : Array.Empty<string>();
+        }
+
+        /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
-        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze weich und
-        /// fragt vorher zurueck; <see cref="Delete"/> meldete die Sperre ueber
-        /// <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
+        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze und
+        /// benutzte Gebaeude weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
+        /// Sperre ueber <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
+        ///
+        /// <para><b>Die Sperre haelt auch hier</b> (Welle #468): Ein Satz, den ein Projekt
+        /// fuehrt (<see cref="Loeschsperre"/>), wird nicht geloescht — die Oberflaeche reicht
+        /// ihn ohnehin nicht herein, aber der Kern verlaesst sich nicht darauf.</para>
         /// </summary>
         /// <returns><c>true</c>, wenn der Satz geloescht wurde.</returns>
         public static bool Loeschen(string bezeichner)
         {
             if (string.IsNullOrEmpty(bezeichner)) return false;
             if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
+            if (Loeschsperre(bezeichner).Count > 0) return false;
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ? AND ReadOnly = 0",
                 new DbParam("@bez", bezeichner));

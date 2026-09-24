@@ -125,6 +125,39 @@ namespace WindowsFormsApplication1
         /// <summary>Kühlsollwert der Nacht [°C]; null = wie <see cref="Kuehl_Sollwert"/>. Gelesen erst ab KU3.</summary>
         public double? Kuehl_Sollwert_Nacht;
 
+        // =====================================================================
+        //  Die dreizehn Spalten der Wärmeübergabe aus AK-S1 (Schemaschritt 122,
+        //  Anlagenkopplung 8.1) — NULL-ERHALTEND wie die Blöcke darüber. Gelesen aus der
+        //  Sicht; der Rechenweg nimmt sie erst mit der zweiten Welle von AK1.
+        // =====================================================================
+
+        /// <summary>„Die Übergabe dieses Gebäudes wird gerechnet" (Schalter, NOT NULL DEFAULT 0).</summary>
+        public bool Heizkreis_Aktiv;
+        /// <summary>Übergabeart (<c>DbWerte.UEBERGABE_*</c>); null = ideal, Kopplung aus.</summary>
+        public string Uebergabe_Art;
+        /// <summary>Exponent der Übergabegleichung [–]; null = Vorgabe der Übergabeart.</summary>
+        public double? Uebergabe_Exponent;
+        /// <summary>Nennleistung der Übergabe [kW]; null = aus der gerechneten Auslegungsheizlast.</summary>
+        public double? Uebergabe_Leistung_Nenn;
+        /// <summary>Auslegungsvorlauf [°C]; null = Vorgabe der Übergabeart.</summary>
+        public double? Auslegung_Vorlauf;
+        /// <summary>Auslegungsrücklauf [°C]; null = Vorgabe der Übergabeart.</summary>
+        public double? Auslegung_Ruecklauf;
+        /// <summary>Raumtemperatur im Auslegungspunkt [°C]; null = <see cref="Raumsolltemperatur_Tag"/>.</summary>
+        public double? Auslegung_Raumtemperatur;
+        /// <summary>Auslegungs-Außentemperatur [°C]; null = kältestes Tagesmittel der Klimareihe (H10).</summary>
+        public double? Auslegung_Aussentemperatur;
+        /// <summary>Vorlauf aus der Heizkurve statt fest (Schalter, NOT NULL DEFAULT 0).</summary>
+        public bool Heizkurve_Aktiv;
+        /// <summary>Niveau der Heizkurve [K]; null = 0.</summary>
+        public double? Heizkurve_Niveau;
+        /// <summary>Steilheit der Heizkurve [–]; null = 1,0.</summary>
+        public double? Heizkurve_Steilheit;
+        /// <summary>Proportionalband des Raumreglers [K]; null = 1,0 (H1, E25).</summary>
+        public double? Regler_Proportionalband;
+        /// <summary>Sollwert-Zeitprogramm, 168 Werte (<c>AnlagenkopplungSchema.WochenprofilLesen</c>); null = die vier Bestandssollwerte.</summary>
+        public string Sollwertprofil;
+
         public ProjektGebaeudeModel()
         {
             items = null;

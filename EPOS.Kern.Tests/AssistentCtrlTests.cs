@@ -593,14 +593,64 @@ namespace EPOS.Kern.Tests
         // =========================================================================
 
         /// <summary>
+        /// <b>Der Assistent schreibt die Gebäudeliste über den Katalogverweis neu</b>
+        /// (Konzept Administrationsdialoge 7.1 (a)): Ist der Katalogsatz eines
+        /// Projektgebäudes inzwischen umbenannt, gelingt das Speichern trotzdem — die
+        /// neue Kopie entsteht aus demselben Satz (Id), trägt dessen neuen Namen, und die
+        /// Zuordnungswerte der Zeile bleiben stehen. Vorher fand die Kopie den Satz nur
+        /// über den alten Namen und brach den ganzen Lauf ab.
+        /// </summary>
+        [Fact]
+        public void Nach_der_Umbenennung_im_Katalog_speichert_der_Assistent_die_Gebaeude_ueber_die_Id()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+
+                    const string NAME = "Laurentiuskirche";
+                    const int ID = 1007;
+                    const int STAMM = 142;
+                    const string NEUER_NAME = "EFH-A-TS-212 (umbenannt)";
+
+                    AssistentCtrl a = Bearbeitenlauf(NAME, ID);
+                    Z_ProjGebModel zeile = Assert.Single(a.Gebaeude);
+                    Assert.Equal(STAMM, zeile.ID_Gebaeude_Stamm);
+                    Assert.Equal(STAMM, zeile.ID_Gebaeude);
+                    double flaeche = zeile.Wohnflaeche;
+                    double nutzungsgrad = zeile.Jahresnutzungsgrad;
+
+                    Assert.True(DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Gebaeude_STAMM SET Bezeichner = ? WHERE ID = ?",
+                        new DbParam("@b", NEUER_NAME), new DbParam("@id", STAMM)));
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+
+                    List<Z_ProjGebModel> nachher = Z_ProjGebCtrl.LiesProjekt(ID);
+                    Z_ProjGebModel neu = Assert.Single(nachher);
+                    Assert.Equal(NEUER_NAME, neu.Gebaeudename);
+                    Assert.Equal(STAMM, neu.ID_Gebaeude_Stamm);
+                    Assert.Equal(flaeche, neu.Wohnflaeche);
+                    Assert.Equal(nutzungsgrad, neu.Jahresnutzungsgrad);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        /// <summary>
         /// NACHWEIS zur Rücknahme: Bricht der Speicherlauf in der MITTE ab, steht
         /// danach nichts von diesem Lauf in der Datenbank.
         ///
         /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Der Bearbeiten-Zweig
         /// schreibt vierzehn Schritte. Der fünfte — <c>Add_Projekt_ZuordungGebäude</c>
-        /// — meldet <c>false</c>, sobald der Gebäudename nicht im Katalog
-        /// <c>Tab_Gebaeude_STAMM</c> steht (<c>GebaeudeStammCtrl.CopyFromStamm</c>
-        /// liefert dann 0). Zu diesem Zeitpunkt sind die vier Schritte davor
+        /// — meldet <c>false</c>, sobald eine Zeile ohne Katalogverweis einen
+        /// Gebäudenamen trägt, der nicht im Katalog <c>Tab_Gebaeude_STAMM</c> steht
+        /// (<c>GebaeudeStammCtrl.CopyFromStamm</c> liefert dann 0). Zu diesem Zeitpunkt sind die vier Schritte davor
         /// GELAUFEN: die elf Anlagenzeilen des Projekts sind gelöscht und neu
         /// angelegt, die Energieträgersätze geschrieben, die Gebäudezuordnung
         /// gelöscht — und in der fehlgeschlagenen Methode selbst steht die neue
@@ -638,10 +688,12 @@ namespace EPOS.Kern.Tests
                     string abbildVorher = Projektabbild(ID);
                     ProjektKopfDaten kopfVorher = ProjektCtrl.Kopf(NAME);
 
-                    // DER FEHLSCHLAG: ein Gebaeudename, den der Katalog nicht kennt.
+                    // DER FEHLSCHLAG: ein Gebaeudename, den der Katalog nicht kennt, und
+                    // kein Katalogverweis - sonst faende die Kopie ihren Satz ueber die Id.
                     Assert.NotEmpty(a.Gebaeude);
                     a.Gebaeude[a.Gebaeude.Count - 1].Gebaeudename =
                         "Kein Gebaeude dieses Namens (W16a-O-1)";
+                    a.Gebaeude[a.Gebaeude.Count - 1].ID_Gebaeude_Stamm = null;
 
                     AssistentErgebnis e = a.Speichern();
 

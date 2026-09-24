@@ -1,4 +1,4 @@
-﻿# Konzept: Energieeinheiten in EPOS-Plan — Inventar, Bewertung kWh gegen MWh, Stufenplan
+# Konzept: Energieeinheiten in EPOS-Plan — Inventar, Bewertung kWh gegen MWh, Stufenplan
 
 **Rev. 2 — 07.09.2026 — entschieden und Stufe S1 umgesetzt.** Der Anwender hat Q1 mit
 **„Regel festschreiben"** und Q2…Q8 mit **„Empfehlung"** beantwortet (Kennung **W8‑O‑5c**,

@@ -320,11 +320,12 @@ namespace WindowsFormsApplication1
         public double? KaeltestromNetzbezugMWh;
 
         /// <summary>
-        /// Die Arbeitskosten des Kältestroms [€/a]: sein Netzbezug × Arbeitspreis des Trägers, der
-        /// ihn bepreist — des abweichenden Kühlträgers (E34), sonst des Projekts. Grund- und
-        /// Leistungspreis werden keiner Anlage zugerechnet (sie bleiben beim Stromträger des
-        /// Projekts). Ein AUSWEIS: In <see cref="Energiekosten"/> steht der Betrag genau einmal.
-        /// <c>null</c> = kein Kältestrom oder ein Träger ohne Arbeitspreis.
+        /// Die Kosten des Kältestroms [€/a]: sein Netzbezug × Arbeitspreis des Trägers, der ihn
+        /// bepreist — des abweichenden Kühlträgers (E34), sonst des Projekts —, bei einem eigenen
+        /// Zähler dazu Grund- und Leistungspreis des Kühlträgers (E35). Anteilig am Netzbezug und
+        /// ohne Kühlträger werden Grund- und Leistungspreis keiner Anlage zugerechnet (sie bleiben
+        /// beim Stromträger des Projekts). Ein AUSWEIS: In <see cref="Energiekosten"/> steht der
+        /// Betrag genau einmal. <c>null</c> = kein Kältestrom oder ein Träger ohne Arbeitspreis.
         /// </summary>
         public double? KaeltestromKosten;
 
@@ -336,7 +337,8 @@ namespace WindowsFormsApplication1
         public double? KaeltestromCO2t;
 
         /// <summary>
-        /// Die Arbeitskosten der ABWEICHENDEN Kühlträger [€/a] (E34) — der Teil von
+        /// Die Kosten der ABWEICHENDEN Kühlträger [€/a] (E34) — ihr Arbeitspreis und, bei eigenem
+        /// Zähler, Grund- und Leistungspreis je Zähler (E35) — der Teil von
         /// <see cref="Energiekosten"/>, der NICHT in <see cref="StromkostenNetz"/> steht. Ein
         /// Rollentarif, der <see cref="StromkostenNetz"/> ersetzt, lässt ihn deshalb stehen. 0 ohne
         /// abweichenden Kühlträger.
@@ -571,6 +573,20 @@ namespace WindowsFormsApplication1
         /// Skalar mit — nicht als vierzehnte Reihe zu 35 040 Werten.</para>
         /// </summary>
         public Netzbezugsspitze Bezugsspitze;
+
+        /// <summary>
+        /// <b>Die eigene Spitze des Kältestroms je Anlage mit eigenem Zähler</b> [kW] (Entscheid E35,
+        /// Konzept Gebäudesimulation N1.40) — Schlüssel ist der Modulplatz der Wärmepumpe
+        /// (<c>Kaelteerzeuger.Modulindex</c> = Index der Modulzeile im Ergebnis). Leer ohne eigenen
+        /// Zähler.
+        ///
+        /// <para>Der Kältestrom geht als Stundenwert in jede Viertelstunde derselben Stunde
+        /// (<c>SimulationControl.Stundenwerte_zu_viertelstunden</c>); seine Viertelstundenspitze ist
+        /// deshalb genau die Stundenspitze — gebildet aus der Stundenreihe der Anlage, nach derselben
+        /// Monatseinteilung wie <see cref="Bezugsspitze"/>. Sie reist wie diese als Skalar mit,
+        /// nicht als Reihe.</para>
+        /// </summary>
+        public Dictionary<int, Netzbezugsspitze> Kaeltestromspitzen = new Dictionary<int, Netzbezugsspitze>();
 
         /// <summary>
         /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die

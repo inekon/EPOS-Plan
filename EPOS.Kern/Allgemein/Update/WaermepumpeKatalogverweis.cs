@@ -129,6 +129,24 @@ namespace WindowsFormsApplication1
                    "WHERE s2.\"Bezeichner\" = \"" + TABELLE + "\".\"Bezeichner\") = 1";
         }
 
+        /// <summary>
+        /// Derselbe Nachtrag fuer die Waermepumpen EINES Projekts (Parameter:
+        /// <c>ID_Projekt</c>) - der Weg des Projekttransfers: Der Katalogverweis reist nicht
+        /// ueber Paketgrenzen (die Id eines fremden Katalogs zeigt am Ziel auf nichts oder
+        /// auf ein anderes Geraet); das importierte Projekt findet seinen Katalogsatz am Ziel
+        /// nach derselben Regel wie der Schritt - genau ein Satz dieses Bezeichners, sonst
+        /// bleibt der Verweis NULL.
+        /// </summary>
+        public static string SqlNachtragProjekt()
+        {
+            return "UPDATE \"" + TABELLE + "\" " +
+                   "SET \"" + SPALTE + "\" = (SELECT s.\"ID\" FROM \"" + TABELLE_STAMM + "\" s " +
+                   "WHERE s.\"Bezeichner\" = \"" + TABELLE + "\".\"Bezeichner\") " +
+                   "WHERE \"ID_Projekt\" = ? AND \"" + SPALTE + "\" IS NULL " +
+                   "AND (SELECT COUNT(*) FROM \"" + TABELLE_STAMM + "\" s2 " +
+                   "WHERE s2.\"Bezeichner\" = \"" + TABELLE + "\".\"Bezeichner\") = 1";
+        }
+
         // =================================================================
         //  Die Auskunft
         // =================================================================
