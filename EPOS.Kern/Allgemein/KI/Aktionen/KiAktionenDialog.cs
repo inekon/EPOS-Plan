@@ -1123,10 +1123,21 @@ namespace WindowsFormsApplication1
         /// Kennt die gemeinte Maske den Namen gar nicht, bleibt nur der Schluessel selbst.
         /// </para>
         /// <para>
-        /// <b>Die Nachsicht an der Zielmaske gilt nur ihren SCHLUESSELN</b>
-        /// (<see cref="KiWahl"/> ueber Paare aus Schluessel und Schluessel): Das Feld
-        /// <c>katalog_breite</c> des Aufklappers „Alle Daten" steht im Modulkatalog als
-        /// <c>breite</c>. Ihre Beschriftungen nimmt sie nicht in die Suche.
+        /// <b>An der Zielmaske gibt es KEINE Nachsicht</b> (Welle #469): Sie fuehrt den
+        /// Schluessel buchstabengetreu oder als erklaertes Gegenstueck - sonst nicht. Die
+        /// Frage ist die IDENTITAET zweier Werte, und die folgt nicht aus einem aehnlichen
+        /// Namen. Eine Anfangs- oder Teilstringsuche ueber die Schluessel der Zielmaske
+        /// (<see cref="KiWahl"/>, Stufen 4 und 5) traf <c>wr_wirkungsgrad</c> des
+        /// Wechselrichters auf den <c>wirkungsgrad</c> des Moduls im Modulkatalog,
+        /// <c>ladeleistung</c> des Puffers auf die <c>speicher_ladeleistung</c> der
+        /// Batterie in der Ansicht „Simulation" und <c>ersatz_fuehren</c> der
+        /// Vorlagenposition auf den <c>satz</c> der Kostenverwaltung - jedesmal hiess die
+        /// Absage den Anwender eine Maske oeffnen, die das gemeinte Feld nicht hat. Der
+        /// einzige Fall, den sie treffen sollte (<c>katalog_breite</c> des Aufklappers
+        /// „Alle Daten" steht im Modulkatalog als <c>breite</c>), ist jetzt die erklaerte
+        /// Vorsilbe in <see cref="KiDialoge.Zielfeldname"/>. Die Nachsicht fuer den
+        /// Wortlaut des MODELLS bleibt, wo sie hingehoert: beim Aufloesen an der gemeinten
+        /// Maske (oben) und an der offenen Maske (<see cref="KiMaskenbruecke.Feldsuche"/>).
         /// </para>
         /// </remarks>
         private static bool ZielFuehrtFeld(KiDialog gemeint, KiDialog ziel, string feld)
@@ -1136,12 +1147,7 @@ namespace WindowsFormsApplication1
                 ? feld
                 : KiDialoge.Zielfeldname(gemeint.Maskenname, eigenes.Name);
 
-            if (ziel.KenntFeld(schluessel)) return true;
-
-            var schluesselpaare = new List<KiWahleintrag>(ziel.Felder.Count);
-            foreach (KiDialogFeld f in ziel.Felder) schluesselpaare.Add(new KiWahleintrag(f.Name));
-
-            return KiWahl.Treffer(schluesselpaare, schluessel).Eindeutig;
+            return ziel.KenntFeld(schluessel);
         }
 
         /// <summary>
