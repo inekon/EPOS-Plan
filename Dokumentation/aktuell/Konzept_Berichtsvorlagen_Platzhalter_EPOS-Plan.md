@@ -1,0 +1,1097 @@
+# Konzept Berichtsvorlagen mit Platzhaltern — Word- und Excel-Bericht aus einer Vorlage (EPOS-Plan)
+
+Stand 25.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 1 — Entwurf zur Entscheidung; Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
+
+**Geltungsbereich.** Das Papier legt fest, wie EPOS-Plan den Word- und den Excel-Bericht künftig
+aus einer Vorlage füllt, die der Anwender in Word bzw. Excel selbst pflegt, und wie er in der App
+erkennt, welcher Platzhalter zu einem Feld, einer Tabelle oder einem Diagramm gehört. Anlass ist
+der Anwenderauftrag vom 24.09.2026:
+
+> Berichterstellung in Word/Excel nicht mehr komplett generieren, sondern Vorlage mit definierten
+> Platzhaltern für Texte, Tabellen, Grafiken; Platzhalter in der App elegant erkennen.
+
+Dazu der Nachtrag desselben Tages, mit einem Bildschirmfoto der heutigen Berichtsseite:
+
+> Die Anforderungen für die Berichterstellung werden beibehalten: Simulation aller
+> Berichtsrelevanter Varianten zuvor ausgeführt. Start in Bereich Berichte&Kosten
+
+Nicht Gegenstand sind Rechenweg, Simulation, Wirtschaftlichkeitsrechnung, Datenbankschema und
+Referenzbasis; keine Etappe friert eine Basis neu ein.
+**Mockup:** `Dokumentation/aktuell/Mockups/Berichtsvorlagen_Platzhaltermarke.html` (Abschnitt 9.8).
+
+
+## 1 Die Frage und das Ziel
+
+Heute erzeugt EPOS-Plan den Word-Bericht vollständig im Code: Es kopiert eine Vorlage, leert ihren
+Rumpf und schreibt neun Bausteine in fester Folge hinein; die Excel-Mappe entsteht leer. Deckblatt,
+Gliederung, Tabellenbild, Kopf- und Fußzeile kann der Anwender nicht gestalten. Die Frage: Wie wird
+daraus ein Bericht, dessen Form dem Anwender gehört und dessen Inhalte EPOS-Plan liefert?
+
+1. Der Anwender pflegt eine gewöhnliche `.docx`- oder `.xlsx`-Datei; Text, Gliederung, Logo, Kopf- und
+   Fußzeile, Tabellen- und Seitenbild gehören ihm.
+2. EPOS-Plan kennt definierte Platzhalter für Texte, Zahlen, Datumsangaben, Tabellen, Diagramme, Listen
+   und ganze Kapitel und füllt sie.
+3. In der App erkennt der Anwender ohne Störung, welcher Platzhalter zu einem Element gehört — wo es in
+   der App ein Gegenstück gibt (Abschnitt 9).
+4. **Die bestehenden Anforderungen bleiben:** Einstieg ist „Berichte & Kosten › Bericht“, und vor jeder
+   Ausgabe werden alle gewählten Varianten simuliert und wirtschaftlich bewertet
+   (`BerichtsDatenSammler.SammleFuerBericht`; Nutzeranforderung 15.08.2026,
+   `EPOS.UI/Seiten/Berichte/BerichtSeite.razor:8-11`) — ohne Option.
+5. Ohne eigene Vorlage entsteht der heutige Bericht, strukturgleich und belegt durch eine Messlatte.
+
+**Leitsatz:** Jede Etappe ist für sich nutzbar und lässt den Standardweg unverändert.
+
+
+## 2 Ausgangslage am Code
+
+Abkürzungen: WBG = `EPOS.Kern/Allgemein/Bericht/WordBerichtGenerator.cs`, EBG = `…/ExcelBerichtGenerator.cs`,
+BS/BP/BV/BW = `…/Bericht/Bausteine/BausteineStandard|Projekt|Vergleich|Wirtschaftlichkeit.cs`,
+AE = `…/AnhangECheckliste.cs`, BD = `…/BerichtsDaten.cs`, BDS = `…/BerichtsDatenSammler.cs`,
+KK = `…/KennzahlenKatalog.cs`, BT = `…/BerichtTexte.cs`, CR = `…/ChartRenderer.cs`,
+WZ = `EPOS.Kern/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitZeilen.cs`,
+BSG = `EPOS.UI.Daten/Bericht/BerichtSeiteGaben.cs`, WS = `EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`.
+
+### 2.1 Word-Pipeline
+
+| Schritt | Heute | Fundstelle |
+|---|---|---|
+| Lauf | Zeitreihen nach Häkchen; `SammleFuerBericht` unter Kulturweitergabe, rechnet immer frisch; erst Word, dann Excel | BSG:207-245; BDS:172-191, 446 ff. |
+| Datei | `<Stamm>_Bericht_<yyyy-MM-dd>.docx` im Zielordner oder `Dienste.Pfade.Dokumente`, Ausweichen `_2 … _20` | `EPOS.Kern/Controller/BerichtCtrl.cs:29-54` |
+| Vorlage | `FindeVorlage` nur relativ zu `AppDomain.BaseDirectory`; ohne Datei Ersatzstile ohne Gliederungsebene | WBG:116-127, 74, 139-167 |
+| Rumpf | alle Kinder außer der letzten `sectPr` entfernt; `Fuege` setzt vor diese `sectPr` | WBG:78-80, 192-196 |
+| Bausteine | neun in fester Folge, acht Häkchen; Anhang E am Schlüssel `B_WIRTSCHAFT` | WBG:96-111; AE:413 |
+| Stile | feste IDs `Title`, `Subtitle`, `Heading1–3`, `Normal`, `Hinweis`, `Beschriftung`; `Title`, `Heading1–3` in der Vorlage doppelt (gemessen) | WBG:212, 220-232 |
+| Tabellen | im Code, direkt formatiert (Kopf, Stammspalte, Rahmen, 9/7 pt), Blöcke zu drei Varianten, feste Breite `INHALT_B = 9355` (18 Fundstellen) | WBG:28-41, 186, 364-429, 453-461 |
+| Bilder | SVG mit PNG-Rückfall über `svgBlip`, Größe fest in Pixeln (meist 620 px), `docPr/@id` ab 1 | WBG:48, 260, 306-360 |
+| Felder | `updateFields` immer; TOC-Feld | WBG:85, 129-136, 247-256 |
+| Kopf/Fuß | allein aus der Vorlage: „INEKON GmbH · Seite {PAGE} / {NUMPAGES}“ und Feld `DATE \@ "dd.MM.yyyy"` | `word/footer1.xml`, gemessen |
+| Sprache | `BerichtTexte.Englisch` global an `Sprache.Nummer`; `T()` mit rund 141 Festtexten; Datumsmuster fest deutsch | BT:18-36; BS:33, BP:30-33, BW:89 |
+| Datenzugriff | Wirtschaftlichkeitsbaustein lädt Parameter, Tarif, Strommatrix, Referenzkessel, Erzeuger und rechnet Verlauf und Emissionsbilanz; Anhang E lädt selbst | BW:29, 57, 72, 192, 204, 267, 992, 1319; AE:309-331 |
+
+### 2.2 Excel und Diagramme
+
+Die Mappe entsteht mit `new XLWorkbook()` (EBG:167; EBG:126 ist die Schriftprobe `MessprobeLaeuft`), ohne
+Vorlage, Bilder, Diagramme und Excel-Tabellen. Übersicht und Vergleich immer; Wirtschaftlichkeit und
+Checkliste nur mit `B_WIRTSCHAFT`, Verlauf nur mit Verlauf, je Stand ein Detailblatt nur mit `B_ERGEBNISSE`
+(EBG:170-196). Die **Formelmappe** (`ExcelFormelmappe.cs`) baut das Wirtschaftlichkeitsblatt von Werten auf
+Formeln um, rechnet jede Formel gegen und trägt die Ergebnisse per SDK nach (`Nachtragen`, :1299-1336);
+`FullCalculationOnLoad` nur bei eigenen Formeln (EBG:201); Namen `Zins_i`, `Zeitraum_T`, `p_E`, `p_B`, `p_I`
+mit Szenarioanhang (:36-48, 293-312), sonst harte A1-Bezüge. Mängel: Datum und Brennstoffmenge als Text
+(EBG:235, :1764), Δ%-Format `±0,0` (EBG:349), Freeze der Titelzeile im Detailblatt (EBG:1774).
+
+`ChartRenderer` hat 32 Zeichenmethoden auf dem `Zeichenmodell`; der Bericht nutzt 13 Bilder an festen
+Aufrufstellen (BV:73-99, 162-224; BP:371-377; BW:290-418, 1223-1226). Farben aus `Farbpalette.Aktuell`
+(Farbrollen), Schrift fest (`SvgSchreiber.cs:175`). In der App haben mehrere Bilder ein anderes Gegenstück
+(Kuchen gegen `Ring`, Speicherverlauf gegen `Speicherbetrieb`).
+
+### 2.3 Oberfläche, Ablage, Tests
+
+| Thema | Befund | Fundstelle |
+|---|---|---|
+| Berichtsseite | links Variantenliste (Stamm fest; Art, Bezeichner, Projektname, Stromspeicher, Simulation), Alle/Keine, Ausgabe, Zielordner, Erstellen; rechts acht Häkchen; Hinweis „Jeder Bericht rechnet neu …“; rund dreißig Texte als Einzelparameter; KI-Sicht `BausteineLesen` | `BerichtSeite.razor:65-97, 178-222, 184, 317` |
+| Zuordnung App ↔ Bericht | gibt es nicht; `DiagrammSvg.Kennung` ist ein Namensvorsatz der clipPath-Kennungen, kein Fachschlüssel | `DiagrammSvg.razor:196-201` |
+| Wurzeln | Windows: jeder Dialog und jede Seite eine eigene `BlazorWebView` mit `Wurzel<T>` (rund 110 Stellen), ein gemeinsames Dienstverzeichnis; iOS: alles in `AppWurzel` | `BlazorDialogForm.cs:154`, `BlazorSeite.cs:145`, `BlazorDienste.cs:38` |
+| Zwischenablage | schreibt die Hülle, nie EPOS.UI; keiner der neun Kern-Dienste kennt sie | `KiChatDialog.razor:948-957`, `Gespraechsverlauf.razor:128-135` |
+| Vorlagendatei | `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx`, **zwei** Lieferwege (Ausgabeordner → Publish-Baum → Setup; MauiAsset); `Setup/EPOS-Plan.iss:296` ist nur ein Kommentar; `EPOS.Kern/CLAUDE.md:34` führt sie unter „Was mit Absicht NICHT hier liegt“ | `WindowsFormsApplication1.csproj:253-256`, `EPOS.iOS/EPOS.iOS.csproj:122-123` |
+| Konfiguration | JSON in `Berichtskonfiguration` (Grundschema, Fremdschlüssel mit `CASCADE` seit Schritt 96); daneben Ad-hoc-DDL ohne Fremdschlüssel | `sql/schema/001_grundschema.sql:14-19`, `ProjektFremdschluessel.cs:111, :205`, `BerichtCtrl.cs:154-170` |
+| Pfade, Einstellungen | `IPfade.Dokumente` = „Eigene Dokumente“ bzw. Sandbox-`Documents`; `IEinstellungen` unter Windows in HKCU | `IPfade.cs:61-62`, `RegistryEinstellungen.cs:43` |
+| iOS-Dateien | `OrdnerWaehlen` immer `""`; `MitSystemOeffnen` = Teilen-Blatt; Dateifilter nur `.docx`/`.xlsx` | `IosDateiDienst.cs:87, 95-116`, `EPOS.iOS/Dienste/Dateifilter.cs:33-36` |
+| Tests | kein Test mit Vorlage; Wachen `BerichtBlattstrukturWacheTests` (:191, :217, :1069, :1115, :1149), `WordBerichtSvgWacheTests` (Validator Office 2007–2021 :176, :323-340), `FormelmappeClosedXmlBefundTests` (:45, :72) | `EPOS.Kern.Tests/` |
+| iOS-Bericht | nie gelaufen, iU11 offen | [Status_iOS_Migration.md](Status_iOS_Migration.md) Z. 42; [Umsetzung_iU10_Nachweise.md](Umsetzung_iU10_Nachweise.md) Z. 761-762 |
+
+### 2.4 Befunde, die jede Vorlagenlösung zuerst trifft
+
+Die Wirkungstafel wird mit `k.Body.Append(t)` statt `k.Fuege(t)` eingefügt (BW:678) und landete mit Vorlage
+hinter der `sectPr`. Feste Stil-IDs, DATE-Feld, `docPr/@id` ab 1, feste Breite und Datenbankzugriffe der
+Bausteine (2.1) treffen jede fremde Vorlage; die Abschnitte 5, 6 und 11 lösen sie.
+
+
+## 3 Zielbild
+
+Word- und Excel-Bericht sind gewöhnliche Office-Dateien, die der Anwender pflegt. Wo Projektdaten,
+Kennzahlen, Tabellen, Diagramme oder Kapitel stehen sollen, schreibt er Platzhalter wie `{{projekt.kunde}}`.
+Einstieg bleibt „Berichte & Kosten › Bericht“, wo er auch die Vorlage wählt. Wie heute werden vor jeder
+Ausgabe alle gewählten Varianten simuliert und bewertet; die Vorlage wird davor geprüft und danach gefüllt,
+und EPOS-Plan nennt jeden Platzhalter, der unbekannt oder leer blieb. Ein **Platzhalterkatalog im Kern** ist
+die einzige fachliche Quelle für Engine, Prüfer, Baukasten, Wachen und die Beschreibungen in der App. Ohne
+eigene Vorlage entsteht der heutige Bericht aus einer eingebetteten Standardvorlage.
+
+Wer eine Vorlage pflegt, schaltet in der App die **Platzhalteranzeige** ein: Jedes Element, das im Bericht
+ein Gegenstück hat, trägt dann eine kleine Marke am Rand; beim Überfahren nennt sie den Schlüssel, ein Klick
+oder Tipp kopiert ihn. Ausgeschaltet trägt kein Feld eine Marke; sichtbar bleibt nur ein ruhiger Umschalter
+`{ }` in der Kopfzeile der Ansicht. Die Vorlage trägt Inhalt, Gliederung und Reihenfolge, Tabellenbild und
+Bildrahmen; EPOS liefert Struktur und Werte; die Excel-Formelmappe bleibt ein erzeugtes Blatt.
+
+
+## 4 Platzhaltermodell
+
+### 4.1 Begriffe und Code-Namen
+
+| Anwenderbegriff | Code | Bemerkung |
+|---|---|---|
+| Platzhalter, z. B. `{{projekt.kunde}}` | Katalogeintrag `Vorlagenfeld` | getippt oder als Inhaltssteuerelement |
+| Blockanfang und -ende, `{{#je stand}}` … `{{/je}}` | `Vorlagenblock` | Wiederhol- oder Bedingungsbereich |
+| Platzhalterkatalog | `Vorlagenfeldkatalog` | Kern, Daten wie `Menuetabelle.cs` |
+| Platzhaltermarke (App) | Baustein `Vorlagenfeldknopf`, Parameter `Vorlagenfeld` | Symbol am Rand eines Elements |
+| Platzhalteranzeige (App) | Zustandsdienst `Vorlagenfeldansicht` | Stellungen Aus, Marken, Schlüssel (Vorlagenmodus) |
+| Beschreibungen | Ressourcen `VF_*` | de und en |
+
+„Platzhalter“ (`Textfeld.razor:68`, `DiagrammSvg.razor:244`, `ProjektWahlPlatzhalterWacheTests`) und „Marke“
+(`DiagrammSvg.razor:160, :625, :904`, `--epos-marke`) sind im Code belegt; „Platzhaltermarke“ steht nur in Texten.
+
+### 4.2 Syntax in Word
+
+| Form | Schreibweise | Regel |
+|---|---|---|
+| Einzelplatzhalter (Text, Zahl, Datum) | `{{schlüssel}}`, `{{schlüssel\|angabe}}` | an jeder zulässigen Stelle (4.3); zerlegte Runs nur im Speicher zusammengefügt; Format des Runs mit `{{` bleibt |
+| Absatzplatzhalter (Tabelle, Liste, Kapitel) | `{{schlüssel}}` allein im Absatz | der Absatz wird durch den Inhalt ersetzt |
+| Bildplatzhalter | beliebiges Bild, Schlüssel im Alternativtext (`wp:docPr/@descr`) | als Text allein im Absatz: Bild in Satzspiegelbreite; im Satz: Fehler (4.10) |
+| Inhaltssteuerelement | SDT mit `w:tag` = Schlüssel | gleichrangig; für Blöcke und Bilder robuster; Füllregeln 6.6 |
+| Wiederholblock | `{{#je stand}}`, `{{#je variante}}`, `{{#je gebaeude}}` … `{{/je}}` | eigene Absätze oder erste/letzte Zelle einer Musterzeile; höchstens zwei Ebenen; nie über Tabellengrenzen |
+| Bedingung | `{{#wenn schalter}}`, `{{#wenn nicht schalter}}` … `{{/wenn}}` | immer ein Katalogschalter; keine Ausdruckssprache |
+
+**Erkennen:** Groß- und Kleinschreibung, Leerzeichen in den Klammern und Umlaute spielen keine Rolle; Umlaute
+werden dokumentiert gefaltet (ä → ae, ö → oe, ü → ue, ß → ss), gleich für Schlüssel, Block- und Formatwörter.
+Abweichungen bekommen einen Prüferhinweis mit der Normalform. Wie Word nach `{{` ersetzt, misst BV-E0.
+
+### 4.3 Erlaubte Orte in Word
+
+Der Einfügeanker ist ein Tripel aus Elternelement, Bezugselement und OpenXML-Teil: eingefügt mit
+`anker.Parent.InsertBefore`, Bildteile am Teil des Ankers statt pauschal am Hauptteil (heute WBG:311-320).
+
+| Art | Rumpf | Tabellenzelle | Block-SDT | Kopf-/Fußzeile | Fuß-/Endnote | Textfeld |
+|---|---|---|---|---|---|---|
+| Text, Zahl, Datum (auch SDT im Satz) | ja | ja | ja | ja | ja | ja |
+| Bild | ja | ja | ja | ja | nein | ja |
+| Tabelle, Liste | ja | ja | ja | nein | nein | nein |
+| Kapitel | ja | nein | ja | nein | nein | nein |
+| Blockanfang und -ende | ja | Musterzeile | ja | nein | nein | nein |
+| Schalter | nur in `{{#wenn …}}` | | | | | |
+
+Ein Verstoß ist der Prüferfehler „Platzhalter passt nicht an diese Stelle“ mit Vorschlag. Kommentare werden
+weder ersetzt noch geprüft (6.7).
+
+### 4.4 Syntax in Excel
+
+| Form | Schreibweise | Regel |
+|---|---|---|
+| Zellplatzhalter | `{{schlüssel}}` allein in der Zelle | typisierter Wert; im Satz wird Text ersetzt |
+| Name | `EPOS.<schlüssel>`, mappenweit | Präfix, weil `CO2` oder `P1` sonst Zellbezüge wären; ohne Punkte (Messprobe BV-E0) `EPOS_<schlüssel>` mit `__` für den Punkt (5.5) |
+| Bereichsplatzhalter | `{{tabelle.…}}` allein in einer Zelle; listentauglich auch Excel-Tabelle `EPOS_<name>` | 7.3 |
+| Blattmarke | `{{blatt.<name>}}` in A1 eines leeren Blattes | 7.2 |
+
+Excel kennt **keine Blocksyntax**; Stände erscheinen nur auf dem geklonten Musterblatt `blatt.detail` und als
+Listenzeilen (4.7).
+
+### 4.5 Schlüsselschema
+
+- ASCII, klein, punktgegliedert, deutsche Wörter ohne Umlaut, Unterstrich nur einzeln im Glied; Muster der
+  Wache `^[a-z][a-z0-9]*(_[a-z0-9]+)*(\.[a-z0-9]+(_[a-z0-9]+)*)*$`. Die 44 Kennzahlschlüssel (KK:329-507)
+  genügen ihm unverändert.
+- Zeilenschlüssel der Wirtschaftlichkeit klein (`kapitalwert_diff`), die Großschreibung (WZ:32) bleibt Alias;
+  ohne Anhang gilt „Erwartet“, `.guenstig`/`.unguenstig` wählen die anderen Szenarien.
+- Keine Positionsadressierung von Ständen (BV-Q10); `stand.anzeige` liefert beim Stamm den Stammprojektnamen
+  statt „Stamm — Stamm“ (BD:403-406).
+- Zur Laufzeit gebildete Zeilen (WZ:1237, 1262, 844) sind **Musterschlüssel mit Parameter**
+  (`stand.wirtschaft.erl_<block>_k_<komponente>`); die Werte zählt der Katalog aus `KOMPONENTE_*` und
+  `BLOCK_A/B` (WZ:143-153) auf.
+
+| Bereich | Inhalt | Kontext |
+|---|---|---|
+| `bericht.` | Titel, Datum, Programmfassung, Variantenliste, -anzahl, Emissionsmodus, Warnungen; Sammelanker `bericht.inhalt` | Bericht |
+| `text.` | sprachabhängige Festtexte der Standardvorlage (`text.seite` …) aus MyResource | Bericht |
+| `ersteller.` | Firma der Installation | Installation |
+| `projekt.`, `stamm.` | Stammdaten bzw. Ergebnisse des Stammprojekts | Stamm |
+| `stand.` | laufender Stand in `je stand`/`je variante`; `stand.a`/`stand.b` im Paarvergleich | Stand |
+| `gebaeude.` | nur in `je gebaeude` | Gebäude |
+| `vergleich.`, `wirtschaft.` | über alle gewählten Stände, auch `wirtschaft.beste.*` | Gruppe |
+| `kennzahl.<k>.beschriftung`, `.einheit` | Beschriftung und Einheit einer Kennzahl | Bericht |
+| `tabelle.`, `bild.` | Tabellen, Diagramme; je Stand unter `stand.tabelle.`, `stand.bild.` | wie Bereich |
+| `kapitel.`, `baustein.`, `hat.` | Kapitel; Häkchen der Berichtsseite; Datenschalter | Bericht bzw. Stand |
+| `muster.`, `blatt.` | Mustertabelle der Tabellenrollen (6.4); erzeugte Excel-Blätter | – |
+
+### 4.6 Platzhalterklassen
+
+| Kennung | Art | Wirkung beim Füllen |
+|---|---|---|
+| BV-P1 | Text | Absatz- und Zeichenformat bleiben; Zeilenumbrüche werden in Word zu `w:br` |
+| BV-P2 | Zahl | Format und Einheit aus dem Katalog; in Excel eine echte Zahl |
+| BV-P3 | Datum | nach Kultur; in Excel ein echtes Datum |
+| BV-P4 | Tabelle | Strukturtabelle aus `Berichtstabelle` (5.4) |
+| BV-P5 | Bild | Diagramm aus dem Zeichenmodell, SVG mit PNG-Rückfall |
+| BV-P6 | Liste | Aufzählung, etwa Warnungen |
+| BV-P7 | Kapitel | ein heutiger Baustein, vollständig erzeugt |
+| BV-P8 | Schalter | ja/nein, nur als Bedingung in `{{#wenn}}` |
+| BV-P9 | Blatt | erzeugtes Excel-Blatt an der Stelle der Blattmarke |
+
+### 4.7 Kontexte
+
+| Kontext | gültig in Word | gültig in Excel |
+|---|---|---|
+| Bericht, Installation, Stamm, Gruppe | überall | überall |
+| Stand (`stand.*`) | in `je stand`/`je variante`; außerhalb nur `stand.a`/`stand.b` | auf dem Musterblatt `blatt.detail`, als Listenzeile |
+| Gebäude (`gebaeude.*`) | in `je gebaeude` | als Listenzeile |
+
+`stand.a`/`stand.b` gelten in der Paarsicht (Sicht 2); in Sicht 1 ist `stand.b` zulässig, wenn genau eine
+Variante gewählt ist, sonst meldet die Vorprüfung „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“. Die
+Sicht bleibt eine Wahl der Ergebnisansicht (BSG:38-44, :214-226). `hat.*` gilt im Block `je stand` für den
+laufenden Stand, außerhalb für die Gruppe. Ein Verstoß ist ein Prüferfehler mit Vorschlag.
+
+### 4.8 Formatangaben
+
+Eine Schreibweise für alle Angaben: deutsche Wörter nach `|`, auch in Blockanfängen.
+
+| Angabe | Wirkung | gilt für |
+|---|---|---|
+| `\|stellen 1` | Dezimalstellen | Zahl |
+| `\|ohne einheit`, `\|mit einheit` | Einheit weglassen bzw. anhängen (Vorgabe: mit Einheit) | Zahl |
+| `\|datum`, `\|datum lang`, `\|datum mit zeit` | Datumsform nach Kultur | Datum |
+| `\|leer statt strich` | leerer Text statt „—“ | Zahl, Text, Datum |
+| `\|mit grund` | Leerwert mit Grund: „— (Lauf fehlgeschlagen)“ | Zahl |
+| `\|block 3` | Gruppen zu höchstens drei Varianten, Stammspalte je Gruppe | Tabelle, `{{#je variante}}` |
+| `\|ohne titel`, `\|ebene 2` | Kapitel ohne eigene Überschrift bzw. eine Ebene tiefer | Kapitel |
+
+Ohne Angabe gelten `Kennzahl.Format` bzw. `WirtZeile.Format` samt Einheit; eine unbekannte oder unpassende
+Angabe ist ein Prüferfehler mit Vorschlag.
+
+### 4.9 Sprache und Kultur
+
+- Die Kultur folgt der Oberflächensprache (`BerichtTexte.Englisch` global, BT:18-20); Einzelwerte folgen
+  ihr, die Kapitel behalten ihre Datumsmuster, bis eine Etappe sie anfasst. **Die Syntax ist in beiden
+  Sprachen deutsch**, die Beschreibungen in der App zweisprachig (BV-Q3).
+- **Die Standardvorlage ist sprachneutral:** Festtexte sind Platzhalter (`text.seite`, `bericht.untertitel`,
+  `wirtschaft.methodik`), übersetzt über `BerichtTexte.T` bzw. MyResource; der Standardweg warnt in keiner
+  Sprache. Der Kurzbericht kommt je Sprache. Trägt eine eigene Vorlage abweichend `EPOS.Sprache` in
+  `custom.xml`, fragt die Vorprüfung **vor** der Simulation zurück („Sprache der Vorlage setzen“).
+
+### 4.10 Fehlverhalten
+
+| Fall | Prüfer | Engine | Laufmeldung |
+|---|---|---|---|
+| unbekannter Schlüssel | Fehler mit Fundort und Vorschlag (Editierabstand, Aliasse) | Platzhalter bleibt, gelb hervorgehoben | genannt |
+| Art passt nicht zur Stelle, Kontextverstoß, unbekannte Formatangabe | Fehler mit Vorschlag | wie unbekannt bzw. Katalogformat | genannt |
+| kein Wert | – | Leerwert des Eintrags: Zahl und Datum „—“, nie 0 (WBG:467-469); Text „—“ oder leer; Excel leere Zelle | je Schlüssel zusammengefasst: „eff.jaz: leer bei 4 von 11 Ständen“ |
+| leere Tabelle, Bild ohne Modell | – | Leertext bzw. Hinweisabsatz mit Grund | Bild genannt |
+| Kapitel ohne Daten | – | entfällt wie heute, mit Kapitelkopf (5.3) | – |
+| Ausnahme bei einem Einzelwert | – | „—“; der Bericht bricht nicht ab | Warnung |
+
+Entfernt wird nie etwas still. Alle Texte, die die Engine in den Bericht schreibt (Leertexte, Hinweise, „nicht
+im Bericht“ in Anhang E), stehen zweisprachig in MyResource oder der `BerichtTexte.T`-Liste; die Katalogwache
+prüft sie.
+
+### 4.11 Gültigkeit und Warnungen
+
+Die Gültigkeitshinweise hängen heute am Kapitel: Rückfall auf den gespeicherten Stand (BW:39-54), „Ergebnis
+veraltet“ (BW:107-117), Fehlergründe (BW:217-225), Warnzeilen je Zelle (BW:908-917), Strich mit Grund statt 0
+(`ErgebnisansichtTests.cs:585`). Damit Vorlagen aus Einzelwerten sie behalten, gibt es die Listen
+`bericht.warnungen`, `wirtschaft.warnungen`, `stand.wirtschaft.warnungen`, Einzelgründe `….grund`, die Angabe
+`|mit grund`, die Schalter `stand.veraltet`, `stand.frisch`, `stand.hat_fehler`, `stand.hat_zeitreihen`,
+`stand.ist_stamm` und den Text `stand.fehler`. Nutzt eine Vorlage `stand.wirtschaft.*`, `stand.kennzahl.*` oder
+`wirtschaft.*` ohne Warnliste, warnt der Prüfer „Gültigkeitshinweise fehlen“. Die Laufmeldung nennt die
+Warnungen immer.
+
+
+## 5 Der Platzhalterkatalog im Kern
+
+### 5.1 Ort, Eintrag, Wertesatz
+
+`EPOS.Kern/Allgemein/Bericht/Vorlagen/Vorlagenfeldkatalog.cs`, Daten wie `Menuetabelle.cs`. Felder:
+`Schluessel`, `Art` (BV-P), `Kontext`, `Quelle` (Funktion auf dem Wertesatz `Berichtswerte`), `Format`,
+`Einheit`, `Leerwert`, `BeschreibungId` (nur handgepflegt), `Ableitung`, `BeispielId`, `Aliasse`, `Ausgaben`
+(Word, Excel), `Bedarf` (Zeitreihen, Verlauf, Emissionsbilanz), `Seit` (Katalogfassung), bei Kapiteln `Deckt`.
+`KATALOGFASSUNG` steigt mit jeder Etappe, die Einträge hinzufügt. Der Kern führt **keine Orte der Oberfläche**;
+er kann Razor-Seiten und `EPOS.UI/Seiten/Seitenschluessel.cs` nicht referenzieren (9.6).
+
+`Berichtswerte` entsteht nach `SammleFuerBericht`; beim Auflösen wird die Datenbank nicht berührt. Zugriffe und
+Nebenrechnungen des Wirtschaftlichkeitsbausteins und von Anhang E wandern in BV-E3 als
+`BerichtsDaten.Wirtschaft` in den Sammler, der dieselben Rechenwege ruft (`EPOS.Kern/CLAUDE.md:209-217`). Die
+Auswahl der „besten Variante“ (heute Hülle, `WirtschaftlichkeitSeiteGaben.cs:1433-1442`) wandert in den Kern,
+damit Kachel und `wirtschaft.beste.*` gleich rechnen. Bis BV-E3 führt der Katalog nur rein vorliegende Werte.
+
+### 5.2 Erzeugte Einträge
+
+- **Kennzahlen:** aus 44 Einträgen (KK:329-507) `stamm.kennzahl.<k>`, `stand.kennzahl.<k>`, `stand.delta.<k>`,
+  `stand.delta_prozent.<k>` (nur `DeltaAnzeigen`), `kennzahl.<k>.beschriftung`, `.einheit`. Die Beschriftungen
+  von `em.co2`, `em.co2_spez`, `kaelte.co2` nennen den Emissionsmodus des Laufs (KK:489-500, KK:324); die
+  Beschriftung hat deshalb Kontext Bericht (aufgelöst mit `EmissionsAusweis.ModusAusVarianten`), dazu
+  `bericht.emissionsmodus` und `hat.emissionsmodus_gwp`.
+- **Wirtschaftlichkeit:** aus `WirtschaftlichkeitZeilen` (WZ:32) je Szenario `stamm.wirtschaft.<zeile>`,
+  `stand.wirtschaft.<zeile>`, `wirtschaft.beste.<zeile>`; Parameter `wirtschaft.parameter.<name>` (`zins`,
+  `zeitraum`, `p_e`, `p_b`, `p_i`, `risiko_*`), Szenarien `wirtschaft.szenario.<s>.name`, `.annahmen`,
+  `.traegerpreise`, Tabelle `tabelle.wirtschaft.parameter`.
+- Eine neue Kennzahl ist ohne Pflege ein Platzhalter; ihre Beschreibung kommt aus einem Muster (5.5).
+
+### 5.3 Kapitel und Einfügeanker
+
+| Regel | Inhalt |
+|---|---|
+| Kapitel | jeder `IBerichtsBaustein` (`IBerichtsBaustein.cs:16`) wird `kapitel.<name>`; Anhang E wird `kapitel.anhang_e` mit dem Schalter „Wirtschaftlichkeit“ (AE:413); die Bausteine schreiben unverändert an den Einfügeanker (4.3), nach Behebung von BW:678 |
+| Inhaltsbreite | `WordKontext.Inhaltsbreite` aus der `sectPr` des Ankerabschnitts (Seite minus Ränder und Spalten) ersetzt `INHALT_B`; Kapitelbilder höchstens min(620 px, Satzspiegel) |
+| Sammelanker | `bericht.inhalt` setzt alle angehakten Kapitel in heutiger Folge ein (WBG:96-111), **ohne** die einzeln geführten |
+| Entfall | ein Kapitel mit abgewähltem Häkchen oder ohne Daten liefert nichts; ein unmittelbar davor stehender Absatz im Format „EPOS Kapitelkopf“ entfällt mit — keine verwaiste Überschrift, auch vor BV-E4 |
+| Kapitelformat | `\|ohne titel` unterdrückt die eigene Überschrift, `\|ebene 2` verschiebt die Überschriften um eine Ebene |
+| ein Codeweg | Kapitel bleiben Sammelplatzhalter; herausgelöste Tabellen nutzen denselben Tabellenbauer |
+
+### 5.4 Tabellen und Bilder
+
+`Berichtstabelle` (Kopf, Zeilen, Zellen mit Wert, Format und Rolle Stamm, Gruppe, Summe, Warnung;
+Spaltenblöcke) wird von einem Word- und einem Excel-Renderer gelesen. Blockteilung (`MAX_VARIANTEN_JE_BLOCK` = 3)
+und Δ-Spalte nur bei genau einer Variante (BV:257) bleiben; `|block n` stellt die Blockgröße ein. Das Merkmal
+`listentauglich` (feste Spaltenzahl, eindeutige Textköpfe, keine verbundenen Zellen) entscheidet über
+Excel-Tabellen (7.3). `tabelle.varianten` führt sechs Spalten mit Stromspeicher (`SpeicherKontextText`, im
+Sammler erhoben; BSG:126-129); das erzeugte Übersichtsblatt bleibt bei fünf. Bilder kommen aus der
+Modellfabrik des `ChartRenderer` an der heutigen Aufrufstelle; Katalog v1 führt die 13 Berichtsbilder.
+Vorgemerkt (`Seit` über der Fassung) sind alle App-Diagramme ohne Berichtsziel, einschließlich Erzeugerstapel,
+Streuwolke, Temperaturverlauf, Jahresverlauf, GanglinieNormiert, MonatsStapel, Stundenprofil und
+Peak-Shaving-Lastgang (Anhang A).
+
+### 5.5 Zweisprachigkeit und Namen
+
+- `designer_neu.py` nimmt nur C#-Bezeichner an (`Werkzeuge/ResourceDesigner/designer_neu.py:37`). Abbildung:
+  `VF_` + Schlüssel in Großbuchstaben, Punkt → `__` (`projekt.kunde` → `VF_PROJEKT__KUNDE`); eindeutig, weil
+  das Schlüsselmuster nur einzelne Unterstriche erlaubt. Dieselbe Abbildung liefert `EPOS_…` in Excel; eine
+  Wache prüft Kollisionsfreiheit, auch gegen Excel-Tabellennamen (gemeinsamer Namensraum).
+- Nur **handgepflegte** Einträge haben eine eigene Beschreibung; erzeugte nehmen ein Muster je Ableitung
+  (`VF_MUSTER_STAND_KENNZAHL` = „Wert „{0}“ des laufenden Standes“, `{0}` = `Kennzahl.Label`). Die Wache „jede
+  Beschreibung in beiden `.resx`“ gilt für handgepflegte Einträge und Muster.
+- `BerichtTexte.T` bleibt für den Kapitelinhalt; die Bausteintitel (`BerichtsKonfiguration.cs:36-46`) wandern
+  nach MyResource.
+
+### 5.6 Katalogfassung und Stabilität
+
+Die Schlüsselliste jeder `KATALOGFASSUNG` wird als Testdatei eingefroren; Wache: jeder einmal ausgelieferte
+Schlüssel ist lebendig oder Alias. Die Vorlage trägt ihre Fassung in `custom.xml`; der Prüfer meldet eine
+ältere Fassung **nur**, wenn ein genutzter Schlüssel seither Alias ist oder seine Bedeutung änderte, neue
+Kapitel als Hinweis („Neues Kapitel X – in Ihrer Vorlage nicht enthalten“). Marke und Katalog zeigen nur
+Schlüssel mit `Seit` ≤ laufender Fassung.
+
+
+## 6 Word-Vorlagen
+
+### 6.1 Rahmen
+
+| Regel | Inhalt |
+|---|---|
+| Formate | `.docx`, `.dotx` (über `ChangeDocumentType`); `.docm`, `.dotm`, `.doc` abgelehnt mit „als .docx speichern“ |
+| Inhalt bleibt | „Rumpf leeren“ (WBG:78-80) entfällt; mehrere Abschnitte erlaubt (Deckblatt ohne Kopfzeile, Querformat); ohne jeden Platzhalter Warnung und `{{bericht.inhalt}}` am Ende, nichts wird gelöscht |
+| Nachverfolgte Änderungen | Prüferfehler „in Word alle Änderungen annehmen oder ablehnen“; kein eigener Annahme-Algorithmus (die einzige fertige Umsetzung ist archiviert, ihre Fortführungen verlangen SkiaSharp ≥ 4.152) |
+| Externe Beziehungen | verknüpfte Bilder und Mappen entfernt und gemeldet; `attachedTemplate` still entfernt, nur als Hinweis |
+| Sicherheit | Makros abgelehnt; Grenzen gegen Zip-Bomben (8.5) |
+
+### 6.2 Formatvorlagen: Rollen statt IDs
+
+Eine im deutschen Word angelegte Vorlage führt übersetzte Stil-IDs (`berschrift1`, `Titel`, `Untertitel`,
+`Standard`), und `Beschriftung` ist dort die eingebaute Beschriftung. Mit festen IDs erschienen die Kapitel als
+Standardtext, das TOC bliebe leer, die Anhang-E-Stelle fände keine Überschrift, „fehlende Stile anlegen“
+erzeugte Doppelungen. Deshalb kennt `WordKontext` **Rollen** (Titel, Untertitel, Überschrift 1–3, Standard,
+Beschriftung, Hinweis, Abstand, Kapitelkopf, Tabelle) und löst sie je Dokument auf: eingebaute Vorlagen über
+`w:name` ohne Rücksicht auf Groß- und Kleinschreibung (`title`, `subtitle`, `heading 1`–`3`, `caption`), den
+Standardabsatz über `w:default="1"`. Nur echt fehlende Stile legt die Engine an, mit eindeutigem Namen und ID
+(`EPOS Hinweis`, `EPOS Abstand`, `EPOS Kapitelkopf`, `EPOS Tabelle`), mit Hinweis; `Beschriftung(" ")` als
+Abstand wird die Rolle Abstand. Der Prüfer warnt, wenn Überschriftenstile fehlen oder keine Gliederungsebene
+tragen. Die Standardvorlage wird um die Doppelungen bereinigt; BV-E0 misst eine im deutschen Word 365 angelegte
+Vorlage. Die Rollenauflösung gehört zu BV-E1, weil schon dort Kapitel über `{{bericht.inhalt}}` in fremde
+Vorlagen gelangen.
+
+### 6.3 Mitgelieferte Vorlagen
+
+Eingebettet im Kern (8.4), schreibgeschützt, mit jedem Update erneuert:
+
+1. **Standardvorlage:** heutige Vorlage, bereinigt, sprachneutral (4.9); Rumpf in BV-E1 `{{bericht.inhalt}}`,
+   ab BV-E2 die Kapitel einzeln; DATE der Fußzeile wird `{{bericht.datum}}`; „INEKON GmbH“ klärt BV-Q8 (Anhang B.3).
+2. **Kurzbericht** (je Sprache): Lehrvorlage mit Erläuterungen als Kommentaren, neutrale Namen und Werte
+   („Variante 1“, „Speicher 1, 100 kWh“); **nicht** direkt wählbar, nur als Kopie über „Neue Vorlage…“ (Anhang B.1).
+3. **Baukasten:** aus dem Katalog erzeugt, **nach Kontext gegliedert** — Bericht, Stamm, Gruppe als Liste;
+   Stand- und Gebäudeeinträge in fertigen Blöcken; Schalter in `#wenn`-Mustern; Kapitel in eigenen Absätzen;
+   die Mustertabelle. Je Eintrag Schlüssel, Beschreibung, Beispiel, `{{…}}`- und SDT-Form, für Bilder ein
+   Musterbild; Platzhalter mit `w:noProof` gegen die Rechtschreibprüfung. Excel-Baukasten nur mit Ausgabe Excel.
+
+### 6.4 Tabellen mit variabler Variantenzahl
+
+1. **Varianten als Zeilen:** Musterzeile mit `{{#je stand}}` in der ersten und `{{/je}}` in der letzten Zelle,
+   je Stand geklont, robust bei jeder Zahl; `gridSpan`/`vMerge` darin sind ein Prüferfehler.
+2. **Strukturtabelle `{{tabelle.…}}`:** EPOS baut Struktur, Blöcke, Δ-Spalte, Breite in Prozent. Die
+   Tabellenformatvorlage „EPOS Tabelle“ (über `w:name`) steuert Rahmen, Kopfzeile, Schrift und Bänder — mehr
+   kennen ihre bedingten Formate nicht. Die **Rollen** Stamm (je Block wiederholte Spalte), Gruppe und Summe
+   (Zeilen mitten in der Tabelle) und Warnung (Einzelzellen, BW:908-917) liest EPOS aus einer **Mustertabelle**
+   mit Alternativtext `{{muster.tabelle}}`, je Rolle eine Zelle mit Schattierung und Zeichenformat; sie wird
+   entfernt. Fehlt beides, gilt die heutige Direktformatierung (WBG:30-41, 364-429).
+3. **Blöcke je Variante:** `{{#je variante|block 3}}` um eine ganze Tabelle samt Überschrift.
+
+Spaltenwiederholung aus einer Musterspalte ist nicht geplant (höchstes Bruchrisiko, die Strukturtabelle deckt
+den Bedarf).
+
+### 6.5 Bilder
+
+Breite aus `wp:extent`, Höhe aus dem Seitenverhältnis des Modells bis zur Rahmenhöhe, eingepasst; Lage,
+Umbruch, Rahmen, Drehung bleiben, `a:srcRect` wird entfernt, `docPr/@id` werden neu vergeben. **Stufe 1**
+skaliert das fertige Modell, Schrift schrumpft mit; der Prüfer warnt unter 80 % der Modellbreite. **Stufe 2**
+rendert in Zielgröße (neue ChartProben-Größen) und kommt mit BV-E5, vor dem Kurzbericht mit zwei Bildern
+nebeneinander. SVG mit PNG-Rückfall bleibt Pflicht (DG-E3-8); `BildTeile` (WBG:306-360) wird in „Blip bauen“
+und „einfügen oder ersetzen“ geteilt. Nach dem Füllen wird der Diagrammtitel Alternativtext (BV-Q14). Die
+Gestaltung folgt weiter Farbrollen und fester Schrift (BV-Q17).
+
+### 6.6 Inhaltssteuerelemente nach dem Füllen
+
+Jedes getaggte SDT wird nach dem Füllen **ausgepackt**, der Inhalt bleibt (BV-Q14). So bleiben weder
+`w:showingPlcHdr`, `w:temporary` noch `w:dataBinding` stehen, die Word als grauen Platzhaltertext zeigen oder
+beim Öffnen überschreiben würde; geklonte Wiederholabschnitte brauchen keine eindeutigen `w:id`, `w15`-Elemente
+bleiben nicht zurück. Ein SDT im Satz (SdtRun) ist nur für Text, Zahl, Datum zulässig. Der Rundlauf prüft gegen
+Office 2007–2021 (`WordBerichtSvgWacheTests.cs:323-340`).
+
+### 6.7 Felder, Kopf- und Fußzeile, Kommentare
+
+- Das Inhaltsverzeichnis ist Vorlageninhalt; `kapitel.inhalt` erzeugt es wie heute. `updateFields` nur bei
+  Feldern, die Word nicht selbst aktualisiert: TOC, PAGEREF, REF, SEQ, DOCPROPERTY (nicht PAGE, NUMPAGES).
+  DATE und TIME bekommen den Hinweis „zeigt das Datum des Öffnens – {{bericht.datum}} verwenden?“.
+- Ersetzt wird in allen Kopf- und Fußzeilen aller Abschnitte, Fuß- und Endnoten, Textfeldern und beiden
+  Zweigen von `mc:AlternateContent`; Seitenfelder bleiben unberührt.
+- **Kommentare** werden weder ersetzt noch geprüft; die Engine entfernt alle samt `commentRangeStart/End` und
+  `commentReference` und nennt ihre Zahl in der Laufmeldung.
+
+### 6.8 Vorlage prüfen
+
+Der `Vorlagenpruefer` hat zwei Stufen derselben Regeln: **Schnellprüfung** (Platzhalter, Kontexte, Orte,
+Formatangaben; Millisekunden) und **volle Prüfung** (zusätzlich Stile, Bildrahmen, Felder, Paketprobe). Er
+läuft zu festen Zeitpunkten ohne Dateiüberwachung und ohne Hintergrundfaden (`EPOS.Kern/CLAUDE.md:74-76`,
+`EPOS.UI/CLAUDE.md:282-297`): voll beim Hinzufügen und auf Knopfdruck, schnell beim Öffnen der Seite, beim
+Vorlagenwechsel und vor jedem Start; eine geänderte Prüfsumme ersetzt die Meldungsliste. Die Vorlage wird mit
+`FileShare.ReadWrite` **einmal** in den Speicher gelesen; genau diese Bytes prüft und füllt EPOS, auch wenn der
+Anwender während der Simulation speichert. Liegt eine Sperrdatei `~$…` daneben, meldet die Prüfzeile „in Word
+geöffnet – ungespeicherte Änderungen fehlen“. Jede Meldung hat einen menschlichen Fundort („Tabelle 3,
+Zeile 2, Zelle beginnt mit ‚Wärme‘“), ein „Was tun“ und bei fachfremden Befunden eine `KiMeldungskennung`
+(`EPOS.UI/CLAUDE.md:94-95`); Texte aus MyResource.
+
+| Stufe | Meldung (Beispiel) | Was tun |
+|---|---|---|
+| Fehler | „Unbekannter Platzhalter {{projekt.kundename}}“ | Vorschlag `{{projekt.kunde}}` übernehmen |
+| Fehler | „Wert je Variante steht außerhalb von {{#je stand}}“, „passt nicht an diese Stelle“ | Block ergänzen bzw. verschieben |
+| Fehler | „Block nicht geschlossen“, „verbundene Zellen in der Wiederholzeile“ | `{{/je}}` ergänzen, Zellverbund aufheben |
+| Fehler | „nachverfolgte Änderungen“, „Makros“, „kann nicht gelesen werden: …“, „zu groß“ | in Word annehmen; als `.docx` speichern; verkleinern |
+| Warnung | „Überschriftenstile fehlen“, „Bildrahmen unter 80 %“, „veralteter Platzhalter“, „Gültigkeitshinweise fehlen“, „ohne Platzhalter“ | Formatvorlage nutzen, Rahmen verbreitern, Normalform übernehmen, Warnliste ergänzen |
+| Hinweis | „Formatvorlage EPOS Hinweis ergänzt“, „Vorlagenverweis entfernt“, „Normalform: {{projekt.geaendert}}“ | – |
+
+Katalogfassung, Sprache und Vorlagenart schreibt der Prüfer nur mit Zustimmung nach `custom.xml`; ist die Datei
+in Word geöffnet, meldet er „Vorlage ist in Word geöffnet“.
+
+
+## 7 Excel-Vorlagen
+
+### 7.1 Mappe, Schrift, Formate
+
+| Regel | Inhalt |
+|---|---|
+| Mappe | `new XLWorkbook(stream)` statt `new XLWorkbook()` (EBG:167); `.xltx` über das SDK umgestellt, ob ClosedXML das trägt, misst BV-E0; `.xlsm` abgelehnt; Anwenderblätter nur an Platzhaltern angefasst; `AdjustToContents` (EBG:284, 365, 407, 1775) nie auf Vorlagenblättern |
+| Schrift | erzeugte Blätter setzen Calibri 11 ausdrücklich, sonst erbten sie eine Vorlagenschrift außerhalb der Rückfallkette (EBG:69-70) und würden auf Linux und iOS falsch vermessen; die Standard-`.xlsx` entsteht im Code |
+| Werte | EPOS schreibt `Value`; `Style` nur beim Zahlenformat einer Zelle mit Format „Standard“ — dann gilt das Kernformat, sonst das der Vorlage; Datumswerte sind echte Datumswerte (heute Text, EBG:235) |
+| Prozent | Kennzahlen mit „%“ (KK:365, 429, 447) sind 0–100; bei Prozentformat der Zielzelle schreibt EPOS den Anteil und gibt einen Hinweis |
+| Delta | `stand.delta*` ist in Vorlagen ein Wert; die Δ%-Formel bleibt dem erzeugten Vergleichsblatt (Bezugszellen, `ExcelFormelmappe.cs:1050`) |
+
+### 7.2 Blattmarken und erzeugte Blätter
+
+Blattmarken `blatt.uebersicht`, `.vergleich`, `.wirtschaftlichkeit`, `.verlauf`, `.detail`, `.checkliste`: EPOS
+ersetzt das markierte Blatt und gibt ihm den heutigen Namen; ohne Marke hängt es an (BV-Q2); nie an
+sprachabhängigen Blattnamen. **Marke ohne Inhalt** (EBG:170-196): Das Blatt wird entfernt; der Prüfer warnt vor
+Bezügen des Anwenders darauf (`#BEZUG!`). **`blatt.detail` ist ein Musterblatt** mit `stand.*`-Zellplatzhaltern,
+je Stand geklont (`CopyTo`), benannt wie heute (EBG:1704, 1912-1922) und an der Markenstelle eingefügt. Ein
+gleichnamiges Anwenderblatt ist ein Prüferfehler (`Worksheets.Add` würfe). Die Standardvorlage trägt nur
+Blattmarken in heutiger Folge; `BerichtBlattstrukturWacheTests.cs:191` bleibt grün; ein Test deckt
+`B_WIRTSCHAFT` aus, leeren Verlauf und null Varianten ab.
+
+### 7.3 Listen und Bereiche
+
+Excel-Tabellen nur für listentaugliche Tabellen (5.4), Zelle für Zelle über `InsertRowsBelow`;
+`ReplaceData(IEnumerable<T>)` liest per Reflection und bleibt ungenutzt; ob berechnete Spalten mitwachsen,
+misst BV-E0 (`propagateExtraColumns`). Tabellen mit Stand-Spalten, Blöcken, Gruppenzeilen oder verbundenen
+Köpfen (Verlauf, EBG:818, `VerlaufExcel.cs:205`) entstehen als **erzeugter Bereich** an einer Zellmarke; EPOS
+fügt Zeilen ein, Inhalte darunter wandern mit, Spalten rechts müssen frei sein.
+
+### 7.4 Formelmappe, Formeln des Anwenders, Diagramme, Paketschutz
+
+- Die Formelmappe bleibt erzeugtes Blatt samt Gegenrechnung, `Nachtragen`, Zellregister: Geometrie
+  datenabhängig, Formel oder Wert entscheidet die Gegenrechnung, NPV/IRR rechnet ClosedXML nicht
+  (`FormelmappeClosedXmlBefundTests.cs:72`). Reserviert: `Zins_i`, `Zeitraum_T`, `p_E`, `p_B`, `p_I`,
+  `Zins_Basis`, Risikonamen, Szenarioanhänge; Vorlagen, die sie führen, lehnt der Prüfer ab.
+- Anwenderformeln sind erlaubt, bis zu Ergebnisnamen nur auf reservierte Parameternamen und eigene
+  Zellplatzhalter. `FullCalculationOnLoad` setzt EPOS, **sobald die Vorlage irgendeine Formel trägt** (heute nur
+  bei eigenen, EBG:201). Ob ClosedXML das `<v>` einer in Excel gespeicherten Vorlagenformel behält, misst BV-E0;
+  der Prüfer weist darauf hin, dass Vorschauen solche Zellen leer oder veraltet zeigen.
+- Excel-Diagramme überstehen das Laden (Probe P3 des Technikbefunds), Reihen werden aber nicht nachgeführt:
+  erlaubt sind feste Raster (12, 365, 168, 8760) oder Namen `EPOS.reihe.*`, deren `RefersTo` EPOS setzt; den
+  Cache-Nachtrag gibt es nach Messprobe (BV-E8). Bilder aus EPOS nur als PNG auf Zuruf (kein SVG, Probe P4).
+- Paketschutz: Probe-Laden und -Speichern, Vergleich nach Beziehungs- und Inhaltstyp mit Positivliste
+  erwarteter Verluste (`calcChain`, Druckereinstellungen); verlorene Teile (Pivot, Formen, Steuerelemente, VBA)
+  mit Namen; eine Ladeausnahme ist ein benannter Fehler. Anhang E nennt in Excel Blatt und Zelle.
+
+
+## 8 Engine und Technik
+
+### 8.1 Optionen und Bewertung
+
+**A** — eigene Engine: Word auf OpenXML SDK 3.5.1 mit Run-Normalisierer und SDT, Excel auf ClosedXML 0.105.1
+mit SDK-Nachlauf (`Directory.Packages.props:37-38`). **B** — DocxTemplater 2.9.7 für Word (Probe P1: Runs,
+Kopfzeile, Zeilenschleife; P2: SVG ohne PNG-Rückfall; Ausdrücke über DynamicExpresso), Excel wie A. **C** —
+OpenXmlPowerTools-Fortführungen (SkiaSharp ≥ 4.152 statt Pin 3.119, `Directory.Packages.props:54`),
+ClosedXML.Report, EPPlus (Polyform Noncommercial), Templater (kommerziell), NPOI, MiniWord, MiniExcel.
+
+| Kriterium | A | B | C |
+|---|---|---|---|
+| iOS: Reflection, Ausdrücke, AOT | keine neuen Risiken | DynamicExpresso auf dem Gerät ungeprüft; die CI prüft weder Linker noch AOT (`.github/workflows/ios.yml:119-122`) | Reflection, `dynamic`, System.Drawing |
+| Paketdrift | kein neues Paket | ein Paket, passt zu OpenXml 3.5.1 | SkiaSharp 4.x oder zweiter Stapel |
+| SVG mit PNG-Rückfall | Code vorhanden (WBG:306-360) | eigener Formatierer | offen |
+| Fehler benannt, deutsch | ja | englisch; Ausnahme bei fehlendem Wert | offen |
+| Ausdruckssprache in Anwenderhand | nein | ja | teils |
+| Kapitel über Einfügeanker | direkt | nur mit eigenem Formatierer | nein |
+| Aufwand (Technikbefund) | Word 15–18 PT, Excel 6–10 PT | Word S–M plus Formatierer, Gerätetest | M–L |
+
+### 8.2 Empfehlung und Rückfall
+
+**Option A, kein neues Paket.** Die Lizenzlage bleibt unverändert: MIT, dazu Apache-2.0 für das gepinnte
+SixLabors.Fonts 1.0.1 (Abhängigkeit von ClosedXML, `EPOS.Kern.csproj:143-146`); die Pins von SkiaSharp 3.119
+und SixLabors.Fonts bleiben. Die Engine steht hinter `IVorlagenFueller`; Notweg ist DocxTemplater 2.9.7 mit
+eigenem SVG-Formatierer, Fehlerbehandlung „überspringen“ und Gerätetest für DynamicExpresso (iU13). Für
+Excel-Vorlagen mit Teilen, die ClosedXML verliert, bleibt der Datenblattmodus (nur erzeugte Blätter und Namen).
+
+### 8.3 Schichten
+
+| Schicht | Ort | Inhalt |
+|---|---|---|
+| Kern | `EPOS.Kern/Allgemein/Bericht/Vorlagen/` | `Vorlagenfeldkatalog`, `Berichtswerte`, `Berichtstabelle`, `Vorlagenpruefer`, `WordVorlagenfueller`, `ExcelVorlagenfueller`, `Baukasten`, eingebettete Vorlagen |
+| Controller | `BerichtCtrl` (erweitert), `BerichtsvorlagenCtrl` (neu) | auflisten, hinzufügen, prüfen, ersetzen, entfernen, kopieren, Baukasten, Probefüllung; Dateiseite über `Dienste.Datei`/`Dienste.Pfade` |
+| Hülle | `BerichtSeiteGaben.cs`, `BerichtsvorlagenGaben` (neu) | Vorlagenliste mit stabilen Ids, Prüfstand, Befunde, Katalogzeilen; Naht `Berichtsvorlagenwege` |
+| Oberfläche | `EPOS.UI` | Vorlagengruppe, Prüfzeile (`Herleitungszeile`), Überlagerungen „Prüfliste“ und „Platzhalterkatalog“, `Vorlagenfeldknopf`, Dienste `Vorlagenfeldansicht`, `IZwischenablage` |
+
+### 8.4 Plattformfreiheit und Nähte
+
+Die Engine arbeitet auf `Stream`/`byte[]`. **Die Standardvorlagen werden eingebettete Ressourcen des Kerns**
+(Vorbild `EPOS.Kern.csproj:287`) — eine bewusste Umkehr von `EPOS.Kern/CLAUDE.md:34` (BV-Q19). Es entfallen
+`FindeVorlage` (WBG:116-127), beide Lieferwege (`WindowsFormsApplication1.csproj:253-256`,
+`EPOS.iOS/EPOS.iOS.csproj:122-123`) und nach BV-E1 der Code-Rückfall (WBG:74, 139-167); eine Wache hält die
+Ressource ladbar. BV-E1 schreibt im selben Schritt fort: `EPOS.Kern/CLAUDE.md:34`,
+`WindowsFormsApplication1/CLAUDE.md:96`, Setup-Konzept (Z. 85), KI-Aufgabenpapier (Z. 618), iOS-Nachweis iR-g
+(Umsetzung_iU10_Nachweise Z. 761), Umsetzungskonzept iOS (Z. 1180). **Die neun Kern-Dienste bleiben
+unverändert**, die Wächter des Kerns leer. Neu sind in EPOS.UI `Vorlagenfeldansicht` und die Naht
+`IZwischenablage` mit Windows- und iOS-Adapter (9.6, BV-Q18), in der Hülle `Berichtsvorlagenwege` (10.3). Was eine
+Plattform nicht kann, wird benannt abgelehnt.
+
+### 8.5 iOS, Aufwand je Lauf, Sicherheit
+
+- **iOS: ungeprüft, Nachweis offen (iU11/iU13).** Die CI baut den Simulator im Debug ohne Linker, der
+  Prüfmodus erzeugt keinen Bericht; ungeprüft sind ClosedXML-Vermessung mit iOS-Schriften, `SkiaMaler.Png` im
+  Bericht, Schreiben des OpenXML-Pakets. Vorgesehen ist eine **iOS-Probe** (Prüfmodus erzeugt Word und Excel
+  für 1030 aus der Standardvorlage), nur nach Rückfrage. Änderungen an `EPOS.iOS/`: MauiAsset-Zeile und
+  Dateifilter `org.openxmlformats.wordprocessingml.template` (BV-E1), `org.openxmlformats.spreadsheetml.template`
+  (BV-E7), Registrierung von `Vorlagenfeldansicht` und Adapter `IZwischenablage` (BV-E6); jede im Protokoll
+  benannt, ein iOS-Lauf nur nach Rückfrage.
+- **Aufwand:** Simulation und Wirtschaftlichkeit laufen immer; Zeitreihen, Verlauf, Emissionsbilanz nach
+  `Bedarf` oder BSG:207-209. Das Füllen malt alle Bilder (mit sieben Varianten über 50, PNG doppelt aufgelöst
+  plus SVG). BV-E0 misst den heutigen Lauf (1030 und sieben Varianten, Windows und Linux-CI); **Ziel: heute plus
+  höchstens 10 %**. Anhang E wird in einem Durchgang gefüllt, die Checkliste zuletzt.
+- **Sicherheit:** Vor dem Öffnen summiert der Prüfer die unkomprimierten Größen per `ZipArchive` (Vorgabe
+  100 MB unkomprimiert, 20 MB Datei) und setzt für Word `OpenSettings.MaxCharactersInPart`; das schützt auch
+  vor Jetsam auf dem iPad (Umsetzung_iU10_Nachweise Z. 753-754).
+
+
+## 9 Platzhalter in der App erkennen
+
+### 9.1 Varianten
+
+- **A — Randmarke immer sichtbar:** über hundert Marken für alle verfehlen „ohne Störung“.
+- **B — Marke nur beim Überfahren am Rand** (Vorschlag des Anwenders, „Symbol, Mouse-over am Rand“): kein
+  Überfahren auf dem iPad, schwer per Tastatur, stört leise auch alle, die nie eine Vorlage pflegen.
+- **C — Platzhalteranzeige mit drei Stellungen:** Aus (Vorgabe, kein DOM); **Marken** (Symbol `{ }` in einer
+  Randspur, Mouse-over mit Schlüssel, Klick oder Tipp öffnet die Aufklappung); **Schlüssel** — der
+  Vorlagenmodus (Schlüssel als Chip, gestrichelter Rahmen, ein Klick kopiert).
+- **D — Platzhalterkatalog mit Suche:** vollständig, auch ohne Gegenstück in der App; keine Erkennung am Ort.
+
+### 9.2 Bewertung
+
+| Kriterium | A | B | C | D |
+|---|---|---|---|---|
+| stört ausgeschaltet nicht | nein | kaum | ja | ja |
+| am Ort erkennbar | ja | ja, mit Maus | ja | nein |
+| iPad, Tastatur | laut oder zu klein | nein | ja (Tipp, Fokus) | ja |
+| vollständig | nein | nein | nein | ja |
+| beantwortet „Symbol, Mouse-over am Rand“ | teils | ja | ja (Stellung Marken) | nein |
+| Aufwand | S | S | M | M |
+
+### 9.3 Empfehlung
+
+**C für die Erkennung am Ort, D als Rückgrat**; beide lesen denselben Katalog, „In der App zeigen“ verbindet
+sie. Der Vorschlag des Anwenders ist die Stellung „Marken“; „Schlüssel“ ist die Arbeitsstellung des
+Vorlagenautors, in der man nicht erst überfahren muss.
+
+### 9.4 Bedienung
+
+| Punkt | Regel |
+|---|---|
+| Umschalter | **ein Umschalter je Bildschirm** (`{ }` · Aus · Marken · Schlüssel, `title` „Platzhalter zeigen“) in der Kopfzeile jeder Ansicht mit Marken; bei „Berichte & Kosten“ in `epos-navigation-kopf` nach der `Kopfzeile`, unabhängig vom Ort der Hilfepille (`BerichteKostenSeite.razor:68-82`); nicht zusätzlich in der Vorlagengruppe (dort führt „Platzhalter…“ zu Katalog und Baukasten). Alle Umschalter binden an denselben Zustand; ausgeschaltet ist das ruhige Symbol die einzige Spur (Teilfrage BV-Q9). Einschalten auch über „In der App zeigen“ im Katalog |
+| Ausschalten | am Umschalter und in jeder Aufklappung („Platzhalter ausblenden“); keine eigene Leiste, kein ✕; in der Stellung „Schlüssel“ nennt eine leise Zeile die Zahl der Platzhalter und öffnet „Katalog…“; der Zustand gilt für die Sitzung |
+| Aufklappung | Schlüssel, Art, Kontext, Beschreibung, Beispielausgabe samt Einheit und Leerwert („1.234 MWh/a“, leer „—“), Excel-Name oder „in Excel nur als Listenzeile“, Stufe „entspricht“ oder „ähnlich im Bericht“ mit Hinweis („im Bericht als Kuchendiagramm“), „Kopieren“, „Platzhalter ausblenden“ |
+| Kopieren je Art | Text, Zahl, Datum `{{schlüssel}}`; Tabelle, Liste, Kapitel dasselbe mit „in einen eigenen Absatz“; Bild der Schlüssel mit „Bild einfügen, Alternativtext = Schlüssel“; `stand.*` samt Blockrahmen `{{#je stand}}` … `{{/je}}` |
+| Kacheln, Diagramme | Marke oben rechts; am `DiagrammSvg` mit Abstand zur umbrechenden Zoomleiste (`epos-ui.css:1719-1724`), zugeordnet über `Vorlagenfeld`, nie über `Kennung` |
+| Tabellen | eine Marke am Tabellenkopf, die Aufklappung listet Zeilen- und Spaltenschlüssel; keine Zeilenmarken (Aktionsknöpfe einer Zeile wären immer sichtbar, `EPOS.UI/CLAUDE.md:37-38`; bei elf Ständen überlagerten sich Trefferflächen) |
+| In der App zeigen | springt zur Seite, schaltet „Marken“ ein, lässt das Element aufleuchten — nur, wenn das Ziel lesend erreichbar und darstellbar ist; nie in den Projektassistenten (Bearbeitungsmodus); bedingte Elemente ohne Daten ausgegraut mit Grund |
+
+### 9.5 Abdeckung und Kontextregel
+
+**Regel: Eine Marke nennt nur einen Schlüssel, der genau den angezeigten Wert erzeugt.** Die Kacheln der
+Wirtschaftlichkeitsseite zeigen die beste Variante, ohne Variante den Stamm
+(`WirtschaftlichkeitSeiteGaben.cs:1433-1442`): Marken `wirtschaft.beste.anzeige`,
+`wirtschaft.beste.kapitalwert_diff` usw. Die Kostenkacheln zeigen „Stamm oder Variante“
+(`KostenSeiteGaben.cs:60`): beim Stamm `stamm.wirtschaft.investition`, bei einer Variante
+`stand.wirtschaft.investition` mit Blockhinweis (für Investition und Betrieb gibt es keine Kennzahl). Die
+Ergebnisansicht der Simulation ebenso: Stamm → `stamm.kennzahl.*`, Variante → `stand.kennzahl.*`. Zeigt die App
+ein ähnliches Element (Ring statt Kuchen, Speicherbetrieb statt Speicherverlauf, alle Geräte statt des ersten),
+trägt die Marke die Stufe „ähnlich im Bericht“.
+
+**Abdeckung:** Jede `Kennzahlkachel`, jedes `DiagrammSvg` und jede `Vergleichstabelle` unter
+`EPOS.UI/Seiten/Berichte` und `EPOS.UI/Seiten/Simulation` trägt ein `Vorlagenfeld` oder steht als benannte
+Ausnahme in der Abdeckungswache; einbezogen sind der Helfer `@Kennzahl(…)` (`UebersichtReiter.razor:147`), die
+Direkttabelle `UebersichtSeite.razor:161-162`, WS:264, :446, :1631, :1665, `ProjektKopfSeite.razor:5` und
+`SimulationErgebnisSeite.razor:154`. `Vergleichstabelle` in Administrationsdialogen trägt keine Marke. Eine Wache
+prüft für 1030, dass jede markierte Kachel den aufgelösten Katalogwert zeigt. Die Anhang-E-Überlagerung
+(`AnhangEChecklisteKnopf.razor`, WS:1665) nennt die Stelle der gewählten Vorlage (Prüferlauf ohne Füllen aus
+Katalog und `Deckt`), sonst mit dem Zusatz „bezogen auf die Standardvorlage“.
+
+### 9.6 Technik
+
+- **`Vorlagenfeldknopf`** nimmt ein neutrales DTO `Vorlagenfeldanzeige` (Schlüssel, Art, Kontext,
+  Beschreibung, Beispielausgabe, Excel-Name, Stufe) aus einem Halter in EPOS.UI, den die Hülle aus dem Katalog
+  füllt; der Baustein kennt keine Fachklasse (`EPOS.UI/CLAUDE.md:305-306`).
+- Einen optionalen Parameter `Vorlagenfeld` (Schlüssel) bekommen `Kennzahlkachel` (`Kennzahlkachel.razor:44-56`),
+  `DiagrammSvg`, `Vergleichstabelle` und `Textfeld`. Die Orte stehen in einer Tabelle `Vorlagenfeldorte` in
+  EPOS.UI, die eine Wache gegen Katalog und Parameter hält.
+- **`Vorlagenfeldansicht`:** Zustand mit Ereignis wie `SeitenZustand`, aber als **Singleton im
+  Dienstverzeichnis**: Unter Windows teilen alle `BlazorWebView`-Wurzeln ein Verzeichnis (`BlazorDienste.cs:38`),
+  auf iOS die MAUI-Anwendung; jede Marke abonniert und zeichnet über `InvokeAsync`. Ein `CascadingValue` aus
+  `AppWurzel` erreichte die Wurzeln der Windows-Dialoge nicht.
+- **`IZwischenablage`** (`EPOS.UI/Dienste`): Windows-Adapter über die Zwischenablage der Schale, iOS-Adapter über
+  `Clipboard.Default.SetTextAsync`; ohne Adapter zeigt die Aufklappung den Text markiert. Die Marke meldet nur.
+
+### 9.7 Hausregeln
+
+| Regel | Inhalt |
+|---|---|
+| Element | `<button>` mit `aria-label` („Platzhalter projekt.kunde kopieren“) und `title` mit Schlüssel und Kurzbeschreibung — das Mouse-over der Stellung „Marken“, wie an der Hilfepille (`InfoKnopf.razor:61-62, 71-73`); Überfahren oder Fokus öffnet die Aufklappung, Klick oder Tipp heftet sie an |
+| Trefferfläche | die Marke ist ein voller 44-px-Knopf (`--epos-touchziel`, `EPOS.UI/CLAUDE.md:35-37`) in einer eigenen Randspur bzw. der Titelzeile des Elements; ohne Pseudofläche überlagert sie weder Sortierung noch Kennzeichen noch Hilfepille; die 28 px der Hilfepille sind kein Vorbild |
+| Gestalt | immer Symbol `{ }` und Text bzw. `title`, nie nur Farbe; nur vorhandene Tokens (`--epos-marke`, `--epos-rahmen-leise`, `--epos-flaeche`, `--epos-ecke`, `--epos-warn-*`); kein CSS-Nesting; eigener `forced-colors`-Block; „kopiert“ 1,5 s |
+| Prüfzeile | eine `Herleitungszeile` (vorhandener Baustein) mit Symbol, Text und optionalem „anzeigen“, kein `Kennzeichen` — das ist das Schloss eines Auslieferungssatzes ohne Textknoten (`Kennzeichen.razor:15-22`) |
+| Überlagerungen | „Prüfliste“ und „Platzhalterkatalog“ in vier Teilen (`*Daten`, `*Texte`, `Dialog.razor`, Hülle; `EPOS.UI/CLAUDE.md:342-352`), Schließkreuz, Esc, `InfoKnopf` mit Hilfeschlüssel und Wiki-Anker, bunit mit Rückweg und ohne Gaben; ohne Arbeitsstand, deshalb primäres „Schließen“ statt OK/Abbrechen (Prüfliste: „Meldungen kopieren“ · „Vorlage testen“ · Füller · „Schließen“; Katalog: „Baukasten speichern“ · Füller · „Schließen“) |
+| Anmeldung, Texte | Vorlagenwahl, Anzeigestufe, Katalogsuche in `KiMaskenabdeckungWacheTests`; Ressourcen `VF_KNOPF_*`, `VF_ANZEIGE_*`, `VF_KATALOG_*`, `VF_PRUEF_*` de/en, danach `designer_neu.py schreiben` |
+
+### 9.8 Mockup
+
+`Dokumentation/aktuell/Mockups/Berichtsvorlagen_Platzhaltermarke.html` ist ein eigenständiges Schema mit den
+Tokens aus `epos-ui.css` und neutralen Werten. Teil 1 zeigt eine Beispielansicht (Projektstammdaten mit
+`projekt.*`, Kachel „JAZ Wärmepumpe“ des Stamms mit `stamm.kennzahl.eff.jaz`, Vergleichstabelle mit
+`tabelle.vergleich.effizienz` und Blockhinweis für Werte je Stand, Diagrammrahmen mit
+`bild.vergleich.balken.eff.jaz`) in den drei Zuständen:
+
+1. **Marke aus:** keine Marke, kein Rahmen; in der Kopfzeile nur der ruhige Umschalter `{ }`.
+2. **Marke an mit Mouse-over:** das Symbol `{ }` in der Randspur jedes Elements; Überfahren oder Fokus öffnet
+   die Aufklappung mit Schlüssel und Kurzbeschreibung, Klick oder Tipp heftet sie an.
+3. **Vorlagenmodus mit Chips und Kopieren:** jede Marke als Chip mit ihrem Schlüssel, gestrichelte Rahmen,
+   „Kopieren“ mit Rückmeldung „kopiert“ und eine leise Zeile mit der Zahl der Platzhalter.
+
+Teil 2 zeigt die Berichtsseite nach dem Umbau, „wie heute“ und „neu“ gekennzeichnet; Teile 3 bis 5 zeigen
+Bedienregeln, einen Katalogauszug und die Festlegungen des Mockups (drei Stellungen, Randspur, keine Leiste,
+ein Umschalter je Bildschirm, Schloss und Herleitungszeile, eine Marke je Tabelle), die dieses Papier
+übernimmt. Teil 2 folgt 10.2: „Standard (EPOS-Plan)“ und eigene Vorlagen im Auswahlfeld,
+„Neue Vorlage…“ als erster Knopf, der Kurzbericht nur als Kopie erreichbar.
+
+
+## 10 Berichtsseite nach dem Umbau, Ablage, Auswahl und Auslieferung
+
+### 10.1 Einstieg und was unverändert bleibt
+
+- Einstieg „Berichte & Kosten › Bericht“ (`MENU_VARIANTEN_BERICHT`); links die Variantenliste (Stamm fest;
+  Art, Bezeichner, Projektname, Stromspeicher, Simulation mit Stand bzw. „fehlt“; Alle, Keine); Ausgabe Word,
+  Excel oder Beide; Zielordner mit Durchsuchen; Erstellen, Fortschritt, Abbrechen.
+- Der Hinweis „Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich
+  bewertet.“ (`BerichtSeite.razor:184`) bleibt Hinweis, keine Option: **`SammleFuerBericht` läuft vor jeder
+  Ausgabe**, für jede Vorlage und jeden Einstieg.
+- „Berichtsbausteine“ mit acht Titeln und Vorbelegung, Hinweis `BK_BER_MSG_WIRTSCHAFT_HINWEIS` (:212);
+  Dateiname `<Stamm>_Bericht_<Datum>` mit `_2 … _20` (die Vorlage steht in `custom.xml` als `EPOS.Vorlage`);
+  Konfiguration je Stammprojekt, Laufmeldung, „öffnen?“; Vergleichssicht der Ergebnisansicht (BSG:38-44,
+  :226); Einzelmappe „Kapitalwert-Verlauf“ ohne Vorlage (`KapitalwertVerlaufHuelle.cs:325`); Diagrammfarben
+  und Schrift wie heute (BV-Q17).
+
+### 10.2 Neu: Gruppe „Vorlage“ oben rechts, über den Häkchen
+
+| Element | Inhalt |
+|---|---|
+| Auswahlfeld „Word-Vorlage“ | „Standard (EPOS-Plan)“ und eigene Vorlagen mit stabilen Ids aus der Hülle (`Auswahlfeld.razor:64-70`); eine gespeicherte, fehlende Vorlage bleibt als gesperrter Eintrag („nicht vorhanden – Standard verwendet“, `GesperrtHinweise` :111-122); bei der mitgelieferten Vorlage daneben das `Kennzeichen` (Schloss) |
+| Knöpfe | „Neue Vorlage…“ (Kopie der Standardvorlage oder des Kurzberichts — der erste Schritt jedes Autors), „Hinzufügen…“, „Prüfen“, „Platzhalter…“ (Katalog, Baukasten) |
+| Menü „…“ | Windows „In Word öffnen“, „Im Ordner zeigen“, „Ersetzen…“, „Entfernen“; iOS „Teilen…“, „Ersetzen…“, „Entfernen“; mitgeliefert nur „Schreibgeschützt öffnen“ mit dem Hinweis, dass Änderungen nicht gespeichert werden |
+| Prüfzeile (`Herleitungszeile`) | „geprüft, 23 Platzhalter, keine Befunde“ oder „2 unbekannte Platzhalter – anzeigen“; unter Windows „Original geändert – übernehmen?“ (10.3) |
+| Weitere Zeilen | aktive Vergleichssicht, wenn die Vorlage den Paarvergleich nutzt; „Excel-Vorlage“ ab BV-E7 (nur Excel oder Beide); der Umschalter der Platzhalteranzeige steht in der Kopfzeile der Seite, nicht in der Gruppe (9.4) |
+| Texte | Bündel `BerichtSeiteTexte` mit Ressourcenschlüsseln im Kommentar (`EPOS.UI/CLAUDE.md:22-24`) |
+| Häkchen (BV-Q1 c) | schalten Kapitelplatzhalter und `baustein.*`, keine Einzelplatzhalter; gerechnet wird ohnehin alles (BDS:172-193); ausgegraut „in dieser Vorlage nicht enthalten“ nur, wenn weder Word- noch Excel-Vorlage Kapitel bzw. Blatt führt; die Liste bleibt, sobald die Vorlage `kapitel.*` oder `baustein.*` nutzt, sonst „Den Inhalt bestimmt die Vorlage“; `B_*` bleiben; Excel bis BV-E7 wie heute (BV-Q2) |
+
+**Ablauf von „Erstellen“:** (1) Die Schnellprüfung liest die Vorlage einmal in den Speicher. (2) Ohne Befund
+kommt die heutige Startrückfrage `BK_BER_FRAGE_START` (:218); mit Fehlern, abweichender Sprache oder
+unpassender Sicht ersetzt sie **eine** erweiterte Rückfrage (Baustein `Rueckfrage`) mit Zahl der Varianten,
+Name der Vorlage, Befunden und drei Wegen „Mit meiner Vorlage“ (unbekannte Stellen gelb), „Mit
+Standardvorlage“, „Abbrechen“ (BV-Q6). (3) `SammleFuerBericht` läuft unverändert. (4) Word, dann Excel werden
+aus den gelesenen Bytes gefüllt. (5) Die Laufmeldung nennt Vorlage, Rückfälle, unbekannte und zusammengefasst
+leere Platzhalter, entfernte Kommentare und alle Warnungen.
+
+**Zweiter Einstieg:** „Bericht erzeugen“ auf der Wirtschaftlichkeitsseite (`ErzeugeFuerVergleich`,
+BSG:303-327) erzwingt `B_WIRTSCHAFT` (BSG:314-315), nimmt die gespeicherte Vorlagenwahl und prüft vor. Führt die
+Vorlage keinen Schlüssel der Wirtschaftlichkeit — geprüft über Katalogbereich und `Deckt`, also auch
+`stand.wirtschaft.*`, `stand.bandbreite.*`, `bild.wirtschaft.*`, `tabelle.wirtschaft.*` —, bietet die Rückfrage
+für diesen Lauf die Standardvorlage an und nennt die gewählte. Die KI-Sicht (`BausteineLesen`, :317) lernt in
+BV-E1, die Vorlage zu lesen und zu setzen.
+
+### 10.3 Ablage, Auswahl, Plattformen, Datenbank
+
+| Thema | Regel |
+|---|---|
+| Mitgeliefert | eingebettet im Kern: Standardvorlagen Word und Excel, Kurzbericht je Sprache, Baukasten; ändern nur über eine Kopie |
+| Vorlagenordner | `Dienste.Pfade.Dokumente` + `EPOS-Plan/Berichtsvorlagen`; „Hinzufügen“ kopiert hierher und merkt Herkunftspfad und Prüfsumme; bearbeitet wird am Ort; Updates fassen den Ordner nie an |
+| Liste | nur `*.docx`, `*.dotx`, `*.xlsx`, `*.xltx`, ohne `~$` und versteckte Dateien; gleicher Name → „Ersetzen“ oder „Unter neuem Namen“ |
+| Sicherung, Cloud | die Datenbanksicherung nimmt den Ordner nicht mit ([BETRIEB_SQLITE.md](BETRIEB_SQLITE.md), Abschnitt 3), das Wiki sagt es; liegt die Vorlage in einem synchronisierten Ordner nur online: „Vorlage nicht lokal verfügbar“; gemeinsame Vorlagen: BV-Q15 |
+| Vorgabe | `IEinstellungen` `BerichtVorlageWord`/`BerichtVorlageExcel` (Hausschreibweise, `IEinstellungen.cs:4-6`); unter Windows **je Windows-Anwender** (HKCU), auf iOS je App |
+| Abweichung | je Stammprojekt in `KonfigJson` als `VorlageWord`/`VorlageExcel` (Quelle, Dateiname); eine Datei, keine Datenbankzeile, „Beziehungen über IDs“ unberührt; fehlt die Datei: Vorgabe, dann Standard, benannt |
+| Windows | Naht `Berichtsvorlagenwege` in der Hülle für „Im Ordner zeigen“ (`IDateiDienst` kennt es nicht, `MitSystemOeffnen` liefert für Ordner `false`, `WindowsDateiDienst.cs:105-107`) und „In Word öffnen“ |
+| iOS | Vorlage über `DateiOeffnenAsync` sofort in die Sandbox kopiert, kein externer Verweis; „In Word öffnen“ gibt es nicht (Teilen-Blatt = Kopie), der Menüpunkt heißt „Teilen…“; „Im Ordner zeigen“ benannt abgelehnt. **Pflegeweg** (BV-Q16, am Gerät zu messen): App „Dateien“ › Auf meinem iPad › EPOS-Plan › Berichtsvorlagen, in Word über „Durchsuchen“ öffnen und am Ort speichern (`Info.plist:38-40`); nach der Rückkehr vergleicht die Schnellprüfung die Prüfsumme; Rückweg „Ersetzen…“. Wiki: Word für iPad auf großen Geräten nur mit Abonnement, keine Inhaltssteuerelemente, kein Überfahren (Wissensstand, BV-E0) |
+| Datenbank | **kein Schemaschritt**; neues JSON-Feld in `Berichtskonfiguration` (Fremdschlüssel, `CASCADE`); BV-E0 entfernt oder begründet die Ad-hoc-DDL (`BerichtCtrl.cs:154-170`) und prüft das Löschen per Hand (`ProjektCtrl.cs:440-447`) samt veralteter Kommentare dort und in `ProjektDuplizierenCtrl.cs:68-78`, im Protokoll |
+| Duplizieren, Transfer | die Konfiguration steht in `AUSNAHME_TABELLEN` (`ProjektDuplizierenCtrl.cs:86-90`), der Transfer übernimmt diesen Plan (`ProjektExportImportCtrl.cs:414-416`): Vorlagenwahl und Vorlagen reisen nicht mit, beim Empfänger gilt dessen Vorgabe (BV-Q5) |
+| Setup, Übernahme | Inno löscht keine Datei, die nicht mehr im Paket ist (`Setup/EPOS-Plan.iss:296-299`); BV-E1 prüft beim ersten Start, ob `{app}\Vorlagen\Berichtsvorlage.docx` von der ausgelieferten Prüfsumme abweicht, bietet die Übernahme als eigene Vorlage an und entfernt die Altdatei per `[InstallDelete]`; Setup-Lauf nach Rückfrage |
+| Ersteller, Lizenz | `ersteller.firma` = Einstellung `BerichtFirma`, vorbelegt aus `LizenzToken.Firma` (`LizenzToken.cs:29`), bei `demo`/`person` (:33) evtl. leer (Leerwert „leer“); im `EinstellungenDialog`, neuer Abschnitt „Bericht“, mit Ressourcen, Hilfeschlüssel, KI-Anmeldung (BV-E1); `projekt.bearbeiter` bleibt die Person (BV-Q8); Vorlagen für alle Lizenztypen (BV-Q13) |
+
+
+## 11 Migration vom Bausteinweg
+
+1. **Messlatte zuerst (BV-E0):** Struktur des heutigen Berichts mit echter Vorlage für 1030 und synthetische
+   Daten (Überschriftenfolge, Tabellenköpfe, Absatztexte, Bildstellen). Begründete Abweichungen:
+   Stiletiketten nach Bereinigung, Lage der Wirkungstafel (Nr. 5), `{{bericht.datum}}` statt DATE.
+2. **Standardvorlage in zwei Schritten:** `{{bericht.inhalt}}` (BV-E1), dann einzelne Kapitel (BV-E2); beide
+   treffen die Messlatte. **Rückfall:** gewählte Vorlage → (Rückfrage) → Standardvorlage, benannt.
+3. **Anhang E:** `kapitel.anhang_e` am Häkchen „Wirtschaftlichkeit“; „Stelle im Bericht“ nennt die tatsächliche
+   Überschrift vor dem Anker — dank Rollenauflösung (6.2) auch in deutschen Vorlagen —, in Excel Blatt und
+   Zelle, in einem Durchgang (8.5); fehlt eine Stelle: „nicht im Bericht“ mit Prüferwarnung; mit der
+   Standardvorlage hält `BerichtBlattstrukturWacheTests.cs:1115`.
+4. **Formelmappe** unverändert; **Warnungen** in Laufmeldung und `bericht.warnungen` (heute BS:176-180);
+   **Konfiguration** `B_*` unverändert gelesen.
+5. **BW:678 vorab:** `k.Body.Append(t)` wird `k.Fuege(t)`.
+6. **Bekannte Mängel** nur, wo eine Etappe sie berührt, im Protokoll: feste Datumsmuster, „Stamm — Stamm“,
+   Δ%-Format (EBG:349), Freeze (EBG:1774), Datum und Menge als Text (EBG:235, :1764), nur erstes Gerät je
+   Gewerk (`ProjektDetails.cs:80`).
+
+
+## 12 Tests und Nachweis
+
+| Bereich | Nachweis |
+|---|---|
+| Vorlagenweg | Test mit echter Vorlage und `OpenXmlValidator` (Office 2007–2021), vor der Behebung von BW:678 rot; Strukturmesslatte bleibt Wache |
+| Katalog | Schlüssel eindeutig und nach Muster; Ressourcen- und Excel-Namen kollisionsfrei; handgepflegte Beschreibungen und Muster in beiden `.resx`; Aliasse lebendig; jede Kennzahl und Wirtschaftlichkeitszeile mit Eintrag, Musterschlüssel gegen die Konstanten; reservierte Namen decken die Formelmappe; eingefrorene Schlüssellisten; Engine-Texte zweisprachig |
+| Deckung je Ausgabe | jeder Schlüssel mit Ausgabe Word in der Word-Standardvorlage (direkt oder über `Deckt`), ebenso Excel; vorgemerkte Einträge ausgenommen |
+| Rundlauf | „Der Baukasten füllt ohne Prüferfehler; kein `{{` bleibt übrig“; Validator grün; jede Bildstelle mit SVG und PNG (`WordBerichtSvgWacheTests.cs:205`); Kurzbericht mit 1030 |
+| Schmutzige Vorlagen | unter `EPOS.Kern.Tests/Proben/Berichtsvorlagen/` (Hauskonvention, `RepositoryOrdnungWacheTests.cs:85-91`): zerlegte Runs, Platzhalter im fetten Wort, Textfelder, Kopfzeile nur Seite 1, Hyperlink, nachverfolgte Änderungen, Vorlage aus deutschem Word 365, XML der Tippprobe (Windows, Mac, iPad, LibreOffice), `.dotx`, `.docm`, Bild in der Kopfzeile, Kapitel im Block-SDT, SDT mit `w:dataBinding`/`w:showingPlcHdr`, Kommentare, Excel mit Standardschrift Aptos |
+| Varianten, Bestand | 0, 1, 3, 7 Varianten und Paarsicht; verschachtelte Blöcke; Leerfälle; `BerichtBlattstrukturWacheTests`, `WordBerichtSvgWacheTests`, Formelmappentests, `FormelmappeClosedXmlBefundTests` auf dem Vorlagenweg; Probe P3 als Test |
+| Excel | Paketvergleich je Testvorlage; Standardvorlage mit `B_WIRTSCHAFT` aus, leerem Verlauf, null Varianten |
+| Oberfläche | bunit (aus = kein DOM, beide Wurzelarten, Kopieren über Prüfadapter und ohne Adapter, ausgegraute Häkchen, gesperrter Eintrag); Abdeckungswache; „Anzeigewert = Katalogwert“ für 1030; `StilblattTests`, `SchliesskreuzWacheTests`, `KnopfleistenWacheTests`, `KiMaskenabdeckungWacheTests`; Browserprobe nach `Proben/Rasterprobe` (Trefferflächen bei 1280 px, zehn Varianten, iPad hoch); **Rasterprobe** selbst, weil Marken an `.epos-raster`-Tabellen ansetzen |
+| Produktdaten | Kurzbericht und Baukasten neutral, geprüft wie `WikiProduktdatenWacheTests` |
+| ChartProben, Referenzlauf | ChartProben unberührt bis Bildgröße Stufe 2 (BV-E5); Referenzlauf GESAMT: PASS in BV-E3; nichts wird eingefroren |
+| Gate | `kern.yml`; bei Hüllen Linux-Bau der Windows-Schale (`-p:EnableWindowsTargeting=true`); `designer_neu.py` nach neuen Ressourcen; `SqlDialektPruefer` nur bei neuem SQL (keines geplant) |
+| Papiere | je Etappe Statuszeile in [Status_iOS_Migration.md](Status_iOS_Migration.md) und Protokollblock unter `Dokumentation/ueberholt/Protokolle/` (Merge → Gate → Statuszeile und Protokoll → Push); Indexzeile dieses Papiers in [../LIESMICH.md](../LIESMICH.md) |
+| Wiki | neue Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` mit Kopfkommentar, Abschnitt „Bericht“ in `Programm Dokumentation - Wirtschaftlichkeit.wiki`; Anker in `help_mapping` erhalten (`HelpMappingAnkerWacheTests.cs:35-65`); „Upload ausstehend“ in der Statusdatei; Logbuch nur für sichtbare Änderungen (BV-E1, E2, E4 bis E7), ein Satz je Version ([Konzept_Hilfesystem_Wikidokumentation.md](Konzept_Hilfesystem_Wikidokumentation.md), 13.3, 13.4) |
+
+
+## 13 Etappen
+
+Aufwand geschätzt in Personentagen; Grundlage ist der Technikbefund (Word 15–18 PT, Excel 6–10 PT) zuzüglich
+Katalog, Oberfläche, Migration und Tests. BV-E6 kann ab BV-E2 parallel laufen; BV-E4 setzt E2 und E3 voraus,
+BV-E7 setzt E3 voraus.
+
+| Etappe | Ziel | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|---|
+| **BV-E0 Grundlagen, Messlatte, Messproben** | Fehlerquellen schließen, Maßstab festlegen | BW:678 beheben; Test mit echter Vorlage; Strukturmesslatte; doppelte Stile bereinigen; Ad-hoc-DDL und veraltete Kommentare (10.3); Laufzeit heute messen. Messproben als Tests: Excel-Namen mit Punkt, ClosedXML-Rundlauf (Diagramm, Tabelle, Name, berechnete Spalten), `.xltx`, `<v>` einer in Excel gespeicherten Vorlagenformel, SDT und Alternativtext, Vorlage aus deutschem Word 365, Tippprobe. Geräteprobe iPad notieren (BV-Q16). Mockup vorlegen | Gate grün; Validator grün mit Vorlage; Messbefunde im Protokoll; Mockup freigegeben; kein Logbucheintrag | 3–4 |
+| **BV-E1 Vorlagenwahl und Textplatzhalter** | eigenes Deckblatt, Kopf- und Fußzeile; übriger Bericht wie heute | Katalog v1 (`bericht.*`, `text.*`, `ersteller.*`, `projekt.*`, `stamm.kennzahl.*`, `kennzahl.*`, `bericht.inhalt`); Engine mit Normalisierer, allen Teilen, Einfügeanker, Rollenauflösung, Inhaltsbreite, Kommentarentfernung; eingebettete Standardvorlage, Entfernen von `FindeVorlage`, Lieferwegen, Code-Rückfall samt Papieren (8.4); Übernahmeschritt, `[InstallDelete]`; `BerichtsvorlagenCtrl`, `BerichtsvorlagenGaben`, `Berichtsvorlagenwege`; Vorlagenordner, „Neue Vorlage…“, „Hinzufügen…“, Vorgabe; Vorlagengruppe, Prüfzeile, `BerichtSeiteTexte`; Prüfer beider Stufen, Vorprüfung, erweiterte Rückfrage; Probefüllung Text (BV-Q12); Einstellung „Firma“; iOS-Dateifilter `.dotx`; KI-Anmeldung samt Eingabebilanz (`KiMaskenabdeckungWacheTests.cs:131, :168`) | Messlatte, Validator, schmutzige Vorlagen (auch deutsches Word) grün; Katalogwachen und `designer_neu.py` prüfend grün; bunit grün; Schale baut auf Linux; Setup-Lauf nach Rückfrage; Anwenderprobe mit Logo und `{{ersteller.firma}}`; Änderungen an `EPOS.iOS/` im Protokoll | 6–8 |
+| **BV-E2 Kapitel und Häkchen** | Vorlage bestimmt Reihenfolge und Umfang | `kapitel.*` einzeln, Standardvorlage umgestellt; `\|ohne titel`, `\|ebene 2`, Entfall des Kapitelkopfs; Häkchen mit ausgegrauten Einträgen; Abweichung je Stammprojekt; `custom.xml` mit Fassung; `Deckt`; Bausteintitel nach MyResource; zweiter Einstieg; Stelle in der Anhang-E-Überlagerung | Word-Wachen grün auf dem Vorlagenweg; Deckungswache Kapitel; bunit Häkchenliste; Linux-Bau der Schale; Anwendervorlage mit umgestellter Folge und abgewähltem Häkchen ohne verwaiste Überschrift | 3–4 |
+| **BV-E3 Reiner Wertesatz** | Auflösen ohne Datenbank, gleiche Zahlen in Word und Excel | Zugriffe und Nebenrechnungen nach `BerichtsDaten.Wirtschaft` über dieselben Rechenwege; beste Variante in den Kern; `Bedarf` steuert Zeitreihen, Verlauf, Emissionsbilanz | Messlatte unverändert; Wirtschaftlichkeits- und Anhang-E-Tests grün; Test mit werfendem `IDatenzugriff` beim Füllen; Word gegen Excel für alle `stand.wirtschaft.*`; Probe gegen heutigen Bausteinweg; Referenzlauf GESAMT: PASS; kein Logbucheintrag | 3–5 |
+| **BV-E4 Blöcke, Schalter, Standwerte** | Werte je Variante und bedingte Abschnitte | `je stand`, `je variante`, `je gebaeude`, `wenn`, `hat.*`, Standschalter (4.11); Zeilenwiederholung, SDT-Wiederholabschnitt mit Auspacken; `stand.*`-Werte, `stand.a/b`, `vergleich.*`, `wirtschaft.*` samt `beste`, Parametern, Szenarien; Warnlisten und Gültigkeitsregel | 0, 1, 3, 7 Varianten und Paarsicht; verschachtelte Blöcke; Leerfälle; Prüfer meldet offene Blöcke und Kontextverstöße | 4–6 |
+| **BV-E5 Tabellen und Bilder** | Kurzberichte ohne ganze Kapitel | `Berichtstabelle`, Strukturtabellen mit Tabellenformatvorlage und Mustertabelle, Breite in Prozent; Bildplatzhalter, Bildgröße Stufe 2; vollständiger Baukasten; Kurzbericht je Sprache; Probefüllung für Tabellen und Bilder | Validator und SVG-Wache grün; ChartProben mit neuen Größen grün; Kurzbericht mit 1030; Leistungstest 60 Seiten innerhalb „heute + 10 %“ | 5–7 |
+| **BV-E6 Kennzeichnung in der App** | Platzhalter am Ort erkennen | `Vorlagenfeldknopf`, `Vorlagenfeldansicht`, `IZwischenablage` mit Adaptern, Umschalter (9.4), Katalog mit „In der App zeigen“, Parameter an den Bausteinen, `Vorlagenfeldorte`, Ressourcen; nur Schlüssel mit `Seit` ≤ Fassung | bunit, Abdeckungswache, „Anzeigewert = Katalogwert“, Stilblatt- und Schließkreuz-Wache grün; Browserprobe 1280 px, zehn Varianten, iPad; Rasterprobe grün (Zeilenhöhe in allen Stellungen gleich); `EPOS.iOS/` benannt, iOS-Lauf nach Rückfrage; Anwenderabnahme | 5–7 |
+| **BV-E7 Excel-Rahmen** | Excel-Mappe aus einer Vorlage | `ExcelVorlagenfueller`, Standard-`.xlsx` im Code, Blattmarken mit Entfall-Regel, Zellplatzhalter, Namen, reservierte Namen, Paketvergleich, ausdrückliche Schrift, `FullCalculationOnLoad` bei Vorlagenformeln, Zeile „Excel-Vorlage“, Dateifilter `.xltx` | ohne Vorlage alle Excel-Wachen unverändert grün (`BerichtBlattstrukturWacheTests.cs:191, :217`); mit Vorlage die Formelmappentests; Aptos-Vorlage | 4–6 |
+| **BV-E8 Excel-Listen, Detailblatt, Diagramme** | Stände und Listen in Excel | Excel-Tabellen aus listentauglichen Tabellen, erzeugte Bereiche, Musterblatt `blatt.detail`, Diagramme auf Rastern oder Namen, Cache-Nachtrag, Anhang-E-Stelle als Blatt und Zelle; nur nach grünen Messproben | Probemappe zeigt neue Werte ohne Neuberechnung; Detailblätter an der Markenstelle in Standfolge | 3–5 |
+| **BV-E9 Ausbau auf Zuruf, Abschluss** | Einzelposten nach nachgewiesenem Bedarf | `.dotx` mit Schnellbausteinen, Ergebnisnamen, PNG in Excel, Sprache des Laufs aus der Vorlage, Teamordner (BV-Q15 b), Positionsadressierung (BV-Q10 b); zum Abschluss `git mv` dieses Papiers nach `ueberholt/` | je Posten benannter Test und Anwenderprobe; Gate grün | je Posten |
+
+
+## 14 Entscheidfragen
+
+| Nr. | Frage | Lesarten | Empfehlung |
+|---|---|---|---|
+| **BV-Q1** | Bausteinhäkchen | (a) feste Schalter für alle Kapitel; (b) entfallen, die Vorlage bestimmt den Inhalt allein; (c) Schalter für Kapitelplatzhalter und `baustein.*`, Kapitel ohne Platz in der Vorlage ausgegraut | **(c):** mit der Standardvorlage wie heute, Tests bleiben gültig, eigene Vorlagen verwirren nicht |
+| **BV-Q2** | Häkchen in Excel | (a) wie heute; (b) wie in Word; (c) wirken auf die Blätter der Excel-Vorlage | **(a)** bis BV-E7, danach (c) |
+| **BV-Q3** | Syntax in Word | (a) `{{…}}` und Inhaltssteuerelemente gleichrangig; (b) nur Inhaltssteuerelemente; (c) nur `{{…}}`. Teilfrage: Syntaxwörter in beiden Sprachen deutsch? | **(a)**; Teilfrage ja |
+| **BV-Q4** | Ablage | (a) Vorlagenordner in den Dokumenten, Kopie mit Herkunft; (b) BLOB in der Datenbank; (c) Datenordner neben `Kenndaten.sqlite` | **(a):** sichtbar, am Ort pflegbar, auf iOS ohne Bookmarks |
+| **BV-Q5** | Geltung der Wahl | (a) je Anwender; (b) je Stammprojekt; (c) Vorgabe je Anwender, Abweichung je Stammprojekt | **(c)**; Duplizieren und Transfer nehmen sie nicht mit |
+| **BV-Q6** | Fehlerhafte Vorlage | (a) Abbruch; (b) stiller Rückfall; (c) Vorprüfung vor der Simulation, eine Rückfrage mit drei Wegen | **(c)** |
+| **BV-Q7** | Sprache | (a) Oberflächensprache; Standardvorlage sprachneutral, Kurzbericht je Sprache, Rückfrage vor der Simulation bei abweichender Vorlage; (b) die Vorlage bestimmt die Sprache des Laufs (Übersteuerung von `BerichtTexte.Englisch` je Lauf); (c) nur sprachneutrale Vorlagen | **(a)**; (b) auf Zuruf in BV-E9 |
+| **BV-Q8** | „Ersteller“ | (a) `projekt.bearbeiter`; (b) Lizenznehmer; (c) `ersteller.firma` als Einstellung aus der Lizenz, `projekt.bearbeiter` bleibt die Person. Teilfrage: Fußzeile der Standardvorlage „INEKON GmbH“ → `{{ersteller.firma}}`, DATE → `{{bericht.datum}}`? | **(c)**; Teilfrage ja |
+| **BV-Q9** | Kennzeichnung in der App | (a) Randmarke immer sichtbar; (b) Marke nur beim Überfahren am Rand; (c) Platzhalteranzeige mit drei Stellungen (Aus, Marken mit Mouse-over, Schlüssel) plus Katalog; (d) nur Katalog. Teilfrage: Umschalter je Bildschirm in der Kopfzeile, auch ausgeschaltet sichtbar (Mockup), oder nur in Vorlagengruppe und Katalog? | **(c)**; Teilfrage: Kopfzeile — ausschalten, wo man ist, um den Preis eines ruhigen Symbols |
+| **BV-Q10** | Stände außerhalb von Blöcken | (a) nur `stamm.*`, Gruppe, `stand.a/b` (`stand.b` in Sicht 1 bei genau einer Variante); (b) nach Position `variante1…n`; (c) nach Projekt-ID | **(a)**; (b) nur bei nachgewiesenem Bedarf |
+| **BV-Q11** | Excel-Umfang | (a) Rahmen, Blattmarken, Namen; (b) zusätzlich Excel-Tabellen, Detail-Musterblatt, eigene Diagramme; (c) zusätzlich PNG-Bilder | **(a)** in BV-E7, (b) in BV-E8, (c) auf Zuruf |
+| **BV-Q12** | Probefüllung ohne Simulation | (a) Muster über „Erstellen“; (b) keine; (c) „Vorlage testen“ in der Prüfliste: Beispielwerte aus `BeispielId`, Kapitel als graue Kästen, Wasserzeichen „Probe – kein Bericht“, eigener Dateiname, nie über „Erstellen“ | **(c)** ab BV-E1 für Text, ab BV-E5 für Tabellen und Bilder; es entsteht kein Bericht, jeder Bericht rechnet weiter neu |
+| **BV-Q13** | Edition | (a) eigene Vorlagen für alle Lizenztypen; (b) nur „firma“; (c) demo nur Standard | **(a)** |
+| **BV-Q14** | Zustand nach dem Füllen | (a) SDT auspacken, Schlüssel entfernen; (b) SDT behalten und sperren; (c) auspacken, Schlüssel in `docPr/@title` oder Textmarke behalten (erneut füllbar) | **(a):** sauberer Kundenbericht, Word überschreibt nichts |
+| **BV-Q15** | Gemeinsame Vorlagen eines Büros | (a) je Anwender, Weitergabe per Datei; (b) zusätzlich ein nur lesender Teamordner `BerichtVorlagenTeamordner` (nur Windows); (c) Vorlagenpaket exportieren und importieren | **(b)** unter Windows, **(a)** auf iOS |
+| **BV-Q16** | Pflegeweg auf dem iPad | (a) Pflege nur unter Windows; (b) Rundweg „Teilen…“ und „Ersetzen…“; (c) Bearbeiten am Ort über die App „Dateien“ | **(c)** nach Geräteprobe (iU13), sonst (b) |
+| **BV-Q17** | Gestaltung der Diagramme | (a) wie heute: Farbrollen der Einstellungen, feste Schrift; (b) Palette aus den Designfarben der Vorlage; (c) Berichtspalette je Vorlage in `custom.xml` | **(a)**; ChartProben bleiben unberührt |
+| **BV-Q18** | Zwischenablage der Marken | (a) Naht `IZwischenablage` in EPOS.UI mit Windows- und iOS-Adapter; (b) rein clientseitiger JS-Klickhandler, Messung am iPad | **(a):** hausgemäß, auf dem iPad verlässlich; iOS-Änderung benannt |
+| **BV-Q19** | Ort der Standardvorlagen | (a) eingebettete Ressourcen im Kern; (b) wie heute Datei neben der EXE bzw. MauiAsset, ergänzt um Excel | **(a):** plattformfrei, testbar; kehrt `EPOS.Kern/CLAUDE.md:34` bewusst um |
+
+
+## 15 Risiken und offene Punkte
+
+### 15.1 Risiken
+
+| Risiko | Gegenmittel |
+|---|---|
+| Normalisierer übersieht Randfälle; Vorlagen aus deutschem Word | Prüfer vor jeder Rechnung, schmutzige Vorlagen, SDT als robuste Form, Rollenauflösung über `w:name`; ein Platzhalter bleibt lieber stehen, als dass Text verloren geht |
+| Standardweg verändert sich; umbenannte Schlüssel brechen Vorlagen | Messlatte vor jedem Umbau, Wachen auf dem Vorlagenweg; Aliasse, eingefrorene Schlüssellisten |
+| Marke verspricht einen anderen Wert; Einzelwerte ohne Gültigkeitshinweise | Regel „genau der angezeigte Wert“ mit Wache; Warnlisten, Prüferregel, Warnungen immer in der Laufmeldung |
+| Bildrahmen und Modell passen nicht; ClosedXML verliert Teile | einpassen, Warnung unter 80 %, Stufe 2; Paketvergleich, `.xlsm` gesperrt, Raster oder Namen, Schrift ausdrücklich |
+| iOS: Bericht nie gelaufen, AOT, Zwischenablage | kein Paket mit Reflection oder Ausdrücken; iOS-Probe nach Rückfrage; Adapter mit Rückfall |
+| Fremde Vorlagen; veraltete Kopien | Makros ablehnen, Verknüpfungen entfernen, Grenze auf unkomprimierte Größe; Herkunft und Prüfsumme |
+| Marken stören; halbfertige Stände über `GitHub_Sync.bat` | Anzeige aus als Vorgabe, eine Marke je Tabelle, Browser- und Rasterprobe; jede Etappe für sich nutzbar |
+
+### 15.2 Offene Punkte
+
+Offen sind die Messfragen von BV-E0, die Geräteprobe iPad (iU13) und die Entscheide BV-Q1 bis BV-Q19; ohne
+sie beginnt keine Etappe über BV-E0 hinaus.
+
+### 15.3 Verworfene Lösungen mit Grund
+
+| Lösung | Grund |
+|---|---|
+| Vorlagen als BLOB in der Datenbank | Ausgeben und Neu-Einlesen macht still veraltete Fassungen wahrscheinlich; nicht am Ort pflegbar |
+| neue Konfigurationstabelle mit Schemaschritt | Fremdschlüssel und `CASCADE` bestehen (`ProjektFremdschluessel.cs:205`) |
+| „Rumpf leeren“ bei Vorlagen ohne Platzhalter | löscht still Inhalt des Anwenders |
+| Ablage unter `%ProgramData%` | dort schreibt nur das Setup; die Datenbanksicherung nähme sie nicht mit |
+| Parameter `Platzhalter`, Code-Name „Marke“; Zuordnung über `DiagrammSvg.Kennung` | kollidieren mit `Textfeld.razor:68`, `DiagrammSvg`, `--epos-marke`; `Kennung` ist je Instanz, teils dynamisch (WS:1637) |
+| Zeilenmarken nur bei Überfahren oder Fokus; dauerhafte Leiste „Platzhalter sichtbar … ✕“ | verletzt „Aktionsknöpfe einer Zeile immer sichtbar“; Banner nur für Zustände, die man beheben muss, ✕ ist Abbrechen |
+| `CascadingValue` aus `AppWurzel`; Prüfzeile als `Kennzeichen` | erreicht Windows-Dialoge nicht; `Kennzeichen` ist das Schloss ohne Textknoten |
+| eigener Annahme-Algorithmus für Änderungen | Umfang ohne Nutzen; fertige Fortführungen verlangen SkiaSharp 4.x |
+| Spaltenwiederholung, `ReplaceData(T)` | höchstes Bruchrisiko; Reflection gegen die iOS-Begründung |
+| Kürzel `\|d`, `\|D`, `max=3`; Positionsadressierung von Anfang an | .NET-Kürzel bzw. zweite Schreibweise; bricht bei Umordnung der Varianten still |
+
+## 16 Verwandte Papiere
+
+- [Konzept_Diagramme_Interaktiv_EPOS-Plan.md](Konzept_Diagramme_Interaktiv_EPOS-Plan.md) (Zeichenmodell, SVG im Bericht, Farbrollen), [Konzept_Knopfleisten_Administration_EPOS-Plan.md](Konzept_Knopfleisten_Administration_EPOS-Plan.md) (Fußleisten), [Konzept_Hilfesystem_Wikidokumentation.md](Konzept_Hilfesystem_Wikidokumentation.md) (Wiki, Logbuch).
+- [Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md](Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md), [Konzept_KI-Assistent_Aufgabensteuerung.md](Konzept_KI-Assistent_Aufgabensteuerung.md) (KI-Sicht, Maskenanmeldung).
+- [Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md](Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) (Szenarien, Anhang E), [Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md](Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md) (Emissionsmodus).
+- [Konzept_Projekttransfer_EPOS-Plan.md](Konzept_Projekttransfer_EPOS-Plan.md), [Konzept_Setup_InnoSetup_EPOS-Plan.md](Konzept_Setup_InnoSetup_EPOS-Plan.md), [EPOS-Plan_Konzept_Lizenzierung.md](EPOS-Plan_Konzept_Lizenzierung.md), [BETRIEB_SQLITE.md](BETRIEB_SQLITE.md).
+- [Umsetzungskonzept_iOS_EPOS-Plan.md](Umsetzungskonzept_iOS_EPOS-Plan.md), [Umsetzung_iU10_Nachweise.md](Umsetzung_iU10_Nachweise.md), [Status_iOS_Migration.md](Status_iOS_Migration.md) (iU11, iU13, iR-g).
+- Geschichte, keine Regelquelle: [../ueberholt/Protokolle/Reporting/Konzept_Berichtserstellung_EPOS-Plan.md](../ueberholt/Protokolle/Reporting/Konzept_Berichtserstellung_EPOS-Plan.md), [../ueberholt/Protokolle/Reporting/E14_Formelmappe_je_Szenario_Protokoll.md](../ueberholt/Protokolle/Reporting/E14_Formelmappe_je_Szenario_Protokoll.md), [../ueberholt/Protokolle/Bericht/DG_E3_Rollout_Protokoll.md](../ueberholt/Protokolle/Bericht/DG_E3_Rollout_Protokoll.md).
+- Hausregeln und Prüfstände: [../../EPOS.UI/CLAUDE.md](../../EPOS.UI/CLAUDE.md), [../../EPOS.Kern/CLAUDE.md](../../EPOS.Kern/CLAUDE.md), [../../Proben/ChartProben/LIESMICH.md](../../Proben/ChartProben/LIESMICH.md), [../../Proben/Rasterprobe/LIESMICH.md](../../Proben/Rasterprobe/LIESMICH.md).
+
+
+## Anhang A Platzhalterkatalog
+
+Abkürzungen wie Abschnitt 2, dazu BK = `BerichtsKonfiguration.cs`, PD = `ProjektDetails.cs`, VE = `VerlaufExcel.cs`,
+SEH = `SimulationErgebnisHuelle.Bilder.cs`. „entspricht“/„ähnlich“: Stufe der Marke; „–“: keine Marke; am Ende die Etappe.
+
+| Schlüssel | Art | Quelle im Kern | Ort in der App | Bemerkung |
+|---|---|---|---|---|
+| `bericht.inhalt` | Kapitel (Sammelanker) | WBG:96-111 | Häkchen der Berichtsseite | angehakte Kapitel ohne die einzeln geführten; E1 |
+| `bericht.titel`, `bericht.untertitel` | Text | `Stammprojektname` BD:18; BS:18 über `BerichtTexte.T` | Seitentitel | Untertitel in der Standardvorlage Platzhalter; E1 |
+| `bericht.datum` | Datum | `ErstelltAm` BD:19 | – | Kultur statt „dd.MM.yyyy“; Excel echtes Datum; E1 |
+| `bericht.programmversion` | Text | `ProduktFassung` BS:89-112 | – | E1 |
+| `bericht.varianten.liste`, `.anzahl` | Text, Zahl | `Anzeige` BS:20-22; `Varianten.Count - 1` | Variantenliste (entspricht) | Rückfall „— (nur Stammprojekt)“; E1 |
+| `bericht.gebaeudemodell.ausweis` | Text | `GEB_PRODUKTAUSWEIS_VDI6007` BS:41-45 | – | nur bei `ProduktausweisNoetig` (BS:59); E1 |
+| `bericht.emissionsmodus` | Text | `EmissionsAusweis.ModusAusVarianten`, KK:324 | – | E1 |
+| `bericht.warnungen` | Liste | `daten.Warnungen` BD:25; BS:176-180 | Laufmeldung | E1 |
+| `text.seite`, `text.<name>` | Text | MyResource | – | Festtexte der Standardvorlage; E1 |
+| `ersteller.firma` | Text | Einstellung `BerichtFirma`, vorbelegt `LizenzToken.Firma` (`LizenzToken.cs:29`) | Einstellungen › Bericht (entspricht) | leer bei demo/person möglich; E1 |
+| `projekt.name`, `.kunde`, `.bearbeiter` | Text | `m_szProjektname`, `m_szKunde`, `m_szBearbeiter` BP:24-25; `Model/ProjektModel.cs:10` | `ProjektKopfSeite.razor:68-95` (entspricht) | Kunde: Leerwert leer; Bearbeiter: die Person; E1 |
+| `projekt.beschreibung` | Text (mehrzeilig) | `m_szBeschreibung` (`ProjektModel.cs:11`) | wie oben | heute nicht in Excel; E1 |
+| `projekt.klimaregion` | Text | `Details.KlimaregionName` PD:64-66 | `ProjektKopfSeite.razor:5` (entspricht) | „—“; E1 |
+| `projekt.angelegt`, `.geaendert`, `.simulationsstand` | Datum | BP:30-31; `SimulationsStand` BD:93 | Spalte „Simulation“ (entspricht) | E1 |
+| `stamm.kennzahl.<k>` | Zahl | `Kennzahlen[k]` KK:513-525; 44 Schlüssel KK:329-507 | Ergebnisansicht beim Stamm (`UebersichtReiter.razor:147`), `UebersichtSeite.razor:161-162` (entspricht) | `energie.*`, `eff.*`, `kaelte.*`, `em.*`, `ko.*`; E1 |
+| `kennzahl.<k>.beschriftung`, `.einheit` | Text | `Label(englisch)`, `Einheit` KK:14-16, 31 | – | Kontext Bericht, nach Emissionsmodus (KK:489-500); E1 |
+| `kapitel.deckblatt`, `.inhalt`, `.projekt`, `.komponenten` | Kapitel | BS:8-50, 116-126; BP:10-410, 416-550 | – | TOC WBG:247-256; Projekt entfällt ohne Stamm; E2 |
+| `kapitel.ergebnisse`, `.vergleich`, `.wirtschaftlichkeit`, `.anhang` | Kapitel | BV:13-105, 112-474; BW:20-1340; BS:130-182 | – | Bedarf Zeitreihen bzw. Verlauf und Emissionsbilanz; E2 |
+| `kapitel.anhang_e` | Kapitel | AE:411-461 | Überlagerung Anhang E, WS:1665 (ähnlich) | Schalter `B_WIRTSCHAFT` (AE:413); E2 |
+| `baustein.<name>` | Schalter | BK:36-46, JSON `B_*` | Häkchen der Berichtsseite (entspricht) | acht Schalter; E2 |
+| `hat.<schlüssel>`, `hat.emissionsmodus_gwp` | Schalter | abgeleitet je Tabelle, Bild, Kapitel; `EmissionsAusweis` | – | im Block für den Stand, sonst Gruppe (BP:127, BV:148, BW:181); E4 |
+| `stand.anzeige`, `.rolle`, `.bezeichner`, `.projektname`, `.hinweis` | Text | `Anzeige` BD:403-406; EBG:246-255; BS:139-162 | Variantenliste (entspricht) | Stamm: Stammprojektname; E4 |
+| `stand.beschreibung`, `.kunde`, `.bearbeiter`, `.stromspeicher` | Text | `VariantenDaten.Projekt` BD:87, BDS:515-520; `SpeicherKontextText` (BSG:126-129), im Sammler | Spalte Stromspeicher (entspricht) | E4 |
+| `stand.simulationsstand` | Datum/Zeit | `SimulationsStand`, `FrischSimuliert` BV:36-38 | Spalte „Simulation“ (entspricht) | E4 |
+| `stand.ist_stamm`, `.hat_fehler`, `.veraltet`, `.frisch`, `.hat_zeitreihen`; `stand.fehler` | Schalter; Text | `IstStamm`, `Fehler` BD:382, `ErgebnisVeraltet` BD:100, `FrischSimuliert` BD:96; BV:40-41 | – | E4 |
+| `stand.a`, `stand.b` | Kontext | Vergleichssicht BSG:214-224 | Paarvergleich der Wirtschaftlichkeitsseite | `stand.b` in Sicht 1 nur bei einer Variante; E4 |
+| `stand.kennzahl.<k>` | Zahl | wie `stamm.kennzahl` | Ergebnisansicht einer Variante; Vergleichstabelle (entspricht) | im Block; E4 |
+| `stand.delta.<k>`, `stand.delta_prozent.<k>` | Zahl | WBG:472-491 | – | nur `DeltaAnzeigen`; in Excel-Vorlagen ein Wert; E4 |
+| `stamm.kaeltestrom.*` | Zahl | `Kaeltestrom*` BD:320-337 | – | nur mit erhobener Kälte (BP:127); E4 |
+| `stamm.wirtschaft.<zeile>` | Zahl | `WirtZeile.Wert/ExcelWert/Format` WZ:32, 41, 295 | Kostenkacheln beim Stamm, `KostenSeite.razor:109` (entspricht) | `.guenstig`/`.unguenstig`; E4 |
+| `stand.wirtschaft.<zeile>` (`nettobarwert`, `kapitalwert_diff`, `annuitaet`, `amortisation`, `irr`, `investition`, `betriebskosten`, `energiekosten`, `gestehungskosten` …) | Zahl | wie oben | Kostenkacheln bei einer Variante (entspricht) | Großschreibung als Alias; Amortisation, IRR teils Text; E4 |
+| `stand.wirtschaft.erl_<block>_k_<komponente>`, `…_teil_…`, `vermieden_herleitung_<komponente>` | Zahl (Muster) | WZ:1237, 1262, 844; Konstanten WZ:143-153 | – | Werte aufgezählt; E4 |
+| `stand.wirtschaft.<zeile>.grund` | Text | Fehlgrund der Zelle (`ErgebnisansichtTests.cs:585`) | – | E4 |
+| `wirtschaft.warnungen`, `stand.wirtschaft.warnungen` | Liste | BW:39-54, 107-117, 217-225, 908-917; EBG:434-510 | Hinweise der Wirtschaftlichkeitsseite (ähnlich) | E4 |
+| `wirtschaft.beste.anzeige`, `wirtschaft.beste.<zeile>` | Text, Zahl | Auswahl aus `WirtschaftlichkeitSeiteGaben.cs:1433-1442`, in den Kern verlegt | Kacheln WS:247 (entspricht) | ohne Variante der Stamm; E4 |
+| `stand.bandbreite.unguenstig`, `.erwartet`, `.guenstig`, `.spanne`, `.amortisation`, `.einstufung` | Zahl/Text | `BandbreitenZeile` BW:1182-1212 | Szenarientafel WS:264 (entspricht) | E4 |
+| `wirtschaft.referenzname`, `.rechenstand` | Text, Datum | BW:1172; `Zeitstempel` EBG:431 | Wirtschaftlichkeitsseite (entspricht) | E4 |
+| `wirtschaft.methodik`, `wirtschaft.parameternachweis` | Text | BW:66-71; BW:76-89, EBG:420-432 | – | Methodik in der Standardvorlage Platzhalter; Nachweis datenbankfrei ab E3; E4 |
+| `wirtschaft.parameter.<name>` (`zins`, `zeitraum`, `p_e`, `p_b`, `p_i`, `risiko_*`) | Zahl | `ExcelFormelmappe.cs:120-247`, ab E3 `BerichtsDaten.Wirtschaft` | – | je Szenario; E4 |
+| `wirtschaft.szenario.<s>.name`, `.annahmen`, `.traegerpreise` | Text | BW:150-159, 1267-1290; EBG:516-647 | – | E4 |
+| `wirtschaft.vorschlag`, `.szenarioabdeckung` | Text | BW:1248, 1240; EBG:689, 1455-1462 | – | Vorschlag entfällt, wenn leer; E4 |
+| `wirtschaft.valeri_hinweise`, `.hinweise`, `.deklarationen` | Liste | BW:1309-1339; EBG:709-750, 1087-1117 | – | E4 |
+| `vergleich.beste_variante`, `vergleich.bestwert.<k>`, `vergleich.spanne.<k>` | Text/Zahl | `Kennzahlen` aller Stände, KK:513-525 | – | E4 |
+| `gebaeude.name`, `.art`, `.baualtersklasse`, `.flaeche`, `.nutzer`, `.waermebedarf`, `.spez_waermeverbrauch`, `.ww_bedarf`, `.raumhoehe` | Text/Zahl | `Tab_Gebaeude` über `ProjektDetails.S/D` BP:39-50 | – | nur in `je gebaeude`; E4 |
+| `gebaeude.ergebnis.rechenweg`, `.heizwaerme`, `.spitze`, `.spitze_tagesmittel`, `.spitze_95`, `.kuehlenergie`, `.kuehlstunden`, `.raumtemperatur`, `.ueberhitzungsstunden` | Text/Zahl | `ErgebnisGebaeudeModel` BP:281-297 | Gebäude-Ergebnisreiter (ähnlich) | Kühlwerte nur auf dem VDI-6007-Weg; E4 |
+| `muster.tabelle` | Mustertabelle | Alternativtext einer Vorlagentabelle | – | wird entfernt; E5 |
+| `tabelle.varianten` | Tabelle | EBG:238-261 | Variantenliste (entspricht) | sechs Spalten mit Stromspeicher; listentauglich; E5 |
+| `tabelle.komponenten.matrix` | Tabelle | BP:429-464; EBG:264-281 | – | Spalten je Stand; E5 |
+| `tabelle.komponenten.kenndaten.<gewerk>` | Tabelle | BP:467-513; PD:23 | Gegenüberstellung `UebersichtSeiteGaben.cs:463` (ähnlich) | nur das erste Gerät (PD:80); E5 |
+| `stand.tabelle.abweichungen`, `tabelle.gebaeude.ergebnis`, `tabelle.kaelteerzeuger` | Tabelle | BP:529-546, BDS:428; BP:269-307; BP:193-221 | – | E5 |
+| `tabelle.speichertemperaturen` | Tabelle | BP:341-361 | `SimulationErgebnisSeite.razor:154` (entspricht) | E5 |
+| `stand.tabelle.kennzahlen` | Tabelle | BV:43-54 (Kernliste BV:19-26); EBG:1725-1743 | – | Word 14 Kennzahlen, Excel alle mit Wert; E5 |
+| `tabelle.vergleich.<gruppe>` (`energiebilanz`, `effizienz`, `kaelte`, `emissionen`, `kosten`), `tabelle.vergleich` | Tabelle | BV:254-308, KK:51; EBG:289-366 | `UebersichtSeite.razor:161-162` (entspricht) | Δ-Spalte nur bei einer Variante; E5 |
+| `tabelle.vergleich.delta_prozent` | Tabelle | BV:310-345 | – | ab zwei Varianten; E5 |
+| `stand.tabelle.erzeuger`, `.brennstoffmengen`, `.monatswerte` | Tabelle | BV:358-432, EBG:1778-1823; BV:435-466, EBG:1750-1768; EBG:1825-1879 | – | Menge künftig Zahl; Monatswerte Ausgabe Excel; E5 |
+| `tabelle.wirtschaft.kennzahlen` (+ `.guenstig`/`.unguenstig`) | Tabelle | BW:814-920; EBG:516-647 | `Vergleichstabelle` WS:1709 (entspricht) | Paarsicht A∣B; E5 |
+| `tabelle.wirtschaft.parameter` | Tabelle | `ExcelFormelmappe.cs:120-247` | – | E5 |
+| `stand.tabelle.kwkg_module`, `.betriebskosten` | Tabelle | BW:526-620, EBG:1483-1578; BW:681-792, EBG:1587-1684 | – | KWK 11 oder 16 Spalten; E5 |
+| `stand.tabelle.mehrjahres` | Tabelle | BW:389-483 | Mehrjahrestafel WS:1631 (entspricht) | Ausgabe Word; in Excel erzeugt; E5 |
+| `stand.tabelle.vermiedene_kosten`, `.sensitivitaet`, `.strommengen`, `.emissionsbilanz` | Tabelle | BW:486-517; BW:1061-1105, EBG:915-968; BW:928-971, EBG:970-1015; BW:974-1052, EBG:1017-1085 | – | Emissionsbilanz nur mit Kraftwerkspark; E5 |
+| `tabelle.wirtschaft.szenarien` | Tabelle | BW:1131-1214; EBG:1396-1470 | Szenarientafel WS:264 (entspricht) | E5 |
+| `tabelle.wirtschaft.nicht_monetaer` | Tabelle | BW:634-679; EBG:1328-1372 | `WirkungenListe` WS:446 (ähnlich) | BW:678 vorab behoben; E5 |
+| `tabelle.wirtschaft.verlauf` | Tabelle | EBG:759-879; VE:66-163 | `KapitalwertVerlaufAbschnitt.razor` (entspricht) | verbundene Köpfe, nicht listentauglich; E5 |
+| `tabelle.anhang.simulationsstaende` | Tabelle | BS:139-162 | – | E5 |
+| `tabelle.anhang_e.checkliste` | Tabelle | AE:344-403, 416-460 | Überlagerung Anhang E, WS:1665 (entspricht) | Spalte „Stelle“ nach Vorlage; E5 |
+| `stand.bild.waerme_jahresverlauf`, `.waerme_dauerlinie`, `.strombilanz_monate` | Bild | CR:387, 414, 444; BV:75-90 | – | 620×280, Zeitreihen; E5 |
+| `stand.bild.speicherverlauf`; `stamm.bild.speichertemperaturen` | Bild | CR:488, BV:93-96; CR:574, BP:371-377 | `Speicherbetrieb` SEH:724; `SimulationErgebnisSeite.razor:154` (ähnlich) | 620×260 bzw. 620×280; E5 |
+| `bild.vergleich.balken.<k>` (`energie.brennstoff`, `energie.netzbezug`, `energie.waermerest`, `eff.jaz`) | Bild | CR:320; BV:162-187 | – | Höhe nach Zahl der Stände; E5 |
+| `stand.bild.deckung_waerme`, `.deckung_strom` | Bild | `KuchenModell` CR:254; BV:220-223 | `Ring` SEH:320, 364, 389 (ähnlich) | 420×262; E5 |
+| `bild.wirtschaft.kapitalwert_szenarien`, `.barwerte_kumuliert` | Bild | CR:1296, BW:290-294; CR:894, BW:316-319 | Wirtschaftlichkeitsseite, `KapitalwertVerlaufAbschnitt.razor` (entspricht) | E5 |
+| `bild.wirtschaft.bruecke`, `.spanne`; `stand.bild.zahlungsstrom` | Bild | CR:2023, BW:349-354; CR:1707, BW:1223-1226; CR:2390, BW:415-418 | WS:1584, :1503, :1637 (entspricht) | Brücke nur Leitversion ≠ Referenz; E5 |
+| `blatt.uebersicht`, `.vergleich`, `.wirtschaftlichkeit`, `.verlauf`, `.checkliste` | Blatt | EBG:213-366, 382-1131; VE:66; AE:344 | – | `wirtschaftlichkeit` ist die Formelmappe; entfällt ohne Inhalt; E7 |
+| `blatt.detail` | Blatt (Muster) | EBG:1702-1776 | – | je Stand geklont; E8 |
+| `EPOS.reihe.<name>` | Name (Diagrammreihe) | Rasterreihen des Kerns | – | `RefersTo` von EPOS gesetzt; E8 |
+| `Zins_i`, `Zeitraum_T`, `p_E`, `p_B`, `p_I` (+ `_Guenstig`/`_Unguenstig`), `Zins_Basis`, `Risiko_*` | reservierter Name | `ExcelFormelmappe.cs:36-48, 293-312` | – | Ausgabe, nicht füllbar; E7 |
+| `bild.kosten.profil`, `bild.klimadaten.jahresgang`, `bild.waermequelle.jahresgang`, `bild.waermepumpe.kennlinie.cop`/`.leistung`, `bild.speicherflotte.optimierungsraster`/`.schnittkurve`/`.stueckzahlkurve`/`.jahresprojektion` | Bild (vorgemerkt) | CR:2634, 2844, 3083, 5765, 6228, 6432, 6695 | `KostenprofilHuelle.cs:79`, `KlimadatenHuelle.cs:180, 193`, `QuelleErdreichHuelle.cs:195`, `WaermepumpeStammHuelle.cs:282, 285`, `SpeicherFlottenAnzeigeCtrl*.cs` | nicht in v1 |
+| `bild.zapfprofil.tagesgang`/`.wochenprofil`/`.jahresgang`/`.dauerlinie`, `bild.gebaeude.raumtemperatur`, `bild.ergebnis.erzeugerstapel`/`.streuwolke`/`.temperaturverlauf`/`.jahresverlauf`/`.ganglinie_normiert`/`.monatsstapel`/`.stundenprofil`, `bild.peakshaving.lastgang` | Bild (vorgemerkt) | `ZapfprofilBilder` :184, 210, 232, 256; CR:5316, 4503, 4875, 5291, 4126, 4354, 5153, 3493; `PeakShavingBild.cs:71` | Zapfprofil-Dialoge; Gebäude-Ergebnisreiter; SEH:430, 500, 523, 445, 190, 781; `PeakShavingDialog.razor` | nicht in v1 |
+
+
+## Anhang B Beispielvorlage
+
+### B.1 Word „Kurzbericht“ (je Sprache, Lehrvorlage)
+
+Erläuterungen stehen als Word-Kommentare an jeder Stelle und werden beim Füllen entfernt (6.7).
+
+| Nr. | Abschnitt | Inhalt und Platzhalter |
+|---|---|---|
+| 1 | Deckblatt (eigener Abschnitt ohne Kopfzeile) | Logo als Bild der Vorlage; `{{bericht.titel}}` im Stil Titel; `{{projekt.kunde}}`, `{{projekt.bearbeiter}}`, `{{ersteller.firma}}`, `{{bericht.datum}}`; „Verglichen: {{bericht.varianten.liste}}“; Seitenumbruch |
+| 2 | Kopf- und Fußzeile ab Abschnitt 2 | oben „{{projekt.name}} · {{bericht.titel}}“; unten „{{ersteller.firma}} · {{text.seite}} {PAGE} / {NUMPAGES}“ |
+| 3 | Überschrift 1 „Ausgangslage“ | Fließtext der Vorlage mit `{{projekt.beschreibung}}` und „Klimaregion: {{projekt.klimaregion}}“ |
+| 4 | Überschrift 1 „Ergebnisse im Überblick“ | Tabelle Variante · Wärmebedarf · JAZ · CO₂ · Kapitalwertdifferenz; Musterzeile `{{#je stand}}{{stand.anzeige}}` · `{{stand.kennzahl.energie.waermebedarf\|ohne einheit}}` · `{{stand.kennzahl.eff.jaz\|stellen 1}}` · `{{stand.kennzahl.em.co2\|ohne einheit}}` · `{{stand.wirtschaft.kapitalwert_diff\|mit grund}}{{/je}}`; darunter `{{bericht.warnungen}}` |
+| 5 | Überschrift 1 „Empfehlung“ | „Beste Variante: {{wirtschaft.beste.anzeige}} mit einer Kapitalwertdifferenz von {{wirtschaft.beste.kapitalwert_diff}}.“; `{{wirtschaft.vorschlag}}` |
+| 6 | Überschrift 1 „Wirtschaftlichkeit“ | Bildrahmen in voller Breite, Alternativtext `{{bild.wirtschaft.spanne}}`; Absatz `{{tabelle.wirtschaft.szenarien}}`; `{{wirtschaft.warnungen}}` |
+| 7 | Bedingter Abschnitt | `{{#wenn hat.kaelte}}` Überschrift 2 „Kühlung“, Satz mit `{{stamm.kennzahl.kaelte.jahresbedarf}}` und `{{stamm.kennzahl.kaelte.deckungsgrad}}` `{{/wenn}}` |
+| 8 | Zwei Bilder nebeneinander | zweispaltige Tabelle ohne Rahmen im Block `{{#je variante\|block 1}}`: `{{stand.bild.deckung_waerme}}` und `{{stand.bild.deckung_strom}}` (mit Bildgröße Stufe 2, E5) |
+| 9 | Anhang | Absatz „Anhang“ im Format „EPOS Kapitelkopf“, darunter `{{kapitel.anhang\|ebene 2}}` |
+| 10 | Mustertabelle am Ende | Alternativtext `{{muster.tabelle}}`, Zellen „Stamm“, „Gruppe“, „Summe“, „Warnung“ mit Schattierung; wird entfernt |
+
+### B.2 Excel „Kurzmappe“
+
+| Nr. | Blatt | Inhalt und Platzhalter |
+|---|---|---|
+| 1 | „Deckblatt“ (Anwenderblatt) | A1 `{{bericht.titel}}`; A3:B7 Beschriftung und Wert mit `{{projekt.name}}`, `{{projekt.kunde}}`, `{{projekt.bearbeiter}}`, `{{ersteller.firma}}`, `{{bericht.datum}}` (Datumsformat); Logo als Bild der Vorlage |
+| 2 | „Kennzahlen“ (Anwenderblatt) | Stammwerte über Namen `EPOS.stamm.kennzahl.energie.waermebedarf` usw., Format „Standard“ → Kernformat; Excel-Tabelle `EPOS_tabelle_varianten` mit Formatmuster in der ersten Datenzeile |
+| 3 | „Monate“ (Anwenderblatt) | feste Tabelle mit zwölf Zeilen aus Zellplatzhaltern; Excel-Liniendiagramm auf diesem Raster |
+| 4 | Blattmarke `{{blatt.vergleich}}` in A1 | wird zum erzeugten Vergleichsblatt |
+| 5 | Blattmarke `{{blatt.wirtschaftlichkeit}}` | wird zur Formelmappe; entfällt ohne Häkchen |
+| 6 | Musterblatt `{{blatt.detail}}` | A1 `{{stand.anzeige}}`, A4 `{{stand.tabelle.kennzahlen}}`; je Stand geklont (E8) |
+
+Die Mappe ist `.xlsx`, ohne reservierte Namen und ohne Makros.
+
+### B.3 Standardvorlage (Word)
+
+Aufbau der heutigen Vorlage, bereinigte Stile; Fußzeile mit `{{ersteller.firma}}` (BV-Q8), `{{text.seite}}` und
+`{{bericht.datum}}` statt DATE; Rumpf in BV-E1 `{{bericht.inhalt}}`, ab BV-E2 die neun Kapitel je in eigenem Absatz.
+
+
+## Anhang C Prüfbefunde und ihre Beantwortung
+
+Schwere h = hoch, m = mittel, g = gering. Befunde gleichen Inhalts stehen in einer Zeile.
+
+| Nr. | Befund kurz | Antwort im Papier: Abschnitt |
+|---|---|---|
+| 1 (h), 55 (h), 80 (h) | Feste Stil-IDs; Vorlagen aus deutschem Word; doppelte Überschriftstile | 6.2, 11 Nr. 3, 12 |
+| 2 (m) | Anker und Bildteile an den Hauptrumpf gebunden | 4.3, 6.5 |
+| 3 (m), 86 (m) | Tabellenformatvorlage kann Rollen nicht ausdrücken | 6.4 |
+| 4 (m) | Annahme nachverfolgter Änderungen ist Eigenbau | 6.1, 6.8 |
+| 5 (m), 85 (m) | Füllregeln und Zustand von SDT nach dem Füllen | 6.6, BV-Q14 |
+| 6 (m), 64 (m) | Kein Stand-Kontext in Excel; Delta-Formel; Formeln des Anwenders | 4.4, 4.7, 7.1, 7.2, 7.4, 9.4 |
+| 7 (m) | ListObjects taugen nicht für Stand-Spalten; `ReplaceData` nutzt Reflection | 5.4, 7.3, 15.3 |
+| 8 (m), 103 (g) | Entfallende Blätter mit Marke; `blatt.detail`; uneinheitliche Parameter | 4.8, 7.2 |
+| 9 (m) | `FullCalculationOnLoad` nur bei EPOS-Formeln; `<v>` ungemessen | 7.4, 13 BV-E0 |
+| 10 (m), 27 (h) | Zwischenablage gehört der Hülle; neue Naht, iOS-Änderung | 8.4, 9.6, BV-Q18 |
+| 11 (m), 28 (m) | `CascadingValue` erreicht Windows-Dialoge nicht | 9.6, 15.3 |
+| 12 (m) | Bericht auf iOS nie gelaufen | 2.3, 8.5 |
+| 13 (m), 31 (m) | Ressourcen- und Excel-Namen nicht eindeutig; erzeugte Einträge ohne Text | 4.5, 5.5 |
+| 14 (g) | Feste Satzspiegelbreite | 5.3 |
+| 15 (g) | Stufe 1 verkleinert die Schrift | 6.5, 13 BV-E5 |
+| 16 (g), 59 (m) | DATE-Feld; `updateFields` bei NUMPAGES | 6.3, 6.7, 11 Nr. 1 |
+| 17 (g) | Größengrenze schützt nicht vor Zip-Bombe | 8.5 |
+| 18 (g) | Fundstelle EBG:126; Standardschrift der Vorlage | 2.2, 7.1 |
+| 19 (g), 73 (g) | Value gegen Zahlenformat; Laufmeldung, Einheit, Prozent | 4.10, 7.1, 9.4 |
+| 20 (g) | „Alle Lizenzen MIT“ falsch | 8.2 |
+| 21 (g) | Zeitziel unbelegt; doppeltes Füllen für Anhang E | 8.5, 11 Nr. 3 |
+| 22 (g) | Paketvergleich nach Teilnamen meldet Fehlalarme | 7.4 |
+| 23 (g), 98 (g) | Vorlage in Word geöffnet; Sperrdateien; gleicher Name | 6.8, 10.3 |
+| 24 (g) | Baukasten nicht fehlerfrei füllbar | 6.3, 12 |
+| 25 (g), 65 (m) | Kommentare der Lehrvorlage im Kundenbericht | 6.3, 6.7 |
+| 26 (g), 48 (g) | iOS-Dateifilter ohne `.dotx`/`.xltx` | 8.5, 13 BV-E1, BV-E7 |
+| 29 (m) | Umkehr einer dokumentierten Entscheidung; zwei statt drei Lieferwege | 2.3, 8.4, BV-Q19 |
+| 30 (m), 61 (m) | „Im Ordner zeigen“, „In Word öffnen“; auf iOS Teilen | 10.2, 10.3 |
+| 32 (m) | Baustein an Fachklasse; Orte im Kern | 5.1, 9.6 |
+| 33 (m), 70 (g) | Zeilenmarken nur bei Fokus; dichte Tabellen, Zoomleiste | 9.4, 12, 15.3 |
+| 34 (m), 69 (g), 39 (g) | Dauerhafte Leiste, ✕, „Kopfleiste“; Schalter im Kopf; Ort neben der Pille | 3, 9.4, 9.8, 15.3, BV-Q9 |
+| 35 (m), 101 (g) | Prüfzeile als `Kennzeichen`; mitgelieferte Vorlage | 9.7, 9.8, 10.2 |
+| 36 (m), 71 (g) | Eine Standardvorlage für zwei Sprachen; Syntax deutsch | 4.9, 6.3, BV-Q3, BV-Q7 |
+| 37 (g) | Wie Änderungen der Vorlage erkannt werden | 6.8 |
+| 38 (g) | Trefferflächen überlagern Nachbarn | 9.4, 9.7 |
+| 40 (g) | Bauart der Überlagerungen | 9.7 |
+| 41 (g), 43 (g), 76 (g) | Texte-Bündel; Auswahlfeld mit int-Ids; Kopieren der Standardvorlage versteckt | 10.2 |
+| 42 (g) | KI-Abdeckungswache in BV-E1 rot | 13 BV-E1 |
+| 44 (g) | Herkunft der Engine-Texte | 4.10 |
+| 45 (g) | Ad-hoc-DDL in `BerichtCtrl` | 10.3, 13 BV-E0 |
+| 46 (g), 47 (g) | Wiki-Regeln; Ordner der Testvorlagen | 12 |
+| 49 (g) | BV-E3 ohne Referenzlauf | 5.1, 13 BV-E3 |
+| 50 (g) | Verweis auf nicht vorhandene Entwürfe; Index, Status | 12, 15.2, 15.3 |
+| 51 (g) | Code-Name „Marke“ mehrdeutig | 4.1 |
+| 52 (g) | `IEinstellungen` gilt je Anwender; Schreibweise | 10.3 |
+| 53 (g) | Keine `KiMeldungskennung` | 6.8 |
+| 54 (h) | Marken nennen Schlüssel mit anderem Wert | 9.5, 9.8, Anhang A |
+| 56 (m) | `stand.*` vor den Blöcken nutzlos | 5.6, 13 (Blöcke in BV-E4 vor Tabellen in BV-E5) |
+| 57 (m) | Kopieren immer Text; kein Art-Verstoß | 4.2, 4.10, 9.4 |
+| 58 (m) | Tippbarkeit, Umlaute, Autokorrektur | 4.2, 6.3, 13 BV-E0 |
+| 60 (m), 94 (m) | Kopie veraltet still; offene Vorlage; gemeinsame Vorlagen | 6.8, 10.3, BV-Q15 |
+| 62 (m) | Dauerwarnungen stumpfen ab; Meldungstexte | 5.6, 6.1, 6.8 |
+| 63 (m) | Umbenennung bricht Vorlagen still | 5.6, 12 |
+| 66 (m) | Häkchen gegen Vorlageninhalt | 5.3, 10.2 |
+| 67 (m) | Zielbild zu weit; „In der App zeigen“ | 3, 9.4, 9.5 |
+| 68 (m) | Probefüllung erst spät | BV-Q12, 13 BV-E1 |
+| 72 (g) | Zwei Schreibweisen der Blockgröße | 4.8 |
+| 74 (g), 75 (g) | Regel des zweiten Einstiegs; Paarsicht unsichtbar | 4.7, 10.2 |
+| 77 (g), 100 (g) | Vorlage am Dateinamen, Cloud-Ordner; Vergleichssicht und Verlaufsmappe | 10.1, 10.3 |
+| 78 (h) | Parameter und Szenarien ohne Platzhalter | 5.2, Anhang A |
+| 79 (h), 90 (m) | Gültigkeits- und Warnhinweise; Schalter im Standkontext | 4.7, 4.11, Anhang A |
+| 81 (h), 92 (m), 96 (m) | Abdeckung der Orte; Anhang-E-Stelle in der App; ähnliche Gegenstücke, vorgemerkte Diagramme | 5.4, 9.5, Anhang A |
+| 82 (m) | Mouse-over fehlt als Lesart | 9.1, 9.7, BV-Q9 |
+| 83 (m), 105 (g) | Etappen unvollständig; kein Aufwand | 13 |
+| 84 (m) | Keine Variantenwerte ohne Blöcke; `vergleich.*` leer | 4.7, 13, Anhang A |
+| 87 (m) | Diagrammgestaltung nicht geregelt | 6.5, 10.1, BV-Q17 |
+| 88 (m) | Verwaiste Überschriften vor Blöcken | 5.3, 13 BV-E2 |
+| 89 (m) | Beschriftung hängt am Emissionsmodus | 5.2, Anhang A |
+| 91 (m) | Beschreibung je Variante; Spalte Stromspeicher | 5.4, Anhang A |
+| 93 (m) | Übergang bestehender Installationen | 10.3, 13 BV-E1 |
+| 95 (m) | Pflegeweg auf dem iPad | 10.3, BV-Q16 |
+| 97 (g) | Rasterprobe fehlt | 12, 13 BV-E6 |
+| 99 (g) | Ort der Einstellung „Firma“ | 10.3, 13 BV-E1 |
+| 102 (g) | Zur Laufzeit gebildete Zeilenschlüssel | 4.5, Anhang A |
+| 104 (g) | Deckungswache nicht erfüllbar | 12 |
