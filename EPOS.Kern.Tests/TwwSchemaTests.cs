@@ -264,7 +264,7 @@ namespace EPOS.Kern.Tests
                 }
             }
             // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2,
-            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt 132)
+            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt 135)
             Assert.Equal(14, beziehungen);
         }
 
@@ -482,26 +482,26 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 132 (T4 „Messreihen", Stufe Z5) steht in der Migration der Schale NACH 131
+        /// Der Schritt 135 (T4 „Messreihen", Stufe Z5) steht in der Migration der Schale NACH 131
         /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT4Messreihen"/>,
-        /// <see cref="TwwSchema.IndizesT4Messreihen"/>); das Ziel steht auf mindestens 132.
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>); das Ziel steht auf mindestens 135.
         /// </summary>
         [Fact]
-        public void Schritt_132_steht_in_der_Migration_nach_131()
+        public void Schritt_135_steht_in_der_Migration_nach_131()
         {
-            Assert.True(SchemaStand.Zielversion >= 132, "Zielstand " + SchemaStand.Zielversion + " liegt unter 132.");
+            Assert.True(SchemaStand.Zielversion >= 135, "Zielstand " + SchemaStand.Zielversion + " liegt unter 135.");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_132_ZAPFPROFIL_MESSREIHEN = 132;", text, StringComparison.Ordinal);
+            Assert.Contains("public const int SCHRITT_135_ZAPFPROFIL_MESSREIHEN = 135;", text, StringComparison.Ordinal);
             int ort131 = text.IndexOf("new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
-            int ort132 = text.IndexOf("new Schritt(SCHRITT_132_ZAPFPROFIL_MESSREIHEN", StringComparison.Ordinal);
-            Assert.True(ort131 > 0 && ort132 > ort131, "Schritt 132 steht nicht nach 131 in der Schrittliste.");
+            int ort135 = text.IndexOf("new Schritt(SCHRITT_135_ZAPFPROFIL_MESSREIHEN", StringComparison.Ordinal);
+            Assert.True(ort131 > 0 && ort135 > ort131, "Schritt 135 steht nicht nach 131 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_132_ZapfprofilMessreihen(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 132 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_135_ZapfprofilMessreihen(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 135 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             string rumpf = text.Substring(methode, ende - methode);
             Assert.Contains("TwwSchema.AnweisungenT4Messreihen", rumpf, StringComparison.Ordinal);
@@ -510,7 +510,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die eingespielten Messreihen sind Bestandteil des Projekts</b> (Schritt 132, T4
+        /// <b>Die eingespielten Messreihen sind Bestandteil des Projekts</b> (Schritt 135, T4
         /// „Messreihen", Stufe Z5; Konzept Kapitel 9 K5): <c>Tab_TwwMessreihe</c> führt
         /// <c>ID_Projekt</c> mit <c>ON DELETE CASCADE</c> — damit reist sie mit einer Projektkopie
         /// und einem <c>.wpx</c>-Paket und verschwindet mit dem Projekt —, trägt aber weder

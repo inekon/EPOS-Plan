@@ -84,7 +84,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Action Pruefnaht = () => { };
 
-        /// <summary>Führt die Datenbank die Tabelle der Messreihen (Stand ab Schritt 132)?</summary>
+        /// <summary>Führt die Datenbank die Tabelle der Messreihen (Stand ab Schritt 135)?</summary>
         internal static bool TabelleVorhanden() => DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_MESSREIHE);
 
         // =================================================================================
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Köpfe der Messreihen eines Projekts</b>, nach Bezeichnung geordnet (die
-        /// Reihenfolge ist wiederholbar). Ohne Tabelle (Stand vor 132) und ohne Zeile eine leere
+        /// Reihenfolge ist wiederholbar). Ohne Tabelle (Stand vor 135) und ohne Zeile eine leere
         /// Liste — der Vergleich ist dann benannt nicht verfügbar, das entscheidet der Aufrufer.
         /// </summary>
         internal static IReadOnlyList<TwwMessreihenkopf> Liste(int idProjekt)

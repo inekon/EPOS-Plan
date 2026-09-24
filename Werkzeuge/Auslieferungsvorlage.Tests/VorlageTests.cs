@@ -165,7 +165,7 @@ namespace Auslieferungsvorlage.Tests
             // Vorlage LEER - sie nimmt die Typtage des lizenzierten Anwenders auf, nie eine
             // Auslieferungszeile.
             //
-            // 134 seit Schemaschritt 132 (Zapfprofilgenerator T4 "Messreihen", Stufe Z5):
+            // 134 seit Schemaschritt 135 (Zapfprofilgenerator T4 "Messreihen", Stufe Z5):
             // Tab_TwwMessreihe, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der Vorlage
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).

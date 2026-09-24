@@ -4238,10 +4238,13 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;
 
         /// <summary>
-        /// Schritt 132 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
-        /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5, Schemaschritt T4 „Messreihen"). Er folgt
-        /// auf <see cref="SCHRITT_131_ZAPFPROFIL_TYPTAGE"/> (131) ohne Reihenfolgebedingung; die
-        /// Tabelle hängt allein an <c>Tab_Projekt</c>, das jede Datenbank führt.
+        /// Schritt 135 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5, Schemaschritt T4 „Messreihen"). Er steht
+        /// als LETZTER Schritt der Liste, <b>ohne Reihenfolgebedingung</b> und ohne einen früheren
+        /// Schritt zu brauchen: Die Tabelle hängt allein an <c>Tab_Projekt</c>, das jede Datenbank
+        /// führt. Die Nummer ist die nächste freie — sie war bei der Messung 132 und ist auf 135
+        /// gewandert, weil Nachbarschritte 132 bis 134 belegt haben; bei einer weiteren Kollision
+        /// wandert sie erneut, ohne dass sich am Schritt etwas ändert.
         ///
         /// <para><b>REIN DDL</b>, eine Tabelle und ein Index: <c>Tab_TwwMessreihe</c> (STRICT, zehn
         /// Spalten, eine Zeile je Wert, natürlicher Schlüssel
@@ -4257,7 +4260,7 @@ namespace WindowsFormsApplication1
         /// <b>Wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c> und
         /// <c>CREATE INDEX IF NOT EXISTS</c>.</para>
         /// </summary>
-        public const int SCHRITT_132_ZAPFPROFIL_MESSREIHEN = 132;
+        public const int SCHRITT_135_ZAPFPROFIL_MESSREIHEN = 135;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6042,14 +6045,14 @@ namespace WindowsFormsApplication1
             // Messreihen eines Projekts: Tab_TwwMessreihe samt Index auf ID_Projekt. REIN DDL;
             // die Quelle ist TwwSchema.AnweisungenT4Messreihen. Er steht NACH 131 ohne
             // Reihenfolgebedingung; die Tabelle haengt allein an Tab_Projekt.
-            new Schritt(SCHRITT_132_ZAPFPROFIL_MESSREIHEN,
+            new Schritt(SCHRITT_135_ZAPFPROFIL_MESSREIHEN,
                         "Zapfprofilgenerator: die eingespielten Messreihen eines Projekts " +
                         "(Tab_TwwMessreihe) samt Index auf ID_Projekt",
                         "Der Anwender koennte keine gemessene Reihe einspielen; Vergleichsbericht, " +
                         "Validierungskennzahlen und die Kalibrierung gegen die Messung blieben ohne " +
                         "Datenablage. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, " +
                         "und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar.",
-                        Schritt_132_ZapfprofilMessreihen),
+                        Schritt_135_ZapfprofilMessreihen),
         };
 
         /// <summary>
@@ -9952,18 +9955,18 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 132 - die eingespielten Messreihen eines Projekts
+        // Schritt 135 - die eingespielten Messreihen eines Projekts
         // (Zapfprofilgenerator Stufe Z5, T4 "Messreihen")
         // =================================================================================
 
         /// <summary>
-        /// Schritt 132 — Anlass und Wirkung stehen bei
-        /// <see cref="SCHRITT_132_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
+        /// Schritt 135 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_135_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
         /// <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
         /// <see cref="TwwSchema.IndizesT4Messreihen"/>. <b>Nur <see cref="SqliteDdl"/></b>;
         /// <b>wiederholbar</b> über <c>IF NOT EXISTS</c>. <b>Kein DML</b> — die Tabelle bleibt leer.
         /// </summary>
-        private static bool Schritt_132_ZapfprofilMessreihen(Lauf l)
+        private static bool Schritt_135_ZapfprofilMessreihen(Lauf l)
         {
             int angelegt = 0;
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
@@ -9987,11 +9990,11 @@ namespace WindowsFormsApplication1
             if (!vollstaendig)
             {
                 l.LetzterFehler = "Die Tabelle der eingespielten Messreihen steht nach dem Schritt nicht.";
-                l.Notiz("132: FEHLER - " + l.LetzterFehler);
+                l.Notiz("135: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("132: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+            l.Notiz("135: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
                     indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) angelegt - " +
                     TwwSchema.TAB_TWW_MESSREIHE + " (eine Zeile je Wert, ID_Projekt mit ON DELETE " +
                     "CASCADE, kein Status, kein ReadOnly). KEIN DML: Die Tabelle bleibt LEER - das " +

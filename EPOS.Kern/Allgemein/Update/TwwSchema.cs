@@ -782,7 +782,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Schemaschritt T4 „Messreihen" (Schritt 132, Stufe Z5): die
+        //  Schemaschritt T4 „Messreihen" (Schritt 135, Stufe Z5): die
         //  eingespielten Messreihen eines Projekts
         // =================================================================
 
@@ -831,7 +831,7 @@ namespace WindowsFormsApplication1
             ") STRICT";
 
         /// <summary>
-        /// Die Anweisungen des Schemaschritts T4 „Messreihen" (Schritt 132, Stufe Z5): die Tabelle
+        /// Die Anweisungen des Schemaschritts T4 „Messreihen" (Schritt 135, Stufe Z5): die Tabelle
         /// der eingespielten Messreihen. Sie hängt allein an <c>Tab_Projekt</c> und darf deshalb
         /// nach den übrigen Tww-Tabellen entstehen. Reines DDL, wiederholbar über
         /// <c>IF NOT EXISTS</c>; nach dem Schritt ist sie leer, und kein Rechenweg findet eine

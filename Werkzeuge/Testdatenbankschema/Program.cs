@@ -1708,10 +1708,10 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 131 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
             }
 
-            // ---- Schritt 132: die eingespielten Messreihen eines Projekts
+            // ---- Schritt 135: die eingespielten Messreihen eines Projekts
             //      (Zapfprofilgenerator Stufe Z5, Schemaschritt T4 "Messreihen"). NACH 131.
             //      REIN DDL aus DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_132_ZapfprofilMessreihen bedient
+            //      SchemaMigration.Schritt_135_ZapfprofilMessreihen bedient
             //      (TwwSchema.AnweisungenT4Messreihen und TwwSchema.IndizesT4Messreihen):
             //      Tab_TwwMessreihe samt Index auf ID_Projekt.
             //
@@ -1720,12 +1720,12 @@ namespace Testdatenbankschema
             //      gehoeren dem Objekt); eingespielt werden sie allein beim Anwender.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
-                tabellen += TabelleSicherstellen(a.Key, a.Value, 132, trocken);
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 135, trocken);
             if (!trocken)
                 foreach (KeyValuePair<string, string> i in TwwSchema.IndizesT4Messreihen)
                 {
                     DataRepository.ExecuteNonQuery(i.Value);
-                    Console.WriteLine("Schritt 132 - Index " + i.Key + " sichergestellt.");
+                    Console.WriteLine("Schritt 135 - Index " + i.Key + " sichergestellt.");
                 }
 
             Console.WriteLine();

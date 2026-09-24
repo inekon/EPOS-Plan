@@ -660,7 +660,7 @@ namespace EPOS.Kern.Tests
                 // ... und die WAHL des Typtagwegs je Projekt aus DERSELBEN Quelle
                 // (TwwSchema.SpaltenT3Typtage) - Typtage_Aktiv steht auf 0, beide Angaben auf NULL.
                 TwwSchema.T3TyptageAlle(null);
-                // Schritt 132 (Zapfprofilgenerator Stufe Z5, T4 "Messreihen"): die eingespielten
+                // Schritt 135 (Zapfprofilgenerator Stufe Z5, T4 "Messreihen"): die eingespielten
                 // Messreihen eines Projekts samt Index auf ID_Projekt. Reines DDL aus DERSELBEN
                 // Quelle wie Migration und Werkzeug (TwwSchema.AnweisungenT4Messreihen,
                 // TwwSchema.IndizesT4Messreihen); IF NOT EXISTS ist selbst wiederholbar. Die
