@@ -15,8 +15,8 @@ Den eigenen Entscheid zu S3 vertreten die Fragen E10‑Q1 bis E10‑Q7 im
 [Entscheidungsregister](../aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (R‑E10): gebaut
 ist jeweils die Empfehlung, **entschieden am 24.09.2026 nach Empfehlung** (E10‑Q5 erledigt). Der Halbsatz aus A8 — eine
 neue Speichervariante nimmt die Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" — ist mit **#474** (E13)
-gebaut, nur als Vorgabe neuer Einträge. Codestand `4b50b77b`, `SchemaStand.Zielversion` = **123** (Schritt 120 sät die
-Instandsetzungssätze der Tabelle; 121 bis 123 gehören anderen Feldern).
+gebaut, nur als Vorgabe neuer Einträge. Codestand `NACHTRAG-474-MERGE2`, `SchemaStand.Zielversion` = **124** (Schritt
+120 sät die Instandsetzungssätze der Tabelle; 121 bis 124 gehören anderen Feldern).
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
