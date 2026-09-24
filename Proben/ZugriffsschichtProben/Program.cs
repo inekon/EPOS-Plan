@@ -71,6 +71,14 @@ namespace ZugriffsschichtProben
             // Anwenders anzufassen (Haken aus S4a).
             DataRepository.PfadUeberschreibung = kopie;
 
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Die Proben laufen ohne Lizenz und
+            // SCHREIBEN auf der Arbeitskopie; ohne die Freigabe wirft jeder schreibende
+            // Zugriff eine LesemodusException, und die Migrationsfaelle 13 und 14 koennten
+            // den Schemastand der Kopie nicht setzen (seit iF30 blieben sie deshalb rot).
+            Schreibnaht.WerkzeugFreigabe("ZugriffsschichtProben (Proben ohne Lizenz auf der Arbeitskopie)");
+            Console.WriteLine("Schreibnaht  : freigegeben fuer " + Schreibnaht.WerkzeugGrund);
+
             // Durchgaengig dialogfrei: sonst blockierte die erste FehlerMelden-MessageBox
             // den unbeaufsichtigten Lauf bis zum Timeout.
             using (DataRepository.EngineModus())
