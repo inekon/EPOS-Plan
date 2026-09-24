@@ -936,7 +936,10 @@ namespace WindowsFormsApplication1
             "MESSWERT_ABWEICHUNG", ZapfprofilRechner.HINWEIS_NETZVERLUST, ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS,
             ZapfprofilRechner.HINWEIS_STOCHASTISCH, ZapfprofilRechner.HINWEIS_ENERGIEPROBE, "ZIRKULATION_ZONE_OHNE_FLAECHE",
             "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE", "ZIRKULATION_NICHT_IN_Z1", ZapfprofilCtrl.HINWEIS_EINSTELLUNG_UNGUELTIG,
-            ZapfprofilRechner.HINWEIS_ANZEIGETEMPERATUR, ZapfprofilRechner.HINWEIS_STUNDENSCHWELLE
+            ZapfprofilRechner.HINWEIS_ANZEIGETEMPERATUR, ZapfprofilRechner.HINWEIS_STUNDENSCHWELLE,
+            // Stufe Z4b: der Jahresgang über die eingespielten Typtage (N14).
+            Typtagzuordnung.HINWEIS_ANZAHL, Typtagzuordnung.HINWEIS_KLEMMUNG, Typtagzuordnung.HINWEIS_SKALIERUNG,
+            Typtagzuordnung.HINWEIS_FERIEN, Typtagzuordnung.HINWEIS_OHNE_GANG
         };
 
         /// <summary>Ein Hinweis der Bilanz als Eintrag der Warnliste: Titel aus <c>ZPG_WARN_…</c>, sonst „Hinweis"; Satz des Kerns; Stufe nach der Warnlogik.</summary>

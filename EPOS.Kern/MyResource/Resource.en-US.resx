@@ -28881,6 +28881,21 @@ Do you want to allow this?</value>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Circulation large compared with draw-off</value>
   </data>
+  <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>number of type days differs</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_KLEMMUNG" xml:space="preserve">
+    <value>daily amount set to 0</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>daily amounts scaled to the annual amount</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>holiday windows without effect</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>type days without daily profile</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of zone “{0}” ({2:0.#} °C) — the zone shows no litres.</value>
   </data>

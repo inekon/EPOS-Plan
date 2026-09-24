@@ -90207,6 +90207,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Typtage weicht ab ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienfenster ohne Wirkung ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesmenge auf 0 gesetzt ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_KLEMMUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_KLEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage ohne Tagesgang ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_OHNE_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_OHNE_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesmengen auf die Jahresmenge skaliert ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TYPTAGE_SKALIERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TYPTAGE_SKALIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochenfaktoren normiert ähnelt.
         /// </summary>
         public static string ZPG_WARN_WOCHENFAKTOREN_SUMME {

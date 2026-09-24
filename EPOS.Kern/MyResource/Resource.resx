@@ -28888,6 +28888,21 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Zirkulation groß gegenüber der Zapfung</value>
   </data>
+  <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>Zahl der Typtage weicht ab</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_KLEMMUNG" xml:space="preserve">
+    <value>Tagesmenge auf 0 gesetzt</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>Tagesmengen auf die Jahresmenge skaliert</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Ferienfenster ohne Wirkung</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>Typtage ohne Tagesgang</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter.</value>
   </data>
