@@ -783,6 +783,14 @@
     [Parameter] public Func<string, bool>? WirkungSpeichern { get; set; }
 
     /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): der Grund, aus dem <see cref="WirkungSpeichern"/> zuletzt
+    /// scheiterte — der Speicherfehler des Kerns als Zeile („Speichern gescheitert: …"),
+    /// leer ohne bekannten Grund. Die Seite schreibt ihn in die Statuszeile; das Band
+    /// darüber sagt weiter, DASS nicht gespeichert wurde.
+    /// </summary>
+    [Parameter] public Func<string>? Speicherfehlerzeile { get; set; }
+
+    /// <summary>
     /// ETAPPE E5 (U2, Entscheid V‑1/K8): Der Umschalter „Kennzahlen / ValERI-Bewertung"
     /// hat gewechselt (<see cref="WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN"/> bzw.
     /// <see cref="WirtschaftlichkeitStand.DARSTELLUNG_VALERI"/>). Die Hülle merkt sich die
@@ -1917,7 +1925,14 @@
         if (_laeuft || WirkungSpeichern is null) return;
 
         string text = _nichtMonetaer;
-        if (!WirkungSpeichern(text)) { _fehler = BewertungFehlerText; return; }
+        if (!WirkungSpeichern(text))
+        {
+            _fehler = BewertungFehlerText;
+            // ETAPPE E13 (E7c3‑Q6 a): der Grund des Kerns, einmal, in der Statuszeile.
+            string grund = Speicherfehlerzeile?.Invoke() ?? "";
+            if (!string.IsNullOrEmpty(grund)) _status = grund;
+            return;
+        }
 
         _fehler = "";
         _stand.NichtMonetaer = text;

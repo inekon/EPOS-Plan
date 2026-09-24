@@ -182,6 +182,7 @@ namespace WindowsFormsApplication1
                 // monetären Wirkungen wird auf der SEITE gepflegt, nicht mehr im
                 // Parameterdialog. Der Schreibweg ist derselbe, den der Dialog nahm.
                 ["WirkungSpeichern"] = new Func<string, bool>(WirkungSpeichern),
+                ["Speicherfehlerzeile"] = new Func<string>(Speicherfehlerzeile),
 
                 // KONZEPT § 2.9 und § 2.15: die waehlbare Referenz und die zwei
                 // Sichten. Jeder Rueckruf gibt den NEUEN Stand zurueck - die Seite
@@ -349,13 +350,33 @@ namespace WindowsFormsApplication1
             // Geladen werden die Ergebnisse ALLER Versionen der Gruppe; die Wahl
             // filtert erst in Ansicht() - so folgt die Tabelle einem Haken sofort,
             // ohne die Datenbank erneut zu lesen.
-            try { _ergebnisse = _ctrl.LadeErgebnisse(new List<int>(_gruppe)); }
-            catch { _ergebnisse = new List<WirtschaftlichkeitErgebnis>(); }
+            // ETAPPE E13 (E7c3‑Q6 a): Der Grund eines abgebrochenen Ladens (Ladefehler des
+            // Kerns, sonst der gefangene Fehler) geht in die Statuszeile, statt dass die
+            // Zeilen still fehlen.
+            var ladefehler = new List<string>();
+            try
+            {
+                _ergebnisse = _ctrl.LadeErgebnisse(new List<int>(_gruppe));
+                ladefehler.Add(_ctrl.Ladefehler);
+            }
+            catch (Exception ex)
+            {
+                _ergebnisse = new List<WirtschaftlichkeitErgebnis>();
+                ladefehler.Add(Fehlergrund.Text(ex));
+            }
 
             // ETAPPE E5 (V‑A): die gespeicherten Sensitivitaetszeilen des Gruppenlaufs -
             // in Sicht 2 ersetzt sie gleich der Lauf gegen A (PaarErgebnisse).
-            try { _sens = _ctrl.LadeSensitivitaet(new List<int>(_gruppe)) ?? new List<SensitivitaetZeile>(); }
-            catch { _sens = new List<SensitivitaetZeile>(); }
+            try
+            {
+                _sens = _ctrl.LadeSensitivitaet(new List<int>(_gruppe)) ?? new List<SensitivitaetZeile>();
+                ladefehler.Add(_ctrl.Ladefehler);
+            }
+            catch (Exception ex)
+            {
+                _sens = new List<SensitivitaetZeile>();
+                ladefehler.Add(Fehlergrund.Text(ex));
+            }
 
             // KONZEPT § 2.15: In Sicht 2 rechnen die Differenzkennzahlen gegen A. Es ist
             // DERSELBE Rechenweg (WirtschaftlichkeitCtrl.Berechne) mit anderer Referenz -
@@ -396,6 +417,14 @@ namespace WindowsFormsApplication1
             if (wahl.Warnung != null) stand.Statuszeile += " " + wahl.Warnung;
             if (sichtWarnung != null) stand.Statuszeile += " " + sichtWarnung;
             if (paarLaufFehlt) stand.Statuszeile += " " + MyResource.Resource.WIRT_SICHT_LAUF_NOETIG;
+
+            // ETAPPE E13 (E7c3‑Q6 a): Ladefehler, Speicherfehler und Vorsorgewarnung des
+            // Kerns — jeder Grund einmal, mit dem Text des Kerns. Der Speicherfehler stammt
+            // aus dem Schreibweg, der dieses Laden auslöste (Referenzwahl), und gilt einmal.
+            foreach (string zeile in Fehlergrund.Anzeigezeilen(ladefehler, _speicherfehler,
+                                                                WirtschaftlichkeitCtrl.Vorsorgewarnung))
+                stand.Statuszeile += " " + zeile;
+            _speicherfehler = null;
 
             WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
             try { flags = _ctrl.ErzeugerDerGruppe(_idStamm); }
@@ -503,10 +532,12 @@ namespace WindowsFormsApplication1
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
                 p.IdReferenzprojekt = idReferenz == _idStamm ? 0 : idReferenz;
-                _ctrl.SpeichereParameter(p);
+                // ETAPPE E13 (E7c3‑Q6 a): Scheitert das Speichern, nennt die Statuszeile
+                // des folgenden Ladens den Grund.
+                if (!_ctrl.SpeichereParameter(p)) _speicherfehler = _ctrl.Speicherfehler;
                 _parameterCache = null;
             }
-            catch { }
+            catch (Exception ex) { _speicherfehler = Fehlergrund.Text(ex); }
             return Laden();
         }
 
@@ -649,11 +680,30 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
                 if (p == null) return false;
                 p.NichtMonetaer = text ?? "";
-                if (!_ctrl.SpeichereParameter(p)) return false;
+                if (!_ctrl.SpeichereParameter(p)) { _speicherfehler = _ctrl.Speicherfehler; return false; }
                 _parameterCache = p;
                 return true;
             }
-            catch { return false; }
+            catch (Exception ex) { _speicherfehler = Fehlergrund.Text(ex); return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE E13 (E7c3‑Q6 a) — der Grund des zuletzt gescheiterten Speicherns
+        /// (<see cref="WirtschaftlichkeitCtrl.Speicherfehler"/>, sonst der gefangene Fehler);
+        /// <c>null</c> = keiner. Die Statuszeile zeigt ihn einmal.
+        /// </summary>
+        private string _speicherfehler;
+
+        /// <summary>
+        /// ETAPPE E13 (E7c3‑Q6 a) — die Statuszeile nach einem gescheiterten
+        /// <see cref="WirkungSpeichern"/>: der Grund des Kerns („Speichern gescheitert: …"),
+        /// leer ohne bekannten Grund. Gelesen wird er einmal.
+        /// </summary>
+        private string Speicherfehlerzeile()
+        {
+            List<string> zeilen = Fehlergrund.Anzeigezeilen(null, _speicherfehler, null);
+            _speicherfehler = null;
+            return zeilen.Count > 0 ? zeilen[0] : "";
         }
 
         private string Parameterzeile()

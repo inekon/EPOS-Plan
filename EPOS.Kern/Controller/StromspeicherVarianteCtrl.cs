@@ -28,6 +28,54 @@ namespace WindowsFormsApplication1
         public List<StromspeicherVarianteModel> items => _internalList;
 
         // =====================================================================
+        // Vorgabe neuer Einträge (ETAPPE E13, Register A8)
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E13 (Register A8, Halbsatz „die Speichervariante sollte die
+        /// Positionsarten 20/21 lesen"; Muster <c>SpeicherFlottenStudieCtrl.ErsatzintervallVorgabeJahre</c>
+        /// aus E10) — die Nutzungsdauer [a], mit der eine NEU angelegte Speichervariante
+        /// vorbelegt wird: die Nutzungsdauer der Standardzeile „Stromspeicher · Batterie"
+        /// der Nutzungsdauertabelle. Ohne Tabelle, ohne Standardzeile oder ohne
+        /// brauchbaren Wert (leer, nicht endlich, unter einem Jahr) bleibt die Konstante
+        /// <see cref="StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Nur Vorgabe neuer Einträge.</b> Eine bestehende Variantenzeile behält ihren
+        /// Wert, und der Rechenweg ohne Variantenzeile (<c>new StromspeicherVarianteModel()</c>
+        /// als Rückfall) bleibt bei der Konstante — keine Rechenwirkung auf Bestehendes.
+        /// <b>Datenbankzugriff.</b>
+        /// </remarks>
+        public static double NutzungsdauerVorgabe()
+        {
+            try
+            {
+                NutzungsdauerZeile z = NutzungsdauerCtrl.Standard(EndenergieAufloeser.KOMPONENTE_STROMSPEICHER);
+                double? n = z?.Nutzungsdauer;
+                if (n.HasValue && double.IsFinite(n.Value) && n.Value >= 1.0) return n.Value;
+            }
+            catch (Exception ex)
+            {
+                // Benannt: Ohne lesbare Tabelle gilt die Konstante — eine Vorbelegung,
+                // kein Rechenwert; der Grund steht in der Konsole.
+                Console.WriteLine("Nutzungsdauer der Speichervariante: Tabelle nicht lesbar (" +
+                                  Fehlergrund.Text(ex) + ") — es gilt die Vorgabe " +
+                                  StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE + " a.");
+            }
+            return StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE;
+        }
+
+        /// <summary>
+        /// ETAPPE E13 (Register A8) — ein frisches Modell für eine NEU angelegte
+        /// Speichervariante: die Vorbelegung des Modells, die Nutzungsdauer aus
+        /// <see cref="NutzungsdauerVorgabe"/>.
+        /// </summary>
+        public static StromspeicherVarianteModel NeueVariante()
+        {
+            return new StromspeicherVarianteModel { Nutzungsdauer = NutzungsdauerVorgabe() };
+        }
+
+        // =====================================================================
         // Lesen
         // =====================================================================
 

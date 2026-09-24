@@ -88,6 +88,12 @@ namespace WindowsFormsApplication1
         /// nur aus Zeilen ohne Zahl ist keine Szenarioanalyse.</summary>
         public bool SzenarienGerechnet;
 
+        /// <summary>
+        /// ETAPPE E13 (E9b‑Q5 b): Ungünstig ODER Günstig trägt für mindestens einen Stand eine
+        /// Zahl — nur ein Szenario gerechnet; Punkt 9 steht dann auf „teilweise".
+        /// </summary>
+        public bool EinSzenarioGerechnet;
+
         /// <summary>Es gibt einen Vorschlag zur Entscheidung.</summary>
         public bool VorschlagVorhanden;
 
@@ -117,6 +123,8 @@ namespace WindowsFormsApplication1
                 lage.SensitivitaetGerechnet = bewertung.Sensitivitaet != null && bewertung.Sensitivitaet.Count > 0;
                 lage.SzenarienGerechnet = bewertung.Bandbreite != null &&
                     bewertung.Bandbreite.Zeilen.Any(z => z != null && z.Worst.HasValue && z.Best.HasValue);
+                lage.EinSzenarioGerechnet = bewertung.Bandbreite != null &&
+                    bewertung.Bandbreite.Zeilen.Any(z => z != null && (z.Worst.HasValue || z.Best.HasValue));
                 lage.VorschlagVorhanden = !string.IsNullOrEmpty(bewertung.Vorschlagstext);
                 lage.Szenarioabdeckung = bewertung.Szenarioabdeckung ?? "";
             }
@@ -205,12 +213,7 @@ namespace WindowsFormsApplication1
                       lage.SensitivitaetGerechnet ? MyResource.Resource.WIRT_AE_8_TEILWEISE : MyResource.Resource.WIRT_AE_8_OFFEN),
                 Punkt("9", gB, MyResource.Resource.WIRT_AE_9_THEMA, MyResource.Resource.WIRT_AE_9_ANF,
                       MyResource.Resource.WIRT_AE_9_STELLE,
-                      lage.SzenarienGerechnet ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
-                      !lage.SzenarienGerechnet ? MyResource.Resource.WIRT_AE_9_OFFEN
-                      // ETAPPE E9b: Punkt 9 prüft die Szenarien — er nennt den Ausweis
-                      // „n von m Parametern szenariert", wo die Lage ihn kennt.
-                      : string.IsNullOrEmpty(lage.Szenarioabdeckung) ? MyResource.Resource.WIRT_AE_9_TEILWEISE
-                      : string.Format(MyResource.Resource.WIRT_AE_9_ABDECKUNG, lage.Szenarioabdeckung)),
+                      StandPunkt9(lage), StandTextPunkt9(lage)),
                 Punkt("10", gC, MyResource.Resource.WIRT_AE_10_THEMA, MyResource.Resource.WIRT_AE_10_ANF,
                       MyResource.Resource.WIRT_AE_10_STELLE,
                       lage.VorschlagVorhanden && lage.SzenarienGerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
@@ -220,6 +223,37 @@ namespace WindowsFormsApplication1
                       MyResource.Resource.WIRT_AE_11_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_11_STAND),
             };
             return l;
+        }
+
+        /// <summary>
+        /// ETAPPE E13 (E9b‑Q5 b) — der Stand von Punkt 9 (Szenarioanalyse): „erfüllt", sobald
+        /// Ungünstig UND Günstig mit Kapitalwert gerechnet sind — unabhängig davon, ob ein
+        /// Parameter szenariert ist; „teilweise", wenn nur Erwartet oder nur eines der beiden
+        /// Szenarien vorliegt; „offen" ohne Lauf.
+        /// </summary>
+        internal static ChecklistenStand StandPunkt9(ChecklistenLage lage)
+        {
+            if (lage.SzenarienGerechnet) return ChecklistenStand.Erfuellt;
+            if (lage.Gerechnet || lage.EinSzenarioGerechnet) return ChecklistenStand.Teilweise;
+            return ChecklistenStand.Offen;
+        }
+
+        /// <summary>Der Standtext von Punkt 9 — mit dem Ausweis „n von m Parametern
+        /// szenariert" als Beleg, wo die Lage ihn kennt (ETAPPE E9b).</summary>
+        private static string StandTextPunkt9(ChecklistenLage lage)
+        {
+            bool abdeckung = !string.IsNullOrEmpty(lage.Szenarioabdeckung);
+            switch (StandPunkt9(lage))
+            {
+                case ChecklistenStand.Erfuellt:
+                    return abdeckung ? string.Format(MyResource.Resource.WIRT_AE_9_ABDECKUNG, lage.Szenarioabdeckung)
+                                     : MyResource.Resource.WIRT_AE_9_ERFUELLT;
+                case ChecklistenStand.Teilweise:
+                    return abdeckung ? string.Format(MyResource.Resource.WIRT_AE_9_TEILWEISE_ABDECKUNG, lage.Szenarioabdeckung)
+                                     : MyResource.Resource.WIRT_AE_9_TEILWEISE;
+                default:
+                    return MyResource.Resource.WIRT_AE_9_OFFEN;
+            }
         }
 
         private static ChecklistenPunkt Punkt(string nummer, string gruppe, string thema, string anforderung,

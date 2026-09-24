@@ -896,8 +896,11 @@ namespace WindowsFormsApplication1
                     KiHilfe.Auswahl w = SpeicheranlageWaehlen(a);
                     if (w.Fehler != null) return KiErgebnis.Abgelehnt(w.Fehler);
 
+                    // ETAPPE E13 (Register A8): eine NEUE Variante nimmt die Nutzungsdauer
+                    // der Nutzungsdauertabelle (Stromspeicher · Batterie).
                     var m = new StromspeicherVarianteModel
                     {
+                        Nutzungsdauer = StromspeicherVarianteCtrl.NutzungsdauerVorgabe(),
                         ID_Energieanlage = w.Id,
                         Betriebsart = Betriebsart(a),
                         SoC_Min_Prozent = a.Zahl("soc_min_prozent",
