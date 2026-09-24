@@ -836,6 +836,92 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Felder der vier KATALOGEDITOREN, die ihre Verwaltung unter einem ANDEREN
+        /// Schluessel fuehrt: Editorfeld → Profilschluessel
+        /// (<see cref="KatalogBrowserProfil"/>). Was hier fehlt, fuehrt die Verwaltung
+        /// unter demselben Schluessel.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum eine erklaerte Zuordnung und kein Namensvergleich.</b> Editor und
+        /// Verwaltung sind EIN Weg (<c>KiAktionenDialog.Zielmaske</c>): Die Absage nennt
+        /// die Verwaltung, wenn sie die genannten Felder fuehrt. Ob sie das tut, ist eine
+        /// Frage der IDENTITAET - derselbe Wert desselben Katalogsatzes - und wird deshalb
+        /// ueber Schluessel beantwortet. Die Beschriftungen stehen uebersetzt in
+        /// <c>MyResource.Resource</c>; ein toleranter Vergleich mit ihnen traf
+        /// <c>bereitschaftsverlust</c> nur unter der deutschen Beschriftung
+        /// „Betriebsbereitschaftsverluste", unter <c>en-US</c> nicht mehr.
+        /// </para>
+        /// <para>
+        /// Der Waechter <c>EPOS.Kern.Tests/KiKatalogKulturTests</c> haelt fest, dass jedes
+        /// Feld der vier Editoren so in seiner Verwaltung steht und jede Zuordnung hier
+        /// auf ein vorhandenes Feld zeigt.
+        /// </para>
+        /// </remarks>
+        private static readonly Dictionary<string, Dictionary<string, string>> VERWALTUNGSFELDER =
+            new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal)
+            {
+                [KiMaskennamen.HEIZKESSEL] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
+                    ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
+                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust
+                },
+                [KiMaskennamen.BHKW] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
+                    ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
+                    ["el_leistung"] = KatalogBrowserProfil.FeldPel,
+                    ["wirkungsgrad_gesamt"] = KatalogBrowserProfil.FeldWirkungsgrad
+                },
+                [KiMaskennamen.SOLARKOLLEKTOR] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma
+                },
+                [KiMaskennamen.PUFFERSPEICHER] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["gesamtvolumen"] = KatalogBrowserProfil.FeldVolumen,
+                    ["bereitschaftsverluste"] = KatalogBrowserProfil.FeldVerluste
+                }
+            };
+
+        /// <summary>
+        /// Der Schluessel, unter dem die ZIELMASKE der Maske <paramref name="maskenname"/>
+        /// (<see cref="KiMaskenziele.Ziel"/>) deren Feld <paramref name="feld"/> fuehrt -
+        /// das erklaerte Gegenstueck eines Katalogeditors in seiner Verwaltung, sonst
+        /// derselbe Schluessel.
+        /// </summary>
+        /// <remarks>
+        /// Sprachneutral: Die Antwort haengt nur an Schluesseln und ist deshalb in jeder
+        /// Anzeigesprache dieselbe.
+        /// </remarks>
+        public static string Zielfeldname(string maskenname, string feld)
+        {
+            Dictionary<string, string> felder;
+            string profilschluessel;
+
+            if (maskenname != null && feld != null &&
+                VERWALTUNGSFELDER.TryGetValue(maskenname, out felder) &&
+                felder.TryGetValue(feld, out profilschluessel))
+                return profilschluessel.ToLowerInvariant();
+
+            return feld;
+        }
+
+        /// <summary>
+        /// Die vier Katalogeditoren, deren Felder <see cref="Zielfeldname"/> in ihre
+        /// Verwaltung uebersetzt - fuer den Waechter.
+        /// </summary>
+        public static IReadOnlyCollection<string> Katalogeditoren => VERWALTUNGSFELDER.Keys;
+
         // =====================================================================
         // „Alle Daten" der sechs Erzeugermasken des Projekts   (Welle #458, Stufe 2)
         // =====================================================================
