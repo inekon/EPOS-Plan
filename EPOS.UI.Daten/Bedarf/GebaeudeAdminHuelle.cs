@@ -18,10 +18,13 @@ namespace WindowsFormsApplication1
     /// Auswahlleiste, Stammblatt — und bekommt ihren eigenen Satz; der Projektdialog behält
     /// seinen unverändert.</para>
     ///
-    /// <para><b>Alles über den Kern</b>: Zeilen, Verwendung und die Schreibwege stehen in
-    /// <see cref="GebaeudeStammCtrl"/>; der Katalogeditor (<see cref="GebaeudeKatalogHuelle"/>)
-    /// und die Gebäudetypen (Naht <see cref="Gebaeudewege"/>) erscheinen als Überlagerungen
-    /// im selben Fenster.</para>
+    /// <para><b>Alles über den Kern</b>: Zeilen, Verwendung, Duplizieren, Schloss und Löschen
+    /// stehen in <see cref="GebaeudeStammCtrl"/>. <b>Gespeichert wird über den Weg des
+    /// Katalogeditors</b> (<see cref="GebaeudeKatalogHuelle.Schreiben"/>, Welle #465): Das
+    /// Stammblatt führt jedes Feld des Editors auf demselben Arbeitsstand, und derselbe
+    /// Schreibweg samt Ableitungen und Auslieferungssperre schreibt es. Der Katalogeditor selbst
+    /// erscheint nur noch für „Neu…", die Gebäudetypen (Naht <see cref="Gebaeudewege"/>) als
+    /// Überlagerung im selben Fenster.</para>
     /// </summary>
     internal static class GebaeudeAdminHuelle
     {
@@ -51,15 +54,20 @@ namespace WindowsFormsApplication1
                 },
                 ["Verwendung"] = new Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
                     () => GebaeudeStammCtrl.Projektverwendung()),
-                ["Speichern"] = new Func<GebaeudeKenndaten, KatalogSpeicherErgebnis>(Speichern),
+                // #465: der Schreibweg des Katalogeditors - dieselbe Pruefung (im Dialog), dieselbe
+                // Ableitung und dieselbe Auslieferungssperre (in der Huelle).
+                ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
+                    GebaeudeKatalogHuelle.Schreiben),
+                ["HuellTexte"] = GebaeudeKatalogHuelle.Texte(),
+                ["Prueftexte"] = GebaeudeKatalogHuelle.Prueftexte(),
                 ["Loeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
                 // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
                 ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Exists"] = new Func<string, bool>(n => new GebaeudeStammCtrl().Lies(n) != null),
-                ["KatalogGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => GebaeudeKatalogHuelle.Gaben(name,
-                        string.IsNullOrEmpty(name) ? GebaeudeKatalogModus.Neu : GebaeudeKatalogModus.Bearbeiten)),
+                // Der Katalogeditor nur noch fuer "Neu..." (AD-Q6, #465) - bearbeitet wird im Stammblatt.
+                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu)),
                 ["TitelText"] = Titel(),
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
@@ -100,7 +108,9 @@ namespace WindowsFormsApplication1
                 Rechenweg = GebaeudeHuelle.Rechenwegtext(m.Gebaeude_Modell),
                 Auslieferung = new GebaeudeStammCtrl().IsReadOnly(name),
                 Huelle = Huelle(m),
-                AlleDaten = AlleDaten(m)
+                AlleDaten = AlleDaten(m),
+                // #465: der Feldsatz des Katalogeditors - der Arbeitsstand des Stammblatts.
+                Feldsatz = GebaeudeKatalogHuelle.AusModell(m)
             };
         }
 
@@ -184,28 +194,6 @@ namespace WindowsFormsApplication1
                 new(Text_("GEBK_LBL_NUTZERLUEFTUNG", "Nutzerlüftung"), N(m.Luftwechsel_Nutzer), "1/h"),
                 new(Text_("GEBK_LBL_KELLERTEMPERATUR", "Kellertemperatur"), N(m.Kellertemperatur, 1), "°C")
             };
-        }
-
-        /// <summary>
-        /// „Speichern" der fünf Kenndaten — über <see cref="GebaeudeStammCtrl.KenndatenSchreiben"/>;
-        /// ein Auslieferungssatz wird abgelehnt, ohne zu schreiben.
-        /// </summary>
-        internal static KatalogSpeicherErgebnis Speichern(GebaeudeKenndaten d)
-        {
-            if (d == null || string.IsNullOrEmpty(d.Name))
-                return new KatalogSpeicherErgebnis(false, Text_("GEBA_MSG_FEHLER", "Die Kenndaten konnten nicht geschrieben werden."), "");
-
-            if (new GebaeudeStammCtrl().IsReadOnly(d.Name))
-                return new KatalogSpeicherErgebnis(false, Text_("GEBK_MSG_READONLY",
-                    "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht überschrieben werden."), d.Name);
-
-            string buchstabe = d.Baualtersklasse is int i
-                ? GebaeudeStammCtrl.KlassenBuchstabe(i).ToString() : "";
-
-            bool ok = GebaeudeStammCtrl.KenndatenSchreiben(d.Name, d.Typ, d.Gebaeudeart, d.Verwendung,
-                                                           buchstabe, d.Beschreibung);
-            return new KatalogSpeicherErgebnis(ok,
-                ok ? "" : Text_("GEBA_MSG_FEHLER", "Die Kenndaten konnten nicht geschrieben werden."), d.Name);
         }
 
         private static KatalogSpeicherErgebnis Duplizieren(int id, string name)

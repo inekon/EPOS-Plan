@@ -21996,6 +21996,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
     <value>The name of the catalogue record. In catalogue management it selects the record the screen loads; otherwise it names the record that is written.</value>
   </data>
+  <data name="KI_DLG_GEBA_NAME_ERL" xml:space="preserve">
+    <value>The name of the selected building – read-only. The field “satz” selects another record; a record gets a new name via “Duplicate...”.</value>
+  </data>
   <data name="KI_DLG_GEBK_TYP_ERL" xml:space="preserve">
     <value>The building type from the type catalogue; it brings along the daily consumption profiles.</value>
   </data>
@@ -26577,14 +26580,11 @@ Do you want to allow this?</value>
   <data name="GEBA_SB_HUELLE" xml:space="preserve">
     <value>Envelope</value>
   </data>
-  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Edit…</value>
-  </data>
   <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
     <value>Building types…</value>
   </data>
   <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
-    <value>Areas and U-values are changed via “Edit…”, together with windows per orientation, room temperatures, holidays and thermal bridges.</value>
+    <value>The window area is the sum of the four orientations under “All data”, together with room temperatures, holidays, model parameters and cooling.</value>
   </data>
   <data name="GEBA_HUELLE_WERT" xml:space="preserve">
     <value>{0} m² · U {1} W/(m²K)</value>
@@ -26620,7 +26620,7 @@ Do you want to allow this?</value>
     <value>Description</value>
   </data>
   <data name="GEBA_MSG_FEHLER" xml:space="preserve">
-    <value>The key data could not be written.</value>
+    <value>The building record could not be written.</value>
   </data>
   <data name="GEBA_MSG_NEU" xml:space="preserve">
     <value>“{0}” created.</value>

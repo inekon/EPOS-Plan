@@ -218,7 +218,7 @@
                                  Gebaeudetypen="@(() => new[] { "Wohnblock", "Schule", "Hotel", "Verwaltung" })"
                                  Gebaeudearten="@(() => new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" })"
                                  Baualtersklassen="@GebaeudeStammklassen"
-                                 Speichern="@(d => new KatalogSpeicherErgebnis(true, "", d.Name))"
+                                 Speichern="@((d, _, _) => new GebaeudeKatalogErgebnis(true, ""))"
                                  Loeschen="@(_ => true)"
                                  Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
                                  Schloss="@ProbeSchloss"

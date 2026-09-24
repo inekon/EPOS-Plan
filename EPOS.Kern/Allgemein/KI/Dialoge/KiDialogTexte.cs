@@ -949,6 +949,15 @@
         /// <summary>Die sechzehnte Maske (Welle KI-F3): der Gebaeude-Katalogeditor.</summary>
         internal static string MaskeGebaeudeKatalog => MyResource.Resource.KI_DLG_MASKE_GEBK;
 
+        /// <summary>
+        /// Die Gebaeudeverwaltung (Welle #465) — ihr Anzeigename ist ihr Fenstertitel, wie bei
+        /// den Verwaltungen der Erzeugerkataloge.
+        /// </summary>
+        internal static string MaskeGebaeudeAdmin => MyResource.Resource.GEBA_TITEL;
+
+        /// <summary>Der Name in der Gebaeudeverwaltung — nur lesbar (Welle #465).</summary>
+        internal static string GebaNameErl => MyResource.Resource.KI_DLG_GEBA_NAME_ERL;
+
         internal static string GebVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
         internal static string GebFilterArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
