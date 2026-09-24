@@ -171,9 +171,9 @@ Gebaut ist jeweils Lesart a (die Empfehlung); offen beim Anwender (→ Register 
   SQL-Prüfer 1.811/0; Designer wiederholbar (9.998).
 - **Nach dem Nachzug** (auf `f545f86b`, derselbe Baum wie `52614c33`): gefiltert Kern 137/137, UI 357/357;
   Referenzlauf 13/13 gegen R14; SQL-Prüfer 1.821/0.
-- **Gate auf `0462f92e`:** Nachtrag folgt.
-- **Gate auf `52614c33`:** NACHTRAG-479-GATE2.
-- **CI:** NACHTRAG-479-CI.
+- **Gate auf `0462f92e`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte; der Testlauf abgebrochen, weil der Baum mit `079de7d7` (voller Lauf in Phase 2) übereinstimmt und das Gate auf dem End-Merge folgte (`GATE479.log`).
+- **Gate auf `52614c33`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 13.050 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.076, EPOS.UI 6.012, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE479b.log`, 24.09.2026 20:29–20:34 Uhr).
+- **CI:** steht aus (Beobachtung nach dem Push).
 
 ## Abnahme am Gerät (A‑E17‑1, Windows)
 
