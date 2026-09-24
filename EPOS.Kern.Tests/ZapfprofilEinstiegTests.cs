@@ -132,7 +132,7 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Zapfprofilweg);
 
             string meldung = ZapfprofilHuelle.Leistenmeldung(v);
-            Assert.StartsWith("Zone „Zone leer“ trägt 0: ", meldung);
+            Assert.Equal("Die Zone „Zone leer“ hat keine positive Bezugsmenge.", meldung);
             Assert.DoesNotContain(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, meldung);
 
             // Der Ergebnisdialog stapelt die Zirkulation und nennt sie als eigenen Posten.

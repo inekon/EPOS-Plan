@@ -322,7 +322,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    Format(Text_("ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"), a.Zone ?? "", Satztext(a.Satz)),
+                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -481,15 +481,12 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone,
-        /// wo sie eine trägt; <c>null</c> ohne Ablehnung oder ohne Satz.
+        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone
+        /// davor, wo sie eine trägt und der Satz sie nicht schon nennt; <c>null</c> ohne Ablehnung
+        /// oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
-        {
-            if (a?.Satz == null) return null;
-            string grund = Satztext(a.Satz);
-            return string.IsNullOrEmpty(a.Zone) ? grund : Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), a.Zone, grund);
-        }
+            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Zone „{0}“: {1}");
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,

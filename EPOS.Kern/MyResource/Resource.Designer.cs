@@ -77814,7 +77814,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Auslegungspunkt — {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Auslegungspunkt: {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_EMPFEHLUNG_KEINE {
             get {
@@ -78471,7 +78471,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag wurde nicht gebaut — {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag wurde nicht gebaut: {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_KON_NICHT_GEBAUT {
             get {
@@ -79299,7 +79299,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Auslegung — {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Auslegung: {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_STATUS_OHNE {
             get {
@@ -81135,7 +81135,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT {
             get {
@@ -81144,7 +81144,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der gewählte Bedarfstag steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Bedarfstag steht nicht im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_FEHLT {
             get {
@@ -81153,7 +81153,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Bedarfstag „{0}“ trägt kein Ereignis. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ trägt kein Ereignis. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_LEER {
             get {
@@ -81171,7 +81171,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das DIN-4708-Profil trägt keinen Zapfblock. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das DIN-4708-Profil trägt keinen Zapfblock. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_DIN_PROFIL_OHNE_BLOCK {
             get {
@@ -81180,7 +81180,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG {
             get {
@@ -81189,7 +81189,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Ensemble hat keine Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble hat keine Zone. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE {
             get {
@@ -81198,7 +81198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein Ereignis des Bedarfstags „{0}“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ereignis des Bedarfstags „{0}“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_EREIGNIS_AUSSERHALB {
             get {
@@ -81207,7 +81207,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein Ereignis des Bedarfstags „{0}“ trägt eine negative oder nicht endliche Energie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ereignis des Bedarfstags „{0}“ trägt eine negative oder nicht endliche Energie. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_EREIGNIS_ENERGIE {
             get {
@@ -81216,7 +81216,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ERZEUGERART_FEHLT {
             get {
@@ -81225,7 +81225,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_FENSTER_AUSSERHALB {
             get {
@@ -81234,7 +81234,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART {
             get {
@@ -81243,7 +81243,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN {
             get {
@@ -81252,7 +81252,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN {
             get {
@@ -81261,7 +81261,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — „{0}“ ist keine ganze Minutenzahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine ganze Minutenzahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KEINE_MINUTENZAHL {
             get {
@@ -81270,7 +81270,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Summenlinie findet kein Volumen mit Nachweis. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summenlinie findet kein Volumen mit Nachweis. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KEIN_VOLUMEN {
             get {
@@ -81279,7 +81279,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE {
             get {
@@ -81288,7 +81288,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_FENSTER {
             get {
@@ -81297,7 +81297,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der konstruierte Bedarfstag braucht einen Namen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der konstruierte Bedarfstag braucht einen Namen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_NAME {
             get {
@@ -81306,7 +81306,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Konstruktor trägt keine Zeile. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Konstruktor trägt keine Zeile. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_ZEILE {
             get {
@@ -81315,7 +81315,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Ladefenster hat keine Länge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ladefenster hat keine Länge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_LADEFENSTER_OHNE_LAENGE {
             get {
@@ -81324,7 +81324,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Ladungsfaktor liegt nicht in (0; 1]. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ladungsfaktor liegt nicht in (0; 1]. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_LADUNGSFAKTOR {
             get {
@@ -81333,7 +81333,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — weder Erzeuger- noch Übertragerleistung ist bekannt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weder Erzeuger- noch Übertragerleistung ist bekannt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_LEISTUNG_FEHLT {
             get {
@@ -81342,7 +81342,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der gemischte Speicher braucht die Mischwassertemperatur. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gemischte Speicher braucht die Mischwassertemperatur. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_MISCHWASSER_FEHLT {
             get {
@@ -81351,7 +81351,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NEGATIV {
             get {
@@ -81360,7 +81360,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Liste der Nenninhalte ist leer. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste der Nenninhalte ist leer. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NENNINHALTE_LEER {
             get {
@@ -81369,7 +81369,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Nenninhalte steigen nicht streng auf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nenninhalte steigen nicht streng auf. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NENNINHALTE_NICHT_AUFSTEIGEND {
             get {
@@ -81378,7 +81378,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Parameter „{0}“ nennt keine Stelle der Nenninhaltsliste. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parameter „{0}“ nennt keine Stelle der Nenninhaltsliste. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NENNINHALT_SCHLUESSEL {
             get {
@@ -81387,7 +81387,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} ist keine endliche Zahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist keine endliche Zahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NICHT_ENDLICH {
             get {
@@ -81396,7 +81396,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NICHT_POSITIV {
             get {
@@ -81414,7 +81414,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Nutzanteil liegt über 1. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Nutzanteil liegt über 1. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_NUTZANTEIL_UEBER_1 {
             get {
@@ -81423,7 +81423,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Speicherauslegung braucht die Wochenreihe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherauslegung braucht die Wochenreihe. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_OHNE_WOCHENREIHE {
             get {
@@ -81432,7 +81432,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Parametersatz der Auslegung fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parametersatz der Auslegung fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_PARAMETERSATZ_FEHLT {
             get {
@@ -81441,7 +81441,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_PUNKT {
             get {
@@ -81450,7 +81450,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein Perzentil braucht mindestens eine Realisierung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Perzentil braucht mindestens eine Realisierung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG {
             get {
@@ -81459,7 +81459,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Auslegungsperzentil ist 95 oder 99, nicht {0}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Auslegungsperzentil ist 95 oder 99, nicht {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_PERZENTIL_WERT {
             get {
@@ -81468,7 +81468,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Projektgrößen der Auslegung fehlen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektgrößen der Auslegung fehlen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_PROJEKTGROESSEN_FEHLEN {
             get {
@@ -81477,7 +81477,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — eine Realisierung trägt keinen Zahlenwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Realisierung trägt keinen Zahlenwert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_REALISIERUNG_OHNE_WERT {
             get {
@@ -81486,7 +81486,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Sensorhöhe liegt nicht in [0; 1]. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sensorhöhe liegt nicht in [0; 1]. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_SENSORHOEHE {
             get {
@@ -81495,7 +81495,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Spreizung {0} ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spreizung {0} ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_SPREIZUNG {
             get {
@@ -81504,7 +81504,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Spreizung des Speichers ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spreizung des Speichers ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_SPREIZUNG_SPEICHER {
             get {
@@ -81513,7 +81513,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Stundenprofil des Bedarfstags trägt nicht 24 Stunden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stundenprofil des Bedarfstags trägt nicht 24 Stunden. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_STUNDENPROFIL_RASTER {
             get {
@@ -81522,7 +81522,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Summenlinie braucht einen Bedarfstag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summenlinie braucht einen Bedarfstag. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_SUMMENLINIE_OHNE_TAG {
             get {
@@ -81531,7 +81531,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Vielfache der Realisierungen des Bedarfstags ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vielfache der Realisierungen des Bedarfstags ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_VIELFACHES {
             get {
@@ -81540,7 +81540,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} braucht den U-Wert des Übertragers, und der hängt am Werkstoff (Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} braucht den U-Wert des Übertragers, und der hängt am Werkstoff (Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WERKSTOFF_FEHLT {
             get {
@@ -81549,7 +81549,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wochenreihe trägt nicht 168 Stunden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe trägt nicht 168 Stunden. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_168 {
             get {
@@ -81558,7 +81558,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wochenreihe hat keine Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe hat keine Zone. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE {
             get {
@@ -81567,7 +81567,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wochenreihe trägt nicht sieben Tagtypen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe trägt nicht sieben Tagtypen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_TAGTYPEN {
             get {
@@ -81576,7 +81576,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wochenreihe trägt einen negativen oder nicht endlichen Wert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe trägt einen negativen oder nicht endlichen Wert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_WERT {
             get {
@@ -81585,7 +81585,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Wochentag des ersten Tages liegt nicht in 0 … 6. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag des ersten Tages liegt nicht in 0 … 6. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_WOCHENTAG {
             get {
@@ -81594,7 +81594,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — eine Zone der Wochenreihe trägt nicht 365 Tage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone der Wochenreihe trägt nicht 365 Tage. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365 {
             get {
@@ -81603,7 +81603,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ZAPFBLOECKE_ZAHL {
             get {
@@ -81621,7 +81621,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: nicht rechenbar — {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708 nicht rechenbar: {0} ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSTEXT_DIN_NICHT_RECHENBAR_GRUND {
             get {
@@ -82665,6 +82665,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfungen der Bedarfstage ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAGEREIGNIS_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAGEREIGNIS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Bedarfstage ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAG_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAG_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der DIN-4708-Werte ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Brauchwasser-Nutzungsarten ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWNUTZUNGSART_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWNUTZUNGSART_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameterkatalog des Zapfprofils ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWPARAMETER_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWPARAMETER_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektgrößen des Zapfprofils ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Tagesgangsätze ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANGSATZ_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANGSATZ_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Tagesgänge ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANG_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANG_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungstabellen der Zonen ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Zapfkategorien ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen des Zapfprofils ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TAGESGANG {
@@ -82971,7 +83070,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der spezifische Bedarf der Zone „{0}“ ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der Zone „{0}“ ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV {
             get {
@@ -82980,7 +83079,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BELEGUNG_FEHLT {
             get {
@@ -82989,7 +83088,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zone „{0}“ hat keine positive Bezugsmenge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine positive Bezugsmenge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV {
             get {
@@ -82998,7 +83097,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE {
             get {
@@ -83007,7 +83106,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT {
             get {
@@ -83016,7 +83115,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das Ensemble zöge {0} Einheitentage (Realisierungen × Einheiten); höchstens {1} sind zulässig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble zöge {0} Einheitentage (Realisierungen × Einheiten); höchstens {1} sind zulässig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ENSEMBLE_EINHEITSTAGE {
             get {
@@ -83025,7 +83124,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_RASTER {
             get {
@@ -83034,7 +83133,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zone „{0}“ der Jahresreihe ist unvollständig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ der Jahresreihe ist unvollständig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG {
             get {
@@ -83043,7 +83142,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER {
             get {
@@ -83052,7 +83151,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Kalender der Klimaregion trägt nicht 365 Tage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender der Klimaregion trägt nicht 365 Tage. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALENDER_365 {
             get {
@@ -83061,7 +83160,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Kalender trägt nicht 365 Tage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender trägt nicht 365 Tage. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALENDER_TAGE {
             get {
@@ -83070,7 +83169,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Kaltwasserfaktor trägt nicht zwölf Monate. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kaltwasserfaktor trägt nicht zwölf Monate. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSERFAKTOR_RASTER {
             get {
@@ -83079,7 +83178,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Kaltwassergang trägt nicht zwölf Monatswerte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kaltwassergang trägt nicht zwölf Monatswerte. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSERGANG_RASTER {
             get {
@@ -83088,7 +83187,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Amplitude des Kaltwassers ist negativ (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Amplitude des Kaltwassers ist negativ (Zone „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV {
             get {
@@ -83097,7 +83196,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF {
             get {
@@ -83106,7 +83205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UNGUELTIG {
             get {
@@ -83115,7 +83214,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Katalogbedarf der Nutzungsart „{0}“ ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogbedarf der Nutzungsart „{0}“ ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATALOGBEDARF_NEGATIV {
             get {
@@ -83124,7 +83223,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL {
             get {
@@ -83133,7 +83232,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL {
             get {
@@ -83142,7 +83241,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_DAUER {
             get {
@@ -83151,7 +83250,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG {
             get {
@@ -83160,7 +83259,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_MITTEL {
             get {
@@ -83169,7 +83268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_RATE {
             get {
@@ -83178,7 +83277,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG {
             get {
@@ -83187,7 +83286,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM {
             get {
@@ -83196,7 +83295,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KEINE_VERTEILUNG {
             get {
@@ -83205,7 +83304,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN {
             get {
@@ -83214,7 +83313,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Literangabe trägt keine Bezugstemperaturen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Literangabe trägt keine Bezugstemperaturen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_LITERANGABE_OHNE_BEZUGSTEMPERATUREN {
             get {
@@ -83223,7 +83322,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL {
             get {
@@ -83232,7 +83331,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Jahresmesswert der Zone „{0}“ ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV {
             get {
@@ -83241,7 +83340,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT {
             get {
@@ -83250,7 +83349,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE {
             get {
@@ -83259,7 +83358,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT {
             get {
@@ -83268,7 +83367,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS {
             get {
@@ -83277,7 +83376,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE {
             get {
@@ -83286,7 +83385,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} der Zone „{1}“ ist keine endliche Zahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Zone „{1}“ ist keine endliche Zahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NICHT_ENDLICH {
             get {
@@ -83295,7 +83394,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — unbekanntes Bedarfsniveau der Zone „{0}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Bedarfsniveau der Zone „{0}“. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT {
             get {
@@ -83304,7 +83403,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Nutzungsart {0} der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT {
             get {
@@ -83313,7 +83412,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Nutzungsart „{0}“ trägt keine Bezugstemperaturen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart „{0}“ trägt keine Bezugstemperaturen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN {
             get {
@@ -83322,7 +83421,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Nutzungsart „{0}“ trägt nicht drei Bedarfsniveaus. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart „{0}“ trägt nicht drei Bedarfsniveaus. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_NIVEAUS {
             get {
@@ -83331,7 +83430,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Parametersatz des Zapfprofils fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parametersatz des Zapfprofils fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_PARAMETERSATZ_FEHLT {
             get {
@@ -83340,7 +83439,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Projektgrößen des Zapfprofils fehlen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektgrößen des Zapfprofils fehlen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_PROJEKTGROESSEN_FEHLEN {
             get {
@@ -83349,7 +83448,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} tragen nicht {1} Werte (Zone „{2}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} tragen nicht {1} Werte (Zone „{2}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_RASTER_LAENGE {
             get {
@@ -83358,7 +83457,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_RASTER_NEGATIV {
             get {
@@ -83367,7 +83466,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … {0}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_REALISIERUNGEN_BEDARFSTAG {
             get {
@@ -83376,7 +83475,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … {0}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_REALISIERUNGEN_JAHRESREIHE {
             get {
@@ -83385,7 +83484,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Temperaturspreizung ({0}) ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperaturspreizung ({0}) ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV {
             get {
@@ -83394,7 +83493,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE {
             get {
@@ -83403,7 +83502,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_STOCHASTIK_EINHEITSTAGE {
             get {
@@ -83412,7 +83511,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
             get {
@@ -83421,7 +83520,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — für die Nutzungsart {0} der Zone „{1}“ stehen keine Zapfkategorien im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart der Zone „{0}“ stehen keine Zapfkategorien im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID {
             get {
@@ -83430,7 +83529,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG {
             get {
@@ -83439,7 +83538,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Tagesgangsatz {0} der Zone „{1}“ fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz {0} der Zone „{1}“ fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT {
             get {
@@ -83448,7 +83547,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG {
             get {
@@ -83457,7 +83556,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Urlaubsversatz liegt nicht in 0 … 364 Tagen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Urlaubsversatz liegt nicht in 0 … 364 Tagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH {
             get {
@@ -83466,7 +83565,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_URLAUBSVERSATZ_UNGUELTIG {
             get {
@@ -83475,7 +83574,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wochenfaktoren der Nutzungsart „{0}“ summieren zu 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenfaktoren der Nutzungsart „{0}“ summieren zu 0. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOCHENFAKTOREN_NULL {
             get {
@@ -83484,7 +83583,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Wochentag des 1. Januar liegt nicht in 0 … 6. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag des 1. Januar liegt nicht in 0 … 6. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOCHENTAG_UNGUELTIG {
             get {
@@ -83493,7 +83592,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Wohnfläche je WE der Zone „{0}“ ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV {
             get {
@@ -83502,7 +83601,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL {
             get {
@@ -83511,7 +83610,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER {
             get {
@@ -83520,7 +83619,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Methode Leitungslänge braucht eine Leitungslänge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Methode Leitungslänge braucht eine Leitungslänge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_LAENGE_FEHLT {
             get {
@@ -83529,7 +83628,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — der Parameter der Leitungslage ist weder 1 noch 2. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parameter der Leitungslage ist weder 1 noch 2. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_LAGE {
             get {
@@ -83538,7 +83637,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Laufzeit der Zirkulation liegt nicht in (0; 24] h. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufzeit der Zirkulation liegt nicht in (0; 24] h. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_LAUFZEIT {
             get {
@@ -83547,7 +83646,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_MANUELL {
             get {
@@ -83556,7 +83655,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — unbekannte Methode der Zirkulation. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekannte Methode der Zirkulation. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_METHODE {
             get {
@@ -83565,7 +83664,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Projektgrößen der Zirkulation fehlen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektgrößen der Zirkulation fehlen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_PROJEKT_FEHLT {
             get {
@@ -83574,7 +83673,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — {0} ist negativ oder keine endliche Zahl ({1}). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist negativ oder keine endliche Zahl ({1}). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZIRKULATION_WERT {
             get {
@@ -83952,7 +84051,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Katalogversion „{0}“ trägt keine Brauchwasserparameter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion „{0}“ trägt keine Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER {
             get {
@@ -83961,7 +84060,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — es gibt keine Katalogversion der Brauchwasserparameter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Katalogversion der Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KEINE_KATALOGVERSION {
             get {
@@ -83970,7 +84069,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — es wurde keine Katalogversion der Brauchwasserparameter genannt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde keine Katalogversion der Brauchwasserparameter genannt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KEINE_VERSION_GENANNT {
             get {
@@ -83979,7 +84078,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — Parameter fehlt: „{0}“ steht nicht in der Katalogversion „{1}“ der Brauchwasserparameter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter fehlt: „{0}“ steht nicht in der Katalogversion „{1}“ der Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_SCHLUESSEL_FEHLT {
             get {
@@ -83988,7 +84087,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Tabelle {0} fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es fehlt: {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_TABELLE_FEHLT {
             get {
@@ -83997,7 +84096,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht rechenbar — die Tabelle {0} fehlt oder trägt keine Katalogversion. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlt oder ohne Katalogversion: {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_TABELLE_OHNE_VERSION {
             get {
@@ -84141,7 +84240,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart {0} der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT {
             get {
@@ -84168,7 +84267,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Tabelle {0} fehlt in dieser Datenbank. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Datenbank fehlt: {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_TABELLE_FEHLT {
             get {
@@ -84258,7 +84357,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — {0} trägt keine Katalogversion. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — ohne Katalogversion: {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION {
             get {
@@ -84267,7 +84366,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen {0}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen: {0}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN {
             get {

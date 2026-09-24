@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -47,7 +48,7 @@ namespace WindowsFormsApplication1
             string version = AktuelleKatalogversion();
             if (version == null)
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    ZapfSatz.Neu("PARAMETER_TABELLE_OHNE_VERSION", TwwSchema.TAB_TWW_PARAMETER_STAMM));
+                    ZapfSatz.Neu("PARAMETER_TABELLE_OHNE_VERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
             return Parameter(version);
         }
 
@@ -62,7 +63,7 @@ namespace WindowsFormsApplication1
                     ZapfSatz.Neu("PARAMETER_KEINE_VERSION_GENANNT"));
             if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, katalogversion, "",
-                    ZapfSatz.Neu("PARAMETER_TABELLE_FEHLT", TwwSchema.TAB_TWW_PARAMETER_STAMM));
+                    ZapfSatz.Neu("PARAMETER_TABELLE_FEHLT", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Schluessel, Wert, Einheit, Quelle, Ausgabe, Version, Herkunftsart " +
@@ -113,12 +114,12 @@ namespace WindowsFormsApplication1
                 if (!DataRepository.TabelleVorhanden(a.Key)) fehlend.Add(a.Key);
             if (fehlend.Count > 0)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.TabellenFehlen,
-                    ZapfSatz.Neu("VERFUEGBAR_TABELLEN_FEHLEN", fehlend.ToArray()));
+                    ZapfSatz.Neu("VERFUEGBAR_TABELLEN_FEHLEN", (object)fehlend.Select(ZapfSatz.Tabelle).ToArray()));
 
             string version = AktuelleKatalogversion();
             if (version == null)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
-                    ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", TwwSchema.TAB_TWW_PARAMETER_STAMM));
+                    ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
 
             return new ZapfVerfuegbarkeit(true, ZapfVerfuegbarkeitsgrund.Verfuegbar,
                 ZapfSatz.Neu("VERFUEGBAR_JA", version));

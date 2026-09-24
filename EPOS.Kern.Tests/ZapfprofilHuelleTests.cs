@@ -242,12 +242,25 @@ namespace EPOS.Kern.Tests
                 ZapfSatz.Neu("EINGABE_BEZUGSMENGE_NICHT_POSITIV", "Büro")));
             Assert.Equal("ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV", a.Kennung);
             Assert.Equal(ZapfprofilMeldungsart.Ablehnung, a.Art);
-            Assert.Equal("Zone „Büro“ trägt 0: Nicht rechenbar — die Zone „Büro“ hat keine positive Bezugsmenge.", a.Text);
-            Assert.Equal("Nicht rechenbar — die Zone „Büro“ hat keine positive Bezugsmenge.", a.Klartext);
+            // Der Satz nennt seine Zone selbst: kein Vorsatz, kein „Nicht rechenbar" (das sagt der Banner).
+            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Text);
+            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Klartext);
+
+            // Ein Satz ohne Zone bekommt den Vorsatz der Zone.
+            ZapfprofilMeldung ohneZone = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.RasterUngueltig,
+                ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UNGUELTIG")));
+            Assert.Equal("Zone „Büro“ trägt 0: Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.", ohneZone.Text);
 
             ZapfprofilMeldung z = ZapfprofilHuelle.Meldung(new ZapfAblehnung("", ZapfEingabefehler.ZirkulationUngueltig,
                 ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")));
-            Assert.Equal("Die Zirkulation trägt 0: Nicht rechenbar — unbekannte Methode der Zirkulation.", z.Text);
+            Assert.Equal("Die Zirkulation trägt 0: Unbekannte Methode der Zirkulation.", z.Text);
+
+            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Nutzungsart steht mit Namen, nie als Id.
+            Assert.Equal("Die Speichertemperatur ist negativ.",
+                         ZapfSatz.Neu("AUSLEGUNG_NEGATIV", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")).Klartext);
+            Assert.Equal("Die Nutzungsart der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+                         ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.NutzungsartFehlt,
+                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro"))).Text);
 
             var hinweis = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE,
                 ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", "Wohnen", 1.5, 0.25, "–"));
@@ -287,7 +300,7 @@ namespace EPOS.Kern.Tests
                 ZapfSatz.Neu(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, "Probe", "T1", "Nord"));
             ZapfprofilMeldung m = ZapfprofilHuelle.Meldung(ablehnung);
             Assert.Equal("ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
-            Assert.Equal("Zone „Nord“ trägt 0: Nicht rechenbar — für die Nutzungsart „Probe“ (Katalogversion T1) der Zone „Nord“ "
+            Assert.Equal("Für die Nutzungsart „Probe“ (Katalogversion T1) der Zone „Nord“ "
                          + "stehen keine Zapfkategorien im Katalog.", m.Text);
             Assert.Equal(ablehnung.Klartext, m.Klartext);
             string en = Text(m.Kennung, EN);
@@ -411,7 +424,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
             Assert.Equal("Zone leer", m.Zone);
             Assert.StartsWith(ZapfSatz.PRAEFIX + "EINGABE_", m.Kennung);
-            Assert.StartsWith("Zone „Zone leer“ trägt 0: ", m.Text);
+            Assert.Equal("Die Zone „Zone leer“ hat keine positive Bezugsmenge.", m.Text);
         }
 
         /// <summary>
@@ -548,8 +561,9 @@ namespace EPOS.Kern.Tests
             e.Zonen.Add(new ZapfprofilZoneDaten { Name = "Z", IdNutzungsart = 1, Bezugsmenge = 1 });
             ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(1, e, null);
             Assert.Equal(ZapfprofilVorschauZustand.Abgebrochen, v.Zustand);
-            Assert.StartsWith("Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen Tab_Tww", v.Grund);
-            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, v.Grund);
+            Assert.StartsWith("Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen: Katalog der Tagesgangsätze, ", v.Grund);
+            Assert.Contains("Parameterkatalog des Zapfprofils", v.Grund);
+            Assert.DoesNotContain("Tab_", v.Grund);
             Assert.Equal("ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN", Assert.Single(v.Meldungen).Kennung);
             Assert.Null(v.Summe);
         }

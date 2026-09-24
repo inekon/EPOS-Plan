@@ -27283,28 +27283,28 @@ Do you want to allow this?</value>
     <value>Balance value, not a design quantity</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>Not computable — there is no catalogue version of the domestic hot water parameters.</value>
+    <value>There is no catalogue version of the domestic hot water parameters.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER" xml:space="preserve">
-    <value>Not computable — catalogue version “{0}” holds no domestic hot water parameters.</value>
+    <value>Catalogue version “{0}” holds no domestic hot water parameters.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_SCHLUESSEL_FEHLT" xml:space="preserve">
-    <value>Not computable — parameter missing: “{0}” is not in catalogue version “{1}” of the domestic hot water parameters.</value>
+    <value>Parameter missing: “{0}” is not in catalogue version “{1}” of the domestic hot water parameters.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_TABELLE_OHNE_VERSION" xml:space="preserve">
-    <value>Not computable — table {0} is missing or holds no catalogue version.</value>
+    <value>Missing or without catalogue version: {0}.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KEINE_VERSION_GENANNT" xml:space="preserve">
-    <value>Not computable — no catalogue version of the domestic hot water parameters was given.</value>
+    <value>No catalogue version of the domestic hot water parameters was given.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_TABELLE_FEHLT" xml:space="preserve">
-    <value>Not computable — table {0} is missing.</value>
+    <value>Missing: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN" xml:space="preserve">
-    <value>The draw-off profile generator is not available in this database — the tables {0} are missing.</value>
+    <value>The draw-off profile generator is not available in this database — missing: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>The draw-off profile generator is not available in this database — {0} holds no catalogue version.</value>
+    <value>The draw-off profile generator is not available in this database — no catalogue version: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
     <value>The draw-off profile generator is available (catalogue version “{0}”).</value>
@@ -27313,10 +27313,10 @@ Do you want to allow this?</value>
     <value>A zone without data.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>Not computable — type of use {0} of zone “{1}” is not in the catalogue.</value>
+    <value>The type of use of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>Not computable — daily profile set {0} of zone “{1}” is missing.</value>
+    <value>Daily profile set {0} of zone “{1}” is missing.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_MESSWERT_NICHT_GEPRUEFT" xml:space="preserve">
     <value>The deviation of the measured values from the catalogue value is not checked.</value>
@@ -27334,10 +27334,10 @@ Do you want to allow this?</value>
     <value>The project has network losses, and the draw-off profile calculates a circulation ({0:0} kWh/a). If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
-    <value>Not computable — the stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
+    <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_UNGUELTIG" xml:space="preserve">
-    <value>Not computable — the holiday offset is not a whole number from 0 to 364 days.</value>
+    <value>The holiday offset is not a whole number from 0 to 364 days.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
     <value>Zone “{0}”: the mean of the drawn years ({1:0.#} kWh) deviates by more than the tolerance {2:0.#} kWh from the annual quantity {3:0.#} kWh; the year for the seed has been scaled to the annual quantity.</value>
@@ -27355,7 +27355,7 @@ Do you want to allow this?</value>
     <value>volume conversion (new)</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Not computable — the characteristic value has no reference temperatures (zone “{0}”).</value>
+    <value>The characteristic value has no reference temperatures (zone “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSTEMPERATUREN_KATALOG" xml:space="preserve">
     <value>reference temperatures of the catalogue</value>
@@ -27364,10 +27364,10 @@ Do you want to allow this?</value>
     <value>project temperatures</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_LITERANGABE_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Not computable — the litre figure has no reference temperatures.</value>
+    <value>The litre figure has no reference temperatures.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Not computable — type of use “{0}” has no reference temperatures.</value>
+    <value>Type of use “{0}” has no reference temperatures.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZAPFTEMPERATUR" xml:space="preserve">
     <value>draw-off temperature</value>
@@ -27379,160 +27379,160 @@ Do you want to allow this?</value>
     <value>cold water amplitude</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV" xml:space="preserve">
-    <value>Not computable — the cold water amplitude is negative (zone “{0}”).</value>
+    <value>The cold water amplitude is negative (zone “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UNGUELTIG" xml:space="preserve">
-    <value>Not computable — the month of the cold water maximum is not a month number 1 … 12.</value>
+    <value>The month of the cold water maximum is not a month number 1 … 12.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
-    <value>Not computable — a dwelling type of zone “{0}” has no positive number.</value>
+    <value>A dwelling type of zone “{0}” has no positive number.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV" xml:space="preserve">
-    <value>Not computable — zone “{0}” has no positive reference quantity.</value>
+    <value>Zone “{0}” has no positive reference quantity.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
-    <value>Not computable — the daily demand of zone “{0}” is set to manual, the value is missing or negative.</value>
+    <value>The daily demand of zone “{0}” is set to manual, the value is missing or negative.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEDARFSUEBERSCHREIBUNG" xml:space="preserve">
     <value>demand override</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV" xml:space="preserve">
-    <value>Not computable — the specific demand of zone “{0}” is negative.</value>
+    <value>The specific demand of zone “{0}” is negative.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_WOHNFLAECHE_JE_WE" xml:space="preserve">
     <value>living area per dwelling</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV" xml:space="preserve">
-    <value>Not computable — the living area per dwelling of zone “{0}” is not positive.</value>
+    <value>The living area per dwelling of zone “{0}” is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_NIVEAUS" xml:space="preserve">
-    <value>Not computable — type of use “{0}” does not have three demand levels.</value>
+    <value>Type of use “{0}” does not have three demand levels.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT" xml:space="preserve">
-    <value>Not computable — unknown demand level of zone “{0}”.</value>
+    <value>Unknown demand level of zone “{0}”.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_KATALOGBEDARF" xml:space="preserve">
     <value>catalogue demand</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATALOGBEDARF_NEGATIV" xml:space="preserve">
-    <value>Not computable — the catalogue demand of type of use “{0}” is negative.</value>
+    <value>The catalogue demand of type of use “{0}” is negative.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WOHNZONEN_OHNE_FLAECHE" xml:space="preserve">
     <value>Residential zones without their own living area per dwelling carry no area for the circulation.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV" xml:space="preserve">
-    <value>Not computable — the annual measured value of zone “{0}” is not positive.</value>
+    <value>The annual measured value of zone “{0}” is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
-    <value>Not computable — the annual measured value of zone “{0}” has no unit (kWh/a or m³/a).</value>
+    <value>The annual measured value of zone “{0}” has no unit (kWh/a or m³/a).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE" xml:space="preserve">
-    <value>Not computable — a measured volume applies at the draw-off point (boundary 1); zone “{0}” states another boundary.</value>
+    <value>A measured volume applies at the draw-off point (boundary 1); zone “{0}” states another boundary.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE" xml:space="preserve">
-    <value>Not computable — the annual measured value of zone “{0}” in kWh/a states no balance boundary (1, 2 or 3).</value>
+    <value>The annual measured value of zone “{0}” in kWh/a states no balance boundary (1, 2 or 3).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT" xml:space="preserve">
-    <value>Not computable — the measured value of zone “{0}” includes the storage loss, but the storage loss is missing.</value>
+    <value>The measured value of zone “{0}” includes the storage loss, but the storage loss is missing.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS" xml:space="preserve">
-    <value>Not computable — the storage loss of zone “{0}” is not smaller than the measured value.</value>
+    <value>The storage loss of zone “{0}” is not smaller than the measured value.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL" xml:space="preserve">
-    <value>Not computable — the catalogue value of zone “{0}” is 0; a measured value cannot be distributed.</value>
+    <value>The catalogue value of zone “{0}” is 0; a measured value cannot be distributed.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
-    <value>Not computable — the occupancy of a dwelling type of zone “{0}” is neither set nor determinable from the catalogue.</value>
+    <value>The occupancy of a dwelling type of zone “{0}” is neither set nor determinable from the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
     <value>The specific demand of zone “{0}” ({1:0.###} kWh per unit and day) lies outside the range of the level ({2:0.###} … {3:0.###}).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NICHT_ENDLICH" xml:space="preserve">
-    <value>Not computable — {0} of zone “{1}” is not a finite number.</value>
+    <value>{0} of zone “{1}” is not a finite number.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV" xml:space="preserve">
-    <value>Not computable — the temperature difference ({0}) is not positive.</value>
+    <value>The temperature difference ({0}) is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE" xml:space="preserve">
-    <value>Not computable — the temperature difference ({0}) is not positive (zone “{1}”).</value>
+    <value>The temperature difference ({0}) is not positive (zone “{1}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
-    <value>Not computable — the project quantities of the draw-off profile are missing.</value>
+    <value>The project quantities of the draw-off profile are missing.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_PARAMETERSATZ_FEHLT" xml:space="preserve">
-    <value>Not computable — the parameter set of the draw-off profile is missing.</value>
+    <value>The parameter set of the draw-off profile is missing.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSERGANG_RASTER" xml:space="preserve">
-    <value>Not computable — the cold water profile does not have twelve monthly values.</value>
+    <value>The cold water profile does not have twelve monthly values.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
-    <value>Not computable — the draw-off temperature is not above the cold water mean (zone “{0}”).</value>
+    <value>The draw-off temperature is not above the cold water mean (zone “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF" xml:space="preserve">
-    <value>Not computable — in month {0} the cold water is not below the draw-off temperature (zone “{1}”).</value>
+    <value>In month {0} the cold water is not below the draw-off temperature (zone “{1}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOCHENTAG_UNGUELTIG" xml:space="preserve">
-    <value>Not computable — the weekday of 1 January is not within 0 … 6.</value>
+    <value>The weekday of 1 January is not within 0 … 6.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALENDER_365" xml:space="preserve">
-    <value>Not computable — the calendar of the climate region does not have 365 days.</value>
+    <value>The calendar of the climate region does not have 365 days.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER" xml:space="preserve">
-    <value>Not computable — the year drawn for the seed of zone “{0}” has no draw-off; the annual quantity cannot be represented.</value>
+    <value>The year drawn for the seed of zone “{0}” has no draw-off; the annual quantity cannot be represented.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_JAHRESREIHE" xml:space="preserve">
-    <value>Not computable — the number of realisations of the annual series is not within 1 … {0}.</value>
+    <value>The number of realisations of the annual series is not within 1 … {0}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Not computable — zone “{0}” of the annual series is incomplete.</value>
+    <value>Zone “{0}” of the annual series is incomplete.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
-    <value>Not computable — calendar, cold water factor or temperature difference of zone “{0}” do not have the annual grid.</value>
+    <value>Calendar, cold water factor or temperature difference of zone “{0}” do not have the annual grid.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
-    <value>Not computable — the holiday offset is not within 0 … 364 days.</value>
+    <value>The holiday offset is not within 0 … 364 days.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
-    <value>Not computable — the catalogue holds no draw-off categories for type of use “{0}” (catalogue version {1}) of zone “{2}”.</value>
+    <value>The catalogue holds no draw-off categories for type of use “{0}” (catalogue version {1}) of zone “{2}”.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID" xml:space="preserve">
-    <value>Not computable — the catalogue holds no draw-off categories for type of use {0} of zone “{1}”.</value>
+    <value>The catalogue holds no draw-off categories for the type of use of zone “{0}”.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no valid flow rate.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no valid flow rate.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no valid spread.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no valid spread.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_DAUER" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no duration of 1 to 1440 minutes.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no duration of 1 to 1440 minutes.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no valid share.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no valid share.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no positive cap.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no positive cap.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL" xml:space="preserve">
-    <value>Not computable — the shares of the draw-off categories of zone “{0}” sum to 0.</value>
+    <value>The shares of the draw-off categories of zone “{0}” sum to 0.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_MITTEL" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” has no positive truncated mean flow rate.</value>
+    <value>Draw-off category “{0}” of zone “{1}” has no positive truncated mean flow rate.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE" xml:space="preserve">
-    <value>Not computable — the living area per dwelling of zone “{0}” is not positive; the units cannot be determined.</value>
+    <value>The living area per dwelling of zone “{0}” is not positive; the units cannot be determined.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT" xml:space="preserve">
-    <value>Not computable — the number of units of zone “{0}” cannot be determined or is greater than {1}.</value>
+    <value>The number of units of zone “{0}” cannot be determined or is greater than {1}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_RATE" xml:space="preserve">
-    <value>Not computable — draw-off category “{0}” of zone “{1}” gives no finite rate of events.</value>
+    <value>Draw-off category “{0}” of zone “{1}” gives no finite rate of events.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ENSEMBLE_EINHEITSTAGE" xml:space="preserve">
-    <value>Not computable — the ensemble would draw {0} unit-days (realisations × units); at most {1} are permitted.</value>
+    <value>The ensemble would draw {0} unit-days (realisations × units); at most {1} are permitted.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_BEDARFSTAG" xml:space="preserve">
-    <value>Not computable — the number of realisations of the design day is not within 1 … {0}.</value>
+    <value>The number of realisations of the design day is not within 1 … {0}.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_SUMMEN_NICHT_GEPRUEFT" xml:space="preserve">
     <value>The sums of the weekly factors and daily profiles are not checked, only normalised.</value>
@@ -27547,13 +27547,13 @@ Do you want to allow this?</value>
     <value>weekly factors</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOCHENFAKTOREN_NULL" xml:space="preserve">
-    <value>Not computable — the weekly factors of type of use “{0}” sum to 0.</value>
+    <value>The weekly factors of type of use “{0}” sum to 0.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_FERIENFAKTOR" xml:space="preserve">
     <value>holiday factor</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Not computable — the daily profile set of zone “{0}” is missing or does not have all four day types.</value>
+    <value>The daily profile set of zone “{0}” is missing or does not have all four day types.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESGANG" xml:space="preserve">
     <value>daily profile</value>
@@ -27577,31 +27577,31 @@ Do you want to allow this?</value>
     <value>rest day</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALENDER_TAGE" xml:space="preserve">
-    <value>Not computable — the calendar does not have 365 days.</value>
+    <value>The calendar does not have 365 days.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSERFAKTOR_RASTER" xml:space="preserve">
-    <value>Not computable — the cold water factor does not have twelve months.</value>
+    <value>The cold water factor does not have twelve months.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
-    <value>Not computable — the time structure of zone “{0}” gives no day a weight.</value>
+    <value>The time structure of zone “{0}” gives no day a weight.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_LAENGE" xml:space="preserve">
-    <value>Not computable — {0} do not have {1} values (zone “{2}”).</value>
+    <value>{0} do not have {1} values (zone “{2}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_NEGATIV" xml:space="preserve">
-    <value>Not computable — {0} of zone “{1}” contains a negative or non-finite value.</value>
+    <value>{0} of zone “{1}” contains a negative or non-finite value.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_SUMME_NORMIERT" xml:space="preserve">
     <value>{0} of zone “{1}” sums to {2:0.######} instead of 1; normalised before calculating.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_PROJEKT_FEHLT" xml:space="preserve">
-    <value>Not computable — the project quantities of the circulation are missing.</value>
+    <value>The project quantities of the circulation are missing.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAUFZEIT" xml:space="preserve">
-    <value>Not computable — the running time of the circulation is not within (0; 24] h.</value>
+    <value>The running time of the circulation is not within (0; 24] h.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_MANUELL" xml:space="preserve">
-    <value>Not computable — the circulation is set to manual, the power is missing or negative.</value>
+    <value>The circulation is set to manual, the power is missing or negative.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_FLAECHE" xml:space="preserve">
     <value>area of the circulation</value>
@@ -27613,7 +27613,7 @@ Do you want to allow this?</value>
     <value>No area for the area-specific value of the circulation; calculated with the share method.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAENGE_FEHLT" xml:space="preserve">
-    <value>Not computable — the pipe length method needs a pipe length.</value>
+    <value>The pipe length method needs a pipe length.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_LAENGE" xml:space="preserve">
     <value>pipe length</value>
@@ -27628,7 +27628,7 @@ Do you want to allow this?</value>
     <value>area-specific value</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_METHODE" xml:space="preserve">
-    <value>Not computable — unknown circulation method.</value>
+    <value>Unknown circulation method.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
     <value>No zone carries a circulation share; the circulation is shown for the whole building.</value>
@@ -27637,10 +27637,10 @@ Do you want to allow this?</value>
     <value>Zone “{0}” carries no circulation share (balance boundary of the characteristic value or circulation “no”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAGE" xml:space="preserve">
-    <value>Not computable — the pipe location parameter is neither 1 nor 2.</value>
+    <value>The pipe location parameter is neither 1 nor 2.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_WERT" xml:space="preserve">
-    <value>Not computable — {0} is negative or not a finite number ({1}).</value>
+    <value>{0} is negative or not a finite number ({1}).</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_GRUND_UND_FOLGE" xml:space="preserve">
     <value>{0} {1}</value>
@@ -27652,16 +27652,16 @@ Do you want to allow this?</value>
     <value>the storage temperature (parameter {0})</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NICHT_ENDLICH" xml:space="preserve">
-    <value>Not computable — {0} is not a finite number.</value>
+    <value>{0} is not a finite number.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NEGATIV" xml:space="preserve">
-    <value>Not computable — {0} is negative.</value>
+    <value>{0} is negative.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NICHT_POSITIV" xml:space="preserve">
-    <value>Not computable — {0} is not positive.</value>
+    <value>{0} is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG" xml:space="preserve">
-    <value>Not computable — the temperature difference {0} is not positive.</value>
+    <value>The temperature difference {0} is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_OFFEN" xml:space="preserve">
     <value>not yet calculated — “Calculate stochastically” draws the design ensemble</value>
@@ -27697,31 +27697,31 @@ Do you want to allow this?</value>
     <value>the number of draw-offs</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ZAPFBLOECKE_ZAHL" xml:space="preserve">
-    <value>Not computable — the number of draw-off blocks of the DIN 4708 profile is not a positive whole number.</value>
+    <value>The number of draw-off blocks of the DIN 4708 profile is not a positive whole number.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_PARAMETERWERT" xml:space="preserve">
     <value>“{0}”</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KEINE_MINUTENZAHL" xml:space="preserve">
-    <value>Not computable — “{0}” is not a whole number of minutes.</value>
+    <value>“{0}” is not a whole number of minutes.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SKALIERUNGSFAKTOR" xml:space="preserve">
     <value>the scaling factor of the design day</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_LEER" xml:space="preserve">
-    <value>Not computable — design day “{0}” has no event.</value>
+    <value>Design day “{0}” has no event.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_AUSSERHALB" xml:space="preserve">
-    <value>Not computable — an event of design day “{0}” is not within the day (start 0 … 1439, duration 1 … 1440 minutes).</value>
+    <value>An event of design day “{0}” is not within the day (start 0 … 1439, duration 1 … 1440 minutes).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_ENERGIE" xml:space="preserve">
-    <value>Not computable — an event of design day “{0}” has a negative or non-finite energy.</value>
+    <value>An event of design day “{0}” has a negative or non-finite energy.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_STUNDENPROFIL_RASTER" xml:space="preserve">
-    <value>Not computable — the hourly profile of the design day does not have 24 hours.</value>
+    <value>The hourly profile of the design day does not have 24 hours.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_FEHLT" xml:space="preserve">
-    <value>Not computable — the selected design day is not in the catalogue.</value>
+    <value>The selected design day is not in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSMENGE_AUSLEGUNG" xml:space="preserve">
     <value>the reference quantity of the design</value>
@@ -27730,16 +27730,16 @@ Do you want to allow this?</value>
     <value>the heat demand W_z</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_DIN_PROFIL_OHNE_BLOCK" xml:space="preserve">
-    <value>Not computable — the DIN 4708 profile has no draw-off block.</value>
+    <value>The DIN 4708 profile has no draw-off block.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_TAG_DIN4708" xml:space="preserve">
     <value>DIN 4708 profile N = {0:0.##}</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_ZEILE" xml:space="preserve">
-    <value>Not computable — the constructor has no row.</value>
+    <value>The constructor has no row.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_FENSTER" xml:space="preserve">
-    <value>Not computable — a row of the constructor has no time window within the day (start &lt; end ≤ 1440).</value>
+    <value>A row of the constructor has no time window within the day (start &lt; end ≤ 1440).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZEILE_VOLUMEN" xml:space="preserve">
     <value>the volume of row “{0}”</value>
@@ -27787,10 +27787,10 @@ Do you want to allow this?</value>
     <value>the usable share</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG_SPEICHER" xml:space="preserve">
-    <value>Not computable — the temperature difference of the storage is not positive.</value>
+    <value>The temperature difference of the storage is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT" xml:space="preserve">
-    <value>Not computable — equipment class {0} of a dwelling type of zone “{1}” is not in the catalogue.</value>
+    <value>Equipment class {0} of a dwelling type of zone “{1}” is not in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_AUSSTATTUNG_WERT" xml:space="preserve">
     <value>Σ v·w_v of equipment “{0}”</value>
@@ -27832,16 +27832,16 @@ Do you want to allow this?</value>
     <value>The system is a large system, but no zone takes part in the circulation.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_168" xml:space="preserve">
-    <value>Not computable — the weekly series does not have 168 hours.</value>
+    <value>The weekly series does not have 168 hours.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WERT" xml:space="preserve">
-    <value>Not computable — the weekly series contains a negative or non-finite value.</value>
+    <value>The weekly series contains a negative or non-finite value.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WOCHENTAG" xml:space="preserve">
-    <value>Not computable — the weekday of the first day is not within 0 … 6.</value>
+    <value>The weekday of the first day is not within 0 … 6.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_TAGTYPEN" xml:space="preserve">
-    <value>Not computable — the weekly series does not have seven day types.</value>
+    <value>The weekly series does not have seven day types.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG" xml:space="preserve">
     <value>draw-off temperature − design cold water</value>
@@ -27850,25 +27850,25 @@ Do you want to allow this?</value>
     <value>draw-off temperature − cold water mean</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE" xml:space="preserve">
-    <value>Not computable — the weekly series has no zone.</value>
+    <value>The weekly series has no zone.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365" xml:space="preserve">
-    <value>Not computable — a zone of the weekly series does not have 365 days.</value>
+    <value>A zone of the weekly series does not have 365 days.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG" xml:space="preserve">
-    <value>Not computable — a percentile needs at least one realisation.</value>
+    <value>A percentile needs at least one realisation.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_REALISIERUNG_OHNE_WERT" xml:space="preserve">
-    <value>Not computable — a realisation has no numerical value.</value>
+    <value>A realisation has no numerical value.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_VIELFACHES" xml:space="preserve">
-    <value>Not computable — the multiple of the realisations of the design day is not positive.</value>
+    <value>The multiple of the realisations of the design day is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE" xml:space="preserve">
-    <value>Not computable — the ensemble has no zone.</value>
+    <value>The ensemble has no zone.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Not computable — a zone of the ensemble is incomplete (categories, density, units ≥ 1).</value>
+    <value>A zone of the ensemble is incomplete (categories, density, units ≥ 1).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESMENGE_ZONE" xml:space="preserve">
     <value>the daily quantity of zone “{0}”</value>
@@ -27880,19 +27880,19 @@ Do you want to allow this?</value>
     <value>the power Φ_N of the cumulative curve point</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_WERT" xml:space="preserve">
-    <value>Not computable — the design percentile is 95 or 99, not {0}.</value>
+    <value>The design percentile is 95 or 99, not {0}.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_LEER" xml:space="preserve">
-    <value>Not computable — the list of nominal capacities is empty.</value>
+    <value>The list of nominal capacities is empty.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_NENNINHALT" xml:space="preserve">
     <value>a nominal capacity</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_NICHT_AUFSTEIGEND" xml:space="preserve">
-    <value>Not computable — the nominal capacities are not strictly increasing.</value>
+    <value>The nominal capacities are not strictly increasing.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALT_SCHLUESSEL" xml:space="preserve">
-    <value>Not computable — parameter “{0}” does not name a position of the nominal capacity list.</value>
+    <value>Parameter “{0}” does not name a position of the nominal capacity list.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_NENNINHALT_RASTER" xml:space="preserve">
     <value>the grid above the end of the nominal capacities</value>
@@ -27904,13 +27904,13 @@ Do you want to allow this?</value>
     <value>The storage design applies only to the storage topology.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_OHNE_WOCHENREIHE" xml:space="preserve">
-    <value>Not computable — the storage design needs the weekly series.</value>
+    <value>The storage design needs the weekly series.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_SPEICHER" xml:space="preserve">
     <value>storage − design cold water</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NUTZANTEIL_UEBER_1" xml:space="preserve">
-    <value>Not computable — the usable share is above 1.</value>
+    <value>The usable share is above 1.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZUSCHLAG" xml:space="preserve">
     <value>the safety margin</value>
@@ -27922,7 +27922,7 @@ Do you want to allow this?</value>
     <value>the running time of the circulation</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LADEFENSTER_OHNE_LAENGE" xml:space="preserve">
-    <value>Not computable — the charging window has no length.</value>
+    <value>The charging window has no length.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_LEISTUNG" xml:space="preserve">
     <value>the circulation power</value>
@@ -28048,7 +28048,7 @@ Do you want to allow this?</value>
     <value>Largest daily demand of the governing week {0:0.#} kWh/d + circulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, together {4:0.#} kWh/d; ÷ charging window {5:0.#} h = {6:0.##} kW — applied: {7:0.##} kW ({8}).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_FENSTER_AUSSERHALB" xml:space="preserve">
-    <value>Not computable — {0} is not within the day (start 0 … 24 h, length 0 … 24 h).</value>
+    <value>{0} is not within the day (start 0 … 24 h, length 0 … 24 h).</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_ENTWURF" xml:space="preserve">
     <value>Draft status, application to be agreed separately</value>
@@ -28057,7 +28057,7 @@ Do you want to allow this?</value>
     <value>Value pair curve: own extension of the verification method.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
-    <value>Not computable — the project quantities of the design are missing.</value>
+    <value>The project quantities of the design are missing.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_KALTWASSER_AUSLEGUNG" xml:space="preserve">
     <value>the design cold water temperature</value>
@@ -28084,7 +28084,7 @@ Do you want to allow this?</value>
     <value>the heat exchanger area of the project</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ERZEUGERART_FEHLT" xml:space="preserve">
-    <value>Not computable — without a heat exchanger in the project, the cumulative curve estimates the area, and the estimation formula depends on the generator type (boiler NA.1, heat pump NA.2); please state the generator type or the heat exchanger.</value>
+    <value>Without a heat exchanger in the project, the cumulative curve estimates the area, and the estimation formula depends on the generator type (boiler NA.1, heat pump NA.2); please state the generator type or the heat exchanger.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SCHAETZFORMEL" xml:space="preserve">
     <value>the estimation formula of the heat exchanger area</value>
@@ -28093,16 +28093,16 @@ Do you want to allow this?</value>
     <value>The time constant of the storage is not shown.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WERKSTOFF_FEHLT" xml:space="preserve">
-    <value>Not computable — {0} needs the U value of the heat exchanger, which depends on the material (steel or stainless steel); please state the material or U·A.</value>
+    <value>{0} needs the U value of the heat exchanger, which depends on the material (steel or stainless steel); please state the material or U·A.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LADUNGSFAKTOR" xml:space="preserve">
-    <value>Not computable — the charge factor is not within (0; 1].</value>
+    <value>The charge factor is not within (0; 1].</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SENSORHOEHE" xml:space="preserve">
-    <value>Not computable — the sensor height is not within [0; 1].</value>
+    <value>The sensor height is not within [0; 1].</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_MISCHWASSER_FEHLT" xml:space="preserve">
-    <value>Not computable — the mixed storage needs the mixed water temperature.</value>
+    <value>The mixed storage needs the mixed water temperature.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_MISCHWASSER" xml:space="preserve">
     <value>mixed water − design cold water</value>
@@ -28114,13 +28114,13 @@ Do you want to allow this?</value>
     <value>the generator power</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
-    <value>Not computable — neither generator nor heat exchanger power is known.</value>
+    <value>Neither generator nor heat exchanger power is known.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SUMMENLINIE_OHNE_TAG" xml:space="preserve">
-    <value>Not computable — the cumulative curve needs a design day.</value>
+    <value>The cumulative curve needs a design day.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
-    <value>Not computable — the cumulative curve finds no volume that passes the verification.</value>
+    <value>The cumulative curve finds no volume that passes the verification.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_SUMMENLINIE_NICHT_MONOTON" xml:space="preserve">
     <value>The verification of the cumulative curve is not monotonic in the volume; the smallest volume comes from a fine grid search.</value>
@@ -28132,7 +28132,7 @@ Do you want to allow this?</value>
     <value>The design day comes from an hourly profile — peaks shorter than one hour are underestimated.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PARAMETERSATZ_FEHLT" xml:space="preserve">
-    <value>Not computable — the parameter set of the design is missing.</value>
+    <value>The parameter set of the design is missing.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_GROSSANLAGE_NICHT_ERKANNT" xml:space="preserve">
     <value>The large system is not detected.</value>
@@ -28165,7 +28165,7 @@ Do you want to allow this?</value>
     <value>The peak per apartment station comes from the design ensemble (“Calculate stochastically”); the sum is stated.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_PUNKT" xml:space="preserve">
-    <value>Not computable — the percentile of the storage needs the cumulative curve point (Φ_N).</value>
+    <value>The percentile of the storage needs the cumulative curve point (Φ_N).</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_NICHT_BELASTBAR_TEIL" xml:space="preserve">
     <value> — not reliable</value>
@@ -28216,13 +28216,13 @@ Do you want to allow this?</value>
     <value>The recommended point {0:0} l lies above the largest nominal capacity {1:0} l — check a multi-storage system.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN" xml:space="preserve">
-    <value>Not computable — catalogue day “{0}” is scaled to the reference quantity, but the zones of the group have different reference types ({1}); quantities of different reference types are not summed — please construct a day.</value>
+    <value>Catalogue day “{0}” is scaled to the reference quantity, but the zones of the group have different reference types ({1}); quantities of different reference types are not summed — please construct a day.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART" xml:space="preserve">
-    <value>Not computable — catalogue day “{0}” applies per {1}, the zones of the group have reference type {2}; it is not scaled — please select a suitable day or construct one.</value>
+    <value>Catalogue day “{0}” applies per {1}, the zones of the group have reference type {2}; it is not scaled — please select a suitable day or construct one.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN" xml:space="preserve">
-    <value>Not computable — catalogue day “{0}” applies at θ_KW,A {1:0.###} °C; the zones of the group have different draw-off temperatures, the conversion to {2:0.###} °C is ambiguous.</value>
+    <value>Catalogue day “{0}” applies at θ_KW,A {1:0.###} °C; the zones of the group have different draw-off temperatures, the conversion to {2:0.###} °C is ambiguous.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG" xml:space="preserve">
     <value>draw-off temperature − cold water of the catalogue day</value>
@@ -28258,7 +28258,7 @@ Do you want to allow this?</value>
     <value>The draw-off profile cannot be saved — {0}</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_TABELLE_FEHLT" xml:space="preserve">
-    <value>table {0} is missing in this database.</value>
+    <value>missing in this database: {0}.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
     <value>project {0} does not exist.</value>
@@ -28303,7 +28303,7 @@ Do you want to allow this?</value>
     <value>zone “{0}” belongs to another project.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>type of use {0} of zone “{1}” is not in the catalogue.</value>
+    <value>the type of use of zone “{0}” is not (or no longer) in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
     <value>daily profile set {0} of zone “{1}” is not in the catalogue.</value>
@@ -28330,7 +28330,7 @@ Do you want to allow this?</value>
     <value>“{0}” is not a number</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_NAME" xml:space="preserve">
-    <value>Not computable — the constructed design day needs a name.</value>
+    <value>The constructed design day needs a name.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
     <value>the constructed design day has no name, no catalogue version or not the source constructor.</value>
@@ -28552,6 +28552,39 @@ Do you want to allow this?</value>
     <value>column {0} is missing in this database (schema version before 120).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
-    <value>Not computable — a constructed design day with a reference quantity needs a positive quantity and its reference type.</value>
+    <value>A constructed design day with a reference quantity needs a positive quantity and its reference type.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANGSATZ_STAMM" xml:space="preserve">
+    <value>catalogue of daily profile sets</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANG_STAMM" xml:space="preserve">
+    <value>catalogue of daily profiles</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWNUTZUNGSART_STAMM" xml:space="preserve">
+    <value>catalogue of domestic hot water types of use</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAG_STAMM" xml:space="preserve">
+    <value>catalogue of design days</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAGEREIGNIS_STAMM" xml:space="preserve">
+    <value>draw-offs of the design days</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPARAMETER_STAMM" xml:space="preserve">
+    <value>parameter catalogue of the draw-off profile</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM" xml:space="preserve">
+    <value>catalogue of DIN 4708 values</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE" xml:space="preserve">
+    <value>zones of the draw-off profile</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP" xml:space="preserve">
+    <value>dwelling tables of the zones</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT" xml:space="preserve">
+    <value>project data of the draw-off profile</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
+    <value>catalogue of draw-off categories</value>
   </data>
 </root>

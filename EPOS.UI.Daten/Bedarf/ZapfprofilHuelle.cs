@@ -933,7 +933,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Meldung der Leiste „Simulation · monatlicher Verlauf" (5.2, N8 b/g) zu einer
         /// Vorschau des Bedarfsprofil-Dialogs: auf dem Zapfprofilweg der Grund eines Abbruchs
-        /// oder je abgelehnter Zone ihr Satz („Zone „…“ trägt 0: …") in der Oberflächensprache;
+        /// oder je abgelehnter Zone ihr Satz (<see cref="Meldung(ZapfAblehnung)"/>) in der Oberflächensprache;
         /// auf dem Bestandsweg leer.
         /// </summary>
         internal static string Leistenmeldung(BedarfsVorschau v)
@@ -1092,17 +1092,30 @@ namespace WindowsFormsApplication1
                                      ZapfprofilMeldungsart.Fehler, ex.Message ?? "");
 
         /// <summary>
-        /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0 — mit dem Satz des
-        /// Kerns als Grund in der Oberflächensprache; die Kennung ist die des Satzes.
+        /// Eine Ablehnung des Rechenwegs mit dem Satz des Kerns als Grund in der Oberflächensprache;
+        /// die Kennung ist die des Satzes. Nennt der Satz seine Zone schon, steht er allein — sonst
+        /// trägt er den Vorsatz „Zone „…“ trägt 0: …" bzw. ohne Zone „Die Zirkulation trägt 0: …"
+        /// (<see cref="MitZone"/>). „Nicht rechenbar" sagt der Titel des Banners, nicht der Satz.
         /// </summary>
         internal static ZapfprofilMeldung Meldung(ZapfAblehnung a)
         {
-            string grund = Satztext(a.Satz);
             string text = string.IsNullOrEmpty(a.Zone)
-                ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), grund)
-                : Format(Text_("ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}"), a.Zone, grund);
+                ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), Satztext(a.Satz))
+                : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}");
             return new ZapfprofilMeldung(Satzkennung(a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL"), a.Zone ?? "", text,
                                          ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? "");
+        }
+
+        /// <summary>
+        /// Der Satz einer Zone in der Oberflächensprache: allein, wenn er die Zone
+        /// <paramref name="zone"/> schon nennt (<see cref="ZapfSatz.Nennt"/>) — sonst mit dem Vorsatz
+        /// <paramref name="schluessel"/> (Platzhalter {0} Zone, {1} Satz). Ohne Zone der Satz allein.
+        /// </summary>
+        internal static string MitZone(string zone, ZapfSatz satz, string schluessel, string rueckfall)
+        {
+            string text = Satztext(satz);
+            if (string.IsNullOrEmpty(zone) || (satz != null && satz.Nennt(zone))) return text;
+            return Format(Text_(schluessel, rueckfall), zone, text);
         }
 
         /// <summary>Ein Hinweis des Rechenwegs: der Satz des Kerns in der Oberflächensprache, Kennung des Satzes.</summary>

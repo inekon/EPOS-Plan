@@ -69,8 +69,10 @@ namespace EPOS.Kern.Tests
             ZapfVerfuegbarkeit v = ZapfprofilCtrl.Verfuegbar();
             Assert.False(v.Ja);
             Assert.Equal(ZapfVerfuegbarkeitsgrund.TabellenFehlen, v.Grund);
+            // Der Satz nennt jede fehlende Tabelle mit ihrer Katalogbezeichnung, nie mit dem Tabellennamen.
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
-                Assert.Contains(a.Key, v.Klartext);
+                Assert.Contains(((ZapfSatz)ZapfSatz.Tabelle(a.Key)).Klartext, v.Klartext);
+            Assert.DoesNotContain("Tab_", v.Klartext);
         }
 
         [Fact]
@@ -81,7 +83,8 @@ namespace EPOS.Kern.Tests
             ZapfVerfuegbarkeit ohne = ZapfprofilCtrl.Verfuegbar();
             Assert.False(ohne.Ja);
             Assert.Equal(ZapfVerfuegbarkeitsgrund.KeineKatalogversion, ohne.Grund);
-            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, ohne.Klartext);
+            Assert.Contains("Parameterkatalog des Zapfprofils", ohne.Klartext);
+            Assert.DoesNotContain("Tab_", ohne.Klartext);
 
             TwwTestdatenbank.ParameterAnlegen("Probe.Eins", 1.0, "T1");
             ZapfVerfuegbarkeit mit = ZapfprofilCtrl.Verfuegbar();

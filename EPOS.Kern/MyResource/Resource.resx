@@ -27290,28 +27290,28 @@ Möchten Sie das zulassen?</value>
     <value>Bilanzwert, keine Auslegungsgröße</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>Nicht rechenbar — es gibt keine Katalogversion der Brauchwasserparameter.</value>
+    <value>Es gibt keine Katalogversion der Brauchwasserparameter.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER" xml:space="preserve">
-    <value>Nicht rechenbar — die Katalogversion „{0}“ trägt keine Brauchwasserparameter.</value>
+    <value>Die Katalogversion „{0}“ trägt keine Brauchwasserparameter.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_SCHLUESSEL_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — Parameter fehlt: „{0}“ steht nicht in der Katalogversion „{1}“ der Brauchwasserparameter.</value>
+    <value>Parameter fehlt: „{0}“ steht nicht in der Katalogversion „{1}“ der Brauchwasserparameter.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_TABELLE_OHNE_VERSION" xml:space="preserve">
-    <value>Nicht rechenbar — die Tabelle {0} fehlt oder trägt keine Katalogversion.</value>
+    <value>Fehlt oder ohne Katalogversion: {0}.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_KEINE_VERSION_GENANNT" xml:space="preserve">
-    <value>Nicht rechenbar — es wurde keine Katalogversion der Brauchwasserparameter genannt.</value>
+    <value>Es wurde keine Katalogversion der Brauchwasserparameter genannt.</value>
   </data>
   <data name="ZPG_SATZ_PARAMETER_TABELLE_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Tabelle {0} fehlt.</value>
+    <value>Es fehlt: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN" xml:space="preserve">
-    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen {0}.</value>
+    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — {0} trägt keine Katalogversion.</value>
+    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — ohne Katalogversion: {0}.</value>
   </data>
   <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist verfügbar (Katalogversion „{0}“).</value>
@@ -27320,10 +27320,10 @@ Möchten Sie das zulassen?</value>
     <value>Eine Zone ohne Angaben.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Nutzungsart {0} der Zone „{1}“ steht nicht im Katalog.</value>
+    <value>Die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der Tagesgangsatz {0} der Zone „{1}“ fehlt.</value>
+    <value>Der Tagesgangsatz {0} der Zone „{1}“ fehlt.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_MESSWERT_NICHT_GEPRUEFT" xml:space="preserve">
     <value>Die Abweichung der Messwerte vom Katalogwert wird nicht geprüft.</value>
@@ -27341,10 +27341,10 @@ Möchten Sie das zulassen?</value>
     <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation ({0:0} kWh/a). Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann die Netzverluste oder die Zirkulation anpassen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
-    <value>Nicht rechenbar — die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
+    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_UNGUELTIG" xml:space="preserve">
-    <value>Nicht rechenbar — der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen.</value>
+    <value>Der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
     <value>Zone „{0}“: Das Mittel der gezogenen Jahre ({1:0.#} kWh) weicht um mehr als die Toleranz {2:0.#} kWh von der Jahresmenge {3:0.#} kWh ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
@@ -27362,7 +27362,7 @@ Möchten Sie das zulassen?</value>
     <value>Volumenumrechnung (neu)</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Nicht rechenbar — der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“).</value>
+    <value>Der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSTEMPERATUREN_KATALOG" xml:space="preserve">
     <value>Bezugstemperaturen des Katalogs</value>
@@ -27371,10 +27371,10 @@ Möchten Sie das zulassen?</value>
     <value>Projekttemperaturen</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_LITERANGABE_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Nicht rechenbar — die Literangabe trägt keine Bezugstemperaturen.</value>
+    <value>Die Literangabe trägt keine Bezugstemperaturen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>Nicht rechenbar — die Nutzungsart „{0}“ trägt keine Bezugstemperaturen.</value>
+    <value>Die Nutzungsart „{0}“ trägt keine Bezugstemperaturen.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZAPFTEMPERATUR" xml:space="preserve">
     <value>Zapftemperatur</value>
@@ -27386,160 +27386,160 @@ Möchten Sie das zulassen?</value>
     <value>Kaltwasseramplitude</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV" xml:space="preserve">
-    <value>Nicht rechenbar — die Amplitude des Kaltwassers ist negativ (Zone „{0}“).</value>
+    <value>Die Amplitude des Kaltwassers ist negativ (Zone „{0}“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UNGUELTIG" xml:space="preserve">
-    <value>Nicht rechenbar — der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.</value>
+    <value>Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
-    <value>Nicht rechenbar — ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl.</value>
+    <value>Ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV" xml:space="preserve">
-    <value>Nicht rechenbar — die Zone „{0}“ hat keine positive Bezugsmenge.</value>
+    <value>Die Zone „{0}“ hat keine positive Bezugsmenge.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
-    <value>Nicht rechenbar — der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ.</value>
+    <value>Der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEDARFSUEBERSCHREIBUNG" xml:space="preserve">
     <value>Bedarfsüberschreibung</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV" xml:space="preserve">
-    <value>Nicht rechenbar — der spezifische Bedarf der Zone „{0}“ ist negativ.</value>
+    <value>Der spezifische Bedarf der Zone „{0}“ ist negativ.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_WOHNFLAECHE_JE_WE" xml:space="preserve">
     <value>Wohnfläche je WE</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV" xml:space="preserve">
-    <value>Nicht rechenbar — die Wohnfläche je WE der Zone „{0}“ ist nicht positiv.</value>
+    <value>Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_NIVEAUS" xml:space="preserve">
-    <value>Nicht rechenbar — die Nutzungsart „{0}“ trägt nicht drei Bedarfsniveaus.</value>
+    <value>Die Nutzungsart „{0}“ trägt nicht drei Bedarfsniveaus.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT" xml:space="preserve">
-    <value>Nicht rechenbar — unbekanntes Bedarfsniveau der Zone „{0}“.</value>
+    <value>Unbekanntes Bedarfsniveau der Zone „{0}“.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_KATALOGBEDARF" xml:space="preserve">
     <value>Katalogbedarf</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATALOGBEDARF_NEGATIV" xml:space="preserve">
-    <value>Nicht rechenbar — der Katalogbedarf der Nutzungsart „{0}“ ist negativ.</value>
+    <value>Der Katalogbedarf der Nutzungsart „{0}“ ist negativ.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WOHNZONEN_OHNE_FLAECHE" xml:space="preserve">
     <value>Wohnzonen ohne eigene Wohnfläche je WE tragen keine Fläche für die Zirkulation.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV" xml:space="preserve">
-    <value>Nicht rechenbar — der Jahresmesswert der Zone „{0}“ ist nicht positiv.</value>
+    <value>Der Jahresmesswert der Zone „{0}“ ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
-    <value>Nicht rechenbar — der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a).</value>
+    <value>Der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE" xml:space="preserve">
-    <value>Nicht rechenbar — ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze.</value>
+    <value>Ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE" xml:space="preserve">
-    <value>Nicht rechenbar — der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3).</value>
+    <value>Der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt.</value>
+    <value>Der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS" xml:space="preserve">
-    <value>Nicht rechenbar — der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert.</value>
+    <value>Der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL" xml:space="preserve">
-    <value>Nicht rechenbar — der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen.</value>
+    <value>Der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar.</value>
+    <value>Die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
     <value>Der spezifische Bedarf der Zone „{0}“ ({1:0.###} kWh je Einheit und Tag) liegt außerhalb der Bandbreite des Niveaus ({2:0.###} … {3:0.###}).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NICHT_ENDLICH" xml:space="preserve">
-    <value>Nicht rechenbar — {0} der Zone „{1}“ ist keine endliche Zahl.</value>
+    <value>{0} der Zone „{1}“ ist keine endliche Zahl.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV" xml:space="preserve">
-    <value>Nicht rechenbar — die Temperaturspreizung ({0}) ist nicht positiv.</value>
+    <value>Die Temperaturspreizung ({0}) ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE" xml:space="preserve">
-    <value>Nicht rechenbar — die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“).</value>
+    <value>Die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
-    <value>Nicht rechenbar — die Projektgrößen des Zapfprofils fehlen.</value>
+    <value>Die Projektgrößen des Zapfprofils fehlen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_PARAMETERSATZ_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der Parametersatz des Zapfprofils fehlt.</value>
+    <value>Der Parametersatz des Zapfprofils fehlt.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSERGANG_RASTER" xml:space="preserve">
-    <value>Nicht rechenbar — der Kaltwassergang trägt nicht zwölf Monatswerte.</value>
+    <value>Der Kaltwassergang trägt nicht zwölf Monatswerte.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“).</value>
+    <value>Die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF" xml:space="preserve">
-    <value>Nicht rechenbar — im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“).</value>
+    <value>Im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOCHENTAG_UNGUELTIG" xml:space="preserve">
-    <value>Nicht rechenbar — der Wochentag des 1. Januar liegt nicht in 0 … 6.</value>
+    <value>Der Wochentag des 1. Januar liegt nicht in 0 … 6.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALENDER_365" xml:space="preserve">
-    <value>Nicht rechenbar — der Kalender der Klimaregion trägt nicht 365 Tage.</value>
+    <value>Der Kalender der Klimaregion trägt nicht 365 Tage.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER" xml:space="preserve">
-    <value>Nicht rechenbar — das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar.</value>
+    <value>Das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_JAHRESREIHE" xml:space="preserve">
-    <value>Nicht rechenbar — die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … {0}.</value>
+    <value>Die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … {0}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Nicht rechenbar — die Zone „{0}“ der Jahresreihe ist unvollständig.</value>
+    <value>Die Zone „{0}“ der Jahresreihe ist unvollständig.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
-    <value>Nicht rechenbar — Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster.</value>
+    <value>Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
-    <value>Nicht rechenbar — der Urlaubsversatz liegt nicht in 0 … 364 Tagen.</value>
+    <value>Der Urlaubsversatz liegt nicht in 0 … 364 Tagen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
-    <value>Nicht rechenbar — für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog.</value>
+    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID" xml:space="preserve">
-    <value>Nicht rechenbar — für die Nutzungsart {0} der Zone „{1}“ stehen keine Zapfkategorien im Katalog.</value>
+    <value>Für die Nutzungsart der Zone „{0}“ stehen keine Zapfkategorien im Katalog.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_DAUER" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL" xml:space="preserve">
-    <value>Nicht rechenbar — die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0.</value>
+    <value>Die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_MITTEL" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE" xml:space="preserve">
-    <value>Nicht rechenbar — die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar.</value>
+    <value>Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT" xml:space="preserve">
-    <value>Nicht rechenbar — die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}.</value>
+    <value>Die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_RATE" xml:space="preserve">
-    <value>Nicht rechenbar — die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse.</value>
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ENSEMBLE_EINHEITSTAGE" xml:space="preserve">
-    <value>Nicht rechenbar — das Ensemble zöge {0} Einheitentage (Realisierungen × Einheiten); höchstens {1} sind zulässig.</value>
+    <value>Das Ensemble zöge {0} Einheitentage (Realisierungen × Einheiten); höchstens {1} sind zulässig.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_BEDARFSTAG" xml:space="preserve">
-    <value>Nicht rechenbar — die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … {0}.</value>
+    <value>Die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … {0}.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_SUMMEN_NICHT_GEPRUEFT" xml:space="preserve">
     <value>Die Summen der Wochenfaktoren und Tagesgänge werden nicht geprüft, nur normiert.</value>
@@ -27554,13 +27554,13 @@ Möchten Sie das zulassen?</value>
     <value>Wochenfaktoren</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOCHENFAKTOREN_NULL" xml:space="preserve">
-    <value>Nicht rechenbar — die Wochenfaktoren der Nutzungsart „{0}“ summieren zu 0.</value>
+    <value>Die Wochenfaktoren der Nutzungsart „{0}“ summieren zu 0.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_FERIENFAKTOR" xml:space="preserve">
     <value>Ferienfaktor</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Nicht rechenbar — der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen.</value>
+    <value>Der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESGANG" xml:space="preserve">
     <value>Tagesgang</value>
@@ -27584,31 +27584,31 @@ Möchten Sie das zulassen?</value>
     <value>Ruhetag</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALENDER_TAGE" xml:space="preserve">
-    <value>Nicht rechenbar — der Kalender trägt nicht 365 Tage.</value>
+    <value>Der Kalender trägt nicht 365 Tage.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSERFAKTOR_RASTER" xml:space="preserve">
-    <value>Nicht rechenbar — der Kaltwasserfaktor trägt nicht zwölf Monate.</value>
+    <value>Der Kaltwasserfaktor trägt nicht zwölf Monate.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
-    <value>Nicht rechenbar — die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht.</value>
+    <value>Die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_LAENGE" xml:space="preserve">
-    <value>Nicht rechenbar — {0} tragen nicht {1} Werte (Zone „{2}“).</value>
+    <value>{0} tragen nicht {1} Werte (Zone „{2}“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_NEGATIV" xml:space="preserve">
-    <value>Nicht rechenbar — {0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert.</value>
+    <value>{0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_SUMME_NORMIERT" xml:space="preserve">
     <value>{0} der Zone „{1}“ summiert zu {2:0.######} statt 1; vor dem Rechnen normiert.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_PROJEKT_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Projektgrößen der Zirkulation fehlen.</value>
+    <value>Die Projektgrößen der Zirkulation fehlen.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAUFZEIT" xml:space="preserve">
-    <value>Nicht rechenbar — die Laufzeit der Zirkulation liegt nicht in (0; 24] h.</value>
+    <value>Die Laufzeit der Zirkulation liegt nicht in (0; 24] h.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_MANUELL" xml:space="preserve">
-    <value>Nicht rechenbar — die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ.</value>
+    <value>Die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_FLAECHE" xml:space="preserve">
     <value>Fläche der Zirkulation</value>
@@ -27620,7 +27620,7 @@ Möchten Sie das zulassen?</value>
     <value>Keine Fläche für den Flächenkennwert der Zirkulation; gerechnet mit der Methode Anteil.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAENGE_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Methode Leitungslänge braucht eine Leitungslänge.</value>
+    <value>Die Methode Leitungslänge braucht eine Leitungslänge.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_LAENGE" xml:space="preserve">
     <value>Leitungslänge</value>
@@ -27635,7 +27635,7 @@ Möchten Sie das zulassen?</value>
     <value>Flächenkennwert</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_METHODE" xml:space="preserve">
-    <value>Nicht rechenbar — unbekannte Methode der Zirkulation.</value>
+    <value>Unbekannte Methode der Zirkulation.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
     <value>Keine Zone trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen.</value>
@@ -27644,10 +27644,10 @@ Möchten Sie das zulassen?</value>
     <value>Die Zone „{0}“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAGE" xml:space="preserve">
-    <value>Nicht rechenbar — der Parameter der Leitungslage ist weder 1 noch 2.</value>
+    <value>Der Parameter der Leitungslage ist weder 1 noch 2.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_WERT" xml:space="preserve">
-    <value>Nicht rechenbar — {0} ist negativ oder keine endliche Zahl ({1}).</value>
+    <value>{0} ist negativ oder keine endliche Zahl ({1}).</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_GRUND_UND_FOLGE" xml:space="preserve">
     <value>{0} {1}</value>
@@ -27659,16 +27659,16 @@ Möchten Sie das zulassen?</value>
     <value>die Speichertemperatur (Parameter {0})</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NICHT_ENDLICH" xml:space="preserve">
-    <value>Nicht rechenbar — {0} ist keine endliche Zahl.</value>
+    <value>{0} ist keine endliche Zahl.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NEGATIV" xml:space="preserve">
-    <value>Nicht rechenbar — {0} ist negativ.</value>
+    <value>{0} ist negativ.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NICHT_POSITIV" xml:space="preserve">
-    <value>Nicht rechenbar — {0} ist nicht positiv.</value>
+    <value>{0} ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG" xml:space="preserve">
-    <value>Nicht rechenbar — die Spreizung {0} ist nicht positiv.</value>
+    <value>Die Spreizung {0} ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_OFFEN" xml:space="preserve">
     <value>noch nicht gerechnet — „Stochastisch rechnen“ zieht das Auslegungsensemble</value>
@@ -27704,31 +27704,31 @@ Möchten Sie das zulassen?</value>
     <value>die Anzahl der Vorgänge</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ZAPFBLOECKE_ZAHL" xml:space="preserve">
-    <value>Nicht rechenbar — die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl.</value>
+    <value>Die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_PARAMETERWERT" xml:space="preserve">
     <value>„{0}“</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KEINE_MINUTENZAHL" xml:space="preserve">
-    <value>Nicht rechenbar — „{0}“ ist keine ganze Minutenzahl.</value>
+    <value>„{0}“ ist keine ganze Minutenzahl.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SKALIERUNGSFAKTOR" xml:space="preserve">
     <value>der Skalierungsfaktor des Bedarfstags</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_LEER" xml:space="preserve">
-    <value>Nicht rechenbar — der Bedarfstag „{0}“ trägt kein Ereignis.</value>
+    <value>Der Bedarfstag „{0}“ trägt kein Ereignis.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_AUSSERHALB" xml:space="preserve">
-    <value>Nicht rechenbar — ein Ereignis des Bedarfstags „{0}“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten).</value>
+    <value>Ein Ereignis des Bedarfstags „{0}“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_ENERGIE" xml:space="preserve">
-    <value>Nicht rechenbar — ein Ereignis des Bedarfstags „{0}“ trägt eine negative oder nicht endliche Energie.</value>
+    <value>Ein Ereignis des Bedarfstags „{0}“ trägt eine negative oder nicht endliche Energie.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_STUNDENPROFIL_RASTER" xml:space="preserve">
-    <value>Nicht rechenbar — das Stundenprofil des Bedarfstags trägt nicht 24 Stunden.</value>
+    <value>Das Stundenprofil des Bedarfstags trägt nicht 24 Stunden.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der gewählte Bedarfstag steht nicht im Katalog.</value>
+    <value>Der gewählte Bedarfstag steht nicht im Katalog.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSMENGE_AUSLEGUNG" xml:space="preserve">
     <value>die Bezugsmenge der Auslegung</value>
@@ -27737,16 +27737,16 @@ Möchten Sie das zulassen?</value>
     <value>der Wärmebedarf W_z</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_DIN_PROFIL_OHNE_BLOCK" xml:space="preserve">
-    <value>Nicht rechenbar — das DIN-4708-Profil trägt keinen Zapfblock.</value>
+    <value>Das DIN-4708-Profil trägt keinen Zapfblock.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_TAG_DIN4708" xml:space="preserve">
     <value>DIN-4708-Profil N = {0:0.##}</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_ZEILE" xml:space="preserve">
-    <value>Nicht rechenbar — der Konstruktor trägt keine Zeile.</value>
+    <value>Der Konstruktor trägt keine Zeile.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_FENSTER" xml:space="preserve">
-    <value>Nicht rechenbar — eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440).</value>
+    <value>Eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZEILE_VOLUMEN" xml:space="preserve">
     <value>das Volumen der Zeile „{0}“</value>
@@ -27794,10 +27794,10 @@ Möchten Sie das zulassen?</value>
     <value>der Nutzanteil</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG_SPEICHER" xml:space="preserve">
-    <value>Nicht rechenbar — die Spreizung des Speichers ist nicht positiv.</value>
+    <value>Die Spreizung des Speichers ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog.</value>
+    <value>Die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_AUSSTATTUNG_WERT" xml:space="preserve">
     <value>Σ v·w_v der Ausstattung „{0}“</value>
@@ -27839,16 +27839,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Anlage ist eine Großanlage, aber keine Zone nimmt an der Zirkulation teil.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_168" xml:space="preserve">
-    <value>Nicht rechenbar — die Wochenreihe trägt nicht 168 Stunden.</value>
+    <value>Die Wochenreihe trägt nicht 168 Stunden.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WERT" xml:space="preserve">
-    <value>Nicht rechenbar — die Wochenreihe trägt einen negativen oder nicht endlichen Wert.</value>
+    <value>Die Wochenreihe trägt einen negativen oder nicht endlichen Wert.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WOCHENTAG" xml:space="preserve">
-    <value>Nicht rechenbar — der Wochentag des ersten Tages liegt nicht in 0 … 6.</value>
+    <value>Der Wochentag des ersten Tages liegt nicht in 0 … 6.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_TAGTYPEN" xml:space="preserve">
-    <value>Nicht rechenbar — die Wochenreihe trägt nicht sieben Tagtypen.</value>
+    <value>Die Wochenreihe trägt nicht sieben Tagtypen.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG" xml:space="preserve">
     <value>Zapftemperatur − Kaltwasser der Auslegung</value>
@@ -27857,25 +27857,25 @@ Möchten Sie das zulassen?</value>
     <value>Zapftemperatur − Kaltwassermittel</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE" xml:space="preserve">
-    <value>Nicht rechenbar — die Wochenreihe hat keine Zone.</value>
+    <value>Die Wochenreihe hat keine Zone.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365" xml:space="preserve">
-    <value>Nicht rechenbar — eine Zone der Wochenreihe trägt nicht 365 Tage.</value>
+    <value>Eine Zone der Wochenreihe trägt nicht 365 Tage.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG" xml:space="preserve">
-    <value>Nicht rechenbar — ein Perzentil braucht mindestens eine Realisierung.</value>
+    <value>Ein Perzentil braucht mindestens eine Realisierung.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_REALISIERUNG_OHNE_WERT" xml:space="preserve">
-    <value>Nicht rechenbar — eine Realisierung trägt keinen Zahlenwert.</value>
+    <value>Eine Realisierung trägt keinen Zahlenwert.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_VIELFACHES" xml:space="preserve">
-    <value>Nicht rechenbar — das Vielfache der Realisierungen des Bedarfstags ist nicht positiv.</value>
+    <value>Das Vielfache der Realisierungen des Bedarfstags ist nicht positiv.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE" xml:space="preserve">
-    <value>Nicht rechenbar — das Ensemble hat keine Zone.</value>
+    <value>Das Ensemble hat keine Zone.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Nicht rechenbar — eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1).</value>
+    <value>Eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESMENGE_ZONE" xml:space="preserve">
     <value>die Tagesmenge der Zone „{0}“</value>
@@ -27887,19 +27887,19 @@ Möchten Sie das zulassen?</value>
     <value>die Leistung Φ_N des Summenlinienpunkts</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_WERT" xml:space="preserve">
-    <value>Nicht rechenbar — das Auslegungsperzentil ist 95 oder 99, nicht {0}.</value>
+    <value>Das Auslegungsperzentil ist 95 oder 99, nicht {0}.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_LEER" xml:space="preserve">
-    <value>Nicht rechenbar — die Liste der Nenninhalte ist leer.</value>
+    <value>Die Liste der Nenninhalte ist leer.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_NENNINHALT" xml:space="preserve">
     <value>ein Nenninhalt</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_NICHT_AUFSTEIGEND" xml:space="preserve">
-    <value>Nicht rechenbar — die Nenninhalte steigen nicht streng auf.</value>
+    <value>Die Nenninhalte steigen nicht streng auf.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALT_SCHLUESSEL" xml:space="preserve">
-    <value>Nicht rechenbar — der Parameter „{0}“ nennt keine Stelle der Nenninhaltsliste.</value>
+    <value>Der Parameter „{0}“ nennt keine Stelle der Nenninhaltsliste.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_NENNINHALT_RASTER" xml:space="preserve">
     <value>das Raster über dem Ende der Nenninhalte</value>
@@ -27911,13 +27911,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Speicherauslegung gilt nur für die Topologie Speicher.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_OHNE_WOCHENREIHE" xml:space="preserve">
-    <value>Nicht rechenbar — die Speicherauslegung braucht die Wochenreihe.</value>
+    <value>Die Speicherauslegung braucht die Wochenreihe.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_SPEICHER" xml:space="preserve">
     <value>Speicher − Kaltwasser der Auslegung</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_NUTZANTEIL_UEBER_1" xml:space="preserve">
-    <value>Nicht rechenbar — der Nutzanteil liegt über 1.</value>
+    <value>Der Nutzanteil liegt über 1.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZUSCHLAG" xml:space="preserve">
     <value>der Zuschlag</value>
@@ -27929,7 +27929,7 @@ Möchten Sie das zulassen?</value>
     <value>die Laufzeit der Zirkulation</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LADEFENSTER_OHNE_LAENGE" xml:space="preserve">
-    <value>Nicht rechenbar — das Ladefenster hat keine Länge.</value>
+    <value>Das Ladefenster hat keine Länge.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_ZIRK_LEISTUNG" xml:space="preserve">
     <value>die Zirkulationsleistung</value>
@@ -28055,7 +28055,7 @@ Möchten Sie das zulassen?</value>
     <value>Größter Tagesbedarf der maßgebenden Woche {0:0.#} kWh/d + Zirkulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, zusammen {4:0.#} kWh/d; ÷ Ladefenster {5:0.#} h = {6:0.##} kW — angesetzt: {7:0.##} kW ({8}).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_FENSTER_AUSSERHALB" xml:space="preserve">
-    <value>Nicht rechenbar — {0} liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h).</value>
+    <value>{0} liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h).</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_ENTWURF" xml:space="preserve">
     <value>Entwurfsstand, Anwendung besonders zu vereinbaren</value>
@@ -28064,7 +28064,7 @@ Möchten Sie das zulassen?</value>
     <value>Wertepaarkurve: eigene Erweiterung des Nachweisverfahrens.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
-    <value>Nicht rechenbar — die Projektgrößen der Auslegung fehlen.</value>
+    <value>Die Projektgrößen der Auslegung fehlen.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_KALTWASSER_AUSLEGUNG" xml:space="preserve">
     <value>die Kaltwassertemperatur der Auslegung</value>
@@ -28091,7 +28091,7 @@ Möchten Sie das zulassen?</value>
     <value>die Übertragerfläche des Projekts</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ERZEUGERART_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben.</value>
+    <value>Ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SCHAETZFORMEL" xml:space="preserve">
     <value>die Schätzformel der Übertragerfläche</value>
@@ -28100,16 +28100,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Zeitkonstante des Speichers wird nicht angezeigt.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WERKSTOFF_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — {0} braucht den U-Wert des Übertragers, und der hängt am Werkstoff (Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben.</value>
+    <value>{0} braucht den U-Wert des Übertragers, und der hängt am Werkstoff (Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LADUNGSFAKTOR" xml:space="preserve">
-    <value>Nicht rechenbar — der Ladungsfaktor liegt nicht in (0; 1].</value>
+    <value>Der Ladungsfaktor liegt nicht in (0; 1].</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SENSORHOEHE" xml:space="preserve">
-    <value>Nicht rechenbar — die Sensorhöhe liegt nicht in [0; 1].</value>
+    <value>Die Sensorhöhe liegt nicht in [0; 1].</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_MISCHWASSER_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der gemischte Speicher braucht die Mischwassertemperatur.</value>
+    <value>Der gemischte Speicher braucht die Mischwassertemperatur.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_MISCHWASSER" xml:space="preserve">
     <value>Mischwasser − Kaltwasser der Auslegung</value>
@@ -28121,13 +28121,13 @@ Möchten Sie das zulassen?</value>
     <value>die Erzeugerleistung</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — weder Erzeuger- noch Übertragerleistung ist bekannt.</value>
+    <value>Weder Erzeuger- noch Übertragerleistung ist bekannt.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_SUMMENLINIE_OHNE_TAG" xml:space="preserve">
-    <value>Nicht rechenbar — die Summenlinie braucht einen Bedarfstag.</value>
+    <value>Die Summenlinie braucht einen Bedarfstag.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
-    <value>Nicht rechenbar — die Summenlinie findet kein Volumen mit Nachweis.</value>
+    <value>Die Summenlinie findet kein Volumen mit Nachweis.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_SUMMENLINIE_NICHT_MONOTON" xml:space="preserve">
     <value>Der Nachweis der Summenlinie ist über das Volumen nicht monoton; das kleinste Volumen stammt aus einem feinen Rasterlauf.</value>
@@ -28139,7 +28139,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PARAMETERSATZ_FEHLT" xml:space="preserve">
-    <value>Nicht rechenbar — der Parametersatz der Auslegung fehlt.</value>
+    <value>Der Parametersatz der Auslegung fehlt.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_GROSSANLAGE_NICHT_ERKANNT" xml:space="preserve">
     <value>Die Großanlage wird nicht erkannt.</value>
@@ -28172,7 +28172,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_PUNKT" xml:space="preserve">
-    <value>Nicht rechenbar — das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N).</value>
+    <value>Das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N).</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_NICHT_BELASTBAR_TEIL" xml:space="preserve">
     <value> — nicht belastbar</value>
@@ -28223,13 +28223,13 @@ Möchten Sie das zulassen?</value>
     <value>Der empfohlene Punkt {0:0} l liegt über dem größten Nenninhalt {1:0} l — Mehrspeicheranlage prüfen.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN" xml:space="preserve">
-    <value>Nicht rechenbar — der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren.</value>
+    <value>Der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART" xml:space="preserve">
-    <value>Nicht rechenbar — der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren.</value>
+    <value>Der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN" xml:space="preserve">
-    <value>Nicht rechenbar — der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig.</value>
+    <value>Der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG" xml:space="preserve">
     <value>Zapftemperatur − Kaltwasser des Katalogtags</value>
@@ -28265,7 +28265,7 @@ Möchten Sie das zulassen?</value>
     <value>Das Zapfprofil kann nicht gespeichert werden — {0}</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_TABELLE_FEHLT" xml:space="preserve">
-    <value>die Tabelle {0} fehlt in dieser Datenbank.</value>
+    <value>in dieser Datenbank fehlt: {0}.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
     <value>das Projekt {0} gibt es nicht.</value>
@@ -28310,7 +28310,7 @@ Möchten Sie das zulassen?</value>
     <value>die Zone „{0}“ gehört zu einem anderen Projekt.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>die Nutzungsart {0} der Zone „{1}“ steht nicht im Katalog.</value>
+    <value>die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
     <value>der Tagesgangsatz {0} der Zone „{1}“ steht nicht im Katalog.</value>
@@ -28337,7 +28337,7 @@ Möchten Sie das zulassen?</value>
     <value>„{0}“ ist keine Zahl</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_NAME" xml:space="preserve">
-    <value>Nicht rechenbar — der konstruierte Bedarfstag braucht einen Namen.</value>
+    <value>Der konstruierte Bedarfstag braucht einen Namen.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
     <value>der konstruierte Bedarfstag trägt keinen Namen, keine Katalogversion oder nicht die Quelle Konstruktor.</value>
@@ -28559,6 +28559,39 @@ Möchten Sie das zulassen?</value>
     <value>die Spalte {0} fehlt in dieser Datenbank (Schemastand vor 120).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
-    <value>Nicht rechenbar — ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart.</value>
+    <value>Ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANGSATZ_STAMM" xml:space="preserve">
+    <value>Katalog der Tagesgangsätze</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANG_STAMM" xml:space="preserve">
+    <value>Katalog der Tagesgänge</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWNUTZUNGSART_STAMM" xml:space="preserve">
+    <value>Katalog der Brauchwasser-Nutzungsarten</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAG_STAMM" xml:space="preserve">
+    <value>Katalog der Bedarfstage</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAGEREIGNIS_STAMM" xml:space="preserve">
+    <value>Zapfungen der Bedarfstage</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPARAMETER_STAMM" xml:space="preserve">
+    <value>Parameterkatalog des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM" xml:space="preserve">
+    <value>Katalog der DIN-4708-Werte</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE" xml:space="preserve">
+    <value>Zonen des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP" xml:space="preserve">
+    <value>Wohnungstabellen der Zonen</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT" xml:space="preserve">
+    <value>Projektgrößen des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
+    <value>Katalog der Zapfkategorien</value>
   </data>
 </root>

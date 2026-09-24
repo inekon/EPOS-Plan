@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const string KENNUNG_KATEGORIEN_FEHLEN = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN";
 
-        /// <summary>Kennung derselben Ablehnung, wenn die Nutzungsart nur ihre Id nennt (ohne Bezeichner).</summary>
+        /// <summary>Kennung derselben Ablehnung, wenn nur die Id der Nutzungsart bekannt ist: Der Satz nennt die Zone, nie die Id.</summary>
         internal const string KENNUNG_KATEGORIEN_FEHLEN_ID = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID";
 
         private readonly Zapfkategoriewert[] _werte;
@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
                 // Kennung und die getrennten Werte (Bezeichner, Katalogversion, Zone): Den Satz baut die
                 // Oberfläche in ihrer Sprache, der deutsche Wortlaut geht ins Protokoll.
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                    name == null ? ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN_ID, idNutzungsart, zone)
+                    name == null ? ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN_ID, zone)
                                  : ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN, name, version ?? "", zone));
 
             double summe = 0.0;

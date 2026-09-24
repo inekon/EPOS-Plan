@@ -78,9 +78,72 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(m))
                 return werte.Length == 0 ? Kennung
                     : Kennung + " (" + string.Join("; ", werte.Select(w => Convert.ToString(w, kultur))) + ")";
-            try { return string.Format(kultur, m, werte); }
+            string satz;
+            try { satz = string.Format(kultur, m, werte); }
             catch (FormatException) { return m; }
+            return GanzerSatz && m.StartsWith("{", StringComparison.Ordinal) ? GrossAnfang(satz, kultur) : satz;
         }
+
+        /// <summary>
+        /// Die Familien, deren Muster ganze Sätze sind (Ablehnungen des Rechenwegs, der Auslegung und
+        /// des Parametersatzes): Beginnt ihr Muster mit einem Platzhalter — etwa „{0} ist negativ."
+        /// mit dem Begriff „die Speichertemperatur" —, beginnt der Satz groß. Die übrigen Familien
+        /// (etwa <c>SPEICHER_</c>) sind Satzteile hinter einem Vorsatz der Hülle und bleiben, wie sie sind.
+        /// </summary>
+        internal static readonly IReadOnlyList<string> GANZE_SAETZE = new[] { "EINGABE_", "AUSLEGUNG_", "PARAMETER_" };
+
+        /// <summary>Gehört die Kennung zu einer Familie ganzer Sätze (<see cref="GANZE_SAETZE"/>)?</summary>
+        private bool GanzerSatz => GANZE_SAETZE.Any(p => Kennung.StartsWith(p, StringComparison.Ordinal));
+
+        private static string GrossAnfang(string s, IFormatProvider kultur)
+        {
+            if (string.IsNullOrEmpty(s) || !char.IsLower(s[0])) return s;
+            CultureInfo c = kultur as CultureInfo ?? CultureInfo.InvariantCulture;
+            return char.ToUpper(s[0], c) + s.Substring(1);
+        }
+
+        /// <summary>
+        /// Nennt der Satz den Text <paramref name="text"/> als Wert — auch in einem eingebetteten Satz
+        /// oder einer Liste (ordinal verglichen)? Etwa die Zone: Ein Satz, der seine Zone schon nennt,
+        /// bekommt in der Oberfläche keinen Vorsatz „Zone „…“" (N11 (k)). Leer nennt nie.
+        /// </summary>
+        internal bool Nennt(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            foreach (object w in _werte) if (NenntWert(w, text)) return true;
+            return false;
+        }
+
+        private static bool NenntWert(object w, string text)
+        {
+            switch (w)
+            {
+                case string s: return string.Equals(s, text, StringComparison.Ordinal);
+                case ZapfSatz z: return z.Nennt(text);
+                case IEnumerable liste:
+                    foreach (object o in liste) if (NenntWert(o, text)) return true;
+                    return false;
+                default: return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Katalogbezeichnung einer Tww-Tabelle als Begriff (<c>BEGRIFF_TABELLE_</c> + Name ohne
+        /// <c>Tab_</c>, groß): Ein Satz nennt nie den Tabellennamen, sondern „Katalog der
+        /// Nutzungsarten" in der Sprache der Oberfläche. Eine Tabelle außerhalb von
+        /// <see cref="TwwSchema.AlleAnweisungen"/> bleibt ihr Name (ein Datum).
+        /// </summary>
+        internal static object Tabelle(string tabelle)
+        {
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
+                if (string.Equals(a.Key, tabelle, StringComparison.Ordinal))
+                    return ZapfSatz.Neu("BEGRIFF_TABELLE_" + TabellenKennung(tabelle));
+            return tabelle ?? "";
+        }
+
+        /// <summary>Der Teil der Kennung einer Tww-Tabelle: ihr Name ohne <c>Tab_</c>, in Großbuchstaben.</summary>
+        internal static string TabellenKennung(string tabelle)
+            => (tabelle.StartsWith("Tab_", StringComparison.Ordinal) ? tabelle.Substring(4) : tabelle).ToUpperInvariant();
 
         /// <inheritdoc />
         public override string ToString() => Klartext;

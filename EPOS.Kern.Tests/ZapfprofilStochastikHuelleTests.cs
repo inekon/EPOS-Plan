@@ -436,7 +436,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
             Assert.Equal("Probe", m.Zone);
             Assert.Equal(1, m.Position);
-            Assert.Equal("Zone „Probe“ trägt 0: Nicht rechenbar — für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
+            Assert.Equal("Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
                          + ") der Zone „Probe“ stehen keine Zapfkategorien im Katalog.", m.Text);
             Assert.True(v.Zonen[1].Abgelehnt);
             Assert.False(v.Zonen[0].Abgelehnt);
@@ -463,7 +463,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilVorschauDaten v = ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT),
                                                                      System.Threading.CancellationToken.None);
             Assert.Equal(ZapfprofilVorschauZustand.Abgebrochen, v.Zustand);
-            const string SATZ = "Nicht rechenbar — die stochastische Jahresreihe zöge 14600000 Einheitentage (Realisierungen × Einheiten × 365); "
+            const string SATZ = "Die stochastische Jahresreihe zöge 14600000 Einheitentage (Realisierungen × Einheiten × 365); "
                                 + "höchstens 10000000 sind zulässig — bitte weniger Realisierungen wählen.";
             Assert.Equal(SATZ, v.Grund);
             Assert.Equal("Stochastik nicht gerechnet — " + SATZ, v.Status);
@@ -474,7 +474,7 @@ namespace EPOS.Kern.Tests
             CultureInfo.CurrentUICulture = EN;
             ZapfprofilVorschauDaten e = ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT),
                                                                      System.Threading.CancellationToken.None);
-            Assert.StartsWith("Not computable — the stochastic annual series would draw 14600000 unit-days", e.Grund);
+            Assert.StartsWith("The stochastic annual series would draw 14600000 unit-days", e.Grund);
             Assert.StartsWith("Stochastics not calculated — ", e.Status);
         }
 

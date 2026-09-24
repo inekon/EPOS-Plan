@@ -96,7 +96,7 @@ namespace WindowsFormsApplication1
                 {
                     a.Art = Suchen(katalog, z.IdNutzungsart)
                             ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.NutzungsartFehlt, a.Name,
-                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", z.IdNutzungsart, a.Name));
+                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", a.Name));
                     Tagesgangsatz satz = a.Art.Tagesgaenge;
                     if (z.IdTagesgangsatz.HasValue)
                         satz = SuchenSatz(e.Tagesgangsaetze, z.IdTagesgangsatz.Value)

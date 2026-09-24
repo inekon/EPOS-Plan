@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
             foreach (string t in new[] { TwwSchema.TAB_TWW_PROJEKT, TwwSchema.TAB_TWW_ZONE, TwwSchema.TAB_TWW_WOHNUNGSTYP })
                 if (Anzahl(v, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", t) == 0)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
-                        ZapfSatz.Neu("SPEICHER_TABELLE_FEHLT", t));
+                        ZapfSatz.Neu("SPEICHER_TABELLE_FEHLT", ZapfSatz.Tabelle(t)));
             if (Anzahl(v, "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?", idProjekt) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektFehlt, "",
                     ZapfSatz.Neu("SPEICHER_PROJEKT_FEHLT", idProjekt));
@@ -324,7 +324,7 @@ namespace WindowsFormsApplication1
 
             if (Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?", z.IdNutzungsart) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.NutzungsartFehlt, name,
-                    ZapfSatz.Neu("SPEICHER_NUTZUNGSART_FEHLT", z.IdNutzungsart, name));
+                    ZapfSatz.Neu("SPEICHER_NUTZUNGSART_FEHLT", name));
             if (z.IdTagesgangsatz.HasValue
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " WHERE ID = ?",
                           z.IdTagesgangsatz.Value) == 0)
