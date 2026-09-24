@@ -310,7 +310,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **128**, LFS-SHA-256 `81209c50…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **129**, LFS-SHA-256 `4c546a7c…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -551,6 +551,20 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzprojekt rechnet gekoppelt, und der Referenzlauf exportiert die Tabelle nicht. **Keine Einfrierregel ist
 > berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV
 > byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E16 (#484): Schemastand 129 (Wiederholperiode je Kostenposition der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **129** (`SCHRITT_WIEDERHOLPERIODE`; die Nummer steht allein bei `WiederholperiodeSchema.SCHRITT`,
+> der Quelle für Migration, Werkzeug und Testvorrichtung) hängt die nullbare Spalte `Wiederholperiode_a` (INTEGER, ohne
+> Vorgabe; leer, 0 und 1 = jährlich) an `Tab_ProjektWerte` und an `Tab_KostenVorlagePosition` (DIN EN 17463, 6.3.1
+> „alle n Jahre"; Konzept Wirtschaftlichkeit § 2.11.2, V‑G3) — **reines DDL**. In Phase 1 vorläufig 128; nach dem Push
+> des Schritts 128 (Nachtrag AK1 Welle 3 oben) steht er als **129** nach 128, der Zwischenstand 127 → 128 der Welle
+> (`f4a6ee8b…`) ist überholt. Nachgezogen auf der Fassung **128** (`81209c50…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: zwei Spalten neu, keine
+> Tabelle, Schritt 128 fand nichts offen, Marker 129; 133 Tabellen (132 STRICT), 14 Sichten, 210 Indizes;
+> `integrity_check` ok, `foreign_key_check` leer. Größe 67 796 992 Byte, unverändert (LFS-SHA-256 `4c546a7c…`).
+> **Ergebnisneutral:** Keine Zeile pflegt `Wiederholperiode_a`, leer rechnet jährlich wie vor dem Schritt, und die
+> Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller
+> dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

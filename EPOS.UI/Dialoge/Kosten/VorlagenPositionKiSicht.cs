@@ -120,4 +120,17 @@ public sealed class VorlagenPositionKiSicht
         get => RestwertLesen?.Invoke();
         set => RestwertSetzen?.Invoke(value);
     }
+
+    // ---- ETAPPE E16 (V‑G3): die Wiederholperiode der Betriebsposition ------------
+
+    public Func<int?>? WiederholperiodeLesen { get; init; }
+    public Action<int?>? WiederholperiodeSetzen { get; init; }
+
+    /// <summary>Alle wie viele Jahre die Betriebsposition zahlt; 1 = jährlich. <c>null</c>,
+    /// wenn der Dialog das Feld nicht zeigt (Investitionsseite).</summary>
+    public int? Wiederholperiode
+    {
+        get => WiederholperiodeLesen?.Invoke();
+        set => WiederholperiodeSetzen?.Invoke(value);
+    }
 }

@@ -49,13 +49,35 @@ namespace WindowsFormsApplication1
 
             int[] naechsteId = { STARTINDEX };
 
+            // Welche Anzeigezeile gehoert zu welchem Modell der Fachliste? Der Speicherweg
+            // traegt einer neu angelegten Zeile nach dem Festschreiben ihre ECHTE
+            // Zuordnungs-Id ins Modell ein (WizardCtrl.EchteIdsUebernehmen); die
+            // Anzeigezeile zieht sie hier nach, bevor die Fachliste neu entsteht - sonst
+            // kaeme die vorlaeufige Id zurueck, und ein zweites Speichern legte die Kopie
+            // erneut an.
+            var paare = new List<(Z_ProjGebModel Modell, GebaeudeProjektZeile Zeile)>();
+            for (int i = 0; i < zeilen.Count; i++) paare.Add((modelle[i], zeilen[i]));
+
+            Action idsNachziehen = () =>
+            {
+                foreach ((Z_ProjGebModel m, GebaeudeProjektZeile z) in paare)
+                    if (z.IdZ >= STARTINDEX && m.ID_Z > 0 && m.ID_Z != z.IdZ) z.IdZ = m.ID_Z;
+            };
+
             // Die Fachliste wird nach jeder Aenderung AN ORT UND STELLE neu aufgebaut -
             // dieselbe Liste, neue Zeilen. Der Assistent reicht dasselbe Objekt ueber
             // mehrere Seitenbesuche hinweg.
             Action geaendert = () =>
             {
+                idsNachziehen();
                 modelle.Clear();
-                foreach (GebaeudeProjektZeile z in zeilen) modelle.Add(NachModell(z, projektId));
+                paare.Clear();
+                foreach (GebaeudeProjektZeile z in zeilen)
+                {
+                    Z_ProjGebModel m = NachModell(z, projektId);
+                    modelle.Add(m);
+                    paare.Add((m, z));
+                }
             };
 
             return new Dictionary<string, object>
@@ -72,8 +94,15 @@ namespace WindowsFormsApplication1
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(
                     name => Aufnehmen(name, projektId, naechsteId)),
-                ["KatalogLoeschen"] = new Func<string, bool>(
-                    name => new GebaeudeStammCtrl().Delete(name)),
+                // Die Loeschsperre der Gebaeudeverwaltung gilt auch hier - eine Wahrheit im
+                // Kern (GebaeudeStammCtrl.Loeschsperrgrund): Auslieferungssatz oder von einem
+                // Projekt gefuehrt heisst benannte Absage statt Rueckfrage. Geloescht wird
+                // ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt und
+                // keinen Meldungskasten oeffnet.
+                ["KatalogLoeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["KatalogLoeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
+                ["MeldungLoeschFehler"] = Text_("BADM_MSG_LOESCHEN_FEHLER",
+                    "Der Datensatz konnte nicht aus der Datenbank gelöscht werden."),
 
                 ["KatalogGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
                     name => GebaeudeKatalogHuelle.Gaben(name,
@@ -91,7 +120,7 @@ namespace WindowsFormsApplication1
                 // Gebaeudes. Die Katalogverwaltung ist seit Stufe 5 der Neuordnung eine
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
-                    z => GebaeudeBedarfHuelle.Gaben(z, projektId)),
+                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId); }),
 
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("GEB_KOPFBAND", "Eingabe der Energiedaten"),

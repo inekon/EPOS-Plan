@@ -37,7 +37,9 @@ Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäude
 Kopien über diesen Verweis an (7.1 a); **mit #475 (24.09.2026)** behält das Speichern der Gebäudeliste
 jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schreibt in einem Vorgang
 (7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
-(7.1 a).
+(7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
+Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
+die Löschsperre der Verwaltung (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -640,8 +642,16 @@ ihrer Tagesverteilung und den Verweisen darauf (Trinkwarmwasserzonen, Gebäudeer
 Zuordnungswerte (Fläche oder Verbrauch, Einheit, Jahresnutzungsgrad, dezentrales Warmwasser) werden
 fortgeschrieben. Eine Zuordnung, die in der Liste fehlt, wird samt Kopie gelöscht; jede übrige Zeile
 (neu übernommen oder mit geändertem Verweis) entsteht neu aus dem Katalog. Eine Umbenennung im Katalog
-berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts wird wie auf jedem
-Schreibweg gesetzt, das letzte Ergebnis gilt damit als veraltet. Die Startseite schreibt in **einem**
+berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts — und damit die
+Veraltung des letzten Ergebnisses — wird nur gesetzt, wenn der Abgleich tatsächlich geschrieben hat
+(eine Zuordnung entfernt oder neu angelegt, Zuordnungswerte einer bleibenden geändert); eine bleibende
+Zeile mit unveränderten Werten wird nicht geschrieben (#487). Nach dem Festschreiben trägt jede neu
+angelegte Zeile der Liste ihre echte Zuordnungs-Id statt der vorläufigen ab 100000
+(`WizardCtrl.EchteIdsUebernehmen`, im Assistenten nach dem Festschreiben seines Vorgangs; die Hülle
+`GebaeudeHuelle` zieht sie in die Anzeigezeile nach) — ein zweites Speichern derselben Liste legt
+nichts neu an, und eine Feld-Übernahme dazwischen bleibt stehen (#487; Nachweis
+`GebaeudelisteAbgleichTests`). Der Assistent setzt im Bearbeiten-Zweig das Änderungsdatum weiterhin
+bei jedem Speichern, weil er die übrigen Gewerke neu schreibt. Die Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
@@ -653,7 +663,13 @@ Ziel nicht unter der Original-Id aufgefüllt, und der Import trägt den Verweis 
 Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die
 Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
 Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
-„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
+„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). ✔ **Die Löschsperre gilt auf
+beiden Wegen (#487):** „Gebäude in DB löschen" im Projekt-Gebäudedialog fragt vor der Rückfrage
+`GebaeudeStammCtrl.Loeschsperrgrund` — dieselbe Wahrheit wie die Verwaltung (`Loeschsperre` über
+Verweis und Namen, dazu `ReadOnly`) — und nennt einen gesperrten Satz benannt als Warnung
+(`ADM_AW_LOESCHEN_VERWENDET` mit den Projekten bzw. `BADM_MSG_SCHREIBGESCHUETZT` für einen
+Auslieferungssatz), ohne nachzufragen; gelöscht wird über `GebaeudeStammCtrl.Loeschen`, das die Sperre
+im Kern noch einmal hält, eine Ablehnung steht als Absage im Dialog. Mit demselben Schritt tragen vier
 Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert). ✔ **Die
 dem Anwender vorgelegten Sätze sind erledigt** (Anwenderentscheid „Empfehlung übernehmen", Welle #485,
 Schemaschritt 126, `GebaeudeKatalogReparatur`): Der Krankenhaussatz trägt U-Wert Fenster 1,3 statt 0,09
@@ -662,7 +678,17 @@ je Nutzer" (`EFH-BZ2`, `KrankenH-F-U-400`, `KMEH-M-U-54`, `Z-EFH-A-S-126`) trage
 Bewohner; die acht Testreste (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) sind gelöscht. Der Schritt trifft je Satz
 nur Bezeichner UND Schadensbild — ein schon berichtigter oder anderer Satz einer Kundendatenbank bleibt,
 ein benutzter Testrest ebenso (Protokoll). Alle 269 Katalogsätze bestehen jetzt die Prüfung des
-Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). (b)
+Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). ✔ **Der Satz
+`Krankenhaus_92-EnEV2016` ist ganz durchgesehen — geprüft, keine weitere Berichtigung (#491):** Jede
+Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abweichungen sind die Werte
+der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
+Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
+`gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
+313,8 m / 13,6 Geschosse ≈ 3,5 m). Nicht entscheidbar und dem Anwender vorgelegt: die Anschlusslänge
+Fenster–Wand 1 800 m (0,95 m je m² Fenster, Ausgangssatz 2,54; physikalisch möglich, die Untergrenze für
+Fensterbänder ist 2 · 1 895,9 m² / 3,5 m ≈ 1 083 m) und die Außenwand von 12 094 m², die nicht um die
+1 120,4 m² gewachsen ist, um die Ost/West kleiner ist als beim Ausgangssatz (Hüllfläche 13 989,9 statt
+15 110,3 m²). (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im

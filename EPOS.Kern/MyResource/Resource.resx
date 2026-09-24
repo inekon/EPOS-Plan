@@ -3200,6 +3200,24 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) bleibt ohne Wirkung — Beginn und Ende ergeben keinen Ferientag.</value>
   </data>
+  <data name="SIMENG_G3_NEIGUNG" xml:space="preserve">
+    <value>{0}: Die Neigung {1}° liegt nicht in 0 … 180° (0° = waagerecht nach oben, 90° = senkrecht, 180° = waagerecht nach unten).</value>
+  </data>
+  <data name="SIMENG_G3_AUFBAU_LEER" xml:space="preserve">
+    <value>{0}: Der Schichtaufbau hat keine Schicht.</value>
+  </data>
+  <data name="SIMENG_G3_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>{0}, Schicht {1}: Die ruhende Luftschicht ist {2} m dick; DIN EN ISO 6946 Tabelle 8 gilt bis {3} m.</value>
+  </data>
+  <data name="SIMENG_G3_SCHICHT_STOFFWERT" xml:space="preserve">
+    <value>{0}, Schicht {1}: {2} = {3} {4} liegt nicht in {5} … {6} {4}; ein Stoffwert außerhalb des Plausibilitätsbands ist kein Wert.</value>
+  </data>
+  <data name="SIMENG_G3_REDUKTION_UNGUELTIG" xml:space="preserve">
+    <value>{0}: Die Reduktion des Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen endlichen, positiven Wert (R_1 = {1} K/W, C_1 = {2} J/K); ein Aufbau ohne wirksame Speichermasse ist als masseloses Bauteil zu führen.</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
+    <value>{0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>
@@ -30417,6 +30435,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>alle {0} Jahre ab Jahr {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Zahlung alle:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Zahlung alle … Jahre</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Wiederholperiode einer Betriebsposition in Jahren: 1 = jährlich, n = die Position zahlt im Startjahr und danach alle n Jahre. Nur auf der Betriebsseite.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_E [€/a]</value>
   </data>
   <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
     <value>Vorgabe ohne auswertbare Schichten ({0} von {1} Konstruktionen vollständig)</value>

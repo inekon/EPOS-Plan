@@ -4175,6 +4175,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_128_ERGEBNIS_HEIZKREIS = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS;
 
+        /// Schritt <see cref="WiederholperiodeSchema.SCHRITT"/> — <b>die Wiederholperiode je
+        /// Kostenposition</b> (Etappe E16; Konzept Wirtschaftlichkeit § 2.11.2 V‑G3, DIN EN 17463
+        /// 6.3.1 „alle n Jahre"). Er folgt auf <see cref="SCHRITT_128_ERGEBNIS_HEIZKREIS"/> (128)
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL:</b> die nullbare Spalte <c>Wiederholperiode_a</c> (INTEGER, Jahre)
+        /// an <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste steht bei
+        /// <see cref="WiederholperiodeSchema.Spalten"/>, die Nummer allein bei
+        /// <see cref="WiederholperiodeSchema.SCHRITT"/>: EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und die Testvorrichtung.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL, 0 und 1 heißen „jährlich wie bisher"; der
+        /// Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5914,6 +5931,18 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - die Spalten bleiben leer, bis ein Lauf die " +
                         "Uebergabe rechnet.",
                         Schritt_128_ErgebnisHeizkreis),
+
+            // ETAPPE E16 (V-G3, DIN EN 17463 6.3.1) - die Wiederholperiode je Kostenposition
+            // ("alle n Jahre") an Tab_ProjektWerte und Tab_KostenVorlagePosition. REIN DDL; die
+            // Quelle ist WiederholperiodeSchema (Spalten und Nummer). Er steht NACH 128 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_WIEDERHOLPERIODE,
+                        "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die Wiederholperiode " +
+                        "Wiederholperiode_a (alle n Jahre)",
+                        "Eine Kostenposition, die nur alle n Jahre anfaellt (z. B. Dichtheitspruefung alle " +
+                        "2 Jahre), liesse sich nicht fuehren. KEIN Rechenergebnis aendert sich - alle " +
+                        "Zeilen stehen auf leer, und leer heisst 'jaehrlich wie bisher'.",
+                        Schritt_Wiederholperiode),
         };
 
         /// <summary>
@@ -9681,6 +9710,40 @@ namespace WindowsFormsApplication1
                     " Spalte(n) des Heizkreises an " + ErgebnisGebaeudeSchema.TAB + " angelegt - " +
                     "Uebergabe_Art, VorlaufMittel_C, RuecklaufMittel_C, UebergabeBegrenzt_H, alle nullbar. " +
                     "KEIN DML: NULL heisst 'nicht gekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt WiederholperiodeSchema.SCHRITT - die Wiederholperiode je Kostenposition (E16)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Wiederholperiode je Kostenposition — Anlass, Spalten und Ergebnisneutralität
+        /// stehen bei <see cref="SCHRITT_WIEDERHOLPERIODE"/> und bei
+        /// <see cref="WiederholperiodeSchema"/>. <b>Reines DDL</b>, dieselbe Schleife wie bei
+        /// Schritt 111. <b>Wiederholbar.</b> Danach vergisst der Kern seinen gemerkten
+        /// Spaltenstand, damit derselbe Prozess die Periode sofort liest.
+        /// </summary>
+        private static bool Schritt_Wiederholperiode(Lauf l)
+        {
+            string nr = SCHRITT_WIEDERHOLPERIODE.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            WiederholperiodeSchema.SpaltenStandVergessen();
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    WiederholperiodeSchema.Spalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + WiederholperiodeSchema.SPALTE + " (nullbar, Jahre) an " +
+                    SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                    ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
+                    "bisher; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

@@ -3184,6 +3184,24 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>Heat demand, building "{0}": holiday period {1} (day {2} to {3}) has no effect — start and end do not yield a single holiday day.</value>
   </data>
+  <data name="SIMENG_G3_NEIGUNG" xml:space="preserve">
+    <value>{0}: the inclination {1}° is outside 0 … 180° (0° = horizontal facing up, 90° = vertical, 180° = horizontal facing down).</value>
+  </data>
+  <data name="SIMENG_G3_AUFBAU_LEER" xml:space="preserve">
+    <value>{0}: the layer build-up has no layer.</value>
+  </data>
+  <data name="SIMENG_G3_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>{0}, layer {1}: the unventilated air layer is {2} m thick; DIN EN ISO 6946 table 8 applies up to {3} m.</value>
+  </data>
+  <data name="SIMENG_G3_SCHICHT_STOFFWERT" xml:space="preserve">
+    <value>{0}, layer {1}: {2} = {3} {4} is outside {5} … {6} {4}; a material value outside the plausibility range is not a value.</value>
+  </data>
+  <data name="SIMENG_G3_REDUKTION_UNGUELTIG" xml:space="preserve">
+    <value>{0}: reducing the layer build-up according to VDI 6007 part 1 eq. (12)–(17) yields no finite, positive value (R_1 = {1} K/W, C_1 = {2} J/K); a build-up without effective thermal mass has to be treated as a massless element.</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
+    <value>{0}: {1} = {2} is outside the permitted range {3}.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>
@@ -30410,6 +30428,30 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>every {0} years from year {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Payment every:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = every year. From 2 on, the item pays in its start year and every n years after that (EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Payment every … years</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Repeat period of an operating cost item in years: 1 = every year, n = the item pays in its start year and every n years after that. Operating side only.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Items every n years with p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Items every n years with p_E [€/a]</value>
   </data>
   <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
     <value>Default value without usable layers ({0} of {1} constructions complete)</value>

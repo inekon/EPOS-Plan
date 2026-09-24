@@ -38519,6 +38519,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederholperiode einer Betriebsposition in Jahren: 1 = jährlich, n = die Position zahlt im Startjahr und danach alle n Jahre. Nur auf der Betriebsseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_WDH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_WDH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlung alle … Jahre ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_WDH_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_WDH_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
         /// </summary>
         public static string KI_DLG_WBX_GANGLINIE_ERL {
@@ -58265,6 +58283,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Schichtaufbau hat keine Schicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_AUFBAU_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_AUFBAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_BAUTEIL_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_BAUTEIL_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Schicht {1}: Die ruhende Luftschicht ist {2} m dick; DIN EN ISO 6946 Tabelle 8 gilt bis {3} m. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_LUFTSCHICHT_DICKE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_LUFTSCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Neigung {1}° liegt nicht in 0 … 180° (0° = waagerecht nach oben, 90° = senkrecht, 180° = waagerecht nach unten). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_NEIGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Reduktion des Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen endlichen, positiven Wert (R_1 = {1} K/W, C_1 = {2} J/K); ein Aufbau ohne wirksame Speichermasse ist als masseloses Bauteil zu führen. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_REDUKTION_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_REDUKTION_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Schicht {1}: {2} = {3} {4} liegt nicht in {5} … {6} {4}; ein Stoffwert außerhalb des Plausibilitätsbands ist kein Wert. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_SCHICHT_STOFFWERT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_SCHICHT_STOFFWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_ABRECHNUNG_ANTEILIG {
@@ -71071,6 +71143,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string WDH_EINHEIT {
+            get {
+                return ResourceManager.GetString("WDH_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1). ähnelt.
+        /// </summary>
+        public static string WDH_INFO {
+            get {
+                return ResourceManager.GetString("WDH_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlung alle: ähnelt.
+        /// </summary>
+        public static string WDH_LBL_PERIODE {
+            get {
+                return ResourceManager.GetString("WDH_LBL_PERIODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Was ist angenommen? ähnelt.
         /// </summary>
         public static string WIRT_ABS_ANNAHMEN {
@@ -72048,6 +72147,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BK_AB_JAHR {
             get {
                 return ResourceManager.GetString("WIRT_BK_AB_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle {0} Jahre ab Jahr {1} ähnelt.
+        /// </summary>
+        public static string WIRT_BK_ALLE_N_JAHRE {
+            get {
+                return ResourceManager.GetString("WIRT_BK_ALLE_N_JAHRE", resourceCulture);
             }
         }
         
@@ -73209,6 +73317,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FM_MJ_VORZEICHEN {
             get {
                 return ResourceManager.GetString("WIRT_FM_MJ_VORZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen alle n Jahre mit p_B [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WDH_PB {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WDH_PB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen alle n Jahre mit p_E [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WDH_PE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WDH_PE", resourceCulture);
             }
         }
         
