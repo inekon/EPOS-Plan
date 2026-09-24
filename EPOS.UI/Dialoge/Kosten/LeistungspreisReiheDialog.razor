@@ -276,8 +276,10 @@
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <b>Kein Speicherweg.</b> „Übernehmen" schreibt die Reihe in die Datenbank;
-    /// das läuft über <c>dialog_speichern</c> samt Rückfrage und Sicherungspunkt.
+    /// <b>Kein Speicherweg.</b> „Übernehmen" schreibt die Reihe in die Datenbank, und
+    /// „Übernehmen" klickt der Anwender: Der Haken meldet keinen <c>Speichern</c>,
+    /// <c>dialog_speichern</c> lehnt deshalb benannt ab („bietet keinen Speicherweg an").
+    /// Der Assistent setzt nur die Felder.
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {

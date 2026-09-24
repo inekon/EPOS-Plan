@@ -1,4 +1,4 @@
-﻿# Fach- und Umsetzungskonzept: KI-Assistent mit Aufgabensteuerung (EPOS-Plan)
+# Fach- und Umsetzungskonzept: KI-Assistent mit Aufgabensteuerung (EPOS-Plan)
 
 Stand: 2026-08-20, Rev. 2 ·
 Auftraggeber: Philipp (INEKON) ·

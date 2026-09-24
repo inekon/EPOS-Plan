@@ -1,4 +1,4 @@
-﻿# Konzept: Der Hilfe-Assistent im Dialog — Aufruf, Kontext, Feldzustand, Steuerung
+# Konzept: Der Hilfe-Assistent im Dialog — Aufruf, Kontext, Feldzustand, Steuerung
 
 Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #198 · Ablage `Projekte/` · Status: **entschieden am
 11.09.2026** (Anwender: „Stufe 1 mit den Wegen 1 und 2, Weg 4 danach für die vier deklarierten Masken und die

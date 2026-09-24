@@ -43,7 +43,6 @@ public sealed class GebaeudeKiSicht
     public Func<string>? BeschreibungLesen { get; init; }
     public Func<string>? WohnflaecheLesen { get; init; }
     public Func<string>? AngabeartLesen { get; init; }
-    public Func<bool>? VerwaltungLesen { get; init; }
 
     // =====================================================================
     //  Die Einträge der drei Wahlfelder (KI-D-Q6)
@@ -123,10 +122,4 @@ public sealed class GebaeudeKiSicht
 
     /// <summary>Die Art der Angabe (Wohnfläche, Öl-, Gas- oder Brennstoffverbrauch).</summary>
     public string Angabeart => AngabeartLesen?.Invoke() ?? "";
-
-    /// <summary>
-    /// Steht die Maske in der KATALOGVERWALTUNG? Dann führt sie keine Projektliste,
-    /// und „Ändern…" sowie „Simulation…" gibt es nicht.
-    /// </summary>
-    public bool Verwaltung => VerwaltungLesen?.Invoke() ?? false;
 }

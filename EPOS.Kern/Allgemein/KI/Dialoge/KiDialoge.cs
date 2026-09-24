@@ -173,8 +173,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Die Gebaeudeverwaltung ist eine eigene Komponente mit eigenem Schluessel
-        /// (<see cref="GEBAEUDE_ADMIN"/>); das Feld „verwaltung" dieser Maske meldet deshalb
-        /// immer „nein".
+        /// (<see cref="GEBAEUDE_ADMIN"/>); diese Maske fuehrt deshalb kein Feld, das die
+        /// Betriebsart „Verwaltung" meldete.
         /// </remarks>
         public const string GEBAEUDE = "Form_Gebaeude";
 
@@ -3991,15 +3991,15 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Gebaeudemaske — zehn Felder aus
+        /// Die Gebaeudemaske — neun Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Die Maske des PROJEKTS.</b> Projektliste und Katalog stehen nebeneinander (in
         /// den Betriebsarten Projekt und Assistent). Die Gebaeudeverwaltung ist eine eigene
-        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); das Feld
-        /// <c>verwaltung</c> meldet hier deshalb immer „nein".
+        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); ein Feld, das
+        /// hier die Betriebsart „Verwaltung" meldete, gibt es deshalb nicht.
         /// </para>
         /// <para>
         /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
@@ -4054,10 +4054,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("angabeart", "GebaeudeKiSicht.Angabeart",
                                      KiDialogTexte.GebAngabeartName, KiParameterTyp.Text,
                                      KiDialogTexte.GebAngabeartErl,
-                                     leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("verwaltung", "GebaeudeKiSicht.Verwaltung",
-                                     KiDialogTexte.GebVerwaltungName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.GebVerwaltungErl, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {
