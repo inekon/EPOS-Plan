@@ -198,7 +198,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("VorlagenZeile", 4),
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 8),
+        new("WaermepumpeKonfiguration", 14, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld"),
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),

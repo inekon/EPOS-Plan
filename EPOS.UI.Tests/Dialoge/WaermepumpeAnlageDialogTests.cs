@@ -2083,4 +2083,100 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                         cut.Find(".epos-ueberlagerung").TextContent);
         Assert.True(cut.Instance.KonfigurationOffen);
     }
+
+    // ---- Der Hilfe-Assistent und die Gruppe „Kühlbetrieb" (KU2 Welle 3) --------------
+
+    private static KiFeldzugang Kuehlzugang(string name)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, name)!;
+
+    /// <summary>
+    /// Die fünf Felder der Gruppe „Kühlbetrieb" stehen in der Feldkarte der Anlage und schreiben in
+    /// denselben Feldsatz wie die Maske: Schalter, Vorlauf aus den Stützstellen, Hilfsstrom in
+    /// Prozent (gespeichert als Anteil), Kühlträger und — bei abweichendem Träger — die
+    /// Abrechnungsart. Ein Träger ohne Abweichung setzt die Abrechnungsart zurück (E34).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Kuehlfelder_im_Feldsatz_der_Anlage()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten, kuehlung: Kuehlgaben());
+
+        Kuehlzugang("kuehlbetrieb").Setzen(true);
+        Assert.True(daten.Kuehlbetrieb);
+
+        KiFeldzugang vorlauf = Kuehlzugang("kuehl_vorlauf");
+        Assert.Equal(new[] { "7", "18" }, vorlauf.Wahleintraege().Select(e => e.Schluessel));
+        vorlauf.Setzen(18);
+        Assert.Equal(18, daten.KuehlVorlauf);
+
+        Kuehlzugang("hilfsstromanteil").Setzen(8.0);
+        Assert.Equal(0.08, daten.KuehlHilfsstromanteil!.Value, 12);
+        Assert.Equal(8.0, (double)Kuehlzugang("hilfsstromanteil").Lesen()!, 9);
+
+        KiFeldzugang traeger = Kuehlzugang("kuehltraeger");
+        Assert.Equal(new[] { "58", "60" }, traeger.Wahleintraege().Select(e => e.Schluessel));
+        traeger.Setzen(58);
+        Assert.Equal(58, daten.KuehlCarrierId);
+
+        KiFeldzugang abrechnung = Kuehlzugang("kuehl_abrechnung");
+        Assert.Equal(new[] { "anteilig am Netzbezug (Vorgabe)", "eigener Zähler" },
+                     abrechnung.Wahleintraege().Select(e => e.Text));
+        abrechnung.Setzen(1);
+        Assert.True(daten.KuehlEigenerZaehler);
+        Assert.Equal(1, abrechnung.Lesen());
+
+        // Der Stromträger des Projekts weicht nicht ab: Die Abrechnungsart fällt auf NULL (anteilig).
+        traeger.Setzen(60);
+        Assert.Null(daten.KuehlEigenerZaehler);
+        Assert.Equal(0, abrechnung.Lesen());
+    }
+
+    /// <summary>
+    /// Was die Maske WEICH sperrt, lehnt der Assistent BENANNT ab: der Kühlbetrieb eines Geräts ohne
+    /// Kühlkennlinie (Grund der Gaben) und die Abrechnungsart ohne abweichenden Stromträger. Der
+    /// Feldsatz bleibt dabei unverändert.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_lehnt_gesperrten_Kuehlbetrieb_und_Abrechnung_ohne_Abweichung_benannt_ab()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        var gaben = new WaermepumpeKuehlGaben
+        {
+            Vorlaeufe = _ => Array.Empty<KuehlVorlaufEintrag>(),
+            Sperrgrund = _ => "Zu diesem Gerät liegen keine Kühlkenndaten vor.",
+            Stromtraeger = new[] { (60, "Strom Projekt") },
+            ProjektStromtraeger = 60
+        };
+        Aufbauen(daten, kuehlung: gaben);
+
+        var gesperrt = Assert.Throws<InvalidOperationException>(() => Kuehlzugang("kuehlbetrieb").Setzen(true));
+        Assert.Equal("Zu diesem Gerät liegen keine Kühlkenndaten vor.", gesperrt.Message);
+        Assert.False(daten.Kuehlbetrieb);
+        Kuehlzugang("kuehlbetrieb").Setzen(false);   // Ausschalten geht immer.
+
+        var ohneTraeger = Assert.Throws<InvalidOperationException>(() => Kuehlzugang("kuehl_abrechnung").Setzen(1));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER, ohneTraeger.Message);
+        Assert.Null(daten.KuehlEigenerZaehler);
+    }
+
+    /// <summary>Ohne Kühlgaben bietet der Wirt keinen Kühlbetrieb an — jede Setzung eines Kühlfeldes sagt das.</summary>
+    [Fact]
+    public void Ohne_Kuehlgaben_lehnt_der_Assistent_jedes_Kuehlfeld_benannt_ab()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        foreach ((string name, object wert) in new (string, object)[]
+                 { ("kuehlbetrieb", true), ("kuehl_vorlauf", 18), ("hilfsstromanteil", 5.0),
+                   ("kuehltraeger", 58), ("kuehl_abrechnung", 0) })
+        {
+            var fehler = Assert.Throws<InvalidOperationException>(() => Kuehlzugang(name).Setzen(wert));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR, fehler.Message);
+        }
+        Assert.False(daten.Kuehlbetrieb);
+        Assert.Null(daten.KuehlVorlauf);
+        Assert.Null(daten.KuehlHilfsstromanteil);
+        Assert.Null(daten.KuehlCarrierId);
+        Assert.Empty(Kuehlzugang("kuehl_vorlauf").Wahleintraege());
+    }
 }

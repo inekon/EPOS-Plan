@@ -414,8 +414,7 @@
             : string.Format(Texte.PlatzhalterKuehlVorlauf, "—");
 
     /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
-    private double? HilfsstromProzent
-        => Daten.KuehlHilfsstromanteil is double a ? Math.Round(a * 100.0, 6) : null;
+    private double? HilfsstromProzent => AnteilAlsProzent(Daten.KuehlHilfsstromanteil);
 
     /// <summary>Die Stromträger des Projekts, dazu ein gespeicherter Kühlträger, der keiner (mehr) ist.</summary>
     private IReadOnlyList<(int Id, string Text)> TraegerEintraege
@@ -430,11 +429,10 @@
     }
 
     /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt die Abrechnungsart (E34).</summary>
-    public bool KuehltraegerAbweichend
-        => Daten.KuehlCarrierId is int id && id > 0 && Kuehlung is not null && id != Kuehlung.ProjektStromtraeger;
+    public bool KuehltraegerAbweichend => KuehltraegerWeichtAb(Daten, Kuehlung);
 
     private IReadOnlyList<(int Id, string Text)> Abrechnungsarten
-        => new[] { (0, Texte.OptionAnteilig), (1, Texte.OptionZaehler) };
+        => new[] { (ABRECHNUNG_ANTEILIG, Texte.OptionAnteilig), (ABRECHNUNG_ZAEHLER, Texte.OptionZaehler) };
 
     private Task KuehlbetriebGesperrt()
     {
@@ -455,23 +453,71 @@
     private Task BeiHilfsstrom(double? prozent)
     {
         _kuehlMeldung = "";
-        Daten.KuehlHilfsstromanteil = prozent is double p ? p / 100.0 : null;
+        Daten.KuehlHilfsstromanteil = ProzentAlsAnteil(prozent);
         return Melden();
     }
 
     private Task BeiKuehltraeger(int? id)
     {
         _kuehlMeldung = "";
-        Daten.KuehlCarrierId = id is int i && i > 0 ? i : null;
-        if (!KuehltraegerAbweichend) Daten.KuehlEigenerZaehler = null;
+        KuehltraegerSetzen(Daten, id, Kuehlung);
         return Melden();
     }
 
     private Task BeiAbrechnung(int? wahl)
     {
-        Daten.KuehlEigenerZaehler = wahl == 1 ? true : null;
+        AbrechnungSetzen(Daten, wahl);
         return Melden();
     }
+
+    // ---- Die Regeln der Kühlfelder, EINMAL — für die Maske und den Hilfe-Assistenten ----
+    //
+    // Die Maske und die Sichtklasse des Assistenten (WaermepumpeAnlageKiSicht) schreiben in
+    // denselben Feldsatz; damit beide dieselben Regeln fahren, stehen sie hier als statische
+    // Wege und nicht zweimal.
+
+    /// <summary>Die Wahl „anteilig am Netzbezug" (E34, Vorgabe; gespeichert als NULL).</summary>
+    public const int ABRECHNUNG_ANTEILIG = 0;
+
+    /// <summary>Die Wahl „eigener Zähler" (E34; gespeichert als 1).</summary>
+    public const int ABRECHNUNG_ZAEHLER = 1;
+
+    /// <summary>Der Sperrgrund des Kühlbetriebs für das Gerät des Feldsatzes; <c>null</c> = frei (oder keine Gaben).</summary>
+    public static string? KuehlbetriebSperrgrund(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben)
+    {
+        string? grund = daten is null ? null : gaben?.Sperrgrund?.Invoke(daten.IdWp);
+        return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    /// <summary>Weicht der Kühlträger des Feldsatzes vom Stromträger des Projekts ab? (E34)</summary>
+    public static bool KuehltraegerWeichtAb(WaermepumpeAnlageDaten daten, WaermepumpeKuehlGaben? gaben)
+        => daten?.KuehlCarrierId is int id && id > 0 && gaben is not null && id != gaben.ProjektStromtraeger;
+
+    /// <summary>
+    /// Setzt den Kühlträger (0 oder leer = wie Heizbetrieb). Weicht er danach nicht ab, wirkt
+    /// die Abrechnungsart nicht mehr und fällt auf NULL (anteilig) zurück.
+    /// </summary>
+    public static void KuehltraegerSetzen(WaermepumpeAnlageDaten daten, int? id, WaermepumpeKuehlGaben? gaben)
+    {
+        daten.KuehlCarrierId = id is int i && i > 0 ? i : null;
+        if (!KuehltraegerWeichtAb(daten, gaben)) daten.KuehlEigenerZaehler = null;
+    }
+
+    /// <summary>Die Abrechnungsart des Feldsatzes als Wahl (<see cref="ABRECHNUNG_ANTEILIG"/> / <see cref="ABRECHNUNG_ZAEHLER"/>).</summary>
+    public static int AbrechnungWahl(WaermepumpeAnlageDaten daten)
+        => daten?.KuehlEigenerZaehler == true ? ABRECHNUNG_ZAEHLER : ABRECHNUNG_ANTEILIG;
+
+    /// <summary>Setzt die Abrechnungsart; „anteilig" wird als NULL gespeichert (Vorgabe, E34).</summary>
+    public static void AbrechnungSetzen(WaermepumpeAnlageDaten daten, int? wahl)
+        => daten.KuehlEigenerZaehler = wahl == ABRECHNUNG_ZAEHLER ? true : null;
+
+    /// <summary>Der gespeicherte Anteil [—] in Prozent, wie die Maske ihn zeigt.</summary>
+    public static double? AnteilAlsProzent(double? anteil)
+        => anteil is double a ? Math.Round(a * 100.0, 6) : null;
+
+    /// <summary>Die gezeigten Prozent als gespeicherter Anteil [—].</summary>
+    public static double? ProzentAlsAnteil(double? prozent)
+        => prozent is double p ? p / 100.0 : null;
 
     /// <summary>
     /// <b>Die Prüfregel der Kühlfelder</b> — EINE Stelle für beide Wirte (Anlagendialog und
@@ -485,11 +531,7 @@
         if (daten is null || gaben is null) return null;
         if (daten.KuehlHilfsstromanteil is double a && (double.IsNaN(a) || a < 0 || a >= 1))
             return (texte ?? new WaermepumpeKonfigurationTexte()).MeldungHilfsstromBereich;
-        if (daten.Kuehlbetrieb)
-        {
-            string? grund = gaben.Sperrgrund?.Invoke(daten.IdWp);
-            if (!string.IsNullOrEmpty(grund)) return grund;
-        }
+        if (daten.Kuehlbetrieb && KuehlbetriebSperrgrund(daten, gaben) is string grund) return grund;
         return null;
     }
 }

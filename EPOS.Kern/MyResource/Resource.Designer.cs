@@ -36944,6 +36944,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie der Kältestrom bei einem abweichenden Stromträger eingeht: anteilig am Netzbezug (Vorgabe; Eigenstrom aus Photovoltaik und Stromspeicher bleibt gemeinsam) oder über einen eigenen Zähler (ganz mit dem gewählten Stromträger, ohne Eigenstrom). Wählbar nur mit abweichendem Stromträger. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ABRECHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ABRECHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Abrechnungsart wirkt nur mit einem Stromträger des Kältestroms, der vom Stromträger des Projekts abweicht — zuerst einen anderen Stromträger wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bivalenztemperatur in °C — die Außentemperatur, unterhalb derer der zweite Wärmeerzeuger übernimmt; nur bei Alternativ- und Teilparallelbetrieb wirksam. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_ABSCHALTPUNKT_ERL {
@@ -37079,6 +37097,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 und weniger als 100, leer heißt „kein Zuschlag“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_HILFSSTROM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_HILFSSTROM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrachtungszeitraum T in Jahren. Über ihn läuft die Barwertrechnung; Ersatzbeschaffungen und Restwerte richten sich nach ihm. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_JAHRE_ERL {
@@ -37088,11 +37115,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Wärmepumpe deckt auch Kältebedarf. Nur mit Kühlkennlinie im Projekt und ohne Quellspeicher — sonst ist der Schalter gesperrt und nennt den Grund; wirksam erst mit dem Projektschalter „Kühlung rechnen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHLBETRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHLBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlleistung des Geräts in kW; Kommazahlen sind zulässig, leer heißt „nicht gepflegt“. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_KUEHLLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_KUEHLLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromträger des Kältestroms; leer heißt „wie Heizbetrieb“. Ein anderer Stromträger des Projekts bepreist und bewertet den Kältestrom nach der Abrechnungsart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHLTRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHLTRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb ist in dieser Maske nicht einstellbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kaltwassers in °C, gewählt aus den Stützstellen der Kühlkennlinie; leer heißt „kleinster Stützwert“. Zwischenwerte gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHL_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHL_VORLAUF_ERL", resourceCulture);
             }
         }
         

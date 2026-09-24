@@ -1113,11 +1113,14 @@
         // Welle #458: Angemeldet ist eine SICHTKLASSE - sie reicht Daten unveraendert
         // durch und traegt dazu die Projekteinstellung „Extrapolation der WP-Kennlinie
         // erlauben", die nicht am Feldsatz haengt (Muster PhotovoltaikKiSicht, KI-F7).
+        // Stufe KU2 Welle 3: Die Sichtklasse traegt auch die Kuehlgaben - mit ihnen loest sie
+        // die drei Wahlfelder des Kuehlbetriebs auf und lehnt ab, was die Maske weich sperrt.
         _kiSicht = new WaermepumpeAnlageKiSicht
         {
             Datenquelle = () => Daten,
             ExtrapolationLesen = () => _extrapolation,
-            ExtrapolationSetzen = KiExtrapolationSetzen
+            ExtrapolationSetzen = KiExtrapolationSetzen,
+            Kuehlgaben = () => Kuehlung
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
                                           () => _kiSicht, KiHaken(),

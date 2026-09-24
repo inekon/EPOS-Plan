@@ -451,6 +451,19 @@
         internal static string WpaExtrapolationName => MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
         internal static string WpaExtrapolationErl => MyResource.Resource.KI_DLG_WPA_EXTRAPOLATION_ERL;
 
+        // Stufe KU2 Welle 3: die Gruppe „Kuehlbetrieb" der Konfiguration - die Namen sind die
+        // Beschriftungen der Maske (WPK_*), die Erlaeuterungen eigene Saetze.
+        internal static string WpaKuehlbetriebName => MyResource.Resource.WPK_CHK_KUEHLBETRIEB;
+        internal static string WpaKuehlbetriebErl => MyResource.Resource.KI_DLG_WPA_KUEHLBETRIEB_ERL;
+        internal static string WpaKuehlVorlaufName => MyResource.Resource.WPK_LBL_KUEHL_VORLAUF;
+        internal static string WpaKuehlVorlaufErl => MyResource.Resource.KI_DLG_WPA_KUEHL_VORLAUF_ERL;
+        internal static string WpaHilfsstromName => MyResource.Resource.WPK_LBL_HILFSSTROM;
+        internal static string WpaHilfsstromErl => MyResource.Resource.KI_DLG_WPA_HILFSSTROM_ERL;
+        internal static string WpaKuehltraegerName => MyResource.Resource.WPK_LBL_KUEHLTRAEGER;
+        internal static string WpaKuehltraegerErl => MyResource.Resource.KI_DLG_WPA_KUEHLTRAEGER_ERL;
+        internal static string WpaAbrechnungName => MyResource.Resource.WPK_LBL_ABRECHNUNG;
+        internal static string WpaAbrechnungErl => MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;

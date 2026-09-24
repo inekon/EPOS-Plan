@@ -26805,4 +26805,25 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WIRT_VERLAUF_GESPERRT" xml:space="preserve">
     <value>The trend is being calculated, or the page is locked — period and ticks are open again only afterwards.</value>
   </data>
+  <data name="KI_DLG_WPA_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>On = the heat pump also covers cooling demand. Only with a cooling characteristic in the project and without a source storage — otherwise the switch is locked and names the reason; effective only with the project switch “Calculate cooling”.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_VORLAUF_ERL" xml:space="preserve">
+    <value>The chilled water supply temperature in °C, chosen from the support points of the cooling characteristic; empty means “lowest support point”. There are no intermediate values.</value>
+  </data>
+  <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Power for pumps and fans of the cooling circuit as a percentage of the compressor work; at least 0 and less than 100, empty means “no surcharge”.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
+    <value>The electricity carrier of the cooling electricity; empty means “as in heating mode”. Another electricity carrier of the project prices and rates the cooling electricity according to the billing option.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_ERL" xml:space="preserve">
+    <value>How the cooling electricity is counted with a different electricity carrier: as a share of the grid import (default; self-generated power from photovoltaics and battery storage remains shared) or via a separate meter (entirely at the chosen carrier, without self-generated power). Selectable only with a different carrier.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER" xml:space="preserve">
+    <value>The billing option only applies with a cooling electricity carrier that differs from the project's carrier — choose a different carrier first.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
+    <value>Cooling mode cannot be set in this form.</value>
+  </data>
 </root>
