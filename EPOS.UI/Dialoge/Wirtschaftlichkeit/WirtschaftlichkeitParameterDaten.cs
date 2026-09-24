@@ -81,6 +81,19 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string SzHerkunftGepflegt { get; } = T("WPAR_SZ_HERKUNFT_GEPFLEGT",
         "{0}: gepflegte Werte — {1}");
 
+    // ------------------------------------------------ Risiko (E15, V-G7)
+    // DIN EN 17463, 6.5: das Risiko als Zinszuschlag ODER als Zahlungsstromabzug
+    // R_loss x p_loss je Periode ab Jahr 1 (Anhang F). Vorgabe aus.
+    /// <summary>ETAPPE E15: der Titel der Gruppe „Risiko".</summary>
+    public string GRisiko { get; } = T("WPAR_G_RISIKO", "Risiko (DIN EN 17463, 6.5)");
+    public string RisikoArt { get; } = T("WPAR_RISIKO_ART", "Art der Risikoberücksichtigung:");
+    public string RisikoAus { get; } = T("WPAR_RISIKO_AUS", "aus — kein Risiko angesetzt");
+    public string RisikoZins { get; } = T("WPAR_RISIKO_ZINS", "Zinszuschlag");
+    public string RisikoAbzug { get; } = T("WPAR_RISIKO_ABZUG", "Zahlungsstromabzug R_loss × p_loss (Anhang F)");
+    public string RisikoZuschlag { get; } = T("WPAR_RISIKO_ZUSCHLAG", "Zinszuschlag [%-Punkte]:");
+    public string RisikoVerlust { get; } = T("WPAR_RISIKO_VERLUST", "Rückflusseinbuße R_loss [€ je Periode]:");
+    public string RisikoP { get; } = T("WPAR_RISIKO_P", "Eintrittswahrscheinlichkeit p_loss [%]:");
+
     // -------------------------------------------- Bewertung (DIN EN 17463)
     // AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die vier Schluessel
     // WPAR_G_BEWERTUNG, WPAR_NICHT_MONETAER, WPAR_NICHT_MONETAER_PLATZ und
@@ -198,6 +211,15 @@ public static class WirtParameterWahlen
         new Steuerwahl(1, DbWerte.EMISSIONSMETHODE_STROMGUTSCHRIFT, t.MethodeGutschrift),
         new Steuerwahl(2, DbWerte.EMISSIONSMETHODE_OHNE_GUTSCHRIFT, t.MethodeOhne),
         new Steuerwahl(3, DbWerte.EMISSIONSMETHODE_SUBSTITUTION,    t.MethodeSubstitution)
+    };
+
+    /// <summary>ETAPPE E15 (V‑G7): die Art der Risikoberücksichtigung — „aus" (leerer
+    /// Steuerwert, gespeichert als NULL), Zinszuschlag, Zahlungsstromabzug.</summary>
+    public static IReadOnlyList<Steuerwahl> Risiko(WirtschaftlichkeitParameterTexte t) => new[]
+    {
+        new Steuerwahl(0, "",                 t.RisikoAus),
+        new Steuerwahl(1, Risikoart.ZINS,     t.RisikoZins),
+        new Steuerwahl(2, Risikoart.ABZUG,    t.RisikoAbzug)
     };
 
     /// <summary>Biomasse-Konvention (L13).</summary>

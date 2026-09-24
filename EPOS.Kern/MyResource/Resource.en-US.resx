@@ -6597,7 +6597,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Discount rate i</value>
   </data>
   <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
-    <value>Evaluation period T [a]</value>
+    <value>Evaluation period T_s per scenario [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
     <value>Price change energy p_E (per year)</value>
@@ -6618,7 +6618,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Service life — change against Expected [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
-    <value>The formulas on this sheet use the column “Expected” (names Zins_i, Zeitraum_T, p_E, p_B, p_I): the discount rate and the price changes can be edited there, and the multi-year table and the key figures of the scenario “Expected” follow. The year rows are fixed — a different evaluation period requires a new report. The columns “Favourable” and “Unfavourable” state the assumptions of their runs; their key figures remain values.</value>
+    <value>The formulas on this sheet use the column of their scenario: “Expected” the names Zins_i, Zeitraum_T, p_E, p_B, p_I, “Favourable” and “Unfavourable” the same names with the suffix _Guenstig or _Unguenstig. The discount rate and the price changes can be edited there, and the multi-year tables, key figures and range of the scenario follow. The year rows are fixed and run to the longest evaluation period of the three scenarios; years after a scenario’s period stay empty — a longer evaluation period requires a new report.</value>
   </data>
   <data name="WIRT_FM_GRENZE" xml:space="preserve">
     <value>The workbook recalculates the evaluation of fixed annual quantities — any change to plant size, demand or operation requires a new hourly simulation that no cell formula provides. The legal logic and the evidence that make the figures valid cannot be represented. Whatever is changed in the workbook never returns to the project: it is traceable evidence, not a second input interface.</value>
@@ -6646,6 +6646,21 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
     <value>Rate</value>
+  </data>
+  <data name="WIRT_FM_MJ_SZENARIO_TITEL" xml:space="preserve">
+    <value>Multi-year overview of cash flows — scenario “{0}” (T = {1} a)</value>
+  </data>
+  <data name="WIRT_FM_MJ_VORZEICHEN" xml:space="preserve">
+    <value>Sign of nominal Δ (|Δ| ≤ 1E-6 € does not count)</value>
+  </data>
+  <data name="WIRT_FM_MJ_WECHSEL" xml:space="preserve">
+    <value>Sign changes up to here</value>
+  </data>
+  <data name="WIRT_FM_IZF_NICHT_EINDEUTIG" xml:space="preserve">
+    <value>not unique — the difference series changes sign more than once (Annex C)</value>
+  </data>
+  <data name="WIRT_FM_MJ_SZENARIO_HINWEIS" xml:space="preserve">
+    <value>Nominal payments per year in the scenario “{0}”, in €: the input values come from the run of this scenario, the formulas use its column in the parameter block (names with the suffix {1}). Years after T = {2} a carry no payment; their formulas stay empty.</value>
   </data>
   <data name="WIRT_AE_TITEL" xml:space="preserve">
     <value>Checklist for the evaluation report (DIN EN 17463, Annex E)</value>
@@ -6894,7 +6909,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Word report: chapters “Economic evaluation” and “Annex” · Workbook: formula workbook (parameter block, multi-year tables, key figures)</value>
   </data>
   <data name="WIRT_AE_11_STAND" xml:space="preserve">
-    <value>declarations in the report; the workbook calculates with visible formulas on the parameter block.</value>
+    <value>declarations in the report; the workbook calculates all three scenarios with formulas — visible formulas on their column in the parameter block.</value>
   </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>
@@ -28701,6 +28716,81 @@ Do you want to allow this?</value>
   <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
     <value>Device data — not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
+  <data name="SIMENG_AK_UEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>The heat emitter type “{0}” is unknown; known types are radiator, panel heating and convector. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_WERT_AUSSERHALB" xml:space="preserve">
+    <value>{0} = {1} is outside the permitted range {2} … {3}. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_VORLAUF_UNTER_RAUM" xml:space="preserve">
+    <value>The design flow temperature {0} °C is not above the design room temperature {1} °C — the heat emitter would not deliver any heat. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_RUECKLAUF_AUSSERHALB" xml:space="preserve">
+    <value>The design return temperature {0} °C does not lie between the design room temperature {1} °C and the design flow temperature {2} °C. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM" xml:space="preserve">
+    <value>The design outdoor temperature {0} °C is not below the design room temperature {1} °C; the heating curve has no design point. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>The derived design heat load is not greater than zero ({0} W at {1} °C outdoors and {2} °C indoors); the nominal output of the heat emitter cannot be derived. Please enter a nominal output.</value>
+  </data>
+  <data name="SIMENG_AK_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>The nominal output of the heat emitter {0} kW is not greater than zero. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SKALIERUNG_UNGUELTIG" xml:space="preserve">
+    <value>The entered nominal output of the heat emitter cannot be converted to the catalogue building: the scaling factor {0} cannot be determined (area or consumption missing).</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_WERTZAHL" xml:space="preserve">
+    <value>The set point schedule has {0} values instead of {1} — no padding, no truncation. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_KEINE_ZAHL" xml:space="preserve">
+    <value>The set point schedule contains no number at position {0} (decimal point, separator “;”). The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_WERT" xml:space="preserve">
+    <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} … {3} °C. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_KALENDER" xml:space="preserve">
+    <value>The weekend days of the run do not form a weekly calendar; the set point schedule cannot be assigned to weekdays. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>System coupling: {0} — heat emission is switched on, but the project is calculated without system coupling. The inputs take effect once the level is set; the calculation uses ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_ALTWEG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>System coupling: {0} — the daily balance (legacy method) does not calculate system coupling; the heat emission inputs take effect once the building is calculated to VDI 6007.</value>
+  </data>
+  <data name="SIMENG_AK_UEBERGABEART_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — heat emission is switched on, but the heat emitter type is “ideal” or empty; the calculation uses ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
+    <value>System coupling: the project is set to level {0}; level AK1 is implemented — the heating circuit is calculated as a boundary condition (AK1).</value>
+  </data>
+  <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>System coupling: {0} — the heat emitter is insufficient in {1} hours; the room temperature there is up to {2} K below the set point.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
+    <value>System coupling: panel heating without screed mass — the mass of the heating surface is not calculated, so the calculated heat-up time is too short.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
+    <value>System coupling: {0} — the cooling side of system coupling is not implemented yet; cooling of this building is still calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — the heating curve is off and no plant of the heating channel has a flow temperature; the fixed flow temperature is the design flow temperature {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_NENNLEISTUNG_NICHT_PROPORTIONAL" xml:space="preserve">
+    <value>System coupling: {0} — the nominal output of the heat emitter is entered as a fixed value; with coupling the back-calculation from consumption is no longer proportional. The calculated annual heat demand deviates by {1} % from the stated consumption.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_KENNLINIENWAHL" xml:space="preserve">
+    <value>{0}: characteristic curve chosen per hour at the calculated flow temperature of the heating circuit — hours per support point: {1}.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit was above the highest support point {2} °C of the characteristic curves in {1} hours (calculated up to {3} °C); the highest curve was used — the performance factor of these hours therefore tends to be too high (extrapolation permitted).</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit {1} °C lies above the highest support point {2} °C of the characteristic curves, and extrapolation is not permitted in the project settings. The run stops.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit was below the lowest support point {2} °C of the characteristic curves in {1} hours (calculated down to {3} °C); the lowest curve was used — the performance factor of these hours therefore tends to be too low.</value>
+  </data>
   <data name="ZPG_KALENDER_WOHNEN" xml:space="preserve">
     <value>Residential</value>
   </data>
@@ -30113,6 +30203,93 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Twelve monthly factors January to December; normalised to the mean 1 when saving.</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ZINS" xml:space="preserve">
+    <value>interest surcharge {0} percentage points</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ABZUG" xml:space="preserve">
+    <value>deduction R_loss × p_loss = €{0} × {1} % = €{2} per period from year 1</value>
+  </data>
+  <data name="WIRT_RISIKO_NACHWEIS" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5): {0}</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_AUS" xml:space="preserve">
+    <value>No risk applied (default) — the calculation uses the discount rate and the payments as they are.</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ZINS" xml:space="preserve">
+    <value>All three scenarios use the discount rate plus surcharge: {0} % + {1} percentage points = {2} % in the expected case (net present value, annuity, payback, internal rate of return).</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ABZUG" xml:space="preserve">
+    <value>Deduction per period from year 1: €{0} × {1} % = €{2} — not in year 0, not on the residual value; in all three scenarios for every version except the reference (if the group has only one version, it carries the deduction).</value>
+  </data>
+  <data name="WIRT_ANN_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects named</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects: none named</value>
+  </data>
+  <data name="WIRT_MJ_RISIKO" xml:space="preserve">
+    <value>Risk deduction</value>
+  </data>
+  <data name="WIRT_GL_RISIKO" xml:space="preserve">
+    <value>Risk deduction (Annex F)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Risk surcharge on the rate (6.5)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS_RISIKO" xml:space="preserve">
+    <value>Discount rate including risk surcharge</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ABZUG" xml:space="preserve">
+    <value>Risk deduction per period from year 1 [€]</value>
+  </data>
+  <data name="WPAR_G_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WPAR_RISIKO_ART" xml:space="preserve">
+    <value>Risk treatment:</value>
+  </data>
+  <data name="WPAR_RISIKO_AUS" xml:space="preserve">
+    <value>off — no risk applied</value>
+  </data>
+  <data name="WPAR_RISIKO_ZINS" xml:space="preserve">
+    <value>Interest surcharge</value>
+  </data>
+  <data name="WPAR_RISIKO_ABZUG" xml:space="preserve">
+    <value>Cash-flow deduction R_loss × p_loss (Annex F)</value>
+  </data>
+  <data name="WPAR_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Interest surcharge [percentage points]:</value>
+  </data>
+  <data name="WPAR_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]:</value>
+  </data>
+  <data name="WPAR_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss [%]:</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ART_ERL" xml:space="preserve">
+    <value>Risk treatment per EN 17463 (6.5): empty = off (default), ZINS = surcharge on the discount rate, ABZUG = cash-flow deduction R_loss × p_loss per period from year 1.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Surcharge in percentage points on the discount rate of all three scenarios; applies only with type ZINS.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_VERLUST_ERL" xml:space="preserve">
+    <value>Quantified loss of return R_loss in euros per period; applies only with type ABZUG.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_P_ERL" xml:space="preserve">
+    <value>Probability of occurrence p_loss in percent; the deduction per period is R_loss × p_loss / 100, only with type ABZUG.</value>
+  </data>
+  <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
+    <value>three price change rates (energy, operation, investment/replacement); risk applied: {0}; no degradation — declared.</value>
   </data>
   <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
     <value>Energy flow</value>

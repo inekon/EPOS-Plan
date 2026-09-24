@@ -530,7 +530,7 @@ public sealed class WirtschaftlichkeitStand
     ///
     /// <para><b>ETAPPE E17 (V‑G11): das ALTFELD.</b> Die Wirkungen stehen seither als Liste
     /// (<see cref="Wirkungen"/>); der Freitext bleibt lesbar und wird auf der Seite nur noch
-    /// gekennzeichnet angezeigt („Altfeld"), nicht mehr geschrieben. Schemaschritt 126 hat
+    /// gekennzeichnet angezeigt („Altfeld"), nicht mehr geschrieben. Schemaschritt 127 hat
     /// ihn als eine Wirkung der Kategorie „sonstig" in die Liste übernommen.</para>
     /// </summary>
     public string NichtMonetaer { get; set; } = "";

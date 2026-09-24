@@ -134,7 +134,8 @@ namespace EPOS.Kern.Tests
         /// p_E 2 %, p_B 1,5 %, p_I 2,5 %); der erste Stand ist der Stamm, die übrigen heißen
         /// „Variante A", „Variante B".
         /// </summary>
-        private static BerichtsDaten GruppeMitSaetzen(int[] ids, double[] energie)
+        private static BerichtsDaten GruppeMitSaetzen(int[] ids, double[] energie,
+                                                      int? zeitraumGuenstig = null, int? zeitraumUnguenstig = null)
         {
             var ctrl = new WirtschaftlichkeitCtrl();
             WirtschaftlichkeitParameter p = ctrl.LadeParameter(ids[0]);
@@ -144,6 +145,9 @@ namespace EPOS.Kern.Tests
             p.PreissteigerungEnergie = 2.0;
             p.PreissteigerungBetrieb = 1.5;
             p.PreissteigerungInvestition = 2.5;
+            // ETAPPE E14: auf Wunsch ein eigener Betrachtungszeitraum je Szenario (E9a, Schritt B).
+            if (zeitraumGuenstig.HasValue) p.SatzBest.Zeitraum = zeitraumGuenstig;
+            if (zeitraumUnguenstig.HasValue) p.SatzWorst.Zeitraum = zeitraumUnguenstig;
             Assert.True(ctrl.SpeichereParameter(p), "Der Parametersatz der Prüfgruppe wurde nicht gespeichert.");
             p = ctrl.LadeParameter(ids[0]);
 
@@ -324,6 +328,24 @@ namespace EPOS.Kern.Tests
                 Zeile(w, P + 129, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
                              w.Cell(P + 151, 1).GetString());
+
+                // ETAPPE E14 (E14‑Q1 a): unter den Tabellen des Erwartungsfalls dieselben
+                // Tabellen für Günstig und Ungünstig — je ein Titel mit T_s und ein Hinweis,
+                // dann je Stand Name, Kopf, Jahre 0…T, Abschluss- und Probezeile. Alles bis
+                // P + 151 bleibt, wo es war.
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, "Günstig", 20), w.Cell(P + 154, 1).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_HINWEIS, "Günstig", "_Guenstig", 20),
+                             w.Cell(P + 155, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(P + 157, 1).GetString());
+                Zeile(w, P + 158, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 180, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(P + 183, 1).GetString());
+                Zeile(w, P + 184, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 206, 1).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, "Ungünstig", 20), w.Cell(P + 209, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(P + 212, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(P + 238, 1).GetString());
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 261, 1).GetString());
 
                 // ---- Verlauf (ETAPPE E6, U13) ---------------------------------
                 // Je Jahr eine Zeile, je Variante und Szenario eine Spalte in der
@@ -655,8 +677,19 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("PMT(Zins_i,Zeitraum_T,-C" + diff + ")", w.Cell(ann, 3).FormulaA1);
                 Assert.StartsWith("IF(I" + j0 + ">=0,IF(I" + jT + ">=0,0,", w.Cell(amo, 3).FormulaA1);
                 Assert.Contains("MIN(J" + (j0 + 1) + ":J" + jT + ")", w.Cell(amo, 3).FormulaA1);
-                Assert.StartsWith("IF(AND(COUNTIF(G" + j0 + ":G" + jT + ",\">1E-6\")>0,COUNTIF(G" + j0 + ":G" + jT +
-                                  ",\"<-1E-6\")>0),ROUND(IRR(G" + j0 + ":G" + jT + ",", w.Cell(irr, 3).FormulaA1);
+                // ETAPPE E14 (E14‑Q3 a): Die Zahl der Vorzeichenwechsel steht in der Hilfsspalte L
+                // (Vorzeichen in K, über Nullwerte fortgeschrieben); der Zinsfuß liest ihren Endstand.
+                Assert.Equal(R.WIRT_FM_MJ_VORZEICHEN, w.Cell(kopf, 11).GetString());
+                Assert.Equal(R.WIRT_FM_MJ_WECHSEL, w.Cell(kopf, 12).GetString());
+                Assert.Equal("IF(ABS(G" + j0 + ")<=1E-6,0,SIGN(G" + j0 + "))", w.Cell(j0, 11).FormulaA1);
+                Assert.Equal("IF(ABS(G" + (j0 + 1) + ")<=1E-6,K" + j0 + ",SIGN(G" + (j0 + 1) + "))",
+                             w.Cell(j0 + 1, 11).FormulaA1);
+                Assert.Equal("L" + j0 + "+IF(AND(K" + j0 + "<>0,K" + (j0 + 1) + "<>K" + j0 + "),1,0)",
+                             w.Cell(j0 + 1, 12).FormulaA1);
+                Assert.Equal(1.0, w.Cell(jT, 12).GetDouble(), 6);
+                Assert.StartsWith("IF(L" + jT + "=0,\"" + R.WIRT_IZF_KEIN_WERT + "\",IF(L" + jT + ">1,\"" +
+                                  R.WIRT_FM_IZF_NICHT_EINDEUTIG + "\",ROUND(IRR(G" + j0 + ":G" + jT + ",",
+                                  w.Cell(irr, 3).FormulaA1);
 
                 // Die Zahlen sind die des Rechenlaufs — Zelle für Zelle der Kennzahlen.
                 WirtschaftlichkeitErgebnis a = daten.Wirtschaftlichkeit.First(
@@ -764,6 +797,175 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(75.5 + 1800.0 + 600.0, w.Cell(summe, 5).GetDouble(), 6);
 
                 FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 400);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E14 (Stufen 1 und 2 je Szenario, E14‑Q2 a) — die Kennzahltafeln
+        /// <b>Günstig und Ungünstig rechnen in Formeln</b> auf die Mehrjahrestabellen ihres
+        /// Szenarios, mit den Namen ihrer Spalte im Parameterblock: Nettobarwert über
+        /// <c>NPV(Zins_i_Guenstig; …)</c>, Differenz als Zellbezug, Annuität über
+        /// <c>PMT(Zins_i_Guenstig; Zeitraum_T_Guenstig; …)</c>, Zinsfuß über die
+        /// Wechselspalte; die Bandbreitentafel verweist auf die drei Blöcke, die Spanne ist
+        /// <c>MAX − MIN</c>. Die zwischengespeicherten Zahlen sind die des Rechenkerns
+        /// (Wertfassung = Formelfassung), und ClosedXML rechnet nach, was es kennt.
+        /// </summary>
+        [Fact]
+        public void Excel_E14_Kennzahlen_Guenstig_und_Unguenstig_rechnen_in_Formeln()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = GruppeMitSaetzen(new[] { 1042, 1043, 1044 }, new[] { 15000.0, 11000.0, 9500.0 });
+                string ziel = Path.Combine(ordner, "e14.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                var diffZeile = new Dictionary<string, int>();
+
+                foreach ((string szenario, string anzeige, string anhang) in new[]
+                         {
+                             (WirtschaftlichkeitSzenario.BEST, "Günstig", "_Guenstig"),
+                             (WirtschaftlichkeitSzenario.WORST, "Ungünstig", "_Unguenstig"),
+                         })
+                {
+                    // ---- Stufe 1: die Tabelle des Szenarios ----
+                    int titel = ZeileMitText(w, string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, anzeige, 20));
+                    Assert.True(titel > 0, "Die Mehrjahresübersicht „" + anzeige + "\" fehlt.");
+                    int s = ZeileMitText(w, "Stamm", titel + 1) + 1;
+                    int kopf = ZeileMitText(w, "Variante A", titel + 1) + 1;
+                    Assert.Equal("Jahr", w.Cell(kopf, 1).GetString());
+                    int j0 = kopf + 1, jT = kopf + 21, abschluss = kopf + 22;
+                    // Spalten wie im Erwartungsfall: B Investition/Ersatz, C Energie, D Netto,
+                    // E Barwert, F Kumuliert, rechts die Differenzreihe (G bis L).
+                    Assert.Equal("D" + (j0 + 1) + "*(1+Zins_i" + anhang + ")^(-A" + (j0 + 1) + ")",
+                                 w.Cell(j0 + 1, 5).FormulaA1);
+                    Assert.Equal("D" + abschluss + "*(1+Zins_i" + anhang + ")^(-A" + jT + ")",
+                                 w.Cell(abschluss, 5).FormulaA1);
+
+                    // ---- Stufe 2: der Kennzahlblock des Szenarios ----
+                    int block = ZeileMitText(w, "Szenario: " + anzeige);
+                    Assert.True(block > 0, "Der Block „" + anzeige + "\" fehlt.");
+                    int nbw = ZeileMitText(w, R.WIRT_ZEILE_NETTOBARWERT, block);
+                    int diff = ZeileMitText(w, R.WIRT_ZEILE_KAPITALWERT_DIFF, block);
+                    int ann = ZeileMitText(w, R.WIRT_ZEILE_ANNUITAET, block);
+                    int amo = ZeileMitText(w, R.WIRT_ZEILE_AMORTISATION, block);
+                    int irr = ZeileMitText(w, R.WIRT_ZEILE_IRR, block);
+                    Assert.True(nbw > 0 && diff > 0 && ann > 0 && amo > 0 && irr > 0, "Eine Kennzahlzeile fehlt.");
+                    diffZeile[szenario] = diff;
+
+                    Assert.Equal("NPV(Zins_i" + anhang + ",D" + (j0 + 1) + ":D" + jT + ")+D" + j0 + "+E" + abschluss,
+                                 w.Cell(nbw, 3).FormulaA1);
+                    Assert.Equal("NPV(Zins_i" + anhang + ",D" + (s + 2) + ":D" + (s + 21) + ")+D" + (s + 1) + "+E" + (s + 22),
+                                 w.Cell(nbw, 2).FormulaA1);
+                    Assert.Equal("C" + nbw + "-B" + nbw, w.Cell(diff, 3).FormulaA1);
+                    Assert.Equal("PMT(Zins_i" + anhang + ",Zeitraum_T" + anhang + ",-C" + diff + ")", w.Cell(ann, 3).FormulaA1);
+                    Assert.True(w.Cell(amo, 3).HasFormula, "Die Amortisation " + anzeige + " steht nicht als Formel.");
+                    Assert.StartsWith("IF(L" + jT + "=0,", w.Cell(irr, 3).FormulaA1);
+
+                    // Wertfassung = Formelfassung: die Zahlen des Rechenkerns.
+                    WirtschaftlichkeitErgebnis a = daten.Wirtschaftlichkeit.First(
+                        x => x.IdProjekt == 1043 && x.Szenario == szenario);
+                    Assert.Equal(a.Kapitalwert.Value, w.Cell(nbw, 3).GetDouble(), 6);
+                    Assert.Equal(a.KapitalwertDiff.Value, w.Cell(diff, 3).GetDouble(), 6);
+                    Assert.Equal(a.AnnuitaetKW.Value, w.Cell(ann, 3).GetDouble(), 6);
+                    if (a.IrrVorzeichenwechsel == 1 && a.IRR.HasValue)
+                        Assert.Equal(a.IRR.Value, w.Cell(irr, 3).GetDouble(), 6);
+                    Assert.Equal(w.Cell(nbw, 3).GetDouble(), w.Cell(abschluss, 6).GetDouble(), 6);
+                }
+
+                // ---- Bandbreite: Zellbezüge auf die drei Blöcke, Spanne als MAX − MIN ----
+                int erwartetBlock = ZeileMitText(w, "Szenario: Erwartet");
+                diffZeile[WirtschaftlichkeitSzenario.ERWARTET] =
+                    ZeileMitText(w, R.WIRT_ZEILE_KAPITALWERT_DIFF, erwartetBlock);
+                int band = ZeileMitText(w, R.WIRT_SZ_BANDBREITE_TITEL);
+                int zeileA = ZeileMitText(w, "Variante A", band + 1);
+                Assert.Equal("C" + diffZeile[WirtschaftlichkeitSzenario.WORST], w.Cell(zeileA, 2).FormulaA1);
+                Assert.Equal("C" + diffZeile[WirtschaftlichkeitSzenario.ERWARTET], w.Cell(zeileA, 3).FormulaA1);
+                Assert.Equal("C" + diffZeile[WirtschaftlichkeitSzenario.BEST], w.Cell(zeileA, 4).FormulaA1);
+                Assert.Equal("MAX(B" + zeileA + ":D" + zeileA + ")-MIN(B" + zeileA + ":D" + zeileA + ")",
+                             w.Cell(zeileA, 5).FormulaA1);
+
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 1000);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E14 (E14‑Q1 a) — der <b>Zeitraum je Szenario</b> in der Formelmappe: Günstig
+        /// 25 a, Erwartet 20 a, Ungünstig 15 a. Jede Tabelle hat Jahreszeilen bis 25; jenseits
+        /// von T_s tragen Netto, Barwert und Kumuliert die Schutzformel
+        /// <c>IF(Jahr&lt;=Zeitraum_T_s;…;"")</c> mit leerem Ergebnis, der Restwert steht am Ende
+        /// von T_s, Nettobarwert und Annuität rechnen über T_s — und treffen den Rechenkern.
+        /// </summary>
+        [Fact]
+        public void Excel_E14_Zeitraum_je_Szenario_mit_Schutzformel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = GruppeMitSaetzen(new[] { 1042, 1043, 1044 }, new[] { 15000.0, 11000.0, 9500.0 },
+                                                       zeitraumGuenstig: 25, zeitraumUnguenstig: 15);
+                string ziel = Path.Combine(ordner, "e14_zeitraum.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+
+                // Der Parameterblock nennt T_s je Szenario.
+                SatzZeile(w, 5, R.WIRT_FM_PARAM_ZEITRAUM, "Zeitraum_T", 20, 25, 15);
+
+                // Erwartet (T = 20): Zeilen bis 25, ab 21 die Schutzformel.
+                int kopf = TabellenKopf(w, "Variante A");
+                int j0 = kopf + 1;
+                Assert.Equal(25.0, w.Cell(j0 + 25, 1).GetDouble());
+                // Spalten: B Investition/Ersatz, C Energie, D Netto, E Barwert, F Kumuliert.
+                Assert.Equal("IF(A" + (j0 + 21) + "<=Zeitraum_T,SUM(B" + (j0 + 21) + ":C" + (j0 + 21) + "),\"\")",
+                             w.Cell(j0 + 21, 4).FormulaA1);
+                Assert.Equal("", w.Cell(j0 + 21, 4).GetString());
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(j0 + 26, 1).GetString());
+                Assert.Equal("D" + (j0 + 26) + "*(1+Zins_i)^(-A" + (j0 + 20) + ")", w.Cell(j0 + 26, 5).FormulaA1);
+
+                foreach ((string szenario, string anzeige, string anhang, int ts) in new[]
+                         {
+                             (WirtschaftlichkeitSzenario.BEST, "Günstig", "_Guenstig", 25),
+                             (WirtschaftlichkeitSzenario.WORST, "Ungünstig", "_Unguenstig", 15),
+                         })
+                {
+                    int titel = ZeileMitText(w, string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, anzeige, ts));
+                    Assert.True(titel > 0, "Die Mehrjahresübersicht „" + anzeige + "\" fehlt.");
+                    int k = ZeileMitText(w, "Variante A", titel + 1) + 1;
+                    int a0 = k + 1, abschluss = k + 27;
+                    Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(abschluss, 1).GetString());
+                    Assert.Equal("D" + abschluss + "*(1+Zins_i" + anhang + ")^(-A" + (a0 + ts) + ")",
+                                 w.Cell(abschluss, 5).FormulaA1);
+                    for (int t = ts + 1; t <= 25; t++)
+                    {
+                        Assert.StartsWith("IF(A" + (a0 + t) + "<=Zeitraum_T" + anhang + ",", w.Cell(a0 + t, 6).FormulaA1);
+                        Assert.Equal("", w.Cell(a0 + t, 6).GetString());
+                    }
+
+                    int block = ZeileMitText(w, "Szenario: " + anzeige);
+                    int nbw = ZeileMitText(w, R.WIRT_ZEILE_NETTOBARWERT, block);
+                    int ann = ZeileMitText(w, R.WIRT_ZEILE_ANNUITAET, block);
+                    WirtschaftlichkeitErgebnis e = daten.Wirtschaftlichkeit.First(
+                        x => x.IdProjekt == 1043 && x.Szenario == szenario);
+                    Assert.Equal("NPV(Zins_i" + anhang + ",D" + (a0 + 1) + ":D" + (a0 + ts) + ")+D" + a0 + "+E" + abschluss,
+                                 w.Cell(nbw, 3).FormulaA1);
+                    Assert.Equal(e.Kapitalwert.Value, w.Cell(nbw, 3).GetDouble(), 6);
+                    Assert.Equal(e.AnnuitaetKW.Value, w.Cell(ann, 3).GetDouble(), 6);
+                    Assert.Equal(w.Cell(nbw, 3).GetDouble(), w.Cell(abschluss, 6).GetDouble(), 6);
+                }
+
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 1000);
             }
             finally { Aufraeumen(ordner); }
         }

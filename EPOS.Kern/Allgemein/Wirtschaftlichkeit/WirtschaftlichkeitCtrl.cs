@@ -392,6 +392,13 @@ namespace WindowsFormsApplication1
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "\" REAL, " +
+                                  // ETAPPE E15 (V-G7, Schemaschritt 125): das Risikomodul -
+                                  // dieselbe Begruendung; leer heisst "kein Risiko".
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ART + "\" " +
+                                  StilleDb.SqliteSpaltenTyp(SchemaKatalog.SPALTE_PW_RISIKO_ART, "TEXT(10)") + ", " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_VERLUST + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT + "\" REAL, " +
                                   "\"GeaendertAm\" TEXT)");
                         Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
@@ -614,6 +621,13 @@ namespace WindowsFormsApplication1
                     // Rechenweg, und die Vorsorge gehoert zum Leser. KEINE
                     // Werte-Vorbelegung: leer heisst "wie Erwartet".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E15 (V-G7) - das Risikomodul. Regulaer entstehen die vier
+                    // Spalten ueber Schemaschritt 125; das hier ist die tolerante VORSORGE
+                    // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls).
+                    // KEINE Werte-Vorbelegung: leer heisst "kein Risiko angesetzt".
+                    foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
@@ -911,6 +925,14 @@ namespace WindowsFormsApplication1
                     p.PreissteigerungInvestition = D(r, SchemaKatalog.SPALTE_PW_PREIS_I);
                     p.NichtMonetaer = Text(r, SchemaKatalog.SPALTE_PW_NICHT_MONETAER);
 
+                    // ETAPPE E15 (V-G7, Schritt 125) - das Risikomodul. Vorgabe AUS: Eine
+                    // leere, fehlende oder unbekannte Art heisst "kein Risiko" (normiert beim
+                    // Lesen); die drei Zahlen bleiben nullbar, ohne "?? 0".
+                    p.RisikoArt = Risikoart.Normiert(Text(r, SchemaKatalog.SPALTE_PW_RISIKO_ART));
+                    p.RisikoZinszuschlag = D(r, SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG);
+                    p.RisikoVerlust = D(r, SchemaKatalog.SPALTE_PW_RISIKO_VERLUST);
+                    p.RisikoWahrscheinlichkeit = D(r, SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT);
+
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
             }
@@ -998,6 +1020,17 @@ namespace WindowsFormsApplication1
         {
             return new DbParam("@szg", DbParamTyp.Integer)
             { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
+        }
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7): die Art des Risikos als Parameter — normiert
+        /// (<see cref="Risikoart.Normiert"/>); „kein Risiko" geht LEER in die Datenbank.
+        /// </summary>
+        private static DbParam RisikoArtParam(string art)
+        {
+            string n = Risikoart.Normiert(art);
+            return new DbParam("@risiko", DbParamTyp.VarWChar, 10)
+            { Wert = n != null ? (object)n : DBNull.Value };
         }
 
         /// <summary>
@@ -1220,6 +1253,11 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "] = ?, " +
+                    // ETAPPE E15 - das Risikomodul (Schritt 125), Reihenfolge wie in SchemaKatalog.
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_ART + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_VERLUST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new DbParam("@z", p.Zinssatz),
                     new DbParam("@t", p.Betrachtungszeitraum),
@@ -1301,6 +1339,12 @@ namespace WindowsFormsApplication1
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Einspeiseverguetung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).EinspeiseverguetungKwk),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).EinspeiseverguetungKwk),
+                    // ETAPPE E15: dieselbe Nullregel - "nicht gepflegt" geht LEER in die
+                    // Datenbank, und eine leere Art heisst "kein Risiko".
+                    RisikoArtParam(p.RisikoArt),
+                    SzenParam(p.RisikoZinszuschlag),
+                    SzenParam(p.RisikoVerlust),
+                    SzenParam(p.RisikoWahrscheinlichkeit),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -1360,9 +1404,14 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "], " +
+                    // ETAPPE E15 - Schritt 125, Reihenfolge wie im UPDATE.
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_ART + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_VERLUST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1440,6 +1489,11 @@ namespace WindowsFormsApplication1
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Einspeiseverguetung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).EinspeiseverguetungKwk),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).EinspeiseverguetungKwk),
+                    // ETAPPE E15 - Reihenfolge wie im UPDATE darueber.
+                    RisikoArtParam(p.RisikoArt),
+                    SzenParam(p.RisikoZinszuschlag),
+                    SzenParam(p.RisikoVerlust),
+                    SzenParam(p.RisikoWahrscheinlichkeit),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch (Exception ex)
@@ -1878,6 +1932,10 @@ namespace WindowsFormsApplication1
                     // Ohne Pflege (und immer für ERWARTET) dieselbe Referenz wie v.
                     VariantenDaten vs = Szenariodaten(v, ps, szenario);
                     ProjektEingabe eingabe = BaueEingabe(vs, ps, tarif, szenario);
+                    // ETAPPE E15 (V‑G7): der Risikoabzug je Periode — für jeden Stand außer der
+                    // Referenz dieses Laufs (RisikoModul.AbzugFuerStand, die eine Regel).
+                    eingabe.Risikoabzug = RisikoModul.AbzugFuerStand(ps, wahl.IstReferenz(v.IdProjekt),
+                                                                     daten.Varianten.Count);
                     // Die gespeicherte Strommatrix bleibt die des ERWARTUNGSfalls: Er wird
                     // zuerst gerechnet, und nur die erste Matrix je Projekt wird gemerkt.
                     if (eingabe.Matrix != null && !matrizen.ContainsKey(v.IdProjekt))
@@ -2043,6 +2101,9 @@ namespace WindowsFormsApplication1
                 // sonst zeigte die Linie eines Szenarios eine andere Zahl als seine Kennzahl.
                 VariantenDaten vs = Szenariodaten(v, ph, verlauf.Szenario);
                 ProjektEingabe eingabe = BaueEingabe(vs, ph, tarif, verlauf.Szenario);
+                // ETAPPE E15 (V‑G7): derselbe Risikoabzug wie im Hauptlauf — dieselbe Regel.
+                eingabe.Risikoabzug = RisikoModul.AbzugFuerStand(ph, wahl.IstReferenz(v.IdProjekt),
+                                                                 daten.Varianten.Count);
                 if (vs.Fehler != null || vs.Ergebnis == null)
                     serie.Fehlgrund = vs.Fehler ?? "Kein Simulationsergebnis vorhanden.";
                 else if (!eingabe.Energie.HasValue)
@@ -2173,6 +2234,13 @@ namespace WindowsFormsApplication1
             /// <summary>ETAPPE K5: Investitionszuschuss [€], positiv (0 = keiner).
             /// Mindert I₀ einmalig; siehe <see cref="LiesInvestitionen(int,string,out double)"/>.</summary>
             public double Zuschuss;
+
+            /// <summary>
+            /// ETAPPE E15 (V‑G7, DIN EN 17463 Anhang F): der Risikoabzug je Periode t ≥ 1 [€/a],
+            /// positiv; 0 = keiner. Gesetzt von Lauf und Verlauf über
+            /// <see cref="RisikoModul.AbzugFuerStand"/> — die Referenz des Laufs trägt ihn nicht.
+            /// </summary>
+            public double Risikoabzug;
 
             public double Betrieb;          // €/a (Kategorie 2, Szenariowert) — Topf p_B
 
@@ -6232,7 +6300,10 @@ namespace WindowsFormsApplication1
                 p.PreissteigerungBetrieb, preisstEnergie,
                 e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
                 betriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr,
-                p.PreisInvestWirksam);
+                p.PreisInvestWirksam,
+                // ETAPPE E15 (V‑G7): der Risikoabzug dieses Standes — 0 ohne Risiko und für die
+                // Referenz des Laufs; dann rechnet der Kern Zeichen für Zeichen wie vorher.
+                e.Risikoabzug);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -6351,6 +6422,9 @@ namespace WindowsFormsApplication1
                 // ausgewiesene Differenz enthielte den Zuschuss statt nur den
                 // weggefallenen KWKG-Bonus.
                 Zuschuss = e.Zuschuss,
+                // E15: der Risikoabzug MUSS mitkopiert werden — dieselbe Begründung wie beim
+                // Zuschuss: Sonst enthielte die ausgewiesene Differenz den Abzug.
+                Risikoabzug = e.Risikoabzug,
                 Betrieb = e.Betrieb,
                 // PAKET FX4-a (Anwenderentscheid 02.09.2026, offener Punkt FX3-2):
                 // Die Betriebskosten mit STARTJAHR ≥ 2 (KD6) fehlten hier seit KD6 —

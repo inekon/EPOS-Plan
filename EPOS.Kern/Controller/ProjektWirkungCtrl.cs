@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// ETAPPE E17 (V‑G11) — Laden und Speichern der <b>nicht monetarisierbaren Wirkungen</b>
-    /// eines Projekts (<c>Tab_ProjektWirkung</c>, Schemaschritt 126). Die Regeln
+    /// eines Projekts (<c>Tab_ProjektWirkung</c>, Schemaschritt 127). Die Regeln
     /// (Beurteilung, Prüfung, Texte) stehen in <see cref="NichtMonetaereWirkungen"/>.
     ///
     /// <para><b>Die Wirkungen hängen am Stammprojekt</b> — wie bis hierher der Freitext:
@@ -44,7 +44,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Wirkungen des Projekts in ihrer Reihenfolge. Ein Lesefehler (etwa eine Datei vor
-        /// Schritt 126) liefert die leere Liste und setzt <see cref="Ladefehler"/>.
+        /// Schritt 127) liefert die leere Liste und setzt <see cref="Ladefehler"/>.
         /// </summary>
         public List<ProjektWirkung> Laden(int idProjekt)
         {

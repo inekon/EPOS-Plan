@@ -630,10 +630,13 @@ namespace WindowsFormsApplication1
             var texte = new List<string>();
             try
             {
-                // ETAPPE E17 (V‑G11): „benannt" heißt seither: mindestens eine Wirkung der
-                // Liste trägt eine Beschreibung — das Altfeld zählt nicht mehr mit.
+                // ETAPPE E15 (V‑G7): mit dem Parametersatz, damit die Risikozeile ein
+                // gepflegtes Risiko nennt. ETAPPE E17 (V‑G11): „benannt" heißt: mindestens
+                // eine Wirkung der Liste trägt eine Beschreibung — das Altfeld zählt nicht mit.
+                WirtschaftlichkeitParameter p = null;
+                try { p = _ctrl.LadeParameter(_idStamm); } catch { p = null; }
                 foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(
-                             NichtMonetaereWirkungen.Kurztext(_wirkungen)))
+                             NichtMonetaereWirkungen.Kurztext(_wirkungen), p))
                     texte.Add(d.Text);
             }
             catch { }

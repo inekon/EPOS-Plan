@@ -1226,6 +1226,9 @@ namespace WindowsFormsApplication1
                 WP_Liste_Laden();
 
                 simulation_wp.Temperatur = Stundentemperatur;
+                // ANLAGENKOPPLUNG (AK1, 6.1): der gerechnete Vorlauf des Heizkreises für die
+                // Kennlinienwahl - null ohne gekoppeltes Gebäude, dann wie im Bestand.
+                simulation_wp.Heizkreisvorlauf = simulation_Waermebedarf?.Heizkreis?.VorlaufC;
                 simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
                 simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
                 // Den Heizstab holt sich das Modul seit dem 16.09.2026 je Anlage selbst

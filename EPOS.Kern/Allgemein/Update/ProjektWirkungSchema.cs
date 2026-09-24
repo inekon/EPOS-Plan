@@ -5,7 +5,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // DIE NICHT MONETARISIERBAREN WIRKUNGEN ALS LISTE JE PROJEKT - Schemaschritt 126
+    // DIE NICHT MONETARISIERBAREN WIRKUNGEN ALS LISTE JE PROJEKT - Schemaschritt 127
     // (Etappe E17, Konzept Wirtschaftlichkeit § 2.11.2 V-G11; Entscheid E17-Q1 a).
     //
     // WOZU. DIN EN 17463 verlangt, die Wirkungen einer Massnahme, die sich nicht in Euro
@@ -44,12 +44,12 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>DDL und Freitextuebernahme der Tabelle <c>Tab_ProjektWirkung</c></b> —
-    /// Schemaschritt 126. Anlass und Regeln stehen im Kopf der Datei.
+    /// Schemaschritt 127. Anlass und Regeln stehen im Kopf der Datei.
     /// </summary>
     public static class ProjektWirkungSchema
     {
-        /// <summary>Die Nummer des Schemaschritts (vorlaeufig, E17; Regel „wer zuerst pusht").</summary>
-        public const int SCHRITT = 126;
+        /// <summary>Die Nummer des Schemaschritts (E17; 126 ist einem parallelen Schritt zugesagt).</summary>
+        public const int SCHRITT = 127;
 
         /// <summary>Die Tabelle, die der Schritt anlegt.</summary>
         public const string TABELLE = "Tab_ProjektWirkung";

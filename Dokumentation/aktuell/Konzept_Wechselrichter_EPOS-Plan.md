@@ -473,7 +473,8 @@ kein Projekt hat eine Strangzeile. Damit ist die Migration selbst ergebnisneutra
 >
 > * **`sql/schema/001_grundschema.sql` bleibt unberührt.** Rev. 1 nennt die Datei in
 >   Stufe S1.1. Sie ist aber der EINGEFRORENE Access-Zielstand 61 („NICHT VON HAND
->   AENDERN — neu erzeugen"), eingebettete Ressource des `EposSqliteMigrator` und über
+>   AENDERN — neu erzeugen"), einst eingebettete Ressource des `EposSqliteMigrator` (Werkzeug
+>   am 13.09.2026 aus dem Repository entfernt) und über
 >   `sql/schema/inventar.json` auf 114 Tabellen gezählt (`sql/tools/baue_leere_db.py`
 >   prüft das). Die Schritte 62, 63 und 64 haben sie aus demselben Grund nicht angefasst.
 >   Der Anwender hat am 06.09.2026 festgehalten, dass die Access-Datenbank nicht mehr

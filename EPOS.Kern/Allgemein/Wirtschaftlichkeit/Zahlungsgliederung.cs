@@ -109,12 +109,48 @@ namespace WindowsFormsApplication1
         /// <summary>Restwert am Ende des Betrachtungszeitraums (Kategorie 1).</summary>
         public const string RESTWERT = "RESTWERT";
 
+        /// <summary>
+        /// ETAPPE E15 (V‑G7, DIN EN 17463 Anhang F): der Risikoabzug je Periode t ≥ 1. Er steht
+        /// NICHT in <see cref="Reihenfolge"/> — nur eine Gliederung, deren Bild einen Abzug
+        /// trägt, führt ihn (<see cref="Schluessel"/>); ohne Risiko bleibt jede Tafel und jedes
+        /// Bild Zeile für Zeile das von vorher.
+        /// </summary>
+        public const string RISIKO = "RISIKO";
+
         /// <summary>Die Bestandteile in der Reihenfolge der Seite, des Brückenbilds und der
         /// Zahlungsreihen.</summary>
         public static readonly IReadOnlyList<string> Reihenfolge = new[]
         {
             INVESTITION, BETRIEB, ENERGIE, ERLOESE, ERSATZ, RESTWERT
         };
+
+        /// <summary>
+        /// ETAPPE E15 — die Schlüssel DIESER Gliederung: <see cref="Reihenfolge"/>, mit einem
+        /// Risikoabzug zusätzlich <see cref="RISIKO"/> vor dem Restwert.
+        /// </summary>
+        public IReadOnlyList<string> Schluessel
+        {
+            get { return MitRisiko(Bestandteil(RISIKO) != null); }
+        }
+
+        /// <summary>
+        /// ETAPPE E15 — die gemeinsamen Schlüssel mehrerer Gliederungen (Tafel mit einer
+        /// Spalte je Stand): <see cref="RISIKO"/> steht dabei, sobald EINE Gliederung ihn führt.
+        /// </summary>
+        public static IReadOnlyList<string> SchluesselVon(IEnumerable<Zahlungsgliederung> gliederungen)
+        {
+            bool risiko = false;
+            if (gliederungen != null)
+                foreach (Zahlungsgliederung g in gliederungen)
+                    if (g != null && g.Bestandteil(RISIKO) != null) risiko = true;
+            return MitRisiko(risiko);
+        }
+
+        private static IReadOnlyList<string> MitRisiko(bool risiko)
+        {
+            if (!risiko) return Reihenfolge;
+            return new[] { INVESTITION, BETRIEB, ENERGIE, ERLOESE, ERSATZ, RISIKO, RESTWERT };
+        }
 
         /// <summary>Kleinste Toleranz der Abgleiche [€] — eine Zahl der Seite zeigt ganze Euro.</summary>
         public const double TOLERANZ_EUR = 0.01;
@@ -225,6 +261,14 @@ namespace WindowsFormsApplication1
             g.Bestandteile.Add(Teil(ENERGIE, energie, i));
             g.Bestandteile.Add(Teil(ERLOESE, erloese, i));
             g.Bestandteile.Add(Teil(ERSATZ, ersatz, i));
+            // ETAPPE E15 (V‑G7): der Risikoabzug als eigener Bestandteil — nur wenn das Bild
+            // einen trägt; negativ wie jede Auszahlung, Jahr 0 und Restwert bleiben frei.
+            if (bild.RisikoJeJahr != null)
+            {
+                var risiko = new double[T + 1];
+                for (int t = 1; t <= T; t++) risiko[t] = -Wert(bild.RisikoJeJahr, t);
+                g.Bestandteile.Add(Teil(RISIKO, risiko, i));
+            }
             g.Bestandteile.Add(new Zahlungsbestandteil
             {
                 Schluessel = RESTWERT, JeJahr = restwert, Barwert = bild.RestwertBarwert
@@ -248,7 +292,8 @@ namespace WindowsFormsApplication1
                 ZinsProzent = stand.ZinsProzent,
                 Kapitalwert = stand.Kapitalwert - referenz.Kapitalwert
             };
-            foreach (string s in Reihenfolge)
+            // ETAPPE E15: mit Risikoabzug einer Seite steht auch der Bestandteil RISIKO da.
+            foreach (string s in SchluesselVon(new[] { stand, referenz }))
             {
                 Zahlungsbestandteil a = stand.Bestandteil(s), b = referenz.Bestandteil(s);
                 var je = new double[stand.Jahre + 1];
@@ -289,6 +334,7 @@ namespace WindowsFormsApplication1
                 case ERLOESE: return MyResource.Resource.WIRT_GL_ERLOESE;
                 case ERSATZ: return MyResource.Resource.WIRT_GL_ERSATZ;
                 case RESTWERT: return MyResource.Resource.WIRT_GL_RESTWERT;
+                case RISIKO: return MyResource.Resource.WIRT_GL_RISIKO;
                 default: return schluessel ?? "";
             }
         }

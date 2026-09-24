@@ -146,7 +146,7 @@ namespace EPOS.Kern.Tests
     }
 
     /// <summary>
-    /// ETAPPE E17 — Persistenz, Schemaschritt 126 und die Freitextübernahme gegen die
+    /// ETAPPE E17 — Persistenz, Schemaschritt 127 und die Freitextübernahme gegen die
     /// Arbeitskopie der Testdatenbank; dazu der Anker „keine Rechenwirkung".
     /// </summary>
     [Collection("Testdatenbank")]
@@ -276,12 +276,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Schritt 126 übernimmt einen gepflegten Freitext als EINE Wirkung SONSTIG ohne
+        /// Schritt 127 übernimmt einen gepflegten Freitext als EINE Wirkung SONSTIG ohne
         /// Beurteilung — nur bei nicht leerem Text, nur ohne eigene Wirkung, wiederholbar; das
         /// Freitextfeld bleibt stehen (Altfeld).
         /// </summary>
         [Fact]
-        public void Schritt_126_uebernimmt_den_Freitext_als_Wirkung_sonstig()
+        public void Schritt_127_uebernimmt_den_Freitext_als_Wirkung_sonstig()
         {
             if (!_db.Vorhanden) return;
 
@@ -392,7 +392,7 @@ namespace EPOS.Kern.Tests
         /// 124, und die REPO-Datei trägt Stand und Tabelle (gelesen nur lesend).
         /// </summary>
         [Fact]
-        public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt_126()
+        public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt_127()
         {
             string wurzel = Repowurzel();
             if (wurzel == null) return;
@@ -402,10 +402,10 @@ namespace EPOS.Kern.Tests
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
-            Assert.Contains("SCHRITT_126_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT", migration);
+            Assert.Contains("SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT", migration);
             int ort124 = migration.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
-            int ort126 = migration.IndexOf("new Schritt(SCHRITT_126_NICHT_MONETAERE_WIRKUNGEN", StringComparison.Ordinal);
-            Assert.True(ort124 > 0 && ort126 > ort124, "Der Schritt 126 steht nicht nach 124.");
+            int ort127 = migration.IndexOf("new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN", StringComparison.Ordinal);
+            Assert.True(ort124 > 0 && ort127 > ort124, "Der Schritt 127 steht nicht nach 124.");
             Assert.Contains("ProjektWirkungSchema.Ausfuehren()", migration);
             Assert.Contains("ProjektWirkungSchema.Vollstaendig()", migration);
 

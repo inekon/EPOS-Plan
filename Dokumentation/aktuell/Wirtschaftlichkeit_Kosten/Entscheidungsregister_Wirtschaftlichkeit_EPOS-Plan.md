@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 24.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463) und E13 (#474) · Schwesterpapiere: das Konzept
+**Stand 24.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477) und E15 (#478) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -34,7 +34,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 |---|---|---|---|
 | R‑A | A1–A20 — Entscheide der Umsetzungsanalyse | Analysepapier § 4 | 20 |
 | R‑Q | Q1–Q25 — Fragen der Mockup-Prüfung | Prüfpapier § 4 | 25 |
-| R‑V | V‑1…V‑4 und die entschiedenen Lücken V‑G2, V‑G5, V‑G10 (ValERI; V‑G5 gebaut #461/#462, V‑4 erledigt #462) | Konzept § 2.11 vor dem Schnitt; Statusdatei #332 | 7 |
+| R‑V | V‑1…V‑4 und die entschiedenen Lücken V‑G2, V‑G5, V‑G7, V‑G10 (ValERI; V‑G5 gebaut #461/#462, V‑4 erledigt #462, V‑G7 gebaut #478 (Schritt 125)) | Konzept § 2.11 vor dem Schnitt; Statusdatei #332; Anwender 24.09.2026 (V‑G7) | 8 |
 | R‑K | K1–K11 — Feld- und Dialogentscheide (K9 ist nicht vergeben) | Konzept § 5 vor dem Schnitt | 10 |
 | R‑D | Darstellung, Energieträger, Einheiten: D‑1, E‑1, D‑2, D‑3, ET‑D‑1…4, UR‑1, E1, U‑1 | Konzept § 5 vor dem Schnitt; Anwender 23.09.2026 (ET‑D‑4) | 11 |
 | R‑BK | Der KWK-Zuschlag an der Anlage und die Nachweise: BK‑E‑1, BK1‑1, BK1‑Q1, BK1‑Q2, BK1‑4, K‑WZ‑1, B7‑E‑1, B7‑E‑2 | Konzept § 2.2, § 6.3, § 6.5 vor dem Schnitt; Statusdatei #330, #331, #335; Protokolle BKW1, B7P, BK1a | 8 |
@@ -51,11 +51,13 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E7c2 | E7c2‑Q1…Q8 — die Fragen aus E7c2 (entschieden 23.09.2026, umgesetzt #446 und #452) | Protokoll E7c2; Statusdatei Nach #446 (a) | 8 |
 | R‑E7c3 | E7c3‑Q1…Q8 — die Fragen aus E7c3 (entschieden 24.09.2026, nach Empfehlung; Q6 a, gebaut #474 (E13)) | Protokoll E7c3; Statusdatei Nach #452 (a) | 8 |
 | R‑E8a | E8a‑Q1…Q4 — die Fragen aus E8a (entschieden 23.09.2026, nach Empfehlung; Q1 umgesetzt #454, Q4 umgesetzt #455) | Protokoll E8a; Statusdatei Nach #454 (a) | 4 |
-| R‑E8b | E8b‑Q1…Q6 — die Fragen aus E8b (entschieden 23.09.2026, nach Empfehlung; Q2 und Q3 als eigener Auftrag erledigt #460 (E8c); Q5 und Q6 erledigt) | Protokoll E8b; Statusdatei Nach #455 (a) | 6 |
+| R‑E8b | E8b‑Q1…Q6 — die Fragen aus E8b (entschieden 23.09.2026, nach Empfehlung; Q2 und Q3 als eigener Auftrag erledigt #460 (E8c); Q5 und Q6 erledigt; Q1 abgelöst durch E14‑Q2 a, #477) | Protokoll E8b; Statusdatei Nach #455 (a) | 6 |
 | R‑E8c | E8c‑Q1, E8c‑Q2 — die Fragen aus E8c (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a) | Protokoll E8c; Statusdatei Nach #460 (a) | 2 |
-| R‑E9a | E9a‑Q1…Q7 — die Fragen aus E9a (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a) | Protokoll E9a; Statusdatei Nach #461 (a) | 7 |
+| R‑E9a | E9a‑Q1…Q7 — die Fragen aus E9a (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a; Befund 1 der Welle erledigt #477, E14; der Vermerk zu V‑G7 aus Q6 erledigt #478, E15) | Protokoll E9a; Statusdatei Nach #461 (a) | 7 |
 | R‑E9b | E9b‑Q1…Q5 — die Fragen aus E9b (entschieden 24.09.2026, nach Empfehlung; Q5 b, gebaut #474 (E13); gebaut sonst jeweils a) | Protokoll E9b; Statusdatei Nach #462 (a) | 5 |
 | R‑E10 | E10‑Q1…Q7 — die Fragen aus E10 (entschieden 24.09.2026, nach Empfehlung; gebaut jeweils a; E10‑Q5 erledigt) | Protokoll E10; Statusdatei Nach #463 (a) | 7 |
+| R‑E14 | E14‑Q1…Q3 — die Fragen aus E14 (offen; gebaut jeweils a, die Empfehlung; Q2 a löst E8b‑Q1 a ab) | Protokoll E14; Statusdatei Nach #477 (a) | 3 |
+| R‑E15 | E15‑Q1…Q4 — die Fragen aus E15, dem Risikomodul V‑G7 (offen; gebaut jeweils a, die Empfehlung) | Protokoll E15; Statusdatei Nach #478 (a) | 4 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -138,7 +140,7 @@ Prüfpapier, wo nicht „Konzept" davorsteht.
 ## R‑V — V‑1…V‑4 und die entschiedenen Lücken V‑G (ValERI)
 
 Quelle: Konzept § 2.11.2, § 2.11.4 bis § 2.11.7 vor dem Schnitt; die Entscheide vom 18.09.2026 auch
-in der Statusdatei, Zeile #332. Die übrigen Lücken V‑G1, V‑G3, V‑G4, V‑G6 bis V‑G9, V‑G11 und V‑G12
+in der Statusdatei, Zeile #332. Die übrigen Lücken V‑G1, V‑G3, V‑G4, V‑G6, V‑G8, V‑G9, V‑G11 und V‑G12
 sind Behandlungen im Konzept (§ 2.11.2), keine Entscheide des Anwenders; ihre Ausführung sind die
 Etappen V‑A bis V‑E. **V‑D ist gebaut #455** (E8 Teil b): mit V‑G10 (unten) die Anhang-E-Checkliste V‑G12 — Wortbericht,
 Mappe und Knopf der Ergebnisseite, → R‑Q (Q18); Punkt 9 (Szenarioanalyse) steht seit #474 auf „erfüllt", sobald Günstig
@@ -148,7 +150,9 @@ und der Kern, der die Best/Worst-Paare liest (#461), dazu die Pflege in den Dial
 der Ausweis „n von m Parametern szenariert" (#462; V‑4 und V‑G5 unten, die fünf Fragen aus E9b → R‑E9b).
 **Vermerk zu V‑G7 und V‑G3** (E9a‑Q6, Empfehlung a, offen → R‑E9a): Die Zeile V‑E des Konzepts (§ 2.11.4) nennt das
 Risiko (V‑G7) und die n-jährlichen Zeitpunkte (V‑G3) mit; die Etappe E9 baut beides nicht — es bleibt Behandlung im
-Konzept (§ 2.11.2) ohne eigene Etappe, bis der Anwender anders entscheidet.
+Konzept (§ 2.11.2) ohne eigene Etappe, bis der Anwender anders entscheidet. **V‑G7 hat der Anwender am 24.09.2026 als
+eigenen Auftrag freigegeben** — gebaut mit **E15 #478** (Schemaschritt 125, Zeile V‑G7 unten, Fragen → R‑E15); V‑G3
+folgt als Auftrag E16 (Wiederholperiode je Kostenposition), offen.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
@@ -158,7 +162,8 @@ Konzept (§ 2.11.2) ohne eigene Etappe, bis der Anwender anders entscheidet.
 | **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5). **Zeitpunkt entschieden 18.09.2026 nach Empfehlung: danach**, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis — **mit Hinweistext** bis dahin (§ 2.11.7); der Hinweistext ist **gebaut #434** | Umfang 31.08.2026 (V‑G5); Zeitpunkt 18.09.2026, nach Empfehlung | § 2.11.5, § 2.11.7 | **erledigt #462** — der Zeitpunkt „danach" ist umgesetzt: die Szenarioabdeckung im Kern gebaut #461 (V‑E, E9 Teil a), die Pflege in den Dialogen #462 (E9 Teil b); der Hinweistext (gebaut #434) ist mit E9b entfallen (§ 2.11.7), an seiner Stelle steht der Ausweis „n von m Parametern szenariert"; Mockup U10 entfallen, U15 erledigt · E9, erledigt |
 | **V-G2** | **Degradation** je Position [%/a] **mit Quellenangabe** (6.3.1/6.3.3) | Degradation — **Entscheid A5 vom 20.09.2026 (nach Empfehlung)**: Der Entscheid „G3 nicht umsetzen" gilt, V-E (§ 2.11.4) wird **ohne** Degradation geplant; die Vereinfachung bleibt offengelegt | 20.09.2026, nach Empfehlung (A5) | § 2.11.2, § 2.11.4 | entschieden; V‑E ohne Degradation gebaut #461/#462 (E9 abgeschlossen) |
 | **V-G5** | **Szenarien = gleichzeitige Variation aller Einstellparameter** — auch r, T, Preisraten, Mengen (7.3) | **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten, Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5 — Wortlaut des § 2.11.5: „Alle Parameter — Investitionskosten, Energiekosten, Betriebskosten, Erlöse, dazu Rahmen und Mengen — werden mit Best- und Worst-Case-Werten versehen." | 31.08.2026, Anwender | § 2.11.5 | **gebaut #461/#462** (E9 abgeschlossen) — E9 Teil a (#461): die Schemaschritte 116 (Szenariorahmen: Betrachtungszeitraum und Mengenänderung je Szenario), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst); der Kern liest die Paare je Größe an einer Stelle, NULL/0 = wie Erwartet, keine Vorgaben, gepflegt = \|Wert − Erwartet\| > 1e−9; A/B-Nachweis über neun Größen, Erwartet bitgleich; die sieben Fragen der Welle → R‑E9a. E9 Teil b (#462): die Pflege in den Dialogen — die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf, ein verallgemeinerter `CaseEingabeDialog`, an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV (Parameterdialog) und KWK (Dialog „BHKW-Wirtschaftlichkeit"), an DV-Entgelt und PPA-Preis (PV-Vergütungsdialog); die Rahmen-Gruppe über die Szenariotafel; der Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts; die fünf Fragen der Welle → R‑E9b; Mockup U15 erledigt (Abnahme A‑E9‑1 offen) · E9, erledigt |
-| **V-G10** | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 | 18.09.2026, Anwender, abweichend von der Empfehlung (Statusdatei #332) | § 2.11.6 | **gebaut #455** (E8 Teil b, V‑D), Stufen 0 bis 3: der Parameterblock aus echten Zellen je Szenario mit den Namen `Zins_i`, `Zeitraum_T`, `p_E`, `p_B`, `p_I`; die Mehrjahrestabellen in Formeln (Energie als Fortschreibung, Betrieb in zwei Termen über Hilfsspalten, Netto, Barwert, Kumuliert); die Kennzahlen des Szenarios Erwartet über NBW/RMZ und — über die Differenzreihe Variante − Referenz — IKV und Amortisation, ohne Vorzeichenwechsel ein Text statt Zellfehler; bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug. Jede Formel ist gegengerechnet, EPOS trägt die Zahl des Rechenkerns als Ergebnis ein, Excel rechnet beim Öffnen neu (ClosedXML-Befund, § 2.11.6); Wertfassung = Formelfassung in 13 Prüfgruppen; was dauerhaft Wert bleibt, ist unverändert; die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → R‑E8b) · E8, erledigt |
+| **V-G7** | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | „V‑G7 Risiko: eigener kleiner Auftrag ausführen" — gebaut nach der Behandlung des Konzepts (§ 2.11.2): optionales Risikomodul, beide Wege der Norm 6.5, Vorgabe aus | 24.09.2026, Anwender (Freigabe des Auftrags E15) | § 2.11.2, § 2.11.5, § 2.11.6 | **gebaut #478 (Schritt 125)** — E15: Schemaschritt 125 mit `Risiko_Art` (leer/`ZINS`/`ABZUG`), `Risiko_Zinszuschlag` [%-Punkte], `Risiko_Verlust` [€ je Periode] und `Risiko_Wahrscheinlichkeit` [%] an `Tab_ProjektWirtschaftlichkeit`; Zinszuschlag in allen drei Szenarien (`FuerSzenario`) oder Abzug R_loss × p_loss / 100 je Periode ab Jahr 1, nicht auf Jahr 0 und Restwert, für jeden Stand außer der Referenz; Gruppe „Risiko (DIN EN 17463, 6.5)" im Parameterdialog, Ausweis nur bei Pflege (Nachweiszeile, Annahmentafel, Deklaration 6.5, Punkt 6 der Anhang-E-Checkliste, Bestandteil RISIKO der Gliederung, Formelmappe). **Lesart der Norm:** Anhang F, Tabelle F.2 rechnet R_loss als Prozent des Nettorückflusses (ded_t = P_t × R_loss × p_loss); gebaut ist R_loss als Betrag in € je Periode — die Prozentlesart steht als E15‑Q4 c zur Entscheidung. Ohne Pflege ergebnisneutral (Anker, Referenzlauf 13/13); vier Fragen → R‑E15 |
+| **V-G10** | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 | 18.09.2026, Anwender, abweichend von der Empfehlung (Statusdatei #332) | § 2.11.6 | **gebaut #455** (E8 Teil b, V‑D), Stufen 0 bis 3: der Parameterblock aus echten Zellen je Szenario mit den Namen `Zins_i`, `Zeitraum_T`, `p_E`, `p_B`, `p_I`; die Mehrjahrestabellen in Formeln (Energie als Fortschreibung, Betrieb in zwei Termen über Hilfsspalten, Netto, Barwert, Kumuliert); die Kennzahlen des Szenarios Erwartet über NBW/RMZ und — über die Differenzreihe Variante − Referenz — IKV und Amortisation, ohne Vorzeichenwechsel ein Text statt Zellfehler; bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug. Jede Formel ist gegengerechnet, EPOS trägt die Zahl des Rechenkerns als Ergebnis ein, Excel rechnet beim Öffnen neu (ClosedXML-Befund, § 2.11.6); Wertfassung = Formelfassung in 13 Prüfgruppen; was dauerhaft Wert bleibt, ist unverändert; die Kennzahlen von Günstig und Ungünstig blieben zunächst Werte (E8b‑Q1, → R‑E8b). **Ergänzt #477** (E14): Stufe 1 und 2 rechnen alle drei Szenarien formelbasiert — je Szenario Mehrjahrestabellen bis zum längsten Zeitraum mit Schutzformel jenseits von T_s, Kennzahlen, Zinsfuß und Bandbreite als Formeln auf die Spalte des Szenarios im Parameterblock; Wertfassung = Formelfassung in 16 Prüfgruppen; E14‑Q2 a löst E8b‑Q1 a ab (→ R‑E14) · E8, erledigt |
 
 ---
 
@@ -489,11 +494,12 @@ Quelle: Protokoll
 „Fragen aus der Etappe", und die Statusdatei, Nach #455 (a). Alle sechs Fragen hat der Anwender am 23.09.2026
 entschieden, im Wortlaut: „Fragen aus E8b: Empfehlung". Gebaut ist bei Q1 und Q4 Lesart a; Q2 und Q3 sind als
 eigener Auftrag mit der Mini-Welle E8c gebaut und erledigt (#460). Q5 und Q6 haben sich mit dem Nachzug und der Phase 2
-erledigt.
+erledigt. Q1 ist **abgelöst durch E14‑Q2 a (#477)** — die Kennzahlen Günstig und Ungünstig rechnen jetzt in Formeln
+(→ R‑E14).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E8b‑Q1** | Die Kennzahlen der Szenarien Günstig und Ungünstig in der Formelmappe — für sie gibt es keine Mehrjahrestabelle: (a) sie bleiben Werte; (b) je Stand zwei weitere Tabellen, damit auch sie in Formeln rechnen | **entschieden 23.09.2026**, nach Empfehlung: a | 23.09.2026 gestellt | § 2.11.6 | gebaut ist a (#455, E8b/3); ebenso bleibt ein mehrdeutiger Zinsfuß ein Wert |
+| **E8b‑Q1** | Die Kennzahlen der Szenarien Günstig und Ungünstig in der Formelmappe — für sie gibt es keine Mehrjahrestabelle: (a) sie bleiben Werte; (b) je Stand zwei weitere Tabellen, damit auch sie in Formeln rechnen | **entschieden 23.09.2026**, nach Empfehlung: a | 23.09.2026 gestellt | § 2.11.6 | gebaut war a (#455, E8b/3); ebenso blieb ein mehrdeutiger Zinsfuß ein Wert — **abgelöst durch E14‑Q2 a (#477)**: je Stand und Szenario eine Tabelle bis zum längsten Zeitraum, die Kennzahlen Günstig und Ungünstig als Formeln; ein mehrdeutiger Zinsfuß steht in allen drei Szenarien als Text „nicht eindeutig" (E14‑Q3 a, → R‑E14) |
 | **E8b‑Q2** | „fester Betrag" neben einer Menge-×-Satz-Formel — schon vorher falsch: `WirtschaftlichkeitZeilen.BemessungText` kennt nur 4 von 17 Bemessungsarten und nennt die übrigen „fester Betrag": (a) so lassen; (b) den Text im Kern für alle Bemessungsarten richtigstellen | **entschieden 23.09.2026**, nach Empfehlung: eigener Auftrag, Bau mit E8c | 23.09.2026 gestellt | § 2.11.6 (Stufe 3); § 3.4 (Die Betriebskostentabelle der Berichte) | **erledigt #460 (E8c)** — E8c/1 `e91617da`: die Texte kommen aus dem Bemessungskatalog (`BM_*`, alle 18 Steuerwerte, gewerkeigene Beschriftung), Herleitung und Formelmappe fragen denselben Faktor (`BetriebskostenCtrl.Bemessungsfaktor`), ein Wächter hält die Konstanten `DbWerte.BEMESSUNG_*` gegen den Katalog; „fester Betrag" nur noch bei `BETRAG` und leerem oder unbekanntem Steuerwert |
 | **E8b‑Q3** | Die Warnung „Gliederung unvollständig" bei Positionen mit späterem Startjahr — auch das war vorher so (Prüfgruppe hybtest: 2.400 gegen 1.800 €, die Differenz ist genau die Wartung ab Jahr 6): (a) die Warnung stehen lassen; (b) nur Positionen vergleichen, die im Jahr 1 laufen, oder das Startjahr in der Warnung nennen | **entschieden 23.09.2026**, nach Empfehlung: Lesart b als eigener Auftrag, Bau mit E8c | 23.09.2026 gestellt | § 3.4 (Die Betriebskostentabelle der Berichte); Wort- und Tabellenbericht, „Betriebskosten nach Kostenarten" (`WIRT_BK_ABWEICHUNG`) | **erledigt #460 (E8c)** — E8c/2 `7c901689`: Lesart b in der Variante „nur Positionen des ersten Jahres vergleichen" (die zweite Variante warnte weiter, wo nichts fehlt); die Herleitungsspalte nennt „ab Jahr X", eine Probe für beide Berichte, Nachweisumschlag Fassung 9; hybtest warnt nicht mehr, eine echte Lücke warnt weiter |
 | **E8b‑Q4** | Der Knopf „Anhang-E-Checkliste…" ruft eine reine Kernfunktion (`AnhangECheckliste.Punkte`) direkt auf, die UI-Regel sagt „keine Fachklassen des Kerns": (a) so lassen — ohne Datenbank, eine Quelle für Seite und Berichte; (b) die Hülle füllt die Punkte in den Seitenstand (berührt Dateien aus E8a, erst nach dem Merge) | **entschieden 23.09.2026**, nach Empfehlung: a | 23.09.2026 gestellt | Mockup-Anhang U43; `EPOS.UI/CLAUDE.md` | gebaut ist a (#455, E8b/5) |
@@ -523,7 +529,9 @@ Quelle: Protokoll
 [`E9a_Szenarioabdeckung_Kern_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E9a_Szenarioabdeckung_Kern_Protokoll.md),
 „Fragen aus der Welle", und die Statusdatei, Nach #461 (a). Alle sieben Fragen stellt der Phase‑1-Bericht der Welle
 E9a (24.09.2026); der Anwender hat sie am 24.09.2026 entschieden, im Wortlaut: „Offene Entscheide: Empfehlung".
-Gebaut ist jeweils Lesart a — bei E9a‑Q6 ist nichts zu bauen, der Vermerk steht in R‑V.
+Gebaut ist jeweils Lesart a — bei E9a‑Q6 ist nichts zu bauen, der Vermerk steht in R‑V. Der **Befund 1** der Welle —
+die Formelmappe rechnete Stufe 1 und 2 nur für Erwartet, „T je Szenario" wirkte dort nur im Parameterblock und im
+Verlaufsblock — ist **erledigt #477** (E14, → R‑E14).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
@@ -532,7 +540,7 @@ Gebaut ist jeweils Lesart a — bei E9a‑Q6 ist nichts zu bauen, der Vermerk st
 | **E9a‑Q3** | Trägerpreise je Szenario: (a) der Szenariopreis ersetzt den Preis als Ganzes, eine gepflegte Leistungspreis-Staffel oder Saisonreihe gilt weiter, dazu eine Kohärenzzeile; (b) nur ein Aufschlag auf den Energieanteil | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Regeln des Kerns) | gebaut ist a (#461, `TraegerpreisSzenario.Wirksam`) |
 | **E9a‑Q4** | Betrachtungszeitraum je Szenario: (a) wirkt auf Horizont, Restwert und Ersatzbeschaffungen — wie ein Lauf mit diesem Zeitraum; (b) nur auf den Horizont | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Regeln des Kerns) | gebaut ist a (#461, `FuerSzenario`) |
 | **E9a‑Q5** | Vorgaben für die neuen Größen: (a) keine — leer oder 0 heißt „wie Erwartet"; (b) Vorgaben wie bei den sieben Größen des W5‑B‑9-Satzes | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Regeln des Kerns) | gebaut ist a (#461) |
-| **E9a‑Q6** | Risiko (V‑G7) und n-jährliche Zeitpunkte (V‑G3), die die Zeile V‑E des Konzepts mitnennt: (a) nicht Teil von E9, nur ein Vermerk im Register; (b) in E9b | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.4 (V‑E) | nichts gebaut; vermerkt in R‑V |
+| **E9a‑Q6** | Risiko (V‑G7) und n-jährliche Zeitpunkte (V‑G3), die die Zeile V‑E des Konzepts mitnennt: (a) nicht Teil von E9, nur ein Vermerk im Register; (b) in E9b | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.4 (V‑E) | nichts gebaut in E9; vermerkt in R‑V — V‑G7 mit eigenem Auftrag gebaut #478 (E15, → R‑E15), V‑G3 offen (E16) |
 | **E9a‑Q7** | Tarif-Rollenmodell — Befund: Im Rollenmodell ist der Erwartet-Strompreis der Reststromtarif, die Einspeisung bewertet der Einspeisetarif; ein Szenario-Strompreis kürzt sich heraus, eine Szenario-Einspeisevergütung wirkt nicht, Gaspreise und Menge wirken weiter: (a) die Rollenpreise bleiben in allen Szenarien Erwartet, eine Kohärenzzeile nennt beides, ebenso eine flache Einspeisevergütung neben einem aktiven PV-Vergütungsdialog; (b) eigene Best/Worst-Preise am Tarifsatz (ein neuer Schemaschritt); (c) der Szenario-Strompreis als Faktor auf die Rollenpreise — verdeckt die Wirkung | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Regeln des Kerns) | gebaut ist a (#461, Kohärenzzeilen `WIRT_SZ_ROLLEN_*`, `WIRT_SZ_PV_DIALOG_EINSPEISUNG`) |
 
 ---
@@ -578,6 +586,39 @@ vertreten den eigenen Entscheid zu ND‑S3, den das Nutzungsdauer-Konzept vor S3
 
 ---
 
+## R‑E14 — E14‑Q1…Q3: die Fragen aus E14
+
+Quelle: Protokoll
+[`E14_Formelmappe_je_Szenario_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E14_Formelmappe_je_Szenario_Protokoll.md),
+„Fragen aus der Welle", und die Statusdatei, Nach #477 (a). Die drei Fragen stellt der Auftrag der Welle E14 (Anwender
+24.09.2026, 18:35: „Formelmappe und Befund aus E9a: Auftrag"); gebaut ist jeweils die Empfehlung a, der Entscheid des
+Anwenders steht aus. E14‑Q2 a löst E8b‑Q1 a ab (→ R‑E8b).
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E14‑Q1** | Länge der Mehrjahrestabellen je Szenario: (a) eine Tabelle je Stand und Szenario bis zum längsten Zeitraum der drei Szenarien, jenseits von T_s leer über eine Schutzformel, der Restwert am Ende von T_s; (b) drei Blätter, je Szenario eines | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/1) |
+| **E14‑Q2** | Kennzahltafel Günstig/Ungünstig: (a) Formeln statt Werte — Nettobarwert, Annuität, Zinsfuß, Amortisation und Bandbreite auf die Tabellen des Szenarios; ersetzt E8b‑Q1 a; (b) die Werte bleiben, die Formeln nur als Nebenblock | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.6 | gebaut ist a (#477, E14/2) |
+| **E14‑Q3** | Interner Zinsfuß bei mehr als einem Vorzeichenwechsel der Differenzreihe: (a) Text „nicht eindeutig"; (b) `IRR` mit Schätzwert | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.6; Anhang C der Norm | gebaut ist a (#477, E14/2) — gilt in allen drei Szenarien, auch im Block Erwartet (nur Ausweis, keine Prüfgruppe betroffen) |
+
+---
+
+## R‑E15 — E15‑Q1…Q4: die Fragen aus E15
+
+Quelle: Protokoll
+[`E15_Risikomodul_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E15_Risikomodul_Protokoll.md),
+„Fragen aus der Welle", und die Statusdatei, Nach #478 (a). Die Fragen E15‑Q1 bis E15‑Q3 stellt der Auftrag der Welle
+E15 (Anwender 24.09.2026: „V‑G7 Risiko: eigener kleiner Auftrag ausführen"), E15‑Q4 der Phase‑1-Bericht der Welle;
+gebaut ist jeweils die Empfehlung a, der Entscheid des Anwenders steht aus. Die Lücke selbst steht in R‑V (V‑G7).
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E15‑Q1** | Risiko je Szenario: (a) ein Risiko, gleich in allen drei Szenarien; (b) Paare je Szenario wie die übrigen Szenariowerte | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.5 | gebaut ist a (#478, E15/3: `FuerSzenario` setzt den Zuschlag in allen Szenarien genau einmal) |
+| **E15‑Q2** | Worauf der Zahlungsstromabzug wirkt: (a) auf die Nettozahlung des Standes, als eigener Bestandteil RISIKO der Gliederung; (b) nur auf die Erlöse — bei einem Betrag in € zahlengleich | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.2 (V‑G7), § 2.11.6 | gebaut ist a (#478, E15/3: Bestandteil RISIKO vor dem Restwert, Spalte „Risikoabzug" der Mehrjahrestabelle) |
+| **E15‑Q3** | Ausweis: (a) Nachweiszeile, Annahmentafel und Parameterblock, dazu die Deklaration 6.5 und Punkt 6 der Anhang-E-Checkliste; (b) ein eigener Block „Risiko" | **offen**, Empfehlung: a | 24.09.2026 gestellt | § 2.11.5 (Ausweis im Bericht), § 2.11.6 | gebaut ist a (#478, E15/3) — nur bei Pflege; ohne Pflege bleibt die Deklaration „Risikozuschlag nicht angesetzt (6.5 optional)" |
+| **E15‑Q4** | Wen der Zahlungsstromabzug trifft: (a) jeden Stand außer der Referenz des Laufs, ein Einzelstand trägt ihn selbst; (b) alle Stände gleich — der Abzug kürzt sich dann in jeder Differenz heraus; (c) R_loss als Prozent der Differenzreihe, wie Anhang F Tabelle F.2 (ded_t = P_t × R_loss × p_loss) | **offen**, Empfehlung: a | 24.09.2026 gestellt (Phase‑1-Bericht) | § 2.11.2 (V‑G7) | gebaut ist a (#478, `RisikoModul.AbzugFuerStand`) — R_loss ist ein Betrag in € je Periode, keine Prozentangabe; der Stamm einer Gruppe zeigt seinen Kapitalwert ohne Abzug, 1030 ohne Varianten trägt ihn selbst |
+
+---
+
 ## R‑EZ — Einzelentscheide ohne eigene Familie
 
 Quelle: Konzept vor dem Schnitt (die Stelle steht in der Spalte *Ort der Regel*); Statusdatei #331
@@ -594,7 +635,7 @@ Register vergeben.
 | **EZ‑6** | *Mit welchem Strompreis bewertet eine Anlage, die selbst Strom bezieht, ihre Endenergie?* | „**Der Strompreis einer Anlage ist der ihres eigenen Trägers**" | 19.09.2026, Anwender | § 3.4 | umgesetzt #366 |
 | **EZ‑7** (B‑1) | Befund B‑1: Die Kessel-Modulspalte `Verbrauch` blieb leer | „Verbrauch aus dem Lauf nachziehen. Es gibt eine Größe Verbrauch aus dem Simulationslauf, aus der die Kosten ermittelt werden." — der frühere Entscheid „falsche Projektkonfiguration, Hinweistext bei 0" ist damit zurückgenommen | 18.09.2026, Anwender | § 4 (B‑1); § 3.4 | umgesetzt #331 (dieser Rechner) |
 | **EZ‑8** | *Referenzbasis nach Befund B‑1 neu einfrieren?* | „Ja, neue Basis einfrieren" | 18.09.2026, Anwender | § 6.2 (Referenzbasis) | umgesetzt #333 (`2026-09-18_R9_Kesselbrennstoff`); heute `2026-09-19_R10_BhkwWirkungsgrad` |
-| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461, Kern), E9b (#462, Dialoge), E10 (#463, Nutzungsdauer S3 und Speicherflotte) und E13 (#474, Checkliste Punkt 9, Fehlergründe, A8-Halbsatz) gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
-| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463) und E13 (#474, die kleine Bauwelle zu E9b‑Q5 und E7c3‑Q6) gebaut — E7, E8, E9 und E10 abgeschlossen; E12 (Wiki-Runden) vorbereitet #470, Sammel-Upload 26.09.2026; E11 entfällt |
+| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461, Kern), E9b (#462, Dialoge), E10 (#463, Nutzungsdauer S3 und Speicherflotte) E13 (#474, Checkliste Punkt 9, Fehlergründe, A8-Halbsatz), E14 (#477, Formelmappe je Szenario) und E15 (#478, Risikomodul V‑G7) gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
+| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474, die kleine Bauwelle zu E9b‑Q5 und E7c3‑Q6), E14 (#477, die Formelmappe je Szenario nach dem Befund 1 aus E9a) und E15 (#478, das Risikomodul V‑G7 mit Schemaschritt 125) gebaut — E7, E8, E9 und E10 abgeschlossen; E12 (Wiki-Runden) vorbereitet #470, Sammel-Upload 26.09.2026; E11 entfällt |
 | **EZ‑11** | *Arbeitsregel beim Beginn des Papiers* | „erst das Konzept, keine Umsetzung" | 30.08.2026, Anwender | — (Entstehung, Protokoll § 2.1) | überholt — „die Regel beschreibt die Entstehung des Papiers, nicht seinen heutigen Geltungsumfang" |
 | **EZ‑12** (N‑3) | Befund N3: Ungepflegte Anteilsspalten wirkten als 11,746 ct/kWh, nicht als 0 | nach Empfehlung — „als 0 lesen"; ein ungepflegter Anteil ist inaktiv und trägt 0 bei | 18.09.2026, nach Empfehlung (Statusdatei #332) | § 4 (N3); § 3.5 | umgesetzt; der Sammelknopf „Vorschlagswerte übernehmen" ohne Vermerk |

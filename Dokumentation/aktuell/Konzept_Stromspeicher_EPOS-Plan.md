@@ -1141,7 +1141,8 @@ neue Tabelle `Tab_ErgebnisStromspeicher` (7.1). **Ausrollweg (nach Revalidierung
 `Allgemein/Update/SchemaKatalog.cs`, neuer Migrationsschritt mit `ZIEL_VERSION`-Anhebung in
 `SchemaMigration.cs` (`ALTER TABLE … ADD COLUMN` mit `Columns.Contains`-Vorabprüfung, Versionsmarker
 `Tab_Applikation.SchemaVersion`); auf diesem Weg wurden bereits die 27 neuen `Tab_Energieanlagen`-Spalten
-ausgerollt. `migration.manuell.sql` ist reine Alt-DB-Datenübernahme und ausdrücklich **kein** Ausrollpfad;
+ausgerollt. Das frühere Handskript `migration.manuell.sql` (Access-Datenübernahme, am 24.09.2026 aus dem
+Repository entfernt) war reine Alt-DB-Datenübernahme und ausdrücklich **kein** Ausrollpfad;
 `UpdateDatabaseFromScript` existiert nicht mehr. Für `Tab_Einstellungen` gilt das namensbasierte Muster aus
 5.6 statt einer Verlängerung der Positionsindizes.
 

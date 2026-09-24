@@ -170,7 +170,8 @@ Schema gehalten. Das ist die Regel aus `c288e1c`, jetzt automatisch.
 **Ausgenommene Dateien** — die Liste `AUSGENOMMEN` im Kopf des Skripts ist **leer**: Im
 Programm gibt es keinen Access-Zweig mehr, jede geprüfte Datei spricht SQLite. Wer die
 Liste erweitert, schreibt dazu, **warum** eine Datei Access sprechen darf. Das
-Hauswerkzeug `EposSqliteMigrator/` liegt außerhalb der geprüften Wurzeln.
+frühere Hauswerkzeug `EposSqliteMigrator/` ist aus dem Repository entfernt; die Windows-Suite
+`Referenzlauf/` (Modus `migration`) liegt außerhalb der geprüften Wurzeln.
 
 **Die rund 150 dynamischen Texte** lassen sich nicht abschließend beurteilen, weil ihr
 Tabellen- oder Spaltenname erst zur Laufzeit entsteht (`KomponentenUebernahmeCtrl`,

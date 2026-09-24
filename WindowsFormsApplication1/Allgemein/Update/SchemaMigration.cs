@@ -17,12 +17,12 @@ namespace WindowsFormsApplication1
     /// (<see cref="SCHRITTE_SQLITE"/>).</para>
     ///
     /// <para><b>Die Schritte 1 bis 61 stehen nicht in diesem Programm.</b> Sie sind der
-    /// Freeze-Stand, den eine Quelle mitbringen muss: Auf ihn hebt die letzte
-    /// Access-Fassung von EPOS-Plan (Auslieferung August 2026, Git-Zweig
-    /// <c>version_august_2026</c>), nach SQLite übernimmt danach das Hauswerkzeug
-    /// <c>EposSqliteMigrator</c> (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier
-    /// als Konstanten stehen, weil sie den Schemastand benennen, den eine Datei
-    /// führt.</para>
+    /// Freeze-Stand, den eine Quelle mitbringen muss. Den Weg dorthin — die letzte
+    /// Access-Fassung von EPOS-Plan (Git-Zweig <c>version_august_2026</c>) auf der
+    /// <c>.accdb</c>, danach das Hauswerkzeug <c>EposSqliteMigrator</c> nach SQLite — gibt
+    /// es seit dem 24.09.2026 nicht mehr: Die Übernahme aus Access ist eingestellt
+    /// (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier als Konstanten stehen,
+    /// weil sie den Schemastand benennen, den eine Datei führt.</para>
     ///
     /// Ablauf:
     ///   1. Alle registrierten Schritte mit Nummer &gt; gespeicherter Version in
@@ -108,8 +108,9 @@ namespace WindowsFormsApplication1
         public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
         /// <summary>
-        /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>
-        /// fertig abliefert und den eine Quelle mitbringen muss (Schritte 1 bis 61).
+        /// Der <b>Freeze-Stand</b>: der Schemastand, den das frühere Hauswerkzeug
+        /// <c>EposSqliteMigrator</c> fertig ablieferte und den eine Quelle mitbringen muss
+        /// (Schritte 1 bis 61).
         ///
         /// <para><b>Er ist NICHT dasselbe wie <see cref="ZIEL_VERSION"/></b>, und genau
         /// dafür gibt es ihn: Mit dem ersten eigenen Schritt (<see
@@ -702,8 +703,10 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Die Tabelle kann FEHLEN — der Sonderfall dieses Schritts.</b>
         /// <c>energy_conversion</c> wird von keinem Migrationsschritt und von keinem
-        /// Controller angelegt; sie stammt aus der ausgelieferten
-        /// <c>Kenndaten.accdb</c> bzw. aus <c>migration.manuell.sql</c>. Fehlt sie,
+        /// Controller angelegt; sie stammte aus der ausgelieferten
+        /// <c>Kenndaten.accdb</c> bzw. aus dem früheren Handskript
+        /// <c>migration.manuell.sql</c> (Access-Datenübernahme, aus dem Repository
+        /// entfernt). Fehlt sie,
         /// meldete <see cref="SpaltenAnlegen"/> nur „Tabelle nicht lesbar" und der
         /// Schritt scheiterte — für immer, denn der Marker bliebe stehen. 25a legt sie
         /// deshalb mit dem Spaltensatz des Handskripts an
@@ -4098,11 +4101,28 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;
 
         /// <summary>
-        /// Schritt 126 — <b>die nicht monetarisierbaren Wirkungen als Liste je Projekt</b>
+        /// Schritt 125 — <b>das Risikomodul</b> (V‑G7, DIN EN 17463 Abschnitt 6.5 und Anhang F;
+        /// Etappe E15, Konzept Wirtschaftlichkeit § 2.11.2). Er folgt auf
+        /// <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Risiko_Art</c> (leer = kein Risiko, <c>ZINS</c>, <c>ABZUG</c>),
+        /// <c>Risiko_Zinszuschlag</c> [%-Punkte], <c>Risiko_Verlust</c> [€ je Periode, R_loss]
+        /// und <c>Risiko_Wahrscheinlichkeit</c> [%, p_loss] — die Liste steht bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Leer heißt „kein Risiko angesetzt"; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_125_RISIKOMODUL = 125;
+
+        /// <summary>
+        /// Schritt 127 — <b>die nicht monetarisierbaren Wirkungen als Liste je Projekt</b>
         /// (Etappe E17; Konzept Wirtschaftlichkeit § 2.11.2 V‑G11, DIN EN 17463 6.1 und 8.2).
-        /// Vorläufige Nummer: 125 gehört einem parallelen Schritt, vergeben wird nach der
-        /// Regel „wer zuerst pusht". Er folgt auf <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/>
-        /// ohne Reihenfolgebedingung und braucht Schritt 72 (die Freitextspalte).
+        /// Die Nummer 126 ist einem parallelen Schritt zugesagt (Dialog Design); die Migration
+        /// überspringt die Lücke. Er folgt auf <see cref="SCHRITT_125_RISIKOMODUL"/> ohne
+        /// Reihenfolgebedingung und braucht Schritt 72 (die Freitextspalte).
         ///
         /// <para><b>DDL und DML:</b> die STRICT-Tabelle <c>Tab_ProjektWirkung</c> samt Index,
         /// dann je Projekt mit gepflegtem Freitext und ohne eigene Wirkung EINE Wirkung der
@@ -4113,7 +4133,7 @@ namespace WindowsFormsApplication1
         /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
         /// bleibt byte-gleich. <b>Wiederholbar.</b></para>
         /// </summary>
-        public const int SCHRITT_126_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT;
+        public const int SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -4633,11 +4653,11 @@ namespace WindowsFormsApplication1
         //                                    Bootstrap - die Markerspalte bringt die
         //                                    Erstmigration mit.
         //
-        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Auf den
-        // Freeze-Stand hebt die letzte Access-Fassung von EPOS-Plan (Auslieferung
-        // August 2026, Git-Zweig version_august_2026), nach SQLite uebernimmt danach das
-        // Hauswerkzeug EposSqliteMigrator (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt
-        // es keinen Access-Weg mehr und keine ACE-Verbindung.
+        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Die
+        // Schritte 1 bis 61 gehoeren dem Access-Zweig, und die Uebernahme aus Access ist
+        // seit dem 24.09.2026 eingestellt - das Hauswerkzeug EposSqliteMigrator ist aus dem
+        // Repository entfernt (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt es keinen
+        // Access-Weg mehr und keine ACE-Verbindung.
 
         /// <summary>
         /// Führt alle noch ausstehenden Migrationsschritte des SQLITE-Zweigs aus
@@ -4826,12 +4846,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Seit iU9‑W14c nicht mehr leer:</b> Der erste Eintrag ist
         /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die Altbereinigung der verwaisten
-        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kommt
-        /// weiterhin fertig aus dem <c>EposSqliteMigrator</c>; was danach kommt, steht
-        /// hier.</para>
+        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kam
+        /// fertig aus dem <c>EposSqliteMigrator</c> (Werkzeug entfernt, Übernahme aus
+        /// Access eingestellt); was danach kommt, steht hier.</para>
         ///
         /// <para><b>Seither sind Freeze-Stand und Ziel zweierlei:</b>
-        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator liefert),
+        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator lieferte),
         /// <see cref="ZIEL_VERSION"/> stand damit auf 62. Wer beide verwechselt, weist eine
         /// frisch migrierte Datei als „nicht auf Freeze-Stand" ab.</para>
         ///
@@ -5804,17 +5824,29 @@ namespace WindowsFormsApplication1
                         "auf 'keine Angabe' bzw. Personen automatisch.",
                         Schritt_124_ZapfprofilLaufangaben),
 
+            // ETAPPE E15 (V-G7, DIN EN 17463 6.5 und Anhang F) - das Risikomodul: Art,
+            // Zinszuschlag, Rueckflusseinbusse und Eintrittswahrscheinlichkeit an der
+            // Parametertabelle. REIN DDL; die Quelle ist SchemaKatalog.RisikomodulSpalten. Er
+            // steht NACH 124 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_125_RISIKOMODUL,
+                        "Tab_ProjektWirtschaftlichkeit: Risikomodul (Zinszuschlag oder " +
+                        "Zahlungsstromabzug R_loss x p_loss)",
+                        "Ein Risiko nach DIN EN 17463 (6.5, Anhang F) liesse sich nicht ansetzen. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten bleiben leer, und leer heisst " +
+                        "'kein Risiko angesetzt'.",
+                        Schritt_Risikomodul),
+
             // ETAPPE E17 (V-G11, DIN EN 17463 6.1/8.2) - die nicht monetarisierbaren Wirkungen
             // als Liste je Projekt; der gepflegte Freitext wird eine Wirkung SONSTIG ohne
-            // Beurteilung. Die Quelle ist ProjektWirkungSchema. Vorlaeufige Nummer 126 (125
-            // gehoert einem parallelen Schritt); er steht NACH 124 ohne Reihenfolgebedingung.
-            new Schritt(SCHRITT_126_NICHT_MONETAERE_WIRKUNGEN,
+            // Beurteilung. Die Quelle ist ProjektWirkungSchema. Schritt 127 (126 ist Dialog
+            // Design zugesagt); er steht NACH 125 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN,
                         "Tab_ProjektWirkung: nicht monetarisierbare Wirkungen je Projekt (Kategorie, " +
                         "Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt); der Freitext wird " +
                         "eine Wirkung der Kategorie 'sonstig'",
                         "Die Wirkungen liessen sich weder einordnen noch beurteilen. KEIN Rechenergebnis " +
                         "aendert sich - die Wirkungen fliessen nicht in den Kapitalwert.",
-                        Schritt_126_NichtMonetaereWirkungen),
+                        Schritt_127_NichtMonetaereWirkungen),
         };
 
         /// <summary>
@@ -5887,23 +5919,23 @@ namespace WindowsFormsApplication1
             // --- Zwei Abbruchgründe, die KEINE Migration sind, sondern eine falsche Datei -
             if (version <= 0)
             {
-                l.Zeile("Die Datenbank führt keine Schemaversion - Erstmigration nötig.");
+                l.Zeile("Die Datenbank führt keine Schemaversion - kein Bestand von EPOS-Plan.");
                 l.Zeile("        In Tab_Applikation fehlt der Schemamarker (Spalte, Zeile oder " +
                         "die Tabelle selbst). Eine so beschaffene Datei ist kein migrierter " +
-                        "Bestand; sie ist mit dem EposSqliteMigrator aus der Access-Datenbank " +
-                        "zu erzeugen.");
+                        "Bestand, und die Übernahme aus Access ist eingestellt " +
+                        "(BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 
             if (version < FREEZE_VERSION)
             {
                 l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION +
-                        " - bitte Erstmigration mit EposSqliteMigrator fahren.");
+                        " - die Übernahme aus Access ist eingestellt.");
                 l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
                         FREEZE_VERSION + " lassen sich auf einer SQLite-Datei nicht " +
-                        "nachspielen. Der Weg führt über den Altbestand: erst die letzte " +
-                        "Access-Fassung von EPOS-Plan (Auslieferung August 2026) auf der " +
-                        ".accdb, dann der EposSqliteMigrator.");
+                        "nachspielen, und den Weg über den Access-Altbestand (letzte " +
+                        "Access-Fassung von EPOS-Plan, dann EposSqliteMigrator) gibt es " +
+                        "nicht mehr (BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 
@@ -9432,16 +9464,48 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 126 - die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17, V-G11)
+        // Schritt 125 - das Risikomodul (Etappe E15, V-G7)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 126 — Anlass und Wirkung stehen bei <see cref="SCHRITT_126_NICHT_MONETAERE_WIRKUNGEN"/>,
+        /// Schritt 125 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_125_RISIKOMODUL"/> und bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>. <b>Reines DDL</b>, dieselbe Schleife
+        /// wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Risikomodul(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz(SCHRITT_125_RISIKOMODUL.ToString(CultureInfo.InvariantCulture) + ": " +
+                    angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust und " +
+                    "Risiko_Wahrscheinlichkeit an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT +
+                    ". KEIN DML: Leer heisst 'kein Risiko angesetzt' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 127 - die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17, V-G11)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 127 — Anlass und Wirkung stehen bei <see cref="SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN"/>,
         /// die Anweisungen bei <see cref="ProjektWirkungSchema"/>. <b>Wiederholbar</b>; die
         /// Nachprobe fragt <see cref="ProjektWirkungSchema.Vollstaendig"/> (Tabelle da, kein
         /// Freitext mehr offen).
         /// </summary>
-        private static bool Schritt_126_NichtMonetaereWirkungen(Lauf l)
+        private static bool Schritt_127_NichtMonetaereWirkungen(Lauf l)
         {
             ProjektWirkungSchema.Bericht bericht;
             bool vollstaendig;
@@ -9458,7 +9522,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 l.LetzterFehler = ex.Message;
-                l.Notiz("126: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                l.Notiz("127: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
                 return false;
             }
 
@@ -9466,11 +9530,11 @@ namespace WindowsFormsApplication1
             {
                 l.LetzterFehler = "Die Tabelle " + ProjektWirkungSchema.TABELLE + " fehlt nach dem Schritt, " +
                                   "oder ein gepflegter Freitext wurde nicht uebernommen.";
-                l.Notiz("126: FEHLER - " + l.LetzterFehler);
+                l.Notiz("127: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("126: " + bericht.Zeile() + ". Das Freitextfeld bleibt stehen (Altfeld); KEIN " +
+            l.Notiz("127: " + bericht.Zeile() + ". Das Freitextfeld bleibt stehen (Altfeld); KEIN " +
                     "Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }

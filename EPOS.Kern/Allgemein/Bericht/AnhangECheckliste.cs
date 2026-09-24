@@ -110,6 +110,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Szenarioabdeckung = "";
 
+        /// <summary>
+        /// ETAPPE E15 (V‑G7): die Kurzfassung des gepflegten Risikos
+        /// (<see cref="RisikoModul.Kurz"/>); leer = kein Risiko angesetzt. Punkt 6 nennt es.
+        /// </summary>
+        public string Risiko = "";
+
         /// <summary>Die Lage eines Berichtslaufs — aus seiner Bewertung und dem Parametersatz.</summary>
         public static ChecklistenLage AusBericht(IList<WirtschaftlichkeitErgebnis> alle,
                                                  WirtschaftlichkeitParameter p,
@@ -119,7 +125,9 @@ namespace WindowsFormsApplication1
             {
                 Gerechnet = alle != null && alle.Any(e => e != null &&
                             e.Szenario == WirtschaftlichkeitSzenario.ERWARTET && e.Kapitalwert.HasValue),
-                NichtMonetaerErfasst = p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer)
+                NichtMonetaerErfasst = p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer),
+                // ETAPPE E15: das gepflegte Risiko (leer ohne Pflege).
+                Risiko = RisikoModul.Kurz(p, BerichtTexte.Kultur)
             };
             // ETAPPE E17 (V‑G11): Trägt die Bewertung die Wirkungsliste, gilt sie — erfasst
             // heißt „eine Wirkung beschrieben", beurteilt „eine Wirkung nach 8.2 beurteilt".
@@ -211,8 +219,13 @@ namespace WindowsFormsApplication1
                           ? MyResource.Resource.WIRT_AE_4_ERFUELLT : MyResource.Resource.WIRT_AE_4_TEILWEISE),
                 Punkt("5", gA, MyResource.Resource.WIRT_AE_5_THEMA, MyResource.Resource.WIRT_AE_5_ANF,
                       MyResource.Resource.WIRT_AE_5_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
+                // ETAPPE E15 (V‑G7): Mit gepflegtem Risiko nennt der Stand, wie es angesetzt ist;
+                // „teilweise" bleibt, weil die Degradation weiter nicht gerechnet wird (A5).
                 Punkt("6", gA, MyResource.Resource.WIRT_AE_6_THEMA, MyResource.Resource.WIRT_AE_6_ANF,
-                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_6_STAND),
+                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise,
+                      string.IsNullOrEmpty(lage.Risiko)
+                          ? MyResource.Resource.WIRT_AE_6_STAND
+                          : string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_AE_6_STAND_RISIKO, lage.Risiko)),
                 Punkt("7", gB, MyResource.Resource.WIRT_AE_7_THEMA, MyResource.Resource.WIRT_AE_7_ANF,
                       MyResource.Resource.WIRT_AE_7_STELLE,
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,

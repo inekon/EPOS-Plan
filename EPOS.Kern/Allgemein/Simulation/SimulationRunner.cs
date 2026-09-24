@@ -397,6 +397,18 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Kaelterestbedarf = kaelte.Kaelterestbedarf;
             }
 
+            // ANLAGENKOPPLUNG (AK1; Anlagenkopplung 8.3): die drei Groessen des Waermeteils nur,
+            // wenn ein Gebaeude gekoppelt gerechnet hat - sonst NULL ("nicht erhoben"), und ein
+            // Projekt ohne Kopplung schreibt dieselbe Zeile wie vorher. Temperaturen und Stunden,
+            // keine Energiemenge: keine Umrechnung an dieser Naht.
+            HeizkreisProjekt heizkreis = simulation_Waermebedarf.Heizkreis;
+            if (heizkreis != null)
+            {
+                m.Energiebedarf.VorlaufMittelC = double.IsNaN(heizkreis.VorlaufMittelC) ? (double?)null : heizkreis.VorlaufMittelC;
+                m.Energiebedarf.RuecklaufMittelC = double.IsNaN(heizkreis.RuecklaufMittelC) ? (double?)null : heizkreis.RuecklaufMittelC;
+                m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
+            }
+
             // ENTSCHEID E30: die Kennzahlen je Gebaeude, wie die Gebaeudeschleife des Laufs
             // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.
             m.Gebaeude.AddRange(simulation_Waermebedarf.GebaeudeKennzahlenListe);

@@ -1923,8 +1923,32 @@ namespace WindowsFormsApplication1
                                      "WirtschaftlichkeitParameterKiSicht.WorstMenge",
                                      KiDialogTexte.WpaSzWorstMenge, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaSzMengeErl,
-                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
                     // ---- Ende ETAPPE E9b ----------------------------------------------
+
+                    // ---- ETAPPE E15 (V-G7): die Gruppe "Risiko" ----------------------
+                    // Art (leer = aus), Zinszuschlag, R_loss und p_loss - nullbar, die
+                    // Felder der nicht gewaehlten Art rechnen nicht (RisikoModul).
+                    new KiDialogFeld("risiko_art",
+                                     "WirtschaftlichkeitParameterKiSicht.RisikoArt",
+                                     KiDialogTexte.WpaRisikoArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaRisikoArtErl, leerErlaubt: true),
+                    new KiDialogFeld("risiko_zinszuschlag",
+                                     "WirtschaftlichkeitParameterKiSicht.RisikoZinszuschlag",
+                                     KiDialogTexte.WpaRisikoZuschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaRisikoZuschlagErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("risiko_verlust",
+                                     "WirtschaftlichkeitParameterKiSicht.RisikoVerlust",
+                                     KiDialogTexte.WpaRisikoVerlustName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaRisikoVerlustErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("risiko_wahrscheinlichkeit",
+                                     "WirtschaftlichkeitParameterKiSicht.RisikoWahrscheinlichkeit",
+                                     KiDialogTexte.WpaRisikoPName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaRisikoPErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true)
+                    // ---- Ende ETAPPE E15 ---------------------------------------------
                 },
                 knoepfe: new[]
                 {

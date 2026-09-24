@@ -1571,23 +1571,34 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
-            // ---- Schritt 126: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
-            //      V-G11; vorlaeufige Nummer, 125 gehoert einem parallelen Schritt). NACH 124.
+            // ---- Schritt 125: das Risikomodul (V-G7, DIN EN 17463 6.5 und Anhang F, Etappe
+            //      E15). NACH 124. REIN DDL aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Risikomodul (SchemaKatalog.RisikomodulSpalten):
+            //      Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust, Risiko_Wahrscheinlichkeit an
+            //      Tab_ProjektWirtschaftlichkeit, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "kein Risiko angesetzt".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 125, trocken);
+            // ---- Schritt 127: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
+            //      V-G11; 126 ist Dialog Design zugesagt). NACH 125.
             //      DDL und DML aus DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_126_NichtMonetaereWirkungen bedient
+            //      SchemaMigration.Schritt_127_NichtMonetaereWirkungen bedient
             //      (ProjektWirkungSchema): Tab_ProjektWirkung STRICT samt Index, dann je Projekt
             //      mit gepflegtem Freitext eine Wirkung SONSTIG ohne Beurteilung.
             //
             //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabelle.
             Console.WriteLine();
-            Console.WriteLine("Schritt 126 - nicht monetarisierbare Wirkungen: " +
+            Console.WriteLine("Schritt 127 - nicht monetarisierbare Wirkungen: " +
                               (ProjektWirkungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
             if (!trocken)
             {
-                ProjektWirkungSchema.Bericht bericht126 = ProjektWirkungSchema.Ausfuehren();
-                if (bericht126.TabelleAngelegt) tabellen++;
-                Console.WriteLine("Schritt 126 - " + bericht126.Zeile() + ".");
-                Console.WriteLine("Schritt 126 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
+                ProjektWirkungSchema.Bericht bericht127 = ProjektWirkungSchema.Ausfuehren();
+                if (bericht127.TabelleAngelegt) tabellen++;
+                Console.WriteLine("Schritt 127 - " + bericht127.Zeile() + ".");
+                Console.WriteLine("Schritt 127 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

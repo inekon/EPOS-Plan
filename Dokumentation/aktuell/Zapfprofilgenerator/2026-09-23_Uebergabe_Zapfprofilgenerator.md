@@ -448,7 +448,7 @@ ausgeführt (von `ffc27d18`, 49 eigene Commits bis `ea6f8608`, gepusht am 24.09.
 ## 11 Nachtrag 24.09.2026 — Stufe Z4 umgesetzt
 
 Nach Abschnitt 10 wurde die Stufe Z4 am 24.09.2026 auf dem Zweig `z4` ausgeführt (von `b7572d42`,
-48 eigene Commits bis `8cddb04a`, Merges von `origin` `48d8836d`, `4a9d7449` und
+48 eigene Commits bis `8cddb04a`, Papiere `101164f8`, gepusht am 24.09.2026, Kern-Lauf 36026628108 rot: sieben Fälle der Katalogimport-Tests nur auf Linux, weil der Testhelfer Zeilenenden mit festem CRLF mutierte; behoben mit `85da8fa7` (Testhelfer normalisiert auf CRLF); Merges von `origin` `48d8836d`, `4a9d7449` und
 `3ff9840b`) und mit dem Stand von `ios_migration_september` zusammengeführt; der Übertrag setzt
 nach Push und Sichtabnahme bei Z4b bzw. Z5 an. Der Anwender bestellte Z4 ohne Sichtabnahme der Z3
 („Fahre fort"); ab 16:00 liefen Nachbesserungen und Abschluss mit Sonnet, weil das

@@ -305,6 +305,47 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* ----------------------------------------------- Risiko (E15, V-G7) *@
+    @* ETAPPE E15 (Konzept § 2.11.2 V-G7; DIN EN 17463 6.5 und Anhang F). Die Norm
+       laesst das Risiko ENTWEDER als Zuschlag auf den Kalkulationszins ODER als
+       zusaetzliche Auszahlung je Periode ansetzen (Anhang F: R_loss x p_loss, nur
+       t > 0). Vorgabe AUS.
+
+       DIE FELDER DER NICHT GEWAEHLTEN ART SIND GESPERRT, NICHT AUSGEBLENDET -
+       dieselbe Regel wie im Tarifdialog: Ihre Werte bleiben lesbar und erhalten,
+       rechnen aber nicht. Die Herleitungszeile sagt, womit gerechnet wird
+       (RisikoModul.Herleitung - dieselbe Stelle, die der Kern rechnet). Das Risiko
+       gilt in allen drei Szenarien gleich (E15-Q1 a). *@
+    <Gruppenkopf Titel="@_t.GRisiko" Symbol="⚠">
+        <KindInhalt>
+            <div class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_WirtschaftlichkeitParameter.btn_Help_Risiko"
+                           StandardKurztext="@_t.GRisiko" />
+            </div>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@_t.RisikoArt"
+                                 Eintraege="@TarifWahlen.Eintraege(_risikoarten)"
+                                 Auswahl="@TarifWahlen.NummerZu(_risikoarten, Parameter.RisikoArt ?? "")"
+                                 AuswahlChanged="@(n => Parameter.RisikoArt = Risikoart.Normiert(TarifWahlen.WertZu(_risikoarten, n)))" />
+                    <Zahlenfeld Bezeichnung="@_t.RisikoZuschlag" Wert="@Parameter.RisikoZinszuschlag"
+                                WertChanged="@(w => Parameter.RisikoZinszuschlag = w)"
+                                Aktiv="@RisikoZinsGewaehlt"
+                                Min="0" Max="20" Nachkommastellen="2" Einheit="%-Pkt" />
+                    <Zahlenfeld Bezeichnung="@_t.RisikoVerlust" Wert="@Parameter.RisikoVerlust"
+                                WertChanged="@(w => Parameter.RisikoVerlust = w)"
+                                Aktiv="@RisikoAbzugGewaehlt"
+                                Min="0" Max="100000000" Nachkommastellen="0" Einheit="€" />
+                    <Zahlenfeld Bezeichnung="@_t.RisikoP" Wert="@Parameter.RisikoWahrscheinlichkeit"
+                                WertChanged="@(w => Parameter.RisikoWahrscheinlichkeit = w)"
+                                Aktiv="@RisikoAbzugGewaehlt"
+                                Min="0" Max="100" Nachkommastellen="1" Einheit="%" />
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@RisikoZeile" />
+        </KindInhalt>
+    </Gruppenkopf>
+
     @* ----------------------------------- Bewertung (DIN EN 17463): NICHT HIER *@
     @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die Gruppe "Bewertung nach
        DIN EN 17463" ist herausgenommen und steht als aufklappbarer Block auf der
@@ -591,6 +632,7 @@
 
     private IReadOnlyList<Steuerwahl> _methoden = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _biomasse = Array.Empty<Steuerwahl>();
+    private IReadOnlyList<Steuerwahl> _risikoarten = Array.Empty<Steuerwahl>();   // E15
 
     private string _fehler = "";
 
@@ -606,6 +648,7 @@
     {
         _methoden = WirtParameterWahlen.Methode(_t);
         _biomasse = WirtParameterWahlen.Biomasse(_t);
+        _risikoarten = WirtParameterWahlen.Risiko(_t);   // ETAPPE E15 (V-G7)
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
                                           () => KiSicht(), KiHaken());
@@ -637,6 +680,9 @@
                 _methoden, z => z.Wert, z => z.Text),
             BiomasseEintraege = () => KiMaskenanmeldung.Eintraege(
                 _biomasse, z => z.Wert, z => z.Text),
+            // ETAPPE E15 (V-G7): die Arten der Risikoberücksichtigung.
+            RisikoEintraege = () => KiMaskenanmeldung.Eintraege(
+                _risikoarten, z => z.Wert, z => z.Text),
 
             Nachziehen = () => _ = InvokeAsync(StateHasChanged)
         };
@@ -720,6 +766,24 @@
         Zahl(Parameter.PreisInvestWirksam, 2),
         Parameter.PreissteigerungInvestition.HasValue
             ? _t.PreisInvestGepflegt : _t.PreisInvestWieB);
+
+    // =====================================================================
+    // Risiko (Etappe E15, V-G7)
+    // =====================================================================
+
+    /// <summary>ETAPPE E15: Ist der Zinszuschlag gewählt? Dann ist sein Feld aktiv.</summary>
+    public bool RisikoZinsGewaehlt =>
+        string.Equals(Risikoart.Normiert(Parameter.RisikoArt), Risikoart.ZINS, StringComparison.Ordinal);
+
+    /// <summary>ETAPPE E15: Ist der Zahlungsstromabzug gewählt? Dann sind R_loss und p_loss aktiv.</summary>
+    public bool RisikoAbzugGewaehlt =>
+        string.Equals(Risikoart.Normiert(Parameter.RisikoArt), Risikoart.ABZUG, StringComparison.Ordinal);
+
+    /// <summary>
+    /// ETAPPE E15: die Herleitungszeile der Gruppe „Risiko" — womit gerechnet wird, aus
+    /// derselben Stelle, die der Kern rechnet (<see cref="RisikoModul.Herleitung"/>).
+    /// </summary>
+    public string RisikoZeile => RisikoModul.Herleitung(Parameter, Kultur);
 
     /// <summary>
     /// „Vorgaben“ — alle Felder der Tafel auf <c>null</c> zurück: seit W5‑B‑12 vierzehn,

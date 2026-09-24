@@ -406,7 +406,8 @@ namespace WindowsFormsApplication1
             // die Tabelle, nie den Bericht (leere Liste). „benannt" folgt der Liste.
             try { b.Wirkungen = new ProjektWirkungCtrl().Laden(daten.IdStamm); }
             catch { b.Wirkungen = new List<ProjektWirkung>(); }
-            b.Deklarationen = ValeriAusweis.Deklarationen(NichtMonetaereWirkungen.Kurztext(b.Wirkungen));
+            // ETAPPE E15 (V‑G7): die Risikozeile nennt ein gepflegtes Risiko.
+            b.Deklarationen = ValeriAusweis.Deklarationen(NichtMonetaereWirkungen.Kurztext(b.Wirkungen), p);
             b.OhneNachweis = StaendeOhneNachweis(staende, alle);
             b.Sensitivitaet = Sensitivitaetszeilen(staende, sensitivitaet, b.Bandbreite.IdReferenz);
             try
