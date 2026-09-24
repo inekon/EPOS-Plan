@@ -1387,8 +1387,9 @@
     }
 
     /// <summary>
-    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, der erste neue Satz ist
-    /// gewählt, und die Statuszeile nennt die Zahl der neuen Sätze (V14).
+    /// Der Import ist zu. Hat er geschrieben, liest die Liste neu, und die neuen Sätze sind
+    /// die Auswahl (V14, 7.1 d): ab zweien über ihre Kästchen („n gewählt"), der erste steht
+    /// als Fokuszeile im Stammblatt; die Statuszeile nennt ihre Zahl.
     /// </summary>
     private void ImportFertig(bool geschrieben)
     {
@@ -1399,6 +1400,8 @@
         List<Katalogfilterzeile> neu = _zeilen.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
         if (neu.Count == 0) return;
 
+        _auswahl.Uebernommen(neu.Select(z => z.Schluessel));
+        _vergleichszeilen = null;
         _gewaehlt = neu[0].Bezeichner;
         DetailLaden();
         _status = neu.Count == 1

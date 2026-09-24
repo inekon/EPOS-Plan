@@ -116,4 +116,22 @@ public static class Fenstermass
         return (Math.Max(MindestBreite, Math.Min(breite, deckelBreite)),
                 Math.Max(MindestHoehe, Math.Min(hoehe, deckelHoehe)));
     }
+
+    /// <summary>
+    /// <b>Das Wunschmaß eines Fensters, das einen anderen Dialog als Überlagerung trägt</b>
+    /// (Konzept Administrationsdialoge 7.1 d): mindestens das Wunschmaß dieses Dialogs,
+    /// je Richtung. Eine <c>Ueberlagerung</c> kann nicht breiter werden als ihr Fenster —
+    /// die breite nimmt 96 % davon —, und der Dialog darin hat sein Wunschmaß nicht aus
+    /// Gewohnheit: Der Stromspeicherimport wünscht 1 180 px, weil seine Liste acht Spalten
+    /// und seine Filterleiste vier Felder trägt. Im Modulkatalog mit 860 px bekam er als
+    /// Überlagerung nur 826 px.
+    /// </summary>
+    /// <param name="wunschBreite">Wunschmaß des Fensters selbst, Breite.</param>
+    /// <param name="wunschHoehe">Wunschmaß des Fensters selbst, Höhe.</param>
+    /// <param name="ueberlagerungBreite">Wunschmaß des getragenen Dialogs als eigenes Fenster, Breite; 0 = keiner.</param>
+    /// <param name="ueberlagerungHoehe">Wunschmaß des getragenen Dialogs als eigenes Fenster, Höhe; 0 = keiner.</param>
+    /// <returns>Das Wunschmaß, das an <see cref="Vorgabe"/> geht.</returns>
+    public static (int Breite, int Hoehe) MitUeberlagerung(
+        int wunschBreite, int wunschHoehe, int ueberlagerungBreite, int ueberlagerungHoehe)
+        => (Math.Max(wunschBreite, ueberlagerungBreite), Math.Max(wunschHoehe, ueberlagerungHoehe));
 }
