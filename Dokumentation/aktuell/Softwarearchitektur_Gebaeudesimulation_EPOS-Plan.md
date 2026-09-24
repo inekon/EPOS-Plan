@@ -176,7 +176,7 @@ keine Datenbank, die Hüllen kennen beide, die zwei Schalen kennen alles** (Befu
 `EnableWindowsTargeting=false` in **sechs** Projektdateien macht einen Rückwärtsbezug zum
 Übersetzungsfehler statt zum Laufzeitfehler auf dem iPad — das ist die einzige Schranke, die vor
 dem Bau greift: in den vier Auslieferungsprojekten `EPOS.Kern`, `EPOS.UI`, `EPOS.UI.Daten` und
-`EPOS.Referenzlauf` und in den zwei Prüfständen `Proben/ChartProben` und `Proben/ErststartProben`.
+`EPOS.Referenzlauf` und in den zwei Prüfständen `Proben/ChartProben` und `Proben/SvgProbe`.
 
 | Projekt | Was die Gebäudesimulation dort ablegt | Was dort **nicht** liegen darf |
 |---|---|---|
