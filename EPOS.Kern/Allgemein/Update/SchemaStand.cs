@@ -479,11 +479,23 @@ namespace WindowsFormsApplication1
         /// bei <see cref="GebaeudeKatalogverweis"/>. <b>Ergebnisneutral:</b> Kein Rechenweg liest
         /// den Verweis, und die reparierten Sätze nutzt kein Referenzprojekt; der Referenzlauf
         /// bleibt byte-gleich.
+        /// Mit den ZWEI SCHEMASCHRITTEN DER ANLAGENKOPPLUNG, Stufe AK1 Welle 1 (Konzept
+        /// Anlagenkopplung Kapitel 8; Entscheide E22, E24, E25, beauftragt am 24.09.2026) steht
+        /// das Ziel auf <b>123</b>: Schritt 122 (AK-S1) legt die dreizehn Spalten der
+        /// Wärmeübergabe an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> und baut die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> ein drittes Mal neu
+        /// (<see cref="GebaeudeSchema.Uebergabespalten"/>), dazu die Projektspalte
+        /// <c>Tab_Einstellungen.Anlagenkopplung</c> (Wertliste AUS/AK1/AK2/AK3, NULL = aus);
+        /// Schritt 123 (AK-S3, Wärmeteil) die drei Ergebnisspalten <c>Vorlauf_Mittel</c>,
+        /// <c>Ruecklauf_Mittel</c> und <c>Uebergabe_Begrenzt_Stunden</c> an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> — beide bei <see cref="AnlagenkopplungSchema"/>.
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Schalter stehen auf 0, alles übrige auf NULL,
+        /// und kein Rechenweg liest die Spalten; <b>der Referenzlauf bleibt byte-gleich</b>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 121;
+        public const int Zielversion = 123;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

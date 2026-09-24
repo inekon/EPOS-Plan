@@ -137,6 +137,24 @@ namespace WindowsFormsApplication1
                     item.Kuehlung_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLUNG_AKTIV);
                     item.Kuehl_Sollwert_Nacht = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_SOLLWERT_NACHT);
 
+                    // Die dreizehn Spalten der Waermeuebergabe aus AK-S1 (Schemaschritt 122,
+                    // dritter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer Sicht
+                    // ohne die Spalten bleibt alles null bzw. aus. Kein Rechenweg liest sie in
+                    // der ersten Welle von AK1.
+                    item.Heizkreis_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_HEIZKREIS_AKTIV);
+                    item.Uebergabe_Art = TextOderNull(row, GebaeudeSchema.SPALTE_UEBERGABE_ART);
+                    item.Uebergabe_Exponent = ZahlOderNull(row, GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT);
+                    item.Uebergabe_Leistung_Nenn = ZahlOderNull(row, GebaeudeSchema.SPALTE_UEBERGABE_LEISTUNG_NENN);
+                    item.Auslegung_Vorlauf = ZahlOderNull(row, GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF);
+                    item.Auslegung_Ruecklauf = ZahlOderNull(row, GebaeudeSchema.SPALTE_AUSLEGUNG_RUECKLAUF);
+                    item.Auslegung_Raumtemperatur = ZahlOderNull(row, GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR);
+                    item.Auslegung_Aussentemperatur = ZahlOderNull(row, GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR);
+                    item.Heizkurve_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_HEIZKURVE_AKTIV);
+                    item.Heizkurve_Niveau = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU);
+                    item.Heizkurve_Steilheit = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT);
+                    item.Regler_Proportionalband = ZahlOderNull(row, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND);
+                    item.Sollwertprofil = TextOderNull(row, GebaeudeSchema.SPALTE_SOLLWERTPROFIL);
+
                     _internalList.Add(item);
                 }
             }

@@ -609,6 +609,14 @@ namespace EPOS.Kern.Tests
                 // (GebaeudeKatalogverweis); jeder Handgriff wiederholbar.
                 GebaeudeKatalogverweis.Ausfuehren();
 
+                // Schritte 122 und 123 (Anlagenkopplung Kapitel 8, Stufe AK1 Welle 1): AK-S1 - die
+                // dreizehn Spalten der Waermeuebergabe an Tab_Gebaeude(_STAMM), der dritte Neubau
+                // der Sicht und die Kopplungsstufe des Projekts; AK-S3 (Waermeteil) - drei
+                // Ergebnisspalten, nullbar. Aus DENSELBEN Quellen wie Migration und Werkzeug;
+                // wiederholbar, kein DML.
+                AnlagenkopplungSchema.UebergabeAlle(null);
+                AnlagenkopplungSchema.ErgebnisspaltenAlle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

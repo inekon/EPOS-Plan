@@ -4034,6 +4034,48 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_121_GEBAEUDE_KATALOGVERWEIS = 121;
 
+        /// <summary>
+        /// Schritt 122 — <b>AK-S1, die Wärmeübergabe an Gebäude und Gebäudekatalog und die
+        /// Kopplungsstufe des Projekts</b> (Konzept Anlagenkopplung 8.1; Stufe AK1 Welle 1,
+        /// Entscheide E22, E24, E25). Er folgt auf <see cref="SCHRITT_121_GEBAEUDE_KATALOGVERWEIS"/>
+        /// ohne Reihenfolgebedingung außer der, dass 101 und 108 die Sicht schon erweitert haben.
+        ///
+        /// <para><b>In dieser Reihenfolge</b>, wie die Schritte 101 und 108: die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> verwerfen (SQLite kennt kein <c>ALTER VIEW</c>); an
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> je dreizehn Spalten anlegen — die
+        /// zwei Schalter <c>Heizkreis_Aktiv</c> und <c>Heizkurve_Aktiv</c> (0/1, Vorgabe 0), die
+        /// Übergabeart (Text, NULL = ideal), Exponent, Nennleistung, Auslegungspunkt (Vor-,
+        /// Rücklauf, Raum- und Außentemperatur), Niveau und Steilheit der Heizkurve, das
+        /// Proportionalband und das Sollwert-Zeitprogramm (168 Werte als Text, NULL = die
+        /// Bestandssollwerte); die Sicht mit den dreizehn Spalten hinter denen von KU-S1 neu
+        /// bauen; dann <c>Tab_Einstellungen.Anlagenkopplung</c> mit der Wertliste AUS/AK1/AK2/AK3
+        /// (NULL = aus). Definitionen: <see cref="GebaeudeSchema"/> und
+        /// <see cref="AnlagenkopplungSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Die Spalten bleiben NULL (die Schalter 0), kein
+        /// Rechenweg liest sie; der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine
+        /// vorhandene Spalte wird übergangen, die Sicht immer neu gebaut.</para>
+        /// </summary>
+        public const int SCHRITT_122_ANLAGENKOPPLUNG_UEBERGABE = 122;
+
+        /// <summary>
+        /// Schritt 123 — <b>AK-S3, Wärmeteil: die drei Ergebnisspalten der Wärmeübergabe</b>
+        /// (Konzept Anlagenkopplung 8.3; Stufe AK1 Welle 1). Er folgt auf
+        /// <see cref="SCHRITT_122_ANLAGENKOPPLUNG_UEBERGABE"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, nach dem Muster von Schritt 110: <c>Vorlauf_Mittel</c>,
+        /// <c>Ruecklauf_Mittel</c> und <c>Uebergabe_Begrenzt_Stunden</c> an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> — nullbares <c>REAL</c>, ohne Vorgabe und ohne
+        /// Nachtrag. Die Quelle ist <see cref="AnlagenkopplungSchema.Ergebnisspalten"/>. Der
+        /// Komfortteil kommt mit AK2, der Kälteteil mit einem eigenen Schritt.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Lauf schreibt die Spalten, bevor die Übergabe
+        /// rechnet; der Referenzlauf-Export nimmt eine Spalte erst auf, wenn sie einen Wert
+        /// trägt — er bleibt byte-gleich. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_123_ANLAGENKOPPLUNG_ERGEBNIS = 123;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5684,6 +5726,31 @@ namespace WindowsFormsApplication1
                         "sein Katalogsatz umbenannt ist, und Katalogsaetze mit einer Sonstigen Flaeche " +
                         "ohne U-Wert liessen sich weder speichern noch im Stundenmodell rechnen.",
                         Schritt_121_GebaeudeKatalogverweis),
+
+            // KONZEPT ANLAGENKOPPLUNG 8.1 (Stufe AK1 Welle 1; Entscheide E22, E24, E25) - AK-S1,
+            // die dreizehn Spalten der Waermeuebergabe an Tab_Gebaeude(_STAMM), dritter
+            // Sichtneubau, und die Kopplungsstufe des Projekts. REIN DDL; die Quellen sind
+            // GebaeudeSchema und AnlagenkopplungSchema. Er steht NACH 121 ohne
+            // Reihenfolgebedingung und nach 101 und 108, deren Sicht er erweitert.
+            new Schritt(SCHRITT_122_ANLAGENKOPPLUNG_UEBERGABE,
+                        "Tab_Gebaeude(_STAMM): dreizehn Spalten der Waermeuebergabe (Heizkreis, " +
+                        "Uebergabeart, Auslegungspunkt, Heizkurve, Proportionalband, " +
+                        "Sollwert-Zeitprogramm), die Sicht Abfrage_Projektgebaeude neu gebaut; " +
+                        "Tab_Einstellungen: Kopplungsstufe des Projekts",
+                        "Die Eingaben der Waermeuebergabe haetten keinen Ort; die Anlagenkopplung " +
+                        "liesse sich spaeter nicht einrichten. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten bleiben leer, jedes Projekt steht auf 'aus', und kein Rechenweg liest sie.",
+                        Schritt_122_AnlagenkopplungUebergabe),
+
+            // KONZEPT ANLAGENKOPPLUNG 8.3 (Stufe AK1 Welle 1) - AK-S3, Waermeteil: drei
+            // Ergebnisspalten an Tab_ErgebnisEnergiebedarf. REIN DDL; die Quelle ist
+            // AnlagenkopplungSchema.Ergebnisspalten. Er steht NACH 122 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_123_ANLAGENKOPPLUNG_ERGEBNIS,
+                        "Tab_ErgebnisEnergiebedarf: mittlerer Vor- und Ruecklauf und Stunden mit " +
+                        "begrenzter Waermeuebergabe",
+                        "Die gekoppelte Rechnung haette keine Ergebnisspalten. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, bis ein Lauf die Uebergabe rechnet.",
+                        Schritt_123_AnlagenkopplungErgebnis),
         };
 
         /// <summary>
@@ -9165,6 +9232,90 @@ namespace WindowsFormsApplication1
                     " Katalogsatz/-saetze" +
                     (betroffene.Count > 0 ? " (" + string.Join(", ", betroffene) + ")" : "") +
                     ". KEIN Rechenweg liest den Verweis, KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritte 122 und 123 - die Schemaschritte der Anlagenkopplung, Stufe AK1 Welle 1
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 122 (AK-S1) — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_122_ANLAGENKOPPLUNG_UEBERGABE"/>, die Definitionen bei
+        /// <see cref="GebaeudeSchema"/> (<see cref="GebaeudeSchema.Uebergabespalten"/>) und
+        /// <see cref="AnlagenkopplungSchema"/>. Dieselbe Folge wie Schritt 108: Sicht verwerfen,
+        /// Spalten anlegen, Sicht neu - nur mit <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteSpalteAnlegen"/>; dann die Projektspalte mit ihrer Wertliste
+        /// (<see cref="AnlagenkopplungSchema.SqliteTyp"/>).
+        ///
+        /// <para><b>Wiederholbar:</b> Die Sicht fällt mit <c>IF EXISTS</c>,
+        /// <see cref="SqliteSpalteAnlegen"/> übergeht eine vorhandene Spalte, die Sicht wird
+        /// immer neu gebaut. Die Nachprobe fragt
+        /// <see cref="AnlagenkopplungSchema.UebergabeVollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_122_AnlagenkopplungUebergabe(Lauf l)
+        {
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann die dreizehn Uebergabespalten je Gebaeudetabelle (26 Eintraege)
+            foreach (SchemaSpalte s in GebaeudeSchema.Uebergabespalten)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, AnlagenkopplungSchema.SqliteTyp(s))) return false;
+
+            // die Sicht neu - aus SQL_VIEW_UEBERGABE: M3, KU-S1 und dahinter die Uebergabespalten
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_UEBERGABE, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            // zuletzt die Projektspalte (Wertliste AUS/AK1/AK2/AK3, NULL = aus)
+            SchemaSpalte p = AnlagenkopplungSchema.Projektspalte;
+            if (!SqliteSpalteAnlegen(l, p.Tabelle, p.Name, AnlagenkopplungSchema.SqliteTyp(p))) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = AnlagenkopplungSchema.UebergabeVollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten der Waermeuebergabe, die Sicht " + GebaeudeSchema.VIEW +
+                                  " oder die Kopplungsstufe des Projekts stehen nach dem Schritt nicht " +
+                                  "auf dem Zielstand.";
+                l.Notiz("122: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("122: AK-S1 - " +
+                    GebaeudeSchema.Uebergabespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Uebergabespalten stehen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_UEBERGABE.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten, " + p.Tabelle + "." + p.Name + " steht (NULL = aus). Die Spalten bleiben " +
+                    "leer (die Schalter 0); KEIN Rechenergebnis aendert sich durch diesen Schritt.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt 123 (AK-S3, Waermeteil) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_123_ANLAGENKOPPLUNG_ERGEBNIS"/>, die Spalten bei
+        /// <see cref="AnlagenkopplungSchema.Ergebnisspalten"/>. Dieselbe Schleife wie Schritt 110;
+        /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen.
+        /// </summary>
+        private static bool Schritt_123_AnlagenkopplungErgebnis(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in AnlagenkopplungSchema.Ergebnisspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, AnlagenkopplungSchema.SqliteTyp(s))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("123: AK-S3 (Waermeteil) - " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    AnlagenkopplungSchema.Ergebnisspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Ergebnisspalte(n) der Waermeuebergabe angelegt, alle nullbar. KEIN DML: Die " +
+                    "Spalten bleiben leer, bis ein Lauf die Uebergabe rechnet; der Referenzlauf " +
+                    "bleibt byte-gleich.");
             return true;
         }
 

@@ -44,6 +44,12 @@ namespace WindowsFormsApplication1
     // fuenfzehn Spalten von M3 neu. Die Bauvorschrift der Sicht steht EINMAL (SichtSql);
     // jeder Durchgang nennt nur seine Zusatzspalten. Tab_Zone gibt es noch nicht - den
     // Block „Spalten aus KU-S1" legt der Zonenschritt S-C mit an (Mehrzonenkonzept 4.2).
+    //
+    // DER DRITTE DURCHGANG: AK-S1 (Schemaschritt 122, Anlagenkopplung 8.1). Dreizehn
+    // Spalten der Waermeuebergabe je Gebaeudetabelle, die Sicht mit ihnen HINTER den
+    // Kuehlspalten neu. Die Projektspalte Tab_Einstellungen.Anlagenkopplung desselben
+    // Schritts steht bei AnlagenkopplungSchema, das beide Teile zu EINEM Schritt fuegt.
+    // Die drei Uebergabespalten der Zone legt ebenfalls S-C mit an.
     // ====================================================================================
 
     /// <summary>
@@ -52,6 +58,8 @@ namespace WindowsFormsApplication1
     /// und der Neubau der Sicht <c>Abfrage_Projektgebaeude</c> - EINE Quelle fuer
     /// Migration, Werkzeug und Nachweis. Dazu der zweite Durchgang KU-S1 (Schemaschritt
     /// 108, Kuehlkonzept 7.1): vier Kuehleingaben je Gebaeudetabelle und der zweite
+    /// Sichtneubau; und der dritte Durchgang AK-S1 (Schemaschritt 122, Anlagenkopplung
+    /// 8.1): dreizehn Spalten der Waermeuebergabe je Gebaeudetabelle und der dritte
     /// Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
@@ -205,6 +213,96 @@ namespace WindowsFormsApplication1
             TABELLEN.SelectMany(t => KUEHL_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
                     .ToArray();
 
+        // ---- AK-S1: die Waermeuebergabe (Schemaschritt 122, Anlagenkopplung 8.1) ------------
+        //
+        // Der dritte Durchgang. Dreizehn Spalten je Gebaeudetabelle beschreiben den Heizkreis
+        // eines Gebaeudes: den Schalter, die Uebergabe (Art, Exponent, Nennleistung), den
+        // Auslegungspunkt, die Heizkurve, das Proportionalband des Raumreglers (E25) und das
+        // Sollwert-Zeitprogramm (H8). Die Gruppen und Bezeichner heissen hier "Uebergabe",
+        // nicht "Heizkreis": SIM_HEIZKREIS benennt im Bestand die Waermesenke des
+        // Anlagenschemas (H11). Die Spalte Heizkreis_Aktiv behaelt ihren Papiernamen.
+        //
+        // KEIN LESER IM RECHENWEG. Die Spalten reisen durch Namensleser, Katalogkopie und
+        // Katalogschreibweg; die Rechnung liest sie erst mit der zweiten Welle von AK1.
+        // Tab_Zone gibt es noch nicht - ihre drei Uebergabespalten legt der Zonenschritt S-C
+        // mit an (Mehrzonenkonzept 4.2).
+
+        /// <summary>
+        /// Schalter (0/1, NOT NULL DEFAULT 0): „die Uebergabe dieses Gebaeudes wird gerechnet".
+        /// Er traegt die ABSICHT, die Felder daneben die WERTE — wer ihn abschaltet, verliert
+        /// seine Auslegungsdaten nicht (Anlagenkopplung 8.1).
+        /// </summary>
+        public const string SPALTE_HEIZKREIS_AKTIV = "Heizkreis_Aktiv";
+        /// <summary>Uebergabeart (<see cref="DbWerte.UEBERGABE_RADIATOR"/> …); <b>NULL = ideal</b> — Kopplung aus, Bestandsweg.</summary>
+        public const string SPALTE_UEBERGABE_ART = "Uebergabe_Art";
+        /// <summary>Exponent der Uebergabegleichung [-]; NULL = Vorgabe der Uebergabeart (3.1).</summary>
+        public const string SPALTE_UEBERGABE_EXPONENT = "Uebergabe_Exponent";
+        /// <summary>Nennleistung der Uebergabe [kW]; NULL = aus Auslegungspunkt und gerechneter Auslegungsheizlast (8.4).</summary>
+        public const string SPALTE_UEBERGABE_LEISTUNG_NENN = "Uebergabe_Leistung_Nenn";
+        /// <summary>Auslegungsvorlauf [°C]; NULL = Vorgabe der Uebergabeart (3.1).</summary>
+        public const string SPALTE_AUSLEGUNG_VORLAUF = "Auslegung_Vorlauf";
+        /// <summary>Auslegungsruecklauf [°C]; NULL = Vorgabe der Uebergabeart (3.1).</summary>
+        public const string SPALTE_AUSLEGUNG_RUECKLAUF = "Auslegung_Ruecklauf";
+        /// <summary>Raumtemperatur im Auslegungspunkt [°C]; NULL = <c>Raumsolltemperatur_Tag</c>.</summary>
+        public const string SPALTE_AUSLEGUNG_RAUMTEMPERATUR = "Auslegung_Raumtemperatur";
+        /// <summary>Auslegungs-Aussentemperatur [°C]; NULL = kaeltestes Tagesmittel der Klimareihe, abgerundet (H10).</summary>
+        public const string SPALTE_AUSLEGUNG_AUSSENTEMPERATUR = "Auslegung_Aussentemperatur";
+        /// <summary>Schalter (0/1, NOT NULL DEFAULT 0): Vorlauf aus der Heizkurve statt fest aus <c>Tab_Energieanlagen.Vorlauf</c> (3.4).</summary>
+        public const string SPALTE_HEIZKURVE_AKTIV = "Heizkurve_Aktiv";
+        /// <summary>Niveau der Heizkurve [K]; NULL = 0.</summary>
+        public const string SPALTE_HEIZKURVE_NIVEAU = "Heizkurve_Niveau";
+        /// <summary>Steilheit der Heizkurve [-]; NULL = 1,0 — die Kurve durch den Auslegungspunkt.</summary>
+        public const string SPALTE_HEIZKURVE_STEILHEIT = "Heizkurve_Steilheit";
+        /// <summary>Proportionalband des Raumreglers [K]; NULL = 1,0 (EPOS-Vorgabe, H1); gewaehlt 0,5 / 1 / 2 K oder frei 0…5 K (E25).</summary>
+        public const string SPALTE_REGLER_PROPORTIONALBAND = "Regler_Proportionalband";
+        /// <summary>
+        /// Sollwert-Zeitprogramm: 168 Raumsollwerte [°C], Montag 00:00 bis Sonntag 23:00,
+        /// Trennzeichen <c>;</c> (4.3, H8). <b>NULL = die vier Bestandssollwerte und die
+        /// Ferienmaske, unveraendert.</b> Format und strenger Leser:
+        /// <see cref="AnlagenkopplungSchema.WochenprofilLesen"/>.
+        /// </summary>
+        public const string SPALTE_SOLLWERTPROFIL = "Sollwertprofil";
+
+        /// <summary>
+        /// Die dreizehn Uebergabespalten JE Tabelle in der Reihenfolge von Anlagenkopplung 8.1,
+        /// mit der Typangabe in <b>Access</b>-Schreibweise — uebersetzt beim Anlegen wie bei M3:
+        /// <c>DOUBLE</c> → nullbares <c>REAL</c>, <c>TEXT(n)</c> → <c>TEXT CHECK (length(…) &lt;= n)</c>,
+        /// <c>YESNO</c> → <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>. Kein DDL-DEFAULT
+        /// auf einem Fachwert: NULL ist die Vorgabe.
+        /// </summary>
+        public static readonly KeyValuePair<string, string>[] UEBERGABE_SPALTEN =
+        {
+            new KeyValuePair<string, string>(SPALTE_HEIZKREIS_AKTIV,            "YESNO"),
+            new KeyValuePair<string, string>(SPALTE_UEBERGABE_ART,              "TEXT(20)"),
+            new KeyValuePair<string, string>(SPALTE_UEBERGABE_EXPONENT,         "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_UEBERGABE_LEISTUNG_NENN,    "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_AUSLEGUNG_VORLAUF,          "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_AUSLEGUNG_RUECKLAUF,        "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_AUSLEGUNG_RAUMTEMPERATUR,   "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_AUSLEGUNG_AUSSENTEMPERATUR, "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_HEIZKURVE_AKTIV,            "YESNO"),
+            new KeyValuePair<string, string>(SPALTE_HEIZKURVE_NIVEAU,           "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_HEIZKURVE_STEILHEIT,        "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_REGLER_PROPORTIONALBAND,    "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_SOLLWERTPROFIL,             "TEXT(1400)"),
+        };
+
+        /// <summary>Die zwei Schalter unter den Uebergabespalten - NOT NULL DEFAULT 0, ohne NULL-Fall.</summary>
+        public static readonly string[] UEBERGABE_SCHALTER = { SPALTE_HEIZKREIS_AKTIV, SPALTE_HEIZKURVE_AKTIV };
+
+        /// <summary>Die zwei Textspalten unter den Uebergabespalten (NULL = Vorgabe; leerer Text ebenso).</summary>
+        public static readonly string[] UEBERGABE_TEXTSPALTEN = { SPALTE_UEBERGABE_ART, SPALTE_SOLLWERTPROFIL };
+
+        /// <summary>
+        /// Die 26 <see cref="SchemaSpalte"/>-Eintraege von AK-S1 an den Gebaeudetabellen
+        /// (Anlagenkopplung 8.1) - die dreizehn aus <see cref="UEBERGABE_SPALTEN"/> fuer
+        /// <c>Tab_Gebaeude</c>, dann fuer <c>Tab_Gebaeude_STAMM</c>. Der 27. Eintrag des
+        /// Schritts ist die Projektspalte <see cref="AnlagenkopplungSchema.Projektspalte"/>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Uebergabespalten =
+            TABELLEN.SelectMany(t => UEBERGABE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
+                    .ToArray();
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -263,7 +361,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// DIE BAUVORSCHRIFT DER SICHT — fuer jeden Sichtneubau dieselbe: die 58
         /// Bestandsspalten an ihren Stellen, dahinter die Zusatzspalten der Durchgaenge in
-        /// ihrer Reihenfolge (M3, dann KU-S1). Ein Durchgang nennt nur, was er anhaengt.
+        /// ihrer Reihenfolge (M3, dann KU-S1, dann AK-S1). Ein Durchgang nennt nur, was er
+        /// anhaengt.
         /// </summary>
         /// <param name="zusatzspalten">Die Spalten aus <c>Tab_Gebaeude</c> hinter <c>Tab_Gebaeude.ID</c>.</param>
         public static string SichtSql(IEnumerable<string> zusatzspalten)
@@ -297,13 +396,26 @@ namespace WindowsFormsApplication1
             SichtSql(NEUE_SPALTEN.Select(s => s.Key).Concat(KUEHL_SPALTEN.Select(s => s.Key)));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit KU-S1). Wer die
+        /// Alle Spalten der Sicht ab Schritt 122 (AK-S1): die 77 aus <see cref="SICHT_KUEHLUNG"/>,
+        /// dahinter die dreizehn Uebergabespalten - an den Stellen 77..89.
+        /// </summary>
+        public static readonly string[] SICHT_UEBERGABE =
+            SICHT_KUEHLUNG.Concat(UEBERGABE_SPALTEN.Select(s => s.Key)).ToArray();
+
+        /// <summary>Die Sichtdefinition des Schritts 122 (AK-S1): M3, KU-S1 und dahinter die dreizehn Uebergabespalten.</summary>
+        public static readonly string SQL_VIEW_UEBERGABE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key)));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit AK-S1). Wer die
         /// Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_KUEHLUNG;
+        public static string[] SICHT_AKTUELL => SICHT_UEBERGABE;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit KU-S1).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KUEHLUNG;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit AK-S1).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_UEBERGABE;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -340,6 +452,19 @@ namespace WindowsFormsApplication1
             foreach (SchemaSpalte s in Kuehlspalten)
                 if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
             return SichtBeginntMit(SICHT_KUEHLUNG);
+        }
+
+        /// <summary>
+        /// Steht der Gebaeudeteil von AK-S1 (Schritt 122) vollstaendig? Alle 26
+        /// Uebergabespalten stehen, und die Sicht liefert <see cref="SICHT_UEBERGABE"/> in
+        /// dieser Reihenfolge an ihren Stellen 0..89. Die Projektspalte fragt
+        /// <see cref="AnlagenkopplungSchema.UebergabeVollstaendig"/> dazu.
+        /// </summary>
+        public static bool UebergabespaltenVollstaendig()
+        {
+            foreach (SchemaSpalte s in Uebergabespalten)
+                if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+            return SichtBeginntMit(SICHT_UEBERGABE);
         }
 
         /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
@@ -448,6 +573,54 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren(SQL_VIEW_KUEHLUNG);
                     bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
                                  SICHT_KUEHLUNG.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt den Gebaeudeteil von AK-S1 (Schritt 122) in EINEM Vorgang aus - fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c> ueber
+        /// <see cref="AnlagenkopplungSchema.UebergabeAlle"/>; die Migration der Schale geht
+        /// denselben Weg ueber ihre eigenen Helfer. Sicht verwerfen, die fehlenden
+        /// Uebergabespalten anlegen, Sicht aus <see cref="SQL_VIEW_UEBERGABE"/> neu bauen. Setzt
+        /// M3 und KU-S1 voraus. Wiederholbar: Eine vorhandene Spalte wird uebergangen, die
+        /// Sicht wird immer neu gebaut. <b>Kein DML</b> - die Schalter stehen danach auf 0, die
+        /// uebrigen Spalten auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens 26).</returns>
+        public static int UebergabespaltenAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = Uebergabespalten.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 Uebergabespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Uebergabespalte(n) angelegt");
+                    v.Ausfuehren(SQL_VIEW_UEBERGABE);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_UEBERGABE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
                     v.Commit();
                 }
                 catch

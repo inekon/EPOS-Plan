@@ -1870,6 +1870,10 @@ namespace WindowsFormsApplication1
         /// Datenbank und nicht aus dem Arbeitsstand der Seite - zurückgeschrieben wird nur das
         /// EIN. Ohne diese Nachreichung schaltete das Speichern der Kaskade die Kühlung eines
         /// Projekts still ab.</para>
+        ///
+        /// <para><b>Ebenso die Kopplungsstufe „Anlagenkopplung"</b> (Schemaschritt 122,
+        /// Anlagenkopplung 8.1): nullbar, ohne Vorgabe — nachgereicht wird ein gesetzter Wert,
+        /// NULL („aus") bleibt NULL.</para>
         /// </summary>
         private bool Speichern()
         {
@@ -1889,6 +1893,7 @@ namespace WindowsFormsApplication1
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
+            string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1902,6 +1907,12 @@ namespace WindowsFormsApplication1
             // VOR dem Delete in der Datenbank stand.
             if (kuehlbetrieb)
                 KonfigurationCtrl.KuehlbetriebSchreiben(m_ID_Projekt, true);
+
+            // DIE KOPPLUNGSSTUFE REIST MIT (Schemaschritt 122, AK-S1; Anlagenkopplung 8.1):
+            // Die neue Zeile traegt NULL (= aus) - nachgereicht wird ein gesetzter Wert, wie er
+            // VOR dem Delete in der Datenbank stand; NULL bleibt NULL.
+            if (anlagenkopplung != null)
+                KonfigurationCtrl.AnlagenkopplungSchreiben(m_ID_Projekt, anlagenkopplung);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

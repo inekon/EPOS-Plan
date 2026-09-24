@@ -622,7 +622,10 @@ Kopierweg, kein neuer Registereintrag (**H8**).
 - **Der Parser ist streng, nicht tolerant.** 168 Werte oder benannter Fehler — anders als beim
   Knappheitsparser (K14 des Kühlkonzepts) gibt es hier keinen sinnvollen Rückfall: Ein Profil mit
   167 Werten ist ein Datenfehler, und ein stillschweigend ergänzter Wert wäre eine erfundene
-  Betriebszeit.
+  Betriebszeit. Jeder Wert ist eine endliche Zahl mit **Punkt** als Dezimaltrennzeichen (Leerraum
+  um einen Wert ist erlaubt); geschrieben wird mit höchstens zwei Nachkommastellen, damit 168 Werte
+  sicher in `TEXT(1400)` passen. Leser und Schreiber stehen einmal, bei `AnlagenkopplungSchema`,
+  und dienen in AK2 auch dem Zeitprogramm des Erzeugers.
 - **Das Profil ist eine Eingabe, kein Ergebnis.** Es wird nicht aus dem Gebäudetyp hergeleitet;
   Nutzungsprofile für Nichtwohngebäude bleiben ausgeschlossen (1.3).
 
@@ -1155,11 +1158,18 @@ Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
 Die Schemaschritte tragen in diesem Papier **Papiernamen** (`AK-S1` …). **Die Nummer vergibt der
 Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigration`, wie ADR-001 und
 die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4 es verlangen
-(**A11**, mit E27 entschieden). **Die Nummer steht in diesem Papier an keiner Stelle**, denn die Gebäude-, Zonen- und
-Kühlschritte entstehen parallel und würden kollidieren; sie wird **bei der Beauftragung** an
-`SchemaStand.Zielversion` abgelesen. Zur Einordnung, nicht zur Verwendung — eine Momentaufnahme
-mit Datum: Am Arbeitsbaum (Stand 22.09.2026) steht der Zielstand auf **100**, die nächste freie
-Nummer ist **101** (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`).
+(**A11**, mit E27 entschieden). **Eine Nummer steht in diesem Papier erst, wenn der Schritt
+beauftragt und vergeben ist**, denn die Gebäude-, Zonen- und Kühlschritte entstehen parallel und
+würden kollidieren; sie wird **bei der Beauftragung** an `SchemaStand.Zielversion` abgelesen.
+
+**Vergeben mit der ersten Welle von AK1 (24.09.2026):** `AK-S1` ist Schemaschritt **122**, der
+Wärmeteil von `AK-S3` Schemaschritt **123** — zwei Schritte, nicht verschmolzen, wie bei der
+Kühlung. Die Definitionen stehen bei `GebaeudeSchema` (die dreizehn Gebäudespalten samt drittem
+Sichtneubau) und `AnlagenkopplungSchema` (Projektspalte, Ergebnisspalten, Format und strenger Leser
+des Wochenprofils). `AK-S2` und der Komfortteil von `AK-S3` bekommen ihre Nummern mit AK2. Der
+Kälteteil von `AK-S3` (F-A16) steht **nicht** in Schritt 123, obwohl KU1 steht (8.3): Er kommt in
+einem eigenen Schritt, sobald die Kälteseite von AK1 beauftragt ist (**H9**); keines seiner drei
+Gegenstücke steht bisher in einem Kühlschritt.
 
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,

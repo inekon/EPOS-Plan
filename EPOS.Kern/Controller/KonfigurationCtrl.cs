@@ -790,6 +790,53 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Projekteinstellung „Anlagenkopplung" (Schemaschritt 122, AK-S1; Anlagenkopplung 8.1)
+
+        /// <summary>
+        /// Die Kopplungsstufe des Projekts, wie sie in <c>Tab_Einstellungen</c> steht - DIALOGFREI
+        /// und NULL-ERHALTEND gelesen: <c>null</c> heisst „nicht gesetzt", und das ist
+        /// <see cref="DbWerte.ANLAGENKOPPLUNG_AUS"/>; fehlende Zeile und fehlende Spalte ebenso.
+        ///
+        /// <para><b>Kein Rechenweg liest die Stufe</b> in der ersten Welle von AK1. Gebraucht wird
+        /// der Leser, damit das Speichern der Kaskade sie nicht verliert
+        /// (<c>SimulationKonfigHuelle.Speichern</c> legt die Zeile neu an).</para>
+        /// </summary>
+        public static string AnlagenkopplungLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            object wert = StilleDb.Scalar(
+                "SELECT [" + AnlagenkopplungSchema.SPALTE_ANLAGENKOPPLUNG + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            return wert == null || wert == DBNull.Value
+                ? null
+                : Convert.ToString(wert, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Schreibt die Kopplungsstufe eines Projekts; <c>null</c> schreibt NULL („aus"). Ein
+        /// EIGENES, zielgenaues UPDATE wie bei <see cref="KuehlbetriebSchreiben"/> und aus demselben
+        /// Grund. Die Spalte traegt die Wertliste als <c>CHECK</c>
+        /// (<see cref="AnlagenkopplungSchema.TYP_ANLAGENKOPPLUNG"/>) - ein fremder Wert scheitert
+        /// dort und liefert <c>false</c>.
+        ///
+        /// Rueckgabe <c>false</c>, wenn keine Zeile getroffen wurde oder die Spalte fehlt.
+        /// </summary>
+        public static bool AnlagenkopplungSchreiben(int idProjekt, string stufe)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                AnlagenkopplungSchema.SPALTE_ANLAGENKOPPLUNG + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.VarWChar, stufe),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
         /// <summary>
         /// <b>DER ANFANGSWERT EINES NEUEN PROJEKTS</b> (Entscheid E27, K10; Kuehlkonzept 7.2)
         /// - die EINE Stelle, an der die Programmeinstellung „Neue Projekte mit Kuehlung

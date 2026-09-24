@@ -1505,6 +1505,50 @@ namespace Testdatenbankschema
                                   Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG) + " (erwartet 0 und 0).");
             }
 
+            // ---- Schritt 122: AK-S1, die Waermeuebergabe an Tab_Gebaeude(_STAMM) und die
+            //      Kopplungsstufe des Projekts (Anlagenkopplung 8.1, Stufe AK1 Welle 1). REIN DDL:
+            //      Sicht verwerfen, 26 Spalten, Sicht Abfrage_Projektgebaeude neu, dann
+            //      Tab_Einstellungen.Anlagenkopplung mit Wertliste - DIESELBE Quelle
+            //      (AnlagenkopplungSchema, GebaeudeSchema), aus der sich
+            //      SchemaMigration.Schritt_122_AnlagenkopplungUebergabe bedient.
+            //
+            //      ER STEHT NACH 101 und 108, deren Sicht er erweitert.
+            //
+            //      ERGEBNISNEUTRAL: Die Spalten bleiben NULL (die Schalter 0), kein Rechenweg
+            //      liest sie; der Referenzlauf bleibt byte-gleich.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 122 - Waermeuebergabe und Kopplungsstufe (AK-S1): " +
+                              (AnlagenkopplungSchema.UebergabeVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht122 = new List<string>();
+                angelegt += AnlagenkopplungSchema.UebergabeAlle(bericht122);
+                foreach (string zeile in bericht122)
+                    Console.WriteLine("Schritt 122 - " + zeile + ".");
+                Console.WriteLine("Schritt 122 - vollstaendig: " + AnlagenkopplungSchema.UebergabeVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 123: AK-S3, Waermeteil - drei Ergebnisspalten an
+            //      Tab_ErgebnisEnergiebedarf (Anlagenkopplung 8.3). NACH 122. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_123_AnlagenkopplungErgebnis
+            //      bedient (AnlagenkopplungSchema.Ergebnisspalten).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Spalten bleiben NULL, und der Export nimmt sie
+            //      erst mit einem Wert auf (Referenzlauf/Ergebnisexport.cs).
+            Console.WriteLine();
+            Console.WriteLine("Schritt 123 - Ergebnisspalten der Waermeuebergabe (AK-S3, Waermeteil): " +
+                              (AnlagenkopplungSchema.ErgebnisspaltenVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht123 = new List<string>();
+                angelegt += AnlagenkopplungSchema.ErgebnisspaltenAlle(bericht123);
+                foreach (string zeile in bericht123)
+                    Console.WriteLine("Schritt 123 - " + zeile + ".");
+                Console.WriteLine("Schritt 123 - vollstaendig: " + AnlagenkopplungSchema.ErgebnisspaltenVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
