@@ -399,6 +399,7 @@
                 <EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationDialog
                     TitelAnzeigen="false" Komponente="@_konfigArt" Werte="@_konfigWerte"
                     Anlage="@_konfigAnlage" Traegerkatalog="@_konfigKatalog"
+                    Kuehlung="@_konfigKuehlung"
                     HilfeSchluessel="@HilfeSchluesselBerechnung"
                     HilfeKurztext="@HilfeKurztextBerechnung"
                     NurLesen="@_daten.Gesperrt" Geschlossen="KonfigFertig" />
@@ -1411,6 +1412,12 @@
     private IReadOnlyList<EnergietraegerWahl.Eintrag> _konfigKatalog
         = Array.Empty<EnergietraegerWahl.Eintrag>();
 
+    /// <summary>
+    /// Die Kühlgaben der Wärmepumpen-Konfiguration (Stufe KU2 Welle 3) — wie der Trägerkatalog
+    /// EINMAL beim Öffnen geholt; <c>null</c> = keine Gruppe „Kühlbetrieb".
+    /// </summary>
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? _konfigKuehlung;
+
     private void Ebene1Schliessen()
     {
         _ebene1 = Editor.Keine;
@@ -1418,6 +1425,7 @@
         _konfigArt = Komponentenart.Keine;
         _konfigWerte = null;
         _konfigAnlage = null;
+        _konfigKuehlung = null;
     }
 
     private void Ebene2Schliessen()
@@ -1742,8 +1750,11 @@
         // Das Textbuendel der Komponente fuellt sich SELBST aus MyResource; nur der
         // Traegerkatalog kommt aus der Datenbank und damit ueber die Naht.
         if (_konfigAnlage is not null)
+        {
             _konfigKatalog = Parameter?.WaermepumpeTraegerkatalog?.Invoke()
                              ?? Array.Empty<EnergietraegerWahl.Eintrag>();
+            _konfigKuehlung = Parameter?.WaermepumpeKuehlGaben?.Invoke();
+        }
 
         _ebene1 = Editor.Komponentenkonfig;
     }

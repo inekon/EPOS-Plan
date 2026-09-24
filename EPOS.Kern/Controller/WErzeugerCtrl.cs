@@ -139,6 +139,12 @@ namespace WindowsFormsApplication1
         /// unter einer Beziehung auf <c>energy_carrier.id</c>. Ein Traeger, den es nicht gibt,
         /// faellt ebenso auf NULL (<see cref="AnlagenSql.TraegerVerweisOderNull"/>).
         /// </param>
+        /// <param name="KuehlEigenerZaehler">
+        /// Die Abrechnungsart des Kaeltestroms (<c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c>,
+        /// Schemaschritt 119; E34). <c>null</c> heisst „nicht anfassen"; <b><c>true</c> = eigener
+        /// Zaehler</b> (geschrieben als 1), <b><c>false</c> = anteilig am Netzbezug</b>, die Vorgabe
+        /// — geschrieben als NULL, nie als 0 (<see cref="AnlagenSql.EigenerZaehlerOderNull"/>).
+        /// </param>
         public sealed record KonfigurationFelder(bool? Heizstab = null,
                                                  bool? Sperrung = null,
                                                  int? SperrzeitVon = null,
@@ -147,7 +153,8 @@ namespace WindowsFormsApplication1
                                                  string Betriebsart = null,
                                                  double? Abschaltpunkt = null,
                                                  int? IdCarrier = null,
-                                                 int? KuehlIdCarrier = null);
+                                                 int? KuehlIdCarrier = null,
+                                                 bool? KuehlEigenerZaehler = null);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -193,7 +200,8 @@ namespace WindowsFormsApplication1
                     "SELECT ID, Bezeichner, Heizstab, Sperrung, Sperrzeit_von, Sperrzeit_bis, " +
                     "Bivalenter_Betrieb, Betriebsart, Abschaltpunkt, [" +
                     SchemaKatalog.SPALTE_ID_CARRIER + "], [" +
-                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "] " +
+                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "], [" +
+                    KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER + "] " +
                     "FROM Tab_Energieanlagen WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@id", idAnlage), new DbParam("@proj", idProjekt));
 
@@ -213,7 +221,8 @@ namespace WindowsFormsApplication1
                     "Sperrzeit_von = ?, Sperrzeit_bis = ?, Bivalenter_Betrieb = ?, " +
                     "Betriebsart = ?, Abschaltpunkt = ?, [" +
                     SchemaKatalog.SPALTE_ID_CARRIER + "] = ?, [" +
-                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "] = ? " +
+                    KuehlungSchema.SPALTE_KUEHL_ID_CARRIER + "] = ?, [" +
+                    KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER + "] = ? " +
                     "WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@stab", Uebernommen(felder.Heizstab, satz, "Heizstab")),
                     new DbParam("@sperr", Uebernommen(felder.Sperrung, satz, "Sperrung")),
@@ -231,6 +240,8 @@ namespace WindowsFormsApplication1
                         Uebernommen(felder.IdCarrier, satz, SchemaKatalog.SPALTE_ID_CARRIER)),
                     ProjektPuffer.Par("@kuehlcarrier", DbParamTyp.Integer,
                         KuehlTraeger(felder.KuehlIdCarrier, satz, bezeichner)),
+                    ProjektPuffer.Par("@kuehlzaehler", DbParamTyp.Integer,
+                        KuehlAbrechnung(felder.KuehlEigenerZaehler, satz)),
                     new DbParam("@id", idAnlage),
                     new DbParam("@proj", idProjekt));
 
@@ -269,6 +280,18 @@ namespace WindowsFormsApplication1
             if (!neu.HasValue)
                 return Wertoderleer(Feldwert(satz, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER));
             return AnlagenSql.TraegerVerweisOderNull(neu.Value, bezeichner);
+        }
+
+        /// <summary>
+        /// Die Abrechnungsart des Kaeltestroms fuer <see cref="KonfigurationSchreiben"/>
+        /// (Schemaschritt 119; E34): <c>null</c> = der gelesene Wert (NULL bleibt NULL), sonst 1 fuer
+        /// den eigenen Zaehler und NULL fuer „anteilig" (<see cref="AnlagenSql.EigenerZaehlerOderNull"/>).
+        /// </summary>
+        private static object KuehlAbrechnung(bool? neu, DataRow satz)
+        {
+            if (!neu.HasValue)
+                return Wertoderleer(Feldwert(satz, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER));
+            return AnlagenSql.EigenerZaehlerOderNull(neu.Value);
         }
 
         /// <summary>Der neue Wahrheitswert, sonst der gelesene (0/1, nie <c>NULL</c>).</summary>
@@ -565,6 +588,11 @@ namespace WindowsFormsApplication1
             // KU-S3 (Schemaschritt 114; K9, E33): der Stromtraeger der Kuehlung, NULL = wie
             // Heizbetrieb - ausdruecklich auch mit null; eine fehlende Spalte gilt wie NULL.
             item.Kuehl_ID_Carrier = Zahl(dt, row, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER);
+            // Schemaschritt 119 (E34): die Abrechnungsart des Kaeltestroms, NULL = anteilig am
+            // Netzbezug (Vorgabe) - NULL bleibt null, 1 wird true, 0 false; eine fehlende Spalte
+            // gilt wie NULL.
+            int? zaehler = Zahl(dt, row, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);
+            item.Kuehl_EigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null;
 
             // --- Quellen-/Senken-Konfiguration (ausdrücklich, auch mit null) -----------
             item.Prioritaet = Zahl(dt, row, "Prioritaet");

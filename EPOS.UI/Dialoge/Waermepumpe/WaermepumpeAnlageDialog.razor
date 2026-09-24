@@ -497,6 +497,7 @@
             {
                 <WaermepumpeKonfiguration Daten="@Daten" Traegerkatalog="@Traegerkatalog"
                                           Texte="@KonfigTexte" Aktiv="@(!NurLesen)"
+                                          Kuehlung="@Kuehlung"
                                           Geaendert="KonfigurationGeaendert" />
 
                 @if (_konfigWarnung.Length > 0)
@@ -705,6 +706,12 @@
     /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
     [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
         = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>
+    /// Die Kühlgaben der Konfiguration (Stufe KU2 Welle 3; Kühlkonzept 8.2) — Stützstellen,
+    /// Sperrgrund und die Stromträger des Projekts; <c>null</c> = keine Gruppe „Kühlbetrieb".
+    /// </summary>
+    [Parameter] public WaermepumpeKuehlGaben? Kuehlung { get; set; }
 
     /// <summary>
     /// Nur ansehen, nicht ändern (iU9-W7.5). Der Weg „Ansicht" der Verwaltung zeigt
@@ -1020,6 +1027,7 @@
     private const string MANGEL_TEMPERATUR = "TEMPERATUR";
     private const string MANGEL_VON = "VON";
     private const string MANGEL_BIS = "BIS";
+    private const string MANGEL_KUEHLUNG = "KUEHLUNG";
     private const string MANGEL_NUTZUNG = "NUTZUNG";
     private const string MANGEL_HEIZSTAB = "HEIZSTAB";
 
@@ -1105,11 +1113,14 @@
         // Welle #458: Angemeldet ist eine SICHTKLASSE - sie reicht Daten unveraendert
         // durch und traegt dazu die Projekteinstellung „Extrapolation der WP-Kennlinie
         // erlauben", die nicht am Feldsatz haengt (Muster PhotovoltaikKiSicht, KI-F7).
+        // Stufe KU2 Welle 3: Die Sichtklasse traegt auch die Kuehlgaben - mit ihnen loest sie
+        // die drei Wahlfelder des Kuehlbetriebs auf und lehnt ab, was die Maske weich sperrt.
         _kiSicht = new WaermepumpeAnlageKiSicht
         {
             Datenquelle = () => Daten,
             ExtrapolationLesen = () => _extrapolation,
-            ExtrapolationSetzen = KiExtrapolationSetzen
+            ExtrapolationSetzen = KiExtrapolationSetzen,
+            Kuehlgaben = () => Kuehlung
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
                                           () => _kiSicht, KiHaken(),
@@ -1449,6 +1460,7 @@
             Daten.Betriebsart = alt.Betriebsart;
             Daten.Abschaltpunkt = alt.Abschaltpunkt;
             Daten.CarrierId = alt.CarrierId;
+            Daten.KuehlfelderAus(alt);   // KU2 Welle 3: die fünf Kühlfelder ebenso
         }
         _konfigSicherung = null;
         _konfigWarnung = "";
@@ -1657,6 +1669,9 @@
             return (string.Format(WarnungFeldFormat, KonfigTexte.LabelVon), MANGEL_VON);
         if (Daten.SperrzeitBis is null)
             return (string.Format(WarnungFeldFormat, KonfigTexte.LabelBis), MANGEL_BIS);
+        // KU2 Welle 3: die Prüfregel der Kühlfelder - EINE Stelle für beide Wirte.
+        string? kuehl = WaermepumpeKonfiguration.KuehlFehler(Daten, Kuehlung, KonfigTexte);
+        if (kuehl is not null) return (kuehl, MANGEL_KUEHLUNG);
         return (null, "");
     }
 
@@ -1671,7 +1686,7 @@
         _mangel = feld;
 
         if (fehler is null || NurLesen) return;
-        if (feld is not (MANGEL_BETRIEBSART or MANGEL_VON or MANGEL_BIS)) return;
+        if (feld is not (MANGEL_BETRIEBSART or MANGEL_VON or MANGEL_BIS or MANGEL_KUEHLUNG)) return;
 
         if (!_konfigOffen) _konfigSicherung = Daten.Kopie();
         _konfigWarnung = fehler;

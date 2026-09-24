@@ -126,6 +126,28 @@ public sealed class WaermepumpeAnlageDaten
     /// </summary>
     public double? Kuehlleistung { get; set; }
 
+    // --- Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2; E15, E33, E34) -------
+    //
+    // Drei Felder der PROJEKTKOPIE (Tab_WP) und zwei der ANLAGENZEILE
+    // (Tab_Energieanlagen). Die Gruppe „Kühlbetrieb" des Bausteins
+    // WaermepumpeKonfiguration zeichnet sie nur, wenn der Wirt die Kühlgaben reicht
+    // (WaermepumpeKuehlGaben); sonst laufen sie unverändert mit.
+
+    /// <summary>„Maschine auch zum Kühlen benutzen" (<c>Tab_WP.Kuehlbetrieb</c>).</summary>
+    public bool Kuehlbetrieb { get; set; }
+
+    /// <summary>Kühl-Vorlauf [°C] aus den Stützstellen der Kühlkennlinie (<c>Tab_WP.Kuehl_Vorlauf</c>, K21); <c>null</c> = kleinster Stützwert.</summary>
+    public int? KuehlVorlauf { get; set; }
+
+    /// <summary>Hilfsstromanteil [—], 0 ≤ x &lt; 1 (<c>Tab_WP.Kuehl_Hilfsstromanteil</c>, K23); <c>null</c> = kein Zuschlag. Der Baustein zeigt ihn in Prozent.</summary>
+    public double? KuehlHilfsstromanteil { get; set; }
+
+    /// <summary>Stromträger des Kältestroms (<c>Tab_Energieanlagen.Kuehl_ID_Carrier</c>, K9); <c>null</c> = wie Heizbetrieb.</summary>
+    public int? KuehlCarrierId { get; set; }
+
+    /// <summary>Abrechnung des Kältestroms bei abweichendem Träger (<c>Kuehl_EigenerZaehler</c>, E34): <c>true</c> = eigener Zähler, sonst anteilig am Netzbezug.</summary>
+    public bool? KuehlEigenerZaehler { get; set; }
+
     // --- Verborgen mitlaufend --------------------------------------------------
 
     /// <summary>Modulkosten [€] — Ä19, nicht gezeichnet.</summary>
@@ -165,9 +187,55 @@ public sealed class WaermepumpeAnlageDaten
         Firma = Firma,
         Nennleistung = Nennleistung,
         Kuehlleistung = Kuehlleistung,
+        Kuehlbetrieb = Kuehlbetrieb,
+        KuehlVorlauf = KuehlVorlauf,
+        KuehlHilfsstromanteil = KuehlHilfsstromanteil,
+        KuehlCarrierId = KuehlCarrierId,
+        KuehlEigenerZaehler = KuehlEigenerZaehler,
         Modulkosten = Modulkosten,
         Volumen = Volumen,
         Solaranteil = Solaranteil,
         RendeMix = RendeMix
     };
+
+    /// <summary>Schreibt die fünf Kühlfelder eines anderen Satzes zurück — der Abbrechen-Weg der Konfiguration.</summary>
+    public void KuehlfelderAus(WaermepumpeAnlageDaten quelle)
+    {
+        if (quelle is null) return;
+        Kuehlbetrieb = quelle.Kuehlbetrieb;
+        KuehlVorlauf = quelle.KuehlVorlauf;
+        KuehlHilfsstromanteil = quelle.KuehlHilfsstromanteil;
+        KuehlCarrierId = quelle.KuehlCarrierId;
+        KuehlEigenerZaehler = quelle.KuehlEigenerZaehler;
+    }
+}
+
+/// <summary>
+/// Eine Vorlauf-Stützstelle der Kühlkennlinie für die Auswahl „Kühl-Vorlauf" (K21) —
+/// mit dem Grund, aus dem der Lauf sie ablehnt (Heizlage, vertauschte Achsen, K22); leer =
+/// wählbar.
+/// </summary>
+public sealed record KuehlVorlaufEintrag(int Vorlauf, string Sperrgrund = "");
+
+/// <summary>
+/// <b>Die Kühlgaben der Wärmepumpen-Konfiguration</b> (Stufe KU2 Welle 3; Kühlkonzept 8.2) — was
+/// der Baustein <c>WaermepumpeKonfiguration</c> für die Gruppe „Kühlbetrieb" aus der Datenbank
+/// braucht, gebaut in der Hülle aus Kern-Controllern. <c>null</c> am Baustein = keine Gruppe.
+/// </summary>
+public sealed class WaermepumpeKuehlGaben
+{
+    /// <summary>Die Vorlauf-Stützstellen der Kühlkennlinie eines Geräts (Projektkopie vor Katalog); leer = keine Kennlinie.</summary>
+    public Func<int, IReadOnlyList<KuehlVorlaufEintrag>>? Vorlaeufe { get; init; }
+
+    /// <summary>Der Sperrgrund des Kühlbetriebs eines Geräts (keine Kennlinie, Quellspeicher); <c>null</c> = frei.</summary>
+    public Func<int, string?>? Sperrgrund { get; init; }
+
+    /// <summary>Die Stromträger des Projekts für die Wahl des Kühlträgers — Id und Name.</summary>
+    public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; init; } = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Der Stromträger, der den Netzbezug des Projekts bepreist (<c>Kaeltestromabrechnung.Projekttraeger</c>);
+    /// weicht der Kühlträger davon ab, bietet der Baustein die Abrechnungsart an (E34).
+    /// </summary>
+    public int ProjektStromtraeger { get; init; }
 }

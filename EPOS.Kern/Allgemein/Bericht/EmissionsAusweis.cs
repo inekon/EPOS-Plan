@@ -77,6 +77,21 @@ namespace WindowsFormsApplication1
             return englisch ? "Total CO₂ emissions" : "CO₂-Emissionen gesamt";
         }
 
+        /// <summary>
+        /// Beschriftung der Kennzahl <c>kaelte.co2</c> (Stufe KU2 Welle 3): die Emissionen des
+        /// Kältestroms — im Modus des Laufs und mit der Grenze der Kältezahl (K5).
+        /// </summary>
+        public static string KennzahlKaeltestrom(string modus, bool englisch)
+        {
+            if (Gemischt(modus))
+                return englisch ? "CO₂ / CO₂ equivalent of cooling electricity, mode differs per variant (sensible)"
+                                : "CO₂ bzw. CO₂-Äquivalent Kältestrom, Modus je Variante verschieden (sensibel)";
+            if (IstAequivalent(modus))
+                return englisch ? "CO₂ equivalent of cooling electricity, GWP₁₀₀ (sensible)"
+                                : "CO₂-Äquivalent Kältestrom, GWP₁₀₀ (sensibel)";
+            return englisch ? "CO₂ emissions of cooling electricity (sensible)" : "CO₂-Emissionen Kältestrom (sensibel)";
+        }
+
         /// <summary>Beschriftung der Kennzahl <c>em.co2_spez</c> (je kWh Wärme).</summary>
         public static string KennzahlSpezifisch(string modus, bool englisch)
         {

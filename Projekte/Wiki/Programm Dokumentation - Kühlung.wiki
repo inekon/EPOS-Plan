@@ -46,15 +46,56 @@ Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile,
 == Deckung ==
 {{Anker|deckung}}
 
-Wärmeerzeuger decken keine Kälte. Einen Kälteerzeuger rechnet EPOS-Plan nicht: Der Kältebedarf wird ausgewiesen und bleibt ungedeckt, und das Laufprotokoll nennt Menge und Spitze. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
+Wärmeerzeuger decken keine Kälte. Kälte deckt eine '''Wärmepumpe im Kühlbetrieb''': eine Wärmepumpe mit Kühlkennlinie, deren Kühlbetrieb im Projekt eingeschaltet ist. Mehrere solche Wärmepumpen decken den Kältebedarf in der Reihenfolge der Kaskade. Was keine deckt, bleibt ungedeckt; das Laufprotokoll nennt Menge und Spitze. Ohne Wärmepumpe im Kühlbetrieb bleibt der ganze Kältebedarf ungedeckt. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
+
+=== Kühlbetrieb der Wärmepumpe ===
+{{Anker|kuehlbetrieb}}
+
+Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der Simulationskonfiguration über ''Konfiguration…'' an der Karte der Wärmepumpe, im Anlagendialog der Wärmepumpe hinter ''Konfiguration…''.
+
+{| class="wikitable"
+! Feld !! Vorgabe !! Bedeutung
+|-
+| Maschine auch zum Kühlen benutzen || aus || schaltet den Kühlbetrieb dieser Wärmepumpe ein; ohne den Projektschalter ''Kühlung rechnen'' wirkt er nicht
+|-
+| Kühl-Vorlauf || kleinster Stützwert || Vorlauftemperatur des Kaltwassers; zur Wahl stehen die Vorlauftemperaturen, für die die Kühlkennlinie Werte führt. Zwischenwerte werden nicht interpoliert
+|-
+| Hilfsstromanteil || kein Zuschlag || Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 % und weniger als 100 %
+|-
+| Stromträger des Kältestroms || wie Heizbetrieb || ein anderer Stromträger des Projekts für den Kältestrom dieser Wärmepumpe
+|-
+| Abrechnung des Kältestroms || anteilig am Netzbezug || erscheint nur, wenn der gewählte Stromträger nicht der des Projekts ist; siehe [[#abrechnung|Stromträger und Abrechnung]]
+|}
+
+Der Schalter ist gesperrt, wenn die Wärmepumpe im Projekt keine Kühlkennlinie führt oder ihre Wärme aus einem Quellspeicher bezieht; der Grund steht am Schalter. Führt ein Gerät eine Kühlleistung, aber keine Kühlkennlinie, sagt der Dialog, dass diese Maschine nur Wärme rechnet. Einen weiteren Stromträger ordnen Sie dem Projekt unter ''Berichte & Kosten › Energieträger'' zu.
+
+Die Wärmepumpe schaltet '''je Tag''' zwischen Heizen und Kühlen um: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt sie an diesem Tag. Brauchwasser bleibt auch an einem Kühltag bedienbar.
+
+=== Wie die Wärmepumpe kühlt ===
+{{Anker|kaelteerzeugung}}
+
+Die Kälteleistung einer Stunde liest EPOS-Plan aus der Kühlkennlinie beim gewählten Kühl-Vorlauf und der Temperatur der Wärmequelle; die Rückkühlung ist in der Kennlinie enthalten. Der '''Kältestrom''' ist die gedeckte Kälte geteilt durch die Leistungszahl des Kühlbetriebs (EER), dazu der Hilfsstromanteil. Er gehört zum Strombedarf des Projekts wie der Strom der Wärmepumpe im Heizbetrieb: Photovoltaik, BHKW und Stromspeicher decken ihn mit, den Rest liefert das Netz.
+
+Die '''Jahresarbeitszahl Kälte''' ist die gedeckte Kälte eines Jahres geteilt durch den Kältestrom desselben Jahres.
+
+=== Stromträger und Abrechnung ===
+{{Anker|abrechnung}}
+
+Ohne eigene Wahl trägt der Kältestrom Tarif und Emissionsfaktor des Stromträgers des Projekts. Wählen Sie für eine Wärmepumpe einen anderen Stromträger, bestimmt die Abrechnungsart, wie ihr Kältestrom in Kosten und Emissionen eingeht:
+
+* '''anteilig am Netzbezug''' (Vorgabe) – ein Netzanschluss: Der Netzbezug jeder Viertelstunde wird nach dem Anteil des Kältestroms am Stromverbrauch geteilt. Dieser Anteil trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers, der Rest die des Stromträgers des Projekts. Eigenstrom aus Photovoltaik, BHKW und Stromspeicher bleibt gemeinsam; Grund- und Leistungspreis bleiben beim Stromträger des Projekts.
+* '''eigener Zähler''' – Der Kältestrom dieser Wärmepumpe wird getrennt gezählt: Er wird nicht aus Photovoltaik, BHKW oder Stromspeicher gedeckt und trägt ganz Arbeitspreis und Emissionsfaktor des gewählten Stromträgers. Grund- und Leistungspreis dieses Stromträgers setzt EPOS-Plan nicht an.
+
+Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten aus, und der Grund nennt den Stromträger. Das Laufprotokoll nennt je Wärmepumpe den Stromträger, die Abrechnungsart und die Menge, die er trägt.
 
 == Ergebnisse ==
 {{Anker|ergebnisse}}
 
 * '''Wärmebedarf Gebäude''' (Knopf ''Simulation…'' im Gebäudedialog) – der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite: Kühlbedarf, höchste Kältelast, Vollbenutzungsstunden, dazu Stunden mit Kühlbedarf, Überhitzungsstunden und Stunden mit Heizen und Kühlen; ein eigenes Bild der Kältelast (mit ''sortiert'' als Dauerlinie) und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''. Die Zeilen darunter sagen, wie der Kältebedarf entsteht, und nennen die Grenze der Zahl. Bei einem Gebäude ohne Kühlung stehen statt der Kältezahlen Striche, dazu die Überhitzungsstunden; es gibt dann kein Bild der Kältelast und keine Spalte ''Kühlung''. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund.
 * '''Simulationsergebnis, Reiter Wärme-/Strombedarf''' – der Block '''Kälte''': Kältebedarf, höchste Kältelast, Stunden mit Kühlbedarf, Vollbenutzungsstunden, die Kanalzeile ''Kühlung'', ein eigenes Bild der Kältelast und der Knopf ''CSV Export''.
-* '''Simulationsergebnis, Übersicht''' – unter den Spalten ''Wärme'' und ''Strom'' der Block '''Kältedeckung''' mit Kältebedarf, höchster Kältelast und dem ungedeckten Kältebedarf. Er steht nur, wenn ein Kältebedarf besteht.
-* '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest; im Variantenvergleich die Kennzahlen ''Kältebedarf gesamt (sensibel)'', ''Kältelast max. (sensibel)'' und ''Stunden mit Kühlbedarf (sensibel)''; je Gebäude die Kühlenergie.
+* '''Simulationsergebnis, Übersicht''' – unter den Spalten ''Wärme'' und ''Strom'' der Block '''Kältedeckung''' mit Kältebedarf, höchster Kältelast und dem ungedeckten Kältebedarf. Kühlt eine Wärmepumpe, stehen darunter Deckungsgrad, Kältestrom und Jahresarbeitszahl Kälte, der Kältestrom aus dem Netz, der Ring ''Kältedeckung'' mit seiner Legende und die Tabelle der Kälteerzeuger mit Kühl-Vorlauf, Kälte, Kältestrom, EER, Strom aus dem Netz und Stromträger. Der Block steht nur, wenn ein Kältebedarf besteht.
+* '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf und -deckung'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest. Kühlt eine Wärmepumpe, stehen dort außerdem Deckungsgrad, Kälteerzeugung, Kältestrom, Jahresarbeitszahl Kälte sowie Netzbezug, Kosten und CO₂ des Kältestroms, die Tabelle ''Kälteerzeuger'' und der Satz, dass Kältemittelverluste nicht enthalten sind. Im Variantenvergleich stehen ''Kältebedarf gesamt'', ''Kältelast max.'', ''Stunden mit Kühlbedarf'' und ''Deckungsgrad Kühlung'' bei den Bedarfskennzahlen, die Zahlen der Wärmepumpen im Kühlbetrieb in der eigenen Gruppe ''Kälte'' – jede mit dem Zusatz ''(sensibel)''. Je Gebäude steht die Kühlenergie.
+* '''Wirtschaftlichkeit''' – der Kältestrom ist Teil der Energiekosten und der Emissionen. Trägt eine Wärmepumpe für den Kältestrom einen eigenen Stromträger, steht er in den Energiekosten je Anlage als eigene Zeile ''Kältestrom …''.
 
 Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Kältegruppe und keine Nullen. Der Wärmebedarf eines Gebäudes zeigt den Abschnitt ''Kältebedarf'' dagegen immer – ohne Kühlung mit Strichen statt Kältezahlen, mit den Überhitzungsstunden und mit der Zeile, dass das Gebäude frei läuft.
 
@@ -67,7 +108,8 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 {{Anker|grenzen}}
 
 * Die Kälte ist '''sensibel''': Feuchte, Entfeuchtung und latente Last sind nicht enthalten.
-* '''Keine Kältemittelemissionen''': Die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
+* '''Keine Kältemittelemissionen''': Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
+* '''Ein Kälteerzeuger''': Kälte deckt allein die Wärmepumpe im Kühlbetrieb; eine Kältemaschine als eigener Erzeuger, freie Kühlung und ein Kältespeicher werden nicht gerechnet.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
 * Das Gebäude ist '''eine Zone''' mit '''einem''' Kühlsollwert für alle Stunden.
 * Verluste eines Kältenetzes werden nicht gerechnet.

@@ -26950,7 +26950,7 @@ Do you want to allow this?</value>
     <value>Heat pump "{0}": the auxiliary power share {1} is not between 0 and 1 — no auxiliary power surcharge is applied.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
-    <value>Heat pump "{0}": the electricity carrier chosen for cooling is not priced separately yet — the cooling electricity carries the project's tariff and emission factor.</value>
+    <value>Heat pump "{0}": the cooling electricity is charged to the electricity carrier "{1}" — {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
     <value>Heat pump "{0}", cooling flow temperature {1} °C: in {2} hours with cooling demand the temperature was below the lowest data point ({3} °C, its values apply), in {4} hours above the highest ({5} °C, {6}).</value>
@@ -26984,6 +26984,132 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>The heat pumps in cooling mode cover {0} MWh/a of the cooling demand ({1} %).</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ANTEILIG" xml:space="preserve">
+    <value>as a share of the grid import; self-consumption from photovoltaics and battery storage stays shared, the demand charge stays with the project's electricity carrier</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ZAEHLER" xml:space="preserve">
+    <value>via a separate meter, without self-generated electricity from photovoltaics and battery storage</value>
+  </data>
+  <data name="SIMENG_KAELTE_KUEHLTRAEGER_MENGE" xml:space="preserve">
+    <value>Heat pump "{0}": {1} MWh/a of grid import for cooling (cooling electricity {2} MWh/a) are charged to the electricity carrier "{3}".</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM" xml:space="preserve">
+    <value>Cooling electricity {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
+    <value>Cooling electricity {0} (separate meter)</value>
+  </data>
+  <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
+    <value>Energy costs cannot be determined: the electricity carrier for cooling "{0}" has no energy price. Remedy: maintain the energy price under "Reports &amp; Costs › Energy carriers" or set the cooling electricity carrier to "as in heating mode" in the heat pump dialog.</value>
+  </data>
+  <data name="WIRT_TARIF_KUEHLTRAEGER" xml:space="preserve">
+    <value>Role tariff: {0} MWh/a of grid import for cooling are charged to the cooling electricity carrier and are not in the residual electricity tariff ({1} €/a).</value>
+  </data>
+  <data name="WPK_GRP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Cooling mode</value>
+  </data>
+  <data name="WPK_CHK_KUEHLBETRIEB" xml:space="preserve">
+    <value>Also use the machine for cooling</value>
+  </data>
+  <data name="WPK_HRL_NENNKUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Rated cooling capacity without a cooling characteristic — this machine calculates heat only.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Chilled water supply</value>
+  </data>
+  <data name="WPK_PH_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Default: lowest data point ({0} °C)</value>
+  </data>
+  <data name="WPK_HRL_UMSCHALTUNG" xml:space="preserve">
+    <value>Switch-over per day: if a day's cooling demand exceeds its heating demand, the machine cools on that day; domestic hot water remains served.</value>
+  </data>
+  <data name="WPK_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Auxiliary power share</value>
+  </data>
+  <data name="WPK_PH_HILFSSTROM" xml:space="preserve">
+    <value>Default: no surcharge</value>
+  </data>
+  <data name="WPK_HRL_HILFSSTROM" xml:space="preserve">
+    <value>Pumps and fans of the chilled water circuit as a share of the compressor work.</value>
+  </data>
+  <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
+    <value>The auxiliary power share must be at least 0 % and less than 100 %.</value>
+  </data>
+  <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
+    <value>Electricity carrier for cooling</value>
+  </data>
+  <data name="WPK_PH_KUEHLTRAEGER" xml:space="preserve">
+    <value>as in heating mode</value>
+  </data>
+  <data name="WPK_HRL_KUEHLTRAEGER_WEITERE" xml:space="preserve">
+    <value>Assign a further electricity carrier to the project under "Reports &amp; Costs › Energy carriers".</value>
+  </data>
+  <data name="WPK_LBL_ABRECHNUNG" xml:space="preserve">
+    <value>Billing of the cooling electricity</value>
+  </data>
+  <data name="WPK_OPT_ANTEILIG" xml:space="preserve">
+    <value>as a share of the grid import (default)</value>
+  </data>
+  <data name="WPK_OPT_ZAEHLER" xml:space="preserve">
+    <value>separate meter</value>
+  </data>
+  <data name="WPK_HRL_ANTEILIG" xml:space="preserve">
+    <value>One grid connection: the grid import of every quarter hour is split by the share of the cooling electricity; this share carries the energy price and emission factor of the chosen carrier. Self-generated electricity from photovoltaics and battery storage stays shared, the demand charge stays with the project's electricity carrier.</value>
+  </data>
+  <data name="WPK_HRL_ZAEHLER" xml:space="preserve">
+    <value>All cooling electricity carries the energy price and emission factor of the chosen carrier; it is not covered by photovoltaics or battery storage.</value>
+  </data>
+  <data name="WPK_HRL_WIE_PROJEKT" xml:space="preserve">
+    <value>The cooling electricity carries the tariff and emission factor of the project's electricity carrier.</value>
+  </data>
+  <data name="WPK_VORLAUF_HEIZLAGE" xml:space="preserve">
+    <value>Characteristic in heating position — not calculated</value>
+  </data>
+  <data name="WPK_VORLAUF_ACHSEN" xml:space="preserve">
+    <value>Axes of the characteristic swapped — not calculated</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_PROJEKT" xml:space="preserve">
+    <value>Project electricity carrier</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ANTEILIG" xml:space="preserve">
+    <value>“{0}”, pro rata of grid purchase</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ZAEHLER" xml:space="preserve">
+    <value>“{0}”, separate meter</value>
+  </data>
+  <data name="SIMUEB_RING_KAELTE_TITEL" xml:space="preserve">
+    <value>Cooling coverage</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTESTROM" xml:space="preserve">
+    <value>Cooling electricity</value>
+  </data>
+  <data name="SIMUEB_LBL_JAZ_KAELTE" xml:space="preserve">
+    <value>Seasonal EER (cooling)</value>
+  </data>
+  <data name="SIMUEB_KAELTESTROM_NETZ" xml:space="preserve">
+    <value>of which cooling electricity from the grid: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_ANLAGE" xml:space="preserve">
+    <value>Cooling generator</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_VORLAUF" xml:space="preserve">
+    <value>Cooling flow</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_STROM" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_EER" xml:space="preserve">
+    <value>EER (annual)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_NETZ" xml:space="preserve">
+    <value>From grid</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
+    <value>Electricity carrier</value>
   </data>
   <data name="WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG" xml:space="preserve">
     <value>Scenario demand charge of the energy carrier “{0}” without effect: the maintained demand-charge tiers or seasonal demand-charge series of the carrier also apply in this scenario.</value>
@@ -27221,5 +27347,26 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WIRT_VERLAUF_GESPERRT" xml:space="preserve">
     <value>The trend is being calculated, or the page is locked — period and ticks are open again only afterwards.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>On = the heat pump also covers cooling demand. Only with a cooling characteristic in the project and without a source storage — otherwise the switch is locked and names the reason; effective only with the project switch “Calculate cooling”.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHL_VORLAUF_ERL" xml:space="preserve">
+    <value>The chilled water supply temperature in °C, chosen from the support points of the cooling characteristic; empty means “lowest support point”. There are no intermediate values.</value>
+  </data>
+  <data name="KI_DLG_WPA_HILFSSTROM_ERL" xml:space="preserve">
+    <value>Power for pumps and fans of the cooling circuit as a percentage of the compressor work; at least 0 and less than 100, empty means “no surcharge”.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLTRAEGER_ERL" xml:space="preserve">
+    <value>The electricity carrier of the cooling electricity; empty means “as in heating mode”. Another electricity carrier of the project prices and rates the cooling electricity according to the billing option.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_ERL" xml:space="preserve">
+    <value>How the cooling electricity is counted with a different electricity carrier: as a share of the grid import (default; self-generated power from photovoltaics and battery storage remains shared) or via a separate meter (entirely at the chosen carrier, without self-generated power). Selectable only with a different carrier.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER" xml:space="preserve">
+    <value>The billing option only applies with a cooling electricity carrier that differs from the project's carrier — choose a different carrier first.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
+    <value>Cooling mode cannot be set in this form.</value>
   </data>
 </root>

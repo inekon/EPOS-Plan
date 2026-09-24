@@ -42,7 +42,8 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
 
     private IRenderedComponent<KomponentenKonfigurationDialog> Zeige(
         Komponentenart art, WaermepumpeAnlageDaten? anlage = null, bool titel = false,
-        IReadOnlyList<EPOS.UI.Bausteine.EnergietraegerWahl.Eintrag>? traeger = null)
+        IReadOnlyList<EPOS.UI.Bausteine.EnergietraegerWahl.Eintrag>? traeger = null,
+        WaermepumpeKuehlGaben? kuehlung = null)
     {
         if (!_hilfeEingelegt)
         {
@@ -58,6 +59,7 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
             p.Add(x => x.Bezeichner, "BHKW · Modul 1");
             if (anlage is not null) p.Add(x => x.Anlage, anlage);
             if (traeger is not null) p.Add(x => x.Traegerkatalog, traeger);
+            if (kuehlung is not null) p.Add(x => x.Kuehlung, kuehlung);
             p.Add(x => x.Geschlossen, (bool ok) => _ergebnis.Add(ok));
         });
     }
@@ -388,5 +390,71 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
                 .Single(f => f.Name == "bhkw_betriebsart");
         Assert.Equal(waermegefuehrt, wert.Text);
         Assert.Equal("0", wert.Schluessel);
+    }
+
+    // ================================================ Kühlbetrieb (Stufe KU2 Welle 3)
+
+    private static WaermepumpeKuehlGaben Kuehlgaben(string? sperrgrund = null) => new()
+    {
+        Vorlaeufe = _ => new[] { new KuehlVorlaufEintrag(7), new KuehlVorlaufEintrag(18),
+                                 new KuehlVorlaufEintrag(35, "Heizlage") },
+        Sperrgrund = _ => sperrgrund,
+        Stromtraeger = new[] { (58, "Strom Kühlung"), (60, "Strom Projekt") },
+        ProjektStromtraeger = 60
+    };
+
+    private static WindowsFormsApplication1.KiFeldzugang Kuehlfeld(string name)
+        => WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+               WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, name)!;
+
+    /// <summary>
+    /// <b>Die Gruppe „Kühlbetrieb" auch in der Konfiguration der Simulation:</b> dieselben fünf
+    /// Felder wie unter <c>Form_WP_Anlage</c>, geschrieben in die Arbeitskopie der Anlage — der
+    /// Vorlauf nur aus den nicht gesperrten Stützstellen, der Hilfsstrom in Prozent, die
+    /// Abrechnungsart bei abweichendem Träger; ein Träger ohne Abweichung setzt sie zurück.
+    /// </summary>
+    [Fact]
+    public void Bei_der_Waermepumpe_setzt_der_Assistent_die_Kuehlfelder_der_Anlage()
+    {
+        var anlage = new WaermepumpeAnlageDaten { Bezeichner = "WP 1" };
+        var cut = Zeige(Komponentenart.Waermepumpe, anlage, kuehlung: Kuehlgaben());
+
+        Kuehlfeld("kuehlbetrieb").Setzen(true);
+        Assert.Equal(new[] { "7", "18" }, Kuehlfeld("kuehl_vorlauf").Wahleintraege().Select(e => e.Schluessel));
+        Kuehlfeld("kuehl_vorlauf").Setzen(7);
+        Kuehlfeld("hilfsstromanteil").Setzen(5.0);
+        Kuehlfeld("kuehltraeger").Setzen(58);
+        Kuehlfeld("kuehl_abrechnung").Setzen(1);
+        cut.Render();
+
+        Assert.True(anlage.Kuehlbetrieb);
+        Assert.Equal(7, anlage.KuehlVorlauf);
+        Assert.Equal(0.05, anlage.KuehlHilfsstromanteil!.Value, 12);
+        Assert.Equal(58, anlage.KuehlCarrierId);
+        Assert.True(anlage.KuehlEigenerZaehler);
+
+        Kuehlfeld("kuehltraeger").Setzen(60);
+        Assert.Null(anlage.KuehlEigenerZaehler);
+    }
+
+    /// <summary>Was die Maske weich sperrt, lehnt der Assistent benannt ab — und ohne Kühlgaben jedes Kühlfeld.</summary>
+    [Fact]
+    public void Gesperrter_Kuehlbetrieb_und_fehlende_Kuehlgaben_werden_benannt_abgelehnt()
+    {
+        var anlage = new WaermepumpeAnlageDaten { Bezeichner = "WP 1" };
+        Zeige(Komponentenart.Waermepumpe, anlage, kuehlung: Kuehlgaben("Kühlbetrieb mit Quellspeicher wird nicht gerechnet."));
+
+        var gesperrt = Assert.Throws<InvalidOperationException>(() => Kuehlfeld("kuehlbetrieb").Setzen(true));
+        Assert.Equal("Kühlbetrieb mit Quellspeicher wird nicht gerechnet.", gesperrt.Message);
+        Assert.False(anlage.Kuehlbetrieb);
+
+        var ohneAbweichung = Assert.Throws<InvalidOperationException>(() => Kuehlfeld("kuehl_abrechnung").Setzen(1));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER, ohneAbweichung.Message);
+
+        var ohneGaben = new WaermepumpeAnlageDaten { Bezeichner = "WP 2" };
+        Zeige(Komponentenart.Waermepumpe, ohneGaben);
+        var abgelehnt = Assert.Throws<InvalidOperationException>(() => Kuehlfeld("hilfsstromanteil").Setzen(5.0));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR, abgelehnt.Message);
+        Assert.Null(ohneGaben.KuehlHilfsstromanteil);
     }
 }

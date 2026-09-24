@@ -453,11 +453,20 @@ namespace WindowsFormsApplication1
         /// <c>PpaPreis_Best/_Worst</c> an <c>Tab_ProjektPhotovoltaik</c>
         /// (<see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>). <b>Reines DDL,
         /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
+        /// Mit der ABRECHNUNGSART DES KAELTESTROMS UND DER KAELTESEITE DER
+        /// WAERMEPUMPENERGEBNISSE (Schritt 119, Stufe KU2 Welle 3; Kuehlkonzept 6.1–6.4 und 8.4,
+        /// Entscheid E34 vom 23.09.2026) steht das Ziel auf <b>119</b>:
+        /// <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c> (0/1, nullbar, NULL = anteilig am
+        /// Netzbezug) und sieben nullbare Ergebnisspalten an <c>Tab_ErgebnisWaermepumpe</c> und
+        /// <c>Tab_ErgebnisWaermepumpeModul</c> (<see cref="KuehlungSchema.Kaelteerzeugerspalten"/>).
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Wahl wirkt nur bei abweichendem Kuehltraeger,
+        /// die Ergebnisspalten schreibt nur ein Lauf mit Kaeltekaskade; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 118;
+        public const int Zielversion = 119;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

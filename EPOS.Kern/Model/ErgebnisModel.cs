@@ -213,6 +213,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
 
+        /// <summary>
+        /// STUFE KU2 WELLE 3 (Schemaschritt 119; Kühlkonzept 6.4, 7.4, E21): die gedeckte Kälte aller
+        /// Wärmepumpen [MWh/a] — Gegenstück zu <see cref="Waermeproduktion_WP"/>. <c>null</c> = keine
+        /// Kälteerzeugung gerechnet (kein Kälteerzeuger im Lauf); Spalte <c>Kaelteproduktion_WP</c>.
+        /// </summary>
+        public double? Kaelteproduktion_WP;
+
+        /// <summary>
+        /// Der Kältestrom aller Wärmepumpen samt Hilfsstrom [MWh/a] (Kühlkonzept 6.1) — Gegenstück zu
+        /// <see cref="Stromverbrauch_WP"/>, der ihn nicht enthält. <c>null</c> wie
+        /// <see cref="Kaelteproduktion_WP"/>; Spalte <c>Stromverbrauch_Kuehlung</c>.
+        /// </summary>
+        public double? Stromverbrauch_Kuehlung;
+
         public List<ErgebnisWaermepumpeModulModel> Module = new List<ErgebnisWaermepumpeModulModel>();
     }
 
@@ -225,6 +239,27 @@ namespace WindowsFormsApplication1
         public double Stromverbrauch;     // MWh/a
         public double Heizstab;           // MWh/a
         public double Betriebsstunden;    // h/a
+
+        // ---- Kälteseite (Schemaschritt 119; Kühlkonzept 6.1, 8.4; E34) - null = keine
+        //      Kälteerzeugung gerechnet (kein Kälteerzeuger im Lauf).
+
+        /// <summary>Gedeckte Kälte der Anlage [MWh/a] — Gegenstück zu <see cref="Waermeproduktion"/>.</summary>
+        public double? Kaelteproduktion;
+
+        /// <summary>Kältestrom der Anlage samt Hilfsstrom [MWh/a] — Gegenstück zu <see cref="Stromverbrauch"/>.</summary>
+        public double? Stromverbrauch_Kuehlung;
+
+        /// <summary>
+        /// Der Netzbezug, der dem Kältestrom der Anlage zukommt [MWh/a] (E34): anteilig am Netzbezug
+        /// ein Teil von <c>Stromrestbedarf</c>, mit eigenem Zähler der ganze Kältestrom daneben.
+        /// </summary>
+        public double? Kaeltestrom_Netzbezug;
+
+        /// <summary>Der abweichende Kühlträger des Laufs (<c>energy_carrier.id</c>); <c>null</c> = Stromträger des Projekts.</summary>
+        public int? Kuehl_CarrierId;
+
+        /// <summary>Die Abrechnungsart des Laufs bei abweichendem Kühlträger: <c>true</c> = eigener Zähler; <c>null</c>/<c>false</c> = anteilig.</summary>
+        public bool? Kuehl_EigenerZaehler;
     }
 
     // Detail: BHKW-Aggregat (Tab_ErgebnisBHKW) + Modulliste.

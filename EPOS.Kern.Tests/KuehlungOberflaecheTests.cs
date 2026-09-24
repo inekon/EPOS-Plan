@@ -330,10 +330,16 @@ namespace EPOS.Kern.Tests
             Assert.Null(Variante(12.5, 8.25).Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN]);
             Assert.Equal(0.0, Variante(0.0).Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN]);
 
+            // Die KANALkennzahlen der Kälte stehen bei den Wärmekanälen (GR_ENERGIE) - seit KU2
+            // Welle 3 samt dem Deckungsgrad; die ERZEUGERkennzahlen in der eigenen Gruppe
+            // GR_KAELTE (Kühlkonzept 6.4, K15).
             List<Kennzahl> kaelte = KennzahlenKatalog.Alle().Where(k => k.Schluessel.StartsWith("kaelte.", StringComparison.Ordinal)).ToList();
-            Assert.Equal(new[] { "kaelte.jahresbedarf", "kaelte.spitze", "kaelte.stunden" },
-                         kaelte.Select(k => k.Schluessel));
-            Assert.All(kaelte, k => Assert.Equal(KennzahlenKatalog.GR_ENERGIE, k.Gruppe));
+            Assert.Equal(new[] { "kaelte.jahresbedarf", "kaelte.spitze", "kaelte.stunden", "kaelte.deckungsgrad" },
+                         kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_ENERGIE).Select(k => k.Schluessel));
+            Assert.Equal(new[] { "kaelte.erzeugung", "kaelte.rest", "kaelte.jaz", "kaelte.strom",
+                                 "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
+                         kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
+            Assert.Equal(11, kaelte.Count);
         }
 
         /// <summary>

@@ -4267,7 +4267,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Konfiguration EINER Komponente der Simulation — elf Felder aus
+        /// Die Konfiguration EINER Komponente der Simulation — sechzehn Felder aus
         /// <c>EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -4286,7 +4286,7 @@ namespace WindowsFormsApplication1
         /// die Maskenbruecke loest ueber <c>GetProperty</c> auf und faende dort nichts.
         /// </para>
         /// <para>
-        /// <b>Die acht Felder der Waermepumpe stehen ZWEIMAL im Katalog</b> — hier
+        /// <b>Die dreizehn Felder der Waermepumpe stehen ZWEIMAL im Katalog</b> — hier
         /// und unter <see cref="KiMaskennamen.WAERMEPUMPE_ANLAGE"/>. Das ist richtig:
         /// Eine Maske ist, was offen ist, und der Anwender sieht dieselben Werte
         /// einmal im Anlagendialog und einmal in dieser Konfiguration. Welche Maske
@@ -4355,7 +4355,28 @@ namespace WindowsFormsApplication1
                                      "KomponentenKonfigurationKiSicht.Abschaltpunkt",
                                      KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaAbschaltpunktErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Gruppe „Kuehlbetrieb" DIESER Waermepumpe (Stufe KU2 Welle 3)
+                    //      - dieselben fuenf Felder und Wege wie unter Form_WP_Anlage.
+                    new KiDialogFeld("kuehlbetrieb", "KomponentenKonfigurationKiSicht.Kuehlbetrieb",
+                                     KiDialogTexte.WpaKuehlbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaKuehlbetriebErl),
+                    new KiDialogFeld("kuehl_vorlauf", "KomponentenKonfigurationKiSicht.KuehlVorlauf",
+                                     KiDialogTexte.WpaKuehlVorlaufName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaKuehlVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("hilfsstromanteil",
+                                     "KomponentenKonfigurationKiSicht.KuehlHilfsstromanteil",
+                                     KiDialogTexte.WpaHilfsstromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaHilfsstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("kuehltraeger", "KomponentenKonfigurationKiSicht.KuehlCarrierId",
+                                     KiDialogTexte.WpaKuehltraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaKuehltraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_abrechnung", "KomponentenKonfigurationKiSicht.KuehlAbrechnung",
+                                     KiDialogTexte.WpaAbrechnungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaAbrechnungErl)
                 },
                 knoepfe: new[]
                 {
@@ -4832,11 +4853,12 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Waermepumpen-ANLAGE eines Projekts — dreiundzwanzig Felder aus
+        /// Die Waermepumpen-ANLAGE eines Projekts — achtundzwanzig Felder aus
         /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageKiSicht</c>, die den Feldsatz
         /// <c>WaermepumpeAnlageDaten</c> unveraendert durchreicht und die
         /// Projekteinstellung „Extrapolation der WP-Kennlinie erlauben" dazu traegt
-        /// (Welle #458).
+        /// (Welle #458), dazu die fuenf Felder der Gruppe „Kuehlbetrieb" (Stufe KU2
+        /// Welle 3).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4938,6 +4960,32 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaAbschaltpunktErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Gruppe „Kuehlbetrieb" der Konfiguration (Stufe KU2 Welle 3;
+                    //      Kuehlkonzept 8.2, E15, E33, E34) ----------------------------
+                    //
+                    // Der Schalter ist in der Maske WEICH gesperrt (keine Kuehlkennlinie im
+                    // Projekt, Quellspeicher); die Sichtklasse lehnt dieselbe Setzung benannt
+                    // ab. Kuehl-Vorlauf, Kuehltraeger und Abrechnungsart sind Wahlfelder - ihre
+                    // Eintraege traegt die Sichtklasse als Begleiteigenschaft <Eigenschaft>Wahl.
+                    // Der Hilfsstromanteil steht in PROZENT, wie die Maske ihn zeigt.
+                    new KiDialogFeld("kuehlbetrieb", "WaermepumpeAnlageKiSicht.Kuehlbetrieb",
+                                     KiDialogTexte.WpaKuehlbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaKuehlbetriebErl),
+                    new KiDialogFeld("kuehl_vorlauf", "WaermepumpeAnlageKiSicht.KuehlVorlauf",
+                                     KiDialogTexte.WpaKuehlVorlaufName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaKuehlVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("hilfsstromanteil", "WaermepumpeAnlageKiSicht.KuehlHilfsstromanteil",
+                                     KiDialogTexte.WpaHilfsstromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaHilfsstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("kuehltraeger", "WaermepumpeAnlageKiSicht.KuehlCarrierId",
+                                     KiDialogTexte.WpaKuehltraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaKuehltraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_abrechnung", "WaermepumpeAnlageKiSicht.KuehlAbrechnung",
+                                     KiDialogTexte.WpaAbrechnungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaAbrechnungErl),
 
                     // ---- Die Felder des Geraets (Stammfeldblock) --------------------
                     new KiDialogFeld("hersteller", "WaermepumpeAnlageKiSicht.Firma",

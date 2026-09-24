@@ -38,6 +38,18 @@ namespace WindowsFormsApplication1
         public const string GR_EMISSION = "Emissionen";
         public const string GR_KOSTEN = "Kosten";
 
+        /// <summary>
+        /// Die Gruppe der ERZEUGERkennzahlen der Kälte (Kühlkonzept 6.4, K15): Kälteerzeugung,
+        /// ungedeckte Kälte, Jahresarbeitszahl Kälte, Kältestrom samt Netzbezug, Kosten und
+        /// Emissionen. Die Kanalkennzahlen der Kälte (Jahreskälte, Spitze, Stunden, Deckungsgrad)
+        /// stehen dagegen bei den Wärmekanälen in <see cref="GR_ENERGIE"/>. Ein Projekt ohne
+        /// Kälteerzeuger führt in dieser Gruppe keinen Wert — die Gruppe entfällt.
+        /// </summary>
+        public const string GR_KAELTE = "Kälte";
+
+        /// <summary>Die Gruppen in der Reihenfolge der Kennzahlentabellen (Word und Excel).</summary>
+        public static readonly string[] GRUPPEN = { GR_ENERGIE, GR_EFFIZIENZ, GR_KAELTE, GR_EMISSION, GR_KOSTEN };
+
         // Kurzzugriffe (null-tolerant) --------------------------------------
 
         private static ErgebnisEnergiebedarfModel E(VariantenDaten v) { return v?.Ergebnis?.Energiebedarf; }
@@ -150,6 +162,52 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden mit Kühlbedarf [h/a], gezählt am Kanalvektor.</summary>
         public const string SCHLUESSEL_KAELTE_STUNDEN = "kaelte.stunden";
+
+        // ------------------------------------------------------------------
+        // STUFE KU2 WELLE 3 (Kühlkonzept 6.2–6.4; E21, E34, K5, K15) — Deckung und Erzeuger
+        // ------------------------------------------------------------------
+
+        /// <summary>Deckungsgrad des Kühlkanals [%] (<see cref="DeckungKanalKaelte"/>) — Katalogschlüssel der Softwarearchitektur 4.3.</summary>
+        public const string SCHLUESSEL_KAELTE_DECKUNGSGRAD = "kaelte.deckungsgrad";
+
+        /// <summary>Kälteerzeugung der Wärmepumpen [MWh/a] — Gegenstück zu <c>energie.wp_waerme</c>.</summary>
+        public const string SCHLUESSEL_KAELTE_ERZEUGUNG = "kaelte.erzeugung";
+
+        /// <summary>Ungedeckte Kälte [MWh/a] (<c>Kaelterestbedarf</c>) — Gegenstück zu <c>energie.waermerest</c>.</summary>
+        public const string SCHLUESSEL_KAELTE_REST = "kaelte.rest";
+
+        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälteerzeugung / Kältestrom — Gegenstück zu <c>eff.jaz</c>.</summary>
+        public const string SCHLUESSEL_KAELTE_JAZ = "kaelte.jaz";
+
+        /// <summary>Kältestrom samt Hilfsstrom [MWh/a] (Kühlkonzept 6.1).</summary>
+        public const string SCHLUESSEL_KAELTE_STROM = "kaelte.strom";
+
+        /// <summary>Netzbezug des Kältestroms [MWh/a] — sein Anteil am Netzbezug bzw. der eigene Zähler (E34).</summary>
+        public const string SCHLUESSEL_KAELTE_NETZBEZUG = "kaelte.netzbezug";
+
+        /// <summary>Arbeitskosten des Kältestroms [€/a] (E34; ein Ausweis, in den Energiekosten enthalten).</summary>
+        public const string SCHLUESSEL_KAELTE_KOSTEN = "kaelte.kosten";
+
+        /// <summary>Emissionen des Kältestroms [t/a] (E34; ein Ausweis, in den Emissionen enthalten).</summary>
+        public const string SCHLUESSEL_KAELTE_CO2 = "kaelte.co2";
+
+        /// <summary>
+        /// Jahresarbeitszahl Kälte aus dem gespeicherten Ergebnis: Kälteerzeugung / Kältestrom der
+        /// Wärmepumpen; <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
+        /// </summary>
+        public static double? JahresarbeitszahlKaelte(VariantenDaten v)
+        {
+            var w = WP(v);
+            if (w == null || !w.Kaelteproduktion_WP.HasValue || !w.Stromverbrauch_Kuehlung.HasValue) return null;
+            return w.Stromverbrauch_Kuehlung.Value > 0
+                ? (double?)(w.Kaelteproduktion_WP.Value / w.Stromverbrauch_Kuehlung.Value) : null;
+        }
+
+        /// <summary>Nur mit gerechneter Kälteerzeugung (<c>Kaelteproduktion_WP</c> gesetzt) — sonst keine Kältezahl der Gruppe <see cref="GR_KAELTE"/>.</summary>
+        private static bool MitKaelteerzeugung(VariantenDaten v)
+        {
+            return WP(v)?.Kaelteproduktion_WP != null;
+        }
 
         /// <summary>
         /// Stunden mit Kühlbedarf [h/a] (<c>kaelte.stunden</c>) — gezählt am KANALVEKTOR, nicht als
@@ -336,6 +394,11 @@ namespace WindowsFormsApplication1
                 "%", GR_ENERGIE, "N1", false, v => DeckungKanal(v, Kanal.BRAUCHWASSER)));
             l.Add(new Kennzahl("energie.deckung_prozess", "Deckungsgrad Prozesswärme", "Coverage process heat",
                 "%", GR_ENERGIE, "N1", false, v => DeckungKanal(v, Kanal.PROZESS)));
+            // STUFE KU2 WELLE 3 (Kühlkonzept 6.4; E21): der Deckungsgrad des Kühlkanals neben den drei
+            // Wärmekanälen — über den EIGENEN Zweig mit dem Kältenenner. null ohne Kälteerzeugung.
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_DECKUNGSGRAD, "Deckungsgrad Kühlung (sensibel)",
+                "Coverage cooling (sensible)", "%", GR_ENERGIE, "N1", false,
+                v => MitKaelteerzeugung(v) ? DeckungKanalKaelte(v) : null));
 
             // ---------------- Effizienz ----------------
             l.Add(new Kennzahl("eff.jaz", "Jahresarbeitszahl (JAZ) WP", "Heat pump SPF", "–", GR_EFFIZIENZ, "N2", true,
@@ -386,9 +449,41 @@ namespace WindowsFormsApplication1
                 {
                     var e = E(v);
                     if (e == null || e.Strombedarf_Gesamt <= 0) return null;
-                    double a = (1.0 - e.Stromrestbedarf / e.Strombedarf_Gesamt) * 100.0;
+                    // E34: Der Kältestrom über einen eigenen Zähler ist Bezug aus dem Netz, auch wenn
+                    // er neben dem Netzbezug des Anschlusses steht — die Abrechnungsart hebt die
+                    // Autarkie nicht (0 ohne eigenen Zähler).
+                    double a = (1.0 - (e.Stromrestbedarf + v.KuehlzaehlerMWh) / e.Strombedarf_Gesamt) * 100.0;
                     return a < 0 ? 0 : a;
                 }));
+
+            // ---------------- Kälte (Stufe KU2 Welle 3; Kühlkonzept 6.2–6.4, K15, E21, E34) ----------------
+            // Die Erzeugerkennzahlen der Kälte — Gegenstücke zu Wärmeerzeugung, Wärmerestbedarf und
+            // JAZ der Wärmepumpe, dazu Kältestrom, sein Netzbezug, seine Kosten und Emissionen. Jede
+            // Zeile trägt die Grenze der Zahl (K5: sensible Kälte ohne Entfeuchtung — auch der
+            // Kältestrom enthält keine Entfeuchtungsarbeit). null ohne gerechnete Kälteerzeugung:
+            // Ein Projekt ohne Kälteerzeuger zeigt die Gruppe nicht.
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_ERZEUGUNG, "Kälteerzeugung Wärmepumpe (sensibel)",
+                "Heat pump cooling output (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => WP(v)?.Kaelteproduktion_WP));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
+                "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                v => MitKaelteerzeugung(v) ? E(v)?.Kaelterestbedarf : null));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_JAZ, "Jahresarbeitszahl Kälte (sensibel)",
+                "Seasonal EER (sensible)", "–", GR_KAELTE, "N2", true, JahresarbeitszahlKaelte));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_STROM, "Kältestrom (sensibel)",
+                "Cooling electricity (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                v => WP(v)?.Stromverbrauch_Kuehlung));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_NETZBEZUG, "Netzbezug Kältestrom (sensibel)",
+                "Grid import for cooling (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                v => MitKaelteerzeugung(v) ? v.KaeltestromNetzbezugMWh : null));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_KOSTEN, "Kosten Kältestrom (sensibel)",
+                "Cooling electricity cost (sensible)", "€/a", GR_KAELTE, "N0", true,
+                v => MitKaelteerzeugung(v) ? v.KaeltestromKosten : null));
+            l.Add(new Kennzahl(SCHLUESSEL_KAELTE_CO2,
+                EmissionsAusweis.KennzahlKaeltestrom(modus, false),
+                EmissionsAusweis.KennzahlKaeltestrom(modus, true),
+                "t/a", GR_KAELTE, "N2", true,
+                v => MitKaelteerzeugung(v) ? v.KaeltestromCO2t : null));
 
             // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
             // Die Beschriftung NENNT DEN MODUS (Etappe E5, Konzept F7): „CO₂-Emissionen"
