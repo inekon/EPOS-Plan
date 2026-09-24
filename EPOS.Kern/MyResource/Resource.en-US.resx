@@ -3202,6 +3202,39 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
     <value>{0}: {1} = {2} is outside the permitted range {3}.</value>
   </data>
+  <data name="SIMENG_G3_RAND_ZONE" xml:space="preserve">
+    <value>{0}: the boundary condition adjacent zone is not modelled in the single-zone model; it arrives with the multi-zone model (stage G6b).</value>
+  </data>
+  <data name="SIMENG_G3_AZIMUT_FEHLT" xml:space="preserve">
+    <value>{0}: the element facing outdoor air with an inclination of {1}° has no azimuth; only horizontal surfaces (0° or 180°) may omit it.</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_BEREICH" xml:space="preserve">
+    <value>{0}: the U-value {1} W/(m²K) is outside {2} … {3} W/(m²K).</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_FEHLT" xml:space="preserve">
+    <value>{0}: the element has neither a U-value nor a layer build-up.</value>
+  </data>
+  <data name="SIMENG_G3_TRANSPARENT_SCHICHTEN" xml:space="preserve">
+    <value>{0}: a window or curtain wall is calculated from its U-value according to VDI 6007 part 1 eq. (25)/(26); a layer build-up is not provided for it.</value>
+  </data>
+  <data name="SIMENG_G3_TRANSPARENT_RAND" xml:space="preserve">
+    <value>{0}: a window or curtain wall faces outdoor air or an unheated space, not "{1}".</value>
+  </data>
+  <data name="SIMENG_G3_WIDERSTAND_GL26" xml:space="preserve">
+    <value>{0}: the resistance R = {1} K/W according to VDI 6007 part 1 eq. (26) is not positive (U = {2} W/(m²K)); EPOS does not substitute a value.</value>
+  </data>
+  <data name="SIMENG_G3_KEINE_AUSSENBAUTEILE" xml:space="preserve">
+    <value>{0}: the set of building elements has no opaque external element; the wall branch carries the capacity of the external element group.</value>
+  </data>
+  <data name="SIMENG_G3_BAUWEISE" xml:space="preserve">
+    <value>{0}: the thermal mass per usable area {1} Wh/(m²K) is outside {2} … {3} Wh/(m²K); an element group without layers takes its capacity from the construction type.</value>
+  </data>
+  <data name="SIMENG_G3_PFLICHT" xml:space="preserve">
+    <value>{0}: {1} = {2} is not greater than zero; the element-based calculation needs this value.</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: the entered U-value {1} W/(m²K) deviates by {3} % from the value {2} W/(m²K) calculated from the layers; the calculation uses the entered value.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>
