@@ -144,6 +144,32 @@ namespace WindowsFormsApplication1
         /// Abschnitt nie beides" fällt laut.
         /// </summary>
         AbschnittsregelVerletzt,
+
+        // ---- Stufe AK1 der Anlagenkopplung (Konzept Anlagenkopplung 3, 8.4, 9.5) --------
+
+        /// <summary>
+        /// Die Wärmeübergabe ist widersprüchlich oder unplausibel: unbekannte Übergabeart, ein
+        /// Auslegungspunkt mit Vorlauf nicht über dem Rücklauf oder Rücklauf nicht über der
+        /// Raumtemperatur, eine Auslegungs-Außentemperatur nicht unter der Raumtemperatur, ein
+        /// Exponent, ein Proportionalband, eine Nennleistung oder eine Heizkurve außerhalb der
+        /// Prüfregel, oder eine hergeleitete Auslegungsheizlast, die nicht größer null ist.
+        /// Benannt mit den Werten; der Lauf bricht für dieses Gebäude ab (9.5).
+        /// </summary>
+        UebergabeUngueltig,
+
+        /// <summary>
+        /// Die Übergabegleichung oder der Arbeitspunkt des Raumreglers ist in der festen
+        /// Schrittzahl nicht gelöst (Anlagenkopplung 3.2, 10.2 H2) — ein benannter Abbruch statt
+        /// einer stillen Näherung.
+        /// </summary>
+        UebergabeNichtKonvergiert,
+
+        /// <summary>
+        /// Das Sollwert-Zeitprogramm ist unbrauchbar: nicht genau 168 Werte, ein Wert keine Zahl
+        /// oder außerhalb der Plausibilitätsgrenze, oder der Kalender des Laufs lässt sich keinem
+        /// Wochentag zuordnen (Anlagenkopplung 4.3, H-F10). Kein Auffüllen, kein Abschneiden.
+        /// </summary>
+        SollwertprofilUngueltig,
     }
 
     /// <summary>

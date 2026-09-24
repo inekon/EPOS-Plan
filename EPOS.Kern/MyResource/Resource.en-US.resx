@@ -28701,6 +28701,81 @@ Do you want to allow this?</value>
   <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
     <value>Device data — not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
+  <data name="SIMENG_AK_UEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>The heat emitter type “{0}” is unknown; known types are radiator, panel heating and convector. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_WERT_AUSSERHALB" xml:space="preserve">
+    <value>{0} = {1} is outside the permitted range {2} … {3}. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_VORLAUF_UNTER_RAUM" xml:space="preserve">
+    <value>The design flow temperature {0} °C is not above the design room temperature {1} °C — the heat emitter would not deliver any heat. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_RUECKLAUF_AUSSERHALB" xml:space="preserve">
+    <value>The design return temperature {0} °C does not lie between the design room temperature {1} °C and the design flow temperature {2} °C. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM" xml:space="preserve">
+    <value>The design outdoor temperature {0} °C is not below the design room temperature {1} °C; the heating curve has no design point. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>The derived design heat load is not greater than zero ({0} W at {1} °C outdoors and {2} °C indoors); the nominal output of the heat emitter cannot be derived. Please enter a nominal output.</value>
+  </data>
+  <data name="SIMENG_AK_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>The nominal output of the heat emitter {0} kW is not greater than zero. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SKALIERUNG_UNGUELTIG" xml:space="preserve">
+    <value>The entered nominal output of the heat emitter cannot be converted to the catalogue building: the scaling factor {0} cannot be determined (area or consumption missing).</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_WERTZAHL" xml:space="preserve">
+    <value>The set point schedule has {0} values instead of {1} — no padding, no truncation. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_KEINE_ZAHL" xml:space="preserve">
+    <value>The set point schedule contains no number at position {0} (decimal point, separator “;”). The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_WERT" xml:space="preserve">
+    <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} … {3} °C. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_SOLLWERTPROFIL_KALENDER" xml:space="preserve">
+    <value>The weekend days of the run do not form a weekly calendar; the set point schedule cannot be assigned to weekdays. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>System coupling: {0} — heat emission is switched on, but the project is calculated without system coupling. The inputs take effect once the level is set; the calculation uses ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_ALTWEG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>System coupling: {0} — the daily balance (legacy method) does not calculate system coupling; the heat emission inputs take effect once the building is calculated to VDI 6007.</value>
+  </data>
+  <data name="SIMENG_AK_UEBERGABEART_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — heat emission is switched on, but the heat emitter type is “ideal” or empty; the calculation uses ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
+    <value>System coupling: the project is set to level {0}; level AK1 is implemented — the heating circuit is calculated as a boundary condition (AK1).</value>
+  </data>
+  <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>System coupling: {0} — the heat emitter is insufficient in {1} hours; the room temperature there is up to {2} K below the set point.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
+    <value>System coupling: panel heating without screed mass — the mass of the heating surface is not calculated, so the calculated heat-up time is too short.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
+    <value>System coupling: {0} — the cooling side of system coupling is not implemented yet; cooling of this building is still calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — the heating curve is off and no plant of the heating channel has a flow temperature; the fixed flow temperature is the design flow temperature {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_NENNLEISTUNG_NICHT_PROPORTIONAL" xml:space="preserve">
+    <value>System coupling: {0} — the nominal output of the heat emitter is entered as a fixed value; with coupling the back-calculation from consumption is no longer proportional. The calculated annual heat demand deviates by {1} % from the stated consumption.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_KENNLINIENWAHL" xml:space="preserve">
+    <value>{0}: characteristic curve chosen per hour at the calculated flow temperature of the heating circuit — hours per support point: {1}.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit was above the highest support point {2} °C of the characteristic curves in {1} hours (calculated up to {3} °C); the highest curve was used — the performance factor of these hours therefore tends to be too high (extrapolation permitted).</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit {1} °C lies above the highest support point {2} °C of the characteristic curves, and extrapolation is not permitted in the project settings. The run stops.</value>
+  </data>
+  <data name="SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN" xml:space="preserve">
+    <value>{0}: the calculated flow temperature of the heating circuit was below the lowest support point {2} °C of the characteristic curves in {1} hours (calculated down to {3} °C); the lowest curve was used — the performance factor of these hours therefore tends to be too low.</value>
+  </data>
   <data name="ZPG_KALENDER_WOHNEN" xml:space="preserve">
     <value>Residential</value>
   </data>

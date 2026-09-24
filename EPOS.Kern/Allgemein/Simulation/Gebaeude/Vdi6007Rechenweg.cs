@@ -67,6 +67,34 @@ namespace WindowsFormsApplication1
         internal bool Kuehlbetrieb { get; set; }
 
         /// <summary>
+        /// Die Kopplungsstufe des PROJEKTS (<c>Tab_Einstellungen.Anlagenkopplung</c>, AK-S1) —
+        /// gesetzt von der Fassade vor jedem Aufruf, wie <see cref="Kuehlbetrieb"/>. <c>null</c> =
+        /// aus: Kein Gebäude rechnet eine Übergabe (F-A17).
+        /// </summary>
+        internal string Anlagenkopplung { get; set; }
+
+        /// <summary>
+        /// Der feste Vorlauf der Anlage [°C] für gekoppelte Gebäude ohne Heizkurve — der höchste
+        /// projektierte Vorlauf der Wärmeerzeuger des Heizkanals; die Fassade liest ihn, das
+        /// Modul liest keine Anlagendaten (6.1). NaN = keiner.
+        /// </summary>
+        internal double AnlagenVorlaufC { get; set; } = double.NaN;
+
+        /// <summary>
+        /// Verhältnis wirkliches Gebäude : Katalogbau für eine FEST eingetragene Nennleistung der
+        /// Übergabe (H7) — gesetzt von der Fassade; NaN = hergeleitet rechnen (erster Lauf der
+        /// Verhältnisrechnung). Ohne feste Nennleistung wirkungslos.
+        /// </summary>
+        internal double NennleistungSkalierung { get; set; } = 1.0;
+
+        /// <summary>
+        /// Ist dieser Aufruf der Probelauf der Verhältnisrechnung (H7, fest eingetragene
+        /// Nennleistung bei Verbrauchsangabe)? Dann schweigt der Weg — die Meldungen kommen aus
+        /// dem Lauf, der zählt.
+        /// </summary>
+        internal bool Probelauf { get; set; }
+
+        /// <summary>
         /// Zahl der Gebäuderechnungen dieses Wegs seit seinem Bau — die Probe „Ein Lauf, zwei
         /// Reihen" (Kühlkonzept 10.2, E21) zählt hier: Das Modul läuft je Gebäude und Lauf
         /// EINMAL, und Heiz- wie Kühlreihe stammen aus diesem einen Ergebnis. Eine zweite
@@ -92,7 +120,8 @@ namespace WindowsFormsApplication1
 
                 GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
                     gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb);
+                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
+                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
 
@@ -100,7 +129,11 @@ namespace WindowsFormsApplication1
                 verbrauchAltKwh = ergebnis.VerbrauchAltKwh;
                 _traeger.Setzen(index, ergebnis);
 
-                Melden(eingang, ergebnis, gemeinsam, wer);
+                if (!Probelauf)
+                {
+                    Melden(eingang, ergebnis, gemeinsam, wer);
+                    KopplungMelden(eingang, ergebnis, gebaeude, wer);
+                }
                 return true;
             }
             catch (GebaeudeModellException ex)
@@ -154,6 +187,14 @@ namespace WindowsFormsApplication1
             var op = new double[8760];
             int umschaltung = 0, beides = 0, sommerStunden = 0;
             double summeW = 0.0;
+
+            // Anlagenkopplung (AK1): die Reihen des Heizkreises - nur mit wirksamer Kopplung.
+            bool gekoppelt = eingang.KopplungWirksam;
+            double[] vorlauf = gekoppelt ? new double[8760] : null;
+            double[] ruecklauf = gekoppelt ? new double[8760] : null;
+            double[] begrenzt = gekoppelt ? new double[8760] : null;
+            double stundenHl = 0.0, stundenHg = 0.0, unterschreitung = 0.0;
+
             for (int h = 0; h < 8760; h++)
             {
                 bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
@@ -175,6 +216,27 @@ namespace WindowsFormsApplication1
                     throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
                         eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
                         " liefert eine nicht endliche oder negative Größe.");
+
+                if (gekoppelt)
+                {
+                    vorlauf[h] = s.VorlaufC;
+                    ruecklauf[h] = s.RuecklaufC;
+                    begrenzt[h] = s.UebergabeBegrenztAnteil;
+                    stundenHl += s.HeizleistungMaxAnteil;
+                    stundenHg += s.HeizgrenzeAnteil;
+                    if (s.UebergabeBegrenzt && eingang.ThetaSoll[h] - s.ThetaAirMittel > unterschreitung)
+                        unterschreitung = eingang.ThetaSoll[h] - s.ThetaAirMittel;
+
+                    // Plausibilität des Heizkreises: NaN nur gemeinsam (Heizgrenze), sonst endlich,
+                    // und der Rücklauf liegt nie über dem Vorlauf (Φ ≥ 0, W_H > 0).
+                    bool nanV = double.IsNaN(s.VorlaufC), nanR = double.IsNaN(s.RuecklaufC);
+                    if (nanV != nanR || (!nanV && (!Endlich(s.VorlaufC) || !Endlich(s.RuecklaufC)
+                                                   || s.RuecklaufC - s.VorlaufC > Rechenrand.Zu(s.VorlaufC))))
+                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
+                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
+                            " liefert einen unplausiblen Heizkreis (Vorlauf " + s.VorlaufC.ToString("G6", CultureInfo.InvariantCulture) +
+                            " °C, Rücklauf " + s.RuecklaufC.ToString("G6", CultureInfo.InvariantCulture) + " °C).");
+                }
             }
 
             // E32: Ohne wirksame Kühlung läuft das Gebäude frei - der Löser hat keine obere
@@ -191,12 +253,66 @@ namespace WindowsFormsApplication1
             }
 
             double verbrauchAltKwh = summeW / 1000.0;
+            HeizkreisErgebnis heizkreis = gekoppelt
+                ? HeizkreisErgebnis.Bilden(eingang, vorlauf, ruecklauf, begrenzt, stundenHl, stundenHg, heiz, unterschreitung)
+                : null;
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, umschaltung, beides,
                                               (double[])eingang.ThetaSoll.Clone(), sommerStunden,
                                               eingang.KuehlungWirksam
-                                                  ? (double?)eingang.KuehlSollwert : null);
+                                                  ? (double?)eingang.KuehlSollwert : null,
+                                              heizkreis);
+        }
+
+        /// <summary>
+        /// Die Meldungen der Anlagenkopplung (9.5) — je Gebäude und Lauf einmal. Ohne Schalter am
+        /// Gebäude schweigt sie; mit Schalter und ohne Projektstufe nennt sie, dass die Eingaben
+        /// ruhen (F-A17), bei Übergabeart „ideal" den ausdrücklichen Rückfall (F-A1). Mit
+        /// wirksamer Kopplung: die gebaute Stufe, die Stunden mit begrenzter Übergabe (Info),
+        /// die Flächenheizung ohne Estrichmasse (3.6), der Rückfall des festen Vorlaufs und die
+        /// benannt vertagte Kälteseite (H9).
+        /// </summary>
+        private static void KopplungMelden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,
+                                           ProjektGebaeudeModel g, string wer)
+        {
+            if (!e.HeizkreisAktiv) return;
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string id = g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture);
+
+            if (!e.KopplungWirksam)
+            {
+                if (!Waermeuebergabe.StufeAn(e.AnlagenkopplungStufe))
+                    p.HinweisEinmal("ak-projektstufe-aus-" + id,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_PROJEKTSTUFE_AUS, wer));
+                else
+                    p.HinweisEinmal("ak-uebergabeart-ideal-" + id,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_IDEAL, wer));
+                return;
+            }
+
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+                p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
+
+            HeizkreisErgebnis hk = r.Heizkreis;
+            if (hk != null && hk.UebergabeBegrenztStundenH > 0.0)
+                p.HinweisEinmal("ak-uebergabe-begrenzt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABE_BEGRENZT, wer,
+                                  hk.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                  hk.GroessteUnterschreitungK.ToString("0.0#", k)));
+
+            if (e.UebergabeArt == DbWerte.UEBERGABE_FLAECHE)
+                p.HinweisEinmal("ak-flaeche-estrich", MyResource.Resource.SIMENG_AK_FLAECHE_OHNE_ESTRICH);
+
+            if (e.Vorlaufquelle == Vorlaufquelle.Auslegung)
+                p.HinweisEinmal("ak-vorlauf-auslegung-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_AUSLEGUNG, wer, e.VorlaufFestC.ToString("0.#", k)));
+
+            if (e.KuehlungWirksam)
+                p.HinweisEinmal("ak-kaelteseite-vertagt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KAELTESEITE_VERTAGT, wer));
         }
 
         private static void Melden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,
