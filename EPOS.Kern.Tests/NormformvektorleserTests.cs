@@ -385,6 +385,23 @@ namespace EPOS.Kern.Tests
                 Assert.False(Normformvektorleser.AufloesungTauglich(schlecht), schlecht + " Minuten duerfen nicht taugen.");
         }
 
+        /// <summary>
+        /// RFC 4180 (N14 (b)): Ein Feld in Anführungszeichen darf den Trenner tragen und das
+        /// Anführungszeichen selbst — verdoppelt; eine Zahl in Anführungszeichen bleibt eine Zahl.
+        /// </summary>
+        [Fact]
+        public void Ein_Feld_in_Anfuehrungszeichen_mit_Trenner_liest_sich()
+        {
+            List<TwwPaketdatei> dateien = Typtagpaketbauer.Erfunden().Dateien();
+            dateien = Typtagpaketbauer.Ersetzen(dateien, Normformvektorleser.DATEI_KLIMAZONEN,
+                "zone;bezeichnung\n\"3\";\"Zone 3; mit \"\"Anfuehrungszeichen\"\" und Trenner\"\n");
+            Normformvektorsatz satz = Normformvektorleser.AusDateien(dateien, out ZapfSatz fehler);
+            Assert.Null(fehler);
+            Assert.Equal(new[] { 3 }, satz.Klimazonen);
+            Assert.Equal(365, satz.Tagesumme(3, "probehaus"));
+            Assert.Equal(6, satz.Kategorien.Count);
+        }
+
         [Fact]
         public void Ein_Trenner_Komma_und_ein_BOM_stoeren_nicht()
         {

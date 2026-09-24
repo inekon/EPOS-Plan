@@ -380,6 +380,74 @@ namespace EPOS.Kern.Tests
         private const int GANZ_SPANNE = 2;
 
         /// <summary>
+        /// Die Regel ZU19 für einen REELLEN Wert: mehr als <see cref="GLEICH"/> und höchstens
+        /// <see cref="BAND"/> vom Original entfernt. Jeder Verstoß hängt an <paramref name="funde"/>
+        /// — die Meldung nennt die Abweichung, nie einen Absolutwert.
+        /// </summary>
+        private static void ReellPruefen(ICollection<string> funde, string was, double abgeleitet, double original)
+        {
+            if (original == 0.0) { if (abgeleitet != 0.0) funde.Add(was + ": Null nicht Null"); return; }
+            double a = Math.Abs(abgeleitet / original - 1.0);
+            if (!(a > GLEICH)) funde.Add(was + ": gleich dem Original");
+            else if (a > BAND + GLEICH)
+                funde.Add(was + ": Abweichung " + (a * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %");
+        }
+
+        /// <summary>
+        /// Die Regel ZU19 für eine GANZE ZAHL: mindestens einen und höchstens
+        /// <c>max(<see cref="GANZ_SPANNE"/>; <see cref="GANZ_BAND"/> · w)</c> Tag(e) entfernt und
+        /// nicht negativ.
+        /// </summary>
+        private static void GanzPruefen(ICollection<string> funde, string was, int abgeleitet, int original)
+        {
+            int d = Math.Abs(abgeleitet - original);
+            int spanne = Math.Max(GANZ_SPANNE, (int)Math.Round(GANZ_BAND * original, MidpointRounding.AwayFromZero));
+            if (d == 0) funde.Add(was + ": gleich dem Original");
+            else if (d > spanne) funde.Add(was + ": " + d + " Tag(e) Abweichung, erlaubt " + spanne);
+            else if (abgeleitet < 0) funde.Add(was + ": negativ");
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe der Regel ZU19</b> (Nachbesserung Gruppe 1): Die beiden Proben schlagen
+        /// an, wenn ein Wert gleich dem Original, zu weit weg oder negativ ist — ohne sie wäre eine
+        /// Wache denkbar, die nichts mehr prüft und trotzdem grün ist. Sie läuft <b>immer</b>, auch
+        /// ohne die lokalen Originale, und hält damit auch in der CI.
+        /// </summary>
+        [Fact]
+        public void Die_Proben_der_ZU19_Regel_schlagen_an()
+        {
+            var funde = new List<string>();
+            ReellPruefen(funde, "gleich", 1.0, 1.0);
+            ReellPruefen(funde, "zu weit", 2.0, 1.0);
+            ReellPruefen(funde, "Null", 1.0, 0.0);
+            GanzPruefen(funde, "gleich", 40, 40);
+            GanzPruefen(funde, "zu weit", 40 + GANZ_SPANNE + 1, 40);        // 40 · 0,06 = 2,4 → Spanne 2
+            GanzPruefen(funde, "negativ", -1, 1);                           // in der Spanne, aber negativ
+            Assert.Equal(6, funde.Count);
+            Assert.Equal(2, funde.Count(f => f.EndsWith("gleich dem Original", StringComparison.Ordinal)));
+            Assert.Contains(funde, f => f.Contains("Abweichung 100.00 %", StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.EndsWith("Null nicht Null", StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.Contains("Tag(e) Abweichung, erlaubt " + GANZ_SPANNE, StringComparison.Ordinal));
+            Assert.Contains(funde, f => f.EndsWith("negativ", StringComparison.Ordinal));
+
+            // Was die Regel erfüllt, meldet nichts: am Rand des Bandes und am Rand der Spanne.
+            var still = new List<string>();
+            ReellPruefen(still, "am Rand", 1.0 + BAND, 1.0);
+            ReellPruefen(still, "knapp daneben", 1.0 + 10 * GLEICH, 1.0);
+            GanzPruefen(still, "Spanne klein", 40 + GANZ_SPANNE, 40);
+            GanzPruefen(still, "Spanne gross", 100 + (int)Math.Round(GANZ_BAND * 100), 100);
+            Assert.Empty(still);
+        }
+
+        /// <summary>
+        /// Relative Spanne der abgeleiteten GANZEN ZAHLEN — <b>dieselbe Zahl wie im Skript</b>
+        /// (<c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c>: <c>max(2; 0,06 · w)</c>).
+        /// Sie ist bewusst nicht <see cref="BAND"/>: Das Skript stört REELLE Werte mit 0,059 und
+        /// lässt GANZE ZAHLEN bis 0,06 wandern; wer das eine ändert, ändert nicht still das andere.
+        /// </summary>
+        private const double GANZ_BAND = 0.06;
+
+        /// <summary>
         /// <b>Lokaler Nachweis zu ZU19 (VDI 4655, Stufe Z4b):</b> Kein Wert von
         /// <c>Referenzlaeufe/Skripte/vdi4655_abgeleitet.json</c> gleicht seinem Original.
         /// <list type="bullet">
@@ -409,26 +477,19 @@ namespace EPOS.Kern.Tests
             var quellKennwerte = Csv(Path.Combine(originale, "kennwerte.csv")).ToDictionary(r => r["schluessel"]);
 
             var funde = new List<string>();
+            List<string> ziel = funde;                 // die Gegenprobe am Ende schreibt in eine eigene Liste
             int verglichen = 0;
 
             void Reell(string was, double abgeleitet, double original)
             {
                 verglichen++;
-                if (original == 0.0) { if (abgeleitet != 0.0) funde.Add(was + ": Null nicht Null"); return; }
-                double a = Math.Abs(abgeleitet / original - 1.0);
-                if (!(a > GLEICH)) funde.Add(was + ": gleich dem Original");
-                else if (a > BAND + GLEICH)
-                    funde.Add(was + ": Abweichung " + (a * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %");
+                ReellPruefen(ziel, was, abgeleitet, original);
             }
 
             void Ganz(string was, int abgeleitet, int original)
             {
                 verglichen++;
-                int d = Math.Abs(abgeleitet - original);
-                int spanne = Math.Max(GANZ_SPANNE, (int)Math.Round(BAND * original, MidpointRounding.AwayFromZero));
-                if (d == 0) funde.Add(was + ": gleich dem Original");
-                else if (d > spanne) funde.Add(was + ": " + d + " Tag(e) Abweichung, erlaubt " + spanne);
-                else if (abgeleitet < 0) funde.Add(was + ": negativ");
+                GanzPruefen(ziel, was, abgeleitet, original);
             }
 
             using JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8));
@@ -464,6 +525,10 @@ namespace EPOS.Kern.Tests
                 i++;
             }
 
+            // Die Vollständigkeit je Abschnitt: Was die Quelle führt, steht auch in der Ausgabe.
+            int anzahlTage = 0, anzahlFaktoren = 0, anzahlKennwerte = 0;
+            var benutzteQuellzeilen = new HashSet<string>(StringComparer.Ordinal);
+
             // --- 3. Die Kalendertage je Zone: ganze Zahlen, Summe 365 -----------------------
             foreach (JsonProperty art in w.GetProperty("typtage_je_zone").EnumerateObject())
             {
@@ -479,10 +544,12 @@ namespace EPOS.Kern.Tests
                     {
                         int neu = tt.Value.GetInt32();
                         summe += neu;
+                        anzahlTage++;
                         Ganz(art.Name + "/" + zone.Name + "/" + tt.Name, neu,
                              int.Parse(quelle[codeAlt[tt.Name]], CultureInfo.InvariantCulture));
                     }
                     if (summe != 365) funde.Add(art.Name + "/" + zone.Name + ": Summe " + summe + " statt 365");
+                    benutzteQuellzeilen.Add(variante + "|" + zone.Name);
                 }
             }
 
@@ -493,8 +560,11 @@ namespace EPOS.Kern.Tests
             foreach (JsonProperty art in w.GetProperty("f_twe_tt").EnumerateObject())
                 foreach (JsonProperty zone in art.Value.EnumerateObject())
                     foreach (JsonProperty tt in zone.Value.EnumerateObject())
+                    {
+                        anzahlFaktoren++;
                         Reell(art.Name + "/" + zone.Name + "/" + tt.Name, tt.Value.GetDouble(),
                               quellFaktor[artAlt[art.Name] + "|" + zone.Name + "|" + codeAlt[tt.Name]]);
+                    }
 
             // --- 5. Die Kennwerte -----------------------------------------------------------
             foreach (JsonProperty kw in w.GetProperty("kennwerte").EnumerateObject())
@@ -506,12 +576,30 @@ namespace EPOS.Kern.Tests
                                      .First(v => artAlt[kw.Name.Substring("heizgrenze.".Length)].EndsWith(v, StringComparison.Ordinal))
                                : kw.Name;
                 Assert.True(quellKennwerte.ContainsKey(alt), "Kein Kennwert der Quelle zu " + kw.Name);
+                anzahlKennwerte++;
                 Reell("Kennwert " + kw.Name, kw.Value.GetDouble(), Kennwertzahl(quellKennwerte[alt]));
             }
+
+            // --- 6. Vollständigkeit je Abschnitt gegen die Quelle ---------------------------
+            // Jeder Faktor der Quelle hat seine abgeleitete Zelle; jede (Variante, Zone) der
+            // Tabelle der Kalendertage ist benutzt; je Gebäudeart und Zone stehen alle Typtage.
+            // So fällt eine Zelle auf, die die Ableitung stillschweigend weggelassen hätte.
+            int artenzahl = w.GetProperty("gebaeudearten").GetArrayLength();
+            int zonenzahl = w.GetProperty("klimazonen").GetArrayLength();
+            int typtagzahl = w.GetProperty("typtage").GetArrayLength();
+            Assert.Equal(quellFaktor.Count, anzahlFaktoren);
+            Assert.Equal(artenzahl * zonenzahl * typtagzahl, anzahlFaktoren);
+            Assert.Equal(artenzahl * zonenzahl * typtagzahl, anzahlTage);
+            Assert.Equal(quellAnzahl.Count, benutzteQuellzeilen.Count);
+            Assert.Equal(quellAnzahl.Select(r => r["zone"]).Distinct().Count(), zonenzahl);
+            Assert.Equal(anzahlTage + anzahlFaktoren + anzahlKennwerte, verglichen);
 
             Assert.True(verglichen > 0, "Nichts verglichen.");
             Assert.True(funde.Count == 0, "Abgeleitete VDI-4655-Werte ausserhalb der Regel (ZU19), " + funde.Count +
                                           " von " + verglichen + ":\n" + string.Join("\n", funde.Take(40)));
+
+            // Die Gegenprobe der beiden Regeln steht in `Die_Proben_der_ZU19_Regel_schlagen_an` —
+            // sie läuft auch ohne die lokalen Originale.
         }
 
         /// <summary>

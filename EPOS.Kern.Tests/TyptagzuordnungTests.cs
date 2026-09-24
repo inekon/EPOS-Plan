@@ -96,6 +96,47 @@ namespace EPOS.Kern.Tests
             Assert.Equal(53, jahr.Tage.Count(t => t.Tagart == Typtagart.Sonntag));
         }
 
+        /// <summary>
+        /// Die benannte Abweichung aus N14 (d): Ein Feiertag, der auf einen Samstag fällt, bleibt
+        /// Werktag — der Klimakalender unterscheidet ihn nicht von einem gewöhnlichen Samstag. Das
+        /// Jahr sieht dann genauso aus wie ohne diesen Feiertag.
+        /// </summary>
+        [Fact]
+        public void Ein_Feiertag_am_Samstag_bleibt_Werktag()
+        {
+            Normformvektorsatz satz = Satz(Typtagpaketbauer.Erfunden());
+            // Jahr beginnt am Montag: Tag 6 ist ein Samstag, Tag 7 ein Sonntag.
+            Typtagjahr ohne = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, We(0), NAME);
+            Typtagjahr mit = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, We(0, 6), NAME);
+
+            Assert.Equal(Typtagart.Werktag, mit.Tage[5].Tagart);
+            Assert.Equal(Typtagart.Sonntag, mit.Tage[6].Tagart);
+            Assert.Equal(52, mit.Tage.Count(t => t.Tagart == Typtagart.Sonntag));
+            // Kein Unterschied zum Jahr ohne diesen Feiertag - Tag fuer Tag derselbe Typtag.
+            Assert.Equal(ohne.Tage.Select(t => t.Typtag), mit.Tage.Select(t => t.Typtag));
+        }
+
+        /// <summary>
+        /// Ohne die Kennzeichen des Klimakalenders (oder mit einem falschen Raster) ist die Tagart
+        /// nicht bestimmbar: benannt abgelehnt, kein Rückfall auf „alles Werktag".
+        /// </summary>
+        [Fact]
+        public void Ein_Klimakalender_ohne_Kennzeichen_wird_benannt_abgelehnt()
+        {
+            Normformvektorsatz satz = Satz(Typtagpaketbauer.Erfunden());
+            foreach (bool[] we in new[] { null, new bool[10], new bool[366] })
+            {
+                ZapfprofilEingabeException ex = Assert.Throws<ZapfprofilEingabeException>(
+                    () => Typtagzuordnung.Zuordnen(Anbindung(satz), 0, we, NAME));
+                Assert.Equal(ZapfEingabefehler.KalenderUngueltig, ex.Fehler);
+                Assert.Equal("EINGABE_KALENDER_365", ex.Kennung);
+            }
+            ZapfprofilEingabeException wt = Assert.Throws<ZapfprofilEingabeException>(
+                () => Typtagzuordnung.Zuordnen(Anbindung(satz), 7, We(0), NAME));
+            Assert.Equal(ZapfEingabefehler.KalenderUngueltig, wt.Fehler);
+            Assert.Equal("EINGABE_WOCHENTAG_UNGUELTIG", wt.Kennung);
+        }
+
         [Fact]
         public void Die_Bewoelkungsschwelle_entscheidet_heiter_gegen_bewoelkt()
         {
