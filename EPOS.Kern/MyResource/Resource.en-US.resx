@@ -11402,7 +11402,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Space requirements:</value>
   </data>
   <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Duration of use:</value>
+    <value>Service life (device data):</value>
   </data>
   <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
     <value>Years</value>
@@ -11528,7 +11528,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Maintenance costs:</value>
   </data>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Duration of use:</value>
+    <value>Service life (device data):</value>
   </data>
   <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
     <value>This record comes from the delivery catalogue and is write-protected.
@@ -26797,7 +26797,7 @@ Do you want to allow this?</value>
     <value>What the maintenance costs refer to, as stated in the catalogue (free text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>The expected service life of the unit in years.</value>
+    <value>The service life of the unit according to the catalogue, in years — device data, not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>The manufacturer’s figure for the emission of {0} per MWh; it is maintained here, calculations use the emission catalogue of the energy carrier.</value>
@@ -27548,5 +27548,8 @@ Do you want to allow this?</value>
   </data>
   <data name="FLOTTE_ED_RESTWERT_ALTFELD" xml:space="preserve">
     <value>Residual value of the unit: device data, no longer used in the calculation. The study derives the residual value linearly — amount of the last purchase × remaining life ÷ service life.</value>
+  </data>
+  <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
+    <value>Device data — not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
 </root>

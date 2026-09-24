@@ -3691,7 +3691,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer (Gerätedaten): ähnelt.
         /// </summary>
         public static string BHKWK_LBL_NUTZUNGSDAUER {
             get {
@@ -21126,7 +21126,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer (Gerätedaten): ähnelt.
         /// </summary>
         public static string HZKK_LBL_NUTZUNGSDAUER {
             get {
@@ -24020,6 +24020,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_MSG_WERT_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KBROW_MSG_WERT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)). ähnelt.
+        /// </summary>
+        public static string KBROW_ND_GERAETEDATEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KBROW_ND_GERAETEDATEN_HINWEIS", resourceCulture);
             }
         }
         
@@ -31769,7 +31778,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die erwartete Nutzungsdauer des Geräts in Jahren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer des Geräts laut Katalog in Jahren — Gerätedaten, nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)). ähnelt.
         /// </summary>
         public static string KI_DLG_KBROW_NUTZUNGSDAUER_ERL {
             get {
