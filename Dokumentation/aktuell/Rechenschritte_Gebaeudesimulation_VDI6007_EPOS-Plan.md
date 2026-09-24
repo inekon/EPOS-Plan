@@ -477,10 +477,10 @@ Abschnitt 4.
 | B1 | Bezugsperiode je Bauteil festlegen: T_BT = 7 d, bei raumseitig abgedeckter Speichermasse 2 d | (10a)–(10d) | Schichtfolge | T_BT [d] |
 | B2 | Kettenmatrix je Schicht aus d, λ, ρ, c und der Kreisfrequenz der Bezugsperiode | (1)–(9) | d [m], λ [W/(mK)], ρ [kg/m³], c [J/(kgK)] | 2×2-Matrix, komplex |
 | B3 | Kettenmatrizen **von innen nach außen** multiplizieren — die Reihenfolge ist nicht vertauschbar | (11) | B2 je Schicht | Gesamtmatrix a_ij des Bauteils |
-| B4 | Identifikation der Ersatzgrößen: R_1 aus a_22/a_12, R_2 aus a_11/a_12, dann C_1, C_2, R_3 und die Korrektur C_1,korr | (12)–(17) | a_ij | R_1, C_1 [K/W, J/K] je Bauteil |
-| B5 | Bauteile einer Gruppe parallel schalten: ΣC, Σ1/R | Abschnitt 6.3 | B4 je Bauteil | R_1,AW, C_AW bzw. R_1,IW, C_IW |
+| B4 | Identifikation der Ersatzgrößen: R_1 und C_1 aus a_22 und a_12, R_2 und C_2 aus a_11 und a_12, R_3 als Rest von Σ d/λ; einseitig belastete Bauteile (AW) nehmen die Korrektur C_1,korr, symmetrisch belastete (IW) R_1/C_1 | (12)–(17) | a_ij | R_1, C_1 bzw. C_1,korr [K/W, J/K] je Bauteil |
+| B5 | Bauteile einer Gruppe parallel schalten — über die **komplexen** Widerstände Z_1 = R_1 + 1/(jω_RA·C_1) mit der Bezugsperiode des Raums T_RA = 5 d, nicht über ΣC und Σ1/R getrennt; bei mehr als zwei Bauteilen die Zweierform mehrfach nacheinander | (10e), (19)–(24) | B4 je Bauteil | R_1,AW, C_AW bzw. R_1,IW, C_IW |
 | B6 | Fenster **nach** den Wänden parallel anschließen: R_1,AF = R_AF/6 mit R_AF = (1/U_AF − 1/α_I − 1/α_A)/A; Gesamtwiderstand der Gruppe aus den U·A aller Wände und Fenster, Rest als Differenz; liegt der Gesamtwiderstand unter dem äußeren Übergang (nur bei widersprüchlicher Eingabe), Rest und R_1 nach den Grenzfällen als Schutzregel; der Fensterzweig geht mit vollem 1/(U·A) einschließlich äußerem Übergang ein; die Kapazität der Wände bleibt dabei unverändert | (25)–(28), Grenzfälle (28a)–(28c) | U_AF, A, α_A | R_ges,AW, R_1,AW, R_Rest,AW |
-| B7 | Zusammenfassung zum Raum mit der Bezugsperiode T_RA = 5 d | (10e) | B5, B6 | Ersatzparameter des Raums |
+| B7 | Übergangswiderstände, Lüftung und Wärmebrücken wie A6/A7; trägt eine Gruppe kein Bauteil mit Schichten, rechnet sie den Klassenweg aus den Bauteilsummen (A1, A4, A5) — Bauteilweg und Klassenweg sind dann gleich | (18), (29)/(30) | B5, B6 | Ersatzparameter des Raums |
 
 **Fallen.** Innenbauteile werden über den **vollständigen** Schichtaufbau in die Kettenmatrix
 gegeben und erst danach reduziert; wer zusätzlich an der Mittelebene halbiert, halbiert zweimal.
