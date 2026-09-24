@@ -110,6 +110,12 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf — er " +
         "ersetzt die Vergütung nicht.");
 
+    /// <summary>
+    /// ETAPPE E9b (Konzept § 2.11.5, Pflege): der Gegenstand des ±-Knopfes an der
+    /// Einspeisevergütung KWK — derselbe Name wie in der Annahmentafel der Seite.
+    /// </summary>
+    public string SzEinspKwk { get; } = T("WIRT_ANN_VERGUETUNG_KWK", "Einspeisevergütung KWK");
+
     public string PAbschlag { get; } = T("BHW_P_ABSCHLAG", "Abschlag Negativstunden [%]:");
     public string PPauschal { get; } = T("BHW_P_PAUSCHAL", "Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)");
     public string PStichtag { get; } = T("BHW_P_STICHTAG", "Stichtag (Bestellung/Genehmigung, § 6):");

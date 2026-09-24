@@ -65948,6 +65948,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie. ähnelt.
+        /// </summary>
+        public static string SZP_PV_DV_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SZP_PV_DV_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht angewendet (Schalter „Vergütung anwenden“). ähnelt.
+        /// </summary>
+        public static string SZP_PV_INAKTIV {
+            get {
+                return ResourceManager.GetString("SZP_PV_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA). ähnelt.
+        /// </summary>
+        public static string SZP_PV_PPA_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SZP_PV_PPA_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte — {0} ähnelt.
         /// </summary>
         public static string SZP_TITEL {
@@ -68389,6 +68416,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_DV_ENTGELT {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_DV_ENTGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
         /// </summary>
         public static string WIRT_ANN_GEPFLEGT {
@@ -68403,6 +68439,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ANN_MENGE {
             get {
                 return ResourceManager.GetString("WIRT_ANN_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Preis ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_PPA_PREIS {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_PPA_PREIS", resourceCulture);
             }
         }
         

@@ -106,7 +106,7 @@ public static class Szenariopaar
                 : t.ErwartetLeer,
             ["WarnungOhneErwartet"] = warnenOhneErwartet ? t.OhneErwartet : "",
             ["HinweisLeer"] = t.Leer,
-            ["Hinweise"] = (IReadOnlyList<string>)(hinweise ?? Array.Empty<string>())
+            ["Hinweise"] = (hinweise ?? Array.Empty<string>())
                 .Where(h => !string.IsNullOrWhiteSpace(h)).ToList(),
             ["HilfeSchluessel"] = HILFESCHLUESSEL,
             ["OkText"] = t.Ok,

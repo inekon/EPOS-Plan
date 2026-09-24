@@ -70,6 +70,10 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string SzZeitraum { get; } = T("WPAR_SZ_ZEITRAUM", "Betrachtungszeitraum");
     /// <summary>ETAPPE E9b: Zeile 9 — die Mengenänderung je Szenario.</summary>
     public string SzMenge { get; } = T("WPAR_SZ_MENGE", "Mengenänderung");
+
+    /// <summary>ETAPPE E9b: der Gegenstand des ±-Knopfes an der Einspeisevergütung PV —
+    /// derselbe Name wie in der Annahmentafel der Seite.</summary>
+    public string SzEinspeisung { get; } = T("WIRT_ANN_VERGUETUNG", "Einspeisevergütung PV");
     public string SzVorgaben { get; } = T("WPAR_SZ_VORGABEN", "Vorgaben");
     public string SzHinweis { get; } = T("WPAR_SZ_HINWEIS", "");
     public string SzHerkunftVorgabe { get; } = T("WPAR_SZ_HERKUNFT_VORGABE",

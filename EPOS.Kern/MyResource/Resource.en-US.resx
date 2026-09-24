@@ -26865,6 +26865,21 @@ Do you want to allow this?</value>
   <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
     <value>The unit of the two value fields in absolute mode (“€” for a cost item, otherwise the unit of the price or rate). Display only.</value>
   </data>
+  <data name="WIRT_ANN_DV_ENTGELT" xml:space="preserve">
+    <value>DM fee</value>
+  </data>
+  <data name="WIRT_ANN_PPA_PREIS" xml:space="preserve">
+    <value>PPA price</value>
+  </data>
+  <data name="SZP_PV_INAKTIV" xml:space="preserve">
+    <value>DM fee and PPA price per scenario without effect: the remuneration is not applied (switch “Apply remuneration”).</value>
+  </data>
+  <data name="SZP_PV_DV_OHNE_WIRKUNG" xml:space="preserve">
+    <value>DM fee per scenario without effect: it only applies to direct marketing with market premium.</value>
+  </data>
+  <data name="SZP_PV_PPA_OHNE_WIRKUNG" xml:space="preserve">
+    <value>PPA price per scenario without effect: it only applies to other direct marketing (PPA).</value>
+  </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>
