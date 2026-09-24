@@ -97,7 +97,7 @@
         <p class="epos-leisezeile epos-zapfprofil-editorhinweis" role="status">@_hinweis</p>
     }
 
-    <Gruppenkopf Titel="@Texte.KatTitel">
+    <Gruppenkopf Titel="">
         <KindInhalt>
             @if (_zeilen.Count == 0)
             {
@@ -147,7 +147,7 @@
                             </TemplateColumn>
                             <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteKappung">
                                 <Zahlenfeld Bezeichnung="@Feld(Texte.KatSpalteKappung, context)" Feldname="@Feld(Texte.KatSpalteKappung, context)"
-                                            Min="0" Wert="@context.KappungLJeMin" Platzhalter="@Texte.KatKappungKeine"
+                                            Min="0.01" Wert="@context.KappungLJeMin" Platzhalter="@Texte.KatKappungKeine"
                                             WertChanged="w => Setzen(context, k => k.KappungLJeMin = w)" FehlerZustand="FehlerZustandMelden" />
                             </TemplateColumn>
                             <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteHerkunft">

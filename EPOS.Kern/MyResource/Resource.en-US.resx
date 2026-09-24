@@ -15424,7 +15424,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>CHP</value>
   </data>
   <data name="MENU_BRAUCHWASSER" xml:space="preserve">
-    <value>Industrial water</value>
+    <value>Domestic hot water</value>
   </data>
   <data name="MENU_DAT_IMPORT" xml:space="preserve">
     <value>Data &amp; import</value>
