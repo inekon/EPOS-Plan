@@ -644,7 +644,7 @@ namespace EPOS.Kern.Tests
                 ErgebnisGebaeudeSchema.HeizkreisAlle(null);
 
                 // Schritte S-A, S-B, S-C (Gebaeudesimulation G3, Welle B): Baustoffkatalog samt
-                // Normsaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
+                // Norm- und Herstellersaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
                 // Quellen wie Migration und Werkzeug (BaustoffSchema, BauteilaufbauSchema,
                 // ZonenSchema); wiederholbar.
                 BaustoffSchema.Ausfuehren();

@@ -1646,7 +1646,7 @@ namespace Testdatenbankschema
             }
 
             // ---- Schritte S-A, S-B, S-C (Gebaeudesimulation Stufe G3, Welle B;
-            //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Normsaat, Bauteilaufbauten
+            //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Norm- und Herstellersaat, Bauteilaufbauten
             //      mit Schichten, Zonen und Bauteile - acht STRICT-Tabellen aus DENSELBEN Quellen, aus
             //      denen sich SchemaMigration.Schritt_BaustoffKatalog, Schritt_Bauteilaufbau und
             //      Schritt_Zonen bedienen (BaustoffSchema, BauteilaufbauSchema, ZonenSchema).

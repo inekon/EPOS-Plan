@@ -529,7 +529,7 @@ namespace WindowsFormsApplication1
         /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
         /// Mit der STUFE G3 DER GEBÄUDESIMULATION (Schritte S-A bis S-C; Softwarearchitektur
         /// Gebäudesimulation 2.2 und 2.4, W1) steht das Ziel auf <see cref="ZonenSchema.SCHRITT"/>:
-        /// der Baustoffkatalog samt Projektkopie und Normsaat (<see cref="BaustoffSchema.SCHRITT"/>,
+        /// der Baustoffkatalog samt Projektkopie und Norm- und Herstellersaat (<see cref="BaustoffSchema.SCHRITT"/>,
         /// <see cref="BaustoffSchema"/>), Bauteilaufbauten und Schichten
         /// (<see cref="BauteilaufbauSchema.SCHRITT"/>, <see cref="BauteilaufbauSchema"/>) und Zonen
         /// und Bauteile (<see cref="ZonenSchema.SCHRITT"/>, <see cref="ZonenSchema"/>) — acht

@@ -134,18 +134,24 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Baustoffsaat: 65 Zeilen, Ids 1 bis 65 lückenlos, Namen eindeutig (ohne Rücksicht auf
-        /// Groß- und Kleinschreibung), Längen und Stoffwerte im Band des Imports (Mehrzonenkonzept
-        /// 3.5), Quelle je Zeile. Die Dämmstoffe nennen λD, nicht „WLS" (Vorgabe der Orchestrierung).
+        /// Die Baustoffsaat: 65 herstellerneutrale Normzeilen (Ids 1 bis 65) und 67 Herstellerzeilen
+        /// (Ids 1001 bis 1067), je lückenlos; der natürliche Schlüssel (Hersteller, Bezeichner)
+        /// eindeutig ohne Rücksicht auf Groß- und Kleinschreibung, Längen und Stoffwerte im Band des
+        /// Imports (Mehrzonenkonzept 3.5), Quelle je Zeile. Die Dämmstoffe der Normsaat nennen λD,
+        /// nicht „WLS" (Vorgabe der Orchestrierung).
         /// </summary>
         [Fact]
         public void Die_Baustoffsaat_ist_vollstaendig_eindeutig_und_im_Band()
         {
             IReadOnlyList<BaustoffSaat> saat = BaustoffSchema.Saat;
-            Assert.Equal(65, saat.Count);
-            Assert.Equal(Enumerable.Range(1, 65), saat.Select(s => s.Id));
+            Assert.Equal(132, saat.Count);
+            Assert.Equal(Enumerable.Range(1, 65), BaustoffSaattabelle.Norm.Select(s => s.Id));
+            Assert.Equal(Enumerable.Range(1001, 67), BaustoffSaattabelle.Hersteller.Select(s => s.Id));
+            Assert.All(BaustoffSaattabelle.Norm, s => Assert.Null(s.Hersteller));
+            Assert.All(BaustoffSaattabelle.Hersteller, s => Assert.False(string.IsNullOrWhiteSpace(s.Hersteller)));
             Assert.True(saat.All(s => s.Id < BaustoffSchema.SAAT_ID_GRENZE));
-            Assert.Equal(saat.Count, saat.Select(s => s.Bezeichner.ToLowerInvariant()).Distinct().Count());
+            Assert.Equal(saat.Count, saat.Select(s => (s.Hersteller ?? "").ToLowerInvariant() + "|" +
+                                                      s.Bezeichner.ToLowerInvariant()).Distinct().Count());
 
             foreach (BaustoffSaat s in saat)
             {
@@ -158,14 +164,22 @@ namespace EPOS.Kern.Tests
                 Assert.InRange(s.Rho, 5.0, 8000.0);
                 Assert.InRange(s.Cp, 100.0, 5000.0);
                 Assert.DoesNotContain("WLS", s.Bezeichner);
+                if (s.Hersteller != null)
+                    Assert.True(s.Hersteller.Length <= BaustoffSchema.LAENGE_HERSTELLER, s.Hersteller);
             }
 
-            Assert.Equal(13, saat.Count(s => s.Gruppe == "Dämmstoffe"));
+            Assert.Equal(13, BaustoffSaattabelle.Norm.Count(s => s.Gruppe == "Dämmstoffe"));
+            // Die Herstellersaat ordnet sich in die Gruppen der Normsaat ein - ein Gruppenfilter
+            // zeigt Norm- und Herstellerzeilen zusammen.
+            Assert.Subset(new HashSet<string>(BaustoffSaattabelle.Norm.Select(s => s.Gruppe)),
+                          new HashSet<string>(BaustoffSaattabelle.Hersteller.Select(s => s.Gruppe)));
             Assert.All(saat.Where(s => s.Gruppe == "Dämmstoffe" && s.Id <= 47), s => Assert.Contains("λD 0,0", s.Bezeichner));
             Assert.Equal("Mineralwolle λD 0,035", BaustoffSchema.SaatZu(36).Bezeichner);
             Assert.Equal(0.036, BaustoffSchema.SaatZu(36).Lambda);
             Assert.Equal("Stahlbeton", BaustoffSchema.SaatZu(10).Bezeichner);
             Assert.Null(BaustoffSchema.SaatZu(66));
+            Assert.Equal("Xella", BaustoffSchema.SaatZu(1026).Hersteller);
+            Assert.Equal(0.07, BaustoffSchema.SaatZu(1026).Lambda);
         }
 
         private static string Liste(IEnumerable<string> werte) => "'" + string.Join("','", werte) + "'";
@@ -315,8 +329,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Saat in der Datenbank: 65 Zeilen unter ihren festen Ids, <c>ReadOnly = 1</c>,
-        /// <c>Herkunft = VORGABE</c>, herstellerneutral, Werte und Quelle wie in der Saattabelle;
+        /// Die Saat in der Datenbank: 132 Zeilen unter ihren festen Ids, <c>ReadOnly = 1</c>,
+        /// <c>Herkunft = VORGABE</c>, Hersteller, Werte und Quelle wie in der Saattabelle;
         /// die AUTOINCREMENT-Folge steht auf der Saatgrenze.
         /// </summary>
         [Fact]
@@ -338,7 +352,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(s.Quelle, Convert.ToString(r["Quelle"]));
                 Assert.Equal(DbWerte.HERKUNFT_VORGABE, Convert.ToString(r["Herkunft"]));
                 Assert.Equal(1L, Convert.ToInt64(r["ReadOnly"]));
-                Assert.Equal(DBNull.Value, r["Hersteller"]);
+                Assert.Equal(s.Hersteller, r["Hersteller"] == DBNull.Value ? null : Convert.ToString(r["Hersteller"]));
                 Assert.Equal(DBNull.Value, r["Quellkennung"]);
             }
             Assert.Equal(BaustoffSchema.SAAT_ID_GRENZE - 1L,
@@ -388,13 +402,13 @@ namespace EPOS.Kern.Tests
 
             BaustoffSchema.Bericht b = BaustoffSchema.Ausfuehren();
             Assert.Equal(2, b.TabellenAngelegt);
-            Assert.Equal(65, b.Gesaet);
+            Assert.Equal(BaustoffSchema.Saat.Count, b.Gesaet);
             Assert.Equal(4, BauteilaufbauSchema.Ausfuehren());
             Assert.Equal(2, ZonenSchema.Ausfuehren());
             Assert.True(BaustoffSchema.Vollstaendig());
             Assert.True(BauteilaufbauSchema.Vollstaendig());
             Assert.True(ZonenSchema.Vollstaendig());
-            Assert.Contains("65 von 65 Saatzeile(n)", b.Zeile());
+            Assert.Contains("132 von 132 Saatzeile(n)", b.Zeile());
         }
 
         private static List<string> IndexSpalten(string index)

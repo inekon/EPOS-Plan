@@ -4184,7 +4184,7 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>DDL und Saat:</b> <c>Tab_Baustoff_STAMM</c> und die spaltengleiche
         /// Projektkopie <c>Tab_Baustoff</c> (STRICT, samt Spalte <c>Hersteller</c>), dann die
-        /// Normsaat mit fester Id, <c>ReadOnly = 1</c> und <c>Herkunft = VORGABE</c>; die
+        /// Norm- und Herstellersaat (132 Zeilen) mit fester Id, <c>ReadOnly = 1</c> und <c>Herkunft = VORGABE</c>; die
         /// AUTOINCREMENT-Folge des Katalogs steigt auf die Saatgrenze. Alles aus
         /// <see cref="BaustoffSchema"/> — EINE Quelle für Migration, Werkzeug und Nachweis.</para>
         ///
@@ -5964,7 +5964,7 @@ namespace WindowsFormsApplication1
             // BauteilaufbauSchema und ZonenSchema; die Nummern stehen allein dort.
             new Schritt(SCHRITT_BAUSTOFFKATALOG,
                         "Tab_Baustoff_STAMM und Tab_Baustoff: Baustoffkatalog samt Projektkopie, " +
-                        "Normsaat nach DIN 4108-4 und DIN EN ISO 10456 (ReadOnly, Quelle je Zeile)",
+                        "Norm- und Herstellersaat nach DIN 4108-4, DIN EN ISO 10456 und Datenblatt (ReadOnly, Quelle je Zeile)",
                         "Ein Bauteilaufbau faende keine Stoffwerte, und der IFC-Import keinen Katalog fuer " +
                         "den Namensabgleich. KEIN Rechenergebnis aendert sich - kein Rechenweg liest den " +
                         "Katalog.",

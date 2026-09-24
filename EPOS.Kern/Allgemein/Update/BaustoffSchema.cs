@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -33,54 +34,15 @@ namespace WindowsFormsApplication1
     // Fremdschluessel aenderte den Loeschweg eines Projekts; die Projektkopie reist ueber
     // ihre Spalte ID_Projekt mit (ProjektDuplizierenCtrl, Projekttransfer).
     //
-    // DIE SAAT. 65 Zeilen mit fester Id (1 bis 65), ReadOnly = 1, Herkunft = VORGABE und der
-    // Quelle je Zeile; die Bemerkungen der Recherche stehen NICHT in der Datenbank. Die Ids
-    // unter SAAT_ID_GRENZE sind der Auslieferungssaat vorbehalten: SaatSchreiben hebt die
-    // AUTOINCREMENT-Folge des Katalogs auf die Grenze, damit eine vom Anwender angelegte Zeile
-    // nie eine Id bekommt, die eine spaetere Saat (die Herstellerkataloge) fest vergibt.
+    // DIE SAAT (BaustoffSaat.cs). 132 Zeilen mit fester Id: 65 herstellerneutrale Normzeilen
+    // (1 bis 65) und 67 Herstellerzeilen (1001 bis 1067), ReadOnly = 1, Herkunft = VORGABE und
+    // die Quelle je Zeile; Bemerkungen und Belege der Recherche stehen NICHT in der Datenbank.
+    // Die Ids unter SAAT_ID_GRENZE sind der Auslieferungssaat vorbehalten: SaatSchreiben hebt
+    // die AUTOINCREMENT-Folge des Katalogs auf die Grenze, damit eine vom Anwender angelegte
+    // Zeile nie eine Id bekommt, die eine Saat fest vergibt.
     //
     // ERGEBNISNEUTRAL. Kein Rechenweg liest die Tabellen; der Referenzlauf bleibt byte-gleich.
     // ====================================================================================
-
-    /// <summary>
-    /// Eine Zeile der Baustoffsaat — ein Norm- oder Richtwert mit Quelle. Die Id ist fest und
-    /// bleibt über alle Auslieferungen gleich (Muster <see cref="NutzungsdauerSaat"/>).
-    /// </summary>
-    public sealed class BaustoffSaat
-    {
-        public BaustoffSaat(int id, string gruppe, string bezeichner, double lambda, double rho,
-                            double cp, string quelle)
-        {
-            Id = id;
-            Gruppe = gruppe;
-            Bezeichner = bezeichner;
-            Lambda = lambda;
-            Rho = rho;
-            Cp = cp;
-            Quelle = quelle;
-        }
-
-        /// <summary>Feste Saat-Id — sie bleibt über alle Auslieferungen gleich.</summary>
-        public int Id { get; }
-
-        /// <summary>Ordnungsgruppe (Mauerwerk, Beton, Dämmstoffe, …).</summary>
-        public string Gruppe { get; }
-
-        /// <summary>Name des Stoffes, herstellerneutral; die Klasse steht im Namen.</summary>
-        public string Bezeichner { get; }
-
-        /// <summary>Wärmeleitfähigkeit [W/(m·K)] — bei Dämmstoffen der Bemessungswert nach DIN 4108-4, Tab. 2.</summary>
-        public double Lambda { get; }
-
-        /// <summary>Rohdichte [kg/m³].</summary>
-        public double Rho { get; }
-
-        /// <summary>Spezifische Wärmekapazität [J/(kg·K)].</summary>
-        public double Cp { get; }
-
-        /// <summary>Regelwerk mit Tabelle und Zeile.</summary>
-        public string Quelle { get; }
-    }
 
     /// <summary>
     /// <b>Die DDL und die Saat des Baustoffkatalogs</b> — Schemaschritt S-A (Nummer
@@ -167,7 +129,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Ids unterhalb dieser Grenze gehören der Auslieferungssaat</b> — die Normsaat
-        /// belegt 1 bis 65, eine spätere Herstellersaat bekommt ihre festen Ids darüber.
+        /// belegt 1 bis 65 (Raum bis 999), die Herstellersaat 1001 bis 1067 (Raum bis 9 999).
         /// <see cref="SaatSchreiben"/> hebt die AUTOINCREMENT-Folge des Katalogs auf
         /// <c>SAAT_ID_GRENZE − 1</c>; eine vom Anwender angelegte Zeile beginnt damit bei
         /// dieser Grenze und kann keine feste Saat-Id besetzen.
@@ -240,169 +202,16 @@ namespace WindowsFormsApplication1
         };
 
         // =================================================================
-        //  Die Saat (Normrecherche 24.09.2026, DIN 4108-4:2020-11 und DIN EN ISO 10456:2010-05)
+        //  Die Saat (BaustoffSaat.cs)
         // =================================================================
 
         /// <summary>
-        /// Die 65 Auslieferungszeilen — Norm- und Richtwerte, je mit ihrer Quelle. Bei den
-        /// Dämmstoffen nennt der Bezeichner den Nennwert λD, die Spalte <c>Lambda</c> trägt den
-        /// Bemessungswert nach DIN 4108-4, Tab. 2. Kupfer, Bronze, Messing und Blei fehlen,
-        /// weil ihre Rohdichte über dem Band des Imports liegt (Mehrzonenkonzept 3.5).
+        /// <b>Die ganze Auslieferungssaat</b> — die 65 Normzeilen (Ids 1 bis 65) und die 67
+        /// Herstellerzeilen (Ids 1001 bis 1067) aus <see cref="BaustoffSaattabelle"/>, in dieser
+        /// Reihenfolge. <see cref="SaatSchreiben"/> schreibt sie in EINEM Zug.
         /// </summary>
-        public static readonly IReadOnlyList<BaustoffSaat> Saat = new[]
-        {
-            // ---- Putze und Mörtel --------------------------------------------------
-            new BaustoffSaat( 1, "Putze und Mörtel", "Kalkzementputz", 1.0, 1800.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.1.1; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat( 2, "Putze und Mörtel", "Gipsputz 1200", 0.43, 1200.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.1.2; DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat( 3, "Putze und Mörtel", "Leichtputz 1000", 0.38, 1000.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.1.4; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat( 4, "Putze und Mörtel", "Zementputz", 1.0, 1800.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Estriche ----------------------------------------------------------
-            new BaustoffSaat( 5, "Estriche", "Zementestrich", 1.4, 2000.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.3.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat( 6, "Estriche", "Calciumsulfatestrich", 1.2, 2100.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.3.3; DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat( 7, "Estriche", "Calciumsulfat-Fließestrich", 1.4, 2100.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.3.4; DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat( 8, "Estriche", "Gussasphaltestrich", 0.9, 2300.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 1.3.1; DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Beton -------------------------------------------------------------
-            new BaustoffSaat( 9, "Beton", "Normalbeton 2400", 2.0, 2400.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(10, "Beton", "Stahlbeton", 2.5, 2400.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(11, "Beton", "Stahlbeton 1 % Bewehrung", 2.3, 2300.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(12, "Beton", "Leichtbeton 1200", 0.62, 1200.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 2.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-
-            // ---- Mauerwerk ---------------------------------------------------------
-            new BaustoffSaat(13, "Mauerwerk", "Vollziegel 1800", 0.81, 1800.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.1.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(14, "Mauerwerk", "Klinker 2000", 0.96, 2000.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.1.1; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(15, "Mauerwerk", "Hochlochziegel 1200", 0.5, 1200.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.1.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(16, "Mauerwerk", "Hochlochziegel HLzA/B 800", 0.39, 800.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.1.3; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(17, "Mauerwerk", "Hochlochziegel HLzW 700", 0.24, 700.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.1.4; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(18, "Mauerwerk", "Kalksandstein 1400", 0.7, 1400.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(19, "Mauerwerk", "Kalksandstein 1600", 0.79, 1600.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(20, "Mauerwerk", "Kalksandstein 1800", 0.99, 1800.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(21, "Mauerwerk", "Kalksandstein 2000", 1.1, 2000.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.2; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(22, "Mauerwerk", "Porenbeton 350", 0.11, 350.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.3; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(23, "Mauerwerk", "Porenbeton 400", 0.13, 400.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.3; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(24, "Mauerwerk", "Porenbeton 500", 0.16, 500.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.3; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(25, "Mauerwerk", "Porenbeton 600", 0.19, 600.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.3; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(26, "Mauerwerk", "Leichtbeton-Hohlblock 800", 0.35, 800.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 4.4.1; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(27, "Mauerwerk", "Sandstein", 2.3, 2600.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(28, "Mauerwerk", "Kalkstein mittelhart", 1.4, 2000.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Holz und Holzwerkstoffe -------------------------------------------
-            new BaustoffSaat(29, "Holz und Holzwerkstoffe", "Nadelholz 500", 0.13, 500.0, 1600.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(30, "Holz und Holzwerkstoffe", "Laubholz 700", 0.18, 700.0, 1600.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(31, "Holz und Holzwerkstoffe", "Sperrholz 500", 0.13, 500.0, 1600.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(32, "Holz und Holzwerkstoffe", "OSB-Platte", 0.13, 650.0, 1700.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(33, "Holz und Holzwerkstoffe", "Spanplatte 600", 0.14, 600.0, 1700.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(34, "Holz und Holzwerkstoffe", "Holzfaserplatte MDF 800", 0.18, 800.0, 1700.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Dämmstoffe --------------------------------------------------------
-            new BaustoffSaat(35, "Dämmstoffe", "Mineralwolle λD 0,032", 0.033, 40.0, 1030.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.1, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(36, "Dämmstoffe", "Mineralwolle λD 0,035", 0.036, 40.0, 1030.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.1, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(37, "Dämmstoffe", "Mineralwolle λD 0,040", 0.041, 40.0, 1030.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.1, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(38, "Dämmstoffe", "EPS-Hartschaum λD 0,032", 0.033, 20.0, 1450.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.2, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(39, "Dämmstoffe", "EPS-Hartschaum λD 0,035", 0.036, 20.0, 1450.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.2, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(40, "Dämmstoffe", "EPS-Hartschaum λD 0,040", 0.041, 20.0, 1450.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.2, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(41, "Dämmstoffe", "XPS-Hartschaum λD 0,035", 0.036, 35.0, 1450.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.3, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(42, "Dämmstoffe", "PUR-Hartschaum λD 0,023", 0.024, 30.0, 1400.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.4, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(43, "Dämmstoffe", "Holzfaserdämmstoff λD 0,040", 0.042, 140.0, 2000.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.10, Fn. b; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(44, "Dämmstoffe", "Zellulose λD 0,040", 0.041, 50.0, 1600.0,
-                             "DIN 4108-4:2020-11, Tab. 5, Z. 2.1; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(45, "Dämmstoffe", "Schaumglas λD 0,040", 0.041, 120.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.6, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(46, "Dämmstoffe", "Perlite-Schüttung λD 0,050", 0.052, 90.0, 900.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.13, Fn. a; DIN EN ISO 10456:2010-05, Tab. 4"),
-            new BaustoffSaat(47, "Dämmstoffe", "Holzwolle-Leichtbauplatte λD 0,090", 0.095, 400.0, 1470.0,
-                             "DIN 4108-4:2020-11, Tab. 2, Z. 5.7.1, Fn. b; DIN EN ISO 10456:2010-05, Tab. 4"),
-
-            // ---- Platten -----------------------------------------------------------
-            new BaustoffSaat(48, "Platten", "Gipskartonplatte 700", 0.21, 700.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 3.4; DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(49, "Platten", "Gipsfaserplatte 1200", 0.43, 1200.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(50, "Platten", "Zementgebundene Spanplatte", 0.23, 1200.0, 1500.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Bodenbeläge -------------------------------------------------------
-            new BaustoffSaat(51, "Bodenbeläge", "Keramikfliese", 1.3, 2300.0, 840.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(52, "Bodenbeläge", "Parkett", 0.18, 700.0, 1600.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(53, "Bodenbeläge", "PVC-Bodenbelag", 0.25, 1700.0, 1400.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(54, "Bodenbeläge", "Linoleum", 0.17, 1200.0, 1400.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(55, "Bodenbeläge", "Teppichboden", 0.06, 200.0, 1300.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Abdichtungen ------------------------------------------------------
-            new BaustoffSaat(56, "Abdichtungen", "Bitumenbahn", 0.17, 1200.0, 1000.0,
-                             "DIN 4108-4:2020-11, Tab. 1, Z. 7.3.1; DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(57, "Abdichtungen", "Kunststoffbahn PVC-P", 0.14, 1200.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(58, "Abdichtungen", "Elastomerbahn EPDM", 0.25, 1150.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(59, "Abdichtungen", "PE-Folie", 0.33, 920.0, 2200.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Metalle und Glas --------------------------------------------------
-            new BaustoffSaat(60, "Metalle und Glas", "Stahl", 50.0, 7800.0, 450.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(61, "Metalle und Glas", "Aluminium", 160.0, 2800.0, 880.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(62, "Metalle und Glas", "Zink", 110.0, 7200.0, 380.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(63, "Metalle und Glas", "Floatglas", 1.0, 2500.0, 750.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-
-            // ---- Erdreich ----------------------------------------------------------
-            new BaustoffSaat(64, "Erdreich", "Erdreich Ton und Schluff", 1.5, 1500.0, 2000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-            new BaustoffSaat(65, "Erdreich", "Erdreich Sand und Kies", 2.0, 2000.0, 1000.0,
-                             "DIN EN ISO 10456:2010-05, Tab. 3"),
-        };
+        public static readonly IReadOnlyList<BaustoffSaat> Saat =
+            BaustoffSaattabelle.Norm.Concat(BaustoffSaattabelle.Hersteller).ToArray();
 
         // =================================================================
         //  Auskunft
@@ -475,8 +284,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schreibt die fehlenden Saatzeilen und hebt danach die AUTOINCREMENT-Folge des
         /// Katalogs auf die Saatgrenze. <b>Wiederholbar und nie überschreibend:</b> Eine Zeile,
-        /// deren Id schon belegt ist ODER deren Bezeichner schon als herstellerneutraler Satz
-        /// dasteht, wird übergangen — ein zweiter Lauf ändert nichts, und eine vom Anwender
+        /// deren Id schon belegt ist ODER deren Bezeichner schon beim selben Hersteller (bzw.
+        /// herstellerneutral) dasteht, wird übergangen — ein zweiter Lauf ändert nichts, und eine vom Anwender
         /// geänderte Saatzeile bleibt, wie sie ist.
         /// </summary>
         /// <returns>Zahl der angelegten Zeilen.</returns>
@@ -487,16 +296,18 @@ namespace WindowsFormsApplication1
             {
                 if (Anzahl("SELECT COUNT(*) FROM \"" + TAB_STAMM + "\" WHERE \"ID\" = ?",
                            new DbParam("@id", s.Id)) > 0) continue;
-                if (Anzahl("SELECT COUNT(*) FROM \"" + TAB_STAMM + "\" WHERE \"Bezeichner\" = ? AND \"Hersteller\" IS NULL",
-                           new DbParam("@bez", s.Bezeichner)) > 0) continue;
+                if (Anzahl("SELECT COUNT(*) FROM \"" + TAB_STAMM + "\" WHERE \"Bezeichner\" = ? AND \"Hersteller\" IS ?",
+                           new DbParam("@bez", s.Bezeichner),
+                           new DbParam("@her", DbParamTyp.VarWChar) { Wert = (object)s.Hersteller ?? DBNull.Value }) > 0) continue;
 
                 int n = DataRepository.ExecuteNonQuery(
                     "INSERT INTO \"" + TAB_STAMM + "\" (\"ID\", \"Bezeichner\", \"Gruppe\", \"Hersteller\", " +
                     "\"Lambda\", \"Rho\", \"cp\", \"Quelle\", \"Herkunft\", \"Quellkennung\", \"ReadOnly\") " +
-                    "VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, NULL, 1)",
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 1)",
                     new DbParam("@id", s.Id),
                     new DbParam("@bez", s.Bezeichner),
                     new DbParam("@gr", s.Gruppe),
+                    new DbParam("@her", DbParamTyp.VarWChar) { Wert = (object)s.Hersteller ?? DBNull.Value },
                     new DbParam("@l", DbParamTyp.Double) { Wert = s.Lambda },
                     new DbParam("@r", DbParamTyp.Double) { Wert = s.Rho },
                     new DbParam("@c", DbParamTyp.Double) { Wert = s.Cp },

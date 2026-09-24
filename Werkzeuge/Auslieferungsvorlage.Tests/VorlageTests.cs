@@ -170,7 +170,7 @@ namespace Auslieferungsvorlage.Tests
         //  P6c — Der Baustoffkatalog und die Kindkataloge ohne ReadOnly (Stufe G3, L1)
         // =============================================================================
         /// <summary>
-        /// <b>Die Normsaat des Baustoffkatalogs reist vollstaendig mit</b> — Name exakt
+        /// <b>Die Saat des Baustoffkatalogs (Norm und Hersteller) reist vollstaendig mit</b> — Name exakt
         /// <c>_STAMM</c>, jede Zeile <c>ReadOnly = 1</c>; der Aufbaukatalog und seine Schichten
         /// stehen leer, die Projektkopien, Zonen und Bauteile ebenso.
         ///
