@@ -2123,7 +2123,7 @@ mit ihr ist E9 abgeschlossen.
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **E9 Teil b** (#462, Merge `75d45630`) | V‑E in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV und KWK, an DV-Entgelt und PPA-Preis; der Hinweistext entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert"; 38 Ressourcenschlüssel neu, 1 entfallen, 2 geändert; kein Schemaschritt | **keine ohne Pflege** — die Rechenwege stehen seit E9a; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich; erstes Gate auf `9fbac8c6` grün, zweites Gate NACHTRAG-462-GATE2 |
+| **E9 Teil b** (#462, Merge `75d45630`) | V‑E in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV und KWK, an DV-Entgelt und PPA-Preis; der Hinweistext entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert"; 38 Ressourcenschlüssel neu, 1 entfallen, 2 geändert; kein Schemaschritt | **keine ohne Pflege** — die Rechenwege stehen seit E9a; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich; erstes Gate auf `9fbac8c6` grün, zweites Gate Build 0 Fehler, ChartProben 146/146 gleich der Windows-Messlatte, voller Lauf 12.532 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 5.700, EPOS.UI 5.877, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27+1), Dokumentationswachen 26/26 (Log GATE462b) |
 
 *Kopf (Z. 3):*
 

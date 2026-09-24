@@ -234,7 +234,7 @@ Analysepapiers ist der Teil „Szenario-±-Knopf" erledigt.
   Lauf 0 Fehler, **12.500 bestanden, 1 übersprungen** (EPOS.Kern 5.685, EPOS.UI 5.860, KiKern 542, SpeicherEngine 386,
   SpeicherPlanung 27 und 1 übersprungen); Dokumentationswachen 26/26. Referenzlauf 13/13 gegen R13 und SQL-Prüfer
   1.763/0 aus dem Agentenlauf auf dem byte-gleichen Baum `018520f8`.
-- **Zweites Gate auf `75d45630`** (über `origin` = `f06c8c9e`): NACHTRAG-462-GATE2.
+- **Zweites Gate auf `75d45630`** (über `origin` = `f06c8c9e`): Build 0 Fehler, ChartProben 146/146 gleich der Windows-Messlatte, voller Lauf 12.532 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 5.700, EPOS.UI 5.877, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27+1), Dokumentationswachen 26/26 (Log GATE462b).
 - **Schema:** E9b bringt keinen Schritt; nach dem Merge `SchemaStand.Zielversion` = 119 (Kühlung KU2 Welle 3,
   `SCHRITT_119_KAELTESTROM`, Entscheid E34 — nicht aus E9b), der nächste freie Schritt ist 120. Testdatenbank: die der
   Kühlung (LFS `6259b348`, Stand 119); E9b ändert sie nicht.
