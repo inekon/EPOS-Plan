@@ -93,8 +93,21 @@ namespace WindowsFormsApplication1
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
         internal const string UEBERSCHRIFT_GEBAEUDE_ERGEBNIS = "Gebäude (Simulationsergebnis Stamm)";
 
-        /// <summary>Überschrift des Kälteabschnitts (Stufe KU1) — zugleich Schlüssel der Übersetzung.</summary>
-        internal const string UEBERSCHRIFT_KAELTE = "Kältebedarf (Simulationsergebnis Stamm)";
+        /// <summary>
+        /// Überschrift des Kälteabschnitts — seit Stufe KU2 Welle 3 „Kältebedarf und -deckung"
+        /// (Kühlkonzept 8.4) — zugleich Schlüssel der Übersetzung.
+        /// </summary>
+        internal const string UEBERSCHRIFT_KAELTE = "Kältebedarf und -deckung (Simulationsergebnis Stamm)";
+
+        /// <summary>Überschrift der Kälteerzeugertabelle (Stufe KU2 Welle 3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KAELTEERZEUGER = "Kälteerzeuger";
+
+        /// <summary>
+        /// Die Grenze der Emissionen des Kältestroms (Kühlkonzept 6.3, Kapitel 14): betriebsbedingt
+        /// über den Strom, ohne Kältemittelverluste — zugleich Schlüssel der Übersetzung.
+        /// </summary>
+        internal const string HINWEIS_KAELTEMITTEL =
+            "Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; Kältemittelverluste sind nicht enthalten.";
 
         /// <summary>
         /// <b>STUFE KU1 — der Kältebedarf des Stamms</b> (Kühlkonzept 8.4; E21, K5, K18): nach dem
@@ -135,11 +148,93 @@ namespace WindowsFormsApplication1
             paare.Add("Kältebedarf ungedeckt");
             paare.Add(k.F(e.Kaelterestbedarf ?? 0.0, 1) + " MWh/a");
 
+            // STUFE KU2 WELLE 3 (Kühlkonzept 6.2–6.4, 8.4; E21, E34): die DECKUNG — nach dem
+            // Muster der Wärmeseite (Deckungsgrad, Erzeuger), dazu der Kältestrom in der
+            // Strombilanz mit seinem Netzbezug, seinen Kosten und Emissionen. Nur mit gerechneter
+            // Kälteerzeugung; ohne Kälteerzeuger steht allein der ungedeckte Bedarf.
+            ErgebnisWaermepumpeModel wp = stamm.Ergebnis.Waermepumpe;
+            bool mitErzeugung = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            if (mitErzeugung)
+            {
+                paare.Add("Deckungsgrad Kühlung");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
+                paare.Add("Kälteerzeugung Wärmepumpe");
+                paare.Add(k.F(wp.Kaelteproduktion_WP.Value, 1) + " MWh/a");
+                paare.Add("Kältestrom");
+                paare.Add(Wert(k, wp.Stromverbrauch_Kuehlung, 2, "MWh/a"));
+                paare.Add("Jahresarbeitszahl Kälte");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, 2, ""));
+                paare.Add("Netzbezug Kältestrom");
+                paare.Add(Wert(k, stamm.KaeltestromNetzbezugMWh, 2, "MWh/a"));
+                paare.Add("Kosten Kältestrom");
+                paare.Add(Wert(k, stamm.KaeltestromKosten, 0, "€/a"));
+                paare.Add("CO₂ Kältestrom");
+                paare.Add(Wert(k, stamm.KaeltestromCO2t, 2, "t/a"));
+            }
+
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            k.HinweisRoh(jahr > 0 ? MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT
-                                  : MyResource.Resource.SIMERG_HRL_KAELTE_LEER);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp);
+            k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
+                         : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
+                                                        k.F(wp.Kaelteproduktion_WP.Value, 2),
+                                                        k.F(SimulationRunner.DeckungProzent(wp.Kaelteproduktion_WP.Value, jahr), 1))
+                         : MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT);
             k.HinweisRoh(SimulationKaeltebedarf.GrenzeFeuchte);
+            if (mitErzeugung) k.Hinweis(HINWEIS_KAELTEMITTEL);
+        }
+
+        /// <summary>
+        /// Die Kälteerzeugertabelle (Kühlkonzept 8.4, #32) — je Wärmepumpe im Kühlbetrieb Kälte,
+        /// Kältestrom, EER-Jahreswert, ihr Netzbezug und der Stromträger, der ihn bepreist (E34).
+        /// Aus den Modulzeilen des Ergebnisses (Schemaschritt 115); eine Wärmepumpe ohne Kälte steht
+        /// nicht darin.
+        /// </summary>
+        private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp)
+        {
+            var zeilen = wp.Module.Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
+            if (zeilen.Count == 0) return;
+
+            int[] b = { 2600, 1200, 1300, 1000, 1300, WordBerichtGenerator.INHALT_B - 7400 };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.STAMM_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            foreach (ErgebnisWaermepumpeModulModel m in zeilen)
+            {
+                double strom = m.Stromverbrauch_Kuehlung ?? 0.0;
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrEmpty(m.Modul) ? "—" : m.Modul, b[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(k.F(m.Kaelteproduktion.Value, 2), b[1], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(strom, 2), b[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(strom > 0 ? k.F(m.Kaelteproduktion.Value / strom, 2) : "—", b[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(m.Kaeltestrom_Netzbezug.HasValue ? k.F(m.Kaeltestrom_Netzbezug.Value, 2) : "—", b[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(KuehltraegerText(m), b[5], false, null, JustificationValues.Left));
+                t.Append(tr);
+            }
+
+            k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);
+            k.Fuege(t);
+        }
+
+        /// <summary>Der Stromträger des Kältestroms einer Modulzeile: der des Projekts, oder ein abweichender samt Abrechnungsart (E34).</summary>
+        internal static string KuehltraegerText(ErgebnisWaermepumpeModulModel m)
+        {
+            if (m == null || !m.Kuehl_CarrierId.HasValue || m.Kuehl_CarrierId.Value <= 0)
+                return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
+            string name = Emissionsquelle.TraegerName(m.Kuehl_CarrierId.Value);
+            return string.Format(m.Kuehl_EigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                               : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
+        }
+
+        /// <summary>Ein Kennzahlwert der Variante aus dem Katalog — null wird „—".</summary>
+        private static string KennzahlWert(WordKontext k, VariantenDaten v, string schluessel, int dez, string einheit)
+        {
+            double? w = v.Kennzahlen.TryGetValue(schluessel, out double? x) ? x : null;
+            return w.HasValue ? k.F(w.Value, dez) + (einheit.Length > 0 ? " " + einheit : "") : "—";
         }
 
         /// <summary>Die Kanalzeile „davon Kühlung" — der vierte Eintrag des Kanalfelds (KU-S4, Spalte <c>Waermebedarf_Kuehlung</c>).</summary>

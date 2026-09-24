@@ -971,6 +971,51 @@ namespace WindowsFormsApplication1
 
             /// <summary>Der Kühlkanal je Stunde [kWh] — für das eigene Bild und den CSV-Export.</summary>
             public double[] KaeltebedarfKwh = new double[0];
+
+            // ---- Die Deckung (Stufe KU2 Welle 3; Kühlkonzept 8.4; E21, E34) ----------
+
+            /// <summary>Deckungsgrad des Kühlkanals [%] — nur mit Kälteerzeuger und Kältebedarf.</summary>
+            public double? DeckungsgradProzent;
+
+            /// <summary>Kältestrom aller Kälteerzeuger samt Hilfsstrom [MWh].</summary>
+            public double KaeltestromMwh;
+
+            /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälte / Kältestrom; <c>null</c> ohne Kältestrom.</summary>
+            public double? EerJahreswert;
+
+            /// <summary>Der Netzbezug des Kältestroms [MWh] — anteilig bzw. über eigene Zähler (E34).</summary>
+            public double KaeltestromNetzbezugMwh;
+
+            /// <summary>Die Kälteerzeuger in Kaskadenreihenfolge — die Zeilen der Kälteerzeugertabelle (#32).</summary>
+            public List<KaelteerzeugerZeile> Erzeuger = new List<KaelteerzeugerZeile>();
+        }
+
+        /// <summary>Eine Zeile der Kälteerzeugertabelle (Stufe KU2 Welle 3) — Mengen in MWh.</summary>
+        public sealed class KaelteerzeugerZeile
+        {
+            /// <summary>Bezeichner der Anlage.</summary>
+            public string Bezeichner = "";
+
+            /// <summary>Der Kühl-Vorlauf, mit dem gerechnet wurde [°C].</summary>
+            public int Vorlauf;
+
+            /// <summary>Gedeckte Kälte [MWh].</summary>
+            public double KaelteMwh;
+
+            /// <summary>Kältestrom samt Hilfsstrom [MWh].</summary>
+            public double StromMwh;
+
+            /// <summary>EER-Jahreswert; <c>null</c> ohne Kältestrom.</summary>
+            public double? Eer;
+
+            /// <summary>Netzbezug des Kältestroms [MWh] (E34).</summary>
+            public double NetzbezugMwh;
+
+            /// <summary>Abweichender Kühlträger (<c>energy_carrier.id</c>); 0 = Stromträger des Projekts.</summary>
+            public int Kuehltraeger;
+
+            /// <summary>Eigener Zähler (E34, Wahl 2)?</summary>
+            public bool EigenerZaehler;
         }
 
         /// <summary>
@@ -982,7 +1027,7 @@ namespace WindowsFormsApplication1
             SimulationKaeltebedarf k = wb?.Kaelteseite;
             if (k == null || !k.Gerechnet) return null;
 
-            return new KaelteErgebnis
+            var e = new KaelteErgebnis
             {
                 KaeltebedarfMwh = k.Kaeltebedarf_Gesamt,
                 KaeltelastMaxKw = k.Kaeltebedarf_Max,
@@ -998,6 +1043,35 @@ namespace WindowsFormsApplication1
                 StundenHeizenUndKuehlenGebaeude = k.StundenHeizenUndKuehlenGebaeude ?? "",
                 KaeltebedarfKwh = (double[])k.Kaeltebedarf.Clone()
             };
+
+            // STUFE KU2 WELLE 3 (Kühlkonzept 8.4): die Deckung der Kälteerzeuger - Deckungsgrad,
+            // Kältestrom, EER-Jahreswert, Netzbezug und je Erzeuger eine Tabellenzeile.
+            Kaeltekaskade kaskade = k.Kaskade;
+            if (kaskade != null && kaskade.Erzeuger.Count > 0)
+            {
+                e.DeckungsgradProzent = k.Kaeltebedarf_Gesamt > 0
+                    ? SimulationRunner.DeckungKuehlkanalProzent(k) : (double?)null;
+                e.KaeltestromMwh = kaskade.StromGesamtKwh / 1000.0;
+                e.EerJahreswert = kaskade.StromGesamtKwh > 0 ? kaskade.EerJahreswert : (double?)null;
+                double netz = 0.0;
+                foreach (Kaelteerzeuger z in kaskade.Erzeuger)
+                {
+                    netz += z.NetzbezugKwh;
+                    e.Erzeuger.Add(new KaelteerzeugerZeile
+                    {
+                        Bezeichner = z.Bezeichner ?? "",
+                        Vorlauf = z.Kennlinie != null ? z.Kennlinie.Vorlauf : 0,
+                        KaelteMwh = z.KaelteGesamtKwh / 1000.0,
+                        StromMwh = z.StromGesamtKwh / 1000.0,
+                        Eer = z.StromGesamtKwh > 0 ? z.EerJahreswert : (double?)null,
+                        NetzbezugMwh = z.NetzbezugKwh / 1000.0,
+                        Kuehltraeger = z.Kuehltraeger,
+                        EigenerZaehler = z.NebenDerStufenrechnung
+                    });
+                }
+                e.KaeltestromNetzbezugMwh = netz / 1000.0;
+            }
+            return e;
         }
 
         /// <summary>

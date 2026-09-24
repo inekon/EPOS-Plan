@@ -3293,6 +3293,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“, anteilig am Netzbezug ähnelt.
+        /// </summary>
+        public static string BER_KAELTE_TRAEGER_ANTEILIG {
+            get {
+                return ResourceManager.GetString("BER_KAELTE_TRAEGER_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string BER_KAELTE_TRAEGER_PROJEKT {
+            get {
+                return ResourceManager.GetString("BER_KAELTE_TRAEGER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“, eigener Zähler ähnelt.
+        /// </summary>
+        public static string BER_KAELTE_TRAEGER_ZAEHLER {
+            get {
+                return ResourceManager.GetString("BER_KAELTE_TRAEGER_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die untere Grenzleistung ähnelt.
         /// </summary>
         public static string BHKWK_FELD_GRENZLEISTUNG {
@@ -57873,11 +57900,92 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Kältestrom aus dem Netz: {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTESTROM_NETZ {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTESTROM_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER (Jahr) ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_EER {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Netz ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_NETZ {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_STROM {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_TRAEGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_SP_VORLAUF {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_SP_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung durch Erzeuger ähnelt.
         /// </summary>
         public static string SIMUEB_LBL_DECKUNG {
             get {
                 return ResourceManager.GetString("SIMUEB_LBL_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl Kälte ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_JAZ_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_JAZ_KAELTE", resourceCulture);
             }
         }
         
@@ -57896,6 +58004,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_LBL_KAELTELAST {
             get {
                 return ResourceManager.GetString("SIMUEB_LBL_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KAELTESTROM {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KAELTESTROM", resourceCulture);
             }
         }
         
@@ -57959,6 +58076,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_RING_GEDECKT {
             get {
                 return ResourceManager.GetString("SIMUEB_RING_GEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältedeckung ähnelt.
+        /// </summary>
+        public static string SIMUEB_RING_KAELTE_TITEL {
+            get {
+                return ResourceManager.GetString("SIMUEB_RING_KAELTE_TITEL", resourceCulture);
             }
         }
         

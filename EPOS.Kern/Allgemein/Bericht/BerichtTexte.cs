@@ -184,12 +184,30 @@ namespace WindowsFormsApplication1
 
             // STUFE KU1 (Kühlkonzept 8.4) — der Kälteabschnitt der Projektbeschreibung. Die
             // Kältezahlen tragen ihre Grenze (K5) als Satz aus MyResource, schon übersetzt.
-            { "Kältebedarf (Simulationsergebnis Stamm)", "Cooling demand (base simulation result)" },
+            { "Kältebedarf und -deckung (Simulationsergebnis Stamm)", "Cooling demand and coverage (base simulation result)" },
             { "Kältebedarf gesamt", "Total cooling demand" },
             { "davon Kühlung", "of which cooling" },
             { "Kältelast max.", "Peak cooling load" },
             { "Vollbenutzungsstunden Kälte", "Full-load hours cooling" },
             { "Kältebedarf ungedeckt", "Uncovered cooling demand" },
+
+            // STUFE KU2 WELLE 3 (Kühlkonzept 6, 8.4; E21, E34) — die Deckung: Kennzahlzeilen,
+            // die Kälteerzeugertabelle und die Grenze der Emissionen des Kältestroms.
+            { "Deckungsgrad Kühlung", "Coverage cooling" },
+            { "Kälteerzeugung Wärmepumpe", "Cooling generation heat pump" },
+            { "Kältestrom", "Cooling electricity" },
+            { "Jahresarbeitszahl Kälte", "Seasonal EER (cooling)" },
+            { "Netzbezug Kältestrom", "Grid import cooling electricity" },
+            { "Kosten Kältestrom", "Cost of cooling electricity" },
+            { "CO₂ Kältestrom", "CO₂ cooling electricity" },
+            { "Kälteerzeuger", "Cooling generators" },
+            { "Anlage", "Plant" },
+            { "Kälte [MWh/a]", "Cooling [MWh/a]" },
+            { "Kältestrom [MWh/a]", "Cooling electricity [MWh/a]" },
+            { "aus dem Netz [MWh/a]", "from the grid [MWh/a]" },
+            { "Stromträger", "Electricity carrier" },
+            { "Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; Kältemittelverluste sind nicht enthalten.",
+              "Emissions of the cooling electricity are operational, calculated via the electricity; refrigerant losses are not included." },
 
             // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells.
             // „Speicher" allein ist als Wörterbuchschlüssel grob genug, dass es nur als

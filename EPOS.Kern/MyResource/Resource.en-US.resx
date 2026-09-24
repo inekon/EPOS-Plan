@@ -26447,4 +26447,46 @@ Do you want to allow this?</value>
   <data name="WPK_VORLAUF_ACHSEN" xml:space="preserve">
     <value>Axes of the characteristic swapped — not calculated</value>
   </data>
+  <data name="BER_KAELTE_TRAEGER_PROJEKT" xml:space="preserve">
+    <value>Project electricity carrier</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ANTEILIG" xml:space="preserve">
+    <value>“{0}”, pro rata of grid purchase</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ZAEHLER" xml:space="preserve">
+    <value>“{0}”, separate meter</value>
+  </data>
+  <data name="SIMUEB_RING_KAELTE_TITEL" xml:space="preserve">
+    <value>Cooling coverage</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTESTROM" xml:space="preserve">
+    <value>Cooling electricity</value>
+  </data>
+  <data name="SIMUEB_LBL_JAZ_KAELTE" xml:space="preserve">
+    <value>Seasonal EER (cooling)</value>
+  </data>
+  <data name="SIMUEB_KAELTESTROM_NETZ" xml:space="preserve">
+    <value>of which cooling electricity from the grid: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_ANLAGE" xml:space="preserve">
+    <value>Cooling generator</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_VORLAUF" xml:space="preserve">
+    <value>Cooling flow</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_STROM" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_EER" xml:space="preserve">
+    <value>EER (annual)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_NETZ" xml:space="preserve">
+    <value>From grid</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
+    <value>Electricity carrier</value>
+  </data>
 </root>

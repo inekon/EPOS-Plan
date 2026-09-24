@@ -497,6 +497,96 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohne.Daten.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD]);
         }
 
+        /// <summary>
+        /// <b>Ergebnisdialog und Bericht mit Kälteerzeugung</b> (8.4; E21, E34): Die Kälteseite des
+        /// Laufs trägt Deckungsgrad, Kältestrom, EER-Jahreswert und je Kälteerzeuger eine Zeile mit
+        /// Netzbezug und abweichendem Kühlträger; der Bericht „Kältebedarf und -deckung" führt die
+        /// Deckungszeilen, die Kälteerzeugertabelle mit dem Stromträger samt Abrechnungsart und den
+        /// Satz zu den Kältemittelverlusten — und nicht mehr den Satz „kein Kälteerzeuger".
+        /// </summary>
+        [Fact]
+        public void Ergebnis_und_Bericht_zeigen_Deckung_Kaelteerzeuger_und_Kuehltraeger()
+        {
+            if (!_db.Vorhanden) return;
+            Einrichten();
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER)).Ok);
+            Stand s = Rechnen();
+
+            // Die Ergebnisseite: aus dem Lauf, ungerundet; die Ergebnisspalten führen zwei Stellen.
+            SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(s.Lauf.simulation_Waermebedarf);
+            Assert.NotNull(k);
+            Assert.True(k.MitKaelteerzeuger);
+            SimulationErgebnisCtrl.KaelteerzeugerZeile z = Assert.Single(k.Erzeuger);
+            Assert.Equal(KUEHLTRAEGER, z.Kuehltraeger);
+            Assert.False(z.EigenerZaehler);
+            Assert.Equal(18, z.Vorlauf);
+            Assert.Equal(s.Modul.Kaelteproduktion.Value, z.KaelteMwh, 2);
+            Assert.Equal(s.Modul.Stromverbrauch_Kuehlung.Value, z.StromMwh, 2);
+            Assert.Equal(s.Modul.Kaeltestrom_Netzbezug.Value, z.NetzbezugMwh, 2);
+            Assert.Equal(z.KaelteMwh / z.StromMwh, z.Eer.Value, 9);
+            Assert.Equal(z.NetzbezugMwh, k.KaeltestromNetzbezugMwh, 12);
+            Assert.Equal(z.StromMwh, k.KaeltestromMwh, 12);
+            Assert.InRange(k.DeckungsgradProzent.Value, 0.0, 100.0);
+            Assert.Equal(s.Daten.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD].Value, k.DeckungsgradProzent.Value, 0);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
+                                       Emissionsquelle.TraegerName(KUEHLTRAEGER)),
+                         ProjektbeschreibungBaustein.KuehltraegerText(s.Modul));
+
+            // Die Hülle der Ergebnisseite: dieselben Zahlen, derselbe Trägertext, die Legende des
+            // Kälterings mit dem ungedeckten Rest als letztem Eintrag.
+            EPOS.UI.Seiten.Simulation.KaelteDaten d0 = SimulationErgebnisHuelle.KaelteDaten(k);
+            Assert.Equal(k.DeckungsgradProzent, d0.DeckungsgradProzent);
+            Assert.Equal(k.KaeltestromMwh, d0.KaeltestromMwh);
+            Assert.Equal(k.EerJahreswert, d0.EerJahreswert);
+            EPOS.UI.Seiten.Simulation.KaelteerzeugerAnzeige a = Assert.Single(d0.Erzeuger);
+            Assert.Equal(ProjektbeschreibungBaustein.KuehltraegerText(s.Modul), a.Stromtraeger);
+            Assert.Equal(z.NetzbezugMwh, a.NetzbezugMwh);
+            Assert.Equal(2, d0.Legende.Count);
+            Assert.True(d0.Legende[1].IstRest);
+            Assert.Equal(k.KaelterestbedarfMwh, d0.Legende[1].Mwh);
+
+            // Der Bericht.
+            s.Daten.IstStamm = true;
+            s.Daten.Projektname = "E34-Probe";
+            var d = new BerichtsDaten { Stammprojektname = "E34-Probe" };
+            d.Varianten.Add(s.Daten);
+            string text = Schreibe(new ProjektbeschreibungBaustein(), d);
+            Assert.Contains(ProjektbeschreibungBaustein.UEBERSCHRIFT_KAELTE, text);
+            Assert.Contains("Deckungsgrad Kühlung", text);
+            Assert.Contains("Kälteerzeugung Wärmepumpe", text);
+            Assert.Contains("Jahresarbeitszahl Kälte", text);
+            Assert.Contains("Netzbezug Kältestrom", text);
+            Assert.Contains("Kosten Kältestrom", text);
+            Assert.Contains("CO₂ Kältestrom", text);
+            Assert.Contains(ProjektbeschreibungBaustein.UEBERSCHRIFT_KAELTEERZEUGER, text);
+            Assert.Contains(ProjektbeschreibungBaustein.KuehltraegerText(s.Modul), text);
+            Assert.Contains(ProjektbeschreibungBaustein.HINWEIS_KAELTEMITTEL, text);
+            Assert.Contains(SimulationKaeltebedarf.GrenzeFeuchte, text);
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT, text);
+
+            // Eigener Zähler: dieselbe Tabelle nennt die andere Abrechnungsart.
+            Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
+                new WErzeugerCtrl.KonfigurationFelder(KuehlEigenerZaehler: true)).Ok);
+            Stand zaehler = Rechnen();
+            Assert.True(Assert.Single(SimulationErgebnisCtrl.Kaelte(zaehler.Lauf.simulation_Waermebedarf).Erzeuger).EigenerZaehler);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER,
+                                       Emissionsquelle.TraegerName(KUEHLTRAEGER)),
+                         ProjektbeschreibungBaustein.KuehltraegerText(zaehler.Modul));
+        }
+
+        /// <summary>Schreibt einen Baustein in ein Dokument im Speicher und liefert dessen Text.</summary>
+        private static string Schreibe(IBerichtsBaustein baustein, BerichtsDaten daten)
+        {
+            using var ms = new System.IO.MemoryStream();
+            using DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc =
+                DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Create(ms, DocumentFormat.OpenXml.WordprocessingDocumentType.Document);
+            DocumentFormat.OpenXml.Packaging.MainDocumentPart main = doc.AddMainDocumentPart();
+            main.Document = new DocumentFormat.OpenXml.Wordprocessing.Document(new DocumentFormat.OpenXml.Wordprocessing.Body());
+            baustein.SchreibeWord(new WordKontext(main, main.Document.Body, null), daten, BerichtsKonfiguration.Standard());
+            return string.Join("\n", main.Document.Body.Descendants<DocumentFormat.OpenXml.Wordprocessing.Text>().Select(t => t.Text));
+        }
+
         // -----------------------------------------------------------------------------
 
         private const string ABRECHNUNG_DER_ANLAGE =

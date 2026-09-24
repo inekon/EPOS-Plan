@@ -302,7 +302,36 @@ public sealed class KaelteDaten
 
     /// <summary>Der Satz der Übersicht zur Deckung (ohne Kälteerzeuger: ungedeckt).</summary>
     public string Deckungshinweis = "";
+
+    // ---- Die Deckung (Stufe KU2 Welle 3; Kühlkonzept 8.4; E21, E34) ------------------
+    // Ohne Kälteerzeuger bleiben die Felder leer - dann zeigt der Block allein den Bedarf
+    // und den ungedeckten Rest.
+
+    /// <summary>Deckungsgrad des Kühlkanals [%]; <c>null</c> ohne Kälteerzeuger.</summary>
+    public double? DeckungsgradProzent;
+
+    /// <summary>Kältestrom samt Hilfsstrom [MWh/a]; <c>null</c> ohne Kälteerzeuger.</summary>
+    public double? KaeltestromMwh;
+
+    /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert); <c>null</c> ohne Kältestrom.</summary>
+    public double? EerJahreswert;
+
+    /// <summary>Der Netzbezug des Kältestroms [MWh/a] (E34); <c>null</c> ohne Kälteerzeuger.</summary>
+    public double? KaeltestromNetzbezugMwh;
+
+    /// <summary>Die Kälteerzeugertabelle (#32) — die Wärmeerzeugertabelle bleibt bei drei Kanälen.</summary>
+    public IReadOnlyList<KaelteerzeugerAnzeige> Erzeuger = Array.Empty<KaelteerzeugerAnzeige>();
+
+    /// <summary>Die HTML-Legende des Kälterings — dieselbe Segmentliste wie das Bild.</summary>
+    public IReadOnlyList<Ringanteil> Legende = Array.Empty<Ringanteil>();
 }
+
+/// <summary>
+/// Eine Zeile der Kälteerzeugertabelle der Übersicht (Stufe KU2 Welle 3; Kühlkonzept 8.4) —
+/// Mengen in MWh/a, der Stromträger als fertiger Text (E34).
+/// </summary>
+public sealed record KaelteerzeugerAnzeige(string Anlage, int Vorlauf, double KaelteMwh, double StromMwh,
+                                          double? Eer, double NetzbezugMwh, string Stromtraeger);
 
 /// <summary>
 /// Der Uebersichtsreiter (R2 + <c>NavigatorUebersicht</c>). Die 13 Zahlen und die
@@ -853,6 +882,9 @@ public static class Bilder
     public const string BedarfKaelte = "BEDARF_KAELTE";
     public const string RingWaerme = "RING_WAERME";
     public const string RingStrom = "RING_STROM";
+
+    /// <summary>Der Ring „Kältedeckung" (Stufe KU2 Welle 3) — nur mit Kälteerzeuger.</summary>
+    public const string RingKaelte = "RING_KAELTE";
     public const string WpProduktion = "WP_PRODUKTION";
     public const string WpStromverbrauch = "WP_STROMVERBRAUCH";
     public const string WpLeistungTemperatur = "WP_LEISTUNG_TEMPERATUR";

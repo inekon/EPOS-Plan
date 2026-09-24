@@ -26454,4 +26454,46 @@ Möchten Sie das zulassen?</value>
   <data name="WPK_VORLAUF_ACHSEN" xml:space="preserve">
     <value>Achsen der Kennlinie vertauscht — wird nicht gerechnet</value>
   </data>
+  <data name="BER_KAELTE_TRAEGER_PROJEKT" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ANTEILIG" xml:space="preserve">
+    <value>„{0}“, anteilig am Netzbezug</value>
+  </data>
+  <data name="BER_KAELTE_TRAEGER_ZAEHLER" xml:space="preserve">
+    <value>„{0}“, eigener Zähler</value>
+  </data>
+  <data name="SIMUEB_RING_KAELTE_TITEL" xml:space="preserve">
+    <value>Kältedeckung</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTESTROM" xml:space="preserve">
+    <value>Kältestrom</value>
+  </data>
+  <data name="SIMUEB_LBL_JAZ_KAELTE" xml:space="preserve">
+    <value>Jahresarbeitszahl Kälte</value>
+  </data>
+  <data name="SIMUEB_KAELTESTROM_NETZ" xml:space="preserve">
+    <value>davon Kältestrom aus dem Netz: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_ANLAGE" xml:space="preserve">
+    <value>Kälteerzeuger</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_STROM" xml:space="preserve">
+    <value>Kältestrom</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_EER" xml:space="preserve">
+    <value>EER (Jahr)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_NETZ" xml:space="preserve">
+    <value>aus dem Netz</value>
+  </data>
+  <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
+    <value>Stromträger</value>
+  </data>
 </root>
