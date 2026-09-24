@@ -189,4 +189,4 @@ Szenarien (Vorgaben `Tab_ProjektWirtschaftlichkeit`, nichts gepflegt): Ungünsti
 | Aufschlagsmessung Projekt 1030 | +360.603 €/a (+32 %), Kapitalwert −29,8 % | `Rechenweg/04` |
 | § 9 Nr. 3 Doppelzählung, Projekt 1024 | 1.510,84 €/a auf beiden Pfaden | `Rechenweg/05`, `07` |
 | Mischsatz Eigenstrom 300 kW | 2,4167 ct/kWh (Tatbestand Nr. 2) | `Rechenweg/05` |
-| Höfingen `Tab_kurz_KWKG2020` | Mehrinvestition 55.745 · NPV 65.259 € · IZF 20,4 % · 4,33 a | `Rechenweg/08` |
+| Beispielprojekt B `Tab_kurz_KWKG2020` | Mehrinvestition 55.745 · NPV 65.259 € · IZF 20,4 % · 4,33 a | `Rechenweg/08` |

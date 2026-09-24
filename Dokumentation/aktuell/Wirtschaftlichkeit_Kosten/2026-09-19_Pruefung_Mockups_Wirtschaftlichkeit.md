@@ -133,7 +133,7 @@ treffen. Der Wegweiser `LIESMICH.md` nennt unter „Verwandte Dokumente" zwei Pf
 **Nachrechnung** (`01/§3`): Investitionskaskade, Ersatz und Restwert, Betriebskosten, Energiekosten,
 Preisbestandteile, KWKG-Mischsätze und Jahresreihe, Energie- und Stromsteuer, PV-Vergütungsreihe
 (Degression, § 51, Marktprämie, Alterung, § 51a), vermiedene Kosten, Erlösrubrik, Kapitalwerte,
-Kennzahlen, Bandbreiten, Verlauf, Sicht 2 und Höfingen-Gegenprobe treffen. Rundungsfolgen: die
+Kennzahlen, Bandbreiten, Verlauf, Sicht 2 und die Gegenprobe „Beispielprojekt B" treffen. Rundungsfolgen: die
 Brennwertmenge 4.797,2 MWh entsteht aus dem gerundeten Faktor 1,1048 (exakt 4.796,99), daraus
 § 53a 21.203,4 statt 21.202,71 €, § 53 26.384,3 statt 26.383,46 €, § 54 6.370,1 statt 6.369,85 €;
 BEHG 56.699,50 statt 56.701,38 €; „energetisch × 0,458 → 12.082" statt 12.079 €; Fall‑2‑Menge
