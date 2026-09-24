@@ -30121,4 +30121,55 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert.</value>
   </data>
+  <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
+    <value>Energiefluss</value>
+  </data>
+  <data name="WIRT_NM_KAT_FINANZIELL" xml:space="preserve">
+    <value>Finanziell</value>
+  </data>
+  <data name="WIRT_NM_KAT_SONSTIG" xml:space="preserve">
+    <value>Sonstig</value>
+  </data>
+  <data name="WIRT_NM_DAUER_1" xml:space="preserve">
+    <value>kurz</value>
+  </data>
+  <data name="WIRT_NM_DAUER_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_DAUER_3" xml:space="preserve">
+    <value>lang</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_0" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_1" xml:space="preserve">
+    <value>gering</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_3" xml:space="preserve">
+    <value>stark</value>
+  </data>
+  <data name="WIRT_NM_NICHT_BEURTEILT" xml:space="preserve">
+    <value>nicht beurteilt</value>
+  </data>
+  <data name="WIRT_NM_BEURTEILUNG_WERT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_KATEGORIE" xml:space="preserve">
+    <value>Unbekannte Kategorie einer nicht monetarisierbaren Wirkung: „{0}“.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_BESCHREIBUNG" xml:space="preserve">
+    <value>Jede nicht monetarisierbare Wirkung braucht eine Beschreibung.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_DAUER" xml:space="preserve">
+    <value>Die Dauer einer Wirkung liegt zwischen 1 (kurz) und 3 (lang).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_WIRKUNG" xml:space="preserve">
+    <value>Ein Wirkungsgrad liegt zwischen 0 (keine) und 3 (stark).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
+    <value>Die nicht monetarisierbaren Wirkungen brauchen ein Stammprojekt.</value>
+  </data>
 </root>

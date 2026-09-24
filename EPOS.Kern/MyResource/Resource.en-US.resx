@@ -30114,4 +30114,55 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Twelve monthly factors January to December; normalised to the mean 1 when saving.</value>
   </data>
+  <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
+    <value>Energy flow</value>
+  </data>
+  <data name="WIRT_NM_KAT_FINANZIELL" xml:space="preserve">
+    <value>Financial</value>
+  </data>
+  <data name="WIRT_NM_KAT_SONSTIG" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="WIRT_NM_DAUER_1" xml:space="preserve">
+    <value>short</value>
+  </data>
+  <data name="WIRT_NM_DAUER_2" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="WIRT_NM_DAUER_3" xml:space="preserve">
+    <value>long</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_0" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_1" xml:space="preserve">
+    <value>low</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_2" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_3" xml:space="preserve">
+    <value>strong</value>
+  </data>
+  <data name="WIRT_NM_NICHT_BEURTEILT" xml:space="preserve">
+    <value>not assessed</value>
+  </data>
+  <data name="WIRT_NM_BEURTEILUNG_WERT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_KATEGORIE" xml:space="preserve">
+    <value>Unknown category of a non-monetisable effect: “{0}”.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_BESCHREIBUNG" xml:space="preserve">
+    <value>Every non-monetisable effect needs a description.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_DAUER" xml:space="preserve">
+    <value>The duration of an effect lies between 1 (short) and 3 (long).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_WIRKUNG" xml:space="preserve">
+    <value>An effect level lies between 0 (none) and 3 (strong).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
+    <value>The non-monetisable effects need a master project.</value>
+  </data>
 </root>

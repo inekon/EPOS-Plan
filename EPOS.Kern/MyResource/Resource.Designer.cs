@@ -73339,6 +73339,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string WIRT_NM_BEURTEILUNG_WERT {
+            get {
+                return ResourceManager.GetString("WIRT_NM_BEURTEILUNG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kurz ähnelt.
+        /// </summary>
+        public static string WIRT_NM_DAUER_1 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_DAUER_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittel ähnelt.
+        /// </summary>
+        public static string WIRT_NM_DAUER_2 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_DAUER_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die lang ähnelt.
+        /// </summary>
+        public static string WIRT_NM_DAUER_3 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_DAUER_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jede nicht monetarisierbare Wirkung braucht eine Beschreibung. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FEHLER_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FEHLER_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauer einer Wirkung liegt zwischen 1 (kurz) und 3 (lang). ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FEHLER_DAUER {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FEHLER_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekannte Kategorie einer nicht monetarisierbaren Wirkung: „{0}“. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FEHLER_KATEGORIE {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FEHLER_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die nicht monetarisierbaren Wirkungen brauchen ein Stammprojekt. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FEHLER_PROJEKT {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FEHLER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wirkungsgrad liegt zwischen 0 (keine) und 3 (stark). ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FEHLER_WIRKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FEHLER_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen gespeichert. ähnelt.
         /// </summary>
         public static string WIRT_NM_GESPEICHERT {
@@ -73348,11 +73429,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiefluss ähnelt.
+        /// </summary>
+        public static string WIRT_NM_KAT_ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("WIRT_NM_KAT_ENERGIEFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Finanziell ähnelt.
+        /// </summary>
+        public static string WIRT_NM_KAT_FINANZIELL {
+            get {
+                return ResourceManager.GetString("WIRT_NM_KAT_FINANZIELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstig ähnelt.
+        /// </summary>
+        public static string WIRT_NM_KAT_SONSTIG {
+            get {
+                return ResourceManager.GetString("WIRT_NM_KAT_SONSTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht beurteilt ähnelt.
+        /// </summary>
+        public static string WIRT_NM_NICHT_BEURTEILT {
+            get {
+                return ResourceManager.GetString("WIRT_NM_NICHT_BEURTEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen ähnelt.
         /// </summary>
         public static string WIRT_NM_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_NM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WIRT_NM_WIRKUNG_0 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_WIRKUNG_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gering ähnelt.
+        /// </summary>
+        public static string WIRT_NM_WIRKUNG_1 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_WIRKUNG_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittel ähnelt.
+        /// </summary>
+        public static string WIRT_NM_WIRKUNG_2 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_WIRKUNG_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die stark ähnelt.
+        /// </summary>
+        public static string WIRT_NM_WIRKUNG_3 {
+            get {
+                return ResourceManager.GetString("WIRT_NM_WIRKUNG_3", resourceCulture);
             }
         }
         
@@ -82202,6 +82355,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_DAUERLINIE_SCHWELLE {
             get {
                 return ResourceManager.GetString("ZPG_DAUERLINIE_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE", resourceCulture);
             }
         }
         
