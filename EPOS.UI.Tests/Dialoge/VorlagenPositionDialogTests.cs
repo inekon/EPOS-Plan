@@ -473,4 +473,106 @@ public class VorlagenPositionDialogTests : BunitContext
 
         Assert.Equal(0, cut.Instance.Ersatz);
     }
+
+    // =====================================================================
+    //  ETAPPE E16 (V-G3, DIN EN 17463 6.3.1): die Wiederholperiode „alle … Jahre"
+    // =====================================================================
+
+    private IRenderedComponent<VorlagenPositionDialog> MitPeriode(
+        Action<VorlagenPositionErgebnis?> beimSchliessen, int? periode, bool zeigen = true)
+    {
+        return Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.Bezeichnung, "Dichtheitsprüfung")
+            .Add(x => x.KostenartId, 2)
+            .Add(x => x.MitWiederholperiode, zeigen)
+            .Add(x => x.Wiederholperiode, periode)
+            .Add(x => x.LabelWiederholperiode, "Zahlung alle:")
+            .Add(x => x.EinheitWiederholperiode, "Jahre")
+            .Add(x => x.InfoWiederholperiode, "1 = jährlich.")
+            .Add(x => x.WiederholperiodeHerleitung,
+                 (Func<int?, string>)(n => n.HasValue && n.Value > 1 ? "alle " + n.Value + " Jahre ab Jahr 3" : ""))
+            .Add(x => x.Geschlossen, beimSchliessen));
+    }
+
+    /// <summary>Ohne Periode (Investitionsseite, Datenbank ohne die Spalte) bleibt der
+    /// Dialog der von vorher — drei Textfelder — und meldet keine Periode.</summary>
+    [Fact]
+    public void Ohne_Periode_bleibt_das_Ganzzahlfeld_weg()
+    {
+        VorlagenPositionErgebnis? ergebnis = null;
+        var cut = MitPeriode(e => ergebnis = e, 3, zeigen: false);
+
+        Assert.Equal(3, cut.FindAll("input[type=text]").Count);
+        Assert.DoesNotContain("Zahlung alle:", cut.Markup, StringComparison.Ordinal);
+        cut.Find(".epos-knopf--primaer").Click();
+        Assert.Null(ergebnis!.Wiederholperiode);
+    }
+
+    /// <summary>Mit Periode steht das Ganzzahlfeld „Zahlung alle: [n] Jahre" da, leer heißt
+    /// 1 (jährlich), und die Herleitungszeile trägt nur die Bedeutung.</summary>
+    [Fact]
+    public void Mit_Periode_steht_das_Ganzzahlfeld_mit_1_als_Vorgabe()
+    {
+        var cut = MitPeriode(_ => { }, null);
+
+        Assert.Equal(4, cut.FindAll("input[type=text]").Count);
+        Assert.Contains("Zahlung alle:", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Jahre", cut.Markup, StringComparison.Ordinal);
+        Assert.Equal(1, cut.Instance.Periode);
+        Assert.Contains("1 = jährlich.", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("ab Jahr", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Eine Eingabe von 2 zeigt die Herleitung „alle 2 Jahre ab Jahr X", und OK
+    /// meldet die Periode; ein geleertes Feld fällt auf jährlich (1) zurück, eine 0 färbt das
+    /// Feld und ändert nichts.</summary>
+    [Fact]
+    public void Die_Eingabe_zeigt_die_Herleitung_und_OK_meldet_die_Periode()
+    {
+        VorlagenPositionErgebnis? ergebnis = null;
+        var cut = MitPeriode(e => ergebnis = e, 1);
+
+        cut.FindAll("input[type=text]")[1].Input("2");
+        Assert.Equal(2, cut.Instance.Periode);
+        Assert.Contains("alle 2 Jahre ab Jahr 3", cut.Markup, StringComparison.Ordinal);
+        cut.Find(".epos-knopf--primaer").Click();
+        Assert.Equal(2, ergebnis!.Wiederholperiode);
+
+        cut.FindAll("input[type=text]")[1].Input("0");
+        Assert.Equal(2, cut.Instance.Periode);
+
+        ergebnis = null;
+        cut.FindAll("input[type=text]")[1].Input("");
+        Assert.Equal(1, cut.Instance.Periode);
+        cut.Find(".epos-knopf--primaer").Click();
+        Assert.Equal(1, ergebnis!.Wiederholperiode);
+    }
+
+    /// <summary>Die Vorbelegung übernimmt die gepflegte Periode; über der Grenze wird geklemmt.</summary>
+    [Fact]
+    public void Die_Vorbelegung_uebernimmt_die_Periode_und_klemmt()
+    {
+        Assert.Equal(4, MitPeriode(_ => { }, 4).Instance.Periode);
+        Assert.Equal(99, MitPeriode(_ => { }, 500).Instance.Periode);
+        Assert.Equal(1, MitPeriode(_ => { }, -2).Instance.Periode);
+    }
+
+    /// <summary>Der Assistent sieht die Periode als Ganzzahlfeld und setzt sie.</summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Periode()
+    {
+        var cut = MitPeriode(_ => { }, null);
+
+        KiFeldzugang periode =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.VORLAGENPOSITION, "wiederholperiode");
+        Assert.NotNull(periode);
+
+        KiFeldumsetzung wert = KiFeldwandler.Wandle(periode, "3");
+        Assert.True(wert.Ok, wert.Grund);
+        periode.Setzen(wert.Wert);
+        cut.Render();
+
+        Assert.Equal(3, cut.Instance.Periode);
+    }
 }

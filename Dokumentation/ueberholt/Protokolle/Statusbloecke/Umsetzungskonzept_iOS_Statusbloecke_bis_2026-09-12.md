@@ -9994,3 +9994,94 @@ Konfliktmarker. Push folgt durch die Hauptsitzung.
 `Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber 7.655,75 beim
 Ausgangssatz `KrankenH_NE` — nicht Teil des Entscheids,
 unverändert; ggf. mit der nächsten Katalogdurchsicht.
+
+## #487 — Nachzüge zur Gebäudeliste eines Projekts: echte Ids,
+Änderungsdatum, Löschsperre (24.09.2026)
+
+Anwenderauftrag „fahre fort“ (24.09.2026) — drei offene Punkte aus
+„Nach #473 (d)“ und „Nach #475 (a)/(b)“. Umsetzung im Agentenzweig
+(Opus 5.5), Commits `9ea7aec8` (Kern), `3668161c` (Hülle/Dialog),
+`012fde60` (Papiere); Merge `1f10d950` auf `3c2f1752` (#488), danach
+`3e37a85f` mit dem Papier-Nachtrag `132d37da` des Nachbarn.
+
+**(1) Vorläufige Ids im Assistenten.** Befund: Weder
+`AssistentCtrl.Gebaeude` noch die Anzeigezeile der Hülle bekamen nach
+dem Speichern die echte Id; die Hülle baute die Fachliste aus den
+Anzeigezeilen neu und brachte die vorläufige Id (ab 100000) zurück —
+ein zweites Speichern legte eine zweite Kopie an (in der heutigen
+Oberfläche schließt sich der Assistent nach dem Speichern, erreichbar
+vor allem über `AssistentCtrl.Speichern`). Umsetzung:
+`WizardCtrl.Schreibe_Projekt_ZuordungGebäude` neue Überladung mit `out
+IReadOnlyDictionary<Z_ProjGebModel,int> neueIds` (Zuordnung über das
+Zeilenobjekt, weil mehrere Zeilen dieselbe vorläufige Id tragen
+können), `GebaeudeZuordnungAnlegen` liefert die Zuordnungs-Id, neues
+`WizardCtrl.EchteIdsUebernehmen` trägt die echten Ids erst nach dem
+Festschreiben ein (`Speichere_Projekt_Gebaeudeliste`,
+`AssistentCtrl.Speichern` Bearbeiten-Zweig, Feld `_neueGebaeudeIds`);
+bei Rollback bleiben die vorläufigen Ids. Hülle `GebaeudeHuelle` merkt
+sich Modell ↔ Anzeigezeile und zieht die echte Id vor jedem Neuaufbau
+und vor dem Öffnen des Wärmebedarfs nach.
+
+**(2) Änderungsdatum nur bei echter Änderung.** Befund:
+`Schreibe_Projekt_ZuordungGebäude` rief `MarkiereProjektGeaendert` am
+Anfang und schrieb jede bleibende Zeile per UPDATE. Umsetzung:
+Bestandsabfrage liest die Zuordnungswerte mit, unveränderte Zeilen
+werden nicht geschrieben, das Datum nur bei
+Entfernen/Neuanlage/Änderung gesetzt. `GebaeudeStammCtrl` (Stammblatt)
+hat die Schwäche nicht. Bewusst nur berichtet: der Bearbeiten-Zweig
+des Assistenten setzt das Datum weiter bei jedem Speichern
+(`Projekt.m_Aenderungsdatum = Now`, er schreibt die übrigen Gewerke
+per Löschen und Neuanlegen);
+`GebaeudeKatalogHuelle.BrauchwasserFertig` setzt es bei jedem OK
+(anderer Dialog).
+
+**(3) „Gebäude in DB löschen“ mit Nutzungssperre.** Befund:
+`GebaeudeHuelle` reichte `GebaeudeStammCtrl.Delete` durch — nur
+`ReadOnly`-Prüfung mit `Meldung.Hinweis`, keine Nutzungsprüfung,
+Dialog schwieg bei Ablehnung. Umsetzung: neues
+`GebaeudeStammCtrl.Loeschsperrgrund(bezeichner)` (dieselbe Grundlage
+wie die Verwaltung: `ReadOnly`, dann `Loeschsperre`; liefert
+`BADM_MSG_SCHREIBGESCHUETZT` oder `ADM_AW_LOESCHEN_VERWENDET` mit
+Projektnamen, sonst leer), Hülle reicht `KatalogLoeschsperre` herein,
+`KatalogLoeschen` = `GebaeudeStammCtrl.Loeschen` (Sperre im Kern, ohne
+Meldungskasten), Meldung `BADM_MSG_LOESCHEN_FEHLER`;
+`GebaeudeDialog.razor`: ohne markierten Satz „Gebäude in DB
+auswählen!“, gesperrter Satz zeigt den Grund als Warnung ohne
+Rückfrage, Absage nach „Ja“ steht im Dialog. Keine neuen Ressourcen,
+KI-Anmeldung unverändert.
+
+**Tests.** `GebaeudelisteAbgleichTests` +5 (zweimal speichern →
+gleiche Zeilenzahlen, stabile Ids, Feldübernahme erhalten; Fehlschlag
+lässt vorläufige Id; Datum bleibt ohne Änderung / wird bei Änderung
+gesetzt; Hülle übernimmt echte Ids; Assistent zweimal ohne doppelte
+Kopie), Anpassung `Geaenderter_Verweis_und_fremde_Zeile_entstehen_neu`
+(Zeilenobjekt trägt neue Id); `GebaeudeKatalogverweisTests` +1
+`Der_Projektdialog_loescht_mit_der_Sperre_der_Verwaltung`;
+`GebaeudeDialogTests` (bunit) +3 (gesperrt, ohne Wahl, abgelehnt).
+
+**Gate (losgelöster Worktree, Stand `1f10d950`).** Kern-Filter 0
+Fehler; Tests EPOS.Kern 6082, EPOS.UI 6015, KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27 (1 übersprungen);
+`Werkzeuge/Auslieferungsvorlage` 30/30; Windows-Schale Debug x64 0
+Fehler; SqlDialektPruefer 1821 Texte, 0 Fundstellen; kein Referenzlauf
+(nur Schreib- und Löschwege, Testdatenbank unverändert); keine
+Konfliktmarker.
+
+**Papiere.** Konzept Administrationsdialoge Kopfnotiz und 7.1 (a);
+Wiki-Quelle `Programm Dokumentation - Gebäude.wiki` ein Satz zum
+Löschen im Projektdialog (**Upload ausstehend**, Sammel-Upload).
+**Logbuch-Satz (Version beim Anwender zu erfragen):** „Im
+Gebäudedialog eines Projekts lässt sich ein Katalog-Gebäude, das ein
+Projekt verwendet oder das zur Auslieferung gehört, nicht mehr
+löschen; der Dialog nennt den Grund.“ Punkte 1 und 2 ohne Eintrag.
+
+**Offen / bewusst nicht angefasst (in „Nach #487“).** (a)
+`Rang()`-Gewichtung Schlüssel gegen Anzeigename — Anwenderentscheid
+offen; (b) Satz 79 `Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber
+7.655,75; (c) Wiki Gebäude Zeile 33 beschreibt die Zuordnungswerte als
+„aus dem Katalogsatz“, tatsächlich kommen sie aus der Liste
+(vorbestehend, mit dem nächsten Wiki-Auftrag); (d) Kopfkommentar in
+`GebaeudeAdminDialog.razor` („erkannt am Namen, weil Z_ProjektGebaeude
+keinen Katalogverweis fuehrt“) ist veraltet, nur Kommentar; (e)
+Änderungsdatum im Bearbeiten-Zweig des Assistenten und in
+`BrauchwasserFertig` bleibt weiter bei jedem Speichern.

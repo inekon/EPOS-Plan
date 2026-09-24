@@ -1510,7 +1510,7 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
             "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
         [KiMaskennamen.VORLAGENPOSITION] =
-            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die acht " +
+            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die neun " +
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
         [KiMaskennamen.CASE_EINGABE] =
             "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +

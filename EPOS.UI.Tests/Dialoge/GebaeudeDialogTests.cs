@@ -79,6 +79,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Filterprotokoll? protokoll = null,
         Func<string, bool>? katalogLoeschen = null,
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
+        Func<string, string>? katalogLoeschsperre = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? wohnflaecheGaben = null,
         Func<IReadOnlyDictionary<string, object>>? gebaeudetypGaben = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? bedarfGaben = null,
@@ -104,6 +105,7 @@ public class GebaeudeDialogTests : EposBunitContext
                                                                   "Katalogtext", "150,00"))
             .Add(x => x.StammSatz, n => Zeile(100000, n))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
+            .Add(x => x.KatalogLoeschsperre, katalogLoeschsperre)
             .Add(x => x.KatalogGaben, katalogGaben)
             .Add(x => x.WohnflaecheGaben, wohnflaecheGaben)
             .Add(x => x.GebaeudetypGaben, gebaeudetypGaben)
@@ -509,6 +511,54 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Nein").Click();
 
         Assert.False(gerufen);
+    }
+
+    /// <summary>
+    /// <b>Die Löschsperre der Verwaltung gilt auch hier</b> (#487): Führt ein Projekt den
+    /// Satz (oder ist er ein Auslieferungssatz), steht der benannte Grund als Warnung — ohne
+    /// Rückfrage, ohne Löschversuch.
+    /// </summary>
+    [Fact]
+    public void Loeschen_eines_gesperrten_Satzes_nennt_den_Grund()
+    {
+        const string GRUND = "In Projekten verwendet (Projekt A) – Löschen gesperrt; dort zuerst entfernen.";
+        bool gerufen = false;
+        string gefragt = "";
+        var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; },
+                           katalogLoeschsperre: n => { gefragt = n; return GRUND; });
+
+        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Knopf(cut, "Gebäude in DB löschen").Click();
+
+        Assert.Equal("Haus 2010", gefragt);
+        Assert.Equal(GRUND, cut.Instance.Meldung);
+        Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
+        Assert.False(gerufen);
+    }
+
+    /// <summary>Ohne markierten Katalogsatz: die Bitte um eine Wahl statt einer leeren Rückfrage.</summary>
+    [Fact]
+    public void Loeschen_ohne_Wahl_bittet_um_eine_Wahl()
+    {
+        var cut = Aufbauen(katalogLoeschsperre: _ => "");
+
+        Knopf(cut, "Gebäude in DB löschen").Click();
+
+        Assert.Equal("Gebäude in DB auswählen!", cut.Instance.Meldung);
+        Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
+    }
+
+    /// <summary>Lehnt der Schreibweg nach dem „Ja" ab, steht die Absage da, statt still nichts zu tun.</summary>
+    [Fact]
+    public void Ein_abgelehntes_Loeschen_meldet_den_Fehlschlag()
+    {
+        var cut = Aufbauen(katalogLoeschen: _ => false, katalogLoeschsperre: _ => "");
+
+        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Knopf(cut, "Gebäude in DB löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal("Der Datensatz konnte nicht aus der Datenbank gelöscht werden.", cut.Instance.Meldung);
     }
 
     // =================================================================================

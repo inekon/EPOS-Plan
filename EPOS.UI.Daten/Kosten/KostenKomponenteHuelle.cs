@@ -1273,8 +1273,27 @@ namespace WindowsFormsApplication1
                 b.Projektzeile != null ? SchemaKatalog.TAB_PROJEKTWERTE
                                        : SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
 
+            // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Wiederholperiode „alle … Jahre" — nur
+            // auf der Betriebsseite (E16‑Q2 a: eine Investition „alle n Jahre" ist die
+            // Ersatzkette) und nur, wo die Tabelle der Zeile die Spalte fuehrt. Die
+            // Herleitung „alle n Jahre ab Jahr X" baut der Kern; X ist das Startjahr der
+            // Projektzeile (die Vorlage kennt keines — dort Jahr 1).
+            bool mitPeriode = !_invest && WiederholperiodeSchema.SpalteVorhanden(
+                b.Projektzeile != null ? SchemaKatalog.TAB_PROJEKTWERTE
+                                       : SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
+            int? startJahr = b.Projektzeile != null ? b.Projektzeile.StartJahr : (int?)null;
+
             return new Dictionary<string, object>
             {
+                ["MitWiederholperiode"] = mitPeriode,
+                ["Wiederholperiode"] = (int?)(b.Position.Wiederholperiode ?? 1),
+                ["WiederholperiodeMax"] = Wiederholperiode.MAX,
+                ["LabelWiederholperiode"] = MyResource.Resource.WDH_LBL_PERIODE,
+                ["EinheitWiederholperiode"] = MyResource.Resource.WDH_EINHEIT,
+                ["InfoWiederholperiode"] = MyResource.Resource.WDH_INFO,
+                ["WiederholperiodeHerleitung"] = (Func<int?, string>)(n =>
+                    Wiederholperiode.Herleitung(n, startJahr, CultureInfo.CurrentCulture)),
+
                 ["MitKennzeichen"] = mitKennzeichen,
                 ["Kennzeichen"] = ErsatzRestwertKennzeichen.Eintraege(),
                 ["KennzeichenLeer"] = ErsatzRestwertKennzeichen.LeerText,
@@ -1372,6 +1391,20 @@ namespace WindowsFormsApplication1
                     p.ErsatzFuehren = ersatz;
                     p.RestwertAnsetzen = restwert;
                 }
+            }
+
+            // ETAPPE E16 (V‑G3): die Wiederholperiode - SOFORT geschrieben wie die Kennzeichen,
+            // ueber den EINEN Schreibweg des Kerns. Nur auf der Betriebsseite; 1 (jaehrlich)
+            // schreibt leer, eine Tabelle ohne die Spalte bleibt still beim jaehrlichen Weg.
+            if (!_invest)
+            {
+                int? periode = Wiederholperiode.Normiert(e.Wiederholperiode);
+                bool geschrieben = b.Projektzeile != null
+                    ? Wiederholperiode.Schreibe(SchemaKatalog.TAB_PROJEKTWERTE,
+                                                b.Projektzeile.Raster.Id, periode)
+                    : Wiederholperiode.Schreibe(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION,
+                                                p.Id, periode);
+                if (geschrieben) p.Wiederholperiode = periode;
             }
         }
 

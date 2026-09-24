@@ -254,7 +254,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("TwwNutzungsartEditor", 13),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
-        new("VorlagenPositionDialog", 8),
+        // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
+        // Feldkarte (KiDialoge, Maske Form_VorlagenPosition) führt es als wiederholperiode (8 -> 9).
+        new("VorlagenPositionDialog", 9),
         new("VorlagenZeile", 4),
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),

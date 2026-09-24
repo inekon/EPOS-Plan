@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479, #484), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1288,7 +1288,9 @@ Design #466 samt den Papieren zu #462), in § 8.25 und § 8.26 **vor #474** (Sta
 und § 8.28 **vor #477** (Stand `61efa054`, der Anwender-Merge der Anlagenkopplung AK1, Welle 2, samt den Papieren zu
 #474 und #476), in § 8.29 und § 8.30 **vor #478** (Stand `6d022f6d` = #477 samt seinen Papieren; der erste Merge #478,
 `d176b378`, lässt die Papiere unberührt), in § 8.31 und § 8.32 **vor #479** (Stand `c99c4c7a` = #478 samt seinen Papieren
-und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt), in § 8.33 und § 8.34 **vor #484** (Stand
+`c778ab12` = #479 samt seinen Papieren, #488, die Anlagenkopplung AK1 Welle 3 und die Entscheid-Papiere vom
+24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2541,3 +2543,41 @@ und #482). Je Stelle eine Zeile:
 | § 6.2 (Z. 2747) | endete mit „… E15 bewegt keinen Anker." | dazu `NichtMonetaereWirkungenTests`, `WirkungenListeTests` und zwei Fälle der Blattstruktur-Wache; „E17 bewegt keinen Anker" |
 | § 7 (Z. 2957–2958) | „Freigegeben und im Bau ist V‑G11 (nicht monetarisierbare Wirkungen, E17); V‑G3 (…, E16) folgt nach E15" | „Die Lücke V‑G11 ist mit E17 (#479) gebaut … vier Fragen offen (→ Register R‑E17). Aus der Gap-Tafel … ist nur noch V‑G3 (…, E16, #484) offen" |
 | Anhang (Z. 3002, 3018, 3020, 3047) | Zeile V‑A…V‑E ohne V‑G11; Kürzelzeilen bis #478; Mockup-Zeile „… Risikozeilen der Mappe #478"; Etappenzeilen bis „E15 — Risikomodul (V‑G7)" | „der Freitext aus W5‑B‑12 abgelöst durch V‑G11 = E17 (gebaut #479)"; Kürzelzeile der Welle (#479); „… Punkte 2b und 3b mit der Wirkungsliste #479"; Etappenzeile „E17 — Nicht monetarisierbare Wirkungen (V‑G11)" = #479 |
+
+### 8.33 E16 — Wiederholperiode je Kostenposition: „alle n Jahre", Schemaschritt 129 (#484)
+
+Protokoll [`E16_Wiederholperiode_Protokoll.md`](E16_Wiederholperiode_Protokoll.md); im Register die Zeile V‑G3 in R‑V
+und die neue Familie R‑E16. Die Welle folgt dem Auftrag des Anwenders vom 24.09.2026 („V‑G3 n‑jährliche Zeitpunkte:
+Ausbau der Bemessung an den Kostenpositionen (eine Wiederholperiode je Position plus Rechenweg und Ausweis), ebenfalls
+mit Schemaspalte"); sie baut aus V‑E die n-jährlichen Zeitpunkte, die E9 nicht gebaut hatte (E9a‑Q6 a), und ist keine
+eigene Etappe des Plans E0–E12. Der Schritt heißt 129; 128 ist der Heizkreis je Gebäude der Anlagenkopplung AK1,
+Welle 3, der zuerst gepusht wurde.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E16** (#484, Merge `ae7b0ed0` über `c778ab12`, der Baum gleich `7c8f4fc4`) | Schemaschritt 129 mit der Spalte `Wiederholperiode_a` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition` (leer, 0, 1 = jährlich; Testdatenbank 129); eine Betriebsposition mit n ≥ 2 zahlt in s, s + n, … ≤ T (`KapitalwertRechner.ZahltImJahr`, E16‑Q1 a), nur Betriebspositionen (E16‑Q2 a), Betriebskosten p. a. = Zahl des ersten Jahres (E16‑Q3 a); das Ganzzahlfeld „Zahlung alle: [n] Jahre" im Zeileneditor der Betriebsseite und in den Kostenvorlagen, die Vorlagenübernahme, KI-Feld `wiederholperiode`; „alle n Jahre ab Jahr X" in der Betriebskostentabelle beider Berichte, Hilfsspalte je Topf in der Formelmappe, Nachweisumschlag Fassung 11 | **ja**, je Pflege — ohne Pflege bitgleich (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich); A/B an 1030 (n = 2) gleich der Handrechnung in allen drei Szenarien |
+
+*§ 2.11.2, Gap-Tabelle, Zeile V‑G3 (Z. 791):*
+
+> | V-G3 | **Zeitpunktattribut** je Cashflow: Periode 0 · jährlich · alle n Jahre · einmalig in k (6.3.1) | teilweise (StartJahr, Ersatz über Nutzungsdauer) | „alle n Jahre" fehlt (z. B. Dichtheitsprüfung alle 2 a) — kleiner Ausbau der Bemessung |
+
+**Umgesetzt mit E16 (#484):** „gebaut #484 (E16, Schemaschritt 129)" mit allen vier Zeitpunktarten, der Spalte, der
+Regel der Zahlungsjahre, dem Pflegeort und dem Ausweis.
+
+### 8.34 Berichtigungen im gültigen Stand (#484)
+
+Die Stellen, die mit E16 veraltet sind; „vorher" ist der Wortlaut vor #484 (Stand `c778ab12`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3), Liste der fremden Schritte (Z. 5, Z. 18) und Schrittabsatz (Z. 39–40) | Codestand `52614c33`, Zielversion 127, „Schemaschritte 90–127 vergeben"; „… 119 und 121 bis 124 gehören nicht diesem Feld"; der Absatz endete mit dem Schritt 127 der Etappe E17 und „126 … gehört nicht diesem Feld" | Codestand `ae7b0ed0`, Zielversion 129, „90–129 vergeben … 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16"; 128 in der Liste der fremden Schritte; dazu der Schritt **129** (`Wiederholperiode_a`, `WiederholperiodeSchema.SCHRITT`) und „126 … und 128 … gehören nicht diesem Feld" |
+| § 2.11.2, Zeile V‑G3 (Z. 791) | Wortlaut in § 8.33 | „gebaut #484 (E16, Schemaschritt 129)" samt Stand |
+| § 2.11.4, Zeile V‑E (Z. 853) und Fußnote (Z. 855–860) | „**V‑G3 offen** — der Auftrag E16 (…)"; „Aus der Gap-Tafel § 2.11.2 ist damit nur noch V‑G3 offen (→ E16)"; Stand „… Risiko gebaut #478 (E15), V‑G3 offen (E16)"; Fußnote endete mit „… die nicht monetarisierbaren Wirkungen E17 (#479, V‑G11, Schemaschritt 127)" | „n-jährliche Zeitpunkte (V‑G3) gebaut #484 mit dem eigenen Auftrag E16 …"; „Mit V‑G3 (E16, #484) ist die Gap-Tafel § 2.11.2 geschlossen — keine Lücke offen"; Wirkung „… und die Wiederholperiode (leer = jährlich)"; Stand „V‑G3 gebaut #484 (E16)"; Fußnote mit „die Wiederholperiode je Kostenposition E16 (#484, V‑G3 aus V‑E, Schemaschritt 129)" |
+| § 2.11.6, Stufe 1 (Z. 1019–1022) | die Hilfsspalten „Basis Betrieb mit p_B/p_E" samt den Stufen späterer Startjahre | dazu die Hilfsspalte „Positionen alle n Jahre mit p_B/p_E" mit `IF(AND(Jahr>=s,MOD(Jahr-s,n)=0),Betrag,0)` und die Betriebszelle `(Basis+Wiederholt)*(1+p)^(Jahr-1)` |
+| § 2.13 (3), nach dem Absatz „Ersatz und Restwert je Position — entkoppelt" (Z. 1282) | — | neuer Absatz „Betriebspositionen „alle n Jahre"": Spalte, Regel, Startjahr = Beginn der Folge, Nutzungsdauer/Ersatz/Restwert unberührt, Zeileneditor, Kostenvorlagen, Übernahme, Assistent |
+| § 3.1 (Z. 1630–1632 und Z. 1678) | A_t ohne n-jährliche Positionen; der Block „Nutzungsdauer, Ersatz, Restwert, Startjahr" endete mit `RestwertAnsetzen` | A_t mit „+ Σ_w Betrag_w × (1 + p_w)^(t−1) · [t zahlt]"; dazu der Block „Wiederholperiode einer Betriebsposition" mit den Zahlungsjahren s, s + n, … ≤ T |
+| § 3.4, Betriebskostentabelle (Z. 1880) | Punkte „Startjahr" und „Probe der Gliederung" ohne Periode | neuer Punkt „Alle n Jahre": „alle n Jahre ab Jahr X", Betriebskosten p. a., Nachweisumschlag Fassung 11 |
+| § 6.1 (Z. 2714) | Kurztafel bis E17 (#479) | Zeile „E16 Wiederholperiode je Kostenposition" (#484) mit Schemaschritt 129 |
+| § 6.2 (Z. 2759) | endete mit „… E17 bewegt keinen Anker." | dazu `WiederholperiodeTests` und fünf Dialogproben; „E16 bewegt keinen Anker" |
+| § 7 (Z. 2970–2973) | „Aus der Gap-Tafel des § 2.11.2 ist nur noch V‑G3 (Wiederholperiode je Kostenposition, E16, #484) offen" | „Die Lücke V‑G3 ist mit E16 (#484) gebaut … vier Fragen offen (→ Register R‑E16). Damit ist die Gap-Tafel des § 2.11.2 geschlossen" |
+| Anhang (Z. 3017, 3034, 3064) | Zeile V‑A…V‑E mit „V‑G3 = E16 (offen)"; Kürzelzeilen bis #479; Etappenzeilen bis „E17 — Nicht monetarisierbare Wirkungen (V‑G11)" | „V‑G3 = E16 (gebaut #484)"; Kürzelzeile der Welle (#484); Etappenzeile „E16 — Wiederholperiode je Kostenposition (V‑G3)" = #484 |
