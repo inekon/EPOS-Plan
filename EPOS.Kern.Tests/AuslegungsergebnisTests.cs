@@ -47,6 +47,26 @@ namespace EPOS.Kern.Tests
             Uebertragerwerkstoff = ZapfUebertragerwerkstoff.Edelstahl
         };
 
+        /// <summary>
+        /// Ein Befund der Bilanz behält in der Auslegung seine Stufe (Warnlogik Z4): Der überschriebene
+        /// Bedarf außerhalb der Bandbreite des Niveaus ist dort wie in der Bilanz eine Warnung.
+        /// </summary>
+        [Fact]
+        public void Eine_Warnung_der_Bilanz_bleibt_in_der_Auslegung_eine_Warnung()
+        {
+            Nutzungsart eng = Art(1, bandbreite: new Bedarfsbandbreite(new double?[3], new double?[] { 3.0, 3.0, 3.0 }));
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 40.0, 1) with
+            {
+                BedarfSpezKwhJeEinheitTag = 5.0,
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
+            };
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(ZapfprofilTestbau.Eingang(Projekt(), Auslegungssatz(), wohnhaus),
+                                                               new[] { eng }, Zusatz());
+            Auslegungshinweis h = Assert.Single(r.Hinweise, x => x.Code == Mengengeruest.HINWEIS_BANDBREITE);
+            Assert.True(h.Warnung);
+            Assert.Equal("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", h.Satz.Kennung);
+        }
+
         [Fact]
         public void Es_gibt_genau_eine_Empfehlung()
         {

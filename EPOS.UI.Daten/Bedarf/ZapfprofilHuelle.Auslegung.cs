@@ -547,11 +547,22 @@ namespace WindowsFormsApplication1
             return v;
         }
 
-        /// <summary>Ein Hinweis des Kerns als Eintrag der Warnliste: Titel aus <c>ZPG_AUSHINW_…</c>, sonst „Hinweis"; Satz des Kerns.</summary>
+        /// <summary>
+        /// Ein Hinweis des Kerns als Eintrag der Warnliste: Titel aus <c>ZPG_AUSHINW_…</c>; ein Befund
+        /// der Bilanz, den die Auslegung mitträgt (Mengengerüst, Tagesgang, Zirkulation), trägt den
+        /// Titel der Warnliste der Bilanz (<c>ZPG_WARN_…</c>) samt dessen Kennung; sonst „Hinweis".
+        /// Satz des Kerns, Stufe nach der Warnlogik.
+        /// </summary>
         internal static ZapfprofilWarnDaten Warnung(Auslegungshinweis h)
         {
             string kennung = AuslegungsHinweisSchluessel(h.Code);
-            string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
+            string titel = Text_(kennung, null);
+            if (titel == null && Text_("ZPG_WARN_" + (h.Code ?? ""), null) is string bilanz)
+            {
+                kennung = "ZPG_WARN_" + h.Code;
+                titel = bilanz;
+            }
+            titel ??= Text_("ZPG_AUS_HINWEIS", "Hinweis");
             return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? Satztext(h.Satz),
                                            h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
         }

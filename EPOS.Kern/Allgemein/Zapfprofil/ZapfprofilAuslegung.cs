@@ -243,7 +243,9 @@ namespace WindowsFormsApplication1
                                    e.Zapfkategorien, prot));
             }
 
-            foreach (ZapfHinweis h in zapfHinweise) hinweise.Add(new Auslegungshinweis(h.Code, h.Satz));
+            // Die Befunde der Bilanz gehen mit ihrer Stufe in die Warnliste (Warnlogik Z4): Eine Warnung
+            // der Bilanz — etwa ein Bedarf außerhalb der Bandbreite — bleibt in der Auslegung eine Warnung.
+            foreach (ZapfHinweis h in zapfHinweise) hinweise.Add(new Auslegungshinweis(h.Code, h.Satz, h.Warnung));
             return new Auslegungsergebnis
             {
                 Gruppen = gruppen.AsReadOnly(),

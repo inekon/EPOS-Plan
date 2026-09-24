@@ -92,6 +92,18 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("AUSHINWEIS_", w.Text);
             Assert.Equal(ZapfprofilWarnstufe.Warnung, w.Stufe);
 
+            // Ein Befund der Bilanz in der Warnliste der Auslegung: Titel und Kennung der Bilanz, Stufe wie dort.
+            foreach (string code in new[] { Mengengeruest.HINWEIS_BANDBREITE, Mengengeruest.HINWEIS_WOHNUNGSTABELLE, "TAGESGANG_SUMME",
+                                            "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_ZONE_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE",
+                                            "ZIRKULATION_NICHT_IN_Z1" })
+            {
+                ZapfprofilWarnDaten b = ZapfprofilHuelle.Warnung(new Auslegungshinweis(code, ZapfSatz.Neu("UNBEKANNT_NEU"), true));
+                Assert.Equal("ZPG_WARN_" + code, b.Kennung);
+                Assert.Equal(Text("ZPG_WARN_" + code, DE), b.Titel);
+                Assert.NotEqual("Hinweis", b.Titel);
+                Assert.Equal(ZapfprofilWarnstufe.Warnung, b.Stufe);
+            }
+
             // Eine Kennung ohne Titel bekommt den allgemeinen — benannt statt still.
             ZapfprofilWarnDaten u = ZapfprofilHuelle.Warnung(new Auslegungshinweis("UNBEKANNT_NEU", ZapfSatz.Neu("UNBEKANNT_NEU")));
             Assert.Equal("Hinweis", u.Titel);
