@@ -138,8 +138,8 @@ Gebaut ist jeweils Lesart a (die Empfehlung); offen beim Anwender (→ Register 
   (`RisikoModulTests` 25), UI 47/47; voller Lauf **13.001 bestanden / 0 Fehler / 1 übersprungen** (EPOS.Kern.Tests
   6.037, EPOS.UI.Tests 6.001, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 und 1
   übersprungen); Referenzlauf 13/13 gegen R14 (oben); SQL-Prüfer 1.807/0; Designer wiederholbar.
-- **Gate auf `d176b378`:** Nachtrag folgt.
-- **CI:** steht aus (Push nach dem Gate).
+- **Gate auf `d176b378`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 13.000 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.037, EPOS.UI 6.001, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE478.log`, 24.09.2026 19:25–19:51 Uhr).
+- **CI:** alle drei Läufe auf `c99c4c7a` grün (36037531327, 36037536128, 36037536072).
 
 ## Abnahme am Gerät (A‑E15‑1, Windows)
 

@@ -306,7 +306,7 @@ offengelegten Annahmen.
 | **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4). **Bestätigt mit Entscheid A5 vom 20.09.2026 (nach Empfehlung):** Das konsolidierte Konzept führte die Degradation als `V-G2` in der Etappe **V-E** (§ 2.11.4); der Widerspruch ist zugunsten dieses Papiers **aufgelöst — V-E wird ohne Degradation geplant**, § 2.11.2 und § 2.11.4 des Konzepts sind nachgezogen |
 | **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **umgesetzt W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 (§ 10) |
 | **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß | **nicht umsetzen** — offenlegen (§ 9.4) |
-| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **umgesetzt W5‑B‑12** — Freitextfeld (§ 10.5) |
+| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **umgesetzt W5‑B‑12** — Freitextfeld (§ 10.5); **abgelöst #479** (E17, V‑G11 des konsolidierten Konzepts) durch die Liste mit Kategorie und Beurteilung, der Freitext bleibt als Altfeld lesbar |
 | **G7** | **Betrachtungszeitraum aus der Nutzungsdauer.** T ist frei wählbar und wird nicht gegen die längste Nutzungsdauer geprüft. | VALERI verlangt die Begründung des Zeitraums. | Prüfzeile; klein | **W5‑B‑11 umgesetzt** (§ 9.3) |
 | **G8** | **Berichtsausgabe der Bandbreite.** Der Word-/Excel-Bericht führt heute den Erwartungsfall. | VALERI-Bericht weist alle drei Szenarien nebeneinander aus. | Berichtsbaustein; **kein klarer Anker** — offen gelassen | **W5‑B‑11 umgesetzt** (§ 9.2) |
 | **G9** | **Kapitalwert je Version absolut.** Wird geführt, aber die Entscheidungsempfehlung („Vorschlag zur Entscheidung") fehlt als Text. | VALERI-Bericht formuliert eine Empfehlung. | Textbaustein; klein | **W5‑B‑11 umgesetzt** (§ 9.1) |
@@ -448,7 +448,7 @@ wie weit Lücke **G2** reicht: genau bis zu diesem dritten Topf neben p_B und p_
 |---|---|
 | `Preissteigerung_Investition` (Erwartet) | **wie p_B** (`Preissteigerung_Betrieb`) — nicht „0 %“ |
 | `Szen_Best_Preis_I` / `Szen_Worst_Preis_I` | Vorgabe = **Erwartet‑p_I ∓ 1 %‑Punkt** (Best −, Worst +) |
-| `Nicht_Monetaer` | nichts erfasst (Berichtszeile entfällt) |
+| `Nicht_Monetaer` | nichts erfasst (Berichtszeile entfällt); seit #479 Altfeld — die Wirkungen stehen in `Tab_ProjektWirkung` (§ 10.5) |
 
 Eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie teurer — eine
 Aussage, die niemand getroffen hat. Der einzige gepflegte Satz im Haus, der eine
@@ -573,6 +573,18 @@ ein zweiter Ort für dieselben Regeln, und ein eigener CSS-Block war nicht nöti
   selbst und formulieren mit `WIRT_NM_TITEL` bzw. `WIRT_NM_ZEILE` ihre eigene Ausgabe.
 * **Ohne gepflegten Text entfällt der ganze Block**, Überschrift eingeschlossen. Eine
   leere Überschrift wäre keine Aussage, sondern eine Lücke mit Titel.
+* **Vom Freitext zur Liste (#479, E17 — V‑G11 des konsolidierten Konzepts).** Der Freitext
+  ist durch eine Liste der Wirkungen abgelöst: Schemaschritt 127 legt `Tab_ProjektWirkung`
+  an — je Wirkung Kategorie (Energiefluss, finanziell, sonstig; DIN EN 17463, 6.1),
+  Beschreibung, Dauer (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter
+  und Umwelt (keine bis stark); die Beurteilung nach 8.2 ist Dauer × stärkste Wirkung
+  (0 bis 9), eine Anzeige, nicht gespeichert. Ein gepflegter Freitext wird dabei eine
+  Wirkung „sonstig" ohne Beurteilung; das Feld `Nicht_Monetaer` bleibt als Altfeld lesbar
+  unter der Liste, keine Maske schreibt es mehr. Auf der Seite steht an seiner Stelle der
+  Baustein `WirkungenListe` im Bewertungsblock; Word und Excel zeigen in dem Abschnitt, der
+  den Freitext trug, die **Tabelle** der Wirkungen (Quelle `WirtschaftlichkeitBewertung.Wirkungen`),
+  ohne Wirkung entfällt der Block. Die Regeln oben — am Stand, nicht an der Ansicht, eine
+  Stelle je Zustand — gelten für die Liste weiter. Keine Rechenwirkung.
 
 ### 10.6 Wirkung auf den Bestand
 
@@ -648,7 +660,7 @@ niemand zweimal baut:
 | **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E für Rahmen (Betrachtungszeitraum), Trägerpreise, Erlössätze und Mengenfaktor **gebaut #461/#462** (E9: Teil a im Kern mit den Schemaschritten 116 bis 118, Teil b die Pflege in den Dialogen und der Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts) |
 | **W5‑B‑10** VALERI-Abgleich (§ 7) | Grundlage der Gap-Tafel **V-G1…V-G12** (§ 2.11.2) | gebaut |
 | **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
-| **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |
+| **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — V-G11 **vollständig mit #479** (E17, Schemaschritt 127): die Liste mit Kategorie und Beurteilung löst den Freitext ab (§ 10.5) |
 | — | **V-A** Ausweis („nachrichtlich", Zinsfuß-Warnung, Deklarationen, Steigung) | gebaut — E5, **#434** |
 | — | **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | V-C gebaut — E8 Teil a, **#454**: die fünf Blöcke vollständig (die Blöcke 1, 3, 4 und 5 mit #434 vorgezogen, das Cashflow-Bild mit #436 als Verlauf unter „Wie sicher ist das?", mit #454 Block 2 samt Zahlungsstrombild und Block 4 mit Spannenbild und Verlauf); V-D gebaut — E8 Teil b, **#455**: die Formelmappe in den Stufen 0 bis 3, die Anhang-E-Checkliste und die Anhang-D-Gegenprobe |
 

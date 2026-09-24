@@ -1,11 +1,11 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
 **Stand 24.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`dedfc760` · `SchemaStand.Zielversion` = **125**, Schemaschritte 90–125 vergeben (105 = K‑1, #440; 108–110 =
+`52614c33` · `SchemaStand.Zielversion` = **127**, Schemaschritte 90–127 vergeben (105 = K‑1, #440; 108–110 =
 Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = Zapfprofil Z3, T2, #453; 119 = Kühlung
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10); E13 (#474) und E14 (#477) ohne Schritt**; 121 = Katalogverweis des Projektgebäudes (#468),
-122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)** · Gegenstand: das konsolidierte Konzept
+122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -99,6 +99,15 @@ Zeilennummern und Messungen:
 > R_loss ist gebaut als Betrag in € je Periode; Anhang F, Tabelle F.2 rechnet ihn als Prozent des Nettorückflusses
 > (E15‑Q4 c). Die vier Fragen E15‑Q1…Q4 sind offen (gebaut jeweils a, → Register R‑E15). E17 (V‑G11) läuft mit dem
 > Schritt 126, E16 (V‑G3) folgt.
+
+> **Nachtrag 24.09.2026 abends (#479).** Die Lücke V‑G11 ist mit **E17 (#479)** gebaut, auf den Auftrag des Anwenders
+> „V‑G11 … kleiner Dialog-und-Bericht-Auftrag ohne Rechenwirkung": Schemaschritt **127** (nach 126, der Reparatur
+> der Gebäude-Katalogsätze #485) legt die Tabelle `Tab_ProjektWirkung` an und übernimmt einen gepflegten Freitext
+> `Nicht_Monetaer` als eine Wirkung „sonstig" ohne Beurteilung; je Wirkung Kategorie (6.1), Beschreibung, Dauer und
+> die Wirkung auf Organisation, Mitarbeiter und Umwelt, die Beurteilung nach 8.2 als Dauer × stärkste Wirkung (0 bis 9).
+> Gepflegt im Bewertungsblock (Baustein `WirkungenListe`), ausgewiesen als Tabelle in Wort- und Tabellenbericht und in
+> den Punkten 2b und 3b der Anhang-E-Checkliste — ohne Rechenwirkung, die Basis bleibt. Die vier Fragen E17‑Q1…Q4 sind
+> offen (gebaut jeweils a, → Register R‑E17). Aus der Gap-Tafel des Konzepts ist nur noch V‑G3 offen (E16, #484).
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
@@ -524,6 +533,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E12 Wiki-Runden** — **Wiki-Quellen vorbereitet #470; E12‑Q1 bis E12‑Q4 entschieden 24.09.2026, nach Empfehlung (Termin 26.09.2026, Version 1.2.0.4); Upload nach Freigabe des Anwenders** | Sammel-Upload: die 14+1 Sätze der Mockup-Prüfung, die fünf Lücken, U17/U23/U36, `help_mapping` (Tarifstruktur, BHKW, PV bereits korrekt verdrahtet; die „acht Anker" tatsächlich neun Seitenebene-Zuordnungen, davon fünf bewusst, vier offene Kandidaten — zwei davon gesetzt #474, zwei bleiben mit Begründung Seitenebene), Höfingen neutralisiert (A16), Hilfesystem 13.2 ergänzt; danach je Etappe die Sätze aus `06/§ 3` | S je Runde | — | Tabuwort-Regex, Produktdaten-Wache | — | — | Sonnet | A16, A18 |
 | **E13 Nachbesserung aus E7c3 und E9b** — **umgesetzt #474** | E9b‑Q5 b: Punkt 9 der Anhang-E-Checkliste „erfüllt", sobald Günstig und Ungünstig gerechnet sind, „teilweise" bei nur Erwartet oder einem Szenario, „offen" ohne Lauf, der Ausweis bleibt Beleg; E7c3‑Q6 a: `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` in der Statuszeile der Ergebnisseite und im Dialog BHKW-Wirtschaftlichkeit, je Grund einmal, einen Datenbankfehler meldet die Anwendung selbst; dazu der Halbsatz aus A8 (neue Speichervariante mit der Nutzungsdauer der Tabelle) und zwei Hilfe-Anker der Seite Kosten | S | keine | Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich, Maskenwache, bunit je Ort | — | Wirtschaftlichkeit `bericht`, `wirtschaftlichkeit`; Kosten `kosten` — drei Logbuch-Sätze | Opus | E9b‑Q5 und E7c3‑Q6 entschieden 24.09.2026 — **umgesetzt #474** (Merge `c71addf5`; Zweig `e13`: E13/1 `58e27722`, E13/2 `f674e839`, E13/4 `a4a38a72`, E13/5 `fa7dfd37`, E13/6 `ba78f7d2`) |
 | **E15 Risikomodul (V‑G7 aus V‑E)** — **umgesetzt #478** | das Risiko nach DIN EN 17463, 6.5 und Anhang F: Zinszuschlag in allen drei Szenarien oder Zahlungsstromabzug R_loss × p_loss je Periode ab Jahr 1 (nicht Jahr 0, nicht der Restwert) für jeden Stand außer der Referenz; Gruppe „Risiko (DIN EN 17463, 6.5)" im Parameterdialog, Ausweis nur bei Pflege (Nachweiszeile, Annahmentafel, Deklaration 6.5, Checkliste Punkt 6, Bestandteil RISIKO, Formelmappe) | M | **ja**, je Pflege (Vorgabe aus) | A/B an 1030, 1019 und 1024 (Zuschlag = Lauf mit i + 1, Abzug = −R_loss × p_loss × Rentenbarwertfaktor, Rückweg exakt), Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich, `RisikoModulTests`, Zellvergleich über 19 Mappen | **125** | Wirtschaftlichkeit `wirtschaftlichkeit`, ein Logbuch-Satz | Opus | Anwenderauftrag 24.09.2026 („V‑G7 Risiko: eigener kleiner Auftrag ausführen") — **umgesetzt #478** (erster Merge `d176b378`, End-Merge `dedfc760`; Zweig `e15`: E15/1 `d46280f7`, E15/2 `e111f7ee`, E15/3 `fe795e10`, E15/4 `a40c9b3c`, E15/5 `a8a82d0c`, Zusammenführung `8494f244`, E15/6 `5eaed19c`; Testdatenbank 125, LFS `6c4c32f9`; vier Fragen E15‑Q1…Q4 offen) |
+| **E17 Nicht monetarisierbare Wirkungen (V‑G11)** — **umgesetzt #479** | die nicht monetarisierbaren Wirkungen nach DIN EN 17463, 6.1 und 8.2 als Liste je Projekt: Kategorie, Beschreibung, Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt, Beurteilung Dauer × stärkste Wirkung (0 bis 9) als Anzeige; Baustein `WirkungenListe` im Bewertungsblock statt des Freitexts (Altfeld lesbar), Tabelle in Wort- und Tabellenbericht, Punkte 2b und 3b der Anhang-E-Checkliste | S | nein | Anker „keine Rechenwirkung" bitgleich, Referenzlauf 13/13 gegen R14 byte-gleich, `NichtMonetaereWirkungenTests`, `WirkungenListeTests`, Blattstruktur-Wache zwei Fälle | **127** | Wirtschaftlichkeit `wirtschaftlichkeit` (Anker `nicht-monetaer`, `checkliste`), ein Logbuch-Satz | Opus | Anwenderauftrag 24.09.2026 („V‑G11 … kleiner Dialog-und-Bericht-Auftrag ohne Rechenwirkung") — **umgesetzt #479** (erster Merge `0462f92e`, End-Merge `52614c33`; Zweig `e17`: E17/1 `1ca8273b`, E17/2 `3f5f0412`, E17/3 `c902018c`, E17/3a `2512865e`, E17/4 `c5094dd4`, E17/5 `0769c84d`, Zusammenführung `311780cd`, E17/6 `4ede85a5`, E17/7 `db909d37`, E17/8 `079de7d7`, Nachzug `86ebd491` auf #485, E17/9 `f545f86b`; Testdatenbank 127, LFS `87e49ed1`; vier Fragen E17‑Q1…Q4 offen) |
 
 **Stand der Etappen am 24.09.2026.**
 
@@ -587,7 +597,9 @@ Hilfe-Anker. **E12** (Wiki-Runden) ist mit #470 vorbereitet, der Sammel-Upload a
 damit ist der Etappenplan E0–E12 bis auf den Upload abgearbeitet. Nach dem Befund 1 aus E9a ergänzt **E14 (#477)** den
 Teil b von E8: Die Formelmappe rechnet die Stufen 1 und 2 für alle drei Szenarien; ihre drei Fragen E14‑Q1…Q3 sind offen.
 Aus V‑E (E9) ist das Risiko V‑G7 mit dem eigenen Auftrag **E15 (#478)** gebaut — Schemaschritt 125, Zinszuschlag oder
-Zahlungsstromabzug, Vorgabe aus; seine vier Fragen E15‑Q1…Q4 sind offen. E17 (V‑G11) läuft, E16 (V‑G3) folgt.
+Zahlungsstromabzug, Vorgabe aus; seine vier Fragen E15‑Q1…Q4 sind offen. Die nicht monetarisierbaren Wirkungen V‑G11
+sind mit **E17 (#479)** gebaut — Schemaschritt 127, Liste mit Kategorie und Beurteilung statt Freitext, ohne
+Rechenwirkung; seine vier Fragen E17‑Q1…Q4 sind offen. Offen bleibt E16 (V‑G3, #484).
 **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
 zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
 wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.
@@ -635,7 +647,10 @@ Nachbarsitzung „Dialog Design"") ist damit überholt: 114 hat die Kühlung gen
 und #459 keinen Schritt. **Weitere Vergabe vom 24.09.2026:** 121 der Katalogverweis des Projektgebäudes (#468), 122
 und 123 die Anlagenkopplung AK1, 124 die Zapfprofil-Stufe Z4 (#464) und **125** — das Risikomodul der Etappe E15
 (V‑G7, `SCHRITT_125_RISIKOMODUL`, gebaut #478); `SchemaStand.Zielversion` steht auf **125**. Die nächste Nummer
-bekommt, wer zuerst pusht (126 ist für E17 vorgesehen).
+bekommt, wer zuerst pusht (126 ist für E17 vorgesehen). **Nachtrag #479:** 126 hat die Reparatur der Gebäude-Katalogsätze
+genommen (Dialog Design, #485), E17 **127** — die Tabelle der nicht monetarisierbaren Wirkungen (V‑G11,
+`SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN`, gebaut #479); `SchemaStand.Zielversion` steht auf **127**, der Schritt steht
+nach 126, ohne Lücke.
 
 Damit keine Nummer zweimal vergeben wird, führt dieses Papier die geplanten Schritte fortan mit
 **Buchstaben**. Jeder bekommt seine Nummer **bei der Umsetzung**, aus dem dann freien Bereich (nach der Vergabe vom
@@ -657,6 +672,7 @@ Auslieferungsvorlage und Erstbereitstellung ohne Sonderbehandlung.
 | **113** (G) | 103 | U‑1: `Einheit`/`PreisEinheit` der fünf Gase auf `Nm³`, eine `energy_price`-Zeile (Projekt 1039), dazu der Brennstoff 24 auf `kWh` (E7c2‑Q4) — **reines DML** (`SCHRITT_113_GASE_NM3`), vor dem Vorlagenbau | `Tab_Brennstoff_Stamm`, `energy_price` | nein | nein (Einfrierliste nennt nur CO₂/SO₂/NOx/Staub) | E7 Teil c2, **gebaut #446** |
 | **120** | — | ND‑S3: die leeren Instandsetzungssätze der Standardzeilen bekommen die Mitte des Empfehlungsbereichs der Betriebsvorlagen (Heizkessel 2,0, BHKW 6,0, Wärmezentrale 2,0, Stromeinspeisung 2,0, Bauliche Anlagen 1,25 %; Wartung leer) — **reines DML** (`SCHRITT_120_NUTZUNGSDAUER_SAETZE`), setzt nur leere Zellen, wiederholbar; ergebnisneutral, weil ein Satz erst über die Vorbelegung rechnet | `Tab_Nutzungsdauer` | nein | nein | E10, **gebaut #463** |
 | **125** | — | V‑G7: `Risiko_Art` (TEXT(10); leer = kein Risiko, `ZINS`, `ABZUG`), `Risiko_Zinszuschlag` [%-Punkte], `Risiko_Verlust` [€ je Periode, R_loss], `Risiko_Wahrscheinlichkeit` [%, p_loss], nullbar, ohne Vorgabe — **reines DDL** (`SCHRITT_125_RISIKOMODUL`, Spaltenliste `SchemaKatalog.RisikomodulSpalten`), ergebnisneutral bis zur ersten Pflege; Testdatenbank 125 (vier Spalten leer, LFS `6c4c32f9…`) | `Tab_ProjektWirtschaftlichkeit` | **ja** (CREATE-TABLE-Text und `SpalteSicher` der `WirtschaftlichkeitCtrl`) | nein | E15, **gebaut #478** |
+| **127** | — | V‑G11: die Tabelle `Tab_ProjektWirkung` (STRICT; `ID`, `ID_Projekt` mit Fremdschlüssel auf `Tab_Projekt` ON DELETE/UPDATE CASCADE, `Sortierung`, `Kategorie` mit CHECK `ENERGIEFLUSS`/`FINANZIELL`/`SONSTIG`, `Beschreibung`, `Dauer` 1–3, `Wirkung_Organisation`, `Wirkung_Mitarbeiter`, `Wirkung_Umwelt` je 0–3, NULL = nicht beurteilt) samt Index `idx_ProjektWirkung_Projekt`; DML: ein gepflegter Freitext `Nicht_Monetaer` wird eine Wirkung SONSTIG ohne Beurteilung — nur nicht leere Texte, nur Projekte ohne Wirkung, wiederholbar; das Freitextfeld bleibt (`SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN`, `ProjektWirkungSchema` für Migration, Werkzeug und Testvorrichtung), ergebnisneutral; Testdatenbank 127 nach 126 (132 Tabellen STRICT, 210 Indizes, 0 Freitexte übernommen, LFS `87e49ed1…`) | `Tab_ProjektWirkung` (neu), liest `Tab_ProjektWirtschaftlichkeit` | nein (eigene Tabelle) | nein | E17, **gebaut #479** |
 | **(H)** | (104) | optional: geräteeigene Nutzungsdauer entfernen | `Tab_BHKW`, `Tab_Heizkessel` | nein | nein | E10, nach A8 — **nicht gebaut**: A8 ist mit der Kennzeichnung „Nutzungsdauer (Gerätedaten)" erfüllt (#463, E10‑Q4 a); (H) bleibt optional |
 | — | — | Speicherflotte an `Tab_Nutzungsdauer` | JSON in `Tab_SpeicherAuslegung` | — | **ja** (Projekt 1046) | E10, eigener Auftrag — **gebaut #463** ohne Schemaschritt: der Flottenstand bleibt, die Studie rechnet den Restwert linear; der Referenzlauf ist byte-gleich, die dritte Einfrierregel ist ergänzt |
 | — | — | `SteuerErgebnis`-Trennung, Anlagenbezug der Erlöszeilen | nur im Nachweisumschlag | — | nein | E4 |
