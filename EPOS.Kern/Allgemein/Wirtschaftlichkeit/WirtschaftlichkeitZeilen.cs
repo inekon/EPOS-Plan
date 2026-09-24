@@ -1937,10 +1937,17 @@ namespace WindowsFormsApplication1
             // GEWERKS — am Pufferspeicher ist sie „€/Ltr.", nicht „€/kW".
             // U33 (18.09.2026): Diese Liste sind die BETRIEBSKOSTENzeilen; ein
             // Leistungssatz heißt hier „€/kWp·a" und nicht „€/kWp".
-            return n.Menge.Value.ToString("N2", kultur) + " " +
-                   BetriebskostenCtrl.MengenEinheit(n.Bemessung, n.Komponente) + " × " +
-                   n.Einheitpreis.Value.ToString("N3", kultur) + " " +
-                   BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
+            string text = n.Menge.Value.ToString("N2", kultur) + " " +
+                          BetriebskostenCtrl.MengenEinheit(n.Bemessung, n.Komponente) + " × " +
+                          n.Einheitpreis.Value.ToString("N3", kultur) + " " +
+                          BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
+            // ETAPPE E10 (Stufe S3): Kam der Satz aus der Nutzungsdauertabelle, sagt die
+            // Herleitung es — dieselbe Zeile in Wort- und Tabellenbericht und in der
+            // Spalte „Herleitung" der Formelmappe (Stufe 3).
+            if (string.Equals(n.SatzHerkunft, NutzungsdauerSatzCtrl.HERKUNFT_TABELLE,
+                              StringComparison.Ordinal))
+                text += " · " + NutzungsdauerSatzCtrl.HerkunftKurz();
+            return text;
         }
 
         // =====================================================================

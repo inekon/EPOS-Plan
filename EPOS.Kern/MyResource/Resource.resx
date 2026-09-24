@@ -11409,7 +11409,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Raumbedarf:</value>
   </data>
   <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Nutzungsdauer:</value>
+    <value>Nutzungsdauer (Gerätedaten):</value>
   </data>
   <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
     <value>Jahre</value>
@@ -11535,7 +11535,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Wartungskosten:</value>
   </data>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Nutzungsdauer:</value>
+    <value>Nutzungsdauer (Gerätedaten):</value>
   </data>
   <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
     <value>Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
@@ -17879,7 +17879,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Ersatzintervall:</value>
   </data>
   <data name="FLOTTE_ED_RESTWERT_EINHEIT" xml:space="preserve">
-    <value>Restwert der Einheit:</value>
+    <value>Restwert der Einheit (Gerätedaten):</value>
   </data>
   <data name="FLOTTE_ED_NETZ_PLANUNG" xml:space="preserve">
     <value>Netzgrenzen und Fahrplanung</value>
@@ -20074,6 +20074,15 @@ Möchten Sie das zulassen?</value>
   <data name="ND_SP_AFA" xml:space="preserve">
     <value>AfA steuerlich [a]</value>
   </data>
+  <data name="ND_SP_INSTANDSETZUNG" xml:space="preserve">
+    <value>Instandsetzung [%/a]</value>
+  </data>
+  <data name="ND_SP_WARTUNG" xml:space="preserve">
+    <value>Wartung [%/a]</value>
+  </data>
+  <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
+    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Die Kostenverwaltung trägt sie mit „Sätze vorbelegen…“ in Betriebskostenpositionen „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage; gerechnet wird mit dem Satz der Position. Eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.</value>
+  </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
   </data>
@@ -20169,6 +20178,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
     <value>{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus der AfA-Tabelle überschrieben werden?</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Sätze vorbelegen…</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder die Tabelle führt für diese Technik keinen.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden?</value>
+  </data>
+  <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
+    <value>{0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3})</value>
+  </data>
+  <data name="ND_SATZ_HERKUNFT" xml:space="preserve">
+    <value>Satz aus Nutzungsdauertabelle</value>
+  </data>
+  <data name="ND_SATZART_INSTANDSETZUNG" xml:space="preserve">
+    <value>Instandsetzung</value>
+  </data>
+  <data name="ND_SATZART_WARTUNG" xml:space="preserve">
+    <value>Wartung</value>
   </data>
   <data name="ND_TAFEL_TITEL" xml:space="preserve">
     <value>Ersatz und Restwert</value>
@@ -22804,6 +22837,30 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
     <value>Woher die Dauer stammt (VDI 2067, AfA-Tabelle, Herstellerangabe, eigene Festlegung).</value>
   </data>
+  <data name="KI_DLG_NUD_NEUINST_NAME" xml:space="preserve">
+    <value>Instandsetzung der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_ERL" xml:space="preserve">
+    <value>Der Instandsetzungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_NAME" xml:space="preserve">
+    <value>Wartung der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_ERL" xml:space="preserve">
+    <value>Der Wartungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“.</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_NAME" xml:space="preserve">
+    <value>Instandsetzung</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
+    <value>Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage.</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
+    <value>Wartung</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
+    <value>Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage.</value>
+  </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Kostenposition bearbeiten</value>
   </data>
@@ -23747,10 +23804,10 @@ Möchten Sie das zulassen?</value>
     <value>Was ein Ersatz dieser Einheit kostet.</value>
   </data>
   <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
-    <value>Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz.</value>
+    <value>Nutzungsdauer dieser Einheit: nach wie vielen Jahren sie ersetzt wird; daraus folgt auch ihr linearer Restwert. 0 = die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher.</value>
   </data>
   <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
-    <value>Der Restwert dieser Einheit am Ende der Betrachtung.</value>
+    <value>Gerätedaten, nicht mehr rechenwirksam: ein fester Restwert dieser Einheit, der nur noch gespeichert wird. Der Kapitalwert setzt den Restwert linear aus der Nutzungsdauer (Ersatzintervall) an.</value>
   </data>
   <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
     <value>Woher der Strombedarf kommt: aus der EPOS-Rechnung oder aus einer eingelesenen Datei.</value>
@@ -26747,7 +26804,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>Die erwartete Nutzungsdauer des Geräts in Jahren.</value>
+    <value>Die Nutzungsdauer des Geräts laut Katalog in Jahren — Gerätedaten, nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers.</value>
@@ -27486,5 +27543,20 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Der Kühlbetrieb ist in dieser Maske nicht einstellbar.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_VORGABE" xml:space="preserve">
+    <value>Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_TABELLE" xml:space="preserve">
+    <value>Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. Aus dem Intervall folgen Ersatz und linearer Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE" xml:space="preserve">
+    <value>Ersatzintervall 0: Die Nutzungsdauertabelle führt für Stromspeicher keine Nutzungsdauer — die Einheit wird nicht ersetzt und trägt keinen Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ALTFELD" xml:space="preserve">
+    <value>Restwert der Einheit: Gerätedaten, nicht mehr rechenwirksam. Die Studie setzt den Restwert linear an — Betrag der letzten Beschaffung × Restdauer ÷ Nutzungsdauer.</value>
+  </data>
+  <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
+    <value>Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).</value>
   </data>
 </root>

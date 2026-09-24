@@ -29,8 +29,13 @@ public sealed class FlottenWirtschaftlichkeitTests
             }
         });
 
-        // CAPEX 100+500+400=1000; Cashflows 550; Restwert 100.
-        Assert.Equal(-350, result.KapitalwertEuro, 8);
+        // CAPEX 100+500+400=1000; Cashflows 550; Restwert 60.
+        // ETAPPE E10 (Empfehlung E10-Q3 a): Der feste Restwert der Einheit (40) ist ein
+        // Altfeld und rechnet nicht mehr; ohne Ersatzintervall hat die Einheit keine
+        // Nutzungsdauer und damit keinen linearen Restwert. Es bleibt der zusaetzliche
+        // Restwert der Studie (60) - vorher -350 mit 40 + 60.
+        Assert.Equal(-390, result.KapitalwertEuro, 8);
+        Assert.Equal(60, result.RestwertEuro, 8);
         Assert.Equal(1000, result.InvestitionEuro, 8);
         Assert.Equal(new[] { 300d, 250d }, result.JahresCashflowsEuro);
     }

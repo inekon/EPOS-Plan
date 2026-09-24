@@ -2324,8 +2324,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Nutzungsdauern (AfA) — fuenf Kopffelder und drei SPALTEN aus
-        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c>.
+        /// Die Nutzungsdauern (AfA) — sieben Kopffelder und fuenf SPALTEN aus
+        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c> (Etappe E10: je Neuzeile und
+        /// Tabellenzeile dazu die Saetze Instandsetzung und Wartung).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -2369,6 +2370,19 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.NudNeuAfaName, KiParameterTyp.Zahl,
                                      KiDialogTexte.NudNeuAfaErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    // ETAPPE E10 (Stufe S3): die zwei Saetze der Neuzeile - Instandsetzung
+                    // und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tab. A2).
+                    new KiDialogFeld("neue_instandsetzung",
+                                     "NutzungsdauerKiSicht.NeueInstandsetzung",
+                                     KiDialogTexte.NudNeuInstandsetzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuInstandsetzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     min: 0, max: 100),
+                    new KiDialogFeld("neue_wartung", "NutzungsdauerKiSicht.NeueWartung",
+                                     KiDialogTexte.NudNeuWartungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuWartungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     min: 0, max: 100),
 
                     // ---- Die Tabelle: je Satz eine Zeile ----------------------------
                     new KiDialogFeld("nutzungsdauer",
@@ -2383,6 +2397,20 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.NudAfaErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
                                      zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("instandsetzung",
+                                     "NutzungsdauerKiSicht.Zeilen[].InstandsetzungProzent",
+                                     KiDialogTexte.NudInstandsetzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudInstandsetzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER,
+                                     min: 0, max: 100),
+                    new KiDialogFeld("wartung",
+                                     "NutzungsdauerKiSicht.Zeilen[].WartungProzent",
+                                     KiDialogTexte.NudWartungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudWartungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER,
+                                     min: 0, max: 100),
                     new KiDialogFeld("quelle", "NutzungsdauerKiSicht.Zeilen[].Quelle",
                                      KiDialogTexte.NudQuelleName, KiParameterTyp.Text,
                                      KiDialogTexte.NudQuelleErl, leerErlaubt: true,

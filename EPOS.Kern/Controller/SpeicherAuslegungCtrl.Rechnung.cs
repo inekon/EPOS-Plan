@@ -37,6 +37,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die projektbezogene BHKW-Vergütung für den Dateiweg; <c>null</c> sonst.</summary>
         public double[] ProjektBhkwVerguetungCtKwh;
+
+        /// <summary>
+        /// ETAPPE E10: die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher als
+        /// Ersatzintervall [a] (<c>SpeicherFlottenStudieCtrl.ErsatzintervallVorgabeJahre</c>);
+        /// 0 = keine.
+        /// </summary>
+        public int ErsatzintervallVorgabeJahre;
     }
 
     /// <summary>
@@ -189,7 +196,10 @@ namespace WindowsFormsApplication1
                 Modulkosten = modulkosten,
                 ProfilAufschlagCtKwh = profilAufschlagCtKwh,
                 ProjektPvVerguetungCtKwh = projektVerguetung?.PvCtKwh,
-                ProjektBhkwVerguetungCtKwh = projektVerguetung?.BhkwCtKwh
+                ProjektBhkwVerguetungCtKwh = projektVerguetung?.BhkwCtKwh,
+                // ETAPPE E10: die Nutzungsdauer der Tabelle für Einheiten ohne eigenes
+                // Ersatzintervall - hier gelesen, weil nur dieser Teil die Datenbank kennt.
+                ErsatzintervallVorgabeJahre = SpeicherFlottenStudieCtrl.ErsatzintervallVorgabeJahre()
             };
         }
 
@@ -215,10 +225,13 @@ namespace WindowsFormsApplication1
             KostenPflicht kostenPflicht = KostenPflicht.Studienlauf)
         {
             ArgumentNullException.ThrowIfNull(quellen);
-            return AusQuellenVorbereiten(quellen.Epos, quellen.Basis, quellen.Kontext,
-                eingaben, quellen.Modulkosten, quellen.ProfilAufschlagCtKwh,
-                quellen.ProjektPvVerguetungCtKwh, quellen.ProjektBhkwVerguetungCtKwh,
-                kostenPflicht);
+            StromspeicherOptimierungVorbereitung v = AusQuellenVorbereiten(quellen.Epos,
+                quellen.Basis, quellen.Kontext, eingaben, quellen.Modulkosten,
+                quellen.ProfilAufschlagCtKwh, quellen.ProjektPvVerguetungCtKwh,
+                quellen.ProjektBhkwVerguetungCtKwh, kostenPflicht);
+            // ETAPPE E10: die beschaffte Nutzungsdauer der Tabelle reist mit in den Lauf.
+            if (v != null) v.ErsatzintervallVorgabeJahre = quellen.ErsatzintervallVorgabeJahre;
+            return v;
         }
 
         /// <summary>

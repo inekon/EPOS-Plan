@@ -2093,6 +2093,61 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Equal(3, cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button").Length);
     }
 
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Auf der BETRIEBSSEITE heißt derselbe Knopf „Sätze
+    /// vorbelegen…" und meldet mit eigenem Text; die Rückfrage vor dem Überschreiben
+    /// abweichender Sätze bleibt dieselbe Bedienung.
+    /// </summary>
+    [Fact]
+    public void Auf_der_Betriebsseite_belegt_der_Knopf_die_Saetze_vor()
+    {
+        var rufe = new List<bool>();
+        KostenKomponenteStand mit = Standard();
+        mit.SaetzeVorbelegbar = true;
+
+        var cut = Zeige(p => p
+            .Add(x => x.NutzungsdauerVorbelegen, (bool u) =>
+            {
+                rufe.Add(u);
+                return u ? new NutzungsdauerVorbelegung(1, 0) : new NutzungsdauerVorbelegung(3, 1);
+            })
+            .Add(x => x.SaetzeVorbelegenStatus, "{0} Sätze vorbelegt")
+            .Add(x => x.SaetzeVorbelegenFrage, "{0} Satz abweichend — überschreiben?"),
+            stand: mit);
+
+        var knopf = cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[3];
+        Assert.Equal("Sätze vorbelegen…", knopf.TextContent.Trim());
+        knopf.Click();
+
+        Assert.Equal(new[] { false }, rufe);
+        Assert.Equal("3 Sätze vorbelegt", cut.Instance.Status);
+        Assert.Contains("1 Satz abweichend", cut.Find(".epos-rueckfrage").TextContent);
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();          // Ja
+        Assert.Equal(new[] { false, true }, rufe);
+        Assert.Equal("4 Sätze vorbelegt", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// ETAPPE E10: Unter dem Satzfeld steht die Herkunftszeile, wenn die
+    /// Nutzungsdauertabelle den Satz stellt — und nur dann.
+    /// </summary>
+    [Fact]
+    public void Die_Herkunftszeile_des_Satzes_steht_unter_dem_Satzfeld()
+    {
+        KostenKomponenteStand mit = Standard();
+        KostenPositionZeile instandhaltung = Zeile(13, "Instandhaltung BHKW", 6.0);
+        instandhaltung.SatzHerleitung =
+            "6 % · Satz aus Nutzungsdauertabelle: Blockheizkraftwerk · Modul (Instandsetzung)";
+        mit.Zeilen = new[] { Zeile(11, "Montage", 1200), instandhaltung };
+
+        var cut = Zeige(stand: mit);
+
+        var zeilen = cut.FindAll(".epos-zr-satzherkunft");
+        Assert.Single(zeilen);
+        Assert.Equal(instandhaltung.SatzHerleitung, zeilen[0].TextContent.Trim());
+    }
+
     // =====================================================================
     // U30 — die Tafel „Ersatz und Restwert"
     // =====================================================================

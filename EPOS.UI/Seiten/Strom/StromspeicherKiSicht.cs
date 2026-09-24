@@ -1040,14 +1040,21 @@ public sealed class FlottenEinheitKiZeile
         set => _einheit.ErsatzkostenEuro = value;
     }
 
-    /// <summary>Ersatzintervall [a].</summary>
+    /// <summary>
+    /// Ersatzintervall = Nutzungsdauer der Einheit [a]; daraus folgt ihr linearer Restwert.
+    /// ETAPPE E10: 0 rechnet mit der Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher.
+    /// </summary>
     public int Ersatzintervall
     {
         get => _einheit.ErsatzintervallJahre;
         set => _einheit.ErsatzintervallJahre = value;
     }
 
-    /// <summary>Restwert der Einheit am Ende der Laufzeit [€].</summary>
+    /// <summary>
+    /// ALTFELD (Etappe E10, Empfehlung E10-Q3 a): ein fester Restwert der Einheit [€] —
+    /// Gerätedaten, nicht mehr rechenwirksam. Der Kapitalwert setzt den Restwert linear aus
+    /// <see cref="Ersatzintervall"/> an; die Feldkarte nennt das in der Erläuterung.
+    /// </summary>
     public double Restwert
     {
         get => _einheit.RestwertEuro;

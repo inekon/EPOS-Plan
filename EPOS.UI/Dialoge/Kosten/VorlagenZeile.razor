@@ -91,6 +91,15 @@
         {
             <span class="epos-herleitung epos-zr-herleitung epos-zr-empfehlung">@EmpfehlungZeile</span>
         }
+        @* ETAPPE E10 (Stufe S3): WOHER der Satz kommt, wenn er der der Nutzungsdauertabelle
+           ist - "2 % . Satz aus Nutzungsdauertabelle: Heizkessel . Waermeerzeuger".
+           Ein LEERES Feld rechnet mit nichts, bis "Saetze vorbelegen..." den Satz
+           eintraegt; dann steht die Zeile. Der Text kommt fertig aus dem Kern
+           (NutzungsdauerSatzCtrl), leer heisst keine Zeile. *@
+        @if (!string.IsNullOrEmpty(SatzHerleitung))
+        {
+            <span class="epos-herleitung epos-zr-herleitung epos-zr-satzherkunft">@SatzHerleitung</span>
+        }
     </div>
 
     <div class="epos-zr-zelle epos-zr-text" title="@BetragTitel">
@@ -221,6 +230,14 @@
     /// (<c>NutzungsdauerCtrl.Herleitungszeile</c>); leer heisst keine Zeile.
     /// </summary>
     [Parameter] public string NutzungsdauerHerleitung { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Die HERKUNFTSZEILE unter dem Satzfeld - "2 % . Satz aus
+    /// Nutzungsdauertabelle: Heizkessel . Waermeerzeuger (Instandsetzung)". Sie kommt
+    /// fertig aus dem Kern (<c>NutzungsdauerSatzCtrl.Herleitungszeile</c>); leer heisst
+    /// keine Zeile.
+    /// </summary>
+    [Parameter] public string SatzHerleitung { get; set; } = "";
 
     // ---- Zustand --------------------------------------------------------
 

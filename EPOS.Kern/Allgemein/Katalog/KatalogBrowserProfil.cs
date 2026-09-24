@@ -76,14 +76,24 @@ namespace WindowsFormsApplication1
     public sealed class BrowserDetailfeld
     {
         public BrowserDetailfeld(string schluessel, string bezeichnung, string einheit = "",
-                                 BrowserFeldArt art = BrowserFeldArt.Text, bool editierbar = false)
+                                 BrowserFeldArt art = BrowserFeldArt.Text, bool editierbar = false,
+                                 string hinweis = "")
         {
             Schluessel = schluessel;
             Bezeichnung = bezeichnung;
             Einheit = einheit ?? "";
             Art = art;
             Editierbar = editierbar;
+            Hinweis = hinweis ?? "";
         }
+
+        /// <summary>
+        /// ETAPPE E10 (Kennzeichnung A8): ein Vermerk zum Feld, bereits uebersetzt — die
+        /// Oberflaeche zeigt ihn als Tooltip der Beschriftung; leer = keiner. Er traegt,
+        /// was die Beschriftung nur andeuten kann (etwa „Geraetedaten — nicht
+        /// rechenwirksam; massgeblich ist die Nutzungsdauertabelle").
+        /// </summary>
+        public string Hinweis { get; }
 
         /// <summary>Sprachneutraler ASCII-Schluessel — zugleich der Zugriff auf den Wert.</summary>
         public string Schluessel { get; }
@@ -419,9 +429,14 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWartungEinheit, t("KESSEL_WARTUNG_EINHEIT_LBL") + ":", "",
                                                   BrowserFeldArt.Text, editierbar: true),
+                            // ETAPPE E10 (Kennzeichnung A8, Empfehlung E10-Q4 a): Geraetedaten,
+                            // nicht rechenwirksam - der Rechenweg nimmt die Nutzungsdauer-
+                            // tabelle. Pflegbar bleibt die Spalte; Beschriftung und Vermerk
+                            // sagen, dass sie nicht rechnet.
                             new BrowserDetailfeld(FeldNutzungsdauer, t("HZKK_LBL_NUTZUNGSDAUER"),
                                                   t("HZKK_EINHEIT_JAHRE"),
-                                                  BrowserFeldArt.Zahl, editierbar: true),
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_ND_GERAETEDATEN_HINWEIS")),
 
                             // Emissionen: Herstellerangabe des Katalogsatzes. Der Lauf
                             // rechnet sie NICHT (W14a-E-8-B1) - er nimmt den
@@ -527,9 +542,11 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl),
                             new BrowserDetailfeld(FeldWartungJeKwhel, t("BHKWK_LBL_WARTUNG"), "€ / kWhel",
                                                   BrowserFeldArt.Zahl, editierbar: true),
+                            // ETAPPE E10 (Kennzeichnung A8): wie beim Heizkessel.
                             new BrowserDetailfeld(FeldNutzungsdauer, t("BHKWK_LBL_NUTZUNGSDAUER"),
                                                   t("HZKK_EINHEIT_JAHRE"),
-                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true,
+                                                  hinweis: t("KBROW_ND_GERAETEDATEN_HINWEIS")),
 
                             // Emissionen: Herstellerangabe, seit W14a-E-8-B1 „nur
                             // Anzeige" im Rechenweg - gepflegt werden sie hier. Die

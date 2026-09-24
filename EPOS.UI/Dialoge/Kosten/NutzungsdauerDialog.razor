@@ -54,6 +54,9 @@
     </div>
 
     <p class="epos-leisezeile">@Texte.LeerHinweis</p>
+    @* ETAPPE E10 (Stufe S3): Die zwei Satzspalten nennen ihre Herkunft in EINER leisen
+       Zeile - VDI 2067 Blatt 1, Tabelle A2 - und wofuer sie gelten. *@
+    <p class="epos-leisezeile epos-nd-saetze">@Texte.SaetzeHinweis</p>
 
     <div class="epos-raster-huelle">
         <table class="epos-raster">
@@ -63,6 +66,8 @@
                     <th>@Texte.SpaltePositionsart</th>
                     <th>@Texte.SpalteNutzungsdauer</th>
                     <th>@Texte.SpalteAfa</th>
+                    <th>@Texte.SpalteInstandsetzung</th>
+                    <th>@Texte.SpalteWartung</th>
                     <th>@Texte.SpalteQuelle</th>
                     <th>@Texte.SpalteAktionen</th>
                 </tr>
@@ -71,7 +76,7 @@
                 @foreach (string gruppe in Gruppen())
                 {
                     <tr class="epos-raster-gruppe">
-                        <th colspan="6" scope="colgroup">@gruppe</th>
+                        <th colspan="8" scope="colgroup">@gruppe</th>
                     </tr>
 
                     @foreach (NutzungsdauerZeileAnzeige z in ZeilenDerGruppe(gruppe))
@@ -99,6 +104,16 @@
                                 <Zahlenfeld Wert="@zeile.AfaSteuerlich" Min="0" Max="200"
                                             Nachkommastellen="1"
                                             WertChanged="@(w => Feld(zeile, () => zeile.AfaSteuerlich = w))" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Wert="@zeile.InstandsetzungProzent" Min="0" Max="100"
+                                            Nachkommastellen="2"
+                                            WertChanged="@(w => Feld(zeile, () => zeile.InstandsetzungProzent = w))" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Wert="@zeile.WartungProzent" Min="0" Max="100"
+                                            Nachkommastellen="2"
+                                            WertChanged="@(w => Feld(zeile, () => zeile.WartungProzent = w))" />
                             </td>
                             <td>
                                 <Textfeld Wert="@zeile.Quelle"
@@ -133,7 +148,7 @@
                        Datenzeile, und weder Auge noch Probe sollen ihn dafuer
                        halten. *@
                     <tr class="epos-raster-leer">
-                        <td colspan="6">@Texte.LeereListe</td>
+                        <td colspan="8">@Texte.LeereListe</td>
                     </tr>
                 }
             </tbody>
@@ -151,6 +166,10 @@
                     Nachkommastellen="1" WertChanged="@(w => _neuWert = w)" />
         <Zahlenfeld Bezeichnung="@Texte.SpalteAfa" Wert="@_neuAfa" Min="0" Max="200"
                     Nachkommastellen="1" WertChanged="@(w => _neuAfa = w)" />
+        <Zahlenfeld Bezeichnung="@Texte.SpalteInstandsetzung" Wert="@_neuInstandsetzung" Min="0"
+                    Max="100" Nachkommastellen="2" WertChanged="@(w => _neuInstandsetzung = w)" />
+        <Zahlenfeld Bezeichnung="@Texte.SpalteWartung" Wert="@_neuWartung" Min="0" Max="100"
+                    Nachkommastellen="2" WertChanged="@(w => _neuWartung = w)" />
         <button type="button" class="epos-knopf" @onclick="Anlegen">@Texte.Neu</button>
     </div>
 
@@ -220,6 +239,8 @@
     private string _neuArt = "";
     private double? _neuWert;
     private double? _neuAfa;
+    private double? _neuInstandsetzung;
+    private double? _neuWartung;
 
     private string _frage = "";
     private Func<Task>? _frageJa;
@@ -266,8 +287,9 @@
     private NutzungsdauerKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten: die fünf Kopffelder und die LEBENDE Zeilenliste,
-    /// über die der Katalog seine drei Spalten auflöst.
+    /// Die Sicht des Assistenten: die sieben Kopffelder und die LEBENDE Zeilenliste,
+    /// über die der Katalog seine fünf Spalten auflöst (Etappe E10: dazu die zwei
+    /// Sätze Instandsetzung und Wartung in Neuzeile und Tabelle).
     /// </summary>
     /// <remarks>
     /// Die Tabelle wird an Ort und Stelle bearbeitet; ihre Zeilen sind veränderlich
@@ -293,6 +315,10 @@
             WertSetzen = w => _neuWert = w,
             AfaLesen = () => _neuAfa,
             AfaSetzen = w => _neuAfa = w,
+            InstandsetzungLesen = () => _neuInstandsetzung,
+            InstandsetzungSetzen = w => _neuInstandsetzung = w,
+            WartungLesen = () => _neuWartung,
+            WartungSetzen = w => _neuWartung = w,
 
             ZeilenLesen = () => _zeilen
         };
@@ -439,7 +465,7 @@
         }
 
         string? grund = AnlegenDelegat(new NutzungsdauerNeuEingabe(
-            _neuTechnik, _neuArt.Trim(), _neuWert, _neuAfa));
+            _neuTechnik, _neuArt.Trim(), _neuWert, _neuAfa, _neuInstandsetzung, _neuWartung));
         if (!string.IsNullOrEmpty(grund))
         {
             Melden(grund!, WarnStufe.Warnung);
@@ -451,6 +477,8 @@
         _neuArt = "";
         _neuWert = null;
         _neuAfa = null;
+        _neuInstandsetzung = null;
+        _neuWartung = null;
         Nachladen();
     }
 

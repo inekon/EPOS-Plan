@@ -1581,6 +1581,15 @@
         internal static string NudAfaErl => MyResource.Resource.KI_DLG_NUD_AFA_ERL;
         internal static string NudQuelleName => MyResource.Resource.KI_DLG_NUD_QUELLE_NAME;
         internal static string NudQuelleErl => MyResource.Resource.KI_DLG_NUD_QUELLE_ERL;
+        // ETAPPE E10 (Stufe S3): die zwei Saetze in Neuzeile und Tabelle.
+        internal static string NudNeuInstandsetzungName => MyResource.Resource.KI_DLG_NUD_NEUINST_NAME;
+        internal static string NudNeuInstandsetzungErl => MyResource.Resource.KI_DLG_NUD_NEUINST_ERL;
+        internal static string NudNeuWartungName => MyResource.Resource.KI_DLG_NUD_NEUWART_NAME;
+        internal static string NudNeuWartungErl => MyResource.Resource.KI_DLG_NUD_NEUWART_ERL;
+        internal static string NudInstandsetzungName => MyResource.Resource.KI_DLG_NUD_INST_NAME;
+        internal static string NudInstandsetzungErl => MyResource.Resource.KI_DLG_NUD_INST_ERL;
+        internal static string NudWartungName => MyResource.Resource.KI_DLG_NUD_WART_NAME;
+        internal static string NudWartungErl => MyResource.Resource.KI_DLG_NUD_WART_ERL;
 
         // ---- Form_VorlagenPosition
         internal static string MaskeVorlagenposition => MyResource.Resource.KI_DLG_MASKE_VOP;

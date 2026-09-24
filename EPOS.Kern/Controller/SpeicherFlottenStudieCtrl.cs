@@ -42,6 +42,8 @@ public static partial class SpeicherFlottenStudieCtrl
     public static SpeicherOptimierungVorgaben Vorbelegung(int projektId, double peak, SimulationControl sim = null)
     {
         var v = SpeicherAuslegungCtrl.Vorbelegung(projektId, peak);
+        // ETAPPE E10: die Nutzungsdauer der Tabelle, die der Editor neben „Ersatzintervall" nennt.
+        v.ErsatzintervallVorgabeJahre = ErsatzintervallVorgabeJahre();
         v.Eingaben.Auslegung ??= new();
         if (v.Eingaben.Auslegung.Flotte != null)
         {
@@ -545,6 +547,12 @@ public static partial class SpeicherFlottenStudieCtrl
             s.InvestitionEuro = 0;
             s.JaehrlicheFixeOpexEuro = 0;
             s.ErsatzkostenEuro = 0;
+            // ETAPPE E10: Das Intervall 0 bekommt in Rechnen die Nutzungsdauer der
+            // Nutzungsdauertabelle (ErsatzintervallAufloesen) - auch hier, wo die
+            // verdeckte Pauschale verworfen ist. Ohne Ersatzkosten bucht die Kette dann
+            // keinen Ersatz, und ein linearer Restwert steht nur, solange die Laufzeit
+            // unter der Nutzungsdauer bleibt. RestwertEuro ist ein Altfeld, das keine
+            // Rechnung mehr liest.
             s.ErsatzintervallJahre = 0;
             s.RestwertEuro = 0;
             s.InvestitionEuroProKw = k.InvestEurProKw;
@@ -556,11 +564,86 @@ public static partial class SpeicherFlottenStudieCtrl
         return f;
     }
 
+    // =====================================================================
+    //  ETAPPE E10: die Nutzungsdauer der Einheiten aus der Nutzungsdauertabelle
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E10 (Nutzungsdauer Stufe S3, Empfehlung E10-Q3 a): das Ersatzintervall einer
+    /// Flotteneinheit OHNE eigene Angabe — die Nutzungsdauer der Standardzeile
+    /// „Stromspeicher" der Nutzungsdauertabelle (Positionsart „Batterie"), auf ganze Jahre
+    /// gerundet. <b>Datenbankzugriff</b> — gerufen im Datenbankteil
+    /// (<c>SpeicherAuslegungCtrl.QuellenBeschaffen</c>, <see cref="Vorbelegung"/>), nie im
+    /// Kandidatenlauf.
+    /// </summary>
+    /// <remarks>
+    /// Eine Wahrheit statt zweier (konsolidiertes Konzept Wirtschaftlichkeit § 2.13 (3),
+    /// § 6.3 Nr. 9h): Die Flotte liest dieselbe Tabelle wie die Kostenpositionen. Die Tabelle führt Jahre mit
+    /// Nachkommastellen, die Ersatzkette der Flotte ganze Jahre
+    /// (<see cref="ErsatzintervallAusNutzungsdauer"/>). Ohne Tabelle, ohne Standardzeile
+    /// oder ohne Wert ist die Vorgabe 0 — dann bleibt es bei „kein Ersatz, kein Restwert",
+    /// und nichts wird erfunden.
+    /// </remarks>
+    /// <returns>Die Vorgabe [a]; 0 = keine.</returns>
+    public static int ErsatzintervallVorgabeJahre()
+    {
+        NutzungsdauerZeile z = NutzungsdauerCtrl.Standard(EndenergieAufloeser.KOMPONENTE_STROMSPEICHER);
+        return ErsatzintervallAusNutzungsdauer(z?.Nutzungsdauer);
+    }
+
+    /// <summary>
+    /// Eine Nutzungsdauer der Tabelle [a] als ganzzahliges Ersatzintervall: kaufmännisch
+    /// gerundet; unter einem Jahr, nicht endlich oder leer ergibt 0.
+    /// </summary>
+    /// <param name="nutzungsdauer">Die Nutzungsdauer der Tabellenzeile.</param>
+    internal static int ErsatzintervallAusNutzungsdauer(double? nutzungsdauer)
+    {
+        if (!nutzungsdauer.HasValue || !double.IsFinite(nutzungsdauer.Value) || nutzungsdauer.Value < 1.0)
+            return 0;
+        return (int)Math.Round(nutzungsdauer.Value, MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>
+    /// ETAPPE E10: setzt die Vorgabe in jede Einheit und jede Achsenvorlage ein, die kein
+    /// eigenes Ersatzintervall trägt (0). <b>Ein gepflegter Wert hat Vorrang</b> und bleibt
+    /// unberührt. Ohne Datenbank — die Vorgabe kommt aus der Vorbereitung.
+    /// </summary>
+    /// <remarks>
+    /// Aus dem Intervall folgen Ersatzkette und linearer Restwert der Einheit
+    /// (<see cref="FlottenWirtschaftlichkeit.LinearerRestwert"/>). Gerufen in
+    /// <see cref="Rechnen"/> auf der Arbeitskopie des Laufs; das Ergebnis trägt die
+    /// eingesetzten Werte in seiner Konfiguration und damit auch in einen daraus
+    /// übernommenen Flottenstand — so, wie es die aufgelösten Kostensätze aus
+    /// <see cref="Konfiguration"/> schon tun.
+    /// </remarks>
+    /// <param name="f">Die Laufkonfiguration; <c>null</c> ändert nichts.</param>
+    /// <param name="vorgabeJahre">Die Vorgabe aus <see cref="ErsatzintervallVorgabeJahre"/>; 0 ändert nichts.</param>
+    /// <returns>Wie viele Einheiten und Vorlagen die Vorgabe bekamen.</returns>
+    public static int ErsatzintervallAufloesen(FlottenStudieKonfiguration f, int vorgabeJahre)
+    {
+        if (f == null || vorgabeJahre <= 0) return 0;
+        IEnumerable<FlottenEinheit> alle = f.Einheiten ?? Enumerable.Empty<FlottenEinheit>();
+        if (f.Auslegung?.Achsen != null)
+            alle = alle.Concat(f.Auslegung.Achsen.Select(x => x?.Vorlage));
+        int gesetzt = 0;
+        foreach (FlottenEinheit s in alle)
+        {
+            if (s == null || s.ErsatzintervallJahre > 0) continue;
+            s.ErsatzintervallJahre = vorgabeJahre;
+            gesetzt++;
+        }
+        return gesetzt;
+    }
+
     public static SpeicherFlottenErgebnis Rechnen(StromspeicherOptimierungVorbereitung v,
         IFlottenPlaner planer, IProgress<FlottenFortschritt> fortschritt, CancellationToken token)
     {
         var input = Eingang(v);
         var f = Konfiguration(v.Eingaben);
+        // ETAPPE E10 (Empfehlung E10-Q3 a): Einheiten und Achsenvorlagen ohne eigenes
+        // Ersatzintervall bekommen die Nutzungsdauer der Nutzungsdauertabelle - beschafft
+        // im Datenbankteil, hier nur eingesetzt; der Kandidatenlauf bleibt ohne Datenbank.
+        ErsatzintervallAufloesen(f, v.ErsatzintervallVorgabeJahre);
         PruefeProjektjahresAbdeckung(input.Projektjahre, f.Wirtschaftlichkeit);
         var result = new SpeicherFlottenErgebnis { Eingaben = v.Eingaben.Kopie(), Konfiguration = f };
         // Vorprüfung VOR der Rechnung (Konzept Stromspeicher-Dialoge 2.4 Punkt 3): Sie sagt,

@@ -1461,6 +1461,25 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 120: die Saetze der Nutzungsdauertabelle (Etappe E10, Stufe S3 des
+            //      Nutzungsdauer-Konzepts). NACH 119; braucht 75 (Tab_Nutzungsdauer).
+            //      REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_120_NutzungsdauerSaetze bedient (NutzungsdauerSaetze):
+            //      die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+            //      Empfehlungsbereichs der Betriebsvorlagen-Saat - gesetzt wird nur, was leer ist.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Basis fuehrt keine Wirtschaftlichkeitsgroesse;
+            //      rechenwirksam wird ein Satz erst in der Satzermittlung der Betriebskosten.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 120 - Saetze der Nutzungsdauertabelle, offen vorher: " +
+                              NutzungsdauerSaetze.Offen() + ".");
+            if (!trocken)
+            {
+                NutzungsdauerSaetze.Bericht bericht120 = NutzungsdauerSaetze.Ausfuehren();
+                Console.WriteLine("Schritt 120 - " + bericht120.Text() + "; offen: " +
+                                  NutzungsdauerSaetze.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

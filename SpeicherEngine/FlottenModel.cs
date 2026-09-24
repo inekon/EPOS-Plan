@@ -537,10 +537,23 @@ public sealed class FlottenEinheit
     /// <summary>Kosten einer Ersatzbeschaffung [EUR]; sie werden im faelligen Jahr in voller Hoehe gebucht.</summary>
     public double ErsatzkostenEuro { get; set; }
 
-    /// <summary>Ersatzintervall [a]; 0 bedeutet „kein Ersatz". Faellig ist jedes Jahr, dessen Nummer ohne Rest durch diesen Wert teilbar ist.</summary>
+    /// <summary>
+    /// Ersatzintervall = Nutzungsdauer der Einheit [a]; 0 bedeutet „keine eigene Angabe".
+    /// Faellig ist jedes Jahr, dessen Nummer ohne Rest durch diesen Wert teilbar ist; aus
+    /// demselben Wert folgt der lineare Restwert
+    /// (<see cref="FlottenWirtschaftlichkeit.LinearerRestwert"/>). ETAPPE E10: Vor einer
+    /// Bewertung setzt der Kern bei 0 die Nutzungsdauer der Nutzungsdauertabelle
+    /// (Stromspeicher, Standardzeile) ein; bleibt es 0, gibt es weder Ersatz noch Restwert.
+    /// </summary>
     public int ErsatzintervallJahre { get; set; }
 
-    /// <summary>Restwert der Einheit [EUR] am Ende der Projektlaufzeit; er wird auf den Bewertungszeitpunkt abgezinst.</summary>
+    /// <summary>
+    /// ALTFELD (Etappe E10, Empfehlung E10-Q3 a): ein fester Restwert der Einheit [EUR] als
+    /// Geraetedatum — <b>nicht mehr rechenwirksam</b>. Der Kapitalwert setzt den Restwert je
+    /// Einheit linear aus <see cref="ErsatzintervallJahre"/> an
+    /// (<see cref="FlottenWirtschaftlichkeit.LinearerRestwert"/>). Das Feld bleibt im
+    /// gespeicherten Stand, damit ein gepflegter Wert nicht verloren geht.
+    /// </summary>
     public double RestwertEuro { get; set; }
 
     /// <summary>
@@ -1408,6 +1421,14 @@ public sealed class FlottenWirtschaftlichkeitErgebnis
 
     /// <summary>Kapitalwert [EUR] gegenueber der Variante ohne Zusatzspeicher: <c>-CAPEX + Summe CF/(1+r)^a + Restwert/(1+r)^n</c>.</summary>
     public double KapitalwertEuro { get; set; }
+
+    /// <summary>
+    /// ETAPPE E10: der Restwert [EUR] am Ende der Laufzeit, NOMINAL — der zusaetzliche
+    /// Restwert der Studie plus der lineare Restwert je Einheit
+    /// (<see cref="FlottenWirtschaftlichkeit.LinearerRestwert"/>); im Kapitalwert steht er
+    /// abgezinst.
+    /// </summary>
+    public double RestwertEuro { get; set; }
 
     /// <summary>Erstes Jahr, in dem der kumulierte DISKONTIERTE Cashflow nicht mehr negativ ist; <c>null</c>, wenn das nie eintritt.</summary>
     public int? DiskontierteAmortisationJahr { get; set; }

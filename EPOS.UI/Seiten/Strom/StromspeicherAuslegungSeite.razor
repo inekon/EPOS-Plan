@@ -211,6 +211,7 @@
                                    EinheitAusKatalog="@Dienste?.EinheitAusKatalog"
                                    EinheitenUebernehmen="@Dienste?.EinheitenUebernehmen"
                                    Schreibgeschuetzt="@(Dienste?.Schreibgeschuetzt?.Invoke() == true)"
+                                   ErsatzintervallVorgabeJahre="@_vorgaben.ErsatzintervallVorgabeJahre"
                                    Uebernommen="UebernahmeGemeldet" />
         }
         else if (_schritt == AuslegungSchritt.Daten)
