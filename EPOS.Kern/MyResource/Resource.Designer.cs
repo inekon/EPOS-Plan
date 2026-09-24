@@ -31337,24 +31337,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht. ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung ähnelt.
-        /// </summary>
-        public static string KI_DLG_GEB_VERWALTUNG_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_VERWENDUNG_ERL {

@@ -173,8 +173,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Die Gebaeudeverwaltung ist eine eigene Komponente mit eigenem Schluessel
-        /// (<see cref="GEBAEUDE_ADMIN"/>); das Feld „verwaltung" dieser Maske meldet deshalb
-        /// immer „nein".
+        /// (<see cref="GEBAEUDE_ADMIN"/>); diese Maske fuehrt deshalb kein Feld, das die
+        /// Betriebsart „Verwaltung" meldete.
         /// </remarks>
         public const string GEBAEUDE = "Form_Gebaeude";
 
@@ -896,12 +896,25 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Schluessel, unter dem die ZIELMASKE der Maske <paramref name="maskenname"/>
         /// (<see cref="KiMaskenziele.Ziel"/>) deren Feld <paramref name="feld"/> fuehrt -
-        /// das erklaerte Gegenstueck eines Katalogeditors in seiner Verwaltung, sonst
-        /// derselbe Schluessel.
+        /// das erklaerte Gegenstueck eines Katalogeditors in seiner Verwaltung, fuer ein
+        /// Feld des Aufklappers „Alle Daten" der Schluessel ohne die Vorsilbe
+        /// <c>katalog_</c>, sonst derselbe Schluessel.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Sprachneutral: Die Antwort haengt nur an Schluesseln und ist deshalb in jeder
         /// Anzeigesprache dieselbe.
+        /// </para>
+        /// <para>
+        /// <b>Nur ERKLAERTE Gegenstuecke</b> (Welle #469): die Tabelle
+        /// <see cref="VERWALTUNGSFELDER"/> und die Vorsilbe
+        /// <see cref="KATALOGFELD_VORSILBE"/> - ein ganzer Schluesselbestandteil, den
+        /// <see cref="AlleDatenFeld"/> selbst vor den Profilschluessel setzt
+        /// (<c>katalog_breite</c> steht im Modulkatalog als <c>breite</c>). Eine
+        /// Aehnlichkeit der Namen erklaert nichts: <c>wr_wirkungsgrad</c> (Wechselrichter)
+        /// ist nicht der <c>wirkungsgrad</c> des Moduls, <c>ladeleistung</c> (Puffer) nicht
+        /// die <c>speicher_ladeleistung</c> der Batterie.
+        /// </para>
         /// </remarks>
         public static string Zielfeldname(string maskenname, string feld)
         {
@@ -912,6 +925,11 @@ namespace WindowsFormsApplication1
                 VERWALTUNGSFELDER.TryGetValue(maskenname, out felder) &&
                 felder.TryGetValue(feld, out profilschluessel))
                 return profilschluessel.ToLowerInvariant();
+
+            string vorsilbe = KATALOGFELD_VORSILBE.ToLowerInvariant();
+            if (feld != null && feld.Length > vorsilbe.Length &&
+                feld.StartsWith(vorsilbe, StringComparison.Ordinal))
+                return feld.Substring(vorsilbe.Length);
 
             return feld;
         }
@@ -3973,15 +3991,15 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Gebaeudemaske — zehn Felder aus
+        /// Die Gebaeudemaske — neun Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Die Maske des PROJEKTS.</b> Projektliste und Katalog stehen nebeneinander (in
         /// den Betriebsarten Projekt und Assistent). Die Gebaeudeverwaltung ist eine eigene
-        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); das Feld
-        /// <c>verwaltung</c> meldet hier deshalb immer „nein".
+        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); ein Feld, das
+        /// hier die Betriebsart „Verwaltung" meldete, gibt es deshalb nicht.
         /// </para>
         /// <para>
         /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
@@ -4036,10 +4054,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("angabeart", "GebaeudeKiSicht.Angabeart",
                                      KiDialogTexte.GebAngabeartName, KiParameterTyp.Text,
                                      KiDialogTexte.GebAngabeartErl,
-                                     leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("verwaltung", "GebaeudeKiSicht.Verwaltung",
-                                     KiDialogTexte.GebVerwaltungName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.GebVerwaltungErl, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

@@ -22000,12 +22000,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
     <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
   </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_NAME" xml:space="preserve">
-    <value>Katalogverwaltung</value>
-  </data>
-  <data name="KI_DLG_GEB_VERWALTUNG_ERL" xml:space="preserve">
-    <value>Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht.</value>
-  </data>
   <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
     <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
   </data>

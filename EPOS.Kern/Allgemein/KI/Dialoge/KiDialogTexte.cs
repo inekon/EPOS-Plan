@@ -976,8 +976,6 @@
         internal static string GebWohnflaecheErl => MyResource.Resource.KI_DLG_GEB_WOHNFLAECHE_ERL;
         internal static string GebAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
         internal static string GebAngabeartErl => MyResource.Resource.KI_DLG_GEB_ANGABEART_ERL;
-        internal static string GebVerwaltungName => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_NAME;
-        internal static string GebVerwaltungErl => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_ERL;
 
         internal static string GebwBedarfsartName => MyResource.Resource.GEBW_LBL_BEDARFSART;
         internal static string GebwBedarfsartErl => MyResource.Resource.KI_DLG_GEBW_BEDARFSART_ERL;

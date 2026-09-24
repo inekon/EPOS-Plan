@@ -1,4 +1,4 @@
-﻿# Darstellung der Reiter „Detaillierte Simulation"
+# Darstellung der Reiter „Detaillierte Simulation"
 
 Stand 10.09.2026 (W11b‑B‑29). Dieses Blatt ist das **Muster**, dem jeder Reiter von
 `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite.razor` folgt — und dem ein neuer Reiter

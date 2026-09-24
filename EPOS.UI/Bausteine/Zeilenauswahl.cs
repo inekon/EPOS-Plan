@@ -38,6 +38,15 @@ public sealed class Zeilenauswahl
     /// <summary>Wie viele Zeilen über das Kästchen gewählt sind.</summary>
     public int Anzahl => Gewaehlte.Count;
 
+    /// <summary>
+    /// <b>Die Fassungsnummer der Übernahmen</b> — jede <see cref="Uebernommen"/> zählt eins
+    /// weiter. Der Wirt reicht sie der <c>Katalogliste</c> als <c>Zeigeanlass</c>: Wechselt
+    /// sie, rollt die Liste die neue Fokuszeile ins Bild, denselben Weg wie nach einem
+    /// Tastenschritt. Nach einem Import steht der neue Satz sonst irgendwo in einer Liste
+    /// von Tausenden, gewählt, aber außer Sicht.
+    /// </summary>
+    public int Uebernahmen { get; private set; }
+
     /// <summary>Die Liste meldet ihre Kästchen — unter zwei endet der Vergleich.</summary>
     public void Setzen(IReadOnlyList<string>? gewaehlte)
     {
@@ -88,7 +97,8 @@ public sealed class Zeilenauswahl
     /// Auswahlleiste sagt „n gewählt", und Vergleichen oder Löschen wirken auf genau sie;
     /// eine einzelne ist als Fokuszeile allein die Wahl („Zeile ist Wahl", wie nach dem
     /// Einlesen einer Klimaregion oder Zeitreihe). Kästchen von vorher fallen, ein Vergleich
-    /// endet. Legt immer eine NEUE Instanz an, damit die Liste nachzieht.
+    /// endet. Legt immer eine NEUE Instanz an, damit die Liste nachzieht, und zählt
+    /// <see cref="Uebernahmen"/> weiter, damit sie die Fokuszeile ins Bild rollt.
     /// </summary>
     /// <param name="neue">Die Schlüssel der neuen Zeilen, die Fokuszeile zuerst.</param>
     public void Uebernommen(IEnumerable<string> neue)
@@ -100,5 +110,6 @@ public sealed class Zeilenauswahl
 
         Gewaehlte = liste.Count >= 2 ? liste : new List<string>();
         Vergleich = false;
+        Uebernahmen++;
     }
 }
