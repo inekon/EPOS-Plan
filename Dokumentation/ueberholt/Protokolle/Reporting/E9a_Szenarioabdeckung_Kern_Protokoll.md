@@ -325,3 +325,5 @@ Energieträgerpreise oder Erlössätze, rechnet jedes Szenario mit seinen Werten
   § 8), Analysepapier (Kopf, Nachtrag, § 0, § 5 mit der Zeile E9, § 6 mit den Schritten 116 bis 118), Mockup (Zone „Was
   ist angenommen?", Ressourcentafel der Kategorie 8, Anhang U15 und U27, Stand-Absatz), Logbuch-Satz und die
   Wiki-Quelle der Seite Wirtschaftlichkeit, Index Reporting.
+
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E9a
