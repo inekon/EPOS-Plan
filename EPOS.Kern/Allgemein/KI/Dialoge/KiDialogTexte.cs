@@ -82,6 +82,12 @@
         /// <summary>Einheit eines kapazitaetsbezogenen Jahresbetrags (Welle KI-F6).</summary>
         internal const string EINHEIT_EURO_KWH_A = "€/(kWh·a)";
 
+        /// <summary>
+        /// Einheit eines monatlichen Leistungspreissatzes (Welle #458 Stufe 3b) — so steht
+        /// sie an den zwoelf Feldern der Leistungspreisreihe.
+        /// </summary>
+        internal const string EINHEIT_EURO_KW_MONAT = "€/(kW·Monat)";
+
 
         /// <summary>Einheit einer Laenge in Metern (Welle KI-F2).</summary>
         internal const string EINHEIT_METER = "m";
@@ -878,6 +884,9 @@
         internal static string QprofBetriebsartErl => MyResource.Resource.KI_DLG_QPROF_BETRIEBSART_ERL;
         internal static string QprofProfilName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_PROFIL;
         internal static string QprofProfilErl => MyResource.Resource.KI_DLG_QPROF_PROFIL_ERL;
+        // Welle #458 Stufe 3b: die zwoelf Monatswerte als Zahlenreihe.
+        internal static string QprofMonatswerteName => MyResource.Resource.SIMQ_QUELLPROFIL_TAB_MONATSWERTE;
+        internal static string QprofMonatswerteErl => MyResource.Resource.KI_DLG_QPROF_MONATSWERTE_ERL;
 
         internal static string WsenZielName => MyResource.Resource.SIM_SPALTE_ZIEL;
         internal static string WsenZielErl => MyResource.Resource.KI_DLG_WSEN_ZIEL_ERL;
@@ -1075,6 +1084,18 @@
         internal static string GebkRechenwegErl => MyResource.Resource.KI_DLG_GEBK_RECHENWEG_ERL;
         internal static string GebkBetriebsartName => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_NAME;
         internal static string GebkBetriebsartErl => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_ERL;
+        // Welle #458 Stufe 3b: die Randbedingung der Bodenplatte im Huell-Raster und die
+        // Ferien als Tabelle (Spalten mit dem Zeitraum als Zeilenkennzeichen).
+        internal static string GebkRandbedingungName => MyResource.Resource.KI_DLG_GEBK_RANDBEDINGUNG_NAME;
+        internal static string GebkRandbedingungErl => MyResource.Resource.KI_DLG_GEBK_RANDBEDINGUNG_ERL;
+        internal static string GebkFerienBeginnTagName => MyResource.Resource.KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME;
+        internal static string GebkFerienBeginnTagErl => MyResource.Resource.KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL;
+        internal static string GebkFerienBeginnMonatName => MyResource.Resource.KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME;
+        internal static string GebkFerienBeginnMonatErl => MyResource.Resource.KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL;
+        internal static string GebkFerienEndeTagName => MyResource.Resource.KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME;
+        internal static string GebkFerienEndeTagErl => MyResource.Resource.KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL;
+        internal static string GebkFerienEndeMonatName => MyResource.Resource.KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME;
+        internal static string GebkFerienEndeMonatErl => MyResource.Resource.KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL;
 
         // ================= Bedarf: Gebaeudebedarf, Typen und Profile (Welle KI-F3)
 
@@ -1109,6 +1130,9 @@
         internal static string GtypKurveErl => MyResource.Resource.KI_DLG_GTYP_KURVE_ERL;
         internal static string GtypBeschreibungName => MyResource.Resource.GTYP_LBL_BESCHREIBUNG;
         internal static string GtypBeschreibungErl => MyResource.Resource.KI_DLG_GTYP_BESCHREIBUNG_ERL;
+        // Welle #458 Stufe 3b: die 24 Stundenwerte der gewaehlten Kurve als Zahlenreihe.
+        internal static string GtypStundenwerteName => MyResource.Resource.KI_DLG_GTYP_STUNDENWERTE_NAME;
+        internal static string GtypStundenwerteErl => MyResource.Resource.KI_DLG_GTYP_STUNDENWERTE_ERL;
 
         internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
         internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;
@@ -1116,6 +1140,9 @@
         internal static string TprofWochentagErl => MyResource.Resource.KI_DLG_TPROF_WOCHENTAG_ERL;
         internal static string TprofBeschreibungName => MyResource.Resource.BPRO_LBL_BESCHR_STROM;
         internal static string TprofBeschreibungErl => MyResource.Resource.KI_DLG_TPROF_BESCHREIBUNG_ERL;
+        // Welle #458 Stufe 3b: die 7 x 24 uebernommenen Wochenwerte als Zahlenreihe.
+        internal static string TprofWochenwerteName => MyResource.Resource.KI_DLG_TPROF_WOCHENWERTE_NAME;
+        internal static string TprofWochenwerteErl => MyResource.Resource.KI_DLG_TPROF_WOCHENWERTE_ERL;
 
         internal static string TstammNameName => MyResource.Resource.BTYP_LBL_NAME;
         internal static string TstammNameErl => MyResource.Resource.KI_DLG_TSTAMM_NAME_ERL;
@@ -1123,6 +1150,9 @@
         internal static string TstammTypErl => MyResource.Resource.KI_DLG_TSTAMM_TYP_ERL;
         internal static string TstammBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
         internal static string TstammBeschreibungErl => MyResource.Resource.KI_DLG_TSTAMM_BESCHREIBUNG_ERL;
+        // Welle #458 Stufe 3b: die zwoelf Monatswerte als Zahlenreihe.
+        internal static string TstammMonatswerteName => MyResource.Resource.BTYP_GRP_MONATE;
+        internal static string TstammMonatswerteErl => MyResource.Resource.KI_DLG_TSTAMM_MONATSWERTE_ERL;
 
         // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
 
@@ -1367,6 +1397,9 @@
         internal static string LprEinheitErl => MyResource.Resource.KI_DLG_LPR_EINHEIT_ERL;
         internal static string LprKontextName => MyResource.Resource.KI_DLG_KONTEXT_NAME;
         internal static string LprKontextErl => MyResource.Resource.KI_DLG_LPR_KONTEXT_ERL;
+        // Welle #458 Stufe 3b: die zwoelf Monatssaetze als Zahlenreihe.
+        internal static string LprMonatssaetzeName => MyResource.Resource.LPR_KOPF_MONATE;
+        internal static string LprMonatssaetzeErl => MyResource.Resource.KI_DLG_LPR_MONATSSAETZE_ERL;
 
         // ---- Form_Kostenprofil
         internal static string KprBezeichnerName => MyResource.Resource.PREIS_PROFIL_LABEL_BEZEICHNER;
@@ -1375,6 +1408,11 @@
         internal static string KprWochentagErl => MyResource.Resource.KI_DLG_KPR_WOCHENTAG_ERL;
         internal static string KprEinheitName => MyResource.Resource.KI_DLG_EINHEIT_NAME;
         internal static string KprEinheitErl => MyResource.Resource.KI_DLG_KPR_EINHEIT_ERL;
+        // Welle #458 Stufe 3b: Monatsniveaus und Wochenabweichungen als Zahlenreihen.
+        internal static string KprMonatswerteName => MyResource.Resource.KI_DLG_KPR_MONATSWERTE_NAME;
+        internal static string KprMonatswerteErl => MyResource.Resource.KI_DLG_KPR_MONATSWERTE_ERL;
+        internal static string KprWochenwerteName => MyResource.Resource.KI_DLG_KPR_WOCHENWERTE_NAME;
+        internal static string KprWochenwerteErl => MyResource.Resource.KI_DLG_KPR_WOCHENWERTE_ERL;
 
         // ---- Die VARIANTE der Kostenverwaltung (Welle KI-F4)
         internal static string KvVarianteName => MyResource.Resource.KDLG_LBL_VARIANTE;

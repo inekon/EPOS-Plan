@@ -2755,15 +2755,15 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die saisonalen Leistungspreis-Saetze — drei Felder aus
+        /// Die saisonalen Leistungspreis-Saetze — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht</c>.
         /// </summary>
         /// <remarks>
-        /// <b>Die zwoelf Monatssaetze bleiben draussen.</b> Sie stehen als Schleife
-        /// ueber ihren Index im Markup und sind damit eine WERTETAFEL - dieselbe
-        /// Regel, mit der die Welle KI-F3 die zwoelf Monatssummen des
-        /// Gebaeudebedarfs ausgelassen hat. Das JAHR dagegen ist der Einstellwert,
-        /// der die ganze Reihe traegt.
+        /// <b>Die zwoelf Monatssaetze sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b):
+        /// ein Feld <c>monatssaetze</c> mit zwoelf Werten, Januar bis Dezember, gesetzt
+        /// mit <c>reihe_setzen</c> ganz oder ab einem Monat. Ihre Grenzen sind die der
+        /// zwoelf Eingabefelder (0 bis 100 000). Das JAHR ist der Einstellwert, der die
+        /// ganze Reihe traegt.
         /// </remarks>
         private static KiDialog Leistungspreisreihe()
         {
@@ -2782,7 +2782,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kontext", "LeistungspreisReiheKiSicht.Kontext",
                                      KiDialogTexte.LprKontextName, KiParameterTyp.Text,
                                      KiDialogTexte.LprKontextErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("monatssaetze", "LeistungspreisReiheKiSicht.Monatssaetze",
+                                     KiDialogTexte.LprMonatssaetzeName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.LprMonatssaetzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_MONAT,
+                                     reihe: KiZahlenreihen.Monate(), min: 0, max: 100000)
                 },
                 knoepfe: new[]
                 {
@@ -2797,16 +2802,23 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Kostenprofil eines Stromtraegers — drei Felder aus
+        /// Das Kostenprofil eines Stromtraegers — fuenf Felder aus
         /// <c>EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht</c>.
         /// </summary>
         /// <remarks>
-        /// <b>Die 36 Zahlenfelder bleiben draussen.</b> Zwoelf Monatswerte und
-        /// 7 × 24 Wochenstunden entstehen aus einer Schleife ueber ihren Index, und
-        /// die Maske pflegt sie mit eigenen Griffen („Jan.-Wert in alle Monate",
-        /// „Tag kopieren", „Tag einfuegen"); der Dateikopf des Dialogs weist sie
-        /// ausdruecklich als nicht feldkartenfaehig aus. Einstellwerte sind der
-        /// BEZEICHNER und der Wochentag, dessen Stundenkurve dasteht.
+        /// <para>
+        /// <b>Die zwei Wertetafeln sind ZAHLENREIHEN</b> (Welle #458 Stufe 3b): die
+        /// zwoelf Monatsniveaus (<c>monatswerte</c>) und die 7 × 24 Abweichungen je
+        /// Wochentag und Stunde (<c>wochenwerte</c>, Montag Stunde 1 bis Sonntag Stunde
+        /// 24). Einzeln waeren es 180 Felder; als Reihe ist jede EIN Feld, gesetzt mit
+        /// <c>reihe_setzen</c> ganz oder ab einer Stelle - „Dienstag" ist die Stelle 25.
+        /// Die Griffe der Maske („Jan.-Wert in alle Monate", „Tag kopieren", „Für alle
+        /// Tage") sind damit ein Aufruf mit der passenden Liste.
+        /// </para>
+        /// <para>
+        /// Einstellwerte daneben sind der BEZEICHNER und der Wochentag, dessen
+        /// Stundenkurve dasteht.
+        /// </para>
         /// </remarks>
         private static KiDialog Kostenprofil()
         {
@@ -2824,7 +2836,17 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("einheit", "KostenprofilKiSicht.Einheit",
                                      KiDialogTexte.KprEinheitName, KiParameterTyp.Text,
                                      KiDialogTexte.KprEinheitErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("monatswerte", "KostenprofilKiSicht.Monatswerte",
+                                     KiDialogTexte.KprMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.KprMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH,
+                                     reihe: KiZahlenreihen.Monate()),
+                    new KiDialogFeld("wochenwerte", "KostenprofilKiSicht.Wochenwerte",
+                                     KiDialogTexte.KprWochenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.KprWochenwerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH,
+                                     reihe: KiZahlenreihen.Wochenstunden())
                 },
                 knoepfe: new[]
                 {
@@ -3296,7 +3318,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Gebaeudetypen-Verwaltung — drei Felder aus
+        /// Die Gebaeudetypen-Verwaltung — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3307,8 +3329,12 @@ namespace WindowsFormsApplication1
         /// Stundenwerte gerade dastehen.
         /// </para>
         /// <para>
-        /// <b>Die 24 Stundenwerte je Kurve bleiben draussen:</b> ein Raster mit eigenem
-        /// Editor. Gepflegt werden sie Feld fuer Feld und gespeichert als Kurve.
+        /// <b>Die 24 Stundenwerte der GEWAEHLTEN Kurve sind EINE ZAHLENREIHE</b>
+        /// (Welle #458 Stufe 3b, <c>stundenwerte</c>, Stunde 1 bis 24): dieselben Zahlen,
+        /// die „Stundenwerte…" zeigt und „Übernehmen" in den Arbeitsstand legt. Eine
+        /// andere Kurve ist ein anderer Stand - die Maske haelt den Kurvenwechsel an,
+        /// solange geaenderte Werte ungespeichert sind, und der Assistent folgt ihr:
+        /// setzen, speichern, dann die naechste Kurve waehlen.
         /// </para>
         /// </remarks>
         private static KiDialog Gebaeudetyp()
@@ -3330,7 +3356,11 @@ namespace WindowsFormsApplication1
                     // ueber Schreibgeschuetzt geschuetzt.
                     new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
                                      KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("stundenwerte", "GebaeudetypKiSicht.Stundenwerte",
+                                     KiDialogTexte.GtypStundenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.GtypStundenwerteErl,
+                                     reihe: KiZahlenreihen.Stunden())
                 },
                 knoepfe: new[]
                 {
@@ -3344,7 +3374,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Wochen-Stundenprofil eines Bedarfstyps — drei Felder aus
+        /// Das Wochen-Stundenprofil eines Bedarfstyps — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3354,8 +3384,11 @@ namespace WindowsFormsApplication1
         /// welche 24 Felder gerade dastehen.
         /// </para>
         /// <para>
-        /// <b>Die 7 x 24 Wochenwerte bleiben draussen:</b> ein Raster mit eigenem
-        /// Editor samt Kopierweg von Tag zu Tag.
+        /// <b>Die 7 x 24 UEBERNOMMENEN Wochenwerte sind EINE ZAHLENREIHE</b> (Welle #458
+        /// Stufe 3b, <c>wochenwerte</c>, Montag Stunde 1 bis Sonntag Stunde 24): der
+        /// Stand, den „Speichern in DB" schreibt. Gesetzt wird er so, wie „Änderungen
+        /// Übernehmen" ihn setzt; die 24 Felder des gezeigten Tages ziehen nach. Ein Tag
+        /// ist ein Ausschnitt ab seiner ersten Stunde (Dienstag = Stelle 25).
         /// </para>
         /// </remarks>
         private static KiDialog Typprofil()
@@ -3373,7 +3406,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TprofWochentagErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "TypProfilKiSicht.Beschreibung",
                                      KiDialogTexte.TprofBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("wochenwerte", "TypProfilKiSicht.Wochenwerte",
+                                     KiDialogTexte.TprofWochenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.TprofWochenwerteErl,
+                                     reihe: KiZahlenreihen.Wochenstunden())
                 },
                 knoepfe: new[]
                 {
@@ -3387,7 +3424,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Kopfsatz eines Bedarfskatalogs — drei Felder an
+        /// Der Kopfsatz eines Bedarfskatalogs — vier Felder an
         /// <c>EPOS.UI.Dialoge.Bedarf.TypStammDaten</c>.
         /// </summary>
         /// <remarks>
@@ -3403,10 +3440,10 @@ namespace WindowsFormsApplication1
         /// Dialog; er reicht sie beim Anmelden als Lieferant herein.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die zwoelf MONATSWERTE:</b> eine Zahlenfolge ohne
-        /// Zeilentyp — ein Katalogfeld traegt EINEN Wert, eine Katalogspalte braucht
-        /// Zeilen mit benannten Eigenschaften. Die Pflichtpruefung ueber alle zwoelf
-        /// steht dem Assistenten trotzdem offen: Sie ist der Haken „Pruefen".
+        /// <b>Die zwoelf MONATSWERTE sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b):
+        /// das Feld <c>monatswerte</c> an <c>TypStammDaten.Monat</c>, derselben Liste,
+        /// an der die zwoelf Eingabefelder haengen. Die Pflichtpruefung ueber alle zwoelf
+        /// bleibt die des Dialogs - der Haken „Pruefen" meldet einen leeren Monat.
         /// </para>
         /// </remarks>
         private static KiDialog Typstamm()
@@ -3425,7 +3462,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TstammTypErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "TypStammDaten.Beschreibung",
                                      KiDialogTexte.TstammBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("monatswerte", "TypStammDaten.Monat",
+                                     KiDialogTexte.TstammMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.TstammMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH,
+                                     reihe: KiZahlenreihen.Monate())
                 },
                 knoepfe: new[]
                 {
@@ -3596,8 +3638,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Gebaeude-Katalogeditor — 51 Felder (darunter die vierzehn Modellparameter
-        /// VDI 6007 der Stufen G1 und G2 samt Rechenweg) aus
+        /// Der Gebaeude-Katalogeditor — 59 Deklarationen (darunter die vierzehn
+        /// Modellparameter VDI 6007 der Stufen G1 und G2 samt Rechenweg, die drei der
+        /// Kuehlung, die Randbedingung der Bodenplatte und die Ferien als vier Spalten) aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht</c>: die groesste Maske des
         /// Katalogs.
         /// </summary>
@@ -3617,12 +3660,27 @@ namespace WindowsFormsApplication1
         /// die Bauweise nach — derselbe Weg, den die Klappliste geht.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die sechzehn FERIENZAHLEN</b> (je vier Zeitraeume Beginn
-        /// und Ende, Tag und Monat): Sie sind zwei Zahlenfolgen ohne Zeilentyp, und ein
-        /// Katalogfeld traegt EINEN Wert. Geprueft werden sie ohnehin nur im Verbund —
-        /// vier Regeln ueber alle acht Paare. Ebenso draussen: die BAUWEISE, die aus
-        /// Bauart und Wohnflaeche gerechnet wird, und die Liste der
-        /// Brauchwasserprofile, die eine eigene Maske pflegt.
+        /// <b>Die sechzehn FERIENZAHLEN sind eine TABELLE</b> (Welle #458 Stufe 3b): vier
+        /// Zeitraeume mit Namen (Winter, Ostern, Sommer, Herbst) und je Beginn und Ende,
+        /// Tag und Monat. Das ist die Spaltenform mit dem Zeitraum als Zeilenkennzeichen
+        /// (<c>ferien_beginn_tag_3</c> heisst „… (Sommer)"), keine Zahlenreihe: Die Zeilen
+        /// tragen Namen, und ein Zeitraum ist mit <c>formular_ausfuellen</c> in einem
+        /// Block gesetzt. Die Grenzen sind die der Eingabefelder (Tag 1 bis 31, Monat 1
+        /// bis 12); die vier Regeln ueber alle acht Paare prueft der Dialog (Haken
+        /// „Pruefen").
+        /// </para>
+        /// <para>
+        /// <b>Das HUELL-RASTER</b> (Bauteil, Kennwert, Groesse, Randbedingung) ist kein
+        /// eigenes Raster fuer den Assistenten: Kennwert und Groesse jeder Zeile binden an
+        /// die Felder <c>u_*</c>, <c>flaeche_*</c>, <c>wbvk_*</c> und <c>anschluss_*</c>
+        /// dieser Liste - eine Spalte daneben waere derselbe Wert unter zweitem Namen. Die
+        /// Groesse der Fensterzeile wird gerechnet (Nord + Sued + Ost + West). Neu ist die
+        /// RANDBEDINGUNG der Bodenplatte, ein Wahlfeld (Erdreich, Keller, Aussenluft) auf
+        /// dem Weg der Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben</b> die BAUWEISE, die aus Bauart und Wohnflaeche gerechnet
+        /// wird, und die Liste der Brauchwasserprofile, die eine eigene Maske pflegt.
         /// </para>
         /// </remarks>
         private static KiDialog GebaeudeKatalog()
@@ -3841,6 +3899,27 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKellertemperaturName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKellertemperaturErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    // ---- Huell-Raster: die Randbedingung der Bodenplatte (Welle #458 3b) --
+                    new KiDialogFeld("randbedingung", "GebaeudeKatalogKiSicht.Randbedingung",
+                                     KiDialogTexte.GebkRandbedingungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkRandbedingungErl),
+                    // ---- Ferien: vier Zeitraeume als Spalten (Welle #458 Stufe 3b) ---------
+                    new KiDialogFeld("ferien_beginn_tag", "GebaeudeKatalogKiSicht.Ferien[].BeginnTag",
+                                     KiDialogTexte.GebkFerienBeginnTagName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienBeginnTagErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 31),
+                    new KiDialogFeld("ferien_beginn_monat", "GebaeudeKatalogKiSicht.Ferien[].BeginnMonat",
+                                     KiDialogTexte.GebkFerienBeginnMonatName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienBeginnMonatErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 12),
+                    new KiDialogFeld("ferien_ende_tag", "GebaeudeKatalogKiSicht.Ferien[].EndeTag",
+                                     KiDialogTexte.GebkFerienEndeTagName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienEndeTagErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 31),
+                    new KiDialogFeld("ferien_ende_monat", "GebaeudeKatalogKiSicht.Ferien[].EndeMonat",
+                                     KiDialogTexte.GebkFerienEndeMonatName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienEndeMonatErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 12),
                     // ---- Kuehlung (Stufe KU1, Kuehlkonzept 8.1) ----------------------------
                     new KiDialogFeld("kuehlung_aktiv", "GebaeudeKatalogKiSicht.KuehlungAktiv",
                                      KiDialogTexte.GebkKuehlungAktivName, KiParameterTyp.Wahrheitswert,
@@ -3980,16 +4059,18 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der KOPF eines Quellprofils — vier Felder aus
+        /// Ein Quellprofil — der Kopf und die zwoelf Monatswerte, fuenf Felder aus
         /// <c>EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Nur der Kopf, und das ist die Aussage.</b> Die zwoelf Monatswerte und die
-        /// 365 bzw. 8 760 Reihenwerte sind Zahlenfolgen ohne Zeilentyp: Ein Katalogfeld
-        /// traegt EINEN Wert, eine Katalogspalte braucht Zeilen mit benannten
-        /// Eigenschaften (<c>KiFeldsammlung</c>). Gepflegt werden sie ohnehin ueber
-        /// „Alle Werte gleich setzen…" und den CSV-Weg und nicht Zelle fuer Zelle.
+        /// <b>Die zwoelf MONATSWERTE sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b,
+        /// <c>monatswerte</c>, Januar bis Dezember, °C) - in der Betriebsart „Monat", in
+        /// der die Maske sie zeigt. Steht eine andere Betriebsart, liest die Reihe leer
+        /// und das Setzen lehnt benannt ab. Die 365 bzw. 8 760 Werte der Betriebsarten
+        /// Tag und Stunde bleiben draussen: Sie sind Zeitreihen, gepflegt ueber „Alle
+        /// Werte gleich setzen…" und den CSV-Weg, und keine Stelle traegt einen Namen,
+        /// den der Anwender auf der Maske liest.
         /// </para>
         /// <para>
         /// <b>Das gewaehlte PROFIL ist ein WAHLFELD</b> (KI-F1b, KI-D-Q6): Seine
@@ -4021,7 +4102,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.QprofBetriebsartErl, leerErlaubt: true),
                     new KiDialogFeld("profil", "QuellprofilKiSicht.Profil",
                                      KiDialogTexte.QprofProfilName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.QprofProfilErl, leerErlaubt: true)
+                                     KiDialogTexte.QprofProfilErl, leerErlaubt: true),
+                    new KiDialogFeld("monatswerte", "QuellprofilKiSicht.Monatswerte",
+                                     KiDialogTexte.QprofMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.QprofMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     reihe: KiZahlenreihen.Monate())
                 },
                 knoepfe: new[]
                 {

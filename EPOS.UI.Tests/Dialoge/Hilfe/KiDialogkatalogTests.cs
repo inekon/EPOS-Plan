@@ -1029,6 +1029,100 @@ public class KiDialogkatalogTests : IDisposable
         Assert.NotNull(d.FindeKnopf("speichern"));
     }
 
+    // ---------------------------------------------------------------------
+    //  Die ZAHLENREIHEN (Welle #458 Stufe 3b)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Die Zahlenfolgen der Masken sind Zahlenreihen</b> — je EIN setzbares Feld mit
+    /// fester Länge und benannten Stellen; die Feldzahl der Maske steht dabei fest.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.TYPPROFIL, "wochenwerte", 168, 4)]
+    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 4)]
+    [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 4)]
+    [InlineData(KiMaskennamen.KOSTENPROFIL, "monatswerte", 12, 5)]
+    [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]
+    [InlineData(KiMaskennamen.LEISTUNGSPREISREIHE, "monatssaetze", 12, 4)]
+    [InlineData(KiMaskennamen.QUELLPROFIL, "monatswerte", 12, 5)]
+    public void Die_Zahlenfolgen_der_Masken_sind_Zahlenreihen(string maske, string feld, int laenge, int felder)
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(maske)!;
+        Assert.Equal(felder, d.Felder.Count);
+
+        KiDialogFeld reihe = d.FindeFeld(feld)!;
+        Assert.NotNull(reihe);
+        Assert.True(reihe.IstReihe);
+        Assert.Equal(KiParameterTyp.ZahlListe, reihe.Typ);
+        Assert.Equal(laenge, reihe.Reihe!.Laenge);
+        Assert.False(reihe.NurLesen);
+        Assert.All(reihe.Reihe.Stellen, s => Assert.False(string.IsNullOrWhiteSpace(s)));
+    }
+
+    /// <summary>
+    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese sieben Reihen an sechs Masken.
+    /// Eine neue Reihe erzwingt einen Blick hierher — und in die Tests ihrer Maske.
+    /// </summary>
+    [Fact]
+    public void Genau_sieben_Zahlenreihen_stehen_im_Katalog()
+    {
+        string[] reihen = KiDialoge.Katalog.Alle
+            .SelectMany(d => d.Felder.Where(f => f.IstReihe).Select(f => d.Maskenname + "." + f.Name))
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            KiMaskennamen.TYPSTAMM + ".monatswerte",
+            KiMaskennamen.TYPPROFIL + ".wochenwerte",
+            KiMaskennamen.GEBAEUDETYP + ".stundenwerte",
+            KiMaskennamen.KOSTENPROFIL + ".monatswerte",
+            KiMaskennamen.KOSTENPROFIL + ".wochenwerte",
+            KiMaskennamen.LEISTUNGSPREISREIHE + ".monatssaetze",
+            KiMaskennamen.QUELLPROFIL + ".monatswerte"
+        }.OrderBy(s => s, StringComparer.Ordinal), reihen);
+    }
+
+    /// <summary>
+    /// <b>Der Gebäudekatalog führt die Randbedingung des Hüll-Rasters und die Ferien als
+    /// TABELLE</b> — Spalten mit dem Zeitraum als Zeilenkennzeichen und den Grenzen der
+    /// Eingabefelder, keine Zahlenreihe; Kennwert und Größe der Rasterzeilen sind die
+    /// Felder der U-Werte und Flächen.
+    /// </summary>
+    [Fact]
+    public void Der_Gebaeudekatalog_fuehrt_Randbedingung_und_Ferientabelle()
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
+
+        // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten.
+        Assert.Equal(59, d.Felder.Count);
+        Assert.DoesNotContain(d.Felder, f => f.IstReihe);
+        Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
+
+        foreach ((string name, double max) in new[]
+                 {
+                     ("ferien_beginn_tag", 31.0), ("ferien_beginn_monat", 12.0),
+                     ("ferien_ende_tag", 31.0), ("ferien_ende_monat", 12.0)
+                 })
+        {
+            KiDialogFeld spalte = d.FindeFeld(name)!;
+            Assert.True(spalte.IstSpalte, name);
+            Assert.Equal("Zeitraum", spalte.Zeilenkennzeichen);
+            Assert.Equal(KiParameterTyp.Ganzzahl, spalte.Typ);
+            Assert.Equal(1.0, spalte.Min);
+            Assert.Equal(max, spalte.Max);
+        }
+
+        foreach (string bauteil in new[]
+                 {
+                     "u_aussenwand", "flaeche_aussenwand", "u_fenster", "u_dachflaeche", "dachflaeche",
+                     "u_grundflaeche", "grundflaeche", "u_sonstiges", "sonstige_flaechen",
+                     "wbvk_fenster_wand", "anschluss_fenster_wand", "wbvk_aussenwand_keller",
+                     "anschluss_aussenwand_keller", "wbvk_wand_dach", "anschluss_wand_dach"
+                 })
+            Assert.True(d.KenntFeld(bauteil), bauteil);
+    }
+
     /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten

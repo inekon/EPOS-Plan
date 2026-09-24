@@ -81,6 +81,20 @@ public sealed class GebaeudeKatalogKiSicht
 
     public Func<string>? BetriebsartLesen { get; init; }
 
+    // ---- Welle #458 Stufe 3b: Randbedingung der Bodenplatte und die Ferien --------
+
+    /// <summary>Liest die Randbedingung der Bodenplatte als Listenplatz (0 Erdreich, 1 Keller, 2 Außenluft).</summary>
+    public Func<int?>? RandbedingungLesen { get; init; }
+
+    /// <summary>Wählt die Randbedingung — derselbe Weg wie die Klappliste im Hüll-Raster.</summary>
+    public Action<int?>? RandbedingungSetzen { get; init; }
+
+    /// <summary>Liefert die drei Randbedingungen der Klappliste.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? RandbedingungEintraege { get; init; }
+
+    /// <summary>Liefert die vier Ferienzeiträume als Zeilen.</summary>
+    public Func<IReadOnlyList<GebaeudeFerienKiZeile>>? FerienLesen { get; init; }
+
     // =====================================================================
     //  Die Einträge der fünf Wahlfelder (KI-D-Q6)
     // =====================================================================
@@ -110,6 +124,10 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Leichte, schwere oder sehr schwere Bauart.</summary>
     public IReadOnlyList<KiWahleintrag> BauartWahl
         => BauartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Erdreich, Keller oder Außenluft; der Schlüssel ist der Listenplatz.</summary>
+    public IReadOnlyList<KiWahleintrag> RandbedingungWahl
+        => RandbedingungEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Kenngrößen — das erste Reiterblatt
@@ -520,4 +538,81 @@ public sealed class GebaeudeKatalogKiSicht
     /// entscheidet, welcher der beiden Speicherwege frei ist.
     /// </summary>
     public string Betriebsart => BetriebsartLesen?.Invoke() ?? "";
+
+    // =====================================================================
+    //  Welle #458 Stufe 3b: das Hüll-Raster und die Ferien
+    // =====================================================================
+
+    /// <summary>
+    /// Die Randbedingung der Bodenplatte im Hüll-Raster — der Listenplatz der Klappliste
+    /// (0 Erdreich, 1 Keller, 2 Außenluft). Kennwert und Größe jeder Rasterzeile sind die
+    /// Felder der U-Werte, Flächen, Wärmebrücken und Anschlussmaße dieser Sicht.
+    /// </summary>
+    public int? Randbedingung
+    {
+        get => RandbedingungLesen?.Invoke();
+        set => RandbedingungSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die vier Ferienzeiträume als TABELLE — Zeilen mit dem Zeitraum als Kennzeichen,
+    /// Spalten Beginn und Ende je Tag und Monat. Die Zellen sind dieselben Felder, an
+    /// denen die Eingaben des Reiters „Raumtemperaturen" hängen.
+    /// </summary>
+    public IReadOnlyList<GebaeudeFerienKiZeile> Ferien
+        => FerienLesen?.Invoke() ?? Array.Empty<GebaeudeFerienKiZeile>();
+}
+
+/// <summary>
+/// EIN Ferienzeitraum des Gebäude-Katalogeditors für den Hilfe-Assistenten (Welle #458
+/// Stufe 3b) — eine Zeile der Tabelle <see cref="GebaeudeKatalogKiSicht.Ferien"/>.
+/// </summary>
+/// <remarks>
+/// <b>Sie hält keinen Zustand:</b> Jede Zelle liest und schreibt über ihren Delegaten die
+/// Felder der Maske (Tag und Monat je Beginn und Ende); zu Jahrestagen werden sie erst im
+/// OK-Weg — derselbe Weg wie bei der Eingabe von Hand.
+/// </remarks>
+public sealed class GebaeudeFerienKiZeile
+{
+    public Func<string>? ZeitraumLesen { get; init; }
+
+    public Func<int?>? BeginnTagLesen { get; init; }
+    public Action<int?>? BeginnTagSetzen { get; init; }
+    public Func<int?>? BeginnMonatLesen { get; init; }
+    public Action<int?>? BeginnMonatSetzen { get; init; }
+    public Func<int?>? EndeTagLesen { get; init; }
+    public Action<int?>? EndeTagSetzen { get; init; }
+    public Func<int?>? EndeMonatLesen { get; init; }
+    public Action<int?>? EndeMonatSetzen { get; init; }
+
+    /// <summary>Der Name des Zeitraums (Winter, Ostern, Sommer, Herbst) — das Zeilenkennzeichen.</summary>
+    public string Zeitraum => ZeitraumLesen?.Invoke() ?? "";
+
+    /// <summary>Tag des Ferienbeginns (1 bis 31); leer = nicht eingetragen.</summary>
+    public int? BeginnTag
+    {
+        get => BeginnTagLesen?.Invoke();
+        set => BeginnTagSetzen?.Invoke(value);
+    }
+
+    /// <summary>Monat des Ferienbeginns (1 bis 12); leer = nicht eingetragen.</summary>
+    public int? BeginnMonat
+    {
+        get => BeginnMonatLesen?.Invoke();
+        set => BeginnMonatSetzen?.Invoke(value);
+    }
+
+    /// <summary>Tag des Ferienendes (1 bis 31); leer = nicht eingetragen.</summary>
+    public int? EndeTag
+    {
+        get => EndeTagLesen?.Invoke();
+        set => EndeTagSetzen?.Invoke(value);
+    }
+
+    /// <summary>Monat des Ferienendes (1 bis 12); leer = nicht eingetragen.</summary>
+    public int? EndeMonat
+    {
+        get => EndeMonatLesen?.Invoke();
+        set => EndeMonatSetzen?.Invoke(value);
+    }
 }

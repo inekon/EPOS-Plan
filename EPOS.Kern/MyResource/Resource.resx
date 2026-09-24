@@ -8541,6 +8541,12 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
     <value>Zahlenreihe ({0}); gesetzt wird sie mit reihe_setzen.</value>
   </data>
+  <data name="KI_DLG_REIHE_STUNDE" xml:space="preserve">
+    <value>Stunde {0}</value>
+  </data>
+  <data name="KI_DLG_REIHE_WOCHENSTUNDE" xml:space="preserve">
+    <value>{0}, Stunde {1}</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>Text</value>
   </data>
@@ -21892,6 +21898,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
     <value>Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit.</value>
   </data>
+  <data name="KI_DLG_QPROF_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monats-Mitteltemperaturen der Wärmequelle, Januar bis Dezember – nur in der Betriebsart „Monat“; jeder Wert ist Pflicht beim Speichern.</value>
+  </data>
+  <data name="KI_DLG_QPROF_NICHT_MONAT" xml:space="preserve">
+    <value>Die Monatswerte gelten in der Betriebsart „Monat“; gewählt ist „{0}“. Zuerst die Betriebsart umstellen.</value>
+  </data>
   <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
     <value>Der Pufferspeicher, den diese Senke lädt. Es gibt ihn nur, wenn das Ziel ein Pufferplatz ist; jeder Speicher darf nur einmal Ziel sein.</value>
   </data>
@@ -22147,6 +22159,36 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
   </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
+    <value>Randbedingung Bodenplatte</value>
+  </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_ERL" xml:space="preserve">
+    <value>Woran die Bodenplatte grenzt: Erdreich, Keller (dann mit Kellertemperatur) oder Außenluft.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME" xml:space="preserve">
+    <value>Ferien Anfang, Tag</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL" xml:space="preserve">
+    <value>Der Tag des Monats, an dem der Ferienzeitraum beginnt (1 bis 31).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME" xml:space="preserve">
+    <value>Ferien Anfang, Monat</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL" xml:space="preserve">
+    <value>Der Monat, in dem der Ferienzeitraum beginnt (1 bis 12).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME" xml:space="preserve">
+    <value>Ferien Ende, Tag</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL" xml:space="preserve">
+    <value>Der Tag des Monats, an dem der Ferienzeitraum endet (1 bis 31); die Winterferien gehen über die Jahresgrenze.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME" xml:space="preserve">
+    <value>Ferien Ende, Monat</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL" xml:space="preserve">
+    <value>Der Monat, in dem der Ferienzeitraum endet (1 bis 12).</value>
+  </data>
   <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
     <value>Wärmebedarf eines Gebäudes</value>
   </data>
@@ -22186,6 +22228,15 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar.</value>
   </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_NAME" xml:space="preserve">
+    <value>Stundenwerte der Kurve</value>
+  </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
+    <value>Die 24 Stundenwerte der gewählten Tageskurve im Arbeitsstand, Stunde 1 bis 24 – dieselben, die „Stundenwerte…“ zeigt. Geschrieben wird mit „Speichern“; solange geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an.</value>
+  </data>
+  <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
+    <value>Der gewählte Gebäudetyp führt keine Tageskurve; zuerst einen Typ mit Kurven wählen.</value>
+  </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
   </data>
@@ -22195,6 +22246,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank.</value>
   </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Wochenwerte</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>Die 7 × 24 übernommenen Stundenwerte der Woche, Montag Stunde 1 bis Sonntag Stunde 24 – der Stand, den „Speichern in DB“ schreibt; die Felder des gezeigten Tages ziehen nach.</value>
+  </data>
   <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
     <value>Der Bezeichner des Katalogsatzes; die Maske zeigt ihn gesperrt. Ein anderer Name entsteht über „Speichern unter“.</value>
   </data>
@@ -22203,6 +22260,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Freitext zum Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monatswerte, Januar bis Dezember; jeder ist Pflicht, bevor gespeichert werden kann.</value>
   </data>
   <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
     <value>Bedarfsprofile im Projekt</value>
@@ -22477,14 +22537,29 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
     <value>Zu welchem Energieträger die Reihe gehört — Anzeige.</value>
   </data>
+  <data name="KI_DLG_LPR_MONATSSAETZE_ERL" xml:space="preserve">
+    <value>Die zwölf Leistungspreis-Sätze des Jahres, Januar bis Dezember; „Übernehmen“ schreibt die Reihe.</value>
+  </data>
   <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Name des Kostenprofils. Unter ihm steht es im Katalog und in der Trägerkarte.</value>
   </data>
   <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
-    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen.</value>
+    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst stehen in der Zahlenreihe „Abweichung je Wochentag und Stunde“.</value>
   </data>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige.</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_NAME" xml:space="preserve">
+    <value>Preisniveau je Monat</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monatsniveaus des Profils, Januar bis Dezember; die Stundenabweichungen werden zu ihnen addiert.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Abweichung je Wochentag und Stunde</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>Die 7 × 24 Abweichungen, Montag Stunde 1 bis Sonntag Stunde 24; sie werden zum Monatsniveau addiert und dürfen negativ sein.</value>
   </data>
   <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
     <value>Die Vorlagenvariante, deren Positionen die Tabelle zeigt — nur im Stammkontext. Sie zu wechseln lädt einen anderen Positionssatz und ist deshalb kein Feldwert; der Assistent nennt sie und die Alternativen, setzen lässt sie sich hier nicht.</value>

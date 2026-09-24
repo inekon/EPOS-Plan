@@ -12,8 +12,10 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// WOCHENTAG gehört ohnehin der Komponente — er entscheidet, welche 24 Felder gerade
 /// dastehen.</para>
 ///
-/// <para><b>Die 7 × 24 Wochenwerte bleiben draußen</b>: Sie sind ein Raster mit eigenem
-/// Editor samt Kopierweg von Tag zu Tag. Gesetzt wird hier, WELCHER Tag offen steht.</para>
+/// <para><b>Die 7 × 24 ÜBERNOMMENEN Wochenwerte sind EINE Zahlenreihe</b> (Welle #458
+/// Stufe 3b, <see cref="Wochenwerte"/>): Montag Stunde 1 bis Sonntag Stunde 24 — der
+/// Stand, den „Speichern in DB" schreibt. Setzen heißt dasselbe wie Tippen und
+/// „Änderungen Übernehmen"; die 24 Felder des gezeigten Tages ziehen nach.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
 /// Delegaten.</para>
@@ -32,6 +34,12 @@ public sealed class TypProfilKiSicht
 
     public Func<string>? BeschreibungLesen { get; init; }
     public Action<string>? BeschreibungSetzen { get; init; }
+
+    /// <summary>Liest die 168 übernommenen Wochenwerte, Montag Stunde 1 zuerst.</summary>
+    public Func<double?[]?>? WochenwerteLesen { get; init; }
+
+    /// <summary>Legt die 168 Wochenwerte als übernommenen Stand ab.</summary>
+    public Action<double?[]>? WochenwerteSetzen { get; init; }
 
     /// <summary>Liefert die Typen, die die Liste der Maske führt.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? TypEintraege { get; init; }
@@ -76,5 +84,15 @@ public sealed class TypProfilKiSicht
     {
         get => BeschreibungLesen?.Invoke() ?? "";
         set => BeschreibungSetzen?.Invoke(value ?? "");
+    }
+
+    /// <summary>
+    /// Die Zahlenreihe der 168 übernommenen Wochenwerte (Welle #458 Stufe 3b) — die
+    /// Stelle (Tag − 1) · 24 + Stunde, Montag Stunde 1 ist die erste.
+    /// </summary>
+    public double?[]? Wochenwerte
+    {
+        get => WochenwerteLesen?.Invoke();
+        set { if (value is not null) WochenwerteSetzen?.Invoke(value); }
     }
 }

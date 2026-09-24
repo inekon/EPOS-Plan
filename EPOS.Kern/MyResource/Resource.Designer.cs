@@ -30563,6 +30563,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, in dem der Ferienzeitraum beginnt (1 bis 12). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Anfang, Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tag des Monats, an dem der Ferienzeitraum beginnt (1 bis 31). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Anfang, Tag ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, in dem der Ferienzeitraum endet (1 bis 12). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Ende, Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tag des Monats, an dem der Ferienzeitraum endet (1 bis 31); die Winterferien gehen über die Jahresgrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Ende, Tag ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Norden. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_FF_NORD_ERL {
@@ -30739,6 +30811,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_RAHMENANTEIL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_RAHMENANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woran die Bodenplatte grenzt: Erdreich, Keller (dann mit Kellertemperatur) oder Außenluft. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RANDBEDINGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RANDBEDINGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung Bodenplatte ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RANDBEDINGUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RANDBEDINGUNG_NAME", resourceCulture);
             }
         }
         
@@ -31207,6 +31297,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GTYP_KURVE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GTYP_KURVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Gebäudetyp führt keine Tageskurve; zuerst einen Typ mit Kurven wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_OHNE_KURVE {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_OHNE_KURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 24 Stundenwerte der gewählten Tageskurve im Arbeitsstand, Stunde 1 bis 24 – dieselben, die „Stundenwerte…“ zeigt. Geschrieben wird mit „Speichern“; solange geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_STUNDENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_STUNDENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte der Kurve ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_STUNDENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_STUNDENWERTE_NAME", resourceCulture);
             }
         }
         
@@ -31823,11 +31940,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monatsniveaus des Profils, Januar bis Dezember; die Stundenabweichungen werden zu ihnen addiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_MONATSWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisniveau je Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_MONATSWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_MONATSWERTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst stehen in der Zahlenreihe „Abweichung je Wochentag und Stunde“. ähnelt.
         /// </summary>
         public static string KI_DLG_KPR_WOCHENTAG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KPR_WOCHENTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 7 × 24 Abweichungen, Montag Stunde 1 bis Sonntag Stunde 24; sie werden zum Monatsniveau addiert und dürfen negativ sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_WOCHENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_WOCHENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung je Wochentag und Stunde ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_WOCHENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_WOCHENWERTE_NAME", resourceCulture);
             }
         }
         
@@ -32125,6 +32278,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_LPR_KONTEXT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_LPR_KONTEXT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Leistungspreis-Sätze des Jahres, Januar bis Dezember; „Übernehmen“ schreibt die Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LPR_MONATSSAETZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LPR_MONATSSAETZE_ERL", resourceCulture);
             }
         }
         
@@ -34262,6 +34424,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monats-Mitteltemperaturen der Wärmequelle, Januar bis Dezember – nur in der Betriebsart „Monat“; jeder Wert ist Pflicht beim Speichern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_MONATSWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatswerte gelten in der Betriebsart „Monat“; gewählt ist „{0}“. Zuerst die Betriebsart umstellen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_NICHT_MONAT {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_NICHT_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit. ähnelt.
         /// </summary>
         public static string KI_DLG_QPROF_PROFIL_ERL {
@@ -34379,11 +34559,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_STUNDE {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt {0}. ähnelt.
         /// </summary>
         public static string KI_DLG_REIHE_UMFANG {
             get {
                 return ResourceManager.GetString("KI_DLG_REIHE_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Stunde {1} ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_WOCHENSTUNDE {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_WOCHENSTUNDE", resourceCulture);
             }
         }
         
@@ -36665,11 +36863,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 7 × 24 übernommenen Stundenwerte der Woche, Montag Stunde 1 bis Sonntag Stunde 24 – der Stand, den „Speichern in DB“ schreibt; die Felder des gezeigten Tages ziehen nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenwerte ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENWERTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_TSTAMM_BESCHREIBUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TSTAMM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monatswerte, Januar bis Dezember; jeder ist Pflicht, bevor gespeichert werden kann. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_MONATSWERTE_ERL", resourceCulture);
             }
         }
         
