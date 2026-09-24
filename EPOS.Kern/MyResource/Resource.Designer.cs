@@ -77553,7 +77553,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. ähnelt.
         /// </summary>
         public static string ZPG_HINW_SEED {
             get {

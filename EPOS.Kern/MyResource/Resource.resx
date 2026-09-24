@@ -25798,7 +25798,7 @@ Möchten Sie das zulassen?</value>
     <value>Zufallssaat (Seed)</value>
   </data>
   <data name="ZPG_HINW_SEED" xml:space="preserve">
-    <value>Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe.</value>
+    <value>Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung.</value>
   </data>
   <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
     <value>Realisierungen</value>

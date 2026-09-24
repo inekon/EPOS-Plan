@@ -284,7 +284,7 @@ public sealed class ZapfprofilTexte
     public string LabelSeed { get; set; } = "Zufallssaat (Seed)";
 
     /// <summary><c>ZPG_HINW_SEED</c></summary>
-    public string HinweisSeed { get; set; } = "Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe.";
+    public string HinweisSeed { get; set; } = "Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung.";
 
     /// <summary><c>ZPG_LBL_REALISIERUNGEN</c></summary>
     public string LabelRealisierungen { get; set; } = "Realisierungen";

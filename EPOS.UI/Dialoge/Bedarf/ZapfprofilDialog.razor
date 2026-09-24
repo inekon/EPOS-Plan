@@ -29,7 +29,8 @@
    Speichern verworfen (ZapfprofilEingabeDaten.PunktUeberholt); eine leise Zeile sagt es.
 
    STOCHASTIK (Stufe Z3). Die Stufe Experte zeigt die Gruppe "Stochastik": den Rechenweg der
-   Jahresreihe (deterministisch | stochastisch) und bei "stochastisch" Seed und Realisierungen
+   Jahresreihe (deterministisch | stochastisch), den Seed (er gilt auch fuer das Ensemble der
+   Auslegung, darum immer) und bei "stochastisch" die Realisierungen der Jahresreihe
    (Ganzzahlfelder mit den Grenzen aus Schema und Kern; leer = Vorgabe der DDL). Die Vorschau
    bleibt deterministisch (5.1) - bei "stochastisch" sagt eine leise Zeile darunter, dass die
    Jahresreihe erst im Lauf stochastisch entsteht.
@@ -232,12 +233,17 @@
                                                    Auswahl="@(_eingabe.JahresreiheStochastisch ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH)"
                                                    AuswahlChanged="RechenwegSetzen" />
                                     <Herleitungszeile Text="@Texte.HinweisRechenwegJahresreihe" />
-                                    @if (_eingabe.JahresreiheStochastisch && _stufe == ZapfprofilStufe.Experte)
+                                    @* Der Seed gilt auch für das Ensemble der Auslegung — in Experte immer sichtbar;
+                                       nur die Jahre der Jahresreihe hängen am Rechenweg „stochastisch". *@
+                                    @if (_stufe == ZapfprofilStufe.Experte)
                                     {
                                         <Ganzzahlfeld Bezeichnung="@Texte.LabelSeed" Feldname="@Texte.LabelSeed" Min="0"
                                                       Wert="@_eingabe.Seed" WertChanged="SeedSetzen"
                                                       Platzhalter="@Klammer(Daten.SeedVorgabe)" FehlerZustand="FehlerZustandMelden" />
                                         <Herleitungszeile Text="@Format(Texte.HinweisSeed, Ganz(Daten.SeedVorgabe))" />
+                                    }
+                                    @if (_eingabe.JahresreiheStochastisch && _stufe == ZapfprofilStufe.Experte)
+                                    {
                                         <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
                                                       Einheit="@Texte.EinheitJahre" Min="@Daten.RealisierungenMindestens"
                                                       Max="@Daten.RealisierungenHoechstens"
@@ -917,7 +923,8 @@
         bool stochastisch = id == RECHENWEG_STOCHASTISCH;
         if (_eingabe.JahresreiheStochastisch == stochastisch) return;
         _eingabe.JahresreiheStochastisch = stochastisch;
-        if (!stochastisch) _fehlfelder.Clear();
+        // Nur das Feld, das verschwindet, nimmt seine Fehleingabe mit — der Seed bleibt stehen.
+        if (!stochastisch) _fehlfelder.Remove(Texte.LabelRealisierungen);
         Geaendert();
     }
 

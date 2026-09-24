@@ -25791,7 +25791,7 @@ Do you want to allow this?</value>
     <value>Random seed</value>
   </data>
   <data name="ZPG_HINW_SEED" xml:space="preserve">
-    <value>Whole number from 0 · empty = default {0}; the same seed draws the same series on every platform.</value>
+    <value>Whole number from 0 · empty = default {0}; the same seed draws the same series on every platform — for the annual series and the design ensemble.</value>
   </data>
   <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
     <value>Realisations</value>

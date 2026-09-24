@@ -322,12 +322,13 @@ public class ZapfprofilDialogTests : EposBunitContext
 
     /// <summary>
     /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte (Erweitert ist noch
-    /// gesperrt), Seed und Realisierungen nur bei „stochastisch" — mit der Vorgabe als Platzhalter
+    /// gesperrt), dazu immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
+    /// Realisierungen der Jahresreihe nur bei „stochastisch"; mit der Vorgabe als Platzhalter
     /// und den Grenzen aus Schema und Kern. Die Stufe blendet nur aus: Zurück in Einfach bleibt
     /// der Rechenweg, und der Zähler zählt ihn.
     /// </summary>
     [Fact]
-    public void Experte_zeigt_den_Rechenweg_und_bei_stochastisch_Seed_und_Realisierungen()
+    public void Experte_zeigt_Rechenweg_und_Seed_und_bei_stochastisch_die_Realisierungen()
     {
         var gesehen = new List<ZapfprofilEingabeDaten>();
         var cut = Aufbauen(vorschau: e => { gesehen.Add(e); return Vorschau(e); });
@@ -341,7 +342,8 @@ public class ZapfprofilDialogTests : EposBunitContext
                      cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe'] .epos-feld-text").Select(x => x.TextContent).ToArray());
         Assert.True(Option(cut, "deterministisch").HasAttribute("checked"));
         Assert.Contains("Wählt nur, welche Reihe in die Bilanz geht", cut.Markup);
-        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));                  // der Seed auch deterministisch
+        Assert.Contains("— für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
         Assert.False(HatFeld(cut, "Realisierungen"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschau-deterministisch"));
 
@@ -353,7 +355,8 @@ public class ZapfprofilDialogTests : EposBunitContext
                      + "mit derselben Jahresmenge.", cut.Find(".epos-zapfprofil-vorschau-deterministisch").TextContent);
         Assert.Equal("(1)", Feld(cut, "Zufallssaat (Seed)").GetAttribute("placeholder"));
         Assert.Equal("(10)", Feld(cut, "Realisierungen").GetAttribute("placeholder"));
-        Assert.Contains("Ganze Zahl ab 0 · leer = Vorgabe 1; derselbe Seed zieht auf jeder Plattform dieselbe Reihe.", cut.Markup);
+        Assert.Contains("Ganze Zahl ab 0 · leer = Vorgabe 1; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — "
+                        + "für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
         Assert.Contains("Ganze Zahl von 1 bis 1000 · leer = Vorgabe 10; die gezogenen Jahre prüfen nur die Konsistenz.", cut.Markup);
         Assert.Contains("Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.", cut.Markup);
         Assert.Contains("3 Werte überschrieben", cut.Markup);            // 2 der Zone + der Rechenweg
@@ -417,6 +420,33 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(20, ergebnis!.Eingabe.Realisierungen);
     }
 
+    /// <summary>
+    /// Umschalten leert nur die eigenen Fehlfelder: „deterministisch" nimmt die Realisierungen samt
+    /// Fehleingabe weg, der Seed bleibt stehen — seine Fehleingabe hält das OK weiter an.
+    /// </summary>
+    [Fact]
+    public void Der_Rechenweg_leert_nur_die_Fehleingabe_der_Realisierungen()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+        Feld(cut, "Zufallssaat (Seed)").Input("-1");
+        Feld(cut, "Realisierungen").Input("5000");
+
+        Option(cut, "deterministisch").Change("0");
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Zufallssaat (Seed)").ClassName);
+        Knopf(cut, "OK").Click();
+        Assert.Null(ergebnis);
+        Assert.Equal("Bitte die markierten Felder berichtigen: Zufallssaat (Seed).", cut.Instance.OkMeldung);
+
+        Feld(cut, "Zufallssaat (Seed)").Input("4");
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(4, ergebnis!.Eingabe.Seed);
+    }
+
     /// <summary>Das Ergebnis eines Laufs der Jahresreihe (erfunden): stochastisch, Seed 3, vier Jahre.</summary>
     private static ZapfprofilVorschauDaten Gezogen(ZapfprofilEingabeDaten e, params ZapfprofilMeldung[] meldungen)
     {
@@ -459,7 +489,11 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Stochastik · noch nicht gerechnet", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
         Knopf(cut, "Stochastisch rechnen").Click();
         Assert.True(Assert.Single(gezogen).JahresreiheStochastisch);
-        cut.WaitForAssertion(() => Assert.Same(v, cut.Instance.StochastikErgebnis));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Same(v, cut.Instance.StochastikErgebnis);
+            Assert.Contains("Stochastik · Jahresreihe zum Seed 3", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        });
         Assert.False(cut.Instance.AktuelleVorschau!.Stochastisch);                // die Vorschau bleibt deterministisch
         string tabelle = cut.Find("table.epos-zapfprofil-kennzahlen").TextContent;
         Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", tabelle);
@@ -540,12 +574,17 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Wohnen A", cut.Find("table.epos-zapfprofil-zonen").TextContent);   // die Vorschau steht weiter
 
         // Abbrechen am Fortschritt: die Marke erreicht den Lauf, eine leise Zeile nennt den Abbruch.
+        // Das Ende kommt auf einem anderen Faden: erst der gezeichnete Zustand zählt (EPOS.UI/CLAUDE.md, Tests).
         cut.Find(".epos-fortschritt-abbruch").Click();
         Assert.True(laeufe[0].Marke.IsCancellationRequested);
-        cut.WaitForAssertion(() => Assert.False(cut.Instance.JahresreiheLaeuft));
-        Assert.Equal("Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.", cut.Instance.Hinweis);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.False(cut.Instance.JahresreiheLaeuft);
+            Assert.Equal("Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.",
+                         cut.Find(".epos-zapfprofil-hinweis").TextContent);
+            Assert.Empty(cut.FindAll(".epos-fortschritt"));
+        });
         Assert.Null(cut.Instance.StochastikErgebnis);
-        Assert.Empty(cut.FindAll(".epos-fortschritt"));
 
         // Eine Eingabe während des Laufs verwirft ihn — sein spätes Ergebnis bleibt draußen.
         Knopf(cut, "Stochastisch rechnen").Click();
@@ -557,9 +596,12 @@ public class ZapfprofilDialogTests : EposBunitContext
         // Ein vollendeter Lauf: das Ergebnis per InvokeAsync, der Kopf nennt Seed und Jahre.
         Knopf(cut, "Stochastisch rechnen").Click();
         laeufe[2].Ende.SetResult(Gezogen(cut.Instance.Eingabe));
-        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.StochastikErgebnis));
-        Assert.False(cut.Instance.JahresreiheLaeuft);
-        Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.NotNull(cut.Instance.StochastikErgebnis);
+            Assert.False(cut.Instance.JahresreiheLaeuft);
+            Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        });
 
         // OK beendet einen laufenden Lauf; die Jahresreihe zieht der Lauf der Simulation.
         Knopf(cut, "Stochastisch rechnen").Click();

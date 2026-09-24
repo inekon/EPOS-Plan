@@ -984,10 +984,14 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Equal("Auslegung rechnet … · Ensemble des Bedarfstags", cut.Find(".epos-fortschritt-text").TextContent);
         Assert.NotNull(cut.Find(".epos-zapfausl-karte--haupt"));            // (a) bleibt stehen
 
+        // Das Ende kommt auf einem anderen Faden: erst der gezeichnete Zustand zählt (EPOS.UI/CLAUDE.md, Tests).
         laeufe[0].Ende.SetResult(ErgebnisZu(laeufe[0].Eingabe));
-        cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".epos-zapfausl-streuband")));
-        Assert.False(cut.Instance.EnsembleLaeuft);
-        Assert.Empty(cut.FindAll(".epos-fortschritt"));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
+            Assert.False(cut.Instance.EnsembleLaeuft);
+            Assert.Empty(cut.FindAll(".epos-fortschritt"));
+        });
 
         // Eine Eingabe startet einen neuen Lauf; Abbrechen am Fortschritt schaltet aus und rechnet deterministisch nach.
         Feld(cut, "Speichertemperatur").Input("55");
@@ -995,12 +999,16 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.True(cut.Instance.EnsembleLaeuft);
         cut.Find(".epos-fortschritt-abbruch").Click();
         Assert.True(laeufe[1].Marke.IsCancellationRequested);
-        cut.WaitForAssertion(() => Assert.False(cut.Instance.EnsembleLaeuft));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.False(cut.Instance.EnsembleLaeuft);
+            Assert.Equal("Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.",
+                         cut.Find(".epos-zapfausl-hinweis").TextContent);
+            Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));            // Karte (b) wieder offen
+            Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
+        });
         Assert.False(cut.Instance.Eingabe.Stochastisch);
-        Assert.Equal("Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.", cut.Instance.Hinweis);
         Assert.False(Assert.Single(imZeichenlauf).Stochastisch);
-        Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));                // Karte (b) wieder offen
-        Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
 
         // OK während eines Laufs: Der Lauf endet, der Punkt kommt aus der deterministischen Rechnung.
         Feld(cut, "Stochastisch rechnen").Change(true);
