@@ -227,6 +227,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Bilanzgrenze, Kalender, Ferienfaktor und Monatsfaktoren (Schleifen je einmal gezählt).
         new("TwwNutzungsartAdminDialog", 0),
         new("TwwNutzungsartEditor", 13),
+        // Zapfprofil Z4b, Gruppe 2: der Dialog der eingespielten VDI-4655-Typtage zeigt den Stand
+        // und den Pruefbericht; die Paketwahl ist ein Dateidialog, Einspielen und Loeschen sind
+        // Handlungen - kein Einstellwert.
+        new("TwwTyptagImportDialog", 0),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
@@ -244,8 +248,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 55, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
-            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht")
+        new("ZapfprofilDialog", 58, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht. " +
+            "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart")
     };
 
     /// <summary>

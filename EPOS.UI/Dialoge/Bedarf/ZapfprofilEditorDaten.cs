@@ -193,4 +193,11 @@ public sealed class ZapfprofilKatalogstandDaten
 {
     public List<ZapfprofilNutzungsartDaten> Katalog { get; set; } = new();
     public List<ZapfprofilKatalogeintragDaten> Tagesgangsaetze { get; set; } = new();
+
+    /// <summary>
+    /// Der eingespielte Stand der Typtage (Stufe Z4b): Nach dem Dialog „VDI-4655-Typtage" liest
+    /// der Zapfprofil-Dialog ihn mit dem Katalog neu — die Wahllisten der Klimazone und der
+    /// Gebäudeart ziehen nach.
+    /// </summary>
+    public TwwTyptagStandDaten Typtagstand { get; set; } = new();
 }

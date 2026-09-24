@@ -117,6 +117,9 @@ namespace WindowsFormsApplication1
                 ["TagesgangGaben"] = new Func<int, int?, IReadOnlyDictionary<string, object>>(TagesgangGaben),
                 ["KategorienGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(KategorienGaben),
                 ["Katalogstand"] = new Func<ZapfprofilKatalogstandDaten>(Katalogstand),
+                // Der Dialog "VDI-4655-Typtage" (Stufe Z4b): Einspielen und Loeschen schreiben
+                // sofort; danach liest der Dialog den Katalogstand samt Typtagstand neu.
+                ["TyptagGaben"] = new Func<IReadOnlyDictionary<string, object>>(TyptagGaben),
                 ["Ladevorschlag"] = new Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten>(e => Ladevorschlag(idProjekt, e, basis)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
@@ -149,6 +152,7 @@ namespace WindowsFormsApplication1
             if (!verfuegbar.Ja) return daten;
 
             StochastikRahmen(daten);
+            daten.Typtagstand = TyptagStand();
             daten.Katalog = Katalog();
             HoehereStufen(daten, idProjekt);
             daten.Vorschau = Vorschau(idProjekt, daten.Eingabe, stand);
@@ -253,6 +257,10 @@ namespace WindowsFormsApplication1
                 e.Seed = p.Seed;
                 e.Realisierungen = p.Realisierungen;
                 e.Gebaeude = AlsGebaeude(p);
+                // Die Wahl des Typtagwegs (Stufe Z4b, Schritt 125) - eine Groesse des Projekts.
+                e.TyptageAktiv = p.TyptageAktiv;
+                e.TyptageKlimazone = p.TyptageKlimazone;
+                e.TyptageGebaeudeart = p.TyptageGebaeudeart ?? "";
             }
             e.AnzeigetemperaturC = stand?.Anzeige?.AnzeigetemperaturC;
             e.SchwelleKw = stand?.Anzeige?.SchwelleKw;
@@ -295,6 +303,37 @@ namespace WindowsFormsApplication1
                 && basis.Realisierungen == realisierungen)
                 return p;
             return basis with { JahresreiheStochastisch = e.JahresreiheStochastisch, Seed = seed, Realisierungen = realisierungen };
+        }
+
+        /// <summary>
+        /// <b>Die Projektgrößen mit der Wahl des Typtagwegs aus dem Dialog</b> (Stufe Z4b, Gruppe 2;
+        /// Schritt 125): Typtagweg ja/nein, Klimazone und Gebäudeart. Weicht nichts ab, bleibt die
+        /// Basis dieselbe Instanz; ohne Projektzeile entsteht eine aus den Vorgaben der DDL nur,
+        /// wenn der Dialog den Typtagweg überhaupt will (Muster <see cref="MitStochastik"/>).
+        ///
+        /// <para><b>Gespeichert wird die WAHL</b>, nie ein Wert der Typtage. Eine leere Gebäudeart
+        /// ist „keine Wahl" und wird als <c>null</c> weitergegeben.</para>
+        /// </summary>
+        internal static ProjektStand MitTyptagwahl(ProjektStand p, ZapfprofilEingabeDaten e)
+        {
+            if (e == null) return p;
+            string art = string.IsNullOrWhiteSpace(e.TyptageGebaeudeart) ? null : e.TyptageGebaeudeart.Trim();
+            ProjektStand basis = p;
+            if (basis == null)
+            {
+                if (!e.TyptageAktiv && !e.TyptageKlimazone.HasValue && art == null) return null;
+                basis = ZapfprofilCtrl.ProjektVorgabe();
+                if (basis == null) return null;
+            }
+            if (basis.TyptageAktiv == e.TyptageAktiv && basis.TyptageKlimazone == e.TyptageKlimazone
+                && string.Equals(basis.TyptageGebaeudeart ?? "", art ?? "", StringComparison.Ordinal))
+                return p;
+            return basis with
+            {
+                TyptageAktiv = e.TyptageAktiv,
+                TyptageKlimazone = e.TyptageKlimazone,
+                TyptageGebaeudeart = art
+            };
         }
 
         /// <summary>
@@ -582,6 +621,10 @@ namespace WindowsFormsApplication1
             // Die Stochastik der Jahresreihe (Z3, Stufe Experte): Rechenweg, Seed, Realisierungen —
             // was der Dialog nicht ändert, bleibt die Projektzeile der Basis.
             ProjektStand projekt = MitStochastik(basis?.Projekt, eingabe);
+
+            // Die Wahl des Typtagwegs (Z4b, Stufe Experte): Typtagweg ja/nein, Klimazone und
+            // Gebaeudeart - eine Groesse des Projekts; die eingespielten Werte selbst reisen nie.
+            projekt = MitTyptagwahl(projekt, eingabe);
 
             // Die Auslegung (Z2): Mit OK der Überlagerung trägt der Arbeitsstand ihre Eingaben samt
             // Punkt — sie gehen in die Projektgrößen, ein konstruierter Tag als Entwurf mit; ohne
@@ -1796,6 +1839,13 @@ namespace WindowsFormsApplication1
             t.LabelAuslastungsgang = Text_("ZPG_LBL_AUSLASTUNGSGANG", t.LabelAuslastungsgang);
             t.HinweisAuslastungsgang = Text_("ZPG_HINW_AUSLASTUNGSGANG", t.HinweisAuslastungsgang);
             t.LabelTagesgangsatz = Text_("ZPG_LBL_TAGESGANGSATZ", t.LabelTagesgangsatz);
+            t.GruppeTyptage = Text_("ZPG_GRP_TYPTAGE", t.GruppeTyptage);
+            t.LabelTyptageAktiv = Text_("ZPG_LBL_TYPTAGE_AKTIV", t.LabelTyptageAktiv);
+            t.LabelTyptageZone = Text_("ZPG_LBL_TYPTAGE_ZONE", t.LabelTyptageZone);
+            t.LabelTyptageGebaeudeart = Text_("ZPG_LBL_TYPTAGE_GEBAEUDEART", t.LabelTyptageGebaeudeart);
+            t.HinweisTyptage = Text_("ZPG_HINW_TYPTAGE", t.HinweisTyptage);
+            t.HinweisTyptageOhne = Text_("ZPG_HINW_TYPTAGE_OHNE", t.HinweisTyptageOhne);
+            t.KnopfTyptage = Text_("ZPG_BTN_TYPTAGE", t.KnopfTyptage);
             t.TagesgangsatzVorgabe = Text_("ZPG_TAGESGANGSATZ_VORGABE", t.TagesgangsatzVorgabe);
             t.HinweisTagesgangsatz = Text_("ZPG_HINW_TAGESGANGSATZ", t.HinweisTagesgangsatz);
             t.KnopfTagesgang = Text_("ZPG_BTN_TAGESGANG", t.KnopfTagesgang);

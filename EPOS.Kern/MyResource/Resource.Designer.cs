@@ -38933,11 +38933,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudearten, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_ARTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_ARTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ausgabe, die das eingespielte Paket nennt. Nur Anzeige; leer = ohne Angabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_AUSGABE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_AUSGABE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was die Prüfung des gewählten Pakets ergeben hat — die Ablehnung mit Datei und Zeile oder die Zusammenfassung. Nur Anzeige; leer = es wurde nichts geprüft. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_BERICHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_BERICHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tag, an dem das Paket eingespielt wurde. Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_DATUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_DATUM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum der Typtagweg nicht verfügbar ist. Nur Anzeige; leer = er ist verfügbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grund der Sperre ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_GRUND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_GRUND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion der eigenen Kopie — nur, wenn die Nutzungsart gesperrt ist und als Kopie bearbeitet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGT_KATALOGVERSION_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPGT_KATALOGVERSION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle, die das eingespielte Paket nennt. Nur Anzeige; leer = es ist nichts eingespielt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_QUELLE_ERL", resourceCulture);
             }
         }
         
@@ -38974,6 +39037,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZPGT_WOCHENFAKTOREN_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPGT_WOCHENFAKTOREN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der eingespielten Zeilen. Nur Anzeige; 0 = es ist nichts eingespielt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_ZEILEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_ZEILEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimazonen, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGT_ZONEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGT_ZONEN_ERL", resourceCulture);
             }
         }
         
@@ -39370,6 +39451,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZPG_TOPOLOGIE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_TOPOLOGIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des eingespielten Pakets, mit der das Projekt rechnet. Nur eine, die das Paket führt; Stufe Experte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TYPTAGART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TYPTAGART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet der Jahresgang jeder Zone über die eingespielten Typtage statt über die Faktoren des Katalogs? Eine Angabe des Projekts, nur in der Stufe Experte; ohne eingespielte Typtage abgelehnt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TYPTAGEWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TYPTAGEWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimazone des eingespielten Pakets, mit der das Projekt rechnet. Nur eine Nummer, die das Paket führt; Stufe Experte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TYPTAGZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TYPTAGZONE_ERL", resourceCulture);
             }
         }
         
@@ -78642,6 +78750,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-4655-Typtage… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die markierten Eingaben berichtigen: {0} ähnelt.
         /// </summary>
         public static string ZPGK_ED_FEHLEINGABE {
@@ -79529,6 +79646,303 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGK_WERT_SATZ_VOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("ZPGK_WERT_SATZ_VOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket ist abgelehnt: {0} ähnelt.
+        /// </summary>
+        public static string ZPGT_ABBRUCH {
+            get {
+                return ResourceManager.GetString("ZPGT_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string ZPGT_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("ZPGT_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspielen ähnelt.
+        /// </summary>
+        public static string ZPGT_BTN_EINSPIELEN {
+            get {
+                return ResourceManager.GetString("ZPGT_BTN_EINSPIELEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ZPGT_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ZPGT_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket wählen… ähnelt.
+        /// </summary>
+        public static string ZPGT_BTN_PAKET {
+            get {
+                return ResourceManager.GetString("ZPGT_BTN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtagpaket (*.zip;*.csv)|*.zip;*.csv|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string ZPGT_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("ZPGT_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket ist schon eingespielt ({0} Zeilen). Das neue ersetzt es vollständig. Einspielen? ähnelt.
+        /// </summary>
+        public static string ZPGT_FRAGE_ERSETZEN {
+            get {
+                return ResourceManager.GetString("ZPGT_FRAGE_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielten Typtage werden entfernt; danach ist der Typtagweg nicht mehr verfügbar. Löschen? ähnelt.
+        /// </summary>
+        public static string ZPGT_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ZPGT_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfung des Pakets ähnelt.
+        /// </summary>
+        public static string ZPGT_GRP_PRUEFUNG {
+            get {
+                return ResourceManager.GetString("ZPGT_GRP_PRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespielter Stand ähnelt.
+        /// </summary>
+        public static string ZPGT_GRP_STAND {
+            get {
+                return ResourceManager.GetString("ZPGT_GRP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ähnelt.
+        /// </summary>
+        public static string ZPGT_HINWEISE {
+            get {
+                return ResourceManager.GetString("ZPGT_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt. ähnelt.
+        /// </summary>
+        public static string ZPGT_HINWEIS_FORMAT {
+            get {
+                return ResourceManager.GetString("ZPGT_HINWEIS_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Programm bringt keine Werte der Richtlinie mit. Die Typtage spielt der lizenzierte Anwender aus seinem eigenen Paket ein; sie bleiben in dieser Datenbank und gehen weder in die Auslieferung noch in einen Projekttransfer. ähnelt.
+        /// </summary>
+        public static string ZPGT_HINWEIS_LIZENZ {
+            get {
+                return ResourceManager.GetString("ZPGT_HINWEIS_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Paket gewählt. ähnelt.
+        /// </summary>
+        public static string ZPGT_KEIN_PAKET {
+            get {
+                return ResourceManager.GetString("ZPGT_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster der Tagesgänge ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_AUFLOESUNG {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_AUFLOESUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgabe ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_AUSGABE {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_AUSGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespielt am ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_DATUM {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudearten ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_GEBAEUDEARTEN {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_GEBAEUDEARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_ZEILEN {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_ZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazonen ähnelt.
+        /// </summary>
+        public static string ZPGT_LBL_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPGT_LBL_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es sind keine Typtage eingespielt — ohne sie ist der Typtagweg des Jahresgangs nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string ZPGT_LEER {
+            get {
+                return ResourceManager.GetString("ZPGT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeile(n) eingespielt, {1} ersetzt. ähnelt.
+        /// </summary>
+        public static string ZPGT_MSG_EINGESPIELT {
+            get {
+                return ResourceManager.GetString("ZPGT_MSG_EINGESPIELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeile(n) entfernt. ähnelt.
+        /// </summary>
+        public static string ZPGT_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("ZPGT_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es war nichts zu löschen. ähnelt.
+        /// </summary>
+        public static string ZPGT_MSG_NICHTS {
+            get {
+                return ResourceManager.GetString("ZPGT_MSG_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angabe ähnelt.
+        /// </summary>
+        public static string ZPGT_SP_ANGABE {
+            get {
+                return ResourceManager.GetString("ZPGT_SP_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPGT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPGT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-4655-Typtage ähnelt.
+        /// </summary>
+        public static string ZPGT_TITEL {
+            get {
+                return ResourceManager.GetString("ZPGT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket der Typtage wählen ähnelt.
+        /// </summary>
+        public static string ZPGT_WAHL_TITEL {
+            get {
+                return ResourceManager.GetString("ZPGT_WAHL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe ähnelt.
+        /// </summary>
+        public static string ZPGT_WERT_OHNE {
+            get {
+                return ResourceManager.GetString("ZPGT_WERT_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Tagesform kommt aus dem Tagesgangsatz der Zone ähnelt.
+        /// </summary>
+        public static string ZPGT_WERT_OHNE_GAENGE {
+            get {
+                return ResourceManager.GetString("ZPGT_WERT_OHNE_GAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket trägt {0} Klimazone(n), {1} Gebäudeart(en) und {2} Typtag(e) — {3} Zeile(n). ähnelt.
+        /// </summary>
+        public static string ZPGT_ZUSAMMENFASSUNG {
+            get {
+                return ResourceManager.GetString("ZPGT_ZUSAMMENFASSUNG", resourceCulture);
             }
         }
         
@@ -82377,6 +82791,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI-4655-Typtage… ähnelt.
+        /// </summary>
+        public static string ZPG_BTN_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_BTN_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Als manuellen Wert übernehmen ähnelt.
         /// </summary>
         public static string ZPG_BTN_VORSCHLAG {
@@ -82643,6 +83066,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_GRP_STOCHASTIK {
             get {
                 return ResourceManager.GetString("ZPG_GRP_STOCHASTIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage nach VDI 4655 ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_TYPTAGE", resourceCulture);
             }
         }
         
@@ -83057,6 +83489,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_TOPOLOGIE {
             get {
                 return ResourceManager.GetString("ZPG_HINW_TOPOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_TYPTAGE_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_TYPTAGE_OHNE", resourceCulture);
             }
         }
         
@@ -84308,6 +84758,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_LBL_TOPOLOGIE {
             get {
                 return ResourceManager.GetString("ZPG_LBL_TOPOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage nach VDI 4655 rechnen ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_TYPTAGE_AKTIV {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_TYPTAGE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_TYPTAGE_GEBAEUDEART {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_TYPTAGE_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_TYPTAGE_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_TYPTAGE_ZONE", resourceCulture);
             }
         }
         

@@ -28888,6 +28888,141 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE" xml:space="preserve">
     <value>die Klimazone der Typtage</value>
   </data>
+  <data name="ZPGT_TITEL" xml:space="preserve">
+    <value>VDI-4655-Typtage</value>
+  </data>
+  <data name="ZPGT_HINWEIS_LIZENZ" xml:space="preserve">
+    <value>Das Programm bringt keine Werte der Richtlinie mit. Die Typtage spielt der lizenzierte Anwender aus seinem eigenen Paket ein; sie bleiben in dieser Datenbank und gehen weder in die Auslieferung noch in einen Projekttransfer.</value>
+  </data>
+  <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
+    <value>Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt.</value>
+  </data>
+  <data name="ZPGT_GRP_STAND" xml:space="preserve">
+    <value>Eingespielter Stand</value>
+  </data>
+  <data name="ZPGT_GRP_PRUEFUNG" xml:space="preserve">
+    <value>Prüfung des Pakets</value>
+  </data>
+  <data name="ZPGT_LEER" xml:space="preserve">
+    <value>Es sind keine Typtage eingespielt — ohne sie ist der Typtagweg des Jahresgangs nicht verfügbar.</value>
+  </data>
+  <data name="ZPGT_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPGT_LBL_AUSGABE" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
+  <data name="ZPGT_LBL_DATUM" xml:space="preserve">
+    <value>Eingespielt am</value>
+  </data>
+  <data name="ZPGT_LBL_ZONEN" xml:space="preserve">
+    <value>Klimazonen</value>
+  </data>
+  <data name="ZPGT_LBL_GEBAEUDEARTEN" xml:space="preserve">
+    <value>Gebäudearten</value>
+  </data>
+  <data name="ZPGT_LBL_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
+  </data>
+  <data name="ZPGT_LBL_AUFLOESUNG" xml:space="preserve">
+    <value>Zeitraster der Tagesgänge</value>
+  </data>
+  <data name="ZPGT_LBL_ZEILEN" xml:space="preserve">
+    <value>Zeilen</value>
+  </data>
+  <data name="ZPGT_SP_ANGABE" xml:space="preserve">
+    <value>Angabe</value>
+  </data>
+  <data name="ZPGT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE" xml:space="preserve">
+    <value>ohne Angabe</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
+    <value>keine — die Tagesform kommt aus dem Tagesgangsatz der Zone</value>
+  </data>
+  <data name="ZPGT_BTN_PAKET" xml:space="preserve">
+    <value>Paket wählen…</value>
+  </data>
+  <data name="ZPGT_BTN_EINSPIELEN" xml:space="preserve">
+    <value>Einspielen</value>
+  </data>
+  <data name="ZPGT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ZPGT_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ZPGT_DATEIFILTER" xml:space="preserve">
+    <value>Typtagpaket (*.zip;*.csv)|*.zip;*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="ZPGT_WAHL_TITEL" xml:space="preserve">
+    <value>Paket der Typtage wählen</value>
+  </data>
+  <data name="ZPGT_KEIN_PAKET" xml:space="preserve">
+    <value>Es ist kein Paket gewählt.</value>
+  </data>
+  <data name="ZPGT_ABBRUCH" xml:space="preserve">
+    <value>Das Paket ist abgelehnt: {0}</value>
+  </data>
+  <data name="ZPGT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Das Paket trägt {0} Klimazone(n), {1} Gebäudeart(en) und {2} Typtag(e) — {3} Zeile(n).</value>
+  </data>
+  <data name="ZPGT_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="ZPGT_FRAGE_ERSETZEN" xml:space="preserve">
+    <value>Ein Paket ist schon eingespielt ({0} Zeilen). Das neue ersetzt es vollständig. Einspielen?</value>
+  </data>
+  <data name="ZPGT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die eingespielten Typtage werden entfernt; danach ist der Typtagweg nicht mehr verfügbar. Löschen?</value>
+  </data>
+  <data name="ZPGT_MSG_EINGESPIELT" xml:space="preserve">
+    <value>{0} Zeile(n) eingespielt, {1} ersetzt.</value>
+  </data>
+  <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} Zeile(n) entfernt.</value>
+  </data>
+  <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
+    <value>Es war nichts zu löschen.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_QUELLE_ERL" xml:space="preserve">
+    <value>Die Quelle, die das eingespielte Paket nennt. Nur Anzeige; leer = es ist nichts eingespielt.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_AUSGABE_ERL" xml:space="preserve">
+    <value>Die Ausgabe, die das eingespielte Paket nennt. Nur Anzeige; leer = ohne Angabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_DATUM_ERL" xml:space="preserve">
+    <value>Der Tag, an dem das Paket eingespielt wurde. Nur Anzeige.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZONEN_ERL" xml:space="preserve">
+    <value>Die Klimazonen, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ARTEN_ERL" xml:space="preserve">
+    <value>Die Gebäudearten, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZEILEN_ERL" xml:space="preserve">
+    <value>Die Zahl der eingespielten Zeilen. Nur Anzeige; 0 = es ist nichts eingespielt.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_NAME" xml:space="preserve">
+    <value>Grund der Sperre</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_ERL" xml:space="preserve">
+    <value>Warum der Typtagweg nicht verfügbar ist. Nur Anzeige; leer = er ist verfügbar.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_BERICHT_ERL" xml:space="preserve">
+    <value>Was die Prüfung des gewählten Pakets ergeben hat — die Ablehnung mit Datei und Zeile oder die Zusammenfassung. Nur Anzeige; leer = es wurde nichts geprüft.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGEWEG_ERL" xml:space="preserve">
+    <value>Rechnet der Jahresgang jeder Zone über die eingespielten Typtage statt über die Faktoren des Katalogs? Eine Angabe des Projekts, nur in der Stufe Experte; ohne eingespielte Typtage abgelehnt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGZONE_ERL" xml:space="preserve">
+    <value>Die Klimazone des eingespielten Pakets, mit der das Projekt rechnet. Nur eine Nummer, die das Paket führt; Stufe Experte.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart des eingespielten Pakets, mit der das Projekt rechnet. Nur eine, die das Paket führt; Stufe Experte.</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen.</value>
   </data>
@@ -29382,6 +29517,27 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
     <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_GRP_TYPTAGE" xml:space="preserve">
+    <value>Typtage nach VDI 4655</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_AKTIV" xml:space="preserve">
+    <value>Typtage nach VDI 4655 rechnen</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_ZONE" xml:space="preserve">
+    <value>Klimazone</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE" xml:space="preserve">
+    <value>Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE_OHNE" xml:space="preserve">
+    <value>Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein.</value>
+  </data>
+  <data name="ZPG_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI-4655-Typtage…</value>
   </data>
   <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
     <value>Satz der Nutzungsart</value>
@@ -30180,6 +30336,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
     <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI-4655-Typtage…</value>
   </data>
   <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>

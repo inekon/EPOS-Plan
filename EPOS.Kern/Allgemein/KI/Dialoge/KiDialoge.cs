@@ -276,6 +276,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TWW_NUTZUNGSART_EDITOR = "TwwNutzungsartEditor";
 
+        /// <summary>
+        /// Der Dialog „VDI-4655-Typtage" (<c>TwwTyptagImportDialog</c>, Zapfprofilgenerator 4.2) —
+        /// die Ueberlagerung hinter „VDI-4655-Typtage…" im Katalogdialog und in der Stufe Experte
+        /// des Zapfprofils. Sie zeigt den eingespielten Stand; Einspielen und Loeschen bleiben
+        /// Klicks des Anwenders.
+        /// </summary>
+        public const string BRAUCHWASSER_TYPTAGE = "Form_Brauchwasser_Typtage";
+
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
         // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
@@ -727,6 +735,7 @@ namespace WindowsFormsApplication1
                 Zapfkategorien(),
                 BrauchwasserNutzungsarten(),
                 TwwNutzungsartEditor(),
+                BrauchwasserTyptage(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -3459,7 +3468,20 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("realisierungen", ZAPFPROFIL_SICHT + ".Realisierungen",
                                      KiDialogTexte.ZpgRealisierungenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ZpgRealisierungenErl,
-                                     einheit: KiDialogTexte.ZpgEinheitJahre, leerErlaubt: true)
+                                     einheit: KiDialogTexte.ZpgEinheitJahre, leerErlaubt: true),
+
+                    // ---- Die Wahl des TYPTAGWEGS (Stufe Experte, Z4b) ----------------
+                    // Eine Groesse des PROJEKTS: Ohne eingespielte Typtage lehnt die Maske
+                    // benannt ab - dieselbe Sperre wie am Schalter des Dialogs.
+                    new KiDialogFeld("typtageweg", ZAPFPROFIL_SICHT + ".Typtageweg",
+                                     KiDialogTexte.ZpgTyptagewegName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.ZpgTyptagewegErl),
+                    new KiDialogFeld("typtagzone", ZAPFPROFIL_SICHT + ".Typtagzone",
+                                     KiDialogTexte.ZpgTyptagzoneName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgTyptagzoneErl, leerErlaubt: true),
+                    new KiDialogFeld("typtagart", ZAPFPROFIL_SICHT + ".Typtagart",
+                                     KiDialogTexte.ZpgTyptagartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgTyptagartErl, leerErlaubt: true)
                 }
                 .Concat(ZapfprofilHoehereStufen())
                 .ToArray(),
@@ -3975,6 +3997,66 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("sperrgrund", TWW_KATALOG_SICHT + ".Sperrgrund",
                                      KiDialogTexte.ZpgkSperrgrundName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgkSperrgrundErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>Der Typname der Sichtklasse des Dialogs der Typtage (<c>EPOS.UI.Dialoge.Bedarf.TwwTyptagImportKiSicht</c>).</summary>
+        private const string TWW_TYPTAG_SICHT = "TwwTyptagImportKiSicht";
+
+        /// <summary>
+        /// Der Dialog „VDI-4655-Typtage" — acht ANZEIGEN aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TwwTyptagImportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung ohne Einstellwert</b>: Der Dialog zeigt den eingespielten Stand und
+        /// den Bericht der Pruefung; geschrieben wird ueber „Einspielen" und „Loeschen" — Handlungen,
+        /// die Zeilen anlegen oder wegnehmen und Klicks des Anwenders bleiben (KI-D-Q11). Auch die
+        /// PAKETWAHL bleibt beim Anwender: Ein Dateipfad ist keine Eingabe, die ein Assistent setzen
+        /// darf. Freigegeben sind deshalb allein Anzeigen, damit <c>dialog_lesen</c> nennt, was
+        /// eingespielt ist und was die Pruefung ergeben hat.
+        /// </para>
+        /// <para>
+        /// <b>Kein Wert der Richtlinie</b>: Quelle, Ausgabe, Tag des Einspielens, Zonen,
+        /// Gebaeudearten und die Zahl der Zeilen sagen, was eingespielt IST — nie, wie gross ein
+        /// Faktor ist (Konzept Kapitel 6).
+        /// </para>
+        /// </remarks>
+        private static KiDialog BrauchwasserTyptage()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BRAUCHWASSER_TYPTAGE,
+                anzeigename: KiDialogTexte.MaskeBrauchwasserTyptage,
+                felder: new[]
+                {
+                    new KiDialogFeld("quelle", TWW_TYPTAG_SICHT + ".Quelle",
+                                     KiDialogTexte.ZpgtQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtQuelleErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("ausgabe", TWW_TYPTAG_SICHT + ".Ausgabe",
+                                     KiDialogTexte.ZpgtAusgabeName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtAusgabeErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("importdatum", TWW_TYPTAG_SICHT + ".Importdatum",
+                                     KiDialogTexte.ZpgtDatumName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtDatumErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("klimazonen", TWW_TYPTAG_SICHT + ".Klimazonen",
+                                     KiDialogTexte.ZpgtZonenName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtZonenErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gebaeudearten", TWW_TYPTAG_SICHT + ".Gebaeudearten",
+                                     KiDialogTexte.ZpgtArtenName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtArtenErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("zeilen", TWW_TYPTAG_SICHT + ".Zeilen",
+                                     KiDialogTexte.ZpgtZeilenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgtZeilenErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("grund", TWW_TYPTAG_SICHT + ".Grund",
+                                     KiDialogTexte.ZpgtGrundName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtGrundErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("pruefbericht", TWW_TYPTAG_SICHT + ".Pruefbericht",
+                                     KiDialogTexte.ZpgtBerichtName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgtBerichtErl, leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

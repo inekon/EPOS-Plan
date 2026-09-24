@@ -28881,6 +28881,141 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE" xml:space="preserve">
     <value>the climate zone of the type days</value>
   </data>
+  <data name="ZPGT_TITEL" xml:space="preserve">
+    <value>VDI 4655 type days</value>
+  </data>
+  <data name="ZPGT_HINWEIS_LIZENZ" xml:space="preserve">
+    <value>The program ships no values of the guideline. The licensed user imports the type days from his own package; they stay in this database and go neither into the delivery template nor into a project transfer.</value>
+  </data>
+  <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
+    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point.</value>
+  </data>
+  <data name="ZPGT_GRP_STAND" xml:space="preserve">
+    <value>Imported state</value>
+  </data>
+  <data name="ZPGT_GRP_PRUEFUNG" xml:space="preserve">
+    <value>Check of the package</value>
+  </data>
+  <data name="ZPGT_LEER" xml:space="preserve">
+    <value>No type days are imported — without them the type day path of the annual profile is not available.</value>
+  </data>
+  <data name="ZPGT_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPGT_LBL_AUSGABE" xml:space="preserve">
+    <value>Edition</value>
+  </data>
+  <data name="ZPGT_LBL_DATUM" xml:space="preserve">
+    <value>Imported on</value>
+  </data>
+  <data name="ZPGT_LBL_ZONEN" xml:space="preserve">
+    <value>Climate zones</value>
+  </data>
+  <data name="ZPGT_LBL_GEBAEUDEARTEN" xml:space="preserve">
+    <value>Building types</value>
+  </data>
+  <data name="ZPGT_LBL_TYPTAGE" xml:space="preserve">
+    <value>Type days</value>
+  </data>
+  <data name="ZPGT_LBL_AUFLOESUNG" xml:space="preserve">
+    <value>Time resolution of the daily profiles</value>
+  </data>
+  <data name="ZPGT_LBL_ZEILEN" xml:space="preserve">
+    <value>Rows</value>
+  </data>
+  <data name="ZPGT_SP_ANGABE" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ZPGT_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE" xml:space="preserve">
+    <value>not stated</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
+    <value>none — the daily shape comes from the daily profile set of the zone</value>
+  </data>
+  <data name="ZPGT_BTN_PAKET" xml:space="preserve">
+    <value>Choose package…</value>
+  </data>
+  <data name="ZPGT_BTN_EINSPIELEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPGT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ZPGT_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ZPGT_DATEIFILTER" xml:space="preserve">
+    <value>Type day package (*.zip;*.csv)|*.zip;*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="ZPGT_WAHL_TITEL" xml:space="preserve">
+    <value>Choose the package of the type days</value>
+  </data>
+  <data name="ZPGT_KEIN_PAKET" xml:space="preserve">
+    <value>No package is chosen.</value>
+  </data>
+  <data name="ZPGT_ABBRUCH" xml:space="preserve">
+    <value>The package is rejected: {0}</value>
+  </data>
+  <data name="ZPGT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>The package holds {0} climate zone(s), {1} building type(s) and {2} type day(s) — {3} row(s).</value>
+  </data>
+  <data name="ZPGT_HINWEISE" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ZPGT_FRAGE_ERSETZEN" xml:space="preserve">
+    <value>A package is already imported ({0} rows). The new one replaces it completely. Import?</value>
+  </data>
+  <data name="ZPGT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>The imported type days are removed; afterwards the type day path is no longer available. Delete?</value>
+  </data>
+  <data name="ZPGT_MSG_EINGESPIELT" xml:space="preserve">
+    <value>{0} row(s) imported, {1} replaced.</value>
+  </data>
+  <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} row(s) removed.</value>
+  </data>
+  <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
+    <value>There was nothing to delete.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_QUELLE_ERL" xml:space="preserve">
+    <value>The source stated by the imported package. Display only; empty = nothing is imported.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_AUSGABE_ERL" xml:space="preserve">
+    <value>The edition stated by the imported package. Display only; empty = not stated.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_DATUM_ERL" xml:space="preserve">
+    <value>The day the package was imported. Display only.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZONEN_ERL" xml:space="preserve">
+    <value>The climate zones carried by the imported package. Display only; in the tapping profile the user chooses one of them.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ARTEN_ERL" xml:space="preserve">
+    <value>The building types carried by the imported package. Display only; in the tapping profile the user chooses one of them.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZEILEN_ERL" xml:space="preserve">
+    <value>The number of imported rows. Display only; 0 = nothing is imported.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_NAME" xml:space="preserve">
+    <value>Reason for the lock</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_ERL" xml:space="preserve">
+    <value>Why the type day path is not available. Display only; empty = it is available.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_BERICHT_ERL" xml:space="preserve">
+    <value>What the check of the chosen package returned — the rejection with file and line, or the summary. Display only; empty = nothing was checked.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGEWEG_ERL" xml:space="preserve">
+    <value>Does the annual profile of every zone use the imported type days instead of the factors of the catalogue? A setting of the project, expert level only; rejected without imported type days.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGZONE_ERL" xml:space="preserve">
+    <value>The climate zone of the imported package the project computes with. Only a number carried by the package; expert level.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGART_ERL" xml:space="preserve">
+    <value>The building type of the imported package the project computes with. Only one carried by the package; expert level.</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
     <value>The circulation loses {0:0} kWh per year, {1:0.##} times the draw-off ({2:0} kWh/a); the catalogue flags this from {3:0.##} times. This is usual in small multi-family houses — otherwise check the circulation method and its characteristic values.</value>
   </data>
@@ -29375,6 +29510,27 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
     <value>Daily profile set</value>
+  </data>
+  <data name="ZPG_GRP_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_AKTIV" xml:space="preserve">
+    <value>Compute type days after VDI 4655</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_ZONE" xml:space="preserve">
+    <value>Climate zone</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_GEBAEUDEART" xml:space="preserve">
+    <value>Building type</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE" xml:space="preserve">
+    <value>A setting of the project: the annual profile of every zone then arises from the type days of the imported package and the weather of the climate region. The sizing stays untouched.</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE_OHNE" xml:space="preserve">
+    <value>Without imported type days this path is not available — “VDI 4655 type days…” imports a package.</value>
+  </data>
+  <data name="ZPG_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days…</value>
   </data>
   <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
     <value>Set of the type of use</value>
@@ -30173,6 +30329,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
     <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days…</value>
   </data>
   <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
     <value>Close</value>

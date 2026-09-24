@@ -164,6 +164,9 @@ public sealed class TwwNutzungsartAdminTexte
     /// <summary><c>ZPGK_BTN_LOESCHEN</c></summary>
     public string KnopfLoeschen { get; set; } = "Löschen";
 
+    /// <summary><c>ZPGK_BTN_TYPTAGE</c></summary>
+    public string KnopfTyptage { get; set; } = "VDI-4655-Typtage…";
+
     /// <summary><c>ZPGK_BTN_IMPORT</c></summary>
     public string KnopfImport { get; set; } = "Import…";
 
