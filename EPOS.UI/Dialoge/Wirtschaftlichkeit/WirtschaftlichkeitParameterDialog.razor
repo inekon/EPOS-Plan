@@ -40,6 +40,7 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Kosten
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -117,7 +118,14 @@
        Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
        wird. Wer tippt, pflegt; "Vorgaben" setzt alle vierzehn Felder zurueck. Ob
        ein Satz aus Vorgaben oder gepflegten Werten besteht, sagt die
-       Herleitungszeile darunter. *@
+       Herleitungszeile darunter.
+
+       ETAPPE E9b: NEUN ZEILEN. Betrachtungszeitraum und Mengenaenderung stehen als
+       Zeilen 8 und 9 darunter - ohne Vorgabe, deshalb mit dem GEPFLEGTEN Wert im
+       Feld (siehe dort). "Vorgaben" leert seither alle achtzehn Felder der Tafel;
+       die Einspeiseverguetungen je Szenario pflegt der ±-Knopf an ihrem Feld in der
+       Gruppe "Strom" (bzw. im Dialog "BHKW-Wirtschaftlichkeit"), sie bleiben dabei
+       stehen. *@
     <Gruppenkopf Titel="@_t.GSzenarien" Symbol="⚖">
         <KindInhalt>
             <div class="epos-raster-huelle">
@@ -241,6 +249,50 @@
                                             WertChanged="@(w => Worst.NutzungsdauerAenderung = w)" />
                             </td>
                         </tr>
+
+                        @* ETAPPE E9b (Konzept § 2.11.5, Pflege): die Zeilen 8 und 9 - der
+                           Betrachtungszeitraum und die Mengenaenderung je Szenario, gelesen vom
+                           Kern seit E9a (SzenarioSatz.Zeitraum, .Menge).
+
+                           ANDERS ALS DIE SIEBEN ZEILEN DARUEBER haben sie KEINE Vorgabe
+                           (E9a-Q5): leer heisst "wie Erwartet". Die Felder zeigen deshalb den
+                           GEPFLEGTEN Wert - ein leeres Feld bleibt leer, und der Platzhalter
+                           nennt den Wert, mit dem dann gerechnet wird (der Erwartungswert).
+                           Der Zeitraum ist eine ganze Zahl von Jahren (1 bis 50 wie das Feld
+                           "Betrachtungszeitraum" oben), die Mengenaenderung ein Prozentsatz
+                           wie die Ertragsaenderung. *@
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzZeitraum</th>
+                            <td class="epos-matrix-zelle">@Parameter.Betrachtungszeitraum a</td>
+                            <td>
+                                <Ganzzahlfeld Bezeichnung="" Einheit="a" Min="1" Max="50"
+                                              Platzhalter="@ZeitraumPlatzhalter"
+                                              Wert="@Best.Zeitraum"
+                                              WertChanged="@(w => Best.Zeitraum = w)" />
+                            </td>
+                            <td>
+                                <Ganzzahlfeld Bezeichnung="" Einheit="a" Min="1" Max="50"
+                                              Platzhalter="@ZeitraumPlatzhalter"
+                                              Wert="@Worst.Zeitraum"
+                                              WertChanged="@(w => Worst.Zeitraum = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzMenge</th>
+                            <td class="epos-matrix-zelle">0 %</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Platzhalter="0"
+                                            Wert="@Best.Menge"
+                                            WertChanged="@(w => Best.Menge = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Platzhalter="0"
+                                            Wert="@Worst.Menge"
+                                            WertChanged="@(w => Worst.Menge = w)" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -305,6 +357,28 @@
                        kommen nicht mehr auf ihn - es gibt nichts an- oder abzuschalten. *@
                 </KindInhalt>
             </Formularraster>
+
+            @* ETAPPE E9b (Konzept § 2.11.5, Pflege; E9b-Q1): der ±-Knopf der
+               Einspeiseverguetung PV. Ihr Best/Worst-Paar steht im Szenariosatz
+               (SzenarioSatz.Einspeiseverguetung, Schemaschritt 118) und geht mit dem
+               Parametersatz in die Zeile. Ist ein Paar gepflegt, sagen die
+               Kohaerenzzeilen darunter, wann die flache Verguetung im Lauf nicht wirkt
+               (E9a-Q7: Tarif-Rollenmodell, PV-Verguetungsdialog) - Hinweise, keine
+               Sperre. Die Einspeiseverguetung KWK traegt ihren ±-Knopf dort, wo ihr
+               Erwartet-Wert gepflegt wird: im Dialog "BHKW-Wirtschaftlichkeit". *@
+            <div class="epos-szenarioleiste">
+                <SzenarioKnopf Text="@_t.SzEinspeisung" Gepflegt="@EinspeisungSzenarioGepflegt"
+                               Kurztext="@EinspeisungSzenarioKurztext"
+                               GepflegtText="@_sz.Gepflegt" WarnungText="@_sz.OhneErwartetKurz"
+                               Angefordert="EinspeisungSzenarioOeffnen" />
+            </div>
+            @if (EinspeisungSzenarioGepflegt)
+            {
+                @foreach (string hinweis in EinspeisungSzenarioHinweise)
+                {
+                    <Kohaerenzzeile Text="@hinweis" Zustand="KohaerenzZustand.Abweichend" />
+                }
+            }
 
             @* SP-E-5 (a): Der Satz stellt AUCH den Verkaufspreis der Speicherwelt.
                Wer ihn hier aendert, aendert die Speicherrechnung mit - und das muss
@@ -417,6 +491,21 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* ETAPPE E9b: das Szenariopaar der Einspeiseverguetung PV - der CaseEingabeDialog
+       als allgemeiner Baustein (E9b-Q1). Ein Titel, eine Stelle: Die Ueberlagerung
+       traegt Titel und Kreuz, TitelText="" steht RECHTS vom Satz. OK legt die Werte auf
+       den Szenariosatz; geschrieben wird mit "Speichern" des Dialogs. *@
+    <Ueberlagerung Offen="@(_szenarioGaben is not null)" Titel="@_szenarioTitel"
+                   Geschlossen="() => EinspeisungSzenarioFertig(null)">
+        <KindInhalt>
+            @if (_szenarioGaben is not null)
+            {
+                <CaseEingabeDialog @attributes="_szenarioGaben" TitelText=""
+                                   Geschlossen="EinspeisungSzenarioFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -464,6 +553,16 @@
     /// <summary>Schreibt den Parametersatz fort. <c>true</c> = gespeichert.</summary>
     [Parameter] public Func<bool>? Speichern { get; set; }
 
+    /// <summary>
+    /// ETAPPE E9b (E9a‑Q7): die Kohärenzzeilen des ±-Knopfes der Einspeisevergütung PV —
+    /// die Fälle, in denen die flache Vergütung im Lauf nicht wirkt (aktives
+    /// Tarif-Rollenmodell, aktiver PV-Vergütungsdialog). Die Hülle bildet sie aus den
+    /// Sätzen des Kerns (<c>WIRT_SZ_ROLLEN_EINSPEISUNG</c>,
+    /// <c>WIRT_SZ_PV_DIALOG_EINSPEISUNG</c>); leer = sie wirkt.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> EinspeisungSzenarioHinweise { get; set; }
+        = Array.Empty<string>();
+
     /// <summary>Was der Dialog beim Schließen meldet.</summary>
     [Parameter] public EventCallback<WirtParameterErgebnis> Geschlossen { get; set; }
 
@@ -486,6 +585,7 @@
     // =====================================================================
 
     private readonly WirtschaftlichkeitParameterTexte _t = new();
+    private readonly SzenariopaarTexte _sz = new();
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
@@ -618,15 +718,28 @@
             ? _t.PreisInvestGepflegt : _t.PreisInvestWieB);
 
     /// <summary>
-    /// „Vorgaben“ — alle vierzehn Felder auf <c>null</c> zurück (seit W5‑B‑12 mit p_I).
+    /// „Vorgaben“ — alle Felder der Tafel auf <c>null</c> zurück: seit W5‑B‑12 vierzehn,
+    /// seit ETAPPE E9b achtzehn (Zeilen 8 und 9, <see cref="SzenarioSatz.TafelZuruecksetzen"/>).
     /// Das ist NICHT dasselbe wie „auf die heutigen Vorgabezahlen setzen“: Ein leeres
     /// Feld zieht bei einer geänderten Projektangabe mit, eine eingetragene Zahl nicht.
+    ///
+    /// <para><b>ETAPPE E9b: Die Einspeisevergütungen je Szenario bleiben.</b> Sie stehen
+    /// nicht in der Tafel; ihr Paar pflegt der ±-Knopf an ihrem Feld. Bis E9b ersetzte der
+    /// Knopf beide Sätze als Ganzes — mit den neuen Größen hätte er eine Pflege gelöscht,
+    /// die an dieser Stelle niemand sieht.</para>
     /// </summary>
     private void VorgabenKlick()
     {
-        Parameter.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
-        Parameter.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        Best.TafelZuruecksetzen();
+        Worst.TafelZuruecksetzen();
     }
+
+    /// <summary>
+    /// ETAPPE E9b: der Platzhalter der leeren Zeitraumfelder — der Erwartungswert, mit
+    /// dem ein leeres Feld rechnet („wie Erwartet").
+    /// </summary>
+    private string ZeitraumPlatzhalter =>
+        Parameter.Betrachtungszeitraum.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>Herleitungszeile des Best-Satzes: Herkunft und die WIRKSAMEN Zahlen.</summary>
     public string SzenarioZeileBest => SzenarioZeile(_t.SzBest, Best);
@@ -634,9 +747,58 @@
     /// <inheritdoc cref="SzenarioZeileBest"/>
     public string SzenarioZeileWorst => SzenarioZeile(_t.SzWorst, Worst);
 
+    /// <summary>
+    /// ETAPPE E9b: Die Zeile nennt Betrachtungszeitraum, Mengenänderung und die
+    /// Einspeisevergütungen NUR, wenn dieses Szenario sie gepflegt hat — „wie Erwartet"
+    /// steht schon in der Erwartet-Spalte (<see cref="SzenarioSatz.Nachweis(WirtschaftlichkeitParameter, CultureInfo, bool)"/>).
+    /// </summary>
     private string SzenarioZeile(string name, SzenarioSatz satz) =>
         string.Format(Kultur, satz.NurVorgaben ? _t.SzHerkunftVorgabe : _t.SzHerkunftGepflegt,
-                      name, satz.Nachweis(Parameter, Kultur));
+                      name, satz.Nachweis(Parameter, Kultur, true));
+
+    // =====================================================================
+    // ETAPPE E9b — der ±-Knopf der Einspeisevergütung PV
+    // =====================================================================
+
+    private IReadOnlyDictionary<string, object>? _szenarioGaben;
+    private string _szenarioTitel = "";
+
+    /// <summary>Steht die Überlagerung des Szenariopaars? (Prüfhilfe für Tests)</summary>
+    public bool SzenarioOffen => _szenarioGaben is not null;
+
+    /// <summary>ETAPPE E9b: Trägt die Einspeisevergütung PV ein gepflegtes Paar
+    /// (1e−9-Regel gegen den Projektwert)?</summary>
+    public bool EinspeisungSzenarioGepflegt =>
+        Szenariopaar.Gepflegt(Best.Einspeiseverguetung, Worst.Einspeiseverguetung,
+                              Parameter.Einspeiseverguetung);
+
+    private string EinspeisungSzenarioKurztext =>
+        Szenariopaar.Kurztext(Best.Einspeiseverguetung, Worst.Einspeiseverguetung,
+                              Parameter.Einspeiseverguetung, "€/kWh", 4);
+
+    /// <summary>
+    /// ETAPPE E9b: „±" an der Einspeisevergütung PV — der <c>CaseEingabeDialog</c> als
+    /// Szenariopaar gegen den Wert des Feldes daneben (€/kWh, vier Stellen, bis 2 wie das
+    /// Feld). Keine Warnung ohne Erwartet-Wert: Eine Vergütung von 0 ist keine Datenlücke,
+    /// sondern „keine Vergütung".
+    /// </summary>
+    private void EinspeisungSzenarioOeffnen()
+    {
+        _szenarioTitel = Szenariopaar.Titel(_t.SzEinspeisung);
+        _szenarioGaben = Szenariopaar.Gaben(_t.SzEinspeisung, _t.SzEinspeisung, "€/kWh",
+            Parameter.Einspeiseverguetung, Best.Einspeiseverguetung, Worst.Einspeiseverguetung,
+            4, 2, EinspeisungSzenarioHinweise, warnenOhneErwartet: false);
+    }
+
+    /// <summary>ETAPPE E9b: das Ergebnis auf beide Szenariosätze — 0 heißt „wie Erwartet".
+    /// Geschrieben wird mit „Speichern" des Dialogs.</summary>
+    private void EinspeisungSzenarioFertig(CaseEingabeErgebnis? ergebnis)
+    {
+        _szenarioGaben = null;
+        if (ergebnis is null) return;
+        Best.Einspeiseverguetung = Szenariopaar.Wert(ergebnis.BestCase);
+        Worst.Einspeiseverguetung = Szenariopaar.Wert(ergebnis.WorstCase);
+    }
 
     /// <summary>Der Schlusshinweis — je nach Erzeugerlage um zwei Absätze länger.</summary>
     public string Hinweis
@@ -706,7 +868,7 @@
     /// Schließkreuz im Kopf — das Kreuz tut genau, was Esc tut. Solange der
     /// Katalog obenauf liegt, gehört die Geste ihm.
     /// </summary>
-    private Task Abbrechen() => _katalogOffen ? Task.CompletedTask : Schliessen();
+    private Task Abbrechen() => _katalogOffen || SzenarioOffen ? Task.CompletedTask : Schliessen();
 
     /// <summary>Esc schließt die OBERSTE Ebene — erst den Katalog, dann den Dialog.</summary>
     private Task BeiTaste(KeyboardEventArgs e)

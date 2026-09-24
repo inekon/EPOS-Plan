@@ -1180,11 +1180,12 @@ namespace WindowsFormsApplication1
             // Seite — drei Formulierungen derselben Auskunft wären drei Wahrheiten.
             SchreibeSzenarioAnnahmen(k, p, daten);
 
-            // ---- ETAPPE E5 (U10): der Hinweistext unter den Annahmen -------------------
-            // Was ein Szenario heute variiert und was nicht — derselbe Text wie unter der
-            // Annahmentafel der Seite.
-            if (!string.IsNullOrEmpty(bewertung.Szenariohinweis))
-                k.HinweisRoh(bewertung.Szenariohinweis);
+            // ---- ETAPPE E9b (U10, E9b‑Q3): der Ausweis unter den Annahmen -------------
+            // „n von m Parametern szenariert" samt der gepflegten Größen — an der Stelle
+            // des Hinweistexts, den die Pflege in den Dialogen überflüssig macht
+            // (Konzept § 2.11.7); derselbe Satz wie unter der Annahmentafel der Seite.
+            if (!string.IsNullOrEmpty(bewertung.Szenarioabdeckung))
+                k.HinweisRoh(bewertung.Szenarioabdeckung);
 
             // ---- W5‑B‑11 (G9): der Vorschlag zur Entscheidung ----------------------
             // ETAPPE E2: Er nennt die REFERENZ beim Namen. Seit § 2.9 rechnet ΔKW gegen

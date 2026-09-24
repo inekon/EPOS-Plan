@@ -107,8 +107,38 @@ namespace WindowsFormsApplication1
                 ["SpeichereAnlage"] = new Func<KwkgAnlagenAngabe, bool>(
                     a => SpeichereAnlage(anlagenCtrl, a)),
                 ["SpeichereVorgaben"] = new Func<WirtschaftlichkeitParameter, bool>(
-                    p => SpeichereVorgaben(ctrl, p))
+                    p => SpeichereVorgaben(ctrl, p)),
+
+                // ETAPPE E9b (E9a-Q7): Ist das Tarif-Rollenmodell wirksam, bewertet es die
+                // Einspeisung mit seinem Einspeisetarif - eine Szenario-Einspeiseverguetung
+                // KWK bleibt dann ohne Wirkung. Derselbe Satz wie am Ergebnis.
+                ["EinspeisungKwkSzenarioHinweise"] = EinspeisungKwkSzenarioHinweise(ctrl, idStamm)
             };
+        }
+
+        /// <summary>
+        /// ETAPPE E9b (Konzept § 2.11.5, Pflege; E9a‑Q7) — die Kohärenzzeile des ±-Knopfes der
+        /// Einspeisevergütung KWK. Ein Lesefehler kostet die Zeile, nie den Dialog.
+        /// </summary>
+        private static IReadOnlyList<string> EinspeisungKwkSzenarioHinweise(WirtschaftlichkeitCtrl ctrl,
+                                                                           int idStamm)
+        {
+            var liste = new List<string>();
+            try
+            {
+                if (ctrl.LadeTarif(idStamm).Wirksam)
+                {
+                    string t = null;
+                    try { t = MyResource.Resource.ResourceManager.GetString("WIRT_SZ_ROLLEN_EINSPEISUNG"); }
+                    catch { }
+                    liste.Add(string.IsNullOrEmpty(t)
+                        ? "Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet " +
+                          "die Einspeisung mit dem Einspeisetarif des Tarifsatzes."
+                        : t);
+                }
+            }
+            catch { }
+            return liste;
         }
 
         /// <summary>

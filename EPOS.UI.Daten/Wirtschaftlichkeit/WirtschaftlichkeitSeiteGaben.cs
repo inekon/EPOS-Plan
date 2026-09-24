@@ -416,12 +416,13 @@ namespace WindowsFormsApplication1
             stand.Nutzungsdauerhinweise = nutzungsdauer.Zeilen;
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
-            // ETAPPE E5 (U10, V‑A): der Hinweistext unter der Annahmentafel und die
-            // Deklarationszeilen der Bewertung - beide am Projekt, nicht an der Wahl.
-            stand.Szenariohinweis = Szenariohinweis();
+            // ETAPPE E5 (U10, V‑A) und E9b (E9b-Q3): unter der Annahmentafel der Ausweis
+            // "n von m Parametern szenariert" (an der Stelle des Hinweistexts) und die
+            // Deklarationszeilen der Bewertung - beide an der Gruppe, nicht an der Wahl.
+            stand.Szenarioabdeckung = Szenarioabdeckung();
             stand.Deklarationen = Deklarationen();
 
-            // ETAPPE E5 Teil b (U2): die Annahmentafel ueber dem Hinweistext und der
+            // ETAPPE E5 Teil b (U2): die Annahmentafel ueber dem Ausweis und der
             // Umschalter als Sitzungswahl.
             stand.Annahmen = Annahmentafel();
             stand.Darstellung = Vergleich.Darstellung;
@@ -558,17 +559,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E5 (U10, Konzept § 2.11.7, Entscheid A14): der Hinweistext unter der
-        /// Annahmentafel — mit den WIRKSAMEN Spannen des Parametersatzes (Vorgaben oder
-        /// gepflegte Werte). Ein Lesefehler lässt den Text mit den Vorgaben stehen: Er
-        /// beschreibt dann, was ein ungepflegtes Projekt tut.
+        /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q2, E9b‑Q3): der Ausweis
+        /// „n von m Parametern szenariert" unter der Annahmentafel — an der Stelle des
+        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt wird
+        /// über die GANZE Vergleichsgruppe, nicht über die Wahl — dieselben Stände wie die
+        /// Nutzungsdauer-Hinweise darüber; die Regel steht im Kern
+        /// (<see cref="SzenarioAbdeckung.Lesen"/>). Ein Lesefehler kostet die Zeile.
         /// </summary>
-        private string Szenariohinweis()
+        private string Szenarioabdeckung()
         {
-            WirtschaftlichkeitParameter p = null;
-            try { p = _ctrl.LadeParameter(_idStamm); }
-            catch { }
-            try { return ValeriAusweis.Szenariohinweis(p, BerichtTexte.Kultur); }
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                var staende = new List<KeyValuePair<int, string>>();
+                foreach (int id in _gruppe)
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+                return SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
+            }
             catch { return ""; }
         }
 
@@ -1300,7 +1307,7 @@ namespace WindowsFormsApplication1
         /// ETAPPE E5 Teil b (U2, Mockup „Was ist angenommen?"): die Annahmentafel aus dem
         /// Parametersatz — Größe · Ungünstig · Erwartet · Günstig · Herkunft
         /// (<see cref="ValeriAusweis.Annahmen"/>). Ein Lesefehler lässt sie leer; der
-        /// Hinweistext darunter steht trotzdem.
+        /// Ausweis der Szenarioabdeckung darunter steht trotzdem.
         /// </summary>
         private ErgebnisMatrix Annahmentafel()
         {

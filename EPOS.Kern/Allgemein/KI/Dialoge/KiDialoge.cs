@@ -1552,7 +1552,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Wirtschaftlichkeits-Parameter — 26 Felder aus
+        /// Die Wirtschaftlichkeits-Parameter — 30 Felder aus
         /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1564,12 +1564,19 @@ namespace WindowsFormsApplication1
         /// wird. Gesetzt wird dagegen der gepflegte Wert - wer tippt, pflegt.
         /// </para>
         /// <para>
+        /// <b>ETAPPE E9b: vier Felder mehr</b> - die Zeilen 8 und 9 der Tafel,
+        /// Betrachtungszeitraum und Mengenaenderung je Szenario. Sie haben keine Vorgabe
+        /// und tragen deshalb den GEPFLEGTEN Wert (leer = wie Erwartet).
+        /// </para>
+        /// <para>
         /// <b>Die Erwartet-Spalte der Szenariotabelle steht NICHT im Katalog</b>: Sie
         /// wiederholt, was oben unter „Allgemein" gepflegt wird, und traegt deshalb
         /// kein eigenes Feld. Ebenfalls draussen: die Herleitungszeilen, der Knopf
-        /// „Vorgaben" (er setzt alle vierzehn Szenariofelder zurueck - ein Weg, kein
-        /// Wert) und der Gesetzeskatalog, der als Ueberlagerung aufgeht und seinen
-        /// eigenen Schluessel traegt.
+        /// „Vorgaben" (er setzt alle achtzehn Felder der Szenariotafel zurueck - ein Weg,
+        /// kein Wert), der ±-Knopf der Einspeiseverguetung (ETAPPE E9b: er oeffnet die
+        /// Maske Form_CaseEingabe, die ihre Felder selbst anmeldet) und der
+        /// Gesetzeskatalog, der als Ueberlagerung aufgeht und seinen eigenen Schluessel
+        /// traegt.
         /// </para>
         /// </remarks>
         private static KiDialog WirtschaftlichkeitParameter()
@@ -1706,7 +1713,33 @@ namespace WindowsFormsApplication1
                                      "WirtschaftlichkeitParameterKiSicht.WorstNutzungsdauerAenderung",
                                      KiDialogTexte.WpaSzWorstDauer, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaSzDauerErl,
-                                     einheit: KiDialogTexte.EinheitJahre)
+                                     einheit: KiDialogTexte.EinheitJahre),
+
+                    // ---- ETAPPE E9b: Zeilen 8 und 9 der Szenariotafel ----------------
+                    // Betrachtungszeitraum und Mengenaenderung je Szenario - OHNE
+                    // Vorgabe (E9a-Q5): leer heisst "wie Erwartet". Anders als die
+                    // vierzehn Felder darueber tragen sie den GEPFLEGTEN Wert.
+                    new KiDialogFeld("best_zeitraum",
+                                     "WirtschaftlichkeitParameterKiSicht.BestZeitraum",
+                                     KiDialogTexte.WpaSzBestZeitraum, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSzZeitraumErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    new KiDialogFeld("worst_zeitraum",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstZeitraum",
+                                     KiDialogTexte.WpaSzWorstZeitraum, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSzZeitraumErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    new KiDialogFeld("best_menge",
+                                     "WirtschaftlichkeitParameterKiSicht.BestMenge",
+                                     KiDialogTexte.WpaSzBestMenge, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzMengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("worst_menge",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstMenge",
+                                     KiDialogTexte.WpaSzWorstMenge, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzMengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true)
+                    // ---- Ende ETAPPE E9b ----------------------------------------------
                 },
                 knoepfe: new[]
                 {
@@ -2420,15 +2453,23 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Worst- und Best-Case einer Kostenposition — sieben Felder aus
+        /// Worst- und Best-Case einer Kostenposition — seit ETAPPE E9b zehn Felder aus
         /// <c>EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht</c>.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// <b>Der PROZENTMODUS fuehrt die Maske.</b> Er entscheidet, ob die zwei
         /// Kostenfelder einen Betrag oder eine Abweichung vom Erwartungswert tragen -
         /// und damit ihre Einheit und ihre Grenzen. Ohne gepflegten Erwartungswert ist
         /// er gesperrt; dann gibt es nichts, wovon abzuweichen waere. Geschrieben wird
         /// beim OK IMMER in Euro, auch wenn der Anwender Prozente getippt hat.
+        /// </para>
+        /// <para>
+        /// <b>ETAPPE E9b: der allgemeine Baustein.</b> Dieselbe Maske pflegt das
+        /// Best/Worst-Paar eines Traegerpreises oder Erloessatzes (Szenariopaar). Drei
+        /// NUR LESBARE Felder sagen, was gepflegt wird, gegen welchen Erwartet-Wert und
+        /// in welcher Einheit; Nutzungsdauer, Startjahr und Zuschuss gibt es dann nicht.
+        /// </para>
         /// </remarks>
         private static KiDialog CaseEingabe()
         {
@@ -2462,7 +2503,22 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ist_zuschuss", "CaseEingabeKiSicht.IstZuschuss",
                                      KiDialogTexte.CseZuschussName,
                                      KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.CseZuschussErl)
+                                     KiDialogTexte.CseZuschussErl),
+
+                    // ---- ETAPPE E9b: die Auskunft ueber das gepflegte Paar -----------
+                    // Nur lesbar: Was die Maske pflegt (Kosten, Traegerpreis oder
+                    // Erloessatz), gegen welchen Erwartet-Wert und in welcher Einheit.
+                    new KiDialogFeld("groesse", "CaseEingabeKiSicht.Groesse",
+                                     KiDialogTexte.CseGroesseName, KiParameterTyp.Text,
+                                     KiDialogTexte.CseGroesseErl, nurLesen: true),
+                    new KiDialogFeld("erwartet", "CaseEingabeKiSicht.Erwartet",
+                                     KiDialogTexte.CseErwartetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseErwartetErl, leerErlaubt: true,
+                                     nurLesen: true),
+                    new KiDialogFeld("einheit", "CaseEingabeKiSicht.Einheit",
+                                     KiDialogTexte.CseEinheitName, KiParameterTyp.Text,
+                                     KiDialogTexte.CseEinheitErl, nurLesen: true)
+                    // ---- Ende ETAPPE E9b ----------------------------------------------
                 },
                 knoepfe: new[]
                 {

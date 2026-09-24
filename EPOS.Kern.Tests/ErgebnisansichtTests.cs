@@ -604,32 +604,33 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  (6) U10 — der Hinweistext
+        //  (6) U10 — an der Stelle des Hinweistexts der Ausweis (ETAPPE E9b)
         // =====================================================================
 
         /// <summary>
-        /// Der Wortlaut des Konzepts § 2.11.7 ohne den Roadmap-Satz (A14), mit den
-        /// Vorgaben ±10 %, ±10 %, ±2 a — und mit den gepflegten Werten, wenn es sie gibt.
+        /// ETAPPE E9b (Konzept § 2.11.7: „Der Hinweis entfällt mit der Etappe, die ihn
+        /// überflüssig macht"; E9b‑Q3): Den Hinweistext gibt es nicht mehr — weder als
+        /// Ressource noch als Satz der Bewertung. An seiner Stelle steht der Ausweis
+        /// „n von m Parametern szenariert"; ohne Pflege: „0 von 11 Parametern szenariert"
+        /// für einen Satz ohne Träger und ohne PV-Anlage. Die Zählregel selbst halten die
+        /// Fälle in <c>SzenarioAbdeckungTests</c>.
         /// </summary>
         [Fact]
-        public void Der_Hinweistext_nennt_die_wirksamen_Spannen()
+        public void Der_Hinweistext_ist_weg_der_Ausweis_steht_an_seiner_Stelle()
         {
-            var p = new WirtschaftlichkeitParameter();
-            string vorgabe = ValeriAusweis.Szenariohinweis(p, DE);
-            Assert.Equal(string.Format(DE, R.WIRT_SZEN_HINWEIS, "±10", "±10", "±2"), vorgabe);
-            Assert.StartsWith("Was ein Szenario heute variiert", vorgabe);
-            Assert.Contains("(±10 %)", vorgabe);
-            Assert.Contains("(±2 a)", vorgabe);
-            Assert.DoesNotContain("kommen nach dieser Darstellung", vorgabe);
+            Assert.Null(R.ResourceManager.GetString("WIRT_SZEN_HINWEIS", DE));
+            Assert.Null(R.ResourceManager.GetString("WIRT_SZEN_HINWEIS", EN));
+            Assert.Null(typeof(WirtschaftlichkeitBewertung).GetField("Szenariohinweis"));
+            Assert.Null(typeof(ValeriAusweis).GetMethod("Szenariohinweis"));
 
-            p.SatzWorst.InvestitionAenderung = 15.0;
-            p.SatzBest.InvestitionAenderung = -5.0;
-            Assert.Contains("(+15 / −5 %)", ValeriAusweis.Szenariohinweis(p, DE));
+            var p = new WirtschaftlichkeitParameter();
+            string satz = SzenarioAbdeckung.Zaehle(p, null, null).Satz(DE);
+            Assert.Equal(string.Format(DE, R.WIRT_SZ_ABDECKUNG, 0, 11), satz);
+            Assert.Equal("0 von 11 Parametern szenariert", satz);
         }
 
         /// <summary>Jeder neue Schlüssel der Etappe steht in BEIDEN Sprachen.</summary>
         [Theory]
-        [InlineData("WIRT_SZEN_HINWEIS")]
         [InlineData("WIRT_DEKL_NOMINAL")]
         [InlineData("WIRT_DEKL_STEUERN")]
         [InlineData("WIRT_DEKL_RESTWERT")]
@@ -832,7 +833,10 @@ namespace EPOS.Kern.Tests
             Assert.Single(stand.Nutzungsdauerhinweise);
             Assert.StartsWith("Stamm, Test1, Test2: ", stand.Nutzungsdauerhinweise[0]);
             Assert.Equal(string.Format(DE, R.WIRT_T_OHNE_DAUER, 20), stand.Zeitraumzeile);
-            Assert.StartsWith("Was ein Szenario heute variiert", stand.Szenariohinweis);
+            // ETAPPE E9b: an der Stelle des Hinweistexts der Ausweis „n von m Parametern
+            // szenariert" — gezählt über die ganze Gruppe (Stamm, Test1, Test2).
+            Assert.Matches(@"^\d+ von \d+ Parametern szenariert", stand.Szenarioabdeckung);
+            Assert.DoesNotContain("Was ein Szenario heute variiert", stand.Szenarioabdeckung);
             Assert.Equal(4, stand.Deklarationen.Count);
         }
 
@@ -1025,8 +1029,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Berichtsdatensammler legt die Bewertung aus denselben Kernmethoden an wie die
-        /// Hülle: Bandbreite wie ohne Persistenz, Satz mit der Referenz beim Namen,
-        /// Hinweistext, vier Deklarationen, keine Stände ohne Nachweis im frischen Lauf.
+        /// Hülle: Bandbreite wie ohne Persistenz, Satz mit der Referenz beim Namen, der
+        /// Ausweis der Szenarioabdeckung (ETAPPE E9b, an der Stelle des Hinweistexts), vier
+        /// Deklarationen, keine Stände ohne Nachweis im frischen Lauf.
         /// </summary>
         [Fact]
         public void Die_Bewertung_des_Berichts_liest_dieselben_Modelle()
@@ -1047,7 +1052,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Stammprojekt", b.Bandbreite.Referenzname);
             Assert.Contains("Variante A", b.Vorschlagstext);
             Assert.Contains("Stammprojekt", b.Vorschlagstext);
-            Assert.Equal(ValeriAusweis.Szenariohinweis(p, DE), b.Szenariohinweis);
+            var staende = daten.Varianten.Select(v => new KeyValuePair<int, string>(v.IdProjekt, v.Anzeige));
+            Assert.Equal(SzenarioAbdeckung.Lesen(p, staende).Satz(DE), b.Szenarioabdeckung);
+            Assert.Equal(b.Abdeckung.Satz(DE), b.Szenarioabdeckung);
+            Assert.False(b.Abdeckung.Leer);
             Assert.Equal(4, b.Deklarationen.Count);
             Assert.Empty(b.OhneNachweis);
             Assert.Empty(b.Nutzungsdauer.Zeilen);

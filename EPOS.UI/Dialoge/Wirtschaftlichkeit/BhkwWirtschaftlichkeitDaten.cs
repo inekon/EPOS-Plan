@@ -397,6 +397,18 @@ public sealed class BhkwVorgabenstand
     /// </summary>
     public double? EinspeiseverguetungKwk;
 
+    /// <summary>
+    /// ETAPPE E9b (Konzept § 2.11.5, Pflege): die Einspeisevergütung KWK des Szenarios
+    /// GÜNSTIG [EUR/kWh] — gepflegt über den ±-Knopf am Feld; <c>null</c> = wie Erwartet.
+    /// Sie steht im Szenariosatz des Parametersatzes
+    /// (<see cref="SzenarioSatz.EinspeiseverguetungKwk"/>, Schemaschritt 118) und reist wie
+    /// die übrigen Vorgaben im Arbeitsstand bis zum OK-Weg.
+    /// </summary>
+    public double? EinspeiseverguetungKwkBest;
+
+    /// <summary>ETAPPE E9b: dasselbe für das Szenario UNGÜNSTIG.</summary>
+    public double? EinspeiseverguetungKwkWorst;
+
     // ETAPPE BK1a: Die vier KWKG-Rechengrößen des Projekts und die zwei
     // Einordnungen (Tatbestand, Anlagenart) sind mit Schemaschritt 90 entfallen,
     // der Kostenanteil mit Schemaschritt 91 — alle drei gehören der Anlage. Der
@@ -440,6 +452,8 @@ public sealed class BhkwVorgabenstand
     public static BhkwVorgabenstand Aus(WirtschaftlichkeitParameter p) => new BhkwVorgabenstand
     {
         EinspeiseverguetungKwk = p.EinspeiseverguetungKWK,
+        EinspeiseverguetungKwkBest = p.SatzBest?.EinspeiseverguetungKwk,
+        EinspeiseverguetungKwkWorst = p.SatzWorst?.EinspeiseverguetungKwk,
         KwkgAbschlagNegativ = p.KwkgAbschlagNegativ,
         KwkgPauschalmodus = p.KwkgPauschalmodus,
         KwkgStichtag = p.KwkgStichtag,
@@ -466,6 +480,8 @@ public sealed class BhkwVorgabenstand
 
     public bool Gleicht(WirtschaftlichkeitParameter p)
         => EinspeiseverguetungKwk == p.EinspeiseverguetungKWK
+        && EinspeiseverguetungKwkBest == p.SatzBest?.EinspeiseverguetungKwk
+        && EinspeiseverguetungKwkWorst == p.SatzWorst?.EinspeiseverguetungKwk
         && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ
         && KwkgPauschalmodus == p.KwkgPauschalmodus
         && KwkgStichtag == p.KwkgStichtag
@@ -482,6 +498,12 @@ public sealed class BhkwVorgabenstand
     public void Anwenden(WirtschaftlichkeitParameter p)
     {
         p.EinspeiseverguetungKWK = EinspeiseverguetungKwk;
+        // ETAPPE E9b: das Szenariopaar in die zwei Szenariosätze — die übrigen Felder der
+        // Sätze pflegt der Parameterdialog, sie bleiben unberührt.
+        if (p.SatzBest is null) p.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+        if (p.SatzWorst is null) p.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        p.SatzBest.EinspeiseverguetungKwk = EinspeiseverguetungKwkBest;
+        p.SatzWorst.EinspeiseverguetungKwk = EinspeiseverguetungKwkWorst;
         p.KwkgAbschlagNegativ = KwkgAbschlagNegativ;
         p.KwkgPauschalmodus = KwkgPauschalmodus;
         p.KwkgStichtag = KwkgStichtag;

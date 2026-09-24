@@ -629,45 +629,11 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// ETAPPE E5 (U10, Konzept § 2.11.7, Entscheid A14): der <b>Hinweistext</b> unter der
-        /// Annahmentafel — was ein Szenario heute variiert und was nicht. Wortlaut der
-        /// Konzeptfassung ohne den Roadmap-Satz (A14).
-        ///
-        /// <para><b>Die Zahlen im Text sind die WIRKSAMEN</b>: ohne Pflege die Vorgaben
-        /// (±10 %, ±10 %, ±2 a — <see cref="SzenarioSatz.VORGABE_INVEST_PROZENT"/> und die
-        /// Konstanten daneben), mit gepflegtem Satz die gepflegten Werte, ungünstig vor
-        /// günstig („+15 / −5 %"). Der Text gilt, bis die vollständige Szenarioabdeckung
-        /// (E9) ihn überflüssig macht.</para>
-        /// </summary>
-        /// <param name="p">Der Parametersatz der Gruppe; <c>null</c> = Vorgaben.</param>
-        /// <param name="kultur">Zahlenformat; <c>null</c> = aktuelle Kultur.</param>
-        public static string Szenariohinweis(WirtschaftlichkeitParameter p, CultureInfo kultur)
-        {
-            if (kultur == null) kultur = CultureInfo.CurrentCulture;
-            SzenarioSatz worst = (p != null ? p.SatzFuer(WirtschaftlichkeitSzenario.WORST) : null)
-                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
-            SzenarioSatz best = (p != null ? p.SatzFuer(WirtschaftlichkeitSzenario.BEST) : null)
-                                ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
-            return string.Format(kultur, MyResource.Resource.WIRT_SZEN_HINWEIS,
-                                 Spanne(worst.InvestWirksam, best.InvestWirksam, kultur),
-                                 Spanne(worst.ErtragWirksam, best.ErtragWirksam, kultur),
-                                 Spanne(worst.DauerWirksam, best.DauerWirksam, kultur));
-        }
-
-        /// <summary>
-        /// Die Spanne einer Szenariogröße als Zahl ohne Einheit: symmetrisch „±10",
-        /// sonst ungünstig vor günstig „+15 / −5". Die Einheit steht im Ressourcentext.
-        /// </summary>
-        internal static string Spanne(double unguenstig, double guenstig, CultureInfo kultur)
-        {
-            if (Math.Abs(unguenstig + guenstig) < 1e-9)
-                return Math.Abs(unguenstig) < 1e-9
-                     ? "0"
-                     : "±" + Math.Abs(unguenstig).ToString("0.#", kultur);
-            return unguenstig.ToString("+0.#;−0.#;0", kultur) + " / " +
-                   guenstig.ToString("+0.#;−0.#;0", kultur);
-        }
+        // ETAPPE E9b (Konzept § 2.11.7, Entscheid E9b‑Q3): Der HINWEISTEXT unter der
+        // Annahmentafel (U10, WIRT_SZEN_HINWEIS, gebaut E5) ist entfallen — „Der Hinweis
+        // entfällt mit der Etappe, die ihn überflüssig macht". Seit die Pflege in den
+        // Dialogen jede Größe je Szenario trägt, sagt an seiner Stelle der Ausweis
+        // „n von m Parametern szenariert" (SzenarioAbdeckung), was die Szenarien tragen.
 
         /// <summary>
         /// ETAPPE E8a (U48, Mockup „Was ist angenommen?"): die <b>Fußzeile</b> des Abschnitts —

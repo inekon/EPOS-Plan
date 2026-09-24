@@ -81,7 +81,11 @@ namespace WindowsFormsApplication1
                 {
                     try { return ctrl.SpeichereParameter(parameter); }
                     catch { return false; }
-                })
+                }),
+
+                // ETAPPE E9b (E9a-Q7): wann die flache Einspeiseverguetung PV im Lauf
+                // nicht wirkt - dieselben Saetze wie die Kohaerenzzeilen des Kerns.
+                ["EinspeisungSzenarioHinweise"] = EinspeisungSzenarioHinweise(ctrl, idStamm)
             };
 
             // iU9-W14c.3: Der Gesetzeskatalog laeuft nicht mehr ueber die
@@ -97,6 +101,43 @@ namespace WindowsFormsApplication1
                 () => GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS));
 
             return werte;
+        }
+
+        /// <summary>
+        /// ETAPPE E9b (Konzept § 2.11.5, Pflege; E9a‑Q7) — die Kohärenzzeilen des ±-Knopfes
+        /// der Einspeisevergütung PV. Dieselbe Regel wie am Ergebnis
+        /// (<c>WirtschaftlichkeitCtrl</c>, Szenariohinweise): Ist das Tarif-Rollenmodell
+        /// wirksam, bewertet es die Einspeisung mit seinem Einspeisetarif; sonst rechnet ein
+        /// aktiver PV-Vergütungsdialog die PV-Vergütung selbst. In beiden Fällen bleibt eine
+        /// Szenario-Einspeisevergütung (PV) ohne Wirkung. Ein Lesefehler kostet die Zeile,
+        /// nie den Dialog.
+        /// </summary>
+        private static IReadOnlyList<string> EinspeisungSzenarioHinweise(WirtschaftlichkeitCtrl ctrl,
+                                                                        int idStamm)
+        {
+            var liste = new List<string>();
+            bool rollen = false;
+            try { rollen = ctrl.LadeTarif(idStamm).Wirksam; }
+            catch { }
+
+            if (rollen)
+            {
+                liste.Add(Text("WIRT_SZ_ROLLEN_EINSPEISUNG",
+                    "Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet " +
+                    "die Einspeisung mit dem Einspeisetarif des Tarifsatzes."));
+                return liste;
+            }
+
+            try
+            {
+                PvVerguetungStand pv = new ProjektPhotovoltaikCtrl().LiesAufgeloest(idStamm);
+                if (pv != null && pv.Aktiv)
+                    liste.Add(Text("WIRT_SZ_PV_DIALOG_EINSPEISUNG",
+                        "Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet " +
+                        "der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario."));
+            }
+            catch { }
+            return liste;
         }
 
         /// <summary>

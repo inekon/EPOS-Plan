@@ -210,6 +210,72 @@ public sealed class EnergietraegerStand
     /// <summary>Preis über der Grenze [€/(kW·a)]; leer = nicht gepflegt.</summary>
     public double? StaffelPreis2 { get; set; }
 
+    // ---- ETAPPE E9b: die Preise je Szenario (±-Knopf, Schemaschritt 117) --
+
+    /// <summary>
+    /// ETAPPE E9b (Konzept § 2.11.5, Pflege): Zeigt die Karte die ±-Knöpfe der Preise? Nur
+    /// im PROJEKTkontext — die Szenariopreise stehen an der Projektübersteuerung
+    /// (<c>energy_project_settings</c>, Schemaschritt 117), der Katalog führt keine — und
+    /// nur, wenn die Datenbank die Spalten führt.
+    /// </summary>
+    public bool MitSzenario { get; set; }
+
+    /// <summary>Der Name des Trägers — für den Titel der Überlagerung und die
+    /// Kohärenzzeile.</summary>
+    public string TraegerName { get; set; } = "";
+
+    /// <summary>ETAPPE E9b: Arbeitspreis Best (Günstig) in der ANZEIGEeinheit — der
+    /// gewählten Preisbasis, wie das Feld daneben; <c>null</c> = wie Erwartet. Die Hülle
+    /// rechnet ihn beim Speichern in die Abrechnungseinheit zurück.</summary>
+    public double? SzenarioArbeitBest { get; set; }
+
+    /// <summary>ETAPPE E9b: Arbeitspreis Worst (Ungünstig), Anzeigeeinheit.</summary>
+    public double? SzenarioArbeitWorst { get; set; }
+
+    /// <summary>ETAPPE E9b: Grundpreis Best [€/a]; <c>null</c> = wie Erwartet.</summary>
+    public double? SzenarioGrundBest { get; set; }
+
+    /// <summary>ETAPPE E9b: Grundpreis Worst [€/a].</summary>
+    public double? SzenarioGrundWorst { get; set; }
+
+    /// <summary>ETAPPE E9b: Leistungspreis Best (Einheit wie das Feld); <c>null</c> = wie
+    /// Erwartet.</summary>
+    public double? SzenarioLeistungBest { get; set; }
+
+    /// <summary>ETAPPE E9b: Leistungspreis Worst.</summary>
+    public double? SzenarioLeistungWorst { get; set; }
+
+    /// <summary>
+    /// ETAPPE E9b (E9b‑Q4, Lesart a — warnen, nicht verweigern): Der Träger hat keinen
+    /// Erwartet-Arbeitspreis (Feld leer, Lesekette ohne Wert). Ein Szenariopreis rechnet
+    /// dann in Günstig und Ungünstig, Erwartet zeigt die Datenlücke.
+    /// </summary>
+    public bool SzenarioArbeitOhneErwartet { get; set; }
+
+    /// <summary>ETAPPE E9b (E9b‑Q4): kein Erwartet-Leistungspreis (weder Satz noch Reihe
+    /// noch Staffel).</summary>
+    public bool SzenarioLeistungOhneErwartet { get; set; }
+
+    /// <summary>
+    /// ETAPPE E9b (E9a‑Q3, Lesart a): Führt der Träger eine Leistungspreis-Staffel oder eine
+    /// saisonale Leistungspreisreihe, bleibt ein Szenario-Leistungspreis ohne Wirkung — der
+    /// Satz dazu (<c>WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG</c>); leer = er wirkt.
+    /// </summary>
+    public string SzenarioLeistungOhneWirkung { get; set; } = "";
+
+    /// <summary>ETAPPE E9b: Trägt der Arbeitspreis ein gepflegtes Paar (1e−9-Regel gegen
+    /// den Wert des Feldes)?</summary>
+    public bool SzenarioArbeitGepflegt
+        => Szenariopaar.Gepflegt(SzenarioArbeitBest, SzenarioArbeitWorst, Arbeitspreis);
+
+    /// <summary>ETAPPE E9b: Trägt der Grundpreis ein gepflegtes Paar?</summary>
+    public bool SzenarioGrundGepflegt
+        => Szenariopaar.Gepflegt(SzenarioGrundBest, SzenarioGrundWorst, Grundpreis);
+
+    /// <summary>ETAPPE E9b: Trägt der Leistungspreis ein gepflegtes Paar?</summary>
+    public bool SzenarioLeistungGepflegt
+        => Szenariopaar.Gepflegt(SzenarioLeistungBest, SzenarioLeistungWorst, Leistungspreis);
+
     // ---- Formel (nur mit Heizwert) -------------------------------------
 
     /// <summary>Zeigt die Formelgruppe? Ohne Heizwert gibt es keine Formel.</summary>

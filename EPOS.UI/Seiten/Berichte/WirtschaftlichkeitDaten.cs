@@ -503,10 +503,12 @@ public sealed class WirtschaftlichkeitStand
     public IReadOnlyList<string> Nutzungsdauerhinweise { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// ETAPPE E5 (U10, Konzept § 2.11.7): der Hinweistext unter der Annahmentafel — was
-    /// ein Szenario heute variiert und was nicht, mit den wirksamen Spannen.
+    /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q3): der AUSWEIS unter der
+    /// Annahmentafel — „n von m Parametern szenariert" samt der gepflegten Größen, an der
+    /// Stelle des früheren Hinweistexts (<c>SzenarioAbdeckung.Satz</c>). Leer = kein
+    /// Ausweis (kein Parametersatz lesbar).
     /// </summary>
-    public string Szenariohinweis { get; set; } = "";
+    public string Szenarioabdeckung { get; set; } = "";
 
     /// <summary>
     /// ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung nach DIN EN 17463 — nominal ·

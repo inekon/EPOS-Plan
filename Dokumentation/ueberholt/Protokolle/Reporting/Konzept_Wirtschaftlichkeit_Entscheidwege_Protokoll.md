@@ -1280,7 +1280,9 @@ jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`),
 (Stand `9c7a0023`), in § 8.13 und § 8.14 **vor #454** (Stand `485052c6`), in § 8.15 und § 8.16 **vor #455** (Stand
 `09037a32`, der Merge `704356a4` samt den Papieren zu #454), in § 8.17 und § 8.18 **vor #460** (Stand `9ab55946`, der
 Merge #460 über den Entscheid-Papieren zu E8b, `46023235`), in § 8.19 und § 8.20 **vor #461** (Stand `62613292`, der
-Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460) —, nicht vor dem Schnitt.*
+Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.21 und § 8.22 **vor #462** (Stand
+`75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
+Papieren zu #461) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2111,3 +2113,113 @@ Die Stellen, die mit E9a veraltet sind; „vorher" ist der Wortlaut vor #461 (St
 | § 6.1 | Kurztafel bis E8c (#460) | Zeile „E9a Szenarioabdeckung, Teil a" (#461) mit den Schemaschritten 116 bis 118, ihren Tabellen und Spalten |
 | § 6.2 | endete mit „… und `BetriebskostenStartjahrGliederungTests` (12, die Probe mit den Positionen des ersten Jahres)." | dazu `SzenarioParameterTests` (39) und der Satz „E9a bewegt keinen Anker" |
 | § 7 und Anhang | § 7: Wortlaut in § 8.19, dazu die Aufzählung „… E8 Teil a (#454) und E8 Teil b (#455)"; Kürzeltafel „V-D = **#455**" und „V-E = **E9**", Mockup-Anhang bis „U12 und U43 erledigt #455"; Etappenzeile „E9 … E12 — E9 läuft: E9a mit den Schritten 116 bis 118 (voraussichtlich #461), dann E9b (voraussichtlich #462) …" | § 7 mit E9 Teil a (#461) gebaut, als Nächstes E9b, offen dazu die sieben Fragen aus E9a; Kürzeltafel „V-E Teil a = **#461**", neue Zeile = #461, „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeilen „E9 Teil a — V‑E im Kern" = #461 (Merge `62613292`) und „E9 Teil b … E12 — nächste Etappe: E9b" |
+
+### 8.21 E9b — Vollständige Szenarioabdeckung, Teil b: Pflege in den Dialogen, Ausweis statt Hinweistext (#462)
+
+Protokoll [`E9b_Szenarioabdeckung_Dialoge_Protokoll.md`](E9b_Szenarioabdeckung_Dialoge_Protokoll.md); der Stand von V‑4,
+V‑G2 und V‑G5 (R‑V), von A5 und A14 (R‑A) und von Q18 (R‑Q) im Register; die fünf Fragen der Welle — offen, gebaut
+jeweils Lesart a, Empfehlung a, a, a, a, b — unter R‑E9b. Die Welle ist der zweite und letzte Teil der Etappe E9 (V‑E);
+mit ihr ist E9 abgeschlossen.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E9 Teil b** (#462, Merge `75d45630`) | V‑E in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV und KWK, an DV-Entgelt und PPA-Preis; der Hinweistext entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert"; 38 Ressourcenschlüssel neu, 1 entfallen, 2 geändert; kein Schemaschritt | **keine ohne Pflege** — die Rechenwege stehen seit E9a; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich; erstes Gate auf `9fbac8c6` grün, zweites Gate Build 0 Fehler, ChartProben 146/146 gleich der Windows-Messlatte, voller Lauf 12.532 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 5.700, EPOS.UI 5.877, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27+1), Dokumentationswachen 26/26 (Log GATE462b) |
+
+*Kopf (Z. 3):*
+
+> **Stand 24.09.2026** · Codestand `62613292` · `SchemaStand.Zielversion` = 118 · Schemaschritte 90–118 vergeben
+> (116–118 die Schritte B, C und D der Etappe E9a) · …
+
+**Umgesetzt mit E9b (#462):** Codestand `75d45630`, Zielversion 119 und „90–119 vergeben" (119 die Kühlung
+KU2, unter den fremden Schritten), dazu „E9b ohne Schritt".
+
+*§ 2.11.2, die Zeile V-G5 der Gap-Tafel (Z. 776), Spalte „Lücke / Behandlung":*
+
+> … Modell in § 2.11.5. **Stand: teilweise gebaut #461** (V‑E Teil a, Kern) — die Schemaschritte 116 bis 118 und die
+> Regeln des Kerns in § 2.11.5: Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario, NULL/0 =
+> wie Erwartet; die Pflege in den Dialogen mit E9b
+
+**Umgesetzt mit E9b (#462):** „**Stand: gebaut #461/#462**" mit Szenariotafel, ±-Knopf und Ausweis.
+
+*§ 2.11.4, die Zeile V-E (Z. 836) und die Fußnote (Z. 841):*
+
+> … `SzenarioParameterTests`, A/B-Nachweis über neun Größen mit Erwartet bitgleich. Risiko (V-G7) und n-jährliche
+> Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a) | … | **E9** — Teil a gebaut #461 (Kern); Teil b (die
+> Pflege in den Dialogen, der Hinweistext entfällt, der Ausweis „n von m") mit E9b |
+>
+> *… E8 (#454, #455; die Nachbesserung E8c #460) und E9 Teil a (#461).*
+
+**Umgesetzt mit E9b (#462):** Die Spalte „entspricht / bereits geliefert durch" nennt „Teil b gebaut #462" (Zeilen 8
+und 9, ±-Knopf, Ausweis, `SzenarioAbdeckungTests`); Stand „**E9** — gebaut #461 (Kern) und #462 (Dialoge, Ausweis);
+E9 abgeschlossen"; die Fußnote „… und E9 (#461, #462)".
+
+*§ 2.11.5, die Spalte „Stand" der Parametertafel (Z. 863–866) und die Regel „Pflege" (Z. 881–885):*
+
+> | **Energiepreise** je Träger | … | **Kern gebaut #461**, Spalten aus Schritt 117: …; die Pflege im Dialog mit E9b |
+> | **Erlössätze** (Marktgrößen) | … | **Kern gebaut #461**, Spalten aus Schritt 118: …; die Pflege im Dialog mit E9b |
+> | **Rahmen** | … | **8 von 8:** 6 seit Schritt 71 (…); der **Betrachtungszeitraum Kern gebaut #461**, Spalten aus
+> Schritt 116: … |
+> | **Mengen** (Simulationsergebnis) | … | **Kern gebaut #461**, Spalten aus Schritt 116: `Szen_Best/Worst_Menge` (%) |
+>
+> - **Pflege**: der vorhandene ±-Knopf (`CaseEingabeDialog`) als einheitliches Muster auch an
+>   Trägerpreisen, Erlösfeldern und der Rahmen-Gruppe; die ValERI-Ansicht zeigt je Szenario, welche
+>   Parameter gepflegte Abweichungen tragen („12 von 31 Parametern szenariert"). **Mit E9b** — die
+>   neuen Größen haben bis dahin keine Eingabestelle; ein Projekt trägt sie nur, wenn sie in seiner
+>   Datenbank stehen.
+
+**Umgesetzt mit E9b (#462):** je Zeile „**gebaut #461/#462**" mit dem Ort der Pflege (Trägerkarte, Parameterdialog,
+Dialog „BHKW-Wirtschaftlichkeit", PV-Vergütungsdialog, die Zeilen 1 bis 4, 8 und 9 der Szenariotafel); die Regel
+„Pflege" beschreibt den gebauten Baustein, die drei Orte, Kennzeichen und Warnzeichen und die Szenariotafel für
+Rahmen-Gruppe und Mengenänderung — die Rahmen-Gruppe ohne eigenen ±-Knopf (Abweichung 6 des Phase‑1-Berichts); neu
+die Regel „**Ausweis „n von m Parametern szenariert"**" mit Ort, Zählregel und Lesart — statt des Beispiels „12 von
+31" ein Satz aus den Tests.
+
+*§ 2.11.7 (Z. 1024–1055):*
+
+> Die vollständigen Parametersätze je Szenario (§ 2.11.5) kommen **nach** der Darstellungsetappe. Bis
+> dahin sagt ein Hinweis unter der Annahmentafel der Wirtschaftlichkeitsseite, was ein Szenario heute
+> variiert und was nicht (V-4, → Register R‑V; die Messung dazu: → Protokoll § 3.11).
+> …
+> **Bis E9b (Stand #461):** Mit E9 Teil a rechnet der Kern Betrachtungszeitraum, Mengenänderung,
+> Trägerpreise und Erlössätze je Szenario (§ 2.11.5). Der Hinweistext bleibt stehen, bis die Pflege in den
+> Dialogen kommt; er stimmt nur noch für Projekte ohne Pflege dieser Größen — eine Pflege zeigen dann die
+> Annahmentafel, die Nachweiszeile je Szenario und die Kohärenzzeilen. Er entfällt mit E9b; an seiner Stelle
+> steht der Ausweis „n von m Parametern szenariert" (§ 2.11.5, Pflege).
+
+**Umgesetzt mit E9b (#462):** vorn der Absatz „**Entfallen mit E9b (#462)**"; der Rest ist Rückschau in der
+Vergangenheitsform — der Wortlaut des Hinweistexts bleibt als Zitat stehen, dazu „entfallen #462"; der Absatz „Bis
+E9b" heißt jetzt „Zwischen E9a und E9b (#461)" und endet mit dem Wegfall.
+
+*§ 2.13 (5), die Folge in Block 4 (Z. 1281–1283):*
+
+> … in der Folge Bandbreite, Spannenbild, Vorschlag, Hinweistext, Verlauf, Sensitivität; …
+
+**Umgesetzt mit E9b (#462):** „Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462)" statt
+„Hinweistext".
+
+*§ 7, die Sätze zur laufenden Etappe (Z. 2806–2813):*
+
+> **E9** (V‑E, die Szenarioabdeckung nach § 2.11.5) läuft in zwei Wellen: **E9 Teil a (#461) ist gebaut** — …; **als
+> Nächstes kommt E9b** (voraussichtlich #462) mit dem ±-Knopf an den drei neuen Orten und den Zeilen 8 und 9 der
+> Szenariotafel, mit ihr entfällt der Hinweistext (§ 2.11.7) zugunsten des Ausweises „n von m Parametern
+> szenariert". Offen sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c) und die
+> sieben aus E9a (→ Register R‑E9a); …
+
+**Umgesetzt mit E9b (#462):** E9 ist in zwei Wellen gebaut; als Nächstes kommt E10 (Nutzungsdauer S3 und
+Speicherflotte, voraussichtlich #463) nach dem eigenen Entscheid zu ND‑S3; offen dazu die fünf Fragen aus E9b.
+
+### 8.22 Berichtigungen im gültigen Stand (#462)
+
+Die Stellen, die mit E9b veraltet sind; „vorher" ist der Wortlaut vor #462 (Stand `75d45630`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `62613292`, Zielversion 118, „90–118 vergeben" | Codestand `75d45630`, Zielversion 119, „90–119 vergeben"; 119 (Kühlung KU2) unter den fremden Schritten; „E9b ohne Schritt" |
+| § 2.11.2 | V‑G5 „Stand: teilweise gebaut #461"; Wortlaut in § 8.21 | „Stand: gebaut #461/#462" |
+| § 2.11.4 | V‑E: Wortlaut in § 8.21; Fußnote „… und E9 Teil a (#461)" | V‑E mit Teil b gebaut #462, Stand „E9 abgeschlossen"; Fußnote „… und E9 (#461, #462)" |
+| § 2.11.5 | Spalte „Stand" und die Regel „Pflege": Wortlaut in § 8.21 | „gebaut #461/#462" mit dem Ort der Pflege je Zeile; „Pflege" mit Baustein, Orten und Szenariotafel; neue Regel „Ausweis „n von m Parametern szenariert"" mit Zählregel und Lesart |
+| § 2.11.7 | begann mit „Die vollständigen Parametersätze … kommen nach der Darstellungsetappe"; endete mit „Bis E9b (Stand #461)" | vorn „Entfallen mit E9b (#462)", der Rest als Rückschau; „Zwischen E9a und E9b (#461)" |
+| § 2.13 (5) | „Vorschlag, Hinweistext, Verlauf, Sensitivität" | „Vorschlag, Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462), Verlauf, Sensitivität" |
+| § 6.1 | Kurztafel bis E9a (#461) | Zeile „E9b Szenarioabdeckung, Teil b" (#462) |
+| § 6.2 | endete mit „… E9a bewegt keinen Anker." | dazu `SzenarioAbdeckungTests` (15), `EnergietraegerSzenarioHuelleTests` (6) und der Satz „E9b bewegt keinen Anker" |
+| § 7 und Anhang | § 7: Wortlaut in § 8.21, dazu die Aufzählung „… E8 Teil b (#455) und E9 Teil a (#461)" und „E7 und E8 sind damit abgeschlossen"; Kürzeltafel „V-E Teil a = **#461**" und „Teil b mit E9b", Mockup-Anhang „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeile „E9 Teil b … E12 — nächste Etappe: E9b (voraussichtlich #462)" | § 7 mit E9 Teil b (#462), „E7, E8 und E9 sind damit abgeschlossen", als Nächstes E10, offen dazu die fünf Fragen aus E9b; Kürzeltafel „V-E = **#461**/**#462**", neue Zeile V‑E Teil b = #462, „U15 erledigt #461/#462, U10 entfallen #462"; Etappenzeilen „E9 Teil b — V‑E in den Dialogen" = #462 (Merge `75d45630`) und „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" |
