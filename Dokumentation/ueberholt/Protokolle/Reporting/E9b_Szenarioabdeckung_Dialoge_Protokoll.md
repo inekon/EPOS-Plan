@@ -18,10 +18,13 @@ m Parametern szenariert"; **damit ist E9 (V‑E) abgeschlossen**. Vorgänger:
 [`E9a_Szenarioabdeckung_Kern_Protokoll.md`](E9a_Szenarioabdeckung_Kern_Protokoll.md). Zweig `e9b` von `0d296ca0`
 (`origin` nach dem Push #461, Schemastand 118), zwei Phasen; Phase 1: `8e3e9357` (E9b/1), `6a7f738e` (E9b/2),
 `5841cd7c` (E9b/3), `8ed0f1a5` (E9b/4), `a4bcb41e` (E9b/5), `6d0fef5f` (E9b/6); Nachzug: Merge `f56cdab4` (`origin` =
-`b7572d42`, Dialog Design #458 Stufe 3a/3b); Phase 2: `4eeab727` (E9b/7) und `018520f8` (E9b/8). Merge `9fbac8c6` auf dem
-Hilfszweig `pm9` über `origin` = `b7572d42` (51 Dateien, +5.003/−262; der Baum gleicht `018520f8` byte-genau). Opus 5.5
-im Worktree `.claude/worktrees/e9b`. **Kein Schemaschritt, keine Rechenwirkung ohne Pflege** — `SchemaStand.Zielversion`
-bleibt 118; die Rechenwege stehen seit E9a, E9b bringt die Eingabestellen und den Ausweis.
+`b7572d42`, Dialog Design #458 Stufe 3a/3b); Phase 2: `4eeab727` (E9b/7) und `018520f8` (E9b/8); Endstand des Zweigs
+`NACHTRAG-462-E9B`. Merge `NACHTRAG-462-MERGE` über `origin` = `f06c8c9e` (Kühlung KU2 Welle 3 mit Schemaschritt 119); der
+Baum gleicht dem Endstand des Zweigs. Der erste Merge `9fbac8c6` auf dem Hilfszweig `pm9` über `b7572d42` (51 Dateien,
++5.003/−262, Baum = `018520f8`) ist durch das Vorrücken von `origin` überholt. Opus 5.5 im Worktree
+`.claude/worktrees/e9b`. **Kein Schemaschritt aus E9b, keine Rechenwirkung ohne Pflege** — nach dem Merge steht
+`SchemaStand.Zielversion` auf 119 (die Kühlung KU2); die Rechenwege stehen seit E9a, E9b bringt die Eingabestellen und
+den Ausweis.
 
 ## Befund vor der Welle
 
@@ -194,8 +197,10 @@ Analysepapiers ist der Teil „Szenario-±-Knopf" erledigt.
   1 übersprungen); gefiltert die neuen Klassen 58/58 (Kern) und 81/81 (UI), Wachen und Nachbarklassen 281/281 und 428/428;
   Formularkarte 124/124; Maskenwache grün (84 Eingabestellen); Referenzlauf 13/13 gegen R13; SQL-Prüfer 1.763 Texte,
   0 Fundstellen; Designer wiederholbar.
-- **Merge `9fbac8c6`** auf dem Hilfszweig `pm9` über `origin` = `b7572d42`: 51 Dateien, +5.003/−262; der Baum gleicht
-  `018520f8` byte-genau.
+- **Erster Merge `9fbac8c6`** auf dem Hilfszweig `pm9` über `origin` = `b7572d42`: 51 Dateien, +5.003/−262; der Baum
+  gleicht `018520f8` byte-genau — überholt, weil `origin` auf `f06c8c9e` vorgerückt ist (Kühlung KU2 Welle 3 mit
+  Schemaschritt 119 und neuer Testdatenbank). **Merge `NACHTRAG-462-MERGE`** über `origin` = `f06c8c9e`; der Endstand
+  des Zweigs `e9b` ist `NACHTRAG-462-E9B`.
 
 ## Abweichungen und Befunde
 
@@ -224,13 +229,15 @@ Analysepapiers ist der Teil „Szenario-±-Knopf" erledigt.
 - **Phase 2** (auf `018520f8`): voller Lauf 0 Fehler, **12.500 bestanden, 1 übersprungen**; gefiltert 58/58 und 81/81,
   281/281 und 428/428; Formularkarte 124/124; Maskenwache 84; Referenzlauf 13/13 gegen R13 (387 CSV byte-gleich,
   4.145.687 Werte); SQL-Prüfer 1.763/0; Designer wiederholbar.
-- **Gate auf `9fbac8c6`** (Worktree `pm9`, 05:46–05:51, Log `GATE462.log`), grün: Kern-Filter 0 Fehler; ChartProben 146
-  Bilder, alle grün, Hashes gleich der Windows-Messlatte (146/146; E9b bringt kein Bild); voller Lauf 0 Fehler, **12.500
-  bestanden, 1 übersprungen** (EPOS.Kern 5.685, EPOS.UI 5.860, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 und
-  1 übersprungen); Dokumentationswachen 26/26. Referenzlauf 13/13 gegen R13 und SQL-Prüfer 1.763/0 aus dem Agentenlauf
-  auf dem byte-gleichen Baum `018520f8`.
-- **Schema:** kein Schritt; `SchemaStand.Zielversion` = 118, der nächste freie Schritt ist 119. Testdatenbank unverändert
-  (LFS `e9748b7f…`, Stand 118).
+- **Erstes Gate auf `9fbac8c6`** (der erste Merge, Worktree `pm9`, 05:46–05:51, Log `GATE462.log`), grün: Kern-Filter
+  0 Fehler; ChartProben 146 Bilder, alle grün, Hashes gleich der Windows-Messlatte (146/146; E9b bringt kein Bild); voller
+  Lauf 0 Fehler, **12.500 bestanden, 1 übersprungen** (EPOS.Kern 5.685, EPOS.UI 5.860, KiKern 542, SpeicherEngine 386,
+  SpeicherPlanung 27 und 1 übersprungen); Dokumentationswachen 26/26. Referenzlauf 13/13 gegen R13 und SQL-Prüfer
+  1.763/0 aus dem Agentenlauf auf dem byte-gleichen Baum `018520f8`.
+- **Zweites Gate auf `NACHTRAG-462-MERGE`** (über `origin` = `f06c8c9e`): NACHTRAG-462-GATE2.
+- **Schema:** E9b bringt keinen Schritt; nach dem Merge `SchemaStand.Zielversion` = 119 (Kühlung KU2 Welle 3,
+  `SCHRITT_119_KAELTESTROM`, Entscheid E34 — nicht aus E9b), der nächste freie Schritt ist 120. Testdatenbank: die der
+  Kühlung (LFS `NACHTRAG-462-TESTDB`, Stand 119); E9b ändert sie nicht.
 
 ## Abnahme am Gerät (A‑E9‑1, Windows und iPad)
 
@@ -298,9 +305,9 @@ Bezug stehen soll, klärt der Anwender mit der Versionsnummer.
 - **Nächste Etappe: E10** (Analysepapier § 5, voraussichtlich #463) — Nutzungsdauer S3 und Speicherflotte: Instandsetzung
   und Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge, die Speicherflotte an `Tab_Nutzungsdauer` mit
   Neueinfrieren der Basis (A7), geräteeigene Spalten kennzeichnen (A8); rechenwirksam mit A/B und neuer Referenzbasis;
-  ein Schemaschritt nur bei Bedarf, dann ab 119. Voraussetzung ist der eigene Entscheid zu ND‑S3. E11 entfällt, E12
-  (Wiki-Runden) folgt.
-- **Push** nach der Regel des Anwenders ohne Rückfrage aus dem Hilfszweig `pm9` (`9fbac8c6` und die Papiere) auf
+  Schemaschritt bei Bedarf 120. Voraussetzung ist der eigene Entscheid zu ND‑S3. E11 entfällt, E12 (Wiki-Runden)
+  folgt.
+- **Push** nach der Regel des Anwenders ohne Rückfrage aus dem Hilfszweig des Merges (`NACHTRAG-462-MERGE` und die Papiere) auf
   `ios_migration_september` und `main`; der CI-Nachweis kommt mit der nächsten Papierwelle.
 - **Papiere mit der Statuszeile:** Register (Kopf, Familientafel, A5, A14, Q18, R‑V mit V‑4, V‑G2, V‑G5, E6‑Q1, neue
   Familie R‑E9b, EZ‑9, EZ‑10), Konzept (Kopf, § 2.11.2, § 2.11.4, § 2.11.5 Tafel und Regeln, § 2.11.7, § 2.13 (5), § 6.1,

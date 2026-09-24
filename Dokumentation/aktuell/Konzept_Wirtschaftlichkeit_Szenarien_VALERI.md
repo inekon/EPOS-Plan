@@ -3,8 +3,8 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 24.09.2026** · Codestand `9fbac8c6` · `SchemaStand.Zielversion` = **118**, Schemaschritte
-90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt). Die Etappen W5‑B‑9 bis
+**Stand 24.09.2026** · Codestand `NACHTRAG-462-MERGE` · `SchemaStand.Zielversion` = **119**, Schemaschritte
+90–119 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2). Die Etappen W5‑B‑9 bis
 W5‑B‑12 sind gebaut; ihre Fortsetzung läuft unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im
 Etappenplan **E0–E12** des Analysepapiers. **V-E ist mit E9 gebaut** (Teil a im Kern #461, Teil b in den
 Dialogen #462): Günstig und Ungünstig lesen zusätzlich Betrachtungszeitraum, Mengenänderung, Trägerpreise und

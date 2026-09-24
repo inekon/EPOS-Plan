@@ -1,8 +1,8 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `9fbac8c6` · `SchemaStand.Zielversion` = 118 · Schemaschritte 90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `NACHTRAG-462-MERGE` · `SchemaStand.Zielversion` = 119 · Schemaschritte 90–119 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
-Die Schritte 97 bis 101, 103, 107 bis 110, 114 und 115 gehören nicht diesem Feld: **97**
+Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115 und 119 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
 BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
 Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten der Gebäudesimulation
@@ -11,8 +11,10 @@ Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten
 (`SCHRITT_107_ERGEBNIS_GEBAEUDE`, Entscheid E30), **108** bis **110** die Kühlung der Gebäudesimulation, Stufe
 KU1 (108 KU-S1 `SCHRITT_108_KUEHLUNG_GEBAEUDE`, 109 KU-S2 `SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG`, 110 KU-S4
 `SCHRITT_110_KUEHLUNG_ERGEBNIS`), **114** der Kühlbetrieb am Erzeuger, Stufe KU2 (KU-S3
-`SCHRITT_114_KUEHLUNG_ERZEUGER`), und **115** die Zapfkategorien des Zapfprofilgenerators, Stufe Z3 (T2,
-`SCHRITT_115_ZAPFKATEGORIEN`, `Tab_TwwZapfkategorie_STAMM`, #453). An Tabellen dieses Feldes,
+`SCHRITT_114_KUEHLUNG_ERZEUGER`), **115** die Zapfkategorien des Zapfprofilgenerators, Stufe Z3 (T2,
+`SCHRITT_115_ZAPFKATEGORIEN`, `Tab_TwwZapfkategorie_STAMM`, #453), und **119** die Abrechnungsart des Kältestroms und
+die Kälteseite der Wärmepumpenergebnisse, Stufe KU2 Welle 3 (`SCHRITT_119_KAELTESTROM`, Entscheid E34). An Tabellen
+dieses Feldes,
 aber nicht aus seinem Etappenplan:
 **106** — fremde Ergebnisverweise der Wirtschaftlichkeit werden NULL, eine Datenbereinigung der Welle #444
 (`SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS`). Diesem Feld gehören **102** — die leere `KWKG_Anlagenart` wird
@@ -2921,7 +2923,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E8** Teil b — V‑D | die Formelmappe Stufen 0 bis 3 (U12) samt Blattstruktur- und ClosedXML-Wache, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`, die Fußzeile in der Knopfreihe (E8a‑Q4) — E8 abgeschlossen | **#455** (Merge `704356a4`) |
 | **E8c** — E8b‑Q2/Q3 | die Bemessungstexte aller Arten aus dem Bemessungskatalog, die Gliederungsprobe mit den Positionen des ersten Jahres („ab Jahr X", Nachweisfassung 9), der Kommentar zu U42 | **#460** (Merge `9ab55946`) |
 | **E9** Teil a — V‑E im Kern | die Schemaschritte 116 (Szenariorahmen), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare, `SzenarioParameterTests`, A/B über neun Größen, Testdatenbank 118 | **#461** (Merge `62613292`) |
-| **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `9fbac8c6`) |
+| **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `NACHTRAG-462-MERGE`) |
 | **E10** … **E12** | ND-S3 (Nutzungsdauer S3 und Speicherflotte) · Wiki (E11 entfällt) | **nächste Etappe: E10** (voraussichtlich #463); offen die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a) und die fünf aus E9b (→ Register R‑E9b); E8b entschieden und gebaut (→ Register R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
