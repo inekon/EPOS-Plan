@@ -30874,7 +30874,7 @@ Do you want to allow this?</value>
     <value>Items every n years with p_E [€/a]</value>
   </data>
   <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
-    <value>Default value without usable layers ({0} of {1} constructions complete)</value>
+    <value>Default value without usable layers ({0} of {1} envelope components with a complete construction)</value>
   </data>
   <data name="GIMP_BELEG_BAUWEISE_AUS_BAUART" xml:space="preserve">
     <value>derived by the building editor from the construction type</value>
@@ -31280,5 +31280,56 @@ Do you want to allow this?</value>
   </data>
   <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
     <value>The share is maintained under "Electricity price details" of the energy carrier; it is shown here for reference only.</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_SCHICHTEN" xml:space="preserve">
+    <value>room-side layers up to 10 cm: {0} Wh/(m²K), area-weighted over {1} envelope components ({2} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_SCHICHTEN" xml:space="preserve">
+    <value>from the layers {0} Wh/K ({1} Wh/(m²K)) — the building editor derives the thermal mass from the construction type</value>
+  </data>
+  <data name="GIMP_BELEG_G_GBXML" xml:space="preserve">
+    <value>area-weighted from {0} windows ({1} m²) — in gbXML, SolarHeatGainCoeff usually refers to the whole window; EPOS additionally reduces it by the frame fraction</value>
+  </data>
+  <data name="IMP_GEB_PROT_BAUWEISE_AUSSERHALB" xml:space="preserve">
+    <value>The thermal mass from the layers ({0} Wh/(m²K)) lies outside {1} … {2} Wh/(m²K) — please check the constructions.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUM_ALS_BEHEIZT" xml:space="preserve">
+    <value>Space {0} "{1}" is treated as heated at the user's request.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUM_ALS_UNBEHEIZT" xml:space="preserve">
+    <value>Space {0} "{1}" is treated as unheated at the user's request.</value>
+  </data>
+  <data name="IMP_GEB_PROT_NAME_FEHLT" xml:space="preserve">
+    <value>The new building needs a name.</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_ATTRIBUT" xml:space="preserve">
+    <value>Condition given in the file: {0}</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_NAME" xml:space="preserve">
+    <value>Name contains "{0}"</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_ANNAHME" xml:space="preserve">
+    <value>not specified — assumed to be heated</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_MANUELL" xml:space="preserve">
+    <value>changed by the user</value>
+  </data>
+  <data name="GIMP_FORMAT_GBXML" xml:space="preserve">
+    <value>gbXML</value>
+  </data>
+  <data name="GIMP_FORMAT_IFC" xml:space="preserve">
+    <value>IFC</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X1" xml:space="preserve">
+    <value>X1 – one zone per zone of the file</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X2" xml:space="preserve">
+    <value>X2 – one zone per storey</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X3" xml:space="preserve">
+    <value>X3 – one zone per space</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
+    <value>X4 – one zone per building</value>
   </data>
 </root>

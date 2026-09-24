@@ -56,7 +56,15 @@ namespace WindowsFormsApplication1
             Gruppe = f.Gruppe;
             Einheit = f.Einheit;
             Reihenfolge = f.Reihenfolge;
+            Eingebbar = f.Eingebbar;
+            HakenSetzbar = f.HakenSetzbar;
         }
+
+        /// <summary>Darf der Anwender den Wert ändern (<see cref="GebaeudeZielfeld.Eingebbar"/>)?</summary>
+        public bool Eingebbar { get; }
+
+        /// <summary>Darf der Anwender den Haken setzen (<see cref="GebaeudeZielfeld.HakenSetzbar"/>)?</summary>
+        public bool HakenSetzbar { get; }
 
         /// <summary>Sprachneutraler Schlüssel des Zielfelds.</summary>
         public string Zielfeld { get; }
@@ -113,6 +121,29 @@ namespace WindowsFormsApplication1
         {
             if (!Markierung.HasValue || stufe > Markierung.Value) Markierung = stufe;
         }
+
+        /// <summary>
+        /// <b>Die Handänderung im Zuordnungsdialog</b> (Softwarearchitektur 3.4, „Wert ändern —
+        /// Herkunft wird MANUELL"): Der Wert wird gesetzt, die Herkunft ist
+        /// <see cref="Importherkunft.Manuell"/>, Beleg und Markierung fallen weg — eine Zahl des
+        /// Anwenders belegt sich selbst, und eine gelbe oder rote Zeile war eine Aussage über den
+        /// GELESENEN Wert. Ein eingetragener Wert setzt den Haken; ein geleerter lässt ihn stehen
+        /// (dann übernimmt die Zeile ein leeres Feld, und die Prüfung sagt, ob das geht).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">wenn das Zielfeld nicht eingebbar ist.</exception>
+        public void ManuellSetzen(double? wert)
+        {
+            if (!Eingebbar)
+                throw new InvalidOperationException("Das Zielfeld " + Zielfeld + " ist nicht eingebbar.");
+            Wert = wert;
+            Herkunft = Importherkunft.Manuell;
+            Beleg = null;
+            Markierung = null;
+            if (wert.HasValue) Uebernehmen = true;
+        }
+
+        /// <summary>Setzt den Haken; eine Zeile, deren Haken nicht setzbar ist, bleibt ohne.</summary>
+        public void HakenSetzen(bool haken) => Uebernehmen = haken && HakenSetzbar;
 
         /// <summary>Sprachunabhängige Kurzfassung für Tests: <c>ZIELFELD = wert (Herkunft)</c>.</summary>
         public override string ToString()

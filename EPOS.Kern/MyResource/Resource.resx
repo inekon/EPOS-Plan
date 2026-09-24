@@ -30881,7 +30881,7 @@ Möchten Sie das zulassen?</value>
     <value>Positionen alle n Jahre mit p_E [€/a]</value>
   </data>
   <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
-    <value>Vorgabe ohne auswertbare Schichten ({0} von {1} Konstruktionen vollständig)</value>
+    <value>Vorgabe ohne auswertbare Schichten ({0} von {1} Hüllbauteilen mit vollständigem Aufbau)</value>
   </data>
   <data name="GIMP_BELEG_BAUWEISE_AUS_BAUART" xml:space="preserve">
     <value>bildet der Gebäudeeditor aus der Bauart</value>
@@ -31287,5 +31287,56 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
     <value>Gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_SCHICHTEN" xml:space="preserve">
+    <value>raumseitige Schichten bis 10 cm: {0} Wh/(m²K), flächengewichtet über {1} Hüllbauteile ({2} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_SCHICHTEN" xml:space="preserve">
+    <value>aus den Schichten {0} Wh/K ({1} Wh/(m²K)) — der Gebäudeeditor bildet die Bauweise aus der Bauart</value>
+  </data>
+  <data name="GIMP_BELEG_G_GBXML" xml:space="preserve">
+    <value>flächengewichtet aus {0} Fenstern ({1} m²) — SolarHeatGainCoeff gilt in gbXML meist für das ganze Fenster; EPOS mindert zusätzlich um den Rahmenanteil</value>
+  </data>
+  <data name="IMP_GEB_PROT_BAUWEISE_AUSSERHALB" xml:space="preserve">
+    <value>Die Speichermasse aus den Schichten ({0} Wh/(m²K)) liegt außerhalb {1} … {2} Wh/(m²K) — bitte die Aufbauten prüfen.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUM_ALS_BEHEIZT" xml:space="preserve">
+    <value>Raum {0} „{1}“ gilt auf Wunsch des Anwenders als beheizt.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUM_ALS_UNBEHEIZT" xml:space="preserve">
+    <value>Raum {0} „{1}“ gilt auf Wunsch des Anwenders als unbeheizt.</value>
+  </data>
+  <data name="IMP_GEB_PROT_NAME_FEHLT" xml:space="preserve">
+    <value>Das neue Gebäude braucht einen Namen.</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_ATTRIBUT" xml:space="preserve">
+    <value>Zustandsangabe der Datei: {0}</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_NAME" xml:space="preserve">
+    <value>Name enthält „{0}“</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_ANNAHME" xml:space="preserve">
+    <value>keine Angabe — als beheizt angenommen</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_MANUELL" xml:space="preserve">
+    <value>vom Anwender umgestellt</value>
+  </data>
+  <data name="GIMP_FORMAT_GBXML" xml:space="preserve">
+    <value>gbXML</value>
+  </data>
+  <data name="GIMP_FORMAT_IFC" xml:space="preserve">
+    <value>IFC</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X1" xml:space="preserve">
+    <value>X1 – eine Zone je Zone der Datei</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X2" xml:space="preserve">
+    <value>X2 – eine Zone je Geschoss</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X3" xml:space="preserve">
+    <value>X3 – eine Zone je Raum</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
+    <value>X4 – eine Zone je Gebäude</value>
   </data>
 </root>

@@ -75,10 +75,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Flächenbezogene Wärmekapazität Σ ρ·c·d [J/(m²K)] eines VOLLSTÄNDIGEN Aufbaus; <c>null</c>
-        /// für jeden anderen (ein masseloser Aufbau trägt keine Masse) und bei Stoffwerten außerhalb
-        /// des Bandes. Grundlage der Bauweise aus Schichten, sobald deren Regel feststeht
-        /// (Umsetzungskonzept 3.4, Zeile Bauweise) — bis dahin bleibt die Bauweise im Import leer.
+        /// Flächenbezogene Wärmekapazität Σ ρ·c·d [J/(m²K)] des GANZEN Aufbaus, wenn er VOLLSTÄNDIG
+        /// ist; <c>null</c> für jeden anderen (ein masseloser Aufbau trägt keine Masse) und bei
+        /// Stoffwerten außerhalb des Bandes. Die Bauart des Imports nimmt nur die raumseitigen
+        /// Schichten (<see cref="WirksameKapazitaetAusSchichten"/>).
         /// </summary>
         internal static double? KapazitaetAusSchichten(AbbildAufbau aufbau)
         {
@@ -88,6 +88,45 @@ namespace WindowsFormsApplication1
                 // Die Richtung wählt nur den Widerstand ruhender Luftschichten — die gibt es hier nicht.
                 return Bauteilreduktion.Kennwerte(Vollstaendige(aufbau), Waermestromrichtung.Horizontal, 0.0, 0.0, aufbau.Kennung)
                                        .Kapazitaet_JM2K;
+            }
+            catch (GebaeudeModellException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Raumseitige Tiefe [m], bis zu der Schichten zur wirksamen Speichermasse zählen (Umsetzungskonzept 3.4, Zeile Bauweise).</summary>
+        internal const double WIRKSAME_TIEFE_M = 0.10;
+
+        /// <summary>
+        /// <b>Die wirksame flächenbezogene Wärmekapazität</b> C″ = Σ ρ·c·d [J/(m²K)] der
+        /// RAUMSEITIGEN Schichten bis <paramref name="tiefeM"/> (Umsetzungskonzept 3.4, Zeile
+        /// Bauweise: „raumseitige Schichten bis 10 cm"): von innen gezählt, die Schicht an der
+        /// Grenze nur mit ihrem Anteil. <c>null</c> für einen nicht vollständigen Aufbau und bei
+        /// Stoffwerten außerhalb des Bandes (<see cref="Bauteilreduktion.Pruefen"/>).
+        ///
+        /// <para>Gerechnet wird an der EINEN Stelle des Kerns —
+        /// <see cref="Bauteilreduktion.FlaechenbezogeneKapazitaet"/> je Schicht; hier steht nur die
+        /// Tiefengrenze. Raumseitig ist nach der gbXML-Hausannahme die LETZTE Schicht der Datei
+        /// (erste Schicht außen, Datenaustauschkonzept 3.7).</para>
+        /// </summary>
+        internal static double? WirksameKapazitaetAusSchichten(AbbildAufbau aufbau, double tiefeM = WIRKSAME_TIEFE_M)
+        {
+            if (aufbau == null || aufbau.Status != Aufbaustatus.Vollstaendig || aufbau.Schichten.Count == 0) return null;
+            if (!(tiefeM > 0.0)) return null;
+            try
+            {
+                List<Schicht> schichten = Vollstaendige(aufbau);   // raumseitig zuerst
+                Bauteilreduktion.Pruefen(schichten, aufbau.Kennung);
+                double rest = tiefeM, c = 0.0;
+                foreach (Schicht s in schichten)
+                {
+                    if (rest <= 0.0) break;
+                    double d = Math.Min(s.Dicke_M, rest);
+                    c += Bauteilreduktion.FlaechenbezogeneKapazitaet(s with { Dicke_M = d });
+                    rest -= d;
+                }
+                return c;
             }
             catch (GebaeudeModellException)
             {

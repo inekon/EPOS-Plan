@@ -111,12 +111,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public PruefMeldung Ablehnung { get; internal set; }
 
+        /// <summary>
+        /// Die Räume, deren „beheizt" der Anwender gegen die Datei umgestellt hat — Kennung →
+        /// beheizt, nur die Abweichungen (Umsetzungskonzept 3.5 Nr. 3: „Der Dialog zeigt die
+        /// Raumliste mit dem Haken"). Leer, wenn alles wie gelesen gilt.
+        /// </summary>
+        public IReadOnlyDictionary<string, bool> Uebersteuerungen { get; internal set; }
+            = new Dictionary<string, bool>(StringComparer.Ordinal);
+
         /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
         public GebaeudeFeldzeile Zeile(string zielfeld)
         {
             foreach (GebaeudeFeldzeile z in _zeilen)
                 if (string.Equals(z.Zielfeld, zielfeld, StringComparison.Ordinal)) return z;
             return null;
+        }
+
+        /// <summary>
+        /// Eine Handänderung des Dialogs auf den Satz legen (<see cref="GebaeudeFeldzeile.ManuellSetzen"/>);
+        /// <c>false</c>, wenn es das Zielfeld nicht gibt oder es nicht eingebbar ist — dann bleibt
+        /// die Zeile, wie sie ist.
+        /// </summary>
+        public bool ManuellSetzen(string zielfeld, double? wert)
+        {
+            GebaeudeFeldzeile z = Zeile(zielfeld);
+            if (z == null || !z.Eingebbar) return false;
+            z.ManuellSetzen(wert);
+            return true;
+        }
+
+        /// <summary>Den Haken des Dialogs auf den Satz legen (<see cref="GebaeudeFeldzeile.HakenSetzen"/>).</summary>
+        public bool HakenSetzen(string zielfeld, bool haken)
+        {
+            GebaeudeFeldzeile z = Zeile(zielfeld);
+            if (z == null) return false;
+            z.HakenSetzen(haken);
+            return true;
         }
     }
 }
