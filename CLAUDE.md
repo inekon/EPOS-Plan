@@ -142,8 +142,9 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-23_R13_Kuehlung`, dreizehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen ohne
-wirksame Kühlung frei, Projekt 1017 rechnet Kälte, allein Projekt 1040 bis zur Stufe GA auf dem
+`2026-09-24_R14_Kaelteerzeuger`, dreizehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
+Kühlbetrieb, allein Projekt 1040 bis zur Stufe GA auf dem
 Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`; Aufbau, Herleitung und
 Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
