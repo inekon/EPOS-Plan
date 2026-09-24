@@ -158,6 +158,28 @@ namespace WindowsFormsApplication1
         /// <summary>Sollwert-Zeitprogramm, 168 Werte (<c>AnlagenkopplungSchema.WochenprofilLesen</c>); null = die vier Bestandssollwerte.</summary>
         public string Sollwertprofil;
 
+        // =====================================================================
+        //  Die acht Spalten der Kühlübergabe aus KAK-S1 (E37, Anlagenkopplung 8.1) —
+        //  NULL-ERHALTEND wie die Blöcke darüber. Gelesen aus der Sicht.
+        // =====================================================================
+
+        /// <summary>„Die Kühlübergabe dieses Gebäudes wird gerechnet" (Schalter, NOT NULL DEFAULT 0; A1).</summary>
+        public bool Kuehluebergabe_Aktiv;
+        /// <summary>Kühlübergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); null = ideal, Kälteseite nicht gekoppelt.</summary>
+        public string Kuehl_Uebergabe_Art;
+        /// <summary>Exponent der Kühlübergabe [–]; null = Vorgabe der Art.</summary>
+        public double? Kuehl_Uebergabe_Exponent;
+        /// <summary>Nennleistung der Kühlübergabe [kW], sensibel; null = aus dem Auslegungstag (A2).</summary>
+        public double? Kuehl_Uebergabe_Leistung_Nenn;
+        /// <summary>Auslegungsvorlauf der Kühlübergabe [°C]; null = Vorgabe der Art.</summary>
+        public double? Kuehl_Auslegung_Vorlauf;
+        /// <summary>Auslegungsrücklauf der Kühlübergabe [°C]; null = Vorgabe der Art.</summary>
+        public double? Kuehl_Auslegung_Ruecklauf;
+        /// <summary>Raumtemperatur im Auslegungspunkt der Kühlübergabe [°C]; null = <see cref="Kuehl_Sollwert"/>.</summary>
+        public double? Kuehl_Auslegung_Raumtemperatur;
+        /// <summary>Untere Grenze des Kaltwasser-Vorlaufs [°C] — Vorgabe statt Taupunktrechnung (7.2); null = Vorgabe der Art.</summary>
+        public double? Kuehl_Vorlaufgrenze;
+
         public ProjektGebaeudeModel()
         {
             items = null;

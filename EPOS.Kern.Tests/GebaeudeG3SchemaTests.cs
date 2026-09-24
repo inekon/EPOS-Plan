@@ -249,7 +249,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
-            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten), Spalten(SchemaKatalog.TAB_ZONE));
+            // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
+            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an.
+            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
+                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
+                         Spalten(SchemaKatalog.TAB_ZONE));
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten), Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }

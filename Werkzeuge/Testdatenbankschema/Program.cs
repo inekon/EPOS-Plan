@@ -1744,6 +1744,54 @@ namespace Testdatenbankschema
                                   "vollstaendig: " + ZonenSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritte KuehluebergabeSchema.SCHRITT bis SCHRITT_ZONE (Anlagenkopplung AK1
+            //      Welle 4, E37): KAK-S1 - acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM)
+            //      samt viertem Sichtneubau (98 Spalten); KAK-S3 - die Ergebnisspalten der
+            //      Kaelteseite an Tab_ErgebnisEnergiebedarf und Tab_ErgebnisGebaeude; die drei
+            //      Zonenspalten der Kuehluebergabe an Tab_Zone. REIN DDL aus DERSELBEN Quelle, aus
+            //      der sich SchemaMigration.Schritt_Kuehluebergabe, Schritt_KuehluebergabeErgebnis
+            //      und Schritt_KuehluebergabeZone bedienen (KuehluebergabeSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108 und 122 oben bauen die
+            //      Sicht jeweils neu; nur so traegt sie am Ende die Spalten der Kuehluebergabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - der Schalter 0, alles andere NULL; kein
+            //      Referenzprojekt rechnet gekoppelt, und der Export nimmt die Ergebnisspalten erst
+            //      mit einem Wert auf.
+            string nrKuehl = KuehluebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlErgebnis = KuehluebergabeSchema.SCHRITT_ERGEBNIS.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlZone = KuehluebergabeSchema.SCHRITT_ZONE.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKuehl + " - Kuehluebergabe am Gebaeude (KAK-S1): " +
+                              (KuehluebergabeSchema.GebaeudeVollstaendig() ? "steht bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlErgebnis + " - Ergebnisspalten der Kaelteseite (KAK-S3): " +
+                              (KuehluebergabeSchema.ErgebnisVollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlZone + " - Kuehluebergabe an der Zone: " +
+                              (KuehluebergabeSchema.ZoneVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKuehl = new List<string>();
+                angelegt += KuehluebergabeSchema.GebaeudeAlle(berichtKuehl);
+                foreach (string zeile in berichtKuehl)
+                    Console.WriteLine("Schritt " + nrKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehl + " - vollstaendig: " + KuehluebergabeSchema.GebaeudeVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlErgebnis = new List<string>();
+                angelegt += KuehluebergabeSchema.ErgebnisAlle(berichtKuehlErgebnis);
+                foreach (string zeile in berichtKuehlErgebnis)
+                    Console.WriteLine("Schritt " + nrKuehlErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlErgebnis + " - vollstaendig: " + KuehluebergabeSchema.ErgebnisVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlZone = new List<string>();
+                angelegt += KuehluebergabeSchema.ZoneAlle(berichtKuehlZone);
+                foreach (string zeile in berichtKuehlZone)
+                    Console.WriteLine("Schritt " + nrKuehlZone + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlZone + " - vollstaendig: " + KuehluebergabeSchema.ZoneVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
