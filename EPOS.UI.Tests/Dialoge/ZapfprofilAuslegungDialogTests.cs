@@ -951,6 +951,71 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Equal("Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.", cut.Find(".epos-zapfausl-konsistenz").TextContent);
     }
 
+    /// <summary>
+    /// P_p = ∞ (4.5 b): Findet die Summenlinie beim Φ_N für das gewählte Perzentil keinen
+    /// Nachweis, zeigt Karte (b) den Satz des Kerns, einen eigenen Satz „entfällt" mit Φ_N und der
+    /// Zahl der Realisierungen ohne Nachweis, „entfällt" statt ∞ als Wert und bei der
+    /// Gleichzeitigkeit; das Streuband behält seine ∞-Zeilen.
+    /// </summary>
+    [Fact]
+    public void Ein_unendliches_Perzentil_entfaellt_benannt()
+    {
+        ZapfprofilPerzentilDaten pz = PerzentilErgebnis();
+        pz.Streuband[2] = new(95, 320);
+        pz.Streuband[3] = new(99, double.PositiveInfinity);
+        pz.Maximum = double.PositiveInfinity;
+        pz.OhneNachweis = 3;
+        pz.Gleichzeitigkeit = null;
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Perzentil = new ZapfprofilKarteDaten
+        {
+            Stand = ZapfprofilKartenstand.NichtRechenbar, LeistungKw = 25,
+            Text = "Perzentil P99: nicht rechenbar — beim Φ_N 25 kW findet die Summenlinie für 3 von 150 Realisierungen kein Volumen."
+        };
+        g.PerzentilErgebnis = pz;
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
+
+        IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
+        Assert.Equal("nicht rechenbar — Perzentil P99: nicht rechenbar — beim Φ_N 25 kW findet die Summenlinie für 3 von 150 "
+                     + "Realisierungen kein Volumen.", b.QuerySelector(".epos-zapfausl-perzentil-grund")!.TextContent);
+        Assert.Equal("Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N 25,0 kW findet die Summenlinie für 3 von 150 "
+                     + "Realisierungen keinen Nachweis.", b.QuerySelector(".epos-zapfausl-perzentil-entfaellt")!.TextContent);
+        Assert.Equal("entfällt", b.QuerySelector(".epos-zapfausl-perzentil-wert b")!.TextContent);
+        Assert.DoesNotContain("∞", b.QuerySelector(".epos-zapfausl-perzentil-wert")!.TextContent);
+        Assert.Equal("entfällt", b.QuerySelector(".epos-zapfausl-glf b")!.TextContent);
+        Assert.Equal("P99 | ∞", string.Join(" | ", b.QuerySelectorAll("table.epos-zapfausl-streuband tbody tr")[3]
+                                                     .Children.Select(c => c.TextContent.Trim())));
+        Assert.Contains("3 von 150 Realisierungen ohne Nachweis", b.TextContent);
+    }
+
+    /// <summary>
+    /// Die Konsistenzzeile der Speichergruppe rät nicht „einschalten", wenn der Schalter schon
+    /// steht: Fehlt das Perzentil trotz Schalter, nennt sie den Grund in Karte (b); während des
+    /// Laufs sagt sie „rechnet …"; ohne Schalter bleibt der Rat.
+    /// </summary>
+    [Fact]
+    public void Die_Konsistenzzeile_raet_nur_ohne_Schalter_zum_Einschalten()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Perzentil = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.NichtRechenbar, Text = "Nicht rechenbar — keine Kategorien." };
+        ZapfprofilAuslegungStartDaten start = StartMitStochastik(Ergebnis(g));
+        start.Eingabe.Stochastisch = true;
+        var cut = Aufbauen(start);
+        Assert.Equal("Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)).",
+                     cut.Find(".epos-zapfausl-konsistenz").TextContent);
+        Assert.DoesNotContain("einschalten", cut.Find(".epos-zapfausl-warnungen").TextContent);
+
+        // Während des Laufs: „rechnet …".
+        var ende = new TaskCompletionSource<ZapfprofilAuslegungDaten>();
+        cut = Aufbauen(StartMitStochastik(Ergebnis(Speichergruppe())), rechnen: ErgebnisZu, stochastisch: (_, _) => ende.Task);
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Assert.Equal("Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …", cut.Find(".epos-zapfausl-konsistenz").TextContent);
+
+        // Ohne Schalter der Rat.
+        cut = Aufbauen(StartMitStochastik(Ergebnis(Speichergruppe())));
+        Assert.Contains("„Stochastisch rechnen“ einschalten", cut.Find(".epos-zapfausl-konsistenz").TextContent);
+    }
+
     [Fact]
     public void Ein_nicht_rechenbares_Perzentil_nennt_seinen_Grund()
     {

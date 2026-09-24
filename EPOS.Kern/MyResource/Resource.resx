@@ -26589,4 +26589,16 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
     <value>Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.</value>
   </data>
+  <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_ENTFAELLT" xml:space="preserve">
+    <value>Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_LAEUFT" xml:space="preserve">
+    <value>Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
+    <value>Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)).</value>
+  </data>
 </root>

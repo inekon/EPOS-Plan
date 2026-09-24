@@ -214,6 +214,15 @@
                             else if (g.PerzentilErgebnis is { } pz)
                             {
                                 <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Tag)</p>
+                                @* P_p = ∞ (ohne Nachweis beim Φ_N): der Satz des Kerns und ein eigener „entfällt". *@
+                                if (g.Perzentil.Stand == ZapfprofilKartenstand.NichtRechenbar)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-perzentil-grund">@Standtext(g.Perzentil)</p>
+                                }
+                                if (PerzentilEntfaellt(pz))
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-perzentil-entfaellt">@Format(Texte.PerzentilEntfaellt, Zahl(pz.LeistungKw, "N1"), Ganz(pz.OhneNachweis), Ganz(pz.Realisierungen))</p>
+                                }
                                 <div class="epos-zapfausl-wert epos-zapfausl-perzentil-wert">
                                     <span>@Format(pz.Volumen ? Texte.PerzentilVolumen : Texte.PerzentilMinutenspitze, pz.Perzentil)</span>
                                     <b>@Perzentilhaupttext(pz)</b>
@@ -262,7 +271,7 @@
                                     <p class="epos-leisezeile epos-zapfausl-ohnenachweis">@Format(Texte.OhneNachweis, pz.OhneNachweis, pz.Realisierungen)</p>
                                 }
                                 <div class="epos-zapfausl-wert epos-zapfausl-glf">
-                                    <span>@(pz.Volumen ? Texte.GlfV : Texte.GlfP)</span><b>@Zahl(pz.Gleichzeitigkeit, "N2")</b>
+                                    <span>@(pz.Volumen ? Texte.GlfV : Texte.GlfP)</span><b>@(pz.Gleichzeitigkeit is double glf ? Zahl(glf, "N2") : Texte.Entfaellt)</b>
                                 </div>
                                 <p class="epos-leisezeile epos-zapfausl-glf-bezug">@Format(pz.Volumen ? Texte.GlfVBezug : Texte.GlfPBezug, pz.Perzentil, pz.Einheiten)</p>
                                 <p class="epos-leisezeile epos-zapfausl-perzentil-info">@Format(Texte.PerzentilNachrichtlich, pz.Perzentil, Zahl(pz.MinutenspitzeKw, "N1"), Zahl(pz.StundenspitzeKw, "N1"))</p>
@@ -432,6 +441,15 @@
                                                         Zustand="@(kz.KonsistenzAuffaellig ? KohaerenzZustand.Abweichend : KohaerenzZustand.Ok)" />
                                     </div>
                                 }
+                            }
+                            else if (EnsembleLaeuft)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz" role="status">@Texte.KonsistenzLaeuft</p>
+                            }
+                            else if (_eingabe.Stochastisch)
+                            {
+                                @* Der Schalter steht schon — kein Rat, ihn einzuschalten; das Perzentil fehlt aus seinem Grund (Karte (b)). *@
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz">@Texte.KonsistenzOhnePerzentil</p>
                             }
                             else
                             {
@@ -736,9 +754,13 @@
 
     /// <summary>Der Perzentilwert der Karte (b): Speicher „V l bei Φ kW", sonst die Minutenspitze in kW.</summary>
     private string Perzentilhaupttext(ZapfprofilPerzentilDaten pz)
-        => pz.Volumen && !double.IsInfinity(pz.Wert) && !double.IsNaN(pz.Wert)
+        => PerzentilEntfaellt(pz) ? Texte.Entfaellt
+         : pz.Volumen && !double.IsNaN(pz.Wert)
             ? Format(Texte.PerzentilVolumenWert, Zahl(pz.Wert, "N0"), Zahl(pz.LeistungKw, "N1"))
             : Perzentilwerttext(pz, pz.Wert);
+
+    /// <summary>Entfällt der Perzentilwert — ohne Nachweis beim Φ_N (P_p = ∞)?</summary>
+    private static bool PerzentilEntfaellt(ZapfprofilPerzentilDaten pz) => double.IsPositiveInfinity(pz.Wert);
 
     /// <summary>Ein Wert des Streubands in seiner Einheit (l bzw. kW); ohne Nachweis „∞".</summary>
     private static string Perzentilwerttext(ZapfprofilPerzentilDaten pz, double wert)

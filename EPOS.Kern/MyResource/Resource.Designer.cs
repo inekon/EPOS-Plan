@@ -75240,6 +75240,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren. ähnelt.
         /// </summary>
         public static string ZPG_AUS_ENTWURFSSTAND {
@@ -75731,6 +75740,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_KONSISTENZ_AUFFAELLIG {
             get {
                 return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_AUFFAELLIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet … ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)). ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL", resourceCulture);
             }
         }
         
@@ -76316,6 +76343,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_OPT_VORGABEREGEL {
             get {
                 return ResourceManager.GetString("ZPG_AUS_OPT_VORGABEREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_ENTFAELLT", resourceCulture);
             }
         }
         

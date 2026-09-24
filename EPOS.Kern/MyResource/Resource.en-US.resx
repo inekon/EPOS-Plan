@@ -26582,4 +26582,16 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
     <value>Design value of each apartment station; the governing zone is “{0}”.</value>
   </data>
+  <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
+    <value>not applicable</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_ENTFAELLT" xml:space="preserve">
+    <value>Percentile value and simultaneity do not apply: at Φ_N {0} kW the cumulative curve finds no proof for {1} of {2} realisations.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_LAEUFT" xml:space="preserve">
+    <value>Consistency note: checked with the ensemble — calculating …</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
+    <value>Consistency note omitted — the percentile is not calculable (reason in card (b)).</value>
+  </data>
 </root>

@@ -198,6 +198,12 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN</c></summary>
     public string HinweisEnsembleAbgebrochen { get; set; } = "Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.";
 
+    /// <summary><c>ZPG_AUS_ENTFAELLT</c></summary>
+    public string Entfaellt { get; set; } = "entfällt";
+
+    /// <summary><c>ZPG_AUS_PERZENTIL_ENTFAELLT</c></summary>
+    public string PerzentilEntfaellt { get; set; } = "Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis.";
+
     /// <summary><c>ZPG_AUS_PERZENTIL_LAUF</c></summary>
     public string PerzentilLauf { get; set; } = "nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2}";
 
@@ -431,6 +437,12 @@ public sealed class ZapfprofilAuslegungTexte
 
     /// <summary><c>ZPG_AUS_KONSISTENZ_AUFFAELLIG</c></summary>
     public string KonsistenzAuffaellig { get; set; } = "Konsistenzhinweis: {0}";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ_LAEUFT</c></summary>
+    public string KonsistenzLaeuft { get; set; } = "Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …";
+
+    /// <summary><c>ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL</c></summary>
+    public string KonsistenzOhnePerzentil { get; set; } = "Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)).";
 
     /// <summary><c>ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE</c></summary>
     public string KonsistenzOhneSchwelle { get; set; } = "Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.";

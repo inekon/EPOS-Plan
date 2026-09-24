@@ -910,6 +910,8 @@ namespace WindowsFormsApplication1
             t.KartePerzentilUnter = Text_("ZPG_AUS_KARTE_PERZENTIL_UNTER", t.KartePerzentilUnter);
             t.PerzentilOffen = Text_("ZPG_AUS_PERZENTIL_OFFEN", t.PerzentilOffen);
             t.PerzentilLauf = Text_("ZPG_AUS_PERZENTIL_LAUF", t.PerzentilLauf);
+            t.Entfaellt = Text_("ZPG_AUS_ENTFAELLT", t.Entfaellt);
+            t.PerzentilEntfaellt = Text_("ZPG_AUS_PERZENTIL_ENTFAELLT", t.PerzentilEntfaellt);
             t.PerzentilLaeuft = Text_("ZPG_AUS_PERZENTIL_LAEUFT", t.PerzentilLaeuft);
             t.StatusEnsembleLaeuft = Text_("ZPG_AUS_STATUS_LAEUFT", t.StatusEnsembleLaeuft);
             t.HinweisEnsembleAbgebrochen = Text_("ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN", t.HinweisEnsembleAbgebrochen);
@@ -989,6 +991,8 @@ namespace WindowsFormsApplication1
             t.KonsistenzOk = Text_("ZPG_AUS_KONSISTENZ_OK", t.KonsistenzOk);
             t.KonsistenzAuffaellig = Text_("ZPG_AUS_KONSISTENZ_AUFFAELLIG", t.KonsistenzAuffaellig);
             t.KonsistenzOhneSchwelle = Text_("ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE", t.KonsistenzOhneSchwelle);
+            t.KonsistenzLaeuft = Text_("ZPG_AUS_KONSISTENZ_LAEUFT", t.KonsistenzLaeuft);
+            t.KonsistenzOhnePerzentil = Text_("ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL", t.KonsistenzOhnePerzentil);
             t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
             t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
             t.StatusPunkt = Text_("ZPG_AUS_STATUS_PUNKT", t.StatusPunkt);
