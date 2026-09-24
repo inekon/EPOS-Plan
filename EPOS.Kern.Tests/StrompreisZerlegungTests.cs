@@ -74,27 +74,138 @@ namespace EPOS.Kern.Tests
         /// Rückfallebene; die Quelle ist der Gesetzeskatalog. Beide müssen
         /// wertgleich sein — auseinanderlaufen dürfen sie nicht, sonst rechnet die
         /// Maske anders als der Katalog anzeigt.
+        ///
+        /// <para>ETAPPE E18 (E18‑Q1 a): verglichen wird die ÄLTESTE Saatzeile je
+        /// Schlüssel, nicht ein festes Stichjahr. Vor ihr greift die Rückfallebene
+        /// (<c>GesetzKatalog.WertMitHerkunft</c> liefert für frühere Jahre nichts);
+        /// eine spätere Jahreszeile — eine Novelle — lässt die Konstante unberührt
+        /// und diese Wache grün.</para>
         /// </summary>
         [Fact]
         public void Die_Katalogwerte_und_die_Rueckfallebene_sind_wertgleich()
         {
-            var katalog = new Dictionary<string, double>();
+            var aelteste = new Dictionary<string, GesetzParameter>();
             foreach (GesetzParameter p in GesetzKatalog.Vorbelegung())
-                if (p.JahrVon == 2026 && p.Wert.HasValue) katalog[p.Schluessel] = p.Wert.Value;
+            {
+                if (!p.Wert.HasValue) continue;
+                GesetzParameter bisher;
+                if (!aelteste.TryGetValue(p.Schluessel, out bisher) || p.JahrVon < bisher.JahrVon)
+                    aelteste[p.Schluessel] = p;
+            }
 
-            // Die drei Umlagen stehen in ct/kWh …
-            Assert.Equal(StrompreisZerlegungModel.UMLAGE_KWKG_VORGABE,
-                         katalog[DbWerte.GESETZ_UMLAGE_KWKG], 9);
-            Assert.Equal(StrompreisZerlegungModel.UMLAGE_OFFSHORE_VORGABE,
-                         katalog[DbWerte.GESETZ_UMLAGE_OFFSHORE], 9);
-            Assert.Equal(StrompreisZerlegungModel.UMLAGE_STROMNEV19_VORGABE,
-                         katalog[DbWerte.GESETZ_UMLAGE_STROMNEV19], 9);
+            var abweichungen = new List<string>();
+            foreach (KeyValuePair<string, double> k in RUECKFALLEBENE)
+            {
+                GesetzParameter p;
+                if (!aelteste.TryGetValue(k.Key, out p))
+                {
+                    abweichungen.Add("  " + k.Key + ": keine Saatzeile in GesetzKatalog.Vorbelegung().");
+                    continue;
+                }
+                PruefeGegenKonstante(abweichungen, "Saat (GesetzKatalog.Vorbelegung)", k.Key, k.Value, p);
+            }
 
-            // … die beiden Stromsteuersätze in EUR/MWh (Faktor 10 auf ct/kWh).
-            Assert.Equal(StrompreisZerlegungModel.STROMSTEUER_REGELFALL,
-                         katalog[DbWerte.GESETZ_STROMST_REGELSATZ] / 10.0, 9);
-            Assert.Equal(StrompreisZerlegungModel.STROMSTEUER_REDUZIERT,
-                         katalog[DbWerte.GESETZ_STROMST_REDUZIERT] / 10.0, 9);
+            Assert.True(abweichungen.Count == 0, Meldung(abweichungen));
+        }
+
+        /// <summary>
+        /// <b>ETAPPE E18 — die Wache Konstante gegen Katalog der Datenbank</b> (Konzept
+        /// § 6.3 Nr. 14, § 6.5 „Doppelte Wahrheiten", E18‑Q1 a). Die Saat ist nur die
+        /// Vorlage; gelesen wird zur Laufzeit <c>Tab_Gesetzesparameter</c>. Diese Wache
+        /// hält die älteste Katalogzeile der TESTDATENBANK je Schlüssel gegen die
+        /// Rückfallebene in <see cref="StrompreisZerlegungModel"/> — die beiden
+        /// Stromsteuersätze (EUR/MWh) und die drei Umlagen (ct/kWh).
+        /// </summary>
+        [Fact]
+        public void Die_Rueckfallebene_steht_wertgleich_im_Katalog_der_Testdatenbank()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var katalog = new GesetzKatalog();
+            var abweichungen = new List<string>();
+            foreach (KeyValuePair<string, double> k in RUECKFALLEBENE)
+            {
+                string klasse = k.Key.StartsWith("UMLAGE_", System.StringComparison.Ordinal)
+                    ? DbWerte.GESETZ_KLASSE_UMLAGEN
+                    : DbWerte.GESETZ_KLASSE_STROMSTEUER;
+
+                GesetzParameter aelteste = null;
+                foreach (GesetzParameter p in katalog.AlleDerKlasse(klasse))
+                    if (p.Schluessel == k.Key && p.Wert.HasValue
+                        && (aelteste == null || p.JahrVon < aelteste.JahrVon))
+                        aelteste = p;
+
+                if (aelteste == null)
+                {
+                    abweichungen.Add("  " + k.Key + ": keine Zeile mit Wert in Tab_Gesetzesparameter " +
+                                     "der Testdatenbank (Klasse " + klasse + ").");
+                    continue;
+                }
+                PruefeGegenKonstante(abweichungen, "Testdatenbank (Tab_Gesetzesparameter)",
+                                     k.Key, k.Value, aelteste);
+            }
+
+            Assert.True(abweichungen.Count == 0, Meldung(abweichungen));
+        }
+
+        /// <summary>Die Rückfallebene je Katalogschlüssel, in ct/kWh.</summary>
+        private static readonly KeyValuePair<string, double>[] RUECKFALLEBENE =
+        {
+            new KeyValuePair<string, double>(DbWerte.GESETZ_STROMST_REGELSATZ,
+                                             StrompreisZerlegungModel.STROMSTEUER_REGELFALL),
+            new KeyValuePair<string, double>(DbWerte.GESETZ_STROMST_REDUZIERT,
+                                             StrompreisZerlegungModel.STROMSTEUER_REDUZIERT),
+            new KeyValuePair<string, double>(DbWerte.GESETZ_UMLAGE_KWKG,
+                                             StrompreisZerlegungModel.UMLAGE_KWKG_VORGABE),
+            new KeyValuePair<string, double>(DbWerte.GESETZ_UMLAGE_OFFSHORE,
+                                             StrompreisZerlegungModel.UMLAGE_OFFSHORE_VORGABE),
+            new KeyValuePair<string, double>(DbWerte.GESETZ_UMLAGE_STROMNEV19,
+                                             StrompreisZerlegungModel.UMLAGE_STROMNEV19_VORGABE),
+        };
+
+        /// <summary>
+        /// Rechnet die Katalogzeile in ct/kWh (EUR/MWh ÷ 10, ct/kWh × 1) und merkt eine
+        /// Abweichung von der Konstante. Eine andere Einheit ist selbst eine Abweichung.
+        /// </summary>
+        private static void PruefeGegenKonstante(List<string> abweichungen, string ort, string schluessel,
+                                                 double konstanteCtKwh, GesetzParameter p)
+        {
+            string einheit = (p.Einheit ?? "").Trim();
+            double ct;
+            if (string.Equals(einheit, DbWerte.GESETZ_EINHEIT_EUR_MWH, System.StringComparison.OrdinalIgnoreCase))
+                ct = p.Wert.Value / 10.0;
+            else if (string.Equals(einheit, DbWerte.GESETZ_EINHEIT_CT_KWH, System.StringComparison.OrdinalIgnoreCase))
+                ct = p.Wert.Value;
+            else
+            {
+                abweichungen.Add("  " + ort + ", " + schluessel + " ab " + p.JahrVon +
+                                 ": Einheit „" + einheit + "\" ist weder EUR/MWh noch ct/kWh.");
+                return;
+            }
+
+            if (System.Math.Abs(ct - konstanteCtKwh) > 1e-9)
+                abweichungen.Add("  " + ort + ", " + schluessel + " ab " + p.JahrVon + ": " +
+                                 p.Wert.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                                 " " + einheit + " = " +
+                                 ct.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                                 " ct/kWh, die Rückfallebene trägt " +
+                                 konstanteCtKwh.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                                 " ct/kWh.");
+        }
+
+        private static string Meldung(List<string> abweichungen)
+        {
+            return "Rückfallebene und Gesetzeskatalog laufen auseinander:" + System.Environment.NewLine +
+                   string.Join(System.Environment.NewLine, abweichungen) + System.Environment.NewLine +
+                   "Nachzuziehen sind alle drei Orte gemeinsam: die Konstante in " +
+                   "EPOS.Kern/Model/StrompreisZerlegungModel.cs (STROMSTEUER_REGELFALL, " +
+                   "STROMSTEUER_REDUZIERT, UMLAGE_*_VORGABE), die Saatzeile in " +
+                   "GesetzKatalog.Vorbelegung (EPOS.Kern/Allgemein/Wirtschaftlichkeit/GesetzKatalog.cs, " +
+                   "mit neuer Generation) und die Zeile der Testdatenbank " +
+                   "(Referenzlaeufe/Kenndaten_Test.sqlite, Tab_Gesetzesparameter). Eine Novelle " +
+                   "ist eine NEUE, spätere Jahreszeile — sie lässt die älteste Zeile und die " +
+                   "Rückfallebene stehen.";
         }
 
         /// <summary>

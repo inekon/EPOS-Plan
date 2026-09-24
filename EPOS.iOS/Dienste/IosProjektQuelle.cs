@@ -232,7 +232,9 @@ public sealed class IosProjektQuelle : IProjektQuelle
                 Katalog: katalog.WertMitHerkunft,
                 ErgebnisseLaden: ids => wirt.LadeErgebnisse(new List<int>(ids)),
                 SpeichereAnlage: a => SpeichereAnlage(anlagenCtrl, a),
-                SpeichereVorgaben: p => SpeichereVorgaben(wirt, p));
+                SpeichereVorgaben: p => SpeichereVorgaben(wirt, p),
+                // ETAPPE E18 (Konzept § 6.3 Nr. 16): der erfasste Stromsteueranteil, nur Anzeige.
+                Stromsteueranteil: StrompreisZerlegungCtrl.StromsteuerErfasst(idProjekt));
         }
         catch (Exception ex)
         {
