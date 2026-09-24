@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platzhaltermarke Berichtsvorlagen</title>
+<meta name="description" content="Mockup zu BV-E6: wie die App zeigt, welcher Platzhalter der Berichtsvorlage zu einem Feld, einer Tabelle oder einem Diagramm gehoert - drei Zustaende der Marke, die Berichtsseite nach dem Umbau, Bedienregeln und ein Auszug des Platzhalterkatalogs">
+<!--
+  MOCKUP zum Konzeptentwurf Berichtsvorlagen (Zweig konzept-berichtsvorlagen),
+  Abschnitte "Platzhalter in der App erkennen" und "Berichtsseite nach dem Umbau";
+  die Kennungen BV-E1, BV-E6, BV-E7, BV-Q1, BV-Q6 und BV-Q9 verweisen dorthin.
+
+  Anwenderauftrag (sinngemaess): Der Word- und Excel-Bericht entsteht kuenftig aus
+  einer VORLAGE, die der Anwender in Word/Excel pflegt; EPOS-Plan fuellt definierte
+  Platzhalter. In der App soll er elegant und ohne Stoerung erkennen, welcher
+  Platzhalter zu einem Feld, einer Tabelle oder einem Diagramm gehoert
+  ("Symbol, Mouse-over am Rand, ...").
+
+  Nachtrag des Anwenders vom 24.09.2026 (mit Bildschirmfoto der heutigen Berichtsseite):
+
+    "Die Anforderungen für die Berichterstellung werden beibehalten: Simulation aller
+     Berichtsrelevanter Varianten zuvor ausgeführt
+     Start in Bereich Berichte&Kosten (screenshot)"
+
+  ES IST EIN SCHEMA, kein Abbild der Masken. Abschnitt 1 zeigt eine Beispielansicht
+  (Projektstammdaten, Kennzahlkachel, Vergleichstabelle, Diagrammrahmen) in drei
+  Zustaenden; das Diagramm ist ein grauer Platzhalter. Abschnitt 2 zeigt die Seite
+  "Berichte & Kosten > Bericht" nach dem Entwurf und kennzeichnet ruhig, was wie
+  heute bleibt und was neu ist. Abschnitte 3 und 4: Bedienregeln und ein Auszug des
+  Platzhalterkatalogs; Abschnitt 5 nennt, was das Mockup gegenueber dem Entwurf
+  festlegt oder vorschlaegt.
+
+  ZUSTAENDE UND SKRIPT: Ohne Skript zeigen die drei Tafeln die drei Zustaende fest
+  (Aus, Marken, Schluessel); Ueberfahren oder Fokus oeffnet die Aufklappung einer
+  Marke ueber CSS. Ein kleines Skript macht den Umschalter in der Kopfzeile jeder
+  Tafel, das Anheften der Aufklappung per Klick oder Tipp, Esc und "Kopieren"
+  lebendig. In der App entsteht ausgeschaltet KEIN DOM - hier verbirgt CSS die
+  Marken, damit jede Tafel umschaltbar bleibt.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen. Farben und
+  Masse aus EPOS.UI/wwwroot/epos-ui.css, Token woertlich (u. a. --epos-marke #005aa0,
+  --epos-rahmen-leise #d9d7cf, --epos-flaeche #f5f4ef, --epos-ecke 6 px,
+  --epos-touchziel 44 px, --epos-infoknopf 28 px, --epos-quelle-rahmen #378ADD,
+  --epos-ampel-gruen #007800); dazu die Werte, die dort OHNE Token stehen:
+  Kennzahlkachel (#f4f6fa, #333333, #0073aa), Navigation (#23282d, #eeeeee, #0073aa),
+  Kopfzeile (#1f4e79), Schatten der Aufklappung (0 2px 8px rgba(0,0,0,.18)).
+  KEINE neue Farbe. Die klar benannte Zugabe fuer die Marke sind sechs Namen --vf-*
+  im :root, die auf vorhandene Token zeigen; Mockup-Zeichen sind nur "neu" /
+  "wie heute" und der blaue Randstrich neuer Bloecke in Abschnitt 2.
+
+  KEINE HERSTELLER- UND PRODUKTDATEN: neutrale Namen, runde Werte
+  ("Musterprojekt 1", "Kunde A", "Speicher 1, 100 kWh").
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-text: #993C1D;
+
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+
+    --epos-ampel-gruen: #007800;
+    --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-hoehe: 40px;
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-infoknopf: 28px;
+    --epos-touchziel: 44px;
+    --epos-abstand: 12px;
+
+    --epos-marke: #005aa0;
+    --epos-marke-trennlinie: #dee3e8;
+
+    /* Woertlich aus epos-ui.css, dort ohne Token */
+    --kachel-flaeche: #f4f6fa;          /* .epos-kennzahlkachel          */
+    --kachel-titel: #333333;            /* .epos-kennzahlkachel-titel    */
+    --kachel-wert: #0073aa;             /* .epos-kennzahlkachel-wert     */
+    --navigation-flaeche: #23282d;      /* .epos-navigation-liste        */
+    --navigation-text: #eeeeee;         /* .epos-navigation-knopf        */
+    --navigation-aktiv: #0073aa;        /* .epos-navigation-knopf--aktiv */
+    --kopfzeile-text: #1f4e79;          /* .epos-navigation-kopf         */
+    --mono-schrift: ui-monospace, "Cascadia Mono", Consolas, monospace; /* .epos-herleitung-formel */
+
+    /* ZUGABE FUER DIE MARKE - keine neue Farbe, nur Namen auf vorhandene Token */
+    --vf-zeichen-text: var(--epos-marke);
+    --vf-zeichen-rahmen: var(--epos-rahmen-leise);
+    --vf-zeichen-flaeche: var(--epos-flaeche);
+    --vf-bezug-rahmen: var(--epos-quelle-rahmen);   /* gestrichelter Rahmen des Elements */
+    --vf-kopiert: var(--epos-ampel-gruen);
+    --vf-kopiert-flaeche: var(--epos-ampel-gruen-flaeche);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    line-height: 1.45;
+}
+
+code, .mono { font-family: var(--mono-schrift); font-size: 12px; }
+
+.nur-vorlesen {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ================= Kopf der Mockup-Seite (nicht Teil der Maske) ========= */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 16px 10px 16px;
+}
+@media (min-width: 720px) { .mockup-kopf { padding: 14px 24px 10px 24px; } }
+.mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
+.mockup-kopf p  { margin: 6px 0 0 0; color: var(--epos-text-leise); max-width: 104ch; }
+
+.mockup-inhalt { padding: 0 16px; max-width: 1760px; }
+@media (min-width: 720px) { .mockup-inhalt { padding: 0 24px; } }
+
+.mockup-hinweis {
+    margin: 16px 0 14px 0; padding: 8px 12px; max-width: 120ch;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel);
+}
+.mockup-hinweis p { margin: 0; }
+.mockup-hinweis p + p { margin-top: 4px; }
+
+section.abschnitt {
+    margin: 0 0 30px 0; padding: 0 0 12px 0;
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+section.abschnitt h2 { margin: 22px 0 2px 0; font-size: 17px; color: var(--epos-karte-titel); }
+section.abschnitt h3.zwischen { margin: 18px 0 6px 0; font-size: 14px; color: var(--epos-karte-titel); }
+.pfad { margin: 0 0 12px 0; color: var(--epos-text-leise); max-width: 110ch; }
+
+/* ================= Abschnitt 1: drei Tafeln ============================= */
+.zustaende { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (min-width: 1140px) { .zustaende { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.tafel {
+    display: flex; flex-direction: column; gap: 8px; min-width: 0;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche); padding: 10px 12px 12px 12px;
+}
+.tafel h3 {
+    margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--epos-text-leise);
+}
+.tafel--an h3 { color: var(--epos-quelle-text); }
+.tafel-satz { margin: 0; color: var(--epos-text-leise); }
+
+/* Die Beispielansicht: ein Container, damit sie sich nach IHRER Breite richtet */
+.ansicht {
+    container-type: inline-size;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+/* Kopfzeile wie .epos-navigation-kopf: Text, dann Umschalter, dann Hilfepille */
+.kopfzeile {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--epos-rand);
+    padding: 6px var(--epos-rand);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    font-weight: 700; color: var(--kopfzeile-text);
+}
+.kopfzeile-text { flex: 1 1 auto; min-width: 0; }
+
+.hilfepille {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: var(--epos-infoknopf); min-width: var(--epos-infoknopf); padding: 0 6px;
+    border: 1px solid var(--epos-rahmen); border-radius: 16px;
+    color: var(--epos-marke); line-height: 0;
+}
+.hilfepille svg { width: 16px; height: 16px; display: block; }
+
+/* Der Umschalter "Platzhalter zeigen": eine Optionsgruppe, drei Stellungen,
+   jede 44 px hoch. Die gewaehlte Stellung traegt die Fuellung der Marke - wie
+   das aktive Feld der Hilfepille. */
+.vf-umschalter {
+    display: inline-flex; align-items: stretch; flex: 0 0 auto;
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    overflow: hidden; background: var(--epos-karte-flaeche);
+    font-weight: 400; color: var(--epos-text);
+}
+.vf-umschalter-titel {
+    display: inline-flex; align-items: center; padding: 0 8px;
+    font: 600 12px/1 var(--mono-schrift); color: var(--vf-zeichen-text);
+    background: var(--vf-zeichen-flaeche); border-right: 1px solid var(--epos-rahmen-leise);
+}
+.vf-stellung { position: relative; display: inline-flex; }
+.vf-stellung input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.vf-stellung > span {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: var(--epos-touchziel); min-width: var(--epos-touchziel); padding: 0 8px;
+    cursor: pointer;
+}
+.vf-stellung + .vf-stellung > span { border-left: 1px solid var(--epos-rahmen-leise); }
+.vf-stellung:hover input:not(:checked) + span { background: var(--epos-karte-flaeche-hover); }
+.vf-stellung input:checked + span { background: var(--epos-marke); color: var(--epos-gruppenkopf-text); }
+.vf-stellung input:focus-visible + span { outline: 2px solid var(--epos-karte-rahmen-hover); outline-offset: -4px; }
+/* Schemafassung ohne Eingabe (Abschnitt 2 und Ortsbild) */
+.vf-umschalter--schema .vf-stellung > span { cursor: default; }
+.vf-stellung--an > span { background: var(--epos-marke); color: var(--epos-gruppenkopf-text); }
+
+/* Die leise Zeile der Stufe "Schluessel" - KEIN Banner, KEIN Schliesskreuz:
+   ausgeschaltet wird am Umschalter. */
+.vf-zeile {
+    display: none; flex-wrap: wrap; align-items: center; gap: 4px var(--epos-rand);
+    padding: 0 var(--epos-rand); border-bottom: 1px solid var(--epos-rahmen-leise);
+    color: var(--epos-text-leise);
+}
+.z-schluessel .vf-zeile { display: flex; }
+.vf-zeile-text { flex: 1 1 14em; padding: 6px 0; }
+.vf-zeile-text b { color: var(--epos-text); font-weight: 600; }
+.vf-zeile-symbol { font: 600 12px/1 var(--mono-schrift); color: var(--vf-zeichen-text); }
+
+.ansicht-koerper { display: flex; flex-direction: column; gap: var(--epos-rand); padding: var(--epos-rand); }
+
+.gruppenkopf {
+    display: flex; align-items: center; min-height: var(--epos-gruppenkopf-hoehe);
+    padding-inline: var(--epos-rand);
+    background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text); font-weight: 700;
+}
+.gruppe-koerper { display: flex; flex-direction: column; gap: var(--epos-rand); padding: var(--epos-rand) 0 0 0; }
+
+.feld-text { color: var(--epos-text); }
+.eingabe {
+    display: block; width: 100%; min-height: var(--epos-touchziel); padding: 0 8px;
+    font: inherit; color: var(--epos-text); background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+}
+.eingabe--mehrzeilig { min-height: 0; height: 64px; padding: 6px 8px; line-height: 1.4; resize: none; }
+.eingabe:focus-visible { outline: 2px solid var(--epos-karte-rahmen-hover); outline-offset: 1px; }
+
+.ansicht-unten { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
+.ansicht-links { display: flex; flex-direction: column; gap: var(--epos-rand); min-width: 0; }
+@container (min-width: 500px) {
+    .ansicht-unten { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+.kachel {
+    padding: 6px 10px; border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke); background: var(--kachel-flaeche);
+}
+.kachel-titel { font-weight: 600; color: var(--kachel-titel); }
+.kachel-wert { display: block; font-size: 19px; color: var(--kachel-wert); }
+.kachel-quelle { display: block; color: var(--epos-text-leise); }
+
+.element-titel { font-weight: 600; color: var(--epos-text); }
+
+.raster-huelle { overflow-x: auto; }
+.raster { width: 100%; border-collapse: collapse; }
+.raster th, .raster td {
+    padding: 4px 8px; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.raster th { background: var(--epos-flaeche); color: var(--epos-text); font-weight: 600; }
+.raster .zahl { text-align: right; }
+
+.platz {
+    border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche); color: var(--epos-text-sehr-leise);
+    padding: 10px 12px; font-style: italic;
+}
+.platz--diagramm { min-height: 150px; display: flex; align-items: center; justify-content: center; text-align: center; }
+
+/* ================= Die Marke ============================================ */
+/* Traeger = ein berichtsfaehiges Element: Titel, Koerper, Halter (Marke +
+   Aufklappung). Das Raster verteilt die drei Teile je Stufe neu. */
+.vf-traeger {
+    position: relative; display: grid; row-gap: 4px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "titel" "koerper";
+}
+.vf-traeger--kachel { row-gap: 2px; }
+.vf-titel { grid-area: titel; min-width: 0; align-self: center; }
+.vf-koerper { grid-area: koerper; min-width: 0; }
+.vf-halter { grid-area: halter; display: none; position: relative; justify-self: end; }
+
+/* Stufe "Marken": eine eigene Randspur von 44 px rechts - die Marke ueberlagert
+   nichts, das Feld wird um die Spur schmaler. */
+.z-marken .vf-traeger {
+    grid-template-columns: minmax(0, 1fr) var(--epos-touchziel); column-gap: 2px;
+    grid-template-areas: "titel ." "koerper halter";
+}
+.z-marken .vf-traeger--oben   { grid-template-areas: "titel halter" "koerper koerper"; }
+.z-marken .vf-traeger--kachel { grid-template-areas: "titel halter" "koerper halter"; }
+.z-marken .vf-halter { display: block; align-self: center; }
+.z-marken .vf-traeger--hoch .vf-halter,
+.z-marken .vf-traeger--oben .vf-halter,
+.z-marken .vf-traeger--kachel .vf-halter { align-self: start; }
+
+/* Bezug: Ueberfahrene, fokussierte oder angeheftete Marke rahmt ihr Element */
+.z-marken .vf-traeger:has(> .vf-halter:hover),
+.z-marken .vf-traeger:has(> .vf-halter:focus-within),
+.z-marken .vf-traeger:has(> .vf-halter.ist-offen) {
+    outline: 1px dashed var(--vf-bezug-rahmen); outline-offset: 3px;
+}
+
+/* Stufe "Schluessel": jedes Element gestrichelt, Chip am oberen Rand in einer
+   44 px hohen Titelzeile. Eine umbrechende Zeile statt Raster: Reicht der Platz
+   neben dem Titel nicht, rueckt der Chip rechtsbuendig in eine eigene Zeile -
+   er ueberdeckt nie den Titel. */
+.z-schluessel .vf-traeger {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px;
+    outline: 1px dashed var(--vf-bezug-rahmen); outline-offset: 3px;
+}
+.z-schluessel .vf-titel { order: 1; flex: 1 1 auto; }
+.z-schluessel .vf-halter { order: 2; display: block; margin-left: auto; max-width: 100%; }
+.z-schluessel .vf-koerper { order: 3; flex: 1 1 100%; margin-top: 4px; }
+/* Luft zwischen den gestrichelten Rahmen (je 3 px Versatz) */
+.z-schluessel .ansicht-koerper,
+.z-schluessel .gruppe-koerper,
+.z-schluessel .ansicht-links,
+.z-schluessel .ansicht-unten { gap: 18px; }
+.z-schluessel .gruppe-koerper { padding-top: 14px; }
+
+/* Der Knopf ist das volle Beruehrungsziel (44 x 44), sichtbar ist das Bild darin */
+.vf-zeichen {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: var(--epos-touchziel); min-height: var(--epos-touchziel); max-width: 100%;
+    margin: 0; padding: 0; border: 0; background: transparent;
+    font: inherit; color: var(--vf-zeichen-text); cursor: pointer;
+}
+.vf-bild {
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    min-width: 20px; height: 20px; padding: 0 3px;
+    border: 1px solid var(--vf-zeichen-rahmen); border-radius: var(--epos-ecke);
+    background: var(--vf-zeichen-flaeche);
+    font: 600 11px/1 var(--mono-schrift); white-space: nowrap;
+}
+.vf-symbol { letter-spacing: -.5px; white-space: nowrap; }
+.vf-haken { white-space: nowrap; }
+.vf-haken, .vf-schluessel, .vf-kopiert-text { display: none; }
+.vf-zeichen:hover .vf-bild,
+.vf-halter.ist-offen .vf-bild {
+    border-color: var(--epos-karte-rahmen-hover); background: var(--epos-karte-flaeche-hover);
+}
+.vf-zeichen:focus-visible { outline: none; }
+.vf-zeichen:focus-visible .vf-bild { outline: 2px solid var(--epos-karte-rahmen-hover); outline-offset: 2px; }
+
+.z-schluessel .vf-zeichen { justify-content: flex-end; }
+.z-schluessel .vf-bild {
+    height: auto; min-height: 24px; padding: 3px 8px;
+    font-weight: 400; font-size: 12px; line-height: 1.25;
+    white-space: normal; text-align: left;
+}
+.z-schluessel .vf-schluessel { display: inline; overflow-wrap: anywhere; }
+
+.vf-zeichen.ist-kopiert .vf-bild {
+    border-color: var(--vf-kopiert); background: var(--vf-kopiert-flaeche); color: var(--vf-kopiert);
+}
+.vf-zeichen.ist-kopiert .vf-symbol { display: none; }
+.vf-zeichen.ist-kopiert .vf-haken,
+.vf-zeichen.ist-kopiert .vf-kopiert-text { display: inline; }
+.vf-kopiert-text { font-weight: 600; }
+
+/* Die Aufklappung der Stufe "Marken": sichtbar bei Ueberfahren, Fokus oder
+   angeheftet (Klick/Tipp). Kein Schliesskreuz - sie ist keine Ueberlagerung;
+   Esc und ein Klick daneben schliessen sie. */
+.vf-aufklappung {
+    display: none; position: absolute; z-index: 5; top: 100%; right: 0;
+    width: 17.5rem; max-width: calc(100vw - 48px); padding: 10px 12px;
+    text-align: left; font-weight: 400; color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.z-marken .vf-halter:hover .vf-aufklappung,
+.z-marken .vf-halter:focus-within .vf-aufklappung,
+.z-marken .vf-halter.ist-offen .vf-aufklappung { display: block; }
+.z-marken .vf-halter.ist-unterdrueckt .vf-aufklappung { display: none; }
+
+.vf-aufklappung p { margin: 0; }
+.vf-auf-schluessel { font: 600 13px/1.35 var(--mono-schrift); color: var(--vf-zeichen-text); overflow-wrap: anywhere; }
+.vf-aufklappung .vf-auf-text { margin: 2px 0 6px 0; }
+.vf-auf-daten { color: var(--epos-text-leise); font-size: 12px; }
+.vf-auf-daten b { color: var(--epos-text); font-weight: 600; overflow-wrap: anywhere; }
+.vf-aufklappung .vf-auf-hinweis {
+    margin-top: 6px; padding-left: 8px;
+    border-left: 3px solid var(--epos-rahmen-leise); color: var(--epos-text-leise); font-size: 12px;
+}
+.vf-aufklappung .vf-auf-leiste { display: flex; align-items: center; gap: var(--epos-abstand); margin-top: 8px; }
+.vf-auf-esc { color: var(--epos-text-sehr-leise); font-size: 12px; }
+
+/* Knopf wie .epos-knopf */
+.knopf {
+    flex: 0 1 auto; min-height: var(--epos-touchziel); min-width: 88px; padding: 4px 12px;
+    font: inherit; font-weight: 400; color: var(--epos-text); background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    white-space: normal; overflow-wrap: break-word; cursor: pointer;
+}
+.knopf:hover { border-color: var(--epos-karte-rahmen-hover); background: var(--epos-karte-flaeche-hover); }
+.knopf:focus-visible { outline: 2px solid var(--epos-karte-rahmen-hover); outline-offset: 1px; }
+.knopf--primaer { color: var(--epos-gruppenkopf-text); background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); }
+.knopf--primaer:hover { background: var(--epos-quelle-text); border-color: var(--epos-quelle-text); }
+.knopf--eng { min-width: var(--epos-touchziel); }
+.knopf-kopiert { display: none; }
+.knopf.ist-kopiert { border-color: var(--vf-kopiert); background: var(--vf-kopiert-flaeche); color: var(--vf-kopiert); }
+.knopf.ist-kopiert .knopf-text { display: none; }
+.knopf.ist-kopiert .knopf-kopiert { display: inline; }
+
+/* Ort des Umschalters (zwei schmale Streifen) */
+.ortsbild { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 8px; }
+@media (min-width: 980px) { .ortsbild { grid-template-columns: 1fr 1fr; } }
+.ortsbild figure { display: flex; flex-direction: column; margin: 0; border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); overflow: hidden; }
+.ortsbild figcaption { margin-top: auto; padding: 6px 10px; color: var(--epos-text-leise); background: var(--epos-flaeche); border-top: 1px solid var(--epos-rahmen-leise); }
+.kopfband {
+    display: flex; align-items: center; gap: var(--epos-rand); padding: 6px var(--epos-rand);
+    border-bottom: 1px solid var(--epos-marke-trennlinie); color: var(--epos-marke); font-weight: 700;
+}
+.kopfband-text { flex: 1 1 auto; }
+
+/* ================= Abschnitt 2: Berichtsseite =========================== */
+.bk {
+    display: flex; min-width: 0; overflow: hidden;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+.bk-nav { flex: 0 0 208px; margin: 0; padding: 0; list-style: none; background: var(--navigation-flaeche); }
+.bk-nav li { display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 0 16px; color: var(--navigation-text); }
+.bk-nav li.aktiv { background: var(--navigation-aktiv); color: var(--epos-gruppenkopf-text); }
+.bk-nav .symbol { flex: 0 0 22px; text-align: center; }
+.bk-inhalt { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 860px) {
+    .bk { flex-direction: column; }
+    .bk-nav { display: flex; flex-wrap: wrap; flex-basis: auto; }
+    .bk-nav li { flex: 1 1 auto; }
+}
+.bk .kopfzeile { padding: 6px var(--epos-karte-rand); }
+.knopf-zurueck { font-weight: 400; }
+.bk-koerper { display: flex; flex-direction: column; gap: var(--epos-rand); padding: var(--epos-rand) var(--epos-karte-rand) 16px var(--epos-karte-rand); }
+.bk-spalten { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+@media (min-width: 1100px) { .bk-spalten { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); } }
+@media (max-width: 400px) { .bk-spalten { grid-template-columns: minmax(0, 1fr); } }
+.bk-spalte { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.untergruppe { margin: 8px 0 0 0; font-weight: 700; color: var(--epos-text); }
+
+.leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: var(--epos-rand); }
+
+.kasten { width: 20px; height: 20px; margin: 0; accent-color: var(--epos-marke); }
+.raster td.wahl { width: 44px; padding: 0 12px; }
+.fehlt { color: var(--epos-senke-text); font-weight: 600; }
+
+.mehrfach { margin: 0; padding: 0; border: 0; min-width: 0; }
+.mehrfach legend { padding: 0; font-weight: 700; }
+.schalter { display: flex; align-items: center; flex-wrap: wrap; gap: 0 8px; min-height: var(--epos-touchziel); }
+.schalter--aus { color: var(--epos-text-sehr-leise); }
+.schalter-grund { flex: 1 1 100%; margin: -10px 0 6px 28px; font-size: 12px; color: var(--epos-text-leise); }
+
+.herleitung { margin: 0; color: var(--epos-text-leise); }
+
+.vorlage { display: flex; flex-direction: column; gap: 6px; }
+.feld-reihe { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+@media (min-width: 560px) { .feld-reihe { grid-template-columns: 9rem minmax(0, 1fr); align-items: center; } }
+.auswahl {
+    display: flex; align-items: center; min-height: var(--epos-touchziel); padding: 0 8px;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche);
+}
+.auswahl-wert { flex: 1 1 auto; }
+.auswahl-pfeil { color: var(--epos-text-leise); }
+.eintragsliste { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--epos-text-leise); font-size: 12px; }
+.eintragsliste li { display: inline-flex; align-items: center; gap: 4px; }
+.eintragsliste li.gewaehlt { color: var(--epos-text); font-weight: 600; }
+.schloss { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--epos-text-leise); }
+.schloss-bild { display: block; }
+.menue-inhalt { margin: 0; color: var(--epos-text-leise); font-size: 12px; }
+
+.pruefzeile { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 0; color: var(--epos-text-leise); }
+.pruefzeile--warn { color: var(--epos-warn-text); }
+.pruef-bild { flex: 0 0 auto; }
+.pruefzeile .knopf { min-width: 0; }
+
+.optionen { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; margin: 0; padding: 0; border: 0; }
+.optionen legend { float: left; margin-right: 12px; padding: 0; line-height: var(--epos-touchziel); }
+.option { display: inline-flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); }
+.dateiwahl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 8px; align-items: center; }
+@media (min-width: 560px) { .dateiwahl { grid-template-columns: 9rem minmax(0, 1fr) auto; } }
+
+/* Mockup-Zeichen: ruhig, nur in Abschnitt 2 */
+.kz {
+    display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 9px;
+    font-size: 11px; font-weight: 400; line-height: 16px; vertical-align: 1px; white-space: nowrap;
+}
+.kz--heute { border: 1px solid var(--epos-rahmen-leise); color: var(--epos-text-leise); background: var(--epos-karte-flaeche); }
+.kz--neu { border: 1px solid var(--epos-quelle-rahmen); color: var(--epos-quelle-text); background: var(--epos-karte-flaeche-hover); }
+.block-neu { border-left: 3px solid var(--epos-quelle-rahmen); padding-left: 10px; }
+
+.gegenueber { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 12px; }
+@media (min-width: 980px) { .gegenueber { grid-template-columns: 1fr 1fr; } }
+.gegenueber > div { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 10px 12px; min-width: 0; }
+.gegenueber h3 { margin: 0 0 6px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--epos-text-leise); }
+.gegenueber .neu h3 { color: var(--epos-quelle-text); }
+.gegenueber ul { margin: 0; padding-left: 18px; }
+.gegenueber li + li { margin-top: 3px; }
+
+.ablauf { margin: 8px 0 0 0; padding: 0; list-style: none; counter-reset: schritt; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 980px) { .ablauf { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.ablauf li {
+    counter-increment: schritt; position: relative; padding: 8px 10px 8px 38px; min-width: 0;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche);
+}
+.ablauf li::before {
+    content: counter(schritt); position: absolute; left: 10px; top: 8px;
+    width: 20px; height: 20px; border-radius: 10px; text-align: center; line-height: 20px;
+    background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen-leise); color: var(--epos-text-leise); font-weight: 600;
+}
+.ablauf li.bleibt { border-color: var(--epos-karte-titel); }
+.ablauf b { color: var(--epos-karte-titel); }
+
+/* ================= Abschnitte 3 bis 5 =================================== */
+.tabelle-huelle { width: 100%; overflow-x: auto; margin: 8px 0; }
+table.liste {
+    border-collapse: collapse; width: 100%; min-width: 640px;
+    border: 1px solid var(--epos-karte-rahmen);
+}
+table.liste th, table.liste td {
+    text-align: left; vertical-align: top; padding: 7px 10px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+table.liste th { background: var(--epos-karte-titel); color: var(--epos-gruppenkopf-text); font-weight: 600; }
+table.liste tr:last-child td { border-bottom: none; }
+table.liste td:first-child { white-space: nowrap; }
+
+.zeichenlegende {
+    display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center;
+    margin: 8px 0 12px 0; padding: 8px 12px;
+    border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    color: var(--epos-text-leise);
+}
+.zeichenlegende > span { display: inline-flex; align-items: center; gap: 6px; }
+.probe-bild {
+    display: inline-flex; align-items: center; gap: 5px; min-width: 20px; height: 20px; padding: 0 3px;
+    border: 1px solid var(--vf-zeichen-rahmen); border-radius: var(--epos-ecke);
+    background: var(--vf-zeichen-flaeche); color: var(--vf-zeichen-text); font: 600 11px/1 var(--mono-schrift);
+}
+.probe-bild--chip { height: 24px; padding: 0 8px; font-weight: 400; font-size: 12px; }
+.probe-bild--kopiert { border-color: var(--vf-kopiert); background: var(--vf-kopiert-flaeche); color: var(--vf-kopiert); }
+.probe-rahmen { display: inline-block; width: 44px; height: 20px; outline: 1px dashed var(--vf-bezug-rahmen); outline-offset: -1px; }
+
+ol.vorschlaege { margin: 8px 0 0 0; padding-left: 20px; max-width: 120ch; }
+ol.vorschlaege li + li { margin-top: 5px; }
+ol.vorschlaege b { color: var(--epos-karte-titel); }
+
+.mockup-fuss { margin: 22px 0 0 0; color: var(--epos-text-leise); max-width: 120ch; }
+
+/* ================= Hoher Kontrast (forced-colors) ======================= */
+@media (forced-colors: active) {
+    .vf-bild, .probe-bild { border-color: ButtonText; color: ButtonText; }
+    .vf-zeichen:focus-visible .vf-bild { outline-color: Highlight; }
+    .vf-zeichen.ist-kopiert .vf-bild, .probe-bild--kopiert { border-style: double; border-width: 3px; }
+    .z-schluessel .vf-traeger,
+    .z-marken .vf-traeger:has(> .vf-halter:hover),
+    .z-marken .vf-traeger:has(> .vf-halter:focus-within),
+    .z-marken .vf-traeger:has(> .vf-halter.ist-offen),
+    .probe-rahmen { outline-color: CanvasText; }
+    .vf-umschalter, .hilfepille, .vf-aufklappung { border-color: CanvasText; }
+    .vf-stellung input:checked + span, .vf-stellung--an > span {
+        forced-color-adjust: none; background: Highlight; color: HighlightText;
+    }
+    .vf-stellung + .vf-stellung > span { border-left-color: CanvasText; }
+    .block-neu { border-left-color: CanvasText; }
+    .schloss { color: CanvasText; }
+}
+</style>
+</head>
+<body>
+
+<header class="mockup-kopf">
+  <h1>Platzhalter in der App erkennen</h1>
+  <p>Mockup zum Konzeptentwurf <b>Berichtsvorlagen</b>, Abschnitte „Platzhalter in der App erkennen“
+     (Etappe BV-E6, Entscheidfrage BV-Q9) und „Berichtsseite nach dem Umbau“ (BV-Q1, BV-Q6).
+     Empfohlen sind ein Ansichtsschalter mit Marken (Variante B) für die Erkennung am Ort und der
+     Platzhalterkatalog (Variante D) als Rückgrat. Schema, kein Abbild der Masken; alle Namen und Werte sind neutral.</p>
+</header>
+
+<main class="mockup-inhalt">
+
+<div class="mockup-hinweis">
+  <p><b>Ohne Störung:</b> Ausgeschaltet bleibt keine Spur außer dem Umschalter „Platzhalter“ in der Kopfzeile.
+     Eingeschaltet trägt jedes Feld, jede Kachel, jede Tabelle und jedes Diagramm, das einen Platzhalter der
+     Berichtsvorlage hat, eine Marke <span class="mono">{ }</span> – ruhig in der Stellung „Marken“, ausgeschrieben
+     in der Stellung „Schlüssel“. Die Marke nennt, was der Anwender in Word oder Excel schreibt, etwa
+     <span class="mono">{{projekt.kunde}}</span>.</p>
+  <p><b>Probe:</b> Mit Skript lässt sich jede Tafel an ihrem Umschalter umstellen. Marke überfahren, antippen oder
+     mit Tab erreichen; Esc schließt die Aufklappung; in der Stellung „Schlüssel“ kopiert ein Klick auf den Chip.
+     Ohne Skript zeigen die drei Tafeln die drei Zustände fest.</p>
+</div>
+
+<!-- =================================================================== -->
+<section class="abschnitt" aria-labelledby="h-zustaende">
+  <h2 id="h-zustaende">1 · Dieselbe Ansicht in drei Zuständen</h2>
+  <p class="pfad">Beispielansicht (Schema): die Formulargruppe Projektstammdaten (Ort in der App: Projektassistent,
+     Schritt 1), darunter eine Kennzahlkachel und eine kleine Vergleichstabelle, daneben ein Diagramm. Sieben
+     Elemente tragen einen Platzhalter; ist die Tafel breit genug, steht das Diagramm neben Kachel und Tabelle. Die Kopfzeile steht für die Kopfzeile der Seite „Berichte &amp; Kosten“
+     (<code>epos-navigation-kopf</code>), in der der Umschalter wohnt.</p>
+
+  <div class="zustaende">
+    <article class="tafel" aria-labelledby="t1">
+      <h3 id="t1">Zustand 1 · Aus</h3>
+<div class="ansicht z-aus" id="ansicht-1">
+<div class="kopfzeile">
+<span class="kopfzeile-text">Beispielansicht</span>
+<div class="vf-umschalter" role="radiogroup" aria-label="Platzhalter zeigen"><span class="vf-umschalter-titel" aria-hidden="true" title="Platzhalter zeigen">{ }</span><label class="vf-stellung"><input type="radio" name="stufe-1" value="aus" checked><span>Aus</span></label><label class="vf-stellung"><input type="radio" name="stufe-1" value="marken"><span>Marken</span></label><label class="vf-stellung"><input type="radio" name="stufe-1" value="schluessel"><span>Schlüssel</span></label></div>
+<span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+</div>
+<div class="vf-zeile"><span class="vf-zeile-text"><span class="vf-zeile-symbol" aria-hidden="true">{ }</span> <b>7 Platzhalter</b> auf dieser Seite · ein Klick auf einen Schlüssel kopiert ihn</span><button type="button" class="knopf">Katalog…</button></div>
+<p class="vf-ansage nur-vorlesen" aria-live="polite"></p>
+<div class="ansicht-koerper">
+<section class="gruppe" aria-label="Projektstammdaten"><div class="gruppenkopf">Projektstammdaten</div><div class="gruppe-koerper">
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f1-name">Projektname</label>
+<div class="vf-koerper"><input class="eingabe" id="f1-name" value="Musterprojekt 1" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.name" aria-label="Platzhalter projekt.name: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-projekt-name"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.name</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-projekt-name" role="group" aria-label="Platzhalter projekt.name">
+    <p class="vf-auf-schluessel">{{projekt.name}}</p>
+    <p class="vf-auf-text">Name des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.name</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen; Absatz- und Zeichenformat der Stelle bleiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.name"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f1-kunde">Kunde</label>
+<div class="vf-koerper"><input class="eingabe" id="f1-kunde" value="Kunde A" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.kunde" aria-label="Platzhalter projekt.kunde: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-projekt-kunde"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.kunde</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-projekt-kunde" role="group" aria-label="Platzhalter projekt.kunde">
+    <p class="vf-auf-schluessel">{{projekt.kunde}}</p>
+    <p class="vf-auf-text">Kunde des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.kunde</b></p>
+    <p class="vf-auf-hinweis">Leer bleibt leer (kein Strich). In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.kunde"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f1-bearbeiter">Bearbeiter</label>
+<div class="vf-koerper"><input class="eingabe" id="f1-bearbeiter" value="Bearbeiter B" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.bearbeiter" aria-label="Platzhalter projekt.bearbeiter: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-projekt-bearbeiter"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.bearbeiter</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-projekt-bearbeiter" role="group" aria-label="Platzhalter projekt.bearbeiter">
+    <p class="vf-auf-schluessel">{{projekt.bearbeiter}}</p>
+    <p class="vf-auf-text">Bearbeiter des Stammprojekts (die Person)</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.bearbeiter</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.bearbeiter"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld vf-traeger--hoch">
+<label class="vf-titel feld-text" for="f1-beschreibung">Beschreibung</label>
+<div class="vf-koerper"><textarea class="eingabe eingabe--mehrzeilig" id="f1-beschreibung" rows="2" readonly>Wärmeversorgung mit Wärmepumpe und Speicher, zwei Varianten.</textarea></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.beschreibung" aria-label="Platzhalter projekt.beschreibung: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-projekt-beschreibung"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.beschreibung</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-projekt-beschreibung" role="group" aria-label="Platzhalter projekt.beschreibung">
+    <p class="vf-auf-schluessel">{{projekt.beschreibung}}</p>
+    <p class="vf-auf-text">Beschreibung des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text, mehrzeilig</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.beschreibung</b></p>
+    <p class="vf-auf-hinweis">Zeilenumbrüche bleiben erhalten.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.beschreibung"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div></section>
+<div class="ansicht-unten"><div class="ansicht-links">
+<div class="vf-traeger vf-traeger--kachel kachel">
+<span class="vf-titel kachel-titel">JAZ Wärmepumpe</span>
+<div class="vf-koerper"><span class="kachel-wert">4,0</span><span class="kachel-quelle">Stammprojekt</span></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="stamm.kennzahl.eff.jaz" aria-label="Platzhalter stamm.kennzahl.eff.jaz: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-stamm-kennzahl-eff-jaz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">stamm<wbr>.kennzahl<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-stamm-kennzahl-eff-jaz" role="group" aria-label="Platzhalter stamm.kennzahl.eff.jaz">
+    <p class="vf-auf-schluessel">{{stamm.kennzahl.eff.jaz}}</p>
+    <p class="vf-auf-text">Jahresarbeitszahl der Wärmepumpe im Stammprojekt – genau der Wert dieser Kachel</p>
+    <p class="vf-auf-daten">Art <b>Zahl</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.stamm.kennzahl.eff.jaz</b></p>
+    <p class="vf-auf-hinweis">Eine Nachkommastelle aus dem Katalog; {{…|stellen 2}} ändert das.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="stamm.kennzahl.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Variantenvergleich · Effizienz</span>
+<div class="vf-koerper raster-huelle"><table class="raster"><thead><tr><th scope="col">Kennzahl</th><th scope="col" class="zahl">Stamm</th><th scope="col" class="zahl">Variante 1</th></tr></thead><tbody><tr><td>JAZ</td><td class="zahl">4,0</td><td class="zahl">4,5</td></tr><tr><td>Deckung WP</td><td class="zahl">80 %</td><td class="zahl">90 %</td></tr></tbody></table></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="tabelle.vergleich.effizienz" aria-label="Platzhalter tabelle.vergleich.effizienz: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-tabelle-vergleich-effizienz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">tabelle<wbr>.vergleich<wbr>.effizienz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-tabelle-vergleich-effizienz" role="group" aria-label="Platzhalter tabelle.vergleich.effizienz">
+    <p class="vf-auf-schluessel">{{tabelle.vergleich.effizienz}}</p>
+    <p class="vf-auf-text">Variantenvergleich, Gruppe Effizienz: Stamm und alle gewählten Varianten</p>
+    <p class="vf-auf-daten">Art <b>Tabelle</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>Zellmarke, erzeugter Bereich</b></p>
+    <p class="vf-auf-hinweis">Marke allein in einen Absatz setzen – EPOS baut die Tabelle. Einzelwerte der Zeilen: stand.kennzahl.eff.jaz usw. im Block {{#je stand}}.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="tabelle.vergleich.effizienz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Jahresarbeitszahl je Stand</span>
+<div class="vf-koerper"><div class="platz platz--diagramm">Diagramm (Schema)</div></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="bild.vergleich.balken.eff.jaz" aria-label="Platzhalter bild.vergleich.balken.eff.jaz: Schlüssel zeigen" aria-expanded="false" aria-controls="a1-bild-vergleich-balken-eff-jaz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">bild<wbr>.vergleich<wbr>.balken<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a1-bild-vergleich-balken-eff-jaz" role="group" aria-label="Platzhalter bild.vergleich.balken.eff.jaz">
+    <p class="vf-auf-schluessel">{{bild.vergleich.balken.eff.jaz}}</p>
+    <p class="vf-auf-text">Balkendiagramm der Jahresarbeitszahl je Stand</p>
+    <p class="vf-auf-daten">Art <b>Bild</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>nicht in Katalogfassung 1</b></p>
+    <p class="vf-auf-hinweis">In Word ein Platzhalterbild einfügen und den Schlüssel in seinen Alternativtext schreiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="bild.vergleich.balken.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+      <p class="tafel-satz">Grundzustand für alle Anwender. Keine Marke, kein Rahmen, keine zusätzliche Zeile; die
+         einzige Spur ist der Umschalter selbst. In der App entsteht ausgeschaltet kein DOM.</p>
+    </article>
+
+    <article class="tafel tafel--an" aria-labelledby="t2">
+      <h3 id="t2">Zustand 2 · Marken</h3>
+<div class="ansicht z-marken" id="ansicht-2">
+<div class="kopfzeile">
+<span class="kopfzeile-text">Beispielansicht</span>
+<div class="vf-umschalter" role="radiogroup" aria-label="Platzhalter zeigen"><span class="vf-umschalter-titel" aria-hidden="true" title="Platzhalter zeigen">{ }</span><label class="vf-stellung"><input type="radio" name="stufe-2" value="aus"><span>Aus</span></label><label class="vf-stellung"><input type="radio" name="stufe-2" value="marken" checked><span>Marken</span></label><label class="vf-stellung"><input type="radio" name="stufe-2" value="schluessel"><span>Schlüssel</span></label></div>
+<span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+</div>
+<div class="vf-zeile"><span class="vf-zeile-text"><span class="vf-zeile-symbol" aria-hidden="true">{ }</span> <b>7 Platzhalter</b> auf dieser Seite · ein Klick auf einen Schlüssel kopiert ihn</span><button type="button" class="knopf">Katalog…</button></div>
+<p class="vf-ansage nur-vorlesen" aria-live="polite"></p>
+<div class="ansicht-koerper">
+<section class="gruppe" aria-label="Projektstammdaten"><div class="gruppenkopf">Projektstammdaten</div><div class="gruppe-koerper">
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f2-name">Projektname</label>
+<div class="vf-koerper"><input class="eingabe" id="f2-name" value="Musterprojekt 1" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.name" aria-label="Platzhalter projekt.name: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-projekt-name"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.name</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-projekt-name" role="group" aria-label="Platzhalter projekt.name">
+    <p class="vf-auf-schluessel">{{projekt.name}}</p>
+    <p class="vf-auf-text">Name des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.name</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen; Absatz- und Zeichenformat der Stelle bleiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.name"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f2-kunde">Kunde</label>
+<div class="vf-koerper"><input class="eingabe" id="f2-kunde" value="Kunde A" readonly></div>
+<div class="vf-halter ist-offen">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.kunde" aria-label="Platzhalter projekt.kunde: Schlüssel zeigen" aria-expanded="true" aria-controls="a2-projekt-kunde"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.kunde</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-projekt-kunde" role="group" aria-label="Platzhalter projekt.kunde">
+    <p class="vf-auf-schluessel">{{projekt.kunde}}</p>
+    <p class="vf-auf-text">Kunde des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.kunde</b></p>
+    <p class="vf-auf-hinweis">Leer bleibt leer (kein Strich). In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.kunde"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f2-bearbeiter">Bearbeiter</label>
+<div class="vf-koerper"><input class="eingabe" id="f2-bearbeiter" value="Bearbeiter B" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.bearbeiter" aria-label="Platzhalter projekt.bearbeiter: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-projekt-bearbeiter"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.bearbeiter</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-projekt-bearbeiter" role="group" aria-label="Platzhalter projekt.bearbeiter">
+    <p class="vf-auf-schluessel">{{projekt.bearbeiter}}</p>
+    <p class="vf-auf-text">Bearbeiter des Stammprojekts (die Person)</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.bearbeiter</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.bearbeiter"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld vf-traeger--hoch">
+<label class="vf-titel feld-text" for="f2-beschreibung">Beschreibung</label>
+<div class="vf-koerper"><textarea class="eingabe eingabe--mehrzeilig" id="f2-beschreibung" rows="2" readonly>Wärmeversorgung mit Wärmepumpe und Speicher, zwei Varianten.</textarea></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.beschreibung" aria-label="Platzhalter projekt.beschreibung: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-projekt-beschreibung"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.beschreibung</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-projekt-beschreibung" role="group" aria-label="Platzhalter projekt.beschreibung">
+    <p class="vf-auf-schluessel">{{projekt.beschreibung}}</p>
+    <p class="vf-auf-text">Beschreibung des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text, mehrzeilig</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.beschreibung</b></p>
+    <p class="vf-auf-hinweis">Zeilenumbrüche bleiben erhalten.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.beschreibung"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div></section>
+<div class="ansicht-unten"><div class="ansicht-links">
+<div class="vf-traeger vf-traeger--kachel kachel">
+<span class="vf-titel kachel-titel">JAZ Wärmepumpe</span>
+<div class="vf-koerper"><span class="kachel-wert">4,0</span><span class="kachel-quelle">Stammprojekt</span></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="stamm.kennzahl.eff.jaz" aria-label="Platzhalter stamm.kennzahl.eff.jaz: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-stamm-kennzahl-eff-jaz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">stamm<wbr>.kennzahl<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-stamm-kennzahl-eff-jaz" role="group" aria-label="Platzhalter stamm.kennzahl.eff.jaz">
+    <p class="vf-auf-schluessel">{{stamm.kennzahl.eff.jaz}}</p>
+    <p class="vf-auf-text">Jahresarbeitszahl der Wärmepumpe im Stammprojekt – genau der Wert dieser Kachel</p>
+    <p class="vf-auf-daten">Art <b>Zahl</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.stamm.kennzahl.eff.jaz</b></p>
+    <p class="vf-auf-hinweis">Eine Nachkommastelle aus dem Katalog; {{…|stellen 2}} ändert das.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="stamm.kennzahl.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Variantenvergleich · Effizienz</span>
+<div class="vf-koerper raster-huelle"><table class="raster"><thead><tr><th scope="col">Kennzahl</th><th scope="col" class="zahl">Stamm</th><th scope="col" class="zahl">Variante 1</th></tr></thead><tbody><tr><td>JAZ</td><td class="zahl">4,0</td><td class="zahl">4,5</td></tr><tr><td>Deckung WP</td><td class="zahl">80 %</td><td class="zahl">90 %</td></tr></tbody></table></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="tabelle.vergleich.effizienz" aria-label="Platzhalter tabelle.vergleich.effizienz: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-tabelle-vergleich-effizienz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">tabelle<wbr>.vergleich<wbr>.effizienz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-tabelle-vergleich-effizienz" role="group" aria-label="Platzhalter tabelle.vergleich.effizienz">
+    <p class="vf-auf-schluessel">{{tabelle.vergleich.effizienz}}</p>
+    <p class="vf-auf-text">Variantenvergleich, Gruppe Effizienz: Stamm und alle gewählten Varianten</p>
+    <p class="vf-auf-daten">Art <b>Tabelle</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>Zellmarke, erzeugter Bereich</b></p>
+    <p class="vf-auf-hinweis">Marke allein in einen Absatz setzen – EPOS baut die Tabelle. Einzelwerte der Zeilen: stand.kennzahl.eff.jaz usw. im Block {{#je stand}}.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="tabelle.vergleich.effizienz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Jahresarbeitszahl je Stand</span>
+<div class="vf-koerper"><div class="platz platz--diagramm">Diagramm (Schema)</div></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="bild.vergleich.balken.eff.jaz" aria-label="Platzhalter bild.vergleich.balken.eff.jaz: Schlüssel zeigen" aria-expanded="false" aria-controls="a2-bild-vergleich-balken-eff-jaz"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">bild<wbr>.vergleich<wbr>.balken<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a2-bild-vergleich-balken-eff-jaz" role="group" aria-label="Platzhalter bild.vergleich.balken.eff.jaz">
+    <p class="vf-auf-schluessel">{{bild.vergleich.balken.eff.jaz}}</p>
+    <p class="vf-auf-text">Balkendiagramm der Jahresarbeitszahl je Stand</p>
+    <p class="vf-auf-daten">Art <b>Bild</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>nicht in Katalogfassung 1</b></p>
+    <p class="vf-auf-hinweis">In Word ein Platzhalterbild einfügen und den Schlüssel in seinen Alternativtext schreiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="bild.vergleich.balken.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+      <p class="tafel-satz">Umschalter auf „Marken“. Jedes platzhalterfähige Element trägt am rechten Rand eine Marke
+         <span class="mono">{ }</span> in einer eigenen 44-px-Spur – sichtbar, solange die Stellung gilt, nicht erst
+         beim Überfahren. Überfahren, Fokus oder Tipp öffnet die Aufklappung mit Schlüssel, Art, Kontext,
+         Excel-Name und „Kopieren“; das Element bekommt dabei einen gestrichelten Bezugsrahmen.
+         Hier offen: <b>Kunde</b>.</p>
+    </article>
+
+    <article class="tafel tafel--an" aria-labelledby="t3">
+      <h3 id="t3">Zustand 3 · Schlüssel (Vorlagenmodus)</h3>
+<div class="ansicht z-schluessel" id="ansicht-3">
+<div class="kopfzeile">
+<span class="kopfzeile-text">Beispielansicht</span>
+<div class="vf-umschalter" role="radiogroup" aria-label="Platzhalter zeigen"><span class="vf-umschalter-titel" aria-hidden="true" title="Platzhalter zeigen">{ }</span><label class="vf-stellung"><input type="radio" name="stufe-3" value="aus"><span>Aus</span></label><label class="vf-stellung"><input type="radio" name="stufe-3" value="marken"><span>Marken</span></label><label class="vf-stellung"><input type="radio" name="stufe-3" value="schluessel" checked><span>Schlüssel</span></label></div>
+<span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+</div>
+<div class="vf-zeile"><span class="vf-zeile-text"><span class="vf-zeile-symbol" aria-hidden="true">{ }</span> <b>7 Platzhalter</b> auf dieser Seite · ein Klick auf einen Schlüssel kopiert ihn</span><button type="button" class="knopf">Katalog…</button></div>
+<p class="vf-ansage nur-vorlesen" aria-live="polite"></p>
+<div class="ansicht-koerper">
+<section class="gruppe" aria-label="Projektstammdaten"><div class="gruppenkopf">Projektstammdaten</div><div class="gruppe-koerper">
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f3-name">Projektname</label>
+<div class="vf-koerper"><input class="eingabe" id="f3-name" value="Musterprojekt 1" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.name" aria-label="Platzhalter projekt.name kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.name</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-projekt-name" role="group" aria-label="Platzhalter projekt.name">
+    <p class="vf-auf-schluessel">{{projekt.name}}</p>
+    <p class="vf-auf-text">Name des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.name</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen; Absatz- und Zeichenformat der Stelle bleiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.name"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f3-kunde">Kunde</label>
+<div class="vf-koerper"><input class="eingabe" id="f3-kunde" value="Kunde A" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.kunde" aria-label="Platzhalter projekt.kunde kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.kunde</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-projekt-kunde" role="group" aria-label="Platzhalter projekt.kunde">
+    <p class="vf-auf-schluessel">{{projekt.kunde}}</p>
+    <p class="vf-auf-text">Kunde des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.kunde</b></p>
+    <p class="vf-auf-hinweis">Leer bleibt leer (kein Strich). In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.kunde"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld">
+<label class="vf-titel feld-text" for="f3-bearbeiter">Bearbeiter</label>
+<div class="vf-koerper"><input class="eingabe" id="f3-bearbeiter" value="Bearbeiter B" readonly></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen ist-kopiert" data-schluessel="projekt.bearbeiter" aria-label="Platzhalter projekt.bearbeiter kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.bearbeiter</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-projekt-bearbeiter" role="group" aria-label="Platzhalter projekt.bearbeiter">
+    <p class="vf-auf-schluessel">{{projekt.bearbeiter}}</p>
+    <p class="vf-auf-text">Bearbeiter des Stammprojekts (die Person)</p>
+    <p class="vf-auf-daten">Art <b>Text</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.bearbeiter</b></p>
+    <p class="vf-auf-hinweis">In Word tippen oder einfügen.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.bearbeiter"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--feld vf-traeger--hoch">
+<label class="vf-titel feld-text" for="f3-beschreibung">Beschreibung</label>
+<div class="vf-koerper"><textarea class="eingabe eingabe--mehrzeilig" id="f3-beschreibung" rows="2" readonly>Wärmeversorgung mit Wärmepumpe und Speicher, zwei Varianten.</textarea></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="projekt.beschreibung" aria-label="Platzhalter projekt.beschreibung kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">projekt<wbr>.beschreibung</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-projekt-beschreibung" role="group" aria-label="Platzhalter projekt.beschreibung">
+    <p class="vf-auf-schluessel">{{projekt.beschreibung}}</p>
+    <p class="vf-auf-text">Beschreibung des Stammprojekts</p>
+    <p class="vf-auf-daten">Art <b>Text, mehrzeilig</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.projekt.beschreibung</b></p>
+    <p class="vf-auf-hinweis">Zeilenumbrüche bleiben erhalten.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="projekt.beschreibung"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div></section>
+<div class="ansicht-unten"><div class="ansicht-links">
+<div class="vf-traeger vf-traeger--kachel kachel">
+<span class="vf-titel kachel-titel">JAZ Wärmepumpe</span>
+<div class="vf-koerper"><span class="kachel-wert">4,0</span><span class="kachel-quelle">Stammprojekt</span></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="stamm.kennzahl.eff.jaz" aria-label="Platzhalter stamm.kennzahl.eff.jaz kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">stamm<wbr>.kennzahl<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-stamm-kennzahl-eff-jaz" role="group" aria-label="Platzhalter stamm.kennzahl.eff.jaz">
+    <p class="vf-auf-schluessel">{{stamm.kennzahl.eff.jaz}}</p>
+    <p class="vf-auf-text">Jahresarbeitszahl der Wärmepumpe im Stammprojekt – genau der Wert dieser Kachel</p>
+    <p class="vf-auf-daten">Art <b>Zahl</b> · Kontext <b>Stamm</b></p>
+    <p class="vf-auf-daten">Excel <b>EPOS.stamm.kennzahl.eff.jaz</b></p>
+    <p class="vf-auf-hinweis">Eine Nachkommastelle aus dem Katalog; {{…|stellen 2}} ändert das.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="stamm.kennzahl.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Variantenvergleich · Effizienz</span>
+<div class="vf-koerper raster-huelle"><table class="raster"><thead><tr><th scope="col">Kennzahl</th><th scope="col" class="zahl">Stamm</th><th scope="col" class="zahl">Variante 1</th></tr></thead><tbody><tr><td>JAZ</td><td class="zahl">4,0</td><td class="zahl">4,5</td></tr><tr><td>Deckung WP</td><td class="zahl">80 %</td><td class="zahl">90 %</td></tr></tbody></table></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="tabelle.vergleich.effizienz" aria-label="Platzhalter tabelle.vergleich.effizienz kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">tabelle<wbr>.vergleich<wbr>.effizienz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-tabelle-vergleich-effizienz" role="group" aria-label="Platzhalter tabelle.vergleich.effizienz">
+    <p class="vf-auf-schluessel">{{tabelle.vergleich.effizienz}}</p>
+    <p class="vf-auf-text">Variantenvergleich, Gruppe Effizienz: Stamm und alle gewählten Varianten</p>
+    <p class="vf-auf-daten">Art <b>Tabelle</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>Zellmarke, erzeugter Bereich</b></p>
+    <p class="vf-auf-hinweis">Marke allein in einen Absatz setzen – EPOS baut die Tabelle. Einzelwerte der Zeilen: stand.kennzahl.eff.jaz usw. im Block {{#je stand}}.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="tabelle.vergleich.effizienz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+<div class="vf-traeger vf-traeger--oben">
+<span class="vf-titel element-titel">Jahresarbeitszahl je Stand</span>
+<div class="vf-koerper"><div class="platz platz--diagramm">Diagramm (Schema)</div></div>
+<div class="vf-halter">
+  <button type="button" class="vf-zeichen" data-schluessel="bild.vergleich.balken.eff.jaz" aria-label="Platzhalter bild.vergleich.balken.eff.jaz kopieren"><span class="vf-bild"><span class="vf-symbol" aria-hidden="true">{ }</span><span class="vf-haken" aria-hidden="true">✓</span><span class="vf-schluessel">bild<wbr>.vergleich<wbr>.balken<wbr>.eff<wbr>.jaz</span><span class="vf-kopiert-text">kopiert</span></span></button>
+  <div class="vf-aufklappung" id="a3-bild-vergleich-balken-eff-jaz" role="group" aria-label="Platzhalter bild.vergleich.balken.eff.jaz">
+    <p class="vf-auf-schluessel">{{bild.vergleich.balken.eff.jaz}}</p>
+    <p class="vf-auf-text">Balkendiagramm der Jahresarbeitszahl je Stand</p>
+    <p class="vf-auf-daten">Art <b>Bild</b> · Kontext <b>Gruppe</b></p>
+    <p class="vf-auf-daten">Excel <b>nicht in Katalogfassung 1</b></p>
+    <p class="vf-auf-hinweis">In Word ein Platzhalterbild einfügen und den Schlüssel in seinen Alternativtext schreiben.</p>
+    <p class="vf-auf-leiste"><button type="button" class="knopf" data-kopiere="bild.vergleich.balken.eff.jaz"><span class="knopf-text">Kopieren</span><span class="knopf-kopiert">✓ kopiert</span></button><span class="vf-auf-esc">Esc schließt</span></p>
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+      <p class="tafel-satz">Umschalter auf „Schlüssel“ – der Arbeitsmodus des Vorlagenautors. Jedes Element ist
+         gestrichelt umrandet und trägt am oberen Rand einen Chip mit seinem Schlüssel. Ein Klick kopiert
+         <span class="mono">{{schlüssel}}</span>, „kopiert“ steht 1,5 s im Chip (hier: <b>Bearbeiter</b>). Eine
+         leise Zeile nennt die Zahl der Platzhalter der Seite und öffnet den Katalog.</p>
+    </article>
+  </div>
+
+  <h3 class="zwischen">Ort des Umschalters</h3>
+  <p class="pfad">In der Kopfzeile von „Berichte &amp; Kosten“ hinter dem Kopfzeilentext – damit gilt er auf allen vier
+     Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht). Wo die Hilfepille steht, hängt vom Aufruf ab; der
+     Umschalter bleibt in beiden Fällen an derselben Stelle. Dritter Zugang ist die Katalogüberlagerung:
+     „In der App zeigen“ stellt auf „Schlüssel“ und lässt das Element kurz aufleuchten. Der Zustand gilt für die
+     Sitzung und erreicht jede Ansicht und jeden Dialog, auch in eigenen Fenstern.</p>
+  <div class="ortsbild">
+    <figure>
+      <div class="kopfzeile">
+        <span class="kopfzeile-text">Bericht – Musterprojekt 1</span>
+        <span class="vf-umschalter vf-umschalter--schema" role="img" aria-label="Umschalter Platzhalter, Stellung Aus"><span class="vf-umschalter-titel">{ }</span><span class="vf-stellung vf-stellung--an"><span>Aus</span></span><span class="vf-stellung"><span>Marken</span></span><span class="vf-stellung"><span>Schlüssel</span></span></span>
+        <span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+      </div>
+      <figcaption>Reiterblatt der Startseite: Umschalter und Hilfepille in derselben Kopfzeile.</figcaption>
+    </figure>
+    <figure>
+      <div class="kopfband">
+        <span class="kopfband-text">EPOS-Plan</span>
+        <span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+      </div>
+      <div class="kopfzeile">
+        <button type="button" class="knopf knopf-zurueck">Zurück</button>
+        <span class="kopfzeile-text">Bericht – Musterprojekt 1</span>
+        <span class="vf-umschalter vf-umschalter--schema" role="img" aria-label="Umschalter Platzhalter, Stellung Aus"><span class="vf-umschalter-titel">{ }</span><span class="vf-stellung vf-stellung--an"><span>Aus</span></span><span class="vf-stellung"><span>Marken</span></span><span class="vf-stellung"><span>Schlüssel</span></span></span>
+      </div>
+      <figcaption>Eigene Ansicht unter dem Kopfband: die Hilfepille sitzt im Kopfband, der Umschalter bleibt am
+         Ende der Kopfzeile.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<section class="abschnitt" aria-labelledby="h-bericht">
+  <h2 id="h-bericht">2 · Berichtsseite nach dem Umbau</h2>
+  <p class="pfad">Einstieg bleibt „Berichte &amp; Kosten › Bericht“ (<code>EPOS.UI/Seiten/Berichte/BerichtSeite.razor</code>,
+     Datenseite <code>EPOS.UI.Daten/Bericht/BerichtSeiteGaben.cs</code>). Gewählt ist hier eine eigene Vorlage,
+     damit die neuen Zustände sichtbar werden. Kennzeichnung:
+     <span class="kz kz--heute">wie heute</span> und <span class="kz kz--neu">neu</span>; neue Blöcke tragen zusätzlich
+     einen blauen Randstrich.</p>
+
+  <div class="bk">
+    <ul class="bk-nav" aria-label="Seiten von Berichte &amp; Kosten (Schema)">
+      <li><span class="symbol" aria-hidden="true">☰</span>Übersicht</li>
+      <li><span class="symbol" aria-hidden="true">€</span>Kosten</li>
+      <li><span class="symbol" aria-hidden="true">▤</span>Wirtschaftlichkeit</li>
+      <li class="aktiv" aria-current="page"><span class="symbol" aria-hidden="true">▦</span>Bericht</li>
+    </ul>
+    <div class="bk-inhalt">
+      <div class="kopfzeile">
+        <span class="kopfzeile-text">Bericht – Musterprojekt 1 <span class="kz kz--heute">wie heute</span></span>
+        <span class="vf-umschalter vf-umschalter--schema" role="img" aria-label="Umschalter Platzhalter, Stellung Aus"><span class="vf-umschalter-titel">{ }</span><span class="vf-stellung vf-stellung--an"><span>Aus</span></span><span class="vf-stellung"><span>Marken</span></span><span class="vf-stellung"><span>Schlüssel</span></span></span>
+        <span class="kz kz--neu">neu</span>
+        <span class="hilfepille" role="img" aria-label="Hilfe (Schema)"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="4.2" r="1.3" fill="currentColor"/><rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor"/></svg></span>
+      </div>
+
+      <div class="bk-koerper">
+        <div class="bk-spalten">
+
+          <!-- Varianten: wie heute -->
+          <section class="bk-spalte" aria-label="Varianten">
+            <p class="untergruppe">Varianten (Referenz: Stamm, fest gewählt): <span class="kz kz--heute">wie heute</span></p>
+            <div class="raster-huelle">
+              <table class="raster">
+                <thead><tr><th scope="col"><span class="nur-vorlesen">Gewählt</span></th><th scope="col">Art</th>
+                  <th scope="col">Bezeichner</th><th scope="col">Projektname</th><th scope="col">Stromspeicher</th>
+                  <th scope="col">Simulation</th></tr></thead>
+                <tbody>
+                  <tr><td class="wahl"><input class="kasten" type="checkbox" checked disabled aria-label="Stamm, fest gewählt"></td>
+                      <td>Stamm</td><td>–</td><td>Musterprojekt 1</td><td>Speicher 1, 100 kWh</td><td>24.09.2026</td></tr>
+                  <tr><td class="wahl"><input class="kasten" type="checkbox" checked aria-label="Variante 1 wählen"></td>
+                      <td>Variante</td><td>V1</td><td>Variante 1</td><td>Speicher 1, 100 kWh</td><td>24.09.2026</td></tr>
+                  <tr><td class="wahl"><input class="kasten" type="checkbox" checked aria-label="Variante 2 wählen"></td>
+                      <td>Variante</td><td>V2</td><td>Variante 2</td><td>ohne</td><td><span class="fehlt">fehlt</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="leiste">
+              <button type="button" class="knopf">Alle</button>
+              <button type="button" class="knopf">Keine</button>
+            </div>
+          </section>
+
+          <!-- Vorlage (neu) und Bausteine -->
+          <section class="bk-spalte" aria-label="Vorlage und Berichtsbausteine">
+            <div class="vorlage block-neu">
+              <p class="untergruppe">Vorlage: <span class="kz kz--neu">neu</span></p>
+              <div class="feld-reihe">
+                <span class="feld-text" id="bk-vorlage-text">Word-Vorlage</span>
+                <div class="auswahl" role="img" aria-labelledby="bk-vorlage-text bk-vorlage-wert">
+                  <span class="auswahl-wert" id="bk-vorlage-wert">Kurzbericht Kunde</span><span class="auswahl-pfeil" aria-hidden="true">▾</span>
+                </div>
+              </div>
+              <ul class="eintragsliste" aria-label="Einträge der Liste (Schema)">
+                <li><span class="schloss" role="img" aria-label="mitgeliefert – nur lesen" title="mitgeliefert – nur lesen"><svg class="schloss-bild" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><rect x="2" y="5.5" width="8" height="5.5" rx="1" fill="currentColor"/><path d="M4 5.5 V4 a2 2 0 0 1 4 0 V5.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>Standard (EPOS-Plan)</li>
+                <li class="gewaehlt">Kurzbericht Kunde</li>
+                <li>Vollbericht Haus</li>
+              </ul>
+              <div class="leiste">
+                <button type="button" class="knopf">Neue Vorlage…</button>
+                <button type="button" class="knopf">Hinzufügen…</button>
+                <button type="button" class="knopf">Prüfen</button>
+                <button type="button" class="knopf">Platzhalter…</button>
+                <button type="button" class="knopf knopf--eng" aria-label="Weitere Aktionen">…</button>
+              </div>
+              <p class="menue-inhalt">Menü „…“: In Word öffnen · Im Ordner zeigen (Windows; auf iOS „Teilen…“) · Ersetzen… · Entfernen;
+                 mitgeliefert nur „Schreibgeschützt öffnen“. „Neue Vorlage…“ legt eine Kopie der Standardvorlage
+                 oder des Kurzberichts an; „Platzhalter…“ öffnet Katalog und Baukasten.</p>
+              <p class="pruefzeile pruefzeile--warn"><svg class="pruef-bild" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M8 1.6 15 14.4H1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><rect x="7.3" y="5.8" width="1.4" height="4.8" rx=".6" fill="currentColor"/><circle cx="8" cy="12.3" r=".85" fill="currentColor"/></svg><span>Geprüft: 21 Platzhalter erkannt, 2 unbekannt</span>
+                 <button type="button" class="knopf">anzeigen</button></p>
+              <p class="herleitung">Mit der Standardvorlage lautet die Prüfzeile: ✓ geprüft, 23 Platzhalter, keine Befunde.</p>
+              <p class="platz">Zeile „Excel-Vorlage“ – erscheint nur bei Ausgabe Excel oder Beide (ab BV-E7).</p>
+            </div>
+
+            <fieldset class="mehrfach" aria-describedby="bk-baustein-hinweis">
+              <legend>Berichtsbausteine: <span class="kz kz--heute">wie heute</span> <span class="kz kz--neu">Wirkung neu</span></legend>
+              <label class="schalter"><input class="kasten" type="checkbox" checked> Deckblatt</label>
+              <label class="schalter schalter--aus"><input class="kasten" type="checkbox" checked disabled> Inhaltsverzeichnis
+                <span class="schalter-grund">in dieser Vorlage nicht enthalten</span></label>
+              <label class="schalter"><input class="kasten" type="checkbox" checked> Projektbeschreibung</label>
+              <label class="schalter"><input class="kasten" type="checkbox" checked> Komponenten &amp; Varianten</label>
+              <label class="schalter"><input class="kasten" type="checkbox" checked> Ergebnisse je Variante</label>
+              <label class="schalter"><input class="kasten" type="checkbox" checked> Variantenvergleich</label>
+              <label class="schalter"><input class="kasten" type="checkbox"> Wirtschaftlichkeit</label>
+              <label class="schalter schalter--aus"><input class="kasten" type="checkbox" checked disabled> Anhang
+                <span class="schalter-grund">in dieser Vorlage nicht enthalten</span></label>
+            </fieldset>
+            <p class="herleitung" id="bk-baustein-hinweis">Die Häkchen schalten die Kapitelplatzhalter der Vorlage
+               (BV-Q1, Empfehlung c). Führt eine Vorlage gar kein Kapitel, steht statt der Liste „Den Inhalt bestimmt
+               die Vorlage“; gespeicherte Häkchen bleiben erhalten.</p>
+            <p class="herleitung">Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich
+               bewertet. <span class="kz kz--heute">wie heute</span></p>
+          </section>
+        </div>
+
+        <fieldset class="optionen">
+          <legend>Ausgabe:</legend>
+          <label class="option"><input class="kasten" type="radio" name="bk-ausgabe" checked> Word</label>
+          <label class="option"><input class="kasten" type="radio" name="bk-ausgabe"> Excel</label>
+          <label class="option"><input class="kasten" type="radio" name="bk-ausgabe"> Beide</label>
+          <span class="kz kz--heute">wie heute</span>
+        </fieldset>
+
+        <div class="dateiwahl">
+          <label class="feld-text" for="bk-ziel">Zielordner:</label>
+          <input class="eingabe" id="bk-ziel" value="Dokumente\EPOS-Plan\Berichte" readonly>
+          <button type="button" class="knopf">Durchsuchen…</button>
+        </div>
+
+        <div class="leiste">
+          <button type="button" class="knopf knopf--primaer">Erstellen</button>
+          <span class="kz kz--heute">wie heute</span>
+          <span class="kz kz--neu">davor neu: Schnellprüfung der Vorlage</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="zwischen">Ablauf von „Erstellen“</h3>
+  <ol class="ablauf">
+    <li><b>Vorlage prüfen</b> – Schnellprüfung in Millisekunden, noch vor jeder Rechnung. <span class="kz kz--neu">neu</span></li>
+    <li><b>Rückfrage</b> – ohne Fehler die heutige Startrückfrage; mit Fehlern eine erweiterte mit drei Wegen:
+        „Mit meiner Vorlage“ (unbekannte Stellen gelb), „Mit Standardvorlage“, „Abbrechen“ (BV-Q6). <span class="kz kz--neu">erweitert</span></li>
+    <li class="bleibt"><b>Simulieren und bewerten</b> – <code>SammleFuerBericht</code> simuliert alle gewählten Varianten
+        und bewertet sie wirtschaftlich, ohne Option. <span class="kz kz--heute">wie heute</span></li>
+    <li><b>Vorlage füllen</b> – erst Word, dann Excel; Dateiname <code>&lt;Stamm&gt;_Bericht_&lt;Datum&gt;</code>, nichts wird
+        überschrieben. <span class="kz kz--neu">neu</span></li>
+    <li><b>Laufmeldung</b> – nennt Vorlage, Rückfälle, unbekannte und leer gebliebene Platzhalter und Warnungen;
+        danach „öffnen?“. <span class="kz kz--neu">erweitert</span></li>
+  </ol>
+
+  <div class="gegenueber">
+    <div>
+      <h3>Bleibt wie heute</h3>
+      <ul>
+        <li>Einstieg „Berichte &amp; Kosten › Bericht“ und der Menüpunkt <code>MENU_VARIANTEN_BERICHT</code>.</li>
+        <li>Variantenliste: Stamm fest gewählt; Spalten Art, Bezeichner, Projektname, Stromspeicher, Simulation mit Stand
+            bzw. „fehlt“; Knöpfe Alle und Keine.</li>
+        <li>Überschrift „Berichtsbausteine“, die acht Titel und ihre Vorbelegung.</li>
+        <li>Ausgabe Word, Excel oder Beide; Zielordner mit Durchsuchen…; Erstellen, Fortschritt, Abbrechen.</li>
+        <li>Der Hinweis „Jeder Bericht rechnet neu …“ – er bleibt Hinweis und wird keine Option.</li>
+        <li><code>SammleFuerBericht</code> vor jeder Ausgabe: alle berichtsrelevanten Varianten werden simuliert und
+            wirtschaftlich bewertet.</li>
+        <li>Dateiname <code>&lt;Stamm&gt;_Bericht_&lt;Datum&gt;</code> mit <code>_2 … _20</code>; nichts wird überschrieben.</li>
+        <li>Die Konfiguration je Stammprojekt samt gespeicherter Häkchen; der Hinweis beim Anhaken der
+            Wirtschaftlichkeit; Laufmeldung und Frage „öffnen?“.</li>
+      </ul>
+    </div>
+    <div class="neu">
+      <h3>Neu</h3>
+      <ul>
+        <li>Gruppe „Vorlage“ über den Häkchen: Word-Vorlage, Neue Vorlage…, Hinzufügen…, Prüfen, Platzhalter…, Menü „…“.
+            Mitgelieferte Vorlagen tragen das Schloss (nur lesen); eigene Vorlagen entstehen über „Neue Vorlage…“ als
+            Kopie der Standardvorlage oder des Kurzberichts.</li>
+        <li>Die Prüfzeile als Herleitungszeile mit Symbol und Text, mit „anzeigen“ bei Befunden.</li>
+        <li>Die Häkchen wirken auf die Kapitelplatzhalter; Kapitel, die die Vorlage nicht führt, sind ausgegraut und
+            nennen den Grund.</li>
+        <li>Zeile „Excel-Vorlage“ ab BV-E7, nur bei Ausgabe Excel oder Beide.</li>
+        <li>Umschalter „Platzhalter“ in der Kopfzeile; er gilt für alle vier Seiten von „Berichte &amp; Kosten“.</li>
+        <li>Vor der Rechnung die Schnellprüfung der Vorlage; bei Fehlern eine Rückfrage mit drei Wegen.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<section class="abschnitt" aria-labelledby="h-regeln">
+  <h2 id="h-regeln">3 · Legende und Bedienregeln</h2>
+  <div class="zeichenlegende">
+    <span><span class="probe-bild">{ }</span> Marke (Stellung „Marken“)</span>
+    <span><span class="probe-bild probe-bild--chip">{ } projekt.kunde</span> Chip (Stellung „Schlüssel“)</span>
+    <span><span class="probe-bild probe-bild--chip probe-bild--kopiert">✓ projekt.bearbeiter kopiert</span> Bestätigung nach dem Kopieren, 1,5 s</span>
+    <span><span class="probe-rahmen" aria-hidden="true"></span> Bezugsrahmen des Elements</span>
+    <span><span class="kz kz--neu">neu</span> <span class="kz kz--heute">wie heute</span> Mockup-Zeichen (nur Abschnitt 2)</span>
+  </div>
+  <div class="tabelle-huelle">
+    <table class="liste">
+      <thead><tr><th scope="col">Regel</th><th scope="col">So hält sie die Marke</th></tr></thead>
+      <tbody>
+        <tr><td>44-px-Berührungsziel</td>
+            <td>Sichtbar ist die Marke 20 px groß; der Knopf selbst ist 44 × 44 px (<code>--epos-touchziel</code>) und steht
+                in einer eigenen Randspur bzw. in der 44 px hohen Titelzeile des Elements. So überlagert keine
+                Trefferfläche ein Nachbarelement. Auch jede Stellung des Umschalters ist 44 px hoch. Die 28 px der
+                Hilfepille sind eine Altlast und kein Vorbild.</td></tr>
+        <tr><td>Sichtbar statt nur Überfahren</td>
+            <td>Solange eine Stellung gilt, stehen alle Marken sichtbar da. Überfahren öffnet nur die Aufklappung – Fokus
+                und Tipp tun dasselbe. Keine Marke erscheint erst beim Überfahren; eine Tabelle trägt eine Marke am Kopf,
+                Zeilen- und Spaltenschlüssel stehen in der Aufklappung und im Katalog.</td></tr>
+        <tr><td>Esc schließt</td>
+            <td>Esc schließt die Aufklappung, der Fokus bleibt auf der Marke; ein Klick daneben schließt ebenfalls. Kein
+                Schließkreuz: Die Aufklappung ist keine Überlagerung. Die Überlagerungen „Katalog…“ und „Prüfliste“
+                tragen Schließkreuz und Esc wie jede Überlagerung.</td></tr>
+        <tr><td>Tastatur erreichbar</td>
+            <td>Die Marke ist ein <code>&lt;button&gt;</code> in der Tab-Folge direkt nach ihrem Element (nach dem Feld,
+                vor dem nächsten Element); Fokus zeigt die Aufklappung, Tab führt weiter zu „Kopieren“. Enter oder Leertaste heftet an bzw. kopiert. Der Umschalter
+                ist eine Optionsgruppe (Pfeiltasten wechseln die Stellung).</td></tr>
+        <tr><td>forced-colors</td>
+            <td>Eigener Block: Marke, Chip und Umschalter mit Rahmen in <code>ButtonText</code>/<code>CanvasText</code>,
+                gewählte Stellung in <code>Highlight</code>, Bezugsrahmen gestrichelt in <code>CanvasText</code>,
+                „kopiert“ als Doppelrahmen. Nichts hängt allein an Farbe: Symbol <span class="mono">{ }</span>,
+                ✓ und das Wort „kopiert“.</td></tr>
+        <tr><td>Vorlesen</td>
+            <td><code>aria-label</code> „Platzhalter projekt.kunde: Schlüssel zeigen“ bzw. „… kopieren“,
+                <code>aria-expanded</code> an der angehefteten Marke, „kopiert“ über eine höfliche Live-Region.</td></tr>
+        <tr><td>Aus heißt kein DOM</td>
+            <td>In der App entstehen ausgeschaltet weder Marke noch Rahmen noch Zeile (bunit-Probe). Das Mockup verbirgt
+                sie nur per CSS, damit jede Tafel umschaltbar bleibt.</td></tr>
+        <tr><td>Eine Marke, ein Wert</td>
+            <td>Eine Marke nennt nur einen Schlüssel, der genau den angezeigten Wert erzeugt: Die Kachel zeigt den Stamm,
+                also <span class="mono">stamm.kennzahl.eff.jaz</span>. Elemente ohne gleichen Berichtsinhalt tragen keine Marke.</td></tr>
+        <tr><td>Kopieren</td>
+            <td>Die Marke meldet nur; in die Zwischenablage schreibt die Hülle der Plattform (Windows, iOS), nicht
+                EPOS.UI. Scheitert das, zeigt die Aufklappung den Schlüssel markierbar.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<section class="abschnitt" aria-labelledby="h-katalog">
+  <h2 id="h-katalog">4 · Platzhalterkatalog (Auszug)</h2>
+  <p class="pfad">So stehen die Einträge in der Überlagerung „Katalog…“ und im Baukasten. Der Schlüssel ist in beiden
+     Sprachen derselbe; die Beschriftung kommt zweisprachig aus MyResource.</p>
+  <div class="tabelle-huelle">
+    <table class="liste">
+      <thead><tr><th scope="col">Schlüssel</th><th scope="col">Art</th><th scope="col">Beschriftung (de)</th><th scope="col">Beschriftung (en)</th></tr></thead>
+      <tbody>
+        <tr><td><code>projekt.kunde</code></td><td>Text</td><td>Kunde</td><td>Customer</td></tr>
+        <tr><td><code>projekt.beschreibung</code></td><td>Text, mehrzeilig</td><td>Projektbeschreibung</td><td>Project description</td></tr>
+        <tr><td><code>bericht.datum</code></td><td>Datum</td><td>Berichtsdatum</td><td>Report date</td></tr>
+        <tr><td><code>stamm.kennzahl.eff.jaz</code></td><td>Zahl</td><td>Jahresarbeitszahl Wärmepumpe (Stamm)</td><td>Heat pump seasonal performance factor (base)</td></tr>
+        <tr><td><code>tabelle.vergleich.effizienz</code></td><td>Tabelle</td><td>Variantenvergleich: Effizienz</td><td>Variant comparison: efficiency</td></tr>
+        <tr><td><code>bild.vergleich.balken.eff.jaz</code></td><td>Bild</td><td>Balkendiagramm Jahresarbeitszahl je Stand</td><td>Bar chart of the seasonal performance factor per case</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<section class="abschnitt" aria-labelledby="h-vorschlag">
+  <h2 id="h-vorschlag">5 · Was das Mockup gegenüber dem Entwurf festlegt</h2>
+  <ol class="vorschlaege">
+    <li><b>Drei Stellungen statt Ein/Aus.</b> Ein Umschalter mit Aus · Marken · Schlüssel. „Marken“ ist die ruhige
+        Erkennung mit Überfahren am Rand, wie vom Anwender vorgeschlagen; „Schlüssel“ ist der Arbeitsmodus des
+        Vorlagenautors. Als Lesart zu BV-Q9 zu führen.</li>
+    <li><b>Randspur statt Pseudoelement.</b> Die Marke ist ein voller 44-px-Knopf in eigener Spur bzw. Titelzeile;
+        die Trefferfläche überlagert nichts.</li>
+    <li><b>Keine Leiste mit Schließkreuz.</b> Ausgeschaltet wird am Umschalter; in der Stellung „Schlüssel“ nennt eine
+        leise Zeile die Zahl der Platzhalter und öffnet „Katalog…“.</li>
+    <li><b>Ein Umschalter je Bildschirm.</b> Auf der Berichtsseite steht er nur in der Kopfzeile, nicht zusätzlich in
+        der Vorlagengruppe; dort führt „Platzhalter…“ zu Katalog und Baukasten.</li>
+    <li><b>Hausformen.</b> Mitgelieferte Vorlagen tragen das Schloss wie ein Auslieferungssatz; die Prüfzeile ist eine
+        Herleitungszeile, kein <code>Kennzeichen</code>.</li>
+    <li><b>Tabelle mit einer Marke.</b> Die Marke sitzt am Tabellenkopf; Werte je Stand nennt die Aufklappung mit dem
+        Blockhinweis <span class="mono">{{#je stand}}</span>.</li>
+  </ol>
+</section>
+
+<p class="mockup-fuss">Gehört zum Konzeptentwurf Berichtsvorlagen, Abschnitte „Platzhalter in der App erkennen“ und
+   „Berichtsseite nach dem Umbau“. Abnahme der Etappe BV-E6: bunit (ausgeschaltet kein DOM, Kopieren, ausgegraute
+   Häkchen), Abdeckungswache nach dem Vorbild <code>KiMaskenabdeckungWacheTests</code>, <code>StilblattTests</code>,
+   <code>SchliesskreuzWacheTests</code>, Browserprobe nach dem Vorbild <code>Proben/Rasterprobe</code> bei 1 280 px und im
+   iPad-Maß. Stand 25.09.2026.</p>
+
+</main>
+
+<script>
+/* Kleine Zugabe: Umschalter je Tafel, Aufklappung anheften, Esc, Kopieren.
+   Ohne Skript bleiben die drei Tafeln fest in ihren Zustaenden. */
+(function () {
+    "use strict";
+    var STUFEN = ["aus", "marken", "schluessel"];
+
+    function stufeVon(ansicht) {
+        for (var i = 0; i < STUFEN.length; i++) {
+            if (ansicht.classList.contains("z-" + STUFEN[i])) return STUFEN[i];
+        }
+        return "aus";
+    }
+
+    function schliesse(halter) {
+        halter.classList.remove("ist-offen");
+        var z = halter.querySelector(".vf-zeichen");
+        if (z && z.hasAttribute("aria-expanded")) z.setAttribute("aria-expanded", "false");
+    }
+
+    function schliesseAlle(ausser) {
+        document.querySelectorAll(".vf-halter.ist-offen").forEach(function (h) {
+            if (h !== ausser) schliesse(h);
+        });
+    }
+
+    function beschrifte(ansicht) {
+        var stufe = stufeVon(ansicht);
+        ansicht.querySelectorAll(".vf-zeichen").forEach(function (z) {
+            var s = z.getAttribute("data-schluessel");
+            var auf = z.parentNode.querySelector(".vf-aufklappung");
+            if (stufe === "schluessel") {
+                z.setAttribute("aria-label", "Platzhalter " + s + " kopieren");
+                z.removeAttribute("aria-expanded");
+                z.removeAttribute("aria-controls");
+            } else {
+                z.setAttribute("aria-label", "Platzhalter " + s + ": Schlüssel zeigen");
+                z.setAttribute("aria-expanded", z.parentNode.classList.contains("ist-offen") ? "true" : "false");
+                if (auf) z.setAttribute("aria-controls", auf.id);
+            }
+        });
+    }
+
+    function setzeStufe(ansicht, stufe) {
+        STUFEN.forEach(function (s) { ansicht.classList.toggle("z-" + s, s === stufe); });
+        ansicht.querySelectorAll(".vf-halter").forEach(function (h) {
+            schliesse(h);
+            h.classList.remove("ist-unterdrueckt");
+        });
+        ansicht.querySelectorAll(".ist-kopiert").forEach(function (k) { k.classList.remove("ist-kopiert"); });
+        beschrifte(ansicht);
+    }
+
+    function kopiere(ansicht, schluessel, anzeiger) {
+        var text = "{{" + schluessel + "}}";
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(function () { /* Rueckfall: Schluessel steht sichtbar da */ });
+            }
+        } catch (e) { /* ebenso */ }
+        anzeiger.classList.add("ist-kopiert");
+        var ansage = ansicht.querySelector(".vf-ansage");
+        if (ansage) ansage.textContent = text + " kopiert";
+        clearTimeout(anzeiger._uhr);
+        anzeiger._uhr = setTimeout(function () { anzeiger.classList.remove("ist-kopiert"); }, 1500);
+    }
+
+    document.querySelectorAll(".ansicht").forEach(function (a) {
+        a.querySelectorAll(".vf-umschalter input").forEach(function (r) {
+            r.addEventListener("change", function () { if (r.checked) setzeStufe(a, r.value); });
+        });
+        beschrifte(a);
+    });
+
+    document.querySelectorAll(".vf-halter").forEach(function (h) {
+        h.addEventListener("mouseleave", function () {
+            if (!h.contains(document.activeElement)) h.classList.remove("ist-unterdrueckt");
+        });
+        h.addEventListener("focusout", function (e) {
+            if (!h.contains(e.relatedTarget) && !h.matches(":hover")) h.classList.remove("ist-unterdrueckt");
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        var ansicht = e.target.closest(".ansicht");
+        var knopf = e.target.closest("[data-kopiere]");
+        var zeichen = e.target.closest(".vf-zeichen");
+        if (knopf && ansicht) { kopiere(ansicht, knopf.getAttribute("data-kopiere"), knopf); return; }
+        if (zeichen && ansicht) {
+            if (stufeVon(ansicht) === "schluessel") {
+                kopiere(ansicht, zeichen.getAttribute("data-schluessel"), zeichen);
+                return;
+            }
+            var halter = zeichen.parentNode;
+            var offen = halter.classList.contains("ist-offen");
+            schliesseAlle(halter);
+            halter.classList.toggle("ist-offen", !offen);
+            halter.classList.remove("ist-unterdrueckt");
+            zeichen.setAttribute("aria-expanded", String(!offen));
+            return;
+        }
+        if (!e.target.closest(".vf-aufklappung")) schliesseAlle(null);
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape" && e.key !== "Esc") return;
+        var aktiv = document.activeElement;
+        var imHalter = aktiv && aktiv.closest ? aktiv.closest(".vf-halter") : null;
+        var ziele = Array.prototype.slice.call(document.querySelectorAll(".vf-halter.ist-offen, .z-marken .vf-halter:hover"));
+        if (imHalter && ziele.indexOf(imHalter) < 0) ziele.push(imHalter);
+        if (!ziele.length) return;
+        ziele.forEach(function (h) { schliesse(h); h.classList.add("ist-unterdrueckt"); });
+        if (imHalter) {
+            var z = imHalter.querySelector(".vf-zeichen");
+            if (z) z.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>
