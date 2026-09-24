@@ -313,8 +313,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die vier Katalogsätze mit dem Schadensbild tragen nach dem Schritt die Fläche 0
-        /// (U · A war 0 und bleibt 0); ein Satz MIT U-Wert bleibt, der Krankenhaussatz mit
-        /// dem U-Wert Fenster 0,09 bleibt unberührt. Ein neu entstandenes Bild wird auch an
+        /// (U · A war 0 und bleibt 0); ein Satz MIT U-Wert bleibt, der U-Wert Fenster des
+        /// Krankenhaussatzes gehört nicht zu diesem Bild (ihn berichtigt
+        /// <see cref="GebaeudeKatalogReparatur"/>, Stand der Kopie: 1,3). Ein neu entstandenes Bild wird auch an
         /// einem Auslieferungssatz repariert; eine PROJEKTKOPIE mit demselben Bild bleibt.
         /// </summary>
         [Fact]
@@ -329,7 +330,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(0.0, Kommazahl("SELECT k_Wert_Sonstiges FROM Tab_Gebaeude_STAMM WHERE ID = ?", id));
             }
             Assert.Equal(4.0, Kommazahl("SELECT Sonstige_Flaechen FROM Tab_Gebaeude_STAMM WHERE ID = 7"));
-            Assert.Equal(0.09, Kommazahl("SELECT k_Wert_Fenster FROM Tab_Gebaeude_STAMM WHERE ID = 79"), 6);
+            Assert.Equal(1.3, Kommazahl("SELECT k_Wert_Fenster FROM Tab_Gebaeude_STAMM WHERE ID = 79"), 6);
             Assert.Equal(0L, Zahl(GebaeudeSonstigeFlaeche.SQL_ZAEHLUNG));
 
             // Das Bild entsteht neu - an einem Auslieferungssatz - und an einer Projektkopie.
@@ -344,14 +345,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Prüfung des Katalogeditors</b> nach dem Schritt: Die vier reparierten Sätze
-        /// bestehen sie ganz; die U-Wert-Regel verletzt allein noch der Krankenhaussatz
-        /// (U-Wert Fenster 0,09 bei 11 646 m² Fensterfläche — der Wert ist nicht nach
-        /// Schadensbild herzuleiten und bleibt dem Anwender vorgelegt). Andere Regeln (die
-        /// „Fläche je Nutzer" einzelner Sätze) sind nicht Gegenstand des Schritts.
+        /// <b>Die Prüfung des Katalogeditors</b> nach den Schritten 121 und
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/> (Welle #485): JEDER der 269
+        /// Katalogsätze besteht sie ganz — die vier Sätze der Sonstigen Fläche, der
+        /// Krankenhaussatz (U-Wert Fenster 1,3) und die vier Sätze, die ihre „Fläche je Nutzer"
+        /// bekamen, eingeschlossen. Der Wächter hält den Katalog: Ein neuer Satz, den der Editor
+        /// nicht speichern ließe, fällt hier auf.
         /// </summary>
         [Fact]
-        public void Nach_dem_Schritt_verletzt_allein_der_Krankenhaussatz_die_U_Wert_Regel()
+        public void Nach_der_Reparatur_besteht_jeder_Katalogsatz_die_Editorpruefung()
         {
             using var db = new TestDatenbank();
             using var kultur = new Kulturvorrichtung();
@@ -362,7 +364,7 @@ namespace EPOS.Kern.Tests
             string uBereich = huelltexte.MeldungUBereich.Split("{0}")[0];
             Assert.False(string.IsNullOrWhiteSpace(uBereich));
 
-            var uVerstoesse = new List<string>();
+            var verstoesse = new List<string>();
             var frei = new List<string>();
             foreach (string name in GebaeudeStammCtrl.Katalognamen())
             {
@@ -370,14 +372,16 @@ namespace EPOS.Kern.Tests
                 arbeit.Laden(GebaeudeAdminHuelle.Satz(name).Feldsatz, neu: false);
                 GebaeudePruefbefund befund = arbeit.Pruefen(false, prueftexte, huelltexte);
                 if (befund is null) frei.Add(name);
-                else if (befund.Meldung.StartsWith(uBereich, StringComparison.Ordinal)) uVerstoesse.Add(name);
+                else verstoesse.Add(name + ": " + befund.Meldung);
             }
-            Assert.Equal(277, GebaeudeStammCtrl.Katalognamen().Count);
-            Assert.Equal(new[] { "Krankenhaus_92-EnEV2016" }, uVerstoesse);
+            Assert.Equal(269, GebaeudeStammCtrl.Katalognamen().Count);
+            Assert.Empty(verstoesse);
 
-            // Die vier reparierten Saetze bestehen die Pruefung jetzt ganz.
+            // Die reparierten Saetze bestehen die Pruefung ganz.
             foreach (string name in new[] { "AltenH-95-EnEV2016", "Pflegeheim-122-EnEV2016",
-                                            "SpH-Umkl-287-EnEV2016", "SpH-Umkl-NE" })
+                                            "SpH-Umkl-287-EnEV2016", "SpH-Umkl-NE",
+                                            "Krankenhaus_92-EnEV2016", "EFH-BZ2", "KrankenH-F-U-400",
+                                            "KMEH-M-U-54", "Z-EFH-A-S-126" })
                 Assert.Contains(name, frei);
         }
 

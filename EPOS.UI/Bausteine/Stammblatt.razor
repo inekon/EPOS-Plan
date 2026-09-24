@@ -29,7 +29,11 @@
    VergleichZurueck zurueck.
 
    IM SCHMALEN FENSTER steht das Blatt ueber der Liste (V3); "‹ Liste" fuehrt
-   zurueck und steht nur dort (epos-nur-schmal).
+   zurueck und steht nur dort (epos-nur-schmal). Reicht der Wirt Kopfhandlungen
+   herein (Ausgabe und Uebernahme eines Ergebnisses, die breit in der
+   Werkzeugleiste der Liste stehen), stehen sie schmal in derselben Zeile wie
+   "‹ Liste" - das Blatt verdeckt dort die Werkzeugleiste. Es ist DASSELBE
+   Fragment wie in der Werkzeugleiste: gleiche Rueckrufe, gleiche Sperren.
 
    DAS BLATT SCHREIBT NICHTS. Felder, Speichern und Verwerfen gehoeren dem
    Wirt; er steckt seine Felder als Gruppen herein und haelt ihren Zustand. *@
@@ -40,7 +44,20 @@
 <section class="epos-stammblatt@(VergleichImBlatt ? " epos-stammblatt--vergleich" : "")"
          aria-label="@Texte.Beschriftung">
     <div class="epos-stammblatt-kopf">
-        @if (ZurListe.HasDelegate)
+        @if (Kopfhandlungen is not null)
+        {
+            <div class="epos-nur-schmal epos-stammblatt-kopfzeile">
+                @if (ZurListe.HasDelegate)
+                {
+                    <button type="button" class="epos-textknopf epos-stammblatt-zurliste"
+                            @onclick="ZurListe">@Texte.ZurListe</button>
+                }
+                <div class="epos-stammblatt-kopfhandlungen">
+                    @Kopfhandlungen
+                </div>
+            </div>
+        }
+        else if (ZurListe.HasDelegate)
         {
             <button type="button" class="epos-textknopf epos-nur-schmal epos-stammblatt-zurliste"
                     @onclick="ZurListe">@Texte.ZurListe</button>
@@ -203,6 +220,14 @@
 
     /// <summary>„‹ Liste" im schmalen Fenster — ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback ZurListe { get; set; }
+
+    /// <summary>
+    /// Handlungen im Kopf, NUR im schmalen Fenster (<c>epos-nur-schmal</c>), in einer Zeile mit
+    /// „‹ Liste" — für Knöpfe, die breit in der Werkzeugleiste der Liste stehen und schmal vom
+    /// Blatt verdeckt wären. Der Wirt reicht DASSELBE Fragment wie in den Schlitz
+    /// <c>Werkzeug</c>; ohne Fragment keine Zeile.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfhandlungen { get; set; }
 
     /// <summary>
     /// Die Köpfe des Vergleichs — je gewähltem Satz sein Name. Zusammen mit

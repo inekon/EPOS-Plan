@@ -406,9 +406,10 @@ namespace EPOS.Kern.Tests
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT", migration);
-            int ort124 = migration.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
+            int ort126 = migration.IndexOf("new Schritt(SCHRITT_GEBAEUDE_KATALOGREPARATUR", StringComparison.Ordinal);
             int ort127 = migration.IndexOf("new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN", StringComparison.Ordinal);
-            Assert.True(ort124 > 0 && ort127 > ort124, "Der Schritt 127 steht nicht nach 124.");
+            Assert.True(ort126 > 0 && ort127 > ort126, "Der Schritt 127 steht nicht nach 126.");
+            Assert.True(ProjektWirkungSchema.SCHRITT > GebaeudeKatalogReparatur.SCHRITT);
             Assert.Contains("ProjektWirkungSchema.Ausfuehren()", migration);
             Assert.Contains("ProjektWirkungSchema.Vollstaendig()", migration);
 

@@ -626,6 +626,12 @@ namespace EPOS.Kern.Tests
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug; kein DML.
                 foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
                     SpalteSicherstellen(s);
+
+                // Schritt GebaeudeKatalogReparatur.SCHRITT (Welle #485): die Reparatur der
+                // Gebaeude-Katalogsaetze nach Bezeichner und Schadensbild. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; NACH 125, braucht 121; wiederholbar.
+                GebaeudeKatalogReparatur.Ausfuehren();
+
                 // Schritt 127 (Etappe E17, V-G11): die Liste der nicht monetarisierbaren Wirkungen
                 // (Tab_ProjektWirkung) samt Uebernahme des gepflegten Freitexts als Wirkung SONSTIG.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug (ProjektWirkungSchema); wiederholbar.

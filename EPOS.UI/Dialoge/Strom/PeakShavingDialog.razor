@@ -28,7 +28,10 @@
    DIE HANDLUNGEN AM ERGEBNIS STEHEN IN DER WERKZEUGLEISTE (Konzept
    Administrationsdialoge 7.1 c): "CSV-Export" und "In Variante uebernehmen"
    wirken auf das Ergebnis, nicht auf den Dialog - sie stehen im Schlitz
-   Werkzeug der Katalogliste neben der Suche. Die Fussleiste traegt nur, was
+   Werkzeug der Katalogliste neben der Suche. Im schmalen Fenster verdeckt das
+   Stammblatt die Werkzeugleiste; dort stehen dieselben Knoepfe zusaetzlich im
+   Kopf des Blatts neben "‹ Liste" (Stammblatt.Kopfhandlungen, dasselbe
+   Fragment, dieselben Sperren). Die Fussleiste traegt nur, was
    das Geruest vorsieht: "Lastgang aus Datei..." an der Stelle von Import...,
    die Statuszeile und "Beenden".
 
@@ -87,7 +90,8 @@
 
         <Blatt>
             <Stammblatt Name="@Fokusname" Unterzeile="@Unterzeile"
-                        Kennzahlen="@Kopfkennzahlen" ZurListe="@_blattSchliessen">
+                        Kennzahlen="@Kopfkennzahlen" ZurListe="@_blattSchliessen"
+                        Kopfhandlungen="@Werkzeughandlungen">
                 <Gruppen>
                     @* ================================================ Speicher *@
                     <Stammblattgruppe Titel="@GruppeSpeicher">
@@ -1194,7 +1198,8 @@
     /// <summary>
     /// <b>Die Handlungen am Ergebnis</b> im Schlitz <c>Werkzeug</c> der Katalogliste
     /// (Konzept Administrationsdialoge 7.1 c): „CSV-Export" und „In Variante übernehmen",
-    /// in dieser Reihenfolge nach der Suche. Beide sind gesperrt, solange gerechnet wird;
+    /// in dieser Reihenfolge nach der Suche; im schmalen Fenster dasselbe Fragment zusätzlich
+    /// im Kopf des Stammblatts (<c>Kopfhandlungen</c>). Beide sind gesperrt, solange gerechnet wird;
     /// ohne Ergebnis meldet jeder „Bitte zuerst rechnen.". Ohne Delegat fehlt der Knopf,
     /// ohne beide Delegaten die ganze Gruppe — die Suchzeile trägt dann keine leere Zelle.
     /// </summary>

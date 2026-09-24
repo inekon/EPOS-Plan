@@ -1582,8 +1582,30 @@ namespace Testdatenbankschema
             foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 125, trocken);
+
+            // ---- Schritt GebaeudeKatalogReparatur.SCHRITT: die Reparatur der Gebaeude-
+            //      Katalogsaetze (Welle #485, Konzept Administrationsdialoge 7.1 (a)). NACH 125,
+            //      braucht 121. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeKatalogreparatur bedient
+            //      (GebaeudeKatalogReparatur): Krankenhaussatz (U-Wert Fenster, Nordfenster),
+            //      vier Saetze ohne Flaeche je Nutzer, acht Testreste - je Satz nach Bezeichner und
+            //      Schadensbild; ein Testrest nur, wenn keine Projektkopie ihn fuehrt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrReparatur = GebaeudeKatalogReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrReparatur + " - Reparatur der Gebaeude-Katalogsaetze, offen vorher: " +
+                              GebaeudeKatalogReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeKatalogReparatur.Bericht berichtReparatur = GebaeudeKatalogReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrReparatur + " - " + berichtReparatur.Text() + "; offen: " +
+                                  GebaeudeKatalogReparatur.Offen() + " (erwartet 0).");
+            }
+
             // ---- Schritt 127: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
-            //      V-G11; 126 ist Dialog Design zugesagt). NACH 125.
+            //      V-G11). NACH 126 (GebaeudeKatalogReparatur).
             //      DDL und DML aus DERSELBEN Quelle, aus der sich
             //      SchemaMigration.Schritt_127_NichtMonetaereWirkungen bedient
             //      (ProjektWirkungSchema): Tab_ProjektWirkung STRICT samt Index, dann je Projekt
