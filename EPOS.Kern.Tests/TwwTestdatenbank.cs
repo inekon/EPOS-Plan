@@ -162,19 +162,20 @@ namespace EPOS.Kern.Tests
         internal static int KategorieAnlegen(int idNutzungsart, string kategorie, int reihenfolge,
                                              double volumenstrom, int dauer, double anteil, double sigma,
                                              double? kappung = null, string status = TwwSchema.STATUS_EIGEN,
-                                             bool readOnly = false)
+                                             bool readOnly = false, string herkunftsart = TwwSchema.HERKUNFT_FIKTIV)
         {
             return DataRepository.ExecuteInsertAndGetId(
                 "INSERT INTO \"Tab_TwwZapfkategorie_STAMM\" (\"ID_Nutzungsart\", \"Kategorie\", \"Reihenfolge\", " +
                 "\"Volumenstrom_l_min\", \"Dauer_min\", \"Anteil\", \"Sigma\", \"Kappung_l_min\", \"Quelle\", " +
                 "\"Ausgabe\", \"Version\", \"Herkunftsart\", \"Status\", \"Beleg\", \"ReadOnly\") " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'T1', 'FIKTIV', ?, NULL, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 'T1', ?, ?, NULL, ?)",
                 new[]
                 {
                     new DbParam("@n", idNutzungsart), new DbParam("@k", kategorie), new DbParam("@r", reihenfolge),
                     new DbParam("@v", volumenstrom), new DbParam("@d", dauer), new DbParam("@a", anteil),
                     new DbParam("@s", sigma), new DbParam("@kap", kappung.HasValue ? (object)kappung.Value : null),
-                    new DbParam("@q", QUELLE), new DbParam("@st", status), new DbParam("@ro", readOnly ? 1 : 0)
+                    new DbParam("@q", QUELLE), new DbParam("@h", herkunftsart), new DbParam("@st", status),
+                    new DbParam("@ro", readOnly ? 1 : 0)
                 });
         }
 

@@ -28050,15 +28050,6 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEDARFSTAG_QUELLE" xml:space="preserve">
     <value>the source of the design day</value>
   </data>
-  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERART" xml:space="preserve">
-    <value>the generator type</value>
-  </data>
-  <data name="ZPG_SATZ_BEGRIFF_WERKSTOFF" xml:space="preserve">
-    <value>the heat exchanger material</value>
-  </data>
-  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG" xml:space="preserve">
-    <value>the reference of the state of charge</value>
-  </data>
   <data name="ZPG_SATZ_SPEICHER_WERTEMENGE" xml:space="preserve">
     <value>{0} lies outside the range of values.</value>
   </data>
@@ -28109,5 +28100,38 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ENTWURF_NAME_BELEGT" xml:space="preserve">
     <value>the name “{0}” of the constructed design day is already used in catalogue version “{1}”.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KEINE" xml:space="preserve">
+    <value>The set needs at least one draw-off category.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_FEHLT" xml:space="preserve">
+    <value>The draw-off category in row {0} has no name.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_DOPPELT" xml:space="preserve">
+    <value>The name “{0}” occurs more than once in the set of draw-off categories.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
+    <value>Draw-off category “{0}” needs a flow rate that is finite and not negative.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_STREUUNG" xml:space="preserve">
+    <value>Draw-off category “{0}” needs a spread σ that is finite and not negative.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_DAUER" xml:space="preserve">
+    <value>Draw-off category “{0}” needs a duration of 1 to 1440 minutes.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL" xml:space="preserve">
+    <value>Draw-off category “{0}” needs a share that is finite and not negative.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KAPPUNG" xml:space="preserve">
+    <value>The cap of draw-off category “{0}” must be empty or positive.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL_NULL" xml:space="preserve">
+    <value>The shares of the draw-off categories sum to 0 — at least one category needs a share.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_MITTEL" xml:space="preserve">
+    <value>Draw-off category “{0}” has a share but no positive truncated mean flow rate — adjust flow rate, spread or cap.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_SUMME_NORMIERT" xml:space="preserve">
+    <value>The shares of the draw-off categories sum to {0:0.###} instead of 1; the calculation normalises them.</value>
   </data>
 </root>

@@ -275,15 +275,6 @@ namespace WindowsFormsApplication1
             else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = ZapfSatz.Neu("BEGRIFF_SPEICHERART");
             else if (p.BedarfstagQuelle.HasValue && !Enum.IsDefined(typeof(ZapfBedarfstagquelle), p.BedarfstagQuelle.Value))
                 grund = ZapfSatz.Neu("BEGRIFF_BEDARFSTAG_QUELLE");
-            else if (p.Erzeugerart.HasValue && !Enum.IsDefined(typeof(ZapfErzeugerart), p.Erzeugerart.Value))
-                grund = ZapfSatz.Neu("BEGRIFF_ERZEUGERART");
-            else if (p.UebertragerWerkstoff.HasValue && !Enum.IsDefined(typeof(ZapfUebertragerwerkstoff), p.UebertragerWerkstoff.Value))
-                grund = ZapfSatz.Neu("BEGRIFF_WERKSTOFF");
-            else if (p.FuellstandBezug.HasValue && !Enum.IsDefined(typeof(ZapfFuellstandbezug), p.FuellstandBezug.Value))
-                grund = ZapfSatz.Neu("BEGRIFF_FUELLSTAND_BEZUG");
-            else if (p.PersonenManuell.HasValue && (double.IsNaN(p.PersonenManuell.Value) || double.IsInfinity(p.PersonenManuell.Value)
-                                                    || p.PersonenManuell.Value < 0))
-                grund = ZapfSatz.Neu("BEGRIFF_PERSONEN");
             if (grund != null)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektUngueltig, "",
                     ZapfSatz.Neu("SPEICHER_WERTEMENGE", grund));

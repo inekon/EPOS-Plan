@@ -154,7 +154,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Alle Zugriffe über <see cref="DataRepository"/> mit <c>?</c>-Parametern</b>,
     /// Prüfung und Schreiben je Aktion in EINEM <see cref="DbVorgang"/>.</para>
     /// </summary>
-    internal static class TwwNutzungsartCtrl
+    internal static partial class TwwNutzungsartCtrl
     {
         /// <summary>
         /// Die Quelle einer vom Anwender gesetzten Wertgruppe — neutral, ohne Norm, Ausgabe oder

@@ -81261,15 +81261,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Erzeugerart ähnelt.
-        /// </summary>
-        public static string ZPG_SATZ_BEGRIFF_ERZEUGERART {
-            get {
-                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_ERZEUGERART", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Erzeugerleistung ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_ERZEUGERLEISTUNG {
@@ -81320,15 +81311,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_4 {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die der Bezug des Füllstands ähnelt.
-        /// </summary>
-        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG {
-            get {
-                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG", resourceCulture);
             }
         }
         
@@ -81824,15 +81806,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_WB {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_WB", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die der Werkstoff des Übertragers ähnelt.
-        /// </summary>
-        public static string ZPG_SATZ_BEGRIFF_WERKSTOFF {
-            get {
-                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_WERKSTOFF", resourceCulture);
             }
         }
         
@@ -82841,6 +82814,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ braucht einen Anteil, endlich und nicht negativ. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_ANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile der Zapfkategorien summieren zu 0 — mindestens eine Kategorie braucht einen Anteil. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_ANTEIL_NULL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_ANTEIL_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ braucht eine Dauer von 1 bis 1440 Minuten. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_DAUER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kappung der Zapfkategorie „{0}“ muss leer oder positiv sein. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_KAPPUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz braucht mindestens eine Zapfkategorie. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_KEINE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ hat einen Anteil, aber kein positives gestutztes Mittel des Volumenstroms — Volumenstrom, Streuung oder Kappung anpassen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ steht mehrfach im Satz der Zapfkategorien. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie in Zeile {0} hat keinen Namen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ braucht eine Streuung σ, endlich und nicht negativ. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_STREUUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_STREUUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile der Zapfkategorien summieren zu {0:0.###} statt 1; die Rechnung normiert sie. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_SUMME_NORMIERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_SUMME_NORMIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ braucht einen Volumenstrom, endlich und nicht negativ. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATEGORIE_VOLUMENSTROM {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATEGORIE_VOLUMENSTROM", resourceCulture);
             }
         }
         

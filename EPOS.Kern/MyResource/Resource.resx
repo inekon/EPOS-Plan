@@ -28057,15 +28057,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_BEDARFSTAG_QUELLE" xml:space="preserve">
     <value>die Quelle des Bedarfstags</value>
   </data>
-  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERART" xml:space="preserve">
-    <value>die Erzeugerart</value>
-  </data>
-  <data name="ZPG_SATZ_BEGRIFF_WERKSTOFF" xml:space="preserve">
-    <value>der Werkstoff des Übertragers</value>
-  </data>
-  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG" xml:space="preserve">
-    <value>der Bezug des Füllstands</value>
-  </data>
   <data name="ZPG_SATZ_SPEICHER_WERTEMENGE" xml:space="preserve">
     <value>{0} liegt außerhalb der Wertemenge.</value>
   </data>
@@ -28116,5 +28107,38 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ENTWURF_NAME_BELEGT" xml:space="preserve">
     <value>der Name „{0}“ des konstruierten Bedarfstags ist in der Katalogversion „{1}“ schon vergeben.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KEINE" xml:space="preserve">
+    <value>Der Satz braucht mindestens eine Zapfkategorie.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_FEHLT" xml:space="preserve">
+    <value>Die Zapfkategorie in Zeile {0} hat keinen Namen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_DOPPELT" xml:space="preserve">
+    <value>Der Name „{0}“ steht mehrfach im Satz der Zapfkategorien.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht einen Volumenstrom, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_STREUUNG" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht eine Streuung σ, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_DAUER" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht eine Dauer von 1 bis 1440 Minuten.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht einen Anteil, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KAPPUNG" xml:space="preserve">
+    <value>Die Kappung der Zapfkategorie „{0}“ muss leer oder positiv sein.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL_NULL" xml:space="preserve">
+    <value>Die Anteile der Zapfkategorien summieren zu 0 — mindestens eine Kategorie braucht einen Anteil.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_MITTEL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ hat einen Anteil, aber kein positives gestutztes Mittel des Volumenstroms — Volumenstrom, Streuung oder Kappung anpassen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_SUMME_NORMIERT" xml:space="preserve">
+    <value>Die Anteile der Zapfkategorien summieren zu {0:0.###} statt 1; die Rechnung normiert sie.</value>
   </data>
 </root>
