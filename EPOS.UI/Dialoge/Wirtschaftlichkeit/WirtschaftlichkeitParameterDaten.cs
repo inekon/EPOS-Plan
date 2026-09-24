@@ -63,6 +63,13 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string SzDauer { get; } = T("WPAR_SZ_DAUER", "Nutzungsdauer");
     /// <summary>ETAPPE W5-B-12: die siebte Zeile der Szenariotabelle.</summary>
     public string SzPreisI { get; } = T("WPAR_SZ_PREIS_I", "Preissteigerung Investition");
+
+    // ETAPPE E9b (Konzept § 2.11.5, Pflege): die Zeilen 8 und 9 der Tafel - Groessen
+    // OHNE Vorgabe (E9a-Q5), leer heisst "wie Erwartet".
+    /// <summary>ETAPPE E9b: Zeile 8 — der Betrachtungszeitraum je Szenario.</summary>
+    public string SzZeitraum { get; } = T("WPAR_SZ_ZEITRAUM", "Betrachtungszeitraum");
+    /// <summary>ETAPPE E9b: Zeile 9 — die Mengenänderung je Szenario.</summary>
+    public string SzMenge { get; } = T("WPAR_SZ_MENGE", "Mengenänderung");
     public string SzVorgaben { get; } = T("WPAR_SZ_VORGABEN", "Vorgaben");
     public string SzHinweis { get; } = T("WPAR_SZ_HINWEIS", "");
     public string SzHerkunftVorgabe { get; } = T("WPAR_SZ_HERKUNFT_VORGABE",

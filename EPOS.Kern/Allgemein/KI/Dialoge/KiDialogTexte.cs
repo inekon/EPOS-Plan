@@ -1516,6 +1516,15 @@
         internal static string WpaSzWorstDauer => Block(SzWorst, MyResource.Resource.WPAR_SZ_DAUER);
         internal static string WpaSzDauerErl => MyResource.Resource.KI_DLG_WPA_SZ_DAUER_ERL;
 
+        // ---- ETAPPE E9b: Zeilen 8 und 9 der Szenariotafel (ohne Vorgabe) ----
+        internal static string WpaSzBestZeitraum => Block(SzBest, MyResource.Resource.WPAR_SZ_ZEITRAUM);
+        internal static string WpaSzWorstZeitraum => Block(SzWorst, MyResource.Resource.WPAR_SZ_ZEITRAUM);
+        internal static string WpaSzZeitraumErl => MyResource.Resource.KI_DLG_WPA_SZ_ZEITRAUM_ERL;
+        internal static string WpaSzBestMenge => Block(SzBest, MyResource.Resource.WPAR_SZ_MENGE);
+        internal static string WpaSzWorstMenge => Block(SzWorst, MyResource.Resource.WPAR_SZ_MENGE);
+        internal static string WpaSzMengeErl => MyResource.Resource.KI_DLG_WPA_SZ_MENGE_ERL;
+        // ---- Ende ETAPPE E9b ----
+
         // ---- Form_BhkwWirtschaftlichkeit
         internal static string MaskeBhkwWirtschaft => MyResource.Resource.KI_DLG_MASKE_BHW;
         internal static string BhwModulName => MyResource.Resource.BHW_SP_ANLAGE;

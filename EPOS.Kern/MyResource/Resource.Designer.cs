@@ -37223,6 +37223,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mengenänderung dieses Szenarios in Prozent — ein Faktor auf die Mengen der Simulation (Erzeugung, Einspeisung, Bezug, Brennstoff). Leer heißt „wie Erwartet“; eine Vorgabe gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_MENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_MENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Preissteigerung der Betriebskosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_SZ_PREIS_B_ERL {
@@ -37246,6 +37255,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_SZ_PREIS_I_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_SZ_PREIS_I_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrachtungszeitraum dieses Szenarios in ganzen Jahren. Leer heißt „wie Erwartet“ — eine Vorgabe wie bei den Zeilen darüber gibt es nicht. Er wirkt auf Horizont, Restwert und Ersatzbeschaffungen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_ZEITRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_ZEITRAUM_ERL", resourceCulture);
             }
         }
         
@@ -73206,6 +73224,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengenänderung ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_MENGE {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb ähnelt.
         /// </summary>
         public static string WPAR_SZ_PREIS_B {
@@ -73274,6 +73301,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_SZ_VORGABEN {
             get {
                 return ResourceManager.GetString("WPAR_SZ_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_ZEITRAUM", resourceCulture);
             }
         }
         

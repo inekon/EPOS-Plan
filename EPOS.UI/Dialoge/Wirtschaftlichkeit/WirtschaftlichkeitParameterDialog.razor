@@ -117,7 +117,14 @@
        Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
        wird. Wer tippt, pflegt; "Vorgaben" setzt alle vierzehn Felder zurueck. Ob
        ein Satz aus Vorgaben oder gepflegten Werten besteht, sagt die
-       Herleitungszeile darunter. *@
+       Herleitungszeile darunter.
+
+       ETAPPE E9b: NEUN ZEILEN. Betrachtungszeitraum und Mengenaenderung stehen als
+       Zeilen 8 und 9 darunter - ohne Vorgabe, deshalb mit dem GEPFLEGTEN Wert im
+       Feld (siehe dort). "Vorgaben" leert seither alle achtzehn Felder der Tafel;
+       die Einspeiseverguetungen je Szenario pflegt der ±-Knopf an ihrem Feld in der
+       Gruppe "Strom" (bzw. im Dialog "BHKW-Wirtschaftlichkeit"), sie bleiben dabei
+       stehen. *@
     <Gruppenkopf Titel="@_t.GSzenarien" Symbol="⚖">
         <KindInhalt>
             <div class="epos-raster-huelle">
@@ -239,6 +246,50 @@
                                 <Zahlenfeld Bezeichnung="" Einheit="a" Nachkommastellen="1"
                                             Min="-30" Max="30" Wert="@Worst.DauerWirksam"
                                             WertChanged="@(w => Worst.NutzungsdauerAenderung = w)" />
+                            </td>
+                        </tr>
+
+                        @* ETAPPE E9b (Konzept § 2.11.5, Pflege): die Zeilen 8 und 9 - der
+                           Betrachtungszeitraum und die Mengenaenderung je Szenario, gelesen vom
+                           Kern seit E9a (SzenarioSatz.Zeitraum, .Menge).
+
+                           ANDERS ALS DIE SIEBEN ZEILEN DARUEBER haben sie KEINE Vorgabe
+                           (E9a-Q5): leer heisst "wie Erwartet". Die Felder zeigen deshalb den
+                           GEPFLEGTEN Wert - ein leeres Feld bleibt leer, und der Platzhalter
+                           nennt den Wert, mit dem dann gerechnet wird (der Erwartungswert).
+                           Der Zeitraum ist eine ganze Zahl von Jahren (1 bis 50 wie das Feld
+                           "Betrachtungszeitraum" oben), die Mengenaenderung ein Prozentsatz
+                           wie die Ertragsaenderung. *@
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzZeitraum</th>
+                            <td class="epos-matrix-zelle">@Parameter.Betrachtungszeitraum a</td>
+                            <td>
+                                <Ganzzahlfeld Bezeichnung="" Einheit="a" Min="1" Max="50"
+                                              Platzhalter="@ZeitraumPlatzhalter"
+                                              Wert="@Best.Zeitraum"
+                                              WertChanged="@(w => Best.Zeitraum = w)" />
+                            </td>
+                            <td>
+                                <Ganzzahlfeld Bezeichnung="" Einheit="a" Min="1" Max="50"
+                                              Platzhalter="@ZeitraumPlatzhalter"
+                                              Wert="@Worst.Zeitraum"
+                                              WertChanged="@(w => Worst.Zeitraum = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzMenge</th>
+                            <td class="epos-matrix-zelle">0 %</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Platzhalter="0"
+                                            Wert="@Best.Menge"
+                                            WertChanged="@(w => Best.Menge = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Platzhalter="0"
+                                            Wert="@Worst.Menge"
+                                            WertChanged="@(w => Worst.Menge = w)" />
                             </td>
                         </tr>
                     </tbody>
@@ -618,15 +669,28 @@
             ? _t.PreisInvestGepflegt : _t.PreisInvestWieB);
 
     /// <summary>
-    /// „Vorgaben“ — alle vierzehn Felder auf <c>null</c> zurück (seit W5‑B‑12 mit p_I).
+    /// „Vorgaben“ — alle Felder der Tafel auf <c>null</c> zurück: seit W5‑B‑12 vierzehn,
+    /// seit ETAPPE E9b achtzehn (Zeilen 8 und 9, <see cref="SzenarioSatz.TafelZuruecksetzen"/>).
     /// Das ist NICHT dasselbe wie „auf die heutigen Vorgabezahlen setzen“: Ein leeres
     /// Feld zieht bei einer geänderten Projektangabe mit, eine eingetragene Zahl nicht.
+    ///
+    /// <para><b>ETAPPE E9b: Die Einspeisevergütungen je Szenario bleiben.</b> Sie stehen
+    /// nicht in der Tafel; ihr Paar pflegt der ±-Knopf an ihrem Feld. Bis E9b ersetzte der
+    /// Knopf beide Sätze als Ganzes — mit den neuen Größen hätte er eine Pflege gelöscht,
+    /// die an dieser Stelle niemand sieht.</para>
     /// </summary>
     private void VorgabenKlick()
     {
-        Parameter.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
-        Parameter.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        Best.TafelZuruecksetzen();
+        Worst.TafelZuruecksetzen();
     }
+
+    /// <summary>
+    /// ETAPPE E9b: der Platzhalter der leeren Zeitraumfelder — der Erwartungswert, mit
+    /// dem ein leeres Feld rechnet („wie Erwartet").
+    /// </summary>
+    private string ZeitraumPlatzhalter =>
+        Parameter.Betrachtungszeitraum.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>Herleitungszeile des Best-Satzes: Herkunft und die WIRKSAMEN Zahlen.</summary>
     public string SzenarioZeileBest => SzenarioZeile(_t.SzBest, Best);
@@ -634,9 +698,14 @@
     /// <inheritdoc cref="SzenarioZeileBest"/>
     public string SzenarioZeileWorst => SzenarioZeile(_t.SzWorst, Worst);
 
+    /// <summary>
+    /// ETAPPE E9b: Die Zeile nennt Betrachtungszeitraum, Mengenänderung und die
+    /// Einspeisevergütungen NUR, wenn dieses Szenario sie gepflegt hat — „wie Erwartet"
+    /// steht schon in der Erwartet-Spalte (<see cref="SzenarioSatz.Nachweis(WirtschaftlichkeitParameter, CultureInfo, bool)"/>).
+    /// </summary>
     private string SzenarioZeile(string name, SzenarioSatz satz) =>
         string.Format(Kultur, satz.NurVorgaben ? _t.SzHerkunftVorgabe : _t.SzHerkunftGepflegt,
-                      name, satz.Nachweis(Parameter, Kultur));
+                      name, satz.Nachweis(Parameter, Kultur, true));
 
     /// <summary>Der Schlusshinweis — je nach Erzeugerlage um zwei Absätze länger.</summary>
     public string Hinweis

@@ -328,9 +328,53 @@ namespace WindowsFormsApplication1
         /// wirklich abbricht.</summary>
         public SzenarioSatz Kopie() { return (SzenarioSatz)MemberwiseClone(); }
 
+        /// <summary>
+        /// ETAPPE E9b (Knopf „Vorgaben" der Szenariotafel im Parameterdialog): setzt die NEUN
+        /// Größen der Tafel auf <c>null</c> zurück — die sieben des W5‑B‑9-Satzes (leer heißt
+        /// dort „Vorgabe") und die Zeilen 8 und 9, Betrachtungszeitraum und Mengenänderung
+        /// (leer heißt dort „wie Erwartet"). Für Best und Worst zusammen sind das die achtzehn
+        /// Felder der Tafel.
+        ///
+        /// <para><b>Die Einspeisevergütungen bleiben.</b> Sie stehen nicht in der Tafel, ihr
+        /// Paar pflegt der ±-Knopf an ihrem Feld (Parameterdialog, BHKW-Wirtschaftlichkeit);
+        /// ein Knopf der Tafel, der sie mitleerte, löschte eine Pflege, die der Anwender an
+        /// dieser Stelle gar nicht sieht.</para>
+        /// </summary>
+        public void TafelZuruecksetzen()
+        {
+            Zinssatz = null;
+            PreissteigerungEnergie = null;
+            PreissteigerungBetrieb = null;
+            PreissteigerungInvestition = null;
+            InvestitionAenderung = null;
+            ErtragAenderung = null;
+            NutzungsdauerAenderung = null;
+            Zeitraum = null;
+            Menge = null;
+        }
+
         /// <summary>Nachweiszeile des Satzes (Seite, Dialog, Bericht) — die WIRKSAMEN
         /// Zahlen, nicht die gepflegten.</summary>
         public string Nachweis(WirtschaftlichkeitParameter p, System.Globalization.CultureInfo kultur)
+        {
+            return Nachweis(p, kultur, false);
+        }
+
+        /// <summary>
+        /// Die Nachweiszeile mit der Wahl, ob die Größen OHNE Vorgabe (Betrachtungszeitraum,
+        /// Einspeisevergütung PV und KWK, Mengenänderung) nur dann erscheinen, wenn DIESES
+        /// Szenario sie gepflegt hat.
+        /// </summary>
+        /// <param name="p">Der Parametersatz der Gruppe (Erwartungswerte).</param>
+        /// <param name="kultur">Zahlenformat.</param>
+        /// <param name="nurGepflegt">
+        /// ETAPPE E9b: <c>true</c> = die Herleitungszeile des Parameterdialogs — sie nennt die
+        /// neuen Größen nur, wenn gepflegt; „wie Erwartet" steht dort schon in der
+        /// Erwartet-Spalte daneben. <c>false</c> = Seite und Bericht (E9a): Zeitraum und
+        /// Einspeisevergütung stehen immer da, sie sind Annahmen jedes Laufs.
+        /// </param>
+        public string Nachweis(WirtschaftlichkeitParameter p, System.Globalization.CultureInfo kultur,
+                               bool nurGepflegt)
         {
             double zins = p != null ? p.Zinssatz : 0;
             double pe = p != null ? p.PreissteigerungEnergie : 0;
@@ -348,16 +392,29 @@ namespace WindowsFormsApplication1
             int t = p != null ? ZeitraumWirksam(p.Betrachtungszeitraum) : (Zeitraum ?? 0);
             double ev = EinspeiseverguetungWirksam(p != null ? p.Einspeiseverguetung : 0);
             double? evKwk = EinspeiseverguetungKwkWirksam(p != null ? p.EinspeiseverguetungKWK : null);
-            string zeile = "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · T = " +
-                   t.ToString(kultur) + " a · p_E = " +
+
+            // ETAPPE E9b: In der Herleitungszeile des Dialogs stehen die Größen ohne Vorgabe
+            // nur, wenn DIESES Szenario sie gepflegt hat (1e−9-Regel wie überall).
+            bool mitZeitraum = !nurGepflegt ||
+                               (p != null ? ZeitraumGepflegt(p.Betrachtungszeitraum)
+                                          : Zeitraum.HasValue && Zeitraum.Value >= 1);
+            bool mitVerguetung = !nurGepflegt ||
+                                 Gepflegt(Einspeiseverguetung, p != null ? p.Einspeiseverguetung : 0.0);
+            bool mitVerguetungKwk = nurGepflegt
+                ? Gepflegt(EinspeiseverguetungKwk, p != null ? (p.EinspeiseverguetungKWK ?? 0.0) : 0.0)
+                : evKwk.HasValue && evKwk.Value != 0;
+
+            string zeile = "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " %" +
+                   (mitZeitraum ? " · T = " + t.ToString(kultur) + " a" : "") + " · p_E = " +
                    PreisEnergieWirksam(pe).ToString("N1", kultur) + " %/a · p_B = " +
                    PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · p_I = " +
                    PreisInvestWirksam(pi).ToString("N1", kultur) + " %/a · Investition " +
                    InvestWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Erträge " +
                    ErtragWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Nutzungsdauer " +
-                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a · Einspeisevergütung " +
-                   ev.ToString("N3", kultur) + " €/kWh";
-            if (evKwk.HasValue && evKwk.Value != 0)
+                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a";
+            if (mitVerguetung)
+                zeile += " · Einspeisevergütung " + ev.ToString("N3", kultur) + " €/kWh";
+            if (mitVerguetungKwk && evKwk.HasValue)
                 zeile += " · Einspeisevergütung KWK " + evKwk.Value.ToString("N3", kultur) + " €/kWh";
             if (MengeGepflegt)
                 zeile += " · Mengen " + MengeWirksam.ToString("+0.#;-0.#;0", kultur) + " %";
