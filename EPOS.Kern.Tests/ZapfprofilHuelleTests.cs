@@ -227,7 +227,7 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14 + 14 + 3 + 14, schluessel.Count);
+            Assert.Equal(15 + 14 + 3 + 14, schluessel.Count);
             Assert.Contains("ZPG_EINGABE_KALENDER_UNGUELTIG", schluessel);
             Assert.Contains("ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG", schluessel);
             Assert.Contains("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", schluessel);
@@ -282,6 +282,33 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ZPG_SPEICHER_ZONE_FREMD", s.Kennung);
             Assert.Equal("Das Zapfprofil wurde nicht gespeichert — Zone „Nord“: die Zone gehört zu einem anderen Projekt.", s.Text);
             Assert.Equal(ZapfprofilMeldungsart.Fehler, s.Art);
+        }
+
+        /// <summary>
+        /// Fehlen einer stochastisch gerechneten Zone die Zapfkategorien ihrer Nutzungsart, nennt die
+        /// Meldung die Nutzungsart — mit dem genaueren Schlüssel, der in beiden Sprachen steht.
+        /// </summary>
+        [Fact]
+        public void Fehlende_Zapfkategorien_nennen_die_Nutzungsart_in_beiden_Sprachen()
+        {
+            var ablehnung = new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig, "Kernsatz")
+            {
+                Kennung = Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN,
+                Argumente = new[] { "Probe", "T1" }
+            };
+            ZapfprofilMeldung m = ZapfprofilHuelle.Meldung(ablehnung);
+            Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
+            Assert.Equal("Zone „Nord“ trägt 0: Für die Nutzungsart „Probe“ (Katalogversion T1) stehen keine " +
+                         "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", m.Text);
+            Assert.Equal("Kernsatz", m.Klartext);
+            string en = Text(m.Kennung, EN);
+            Assert.Contains("{0}", en);
+            Assert.Contains("{1}", en);
+            Assert.Contains("draw-off categories", en);
+
+            // Ohne Kennung bleibt der allgemeine Grund.
+            ZapfprofilMeldung ohne = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Nord", ZapfEingabefehler.StochastikUngueltig, "k"));
+            Assert.Equal("ZPG_EINGABE_STOCHASTIK_UNGUELTIG", ohne.Kennung);
         }
 
         /// <summary>

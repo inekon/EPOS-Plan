@@ -6,7 +6,21 @@ namespace WindowsFormsApplication1
     /// Eine benannte Ablehnung im Ergebnis: Zone (leer = Projekt), Grund, Klartext. Die
     /// betroffene Zone — bzw. bei leerer Zone die Zirkulation — trägt 0 (Konzept 2.2).
     /// </summary>
-    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, string Klartext);
+    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, string Klartext)
+    {
+        /// <summary>Die genauere Kennung der Ablehnung (<see cref="ZapfprofilEingabeException.Kennung"/>); sonst <c>null</c>.</summary>
+        public string Kennung { get; init; }
+
+        /// <summary>
+        /// Die Werte zur <see cref="Kennung"/>, sprachfrei und getrennt (etwa Bezeichner und
+        /// Katalogversion der Nutzungsart); sonst <c>null</c>.
+        /// </summary>
+        public IReadOnlyList<string> Argumente { get; init; }
+
+        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Kennung und Werten.</summary>
+        internal static ZapfAblehnung Aus(string zone, ZapfprofilEingabeException ex)
+            => new ZapfAblehnung(zone, ex.Fehler, ex.Message) { Kennung = ex.Kennung, Argumente = ex.Argumente };
+    }
 
     /// <summary>
     /// Das Ergebnis einer Zone: ihre Bilanzreihen Zapfung und Zirkulation und die Kennzahlen
@@ -48,6 +62,14 @@ namespace WindowsFormsApplication1
         /// wurde, bevor ihr Kalender stand.
         /// </summary>
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
+
+        /// <summary>
+        /// Die Konsistenzprobe der stochastischen Jahresreihe (4.4) — Mittel der R Jahre gegen den
+        /// deterministischen Pfad mit Toleranz, dazu der Faktor der Energieprobe, der die Realisierung
+        /// zum Seed (die Zapfreihe der Zone) auf die Jahresmenge bringt; <c>null</c> auf dem
+        /// deterministischen Weg und bei einer abgelehnten Zone.
+        /// </summary>
+        public Jahreskonsistenz Konsistenz { get; init; }
     }
 
     /// <summary>
@@ -100,6 +122,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record ZapfprofilErgebnis
     {
+        /// <summary>Rechnet die Jahresreihe stochastisch (Realisierung zum Seed, 4.4) statt deterministisch?</summary>
+        public bool Stochastisch { get; init; }
+
         /// <summary>Summe der Zapfreihen aller Zonen.</summary>
         public Bilanzreihe Zapfung { get; init; }
 

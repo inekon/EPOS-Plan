@@ -429,14 +429,19 @@ namespace WindowsFormsApplication1
         /// auf <c>energy_carrier.id</c>, NULL = wie Heizbetrieb) — alle bei
         /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> kein Rechenweg
         /// liest die Spalten; der Referenzlauf bleibt byte-gleich.
+        /// Mit den ZAPFKATEGORIEN DES ZAPFPROFILGENERATORS (Schritt 115, Papiername T2,
+        /// Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Stufe Z3) steht das Ziel auf
+        /// <b>115</b>: die Tabelle <c>Tab_TwwZapfkategorie_STAMM</c>
+        /// (<see cref="TwwSchema.AnweisungenT2"/>). <b>Reines DDL, ergebnisneutral:</b> Die
+        /// Tabelle entsteht leer, kein Projekt steht auf dem Generator; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Mit dem SZENARIORAHMEN (Schritt 116, Schritt B des Analysepapiers, Etappe E9a der
         /// vollständigen Szenarioabdeckung V‑E) steht das Ziel auf <b>116</b>:
         /// <c>Szen_Best/Worst_Zeitraum</c> (ganze Jahre) und <c>Szen_Best/Worst_Menge</c> [%]
         /// an <c>Tab_ProjektWirtschaftlichkeit</c>
         /// (<see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>). <b>Reines DDL,
         /// ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „wie Erwartet"; der
-        /// Referenzlauf bleibt byte-gleich. Die Nummer 115 ist dem Zapfprofil (Stufe T2)
-        /// zugesagt und bleibt in diesem Stand frei.
+        /// Referenzlauf bleibt byte-gleich.
         /// Mit den TRÄGERPREISEN BEST/WORST (Schritt 117, Schritt C) steht das Ziel auf
         /// <b>117</b>: <c>custom_price_work/base/power_best/_worst</c> an
         /// <c>energy_project_settings</c>

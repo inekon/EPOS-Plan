@@ -1,0 +1,26 @@
+{
+  "hinweis": "FIKTIVER Referenzfall des Jahresensembles (Stufe Z3). Alle Werte erfunden - keine Jordan/Vajen-Zahl, keine Normzahl.",
+  "seed": 16,
+  "realisierungen": 4,
+  "zone": {"index": 1, "zone": "Zone J (fiktiv)", "einheiten": 3, "id_art": 7, "jahresmenge_kwh": 5475.0},
+  "kategorien": [
+    {"id_art": 7, "name": "Testkategorie J1 (fiktiv)", "mu": 4.0, "sigma": 2.0, "dauer": 2, "anteil": 0.3, "kappung": null},
+    {"id_art": 7, "name": "Testkategorie J2 (fiktiv)", "mu": 9.0, "sigma": 3.0, "dauer": 6, "anteil": 0.5, "kappung": 12.0},
+    {"id_art": 7, "name": "Testkategorie J3 (fiktiv)", "mu": 3.0, "sigma": 1.0, "dauer": 60, "anteil": 0.2, "kappung": null}
+  ],
+  "monate": [1.2, 1.15, 1.1, 1.0, 0.95, 0.85, 0.8, 0.85, 0.95, 1.0, 1.05, 1.1],
+  "woche": [0.14, 0.14, 0.14, 0.14, 0.14, 0.15, 0.15],
+  "ferienfaktor": 1.0,
+  "gaenge": {
+    "werktag": [0, 0, 0, 0, 0, 0, 0.25, 0.25, 0, 0, 0, 0, 0.125, 0, 0, 0, 0, 0, 0, 0.125, 0, 0, 0, 0.25],
+    "samstag": [0, 0, 0, 0, 0, 0, 0, 0, 0.25, 0.25, 0, 0, 0, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.25],
+    "sonntag": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.25, 0, 0, 0.25],
+    "ruhetag": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0]
+  },
+  "wochentag_jan1": 3,
+  "feiertage": [1, 121, 359],
+  "ferien": [[200, 214], [358, 365]],
+  "kaltwasserfaktor": [1.08, 1.07, 1.05, 1.02, 0.99, 0.96, 0.94, 0.93, 0.95, 0.97, 1.01, 1.04],
+  "spreizung_k": [49.5, 49.0, 48.0, 46.5, 45.0, 43.5, 42.5, 42.0, 43.0, 44.5, 47.0, 48.5],
+  "urlaubsversatz_tage": 20
+}

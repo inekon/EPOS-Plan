@@ -24203,7 +24203,7 @@ Möchten Sie das zulassen?</value>
     <value>Stochastik · noch nicht gerechnet</value>
   </data>
   <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
-    <value>„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte.</value>
+    <value>„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble des Bedarfstags: P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung. Bei Rechenweg „stochastisch“ zieht es auch die Jahresreihe; ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf.</value>
   </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
@@ -24364,6 +24364,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar.</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
+    <value>Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen).</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
+    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>die Tabellen des Zapfprofils fehlen in dieser Datenbank.</value>
   </data>
@@ -24432,6 +24438,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz.</value>
+  </data>
+  <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>
@@ -25085,7 +25097,7 @@ Möchten Sie das zulassen?</value>
     <value>Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)</value>
   </data>
   <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
-    <value>Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.</value>
+    <value>Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder dem Katalogimport.</value>
   </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
@@ -25184,7 +25196,7 @@ Möchten Sie das zulassen?</value>
     <value>Stochastisch superponierte Minutenlast</value>
   </data>
   <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
-    <value>noch nicht gerechnet — die Stochastik kommt mit einer späteren Fassung; die Empfehlung stützt sich auf (a) und (c).</value>
+    <value>noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung stützt sich auf (a) und (c).</value>
   </data>
   <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
     <value>(c) Normvergleich</value>
@@ -25349,7 +25361,7 @@ Möchten Sie das zulassen?</value>
     <value>Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft</value>
   </data>
   <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
-    <value>Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.</value>
+    <value>Der Konsistenzhinweis braucht das Perzentil — „Stochastisch rechnen“ einschalten.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Hinweis</value>
@@ -25562,7 +25574,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Anlagenbestand nennt keinen Erzeuger.</value>
   </data>
   <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
-    <value>Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet</value>
+    <value>Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“</value>
   </data>
   <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
     <value>Es ist keine Zone angelegt — ohne Zone keine Auslegung.</value>
@@ -25696,6 +25708,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
     <value>Kriterium N_L</value>
   </data>
+  <data name="ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR" xml:space="preserve">
+    <value>Perzentil nicht belastbar</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE" xml:space="preserve">
+    <value>Stochastische Spitze</value>
+  </data>
+  <data name="ZPG_AUSHINW_WURZEL_N_VERGLEICH" xml:space="preserve">
+    <value>Vergleich μ + z·σ/√N</value>
+  </data>
+  <data name="ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Stochastik nicht rechenbar</value>
+  </data>
   <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
     <value>Katalogparameter</value>
   </data>
@@ -25740,6 +25764,162 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
     <value>Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.</value>
+  </data>
+  <data name="ZPG_GRP_STOCHASTIK" xml:space="preserve">
+    <value>Stochastik · Jahresreihe</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Rechenweg der Jahresreihe</value>
+  </data>
+  <data name="ZPG_OPT_DETERMINISTISCH" xml:space="preserve">
+    <value>deterministisch</value>
+  </data>
+  <data name="ZPG_OPT_STOCHASTISCH" xml:space="preserve">
+    <value>stochastisch</value>
+  </data>
+  <data name="ZPG_HINW_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Wählt nur, welche Reihe in die Bilanz geht: bei „stochastisch“ das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Das Perzentil der Auslegung ist davon unabhängig.</value>
+  </data>
+  <data name="ZPG_LBL_SEED" xml:space="preserve">
+    <value>Zufallssaat (Seed)</value>
+  </data>
+  <data name="ZPG_HINW_SEED" xml:space="preserve">
+    <value>Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung.</value>
+  </data>
+  <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisierungen</value>
+  </data>
+  <data name="ZPG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="ZPG_HINW_REALISIERUNGEN" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe {2}; die gezogenen Jahre prüfen nur die Konsistenz.</value>
+  </data>
+  <data name="ZPG_HINW_KONSISTENZ_ORT" xml:space="preserve">
+    <value>Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_GERECHNET" xml:space="preserve">
+    <value>Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_JAHRESREIHE" xml:space="preserve">
+    <value>Die Bilanzreihe ist das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Die Konsistenzprobe zeigt die Stufe Experte.</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ" xml:space="preserve">
+    <value>Konsistenzprobe Energie · {0}</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_VERMERK" xml:space="preserve">
+    <value>Mittel der {0} Jahre {1} kWh/a gegen {2} kWh/a deterministisch · s_R {3} kWh/a · Toleranz ±{4} kWh/a</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ERFUELLT" xml:space="preserve">
+    <value>innerhalb der Toleranz</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ABWEICHEND" xml:space="preserve">
+    <value>außerhalb der Toleranz — das Jahr zum Seed ist auf die Jahresmenge gebracht</value>
+  </data>
+  <data name="ZPG_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Felder berichtigen: {0}.</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK_TITEL" xml:space="preserve">
+    <value>Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen.</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastik gerechnet · Seed {0} · {1} Jahre</value>
+  </data>
+  <data name="ZPG_MSG_SEED_UNGUELTIG" xml:space="preserve">
+    <value>Der Seed muss eine ganze Zahl ab 0 sein.</value>
+  </data>
+  <data name="ZPG_MSG_REALISIERUNGEN_UNGUELTIG" xml:space="preserve">
+    <value>Die Zahl der Realisierungen muss zwischen {0} und {1} liegen.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastisch rechnen</value>
+  </data>
+  <data name="ZPG_AUS_HERL_STOCHASTISCH" xml:space="preserve">
+    <value>Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit — eine Laufangabe, sie wird nicht gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERZENTIL" xml:space="preserve">
+    <value>Auslegungsperzentil</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERZENTIL" xml:space="preserve">
+    <value>P95 oder P99 · Vorgabe P{0}</value>
+  </data>
+  <data name="ZPG_AUS_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisierungen des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUS_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Felder berichtigen: {0}.</value>
+  </data>
+  <data name="ZPG_AUS_EINHEIT_TAGE" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe {2} (Vielfaches der Mindestzahl); unter {3} ist P{4} nicht belastbar.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN_OHNE" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe, hier nicht bestimmbar: {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAUF" xml:space="preserve">
+    <value>nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN" xml:space="preserve">
+    <value>Volumen P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN_WERT" xml:space="preserve">
+    <value>{0} l bei {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_MINUTENSPITZE" xml:space="preserve">
+    <value>Minutenspitze P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_NACHRICHTLICH" xml:space="preserve">
+    <value>nachrichtlich: Minutenspitze P{0} {1} kW · größte Stundenleistung P{0} {2} kW</value>
+  </data>
+  <data name="ZPG_AUS_NICHT_BELASTBAR" xml:space="preserve">
+    <value>nicht belastbar</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NICHT_BELASTBAR" xml:space="preserve">
+    <value>{0} Realisierungen; ein empirisches P{1} braucht mindestens {2} = 1/(1 − p).</value>
+  </data>
+  <data name="ZPG_AUS_STREUBAND" xml:space="preserve">
+    <value>Streuband über {0} Realisierungen</value>
+  </data>
+  <data name="ZPG_AUS_SP_PERZENTIL" xml:space="preserve">
+    <value>Perzentil</value>
+  </data>
+  <data name="ZPG_AUS_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_AUS_SPANNWEITE" xml:space="preserve">
+    <value>Spannweite (min – max)</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_NACHWEIS" xml:space="preserve">
+    <value>{0} von {1} Realisierungen ohne Nachweis beim Φ_N (Volumen ∞)</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V" xml:space="preserve">
+    <value>Gleichzeitigkeit GLF_V</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V_BEZUG" xml:space="preserve">
+    <value>Ergebnis, kein Eingabefaktor: P{0} des Volumens der Gruppe ÷ Σ P{0} der Volumina je Einheit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P" xml:space="preserve">
+    <value>Gleichzeitigkeit GLF_P</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P_BEZUG" xml:space="preserve">
+    <value>Ergebnis, kein Eingabefaktor: P{0} der Minutenspitze der Gruppe ÷ Σ P{0} der Minutenspitze je Einheit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_WURZEL_N" xml:space="preserve">
+    <value>Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OK" xml:space="preserve">
+    <value>Konsistenzhinweis geprüft: Die größte Stundenleistung P{0} ({1} kW) liegt nicht über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW).</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_AUFFAELLIG" xml:space="preserve">
+    <value>Konsistenzhinweis: Die größte Stundenleistung P{0} ({1} kW) liegt über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW) — Bedarfstag und Summenlinie prüfen.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE" xml:space="preserve">
+    <value>Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH" xml:space="preserve">
+    <value>Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}</value>
   </data>
   <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
     <value>{0} gewählt</value>
@@ -26604,6 +26784,60 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
     <value>Einspeisevergütung KWK</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
+  </data>
+  <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
+    <value>Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_LAEUFT" xml:space="preserve">
+    <value>Stochastik · rechnet …</value>
+  </data>
+  <data name="ZPG_STATUS_JAHRESREIHE_LAEUFT" xml:space="preserve">
+    <value>Jahresreihe rechnet … · Seed {0} · {1} Jahre</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_ABGEBROCHEN" xml:space="preserve">
+    <value>Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_DETERMINISTISCH" xml:space="preserve">
+    <value>Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe.</value>
+  </data>
+  <data name="ZPG_STATUS_OHNE_JAHRESREIHE" xml:space="preserve">
+    <value>Stochastik nicht gerechnet — {0}</value>
+  </data>
+  <data name="ZPG_MSG_JAHRESREIHE_UNERWARTET" xml:space="preserve">
+    <value>Die Jahresreihe konnte nicht gerechnet werden: {0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAEUFT" xml:space="preserve">
+    <value>rechnet … — das Ensemble des Bedarfstags wird gezogen.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_LAEUFT" xml:space="preserve">
+    <value>Auslegung rechnet … · Ensemble des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN" xml:space="preserve">
+    <value>Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT" xml:space="preserve">
+    <value>Minutenspitze P{0} je Wohnungsstation</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
+    <value>Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.</value>
+  </data>
+  <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_ENTFAELLT" xml:space="preserve">
+    <value>Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_LAEUFT" xml:space="preserve">
+    <value>Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
+    <value>Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)).</value>
+  </data>
+  <data name="ZPG_AUS_DATUM" xml:space="preserve">
+    <value>{0}. {1}</value>
   </data>
   <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
     <value>Kenndaten der Wärmepumpe</value>

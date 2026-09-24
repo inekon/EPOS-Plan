@@ -1,0 +1,28 @@
+{
+  "hinweis": "FIKTIVER Referenzfall des Auslegungsensembles (Stufe Z3). Alle Werte erfunden - keine Jordan/Vajen-Zahl, keine Normzahl.",
+  "seed": 3,
+  "realisierungen": 6,
+  "perzentil": 95,
+  "quantil": 1.7,
+  "kategorien": [
+    {"id_art": 1, "name": "Testkategorie A (fiktiv)", "mu": 2.0, "sigma": 1.0, "dauer": 1, "anteil": 0.2, "kappung": null},
+    {"id_art": 1, "name": "Testkategorie B (fiktiv)", "mu": 5.0, "sigma": 2.0, "dauer": 2, "anteil": 0.5, "kappung": null},
+    {"id_art": 1, "name": "Testkategorie C (fiktiv)", "mu": 12.0, "sigma": 3.0, "dauer": 8, "anteil": 0.3, "kappung": 15.0},
+    {"id_art": 2, "name": "Testkategorie D (fiktiv)", "mu": 1.5, "sigma": 2.0, "dauer": 3, "anteil": 0.4, "kappung": null},
+    {"id_art": 2, "name": "Testkategorie E (fiktiv)", "mu": 6.0, "sigma": 2.5, "dauer": 5, "anteil": 0.6, "kappung": 10.0}
+  ],
+  "zonen": [
+    {"index": 0, "zone": "Zone A (fiktiv)", "einheiten": 3, "id_art": 1, "tagesmenge_kwh": 24.0, "spreizung_k": 38.0,
+     "gang": [0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.1, 0, 0, 0]},
+    {"index": 2, "zone": "Zone B (fiktiv)", "einheiten": 2, "id_art": 2, "tagesmenge_kwh": 10.0, "spreizung_k": 45.0,
+     "gang": [0, 0, 0, 0, 0, 0, 0, 0.25, 0, 0.25, 0, 0.25, 0, 0, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0.0]}
+  ],
+  "summenlinie": {"speicher_c": 60.0, "kaltwasser_auslegung_c": 10.0, "ladungsfaktor": 0.9, "sensorhoehe": 0.5,
+                  "speicherart": 1, "mischwasser_c": null, "verzoegerung_min": 2, "speicherverlust_kw": 0.2,
+                  "zirkulation_kw": 0.0, "zirkulation_beginn_h": 0.0, "zirkulation_laufzeit_h": 0.0,
+                  "uebertrager": null, "leistung_kw": 6.0},
+  "summenlinie_zirkulation": {"speicher_c": 60.0, "kaltwasser_auslegung_c": 10.0, "ladungsfaktor": 0.9, "sensorhoehe": 0.5,
+                              "speicherart": 1, "mischwasser_c": null, "verzoegerung_min": 2, "speicherverlust_kw": 0.2,
+                              "zirkulation_kw": 0.8, "zirkulation_beginn_h": 20.5, "zirkulation_laufzeit_h": 9.0,
+                              "uebertrager": null, "leistung_kw": 6.0}
+}

@@ -153,7 +153,10 @@ namespace Auslieferungsvorlage.Tests
             //
             // 130 seit Schemaschritt 107 (Entscheid E30, Gebaeudesimulation):
             // Tab_ErgebnisGebaeude traegt STRICT von ihrer ersten Zeile an.
-            Assert.Equal(130, befund.Strict);
+            //
+            // 131 seit Schemaschritt 115 (Zapfprofilgenerator T2): Tab_TwwZapfkategorie_STAMM,
+            // STRICT von ihrer ersten Zeile an.
+            Assert.Equal(131, befund.Strict);
         }
 
         // =============================================================================

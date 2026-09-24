@@ -323,6 +323,34 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Das Ecodesign-Zapfprofil (Quelle 5, N11 (e)): Führt der Katalog seine Zeile — die
+        /// Testdatenbank trägt das Lastprofil L der Verordnung (EU) Nr. 814/2013 —, steht es als
+        /// wählbarer Katalogtag in der Wahl, und die Sperrzeile des Dialogs entfällt, denn sie hängt
+        /// allein daran, ob eine Zeile dieser Art da ist. Ohne die Zeile ist sie wieder da.
+        /// </summary>
+        [Fact]
+        public void Das_Ecodesign_Zapfprofil_steht_als_Katalogtag_und_die_Sperre_faellt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+
+            ZapfprofilAuslegungStartDaten s = ZapfprofilHuelle.AuslegungStart(PROJEKT, Zonen(), null, ZapfprofilStufe.Einfach);
+            Assert.True(s.Verfuegbar, s.Sperrgrund);
+            ZapfprofilBedarfstagDaten eco = Assert.Single(s.Bedarfstage, t => t.Quelle == ZapfprofilBedarfstagquelle.Ecodesign);
+            Assert.True(eco.Waehlbar, eco.Sperrgrund);
+            Assert.True(eco.Id > 0);
+            Assert.Equal(ZapfprofilCtrl.Bedarfstage().Single(t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign)
+                                         .Ereignisse.Sum(e => e.EnergieKwh), eco.TagessummeKwh, 9);
+
+            // Die Sperre hängt allein an der Katalogzeile: ohne sie kein Ecodesign-Tag in der Wahl.
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwBedarfstag_STAMM WHERE Quelle_Art = ?",
+                                           new DbParam("@art", (int)ZapfBedarfstagquelle.Ecodesign));
+            ZapfprofilAuslegungStartDaten ohne = ZapfprofilHuelle.AuslegungStart(PROJEKT, Zonen(), null, ZapfprofilStufe.Einfach);
+            Assert.DoesNotContain(ohne.Bedarfstage, t => t.Quelle == ZapfprofilBedarfstagquelle.Ecodesign);
+        }
+
+        /// <summary>
         /// Hausregel „Ein Parametersatz aus einer Hülle trifft nur [Parameter]": Die Schlüssel von
         /// <c>Gaben</c> sind Parameter des Zapfprofil-Dialogs, die des Delegaten
         /// <c>AuslegungGaben</c> Parameter der Überlagerung — je mit passendem Typ.
@@ -337,11 +365,13 @@ namespace EPOS.Kern.Tests
             IReadOnlyDictionary<string, object> gaben = ZapfprofilHuelle.Gaben(PROJEKT, null);
             ParameterPruefen(typeof(ZapfprofilDialog), gaben);
 
-            var auslegungGaben = (Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>)gaben["AuslegungGaben"];
-            IReadOnlyDictionary<string, object> ausl = auslegungGaben(Zonen());
+            var auslegungGaben = (Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>)gaben["AuslegungGaben"];
+            IReadOnlyDictionary<string, object> ausl = auslegungGaben(Zonen(), false);
             ParameterPruefen(typeof(ZapfprofilAuslegungDialog), ausl);
             Assert.True(((ZapfprofilAuslegungStartDaten)ausl["Daten"]).Verfuegbar);
             Assert.IsType<ZapfprofilAuslegungTexte>(ausl["Texte"]);
+            // Mit dem Schalter (Fußknopf „Stochastisch rechnen") dieselben Parameter.
+            ParameterPruefen(typeof(ZapfprofilAuslegungDialog), auslegungGaben(Zonen(), true));
         }
 
         private static void ParameterPruefen(Type komponente, IReadOnlyDictionary<string, object> gaben)

@@ -567,6 +567,13 @@ namespace EPOS.Kern.Tests
                 // Migration; wiederholbar.
                 GaseNormkubikmeter.Ausfuehren();
 
+                // Schritt 115 (Umsetzungskonzept Zapfprofilgenerator 3.2, T2): die
+                // Zapfkategorien je Nutzungsart. Reines DDL aus DERSELBEN Quelle wie in der
+                // Migration und im Werkzeug (TwwSchema.AnweisungenT2); NACH 103, dessen
+                // Nutzungsarten sie verweist. CREATE … IF NOT EXISTS ist selbst wiederholbar.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 // Schritt 116 (Schritt B, Etappe E9a): der Szenariorahmen - Zeitraum und
                 // Mengenfaktor je Szenario an Tab_ProjektWirtschaftlichkeit. Wie in der
                 // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst

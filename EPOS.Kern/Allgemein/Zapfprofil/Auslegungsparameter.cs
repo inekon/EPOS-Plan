@@ -284,6 +284,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record Auslegungshinweis(string Code, string Text, bool Warnung = false)
     {
+        /// <summary>
+        /// Die benannte Ablehnung hinter dem Hinweis (Kennung und sprachfreie Werte, etwa fehlende
+        /// Zapfkategorien); sonst <c>null</c>. Die Hülle baut daraus den Satz der Oberflächensprache.
+        /// </summary>
+        public ZapfAblehnung Ablehnung { get; init; }
+
         /// <summary>Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt (N7).</summary>
         internal static Auslegungshinweis ParameterFehlt(string schluessel, string folge)
             => new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,

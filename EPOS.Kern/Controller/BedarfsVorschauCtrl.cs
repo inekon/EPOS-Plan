@@ -119,7 +119,8 @@ namespace WindowsFormsApplication1
         /// auf <see cref="BrauchwasserWeg.Generator"/>, zeigt die Vorschau die Monatssummen aus
         /// dem Generator über diesen Stand — derselbe Aufruf wie im Lauf
         /// (<see cref="SimulationWaermebedarf.BrauchwasserAusGenerator"/>), mit dem Kalender
-        /// der Klimaregion des Projekts; die Profilnamen rechnen dann nicht mit. Bei
+        /// der Klimaregion des Projekts, stets auf dem deterministischen Pfad (5.1); die
+        /// Profilnamen rechnen dann nicht mit. Bei
         /// <see cref="BrauchwasserWeg.Bestand"/> bleibt der Weg dieser Methode unverändert.
         /// </param>
         internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
@@ -177,10 +178,17 @@ namespace WindowsFormsApplication1
         /// <c>false</c>) und nennt den Grund in <see cref="BedarfsVorschau.Meldung"/> — wie der
         /// Lauf, der dann abbricht. Abgelehnte Zonen tragen 0 wie im Lauf; die Meldung nennt sie
         /// (N8).
+        ///
+        /// <para><b>Immer der deterministische Pfad (5.1).</b> Die Vorschau rechnet live — sie zieht
+        /// kein Jahresensemble, auch wenn der Stand die Jahresreihe stochastisch führt: Die
+        /// stochastische Reihe entsteht erst im Lauf (im Dialog nebenläufig mit „Stochastisch
+        /// rechnen"). Die Jahresmenge ist in beiden Wegen dieselbe (Energieprobe, 4.4).</para>
         /// </summary>
         private static BedarfsVorschau ZapfprofilVorschau(BedarfsVorschau ergebnis, int idProjekt, ZapfprofilStand stand)
         {
             ergebnis.Zapfprofilweg = true;
+            if (stand.Projekt != null && stand.Projekt.JahresreiheStochastisch)
+                stand = stand with { Projekt = stand.Projekt with { JahresreiheStochastisch = false } };
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(idProjekt);
             if (projekt.m_ID_Klimaregion <= 0)

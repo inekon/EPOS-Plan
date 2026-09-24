@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N11 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N12 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -525,7 +525,7 @@ Lauf rechnet sie neu. Die Liste der Speicher-Nenninhalte ist keine Tabelle, sond
 (`IEinstellungen`, Schlüssel `Zapfprofil.Nenninhalte`) mit einer neutralen Vorgabe aus dem Parametersatz
 (`Speicherauslegung.Nenninhalt.Liste.{k}`), nicht aus dem Code (N11).
 
-**Später:** `Tab_TwwZapfkategorie_STAMM` (T2, Z3: `ID_Nutzungsart`, `Kategorie`, `Volumenstrom_l_min`,
+**Später:** `Tab_TwwZapfkategorie_STAMM` (T2 = Schritt 115, umgesetzt in Z3 mit 16 Spalten, N12 (l); Erstfassung: `ID_Nutzungsart`, `Kategorie`, `Volumenstrom_l_min`,
 `Dauer_min`, `Anteil`, `Sigma`, Provenienz, `Status`), `Tab_TwwTyptag_IMPORT` (T3, Z4b: `Klimazone`,
 `Gebaeudeart`, `Typtag`, `Aufloesung_min`, Werte als Zeilen, `Quelle`; nie `ReadOnly`, nie in der
 Auslieferungsvorlage) und der Feiertags-/Ferienkalender **erst nach Entscheid A6**.
@@ -539,7 +539,7 @@ Drei Schritte, jeweils der **nächste freie Schritt nach `SchemaStand.Zielversio
 | Papiername | Stufe | Inhalt |
 |---|---|---|
 | **T1 — Katalog, Zonen, Projekt** | Z0 | die zehn Tabellen aus 3.1; der Katalog der Testdatenbank nur fiktiv (Kapitel 6) |
-| **T2 — Zapfkategorien** | Z3 | `Tab_TwwZapfkategorie_STAMM` |
+| **T2 — Zapfkategorien** | Z3 (Schritt 115, N12 (l)) | `Tab_TwwZapfkategorie_STAMM` |
 | **T3 — Typtage** | Z4b, nach K3a/K8 | `Tab_TwwTyptag_IMPORT` |
 
 T1 ist im Bestand Schritt 103 (N2 (a), N4); T2 und T3 bekommen den dann nächsten freien Schritt.
@@ -856,7 +856,7 @@ zu Einzeltagesspitzen) und **nie als Empfehlung ohne Rückfrage**; (2) A100-Refe
 Katalog, erst nach K1/K8 (bis dahin benannt gesperrt, N11); (3) DIN-4708-Profil, nur Wohnen, ebenfalls ein Normdatensatz und damit
 K1/K8-pflichtig (aus W_z(N) und den Zapfblöcken des Parametersatzes, N10); (4) manuell konstruiert nach dem Verfahren der A100 (Konstruktor, Z2, Ablage als
 Katalogeintrag Status EIGEN); (5) Ecodesign-Zapfprofil, nur Einfamilienhaus, zur Plausibilisierung
-(benannt gesperrt bis Z3, N11).
+(Katalogzeile aus dem freien Paketteil, N12 (p) und (q)).
 **Vorgaberegel:** Wohnen → (3), sobald nach K1/K8 zulässig, sonst (4); Nichtwohnen → (4); ohne
 konstruierten Tag öffnet die Auslegung den Konstruktor statt still (1) zu nehmen.
 
@@ -1259,7 +1259,7 @@ Repositoriums.
   DIN 1988-300, Koeffizienten der A100, Grenzen nach DVGW W 551) über den `Parametersatz` aus
   `Tab_TwwParameter_STAMM` (3.1). Tests arbeiten mit erfundenen Parametern und prüfen Formeln und
   Relationen, nie Normzahlen.
-- **(b) Testdatenbank nur fiktiv.** Die Testdatenbank enthält nur fiktive Nutzungsarten, Tagesgangsätze,
+- **(b) Testdatenbank nur fiktiv** (gilt angepasst, N12 (o) und ZU19)**.** Die Testdatenbank enthält nur fiktive Nutzungsarten, Tagesgangsätze,
   Bedarfstage und Parameter mit runden Werten, `Status = 'EIGEN'`, Herkunftsart `FIKTIV`, Quelle
   „Testkatalog (fiktiv)". Die Auslieferungswerte (Erstbefüllung nach K2/K8) kommen aus einem
   Katalogpaket **außerhalb des Repositoriums**, das `Werkzeuge/Auslieferungsvorlage` beim Bau der
@@ -1273,7 +1273,7 @@ Repositoriums.
   Kindzeilen und Nutzungsarten verweisen über `ID_Tagesgangsatz` bzw. `ID_Bedarfstag` auf diese
   IDs. Ein leeres Feld ist NULL. Das Paket ersetzt den Tww-Katalog der Quelle in einer Transaktion; ein Fehler nennt Datei und Zeile, rollt zurück und
   bricht ab. Jede Auslieferungszeile der Vorlage trägt `ReadOnly = 1` (3.2).
-- **(c) Wache.** `TwwKatalogWacheTests`: keine Zeile einer `Tab_Tww*_STAMM` der Testdatenbank mit
+- **(c) Wache** (gilt angepasst, N12 (o))**.** `TwwKatalogWacheTests`: keine Zeile einer `Tab_Tww*_STAMM` der Testdatenbank mit
   `Status = 'AUSLIEFERUNG'`, jede Zeile `EIGEN` mit Herkunftsart `FIKTIV` und Quelle „Testkatalog
   (fiktiv)" in jeder Provenienzgruppe, Katalogversion nie leer, Skript des Testkatalogs wiederholbar
   (N2); dazu Posten im Prüfbericht der Auslieferungsvorlage (3.2).
@@ -1604,6 +1604,9 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
 | ZU16 | bis zum Entscheid gilt die gebaute Lesart (das Paket ersetzt) | Anwender | vor dem ersten Katalogpaket |
 | ZU17 | bei Entscheid nach Empfehlung: Inhaltsvergleich im Projektimport | Agent der Stufe Z1 | Z1 |
 | ZU18 | bei Entscheid nach Empfehlung: Testklasse aufspüren und umstellen | Agent eines Folgepostens | unabhängig von den Stufen |
+| ZU19 | Anwenderentscheid 23./24.09.2026: geringfügig abweichende VDI-Werte im Repositorium, Ableitung reproduzierbar (Rückrechenbarkeit zugelassen) — umgesetzt für VDI 6002 (N12) | Anwender (entschieden) | Z3 |
+| ZU20 | Auslieferung der abgeleiteten VDI-Werte: ja/nein (N12) | Anwender | nach K8 |
+| ZU21 | Setzungen des freien Paketteils bestätigen oder ändern (N12 (u)) | Anwender | vor der ersten Auslieferung |
 | P14 | ruht bis zum Ergebnis von K8 (N1) | Agent nach K8 | Z0, eigener Schritt |
 
 ### N3 (23.09.2026) — Nachbesserung der Abschlusspapiere Z0
@@ -2222,3 +2225,185 @@ Projektimport (3.2), die an K8 hängenden offenen Posten und jede Abweichung von
 Die Orchestrierung nimmt ab, führt zusammen und löscht `AGENT_LAEUFT`.
 
 **Umsetzungsstand und Abweichungen:** N2 bis N4 (Kapitel 11); T1 ist Schritt 103 (N4).
+
+### N12 (24.09.2026) — Umsetzungsbefunde Z3 (Stochastik): Kern, Katalog, Oberfläche
+
+**Anlass.** Stufe Z3 nach Kapitel 7: portabler Zufall, Zapfereignisgenerator mit gestutztem Mittel,
+Ensembles der Jahresreihe und des Bedarfstags, Perzentil je Topologiegruppe, Gleichzeitigkeit als
+Ergebnis, Schemaschritt T2 (115) mit `Tab_TwwZapfkategorie_STAMM`, Katalog der Zapfkategorien,
+Ecodesign-Zapfprofil, Oberfläche der Stochastik. Drei Gruppen (Kern · Katalog und Schema · Oberfläche)
+durch Agenten mit `model: opus` im Worktree `z3`, je Gruppe eine Gegenprüfung; Protokoll
+[Z3](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-24_Z3_Stochastik.md), Statuszeile #453.
+
+**Anwenderentscheid ZU19 (23.09.2026, wörtlich: „nehme geringfügig abweichende vdi werte ins
+repository").** VDI-Werte dürfen als *geringfügig abweichende* Werte ins Repositorium; die Originale
+bleiben lokal unter `Referenzlaeufe/Normzahlen/` (gitignoriert). Festlegungen dazu:
+1. **Ableitung reproduzierbar, Rückrechenbarkeit zulässig (Anwender, 24.09.2026: „reproducible
+   acceptable").** Es gilt die dokumentierte Regel: v' = v · (1 + δ) mit δ zyklisch je Zeilenindex aus
+   (+4; −3; +5; −4; +3; −5 %), Rundung auf die Stellenzahl der Quelle (mindestens zwei signifikante
+   Ziffern), Verteilungen renormiert, kein Wert gleich dem Original (sonst nächstes δ, dann eine Stelle
+   feiner), jeder Wert 0,19–5,88 % vom Original entfernt (497 Werte). Die Gegenprüfung hatte gezeigt,
+   dass sich rund drei Viertel der Originale aus JSON und Regel zurückrechnen lassen; der Anwender hat
+   das ausdrücklich zugelassen. Skript `Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py` (läuft nur
+   mit den lokalen Originalen, zwei Läufe schreiben dieselben Bytes), Ausgabe
+   `Referenzlaeufe/Skripte/tww_katalogwerte_abgeleitet.json` (committet).
+2. **Herkunftsart `FIKTIV`, Quelle „VDI 6002 Blatt 1/2 (abgeleitet)".** Die Zeilen sind keine
+   Normwerte und keine Eigenkonstruktion; sie bleiben bis zum Ergebnis von K8 aus der
+   Auslieferungsvorlage (Regel 6 (b)). Ob die abgeleiteten Werte ausgeliefert werden, ist eine eigene
+   Frage: **ZU20** (Anwender, nach K8).
+3. **Umfang.** Nur VDI 6002; VDI 4655 folgt mit Z4b unter derselben Regel. DIN 4708 und DIN EN 12831
+   Beiblatt A100 sind DIN-Tabellen und bleiben K1/K8-gesperrt.
+4. **Hinweis an den Anwender (gegeben).** Auch geringfügig veränderte Tabellen können urheberrechtlich
+   als Bearbeitung gelten; K8 bleibt offen.
+
+**Befunde und Festlegungen (Kern, Gruppe 1):**
+
+- **(a) Realisierungsseed (4.4).** Es gilt `SplitMix64(SplitMix64(Seed) ⊕ r)` statt
+  `SplitMix64(Seed ⊕ r)`, damit benachbarte Seeds keine Realisierungen teilen.
+- **(b) Ereigniszahl (4.4).** Poisson je Kategorie und Tag (Exponentialabstände nach von Neumann, ohne
+  transzendente Funktion) statt Bernoulli je Minute; der Erwartungswert ist exakt, p wird nicht bei 1
+  gekappt.
+- **(c) Gestutztes Mittel (4.4, N7).** Das exakte Irwin-Hall-Mittel als Stückpolynom statt μF + σf;
+  `Kappung_l_min` je Kategorie begrenzt den Volumenstrom nach oben, die λ-Kalibrierung rechnet mit dem
+  doppelt gestutzten Mittel. Nur Grundrechenarten, bitgleich auf jeder Plattform; veröffentlichter
+  Prüfvektor für xoshiro256** (Zustand {1,2,3,4}) im Test und im Referenzskript.
+- **(d) Einheiten n_E je Bezugsart.** Wohnungstabelle → Σ Anzahl; Wohneinheiten → Bezugsmenge;
+  Personen → Bezugsmenge / Personen je WE; Fläche → Bezugsmenge / Wohnfläche je WE; sonst die
+  Bezugsmenge; kaufmännisch gerundet, mindestens 1.
+- **(e) Gleichzeitigkeit (4.4).** GLF_V: die erste Einheit jeder Zone rechnet mit dem Anteil ihrer
+  Tagesmenge an Φ_N, Speicherverlust und Zirkulation; Σ_i = Σ_Zonen n_E · P_p(V_Einheit). GLF_P über
+  die Minutenspitze. Beide sind Ergebnis, kein Eingabefaktor.
+- **(f) Konsistenzhinweis (4.4, N11 (f)).** Er vergleicht das Perzentil der größten Stundenleistung des
+  Bedarfstags mit Schwelle · Φ_N des Summenlinienpunkts; er entscheidet die Rechnung nicht.
+- **(g) Bilanz ist das Jahr zum Seed (2.3, 4.4).** In die Bilanz geht die Realisierung r = 0 mal
+  E_det/E_0; die R Jahre dienen nur der Konsistenzprobe (Mittel gegen die deterministische Reihe,
+  s_R). Die erste Fassung gab das Ensemblemittel in die Bilanz; die Gegenprüfung hat das
+  richtiggestellt. Die Bilanz hängt nicht von R ab.
+- **(h) Obergrenzen (benannt als `StochastikUngueltig`).** Bedarfstag höchstens 100 000
+  Realisierungen; R · Σ n_E höchstens 10⁷ Einheitentage; Jahresreihe höchstens 1000 Jahre; je Zone
+  höchstens 10⁶ Einheiten. Das Ensemble bewahrt je Realisierung nur Kennzahlen und die Vertretertage zu
+  P50/P90/P95/P99; das Volumen rechnet ein `Volumenauftrag` während der Ziehung; parallel und seriell
+  bleiben bitgleich, auch über Blockgrenzen.
+- **(i) Kategorien ohne Anteil** ziehen nicht (Rate 0); eine nicht endliche Rate wird benannt
+  abgelehnt; innere Ausnahmen des parallelen Laufs werden ausgepackt.
+- **(j) Trennungswache (2.4).** Minutenwerte außerhalb `Bedarfstag` nur im Typ `Minutenstatistik`; die
+  Wache prüft auch nicht private Konstruktoren auf Zahlenfelder.
+- **(k) Testorakel.** Unabhängige Referenzfälle (Python, ohne C#-Aufruf) für Zufall, Auslegungs- und
+  Jahresensemble (Urlaubsfenster über den Jahreswechsel, Ereignis über Mitternacht, zwölf Spreizungen,
+  Energiefaktor, Feiertag); Vergleich gegen eine DHWcalc-Referenzdatei aus OpenDHW (MIT, gz 45 kB,
+  Attribution im Testordner `EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/`) in Verteilungsgrößen
+  (Tagesmittel ± 5 %, Minutenspitze/Tagesmittel, Zapfminuten je Tag) — kein Bitvergleich.
+
+**Befunde und Festlegungen (Katalog und Schema, Gruppe 2):**
+
+- **(l) T2 = Schritt 115 — Spaltenliste (ersetzt die Liste in 3.1).** `Tab_TwwZapfkategorie_STAMM`,
+  STRICT, 16 Spalten: `ID`, `ID_Nutzungsart` (Fremdschlüssel, `ON DELETE CASCADE` wie Tagesgang und
+  Ereignis, 3.2), `Kategorie`, `Reihenfolge`, `Volumenstrom_l_min` ≥ 0, `Dauer_min` 1…1440, `Anteil`
+  ≥ 0, `Sigma` ≥ 0, `Kappung_l_min` > 0 oder NULL, `Quelle`, `Ausgabe`, `Version`, `Herkunftsart`
+  (CHECK wie T1), `Status`, `Beleg`, `ReadOnly`; eindeutig über (`ID_Nutzungsart`, `Kategorie`). Die
+  Kategorie hat keine eigene Katalogversion: sie gehört zur Version ihrer Nutzungsart.
+  „Provenienz" ist die übliche Vierergruppe Quelle/Ausgabe/Version/Herkunftsart, keine Textspalte.
+- **(m) Kategorien als Datenblock der Nutzungsart.** Im Projekttransfer reisen sie als Kindzeilen
+  (Status IMPORT, ReadOnly 0) und zählen im Inhaltsvergleich; eine ReadOnly-Kategorie sperrt ihre
+  Nutzungsart (Löschen, Ändern, Tagesgang speichern); „Speichern unter" und `TagesgangSpeichern`
+  kopieren die Kategorien mit; die Auslieferungsvorlage prüft Waisen und schreibt eine eigene
+  Katalogpaket-Datei (Paketformat N2 um `Tab_TwwZapfkategorie_STAMM.csv` mit Status ergänzt); ohne die
+  Tabelle (Stand vor 115, älterer iOS-Seed) laufen Löschen, Dublettenscan und Import wie bisher.
+- **(n) Eingang.** `ZapfprofilCtrl.Eingang` liest die Kategorien je Nutzungsart der Zone in
+  Reihenfolge; eine stochastisch gerechnete Zone ohne Kategorien lehnt benannt ab (Nutzungsart und
+  Katalogversion getrennt als Kennung und Argument, sprachfest); eine deterministische braucht sie
+  nicht. Die fünf Parameter `Zapfprofil.Stochastik.*` und die Vorgaben (Seed 1, R = 10,
+  ⌈Vielfaches · 1/(1 − p)⌉) sind durch Tests belegt.
+- **(o) Kapitel 6 (b) und (c) gelten angepasst.** Die Testdatenbank ist nicht mehr rein fiktiv: je
+  `Tab_Tww*_STAMM` sind Paare aus Herkunftsart und Quelle zugelassen — `FIKTIV`/„Testkatalog (fiktiv)"
+  (Testnutzungen A/B/C bleiben, acht Testklassen hängen an ihren runden Werten), `FIKTIV`/„VDI 6002
+  Blatt 1/2 (abgeleitet)" (ZU19), `FREI`/Verordnung bzw. Modellannahme (Ecodesign, Zapfkategorien,
+  Stochastik-Parameter). Die Wache prüft die Paare, hält die abgeleiteten Werte gegen die lokalen
+  Originale (nur wo sie liegen: kein Wert gleich, jeder innerhalb ± 6 %) und die Testdatenbank gegen
+  die JSON und den freien Paketteil (überall, auch in der CI).
+- **(p) Freier Paketteil im Repositorium (Erweiterung von N2).** Die Zapfkategorien (Modellannahme bis
+  Z5 nach Jordan/Vajen, IEA SHC Task 26; Streuungen nach dem DHWcalc-Protokoll im Testordner), die fünf
+  Stochastik-Parameter und das Ecodesign-Zapfprofil L sind frei und liegen als Paketdateien unter
+  `Referenzlaeufe/Katalogpaket_frei/` (Herkunftsart `FREI`, Status AUSLIEFERUNG, ReadOnly 1; Kopf und
+  Ereignisse über `ID`/`ID_Bedarfstag` verknüpft; LIESMICH). `Werkzeuge/Auslieferungsvorlage` spielt den
+  Paketteil **immer** ein (`TwwKataloge.PaketteilEinspielen`, nach `--katalogpaket`, in einer
+  Transaktion); die Zeilen übernehmen die Katalogversion des Katalogs (sonst `FREI-1`); führt das
+  externe Paket dieselbe Zeile, gewinnt es, und der Prüfbericht meldet das. Die Kategorien sind ein
+  **Vorgabesatz ohne `ID_Nutzungsart`** im Paket und binden beim Einspielen an jede Nutzungsart mit
+  Status AUSLIEFERUNG, die keine eigenen führt; der Paketteil trägt keine eigene Katalogversion. Das
+  Katalogskript schreibt dieselben Dateien in die Testdatenbank (eine Quelle); Wachen halten die
+  Testdatenbank gegen JSON und Paketteil, ohne die Originale. Ohne den Paketteil könnte die Auslieferung
+  nicht stochastisch rechnen. Der Sperrgrund der Bedarfstag-Quelle (5) gilt nur ohne Katalogzeile und
+  lautet „Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder
+  dem Katalogimport."
+- **(q) Ecodesign-Zapfprofil (4.5 (5), N11 (e)).** Profil L (Einfamilienhaus), 24 Zapfungen, Q_ref
+  11,655 kWh (Tagessumme per Test), Quelle Verordnung (EU) Nr. 814/2013, Anhang III (ABl. L 239 vom
+  6.9.2013, amtliche Fassung des Amts für Veröffentlichungen). Die Verordnung nennt keine Dauer: es gilt
+  Dauer = Volumen / f mit T_p, sonst T_m, gegen 10 °C, kaufmännisch gerundet; Bezugsmenge NULL. Die
+  Profile M und XL sind ebenso frei, aber nicht aufgenommen (Setzung; Folgeposten bei Bedarf).
+- **(r) Zuordnung der abgeleiteten Werte.** Tagtyp 4 nimmt den Sonntag; Bezugstemperaturen 60/12 °C;
+  niedrig/mittel/hoch = Minimum/Mittel/Maximum (die Extrema der Quelle sind Monatsextrema, der
+  Jahresgang zählt damit doppelt — für Testdaten tragbar, im Skriptkopf vermerkt); Campingplatz,
+  Hallenbad und Ein-/Zweifamilienhaus stehen nicht im Katalog (keine passende Bezugsart bzw. keine
+  Profile); die Montags- und Freitagsprofile des Studentenwohnheims bleiben ungenutzt.
+
+**Befunde und Festlegungen (Oberfläche, Gruppe 3):**
+
+- **(s) Oberfläche (Kapitel 5).** Die Stufe Experte ist im Zapfprofil-Dialog wählbar und trägt die
+  Gruppe „Stochastik · Jahresreihe" mit dem Rechenweg (deterministisch | stochastisch), Seed und
+  Realisierungen (leer = Vorgabe 1 bzw. 10, Grenzen 1…1000); Erweitert bleibt mit Grund gesperrt (Z4),
+  deshalb steht der Rechenweg in Experte statt ab Erweitert (5.x). Der Reiter Kennzahlen zeigt in
+  Experte je Zone die Konsistenzprobe (Abweichung, Mittel, s_R, Toleranz, ✓/≠) als Textzeile; eine Zone
+  ohne Zapfkategorien steht als Banner mit Nutzungsart. Die Vorschau rechnet den Rechenweg des Stands,
+  also auch stochastisch, synchron und entprellt — Abweichung von 5.1 („deterministischer Pfad"). Der
+  Fußknopf „Stochastisch rechnen" öffnet die Auslegung mit gesetztem Schalter statt eines eigenen
+  nebenläufigen Laufs. In der Auslegung schaltet „Stochastisch rechnen" die Perzentilwahl (P95 | P99,
+  K3) und die Realisierungen des Bedarfstags frei (leer = Kernvorgabe ⌈Vielfaches · 1/(1 − p)⌉); Karte
+  (b) zeigt Perzentilwert, Streuband P50…P99 mit Spannweite als Tabelle, GLF_V bzw. GLF_P mit Σ n_E,
+  den Vermerk „nicht belastbar" und den Konsistenzhinweis; ohne Schalter bleibt die deterministische
+  Karte (b). P50…P99 und Gleichzeitigkeit stehen in Karte (b), nicht im Reiter Kennzahlen; die
+  Schlüssel des Auslegungsbündels tragen das Präfix `ZPG_AUS_` (`ZPG_AUS_LBL_PERZENTIL`,
+  `ZPG_AUS_LBL_REALISIERUNGEN` statt der Namen in 5.3); die Kernsätze der Karte (b) bleiben deutsch
+  (N11 (k)); die Stufe geht nicht an die Überlagerung, die Marke „Schnellauslegung" steht (N11 (c), Z4).
+  Kein neues und kein geändertes Diagrammbild. Kernänderung außerhalb der Schnittstellen der Gruppen
+  1/2: `ZapfprofilCtrl.Auslegung.Auslegungslauf` trägt den Parameter `Stochastisch` (Vorgabe false).
+- **(s2) Nachbesserung der Oberfläche (Gegenprüfung).** Die Vorschau rechnet **immer deterministisch**
+  (5.1; festgelegt in `BedarfsVorschauCtrl`, gilt für Dialog, Öffnen und die Leiste des
+  Bedarfsprofil-Dialogs); eine leise Zeile darunter sagt, dass die Jahresreihe erst im Lauf stochastisch
+  entsteht — Vorschau und Lauf sind bei „stochastisch" bewusst ungleich (gleiche Jahresmenge). Das
+  Jahresensemble rechnet nur über den Fußknopf „Stochastisch rechnen" (bei Rechenweg stochastisch),
+  **nebenläufig** nach dem Muster `KapitalwertVerlaufAbschnitt`/`ProjektKopieDialog`:
+  `CancellationTokenSource`, Baustein `Fortschritt`, Start über `Kulturweitergabe.Starten` (ein nacktes
+  `Task.Run` weist `ParallelitaetWacheTests` ab), Abbruchmarke bis in den Kern (`ZapfprofilCtrl.Rechnen`,
+  `ZapfprofilRechner`, `Auslegungslauf`/`Auslegungseingang.Abbruch`, `ParallelOptions`), Ergebnis per
+  `InvokeAsync`, überholte Läufe verworfen; OK rechnet nichts — die Simulation zieht die Reihe selbst.
+  Das Auslegungsensemble rechnet ebenso nebenläufig (Karte (b) „rechnet …"); ein Abbruch schaltet
+  „Stochastisch rechnen" aus und rechnet deterministisch nach; OK während des Laufs nimmt den
+  deterministischen Punkt. Der Kern begrenzt die Einheitentage der Jahresreihe **je Projekt**
+  (R · Σ n_E · 365 ≤ 10⁷, Kennung `STOCHASTIK_EINHEITSTAGE` mit Anzahl und Grenze); die Pflichtprüfung
+  des OK prüft sie nicht, der Lauf lehnt benannt ab. Der Seed steht in Experte immer, nur die
+  Realisierungen der Jahresreihe hängen am Rechenweg. Die Wohnungsstation zeigt die P_p-Spitze je
+  Einheit samt Zone in Karte (b) (`Perzentilergebnis.SpitzeJeEinheit*`). Der Schalter der Auslegung
+  kommt allein aus dem Öffnen (`AuslegungGaben`; „Auslegung…" öffnet ohne Schalter, kein erstes
+  Ergebnis, genau ein Lauf). Bei P_p = ∞ zeigt Karte (b) Standtext und „entfällt". Das
+  `Perzentilergebnis` trägt Schwelle und verglichene Größe als Felder (`Konsistenz*`), der Satz der
+  Karte (b) entsteht aus Werten in der Oberflächensprache; der Kernsatz der Warnliste bleibt deutsch
+  (N10 (l)). „(K3)" steht nicht mehr in Oberflächentexten; der maßgebende Tag erscheint als Datum (kein
+  Schaltjahr); die Abweichung der Konsistenzprobe rechnet der Kern (`Jahreskonsistenz.Abweichung`);
+  die Dialoggrenze der Auslegungsrealisierungen ist die Kernobergrenze (100 000). 18 neue und 7
+  geänderte Schlüssel je Sprache.
+- **(t) KI-Maskenanmeldung.** Die Anmeldung von `ZapfprofilDialog`, `ZapfprofilAuslegungDialog` und
+  `BedarfstagKonstruktor` beim KI-Assistenten sowie die Optionsgruppe „Rechenweg" in der Feldkarte des
+  `BedarfsProfileDialog` macht die Sitzung Dialog Design nach dem Z3-Merge (#458), nicht Z3.
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| ZU20 | Auslieferung der abgeleiteten VDI-Werte: ja/nein | Anwender | nach K8 |
+| ZU21 | Setzungen des Paketteils (u) bestätigen oder ändern | Anwender | vor der ersten Auslieferung |
+| (p) | freier Paketteil im Repositorium; Paketformat um Kategorien | Agent Z3 (Nachbesserung) | Z3 |
+| (q) | Profile M und XL der Verordnung als weitere Bedarfstage | Folgeposten | bei Bedarf |
+| (k) | ChartProben-Messlatte auf Linux einfrieren (unverändert: Z3 fügt keine Bilder hinzu) | Anwender/CI | nach #451 |
+| (s) | Sichtabnahme unter Windows (Prüfliste im Übergabepapier, Abschnitt 10) | Anwender | nach dem Push |
+| Wiki | Abschnitt „Stochastik" der Seite Brauchwasser-Zapfprofil; Logbuch-Sätze (Versionsnummer) | Anwender (Upload gebündelt) | nächster Upload |

@@ -9,7 +9,8 @@
    WAS ER TUT. Links die Nutzungszonen (Liste mit eigener Listenleiste, darunter der
    Eingabeblock der gewaehlten Zone: Zonenname, Nutzungsart aus dem Katalog samt Herkunft
    und Status, Bezugsgroesse, Bedarfsniveau), rechts die Vorschau ueber den Delegaten der
-   Huelle - derselbe Generatoraufruf wie der Lauf -, mit den Reitern Tagesgang,
+   Huelle - derselbe Generatoraufruf wie der Lauf, live auf dem deterministischen Pfad -,
+   mit den Reitern Tagesgang,
    Wochenprofil, Jahresgang und Kennzahlen. Der Dialog RECHNET NICHTS: Zahlen, Bilder und
    Meldungen kommen fertig aus der Huelle (ZapfprofilHuelle.Vorschau).
 
@@ -20,7 +21,9 @@
 
    AUSLEGUNG (Stufe Z2). Der Knopf "Auslegung..." oeffnet die Ueberlagerung
    ZapfprofilAuslegungDialog zum aktuellen Arbeitsstand (Parametersatz ueber den Delegaten
-   AuslegungGaben der Huelle). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
+   AuslegungGaben der Huelle, samt dem Schalter "Stochastisch rechnen": aus bei "Auslegung...",
+   an beim Fussknopf "Stochastisch rechnen" - die Laufangabe bleibt nicht im Arbeitsstand
+   stehen, jedes Oeffnen setzt sie neu). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
    (ZapfprofilEingabeDaten.Auslegung), geschrieben wird erst mit dem OK des
    Bedarfsprofil-Dialogs; Abbrechen verwirft. Ohne Delegat steht der Knopf weich gesperrt.
    Aendert der Anwender danach eine Zone so, dass sich die Auslegung aendert (neue, doppelte
@@ -28,10 +31,28 @@
    uebernommene faellt aus dem Arbeitsstand, ein Punkt des Stands beim Oeffnen wird beim
    Speichern verworfen (ZapfprofilEingabeDaten.PunktUeberholt); eine leise Zeile sagt es.
 
-   BENANNT GESPERRT. Die Stufen Erweitert und Experte, der Reiter Dauerlinie und der
-   Knopf "Stochastisch rechnen" kommen mit spaeteren Stufen: Sie stehen da, sind WEICH
-   gesperrt (aria-disabled + Grund als title), und der Versuch meldet den Grund als leise
-   Zeile.
+   STOCHASTIK (Stufe Z3). Die Stufe Experte zeigt die Gruppe "Stochastik": den Rechenweg der
+   Jahresreihe (deterministisch | stochastisch), den Seed (er gilt auch fuer das Ensemble der
+   Auslegung, darum immer) und bei "stochastisch" die Realisierungen der Jahresreihe
+   (Ganzzahlfelder mit den Grenzen aus Schema und Kern; leer = Vorgabe der DDL). Die Vorschau
+   bleibt deterministisch (5.1) - bei "stochastisch" sagt eine leise Zeile darunter, dass die
+   Jahresreihe erst im Lauf stochastisch entsteht.
+
+   STOCHASTISCH RECHNEN (5.1). Der Knopf der Fussleiste zieht bei "stochastisch" die Jahresreihe
+   NEBENLAEUFIG (Delegat "Jahresreihe": die Huelle legt ihn auf einen Arbeitsfaden, die
+   Abbruchmarke reicht bis in den Kern): Fortschritt mit Abbrechen unter der Vorschau, Status
+   "rechnet ..." in der Fussleiste, das Ergebnis per InvokeAsync. Danach zeigt der Reiter
+   Kennzahlen in der Stufe Experte je Zone die Konsistenzprobe (Mittel der R Jahre gegen den
+   deterministischen Pfad) als Zeile, gruen innerhalb, amber ausserhalb der Toleranz; eine
+   Zone ohne Zapfkategorien steht wie jede Ablehnung als Banner an ihr. Jede Eingabe, OK und
+   Abbrechen verwerfen Lauf und Ergebnis. Dazu oeffnet der Knopf die Auslegung mit
+   eingeschaltetem Schalter; ihr Ensemble laeuft dort ebenso nebenlaeufig. Eine Fehleingabe in
+   Seed oder Realisierungen haelt das OK an und wird benannt.
+
+   BENANNT GESPERRT. Die Stufe Erweitert und der Reiter Dauerlinie kommen mit spaeteren
+   Stufen: Sie stehen da, sind WEICH gesperrt (aria-disabled + Grund als title), und der
+   Versuch meldet den Grund als leise Zeile. Ohne Delegat der Auslegung gilt das auch fuer
+   "Auslegung...", ohne Auslegung und Jahresreihe fuer "Stochastisch rechnen".
 
    ENTPRELLT. Die Vorschau liest Katalog und Kalender aus der Datenbank; sie laeuft deshalb
    erst EntprellungMs nach der letzten Eingabe (Hausregel "Eine Pruefung je Tastendruck
@@ -69,9 +90,9 @@
         <Optionsgruppe Bezeichnung="@Texte.LabelStufe" Eintraege="@Stufen"
                        Auswahl="@((int)_stufe)" AuswahlChanged="StufeWaehlen"
                        WeichGesperrt="@StufenGesperrt" Verweigert="_ => NochNicht()" />
-        @if (Ueberschrieben > 0)
+        @if (Daten.UeberschriebenIn(_eingabe) is > 0 and var ueberschrieben)
         {
-            <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, Ueberschrieben)</span>
+            <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, ueberschrieben)</span>
         }
     </div>
 
@@ -201,6 +222,45 @@
                     </KindInhalt>
                 </Gruppenkopf>
             }
+
+            @* Die Stochastik der Jahresreihe (5.3, Stufe Experte; Groessen des Projekts, nicht der Zone). *@
+            @if (_stufe != ZapfprofilStufe.Einfach)
+            {
+                <Gruppenkopf Titel="@Texte.GruppeStochastik"
+                             Summe="@(_stufe == ZapfprofilStufe.Experte ? Texte.StufeExperte : Texte.StufeErweitert)">
+                    <KindInhalt>
+                        <div class="epos-zapfprofil-stochastik-felder">
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Optionsgruppe Bezeichnung="@Texte.LabelRechenwegJahresreihe" Eintraege="@Rechenwege"
+                                                   Auswahl="@(_eingabe.JahresreiheStochastisch ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH)"
+                                                   AuswahlChanged="RechenwegSetzen" />
+                                    <Herleitungszeile Text="@Texte.HinweisRechenwegJahresreihe" />
+                                    @* Der Seed gilt auch für das Ensemble der Auslegung — in Experte immer sichtbar;
+                                       nur die Jahre der Jahresreihe hängen am Rechenweg „stochastisch". *@
+                                    @if (_stufe == ZapfprofilStufe.Experte)
+                                    {
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelSeed" Feldname="@Texte.LabelSeed" Min="0"
+                                                      Wert="@_eingabe.Seed" WertChanged="SeedSetzen"
+                                                      Platzhalter="@Klammer(Daten.SeedVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                                        <Herleitungszeile Text="@Format(Texte.HinweisSeed, Ganz(Daten.SeedVorgabe))" />
+                                    }
+                                    @if (_eingabe.JahresreiheStochastisch && _stufe == ZapfprofilStufe.Experte)
+                                    {
+                                        <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
+                                                      Einheit="@Texte.EinheitJahre" Min="@Daten.RealisierungenMindestens"
+                                                      Max="@Daten.RealisierungenHoechstens"
+                                                      Wert="@_eingabe.Realisierungen" WertChanged="RealisierungenSetzen"
+                                                      Platzhalter="@Klammer(Daten.RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                                        <Herleitungszeile Text="@Format(Texte.HinweisRealisierungen, Ganz(Daten.RealisierungenMindestens), Ganz(Daten.RealisierungenHoechstens), Ganz(Daten.RealisierungenVorgabe))" />
+                                        <Herleitungszeile Text="@Texte.HinweisKonsistenzOrt" />
+                                    }
+                                </KindInhalt>
+                            </Formularraster>
+                        </div>
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
         </div>
 
         @* ------------------------------------------------ rechts: die Vorschau - *@
@@ -273,15 +333,40 @@
                                                         <td>@zeile.Vermerk</td>
                                                     </tr>
                                                 }
-                                                <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlStochastik</th></tr>
-                                                <tr class="epos-zapfprofil-stochastik"><td colspan="3">@Texte.KennzahlStochastikErklaerung</td></tr>
+                                                <tr><th scope="rowgroup" colspan="3">@StochastikKopf</th></tr>
+                                                @if (Konsistenzzeilen is { Count: > 0 } proben)
+                                                {
+                                                    foreach (ZapfprofilKonsistenzDaten k in proben)
+                                                    {
+                                                        <tr class="epos-zapfprofil-konsistenz" data-zone="@k.Zone">
+                                                            <th scope="row">@Format(Texte.KennzahlKonsistenz, k.Zone)</th>
+                                                            <td class="epos-zahl">@Abweichungstext(k)</td>
+                                                            <td>
+                                                                <Kohaerenzzeile Text="@Konsistenztext(k)"
+                                                                                Zustand="@(k.Erfuellt ? KohaerenzZustand.Ok : KohaerenzZustand.Abweichend)" />
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr class="epos-zapfprofil-stochastik"><td colspan="3">@StochastikErklaerung</td></tr>
+                                                }
                                             </tbody>
                                         </table>
                                     </KindInhalt>
                                 </Reiterblatt>
                             </KindInhalt>
                         </Reiter>
+                        @if (_eingabe.JahresreiheStochastisch)
+                        {
+                            <p class="epos-leisezeile epos-zapfprofil-vorschau-deterministisch">@Texte.HinweisVorschauDeterministisch</p>
+                        }
                     }
+
+                    @* Der nebenläufige Lauf der Jahresreihe (5.1): Status und Abbruch, nie im Zeichenfaden. *@
+                    <Fortschritt Sichtbar="@JahresreiheLaeuft" Text="@JahresreiheLaufText"
+                                 Abbrechen="@(EventCallback.Factory.Create(this, JahresreiheAbbrechen))" />
 
                     @foreach (ZapfprofilMeldung m in AllgemeineMeldungen)
                     {
@@ -301,8 +386,16 @@
 
     <SpeichernLeiste @ref="_leiste" OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
         <Aktionen>
-            <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
-                    @onclick="NochNicht">@Texte.KnopfStochastik</button>
+            @if (StochastikMoeglich)
+            {
+                <button type="button" class="epos-knopf epos-zapfprofil-stochastik-knopf" title="@Texte.KnopfStochastikTitel"
+                        @onclick="StochastikRechnen">@Texte.KnopfStochastik</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
+                        @onclick="NochNicht">@Texte.KnopfStochastik</button>
+            }
             @if (AuslegungGaben is not null)
             {
                 <button type="button" class="epos-knopf epos-zapfprofil-auslegung"
@@ -336,6 +429,10 @@
     private const string REITER_DAUER = "dauerlinie";
     private const string REITER_KENNZAHLEN = "kennzahlen";
 
+    /// <summary>Die Einträge der Optionsgruppe „Rechenweg der Jahresreihe".</summary>
+    private const int RECHENWEG_DETERMINISTISCH = 0;
+    private const int RECHENWEG_STOCHASTISCH = 1;
+
     // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
 
     /// <summary>Der Stand beim Öffnen: Kontext, Katalog, Arbeitsstand, erste Vorschau, Verfügbarkeit.</summary>
@@ -349,6 +446,14 @@
     /// nimmt wie der Lauf. Kein Delegat = die Vorschau bleibt beim Stand des Öffnens.
     /// </summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Die stochastische Jahresreihe zu einem Arbeitsstand (4.4) — der Delegat der Hülle, der den
+    /// Lauf auf einen Arbeitsfaden legt und die Abbruchmarke an den Kern reicht. Er liefert die
+    /// Konsistenzprobe je Zone; die Vorschau selbst bleibt deterministisch (5.1). Kein Delegat =
+    /// „Stochastisch rechnen" zieht keine Jahresreihe.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>? Jahresreihe { get; set; }
 
     /// <summary>Die Pflichtprüfung des OK (jede Zone mit Name, Nutzungsart, Bezugsgröße); leer = in Ordnung.</summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>? Pruefen { get; set; }
@@ -366,10 +471,12 @@
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>
-    /// Der Parametersatz der Überlagerung „Auslegung" zum Arbeitsstand (Stufe Z2) — der
-    /// Delegat der Hülle. Kein Delegat = der Knopf „Auslegung…" steht weich gesperrt mit Grund.
+    /// Der Parametersatz der Überlagerung „Auslegung" zum Arbeitsstand (Stufe Z2) samt dem
+    /// Schalter „Stochastisch rechnen" (Laufangabe: <c>false</c> bei „Auslegung…", <c>true</c>
+    /// beim Fußknopf „Stochastisch rechnen") — der Delegat der Hülle. Kein Delegat = der Knopf
+    /// „Auslegung…" steht weich gesperrt mit Grund.
     /// </summary>
-    [Parameter] public Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
+    [Parameter] public Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
@@ -396,9 +503,25 @@
     private string _hinweis = "";
     private CancellationTokenSource? _entprellung;
     private IReadOnlyDictionary<string, object>? _auslegungGaben;
+    private bool _auslegungStochastisch;
+
+    /// <summary>Das Ergebnis des letzten Laufs der Jahresreihe zum aktuellen Arbeitsstand; <c>null</c> ohne Lauf.</summary>
+    private ZapfprofilVorschauDaten? _stochastik;
+
+    /// <summary>Die Abbruchmarke des laufenden Laufs der Jahresreihe; <c>null</c>, solange keiner läuft.</summary>
+    private CancellationTokenSource? _jahresreihe;
+
+    /// <summary>Die Felder, deren Text gerade keine gültige Zahl ist (Feldname) — sie halten das OK an.</summary>
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
 
     /// <summary>Steht die Überlagerung „Auslegung"? Prüfhilfe für die Tests.</summary>
     public bool AuslegungOffen => _auslegungGaben is not null;
+
+    /// <summary>Öffnete die Überlagerung mit „Stochastisch rechnen"? Prüfhilfe für die Tests.</summary>
+    public bool AuslegungStochastisch => _auslegungStochastisch;
+
+    /// <summary>Die gewählte Stufe — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilStufe Stufe => _stufe;
 
     /// <summary>Der Arbeitsstand — Prüfhilfe für die Tests.</summary>
     public ZapfprofilEingabeDaten Eingabe => _eingabe;
@@ -414,6 +537,12 @@
 
     /// <summary>Der sichtbare Reiter — Prüfhilfe für die Tests.</summary>
     public string AktiverReiter => _reiter;
+
+    /// <summary>Läuft die Jahresreihe gerade? Prüfhilfe für die Tests.</summary>
+    public bool JahresreiheLaeuft => _jahresreihe is not null;
+
+    /// <summary>Das Ergebnis des letzten Laufs der Jahresreihe — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilVorschauDaten? StochastikErgebnis => _stochastik;
 
     protected override void OnInitialized()
     {
@@ -433,7 +562,11 @@
     }
 
     /// <inheritdoc/>
-    public void Dispose() => EntprellungAbbrechen();
+    public void Dispose()
+    {
+        EntprellungAbbrechen();
+        JahresreiheVerwerfen();
+    }
 
     // =================================================================================
     // Anzeige
@@ -454,8 +587,6 @@
         }
     }
 
-    private int Ueberschrieben => _eingabe.Zonen.Sum(z => z.Ueberschrieben);
-
     private IReadOnlyList<(int Id, string Text)> Stufen => new[]
     {
         ((int)ZapfprofilStufe.Einfach, Texte.StufeEinfach),
@@ -463,11 +594,16 @@
         ((int)ZapfprofilStufe.Experte, Texte.StufeExperte)
     };
 
-    /// <summary>Erweitert und Experte kommen mit späteren Stufen — weich gesperrt, mit Grund.</summary>
+    /// <summary>Erweitert kommt mit einer späteren Stufe — weich gesperrt, mit Grund; Experte trägt die Stochastik (Z3).</summary>
     private IReadOnlyDictionary<int, string> StufenGesperrt => new Dictionary<int, string>
     {
-        [(int)ZapfprofilStufe.Erweitert] = Texte.GrundNochNicht,
-        [(int)ZapfprofilStufe.Experte] = Texte.GrundNochNicht
+        [(int)ZapfprofilStufe.Erweitert] = Texte.GrundNochNicht
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Rechenwege => new[]
+    {
+        (RECHENWEG_DETERMINISTISCH, Texte.OptionDeterministisch),
+        (RECHENWEG_STOCHASTISCH, Texte.OptionStochastisch)
     };
 
     private IReadOnlyList<(int Id, string Text)> Niveaus => new[]
@@ -615,6 +751,63 @@
         yield return (Texte.KennzahlGleichzeitigkeit, "—", Texte.KennzahlGleichzeitigkeitVermerk);
     }
 
+    // --- Stochastik im Reiter Kennzahlen (4.4, Mockup Abschnitt 3) --------------------
+
+    /// <summary>Hat der Lauf „Stochastisch rechnen" die Jahresreihe zum aktuellen Arbeitsstand gezogen?</summary>
+    private bool StochastikGerechnet
+        => _stochastik is { Stochastisch: true, Zustand: ZapfprofilVorschauZustand.Gerechnet };
+
+    /// <summary>Der Kopf der Gruppe Stochastik: nach dem Lauf mit Seed und Jahren, während des Laufs „rechnet …".</summary>
+    private string StochastikKopf
+        => StochastikGerechnet ? Format(Texte.KennzahlStochastikGerechnet, Ganz(_stochastik!.Seed), Ganz(_stochastik.Realisierungen))
+         : JahresreiheLaeuft ? Texte.KennzahlStochastikLaeuft
+         : Texte.KennzahlStochastik;
+
+    /// <summary>
+    /// Die Erklärzeile, solange keine Einzelwerte stehen (Stufe Einfach oder ohne Probe) — nach
+    /// einem abgelehnten Lauf sein benannter Grund.
+    /// </summary>
+    private string StochastikErklaerung
+        => _stochastik is { Zustand: not ZapfprofilVorschauZustand.Gerechnet, Grund.Length: > 0 } ? _stochastik.Grund
+         : StochastikGerechnet ? Texte.KennzahlStochastikJahresreihe
+         : Texte.KennzahlStochastikErklaerung;
+
+    /// <summary>
+    /// Die Konsistenzproben zur gewählten Ansicht — nur nach dem Lauf und nur in der Stufe Experte.
+    /// Der Lauf trägt dieselben Ansichten wie die Vorschau (Summe zuerst, dann je Zone).
+    /// </summary>
+    private IReadOnlyList<ZapfprofilKonsistenzDaten> Konsistenzzeilen
+    {
+        get
+        {
+            if (!StochastikGerechnet || _stufe != ZapfprofilStufe.Experte || _stochastik!.Ansichten.Count == 0)
+                return Array.Empty<ZapfprofilKonsistenzDaten>();
+            int i = _ansicht >= 0 && _ansicht < _stochastik.Ansichten.Count ? _ansicht : 0;
+            return _stochastik.Ansichten[i].Konsistenzen;
+        }
+    }
+
+    /// <summary>Der Text des laufenden Laufs: Seed und Jahre des Arbeitsstands (leer = Vorgabe).</summary>
+    private string JahresreiheLaufText
+        => Format(Texte.StatusJahresreiheLaeuft, Ganz(_eingabe.Seed ?? Daten.SeedVorgabe),
+                  Ganz(_eingabe.Realisierungen ?? Daten.RealisierungenVorgabe));
+
+    /// <summary>Die Energieabweichung des Mittels der R Jahre vom deterministischen Pfad in Prozent, mit Vorzeichen.</summary>
+    private static string Abweichungstext(ZapfprofilKonsistenzDaten k)
+        => k.Abweichung is double a ? (a * 100.0).ToString("+0.00;−0.00;0.00", CultureInfo.CurrentCulture) + " %" : "–";
+
+    /// <summary>Der Vermerk der Probe: Mittel, deterministisch, s_R, Toleranz und das Urteil.</summary>
+    private string Konsistenztext(ZapfprofilKonsistenzDaten k)
+        => Format(Texte.KennzahlKonsistenzVermerk, k.Realisierungen.ToString(CultureInfo.CurrentCulture), Zahl(k.MittelKwh, "N0"),
+                  Zahl(k.DeterministischKwh, "N0"), Zahl(k.StandardabweichungKwh, "N0"), Zahl(k.ToleranzKwh, "N0"))
+           + " · " + (k.Erfuellt ? Texte.KonsistenzErfuellt : Texte.KonsistenzAbweichend);
+
+    /// <summary>Eine Vorgabe als Platzhalter im leeren Feld: „(1)"; ohne Vorgabe leer.</summary>
+    private static string Klammer(int? wert) => wert is int w ? "(" + w.ToString(CultureInfo.CurrentCulture) + ")" : "";
+
+    /// <summary>Eine ganze Zahl für einen Satz; ohne Wert „–".</summary>
+    private static string Ganz(int? wert) => wert is int w ? w.ToString(CultureInfo.CurrentCulture) : "–";
+
     /// <summary>
     /// Die Meldungen der Vorschau zur Zone an Position <paramref name="index"/> (am Feld, nicht
     /// blockierend): über die Position, die die Hülle mitgibt; ohne Position nur über einen Namen,
@@ -623,7 +816,24 @@
     private IEnumerable<ZapfprofilMeldung> ZonenMeldungen(int index)
     {
         if (!_vorschauAktuell || _vorschau is null) return Array.Empty<ZapfprofilMeldung>();
-        return _vorschau.Meldungen.Where(m => GehoertZu(m, index));
+        return Meldungen.Where(m => GehoertZu(m, index));
+    }
+
+    /// <summary>
+    /// Die Meldungen der Vorschau und — nach dem Lauf „Stochastisch rechnen" — die eigenen des
+    /// Laufs (etwa eine Zone ohne Zapfkategorien oder die Schranke der Einheitentage); eine
+    /// Meldung, die beide tragen, steht einmal.
+    /// </summary>
+    private IReadOnlyList<ZapfprofilMeldung> Meldungen
+    {
+        get
+        {
+            var liste = new List<ZapfprofilMeldung>(_vorschau?.Meldungen ?? new List<ZapfprofilMeldung>());
+            if (_stochastik is null) return liste;
+            foreach (ZapfprofilMeldung m in _stochastik.Meldungen)
+                if (!liste.Any(x => x.Kennung == m.Kennung && x.Zone == m.Zone && x.Text == m.Text)) liste.Add(m);
+            return liste;
+        }
     }
 
     private bool GehoertZu(ZapfprofilMeldung m, int index)
@@ -644,19 +854,24 @@
         get
         {
             if (_vorschau is null) return Array.Empty<ZapfprofilMeldung>();
-            return _vorschau.Meldungen.Where(m =>
+            return Meldungen.Where(m =>
                 m.Zone.Length == 0 ? _vorschau.Zustand == ZapfprofilVorschauZustand.Gerechnet
                                    : !_vorschauAktuell || !GehoertZu(m, _wahl));
         }
     }
 
-    private string Status => _vorschau is null ? "" : _vorschau.Status;
+    /// <summary>Der Status der Fußleiste: während des Laufs „rechnet …", danach sein Ergebnis, sonst die Vorschau.</summary>
+    private string Status
+        => JahresreiheLaeuft ? JahresreiheLaufText
+         : _stochastik is { Status.Length: > 0 } ? _stochastik.Status
+         : _vorschau is null ? "" : _vorschau.Status;
 
     private void StatusNachziehen()
     {
         if (_leiste is null || Status == _statusGezeigt) return;
         _statusGezeigt = Status;
-        bool fehler = _vorschau is not null && _vorschau.Zustand == ZapfprofilVorschauZustand.Abgebrochen;
+        ZapfprofilVorschauDaten? quelle = !JahresreiheLaeuft && _stochastik is { Status.Length: > 0 } ? _stochastik : _vorschau;
+        bool fehler = !JahresreiheLaeuft && quelle is not null && quelle.Zustand == ZapfprofilVorschauZustand.Abgebrochen;
         _leiste.Zeigen(Status, fehler);
     }
 
@@ -680,8 +895,54 @@
 
     private void StufeWaehlen(int? id)
     {
-        // Nur Einfach ist in dieser Fassung waehlbar; die weich gesperrten melden ueber Verweigert.
-        if (id == (int)ZapfprofilStufe.Einfach) _stufe = ZapfprofilStufe.Einfach;
+        // Einfach und Experte sind waehlbar; Erweitert ist weich gesperrt und meldet ueber Verweigert.
+        // Die Stufe blendet nur ein und aus — die Werte bleiben; ein Feld, das verschwindet, nimmt
+        // seinen ungueltigen Text mit (der Arbeitsstand traegt den letzten gueltigen Wert).
+        if (id is not int n || (n != (int)ZapfprofilStufe.Einfach && n != (int)ZapfprofilStufe.Experte)) return;
+        _stufe = (ZapfprofilStufe)n;
+        _hinweis = "";
+        if (_stufe != ZapfprofilStufe.Experte)
+        {
+            // Nur die Felder, die verschwinden, nehmen ihre Fehleingabe mit.
+            _fehlfelder.Remove(Texte.LabelSeed);
+            _fehlfelder.Remove(Texte.LabelRealisierungen);
+        }
+    }
+
+    /// <summary>Die Optionsgruppe „Rechenweg der Jahresreihe": deterministisch oder stochastisch (die Vorschau bleibt deterministisch).</summary>
+    private void RechenwegSetzen(int? id)
+    {
+        bool stochastisch = id == RECHENWEG_STOCHASTISCH;
+        if (_eingabe.JahresreiheStochastisch == stochastisch) return;
+        _eingabe.JahresreiheStochastisch = stochastisch;
+        // Nur das Feld, das verschwindet, nimmt seine Fehleingabe mit — der Seed bleibt stehen.
+        if (!stochastisch) _fehlfelder.Remove(Texte.LabelRealisierungen);
+        Geaendert();
+    }
+
+    /// <summary>Der Seed; ein geleertes Feld steht für die Vorgabe.</summary>
+    private void SeedSetzen(int? wert)
+    {
+        int? neu = wert ?? Daten.SeedVorgabe;
+        if (neu == _eingabe.Seed) return;
+        _eingabe.Seed = neu;
+        Geaendert();
+    }
+
+    /// <summary>Die Realisierungen der Jahresreihe; ein geleertes Feld steht für die Vorgabe.</summary>
+    private void RealisierungenSetzen(int? wert)
+    {
+        int? neu = wert ?? Daten.RealisierungenVorgabe;
+        if (neu == _eingabe.Realisierungen) return;
+        _eingabe.Realisierungen = neu;
+        Geaendert();
+    }
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
     }
 
     /// <summary>Ein gesperrter Versuch (Stufe, Reiter, Knopf): der Grund als leise Zeile.</summary>
@@ -782,13 +1043,18 @@
 
     private void AnsichtWaehlen(int? id) => _ansicht = id ?? 0;
 
-    /// <summary>Eine Eingabe hat den Arbeitsstand geändert: die Vorschau ist überholt und wird entprellt neu gerechnet.</summary>
+    /// <summary>
+    /// Eine Eingabe hat den Arbeitsstand geändert: die Vorschau ist überholt und wird entprellt
+    /// neu gerechnet; ein Lauf der Jahresreihe gehört zum alten Stand — er bricht ab, sein
+    /// Ergebnis fällt weg.
+    /// </summary>
     private void Geaendert(bool ansichtZuruecksetzen = false)
     {
         _okMeldung = "";
         _okKennung = null;
         _hinweis = "";
         _vorschauAktuell = false;
+        JahresreiheVerwerfen();
         if (ansichtZuruecksetzen) _ansicht = 0;
         VorschauEntprellen();
     }
@@ -863,6 +1129,14 @@
             return;
         }
 
+        // Ein Feld mit ungültigem Text (Seed, Realisierungen) hielte sonst still den alten Wert.
+        if (_fehlfelder.Count > 0)
+        {
+            _okMeldung = Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder));
+            _okKennung = "ZPG_MSG_FEHLEINGABE";
+            return;
+        }
+
         IReadOnlyList<ZapfprofilMeldung> fehler = (Pruefen?.Invoke(_eingabe) ?? Array.Empty<ZapfprofilMeldung>())
             .Where(m => m.Art == ZapfprofilMeldungsart.Fehler).ToList();
         if (fehler.Count > 0)
@@ -872,7 +1146,9 @@
             return;
         }
 
+        // Die Jahresreihe zieht der Lauf der Simulation selbst; ein offener Lauf des Dialogs endet hier.
         EntprellungAbbrechen();
+        JahresreiheVerwerfen();
         ZapfprofilEingabeDaten ergebnis = _eingabe.Kopie();
         ergebnis.Weg = ZapfprofilWeg.Generator;
         await Geschlossen.InvokeAsync(new ZapfprofilErgebnisDaten(ergebnis));
@@ -882,6 +1158,7 @@
     private Task Abbrechen()
     {
         EntprellungAbbrechen();
+        JahresreiheVerwerfen();
         return Geschlossen.InvokeAsync(null);
     }
 
@@ -916,7 +1193,104 @@
     {
         if (AuslegungGaben is null) return;
         _hinweis = "";
-        _auslegungGaben = AuslegungGaben(_eingabe.Kopie());
+        _auslegungStochastisch = false;
+        _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), false);
+    }
+
+    // =================================================================================
+    // Stochastisch rechnen (5.1): nebenläufig, mit Status und Abbruch
+    // =================================================================================
+
+    /// <summary>Steht „Stochastisch rechnen" offen? Es braucht die Auslegung oder die Jahresreihe.</summary>
+    private bool StochastikMoeglich => AuslegungGaben is not null || Jahresreihe is not null;
+
+    /// <summary>
+    /// „Stochastisch rechnen" (5.1, Mockup): Bei Rechenweg „stochastisch" zieht der Dialog
+    /// nebenläufig die Jahresreihe (Konsistenzprobe im Reiter Kennzahlen); dazu öffnet er die
+    /// Überlagerung „Auslegung" mit eingeschaltetem Schalter — sie zieht das Ensemble des
+    /// Bedarfstags für Perzentil und Gleichzeitigkeit, ebenfalls nebenläufig. Welche Reihe in die
+    /// Bilanz geht, wählt allein der Rechenweg der Jahresreihe.
+    /// </summary>
+    private void StochastikRechnen()
+    {
+        if (!StochastikMoeglich) return;
+        _hinweis = "";
+        bool jahresreihe = _eingabe.JahresreiheStochastisch && Jahresreihe is not null;
+        if (jahresreihe) JahresreiheStarten();
+        if (AuslegungGaben is not null)
+        {
+            _auslegungStochastisch = true;
+            _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), true);
+        }
+        else if (!jahresreihe)
+            _hinweis = Texte.HinweisJahresreiheDeterministisch;
+    }
+
+    /// <summary>Startet den Lauf der Jahresreihe zum Arbeitsstand; ein laufender endet vorher.</summary>
+    private void JahresreiheStarten()
+    {
+        JahresreiheVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _jahresreihe = quelle;
+        _ = JahresreiheLaufen(quelle, _eingabe.Kopie());
+    }
+
+    /// <summary>
+    /// Der Lauf: Der Delegat der Hülle rechnet auf einem Arbeitsfaden; das Ergebnis kommt über
+    /// <c>InvokeAsync</c> in den Verteiler. Ein überholter Lauf (neue Eingabe, neuer Lauf, OK,
+    /// Abbrechen) hinterlässt nichts; ein abgebrochener nennt den Abbruch als leise Zeile. Jede
+    /// Ausnahme bleibt hier — ein loser Task erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task JahresreiheLaufen(CancellationTokenSource quelle, ZapfprofilEingabeDaten kopie)
+    {
+        ZapfprofilVorschauDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await Jahresreihe!(kopie, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilVorschauDaten
+            {
+                Zustand = ZapfprofilVorschauZustand.Abgebrochen,
+                Grund = ex.Message,
+                Status = Format(Texte.StatusOhneVorschau, ex.Message)
+            };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_jahresreihe, quelle)) return;
+                _jahresreihe = null;
+                if (abgebrochen) _hinweis = Texte.HinweisJahresreiheAbgebrochen;
+                else _stochastik = ergebnis;
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt: Der Lauf endet an der nächsten Einheit; der Arbeitsstand bleibt.</summary>
+    private void JahresreiheAbbrechen()
+    {
+        try { _jahresreihe?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Verwirft Lauf und Ergebnis der Jahresreihe — sie gehören zum alten Arbeitsstand.</summary>
+    private void JahresreiheVerwerfen()
+    {
+        CancellationTokenSource? offen = _jahresreihe;
+        _jahresreihe = null;
+        _stochastik = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     /// <summary>OK der Überlagerung: Eingaben samt Punkt in den Arbeitsstand (der Punkt gilt wieder); Abbrechen verwirft.</summary>
@@ -925,6 +1299,7 @@
         _auslegungGaben = null;
         if (auslegung is null) return;
         _eingabe.Auslegung = auslegung.Kopie();
+        _eingabe.Auslegung.Stochastisch = false;             // eine Laufangabe — jedes Öffnen setzt sie neu
         _eingabe.PunktUeberholt = false;
         _okMeldung = "";
         _okKennung = null;

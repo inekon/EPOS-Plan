@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -11,8 +12,9 @@ namespace WindowsFormsApplication1
     /// dem Kalender der Klimaregion, dem Parametersatz der aktuellen Katalogversion, der
     /// Belegung je Raumzahl aus <c>Tab_TwwDin4708Wert_STAMM</c>, den eigenen Tagesgangsätzen
     /// der Zonen und den Angaben der gebundenen Gebäude (A8) entsteht der
-    /// <see cref="Zapfprofileingang"/>; <see cref="Rechnen(int, ZapfprofilStand, int, bool[])"/>
-    /// rechnet ihn mit dem Katalog.
+    /// <see cref="Zapfprofileingang"/>, dazu die Zapfkategorien der Nutzungsarten der Zonen
+    /// (<see cref="Zapfkategorien(IEnumerable{int})"/>, Schemaschritt T2);
+    /// <see cref="Rechnen(int, ZapfprofilStand, int, bool[])"/> rechnet ihn mit dem Katalog.
     ///
     /// <para><b>Benannte Ablehnung statt Rückfall (2.2, 3.3).</b> Fehlen die Tww-Tabellen,
     /// wirft der Eingang <see cref="ZapfprofilEingabeException"/> mit
@@ -71,8 +73,56 @@ namespace WindowsFormsApplication1
                 Parameter = ps,
                 Tagesgangsaetze = EigeneSaetze(zonen),
                 BelegungJeRaumzahl = Belegung(ps.Katalogversion),
-                NetzverlusteProjekt = Netzverluste(idProjekt)
+                NetzverlusteProjekt = Netzverluste(idProjekt),
+                Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen))
             };
+        }
+
+        /// <summary>Die Nutzungsarten der Zonen, je Id einmal.</summary>
+        private static IEnumerable<int> NutzungsartenDerZonen(IReadOnlyList<ZonenStand> zonen)
+        {
+            var ids = new SortedSet<int>();
+            foreach (ZonenStand z in zonen)
+                if (z != null && z.IdNutzungsart > 0) ids.Add(z.IdNutzungsart);
+            return ids;
+        }
+
+        // =================================================================================
+        // Zapfkategorien (Schemaschritt T2, Konzept 4.4)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Zapfkategorien der Nutzungsarten <paramref name="idNutzungsarten"/> aus
+        /// <c>Tab_TwwZapfkategorie_STAMM</c> — je Nutzungsart eine Abfrage, in der Reihenfolge
+        /// des Katalogs (<c>Reihenfolge</c>, dann <c>ID</c>), samt Kappung (NULL = keine obere
+        /// Kappung) und Provenienz. Die Prüfung der Werte bleibt beim Rechenweg
+        /// (<see cref="Zapfkategoriensatz.Aus(IReadOnlyList{Zapfkategorie}, Nutzungsart, string)"/>):
+        /// Fehlen die Kategorien einer Nutzungsart, lehnt eine stochastisch gerechnete Zone benannt
+        /// ab (<see cref="ZapfEingabefehler.StochastikUngueltig"/>), eine deterministische braucht
+        /// sie nicht. Ohne Tabelle (Stand vor Schritt 115, älterer iOS-Seed) leer.
+        /// </summary>
+        internal static IReadOnlyList<Zapfkategorie> Zapfkategorien(IEnumerable<int> idNutzungsarten)
+        {
+            var liste = new List<Zapfkategorie>();
+            if (idNutzungsarten == null || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM))
+                return liste;
+
+            foreach (int id in new SortedSet<int>(idNutzungsarten))
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Kategorie, Volumenstrom_l_min, Sigma, Dauer_min, Anteil, Kappung_l_min, " +
+                    "Quelle, Ausgabe, Version, Herkunftsart FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
+                    " WHERE ID_Nutzungsart = ? ORDER BY Reihenfolge, ID",
+                    new DbParam("@nutzungsart", id));
+                if (dt == null) continue;
+                foreach (DataRow r in dt.Rows)
+                    liste.Add(new Zapfkategorie(id, Text(r, "Kategorie"), Zahl(r, "Volumenstrom_l_min"), Zahl(r, "Sigma"),
+                                                Ganz(r, "Dauer_min"), Zahl(r, "Anteil"), Herkunft(r, ""))
+                    {
+                        KappungLJeMin = ZahlOderNull(r, "Kappung_l_min")
+                    });
+            }
+            return liste;
         }
 
         /// <summary>
@@ -91,10 +141,19 @@ namespace WindowsFormsApplication1
         /// (Stand des Dialogs). Der Katalog wird einmal gelesen.
         /// </summary>
         internal static ZapfprofilErgebnis Rechnen(int idProjekt, ZapfprofilStand stand, int wochentagJan1, bool[] we)
+            => Rechnen(idProjekt, stand, wochentagJan1, we, CancellationToken.None);
+
+        /// <summary>
+        /// Derselbe Generatorweg mit Abbruchmarke — der nebenläufige Lauf „Stochastisch rechnen"
+        /// des Dialogs (5.1): Die Ziehung der stochastischen Jahresreihe endet auf
+        /// <paramref name="abbruch"/> mit <see cref="OperationCanceledException"/>.
+        /// </summary>
+        internal static ZapfprofilErgebnis Rechnen(int idProjekt, ZapfprofilStand stand, int wochentagJan1, bool[] we,
+                                                   CancellationToken abbruch)
         {
             IReadOnlyList<Nutzungsart> katalog = Katalog();
             Zapfprofileingang e = Eingang(idProjekt, stand, wochentagJan1, we, katalog);
-            return ZapfprofilRechner.Rechnen(e, katalog);
+            return ZapfprofilRechner.Rechnen(e, katalog, abbruch);
         }
 
         // =================================================================================

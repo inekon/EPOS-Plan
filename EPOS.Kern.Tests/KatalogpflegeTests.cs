@@ -99,7 +99,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, n.Tabelle);
             VerwendungsPruefung zone = Assert.Single(n.VerwendungsPruefungen);
             Assert.Equal((TwwSchema.TAB_TWW_ZONE, "ID_Nutzungsart", false), (zone.Tabelle, zone.Spalte, zone.UeberName));
-            Assert.Empty(n.Datenbloecke);
+            // Die Zapfkategorien (Schemaschritt T2) sind der Datenblock der Nutzungsart.
+            KatalogDatenblock kategorien = Assert.Single(n.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "ID_Nutzungsart"), (kategorien.Tabelle, kategorien.FkSpalte));
+            Assert.Equal(new[] { "Kategorie", "Reihenfolge", "Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min" },
+                         kategorien.WertSpalten);
             Assert.DoesNotContain("Katalogversion", n.AusschlussSpalten);
             Assert.Contains("ID_Vorlage", n.AusschlussSpalten);
 
@@ -204,12 +208,14 @@ namespace EPOS.Kern.Tests
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
-        // Zapfprofilgenerator (P4): der FIKTIVE Testkatalog aus
-        // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei Nutzungsarten, ein
-        // Tagesgangsatz, drei Bedarfstage (Konstruktor, Referenztag, Normtag), alle Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 3, 0, 0)]
-        [InlineData("TWW_TAGESGANGSATZ", 1, 0, 0)]
-        [InlineData("TWW_BEDARFSTAG", 3, 0, 0)]
+        // Zapfprofilgenerator (P4, Stufe Z3): der Testkatalog aus
+        // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei fiktive Nutzungsarten und vier
+        // aus VDI 6002 abgeleitete (ZU19), fuenf Tagesgangsaetze (der fiktive und je einer der
+        // abgeleiteten), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle
+        // Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 7, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 5, 0, 0)]
+        [InlineData("TWW_BEDARFSTAG", 4, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
         [InlineData("PROZESSWAERME", 32, 0, 1)]

@@ -1,0 +1,6 @@
+Schluessel;Wert;Einheit;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+Zapfprofil.Stochastik.Urlaubsversatz;14;d;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.4;FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Stochastik.Auslegung.Vielfaches;2;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.4;FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Stochastik.Konsistenzschwelle;1.5;-;Setzung Zapfprofilgenerator;Konzept TWW-Zapfprofile, Warnlogik;FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Stochastik.Quantil.P95;1.6448536;-;Standardnormalverteilung;Quantil z(0.95), gerundet auf 7 Stellen;FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Stochastik.Quantil.P99;2.3263479;-;Standardnormalverteilung;Quantil z(0.99), gerundet auf 7 Stellen;FREI-1;FREI;AUSLIEFERUNG;1

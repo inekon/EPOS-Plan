@@ -1390,14 +1390,23 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 115: die Zapfkategorien des Zapfprofilgenerators (Umsetzungskonzept
+            //      Zapfprofilgenerator 3.2, T2, Stufe Z3). REIN DDL aus TwwSchema.AnweisungenT2 -
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_115_Zapfkategorien
+            //      bedient. NACH 103, dessen Nutzungsarten die Tabelle verweist, und nach 114 (Kuehlung).
+            //
+            //      ERGEBNISNEUTRAL: Die Tabelle entsteht leer; den Testkatalog der Kategorien
+            //      spielt danach Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py ein.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 115, trocken);
+
             // ---- Schritt 116: der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a der
             //      vollstaendigen Szenarioabdeckung V-E). REIN DDL aus DERSELBEN Quelle, aus der
             //      sich SchemaMigration.Schritt_116_SzenarioRahmen bedient
             //      (SchemaKatalog.Schritt116_Szenariorahmen): Szen_Best/Worst_Zeitraum (ganze
             //      Jahre) und Szen_Best/Worst_Menge (Prozent) an Tab_ProjektWirtschaftlichkeit,
-            //      nullbar, ohne Vorgabe. Die 115 ist dem Zapfprofil (Stufe T2) zugesagt - das
-            //      Werkzeug fragt jede Spalte vor dem Anlegen und setzt den Marker erst am Ende;
-            //      eine Luecke im Nummernraum stoert es nicht.
+            //      nullbar, ohne Vorgabe.
             //
             //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
             Console.WriteLine();

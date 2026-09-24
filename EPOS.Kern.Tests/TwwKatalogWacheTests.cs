@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
@@ -22,13 +24,21 @@ namespace EPOS.Kern.Tests
     /// mit <c>Status = 'AUSLIEFERUNG'</c> in der Testdatenbank wäre genau so ein Wert — er
     /// fiele sonst erst in einer Vorlage oder einem Wiki-Beispiel auf.</para>
     ///
-    /// <para><b>Vier Fälle:</b> keine Zeile mit <c>Status = 'AUSLIEFERUNG'</c>; jede
-    /// Katalogzeile ist <c>EIGEN</c> UND trägt in jeder Herkunftsspalte <c>FIKTIV</c> und in
-    /// jeder Quellenspalte „Testkatalog (fiktiv)“ (Kapitel 6 (b) verlangt alles zugleich;
-    /// eine Tabelle ohne Status — die Tagesgänge — prüft nur Herkunft und Quelle, eine ohne
-    /// Herkunftsspalte — der Tagesgangsatz — nur den Status); die Katalogversion ist nie
-    /// leer; das Einspielskript <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist
-    /// wiederholbar — ein weiterer Lauf auf einer Arbeitskopie ändert keine Tww-Zeile.</para>
+    /// <para><b>Die Fälle:</b> keine Zeile mit <c>Status = 'AUSLIEFERUNG'</c>; jede
+    /// Katalogzeile ist <c>EIGEN</c> UND trägt in jeder Provenienzgruppe ein zugelassenes Paar
+    /// aus Herkunftsart und Quelle — <c>FIKTIV</c> mit „Testkatalog (fiktiv)“ (Kapitel 6 (b)),
+    /// in Nutzungsarten und Tagesgängen dazu <c>FIKTIV</c> mit „VDI 6002 Blatt n (abgeleitet)“
+    /// (Anwenderentscheid ZU19: geringfügig abweichende VDI-Werte, Regel in
+    /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c> — Testdaten nach Regel, weder
+    /// Eigenkonstruktion noch Normwert), in Bedarfstagen <c>FREI</c> mit der Ecodesign-Verordnung
+    /// (EU-Recht), und überall, wo der freie Paketteil (<c>Referenzlaeufe/Katalogpaket_frei/</c>) eine Datei
+    /// führt, <c>FREI</c> mit einer Quelle dieser Datei. Eine Tabelle ohne Status — die
+    /// Tagesgänge — prüft nur Herkunft und Quelle, eine ohne Herkunftsspalte — der
+    /// Tagesgangsatz — nur den Status. Die Katalogversion ist nie leer; das Einspielskript
+    /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist wiederholbar — ein weiterer
+    /// Lauf auf einer Arbeitskopie ändert keine Tww-Zeile. Liegen die VDI-Originale lokal, gleicht
+    /// kein abgeleiteter Wert seinem Original, und jeder liegt innerhalb ±6 % (lokaler Nachweis;
+    /// ohne Ordner schweigt der Fall).</para>
     ///
     /// <para><b>Nur LESEND</b>, über <c>mode=ro&amp;immutable=1</c> wie
     /// <see cref="TestdatenbankSchemastandWacheTests"/> — ohne Beidateien. Fehlt die Datei,
@@ -50,6 +60,34 @@ namespace EPOS.Kern.Tests
             TwwSchema.TAB_TWW_TAGESGANG_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM
         };
 
+        /// <summary>Katalogtabellen mit Status, aber ohne eigene Katalogversion: die Zapfkategorien (T2).</summary>
+        private static readonly string[] OHNE_VERSION = { TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM };
+
+        /// <summary>Die Quelle der aus VDI 6002 abgeleiteten Zeilen (ZU19); „{0}“ ist das Blatt.</summary>
+        private const string QUELLE_VDI_ABGELEITET = "VDI 6002 Blatt {0} (abgeleitet)";
+
+        /// <summary>Die Quelle des Ecodesign-Zapfprofils (EU-Recht, frei).</summary>
+        private const string QUELLE_ECODESIGN = "Verordnung (EU) Nr. 814/2013 Anhang III";
+
+        /// <summary>
+        /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
+        /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19, Herkunftsart
+        /// <c>FIKTIV</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
+        /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen).
+        /// </summary>
+        private static IEnumerable<(string Herkunft, string Quelle)> Zugelassen(string tabelle)
+        {
+            yield return (TwwSchema.HERKUNFT_FIKTIV, QUELLE_FIKTIV);
+            if (tabelle == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM || tabelle == TwwSchema.TAB_TWW_TAGESGANG_STAMM)
+                foreach (string blatt in new[] { "1", "2" })
+                    yield return (TwwSchema.HERKUNFT_FIKTIV, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
+            string ordner = PaketteilOrdner();
+            if (ordner != null && File.Exists(Path.Combine(ordner, tabelle + ".csv")))
+                foreach (var paar in Paketteil(ordner, tabelle).Where(z => z.ContainsKey("Herkunftsart"))
+                                                               .Select(z => (z["Herkunftsart"], z["Quelle"])).Distinct())
+                    yield return paar;
+        }
+
         private const string SKRIPT = "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py";
 
         /// <summary>Die Quelle jeder Zeile des fiktiven Testkatalogs (Kapitel 6 (b)).</summary>
@@ -67,9 +105,9 @@ namespace EPOS.Kern.Tests
 
             using SqliteConnection c = Oeffnen(pfad);
             var funde = new List<string>();
-            foreach (string t in KOEPFE)
+            foreach (string t in KOEPFE.Concat(OHNE_VERSION))
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 103).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 115).");
                 long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" = $w", TwwSchema.STATUS_AUSLIEFERUNG);
                 if (n > 0) funde.Add(t + ": " + n);
             }
@@ -80,14 +118,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Kapitel 6 (b) verlangt alles ZUGLEICH: <c>Status = 'EIGEN'</c>, Herkunftsart
-        /// <c>FIKTIV</c> in jeder Herkunftsspalte und die Quelle „Testkatalog (fiktiv)“ in jeder
-        /// Quellenspalte. Eine Zeile <c>EIGEN</c> mit Herkunftsart <c>VERFAHREN</c> wäre genau
-        /// der Weg, auf dem eine echte Normzahl als Anwenderkopie in die Testdatenbank käme;
-        /// eine Zeile <c>IMPORT</c> mit <c>FIKTIV</c> ein mitgenommener Fremdkatalog.
+        /// Kapitel 6 (b) mit ZU19 verlangt alles ZUGLEICH: <c>Status = 'EIGEN'</c> und in JEDER
+        /// Provenienzgruppe ein zugelassenes Paar aus Herkunftsart und Quelle
+        /// (<see cref="Zugelassen"/>). Eine Zeile <c>EIGEN</c> mit Herkunftsart <c>VERFAHREN</c>
+        /// wäre genau der Weg, auf dem eine echte Normzahl als Anwenderkopie in die Testdatenbank
+        /// käme; eine Zeile <c>IMPORT</c> mit <c>FIKTIV</c> ein mitgenommener Fremdkatalog.
         /// </summary>
         [Fact]
-        public void Jede_Tww_Katalogzeile_ist_EIGEN_und_FIKTIV()
+        public void Jede_Tww_Katalogzeile_ist_EIGEN_mit_zugelassener_Herkunft()
         {
             string pfad = Testdatenbank();
             if (pfad == null) return;
@@ -96,9 +134,15 @@ namespace EPOS.Kern.Tests
             using SqliteConnection c = Oeffnen(pfad);
             List<string> funde = Verstoesse(c, out long geprueft);
             Assert.True(funde.Count == 0,
-                "Tww-Katalogzeilen der Testdatenbank, die nicht zugleich EIGEN, FIKTIV und mit der Quelle \"" +
-                QUELLE_FIKTIV + "\" gefuehrt sind (Kapitel 6 (b)):\n" + string.Join("\n", funde));
-            Assert.True(geprueft > 0, "Der fiktive Testkatalog fehlt — die Probe waere leer.");
+                "Tww-Katalogzeilen der Testdatenbank, die nicht zugleich EIGEN und mit einem zugelassenen Paar aus " +
+                "Herkunftsart und Quelle gefuehrt sind (Kapitel 6 (b), ZU19):\n" + string.Join("\n", funde));
+            Assert.True(geprueft > 0, "Der Testkatalog fehlt — die Probe waere leer.");
+            // Die abgeleiteten VDI-Zeilen und das Ecodesign-Zapfprofil stehen da (ZU19, Stufe Z3).
+            Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w " +
+                             "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'",
+                             TwwSchema.HERKUNFT_FIKTIV) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
+            Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Quelle_Art\" = 5 AND \"Quelle\" = $w",
+                             QUELLE_ECODESIGN) == 1, "Das Ecodesign-Zapfprofil fehlt in der Testdatenbank.");
         }
 
         /// <summary>
@@ -153,39 +197,216 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Tabellen mit Zeilen, die nicht zugleich <c>EIGEN</c> (wo es Status gibt),
-        /// <c>FIKTIV</c> in jeder Herkunftsspalte und die fiktive Quelle in jeder
-        /// Quellenspalte tragen; <paramref name="geprueft"/> zaehlt die gepruefte Zeilen.
+        /// Die Tabellen mit Zeilen, die nicht zugleich <c>EIGEN</c> (wo es Status gibt) und in
+        /// jeder Provenienzgruppe (Herkunftsart und Quelle mit demselben Präfix) ein zugelassenes
+        /// Paar tragen; <paramref name="geprueft"/> zaehlt die gepruefte Zeilen.
         /// </summary>
         private static List<string> Verstoesse(SqliteConnection c, out long geprueft)
         {
             var funde = new List<string>();
             geprueft = 0;
-            foreach (string t in KOEPFE.Concat(KINDER))
+            foreach (string t in KOEPFE.Concat(OHNE_VERSION).Concat(KINDER))
             {
-                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 103).");
+                Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritte 103, 115).");
                 List<string> spalten = Spalten(c, t);
-                List<string> herkunft = spalten.Where(s => s == "Herkunftsart" ||
-                                                           s.EndsWith("_Herkunftsart", StringComparison.Ordinal)).ToList();
-                List<string> quelle = spalten.Where(s => s == "Quelle" ||
-                                                         s.EndsWith("_Quelle", StringComparison.Ordinal)).ToList();
+                List<string> praefixe = spalten.Where(s => s == "Herkunftsart" ||
+                                                           s.EndsWith("_Herkunftsart", StringComparison.Ordinal))
+                                               .Select(s => s.Substring(0, s.Length - "Herkunftsart".Length)).ToList();
                 bool mitStatus = spalten.Contains("Status");
-                if (!mitStatus && herkunft.Count == 0 && quelle.Count == 0) continue;   // Ereignisse: am Kopf geprueft
+                if (!mitStatus && praefixe.Count == 0) continue;   // Ereignisse: am Kopf geprueft
+                Assert.All(praefixe, p => Assert.Contains(p + "Quelle", spalten));
 
-                // Verlangt: EIGEN (wo es Status gibt) UND in JEDER Herkunftsspalte FIKTIV UND in
-                // JEDER Quellenspalte die fiktive Quelle. Verletzt ist jede Zeile, der eines fehlt
-                // (IS statt =, damit NULL ebenfalls verletzt).
+                // Verlangt: EIGEN (wo es Status gibt) UND in JEDER Gruppe eines der zugelassenen
+                // Paare. Verletzt ist jede Zeile, der eines fehlt (IS statt =, damit NULL ebenfalls
+                // verletzt). Die Werte gehen als Parameter.
+                var paare = Zugelassen(t).ToList();
+                var werte = new List<(string Name, string Wert)> { ("$e", TwwSchema.STATUS_EIGEN) };
+                for (int i = 0; i < paare.Count; i++)
+                {
+                    werte.Add(("$h" + i, paare[i].Herkunft));
+                    werte.Add(("$q" + i, paare[i].Quelle));
+                }
                 var bedingung = new List<string>();
                 if (mitStatus) bedingung.Add("\"Status\" IS $e");
-                bedingung.AddRange(herkunft.Select(h => "\"" + h + "\" IS $f"));
-                bedingung.AddRange(quelle.Select(q => "\"" + q + "\" IS $q"));
+                foreach (string p in praefixe)
+                    bedingung.Add("(" + string.Join(" OR ", paare.Select((_, i) =>
+                        "(\"" + p + "Herkunftsart\" IS $h" + i + " AND \"" + p + "Quelle\" IS $q" + i + ")")) + ")");
                 long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE NOT (" + string.Join(" AND ", bedingung) + ")",
-                              null, ("$f", TwwSchema.HERKUNFT_FIKTIV), ("$e", TwwSchema.STATUS_EIGEN),
-                              ("$q", QUELLE_FIKTIV));
+                              null, werte.ToArray());
                 if (n > 0) funde.Add(t + ": " + n);
                 geprueft += Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\"", null);
             }
             return funde;
+        }
+
+        // =============================================================================
+        //  ZU19 — die abgeleiteten VDI-Werte gegen die lokalen Originale
+        // =============================================================================
+
+        /// <summary>Hoechste relative Abweichung eines abgeleiteten Werts von seinem Original (ZU19).</summary>
+        private const double BAND = 0.06;
+
+        /// <summary>Darunter gilt ein Wert als unveraendert (relativ).</summary>
+        private const double GLEICH = 1e-9;
+
+        /// <summary>Die Wärmekapazität, mit der das Einspielskript Liter in kWh umrechnet [Wh/(l·K)].</summary>
+        private const double CW = 1.163;
+
+        /// <summary>
+        /// <b>Lokaler Nachweis zu ZU19:</b> Kein Katalogwert der Testdatenbank und kein Wert der
+        /// abgeleiteten JSON-Datei gleicht seinem VDI-6002-Original (relativ &lt; 1e-9), und jeder
+        /// liegt innerhalb ±6 % — Bedarfswerte (über die Bezugstemperaturen der Zeile zurück in
+        /// Liter), Monatsfaktoren, Wochenanteile und Stundenanteile der Tagesgänge. Nur, wenn
+        /// <c>Referenzlaeufe/Normzahlen/vdi6002/</c> lokal liegt; sonst schweigt der Fall. Die
+        /// Meldung nennt Abweichungen, nie einen Absolutwert.
+        /// </summary>
+        [Fact]
+        public void Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            string originale = VdiOriginale();
+            if (originale == null) return;                     // lokal nicht beigestellt - schweigen
+            LfsZeigerProbe.Sicherstellen(pfad);
+
+            var bedarf = Csv(Path.Combine(originale, "bedarfskennwerte.csv")).ToDictionary(r => r["nutzungsart"]);
+            var tage = Csv(Path.Combine(originale, "tagesprofile.csv"));
+            var woche = Csv(Path.Combine(originale, "wochenanteile.csv"));
+            var saison = Csv(Path.Combine(originale, "saisonfaktoren.csv"));
+            var funde = new List<string>();
+            int verglichen = 0;
+
+            void Pruefen(string was, double katalog, string original)
+            {
+                double o = double.Parse(original, CultureInfo.InvariantCulture);
+                double a = Math.Abs(katalog / o - 1.0);
+                verglichen++;
+                if (!(a > GLEICH)) funde.Add(was + ": gleich dem Original");
+                else if (a > BAND + GLEICH) funde.Add(was + ": Abweichung " + (a * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %");
+            }
+
+            // --- 1. Die Katalogzeilen der Testdatenbank ------------------------------------
+            using (SqliteConnection c = Oeffnen(pfad))
+            using (SqliteCommand b = c.CreateCommand())
+            {
+                b.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $h " +
+                                "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'";
+                b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_FIKTIV);
+                var zeilen = new List<Dictionary<string, object>>();
+                using (SqliteDataReader r = b.ExecuteReader())
+                    while (r.Read())
+                    {
+                        var z = new Dictionary<string, object>();
+                        for (int i = 0; i < r.FieldCount; i++) z[r.GetName(i)] = r.IsDBNull(i) ? null : r.GetValue(i);
+                        zeilen.Add(z);
+                    }
+                Assert.NotEmpty(zeilen);
+                foreach (Dictionary<string, object> z in zeilen)
+                {
+                    string name = Convert.ToString(z["Bezeichner"]);
+                    Assert.EndsWith(" (abgeleitet)", name);
+                    string art = name.Substring(0, name.Length - " (abgeleitet)".Length);
+                    Assert.True(bedarf.ContainsKey(art), "Keine Nutzungsart der Quelle zu " + name);
+                    double proLiter = CW * (Convert.ToDouble(z["Bezug_Zapftemperatur"]) - Convert.ToDouble(z["Bezug_Kaltwasser"])) / 1000.0;
+                    Pruefen(name + " Bedarf_Niedrig", Convert.ToDouble(z["Bedarf_Niedrig"]) / proLiter, bedarf[art]["minimum"]);
+                    Pruefen(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]) / proLiter, bedarf[art]["mittel"]);
+                    Pruefen(name + " Bedarf_Hoch", Convert.ToDouble(z["Bedarf_Hoch"]) / proLiter, bedarf[art]["maximum"]);
+                    string[] monate = { "jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez" };
+                    for (int m = 0; m < 12; m++)
+                        Pruefen(name + " Monat_" + (m + 1), Convert.ToDouble(z["Monat_" + (m + 1)]),
+                                saison.Single(s => s["nutzungsart"] == art && s["monat_oder_periode"] == monate[m])["faktor"]);
+                    string[] tage7 = { "mo", "di", "mi", "do", "fr", "sa", "so" };
+                    for (int w = 0; w < 7; w++)
+                        Pruefen(name + " Woche_" + (w + 1), Convert.ToDouble(z["Woche_" + (w + 1)]),
+                                woche.Single(s => s["nutzungsart"] == art && s["wochentag"] == tage7[w])["anteil"]);
+
+                    // Die Tagtypen wie im Einspielskript: 1 Werktag, 2 Samstag, 3 und 4 Sonntag; „alle“ für jeden.
+                    using SqliteCommand g = c.CreateCommand();
+                    g.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM + "\" WHERE \"ID_Tagesgangsatz\" = $s";
+                    g.Parameters.AddWithValue("$s", z["ID_Tagesgangsatz"]);
+                    using SqliteDataReader gr = g.ExecuteReader();
+                    int gaenge = 0;
+                    while (gr.Read())
+                    {
+                        gaenge++;
+                        int tagtyp = Convert.ToInt32(gr["Tagtyp"]);
+                        bool alle = tage.Any(s => s["nutzungsart"] == art && s["tagtyp"] == "alle");
+                        string quelltyp = alle ? "alle" : tagtyp == 1 ? "werktag" : tagtyp == 2 ? "samstag" : "sonntag";
+                        for (int h = 1; h <= 24; h++)
+                            Pruefen(name + " Tagtyp " + tagtyp + " Anteil_" + h.ToString("00", CultureInfo.InvariantCulture),
+                                    Convert.ToDouble(gr["Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)]),
+                                    tage.Single(s => s["nutzungsart"] == art && s["tagtyp"] == quelltyp &&
+                                                     s["stunde"] == (h - 1).ToString(CultureInfo.InvariantCulture))["anteil"]);
+                    }
+                    Assert.Equal(4, gaenge);
+                }
+            }
+
+            // --- 2. Die committete JSON-Datei, jeder Wert --------------------------------------
+            string json = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(pfad)), "Referenzlaeufe", "Skripte",
+                                       "tww_katalogwerte_abgeleitet.json");
+            using (JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8)))
+            {
+                JsonElement w = d.RootElement;
+                foreach (JsonElement b in w.GetProperty("bedarf").EnumerateArray())
+                {
+                    string art = b.GetProperty("nutzungsart").GetString();
+                    foreach (string s in new[] { "mittel", "minimum", "maximum", "winterspitze", "sommerschwachlast" })
+                    {
+                        string original = bedarf[art][s];
+                        JsonElement v = b.GetProperty(s);
+                        if (original.Length == 0) { Assert.Equal(JsonValueKind.Null, v.ValueKind); continue; }
+                        Pruefen("JSON " + art + " " + s, v.GetDouble(), original);
+                    }
+                }
+                foreach (Dictionary<string, string> s in tage)
+                    Pruefen("JSON Tagesprofil " + s["nutzungsart"] + "/" + s["tagtyp"],
+                            w.GetProperty("tagesprofile").GetProperty(s["nutzungsart"]).GetProperty(s["tagtyp"])[int.Parse(s["stunde"], CultureInfo.InvariantCulture)].GetDouble(),
+                            s["anteil"]);
+                foreach (Dictionary<string, string> s in woche)
+                    Pruefen("JSON Woche " + s["nutzungsart"],
+                            w.GetProperty("wochenanteile").GetProperty(s["nutzungsart"]).GetProperty(s["wochentag"]).GetDouble(), s["anteil"]);
+                foreach (Dictionary<string, string> s in saison)
+                    Pruefen("JSON Monat " + s["nutzungsart"],
+                            w.GetProperty("saisonfaktoren").GetProperty(s["nutzungsart"]).GetProperty(s["monat_oder_periode"]).GetDouble(), s["faktor"]);
+            }
+
+            Assert.True(verglichen > 0, "Nichts verglichen.");
+            Assert.True(funde.Count == 0, "Abgeleitete VDI-Werte ausserhalb der Regel (ZU19), " + funde.Count + " von " +
+                                          verglichen + ":\n" + string.Join("\n", funde.Take(40)));
+        }
+
+        /// <summary>
+        /// Der lokale Ordner der VDI-6002-Originale: aufwärts gesucht nach
+        /// <c>Referenzlaeufe/Normzahlen/vdi6002/bedarfskennwerte.csv</c> (Muster <see cref="Normzahlen"/>),
+        /// ab dem Ordner dieser Datei und ab dem Laufordner, höchstens acht Ebenen; sonst <c>null</c>.
+        /// </summary>
+        private static string VdiOriginale([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            foreach (string start in new[] { Path.GetDirectoryName(eigeneDatei ?? ""), AppContext.BaseDirectory })
+            {
+                DirectoryInfo d = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+                {
+                    string kandidat = Path.Combine(d.FullName, "Referenzlaeufe", "Normzahlen", "vdi6002");
+                    if (File.Exists(Path.Combine(kandidat, "bedarfskennwerte.csv"))) return kandidat;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>Eine CSV der Originale (Semikolon, Kopfzeile, UTF-8) als Zeilen nach Spaltennamen.</summary>
+        private static List<Dictionary<string, string>> Csv(string datei)
+        {
+            string[] zeilen = File.ReadAllLines(datei, Encoding.UTF8).Where(z => z.Length > 0).ToArray();
+            string[] kopf = zeilen[0].TrimStart('\uFEFF').Split(';');
+            return zeilen.Skip(1).Select(z =>
+            {
+                string[] f = z.Split(';');
+                var d = new Dictionary<string, string>(StringComparer.Ordinal);
+                for (int i = 0; i < kopf.Length; i++) d[kopf[i]] = i < f.Length ? f[i] : "";
+                return d;
+            }).ToList();
         }
 
         [Fact]
@@ -259,6 +480,302 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Testdatenbank = abgeleitete JSON (läuft überall, ohne Originale)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die abgeleiteten VDI-Zeilen der Testdatenbank gleichen der JSON-Datei</b>
+        /// (<c>Referenzlaeufe/Skripte/tww_katalogwerte_abgeleitet.json</c>, ZU19), so wie das
+        /// Einspielskript sie umrechnet: Bedarf niedrig/mittel/hoch = Minimum/Mittel/Maximum in Litern
+        /// bei den Bezugstemperaturen der Zeile, Monatsfaktoren auf Mittel 1, Wochenanteile und
+        /// Tagesgänge auf Summe 1 (Tagtyp 1 Werktag, 2 Samstag, 3 und 4 Sonntag, „alle“ für jeden);
+        /// dazu Blatt und Anzahl (je abgeleitete Nutzungsart ein eigener Satz mit vier Tagesgängen).
+        /// Relativ 1e-12. Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
+        /// </summary>
+        [Fact]
+        public void Die_abgeleiteten_Zeilen_der_Testdatenbank_gleichen_der_JSON()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string json = Path.Combine(Path.GetDirectoryName(pfad), "Skripte", "tww_katalogwerte_abgeleitet.json");
+            Assert.True(File.Exists(json), "Die abgeleitete JSON-Datei fehlt: " + json);
+
+            var funde = new List<string>();
+            void Gleich(string was, double ist, double soll)
+            {
+                if (!(Math.Abs(ist - soll) <= 1e-12 * Math.Max(1.0, Math.Abs(soll)))) funde.Add(was + " weicht ab");
+            }
+            static double[] Normiert(IEnumerable<double> werte, double ziel)
+            {
+                double[] w = werte.ToArray();
+                double s = w.Sum();
+                return w.Select(x => x * ziel / s).ToArray();
+            }
+
+            using JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8));
+            JsonElement wurzel = d.RootElement;
+            var bedarf = wurzel.GetProperty("bedarf").EnumerateArray().ToDictionary(b => b.GetProperty("nutzungsart").GetString());
+            string[] monate = { "jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez" };
+            string[] tage = { "mo", "di", "mi", "do", "fr", "sa", "so" };
+
+            using SqliteConnection c = Oeffnen(pfad);
+            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)' ORDER BY \"ID\"", null);
+            Assert.NotEmpty(arten);
+            var saetze = new HashSet<long>();
+            foreach (Dictionary<string, object> z in arten)
+            {
+                string name = Convert.ToString(z["Bezeichner"]);
+                if (!name.EndsWith(" (abgeleitet)", StringComparison.Ordinal)) { funde.Add(name + ": ohne Zusatz (abgeleitet)"); continue; }
+                string art = name.Substring(0, name.Length - " (abgeleitet)".Length);
+                if (!bedarf.TryGetValue(art, out JsonElement b)) { funde.Add(name + ": keine Nutzungsart der JSON-Datei"); continue; }
+                string quelle = string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, b.GetProperty("blatt").GetString());
+                foreach (string g in new[] { "Bedarf", "Jahresgang", "Wochengang" })
+                    if (Convert.ToString(z[g + "_Quelle"]) != quelle) funde.Add(name + ": " + g + "_Quelle weicht ab");
+
+                double proLiter = CW * (Convert.ToDouble(z["Bezug_Zapftemperatur"]) - Convert.ToDouble(z["Bezug_Kaltwasser"])) / 1000.0;
+                Gleich(name + " Bedarf_Niedrig", Convert.ToDouble(z["Bedarf_Niedrig"]), b.GetProperty("minimum").GetDouble() * proLiter);
+                Gleich(name + " Bedarf_Mittel", Convert.ToDouble(z["Bedarf_Mittel"]), b.GetProperty("mittel").GetDouble() * proLiter);
+                Gleich(name + " Bedarf_Hoch", Convert.ToDouble(z["Bedarf_Hoch"]), b.GetProperty("maximum").GetDouble() * proLiter);
+
+                double[] m = Normiert(monate.Select(x => wurzel.GetProperty("saisonfaktoren").GetProperty(art).GetProperty(x).GetDouble()), 12.0);
+                for (int i = 0; i < 12; i++) Gleich(name + " Monat_" + (i + 1), Convert.ToDouble(z["Monat_" + (i + 1)]), m[i]);
+                double[] w = Normiert(tage.Select(x => wurzel.GetProperty("wochenanteile").GetProperty(art).GetProperty(x).GetDouble()), 1.0);
+                for (int i = 0; i < 7; i++) Gleich(name + " Woche_" + (i + 1), Convert.ToDouble(z["Woche_" + (i + 1)]), w[i]);
+
+                long satz = Convert.ToInt64(z["ID_Tagesgangsatz"]);
+                if (!saetze.Add(satz)) funde.Add(name + ": Tagesgangsatz mit einer anderen abgeleiteten Nutzungsart geteilt");
+                JsonElement profile = wurzel.GetProperty("tagesprofile").GetProperty(art);
+                bool alle = profile.TryGetProperty("alle", out _);
+                List<Dictionary<string, object>> gaenge = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                                                    "\" WHERE \"ID_Tagesgangsatz\" = $w ORDER BY \"Tagtyp\"",
+                                                                    satz.ToString(CultureInfo.InvariantCulture));
+                if (gaenge.Count != 4) { funde.Add(name + ": " + gaenge.Count + " Tagesgänge statt 4"); continue; }
+                foreach (Dictionary<string, object> g in gaenge)
+                {
+                    int tagtyp = Convert.ToInt32(g["Tagtyp"]);
+                    string quelltyp = alle ? "alle" : tagtyp == 1 ? "werktag" : tagtyp == 2 ? "samstag" : "sonntag";
+                    if (Convert.ToString(g["Quelle"]) != quelle) funde.Add(name + " Tagtyp " + tagtyp + ": Quelle weicht ab");
+                    double[] soll = Normiert(profile.GetProperty(quelltyp).EnumerateArray().Select(x => x.GetDouble()), 1.0);
+                    for (int h = 1; h <= 24; h++)
+                        Gleich(name + " Tagtyp " + tagtyp + " Anteil_" + h.ToString("00", CultureInfo.InvariantCulture),
+                               Convert.ToDouble(g["Anteil_" + h.ToString("00", CultureInfo.InvariantCulture)]), soll[h - 1]);
+                }
+            }
+            long abgeleiteteSaetze = Zahl(c, "SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                             "\" WHERE \"Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'", null);
+            if (abgeleiteteSaetze != arten.Count)
+                funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + arten.Count);
+
+            Assert.True(funde.Count == 0, "Die abgeleiteten Zeilen der Testdatenbank weichen von der JSON-Datei ab — " +
+                                          "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py nachlaufen lassen:\n" +
+                                          string.Join("\n", funde.Take(40)));
+        }
+
+        // =============================================================================
+        //  Testdatenbank = freier Paketteil (läuft überall, ohne Originale)
+        // =============================================================================
+
+        /// <summary>Die Spalten einer Paketzeile, die die Testdatenbank anders führt (Kapitel 6 (c)) oder abbildet.</summary>
+        private static readonly string[] NICHT_VERGLICHEN = { "ID", "ID_Bedarfstag", "Status", "ReadOnly" };
+
+        /// <summary>
+        /// <b>Die freien Zeilen der Testdatenbank gleichen dem Paketteil</b>
+        /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
+        /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
+        /// Ereignissen) der Dateien steht mit Herkunftsart <c>FREI</c> und der Katalogversion des
+        /// Testkatalogs da, jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien, und keine
+        /// weitere Zeile trägt <c>FREI</c>. Status und ReadOnly folgen der Regel der Testdatenbank
+        /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
+        /// </summary>
+        [Fact]
+        public void Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string ordner = PaketteilOrdner();
+            Assert.True(ordner != null, "Der freie Paketteil Referenzlaeufe/Katalogpaket_frei fehlt.");
+
+            List<string> funde = PaketteilAbweichungen(pfad, ordner);
+            Assert.True(funde.Count == 0, "Die freien Zeilen der Testdatenbank weichen vom Paketteil ab — " +
+                                          "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py nachlaufen lassen:\n" +
+                                          string.Join("\n", funde.Take(40)));
+        }
+
+        /// <summary>
+        /// Gegenprobe auf einer Arbeitskopie: ein geänderter freier Parameter, eine fehlende
+        /// Zapfkategorie und ein zusätzliches Ereignis des Ecodesign-Zapfprofils schlagen an.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_Abweichungen_vom_Paketteil_schlagen_an()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+            string ordner = PaketteilOrdner();
+            Assert.True(ordner != null, "Der freie Paketteil Referenzlaeufe/Katalogpaket_frei fehlt.");
+
+            string arbeit = Path.Combine(Path.GetTempPath(), "epos-twwwache-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(arbeit);
+            try
+            {
+                string kopie = Path.Combine(arbeit, "Kenndaten_Test.sqlite");
+                File.Copy(pfad, kopie);
+                using (var s = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = kopie, Pooling = false }.ToString()))
+                {
+                    s.Open();
+                    using SqliteCommand b = s.CreateCommand();
+                    b.CommandText =
+                        "UPDATE \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" SET \"Wert\" = \"Wert\" + 1 WHERE \"ID\" = " +
+                        "(SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI');" +
+                        "DELETE FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\" WHERE \"ID\" = " +
+                        "(SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\");" +
+                        "INSERT INTO \"" + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + "\" (\"ID_Bedarfstag\", \"Minute_Beginn\", " +
+                        "\"Dauer_min\", \"Energie_Kwh\", \"Reihenfolge\") SELECT \"ID\", 1300, 1, 0.1, 99 FROM \"" +
+                        TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI';";
+                    Assert.Equal(3, b.ExecuteNonQuery());
+                }
+                List<string> funde = PaketteilAbweichungen(kopie, ordner);
+                Assert.Contains(funde, f => f.StartsWith(TwwSchema.TAB_TWW_PARAMETER_STAMM + " \"", StringComparison.Ordinal)
+                                            && f.EndsWith(": Wert weicht ab", StringComparison.Ordinal));
+                Assert.Contains(funde, f => f.Contains(" Zapfkategorien statt "));
+                Assert.Contains(funde, f => f.Contains(" Ereignisse statt "));
+            }
+            finally
+            {
+                try { SqliteConnection.ClearAllPools(); } catch { }
+                try { Directory.Delete(arbeit, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
+        /// <summary>Die Abweichungen der freien Zeilen einer Datenbank vom Paketteil (leer = gleich).</summary>
+        private static List<string> PaketteilAbweichungen(string pfad, string ordner)
+        {
+            using SqliteConnection c = Oeffnen(pfad);
+            var funde = new List<string>();
+
+            // --- Parameter und Bedarfstage: je Zeile der Datei die Zeile der Testdatenbank ------
+            foreach ((string tabelle, string schluessel) in new[]
+                     {
+                         (TwwSchema.TAB_TWW_PARAMETER_STAMM, "Schluessel"), (TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Bezeichner")
+                     })
+            {
+                List<Dictionary<string, string>> soll = Paketteil(ordner, tabelle);
+                Assert.NotEmpty(soll);
+                foreach (Dictionary<string, string> z in soll)
+                {
+                    List<Dictionary<string, object>> ist = Zeilen(c, "SELECT * FROM \"" + tabelle + "\" WHERE \"" + schluessel +
+                                                                     "\" = $w AND \"Katalogversion\" = 'TEST-1'", z[schluessel]);
+                    if (ist.Count != 1) { funde.Add(tabelle + " \"" + z[schluessel] + "\": " + ist.Count + " Zeile(n)"); continue; }
+                    Vergleichen(tabelle + " \"" + z[schluessel] + "\"", z, ist[0], funde);
+                    if (Convert.ToString(ist[0]["Status"]) != TwwSchema.STATUS_EIGEN || Convert.ToInt64(ist[0]["ReadOnly"]) != 0)
+                        funde.Add(tabelle + " \"" + z[schluessel] + "\": nicht EIGEN/ReadOnly 0");
+
+                    if (tabelle != TwwSchema.TAB_TWW_BEDARFSTAG_STAMM) continue;
+                    List<Dictionary<string, string>> e = Paketteil(ordner, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM)
+                        .Where(x => x["ID_Bedarfstag"] == z["ID"]).ToList();
+                    List<Dictionary<string, object>> ei = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM +
+                                                                    "\" WHERE \"ID_Bedarfstag\" = $w ORDER BY \"Reihenfolge\", \"ID\"",
+                                                                    Convert.ToString(ist[0]["ID"], CultureInfo.InvariantCulture));
+                    if (e.Count != ei.Count) funde.Add(z[schluessel] + ": " + ei.Count + " Ereignisse statt " + e.Count);
+                    else for (int i = 0; i < e.Count; i++) Vergleichen(z[schluessel] + " Ereignis " + (i + 1), e[i], ei[i], funde);
+                }
+                long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_FREI);
+                if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI statt " + soll.Count);
+            }
+
+            // --- Zapfkategorien: der Vorgabesatz an jeder Nutzungsart, sonst nichts ----------------
+            List<Dictionary<string, string>> satz = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            Assert.NotEmpty(satz);
+            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT \"ID\", \"Bezeichner\" FROM \"" +
+                                                                TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" ORDER BY \"ID\"", null);
+            Assert.NotEmpty(arten);
+            foreach (Dictionary<string, object> a in arten)
+            {
+                List<Dictionary<string, object>> k = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
+                                                               "\" WHERE \"ID_Nutzungsart\" = $w ORDER BY \"Reihenfolge\", \"ID\"",
+                                                               Convert.ToString(a["ID"], CultureInfo.InvariantCulture));
+                string art = Convert.ToString(a["Bezeichner"]);
+                if (k.Count != satz.Count) { funde.Add(art + ": " + k.Count + " Zapfkategorien statt " + satz.Count); continue; }
+                for (int i = 0; i < satz.Count; i++) Vergleichen(art + " Kategorie " + (i + 1), satz[i], k[i], funde);
+            }
+            long alle = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\"", null);
+            if (alle != (long)arten.Count * satz.Count)
+                funde.Add(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ": " + alle + " Zeile(n) statt " + arten.Count * satz.Count);
+            return funde;
+        }
+
+        /// <summary>
+        /// Vergleicht jede Spalte einer Paketzeile (ausser <see cref="NICHT_VERGLICHEN"/>) mit der
+        /// Datenbankzeile: Zahlen als Zahl (relativ 1e-12), leer gegen NULL, sonst Text.
+        /// </summary>
+        private static void Vergleichen(string was, Dictionary<string, string> soll, Dictionary<string, object> ist, List<string> funde)
+        {
+            foreach (KeyValuePair<string, string> s in soll)
+            {
+                if (NICHT_VERGLICHEN.Contains(s.Key)) continue;
+                if (!ist.TryGetValue(s.Key, out object w)) { funde.Add(was + ": Spalte " + s.Key + " fehlt"); continue; }
+                bool gleich;
+                if (s.Value.Length == 0) gleich = w == null;
+                else if (w is double || w is long)
+                {
+                    double d = Convert.ToDouble(w, CultureInfo.InvariantCulture);
+                    gleich = double.TryParse(s.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double e)
+                             && Math.Abs(d - e) <= 1e-12 * Math.Max(1.0, Math.Abs(e));
+                }
+                else gleich = string.Equals(Convert.ToString(w, CultureInfo.InvariantCulture), s.Value, StringComparison.Ordinal);
+                if (!gleich) funde.Add(was + ": " + s.Key + " weicht ab");
+            }
+        }
+
+        /// <summary>Die Zeilen einer Abfrage als dict Spaltenname → Wert (NULL = null); <c>$w</c> optional.</summary>
+        private static List<Dictionary<string, object>> Zeilen(SqliteConnection c, string sql, string wert)
+        {
+            using SqliteCommand b = c.CreateCommand();
+            b.CommandText = sql;
+            if (wert != null) b.Parameters.AddWithValue("$w", wert);
+            var liste = new List<Dictionary<string, object>>();
+            using SqliteDataReader r = b.ExecuteReader();
+            while (r.Read())
+            {
+                var z = new Dictionary<string, object>(StringComparer.Ordinal);
+                for (int i = 0; i < r.FieldCount; i++) z[r.GetName(i)] = r.IsDBNull(i) ? null : r.GetValue(i);
+                liste.Add(z);
+            }
+            return liste;
+        }
+
+        /// <summary>Der Ordner des freien Paketteils neben der Testdatenbank; <c>null</c> ohne Testdatenbank oder Ordner.</summary>
+        private static string PaketteilOrdner()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return null;
+            string ordner = Path.Combine(Path.GetDirectoryName(pfad), "Katalogpaket_frei");
+            return Directory.Exists(ordner) ? ordner : null;
+        }
+
+        /// <summary>
+        /// Eine Datei des Paketteils (Semikolon, Kopfzeile, UTF-8) als Zeilen nach Spaltennamen; die
+        /// Dateien führen weder Trenner noch Anführungszeichen in Feldern.
+        /// </summary>
+        private static List<Dictionary<string, string>> Paketteil(string ordner, string tabelle)
+        {
+            string[] zeilen = File.ReadAllLines(Path.Combine(ordner, tabelle + ".csv"), Encoding.UTF8)
+                                  .Where(z => z.Trim().Length > 0).ToArray();
+            string[] kopf = zeilen[0].TrimStart('\uFEFF').Split(';');
+            return zeilen.Skip(1).Select(z =>
+            {
+                string[] f = z.Split(';');
+                Assert.Equal(kopf.Length, f.Length);
+                var d = new Dictionary<string, string>(StringComparer.Ordinal);
+                for (int i = 0; i < kopf.Length; i++) d[kopf[i]] = f[i];
+                return d;
+            }).ToList();
+        }
+
+        // =============================================================================
         //  Handwerkszeug
         // =============================================================================
 
@@ -271,7 +788,7 @@ namespace EPOS.Kern.Tests
                 DataSource = datei, Mode = SqliteOpenMode.ReadOnly, Pooling = false
             }.ToString());
             c.Open();
-            foreach (string t in KOEPFE.Concat(KINDER))
+            foreach (string t in KOEPFE.Concat(OHNE_VERSION).Concat(KINDER))
             {
                 using SqliteCommand b = c.CreateCommand();
                 b.CommandText = "SELECT * FROM \"" + t + "\" ORDER BY \"ID\"";
@@ -288,22 +805,29 @@ namespace EPOS.Kern.Tests
             return sb.ToString();
         }
 
-        /// <summary>Die Parameterschlüssel von Bilanz und Auslegung, die der Datei fehlen (Präfixe ausgenommen).</summary>
+        /// <summary>
+        /// Die Parameterschlüssel von Bilanz, Auslegung und Stochastik, die der Datei fehlen
+        /// (Präfixe ausgenommen; das Quantil der Stochastik je Perzentil der Wertemenge).
+        /// </summary>
         private static List<string> FehlendeParameter(string datei)
         {
             var fehlend = new List<string>();
             using SqliteConnection c = Oeffnen(datei);
-            foreach (Type t in new[] { typeof(ZapfParameter), typeof(ZapfAuslegungParameter) })
+            var schluessel = new List<string>();
+            foreach (Type t in new[] { typeof(ZapfParameter), typeof(ZapfAuslegungParameter), typeof(ZapfStochastikParameter) })
                 foreach (System.Reflection.FieldInfo f in t.GetFields(System.Reflection.BindingFlags.Static
                              | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
                 {
                     if (!f.IsLiteral || f.FieldType != typeof(string)) continue;
-                    string schluessel = (string)f.GetRawConstantValue();
-                    if (schluessel.EndsWith(".", StringComparison.Ordinal)) continue;   // Präfix
-                    if (Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Schluessel\" = $w",
-                             schluessel) == 0)
-                        fehlend.Add(schluessel);
+                    string s = (string)f.GetRawConstantValue();
+                    if (s.EndsWith(".", StringComparison.Ordinal)) continue;   // Präfix
+                    if (s == ZapfStochastikParameter.QUANTIL)
+                        schluessel.AddRange(TwwSchema.Perzentile.Select(p => s + p.ToString(CultureInfo.InvariantCulture)));
+                    else schluessel.Add(s);
                 }
+            foreach (string s in schluessel)
+                if (Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Schluessel\" = $w", s) == 0)
+                    fehlend.Add(s);
             return fehlend;
         }
 

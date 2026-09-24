@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -26,6 +27,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Werkstoff des Übertragers — wählt den U-Wert; <c>null</c> = unbekannt (N10, Laufangabe).</summary>
         public ZapfUebertragerwerkstoff? Uebertragerwerkstoff { get; init; }
+
+        /// <summary>
+        /// „Stochastisch rechnen" (4.5 b): zieht je Topologiegruppe das Auslegungsensemble des
+        /// Bedarfstags und füllt das Perzentil. Ohne diese Angabe bleibt das Perzentil „noch nicht
+        /// gerechnet" — das Ensemble läuft nur auf Zuruf. Seed, Realisierungen und Perzentil kommen aus
+        /// den Projektgrößen, die Kategorien aus dem Eingang (<see cref="Zapfprofileingang.Zapfkategorien"/>).
+        /// </summary>
+        public bool Stochastisch { get; init; }
+
+        /// <summary>
+        /// Die Abbruchmarke des nebenläufigen Laufs „Stochastisch rechnen" (5.1): Sie beendet die
+        /// Ziehung des Auslegungsensembles mit <see cref="OperationCanceledException"/> — kein halbes
+        /// Perzentil. Ohne Marke (Vorgabe) läuft die Rechnung durch.
+        /// </summary>
+        public CancellationToken Abbruch { get; init; }
     }
 
     /// <summary>
@@ -39,8 +55,12 @@ namespace WindowsFormsApplication1
     /// Tagesmengen mal Tagesgang (dieselben Stunden wie die Bilanz); Tagesmengen der Auslegung bei
     /// θ_KW,Auslegung; dann je <b>Topologiegruppe</b> (ZU13) Wochenreihe, Bedarfstag nach der
     /// Vorgaberegel, Normvergleich, bei Speicher Summenlinie, Speicherauslegung nach V4 und
-    /// Großanlage, sonst die Minutenspitze. Je Gruppe genau eine Empfehlung; das Perzentil bleibt
-    /// bis Z3 „noch nicht gerechnet".</para>
+    /// Großanlage, sonst die Minutenspitze. Je Gruppe genau eine Empfehlung. Mit „Stochastisch
+    /// rechnen" (<see cref="Auslegungseingang.Stochastisch"/>) zieht jede Gruppe ihr
+    /// Auslegungsensemble (<see cref="Zapfensemble"/>) und füllt das Perzentil (4.5 b) — bei
+    /// Speicher das Volumen beim Φ_N des Summenlinienpunkts, sonst die Minutenspitze —, dazu
+    /// Gleichzeitigkeit, Konsistenzhinweis und den Vergleich μ + z·σ/√N; sonst bleibt es „noch nicht
+    /// gerechnet".</para>
     ///
     /// <para><b>Kein stiller Rückfall.</b> Eine Zone, die nicht rechenbar ist, steht in
     /// <see cref="Auslegungsergebnis.Ablehnungen"/>; eine Gruppe ohne Bedarfstag trägt eine nicht
@@ -64,6 +84,7 @@ namespace WindowsFormsApplication1
             internal double ZapfungKwh;
             internal double ZirkulationKwh;
             internal Wochenbaustein Baustein;
+            internal int Index;
         }
 
         /// <summary>Rechnet die Auslegung. Kalender, Projektgrößen und Parametersatz sind Pflicht.</summary>
@@ -91,7 +112,7 @@ namespace WindowsFormsApplication1
             var arbeit = new List<Zonenarbeit>();
             foreach (ZonenStand z in e.Zonen ?? new ZonenStand[0])
             {
-                var w = new Zonenarbeit { Stand = z, Name = z?.Name ?? "" };
+                var w = new Zonenarbeit { Stand = z, Name = z?.Name ?? "", Index = arbeit.Count };
                 arbeit.Add(w);
                 if (z == null)
                 {
@@ -211,7 +232,8 @@ namespace WindowsFormsApplication1
                 if (topo == ZapfTopologie.Speicher) ersteSpeichergruppe = false;
                 var zirk = new Schaetzwert(p.ZirkAuto, zirkVorschlagKw * anteil,
                                            p.ZirkManuellKw.HasValue ? p.ZirkManuellKw.Value * anteil : (double?)null);
-                gruppen.Add(Gruppe(topo, zonen, p, ps, a, e.WochentagJan1, region, zirk, laufzeit, kwAuslegung, prot));
+                gruppen.Add(Gruppe(topo, zonen, p, ps, a, e.WochentagJan1, region, zirk, laufzeit, kwAuslegung,
+                                   e.Zapfkategorien, prot));
             }
 
             foreach (ZapfHinweis h in zapfHinweise) hinweise.Add(new Auslegungshinweis(h.Code, h.Text));
@@ -240,6 +262,7 @@ namespace WindowsFormsApplication1
             internal Summenlinienergebnis Summenlinie;
             internal string Grund;
             internal double? NenninhaltL;
+            internal Summenlinienparameter Parameter;
             internal readonly List<Auslegungshinweis> Hinweise = new List<Auslegungshinweis>();
 
             /// <summary>Das empfohlene Volumen der Großanlagenerkennung: Nenninhalt, sonst Punkt der Summenlinie (N10).</summary>
@@ -248,7 +271,8 @@ namespace WindowsFormsApplication1
 
         private static Auslegungsgruppe Gruppe(ZapfTopologie topo, List<Zonenarbeit> zonen, ProjektStand p, Parametersatz ps,
                                                Auslegungseingang a, int wochentagJan1, ZapfTagtyp[] region, Schaetzwert zirk,
-                                               Tagesfenster laufzeit, double kwAuslegung, Herkunftsprotokoll prot)
+                                               Tagesfenster laufzeit, double kwAuslegung, IReadOnlyList<Zapfkategorie> kategorien,
+                                               Herkunftsprotokoll prot)
         {
             var h = new List<Auslegungshinweis>();
             var bausteine = new List<Wochenbaustein>();
@@ -372,6 +396,7 @@ namespace WindowsFormsApplication1
             Auslegungswert haupt;
             Auslegungsempfehlung empfehlung;
             Summenlinienergebnis sl = null;
+            Summenlinienparameter slp = null;
             Speicherauslegungsergebnis sa = null;
             Grossanlagenbefund gross = null;
             if (speicher)
@@ -416,6 +441,7 @@ namespace WindowsFormsApplication1
                     }
                     h.AddRange(lauf.Hinweise);
                     sl = lauf.Summenlinie;
+                    slp = lauf.Parameter;
 
                     // --- Speicherauslegung nach V4 (nachrichtlich), mit Summenlinienpunkt und Großanlage ---
                     if (lauf.Eingang != null)
@@ -479,12 +505,18 @@ namespace WindowsFormsApplication1
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Minutenspitze, false, null, null, null, false, "",
                                                           tagGrund ?? "");
                 }
-                if (topo == ZapfTopologie.Wohnungsstation)
-                    h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
-                        "Die Spitze je Wohnungsstation folgt mit dem Ensemble (Z3); angegeben ist die Summe."));
             }
 
-            IReadOnlyList<Auslegungswert> dreier = Dreiergruppe.Bilden(haupt, Dreiergruppe.PerzentilOffen(), Dreiergruppe.Normvergleich(din));
+            // --- Perzentil aus dem Auslegungsensemble (4.5 b) — nur auf Zuruf -------------------------
+            Auslegungswert perzentilwert = Dreiergruppe.PerzentilOffen();
+            Perzentilergebnis perzentil = null;
+            if (a.Stochastisch)
+                perzentilwert = Stochastik(topo, zonen, bausteine, p, ps, kategorien, kwAuslegung, sl, slp, h, a.Abbruch, out perzentil);
+            if (topo == ZapfTopologie.Wohnungsstation && perzentil == null)
+                h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
+                    "Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe."));
+
+            IReadOnlyList<Auslegungswert> dreier = Dreiergruppe.Bilden(haupt, perzentilwert, Dreiergruppe.Normvergleich(din));
             h.AddRange(Dreiergruppe.Reihenfolge(topo, dreier[0], dreier[1], dreier[2]));
             h.AddRange(din.Hinweise);
             if (sa != null) h.AddRange(sa.Hinweise);
@@ -505,7 +537,149 @@ namespace WindowsFormsApplication1
                 Grossanlage = gross,
                 Speichertemperatur = temperatur,
                 ZirkulationLaufzeit = laufzeit,
+                Perzentil = perzentil,
                 Hinweise = h.AsReadOnly()
+            };
+        }
+
+        // =================================================================================
+        // Das Perzentil aus dem Auslegungsensemble (4.4, 4.5 b)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Das Perzentil einer Topologiegruppe</b> (4.5 b): je Zone n_E Einheiten mit der
+        /// Tagesmenge des maßgebenden Tags (größte Tagessumme der Gruppe bei θ_KW,Auslegung, derselbe
+        /// Tag wie beim Stundenprofil) und der Tageszeitdichte seines Tagtyps; R Realisierungen
+        /// (Projekt, sonst Vielfaches der Mindestzahl aus dem Parametersatz), Seed des Projekts. Bei
+        /// Speicher das erforderliche Volumen beim Φ_N des Summenlinienpunkts, sonst die Minutenspitze;
+        /// dazu die Gleichzeitigkeit, „nicht belastbar" bei R &lt; 1/(1 − p), der Konsistenzhinweis
+        /// (N11 (f)), der Vergleich μ + z·σ/√N und bei der Wohnungsstation die Spitze je Einheit
+        /// (N10 (d)). Ist das Ensemble nicht rechenbar, bleibt das Perzentil benannt „nicht rechenbar".
+        /// </summary>
+        private static Auslegungswert Stochastik(ZapfTopologie topo, List<Zonenarbeit> zonen, List<Wochenbaustein> bausteine,
+                                                 ProjektStand p, Parametersatz ps, IReadOnlyList<Zapfkategorie> kategorien,
+                                                 double kwAuslegung, Summenlinienergebnis sl, Summenlinienparameter slp,
+                                                 List<Auslegungshinweis> h, CancellationToken abbruch, out Perzentilergebnis ergebnis)
+        {
+            ergebnis = null;
+            bool speicher = topo == ZapfTopologie.Speicher;
+            try
+            {
+                if (speicher && (sl == null || slp == null))
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
+                        "Nicht rechenbar — das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N).");
+                int perzentil = p.Perzentil;
+                int realisierungen = Zapfensemble.RealisierungenAuslegung(p.RealisierungenAuslegung, perzentil, ps);
+                int tag = Wochenreihe.GroessterTag(bausteine);
+                var ensemblezonen = new List<Ensemblezone>(zonen.Count);
+                foreach (Zonenarbeit w in zonen)
+                    ensemblezonen.Add(new Ensemblezone(w.Index, w.Name,
+                        Zapfeinheiten.Anzahl(w.Stand, w.Art, w.Menge.Bezugsmenge, ps),
+                        Zapfkategoriensatz.Aus(kategorien, w.Art, w.Name),
+                        w.Baustein.TagesmengenKwh[tag - 1],
+                        Auslegungspruefung.Spreizung(w.Temperaturen.ZapfC, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung"),
+                        Tageszeitdichte.Aus(w.Struktur, w.Kalender[tag - 1])));
+                // Bei Speicher rechnet jede Realisierung ihr Volumen beim Φ_N des Summenlinienpunkts gleich mit
+                // (Volumenauftrag) — das Ensemble bewahrt keine gezogenen Tage auf.
+                Bedarfstagensemble ens = Zapfensemble.Ziehen(ensemblezonen, p.Seed, realisierungen, perzentil,
+                    speicher ? new Volumenauftrag(slp, sl.Punkt.LeistungKw) : null, abbruch: abbruch);
+                Speicherensemble volumen = ens.Volumina;
+
+                ergebnis = new Perzentilergebnis
+                {
+                    Topologie = topo, Perzentil = perzentil, Seed = p.Seed, Realisierungen = realisierungen,
+                    Tag = tag, Belastbar = ens.Belastbar, MinutenspitzeKw = ens.MinutenspitzeKw, StundenspitzeKw = ens.StundenspitzeKw,
+                    VolumenL = volumen?.VolumenL, LeistungKw = volumen?.LeistungKw, OhneNachweis = volumen?.OhneNachweis ?? 0,
+                    GleichzeitigkeitLeistung = ens.GleichzeitigkeitLeistung, GleichzeitigkeitVolumen = volumen?.GleichzeitigkeitVolumen,
+                    Zonen = ens.Zonen
+                };
+                string pp = "P" + perzentil.ToString(CultureInfo.InvariantCulture);
+                string r = "R = " + realisierungen.ToString(CultureInfo.InvariantCulture) + ", Seed " + p.Seed.ToString(CultureInfo.InvariantCulture);
+                string glf = (ergebnis.GleichzeitigkeitVolumen.HasValue ? "; GLF_V " + Auslegungstext.Z(ergebnis.GleichzeitigkeitVolumen.Value) : "")
+                             + (ergebnis.GleichzeitigkeitLeistung.HasValue ? "; GLF_P " + Auslegungstext.Z(ergebnis.GleichzeitigkeitLeistung.Value) : "");
+                string belastbar = ens.Belastbar ? "" : " — nicht belastbar";
+                if (!ens.Belastbar)
+                    h.Add(new Auslegungshinweis("PERZENTIL_NICHT_BELASTBAR",
+                        "Das Perzentil " + pp + " stützt sich auf " + realisierungen.ToString(CultureInfo.InvariantCulture)
+                        + " Realisierungen; ein empirisches " + pp + " braucht mindestens "
+                        + Zapfensemble.Mindestzahl(perzentil).ToString(CultureInfo.InvariantCulture) + " — nicht belastbar.", true));
+
+                // Vergleich μ + z·σ/√N aus der Einzelstatistik (Konzept S4c) — nur ein Hinweis.
+                double? quantil = ZapfAuslegungParameter.Wahlweise(ps, ZapfStochastikParameter.QUANTIL + perzentil.ToString(CultureInfo.InvariantCulture),
+                    "Der Vergleich μ + z·σ/√N entfällt.", h);
+                if (quantil.HasValue)
+                {
+                    ergebnis = ergebnis with { WurzelNSchaetzungKw = ens.WurzelNSchaetzungKw(quantil.Value) };
+                    h.Add(new Auslegungshinweis("WURZEL_N_VERGLEICH",
+                        "Minutenspitze " + pp + " des Ensembles " + Auslegungstext.Z(ens.MinutenspitzeKw.Wert(perzentil))
+                        + " kW; die Einzelstatistik der Einheiten ergibt je Minute μ + z·σ/√N = "
+                        + Auslegungstext.Z(ergebnis.WurzelNSchaetzungKw.Value) + " kW (z = " + Auslegungstext.Z(quantil.Value) + ")."));
+                }
+
+                if (topo == ZapfTopologie.Wohnungsstation)
+                {
+                    Ensemblezonenstatistik groesste = null;
+                    foreach (Ensemblezonenstatistik z in ens.Zonen)
+                        if (groesste == null || z.SpitzeJeEinheitKw.Wert(perzentil) > groesste.SpitzeJeEinheitKw.Wert(perzentil)) groesste = z;
+                    ergebnis = ergebnis with
+                    {
+                        SpitzeJeEinheitKw = groesste.SpitzeJeEinheitKw.Wert(perzentil), SpitzeJeEinheitZone = groesste.Zone
+                    };
+                    h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
+                        "Die Wohnungsstation je Einheit: " + pp + " der Minutenspitze " + Auslegungstext.Z(groesste.SpitzeJeEinheitKw.Wert(perzentil))
+                        + " kW (Zone „" + groesste.Zone + "“); die Summe der Gruppe " + pp + " "
+                        + Auslegungstext.Z(ens.MinutenspitzeKw.Wert(perzentil)) + " kW."));
+                }
+
+                if (speicher)
+                {
+                    double v = volumen.VolumenL.Wert(perzentil);
+                    double phi = sl.Punkt.LeistungKw;
+                    double? schwelle = ZapfAuslegungParameter.Wahlweise(ps, ZapfStochastikParameter.KONSISTENZSCHWELLE,
+                        "Der Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts) entfällt.", h);
+                    double spitze = ens.StundenspitzeKw.Wert(perzentil);
+                    // Die Probe als Werte (N11 (k)): die Oberfläche baut ihren Satz daraus, nicht aus dem Satz des Kerns.
+                    bool auffaellig = schwelle.HasValue && spitze > schwelle.Value * phi;
+                    if (schwelle.HasValue)
+                        ergebnis = ergebnis with
+                        {
+                            KonsistenzSchwelle = schwelle.Value, KonsistenzSpitzeKw = spitze,
+                            KonsistenzGrenzeKw = schwelle.Value * phi, KonsistenzAuffaellig = auffaellig
+                        };
+                    if (auffaellig)
+                        h.Add(new Auslegungshinweis("KONSISTENZ_STOCHASTISCHE_SPITZE",
+                            "Die stochastische Spitze (" + pp + " der größten Stundenleistung " + Auslegungstext.Z(spitze)
+                            + " kW) liegt über dem " + Auslegungstext.Z(schwelle.Value) + "-Fachen der Leistung des Summenlinienpunkts "
+                            + Auslegungstext.Z(phi) + " kW — Bedarfstag und Summenlinie prüfen.", true));
+                    if (double.IsPositiveInfinity(v))
+                        return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, phi, false,
+                            "Perzentil " + pp + ": nicht rechenbar — beim Φ_N " + Auslegungstext.Z(phi) + " kW findet die Summenlinie für "
+                            + volumen.OhneNachweis.ToString(CultureInfo.InvariantCulture) + " von "
+                            + realisierungen.ToString(CultureInfo.InvariantCulture) + " Realisierungen kein Volumen.");
+                    string band = double.IsPositiveInfinity(volumen.VolumenL.Maximum) ? "∞" : Auslegungstext.G(volumen.VolumenL.Maximum);
+                    return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, v, phi, false,
+                        "Perzentil " + pp + ": " + Auslegungstext.G(v) + " l bei " + Auslegungstext.Z(phi) + " kW (" + r
+                        + "; Streuband " + Auslegungstext.G(volumen.VolumenL.Minimum) + "–" + band + " l" + glf + ")" + belastbar);
+                }
+                double pk = ens.MinutenspitzeKw.Wert(perzentil);
+                return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, null, pk, false,
+                    "Perzentil " + pp + ": Minutenspitze " + Auslegungstext.Z(pk) + " kW, größte Stundenleistung "
+                    + Auslegungstext.Z(ens.StundenspitzeKw.Wert(perzentil)) + " kW nachrichtlich (" + r + "; Streuband "
+                    + Auslegungstext.Z(ens.MinutenspitzeKw.Minimum) + "–" + Auslegungstext.Z(ens.MinutenspitzeKw.Maximum) + " kW" + glf + ")"
+                    + belastbar);
+            }
+            // Die benannte Ablehnung des Rechenwegs reist mit Kennung und Werten weiter — nicht nur ihr Satz.
+            catch (ZapfprofilEingabeException ex) { return PerzentilNichtRechenbar(ex.Message, h, ZapfAblehnung.Aus(ex.Zone, ex)); }
+            catch (ParametersatzException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
+            catch (ZapfAuslegungException ex) { return PerzentilNichtRechenbar(ex.Message, h, null); }
+        }
+
+        private static Auslegungswert PerzentilNichtRechenbar(string grund, List<Auslegungshinweis> h, ZapfAblehnung ablehnung)
+        {
+            h.Add(new Auslegungshinweis("STOCHASTIK_NICHT_RECHENBAR", grund, true) { Ablehnung = ablehnung });
+            return new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.NichtRechenbar, null, null, false, grund)
+            {
+                Ablehnung = ablehnung
             };
         }
 
@@ -582,6 +756,7 @@ namespace WindowsFormsApplication1
                 Summenlinienparameter slp = Summenlinie.Parameter(p, ps, temperatur.SpeicherC, vorlage?.Ladeleistung.Angesetzt,
                     new Zirkulationslast(zirk.Angesetzt, laufzeit), prot, lauf.Hinweise, a.Erzeugerart, a.Uebertragerwerkstoff);
                 if (temperatur.Schnellpfad) slp = Summenlinie.Schnellpfad(slp, ps);
+                lauf.Parameter = slp;
                 double? n = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.WERTEPAARE,
                     "Die Wertepaarkurve der Summenlinie entfällt.", lauf.Hinweise);
                 lauf.Summenlinie = Summenlinie.Rechnen(tag, slp, n.HasValue && n.Value >= 1 ? (int)n.Value : 0);

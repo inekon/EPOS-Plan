@@ -3898,10 +3898,29 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
 
         /// <summary>
+        /// Schritt 115 — die <b>Zapfkategorien des Zapfprofilgenerators</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 3.1/3.2, Papiername T2, Stufe Z3): die Tabelle
+        /// <c>Tab_TwwZapfkategorie_STAMM</c> mit Volumenstrom, Streuung, Dauer, Anteil und
+        /// oberer Kappung je Nutzungsart. Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne
+        /// Reihenfolgebedingung; er braucht <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>, dessen
+        /// Nutzungsarten er über <c>ID_Nutzungsart</c> (<c>ON DELETE CASCADE</c>) verweist.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema.AnweisungenT2"/>) — EINE
+        /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Kein Katalogwert kommt über den Schritt
+        /// herein — die Auslieferungswerte bringt das Katalogpaket (Konzept Kapitel 6 (b)). Die
+        /// Tabelle ist nach dem Schritt leer; nur der stochastische Rechenweg liest sie, und kein
+        /// Projekt steht auf dem Generator. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_115_ZAPFKATEGORIEN = 115;
+
+        /// <summary>
         /// Schritt 116 — <b>der Szenariorahmen</b> (Schritt B des Analysepapiers § 6, Etappe
         /// E9a der vollständigen Szenarioabdeckung V‑E, Konzept Wirtschaftlichkeit § 2.11.5).
-        /// Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne Reihenfolgebedingung;
-        /// die Nummer 115 ist dem Zapfprofil (Stufe T2) zugesagt.
+        /// Er folgt auf <see cref="SCHRITT_115_ZAPFKATEGORIEN"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
         /// <c>Szen_Best_Zeitraum</c>, <c>Szen_Worst_Zeitraum</c> (ganze Jahre) und
@@ -5512,10 +5531,22 @@ namespace WindowsFormsApplication1
                         "bleiben leer, und kein Rechenweg liest sie.",
                         Schritt_114_KuehlungErzeuger),
 
+            // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z3 (Papiername T2) - die
+            // Zapfkategorien je Nutzungsart. REIN DDL; die Quelle ist TwwSchema.AnweisungenT2.
+            // Er steht NACH 114 ohne Reihenfolgebedingung und braucht 103 (Fremdschluessel auf
+            // Tab_TwwNutzungsart_STAMM).
+            new Schritt(SCHRITT_115_ZAPFKATEGORIEN,
+                        "Zapfprofilgenerator: Zapfkategorien anlegen (Tab_TwwZapfkategorie_STAMM)",
+                        "Die stochastische Jahresreihe und das Auslegungsensemble des " +
+                        "Zapfprofilgenerators finden dann keine Zapfkategorien und lehnen jede " +
+                        "stochastisch gerechnete Zone benannt ab. Der deterministische Weg und der " +
+                        "Bestandsweg des Brauchwassers rechnen unveraendert.",
+                        Schritt_115_Zapfkategorien),
+
             // ETAPPE E9a (Schritt B, vollstaendige Szenarioabdeckung V-E) - der
             // Szenariorahmen: Betrachtungszeitraum und Mengenfaktor je Szenario. REIN DDL;
-            // die Quelle ist SchemaKatalog.Schritt116_Szenariorahmen. Er steht NACH 114 ohne
-            // Reihenfolgebedingung; die 115 ist dem Zapfprofil (Stufe T2) zugesagt.
+            // die Quelle ist SchemaKatalog.Schritt116_Szenariorahmen. Er steht NACH 115 ohne
+            // Reihenfolgebedingung.
             new Schritt(SCHRITT_116_SZENARIO_RAHMEN,
                         "Tab_ProjektWirtschaftlichkeit: Betrachtungszeitraum und Mengenfaktor " +
                         "je Szenario (Best/Worst)",
@@ -8733,6 +8764,36 @@ namespace WindowsFormsApplication1
                     " (Verweis auf energy_carrier.id, NULL = wie Heizbetrieb). KEIN DML: Jede " +
                     "Waermepumpe steht auf 0, die uebrigen Spalten bleiben leer, und kein Rechenweg " +
                     "liest sie; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 115 - Zapfkategorien des Zapfprofilgenerators (T2, Stufe Z3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 115 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_115_ZAPFKATEGORIEN"/>. Dieselbe Schleife wie Schritt 103 über
+        /// <see cref="TwwSchema.AnweisungenT2"/>; <b>nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/></b>.
+        /// </summary>
+        private static bool Schritt_115_Zapfkategorien(Lauf l)
+        {
+            int angelegt = 0;
+            int gesamt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+            {
+                gesamt++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            l.Notiz("115: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) der " +
+                    "Zapfkategorien angelegt. KEIN DML: die Tabelle ist nach dem Schritt LEER, " +
+                    "kein Projekt steht auf dem Generator. KEIN Rechenergebnis aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

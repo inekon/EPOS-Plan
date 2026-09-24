@@ -204,7 +204,7 @@ public sealed class ZapfprofilTexte
     public string KennzahlStochastik { get; set; } = "Stochastik · noch nicht gerechnet";
 
     /// <summary><c>ZPG_KZ_STOCHASTIK_ERKLAERUNG</c></summary>
-    public string KennzahlStochastikErklaerung { get; set; } = "„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte.";
+    public string KennzahlStochastikErklaerung { get; set; } = "„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble des Bedarfstags: P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung. Bei Rechenweg „stochastisch“ zieht es auch die Jahresreihe; ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf.";
 
     /// <summary><c>ZPG_SP_KENNZAHL</c></summary>
     public string SpalteKennzahl { get; set; } = "Kennzahl";
@@ -263,10 +263,84 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_KZ_ABGELEHNT</c></summary>
     public string KennzahlAbgelehnt { get; set; } = "trägt 0";
 
+    // ------------------------------------------------------------ Stochastik (Stufe Experte, Z3)
+
+    /// <summary><c>ZPG_GRP_STOCHASTIK</c></summary>
+    public string GruppeStochastik { get; set; } = "Stochastik · Jahresreihe";
+
+    /// <summary><c>ZPG_LBL_RECHENWEG_JAHRESREIHE</c></summary>
+    public string LabelRechenwegJahresreihe { get; set; } = "Rechenweg der Jahresreihe";
+
+    /// <summary><c>ZPG_OPT_DETERMINISTISCH</c></summary>
+    public string OptionDeterministisch { get; set; } = "deterministisch";
+
+    /// <summary><c>ZPG_OPT_STOCHASTISCH</c></summary>
+    public string OptionStochastisch { get; set; } = "stochastisch";
+
+    /// <summary><c>ZPG_HINW_RECHENWEG_JAHRESREIHE</c></summary>
+    public string HinweisRechenwegJahresreihe { get; set; } = "Wählt nur, welche Reihe in die Bilanz geht: bei „stochastisch“ das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Das Perzentil der Auslegung ist davon unabhängig.";
+
+    /// <summary><c>ZPG_LBL_SEED</c></summary>
+    public string LabelSeed { get; set; } = "Zufallssaat (Seed)";
+
+    /// <summary><c>ZPG_HINW_SEED</c></summary>
+    public string HinweisSeed { get; set; } = "Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung.";
+
+    /// <summary><c>ZPG_LBL_REALISIERUNGEN</c></summary>
+    public string LabelRealisierungen { get; set; } = "Realisierungen";
+
+    /// <summary><c>ZPG_EINHEIT_JAHRE</c></summary>
+    public string EinheitJahre { get; set; } = "Jahre";
+
+    /// <summary><c>ZPG_HINW_REALISIERUNGEN</c></summary>
+    public string HinweisRealisierungen { get; set; } = "Ganze Zahl von {0} bis {1} · leer = Vorgabe {2}; die gezogenen Jahre prüfen nur die Konsistenz.";
+
+    /// <summary><c>ZPG_HINW_KONSISTENZ_ORT</c></summary>
+    public string HinweisKonsistenzOrt { get; set; } = "Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.";
+
+    /// <summary><c>ZPG_HINW_VORSCHAU_DETERMINISTISCH</c></summary>
+    public string HinweisVorschauDeterministisch { get; set; } = "Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.";
+
+    /// <summary><c>ZPG_KZ_STOCHASTIK_LAEUFT</c></summary>
+    public string KennzahlStochastikLaeuft { get; set; } = "Stochastik · rechnet …";
+
+    /// <summary><c>ZPG_STATUS_JAHRESREIHE_LAEUFT</c></summary>
+    public string StatusJahresreiheLaeuft { get; set; } = "Jahresreihe rechnet … · Seed {0} · {1} Jahre";
+
+    /// <summary><c>ZPG_HINW_JAHRESREIHE_ABGEBROCHEN</c></summary>
+    public string HinweisJahresreiheAbgebrochen { get; set; } = "Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.";
+
+    /// <summary><c>ZPG_HINW_JAHRESREIHE_DETERMINISTISCH</c></summary>
+    public string HinweisJahresreiheDeterministisch { get; set; } = "Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe.";
+
+    /// <summary><c>ZPG_KZ_STOCHASTIK_GERECHNET</c></summary>
+    public string KennzahlStochastikGerechnet { get; set; } = "Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen";
+
+    /// <summary><c>ZPG_KZ_STOCHASTIK_JAHRESREIHE</c></summary>
+    public string KennzahlStochastikJahresreihe { get; set; } = "Die Bilanzreihe ist das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Die Konsistenzprobe zeigt die Stufe Experte.";
+
+    /// <summary><c>ZPG_KZ_KONSISTENZ</c></summary>
+    public string KennzahlKonsistenz { get; set; } = "Konsistenzprobe Energie · {0}";
+
+    /// <summary><c>ZPG_KZ_KONSISTENZ_VERMERK</c></summary>
+    public string KennzahlKonsistenzVermerk { get; set; } = "Mittel der {0} Jahre {1} kWh/a gegen {2} kWh/a deterministisch · s_R {3} kWh/a · Toleranz ±{4} kWh/a";
+
+    /// <summary><c>ZPG_KZ_KONSISTENZ_ERFUELLT</c></summary>
+    public string KonsistenzErfuellt { get; set; } = "innerhalb der Toleranz";
+
+    /// <summary><c>ZPG_KZ_KONSISTENZ_ABWEICHEND</c></summary>
+    public string KonsistenzAbweichend { get; set; } = "außerhalb der Toleranz — das Jahr zum Seed ist auf die Jahresmenge gebracht";
+
+    /// <summary><c>ZPG_MSG_FEHLEINGABE</c></summary>
+    public string MeldungFehleingabe { get; set; } = "Bitte die markierten Felder berichtigen: {0}.";
+
     // ------------------------------------------------------------ Fussleiste
 
     /// <summary><c>ZPG_BTN_STOCHASTIK</c></summary>
     public string KnopfStochastik { get; set; } = "Stochastisch rechnen";
+
+    /// <summary><c>ZPG_BTN_STOCHASTIK_TITEL</c></summary>
+    public string KnopfStochastikTitel { get; set; } = "Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen.";
 
     /// <summary><c>ZPG_BTN_AUSLEGUNG</c></summary>
     public string KnopfAuslegung { get; set; } = "Auslegung…";

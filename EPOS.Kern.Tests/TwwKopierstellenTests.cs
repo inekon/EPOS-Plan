@@ -231,6 +231,157 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Die Zapfkategorien (Schemaschritt T2) reisen als Kindzeilen ihrer Nutzungsart: Fehlt
+        /// die Nutzungsart am Ziel, kommen ihre Kategorien mit — Werte gleich, Status IMPORT,
+        /// ReadOnly 0. Die Werte liest die Probe aus der Datenbank; trägt die Nutzungsart dort
+        /// keine Kategorie, legt die Probe zwei erfundene an.
+        /// </summary>
+        [Fact]
+        public void Transfer_bringt_die_Zapfkategorien_einer_mitgenommenen_Nutzungsart_mit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            List<string> soll = KategorienSicherstellen(q.Nutzungsart);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+
+            int neu = io.Importieren(paket, "Tww Kategorien", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            long nutzung = Convert.ToInt64(Assert.Single(Zonen(neu).Rows.Cast<DataRow>())["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+
+            Assert.Equal(soll, Kategorien(nutzung));
+            Assert.Equal(soll.Count, Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ? AND Status = ? AND ReadOnly = 0 " +
+                "AND Beleg IS NULL", new DbParam("@n", nutzung), new DbParam("@s", TwwSchema.STATUS_IMPORT))));
+            // Die Quelle behält ihre Kategorien.
+            Assert.Equal(soll, Kategorien(q.Nutzungsart));
+        }
+
+        /// <summary>
+        /// Ein Paket mit Zapfkategorien in eine Datenbank VOR Schritt 115 (Stand 114, ohne
+        /// <c>Tab_TwwZapfkategorie_STAMM</c>): Der Import läuft durch — die Nutzungsart kommt als
+        /// <c>IMPORT</c> mit, Zone, Wohnungstypen und Projektzeile stehen —, und der Bericht nennt
+        /// die übergangenen Kategorien; die Tabelle entsteht nicht.
+        /// </summary>
+        [Fact]
+        public void Transfer_in_eine_Datenbank_vor_115_uebergeht_die_Zapfkategorien_benannt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            KategorienSicherstellen(q.Nutzungsart);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Das Ziel steht auf Stand 114: die Tabelle der Zapfkategorien gibt es dort nicht.
+            DataRepository.ExecuteNonQuery("DROP TABLE " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = 114");
+            Assert.False(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            Umversionieren(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, q.Nutzungsart);
+
+            int neu = io.Importieren(paket, "Tww vor 115", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            DataRow zone = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            long nutzung = Convert.ToInt64(zone["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Status FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung))));
+            Assert.Equal(q.Wohnungstypen.Count, Wohnungstypen(Convert.ToInt64(zone["ID"])).Rows.Count);
+            Assert.Equal(1, Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu))));
+
+            Assert.False(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            Assert.Contains(io.LetzterBericht, b => b.Contains(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, StringComparison.Ordinal)
+                                                    && b.Contains("übergangen", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// ZU17 mit Kategorien: Steht die Nutzungsart unter ihrem Schlüssel am Ziel, aber mit
+        /// ANDEREN Kategorien, zeigt die Zone nicht still darauf — sie kommt als neue Version
+        /// „(Import 1)“ mit den Kategorien des Pakets; die Zielzeile bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_abweichenden_Zapfkategorien_bringt_eine_neue_Version()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            List<string> soll = KategorienSicherstellen(q.Nutzungsart);
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Am Ziel weicht eine Streuung ab — der Kopf selbst ist gleich.
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwZapfkategorie_STAMM SET Sigma = Sigma + 0.5 WHERE ID = (SELECT MIN(ID) FROM " +
+                "Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ?)", new DbParam("@n", q.Nutzungsart)));
+            List<string> ziel = Kategorien(q.Nutzungsart);
+            Assert.NotEqual(soll, ziel);
+
+            int neu = io.Importieren(paket, "Tww Kategorien ZU17", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            long nutzung = Convert.ToInt64(Assert.Single(Zonen(neu).Rows.Cast<DataRow>())["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            Assert.Equal(NUTZUNG + " (Import 1)", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung))));
+            Assert.Equal(soll, Kategorien(nutzung));
+            Assert.Equal(ziel, Kategorien(q.Nutzungsart));
+        }
+
+        /// <summary>
+        /// Die Kategorien einer Nutzungsart als sortierte Textzeilen (ohne Id, Stand und
+        /// Provenienz) — die Werte kommen aus der Datenbank; trägt sie keine, legt die Probe zwei
+        /// erfundene an.
+        /// </summary>
+        private static List<string> KategorienSicherstellen(long nutzung)
+        {
+            if (Kategorien(nutzung).Count == 0)
+                foreach (var (name, r, v, d, a, s, k) in new[]
+                         {
+                             ("Probe kurz", 1, 4.0, 1, 0.5, 1.0, (double?)null),
+                             ("Probe lang", 2, 8.0, 5, 0.5, 2.0, (double?)12.0)
+                         })
+                    Assert.True(DataRepository.ExecuteSQL(
+                        "INSERT INTO Tab_TwwZapfkategorie_STAMM (ID_Nutzungsart, Kategorie, Reihenfolge, Volumenstrom_l_min, " +
+                        "Dauer_min, Anteil, Sigma, Kappung_l_min, Quelle, Version, Herkunftsart, Status, ReadOnly) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Testkatalog (fiktiv)', 'TEST-1', 'FIKTIV', 'EIGEN', 0)",
+                        new DbParam("@n", nutzung), new DbParam("@k", name), new DbParam("@r", r), new DbParam("@v", v),
+                        new DbParam("@d", d), new DbParam("@a", a), new DbParam("@s", s),
+                        new DbParam("@kap", k.HasValue ? (object)k.Value : null)));
+            List<string> liste = Kategorien(nutzung);
+            Assert.NotEmpty(liste);
+            return liste;
+        }
+
+        private static List<string> Kategorien(long nutzung) =>
+            DataRepository.GetDataTable(
+                "SELECT Kategorie, Reihenfolge, Volumenstrom_l_min, Dauer_min, Anteil, Sigma, Kappung_l_min " +
+                "FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ? ORDER BY Reihenfolge, Kategorie",
+                new DbParam("@n", nutzung)).Rows.Cast<DataRow>()
+                .Select(r => string.Join("|", r.ItemArray.Select(w => Convert.ToString(w, System.Globalization.CultureInfo.InvariantCulture))))
+                .ToList();
+
+        /// <summary>
         /// Die benannte Ablehnung: Die Nutzungsart fehlt am Ziel, ihr Tagesgangsatz steht nicht
         /// im Paket (ein Paket, das nicht dieser Weg geschrieben hat). Der Import bricht mit
         /// Namen ab und ändert nichts — kein Projekt, keine Zone, keine Katalogzeile.

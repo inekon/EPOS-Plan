@@ -75924,6 +75924,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastische Spitze ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfstag fehlt ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_KONSTRUKTOR_OEFFNEN {
@@ -76005,6 +76014,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perzentil nicht belastbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge der Verfahren ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_REIHENFOLGE {
@@ -76059,6 +76077,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik nicht rechenbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summenkontrolle ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_SUMMENKONTROLLE {
@@ -76109,6 +76136,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT {
             get {
                 return ResourceManager.GetString("ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich μ + z·σ/√N ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_WURZEL_N_VERGLEICH {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_WURZEL_N_VERGLEICH", resourceCulture);
             }
         }
         
@@ -76284,11 +76320,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_DATUM {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die D_max = 0: Die Ladeleistung deckt jede Stundenlast; „profilbasiert“ zeigt „–“ statt 0 l — den größten Wert liefert dann DIN 4708. ähnelt.
         /// </summary>
         public static string ZPG_AUS_DMAX_NULL {
             get {
                 return ResourceManager.GetString("ZPG_AUS_DMAX_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_EINHEIT_TAGE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_EINHEIT_TAGE", resourceCulture);
             }
         }
         
@@ -76307,6 +76361,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_EMPFEHLUNG_KEINE {
             get {
                 return ResourceManager.GetString("ZPG_AUS_EMPFEHLUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_ENTFAELLT", resourceCulture);
             }
         }
         
@@ -76392,6 +76455,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleichzeitigkeit GLF_P ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GLF_P {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GLF_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis, kein Eingabefaktor: P{0} der Minutenspitze der Gruppe ÷ Σ P{0} der Minutenspitze je Einheit (Σ n_E = {1}) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GLF_P_BEZUG {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GLF_P_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleichzeitigkeit GLF_V ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GLF_V {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GLF_V", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis, kein Eingabefaktor: P{0} des Volumens der Gruppe ÷ Σ P{0} der Volumina je Einheit (Σ n_E = {1}) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GLF_V_BEZUG {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GLF_V_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die größter Wert ähnelt.
         /// </summary>
         public static string ZPG_AUS_GROESSTER_WERT {
@@ -76428,7 +76527,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder dem Katalogimport. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_ECODESIGN {
             get {
@@ -76437,11 +76536,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Konsistenzhinweis braucht das Perzentil — „Stochastisch rechnen“ einschalten. ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRUND_KONSISTENZ {
             get {
                 return ResourceManager.GetString("ZPG_AUS_GRUND_KONSISTENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Realisierungen; ein empirisches P{1} braucht mindestens {2} = 1/(1 − p). ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRUND_NICHT_BELASTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRUND_NICHT_BELASTBAR", resourceCulture);
             }
         }
         
@@ -76500,6 +76608,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P95 oder P99 · Vorgabe P{0} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_PERZENTIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl von {0} bis {1} · leer = Vorgabe {2} (Vielfaches der Mindestzahl); unter {3} ist P{4} nicht belastbar. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_REALISIERUNGEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_REALISIERUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl von {0} bis {1} · leer = Vorgabe, hier nicht bestimmbar: {2} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_REALISIERUNGEN_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_REALISIERUNGEN_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe des Katalogs ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERL_SENSORHOEHE {
@@ -76518,6 +76653,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit — eine Laufangabe, sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = aus U·A, Fläche oder Schätzformel der Erzeugerart ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERL_UEBERTRAGER {
@@ -76532,6 +76676,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_HINWEIS {
             get {
                 return ResourceManager.GetString("ZPG_AUS_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN", resourceCulture);
             }
         }
         
@@ -76703,6 +76856,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_KONSISTENZ {
             get {
                 return ResourceManager.GetString("ZPG_AUS_KONSISTENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis: Die größte Stundenleistung P{0} ({1} kW) liegt über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW) — Bedarfstag und Summenlinie prüfen. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_AUFFAELLIG {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_AUFFAELLIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet … ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)). ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis geprüft: Die größte Stundenleistung P{0} ({1} kW) liegt nicht über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW). ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KONSISTENZ_OK {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KONSISTENZ_OK", resourceCulture);
             }
         }
         
@@ -77031,6 +77229,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsperzentil ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_LBL_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_LBL_PERZENTIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Realisierungen des Bedarfstags ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_LBL_REALISIERUNGEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_LBL_REALISIERUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensorhöhe h_sensor/h_sto ähnelt.
         /// </summary>
         public static string ZPG_AUS_LBL_SENSORHOEHE {
@@ -77054,6 +77270,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_LBL_SPEICHERTEMPERATUR {
             get {
                 return ResourceManager.GetString("ZPG_AUS_LBL_SPEICHERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastisch rechnen ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_LBL_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_LBL_STOCHASTISCH", resourceCulture);
             }
         }
         
@@ -77090,6 +77315,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_MEHRSPEICHER {
             get {
                 return ResourceManager.GetString("ZPG_AUS_MEHRSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die markierten Felder berichtigen: {0}. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_MSG_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_MSG_FEHLEINGABE", resourceCulture);
             }
         }
         
@@ -77139,6 +77373,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht belastbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_NICHT_BELASTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_NICHT_BELASTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur nachrichtlich ähnelt.
         /// </summary>
         public static string ZPG_AUS_NUR_NACHRICHTLICH {
@@ -77153,6 +77396,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_OHNE_LISTE {
             get {
                 return ResourceManager.GetString("ZPG_AUS_OHNE_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Realisierungen ohne Nachweis beim Φ_N (Volumen ∞) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_OHNE_NACHWEIS {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_OHNE_NACHWEIS", resourceCulture);
             }
         }
         
@@ -77220,11 +77472,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht gerechnet — die Stochastik kommt mit einer späteren Fassung; die Empfehlung stützt sich auf (a) und (c). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die rechnet … — das Ensemble des Bedarfstags wird gezogen. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_LAUF {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minutenspitze P{0} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_MINUTENSPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_MINUTENSPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nachrichtlich: Minutenspitze P{0} {1} kW · größte Stundenleistung P{0} {2} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_NACHRICHTLICH {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_NACHRICHTLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung stützt sich auf (a) und (c). ähnelt.
         /// </summary>
         public static string ZPG_AUS_PERZENTIL_OFFEN {
             get {
                 return ResourceManager.GetString("ZPG_AUS_PERZENTIL_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen P{0} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_VOLUMEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l bei {1} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_VOLUMEN_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_VOLUMEN_WERT", resourceCulture);
             }
         }
         
@@ -77346,6 +77661,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannweite (min – max) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SPANNWEITE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SPANNWEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gemischter Speicher ähnelt.
         /// </summary>
         public static string ZPG_AUS_SPEICHERART_GEMISCHT {
@@ -77400,11 +77724,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minutenspitze P{0} je Wohnungsstation ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SPITZE_JE_EINHEIT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SPITZE_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SPITZE_JE_EINHEIT_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SPITZE_JE_EINHEIT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennwert ähnelt.
         /// </summary>
         public static string ZPG_AUS_SP_KENNWERT {
             get {
                 return ResourceManager.GetString("ZPG_AUS_SP_KENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perzentil ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SP_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SP_PERZENTIL", resourceCulture);
             }
         }
         
@@ -77436,6 +77787,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb des Gültigkeitsbereichs ähnelt.
         /// </summary>
         public static string ZPG_AUS_STAND_AUSSERHALB {
@@ -77454,11 +77814,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“ ähnelt.
         /// </summary>
         public static string ZPG_AUS_STATUS_GERECHNET {
             get {
                 return ResourceManager.GetString("ZPG_AUS_STATUS_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung rechnet … · Ensemble des Bedarfstags ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_STATUS_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_STATUS_LAEUFT", resourceCulture);
             }
         }
         
@@ -77486,6 +77864,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_STATUS_PUNKT {
             get {
                 return ResourceManager.GetString("ZPG_AUS_STATUS_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Streuband über {0} Realisierungen ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_STREUBAND {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_STREUBAND", resourceCulture);
             }
         }
         
@@ -77697,6 +78084,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis) ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_WURZEL_N {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_WURZEL_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitkonstante τ (informativ) ähnelt.
         /// </summary>
         public static string ZPG_AUS_ZEITKONSTANTE {
@@ -77841,6 +78237,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen. ähnelt.
+        /// </summary>
+        public static string ZPG_BTN_STOCHASTIK_TITEL {
+            get {
+                return ResourceManager.GetString("ZPG_BTN_STOCHASTIK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
         /// </summary>
         public static string ZPG_BTN_ZONE_DUPLIZIEREN {
@@ -77958,6 +78363,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen). ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf ist ungültig. ähnelt.
         /// </summary>
         public static string ZPG_EINGABE_TAGESBEDARF_UNGUELTIG {
@@ -78030,6 +78462,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string ZPG_EINHEIT_JAHRE {
+            get {
+                return ResourceManager.GetString("ZPG_EINHEIT_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die P ähnelt.
         /// </summary>
         public static string ZPG_EINHEIT_PERSONEN {
@@ -78053,6 +78494,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_EINHEIT_WOHNEINHEITEN {
             get {
                 return ResourceManager.GetString("ZPG_EINHEIT_WOHNEINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik · Jahresreihe ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_STOCHASTIK {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_STOCHASTIK", resourceCulture);
             }
         }
         
@@ -78174,6 +78624,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_DETERMINISTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_DETERMINISTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_KONSISTENZ_ORT {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_KONSISTENZ_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Messwert weicht um mehr als die Rückfrageschwelle vom Katalogwert ab. ähnelt.
         /// </summary>
         public static string ZPG_HINW_MESSWERT_ABWEICHUNG {
@@ -78228,6 +78714,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl von {0} bis {1} · leer = Vorgabe {2}; die gezogenen Jahre prüfen nur die Konsistenz. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_REALISIERUNGEN {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_REALISIERUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählt nur, welche Reihe in die Bilanz geht: bei „stochastisch“ das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Das Perzentil der Auslegung ist davon unabhängig. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_RECHENWEG_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_RECHENWEG_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_SEED {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_SEED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_STOCHASTIK_ENERGIEPROBE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_STOCHASTIK_ENERGIEPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Tagesgang ist leer; diese Tage tragen keine Zapfung. ähnelt.
         /// </summary>
         public static string ZPG_HINW_TAGESGANG_LEER {
@@ -78242,6 +78764,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_TAGESGANG_SUMME {
             get {
                 return ResourceManager.GetString("ZPG_HINW_TAGESGANG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_VORSCHAU_DETERMINISTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_VORSCHAU_DETERMINISTISCH", resourceCulture);
             }
         }
         
@@ -78426,6 +78957,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzprobe Energie · {0} ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_KONSISTENZ {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_KONSISTENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb der Toleranz — das Jahr zum Seed ist auf die Jahresmenge gebracht ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_KONSISTENZ_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_KONSISTENZ_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die innerhalb der Toleranz ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_KONSISTENZ_ERFUELLT {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_KONSISTENZ_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel der {0} Jahre {1} kWh/a gegen {2} kWh/a deterministisch · s_R {3} kWh/a · Toleranz ±{4} kWh/a ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_KONSISTENZ_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_KONSISTENZ_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ≈ {0} l/d ähnelt.
         /// </summary>
         public static string ZPG_KZ_LITER_JE_TAG {
@@ -78453,11 +79020,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Stochastisch rechnen“ in der Fußleiste zieht das Ensemble des Bedarfstags: P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung. Bei Rechenweg „stochastisch“ zieht es auch die Jahresreihe; ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf. ähnelt.
         /// </summary>
         public static string ZPG_KZ_STOCHASTIK_ERKLAERUNG {
             get {
                 return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_STOCHASTIK_GERECHNET {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bilanzreihe ist das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Die Konsistenzprobe zeigt die Stufe Experte. ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_STOCHASTIK_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik · rechnet … ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_STOCHASTIK_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_LAEUFT", resourceCulture);
             }
         }
         
@@ -78579,6 +79173,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Realisierungen ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_REALISIERUNGEN {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_REALISIERUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Jahresreihe ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_RECHENWEG_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_RECHENWEG_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zufallssaat (Seed) ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_SEED {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_SEED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
         /// </summary>
         public static string ZPG_LBL_STUFE {
@@ -78602,6 +79223,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_ANTEIL_TRAEGT_NULL {
             get {
                 return ResourceManager.GetString("ZPG_MSG_ANTEIL_TRAEGT_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die markierten Felder berichtigen: {0}. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe konnte nicht gerechnet werden: {0} ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_JAHRESREIHE_UNERWARTET {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_JAHRESREIHE_UNERWARTET", resourceCulture);
             }
         }
         
@@ -78656,6 +79295,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_PLATTFORM {
             get {
                 return ResourceManager.GetString("ZPG_MSG_PLATTFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Realisierungen muss zwischen {0} und {1} liegen. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_REALISIERUNGEN_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_REALISIERUNGEN_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Seed muss eine ganze Zahl ab 0 sein. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_SEED_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_SEED_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -78764,6 +79421,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_NIVEAU_NIEDRIG {
             get {
                 return ResourceManager.GetString("ZPG_NIVEAU_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die deterministisch ähnelt.
+        /// </summary>
+        public static string ZPG_OPT_DETERMINISTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_OPT_DETERMINISTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die stochastisch ähnelt.
+        /// </summary>
+        public static string ZPG_OPT_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_OPT_STOCHASTISCH", resourceCulture);
             }
         }
         
@@ -79128,6 +79803,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe rechnet … · Seed {0} · {1} Jahre ähnelt.
+        /// </summary>
+        public static string ZPG_STATUS_JAHRESREIHE_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_STATUS_JAHRESREIHE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik nicht gerechnet — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_STATUS_OHNE_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_STATUS_OHNE_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorschau — {0} ähnelt.
         /// </summary>
         public static string ZPG_STATUS_OHNE_VORSCHAU {
@@ -79142,6 +79835,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_STATUS_VORSCHAU {
             get {
                 return ResourceManager.GetString("ZPG_STATUS_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik gerechnet · Seed {0} · {1} Jahre ähnelt.
+        /// </summary>
+        public static string ZPG_STATUS_VORSCHAU_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_STATUS_VORSCHAU_STOCHASTISCH", resourceCulture);
             }
         }
         

@@ -80,6 +80,40 @@ public sealed class ZapfprofilAuslegungDatenTests : IDisposable
         Assert.Equal("Bad", z.Verbraucher);
     }
 
+    /// <summary>
+    /// Stufe Z3: „Stochastisch rechnen", Perzentil und Realisierungen gehen mit der Kopie; ohne
+    /// Angabe steht die Vorgabe (<c>null</c>), der Schalter aus. Der Wert des Perzentils ist die
+    /// Zeile des gewählten p im Streuband; ohne Streuband NaN, ohne Lauf kein Ergebnis.
+    /// </summary>
+    [Fact]
+    public void Stochastik_Perzentil_und_Realisierungen_gehen_mit_der_Kopie()
+    {
+        var leer = new ZapfprofilAuslegungEingabeDaten();
+        Assert.False(leer.Stochastisch);
+        Assert.Null(leer.Perzentil);
+        Assert.Null(leer.RealisierungenAuslegung);
+        Assert.Null(new ZapfprofilAuslegungsgruppeDaten().PerzentilErgebnis);
+        Assert.Empty(new ZapfprofilAuslegungStartDaten().Perzentile);
+
+        var a = new ZapfprofilAuslegungEingabeDaten { Stochastisch = true, Perzentil = 95, RealisierungenAuslegung = 40 };
+        ZapfprofilAuslegungEingabeDaten k = a.Kopie();
+        Assert.True(k.Stochastisch);
+        Assert.Equal(95, k.Perzentil);
+        Assert.Equal(40, k.RealisierungenAuslegung);
+        k.Perzentil = 99;
+        Assert.Equal(95, a.Perzentil);
+
+        var p = new ZapfprofilPerzentilDaten
+        {
+            Perzentil = 95,
+            Streuband = { new(50, 10), new(90, 20), new(95, 25), new(99, double.PositiveInfinity) }
+        };
+        Assert.Equal(25, p.Wert);
+        p.Perzentil = 99;
+        Assert.True(double.IsPositiveInfinity(p.Wert));
+        Assert.True(double.IsNaN(new ZapfprofilPerzentilDaten { Perzentil = 99 }.Wert));
+    }
+
     /// <summary>Hausregel „kein vorbelegtes DTO als Ergebnis": ohne Rechnung kein Punkt, aber ein Zustand.</summary>
     [Fact]
     public void Ohne_Rechnung_gibt_es_keinen_Punkt_und_der_Punkt_ist_die_erste_rechenbare_Speichergruppe()
