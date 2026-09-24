@@ -317,6 +317,83 @@ namespace EPOS.Kern.Tests
             Assert.Contains("TwwSchema.AnweisungenT2", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Der Schemaschritt T3 (Schritt 124) auf einer Datenbank mit Stand 120: Die Tabellen aus T1
+        /// stehen samt einer Projekt- und einer Bedarfstagzeile, T3 legt die sechs Spalten daneben —
+        /// wiederholbar, ohne eine Zeile zu ändern: die vorhandene Projektzeile rechnet mit
+        /// <c>Personen_Auto</c> = 1 und sonst NULL. Die CHECK-Klauseln kommen aus den Wertemengen
+        /// von <see cref="TwwSchema"/>, derselben Quelle wie der Schreibweg.
+        /// </summary>
+        [Fact]
+        public void Schritt_T3_legt_die_Laufangaben_und_die_Bezugsart_auf_Stand_120_an()
+        {
+            using SqliteConnection c = Datenbank();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwProjekt\" (\"ID_Projekt\") VALUES (1)");
+            Ausfuehren(c, Einfuegen(c, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+            int vorherProjekt = Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count;
+            int vorherTag = Spalten(c, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM).Count;
+
+            Assert.Equal(6, TwwSchema.SpaltenT3.Count);
+            for (int lauf = 0; lauf < 2; lauf++)
+                foreach (TwwSpalte s in TwwSchema.SpaltenT3)
+                    if (!Spalten(c, s.Tabelle).Contains(s.Name)) Ausfuehren(c, TwwSchema.SpalteAnlegen(s));
+
+            Assert.Equal(vorherProjekt + 5, Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count);
+            Assert.Equal(vorherTag + 1, Spalten(c, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM).Count);
+            Assert.Equal(1L, Skalar(c, "SELECT \"Personen_Auto\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Erzeugerart\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Fuellstand_Bezug\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Bezugsart\" FROM \"Tab_TwwBedarfstag_STAMM\""));
+
+            // Die Wertemengen greifen — dieselben Zahlen wie im Schreibweg.
+            Assert.Equal(new[] { 1, 2 }, TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE));
+            Assert.Equal(new[] { 1, 2, 3, 4 }, TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE));
+            Assert.Equal(Enum.GetValues(typeof(ZapfBezugsart)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE));
+            Assert.Equal(Enum.GetValues(typeof(ZapfFuellstandbezug)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE));
+            Assert.Equal(Enum.GetValues(typeof(ZapfErzeugerart)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE));
+            Assert.Equal(Enum.GetValues(typeof(ZapfUebertragerwerkstoff)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.WERKSTOFF_WERTE));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Erzeugerart\" = 3"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Uebertrager_Werkstoff\" = 0"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Auto\" = 2"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Auto\" = NULL"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Manuell\" = -1"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Fuellstand_Bezug\" = 5"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwBedarfstag_STAMM\" SET \"Bezugsart\" = 8"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Manuell\" = 'viele'"));   // STRICT
+            Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Erzeugerart\" = 2, \"Uebertrager_Werkstoff\" = 1, " +
+                          "\"Personen_Auto\" = 0, \"Personen_Manuell\" = 12.5, \"Fuellstand_Bezug\" = 4");
+            Ausfuehren(c, "UPDATE \"Tab_TwwBedarfstag_STAMM\" SET \"Bezugsart\" = 2");
+            Assert.Equal(12.5, Skalar(c, "SELECT \"Personen_Manuell\" FROM \"Tab_TwwProjekt\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>
+        /// Der Schritt 124 steht in der Migration der Schale NACH 123 (Anlagenkopplung AK-S3) und
+        /// bedient sich derselben Quelle (<see cref="TwwSchema.SpaltenT3"/>); das Ziel steht auf
+        /// mindestens 124.
+        /// </summary>
+        [Fact]
+        public void Schritt_124_steht_in_der_Migration_nach_123()
+        {
+            Assert.True(SchemaStand.Zielversion >= 124, "Zielstand " + SchemaStand.Zielversion + " liegt unter 124.");
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;", text, StringComparison.Ordinal);
+            int ort123 = text.IndexOf("new Schritt(SCHRITT_123_ANLAGENKOPPLUNG_ERGEBNIS", StringComparison.Ordinal);
+            int ort124 = text.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
+            Assert.True(ort123 > 0 && ort124 > ort123, "Schritt 124 steht nicht nach 123 in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_124_ZapfprofilLaufangaben(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 124 fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            Assert.Contains("TwwSchema.SpaltenT3", text.Substring(methode, ende - methode), StringComparison.Ordinal);
+        }
+
         [Fact]
         public void Die_Pruefungen_weisen_ungueltige_Werte_ab()
         {

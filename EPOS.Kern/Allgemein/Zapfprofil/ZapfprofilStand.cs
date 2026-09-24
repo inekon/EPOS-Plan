@@ -44,6 +44,18 @@ namespace WindowsFormsApplication1
         GemischterSpeicher = 2
     }
 
+    /// <summary>
+    /// Die Stufe des Zapfprofil-Dialogs (Konzept 5.1): Sie blendet an der Oberfläche nur ein und aus;
+    /// im Kern bestimmt sie allein die Marke „Schnellauslegung" der Auslegung (N11 (c)). Die Zahlen
+    /// sind die des DTO <c>ZapfprofilStufe</c>.
+    /// </summary>
+    internal enum ZapfStufe
+    {
+        Einfach = 0,
+        Erweitert = 1,
+        Experte = 2
+    }
+
     /// <summary>Die Quelle des Bedarfstags der Auslegung (<c>Tab_TwwProjekt.Bedarfstag_Quelle</c>, Konzept 4.5).</summary>
     internal enum ZapfBedarfstagquelle
     {
@@ -176,6 +188,29 @@ namespace WindowsFormsApplication1
         public double? AuslegungVolumenL { get; init; }
         public double? AuslegungLeistungKw { get; init; }
         public string Aenderungsdatum { get; init; }
+
+        /// <summary>
+        /// Die gewählte Erzeugerart am Speicher (<c>Tab_TwwProjekt.Erzeugerart</c>, Schritt 124;
+        /// N10 (i), N11 (i)); <c>null</c> = keine Angabe — dann gilt der Vorschlag des
+        /// Anlagenbestands, wenn er eindeutig ist. Der Vorschlag wird nie gespeichert.
+        /// </summary>
+        public ZapfErzeugerart? Erzeugerart { get; init; }
+
+        /// <summary>Der Werkstoff des Übertragers (<c>Tab_TwwProjekt.Uebertrager_Werkstoff</c>, Schritt 124); <c>null</c> = keine Angabe.</summary>
+        public ZapfUebertragerwerkstoff? UebertragerWerkstoff { get; init; }
+
+        /// <summary>
+        /// Die Personen des Verfahrensvergleichs auto/manuell (<c>Tab_TwwProjekt.Personen_Auto</c>,
+        /// Schritt 124; N11 (d)): <c>true</c> = aus dem Mengengerüst. Ohne Projektzeile oder vor
+        /// Schritt 124 gilt die DDL-Vorgabe (1).
+        /// </summary>
+        public bool PersonenAuto { get; init; } = true;
+
+        /// <summary>Der manuelle Wert der Personen (<c>Tab_TwwProjekt.Personen_Manuell</c>); wirkt nur bei <see cref="PersonenAuto"/> = false.</summary>
+        public double? PersonenManuell { get; init; }
+
+        /// <summary>Der Bezug des Füllstands (<c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 124; N10 (k), N11 (d)); <c>null</c> = Vorgabe.</summary>
+        public ZapfFuellstandbezug? FuellstandBezug { get; init; }
     }
 
     /// <summary>
@@ -201,7 +236,40 @@ namespace WindowsFormsApplication1
         /// (<see cref="ProjektStand.IdBedarfstag"/> leer).
         /// </summary>
         public BedarfstagKatalogzeile BedarfstagEntwurf { get; init; }
+
+        /// <summary>
+        /// Die Zeilen, aus denen der Konstruktor den <see cref="BedarfstagEntwurf"/> baute (N11 (j)) —
+        /// am Arbeitsstand, damit sie das Schließen des Zapfprofil-Dialogs überdauern: Ein erneutes
+        /// Öffnen des Konstruktors beginnt mit ihnen, solange der Arbeitsstand lebt (bis zum OK des
+        /// Bedarfsprofil-Dialogs). Gespeichert werden sie nicht — die Katalogzeile trägt nur Ereignisse;
+        /// nach dem Speichern beginnt der Konstruktor mit einer Zeile. Leer = keine.
+        /// </summary>
+        public IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen { get; init; } = new KonstruktorzeileStand[0];
+
+        /// <summary>
+        /// Die Laufangaben der Anzeige (N9 (h)): Temperatur der Literanzeige und Schwelle der
+        /// Stundenzählung — nicht gespeichert; <c>null</c> = die Einstellung, sonst die Vorgabe des
+        /// Parametersatzes (<see cref="ZapfParameter.ANZEIGETEMPERATUR"/>,
+        /// <see cref="ZapfParameter.STUNDENSCHWELLE"/>; aufgelöst in <c>ZapfprofilCtrl.Eingang</c>).
+        /// </summary>
+        public ZapfAnzeige Anzeige { get; init; }
     }
+
+    /// <summary>
+    /// Eine Zeile des Konstruktors, wie der Dialog sie führt (N11 (j)): Fenster in Stunden,
+    /// wahlweise eine Zapfregel des Katalogs mit Anzahl der Vorgänge oder Volumen [l] und
+    /// Zapftemperatur [°C], Verbraucher. Nur Arbeitsstand, nie gespeichert.
+    /// </summary>
+    internal sealed record KonstruktorzeileStand(double? BeginnH, double? EndeH, string Regel, double? Anzahl, double? VolumenL,
+                                                 double? ZapftemperaturC, string Verbraucher);
+
+    /// <summary>
+    /// Die Laufangaben der Anzeige einer Bilanz (N9 (h), 4.0, 4.6): Temperatur der Literanzeige
+    /// θ_Anzeige [°C] und Schwelle der Stundenzählung [kW] — beide nur für Kennzahlen, nie für die Reihe.
+    /// <c>null</c> je Größe = die Einstellung, sonst die Vorgabe des Parametersatzes
+    /// (<c>Zapfprofil.Anzeigetemperatur</c> bzw. <c>Zapfprofil.Stundenschwelle</c>).
+    /// </summary>
+    internal sealed record ZapfAnzeige(double? AnzeigetemperaturC, double? SchwelleKw);
 
     /// <summary>Warum der Zapfprofilgenerator nicht zur Verfügung steht.</summary>
     internal enum ZapfVerfuegbarkeitsgrund
@@ -218,7 +286,12 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Die benannte Antwort auf „kann der Generator hier laufen?" — ein Kennzeichen, der Grund
-    /// und ein Klartext für Protokoll und Test (die Oberfläche übersetzt den Grund selbst).
+    /// und der Satz als Kennung und Werte (N11 (k)); <see cref="Klartext"/> ist sein deutscher
+    /// Wortlaut für Protokoll und Test.
     /// </summary>
-    internal sealed record ZapfVerfuegbarkeit(bool Ja, ZapfVerfuegbarkeitsgrund Grund, string Klartext);
+    internal sealed record ZapfVerfuegbarkeit(bool Ja, ZapfVerfuegbarkeitsgrund Grund, ZapfSatz Satz)
+    {
+        /// <summary>Der deutsche Wortlaut (Protokoll, Test).</summary>
+        public string Klartext => Satz?.Klartext ?? "";
+    }
 }

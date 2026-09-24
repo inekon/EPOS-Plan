@@ -7,8 +7,11 @@
 
    WAS SIE TUT. Oben die Eingaben der Summenlinie (Bedarfstag mit Quelle, "Bedarfstag
    konstruieren..." als weitere Ueberlagerung, Speichertemperatur, Erzeuger- und
-   Uebertragerleistung, Speicherart, Sensorhoehe, die Laufangaben Erzeugerart und Werkstoff),
-   darunter je Topologiegruppe die drei Karten der Dreiergruppe NEBENEINANDER (schmal
+   Uebertragerleistung, Speicherart, Sensorhoehe, Erzeugerart und Werkstoff - beide mit dem
+   Projekt gespeichert, die Erzeugerart mit dem Vorschlag des Projekts als Knopf), dann die
+   Eingaben des Verfahrensvergleichs als Felder (Ladeleistung auto/manuell mit Vorschlag,
+   Ladezeitfenster, Personen auto/manuell, nutzbarer Anteil, Zuschlag, Bezug des Fuellstands;
+   N11 (d), Z4), darunter je Topologiegruppe die drei Karten der Dreiergruppe NEBENEINANDER (schmal
    untereinander), der EINE empfohlene Punkt, getrennt davon der Verfahrensvergleich der
    Speicherauslegung als nachrichtlicher Vorschlag mit Wochenbild und die Warnliste. Sie
    RECHNET NICHTS: Ergebnis, Bilder und Saetze kommen aus der Huelle (Delegat "Rechnen").
@@ -118,10 +121,18 @@
                     <Herleitungszeile Text="@Texte.HerleitungSensorhoehe" />
                     <Auswahlfeld Bezeichnung="@Texte.LabelErzeugerart" Eintraege="@Erzeugerarten"
                                  Auswahl="@((int)_eingabe.Erzeugerart)" AuswahlChanged="ErzeugerartSetzen" />
-                    <Herleitungszeile Text="@Laufangabe(_ergebnis?.ErzeugerartHerkunft ?? "")" />
+                    @* N10 (i), Schritt 124: Die Wahl wird mit dem Projekt gespeichert; der Vorschlag des
+                       Projekts (eindeutiger Anlagenbestand) ist eine Wahl, die der Anwender übernimmt. *@
+                    @if (ErzeugerVorschlag is { } vorschlag)
+                    {
+                        <Vorschlagszeile Text="@Format(Texte.LabelErzeugerVorschlag, Erzeugerartname(vorschlag))"
+                                         Knopftext="@Texte.KnopfErzeugerVorschlag"
+                                         Uebernommen="() => ErzeugerartSetzen((int)vorschlag)" />
+                    }
+                    <Herleitungszeile Text="@Format(Texte.HerleitungGespeichert, _ergebnis?.ErzeugerartHerkunft ?? "")" />
                     <Auswahlfeld Bezeichnung="@Texte.LabelWerkstoff" Eintraege="@Werkstoffe"
                                  Auswahl="@((int)_eingabe.Werkstoff)" AuswahlChanged="WerkstoffSetzen" />
-                    <Herleitungszeile Text="@Laufangabe("")" />
+                    <Herleitungszeile Text="@Format(Texte.HerleitungGespeichert, Texte.HerleitungWerkstoff)" />
                     <Schalter Bezeichnung="@Texte.LabelStochastisch" Wert="@_eingabe.Stochastisch" WertChanged="StochastischSetzen" />
                     <Herleitungszeile Text="@Texte.HerleitungStochastisch" />
                     @if (_eingabe.Stochastisch)
@@ -139,6 +150,71 @@
                                       Platzhalter="@Klammer(RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
                         <Herleitungszeile Text="@RealisierungenHerleitung" />
                     }
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------ Eingaben des Verfahrensvergleichs (4.7, N11 (d)) --- *@
+    <Gruppenkopf Titel="@Texte.GruppeVergleichEingaben" Summe="@Texte.Nachrichtlich">
+        <KindInhalt>
+            <p class="epos-leisezeile">@Texte.HinweisVergleichEingaben</p>
+            <Formularraster>
+                <KindInhalt>
+                    <Formulargruppe Titel="@Texte.LabelLadeleistung">
+                        <KindInhalt>
+                            <Optionsgruppe Bezeichnung="@Texte.LabelLadeleistung" Eintraege="@AutoManuell"
+                                           Auswahl="@(_eingabe.LadeAuto ? AUTO : MANUELL)" AuswahlChanged="LadeModusSetzen" />
+                            @if (ErsterVergleich?.Ladeleistung is { } lade)
+                            {
+                                <Vorschlagszeile Text="@Vorschlagstext(lade.Vorschlag, lade.Einheit)" Knopftext="@Texte.KnopfVorschlag"
+                                                 Erlaubt="@lade.Vorschlag.HasValue" Sperrgrund="@Texte.HerleitungLadeOhne"
+                                                 Uebernommen="() => LadeVorschlagUebernehmen(lade.Vorschlag)" />
+                            }
+                            else
+                            {
+                                <Herleitungszeile Text="@Texte.HerleitungLadeOhne" />
+                            }
+                            <Zahlenfeld Bezeichnung="@Texte.LabelLadeManuell" Feldname="@Texte.LabelLadeManuell"
+                                        Einheit="kW" Min="0" Wert="@_eingabe.LadeManuellKw" WertChanged="LadeManuellSetzen"
+                                        FehlerZustand="FehlerZustandMelden" />
+                            @if (ErsterVergleich is { } lv)
+                            {
+                                <Herleitungszeile Text="@Format(Texte.HerleitungLade, Zahl(lv.LadeleistungKw, "N1"), lv.LadeManuell ? Texte.Manuell : Texte.Auto, lv.LadeRechenweg)" />
+                            }
+                            <Zahlenfeld Bezeichnung="@Texte.LabelLadefenster" Feldname="@Texte.LabelLadefenster"
+                                        Einheit="h/d" Min="0" Max="24" Wert="@_eingabe.LadefensterH" WertChanged="LadefensterSetzen"
+                                        FehlerZustand="FehlerZustandMelden" />
+                            <Zahlenfeld Bezeichnung="@Texte.LabelLadefensterBeginn" Feldname="@Texte.LabelLadefensterBeginn"
+                                        Einheit="h" Min="0" Max="24" Wert="@_eingabe.LadefensterBeginnH" WertChanged="LadefensterBeginnSetzen"
+                                        FehlerZustand="FehlerZustandMelden" />
+                            <Herleitungszeile Text="@Texte.HerleitungLadefenster" />
+                        </KindInhalt>
+                    </Formulargruppe>
+                    <Formulargruppe Titel="@Texte.LabelPersonen">
+                        <KindInhalt>
+                            <Optionsgruppe Bezeichnung="@Texte.LabelPersonen" Eintraege="@AutoManuell"
+                                           Auswahl="@(_eingabe.PersonenAuto ? AUTO : MANUELL)" AuswahlChanged="PersonenModusSetzen" />
+                            <Zahlenfeld Bezeichnung="@Texte.LabelPersonenManuell" Feldname="@Texte.LabelPersonenManuell"
+                                        Min="0" Wert="@_eingabe.PersonenManuell" WertChanged="PersonenManuellSetzen"
+                                        FehlerZustand="FehlerZustandMelden" />
+                            @if (ErsterVergleich is { } pv)
+                            {
+                                <Herleitungszeile Text="@Format(Texte.HerleitungPersonen, Zahl(pv.PersonenVorschlag, "N1"), Zahl(pv.Personen, "N1"))" />
+                            }
+                        </KindInhalt>
+                    </Formulargruppe>
+                    <Zahlenfeld Bezeichnung="@Texte.LabelNutzanteil" Feldname="@Texte.LabelNutzanteil"
+                                Min="0" Max="1" Wert="@_eingabe.Nutzanteil" WertChanged="NutzanteilSetzen"
+                                FehlerZustand="FehlerZustandMelden" />
+                    <Herleitungszeile Text="@Format(Texte.HerleitungAngesetzt, ErsterVergleich is { } nv ? Zahl(nv.Nutzanteil, "0.###") : "–")" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelZuschlag" Feldname="@Texte.LabelZuschlag"
+                                Min="0" Wert="@_eingabe.Zuschlag" WertChanged="ZuschlagSetzen"
+                                FehlerZustand="FehlerZustandMelden" />
+                    <Herleitungszeile Text="@Format(Texte.HerleitungAngesetzt, ErsterVergleich is { } zv ? Prozent(zv.Zuschlag) : "–")" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelFuellstandBezug" Eintraege="@Fuellstandbezuege"
+                                 Auswahl="@((int)_eingabe.FuellstandBezug)" AuswahlChanged="FuellstandSetzen" />
+                    <Herleitungszeile Text="@Format(Texte.HerleitungFuellstand, ErsterVergleich is { } fv && fv.FuellstandBezug.Length > 0 ? fv.FuellstandBezug + (fv.FuellstandBezugL is double fl ? " " + Zahl(fl, "N0") + " l" : "") : "–")" />
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
@@ -490,7 +566,9 @@
             {
                 <BedarfstagKonstruktor Texte="@Texte" Regeln="@Daten.Regeln" RegelnGrund="@Daten.RegelnGrund"
                                        Name="@KonstruktorName" Startzeilen="@_eingabe.Entwurf?.Konstruktorzeilen"
-                                       Konstruieren="@Konstruieren" HilfeSchluessel="@HilfeRechenweg"
+                                       Bezugsarten="@Daten.Bezugsarten" Bezugsart="@_eingabe.Entwurf?.Bezugsart"
+                                       Bezugsmenge="@_eingabe.Entwurf?.Bezugsmenge"
+                                       Konstruieren="@Konstruieren"
                                        OkText="@OkText" AbbrechenText="@AbbrechenText"
                                        TitelAnzeigen="false" Geschlossen="KonstruktorFertig" />
             }
@@ -520,6 +598,10 @@
     /// <summary>Die Auswahl „konstruierter Entwurf".</summary>
     private const int WAHL_ENTWURF = -4;
 
+    /// <summary>Die Einträge der Umschalter auto/manuell (Verfahrensvergleich, Z4).</summary>
+    private const int AUTO = 0;
+    private const int MANUELL = 1;
+
     // --- Parameter (Schluessel wie ZapfprofilHuelle.AuslegungGaben) --------------------
 
     /// <summary>Der Stand beim Öffnen: Eingaben, Bedarfstage, Regeln, erstes Ergebnis.</summary>
@@ -542,14 +624,17 @@
     /// </summary>
     [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>? StochastischRechnen { get; set; }
 
-    /// <summary>Der Konstruktor der Hülle; kein Delegat = kein Knopf „Bedarfstag konstruieren…".</summary>
-    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+    /// <summary>
+    /// Der Konstruktor der Hülle — Zeilen, Name, Bezugsmenge und Bezugsart (beide leer = ohne
+    /// Bezug); kein Delegat = kein Knopf „Bedarfstag konstruieren…".
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
 
     /// <summary>Hilfeschlüssel der Bedienung.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.btn_Help";
 
-    /// <summary>Hilfeschlüssel des Rechenwegs.</summary>
-    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil_Berechnung";
+    /// <summary>Hilfeschlüssel des Rechenwegs der Auslegung.</summary>
+    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil.grp_Auslegung";
 
     /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
@@ -801,12 +886,37 @@
     /// <summary>Eine ganze Zahl für einen Satz; ohne Wert „–".</summary>
     private static string Ganz(int? wert) => wert is int w ? w.ToString(CultureInfo.CurrentCulture) : "–";
 
-    /// <summary>„Laufangabe — wird nicht gespeichert; …" ohne leeren Zusatz.</summary>
-    private string Laufangabe(string zusatz)
+    // --- Eingaben des Verfahrensvergleichs und Erzeugerart (Z4, Gruppe 2b) ---------------
+
+    private IReadOnlyList<(int Id, string Text)> AutoManuell => new[] { (AUTO, Texte.Auto), (MANUELL, Texte.Manuell) };
+
+    /// <summary>Die Wahl des Füllstandsbezugs: die Vorgabe und die Wertemenge des Schemas.</summary>
+    private IReadOnlyList<(int Id, string Text)> Fuellstandbezuege
     {
-        string t = Format(Texte.HerleitungLaufangabe, zusatz ?? "").TrimEnd();
-        return string.IsNullOrWhiteSpace(zusatz) ? t.TrimEnd(';', ' ') : t;
+        get
+        {
+            var liste = new List<(int Id, string Text)> { ((int)ZapfprofilFuellstandbezug.Vorgabe, Texte.FuellstandVorgabe) };
+            liste.AddRange(Daten.Fuellstandbezuege.Select(b => (b.Id, b.Name)));
+            if (liste.All(e => e.Id != (int)_eingabe.FuellstandBezug))
+                liste.Add(((int)_eingabe.FuellstandBezug, "#" + ((int)_eingabe.FuellstandBezug).ToString(CultureInfo.InvariantCulture)));
+            return liste;
+        }
     }
+
+    /// <summary>Der Verfahrensvergleich der ersten Speichergruppe — seine angesetzten Werte stehen an den Feldern; <c>null</c> ohne ihn.</summary>
+    private ZapfprofilVergleichDaten? ErsterVergleich
+        => _ergebnis?.Gruppen.FirstOrDefault(g => g.Speicher && g.Vergleich is not null)?.Vergleich;
+
+    /// <summary>Der Vorschlag der Erzeugerart aus dem Projekt — nur, solange keine gewählt ist und das Projekt eindeutig einen nennt.</summary>
+    private ZapfprofilErzeugerart? ErzeugerVorschlag
+        => _eingabe.Erzeugerart == ZapfprofilErzeugerart.KeineAngabe
+           && _ergebnis?.ErzeugerartVorschlag is { } v && v != ZapfprofilErzeugerart.KeineAngabe ? v : null;
+
+    private string Erzeugerartname(ZapfprofilErzeugerart art) => Erzeugerarten.FirstOrDefault(e => e.Id == (int)art).Text ?? "";
+
+    /// <summary>„Vorschlag: 12,5 kW" — ohne Vorschlag der Grund.</summary>
+    private string Vorschlagstext(double? vorschlag, string einheit)
+        => vorschlag is double v ? Format(Texte.LabelVorschlag, Zahl(v, "N1"), einheit) : Texte.HerleitungLadeOhne;
 
     private string KonstruktorName
         => _eingabe.Entwurf?.Bezeichner is { Length: > 0 } name ? name : Daten.NameVorschlag;
@@ -956,6 +1066,33 @@
     {
         if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilWerkstoff), n)) return;
         _eingabe.Werkstoff = (ZapfprofilWerkstoff)n;
+        Geaendert();
+    }
+
+    // Die Eingaben des Verfahrensvergleichs (4.7, N11 (d)): jede rechnet neu wie jede andere Eingabe.
+
+    private void LadeModusSetzen(int? id) { _eingabe.LadeAuto = id != MANUELL; Geaendert(); }
+    private void LadeManuellSetzen(double? w) { _eingabe.LadeManuellKw = w; Geaendert(); }
+    private void LadefensterSetzen(double? w) { _eingabe.LadefensterH = w; Geaendert(); }
+    private void LadefensterBeginnSetzen(double? w) { _eingabe.LadefensterBeginnH = w; Geaendert(); }
+    private void NutzanteilSetzen(double? w) { _eingabe.Nutzanteil = w; Geaendert(); }
+    private void ZuschlagSetzen(double? w) { _eingabe.Zuschlag = w; Geaendert(); }
+    private void PersonenModusSetzen(int? id) { _eingabe.PersonenAuto = id != MANUELL; Geaendert(); }
+    private void PersonenManuellSetzen(double? w) { _eingabe.PersonenManuell = w; Geaendert(); }
+
+    private void FuellstandSetzen(int? id)
+    {
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilFuellstandbezug), n)) return;
+        _eingabe.FuellstandBezug = (ZapfprofilFuellstandbezug)n;
+        Geaendert();
+    }
+
+    /// <summary>„Als manuellen Wert übernehmen" an der Ladeleistung: der Vorschlag wird der manuelle Wert, der Umschalter „manuell".</summary>
+    private void LadeVorschlagUebernehmen(double? vorschlag)
+    {
+        if (vorschlag is not double v) return;
+        _eingabe.LadeManuellKw = v;
+        _eingabe.LadeAuto = false;
         Geaendert();
     }
 
@@ -1232,8 +1369,43 @@
         RealisierungenLesen = () => _eingabe.RealisierungenAuslegung,
         RealisierungenSetzen = KiRealisierungen,
 
-        PunktLesen = () => _ergebnis?.Punktgruppe is { } g ? Punkttext(g) : ""
+        PunktLesen = () => _ergebnis?.Punktgruppe is { } g ? Punkttext(g) : "",
+
+        // Die Eingaben des Verfahrensvergleichs (Z4, Gruppe 2b) — dieselben Wege und Grenzen wie die Felder.
+        AutoManuellEintraege = () => KiMaskenanmeldung.Eintraege(AutoManuell, e => e.Id, e => e.Text),
+        LadeleistungModusLesen = () => _eingabe.LadeAuto ? AUTO : MANUELL,
+        LadeleistungModusSetzen = id => KiAutoManuell(Texte.LabelLadeleistung, id, LadeModusSetzen),
+        LadeleistungManuellLesen = () => _eingabe.LadeManuellKw,
+        LadeleistungManuellSetzen = w => KiZahl(Texte.LabelLadeManuell, w, 0, null, () => this.LadeManuellSetzen(w)),
+        LadefensterLesen = () => _eingabe.LadefensterH,
+        LadefensterSetzen = w => KiZahl(Texte.LabelLadefenster, w, 0, 24, () => this.LadefensterSetzen(w)),
+        LadefensterBeginnLesen = () => _eingabe.LadefensterBeginnH,
+        LadefensterBeginnSetzen = w => KiZahl(Texte.LabelLadefensterBeginn, w, 0, 24, () => this.LadefensterBeginnSetzen(w)),
+        NutzanteilLesen = () => _eingabe.Nutzanteil,
+        NutzanteilSetzen = w => KiZahl(Texte.LabelNutzanteil, w, 0, 1, () => this.NutzanteilSetzen(w)),
+        ZuschlagLesen = () => _eingabe.Zuschlag,
+        ZuschlagSetzen = w => KiZahl(Texte.LabelZuschlag, w, 0, null, () => this.ZuschlagSetzen(w)),
+        PersonenModusLesen = () => _eingabe.PersonenAuto ? AUTO : MANUELL,
+        PersonenModusSetzen = id => KiAutoManuell(Texte.LabelPersonen, id, PersonenModusSetzen),
+        PersonenManuellLesen = () => _eingabe.PersonenManuell,
+        PersonenManuellSetzen = w => KiZahl(Texte.LabelPersonenManuell, w, 0, null, () => this.PersonenManuellSetzen(w)),
+        FuellstandBezugLesen = () => (int)_eingabe.FuellstandBezug,
+        FuellstandBezugSetzen = id =>
+        {
+            if (id is not int n || Fuellstandbezuege.All(e => e.Id != n)) return ZapfprofilKiRegeln.Gesperrt(Texte.LabelFuellstandBezug);
+            FuellstandSetzen(n);
+            return null;
+        },
+        FuellstandBezugEintraege = () => KiMaskenanmeldung.Eintraege(Fuellstandbezuege, e => e.Id, e => e.Text)
     };
+
+    /// <summary>Ein Umschalter auto/manuell — nur einer der zwei Einträge.</summary>
+    private static string? KiAutoManuell(string feld, int? id, Action<int?> weg)
+    {
+        if (id is not (AUTO or MANUELL)) return ZapfprofilKiRegeln.Gesperrt(feld);
+        weg(id);
+        return null;
+    }
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen.

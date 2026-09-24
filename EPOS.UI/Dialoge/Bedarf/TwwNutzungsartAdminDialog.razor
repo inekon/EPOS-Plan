@@ -1,0 +1,693 @@
+﻿@* Der KATALOGDIALOG „Brauchwasser-Nutzungsarten" (Umsetzungskonzept Zapfprofilgenerator 5.4;
+   Stufe Z4, Gruppe 3) - Menue Administration → Wärmebedarf & Heizung → Brauchwasser →
+   Brauchwasser-Nutzungsarten.
+
+   AUFBAU nach dem Muster der Verwaltungen (BedarfAdminDialog, StromganglinieAdminDialog;
+   EPOS.UI/CLAUDE.md „Ein KATALOGDIALOG nutzt die Höhe"): Katalograhmen mit der Katalogliste
+   (Nutzungsart, Bezugsart, Kalender, Herkunft, Katalogversion, Stand; das Schloss am
+   Auslieferungssatz), die Auswahlleiste mit „Speichern unter…" und „Löschen", das Stammblatt der
+   gewählten Nutzungsart - alles LESEND: Kennwerte, Tagesgang samt Vorschaubild, Jahres- und
+   Wochengang, Zapfkategorien, Herkunft. Konzept 5.4 nennt „Katalograhmen Gestapelt" mit einem
+   lesenden Formularraster; seither tragen alle Verwaltungen das Stammblatt neben der Liste
+   (Neuordnung Stufe 3/4) - der Dialog folgt dem gültigen Muster.
+
+   KATALOG OHNE ARBEITSSTAND. Jede Aktion schreibt sofort ueber den Delegaten der Huelle (EINE
+   Transaktion des Kerns) und liest die Liste neu; es gibt nichts zu verwerfen. Der Dialog schliesst
+   mit „Beenden"; Esc und das Kreuz tun dasselbe, sobald keine Ueberlagerung steht.
+
+   DIE HANDLUNGEN (DL-2, ohne Handlung an zwei Orten):
+     * Kopf der Gruppe „Kennwerte": „Ändern…" - der Editor; an einer Zeile der Auslieferung oder
+       einer benutzten Zeile oeffnet er als „Speichern unter" (3.2, K7), der Grund steht als
+       Hinweis darin.
+     * Kopf der Gruppe „Tagesgang": „Grafik…" (Vorschau gross) und „Tagesgang…" - der Editor des
+       Zapfprofil-Dialogs; eine gesperrte Nutzungsart bekommt dort eine neue Katalogversion.
+     * Kopf der Gruppe „Zapfkategorien": „Kategorien…" - der Kategorien-Editor, ebenso.
+     * Auswahlleiste: „Speichern unter…" (neue eigene Zeile, die Vorlage bleibt) und „Löschen",
+       weich gesperrt mit Grund (Auslieferung; in Projekten benutzt - mit Namen).
+     * Fussleiste: Statuszeile - „Import…" (Katalogpaket) - „Neu…" - „Beenden".
+
+   DER IMPORT (Konzept Kapitel 6 (b), N2): „Import…" oeffnet eine Ueberlagerung mit Formathinweis,
+   Paketwahl und dem Bericht (angelegt, uebersprungen, abgelehnt mit Grund); nach dem Import ist die
+   erste neue Nutzungsart gewaehlt.
+
+   HILFE-ASSISTENT. Die Maske meldet sich an (KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN): die Wahl
+   der Zeile (Satzwahl) und die Anzeigen Katalogversion, Stand und Sperrgrund. Neu, Aendern,
+   Loeschen und Import legen Zeilen an oder nehmen sie weg und bleiben Klicks des Anwenders. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-katalog-dialog epos-tww-katalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        <Schliesskreuz Geschlossen="Beenden" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" Kennung="@_kennung" />
+    }
+
+    <Katalograhmen BlattOffen="@_blattOffen" Gestapelt="true">
+        <Liste>
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog" Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true" />
+            @if (_katalog.Count == 0)
+            {
+                <p class="epos-leisezeile epos-tww-katalog-leer">@Texte.LeerKatalog</p>
+            }
+        </Liste>
+
+        <Auswahl>
+            <Auswahlleiste Fokus="@FokusText" Anzahl="0" Handlungen="@Handlungen()" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@(_detail?.Name ?? "")" Unterzeile="@(_detail?.Unterzeile ?? "")"
+                        Auslieferung="@(_detail?.Auslieferung == true)" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@(_detail?.Kennzahlen ?? Array.Empty<Stammblattkennzahl>())" Texte="@_blatttexte"
+                        ZurListe="@_blattSchliessen">
+                <Gruppen>
+                    @if (_detail is not null)
+                    {
+                        <Stammblattgruppe Titel="@Texte.GruppeKennwerte" Lesemodus="true" Werte="@_detail.Kennwerte">
+                            <Kopf>
+                                @if (EditorLaden is not null && Speichern is not null)
+                                {
+                                    <button type="button" class="epos-textknopf epos-tww-aendern" title="@(_detail.AendernGrund.Length > 0 ? _detail.AendernGrund : null)"
+                                            @onclick="BeiAendern">@Texte.KnopfAendern</button>
+                                }
+                            </Kopf>
+                        </Stammblattgruppe>
+
+                        <Stammblattgruppe Titel="@Texte.GruppeTagesgang" Lesemodus="true" Werte="@_detail.Tagesgang">
+                            <Kopf>
+                                <button type="button" class="epos-textknopf epos-tww-grafik" aria-disabled="@(_detail.TagesgangModell is null ? "true" : null)"
+                                        title="@(_detail.TagesgangModell is null ? _detail.VorschauGrund : null)"
+                                        @onclick="BeiGrafik">@Texte.KnopfGrafik</button>
+                                @if (TagesgangGaben is not null)
+                                {
+                                    <button type="button" class="epos-textknopf epos-tww-tagesgang" @onclick="BeiTagesgang">@Texte.KnopfTagesgang</button>
+                                }
+                            </Kopf>
+                            <Nachsatz>
+                                @if (_detail.TagesgangModell is not null)
+                                {
+                                    <DiagrammSvg Modell="@_detail.TagesgangModell" Kennung="@("tww-tagesgang-" + _detail.Id)"
+                                                 Bezeichnung="@Texte.BildTagesgang" OhneZoom="true" />
+                                }
+                                else if (_detail.VorschauGrund.Length > 0)
+                                {
+                                    <p class="epos-leisezeile">@_detail.VorschauGrund</p>
+                                }
+                            </Nachsatz>
+                        </Stammblattgruppe>
+
+                        <Stammblattgruppe Titel="@Texte.GruppeGaenge" Lesemodus="true" Werte="@_detail.Gaenge" />
+
+                        <Stammblattgruppe Titel="@Texte.GruppeKategorien" Lesemodus="true" Werte="@_detail.Kategorien">
+                            <Kopf>
+                                @if (KategorienGaben is not null)
+                                {
+                                    <button type="button" class="epos-textknopf epos-tww-kategorien" @onclick="BeiKategorien">@Texte.KnopfKategorien</button>
+                                }
+                            </Kopf>
+                        </Stammblattgruppe>
+
+                        <Stammblattgruppe Titel="@Texte.GruppeHerkunft" Lesemodus="true" Werte="@_detail.Herkunft" />
+                    }
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE (DL-2 fuer eine Verwaltung ohne Arbeitsstand): Statuszeile - Import… - Neu… -
+       Beenden. Zeilenhandlungen stehen in der Auswahlleiste und in den Koepfen der Gruppen. *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Importieren is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" @onclick="ImportOeffnen">@Texte.KnopfImport</button>
+        }
+        @if (EditorLaden is not null && Speichern is not null)
+        {
+            <button type="button" class="epos-knopf epos-tww-neu" @onclick="BeiNeu">@Texte.KnopfNeu</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Beenden">@Texte.KnopfBeenden</button>
+    </div>
+
+    @* --- Rueckfrage vor dem Loeschen ------------------------------------------------ *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@Texte.Titel"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- Ueberlagerung: der Editor der Nutzungsart ----------------------------------- *@
+    <Ueberlagerung Offen="@(_editor is not null)" Titel="@EditorTitel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="() => _editor = null">
+        <KindInhalt>
+            @if (_editor is not null)
+            {
+                <TwwNutzungsartEditor Daten="@_editor" Texte="@Texte" Speichern="@Speichern" TitelAnzeigen="false"
+                                      HilfeSchluessel="@HilfeSchluesselEditor" Geschlossen="EditorGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerungen: die Editoren des Zapfprofil-Dialogs ------------------------ *@
+    <Ueberlagerung Offen="@(_tagesgangGaben is not null)" Titel="@Resource.ZPG_TGE_TITEL"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _tagesgangGaben = null">
+        <KindInhalt>
+            @if (_tagesgangGaben is not null)
+            {
+                <TagesgangEditor @attributes="_tagesgangGaben" TitelAnzeigen="false" Geschlossen="TagesgangGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_kategorienGaben is not null)" Titel="@Resource.ZPG_KATEG_TITEL"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _kategorienGaben = null">
+        <KindInhalt>
+            @if (_kategorienGaben is not null)
+            {
+                <ZapfkategorienEditor @attributes="_kategorienGaben" TitelAnzeigen="false" Geschlossen="KategorienGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: die Vorschau gross ------------------------------------------ *@
+    <Ueberlagerung Offen="@_grafikOffen" Titel="@Texte.GrafikTitel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="() => _grafikOffen = false">
+        <KindInhalt>
+            @if (_grafikOffen && _detail is not null)
+            {
+                <div class="epos-tww-grafik-inhalt">
+                    <DiagrammSvg Modell="@_detail.TagesgangModell" Kennung="@("tww-grafik-tagesgang-" + _detail.Id)"
+                                 Bezeichnung="@Texte.BildTagesgang" PlatzhalterText="@Texte.KeinBild" />
+                    <DiagrammSvg Modell="@_detail.JahresgangModell" Kennung="@("tww-grafik-jahresgang-" + _detail.Id)"
+                                 Bezeichnung="@Texte.BildJahresgang" PlatzhalterText="@Texte.KeinBild" />
+                    <Herleitungszeile Text="@Texte.GrafikHinweis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: der Katalogimport ------------------------------------------- *@
+    <Ueberlagerung Offen="@_importOffen" Titel="@Texte.ImportTitel" Geschlossen="ImportSchliessen">
+        <KindInhalt>
+            @if (_importOffen)
+            {
+                <div class="epos-einlesen epos-tww-import">
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport" Dialogname="@Texte.ImportTitel" />
+                    <Herleitungszeile Text="@Texte.ImportHinweis" />
+                    <Herleitungszeile Text="@Texte.ImportHerkunft" />
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Dateiwahl Bezeichnung="" KnopfText="@Texte.ImportDatei" Filter="@Texte.ImportDateifilter"
+                                       Pfad="@_pfad" Waehlen="@PaketWahl" PfadChanged="BeiPaket" />
+                        </KindInhalt>
+                    </Formularraster>
+
+                    @if (_bericht is not null)
+                    {
+                        @if (_bericht.Abgebrochen)
+                        {
+                            <Warnbanner Stufe="WarnStufe.Fehler" Text="@_bericht.Abbruch" />
+                        }
+                        else
+                        {
+                            <p class="epos-leisezeile epos-tww-import-summe" role="status">@_bericht.Zusammenfassung</p>
+                            <div class="epos-raster-huelle">
+                                <table class="epos-raster epos-tww-importbericht">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.ImportSpalteNutzungsart</th>
+                                            <th>@Texte.ImportSpalteErgebnis</th>
+                                            <th>@Texte.ImportSpalteGrund</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (TwwImportzeileDaten z in _bericht.Zeilen)
+                                        {
+                                            <tr class="epos-tww-import-@z.Ausgang.ToString().ToLowerInvariant()">
+                                                <td>@z.Nutzungsart</td>
+                                                <td>@z.Ausgangstext</td>
+                                                <td>@z.Grund</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        @if (_bericht.Hinweise.Count > 0)
+                        {
+                            <Gruppenkopf Titel="@Texte.ImportHinweise">
+                                <KindInhalt>
+                                    @foreach (string h in _bericht.Hinweise)
+                                    {
+                                        <p class="epos-leisezeile epos-tww-import-hinweis">@h</p>
+                                    }
+                                </KindInhalt>
+                            </Gruppenkopf>
+                        }
+                    }
+
+                    <div class="epos-leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf" @onclick="ImportSchliessen">@AbbrechenText</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer" aria-disabled="@(_pfad.Length == 0 ? "true" : null)"
+                                title="@(_pfad.Length == 0 ? Texte.ImportKeinPaket : null)" @onclick="BeiImportieren">@Texte.ImportStarten</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Hülle (ZapfprofilHuelle.KatalogGaben)
+    // =====================================================================
+
+    /// <summary>Die Zeilen der Katalogliste (<c>TwwNutzungsartCtrl.Katalogfilterzeilen</c>); Schlüssel ist die Id.</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.FuerTwwNutzungsart</c>.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers.</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Das Stammblatt einer Nutzungsart; <c>null</c>, wenn es sie nicht (mehr) gibt.</summary>
+    [Parameter] public Func<int, TwwNutzungsartDetailDaten?>? Detail { get; set; }
+
+    /// <summary>Der Stand des Editors zu einer Zeile (0 = ohne Vorlage) im gewünschten Modus.</summary>
+    [Parameter] public Func<int, TwwEditorModus, TwwNutzungsartEditorDaten>? EditorLaden { get; set; }
+
+    /// <summary>Der Schreibweg des Editors — eine Transaktion. Ohne ihn stehen weder „Neu…" noch „Ändern…".</summary>
+    [Parameter] public Func<TwwEditorModus, TwwNutzungsartEntwurfDaten, TwwNutzungsartSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>„Löschen" — der Kern sperrt benannt.</summary>
+    [Parameter] public Func<int, TwwNutzungsartSpeicherErgebnis>? Loeschen { get; set; }
+
+    /// <summary>Der Parametersatz des Tagesgang-Editors zu einer Nutzungsart (<c>ZapfprofilHuelle.TagesgangGaben</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? TagesgangGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Kategorien-Editors zu einer Nutzungsart (<c>ZapfprofilHuelle.KategorienGaben</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? KategorienGaben { get; set; }
+
+    /// <summary>Die Paketwahl der Plattform (<c>Dienste.Datei</c>, hinter dem Ereignis); <c>""</c> = abgebrochen.</summary>
+    [Parameter] public Func<string, Task<string>>? PaketWaehlen { get; set; }
+
+    /// <summary>Der Katalogimport (<c>TwwNutzungsartCtrl.Importieren</c>). Ohne ihn steht „Import…" nicht da.</summary>
+    [Parameter] public Func<string, TwwImportberichtDaten>? Importieren { get; set; }
+
+    /// <summary>Die Beschriftungen des Dialogs, des Editors, der Vorschau und des Imports.</summary>
+    [Parameter] public TwwNutzungsartAdminTexte Texte { get; set; } = new();
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Brauchwasser_Nutzungsarten.btn_Help";
+    [Parameter] public string HilfeSchluesselEditor { get; set; } = "Form_Brauchwasser_Nutzungsarten.grp_Editor";
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Brauchwasser_Nutzungsarten.grp_Import";
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Der Dialog ist zu Ende — immer <c>true</c> („Beenden", Kreuz, Esc): jede Aktion schrieb sofort.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _gewaehlt = "";
+    private TwwNutzungsartDetailDaten? _detail;
+    private bool _blattOffen;
+    private string _meldung = "";
+    private string _kennung = "";
+    private string _status = "";
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+    private int _loeschziel;
+
+    private TwwNutzungsartEditorDaten? _editor;
+    private IReadOnlyDictionary<string, object>? _tagesgangGaben;
+    private IReadOnlyDictionary<string, object>? _kategorienGaben;
+    private bool _grafikOffen;
+
+    private bool _importOffen;
+    private string _pfad = "";
+    private TwwImportberichtDaten? _bericht;
+
+    private EventCallback _speichernUnterWeg;
+    private EventCallback _loeschenWeg;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+    private Stammblatttexte _blatttexte = new();
+
+    /// <summary>Die Zeilen der Liste (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Die gewählte Zeile als Id; 0 = keine (Prüfhilfe für Tests).</summary>
+    public int GewaehltId => int.TryParse(_gewaehlt, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id) ? id : 0;
+
+    /// <summary>Das Stammblatt der gewählten Zeile (Prüfhilfe für Tests).</summary>
+    public TwwNutzungsartDetailDaten? Stamm => _detail;
+
+    /// <summary>Das Warnband des Dialogs (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Der offene Editor (Prüfhilfe für Tests); <c>null</c> = keiner.</summary>
+    public TwwNutzungsartEditorDaten? Editor => _editor;
+
+    /// <summary>Steht die Überlagerung des Imports? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _importOffen;
+
+    /// <summary>Der Bericht des letzten Imports (Prüfhilfe für Tests).</summary>
+    public TwwImportberichtDaten? Bericht => _bericht;
+
+    private string FokusText => _detail is null ? "" : _detail.Name + " · " + _detail.Katalogversion;
+
+    private string EditorTitel => _editor?.Modus switch
+    {
+        TwwEditorModus.Neu => Texte.EditorTitelNeu,
+        TwwEditorModus.Aendern => Texte.EditorTitelAendern,
+        _ => Texte.EditorTitelSpeichernUnter
+    };
+
+    private EventCallback BlattOeffnenWeg => _blattOffen ? default : _blattOeffnen;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        _speichernUnterWeg = EventCallback.Factory.Create(this, BeiSpeichernUnter);
+        _loeschenWeg = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _blattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _blattOffen = false);
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? Katalogfilterprofil.SCHLUESSEL_TWW_NUTZUNGSART);
+        _blatttexte = new Stammblatttexte { NurLesen = Texte.GrundAuslieferung };
+        KatalogLaden(0);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    /// <summary>
+    /// Liest die Liste neu und wählt <paramref name="ziel"/> (0 = die bisherige Wahl, sonst die erste
+    /// Zeile) — das Stammblatt ist nie leer, solange die Liste Zeilen hat.
+    /// </summary>
+    private void KatalogLaden(int ziel)
+    {
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        string schluessel = ziel > 0 ? ziel.ToString(CultureInfo.InvariantCulture) : _gewaehlt;
+        if (_katalog.All(z => z.Schluessel != schluessel)) schluessel = _katalog.Count > 0 ? _katalog[0].Schluessel : "";
+        Waehlen(schluessel);
+    }
+
+    private void BeiZeile(string schluessel)
+    {
+        _meldung = "";
+        _kennung = "";
+        Waehlen(schluessel ?? "");
+    }
+
+    /// <summary>Eine Zeile wählen: das Stammblatt aus der Hülle (Kennwerte, Vorschau, Sperrgründe).</summary>
+    private void Waehlen(string schluessel)
+    {
+        _gewaehlt = schluessel ?? "";
+        _detail = GewaehltId > 0 ? Detail?.Invoke(GewaehltId) : null;
+    }
+
+    // =====================================================================
+    // Auswahlleiste: Speichern unter…, Löschen
+    // =====================================================================
+
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(2);
+        if (EditorLaden is not null && Speichern is not null)
+            liste.Add(new(Texte.KnopfSpeichernUnter, _speichernUnterWeg) { Hoechstens = 1 });
+        if (Loeschen is not null)
+            liste.Add(new(Texte.KnopfLoeschen, _loeschenWeg)
+            {
+                Hoechstens = 1,
+                Sperrgrund = _detail?.LoeschGrund ?? ""
+            });
+        return liste;
+    }
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _kennung = "";
+    }
+
+    private void BeiSpeichernUnter() => EditorOeffnen(TwwEditorModus.SpeichernUnter);
+
+    private void BeiAendern() => EditorOeffnen(TwwEditorModus.Aendern);
+
+    private void BeiNeu()
+    {
+        if (EditorLaden is null) return;
+        _meldung = "";
+        _status = "";
+        _editor = EditorLaden(_detail?.Id ?? 0, TwwEditorModus.Neu);
+    }
+
+    /// <summary>Der Editor zur gewählten Zeile; ohne Wahl nennt das Band den Grund.</summary>
+    private void EditorOeffnen(TwwEditorModus modus)
+    {
+        if (EditorLaden is null) return;
+        if (_detail is null)
+        {
+            Warnen(Texte.GrundKeineWahl);
+            return;
+        }
+        _meldung = "";
+        _status = "";
+        _editor = EditorLaden(_detail.Id, modus);
+    }
+
+    /// <summary>Der Editor hat geschrieben: Liste neu, die Zeile, die jetzt die Werte trägt, gewählt.</summary>
+    private void EditorGeschlossen(TwwNutzungsartSpeicherErgebnis? e)
+    {
+        _editor = null;
+        if (e is not { Ok: true }) return;
+        KatalogLaden(e.Id);
+        _status = e.Meldung;
+    }
+
+    /// <summary>„Löschen": weich gesperrt mit Grund (Auslieferung, benutzt); sonst die Rückfrage.</summary>
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+        if (_detail is null)
+        {
+            Warnen(Texte.GrundKeineWahl);
+            return;
+        }
+        if (_detail.LoeschGrund.Length > 0)
+        {
+            Warnen(_detail.LoeschGrund);
+            return;
+        }
+        _loeschziel = _detail.Id;
+        _loeschfrage = Format(Texte.FrageLoeschen, _detail.Name + " · " + _detail.Katalogversion);
+        _loeschfrageOffen = true;
+    }
+
+    private void LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null || _loeschziel <= 0) return;
+        TwwNutzungsartSpeicherErgebnis e = Loeschen(_loeschziel);
+        _loeschziel = 0;
+        if (!e.Ok)
+        {
+            _meldung = e.Meldung;
+            _kennung = e.Kennung;
+            return;
+        }
+        _gewaehlt = "";
+        KatalogLoeschenNachlesen();
+        _status = e.Meldung;
+    }
+
+    private void KatalogLoeschenNachlesen() => KatalogLaden(0);
+
+    // =====================================================================
+    // Tagesgang…, Kategorien…, Grafik…
+    // =====================================================================
+
+    private void BeiTagesgang()
+    {
+        if (TagesgangGaben is null) return;
+        if (_detail is null) { Warnen(Texte.GrundKeineWahl); return; }
+        _meldung = "";
+        _status = "";
+        _tagesgangGaben = TagesgangGaben(_detail.Id);
+    }
+
+    private void BeiKategorien()
+    {
+        if (KategorienGaben is null) return;
+        if (_detail is null) { Warnen(Texte.GrundKeineWahl); return; }
+        _meldung = "";
+        _status = "";
+        _kategorienGaben = KategorienGaben(_detail.Id);
+    }
+
+    /// <summary>Der Tagesgang ist geschrieben — eine gesperrte Nutzungsart kam als neue Katalogversion; sie wird gewählt.</summary>
+    private void TagesgangGeschlossen(ZapfprofilTagesgangErgebnis? e)
+    {
+        _tagesgangGaben = null;
+        if (e is not { Ok: true }) return;
+        KatalogLaden(e.IdNutzungsart);
+        _status = Format(Texte.MeldungTagesgang, FokusText);
+    }
+
+    private void KategorienGeschlossen(ZapfprofilKategorienErgebnis? e)
+    {
+        _kategorienGaben = null;
+        if (e is not { Ok: true }) return;
+        KatalogLaden(e.IdNutzungsart);
+        _status = Format(Texte.MeldungKategorien, FokusText);
+    }
+
+    private void BeiGrafik()
+    {
+        if (_detail is null) { Warnen(Texte.GrundKeineWahl); return; }
+        if (_detail.TagesgangModell is null)
+        {
+            Warnen(_detail.VorschauGrund);
+            return;
+        }
+        _grafikOffen = true;
+    }
+
+    // =====================================================================
+    // Import…
+    // =====================================================================
+
+    private void ImportOeffnen()
+    {
+        if (Importieren is null) return;
+        _meldung = "";
+        _bericht = null;
+        _pfad = "";
+        _importOffen = true;
+    }
+
+    private void ImportSchliessen()
+    {
+        _importOffen = false;
+        _bericht = null;
+    }
+
+    /// <summary>Die Paketwahl der Plattform — über den Delegaten der Hülle, erwartet (nie synchron).</summary>
+    private async Task<string?> PaketWahl(string filter)
+        => PaketWaehlen is null ? null : await PaketWaehlen(filter);
+
+    private void BeiPaket(string pfad)
+    {
+        _pfad = pfad ?? "";
+        _bericht = null;
+    }
+
+    /// <summary>„Importieren": der Bericht bleibt in der Überlagerung stehen; die erste neue Nutzungsart wird gewählt.</summary>
+    private void BeiImportieren()
+    {
+        if (Importieren is null) return;
+        if (_pfad.Length == 0)
+        {
+            _bericht = new TwwImportberichtDaten { Abgebrochen = true, Abbruch = Texte.ImportKeinPaket };
+            return;
+        }
+        _bericht = Importieren(_pfad);
+        if (_bericht.Abgebrochen) return;
+        IReadOnlyList<int> neu = _bericht.NeueIds;
+        KatalogLaden(neu.Count > 0 ? neu[0] : 0);
+        _status = Format(Texte.MeldungImportiert, _bericht.Zusammenfassung);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    /// <summary>„Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg.</summary>
+    private Task Beenden() => Geschlossen.InvokeAsync(true);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_loeschfrageOffen || _editor is not null || _tagesgangGaben is not null || _kategorienGaben is not null
+            || _grafikOffen || _importOffen) return Task.CompletedTask;
+        if (_blattOffen)
+        {
+            _blattOffen = false;
+            return Task.CompletedTask;
+        }
+        return Beenden();
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TwwNutzungsartAdminKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Wahl der Zeile und drei Anzeigen.</summary>
+    private TwwNutzungsartAdminKiSicht KiSicht() => _kiSicht ??= new TwwNutzungsartAdminKiSicht
+    {
+        SatzLesen = () => GewaehltId > 0 ? GewaehltId : null,
+        SatzSetzen = id =>
+        {
+            string s = id?.ToString(CultureInfo.InvariantCulture) ?? "";
+            if (_katalog.All(z => z.Schluessel != s)) return ZapfprofilKiRegeln.ZeileFehlt;
+            Waehlen(s);
+            _ = InvokeAsync(StateHasChanged);
+            return null;
+        },
+        SatzEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Id, z => z.Bezeichner + " · " + z.Text(Katalogfilterprofil.SpKatalogversion)),
+        KatalogversionLesen = () => _detail?.Katalogversion ?? "",
+        StandLesen = () => _detail?.Unterzeile ?? "",
+        SperrgrundLesen = () => _detail?.AendernGrund ?? ""
+    };
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+}

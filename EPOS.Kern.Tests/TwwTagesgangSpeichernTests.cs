@@ -184,6 +184,51 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Eine_geaenderte_Reihe_bitgleich_einer_Vorlage_traegt_deren_Herkunft()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+
+            // Eine Vorlage, deren Samstag (Tagtyp 2) genau die Reihe trägt, auf die "OK" den
+            // Samstag von Satz A ändert (Spitze auf Stunde 10) — mit eigener Herkunft.
+            int vorlage = TwwTestdatenbank.TagesgangsatzAnlegen("Satz V", "V1");
+            string spalten = string.Join(", ", Enumerable.Range(1, 24)
+                .Select(h => "\"Anteil_" + h.ToString("00") + "\" = " + (h == 10 ? "1.0" : "0.0")));
+            DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_TwwTagesgang_STAMM\" SET " + spalten +
+                ", \"Quelle\" = 'VDI 6002', \"Ausgabe\" = '2019', \"Version\" = 'V1', \"Herkunftsart\" = 'VERFAHREN' " +
+                "WHERE \"ID_Tagesgangsatz\" = ? AND \"Tagtyp\" = 2", new DbParam("@id", vorlage));
+
+            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(id, GaengeNeu(), WocheAlt, idVorlageSatz: vorlage);
+            Assert.True(erg.Ok);
+            Assert.Equal(satz, erg.IdTagesgangsatz);                                // an Ort und Stelle, kein neuer Satz
+
+            Tagesgangsatz s = Satz(satz);
+            Assert.Equal(1.0, s.Anteile[1, 9]);
+            Assert.Equal(new Provenienz("VDI 6002", "2019", "V1", Herkunftsart.Verfahren), s.JeTagtyp[1]);
+            Assert.Equal(Herkunftsart.Fiktiv, s.JeTagtyp[0].Art);                    // unveränderter Tagtyp bleibt, wie er war
+        }
+
+        [Fact]
+        public void Eine_Reihe_innerhalb_der_Gleichtoleranz_gilt_als_unveraendert()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.ZoneAnlegen(1, id, "Zone", 10.0);          // Satz benutzt: eine echte Änderung erzwänge einen neuen Satz
+
+            List<double[]> fastGleich = GaengeAlt();
+            fastGleich[0][6] += 1e-13;                                  // innerhalb der Toleranz 1e-12
+            fastGleich[0][18] -= 1e-13;
+
+            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(id, fastGleich, WocheAlt);
+            Assert.True(erg.Ok);
+            Assert.Equal(satz, erg.IdTagesgangsatz);                    // kein neuer Satz — nichts gilt als geändert
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM \"Tab_TwwTagesgangsatz_STAMM\""));
+        }
+
+        [Fact]
         public void Ohne_Aenderung_wird_nichts_geschrieben()
         {
             using var db = new TwwTestdatenbank();

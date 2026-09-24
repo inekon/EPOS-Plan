@@ -306,7 +306,7 @@ namespace EPOS.Kern.Tests
             SimulationProtokoll.NeuStarten();
             waerme.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
             Assert.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, waerme.Fehlertext);
-            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, waerme.Fehlertext);
+            Assert.Contains("Parameterkatalog des Zapfprofils", waerme.Fehlertext);
             Assert.Single(SimulationProtokoll.Aktuell.Fehler);
             Assert.Equal(0.0, waerme.Waermebedarf_Gesamt);
             Assert.Equal(0.0, waerme.Waermebedarf_Brauchwasser);
@@ -317,7 +317,7 @@ namespace EPOS.Kern.Tests
             BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Brauchwasser, PROJEKT, new List<string>());
             Assert.True(v.Zapfprofilweg);
             Assert.False(v.Erfolgreich);
-            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, v.Meldung);
+            Assert.Contains("Parameterkatalog des Zapfprofils", v.Meldung);
         }
 
         /// <summary>
@@ -433,7 +433,7 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            Assert.Equal(15, schluessel.Length);
+            Assert.Equal(18, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
         }
 

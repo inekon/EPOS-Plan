@@ -123,8 +123,7 @@ namespace WindowsFormsApplication1
                 double rate = Rate(k, tagesmengeKwh, spreizungK);
                 if (double.IsNaN(rate) || double.IsInfinity(rate) || rate < 0)
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, satz.Zone,
-                        "Nicht rechenbar — die Zapfkategorie „" + (k.Kategorie.Name ?? "") + "“ der Zone „" + satz.Zone
-                        + "“ ergibt keine endliche Rate der Ereignisse.");
+                        ZapfSatz.Neu("EINGABE_KATEGORIE_RATE", k.Kategorie.Name ?? "", satz.Zone));
                 if (!(rate > 0)) continue;
                 int anzahl = z.Poisson(rate);
                 if (anzahl == 0) continue;

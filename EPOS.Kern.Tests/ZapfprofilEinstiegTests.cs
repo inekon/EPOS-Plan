@@ -132,7 +132,7 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Zapfprofilweg);
 
             string meldung = ZapfprofilHuelle.Leistenmeldung(v);
-            Assert.StartsWith("Zone „Zone leer“ trägt 0: ", meldung);
+            Assert.Equal("Die Zone „Zone leer“ hat keine positive Bezugsmenge.", meldung);
             Assert.DoesNotContain(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, meldung);
 
             // Der Ergebnisdialog stapelt die Zirkulation und nennt sie als eigenen Posten.
@@ -208,7 +208,7 @@ namespace EPOS.Kern.Tests
                 PROJEKT, new List<Z_ProjektBrauchwasserModel>(), behaelter);
 
             Assert.False(e.Erfolg);
-            Assert.Equal("ZPG_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
+            Assert.Equal("ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT", e.Meldung.Kennung);
             Assert.StartsWith("Das Zapfprofil wurde nicht gespeichert — ", e.Meldung.Text);
             Assert.Equal(vorher, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Count);
             Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(PROJEKT));

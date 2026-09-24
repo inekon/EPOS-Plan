@@ -129,6 +129,17 @@
 //      Dialog seit MN-1 den Reiter "Status & Aktivierung". Der Textschluessel
 //      MENU_LIZENZ_VERWALTUNG bleibt wie MENU_PC_BEARBEITEN, MENU_PV und
 //      MENU_KLIMA im Katalog stehen und wird vom Menue nicht mehr gelesen.
+//
+// ZAPFPROFILGENERATOR (Umsetzungskonzept 5.4, Stufe Z4) - der Punkt
+// "Brauchwasser" in "Waermebedarf & Heizung" wird ein UNTERMENUE mit zwei
+// Punkten: "Brauchwasserprofile" (MenuItem_Brauchwasserprofile,
+// MENU_BRAUCHWASSERPROFILE) traegt das bisherige Ziel
+// Seitenschluessel.BrauchwasserAdmin, "Brauchwasser-Nutzungsarten"
+// (MenuItem_BrauchwasserNutzungsarten, MENU_BRAUCHWASSER_NUTZUNGSARTEN) das NEUE
+// Ziel Seitenschluessel.BrauchwasserNutzungsarten, den Katalog des
+// Zapfprofilgenerators. Der Knoten behaelt Namen und Textschluessel
+// (MenuItem_Brauchwasser, MENU_BRAUCHWASSER) und verliert sein Ziel; die Regel
+// "kein Untermenue mit nur EINEM Punkt" bleibt gewahrt.
 
 using System;
 using System.Collections.Generic;
@@ -139,7 +150,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>59 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>61 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -151,16 +162,17 @@ namespace EPOS.UI.Bausteine;
 /// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
 /// Ein-Punkt-Untermenue MenuItem_Klima, mit W13-E-2 kommt der
 /// Stromspeicherimport hinzu, mit SIM-Q3 der Punkt „Simulation…", mit
-/// ND-Q3 der Punkt „Nutzungsdauern (AfA)…", und mit MN-1 faellt
-/// MenuItem_LizenzVerwaltung. Also
+/// ND-Q3 der Punkt „Nutzungsdauern (AfA)…", mit MN-1 faellt
+/// MenuItem_LizenzVerwaltung, und mit dem Zapfprofilgenerator (5.4) kommen
+/// die zwei Punkte unter „Brauchwasser" hinzu. Also
 /// 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 = 59, dazu 13 Trennstriche
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 = 61, dazu 13 Trennstriche
 /// (8 aus dem Bestand und die 5 aus MN-1: vier in der obersten Ebene des
 /// Kopfes "Administration", einer in "Daten &amp; Import").</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 59 Punkten handeln <b>46</b>, 13 klappen auf.
+/// vier klappen nur auf; von den 61 Punkten handeln <b>47</b>, 14 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
@@ -169,7 +181,8 @@ namespace EPOS.UI.Bausteine;
 /// Stromspeicherimport (44 -> 45) und mit SIM-Q3 (Auftrag #207) um die Ansicht
 /// „Simulation" (45 -> 46); GESUNKEN ist sie genau einmal - mit MN-1
 /// (19.09.2026) faellt der zweite Weg zur Lizenzverwaltung (47 -> 46), weil
-/// derselbe Dialog unter Hilfe -> Lizenz steht.</para>
+/// derselbe Dialog unter Hilfe -> Lizenz steht. Mit dem Zapfprofilgenerator
+/// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -233,7 +246,14 @@ public static class Menuetabelle
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminOrt"),
             new Menuepunkt("MenuItem_WBundHeizung", "MENU_WBUND_HEIZUNG", "", bild: "Menu1")
             {
-                new Menuepunkt("MenuItem_Brauchwasser", "MENU_BRAUCHWASSER", Seitenschluessel.BrauchwasserAdmin),
+                // Zapfprofilgenerator 5.4: aus dem Punkt wird ein Untermenue mit
+                // den Profilen (bisheriges Ziel) und dem Katalog der Nutzungsarten.
+                new Menuepunkt("MenuItem_Brauchwasser", "MENU_BRAUCHWASSER", "")
+                {
+                    new Menuepunkt("MenuItem_Brauchwasserprofile", "MENU_BRAUCHWASSERPROFILE", Seitenschluessel.BrauchwasserAdmin),
+                    new Menuepunkt("MenuItem_BrauchwasserNutzungsarten", "MENU_BRAUCHWASSER_NUTZUNGSARTEN",
+                                   Seitenschluessel.BrauchwasserNutzungsarten),
+                },
                 // W16c-E-6: die neue Unterrubrik. Sie ist die zweite Zeile ohne
                 // Designer-Herkunft (nach dem Kopf "Sprache") und traegt darum
                 // KEIN Bild; ihre drei Punkte kommen unveraendert aus

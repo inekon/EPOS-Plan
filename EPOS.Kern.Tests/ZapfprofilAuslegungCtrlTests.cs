@@ -321,7 +321,7 @@ namespace EPOS.Kern.Tests
             Auslegungsgruppe g = Assert.Single(r.Ergebnis.Gruppen);
             Assert.Equal(ZapfBedarfstagquelle.Konstruktor, g.Bedarfstagwahl.Quelle);
             Assert.Equal("Probetag (fiktiv)", g.Bedarfstag.Bezeichner);
-            Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.Grund);
+            Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.GrundText);
             Assert.True(g.Empfehlung.VolumenL > 0);
             double nenn = g.Empfehlung.NenninhaltL.Value;
             Assert.True(AuslegungTestbau.NENNINHALTE.Contains(nenn), "Nenninhalt " + nenn + " l steht nicht in der Vorgabeliste.");
@@ -334,7 +334,23 @@ namespace EPOS.Kern.Tests
                 new Auslegungslauf(ZapfErzeugerart.Waermepumpe, null));
             Auslegungsgruppe gw = Assert.Single(ohneWerkstoff.Ergebnis.Gruppen);
             Assert.False(gw.Empfehlung.Rechenbar);
-            Assert.Contains("Werkstoff", gw.Empfehlung.Grund);
+            Assert.Contains("Werkstoff", gw.Empfehlung.GrundText);
+
+            // Schritt 124 (N10 (i)): Ohne Laufangabe gilt die gespeicherte Wahl des Projekts — der
+            // Werkstoff aus der Projektzeile macht die Summenlinie rechenbar, die Erzeugerart der
+            // Projektzeile geht dem Vorschlag des Anlagenbestands vor.
+            ZapfprofilStand gewaehlt = mit with
+            {
+                Projekt = ZapfprofilCtrl.ProjektVorgabe() with
+                {
+                    Erzeugerart = ZapfErzeugerart.Kessel, UebertragerWerkstoff = ZapfUebertragerwerkstoff.Stahl
+                }
+            };
+            Auslegungsrechnung ausProjekt = ZapfprofilCtrl.Auslegung(PROJEKT, gewaehlt, jan1, we, new Auslegungslauf(null, null));
+            Assert.Equal(ZapfErzeugerart.Kessel, ausProjekt.Erzeugerart);
+            Assert.True(Assert.Single(ausProjekt.Ergebnis.Gruppen).Empfehlung.Rechenbar);
+            Assert.Equal(ZapfErzeugerart.Waermepumpe,
+                ZapfprofilCtrl.Auslegung(PROJEKT, gewaehlt, jan1, we, new Auslegungslauf(ZapfErzeugerart.Waermepumpe, null)).Erzeugerart);
         }
 
         // =================================================================================

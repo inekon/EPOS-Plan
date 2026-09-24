@@ -168,6 +168,15 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static readonly string[] Normkuerzel = { "DIN", "EN", "ISO", "IEC", "VDI", "TRY" };
 
+        /// <summary>
+        /// Zwei Normbezeichnungen der Brauchwasserauslegung, die das Typcode-Muster als Ganzes trifft:
+        /// <c>A100</c> (Beiblatt zu DIN EN 12831-3) und <c>W551</c> (DVGW-Arbeitsblatt W 551). Sie
+        /// stehen in Oberflächentexten des Zapfprofilgenerators und — geklebt — in den Schlüsseln
+        /// seines Parameterkatalogs (<c>A100.Ladungsfaktor</c>, <c>W551.Mindesttemperatur</c>); ein
+        /// Produkt sind sie nicht.
+        /// </summary>
+        private static readonly string[] Normbezeichnungen = { "A100", "W551" };
+
         // =====================================================================
         //  Der Wächter
         // =====================================================================
@@ -314,6 +323,117 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Zapfprofilgenerator (Konzept Kapitel 6 (e), ZU-Folge (c)): die Katalogtexte
+        //  der Tab_Tww*_STAMM und die Ressourcen ZPG_/ZPGK_
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Kein Katalogtext der Tww-Kataloge nennt einen Hersteller, ein Produkt oder eine
+        /// Typbezeichnung</b> (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (e)): jede Textspalte
+        /// jeder <c>Tab_Tww*_STAMM</c> der Testdatenbank — Bezeichner, Quellen, Ausgaben, Versionen,
+        /// Parameterschlüssel und Kategorien — AUSSER der internen Spalte <c>Beleg</c>, die eine
+        /// Sekundärquelle tragen darf und die weder Oberfläche, Bericht noch KiSicht zeigen. Dieselben
+        /// drei Quellen der verbotenen Namen wie für die Wiki-Seiten.
+        /// </summary>
+        [Fact]
+        public void Kein_Katalogtext_der_Tww_Kataloge_nennt_Hersteller_oder_Produktdaten()
+        {
+            if (!_db.Vorhanden) return;
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            var funde = new List<string>();
+            int texte = 0;
+            foreach ((string tabelle, string spalte) in TwwTextspalten())
+                foreach (string wert in Werte(tabelle, spalte))
+                {
+                    texte++;
+                    funde.AddRange(Fundstellen(tabelle + "." + spalte, wert, begriffe));
+                }
+
+            Assert.True(texte > 100, "Nur " + texte + " Katalogtexte der Tww-Kataloge gelesen.");
+            Assert.True(funde.Count == 0,
+                "Diese Katalogtexte der Tww-Kataloge nennen einen Hersteller, ein Produkt oder eine " +
+                "Typbezeichnung (Konzept Zapfprofilgenerator 6 (e)) - eine Sekundärquelle gehört in " +
+                "die interne Spalte Beleg:\n" + string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Keine Ressource des Zapfprofilgenerators</b> (<c>ZPG_…</c> samt der Satzmuster
+        /// <c>ZPG_SATZ_…</c>, <c>ZPGK_…</c> des Katalogdialogs) nennt in einer der beiden Sprachen einen
+        /// Hersteller, ein Produkt oder eine Typbezeichnung.
+        /// </summary>
+        [Fact]
+        public void Keine_Ressource_des_Zapfprofilgenerators_nennt_Hersteller_oder_Produktdaten()
+        {
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            var funde = new List<string>();
+            var schluessel = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string datei in new[] { "Resource.resx", "Resource.en-US.resx" })
+                foreach ((string k, string wert) in Zapfressourcen(datei))
+                {
+                    schluessel.Add(k);
+                    funde.AddRange(Fundstellen(datei + ":" + k, wert, begriffe));
+                }
+
+            Assert.True(schluessel.Count > 1000, "Nur " + schluessel.Count + " Schlüssel ZPG_/ZPGK_ gelesen.");
+            Assert.Contains("ZPGK_TITEL", schluessel);
+            Assert.Contains("ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION", schluessel);
+            Assert.True(funde.Count == 0,
+                "Diese Ressourcen des Zapfprofilgenerators nennen einen Hersteller, ein Produkt oder " +
+                "eine Typbezeichnung:\n" + string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zu den Tww-Fällen:</b> ein Herstellername und ein Typcode in einem Katalogtext
+        /// schlagen an; die Normbezeichnungen der Parameterschlüssel (<c>A100.…</c>, <c>W551.…</c>,
+        /// <c>DIN4708.…</c>) und die freien Quellen des Paketteils nicht.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_Katalogtexte_mit_Hersteller_schlagen_an_Normschluessel_nicht()
+        {
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            Assert.NotEmpty(Fundstellen("Tab_TwwNutzungsart_STAMM.Bezeichner", "Wohnen mit Vitocal", begriffe));
+            Assert.NotEmpty(Fundstellen("Tab_TwwNutzungsart_STAMM.Bedarf_Quelle", "Datenblatt JKM400M", begriffe));
+            Assert.NotEmpty(Fundstellen("Tab_TwwParameter_STAMM.Schluessel", "A1000.Wert", begriffe));
+
+            foreach (string erlaubt in new[]
+                     {
+                         "A100.Ladungsfaktor", "A100-Referenzprofil aus dem Katalog", "W551.Mindesttemperatur",
+                         "DIN4708.Profil.Block.1.Anteil", "DIN18599.Wohnen.a", "Jordan/Vajen (IEA SHC Task 26)",
+                         "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L", "VDI 6002 Blatt 2 (abgeleitet)"
+                     })
+                Assert.True(Fundstellen("probe", erlaubt, begriffe).Count == 0, erlaubt);
+        }
+
+        /// <summary>Die Textspalten aller <c>Tab_Tww*_STAMM</c> der Testdatenbank — ohne <c>Beleg</c>.</summary>
+        private static IEnumerable<(string Tabelle, string Spalte)> TwwTextspalten()
+        {
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'Tab_Tww%' ORDER BY name");
+            if (t == null) yield break;
+            foreach (DataRow r in t.Rows)
+            {
+                string tabelle = Convert.ToString(r[0]);
+                if (!tabelle.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                DataTable s = DataRepository.GetDataTable("SELECT name, type FROM pragma_table_info(?)", new DbParam("@t", tabelle));
+                foreach (DataRow z in s.Rows)
+                {
+                    string spalte = Convert.ToString(z[0]);
+                    string typ = Convert.ToString(z[1]) ?? "";
+                    if (spalte == "Beleg" || !typ.StartsWith("TEXT", StringComparison.OrdinalIgnoreCase)) continue;
+                    yield return (tabelle, spalte);
+                }
+            }
+        }
+
+        /// <summary>Die Einträge <c>ZPG_…</c> und <c>ZPGK_…</c> einer Ressourcendatei, dekodiert.</summary>
+        private static IEnumerable<(string Schluessel, string Wert)> Zapfressourcen(string datei)
+        {
+            string text = File.ReadAllText(Path.Combine(Arbeitsbaum(), "EPOS.Kern", "MyResource", datei));
+            foreach (Match m in Regex.Matches(text, @"<data name=""(?<k>ZPGK?_[^""]+)""[^>]*>\s*<value>(?<v>.*?)</value>", RegexOptions.Singleline))
+                yield return (m.Groups["k"].Value, System.Net.WebUtility.HtmlDecode(m.Groups["v"].Value));
+        }
+
+        // =====================================================================
         //  Die Regel als Funktion — dieselbe für den Bestand und die Gegenproben
         // =====================================================================
 
@@ -410,6 +530,11 @@ namespace EPOS.Kern.Tests
                 if (treffer.Length > k.Length
                     && treffer.StartsWith(k, StringComparison.Ordinal)
                     && char.IsDigit(treffer[k.Length]))
+                    return true;
+            // A100 und W551 als ganze Bezeichnung („A100", „A100-Referenzprofil"), nicht „A1000".
+            foreach (string n in Normbezeichnungen)
+                if (treffer.StartsWith(n, StringComparison.Ordinal)
+                    && (treffer.Length == n.Length || !char.IsDigit(treffer[n.Length])))
                     return true;
             return false;
         }

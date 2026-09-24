@@ -1191,6 +1191,19 @@ for (const [nr, name, maske, art, zeilen] of IMPORT) {
   }
 }
 
+// ZAPFPROFILGENERATOR (Stufe Z4, Gruppe 3): der Katalog der Brauchwasser-
+// Nutzungsarten (Seite maske=tww) im Geruest der Verwaltungen - Liste mit sechs
+// Spalten (Zeile ist Wahl, Schloss, keine Kaestchen), Stammblatt mit Kennwerten und
+// zwei Bildern, Fussleiste Import/Neu/Beenden. Er laeuft durch Stufe 1 bis 3 und
+// durch stufe4probe: das Bild der Gruppe "Tagesgang" ganz im Stammblatt, "Import..."
+// oeffnet die Ueberlagerung des Katalogimports (epos-einlesen) mit Titel und Kreuz.
+// 40 Saetze im Mass eines ausgelieferten Katalogs.
+for (const [buchstabe, breite] of [['a', 1088], ['b', 400]]) {
+  FAELLE.push({ name: `N23${buchstabe}_tww_${breite}x624`, maske: 'tww', art: '', zeilen: 40, breite, hoehe: 624,
+                stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true,
+                stufe3: true, stufe4: true, mindestZeilen: breite >= 900 ? 8 : 0 });
+}
+
 if (FOTOS) await mkdir(FOTOS, { recursive: true });
 
 const browser = await chromium.launch({ headless: true });

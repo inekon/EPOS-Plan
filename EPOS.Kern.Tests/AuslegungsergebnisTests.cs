@@ -47,6 +47,26 @@ namespace EPOS.Kern.Tests
             Uebertragerwerkstoff = ZapfUebertragerwerkstoff.Edelstahl
         };
 
+        /// <summary>
+        /// Ein Befund der Bilanz behält in der Auslegung seine Stufe (Warnlogik Z4): Der überschriebene
+        /// Bedarf außerhalb der Bandbreite des Niveaus ist dort wie in der Bilanz eine Warnung.
+        /// </summary>
+        [Fact]
+        public void Eine_Warnung_der_Bilanz_bleibt_in_der_Auslegung_eine_Warnung()
+        {
+            Nutzungsart eng = Art(1, bandbreite: new Bedarfsbandbreite(new double?[3], new double?[] { 3.0, 3.0, 3.0 }));
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 40.0, 1) with
+            {
+                BedarfSpezKwhJeEinheitTag = 5.0,
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
+            };
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(ZapfprofilTestbau.Eingang(Projekt(), Auslegungssatz(), wohnhaus),
+                                                               new[] { eng }, Zusatz());
+            Auslegungshinweis h = Assert.Single(r.Hinweise, x => x.Code == Mengengeruest.HINWEIS_BANDBREITE);
+            Assert.True(h.Warnung);
+            Assert.Equal("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", h.Satz.Kennung);
+        }
+
         [Fact]
         public void Es_gibt_genau_eine_Empfehlung()
         {
@@ -63,7 +83,7 @@ namespace EPOS.Kern.Tests
             Assert.True(speicher.Dreiergruppe[0].Empfohlen);
             Assert.Equal(speicher.Summenlinie.Punkt.VolumenL, speicher.Empfehlung.VolumenL);
             Assert.True(speicher.Empfehlung.NenninhaltL >= speicher.Empfehlung.VolumenL);
-            Assert.Contains(Summenlinie.VERMERK_ENTWURF, speicher.Empfehlung.Vermerk);
+            Assert.Contains(speicher.Empfehlung.Vermerke, v => v.Kennung == Summenlinie.VERMERK_ENTWURF);
             Assert.Equal(3, speicher.Dreiergruppe.Count);
             Assert.NotNull(speicher.Speicherauslegung);
             Assert.NotNull(speicher.Grossanlage);
@@ -96,7 +116,7 @@ namespace EPOS.Kern.Tests
         {
             Auslegungswert p = Dreiergruppe.PerzentilOffen();
             Assert.Equal(Auslegungsstatus.NichtGerechnet, p.Status);
-            Assert.Equal(Dreiergruppe.PERZENTIL_OFFEN, p.Text);
+            Assert.Equal(Dreiergruppe.PERZENTIL_OFFEN, p.Satz.Kennung);
             Assert.False(p.Empfohlen);
             Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(Eingang(), new[] { Wohnen, Buero }, Zusatz());
             Assert.All(r.Gruppen, g => Assert.Equal(Auslegungsstatus.NichtGerechnet, g.Dreiergruppe[1].Status));
@@ -105,21 +125,21 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Reihenfolge_wird_groessengleich_geprueft()
         {
-            Auslegungswert Sl(double v) => new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.Gerechnet, v, 10.0, true, "");
-            Auslegungswert Norm(double v) => new Auslegungswert(ZapfAuslegungsverfahren.Normvergleich, Auslegungsstatus.Gerechnet, v, null, false, "");
+            Auslegungswert Sl(double v) => new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.Gerechnet, v, 10.0, true, null);
+            Auslegungswert Norm(double v) => new Auslegungswert(ZapfAuslegungsverfahren.Normvergleich, Auslegungsstatus.Gerechnet, v, null, false, null);
             Auslegungswert offen = Dreiergruppe.PerzentilOffen();
 
             // Speicher, Liter: V_Summenlinie < V_DIN erwartet.
             Assert.Empty(Dreiergruppe.Reihenfolge(ZapfTopologie.Speicher, Sl(300), offen, Norm(400)));
             Assert.Single(Dreiergruppe.Reihenfolge(ZapfTopologie.Speicher, Sl(500), offen, Norm(400)));
             // Mit Perzentil (Z3): V_Perzentil ≤ V_Summenlinie.
-            var perz = new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, 600, null, false, "");
+            var perz = new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, 600, null, false, null);
             Assert.Single(Dreiergruppe.Reihenfolge(ZapfTopologie.Speicher, Sl(500), perz, Norm(700)));
 
             // Durchfluss, kW: P_Perzentil ≤ P_Bedarfstag; der Literwert der Norm wird nie gegen kW gehalten.
-            var spitze = new Auslegungswert(ZapfAuslegungsverfahren.Minutenspitze, Auslegungsstatus.Gerechnet, null, 30.0, true, "");
+            var spitze = new Auslegungswert(ZapfAuslegungsverfahren.Minutenspitze, Auslegungsstatus.Gerechnet, null, 30.0, true, null);
             Assert.Empty(Dreiergruppe.Reihenfolge(ZapfTopologie.Durchfluss, spitze, offen, Norm(10)));
-            var perzKw = new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, null, 40.0, false, "");
+            var perzKw = new Auslegungswert(ZapfAuslegungsverfahren.Perzentil, Auslegungsstatus.Gerechnet, null, 40.0, false, null);
             Assert.Single(Dreiergruppe.Reihenfolge(ZapfTopologie.Durchfluss, spitze, perzKw, Norm(10)));
             perzKw = perzKw with { LeistungKw = 20.0 };
             Assert.Empty(Dreiergruppe.Reihenfolge(ZapfTopologie.Durchfluss, spitze, perzKw, Norm(10)));
@@ -303,7 +323,7 @@ namespace EPOS.Kern.Tests
             g = Durchflussgruppe(p, buero, weitere);
             Assert.Null(g.Bedarfstag);
             Assert.False(g.Empfehlung.Rechenbar);
-            Assert.Contains("verschiedene Bezugsarten", g.Empfehlung.Grund);
+            Assert.Contains("verschiedene Bezugsarten", g.Empfehlung.GrundText);
             Assert.Contains(g.Hinweise, h => h.Code == "BEDARFSTAG_NICHT_RECHENBAR");
 
             // θ_KW,A des Projekts 10 °C statt 12 °C des Katalogs: Faktor (50 − 10) / (50 − 12) bei θ_Zapf 50 °C.
@@ -314,7 +334,7 @@ namespace EPOS.Kern.Tests
             ZonenStand heiss = Zone("Büro 2", 2, 10.0, 2) with { Topologie = ZapfTopologie.Durchfluss, ZapftemperaturC = 55.0 };
             g = Durchflussgruppe(p with { KaltwasserAuslegungC = 10.0 }, buero, heiss);
             Assert.Null(g.Bedarfstag);
-            Assert.Contains("nicht eindeutig", g.Empfehlung.Grund);
+            Assert.Contains("nicht eindeutig", g.Empfehlung.GrundText);
             // Ohne abweichendes θ_KW,A stört die Zapftemperatur nicht.
             Assert.NotNull(Durchflussgruppe(p, buero, heiss).Bedarfstag);
         }
@@ -362,6 +382,27 @@ namespace EPOS.Kern.Tests
             // Ohne Pflichtparameter der Auslegung: benannt, kein Rückfall.
             Zapfprofileingang e = Eingang() with { Parameter = Auslegungssatz(null, ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG) };
             Assert.Throws<ParametersatzException>(() => ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen, Buero }, Zusatz()));
+        }
+
+        /// <summary>
+        /// N11 (c), Stufe Z4: Die Marke „Schnellauslegung" setzt der Kern je Stufe — in der Stufe
+        /// Einfach trägt jeder rechenbare Punkt sie, in Erweitert und Experte nur der Schnellpfad;
+        /// ohne Stufe (Lauf ohne Dialog) ebenso nur der Schnellpfad.
+        /// </summary>
+        [Fact]
+        public void Die_Stufe_Einfach_markiert_jeden_Punkt_als_Schnellauslegung()
+        {
+            Auslegungsempfehlung Speicher(ZapfStufe? stufe)
+                => ZapfprofilAuslegung.Rechnen(Eingang(), new[] { Wohnen, Buero }, Zusatz() with { Stufe = stufe })
+                                      .Gruppen.Single(g => g.Topologie == ZapfTopologie.Speicher).Empfehlung;
+
+            Auslegungsempfehlung einfach = Speicher(ZapfStufe.Einfach);
+            Assert.True(einfach.Rechenbar);
+            Assert.True(einfach.Schnellauslegung);
+            Assert.Contains(einfach.Vermerke, v => v.Kennung == "AUSTEXT_VERMERK_SCHNELLAUSLEGUNG");
+            Assert.False(Speicher(ZapfStufe.Erweitert).Schnellauslegung);
+            Assert.False(Speicher(ZapfStufe.Experte).Schnellauslegung);
+            Assert.False(Speicher(null).Schnellauslegung);
         }
     }
 }

@@ -31,8 +31,8 @@ namespace EPOS.Kern.Tests
             Assert.True(b.Gross);
             Assert.True(b.DurchLeitung);
             Assert.False(b.DurchSpeicher);
-            Assert.Contains("Leitungsinhalt", b.Satz);
-            Assert.Contains("nicht prüfbar", Grossanlage.Erkennen(null, null, ps).Satz);
+            Assert.Contains("Leitungsinhalt", b.Text);
+            Assert.Contains("nicht prüfbar", Grossanlage.Erkennen(null, null, ps).Text);
 
             // Andere Schwellen im Katalog, anderes Ergebnis — die Klasse kennt keine eigene.
             Parametersatz streng = Auslegungssatz(new Dictionary<string, double>

@@ -149,6 +149,28 @@ Form_Waermebedarf.btn_Help_Import   = Wärmebedarf
 Form_Gebaeude.btn_Help              = Gebäude
 Form_Brauchwasser.btn_Help          = Brauchwasser
 Form_Prozesswaerme.btn_Help         = Prozesswärme
+# Das Brauchwasser-Zapfprofil (Umsetzungskonzept Zapfprofilgenerator 5.8): eine
+# Ueberlagerung des Bedarfsprofil-Dialogs mit eigener Bedienseite. Die Gruppen der
+# Stufen Erweitert und Experte und die Warnliste der Bilanz springen auf ihre Anker.
+Form_Zapfprofil.btn_Help            = Brauchwasser-Zapfprofil
+Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
+Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
+Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte
+Form_Zapfprofil.grp_Warnliste       = Brauchwasser-Zapfprofil#warnliste-bilanz
+# Die Infoknoepfe "Rechenweg": im Kopf des Zapfprofils der Abschnitt Stochastik
+# (wie die Jahresreihe entsteht), im Kopf der Auslegung ihr Abschnitt, im
+# Konstruktor dessen Abschnitt. Die Editoren der Stufe Experte (Ueberlagerungen
+# "Tagesgang bearbeiten" und "Zapfkategorien und Streuung") haben je einen Anker.
+Form_Zapfprofil_Berechnung          = Brauchwasser-Zapfprofil#stochastik
+Form_Zapfprofil.grp_Auslegung       = Brauchwasser-Zapfprofil#auslegung
+Form_Zapfprofil.grp_Konstruktor     = Brauchwasser-Zapfprofil#konstruktor
+Form_Zapfprofil.grp_Tagesgang       = Brauchwasser-Zapfprofil#tagesgang
+Form_Zapfprofil.grp_Kategorien      = Brauchwasser-Zapfprofil#kategorien
+# Der Katalog der Brauchwasser-Nutzungsarten (Menue Administration -> Brauchwasser):
+# ein Abschnitt derselben Seite; Editor und Katalogimport springen auf ihre Anker.
+Form_Brauchwasser_Nutzungsarten.btn_Help   = Brauchwasser-Zapfprofil#katalog
+Form_Brauchwasser_Nutzungsarten.grp_Editor = Brauchwasser-Zapfprofil#katalog-editor
+Form_Brauchwasser_Nutzungsarten.grp_Import = Brauchwasser-Zapfprofil#katalog-import
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher

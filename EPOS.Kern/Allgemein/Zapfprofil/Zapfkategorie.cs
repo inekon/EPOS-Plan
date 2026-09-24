@@ -83,9 +83,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Kennung der Ablehnung „keine Kategorien für die Nutzungsart" (Grund
         /// <see cref="ZapfEingabefehler.StochastikUngueltig"/>); die Werte sind Bezeichner und
-        /// Katalogversion der Nutzungsart, getrennt (Platzhalter {0} und {1} des Textes).
+        /// Katalogversion der Nutzungsart und die Zone, getrennt (Platzhalter {0}, {1} und {2}).
         /// </summary>
-        internal const string KENNUNG_KATEGORIEN_FEHLEN = "STOCHASTIK_KATEGORIEN_FEHLEN";
+        internal const string KENNUNG_KATEGORIEN_FEHLEN = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN";
+
+        /// <summary>Kennung derselben Ablehnung, wenn nur die Id der Nutzungsart bekannt ist: Der Satz nennt die Zone, nie die Id.</summary>
+        internal const string KENNUNG_KATEGORIEN_FEHLEN_ID = "EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID";
 
         private readonly Zapfkategoriewert[] _werte;
 
@@ -132,39 +135,33 @@ namespace WindowsFormsApplication1
                 foreach (Zapfkategorie k in katalog)
                     if (k != null && k.IdNutzungsart == idNutzungsart) eigene.Add(k);
             if (eigene.Count == 0)
-            {
-                // Der Klartext des Kerns (Protokoll) ist deutsch; die Oberfläche baut den Satz aus
-                // Kennung und den getrennten Werten in ihrer Sprache.
-                string art = name == null
-                    ? idNutzungsart.ToString(CultureInfo.InvariantCulture)
-                    : "„" + name + "“" + (string.IsNullOrEmpty(version) ? "" : " (Katalogversion " + version + ")");
+                // Kennung und die getrennten Werte (Bezeichner, Katalogversion, Zone): Den Satz baut die
+                // Oberfläche in ihrer Sprache, der deutsche Wortlaut geht ins Protokoll.
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                    "Nicht rechenbar — für die Nutzungsart " + art + " der Zone „" + zone
-                    + "“ stehen keine Zapfkategorien im Katalog.")
-                {
-                    Kennung = name == null ? null : KENNUNG_KATEGORIEN_FEHLEN,
-                    Argumente = name == null ? null : new[] { name, version ?? "" }
-                };
-            }
+                    name == null ? ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN_ID, zone)
+                                 : ZapfSatz.Neu(KENNUNG_KATEGORIEN_FEHLEN, name, version ?? "", zone));
 
             double summe = 0.0;
             foreach (Zapfkategorie k in eigene)
             {
-                string was = "Die Zapfkategorie „" + (k.Name ?? "") + "“ der Zone „" + zone + "“";
-                if (!Endlich(k.VolumenstromLJeMin) || k.VolumenstromLJeMin < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keinen gültigen Volumenstrom.");
-                if (!Endlich(k.StreuungLJeMin) || k.StreuungLJeMin < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine gültige Streuung.");
-                if (k.DauerMin < 1 || k.DauerMin > Bedarfstag.MINUTEN)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine Dauer von 1 bis 1440 Minuten.");
-                if (!Endlich(k.Anteil) || k.Anteil < 0)
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keinen gültigen Anteil.");
-                if (k.KappungLJeMin.HasValue && (!Endlich(k.KappungLJeMin.Value) || !(k.KappungLJeMin.Value > 0)))
-                    throw Fehler(zone, "Nicht rechenbar — " + was + " trägt keine positive Kappung.");
+                string kategorie = k.Name ?? "";
+                switch (Verstoss(k))
+                {
+                    case Kategorieverstoss.Volumenstrom:
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_VOLUMENSTROM", kategorie, zone));
+                    case Kategorieverstoss.Streuung:
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_STREUUNG", kategorie, zone));
+                    case Kategorieverstoss.Dauer:
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_DAUER", kategorie, zone));
+                    case Kategorieverstoss.Anteil:
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_ANTEIL", kategorie, zone));
+                    case Kategorieverstoss.Kappung:
+                        throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_KAPPUNG", kategorie, zone));
+                }
                 summe += k.Anteil;
             }
             if (!(summe > 0))
-                throw Fehler(zone, "Nicht rechenbar — die Anteile der Zapfkategorien der Zone „" + zone + "“ summieren zu 0.");
+                throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIEN_ANTEIL_NULL", zone));
 
             var werte = new Zapfkategoriewert[eigene.Count];
             for (int i = 0; i < werte.Length; i++)
@@ -172,18 +169,100 @@ namespace WindowsFormsApplication1
                 Zapfkategorie k = eigene[i];
                 double mittel = Zapfverteilung.GestutztesMittel(k.VolumenstromLJeMin, k.StreuungLJeMin, k.KappungLJeMin);
                 if (!(mittel > 0) && k.Anteil > 0)
-                    throw Fehler(zone, "Nicht rechenbar — die Zapfkategorie „" + (k.Name ?? "") + "“ der Zone „" + zone
-                                       + "“ hat kein positives gestutztes Mittel des Volumenstroms.");
+                    throw Fehler(zone, ZapfSatz.Neu("EINGABE_KATEGORIE_MITTEL", k.Name ?? "", zone));
                 double energie = mittel * k.DauerMin * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K / Mengengeruest.WH_JE_KWH;
                 werte[i] = new Zapfkategoriewert(k, k.Anteil / summe, mittel, energie);
             }
             return new Zapfkategoriensatz(idNutzungsart, zone, werte);
         }
 
+        /// <summary>
+        /// <b>Die Regeln eines Kategoriensatzes für den Katalog</b> (Stufe Z4, Experte: Kategorien als
+        /// Katalogkopie): dieselben Regeln wie <see cref="Aus(IReadOnlyList{Zapfkategorie}, Nutzungsart, string)"/>
+        /// — μ und σ endlich und nicht negativ, Dauer 1 … 1440 Minuten, Anteil endlich und nicht
+        /// negativ mit Σ &gt; 0, Kappung positiv, gestutztes Mittel positiv, wo ein Anteil zieht —,
+        /// dazu mindestens eine Kategorie und je Kategorie ein Name, eindeutig (<c>UNIQUE</c> der
+        /// Tabelle). <c>null</c> = gültig; sonst der erste Verstoß als Satz ohne Zone
+        /// (<c>KATEGORIE_…</c>).
+        /// </summary>
+        internal static ZapfSatz Pruefen(IReadOnlyList<Zapfkategorie> kategorien)
+        {
+            if (kategorien == null || kategorien.Count == 0) return ZapfSatz.Neu("KATEGORIE_KEINE");
+            var namen = new HashSet<string>(StringComparer.Ordinal);
+            double summe = 0.0;
+            for (int i = 0; i < kategorien.Count; i++)
+            {
+                Zapfkategorie k = kategorien[i];
+                string name = k?.Name?.Trim() ?? "";
+                if (name.Length == 0) return ZapfSatz.Neu("KATEGORIE_NAME_FEHLT", i + 1);
+                if (!namen.Add(name)) return ZapfSatz.Neu("KATEGORIE_NAME_DOPPELT", name);
+                switch (Verstoss(k))
+                {
+                    case Kategorieverstoss.Volumenstrom: return ZapfSatz.Neu("KATEGORIE_VOLUMENSTROM", name);
+                    case Kategorieverstoss.Streuung: return ZapfSatz.Neu("KATEGORIE_STREUUNG", name);
+                    case Kategorieverstoss.Dauer: return ZapfSatz.Neu("KATEGORIE_DAUER", name);
+                    case Kategorieverstoss.Anteil: return ZapfSatz.Neu("KATEGORIE_ANTEIL", name);
+                    case Kategorieverstoss.Kappung: return ZapfSatz.Neu("KATEGORIE_KAPPUNG", name);
+                }
+                summe += k.Anteil;
+            }
+            if (!(summe > 0)) return ZapfSatz.Neu("KATEGORIE_ANTEIL_NULL");
+            foreach (Zapfkategorie k in kategorien)
+                if (k.Anteil > 0 && !(Zapfverteilung.GestutztesMittel(k.VolumenstromLJeMin, k.StreuungLJeMin, k.KappungLJeMin) > 0))
+                    return ZapfSatz.Neu("KATEGORIE_MITTEL", k.Name.Trim());
+            return null;
+        }
+
+        /// <summary>
+        /// Die Summe der Anteile [-] — die Rechnung normiert sie auf 1 (<see cref="Zapfkategoriewert.AnteilNormiert"/>);
+        /// NaN, wenn ein Anteil nicht endlich ist.
+        /// </summary>
+        internal static double SummeAnteil(IReadOnlyList<Zapfkategorie> kategorien)
+        {
+            double summe = 0.0;
+            if (kategorien != null)
+                foreach (Zapfkategorie k in kategorien) summe += k?.Anteil ?? 0.0;
+            return summe;
+        }
+
+        /// <summary>
+        /// Der Hinweis, dass die Anteile nicht zu 1 summieren und die Rechnung sie normiert
+        /// (<c>KATEGORIE_SUMME_NORMIERT</c>, mit der Summe) — nicht blockierend; <c>null</c> bei Σ 1
+        /// (Toleranz 1e-9) oder bei einer Summe, die ohnehin abgelehnt wird.
+        /// </summary>
+        internal static ZapfSatz Summenhinweis(IReadOnlyList<Zapfkategorie> kategorien)
+        {
+            double summe = SummeAnteil(kategorien);
+            if (!Endlich(summe) || !(summe > 0) || Math.Abs(summe - 1.0) <= 1e-9) return null;
+            return ZapfSatz.Neu("KATEGORIE_SUMME_NORMIERT", summe);
+        }
+
+        /// <summary>Welche Einzelregel eine Kategorie verletzt — die eine Regel für Rechenweg und Katalog.</summary>
+        private enum Kategorieverstoss
+        {
+            Keiner = 0,
+            Volumenstrom,
+            Streuung,
+            Dauer,
+            Anteil,
+            Kappung
+        }
+
+        private static Kategorieverstoss Verstoss(Zapfkategorie k)
+        {
+            if (!Endlich(k.VolumenstromLJeMin) || k.VolumenstromLJeMin < 0) return Kategorieverstoss.Volumenstrom;
+            if (!Endlich(k.StreuungLJeMin) || k.StreuungLJeMin < 0) return Kategorieverstoss.Streuung;
+            if (k.DauerMin < 1 || k.DauerMin > Bedarfstag.MINUTEN) return Kategorieverstoss.Dauer;
+            if (!Endlich(k.Anteil) || k.Anteil < 0) return Kategorieverstoss.Anteil;
+            if (k.KappungLJeMin.HasValue && (!Endlich(k.KappungLJeMin.Value) || !(k.KappungLJeMin.Value > 0)))
+                return Kategorieverstoss.Kappung;
+            return Kategorieverstoss.Keiner;
+        }
+
         private static bool Endlich(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
 
-        private static ZapfprofilEingabeException Fehler(string zone, string text)
-            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, text);
+        private static ZapfprofilEingabeException Fehler(string zone, ZapfSatz satz)
+            => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone, satz);
     }
 
     /// <summary>
@@ -296,7 +375,7 @@ namespace WindowsFormsApplication1
                     double flaeche = z.WohnflaecheJeWeM2 ?? ps.Wert(ZapfParameter.WOHNEN_FLAECHE_JE_WE);
                     if (!(flaeche > 0))
                         throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                            "Nicht rechenbar — die Wohnfläche je WE der Zone „" + zone + "“ ist nicht positiv; die Einheiten sind nicht bestimmbar.");
+                            ZapfSatz.Neu("EINGABE_EINHEITEN_FLAECHE", zone));
                     x = bezugsmenge / flaeche;
                     break;
                 default:
@@ -305,8 +384,7 @@ namespace WindowsFormsApplication1
             }
             if (double.IsNaN(x) || double.IsInfinity(x) || x < 0 || x > HOECHSTENS)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
-                    "Nicht rechenbar — die Zahl der Einheiten der Zone „" + zone + "“ ist nicht bestimmbar oder größer als "
-                    + HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
+                    ZapfSatz.Neu("EINGABE_EINHEITEN_UNBESTIMMT", zone, HOECHSTENS));
             int anzahl = (int)Math.Round(x, MidpointRounding.AwayFromZero);
             return anzahl < 1 ? 1 : anzahl;
         }

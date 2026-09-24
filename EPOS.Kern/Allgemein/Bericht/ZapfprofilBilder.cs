@@ -43,6 +43,18 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>ZPG_ACHSE_LEISTUNG</c></summary>
         public string AchseLeistung { get; set; } = "Leistung [kW]";
+
+        /// <summary><c>ZPG_BILD_DAUERLINIE</c> (Stufe Z4)</summary>
+        public string TitelDauerlinie { get; set; } = "Dauerlinie Zapfung und Zirkulation";
+
+        /// <summary><c>ZPG_REIHE_GESAMT</c></summary>
+        public string Gesamt { get; set; } = "Zapfung und Zirkulation";
+
+        /// <summary><c>ZPG_ACHSE_RANG</c></summary>
+        public string AchseRang { get; set; } = "Stunden des Jahres, absteigend geordnet, Teilung alle 1000 h";
+
+        /// <summary><c>ZPG_BILD_PERZENTIL</c> — {0} ist das Perzentil.</summary>
+        public string Perzentil { get; set; } = "P{0}";
     }
 
     /// <summary>
@@ -227,6 +239,44 @@ namespace WindowsFormsApplication1
             if (Belegt(zirkulationMonate))
                 reihen.Add(new ChartRenderer.Reihe(texte.Zirkulation, zirkulationMonate, RolleZirkulation));
             return ChartRenderer.MonatsStapelModell(texte.TitelJahresgang, einheit ?? "", reihen);
+        }
+
+        /// <summary>
+        /// Die Dauerlinie als Bild (Reiter „Dauerlinie", 5.6; Stufe Z4): die absteigend geordneten
+        /// Stundenwerte von Zapfung und Zirkulation [kW] über dem Rang 1 … 8760 und je Perzentil eine
+        /// Strecke von der Achse bis zur Linie an seinem Rang, beschriftet „P90" usw. Dazu wahlweise
+        /// eine waagerechte Vergleichslinie (<paramref name="vergleichKw"/>, etwa eine Ladeleistung)
+        /// gestrichelt. Keine gültige Reihe: der Leerhinweis.
+        /// </summary>
+        public static byte[] Dauerlinie(double[] gesamtKw, int[] perzentile, int[] raenge, double[] werteKw,
+                                        double? vergleichKw, string vergleichText, ZapfprofilBildtexte texte)
+            => SkiaMaler.Png(DauerlinieModell(gesamtKw, perzentile, raenge, werteKw, vergleichKw, vergleichText, texte));
+
+        /// <summary>Dasselbe Bild als Zeichenmodell — der Weg der Oberfläche.</summary>
+        public static Zeichenmodell DauerlinieModell(double[] gesamtKw, int[] perzentile, int[] raenge, double[] werteKw,
+                                                     double? vergleichKw, string vergleichText, ZapfprofilBildtexte texte)
+        {
+            texte ??= new ZapfprofilBildtexte();
+            var reihen = new List<ChartRenderer.Reihe>();
+            int n = gesamtKw?.Length ?? 0;
+            var x = new double[n];
+            for (int i = 0; i < n; i++) x[i] = i + 1;
+            if (gesamtKw != null) reihen.Add(new ChartRenderer.Reihe(texte.Gesamt, gesamtKw, RolleZapfung, ChartRenderer.Stapelart.Flaeche));
+            if (reihen.Count > 0 && vergleichKw.HasValue && !double.IsNaN(vergleichKw.Value) && !double.IsInfinity(vergleichKw.Value))
+            {
+                var linie = new double[n];
+                for (int i = 0; i < n; i++) linie[i] = vergleichKw.Value;
+                reihen.Add(new ChartRenderer.Reihe(vergleichText ?? "", linie, RolleVersorgung,
+                                                   ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt));
+            }
+            var marken = new List<ChartRenderer.Linienmarke>();
+            int k = System.Math.Min(perzentile?.Length ?? 0, System.Math.Min(raenge?.Length ?? 0, werteKw?.Length ?? 0));
+            for (int i = 0; i < k && n > 0; i++)
+                if (raenge[i] >= 1 && raenge[i] <= n)
+                    marken.Add(new ChartRenderer.Linienmarke(raenge[i], 0.0, werteKw[i],
+                        Format(texte.Perzentil, perzentile[i].ToString(System.Globalization.CultureInfo.CurrentCulture))));
+            return ChartRenderer.SummenlinieModell(texte.TitelDauerlinie, reihen, x, 1000.0, 1.0, texte.AchseRang,
+                                                   texte.AchseLeistung, null, null, marken);
         }
 
         // =================================================================================

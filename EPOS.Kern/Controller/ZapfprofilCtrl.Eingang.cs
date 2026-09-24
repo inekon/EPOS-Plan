@@ -56,13 +56,21 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = Verfuegbar();
             if (!verfuegbar.Ja && verfuegbar.Grund == ZapfVerfuegbarkeitsgrund.TabellenFehlen)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.NichtVerfuegbar, "", verfuegbar.Klartext);
+                throw new ZapfprofilEingabeException(ZapfEingabefehler.NichtVerfuegbar, "", verfuegbar.Satz);
 
             // Fehlt die Katalogversion, wirft Parameter() benannt (KeineKatalogversion).
             Parametersatz ps = Parameter();
             katalog ??= Katalog();
 
             IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog);
+            // Die Anzeige (4.0, 4.6): Laufangabe des Dialogs, sonst die Einstellung, sonst die Vorgabe des
+            // Parametersatzes; eine ungültige Einstellung nennt ein Hinweis, dann gilt die Vorgabe. Ob der
+            // Wert taugt (θ_Anzeige über θ̄_KW, Schwelle nicht negativ), prüft der Rechenweg.
+            var vorhinweise = new List<ZapfHinweis>();
+            double? anzeigeC = stand.Anzeige?.AnzeigetemperaturC ?? EinstellungZahl(EINSTELLUNG_ANZEIGETEMPERATUR, vorhinweise)
+                               ?? Vorgabe(ps, ZapfParameter.ANZEIGETEMPERATUR);
+            double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise)
+                                 ?? Vorgabe(ps, ZapfParameter.STUNDENSCHWELLE);
 
             return new Zapfprofileingang
             {
@@ -74,9 +82,52 @@ namespace WindowsFormsApplication1
                 Tagesgangsaetze = EigeneSaetze(zonen),
                 BelegungJeRaumzahl = Belegung(ps.Katalogversion),
                 NetzverlusteProjekt = Netzverluste(idProjekt),
-                Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen))
+                Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen)),
+                AnzeigetemperaturC = anzeigeC,
+                SchwelleKw = schwelleKw,
+                Vorhinweise = vorhinweise.AsReadOnly()
             };
         }
+
+        /// <summary>
+        /// Die Einstellung der Temperatur der Literanzeige θ_Anzeige [°C] (4.0: „Einstellung,
+        /// INEKON-Setzung", N9 (h)) — nur für die Kennzahlen, nie für die Reihe. Es gilt die
+        /// Laufangabe des Dialogs (<see cref="ZapfprofilStand.Anzeige"/>), sonst diese Einstellung,
+        /// sonst der Parameter <see cref="ZapfParameter.ANZEIGETEMPERATUR"/> (gleicher Schlüssel);
+        /// ohne alle drei keine Literanzeige.
+        /// </summary>
+        internal const string EINSTELLUNG_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+
+        /// <summary>
+        /// Die Einstellung der Schwelle der Stundenzählung [kW] (4.6, N9 (h)): nach der Laufangabe, vor
+        /// dem Parameter <see cref="ZapfParameter.STUNDENSCHWELLE"/>; ohne alle drei keine Zählung.
+        /// </summary>
+        internal const string EINSTELLUNG_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
+
+        /// <summary>Kennung des Hinweises: Eine Einstellung der Anzeige ist keine gültige Zahl — sie gilt nicht.</summary>
+        internal const string HINWEIS_EINSTELLUNG_UNGUELTIG = "EINSTELLUNG_UNGUELTIG";
+
+        /// <summary>
+        /// Eine Zahl aus den Einstellungen (<see cref="Dienste.Einstellungen"/>, invariante Kultur,
+        /// endlich); leer = <c>null</c>, eine ungültige Angabe benannt verworfen (Hinweis).
+        /// </summary>
+        private static double? EinstellungZahl(string schluessel, ICollection<ZapfHinweis> hinweise)
+        {
+            string text = null;
+            try { text = Dienste.Einstellungen.Lies(schluessel, null); }
+            catch (Exception) { return null; }
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            if (double.TryParse(text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
+                && !double.IsNaN(w) && !double.IsInfinity(w))
+                return w;
+            hinweise.Add(new ZapfHinweis("", HINWEIS_EINSTELLUNG_UNGUELTIG,
+                ZapfSatz.Neu("HINWEIS_EINSTELLUNG_UNGUELTIG", schluessel, text.Trim())));
+            return null;
+        }
+
+        /// <summary>Die Vorgabe eines Parameters der Anzeige, wenn der Satz ihn trägt; sonst <c>null</c> (keine Anzeige, kein Hinweis).</summary>
+        private static double? Vorgabe(Parametersatz ps, string schluessel)
+            => ps != null && ps.Enthaelt(schluessel) ? ps.Wert(schluessel) : (double?)null;
 
         /// <summary>Die Nutzungsarten der Zonen, je Id einmal.</summary>
         private static IEnumerable<int> NutzungsartenDerZonen(IReadOnlyList<ZonenStand> zonen)
@@ -262,6 +313,23 @@ namespace WindowsFormsApplication1
             internal bool FerienAktiv;
             internal int?[] Ferienbeginn = new int?[4];
             internal int?[] Ferienende = new int?[4];
+        }
+
+        /// <summary>
+        /// Die Gebäude eines Projekts, an die eine Zone ihren Kalender binden kann (A8, Stufe Z4):
+        /// Id und Name aus <c>Tab_Gebaeude</c> (die Projektkopien, <c>ID_Projekt</c>), geordnet nach
+        /// Name und Id. Ohne Projekt eine leere Liste.
+        /// </summary>
+        internal static IReadOnlyList<(int Id, string Name)> GebaeudeDesProjekts(int idProjekt)
+        {
+            var liste = new List<(int Id, string Name)>();
+            if (idProjekt <= 0 || !DataRepository.TabelleVorhanden("Tab_Gebaeude")) return liste;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Gebaeudename FROM Tab_Gebaeude WHERE ID_Projekt = ? ORDER BY Gebaeudename, ID",
+                new DbParam("@projekt", idProjekt));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows) liste.Add((Ganz(r, "ID"), Text(r, "Gebaeudename")));
+            return liste.AsReadOnly();
         }
 
         /// <summary>

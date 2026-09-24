@@ -67,6 +67,7 @@ Zeichenläufe je Sekunde darauf.
 | (f) | Bildschirmfotos | — |
 | (g) | nach einem Rollen um 2 000 px: echte Zeilen, Platzhalter nach 3 s Ruhe | echte Zeilen ≤ 300 ms, danach 0 Platzhalter |
 | (i) | **Rückmeldungen der Sichtbarkeitsmelder in den 3 s nach dem Rollen** | ≤ 12 |
+| (l) | nur Fälle mit `frei: true` (ein `Raster` ohne eigene Höchsthöhe, `Begrenzt="false"`): Abstandshalter, Sichtbarkeitsmelder, gezeichnete Zeilen, Höhe jeder Zeile, ob die Hülle selbst senkrecht rollt, welcher Vorfahr wirklich rollt, ob Seite oder Überlagerung quer rollen | 0 Abstandshalter, 0 Melder, alle Zeilen gleich hoch, Hülle rollt nicht senkrecht, Seite und Überlagerung quer 0 px (quer rollt allein die Hülle; mit `querMax` auch sie höchstens so weit) |
 
 (i) ist der schärfste Wert: Er zeigt den Fehler unmittelbar. Streiten sich die zwei Melder,
 melden sie im Takt des Bildaufbaus.
@@ -86,6 +87,12 @@ melden sie im Takt des Bildaufbaus.
 | H | **Gegenprobe zum Fix**: dieselbe Seite, das gesetzte Zeilenmaß per Stilblatt wieder weggenommen. Sie MUSS die Sollwerte verfehlen — sonst belegt der Fix nichts |
 | J / K | 6 654 Stromspeicher **im Katalogdialog** (Seite `/katalogprobe`, Stromspeicher-Verwaltung), 1 088 × 624 und 400 × 624 — die Liste nimmt dort seit Stufe 1 der Neuordnung die Resthöhe; zusätzlich geprüft: Rollbehälter = Hülle, Zeile **46 px** (Stufe 2: die Zeile ist die Wahl) und die Tastatur (k): Ende wählt die letzte Zeile, sie steht gezeichnet im Bild, Pos1 zurück, die Liste behält den Fokus |
 | L / M | wie A (freie Liste der Importmaske), 1 088 × 624 und 400 × 624 |
+| T1 / T2 | 6 654 Nutzungsarten im **Katalog der Brauchwasser-Nutzungsarten** (Seite `/katalogprobe?maske=tww`), 1 088 × 624 und 400 × 624 — dieselben Sollwerte wie J / K (Rollbehälter = Hülle, Zeile 46 px, Tastatur) |
+| T3 | derselbe Katalog mit 40 Sätzen (unter der Schwelle, das Maß eines ausgelieferten Katalogs), 1 088 × 624 |
+| Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
+| Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
+| Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px) und 400 × 624 — Sollwerte (l) |
+| Z8 | **Gegenprobe** zu Z7: die versteckte Feldbeschriftung ohne positionierten Vorfahren (`position: static`). Sie MUSS die Sollwerte verfehlen |
 
 ---
 
@@ -579,3 +586,49 @@ Damit breit zwei Zeilen reichen, ist das erste Wort der Leiste höchstens `10rem
 Kurztext und im Kopf des Stammblatts), und der leise Hinweis „Kästchen: mehrere wählen" kürzt sich in
 seiner Zeile, statt eine dritte zu öffnen. Schmal brechen vier Handlungen in 368 px zwangsläufig in zwei
 Zeilen um — die Liste verliert dort eine Zeile; offen im Konzept Administrationsdialoge 7.1 (f).
+
+## Zapfprofilgenerator, Stufe Z4 — Katalog der Nutzungsarten, Wohnungstabelle, Zapfkategorien
+
+Der Katalogdialog „Brauchwasser-Nutzungsarten" (`TwwNutzungsartAdminDialog`) trägt eine neue
+`Katalogliste`; die Wohnungstabelle des Zapfprofil-Dialogs und das Raster der Zapfkategorien sind
+bearbeitbare `Raster` ohne eigene Höchsthöhe. Die Wirt-Seite kennt dafür die Masken `tww`
+(mit „Kategorien…" als Überlagerung), `wohnungen` und `kategorien` (`art=lesen`); die Rasterprobe
+misst sie in den Fällen T1 … T3 und Z1 … Z8 (Sollwerte (l) für die Raster ohne Höchsthöhe, `bereich`
+grenzt die Messung auf ein Raster der Seite ein, `klick` ist der Schritt vor der Messung), die
+Katalogprobe den ganzen Dialog im Fall N23 (`a` 1 088 × 624, `b` 400 × 624; Stufe 1 bis 3 und
+`stufe4probe`: Bild der Gruppe „Tagesgang" im Stammblatt, „Import…" öffnet die Überlagerung des
+Katalogimports).
+
+**Befund und Behebung:**
+
+- **Katalogliste quer (s3).** Ohne Rang rollte die Liste bei 1 088 px um 58 px, bei 400 px um 350 px
+  quer. Das Profil `FuerTwwNutzungsart` gibt jetzt Ränge: Nutzungsart und Bezugsart immer, Kalender und
+  Katalogversion bei Platz, Herkunft und Status weichen als erste (das Stammblatt nennt beide).
+- **Überlagerung „Zapfkategorien" rollte mit.** Die versteckte Feldbeschriftung der Zeilentabellen
+  (`position: absolute`) hatte keinen positionierten Vorfahren; ihr Bezugskasten war die Überlagerung
+  (`position: fixed`), und die Zellen jenseits des rechten Hüllenrandes ließen die Überlagerung um
+  135 px (1 088 px) bzw. 795 px (400 px) quer rollen — Rollbereich im Rollbereich. Behoben mit
+  `position: relative` an `.epos-feld` in den drei Zeilentabellen des Zapfprofils (Gegenprobe Z8).
+- **Raster zu breit.** Zahlenfelder in Vorgabebreite (20 Zeichen, rund 165 px) und einzeilige
+  Spaltenköpfe machten das Kategorien-Raster 1 548 px breit; bei 1 088 px lagen Streuung, Kappung,
+  Herkunft und „Entfernen" hinter dem rechten Rand (560 px quer in der Überlagerung). Zahlenfelder
+  jetzt 5,5em, der Name 9em, die Pfeile der Reihenfolge ein Touchziel breit, Spaltenköpfe und die
+  Herkunft brechen um.
+
+**Ergebnis vom 24.09.2026** (Chromium headless 1208, Playwright 1.58.0 über das NuGet-Paket, Wirt auf
+Port 5361):
+
+| | 1 088 × 624 | 400 × 624 |
+|---|---|---|
+| T1 / T2: Katalog, 6 654 Sätze virtualisiert | Rollbehälter = Hülle (424 px), Zeile 46 px, 0 Platzhalter, echte Zeilen nach dem Rollen in 122 ms, 3 + 4 Melder, Ende → Zeile 6 653 im Bild, Pos1 → 0, quer 0 | Hülle 260 px, sonst wie links |
+| T3: Katalog, 40 Sätze | nicht virtualisiert, Zeile 46 px, 0 Abstandshalter, 0 Melder, quer 0 | — |
+| N23: Katalogdialog | Liste 659,8 px mit vier von sechs Spalten (Herkunft und Status weichen), quer 0 (vorher 58); 8 ganze Zeilen; Stammblatt 380 × 370 px rechts, Bild 358 px breit darin; „Import…": Überlagerung 900 × 345 px, 1 Kreuz, quer 0; Fußleiste frei | Nutzungsart und Bezugsart, quer 0 (vorher 350); Stammblatt als Blatt; Überlagerung 368 × 490 px, quer 0 |
+| Z1 / Z2: Wohnungstabelle, 12 Zeilen | Zeile 45 px, 0 Abstandshalter, 0 Melder, Hülle rollt nicht senkrecht; quer 102 px in 498 px Eingabeblock (vorher 348) | quer 254 px (vorher 500); Seite quer 0 (vorher 179) |
+| Z3 / Z4: Kategorien-Raster, 10 Zeilen | Zeile 45 px, quer 0 (vorher 514), Seite quer 0 (vorher 89) | Hülle quer 638 px, Seite quer 0 (vorher 777) |
+| Z5: Kategorien lesend | Zeile 27,2 px, quer 0 (vorher 94) | — |
+| Z6 / Z7: Kategorien in der Überlagerung | Hülle quer 0 (vorher 560), Überlagerung quer 0 (vorher 135) | Hülle quer 656 px, Überlagerung quer 0 (vorher 795) |
+| Z8: Gegenprobe | — | Überlagerung quer 333 px: verfehlt wie erwartet |
+| Rückgabe | **Rasterprobe 0 (24 Fälle), Katalogprobe 0 (62 Fälle)** | |
+
+Offen: Die Wohnungstabelle rollt im Eingabeblock des Zapfprofil-Dialogs bei 1 088 px noch 102 px quer
+(„Entfernen" teils hinter dem Rand) — fünf Spalten mit Auswahlfeld und Knopf passen nicht in 498 px.

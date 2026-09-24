@@ -67,6 +67,28 @@ public sealed class ZapfprofilAuslegungKiSicht
 
     public Func<string>? PunktLesen { get; init; }
 
+    // Die Eingaben des Verfahrensvergleichs (4.7, N11 (d); Z4, Gruppe 2b)
+    public Func<int?>? LadeleistungModusLesen { get; init; }
+    public Func<int?, string?>? LadeleistungModusSetzen { get; init; }
+    public Func<double?>? LadeleistungManuellLesen { get; init; }
+    public Func<double?, string?>? LadeleistungManuellSetzen { get; init; }
+    public Func<double?>? LadefensterLesen { get; init; }
+    public Func<double?, string?>? LadefensterSetzen { get; init; }
+    public Func<double?>? LadefensterBeginnLesen { get; init; }
+    public Func<double?, string?>? LadefensterBeginnSetzen { get; init; }
+    public Func<double?>? NutzanteilLesen { get; init; }
+    public Func<double?, string?>? NutzanteilSetzen { get; init; }
+    public Func<double?>? ZuschlagLesen { get; init; }
+    public Func<double?, string?>? ZuschlagSetzen { get; init; }
+    public Func<int?>? PersonenModusLesen { get; init; }
+    public Func<int?, string?>? PersonenModusSetzen { get; init; }
+    public Func<double?>? PersonenManuellLesen { get; init; }
+    public Func<double?, string?>? PersonenManuellSetzen { get; init; }
+    public Func<int?>? FuellstandBezugLesen { get; init; }
+    public Func<int?, string?>? FuellstandBezugSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? AutoManuellEintraege { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? FuellstandBezugEintraege { get; init; }
+
     // =====================================================================
     //  Die Wahllisten (KI‑D‑Q6)
     // =====================================================================
@@ -132,14 +154,14 @@ public sealed class ZapfprofilAuslegungKiSicht
         set => ZapfprofilKiRegeln.Setze(SensorhoeheSetzen, value);
     }
 
-    /// <summary>Die Erzeugerart am Speicher — eine Laufangabe.</summary>
+    /// <summary>Die Erzeugerart am Speicher — gespeichert mit dem Projekt (Schritt 124).</summary>
     public int? Erzeugerart
     {
         get => ErzeugerartLesen?.Invoke();
         set => ZapfprofilKiRegeln.Setze(ErzeugerartSetzen, value);
     }
 
-    /// <summary>Der Werkstoff des Übertragers — eine Laufangabe.</summary>
+    /// <summary>Der Werkstoff des Übertragers — gespeichert mit dem Projekt (Schritt 124).</summary>
     public int? Werkstoff
     {
         get => WerkstoffLesen?.Invoke();
@@ -169,6 +191,82 @@ public sealed class ZapfprofilAuslegungKiSicht
 
     /// <summary>Der empfohlene Punkt, den OK übernimmt; leer ohne rechenbaren Punkt.</summary>
     public string Punkt => PunktLesen?.Invoke() ?? "";
+
+    // =====================================================================
+    //  Die Eingaben des Verfahrensvergleichs (nachrichtlich; gespeichert mit dem Projekt)
+    // =====================================================================
+
+    /// <summary>auto (0) oder manuell (1) — für Ladeleistung und Personen.</summary>
+    public IReadOnlyList<KiWahleintrag> LadeleistungModusWahl => Liste(AutoManuellEintraege);
+
+    /// <summary>auto (0) oder manuell (1).</summary>
+    public IReadOnlyList<KiWahleintrag> PersonenModusWahl => Liste(AutoManuellEintraege);
+
+    /// <summary>Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands, V_max.</summary>
+    public IReadOnlyList<KiWahleintrag> FuellstandBezugWahl => Liste(FuellstandBezugEintraege);
+
+    /// <summary>Die Ladeleistung des Vergleichs: 0 auto (Vorschlag), 1 manuell.</summary>
+    public int? LadeleistungModus
+    {
+        get => LadeleistungModusLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(LadeleistungModusSetzen, value);
+    }
+
+    /// <summary>Die manuelle Ladeleistung [kW]; wirkt nur bei „manuell".</summary>
+    public double? LadeleistungManuell
+    {
+        get => LadeleistungManuellLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(LadeleistungManuellSetzen, value);
+    }
+
+    /// <summary>Das Ladezeitfenster [h/d]; leer = Vorgabe.</summary>
+    public double? Ladefenster
+    {
+        get => LadefensterLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(LadefensterSetzen, value);
+    }
+
+    /// <summary>Der Beginn des Ladezeitfensters [h]; leer = Vorgabe.</summary>
+    public double? LadefensterBeginn
+    {
+        get => LadefensterBeginnLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(LadefensterBeginnSetzen, value);
+    }
+
+    /// <summary>Der nutzbare Anteil des Speichervolumens [-]; leer = Vorgabe.</summary>
+    public double? Nutzanteil
+    {
+        get => NutzanteilLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(NutzanteilSetzen, value);
+    }
+
+    /// <summary>Der Zuschlag [-]; leer = Vorgabe.</summary>
+    public double? Zuschlag
+    {
+        get => ZuschlagLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(ZuschlagSetzen, value);
+    }
+
+    /// <summary>Die Personen des Vergleichs: 0 auto (Mengengerüst), 1 manuell.</summary>
+    public int? PersonenModus
+    {
+        get => PersonenModusLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(PersonenModusSetzen, value);
+    }
+
+    /// <summary>Die manuelle Personenzahl; wirkt nur bei „manuell".</summary>
+    public double? PersonenManuell
+    {
+        get => PersonenManuellLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(PersonenManuellSetzen, value);
+    }
+
+    /// <summary>Der Bezug des Füllstands als Zahl (0 Vorgabe … 4 V_max).</summary>
+    public int? FuellstandBezug
+    {
+        get => FuellstandBezugLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(FuellstandBezugSetzen, value);
+    }
 
     private static IReadOnlyList<KiWahleintrag> Liste(Func<IReadOnlyList<KiWahleintrag>>? quelle)
         => quelle?.Invoke() ?? Array.Empty<KiWahleintrag>();

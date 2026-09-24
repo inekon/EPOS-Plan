@@ -24619,12 +24619,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_MSG_PLATTFORM" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist auf dieser Plattform noch nicht erreichbar.</value>
   </data>
-  <data name="ZPG_MSG_TABELLEN_FEHLEN" xml:space="preserve">
-    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen seine Tabellen.</value>
-  </data>
-  <data name="ZPG_MSG_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — die Brauchwasserparameter tragen keine Katalogversion.</value>
-  </data>
   <data name="ZPG_MSG_KEINE_KLIMAREGION" xml:space="preserve">
     <value>Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.</value>
   </data>
@@ -24639,141 +24633,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_MSG_ZONE" xml:space="preserve">
     <value>Zone „{0}“: {1}</value>
-  </data>
-  <data name="ZPG_EINGABE_KALENDER_UNGUELTIG" xml:space="preserve">
-    <value>Der Kalender der Klimaregion ist ungültig.</value>
-  </data>
-  <data name="ZPG_EINGABE_PROJEKT_FEHLT" xml:space="preserve">
-    <value>Das Projekt fehlt.</value>
-  </data>
-  <data name="ZPG_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>Die Nutzungsart steht nicht im Katalog.</value>
-  </data>
-  <data name="ZPG_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>Der Tagesgangsatz fehlt oder ist unvollständig.</value>
-  </data>
-  <data name="ZPG_EINGABE_BEZUGSMENGE_FEHLT" xml:space="preserve">
-    <value>Die Bezugsgröße fehlt.</value>
-  </data>
-  <data name="ZPG_EINGABE_RASTER_UNGUELTIG" xml:space="preserve">
-    <value>Ein Wertraster des Katalogs ist ungültig.</value>
-  </data>
-  <data name="ZPG_EINGABE_TEMPERATUR_UNGUELTIG" xml:space="preserve">
-    <value>Die Temperaturangaben sind ungültig.</value>
-  </data>
-  <data name="ZPG_EINGABE_PARAMETER_FEHLT" xml:space="preserve">
-    <value>Ein Parameter des Katalogs fehlt.</value>
-  </data>
-  <data name="ZPG_EINGABE_MESSWERT_UNGUELTIG" xml:space="preserve">
-    <value>Der Jahresmesswert ist ungültig oder ohne Einheit bzw. Bilanzgrenze.</value>
-  </data>
-  <data name="ZPG_EINGABE_ZIRKULATION_UNGUELTIG" xml:space="preserve">
-    <value>Die Angaben zur Zirkulation sind ungültig.</value>
-  </data>
-  <data name="ZPG_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
-    <value>Die Belegung je Raumzahl fehlt im Katalog.</value>
-  </data>
-  <data name="ZPG_EINGABE_TAGESBEDARF_UNGUELTIG" xml:space="preserve">
-    <value>Der Tagesbedarf ist ungültig.</value>
-  </data>
-  <data name="ZPG_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
-    <value>Die Zone hat keinen Tag mit Zapfung.</value>
-  </data>
-  <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
-    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar.</value>
-  </data>
-  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
-    <value>Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen).</value>
-  </data>
-  <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
-    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.</value>
-  </data>
-  <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
-    <value>die Tabellen des Zapfprofils fehlen in dieser Datenbank.</value>
-  </data>
-  <data name="ZPG_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
-    <value>das Projekt gibt es nicht.</value>
-  </data>
-  <data name="ZPG_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>die Nutzungsart steht nicht im Katalog.</value>
-  </data>
-  <data name="ZPG_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>der Tagesgangsatz steht nicht im Katalog.</value>
-  </data>
-  <data name="ZPG_SPEICHER_AUSSTATTUNG_FEHLT" xml:space="preserve">
-    <value>die Ausstattungsklasse steht nicht im Katalog.</value>
-  </data>
-  <data name="ZPG_SPEICHER_BEDARFSTAG_FEHLT" xml:space="preserve">
-    <value>der Bedarfstag steht nicht im Katalog.</value>
-  </data>
-  <data name="ZPG_SPEICHER_GEBAEUDE_FEHLT" xml:space="preserve">
-    <value>das Gebäude gibt es nicht.</value>
-  </data>
-  <data name="ZPG_SPEICHER_ZONE_UNGUELTIG" xml:space="preserve">
-    <value>die Zone ist unvollständig oder ungültig.</value>
-  </data>
-  <data name="ZPG_SPEICHER_ZONE_FREMD" xml:space="preserve">
-    <value>die Zone gehört zu einem anderen Projekt.</value>
-  </data>
-  <data name="ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
-    <value>eine Zeile der Wohnungstabelle ist ungültig.</value>
-  </data>
-  <data name="ZPG_SPEICHER_GEBAEUDE_FREMD" xml:space="preserve">
-    <value>das Gebäude gehört zu einem anderen Projekt.</value>
-  </data>
-  <data name="ZPG_SPEICHER_PROJEKT_UNGUELTIG" xml:space="preserve">
-    <value>eine Projektgröße liegt außerhalb ihrer Wertemenge.</value>
-  </data>
-  <data name="ZPG_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
-    <value>Die Brauchwasserparameter tragen keine Katalogversion.</value>
-  </data>
-  <data name="ZPG_PARAMETER_KATALOGVERSION_FEHLT" xml:space="preserve">
-    <value>Die Katalogversion der Brauchwasserparameter fehlt.</value>
-  </data>
-  <data name="ZPG_PARAMETER_PARAMETER_FEHLT" xml:space="preserve">
-    <value>Parameter „{0}“ fehlt im Katalog.</value>
-  </data>
-  <data name="ZPG_HINW_PARAMETER_FEHLT" xml:space="preserve">
-    <value>Ein Katalogparameter fehlt; die zugehörige Prüfung entfällt.</value>
-  </data>
-  <data name="ZPG_HINW_TAGESGANG_LEER" xml:space="preserve">
-    <value>Zone „{0}“: Ein Tagesgang ist leer; diese Tage tragen keine Zapfung.</value>
-  </data>
-  <data name="ZPG_HINW_TAGESGANG_SUMME" xml:space="preserve">
-    <value>Zone „{0}“: Ein Tagesgang summiert nicht zu 100 %; er ist vor dem Rechnen normiert.</value>
-  </data>
-  <data name="ZPG_HINW_WOCHENFAKTOREN_SUMME" xml:space="preserve">
-    <value>Zone „{0}“: Die Wochenfaktoren summieren nicht zu 1; sie sind vor dem Rechnen normiert.</value>
-  </data>
-  <data name="ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
-    <value>Zone „{0}“: Der spezifische Bedarf liegt außerhalb der Bandbreite des Niveaus.</value>
-  </data>
-  <data name="ZPG_HINW_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
-    <value>Zone „{0}“: Vom Messwert ist der Speicherverlust abgezogen.</value>
-  </data>
-  <data name="ZPG_HINW_MESSWERT_ABWEICHUNG" xml:space="preserve">
-    <value>Zone „{0}“: Der Messwert weicht um mehr als die Rückfrageschwelle vom Katalogwert ab.</value>
-  </data>
-  <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
-    <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
-  </data>
-  <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
-    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz.</value>
-  </data>
-  <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
-    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
-  </data>
-  <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
-    <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>
-  </data>
-  <data name="ZPG_HINW_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
-    <value>Keine Fläche für den Flächenkennwert der Zirkulation; gerechnet mit der Methode Anteil.</value>
-  </data>
-  <data name="ZPG_HINW_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
-    <value>Keine Zone trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen.</value>
-  </data>
-  <data name="ZPG_HINW_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
-    <value>Zone „{0}“ trägt keinen Zirkulationsanteil.</value>
   </data>
   <data name="BPF_BTN_ZAPFPROFIL_BW" xml:space="preserve">
     <value>Zapfprofil erzeugen…</value>
@@ -25369,12 +25228,6 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
     <value>Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.</value>
   </data>
-  <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
-    <value>der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag).</value>
-  </data>
-  <data name="ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT" xml:space="preserve">
-    <value>der Name des konstruierten Bedarfstags ist in dieser Katalogversion schon vergeben.</value>
-  </data>
   <data name="ZPG_AUS_TITEL" xml:space="preserve">
     <value>Auslegung Brauchwasser</value>
   </data>
@@ -25485,9 +25338,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_AUS_HERL_SENSORHOEHE" xml:space="preserve">
     <value>leer = Vorgabe des Katalogs</value>
-  </data>
-  <data name="ZPG_AUS_HERL_LAUFANGABE" xml:space="preserve">
-    <value>Laufangabe — wird nicht gespeichert; {0}</value>
   </data>
   <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
     <value>{0} · Zonen: {1}</value>
@@ -26040,39 +25890,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
     <value>Katalogparameter</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
-    <value>Der Bedarfstag ist leer oder trägt ein Ereignis außerhalb des Tages.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_WOCHENREIHE_UNGUELTIG" xml:space="preserve">
-    <value>Die Wochenreihe fehlt oder trägt nicht 168 Stunden.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_TEMPERATUR_UNGUELTIG" xml:space="preserve">
-    <value>Eine Temperaturdifferenz ist nicht positiv.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_GROESSE_UNGUELTIG" xml:space="preserve">
-    <value>Eine Größe ist negativ, nicht endlich oder außerhalb ihres Bereichs.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_WOHNUNGSTABELLE_FEHLT" xml:space="preserve">
-    <value>Die Wohnungstabelle fehlt — die Kennzahl N ist nicht rechenbar.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
-    <value>Belegung oder Ausstattung eines Wohnungstyps ist nicht bestimmbar.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
-    <value>Weder Erzeuger- noch Übertragerleistung ist bestimmbar.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
-    <value>Der Nachweis findet kein Volumen.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_PARAMETER_FEHLT" xml:space="preserve">
-    <value>Ein Parameter des Katalogs fehlt.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_NICHT_GUELTIG" xml:space="preserve">
-    <value>Das Verfahren gilt für diese Zone oder Topologie nicht.</value>
-  </data>
-  <data name="ZPG_AUSLEGUNG_UEBERTRAGER_UNBESTIMMT" xml:space="preserve">
-    <value>Der Übertrager ist nicht bestimmbar — bitte Werkstoff bzw. Erzeugerart oder die Übertragerleistung angeben.</value>
   </data>
   <data name="ZPG_STATUS_AUSLEGUNG" xml:space="preserve">
     <value>Auslegung übernommen: {0}</value>
@@ -27346,9 +27163,6 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
     <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}.</value>
   </data>
-  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
-    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
-  </data>
   <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
     <value>Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.</value>
   </data>
@@ -27532,6 +27346,1242 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WIRT_VERLAUF_GESPERRT" xml:space="preserve">
     <value>Der Verlauf rechnet gerade, oder die Seite ist gesperrt — Zeitraum und Haken stehen erst danach wieder offen.</value>
   </data>
+  <data name="ZPG_SATZ_HINWEIS_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter fehlt: „{0}“. {1}</value>
+  </data>
+  <data name="ZPG_SATZ_VERMERK_STUNDENWERT" xml:space="preserve">
+    <value>Bilanzwert, keine Auslegungsgröße</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>Es gibt keine Katalogversion der Brauchwasserparameter.</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER" xml:space="preserve">
+    <value>Die Katalogversion „{0}“ trägt keine Brauchwasserparameter.</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_SCHLUESSEL_FEHLT" xml:space="preserve">
+    <value>Parameter fehlt: „{0}“ steht nicht in der Katalogversion „{1}“ der Brauchwasserparameter.</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_TABELLE_OHNE_VERSION" xml:space="preserve">
+    <value>Fehlt oder ohne Katalogversion: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_KEINE_VERSION_GENANNT" xml:space="preserve">
+    <value>Es wurde keine Katalogversion der Brauchwasserparameter genannt.</value>
+  </data>
+  <data name="ZPG_SATZ_PARAMETER_TABELLE_FEHLT" xml:space="preserve">
+    <value>Es fehlt: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — ohne Katalogversion: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_VERFUEGBAR_JA" xml:space="preserve">
+    <value>Der Zapfprofilgenerator ist verfügbar (Katalogversion „{0}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN" xml:space="preserve">
+    <value>Eine Zone ohne Angaben.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>Die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>Der Tagesgangsatz {0} der Zone „{1}“ fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_MESSWERT_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Die Abweichung der Messwerte vom Katalogwert wird nicht geprüft.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Vom Messwert der Zone „{0}“ ist der Speicherverlust ({1:0.#} kWh/a) abgezogen.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Der Messwert der Zone „{0}“ weicht um mehr als die Rückfrageschwelle vom Katalogwert ab (Faktor {1:0.###}, Schwelle ± {2:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed {0}, auf die Jahresmenge des Mengengerüsts gebracht; die Konsistenzprobe prüft es an {1} gezogenen Jahren.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation ({0:0} kWh/a). Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann die Netzverluste oder die Zirkulation anpassen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_UNGUELTIG" xml:space="preserve">
+    <value>Der Urlaubsversatz ist keine ganze Zahl von 0 bis 364 Tagen.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Zone „{0}“: Das Mittel der gezogenen Jahre ({1:0.#} kWh) weicht um mehr als die Toleranz {2:0.#} kWh von der Jahresmenge {3:0.#} kWh ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_VOLUMENUMRECHNUNG" xml:space="preserve">
+    <value>Volumenumrechnung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ENERGIEUMRECHNUNG" xml:space="preserve">
+    <value>Energieumrechnung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_VOLUMENUMRECHNUNG_BEZUG" xml:space="preserve">
+    <value>Volumenumrechnung (Bezug)</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_VOLUMENUMRECHNUNG_NEU" xml:space="preserve">
+    <value>Volumenumrechnung (neu)</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
+    <value>Der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“).</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSTEMPERATUREN_KATALOG" xml:space="preserve">
+    <value>Bezugstemperaturen des Katalogs</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PROJEKTTEMPERATUREN" xml:space="preserve">
+    <value>Projekttemperaturen</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_LITERANGABE_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
+    <value>Die Literangabe trägt keine Bezugstemperaturen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
+    <value>Die Nutzungsart „{0}“ trägt keine Bezugstemperaturen.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_KALTWASSER_MITTEL" xml:space="preserve">
+    <value>Kaltwassermittel</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_KALTWASSER_AMPLITUDE" xml:space="preserve">
+    <value>Kaltwasseramplitude</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV" xml:space="preserve">
+    <value>Die Amplitude des Kaltwassers ist negativ (Zone „{0}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UNGUELTIG" xml:space="preserve">
+    <value>Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
+    <value>Ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV" xml:space="preserve">
+    <value>Die Zone „{0}“ hat keine positive Bezugsmenge.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEDARFSUEBERSCHREIBUNG" xml:space="preserve">
+    <value>Bedarfsüberschreibung</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV" xml:space="preserve">
+    <value>Der spezifische Bedarf der Zone „{0}“ ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Wohnfläche je WE</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV" xml:space="preserve">
+    <value>Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_NIVEAUS" xml:space="preserve">
+    <value>Die Nutzungsart „{0}“ trägt nicht drei Bedarfsniveaus.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT" xml:space="preserve">
+    <value>Unbekanntes Bedarfsniveau der Zone „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_KATALOGBEDARF" xml:space="preserve">
+    <value>Katalogbedarf</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATALOGBEDARF_NEGATIV" xml:space="preserve">
+    <value>Der Katalogbedarf der Nutzungsart „{0}“ ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_WOHNZONEN_OHNE_FLAECHE" xml:space="preserve">
+    <value>Wohnzonen ohne eigene Wohnfläche je WE tragen keine Fläche für die Zirkulation.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>Der Jahresmesswert der Zone „{0}“ ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
+    <value>Der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE" xml:space="preserve">
+    <value>Ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE" xml:space="preserve">
+    <value>Der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT" xml:space="preserve">
+    <value>Der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS" xml:space="preserve">
+    <value>Der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL" xml:space="preserve">
+    <value>Der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
+    <value>Die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Der spezifische Bedarf der Zone „{0}“ ({1:0.###} kWh je Einheit und Tag) liegt außerhalb der Bandbreite des Niveaus ({2:0.###} … {3:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NICHT_ENDLICH" xml:space="preserve">
+    <value>{0} der Zone „{1}“ ist keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV" xml:space="preserve">
+    <value>Die Temperaturspreizung ({0}) ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE" xml:space="preserve">
+    <value>Die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
+    <value>Die Projektgrößen des Zapfprofils fehlen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_PARAMETERSATZ_FEHLT" xml:space="preserve">
+    <value>Der Parametersatz des Zapfprofils fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALTWASSERGANG_RASTER" xml:space="preserve">
+    <value>Der Kaltwassergang trägt nicht zwölf Monatswerte.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF" xml:space="preserve">
+    <value>Im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_WOCHENTAG_UNGUELTIG" xml:space="preserve">
+    <value>Der Wochentag des 1. Januar liegt nicht in 0 … 6.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALENDER_365" xml:space="preserve">
+    <value>Der Kalender der Klimaregion trägt nicht 365 Tage.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER" xml:space="preserve">
+    <value>Das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_JAHRESREIHE" xml:space="preserve">
+    <value>Die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Die Zone „{0}“ der Jahresreihe ist unvollständig.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
+    <value>Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
+    <value>Der Urlaubsversatz liegt nicht in 0 … 364 Tagen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
+    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID" xml:space="preserve">
+    <value>Für die Nutzungsart der Zone „{0}“ stehen keine Zapfkategorien im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_DAUER" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL" xml:space="preserve">
+    <value>Die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_MITTEL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE" xml:space="preserve">
+    <value>Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT" xml:space="preserve">
+    <value>Die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KATEGORIE_RATE" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ENSEMBLE_EINHEITSTAGE" xml:space="preserve">
+    <value>Das Ensemble zöge {0} Einheitentage (Realisierungen × Einheiten); höchstens {1} sind zulässig.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_BEDARFSTAG" xml:space="preserve">
+    <value>Die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_SUMMEN_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Die Summen der Wochenfaktoren und Tagesgänge werden nicht geprüft, nur normiert.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monatsfaktoren</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Auslastungsgang</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Wochenfaktoren</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_WOCHENFAKTOREN_NULL" xml:space="preserve">
+    <value>Die Wochenfaktoren der Nutzungsart „{0}“ summieren zu 0.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FERIENFAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TAGESGANG_LEER" xml:space="preserve">
+    <value>Der Tagesgang des Tagtyps {0} der Zone „{1}“ ist leer; diese Tage tragen keine Zapfung.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGESGANG_TAGTYP" xml:space="preserve">
+    <value>Tagesgang {0}</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGTYP_1" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGTYP_2" xml:space="preserve">
+    <value>Samstag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGTYP_3" xml:space="preserve">
+    <value>Sonn-/Feiertag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGTYP_4" xml:space="preserve">
+    <value>Ruhetag</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALENDER_TAGE" xml:space="preserve">
+    <value>Der Kalender trägt nicht 365 Tage.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KALTWASSERFAKTOR_RASTER" xml:space="preserve">
+    <value>Der Kaltwasserfaktor trägt nicht zwölf Monate.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
+    <value>Die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_RASTER_LAENGE" xml:space="preserve">
+    <value>{0} tragen nicht {1} Werte (Zone „{2}“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_RASTER_NEGATIV" xml:space="preserve">
+    <value>{0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_SUMME_NORMIERT" xml:space="preserve">
+    <value>{0} der Zone „{1}“ summiert zu {2:0.######} statt 1; vor dem Rechnen normiert.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_PROJEKT_FEHLT" xml:space="preserve">
+    <value>Die Projektgrößen der Zirkulation fehlen.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAUFZEIT" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation liegt nicht in (0; 24] h.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_MANUELL" xml:space="preserve">
+    <value>Die Zirkulation steht auf manuell, die Leistung fehlt oder ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_FLAECHE" xml:space="preserve">
+    <value>Fläche der Zirkulation</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Die Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche; A_N enthält sie nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>Keine Fläche für den Flächenkennwert der Zirkulation; gerechnet mit der Methode Anteil.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAENGE_FEHLT" xml:space="preserve">
+    <value>Die Methode Leitungslänge braucht eine Leitungslänge.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_LAENGE" xml:space="preserve">
+    <value>Leitungslänge</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_VERLUST_JE_METER" xml:space="preserve">
+    <value>Verlust je Meter</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Anteil der Zirkulation</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_KENNWERT" xml:space="preserve">
+    <value>Flächenkennwert</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_METHODE" xml:space="preserve">
+    <value>Unbekannte Methode der Zirkulation.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>Keine Zone trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“).</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAGE" xml:space="preserve">
+    <value>Der Parameter der Leitungslage ist weder 1 noch 2.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_ZIRKULATION_WERT" xml:space="preserve">
+    <value>{0} ist negativ oder keine endliche Zahl ({1}).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_GRUND_UND_FOLGE" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>die Speichertemperatur</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPEICHERTEMPERATUR_PARAMETER" xml:space="preserve">
+    <value>die Speichertemperatur (Parameter {0})</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NICHT_ENDLICH" xml:space="preserve">
+    <value>{0} ist keine endliche Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NEGATIV" xml:space="preserve">
+    <value>{0} ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NICHT_POSITIV" xml:space="preserve">
+    <value>{0} ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG" xml:space="preserve">
+    <value>Die Spreizung {0} ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_OFFEN" xml:space="preserve">
+    <value>noch nicht gerechnet — „Stochastisch rechnen“ zieht das Auslegungsensemble</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_NORMVERGLEICH" xml:space="preserve">
+    <value>DIN 4708: N = {0:0.###}, V_DIN = {1:0} l</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_NORMVERGLEICH_TEIL" xml:space="preserve">
+    <value>DIN 4708: N = {0:0.###}, V_DIN = {1:0} l (nur Wohnzonen)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_DIN_AUSSERHALB" xml:space="preserve">
+    <value>DIN 4708: außerhalb des Gültigkeitsbereichs</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_REIHENFOLGE_DIN" xml:space="preserve">
+    <value>Der Summenlinienpunkt {0:0} l liegt nicht unter V_DIN {1:0} l.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_REIHENFOLGE_PERZENTIL_V" xml:space="preserve">
+    <value>Das Perzentil {0:0} l liegt über dem Summenlinienpunkt {1:0} l.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_REIHENFOLGE_PERZENTIL_P" xml:space="preserve">
+    <value>Die Perzentilleistung {0:0.###} kW liegt über der Minutenspitze {1:0.###} kW des Bedarfstags.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_REGEL_VOLUMENSTROM" xml:space="preserve">
+    <value>der Volumenstrom der Regel „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_REGEL_DAUER" xml:space="preserve">
+    <value>die Dauer der Regel „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_REGEL_TEMPERATUR" xml:space="preserve">
+    <value>die Temperatur der Regel „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ANZAHL_VORGAENGE" xml:space="preserve">
+    <value>die Anzahl der Vorgänge</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_ZAPFBLOECKE_ZAHL" xml:space="preserve">
+    <value>Die Zahl der Zapfblöcke des DIN-4708-Profils ist keine positive ganze Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PARAMETERWERT" xml:space="preserve">
+    <value>„{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KEINE_MINUTENZAHL" xml:space="preserve">
+    <value>„{0}“ ist keine ganze Minutenzahl.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SKALIERUNGSFAKTOR" xml:space="preserve">
+    <value>der Skalierungsfaktor des Bedarfstags</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_LEER" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ trägt kein Ereignis.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_AUSSERHALB" xml:space="preserve">
+    <value>Ein Ereignis des Bedarfstags „{0}“ liegt nicht im Tag (Beginn 0 … 1439, Dauer 1 … 1440 Minuten).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_EREIGNIS_ENERGIE" xml:space="preserve">
+    <value>Ein Ereignis des Bedarfstags „{0}“ trägt eine negative oder nicht endliche Energie.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_STUNDENPROFIL_RASTER" xml:space="preserve">
+    <value>Das Stundenprofil des Bedarfstags trägt nicht 24 Stunden.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_BEDARFSTAG_FEHLT" xml:space="preserve">
+    <value>Der gewählte Bedarfstag steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSMENGE_AUSLEGUNG" xml:space="preserve">
+    <value>die Bezugsmenge der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WZ" xml:space="preserve">
+    <value>der Wärmebedarf W_z</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_DIN_PROFIL_OHNE_BLOCK" xml:space="preserve">
+    <value>Das DIN-4708-Profil trägt keinen Zapfblock.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_TAG_DIN4708" xml:space="preserve">
+    <value>DIN-4708-Profil N = {0:0.##}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_ZEILE" xml:space="preserve">
+    <value>Der Konstruktor trägt keine Zeile.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_FENSTER" xml:space="preserve">
+    <value>Eine Zeile des Konstruktors hat kein Zeitfenster im Tag (Beginn &lt; Ende ≤ 1440).</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZEILE_VOLUMEN" xml:space="preserve">
+    <value>das Volumen der Zeile „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZEILE_SPREIZUNG" xml:space="preserve">
+    <value>der Zeile „{0}“ (Zapftemperatur − Kaltwasser)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_STUNDENPROFIL" xml:space="preserve">
+    <value>Stundenprofil ausdrücklich gewählt — Spitzen unterschätzt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_DIN_NUR_WOHNEN" xml:space="preserve">
+    <value>Das DIN-4708-Profil gilt nur für Wohnen — bitte einen Tag konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_DIN_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Das DIN-4708-Profil ist nicht rechenbar (Wohnungstabelle oder Katalogkonstanten fehlen) — bitte einen Tag konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_DIN" xml:space="preserve">
+    <value>DIN-4708-Profil gewählt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_KATALOGTAG" xml:space="preserve">
+    <value>Katalogtag „{0}“ gewählt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_TAG_FEHLT" xml:space="preserve">
+    <value>Der gewählte Bedarfstag fehlt im Katalog — bitte einen Tag wählen oder konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_VORGABE_WOHNEN_DIN" xml:space="preserve">
+    <value>Vorgabe Wohnen: DIN-4708-Profil.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_VORGABE_WOHNEN_KONSTRUKTOR" xml:space="preserve">
+    <value>Vorgabe Wohnen: Das DIN-4708-Profil ist nicht rechenbar — bitte einen Tag konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_WAHL_VORGABE_NICHTWOHNEN" xml:space="preserve">
+    <value>Vorgabe Nichtwohnen: Konstruktor — bitte einen Tag konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PB" xml:space="preserve">
+    <value>p_b</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WB" xml:space="preserve">
+    <value>w_b</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_KENNZAHL_N" xml:space="preserve">
+    <value>die Kennzahl N</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_NUTZANTEIL" xml:space="preserve">
+    <value>der Nutzanteil</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_SPREIZUNG_SPEICHER" xml:space="preserve">
+    <value>Die Spreizung des Speichers ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT" xml:space="preserve">
+    <value>Die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_AUSSTATTUNG_WERT" xml:space="preserve">
+    <value>Σ v·w_v der Ausstattung „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_DIN_NUR_WOHNEN" xml:space="preserve">
+    <value>DIN 4708: außerhalb des Gültigkeitsbereichs — die Kennzahl gilt nur für Wohnen mit Speicher.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>DIN 4708: nicht rechenbar — die Zone „{0}“ trägt keine Wohnungstabelle.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_DIN4708_WAERMEPUMPE" xml:space="preserve">
+    <value>Die Bedarfskennzahl nach DIN 4708 ist für die Vorlauftemperaturen einer Wärmepumpe kaum aussagefähig.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_DIN4708_TEILGUELTIG" xml:space="preserve">
+    <value>Die Kennzahl N = {0:0.##} deckt nur die Wohnzonen mit Speicher; außerhalb des Gültigkeitsbereichs: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_LEITUNGSINHALT" xml:space="preserve">
+    <value>der Leitungsinhalt</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_LEITUNGSLAENGE" xml:space="preserve">
+    <value>die Länge der Zirkulationsleitung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GROSS_BEIDE" xml:space="preserve">
+    <value>Großanlage nach DVGW W 551: Speichervolumen {0:0} l über {1:0} l, Leitungsinhalt {2:0.###} l über {3:0.###} l — Austrittstemperatur, Zirkulation und thermische Desinfektion nach DVGW W 551 einhalten.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GROSS_SPEICHER" xml:space="preserve">
+    <value>Großanlage nach DVGW W 551: Speichervolumen {0:0} l über {1:0} l — Austrittstemperatur, Zirkulation und thermische Desinfektion nach DVGW W 551 einhalten.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GROSS_LEITUNG" xml:space="preserve">
+    <value>Großanlage nach DVGW W 551: Leitungsinhalt {0:0.###} l über {1:0.###} l — Austrittstemperatur, Zirkulation und thermische Desinfektion nach DVGW W 551 einhalten.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GROSS_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>Großanlage nicht prüfbar — weder Speichervolumen noch Leitungsinhalt bekannt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KLEINANLAGE" xml:space="preserve">
+    <value>Kleinanlage nach DVGW W 551.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_GROSS_OHNE_ZIRKULATION" xml:space="preserve">
+    <value>Die Anlage ist eine Großanlage, aber keine Zone nimmt an der Zirkulation teil.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_168" xml:space="preserve">
+    <value>Die Wochenreihe trägt nicht 168 Stunden.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WERT" xml:space="preserve">
+    <value>Die Wochenreihe trägt einen negativen oder nicht endlichen Wert.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_WOCHENTAG" xml:space="preserve">
+    <value>Der Wochentag des ersten Tages liegt nicht in 0 … 6.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_TAGTYPEN" xml:space="preserve">
+    <value>Die Wochenreihe trägt nicht sieben Tagtypen.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG" xml:space="preserve">
+    <value>Zapftemperatur − Kaltwasser der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_MITTEL" xml:space="preserve">
+    <value>Zapftemperatur − Kaltwassermittel</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE" xml:space="preserve">
+    <value>Die Wochenreihe hat keine Zone.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365" xml:space="preserve">
+    <value>Eine Zone der Wochenreihe trägt nicht 365 Tage.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG" xml:space="preserve">
+    <value>Ein Perzentil braucht mindestens eine Realisierung.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_REALISIERUNG_OHNE_WERT" xml:space="preserve">
+    <value>Eine Realisierung trägt keinen Zahlenwert.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_VIELFACHES" xml:space="preserve">
+    <value>Das Vielfache der Realisierungen des Bedarfstags ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE" xml:space="preserve">
+    <value>Das Ensemble hat keine Zone.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1).</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TAGESMENGE_ZONE" xml:space="preserve">
+    <value>die Tagesmenge der Zone „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZONE" xml:space="preserve">
+    <value>die Spreizung der Zone „{0}“</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PHI_N" xml:space="preserve">
+    <value>die Leistung Φ_N des Summenlinienpunkts</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_WERT" xml:space="preserve">
+    <value>Das Auslegungsperzentil ist 95 oder 99, nicht {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_LEER" xml:space="preserve">
+    <value>Die Liste der Nenninhalte ist leer.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_NENNINHALT" xml:space="preserve">
+    <value>ein Nenninhalt</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALTE_NICHT_AUFSTEIGEND" xml:space="preserve">
+    <value>Die Nenninhalte steigen nicht streng auf.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NENNINHALT_SCHLUESSEL" xml:space="preserve">
+    <value>Der Parameter „{0}“ nennt keine Stelle der Nenninhaltsliste.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_NENNINHALT_RASTER" xml:space="preserve">
+    <value>das Raster über dem Ende der Nenninhalte</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_NENNINHALT_NICHT_GERUNDET" xml:space="preserve">
+    <value>Über dem Ende der Nenninhaltsliste wird nicht gerundet.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NUR_SPEICHER" xml:space="preserve">
+    <value>Die Speicherauslegung gilt nur für die Topologie Speicher.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_OHNE_WOCHENREIHE" xml:space="preserve">
+    <value>Die Speicherauslegung braucht die Wochenreihe.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_SPEICHER" xml:space="preserve">
+    <value>Speicher − Kaltwasser der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_NUTZANTEIL_UEBER_1" xml:space="preserve">
+    <value>Der Nutzanteil liegt über 1.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZUSCHLAG" xml:space="preserve">
+    <value>der Zuschlag</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER" xml:space="preserve">
+    <value>das Ladefenster</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>die Laufzeit der Zirkulation</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_LADEFENSTER_OHNE_LAENGE" xml:space="preserve">
+    <value>Das Ladefenster hat keine Länge.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_LEISTUNG" xml:space="preserve">
+    <value>die Zirkulationsleistung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_LADELEISTUNG" xml:space="preserve">
+    <value>die Ladeleistung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_AUTO" xml:space="preserve">
+    <value>auto</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_LADE_RECHENWEG" xml:space="preserve">
+    <value>({0:0.###} kWh + {1:0.###} kW · {2:0.###} h) / {3:0.###} h = {4:0.###} kW — angesetzt: {5:0.###} kW ({6})</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_LADELEISTUNG_ZU_KLEIN" xml:space="preserve">
+    <value>Die Ladeleistung {0:0.###} kW deckt im Ladefenster von {1:0.###} h den größten Tag nicht; Mindestleistung {2:0.###} kW — Speichervolumen ersetzt keine Ladeleistung.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PERSONEN" xml:space="preserve">
+    <value>die Personenzahl</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SUMMENKONTROLLE" xml:space="preserve">
+    <value>Die Stundenwerte der maßgebenden Woche ({0:0.###} kWh) weichen von der Summe der Tagesmengen ihres Fensters ({1:0.###} kWh) ab — ein Tagesgang summiert nicht zu 1.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_PROFIL_RECHENWEG" xml:space="preserve">
+    <value>D_max {0:0.###} kWh am Tag {1} der Woche 2 um {2} Uhr → {3:0} l (Stundenbilanz — Zapfspitzen unter einer Stunde deckt DIN 4708)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_MASSGEBEND_WOCHENENDE" xml:space="preserve">
+    <value>Der maßgebende Zeitpunkt liegt an einem Tag des Typs {0} (Tag {1} der Woche 2).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_DEFIZIT_WAECHST" xml:space="preserve">
+    <value>Das Defizit wächst über die Woche — D_max ist dann kein Volumen, sondern ein Zeichen zu kleiner Ladeleistung.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_STRICH" xml:space="preserve">
+    <value>–</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_DMAX_NULL" xml:space="preserve">
+    <value>Profilbasiert: –. Die Ladeleistung deckt jede Stundenlast, es entsteht kein Defizit; maßgebend ist dann das DIN-4708-Verfahren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_DIN_RECHENWEG" xml:space="preserve">
+    <value>N = {0:0.###}, W_z = {1:0.###} kWh → {2:0} l (ohne Zuschlag)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_GUELTIGKEIT_DIN_GLF" xml:space="preserve">
+    <value>DIN 4708 und das Gleichzeitigkeitsverfahren gelten nur für Wohnen mit Speicher; die Gruppe ist außerhalb des Gültigkeitsbereichs.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_NICHT_GERECHNET" xml:space="preserve">
+    <value>nicht gerechnet</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_GLF_GRENZE_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Die Gültigkeitsgrenze des Gleichzeitigkeitsverfahrens wird nicht geprüft.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_GLF_GUELTIGKEITSGRENZE" xml:space="preserve">
+    <value>Das Gleichzeitigkeitsverfahren gilt bis N = {0:0.###}; bei N = {1:0.###} steht es außerhalb des Bands.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GLF_RECHENWEG" xml:space="preserve">
+    <value>GLF({0:0.###}) = {1:0.###}, {2:0.###} Personen → {3:0} l (setzt die Wannen-Zapfperiode an)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_GLF_WANNEN" xml:space="preserve">
+    <value>Das Gleichzeitigkeitsverfahren setzt die Wannen-Zapfperiode an; für Wohnungen ohne Badewanne ist es nur eingeschränkt gültig.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KLASSISCH_RECHENWEG" xml:space="preserve">
+    <value>{0:0.###} Personen → {1:0} l — nur nachrichtlich, unterstellt eine Speicherladung je Tag</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KLASSISCH_OHNE_PERSONEN" xml:space="preserve">
+    <value>ohne Personenzahl nicht gerechnet</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_BAND" xml:space="preserve">
+    <value>Das Band endet mit {0:0} l über dem größten Nenninhalt {1:0} l — Mehrspeicheranlage prüfen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_NENNINHALTE_FEHLEN" xml:space="preserve">
+    <value>Ohne Liste der Nenninhalte wird nicht gerundet.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_NL_KRITERIUM" xml:space="preserve">
+    <value>Speicher mit Leistungskennzahl N_L ≥ {0:0.###} wählen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SUMMENLINIE_AUSSERHALB_BAND" xml:space="preserve">
+    <value>Der Summenlinienpunkt {0:0} l liegt außerhalb des Bands {1:0} … {2:0} l.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_KLASSISCH_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Der klassische Faustwert wird nicht gegen das Band geprüft.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_KLASSISCH_WEIT_UEBER_BAND" xml:space="preserve">
+    <value>Der klassische Faustwert {0:0} l liegt weit über dem Band (bis {1:0} l) — er unterstellt eine Ladung je Tag.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_MINDESTTEMPERATUR_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Die Speichertemperatur wird nicht gegen die Mindesttemperatur geprüft.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST" xml:space="preserve">
+    <value>Die Speichertemperatur {0:0.###} °C liegt unter der Mindesttemperatur nach DVGW W 551 ({1:0.###} °C) — thermische Desinfektion oder Frischwasserstation nachweisen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST_GROSS" xml:space="preserve">
+    <value>Die Speichertemperatur {0:0.###} °C liegt unter der Mindesttemperatur nach DVGW W 551 ({1:0.###} °C) der Großanlage — thermische Desinfektion oder Frischwasserstation nachweisen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KENNWERT_DMAX" xml:space="preserve">
+    <value>D_max {0:0.###} kWh</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KENNWERT_WZ" xml:space="preserve">
+    <value>W_z {0:0.###} kWh</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KENNWERT_GLF" xml:space="preserve">
+    <value>GLF {0:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_NUR_NACHRICHTLICH" xml:space="preserve">
+    <value>nur nachrichtlich</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_FUELLSTAND_BEZUG_VORGABE" xml:space="preserve">
+    <value>Der gewählte Bezug des Füllstands ({0}) ist nicht bestimmbar; es gilt die Vorgabe.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_1" xml:space="preserve">
+    <value>Nenninhalt des empfohlenen Punkts</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_2" xml:space="preserve">
+    <value>empfohlener Punkt der Summenlinie</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_3" xml:space="preserve">
+    <value>Nenninhalt des Bands</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
+    <value>V_max des Bands</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
+    <value>Größter Tagesbedarf der maßgebenden Woche {0:0.#} kWh/d + Zirkulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, zusammen {4:0.#} kWh/d; ÷ Ladefenster {5:0.#} h = {6:0.##} kW — angesetzt: {7:0.##} kW ({8}).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_FENSTER_AUSSERHALB" xml:space="preserve">
+    <value>{0} liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_ENTWURF" xml:space="preserve">
+    <value>Entwurfsstand, Anwendung besonders zu vereinbaren</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_WERTEPAARKURVE" xml:space="preserve">
+    <value>Wertepaarkurve: eigene Erweiterung des Nachweisverfahrens.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
+    <value>Die Projektgrößen der Auslegung fehlen.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_KALTWASSER_AUSLEGUNG" xml:space="preserve">
+    <value>die Kaltwassertemperatur der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SENSORHOEHE" xml:space="preserve">
+    <value>die Sensorhöhe</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPEICHERVERLUST" xml:space="preserve">
+    <value>der Speicherverlust</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SPEICHERVERLUST_NULL" xml:space="preserve">
+    <value>Ohne Angabe des Bereitschaftsverlusts rechnet die Summenlinie ohne Speicherverlust.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_UEBERTRAGERLEISTUNG" xml:space="preserve">
+    <value>die Übertragerleistung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_UA" xml:space="preserve">
+    <value>U·A des Übertragers</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_UEBERTRAGERFLAECHE" xml:space="preserve">
+    <value>die Übertragerfläche</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_UEBERTRAGERFLAECHE_PROJEKT" xml:space="preserve">
+    <value>die Übertragerfläche des Projekts</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_ERZEUGERART_FEHLT" xml:space="preserve">
+    <value>Ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SCHAETZFORMEL" xml:space="preserve">
+    <value>die Schätzformel der Übertragerfläche</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_ZEITKONSTANTE_ENTFAELLT" xml:space="preserve">
+    <value>Die Zeitkonstante des Speichers wird nicht angezeigt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_WERKSTOFF_FEHLT" xml:space="preserve">
+    <value>{0} braucht den U-Wert des Übertragers, und der hängt am Werkstoff (Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_LADUNGSFAKTOR" xml:space="preserve">
+    <value>Der Ladungsfaktor liegt nicht in (0; 1].</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_SENSORHOEHE" xml:space="preserve">
+    <value>Die Sensorhöhe liegt nicht in [0; 1].</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_MISCHWASSER_FEHLT" xml:space="preserve">
+    <value>Der gemischte Speicher braucht die Mischwassertemperatur.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_MISCHWASSER" xml:space="preserve">
+    <value>Mischwasser − Kaltwasser der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_VERZOEGERUNG" xml:space="preserve">
+    <value>die Verzögerung des Erzeugers</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERLEISTUNG" xml:space="preserve">
+    <value>die Erzeugerleistung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
+    <value>Weder Erzeuger- noch Übertragerleistung ist bekannt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_SUMMENLINIE_OHNE_TAG" xml:space="preserve">
+    <value>Die Summenlinie braucht einen Bedarfstag.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
+    <value>Die Summenlinie findet kein Volumen mit Nachweis.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SUMMENLINIE_NICHT_MONOTON" xml:space="preserve">
+    <value>Der Nachweis der Summenlinie ist über das Volumen nicht monoton; das kleinste Volumen stammt aus einem feinen Rasterlauf.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_UEBERTRAGER_UNPLAUSIBEL" xml:space="preserve">
+    <value>Die Schätzformel der Übertragerfläche ergibt beim Auslegungsvolumen keine positive Fläche; bitte die Fläche angeben.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_SPITZEN_UNTERSCHAETZT" xml:space="preserve">
+    <value>Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_PARAMETERSATZ_FEHLT" xml:space="preserve">
+    <value>Der Parametersatz der Auslegung fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_GROSSANLAGE_NICHT_ERKANNT" xml:space="preserve">
+    <value>Die Großanlage wird nicht erkannt.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_SCHNELLPFAD_ENTFAELLT" xml:space="preserve">
+    <value>Der Schnellpfad entfällt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_TAG_STUNDENPROFIL" xml:space="preserve">
+    <value>Stundenprofil, Tag {0}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
+    <value>Mit {0:0.###} °C ergibt die Auslegung {1:0} l — eine Großanlage nach DVGW W 551; die Gruppe rechnet deshalb mit der Mindesttemperatur {2:0.###} °C.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
+    <value>{0} Die Gruppe bleibt bei {1:0.###} °C.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
+    <value>Schnellauslegung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
+    <value>Spitzen unterschätzt</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_SUMMENLINIE" xml:space="preserve">
+    <value>Summenlinie: {0:0} l bei {1:0.###} kW, Ladezeit {2:0.###} h/d</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_MINUTENSPITZE" xml:space="preserve">
+    <value>Minutenspitze des Bedarfstags {0:0.###} kW (größte Stundenleistung {1:0.###} kW nachrichtlich)</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_WOHNUNGSSTATION_SUMME" xml:space="preserve">
+    <value>Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_PUNKT" xml:space="preserve">
+    <value>Das Perzentil des Speichers braucht den Summenlinienpunkt (Φ_N).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_NICHT_BELASTBAR_TEIL" xml:space="preserve">
+    <value> — nicht belastbar</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_PERZENTIL_NICHT_BELASTBAR" xml:space="preserve">
+    <value>Das Perzentil P{0} stützt sich auf {1} Realisierungen; ein empirisches P{0} braucht mindestens {2} — nicht belastbar.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_WURZEL_N_ENTFAELLT" xml:space="preserve">
+    <value>Der Vergleich μ + z·σ/√N entfällt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_WURZEL_N_VERGLEICH" xml:space="preserve">
+    <value>Minutenspitze P{0} des Ensembles {1:0.###} kW; die Einzelstatistik der Einheiten ergibt je Minute μ + z·σ/√N = {2:0.###} kW (z = {3:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_WOHNUNGSSTATION_JE_EINHEIT" xml:space="preserve">
+    <value>Die Wohnungsstation je Einheit: P{0} der Minutenspitze {1:0.###} kW (Zone „{2}“); die Summe der Gruppe P{0} {3:0.###} kW.</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_KONSISTENZ_ENTFAELLT" xml:space="preserve">
+    <value>Der Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts) entfällt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_KONSISTENZ_STOCHASTISCHE_SPITZE" xml:space="preserve">
+    <value>Die stochastische Spitze (P{0} der größten Stundenleistung {1:0.###} kW) liegt über dem {2:0.###}-Fachen der Leistung des Summenlinienpunkts {3:0.###} kW — Bedarfstag und Summenlinie prüfen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_KEIN_VOLUMEN" xml:space="preserve">
+    <value>Perzentil P{0}: nicht rechenbar — beim Φ_N {1:0.###} kW findet die Summenlinie für {2} von {3} Realisierungen kein Volumen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_SPEICHER" xml:space="preserve">
+    <value>Perzentil P{0}: {1:0} l bei {2:0.###} kW (R = {3}, Seed {4}; Streuband {5:0}–{6:0} l{7}){8}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_PERZENTIL_MINUTE" xml:space="preserve">
+    <value>Perzentil P{0}: Minutenspitze {1:0.###} kW, größte Stundenleistung {2:0.###} kW nachrichtlich (R = {3}, Seed {4}; Streuband {5:0.###}–{6:0.###} kW{7}){8}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GLF_TEIL_VP" xml:space="preserve">
+    <value>; GLF_V {0:0.###}; GLF_P {1:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GLF_TEIL_V" xml:space="preserve">
+    <value>; GLF_V {0:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_GLF_TEIL_P" xml:space="preserve">
+    <value>; GLF_P {0:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_DIN_NICHT_RECHENBAR_GRUND" xml:space="preserve">
+    <value>DIN 4708: nicht rechenbar — {0}</value>
+  </data>
+  <data name="ZPG_SATZ_FOLGE_WERTEPAARKURVE_ENTFAELLT" xml:space="preserve">
+    <value>Die Wertepaarkurve der Summenlinie entfällt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_PUNKT" xml:space="preserve">
+    <value>Der empfohlene Punkt {0:0} l liegt über dem größten Nenninhalt {1:0} l — Mehrspeicheranlage prüfen.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN" xml:space="preserve">
+    <value>Der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART" xml:space="preserve">
+    <value>Der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN" xml:space="preserve">
+    <value>Der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG" xml:space="preserve">
+    <value>Zapftemperatur − Kaltwasser des Katalogtags</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_1" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_2" xml:space="preserve">
+    <value>Wohneinheiten</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_3" xml:space="preserve">
+    <value>Betten</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_4" xml:space="preserve">
+    <value>Duschplätze</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_5" xml:space="preserve">
+    <value>Sitzplätze</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_6" xml:space="preserve">
+    <value>Beschäftigte</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEZUGSART_7" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>der Beginn des Ladefensters</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_LADEFENSTER_LAENGE" xml:space="preserve">
+    <value>die Länge des Ladefensters</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Das Zapfprofil kann nicht gespeichert werden — {0}</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_TABELLE_FEHLT" xml:space="preserve">
+    <value>in dieser Datenbank fehlt: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
+    <value>das Projekt {0} gibt es nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_BEDARFSTAG_FEHLT" xml:space="preserve">
+    <value>der Bedarfstag {0} steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_PERZENTIL_WERT" xml:space="preserve">
+    <value>das Perzentil {0}</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_REALISIERUNGEN" xml:space="preserve">
+    <value>die Zahl der Realisierungen</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_REALISIERUNGEN_AUSLEGUNG" xml:space="preserve">
+    <value>die Zahl der Realisierungen der Auslegung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_METHODE" xml:space="preserve">
+    <value>die Methode der Zirkulation</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_ZIRK_LAGE" xml:space="preserve">
+    <value>die Lage der Zirkulationsleitung</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_SPEICHERART" xml:space="preserve">
+    <value>die Speicherart</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_BEDARFSTAG_QUELLE" xml:space="preserve">
+    <value>die Quelle des Bedarfstags</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_WERTEMENGE" xml:space="preserve">
+    <value>{0} liegt außerhalb der Wertemenge.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ZONE_OHNE_NAME" xml:space="preserve">
+    <value>eine Zone hat keinen Namen.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ZONE_BEZUGSMENGE" xml:space="preserve">
+    <value>die Zone „{0}“ hat keine positive Bezugsmenge.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE" xml:space="preserve">
+    <value>die Zone „{0}“ trägt einen Wert außerhalb seiner Wertemenge.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ZONE_FREMD" xml:space="preserve">
+    <value>die Zone „{0}“ gehört zu einem anderen Projekt.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>der Tagesgangsatz {0} der Zone „{1}“ steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>das Gebäude {0} der Zone „{1}“ gibt es nicht.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_GEBAEUDE_FREMD" xml:space="preserve">
+    <value>das Gebäude {0} der Zone „{1}“ gehört zu einem anderen Projekt.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
+    <value>ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_WOHNUNGSTYP_FREMD" xml:space="preserve">
+    <value>ein Wohnungstyp der Zone „{0}“ gehört zu einer anderen Zone.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_AUSSTATTUNG_FEHLT" xml:space="preserve">
+    <value>die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_NENNINHALTE_EINSTELLUNG" xml:space="preserve">
+    <value>Die Einstellung „{0}“ ist keine gültige Liste ({1}) — es gilt die Vorgabe des Katalogs.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_KEINE_ZAHL" xml:space="preserve">
+    <value>„{0}“ ist keine Zahl</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_OHNE_NAME" xml:space="preserve">
+    <value>Der konstruierte Bedarfstag braucht einen Namen.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>der konstruierte Bedarfstag trägt keinen Namen, keine Katalogversion oder nicht die Quelle Konstruktor.</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_ENTWURF_NAME_BELEGT" xml:space="preserve">
+    <value>der Name „{0}“ des konstruierten Bedarfstags ist in der Katalogversion „{1}“ schon vergeben.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KEINE" xml:space="preserve">
+    <value>Der Satz braucht mindestens eine Zapfkategorie.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_FEHLT" xml:space="preserve">
+    <value>Die Zapfkategorie in Zeile {0} hat keinen Namen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_NAME_DOPPELT" xml:space="preserve">
+    <value>Der Name „{0}“ steht mehrfach im Satz der Zapfkategorien.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht einen Volumenstrom, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_STREUUNG" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht eine Streuung σ, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_DAUER" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht eine Dauer von 1 bis 1440 Minuten.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ braucht einen Anteil, endlich und nicht negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_KAPPUNG" xml:space="preserve">
+    <value>Die Kappung der Zapfkategorie „{0}“ muss leer oder positiv sein.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_ANTEIL_NULL" xml:space="preserve">
+    <value>Die Anteile der Zapfkategorien summieren zu 0 — mindestens eine Kategorie braucht einen Anteil.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_MITTEL" xml:space="preserve">
+    <value>Die Zapfkategorie „{0}“ hat einen Anteil, aber kein positives gestutztes Mittel des Volumenstroms — Volumenstrom, Streuung oder Kappung anpassen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATEGORIE_SUMME_NORMIERT" xml:space="preserve">
+    <value>Die Anteile der Zapfkategorien summieren zu {0:0.###} statt 1; die Rechnung normiert sie.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_1" xml:space="preserve">
+    <value>P</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_2" xml:space="preserve">
+    <value>WE</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_3" xml:space="preserve">
+    <value>Bett</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_4" xml:space="preserve">
+    <value>Dusche</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_5" xml:space="preserve">
+    <value>Platz</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_6" xml:space="preserve">
+    <value>Besch.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
+    <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — angesetzt: {5:0.#} kWh/d ({6}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Ohne Vorschlag des Katalogs — angesetzt: {0:0.#} kWh/d ({1}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_LEITUNG" xml:space="preserve">
+    <value>α {0:0.###} × {1:0.#} m × {2:0.#} W/m ÷ 1000 = {3:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_ANTEIL" xml:space="preserve">
+    <value>{0:0.###} × Tagesbedarf {1:0.#} kWh/d ÷ {2:0.#} h = {3:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_FLAECHE" xml:space="preserve">
+    <value>{0:0.###} × {1:0.#} kWh/(m²·a) × {2:0.#} m² ÷ (365 d × {3:0.#} h) = {4:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION" xml:space="preserve">
+    <value>{0}; × {1:0.#} h/d × 365 d = {2:0} kWh/a — angesetzt: {3:0.###} kW ({4}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Ohne Vorschlag der Methode — angesetzt: {0:0.###} kW ({1}).</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Die Bezugsmenge der Zone „{0}“ ({1:0.##}) weicht von ihrer Wohnungstabelle ab ({2:0.##} {3}); es gilt die Wohnungstabelle.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Einstellung „{0}“ ist keine gültige Zahl („{1}“) — sie gilt nicht.</value>
+  </data>
+  <data name="ZPG_WARN_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter fehlt</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_LEER" xml:space="preserve">
+    <value>Tagesgang leer</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_SUMME" xml:space="preserve">
+    <value>Tagesgang normiert</value>
+  </data>
+  <data name="ZPG_WARN_WOCHENFAKTOREN_SUMME" xml:space="preserve">
+    <value>Wochenfaktoren normiert</value>
+  </data>
+  <data name="ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Bedarf außerhalb der Bandbreite</value>
+  </data>
+  <data name="ZPG_WARN_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Bezugsmenge und Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Messwert mit Speicherverlust</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Messwert weicht ab</value>
+  </data>
+  <data name="ZPG_WARN_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>Netzverluste und Zirkulation</value>
+  </data>
+  <data name="ZPG_WARN_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Jahresreihe stochastisch</value>
+  </data>
+  <data name="ZPG_WARN_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Energieprobe der Stochastik</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zone ohne Fläche</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zirkulation ohne Fläche</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>Zirkulation ohne Zone</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Zone außerhalb der Zirkulation</value>
+  </data>
+  <data name="ZPG_WARN_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Einstellung ungültig</value>
+  </data>
+  <data name="ZPG_BILD_DAUERLINIE" xml:space="preserve">
+    <value>Dauerlinie Zapfung und Zirkulation</value>
+  </data>
+  <data name="ZPG_REIHE_GESAMT" xml:space="preserve">
+    <value>Zapfung und Zirkulation</value>
+  </data>
+  <data name="ZPG_ACHSE_RANG" xml:space="preserve">
+    <value>Stunden des Jahres, absteigend geordnet, Teilung alle 1000 h</value>
+  </data>
+  <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
+    <value>P{0}</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
+    <value>Weitere Angaben stehen in der Stufe Erweitert.</value>
+  </data>
+  <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zapfkategorien wurden nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>die Nutzungsart gibt es nicht mehr.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Die Nutzungsart gehört zur Auslieferung — geänderte Kategorien entstehen als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Eine Zone benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>die Nutzungsart steht in dieser Katalogversion schon.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>für die neue Katalogversion fehlt ihr Name.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>der Tagesgangsatz der Nutzungsart steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>die Tabellen der Zapfkategorien fehlen in dieser Datenbank.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>die Kategorien verletzen eine Regel.</value>
+  </data>
   <data name="KI_DLG_WPA_KUEHLBETRIEB_ERL" xml:space="preserve">
     <value>An = die Wärmepumpe deckt auch Kältebedarf. Nur mit Kühlkennlinie im Projekt und ohne Quellspeicher — sonst ist der Schalter gesperrt und nennt den Grund; wirksam erst mit dem Projektschalter „Kühlung rechnen“.</value>
   </data>
@@ -27553,6 +28603,78 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Der Kühlbetrieb ist in dieser Maske nicht einstellbar.</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_ERZEUGERART" xml:space="preserve">
+    <value>die Erzeugerart</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_WERKSTOFF" xml:space="preserve">
+    <value>der Werkstoff des Übertragers</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>der Bezug des Füllstands</value>
+  </data>
+  <data name="ZPG_SATZ_SPEICHER_SPALTE_FEHLT" xml:space="preserve">
+    <value>die Spalte {0} fehlt in dieser Datenbank (Schemastand vor 121).</value>
+  </data>
+  <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
+    <value>Ein konstruierter Bedarfstag mit Bezugsmenge braucht eine positive Menge und ihre Bezugsart.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANGSATZ_STAMM" xml:space="preserve">
+    <value>Katalog der Tagesgangsätze</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTAGESGANG_STAMM" xml:space="preserve">
+    <value>Katalog der Tagesgänge</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWNUTZUNGSART_STAMM" xml:space="preserve">
+    <value>Katalog der Brauchwasser-Nutzungsarten</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAG_STAMM" xml:space="preserve">
+    <value>Katalog der Bedarfstage</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWBEDARFSTAGEREIGNIS_STAMM" xml:space="preserve">
+    <value>Zapfungen der Bedarfstage</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPARAMETER_STAMM" xml:space="preserve">
+    <value>Parameterkatalog des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM" xml:space="preserve">
+    <value>Katalog der DIN-4708-Werte</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE" xml:space="preserve">
+    <value>Zonen des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP" xml:space="preserve">
+    <value>Wohnungstabellen der Zonen</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT" xml:space="preserve">
+    <value>Projektgrößen des Zapfprofils</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
+    <value>Katalog der Zapfkategorien</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen.</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>Zirkulation groß gegenüber der Zapfung</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>Die Schwelle der Stundenzählung ({0} kW) ist negativ oder keine endliche Zahl — die Stunden über der Schwelle werden nicht gezählt.</value>
+  </data>
+  <data name="ZPG_WARN_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Anzeigetemperatur zu niedrig</value>
+  </data>
+  <data name="ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>Stundenschwelle ungültig</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT" xml:space="preserve">
+    <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — kalibriert auf den Jahresmesswert: {5:0.#} kWh/d (Faktor {6:0.###}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Ohne Vorschlag des Katalogs — kalibriert auf den Jahresmesswert: {0:0.#} kWh/d (Faktor {1:0.###}).</value>
+  </data>
   <data name="FLOTTE_ED_ERSATZINTERVALL_VORGABE" xml:space="preserve">
     <value>Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert.</value>
   </data>
@@ -27567,5 +28689,1418 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
     <value>Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).</value>
+  </data>
+  <data name="ZPG_KALENDER_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="ZPG_KALENDER_ARBEITSTAGE" xml:space="preserve">
+    <value>Arbeitstage</value>
+  </data>
+  <data name="ZPG_KALENDER_SCHULFERIEN" xml:space="preserve">
+    <value>Schulferien</value>
+  </data>
+  <data name="ZPG_KALENDER_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="ZPG_KALENDER_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Auslastungsgang</value>
+  </data>
+  <data name="ZPG_MSG_WOHNUNG_OHNE_ANZAHL" xml:space="preserve">
+    <value>Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0.</value>
+  </data>
+  <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
+    <value>Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>Zone „{0}“: Der Jahresmesswert muss größer 0 sein.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
+    <value>Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_GRENZE" xml:space="preserve">
+    <value>Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST" xml:space="preserve">
+    <value>Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a.</value>
+  </data>
+  <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
+    <value>Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0.</value>
+  </data>
+  <data name="ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben.</value>
+  </data>
+  <data name="ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Bitte die manuelle Zirkulationsleistung (kW, ≥ 0) angeben.</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
+    <value>Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.</value>
+  </data>
+  <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
+    <value>Die Dauerlinie zeigt die Stufe Erweitert.</value>
+  </data>
+  <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
+    <value>Vorgabe · {0}</value>
+  </data>
+  <data name="ZPG_OPT_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="ZPG_OPT_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="ZPG_FELD_ZEILE" xml:space="preserve">
+    <value>{0}, Zeile {1}</value>
+  </data>
+  <data name="ZPG_SP_TOPOLOGIE" xml:space="preserve">
+    <value>Topologie</value>
+  </data>
+  <data name="ZPG_SP_ANTEIL" xml:space="preserve">
+    <value>Anteil</value>
+  </data>
+  <data name="ZPG_SP_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="ZPG_RECHENWEG_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="ZPG_RECHENWEG_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="ZPG_RECHENWEG_MESSWERT" xml:space="preserve">
+    <value>Messwert</value>
+  </data>
+  <data name="ZPG_KAT_AUFGEKLAPPT" xml:space="preserve">
+    <value>Katalog der Nutzungsarten</value>
+  </data>
+  <data name="ZPG_SP_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.</value>
+  </data>
+  <data name="ZPG_GRP_BELEGUNG" xml:space="preserve">
+    <value>Belegung und Anlage</value>
+  </data>
+  <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_LBL_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="ZPG_LBL_RAUMZAHL" xml:space="preserve">
+    <value>Raumzahl</value>
+  </data>
+  <data name="ZPG_LBL_PERSONEN" xml:space="preserve">
+    <value>Personen je Wohnung</value>
+  </data>
+  <data name="ZPG_LBL_AUSSTATTUNG" xml:space="preserve">
+    <value>Ausstattungsklasse</value>
+  </data>
+  <data name="ZPG_SP_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="ZPG_BTN_WOHNUNG_NEU" xml:space="preserve">
+    <value>Wohnungstyp hinzufügen</value>
+  </data>
+  <data name="ZPG_BTN_WOHNUNG_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ZPG_AUSSTATTUNG_VORGABE" xml:space="preserve">
+    <value>Vorgabeklasse</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße.</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
+    <value>Keine Wohnungstabelle — es gilt die Bezugsgröße.</value>
+  </data>
+  <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
+    <value>Personen je Wohneinheit</value>
+  </data>
+  <data name="ZPG_EINHEIT_PERSONEN_JE_WE" xml:space="preserve">
+    <value>P/WE</value>
+  </data>
+  <data name="ZPG_HINW_PERSONEN_JE_WE" xml:space="preserve">
+    <value>Vorgabe · Belegung nach der Wohnungsgröße aus dem Katalog (Verfahren nach DIN 4708-2).</value>
+  </data>
+  <data name="ZPG_LBL_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Wohnfläche je Wohneinheit</value>
+  </data>
+  <data name="ZPG_HINW_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Vorgabe · {0} m² (Annahme); Flächenformel nach DIN V 18599-10.</value>
+  </data>
+  <data name="ZPG_LBL_TOPOLOGIE" xml:space="preserve">
+    <value>Anlagentopologie</value>
+  </data>
+  <data name="ZPG_HINW_TOPOLOGIE" xml:space="preserve">
+    <value>Vorgabe · Speicher; wirkt nur auf die Auslegung.</value>
+  </data>
+  <data name="ZPG_LBL_ZIRKULATION_VORHANDEN" xml:space="preserve">
+    <value>Zirkulation vorhanden</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_VORHANDEN" xml:space="preserve">
+    <value>Vorgabe · ja; „nein“ nimmt die Zone aus dem Zirkulationsanteil.</value>
+  </data>
+  <data name="ZPG_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="ZPG_KALENDER_NUTZUNGSART" xml:space="preserve">
+    <value>Kalender der Nutzungsart · {0}</value>
+  </data>
+  <data name="ZPG_KALENDER_GEBAEUDE" xml:space="preserve">
+    <value>Ferien des Gebäudes {0}</value>
+  </data>
+  <data name="ZPG_HINW_KALENDER" xml:space="preserve">
+    <value>Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor.</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN" xml:space="preserve">
+    <value>Ferienzeitraum {0}</value>
+  </data>
+  <data name="ZPG_LBL_BEGINN_TAG" xml:space="preserve">
+    <value>Beginn Tag</value>
+  </data>
+  <data name="ZPG_LBL_BEGINN_MONAT" xml:space="preserve">
+    <value>Beginn Monat</value>
+  </data>
+  <data name="ZPG_LBL_ENDE_TAG" xml:space="preserve">
+    <value>Ende Tag</value>
+  </data>
+  <data name="ZPG_LBL_ENDE_MONAT" xml:space="preserve">
+    <value>Ende Monat</value>
+  </data>
+  <data name="ZPG_HINW_FERIEN" xml:space="preserve">
+    <value>Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.</value>
+  </data>
+  <data name="ZPG_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Bundesland</value>
+  </data>
+  <data name="ZPG_BUNDESLAND_KLIMAREGION" xml:space="preserve">
+    <value>wie Klimaregion</value>
+  </data>
+  <data name="ZPG_GRUND_BUNDESLAND" xml:space="preserve">
+    <value>Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion.</value>
+  </data>
+  <data name="ZPG_LBL_JAHRESMESSWERT" xml:space="preserve">
+    <value>Jahresmesswert</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_EINHEIT" xml:space="preserve">
+    <value>Einheit des Messwerts</value>
+  </data>
+  <data name="ZPG_MESSWERT_KWH" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="ZPG_MESSWERT_M3" xml:space="preserve">
+    <value>m³/a</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_GRENZE" xml:space="preserve">
+    <value>Bilanzgrenze des Messwerts</value>
+  </data>
+  <data name="ZPG_GRENZE_ZAPFSTELLE" xml:space="preserve">
+    <value>an der Zapfstelle</value>
+  </data>
+  <data name="ZPG_GRENZE_VERTEILUNG" xml:space="preserve">
+    <value>mit Verteil- und Zirkulationsverlust</value>
+  </data>
+  <data name="ZPG_GRENZE_SPEICHER" xml:space="preserve">
+    <value>zusätzlich mit Speicherverlust</value>
+  </data>
+  <data name="ZPG_LBL_SPEICHERVERLUST" xml:space="preserve">
+    <value>Speicherverlust</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_QUELLE" xml:space="preserve">
+    <value>Quelle des Messwerts</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum des Messwerts</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
+    <value>Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.</value>
+  </data>
+  <data name="ZPG_GRP_SCHAETZHILFEN" xml:space="preserve">
+    <value>Tagesbedarf, Ladeleistung, Zirkulation</value>
+  </data>
+  <data name="ZPG_HINW_SCHAETZHILFEN" xml:space="preserve">
+    <value>Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.</value>
+  </data>
+  <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
+    <value>Tagesbedarf</value>
+  </data>
+  <data name="ZPG_LBL_TAGESBEDARF_MANUELL" xml:space="preserve">
+    <value>Tagesbedarf manuell</value>
+  </data>
+  <data name="ZPG_LBL_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag: {0} {1}</value>
+  </data>
+  <data name="ZPG_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Als manuellen Wert übernehmen</value>
+  </data>
+  <data name="ZPG_HINW_VORSCHLAG_OHNE" xml:space="preserve">
+    <value>Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.</value>
+  </data>
+  <data name="ZPG_HINW_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.</value>
+  </data>
+  <data name="ZPG_HINW_MANUELL" xml:space="preserve">
+    <value>Wirkt nur bei „manuell“.</value>
+  </data>
+  <data name="ZPG_LBL_ANGESETZT" xml:space="preserve">
+    <value>Angesetzt: {0} {1} ({2})</value>
+  </data>
+  <data name="ZPG_ANGESETZT_KALIBRIERT" xml:space="preserve">
+    <value>kalibriert auf den Jahresmesswert</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg: {0}</value>
+  </data>
+  <data name="ZPG_LBL_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung (Gebäude)</value>
+  </data>
+  <data name="ZPG_LBL_LADELEISTUNG_MANUELL" xml:space="preserve">
+    <value>Ladeleistung manuell</value>
+  </data>
+  <data name="ZPG_LBL_LADEFENSTER" xml:space="preserve">
+    <value>Ladezeitfenster</value>
+  </data>
+  <data name="ZPG_LBL_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Beginn des Ladefensters</value>
+  </data>
+  <data name="ZPG_HINW_LADEFENSTER" xml:space="preserve">
+    <value>Vorgabe · {0} h/d ab {1} Uhr; effektive Ladezeit je Tag, Sperr- und Heizzeiten abgezogen.</value>
+  </data>
+  <data name="ZPG_HINW_LADELEISTUNG" xml:space="preserve">
+    <value>Wirkt nur auf die Auslegung, nie auf die Bilanzreihe. Den Vorschlag rechnet die Auslegung: größter Tagesbedarf samt Zirkulation ÷ Ladezeitfenster.</value>
+  </data>
+  <data name="ZPG_LADE_ANGESETZT_AUTO" xml:space="preserve">
+    <value>Angesetzt: Vorschlag der Auslegung (auto)</value>
+  </data>
+  <data name="ZPG_LADE_ANGESETZT_MANUELL" xml:space="preserve">
+    <value>Angesetzt: {0} kW (manuell)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRKULATION" xml:space="preserve">
+    <value>Zirkulation (Gebäude)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_MANUELL" xml:space="preserve">
+    <value>Zirkulation manuell</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_METHODE" xml:space="preserve">
+    <value>Methode der Zirkulation</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_LAENGE" xml:space="preserve">
+    <value>Leitungslänge × spezifischer Verlust</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_ANTEIL" xml:space="preserve">
+    <value>Anteil am Tagesbedarf</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_FLAECHE" xml:space="preserve">
+    <value>Flächenkennwert</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAENGE" xml:space="preserve">
+    <value>Leitungslänge</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_VERLUST" xml:space="preserve">
+    <value>Spezifischer Verlust</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Anteil am Tagesbedarf</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAGE" xml:space="preserve">
+    <value>Lage der Leitung</value>
+  </data>
+  <data name="ZPG_LAGE_INNEN" xml:space="preserve">
+    <value>innerhalb der thermischen Hülle</value>
+  </data>
+  <data name="ZPG_LAGE_AUSSEN" xml:space="preserve">
+    <value>außerhalb der thermischen Hülle</value>
+  </data>
+  <data name="ZPG_HINW_ZIRK_VORGABEN" xml:space="preserve">
+    <value>Leer = Vorgabe · {0} W/m bzw. Anteil {1}.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION" xml:space="preserve">
+    <value>Eigener Kanal neben dem Zapfprofil, nie in das Profil eingerechnet; Kennwert, Fläche und Laufzeit zeigt die Stufe Experte.</value>
+  </data>
+  <data name="ZPG_LBL_LEITUNGSINHALT" xml:space="preserve">
+    <value>Leitungsinhalt</value>
+  </data>
+  <data name="ZPG_HINW_LEITUNGSINHALT" xml:space="preserve">
+    <value>Wasserinhalt der Leitungen zwischen Erwärmer und entferntester Zapfstelle; er entscheidet mit über die Großanlage nach DVGW W 551.</value>
+  </data>
+  <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
+    <value>Fachwerte · {0}</value>
+  </data>
+  <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
+    <value>Spezifischer Bedarf</value>
+  </data>
+  <data name="ZPG_HINW_BEDARF_SPEZ" xml:space="preserve">
+    <value>Leer = Katalogwert des Niveaus ({0} kWh/({1}·d)).</value>
+  </data>
+  <data name="ZPG_LBL_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur</value>
+  </data>
+  <data name="ZPG_HINW_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Leer = Bezugstemperatur des Katalogs ({0} °C); eine Großanlage erwartet die Mindesttemperatur nach DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_MITTEL" xml:space="preserve">
+    <value>Kaltwasser Jahresmittel</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_AMPLITUDE" xml:space="preserve">
+    <value>Kaltwasser Amplitude</value>
+  </data>
+  <data name="ZPG_HINW_KALTWASSER" xml:space="preserve">
+    <value>Leer = Konvention {0} °C ± {1} K, sinusförmig über das Jahr (nur Bilanz).</value>
+  </data>
+  <data name="ZPG_LBL_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Auslastungsgang</value>
+  </data>
+  <data name="ZPG_HINW_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Zwölf Monatsfaktoren; leer = Faktor des Katalogs (im Feld grau).</value>
+  </data>
+  <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
+    <value>Satz der Nutzungsart</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANGSATZ" xml:space="preserve">
+    <value>Vorgabe · der Satz der Nutzungsart; ein unvollständiger Satz ist gesperrt.</value>
+  </data>
+  <data name="ZPG_BTN_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang bearbeiten…</value>
+  </data>
+  <data name="ZPG_BTN_KATEGORIEN" xml:space="preserve">
+    <value>Zapfkategorien und Streuung…</value>
+  </data>
+  <data name="ZPG_GRP_FACHWERTE_GEBAEUDE" xml:space="preserve">
+    <value>Fachwerte · Gebäude</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_AUSLEGUNG" xml:space="preserve">
+    <value>Kaltwasser der Auslegung</value>
+  </data>
+  <data name="ZPG_HINW_KALTWASSER_AUSLEGUNG" xml:space="preserve">
+    <value>Leer = {0} °C; gilt für alle Tage der Auslegung.</value>
+  </data>
+  <data name="ZPG_LBL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Speichertemperatur</value>
+  </data>
+  <data name="ZPG_HINW_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Leer = {0} °C; eine Großanlage nimmt die Mindesttemperatur nach DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_KENNWERT" xml:space="preserve">
+    <value>Zirkulationsverlust (Kennwert)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_FLAECHE" xml:space="preserve">
+    <value>Zirkulationsfläche</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Laufzeit der Zirkulation</value>
+  </data>
+  <data name="ZPG_HINW_ZIRK_EXPERTE" xml:space="preserve">
+    <value>Leer = Kennwert nach der Lage ({0} bzw. {1} kWh/(m²·a), Verfahren nach DIN V 4701-10), Fläche aus Wohnfläche je Wohneinheit bzw. Gebäude, Laufzeit {2} h/d nach DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Temperatur der Literanzeige</value>
+  </data>
+  <data name="ZPG_LBL_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Schwelle der Stundenzählung</value>
+  </data>
+  <data name="ZPG_HINW_ANZEIGE" xml:space="preserve">
+    <value>Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_DAUERLINIE" xml:space="preserve">
+    <value>Sortierte Stundenwerte der Bilanzreihe (Zapfung und Zirkulation) — Bilanzwerte, keine Auslegungsgröße.</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_MARKE" xml:space="preserve">
+    <value>P{0} · {1} kW (Rang {2})</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_SCHWELLE" xml:space="preserve">
+    <value>{0} Stunden über {1} kW</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_OHNE" xml:space="preserve">
+    <value>Die Zone trägt 0 — keine Dauerlinie.</value>
+  </data>
+  <data name="ZPG_GRP_WARNLISTE" xml:space="preserve">
+    <value>Hinweise der Bilanz</value>
+  </data>
+  <data name="ZPG_WARNLISTE_UNTER" xml:space="preserve">
+    <value>Nicht blockierend; die Hinweise einer Zone stehen auch an ihrem Eingabeblock.</value>
+  </data>
+  <data name="ZPG_WARNLISTE_LEER" xml:space="preserve">
+    <value>Keine Hinweise.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
+    <value>Die Raumzahl des Wohnungstyps; ohne Personenangabe folgt aus ihr die Belegung nach dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL" xml:space="preserve">
+    <value>Die Personen je Wohnung dieses Typs; leer = Belegung nach der Raumzahl aus dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL" xml:space="preserve">
+    <value>Die Ausstattungsklasse des Wohnungstyps für die Bedarfskennzahl; leer = Vorgabeklasse.</value>
+  </data>
+  <data name="KI_DLG_ZPG_PERSONEN_JE_WE_ERL" xml:space="preserve">
+    <value>Personen je Wohneinheit der gewählten Zone; leer = Belegung nach der Wohnungsgröße aus dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL" xml:space="preserve">
+    <value>Wohnfläche je Wohneinheit der gewählten Zone; leer = Annahme des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TOPOLOGIE_ERL" xml:space="preserve">
+    <value>Wie die gewählte Zone Trinkwarmwasser erwärmt (Speicher, Frischwasserstation, Durchfluss, Wohnungsstation) — wirkt nur auf die Auslegung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL" xml:space="preserve">
+    <value>Ob die gewählte Zone an der Zirkulation hängt; „nein“ nimmt sie aus dem Zirkulationsanteil.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALENDER_ERL" xml:space="preserve">
+    <value>Der Kalender der gewählten Zone: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
+    <value>Ein Ferienzeitraum der gewählten Zone als Beginn Tag, Beginn Monat, Ende Tag und Ende Monat; leer = keine Ferien.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
+    <value>Ein gemessener Jahresverbrauch der gewählten Zone; er skaliert die Zone mit einem ausgewiesenen Faktor, leer = kein Messwert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit des Jahresmesswerts: kWh/a oder m³/a; ein Volumen gilt an der Zapfstelle.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_GRENZE_ERL" xml:space="preserve">
+    <value>Was der Messwert einschließt: nur die Zapfung, dazu Verteil- und Zirkulationsverlust oder zusätzlich den Speicherverlust.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERVERLUST_ERL" xml:space="preserve">
+    <value>Der Speicherverlust in kWh/a, den ein Messwert mit Speicherverlust einschließt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_QUELLE_ERL" xml:space="preserve">
+    <value>Woher der Messwert stammt, etwa Zähler oder Abrechnung — nur Vermerk.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Zeitraum des Messwerts — nur Vermerk.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
+    <value>Der Tagesbedarf der gewählten Zone aus dem Katalog (auto) oder als manueller Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
+    <value>Der manuelle Tagesbedarf der gewählten Zone; er gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
+    <value>Die Ladeleistung des Gebäudes als Vorschlag der Auslegung (auto) oder als manueller Wert — wirkt nur auf die Auslegung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Ladeleistung; sie gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
+    <value>Die effektive Ladezeit je Tag; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>Die Stunde, zu der das Ladefenster beginnt; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
+    <value>Die Zirkulation des Gebäudes nach der gewählten Methode (auto) oder als manuelle Leistung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
+    <value>Wie die Zirkulation geschätzt wird: Leitungslänge × Verlust, Anteil am Tagesbedarf oder Flächenkennwert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAENGE_ERL" xml:space="preserve">
+    <value>Die Länge der Zirkulationsleitung (Methode Leitungslänge).</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_VERLUST_ERL" xml:space="preserve">
+    <value>Der spezifische Verlust der Leitung (Methode Leitungslänge); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_ANTEIL_ERL" xml:space="preserve">
+    <value>Der Anteil der Zirkulation am Tagesbedarf von 0 bis 1 (Methode Anteil); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAGE_ERL" xml:space="preserve">
+    <value>Die Lage der Leitung zur thermischen Hülle (Methode Flächenkennwert); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Leistung der Zirkulation; sie gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
+    <value>Der Wasserinhalt der Leitungen; er entscheidet mit über die Großanlage.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEDARF_SPEZ_ERL" xml:space="preserve">
+    <value>Der spezifische Bedarf der gewählten Zone je Bezugseinheit und Tag; leer = Katalogwert des Niveaus.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZAPFTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Zapftemperatur der gewählten Zone; leer = Bezugstemperatur des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_MITTEL_ERL" xml:space="preserve">
+    <value>Das Jahresmittel des Kaltwassers der gewählten Zone (nur Bilanz); leer = Konvention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL" xml:space="preserve">
+    <value>Die Schwankung des Kaltwassers über das Jahr; leer = Konvention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_AUSLASTUNGSGANG_ERL" xml:space="preserve">
+    <value>Zwölf Monatsfaktoren der gewählten Zone; leer je Monat = Faktor des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz der gewählten Zone; leer = der Satz der Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Das Kaltwasser der Auslegung, gleich für alle Tage; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Speichertemperatur; leer = Vorgabe, bei einer Großanlage die Mindesttemperatur.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_KENNWERT_ERL" xml:space="preserve">
+    <value>Der Flächenkennwert des Zirkulationsverlusts; leer = Kennwert nach der Lage der Leitung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche für den Flächenkennwert; leer = aus Wohnfläche je Wohneinheit bzw. dem Gebäude.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation je Tag; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur, auf die die Literanzeige der Kennzahlen umrechnet — nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
+    <value>Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert.</value>
+  </data>
+  <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
+    <value>Zuerst eine Nutzungsart wählen.</value>
+  </data>
+  <data name="ZPG_TGE_TITEL" xml:space="preserve">
+    <value>Tagesgang bearbeiten</value>
+  </data>
+  <data name="ZPG_TGE_KONTEXT" xml:space="preserve">
+    <value>Nutzungsart {0} · Tagesgangsatz {1}</value>
+  </data>
+  <data name="ZPG_TGE_GRP_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang je Tagtyp [%]</value>
+  </data>
+  <data name="ZPG_TGE_LBL_TAGTYP" xml:space="preserve">
+    <value>Tagtyp</value>
+  </data>
+  <data name="ZPG_TGE_FELD_STUNDE" xml:space="preserve">
+    <value>{0} · Stunde {1}</value>
+  </data>
+  <data name="ZPG_TGE_HERKUNFT" xml:space="preserve">
+    <value>Herkunft: {0}</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_OK" xml:space="preserve">
+    <value>summiert zu 100 %</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_ABWEICHEND" xml:space="preserve">
+    <value>Summe {0} % — korrigieren oder normieren; „OK“ normiert auf 100 %.</value>
+  </data>
+  <data name="ZPG_TGE_SUMME_NULL" xml:space="preserve">
+    <value>Summe 0 % — ohne Anteile lässt sich nichts normieren.</value>
+  </data>
+  <data name="ZPG_TGE_VORSCHAU_NORMIERT" xml:space="preserve">
+    <value>Nach der Normierung: {0}</value>
+  </data>
+  <data name="ZPG_TGE_BTN_NORMIEREN" xml:space="preserve">
+    <value>Normieren</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="ZPG_TGE_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_EINFUEGEN" xml:space="preserve">
+    <value>Zuerst einen Tag kopieren.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_WOCHE" xml:space="preserve">
+    <value>Wochenfaktoren Mo–So [%]</value>
+  </data>
+  <data name="ZPG_TGE_HINW_WOCHE" xml:space="preserve">
+    <value>Anteil jedes Wochentags an der Wochenmenge (Σ 100 %); Sonn- und Feiertage rechnen mit dem Sonntag.</value>
+  </data>
+  <data name="ZPG_TGE_GRP_VORLAGE" xml:space="preserve">
+    <value>Vorlage aus dem Katalog</value>
+  </data>
+  <data name="ZPG_TGE_LBL_VORLAGE" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_TGE_BTN_VORLAGE" xml:space="preserve">
+    <value>Vorlage laden</value>
+  </data>
+  <data name="ZPG_TGE_HINW_VORLAGE" xml:space="preserve">
+    <value>„Vorlage laden“ übernimmt die vier Tagesgänge des gewählten Satzes, die Wochenfaktoren bleiben; „Zurücksetzen“ stellt die Werte beim Öffnen wieder her.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_VORLAGE" xml:space="preserve">
+    <value>Zuerst einen Tagesgangsatz wählen.</value>
+  </data>
+  <data name="ZPG_TGE_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.</value>
+  </data>
+  <data name="ZPG_BTN_ZURUECKSETZEN" xml:space="preserve">
+    <value>Zurücksetzen</value>
+  </data>
+  <data name="ZPG_BTN_KOPIE" xml:space="preserve">
+    <value>Als eigene Kopie bearbeiten…</value>
+  </data>
+  <data name="ZPG_LBL_KATALOGVERSION_KOPIE" xml:space="preserve">
+    <value>Katalogversion der Kopie</value>
+  </data>
+  <data name="ZPG_HINW_KOPIE" xml:space="preserve">
+    <value>„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.</value>
+  </data>
+  <data name="ZPG_HINW_FREI" xml:space="preserve">
+    <value>„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.</value>
+  </data>
+  <data name="ZPG_HINW_NUR_LESEN" xml:space="preserve">
+    <value>Nur lesbar — bearbeiten lässt sich eine eigene Kopie.</value>
+  </data>
+  <data name="ZPG_KATEG_TITEL" xml:space="preserve">
+    <value>Zapfkategorien und Streuung</value>
+  </data>
+  <data name="ZPG_KATEG_KONTEXT" xml:space="preserve">
+    <value>Nutzungsart {0} · {1} Kategorien · Σ Anteile {2}</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_REGELN" xml:space="preserve">
+    <value>μ und σ ≥ 0 l/min, Dauer 1 … 1440 min, Anteil ≥ 0 mit Σ &gt; 0 (die Rechnung normiert auf 1), Kappung &gt; 0 oder leer; jeder Name einmal.</value>
+  </data>
+  <data name="ZPG_KATEG_SP_REIHENFOLGE" xml:space="preserve">
+    <value>Reihenfolge</value>
+  </data>
+  <data name="ZPG_KATEG_SP_NAME" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="ZPG_KATEG_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>Volumenstrom μ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_DAUER" xml:space="preserve">
+    <value>Dauer [min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_ANTEIL" xml:space="preserve">
+    <value>Anteil [–]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_STREUUNG" xml:space="preserve">
+    <value>Streuung σ [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_KAPPUNG" xml:space="preserve">
+    <value>Kappung [l/min]</value>
+  </data>
+  <data name="ZPG_KATEG_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_KATEG_KAPPUNG_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_NEU" xml:space="preserve">
+    <value>Kategorie hinzufügen</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_HOCH" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_RUNTER" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_LETZTE" xml:space="preserve">
+    <value>Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RAND" xml:space="preserve">
+    <value>Die Kategorie steht schon am Rand der Liste.</value>
+  </data>
+  <data name="ZPG_KATEG_BTN_VORGABE" xml:space="preserve">
+    <value>Vorgabesatz laden</value>
+  </data>
+  <data name="ZPG_KATEG_HINW_VORGABE" xml:space="preserve">
+    <value>Der Vorgabesatz sind die frei dokumentierten Kategorien des Katalogs (Modellannahme); er ersetzt die Zeilen im Editor.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_OHNE_VORGABE" xml:space="preserve">
+    <value>Der Katalog führt keinen Vorgabesatz der Zapfkategorien.</value>
+  </data>
+  <data name="ZPG_KATEG_NEU_NAME" xml:space="preserve">
+    <value>Kategorie {0}</value>
+  </data>
+  <data name="ZPG_KATEG_LEER" xml:space="preserve">
+    <value>Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.</value>
+  </data>
+  <data name="ZPG_KATEG_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.</value>
+  </data>
+  <data name="ZPG_AUS_GRP_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Eingaben des Verfahrensvergleichs</value>
+  </data>
+  <data name="ZPG_AUS_HINW_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Sie wirken nur auf den Verfahrensvergleich (nachrichtlich), nicht auf den empfohlenen Punkt, und werden mit dem Projekt gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADE_MANUELL" xml:space="preserve">
+    <value>Ladeleistung manuell</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER" xml:space="preserve">
+    <value>Ladezeitfenster</value>
+  </data>
+  <data name="ZPG_AUS_LBL_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Beginn des Ladezeitfensters</value>
+  </data>
+  <data name="ZPG_AUS_LBL_NUTZANTEIL" xml:space="preserve">
+    <value>Nutzbarer Anteil</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ZUSCHLAG" xml:space="preserve">
+    <value>Zuschlag</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERSONEN_MANUELL" xml:space="preserve">
+    <value>Personen manuell</value>
+  </data>
+  <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
+    <value>Bezug des Füllstands</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
+    <value>Vorgabe: Nenninhalt des Punkts, sonst der Punkt</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
+    <value>Angesetzt: {0} kW ({1}) · {2}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADE_OHNE" xml:space="preserve">
+    <value>Einen Vorschlag gibt es erst mit einer gerechneten Speichergruppe.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LADEFENSTER" xml:space="preserve">
+    <value>leer = Vorgabe des Katalogs; dieselben Werte wie „Ladezeitfenster“ im Zapfprofil</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERSONEN" xml:space="preserve">
+    <value>auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_ANGESETZT" xml:space="preserve">
+    <value>leer = Vorgabe des Katalogs; angesetzt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
+    <value>Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
+    <value>wird mit dem Projekt gespeichert; {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_WERKSTOFF" xml:space="preserve">
+    <value>kein Vorschlag aus dem Projekt; ohne Angabe braucht die Summenlinie U·A, die Fläche oder die Übertragerleistung</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG_WAEHLEN" xml:space="preserve">
+    <value>Vorschlag wählen</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus dem Projekt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_BEZUG" xml:space="preserve">
+    <value>ohne Bezug — der Tag gilt, wie er ist</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_BEZUGSMENGE" xml:space="preserve">
+    <value>Bezugsmenge</value>
+  </data>
+  <data name="ZPG_AUS_KON_HINW_BEZUG" xml:space="preserve">
+    <value>Mit Bezug skaliert die Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart; beides wird mit dem Tag gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Bezugsart und Bezugsmenge (größer 0) gehören zusammen.</value>
+  </data>
+  <data name="ZPG_TGE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Tagesgang wurde nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>die Nutzungsart steht nicht (mehr) im Katalog.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Die Nutzungsart oder ihr Tagesgangsatz gehört zur Auslieferung — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Eine Zone oder eine andere Nutzungsart benutzt den Tagesgang — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND" xml:space="preserve">
+    <value>Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>die Nutzungsart oder ihr Tagesgangsatz steht in dieser Katalogversion schon.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>für die neue Katalogversion fehlt ihr Name.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>der Tagesgangsatz der Nutzungsart steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>die Tabellen der Brauchwasser-Nutzungsarten fehlen in dieser Datenbank.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>ein Tagesgang oder die Wochenfaktoren lassen sich nicht auf 100 % normieren (negativer Wert oder Summe 0).</value>
+  </data>
+  <data name="ZPG_TGE_GRUND_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Der Tagesgangsatz führt nicht alle vier Tagtypen.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_TAGTYP_ERL" xml:space="preserve">
+    <value>Der Tagtyp, dessen 24 Stundenanteile der Editor zeigt: Werktag, Samstag, Sonn-/Feiertag oder Ruhetag.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_STUNDEN_ERL" xml:space="preserve">
+    <value>Die 24 Stundenanteile des gezeigten Tagtyps in Prozent, Stunde 1 bis 24; „OK“ normiert sie auf 100 %. Bearbeitbar, solange die Nutzungsart frei ist oder als eigene Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_WOCHENFAKTOREN_ERL" xml:space="preserve">
+    <value>Die sieben Wochenfaktoren Montag bis Sonntag in Prozent; „OK“ normiert sie auf 100 %.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_VORLAGE_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz des Katalogs, den „Vorlage laden“ übernimmt — das Laden bleibt ein Klick des Anwenders.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der eigenen Kopie — nur, wenn die Nutzungsart gesperrt ist und als Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der eigenen Kopie — nur, wenn die Nutzungsart gesperrt ist und als Kopie bearbeitet wird.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_NAME_ERL" xml:space="preserve">
+    <value>Der Name der Zapfkategorie — eindeutig innerhalb der Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Der mittlere Volumenstrom μ eines Zapfereignisses in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_DAUER_ERL" xml:space="preserve">
+    <value>Die Dauer eines Zapfereignisses in Minuten (1 bis 1440).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_ANTEIL_ERL" xml:space="preserve">
+    <value>Der Anteil der Kategorie an der Tagesmenge (≥ 0); die Rechnung normiert die Anteile auf 1.</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_STREUUNG_ERL" xml:space="preserve">
+    <value>Die Streuung σ des Volumenstroms in l/min (≥ 0).</value>
+  </data>
+  <data name="KI_DLG_ZPGZ_KAPPUNG_ERL" xml:space="preserve">
+    <value>Die obere Kappung des Volumenstroms in l/min (&gt; 0); leer = keine.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MODUS_ERL" xml:space="preserve">
+    <value>Die Ladeleistung des Verfahrensvergleichs: auto = Vorschlag aus größtem Tagesbedarf und Zirkulation über das Ladezeitfenster, manuell = eigener Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADE_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Ladeleistung in kW — sie wirkt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_ERL" xml:space="preserve">
+    <value>Die Länge des täglichen Ladezeitfensters in Stunden (0 bis 24); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>Der Beginn des Ladezeitfensters in Stunden (0 bis 24); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_NUTZANTEIL_ERL" xml:space="preserve">
+    <value>Der nutzbare Anteil des Speichervolumens (größer 0 bis 1); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Der Zuschlag auf das Volumen der Verfahren (≥ 0, 0,1 = 10 %); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
+    <value>Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Zonen, manuell = eigener Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Personenzahl — sie wirkt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
+    <value>Auf welches Volumen sich der Füllstand der Kachel bezieht: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
+    <value>Die Bezugsart des konstruierten Tags; ohne Bezug gilt der Tag, wie er ist.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>Die Bezugsmenge des konstruierten Tags (größer 0) — nur mit einer Bezugsart.</value>
+  </data>
+  <data name="ZPG_AUS_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Als manuellen Wert übernehmen</value>
+  </data>
+  <data name="ZPG_AUS_LBL_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag: {0} {1}</value>
+  </data>
+  <data name="MENU_BRAUCHWASSERPROFILE" xml:space="preserve">
+    <value>Brauchwasserprofile</value>
+  </data>
+  <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
+    <value>Brauchwasser-Nutzungsarten</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>Die Datei „{0}“ lässt sich nicht lesen ({1}) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Datenbank hat den Import nicht angenommen ({0}) — nichts geändert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Die Auslieferung führt diese Katalogversion; sie ist unveränderlich und bleibt, wie sie ist.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_VORHANDEN" xml:space="preserve">
+    <value>Der Katalog führt sie schon mit gleichem Inhalt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GLEICH_ALS" xml:space="preserve">
+    <value>Der Katalog führt ihren Inhalt schon als „{0}“.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_NEUE_VERSION" xml:space="preserve">
+    <value>Sie weicht vom Eintrag gleichen Namens ab und steht als „{0}“ im Katalog; der Eintrag gleichen Namens bleibt unverändert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}, Spalte {2}: „{3}“ ist keine Zahl (Dezimalpunkt) — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_GANZZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}, Spalte {2}: „{3}“ ist keine ganze Zahl — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UEBERGANGEN" xml:space="preserve">
+    <value>Die Datei „{0}“ gehört nicht zum Katalog der Nutzungsarten und ist übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE" xml:space="preserve">
+    <value>Diese Datenbank führt die Zapfkategorien nicht (älterer Schemastand); die Kategorien des Pakets sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT" xml:space="preserve">
+    <value>Die Datei „{0}“ steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KEINE_DATEI" xml:space="preserve">
+    <value>Das Paket enthält keine Datei {0} — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die ID {2} steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET" xml:space="preserve">
+    <value>Das Paket führt diese Nutzungsart mit derselben Katalogversion zweimal; übernommen ist nur die erste.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIEN_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Zapfkategorie(n) verweisen auf keine Nutzungsart des Pakets und sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_UNBEKANNT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ gibt es in {2} nicht — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_DOPPELT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ steht zweimal in der Kopfzeile — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_FELDZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} Felder, die Kopfzeile nennt {3} — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SPALTE_FEHLT" xml:space="preserve">
+    <value>{0}: Die Spalte „{1}“ fehlt — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ID_FEHLT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Die Spalte {2} ist leer; über sie verknüpft das Paket seine Zeilen — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_PFLICHT" xml:space="preserve">
+    <value>Dem Tagesgangsatz „{0}“ fehlt die Angabe {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} = „{1}“ liegt außerhalb der Wertemenge.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Tagtyp {2} des Tagesgangsatzes {3} steht zweimal im Paket — nichts importiert.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_ANGABE" xml:space="preserve">
+    <value>Tagesgangsatz „{0}“: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGANG" xml:space="preserve">
+    <value>Der Tagesgang des Tagtyps {1} im Tagesgangsatz „{0}“ ist unvollständig, trägt einen negativen Wert oder summiert nicht zu 1.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_TAGESGAENGE_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Tagesgang/Tagesgänge verweisen auf keinen Tagesgangsatz des Pakets und sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Der Tagesgangsatz „{0}“ führt nicht alle vier Tagtypen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_KATEGORIE_ANGABE" xml:space="preserve">
+    <value>Zapfkategorie „{0}“: {1}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT" xml:space="preserve">
+    <value>Die Angabe {0} fehlt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Tagesgangsatz mit der ID {0} steht nicht im Paket.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_RASTER" xml:space="preserve">
+    <value>Die Faktoren verletzen die Regeln des Katalogs: keine negativen Werte, Wochenfaktoren mit der Summe 1, Monatsfaktoren im Mittel 1.</value>
+  </data>
+  <data name="ZPGK_TITEL" xml:space="preserve">
+    <value>Brauchwasser-Nutzungsarten</value>
+  </data>
+  <data name="ZPGK_LEER" xml:space="preserve">
+    <value>Der Katalog führt noch keine Nutzungsart — „Neu…“ legt eine an, „Import…“ spielt ein Paket ein.</value>
+  </data>
+  <data name="ZPGK_KZ_BEDARF_MITTEL" xml:space="preserve">
+    <value>Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_EINHEIT_BEDARF" xml:space="preserve">
+    <value>kWh/(Einheit·d)</value>
+  </data>
+  <data name="ZPGK_EINHEIT_GRAD" xml:space="preserve">
+    <value>°C</value>
+  </data>
+  <data name="ZPGK_GRP_KENNWERTE" xml:space="preserve">
+    <value>Kennwerte</value>
+  </data>
+  <data name="ZPGK_GRP_GAENGE" xml:space="preserve">
+    <value>Jahres- und Wochengang</value>
+  </data>
+  <data name="ZPGK_GRP_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang</value>
+  </data>
+  <data name="ZPGK_GRP_KATEGORIEN" xml:space="preserve">
+    <value>Zapfkategorien</value>
+  </data>
+  <data name="ZPGK_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPGK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="ZPGK_LBL_KATALOGVERSION" xml:space="preserve">
+    <value>Katalogversion</value>
+  </data>
+  <data name="ZPGK_LBL_STATUS" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPGK_LBL_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_NIEDRIG" xml:space="preserve">
+    <value>Bedarf niedrig</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_MITTEL" xml:space="preserve">
+    <value>Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_HOCH" xml:space="preserve">
+    <value>Bedarf hoch</value>
+  </data>
+  <data name="ZPGK_LBL_UNTERE_GRENZE" xml:space="preserve">
+    <value>{0} – untere Grenze</value>
+  </data>
+  <data name="ZPGK_LBL_OBERE_GRENZE" xml:space="preserve">
+    <value>{0} – obere Grenze</value>
+  </data>
+  <data name="ZPGK_LBL_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur (Bezug)</value>
+  </data>
+  <data name="ZPGK_LBL_KALTWASSER" xml:space="preserve">
+    <value>Kaltwassertemperatur (Bezug)</value>
+  </data>
+  <data name="ZPGK_LBL_BILANZGRENZE" xml:space="preserve">
+    <value>Bilanzgrenze</value>
+  </data>
+  <data name="ZPGK_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="ZPGK_LBL_FERIENFAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="ZPGK_LBL_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monatsfaktoren (Mittel 1)</value>
+  </data>
+  <data name="ZPGK_LBL_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Wochenfaktoren Mo–So (Summe 1)</value>
+  </data>
+  <data name="ZPGK_LBL_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPGK_LBL_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="ZPGK_LBL_VERWENDET" xml:space="preserve">
+    <value>Verwendet in</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_BEDARF" xml:space="preserve">
+    <value>Herkunft Bedarf</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_JAHRESGANG" xml:space="preserve">
+    <value>Herkunft Jahresgang</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_WOCHENGANG" xml:space="preserve">
+    <value>Herkunft Wochengang</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_TAGESGANG" xml:space="preserve">
+    <value>Herkunft Tagesgang {0}</value>
+  </data>
+  <data name="ZPGK_WERT_BANDBREITE" xml:space="preserve">
+    <value>{0} ({1} … {2})</value>
+  </data>
+  <data name="ZPGK_WERT_KATEGORIE" xml:space="preserve">
+    <value>{0} l/min · σ {1} l/min · {2} min · Anteil {3}</value>
+  </data>
+  <data name="ZPGK_WERT_KAPPUNG" xml:space="preserve">
+    <value>{0} · höchstens {1} l/min</value>
+  </data>
+  <data name="ZPGK_WERT_KEINE_KATEGORIEN" xml:space="preserve">
+    <value>keine — die Nutzungsart rechnet nur deterministisch</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_VOLLSTAENDIG" xml:space="preserve">
+    <value>alle vier Tagtypen</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>unvollständig — nicht alle vier Tagtypen</value>
+  </data>
+  <data name="ZPGK_WERT_NIRGENDS" xml:space="preserve">
+    <value>in keinem Projekt</value>
+  </data>
+  <data name="ZPGK_WERT_OHNE_VORLAGE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="ZPGK_BTN_AENDERN" xml:space="preserve">
+    <value>Ändern…</value>
+  </data>
+  <data name="ZPGK_BTN_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang…</value>
+  </data>
+  <data name="ZPGK_BTN_GRAFIK" xml:space="preserve">
+    <value>Grafik…</value>
+  </data>
+  <data name="ZPGK_BTN_KATEGORIEN" xml:space="preserve">
+    <value>Kategorien…</value>
+  </data>
+  <data name="ZPGK_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="ZPGK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter…</value>
+  </data>
+  <data name="ZPGK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ZPGK_GRUND_AUSLIEFERUNG" xml:space="preserve">
+    <value>Die Nutzungsart gehört zur Auslieferung und ist unveränderlich — „Speichern unter…“ legt eine eigene Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT" xml:space="preserve">
+    <value>Die Nutzungsart ist in {0} benutzt und damit unveränderlich — „Speichern unter…“ legt eine neue Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_AUSLIEFERUNG" xml:space="preserve">
+    <value>Eine Nutzungsart der Auslieferung wird nicht gelöscht.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_BENUTZT" xml:space="preserve">
+    <value>In {0} benutzt — nicht löschbar.</value>
+  </data>
+  <data name="ZPGK_GRUND_KEINE_WAHL" xml:space="preserve">
+    <value>Bitte zuerst eine Nutzungsart wählen.</value>
+  </data>
+  <data name="ZPGK_GRUND_OHNE_WEG" xml:space="preserve">
+    <value>In dieser Umgebung nicht verfügbar.</value>
+  </data>
+  <data name="ZPGK_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll die Nutzungsart „{0}“ gelöscht werden?</value>
+  </data>
+  <data name="ZPGK_MSG_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ ist gelöscht.</value>
+  </data>
+  <data name="ZPGK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>„{0}“ ist gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_TAGESGANG" xml:space="preserve">
+    <value>Der Tagesgang von „{0}“ ist gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_KATEGORIEN" xml:space="preserve">
+    <value>Die Zapfkategorien von „{0}“ sind gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_IMPORTIERT" xml:space="preserve">
+    <value>Import: {0}</value>
+  </data>
+  <data name="ZPGK_GRAFIK_TITEL" xml:space="preserve">
+    <value>Vorschau der Nutzungsart</value>
+  </data>
+  <data name="ZPGK_GRAFIK_HINWEIS" xml:space="preserve">
+    <value>Die Vorschau zeigt eine Einheit der Bezugsart am mittleren Bedarfsniveau; Wochengang, Kalender, Ferien und Zirkulation wirken erst in der Rechnung des Projekts.</value>
+  </data>
+  <data name="ZPGK_KEIN_BILD" xml:space="preserve">
+    <value>Keine Vorschau — der Tagesgangsatz ist unvollständig.</value>
+  </data>
+  <data name="ZPGK_BILD_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang je Einheit, Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_BILD_JAHRESGANG" xml:space="preserve">
+    <value>Monatsmengen je Einheit, Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_IMPORT_TITEL" xml:space="preserve">
+    <value>Katalog importieren</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
+    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.</value>
+  </data>
+  <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
+    <value>Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“.</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEI" xml:space="preserve">
+    <value>Paket wählen…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Katalogpaket (*.zip;*.csv)|*.zip;*.csv</value>
+  </data>
+  <data name="ZPGK_IMPORT_STARTEN" xml:space="preserve">
+    <value>Importieren</value>
+  </data>
+  <data name="ZPGK_IMPORT_KEIN_PAKET" xml:space="preserve">
+    <value>Bitte zuerst ein Paket wählen.</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} angelegt · {1} übersprungen · {2} abgelehnt</value>
+  </data>
+  <data name="ZPGK_IMPORT_ANGELEGT" xml:space="preserve">
+    <value>angelegt</value>
+  </data>
+  <data name="ZPGK_IMPORT_UEBERSPRUNGEN" xml:space="preserve">
+    <value>übersprungen</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABGELEHNT" xml:space="preserve">
+    <value>abgelehnt</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZEILE" xml:space="preserve">
+    <value>Zeile {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_GRUND" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABBRUCH" xml:space="preserve">
+    <value>Das Paket ist abgelehnt — {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_NEU" xml:space="preserve">
+    <value>Neue Nutzungsart</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_AENDERN" xml:space="preserve">
+    <value>Nutzungsart ändern</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Nutzungsart speichern unter</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_NEU" xml:space="preserve">
+    <value>Vorbelegt sind die Werte der gewählten Nutzungsart; die neue Zeile trägt den Stand „eigen“, ihre Wertgruppen die Herkunft Eigenkonstruktion.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_AENDERN" xml:space="preserve">
+    <value>Die Zeile wird an Ort und Stelle geändert; geänderte Wertgruppen tragen danach die Herkunft Eigenkonstruktion.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Die Werte werden als neue Zeile mit eigener Katalogversion gespeichert; die Vorlage bleibt unverändert.</value>
+  </data>
+  <data name="ZPGK_ED_GRP_KENNUNG" xml:space="preserve">
+    <value>Kennung</value>
+  </data>
+  <data name="ZPGK_ED_GRP_BEDARF" xml:space="preserve">
+    <value>Bedarf je Einheit und Tag</value>
+  </data>
+  <data name="ZPGK_ED_GRP_ZEIT" xml:space="preserve">
+    <value>Kalender und Jahresgang</value>
+  </data>
+  <data name="ZPGK_ED_WOCHE" xml:space="preserve">
+    <value>Wochenfaktoren: {0} — sie werden über „Tagesgang…“ bearbeitet.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_MITTEL" xml:space="preserve">
+    <value>Mittel der Monatsfaktoren {0} — beim Speichern auf 1 normiert.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_EINS" xml:space="preserve">
+    <value>Die Monatsfaktoren haben das Mittel 1.</value>
+  </data>
+  <data name="ZPGK_ED_PFLICHT" xml:space="preserve">
+    <value>Es fehlen Angaben: {0}</value>
+  </data>
+  <data name="ZPGK_ED_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Eingaben berichtigen: {0}</value>
+  </data>
+  <data name="ZPGK_ED_KEINE_WAHL" xml:space="preserve">
+    <value>— bitte wählen —</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Nutzungsart wurde nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GELOESCHT" xml:space="preserve">
+    <value>Die Nutzungsart wurde nicht gelöscht — {0}</value>
+  </data>
+  <data name="ZPGK_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Die Nutzungsart steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="ZPGK_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Sie gehört zur Auslieferung und ist unveränderlich; „Speichern unter…“ legt eine eigene Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Ein Projekt benutzt sie; sie ist unveränderlich, „Speichern unter…“ legt eine neue Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>Bezeichner und Katalogversion sind schon vergeben.</value>
+  </data>
+  <data name="ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Es fehlt eine Pflichtangabe.</value>
+  </data>
+  <data name="ZPGK_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>Der gewählte Tagesgangsatz steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPGK_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand).</value>
+  </data>
+  <data name="ZPGK_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPGK_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>Ein Wert ist negativ oder die Monatsfaktoren lassen sich nicht auf das Mittel 1 bringen.</value>
+  </data>
+  <data name="KFLT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="KFLT_SP_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="KFLT_SP_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="KFLT_SP_KATALOGVERSION" xml:space="preserve">
+    <value>Katalogversion</value>
+  </data>
+  <data name="KFLT_SP_STATUS" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SATZ_ERL" xml:space="preserve">
+    <value>Die gewählte Nutzungsart des Katalogs; sie zu setzen wählt die Zeile in der Liste, das Stammblatt zieht nach.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der gewählten Nutzungsart; mit dem Bezeichner ihr natürlicher Schlüssel.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_STAND_ERL" xml:space="preserve">
+    <value>Katalogversion, Stand (Auslieferung, eigen, Import) und Bezugsart der gewählten Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_NAME" xml:space="preserve">
+    <value>Sperrgrund</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_ERL" xml:space="preserve">
+    <value>Warum die gewählte Nutzungsart nur als neue Version geändert werden kann (Auslieferung oder in Projekten benutzt); leer, wenn sie frei ist.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_EDITOR" xml:space="preserve">
+    <value>Nutzungsart bearbeiten</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Bezeichner der Nutzungsart — neutral, ohne Hersteller- oder Produktnamen.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion; Bezeichner und Katalogversion sind zusammen eindeutig. Bei „Speichern unter“ eine neue Version.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZUGSART_ERL" xml:space="preserve">
+    <value>Worauf sich der Bedarf bezieht (Personen, Wohneinheiten, Betten …).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz der Nutzungsart — nur vollständige Sätze mit allen vier Tagtypen.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BILANZGRENZE_ERL" xml:space="preserve">
+    <value>Wo der Bedarf bilanziert ist: an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KALENDER_ERL" xml:space="preserve">
+    <value>Der Kalender, nach dem die Nutzung über das Jahr läuft (Wohnen, Arbeitstage, Schulferien, Betrieb, Auslastungsgang).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEDARF_ERL" xml:space="preserve">
+    <value>Der Bedarf je Einheit und Tag am jeweiligen Niveau, nicht negativ.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BANDBREITE_ERL" xml:space="preserve">
+    <value>Untere bzw. obere Grenze der Bandbreite des Bedarfs laut Quelle; leer = keine Angabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur, auf die sich die Bedarfszahl bezieht.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_FERIENFAKTOR_ERL" xml:space="preserve">
+    <value>Der Faktor des Bedarfs an Ferientagen; leer = keiner.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
+    <value>Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert.</value>
   </data>
 </root>

@@ -49,13 +49,13 @@ namespace WindowsFormsApplication1
         {
             if (stichprobe == null || stichprobe.Count == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — ein Perzentil braucht mindestens eine Realisierung.");
+                    ZapfSatz.Neu("AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG"));
             var w = new double[stichprobe.Count];
             for (int i = 0; i < w.Length; i++)
             {
                 if (double.IsNaN(stichprobe[i]))
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                        "Nicht rechenbar — eine Realisierung trägt keinen Zahlenwert.");
+                        ZapfSatz.Neu("AUSLEGUNG_REALISIERUNG_OHNE_WERT"));
                 w[i] = stichprobe[i];
             }
             Array.Sort(w);
@@ -345,7 +345,7 @@ namespace WindowsFormsApplication1
             double vielfaches = ps.Wert(ZapfStochastikParameter.AUSLEGUNG_VIELFACHES);
             if (double.IsNaN(vielfaches) || double.IsInfinity(vielfaches) || !(vielfaches > 0))
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — das Vielfache der Realisierungen des Bedarfstags ist nicht positiv.");
+                    ZapfSatz.Neu("AUSLEGUNG_VIELFACHES"));
             double r = Math.Ceiling(vielfaches * Mindestzahl(perzentil));
             if (r > HOECHSTENS) throw ZuViele();
             return (int)r;
@@ -369,22 +369,20 @@ namespace WindowsFormsApplication1
             RealisierungenPruefen(realisierungen);
             if (zonen == null || zonen.Count == 0)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — das Ensemble hat keine Zone.");
+                    ZapfSatz.Neu("AUSLEGUNG_ENSEMBLE_OHNE_ZONE"));
             long einheiten = 0;
             foreach (Ensemblezone z in zonen)
             {
                 if (z == null || z.Kategorien == null || z.Dichte == null || z.Einheiten < 1 || z.Index < 0)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                        "Nicht rechenbar — eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1).");
-                Auslegungspruefung.NichtNegativ(z.TagesmengeKwh, "die Tagesmenge der Zone „" + z.Zone + "“");
-                if (z.TagesmengeKwh > 0) Auslegungspruefung.Positiv(z.SpreizungK, "die Spreizung der Zone „" + z.Zone + "“");
+                        ZapfSatz.Neu("AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG"));
+                Auslegungspruefung.NichtNegativ(z.TagesmengeKwh, ZapfSatz.Neu("BEGRIFF_TAGESMENGE_ZONE", z.Zone ?? ""));
+                if (z.TagesmengeKwh > 0) Auslegungspruefung.Positiv(z.SpreizungK, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZONE", z.Zone ?? ""));
                 einheiten += z.Einheiten;
             }
             if (einheiten * realisierungen > HOECHSTENS_EINHEITSTAGE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, "",
-                    "Nicht rechenbar — das Ensemble zöge " + (einheiten * realisierungen).ToString(CultureInfo.InvariantCulture)
-                    + " Einheitentage (Realisierungen × Einheiten); höchstens "
-                    + HOECHSTENS_EINHEITSTAGE.ToString(CultureInfo.InvariantCulture) + " sind zulässig.");
+                    ZapfSatz.Neu("EINGABE_ENSEMBLE_EINHEITSTAGE", (long)einheiten * realisierungen, (long)HOECHSTENS_EINHEITSTAGE));
             Volumenplan plan = volumen == null ? null : new Volumenplan(volumen, zonen);
 
             int zahl = zonen.Count;
@@ -464,7 +462,7 @@ namespace WindowsFormsApplication1
             internal Volumenplan(Volumenauftrag a, IReadOnlyList<Ensemblezone> zonen)
             {
                 if (a.Parameter == null) throw new ArgumentNullException(nameof(a), "Der Volumenauftrag trägt keine Parameter.");
-                Auslegungspruefung.Positiv(a.LeistungKw, "die Leistung Φ_N des Summenlinienpunkts");
+                Auslegungspruefung.Positiv(a.LeistungKw, ZapfSatz.Neu("BEGRIFF_PHI_N"));
                 LeistungKw = a.LeistungKw;
                 Summenlinienparameter p = a.Parameter;
                 Fest = p with { ErzeugerKw = LeistungKw, Uebertrager = null };
@@ -677,8 +675,7 @@ namespace WindowsFormsApplication1
         {
             if (perzentil != 95 && perzentil != 99)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — das Auslegungsperzentil ist 95 oder 99 (K3), nicht "
-                    + perzentil.ToString(CultureInfo.InvariantCulture) + ".");
+                    ZapfSatz.Neu("AUSLEGUNG_PERZENTIL_WERT", perzentil));
         }
 
         private static int RealisierungenPruefen(int realisierungen)
@@ -689,7 +686,6 @@ namespace WindowsFormsApplication1
 
         private static ZapfprofilEingabeException ZuViele()
             => new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, "",
-                   "Nicht rechenbar — die Zahl der Realisierungen des Bedarfstags liegt nicht in 1 … "
-                   + HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
+                   ZapfSatz.Neu("EINGABE_REALISIERUNGEN_BEDARFSTAG", HOECHSTENS));
     }
 }
