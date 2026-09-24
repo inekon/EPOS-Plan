@@ -15,7 +15,7 @@ Vorgänger: [`E10_Nutzungsdauer_S3_Speicherflotte_Protokoll.md`](E10_Nutzungsdau
 `2026-09-24_R14_Kaelteerzeuger`), Opus 5.5 im Worktree `.claude/worktrees/e13`, zwei Phasen: `58e27722` (E13/1),
 `f674e839` (E13/2), `a4a38a72` (E13/4), `fa7dfd37` (E13/5) in Phase 1, `ba78f7d2` (E13/6) in Phase 2; eine Nummer E13/3
 gibt es nicht (Punkt 3 des Auftrags ist der Nachweis). Erster Merge `4b50b77b` über `origin` = `3ff9840b` (der Baum gleicht
-`ba78f7d2`); End-Merge `NACHTRAG-474-MERGE2` über `origin` = `101164f8` (Zapfprofil Z4 #464, Schemaschritt 124,
+`ba78f7d2`); End-Merge `c71addf5` über `origin` = `526c7951` (Zapfprofil Z4 #464, Schemaschritt 124,
 Testdatenbank LFS `1d971b1a`). **Kein Schemaschritt, keine Rechenwirkung, keine neue Basis.**
 
 ## Gebaut
@@ -101,8 +101,8 @@ gerechnet — erst berechnen."). Designer wiederholbar.
 - **Gate auf `4b50b77b`** (Worktree `pm13`, Log `GATE474.log`): Kern-Filter 0 Fehler; ChartProben 146/146 gleich der
   Windows-Messlatte; voller Lauf 12.714 / 0 / 1 (Kern 5.834, UI 5.918, KiKern 549, SpeicherEngine 386, SpeicherPlanung
   27/1); Dokumentationswachen 26/26.
-- **Gate auf dem End-Merge:** NACHTRAG-474-GATE2.
-- **CI:** NACHTRAG-474-CI.
+- **Gate auf dem End-Merge:** Gate auf c2a03f75 (Nachzug Z4): Build 0 Fehler, ChartProben 151/151 gleich der auf die fünf Z4-Bilder erweiterten Windows-Messlatte, voller Lauf 12.909 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 5.952, EPOS.UI 5.995, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27+1), Dokumentationswachen 29/29; reduziertes Gate auf dem End-Merge c71addf5 (Nachzug #475): Build 0 Fehler, E13-Testklassen und Wachen Kern 136/136, UI 175/175.
+- **CI:** steht aus (Push nach dem Gate).
 
 ## Abnahme am Gerät (A‑E13‑1, Windows und iPad)
 
