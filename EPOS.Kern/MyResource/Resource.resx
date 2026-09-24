@@ -3218,6 +3218,39 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
     <value>{0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}.</value>
   </data>
+  <data name="SIMENG_G3_RAND_ZONE" xml:space="preserve">
+    <value>{0}: Die Randbedingung Nachbarzone ist im Einzonenmodell nicht abgebildet; sie kommt mit dem Mehrzonenmodell (Stufe G6b).</value>
+  </data>
+  <data name="SIMENG_G3_AZIMUT_FEHLT" xml:space="preserve">
+    <value>{0}: Das Bauteil an Außenluft mit der Neigung {1}° hat keinen Azimut; ohne Azimut dürfen nur waagerechte Flächen (0° oder 180°) stehen.</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_BEREICH" xml:space="preserve">
+    <value>{0}: Der U-Wert {1} W/(m²K) liegt nicht in {2} … {3} W/(m²K).</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_FEHLT" xml:space="preserve">
+    <value>{0}: Das Bauteil hat weder einen U-Wert noch einen Schichtaufbau.</value>
+  </data>
+  <data name="SIMENG_G3_TRANSPARENT_SCHICHTEN" xml:space="preserve">
+    <value>{0}: Ein Fenster oder eine Vorhangfassade rechnet nach VDI 6007 Blatt 1 Gl. (25)/(26) aus dem U-Wert; ein Schichtaufbau ist dafür nicht vorgesehen.</value>
+  </data>
+  <data name="SIMENG_G3_TRANSPARENT_RAND" xml:space="preserve">
+    <value>{0}: Ein Fenster oder eine Vorhangfassade liegt an Außenluft oder an einem unbeheizten Raum, nicht an „{1}“.</value>
+  </data>
+  <data name="SIMENG_G3_WIDERSTAND_GL26" xml:space="preserve">
+    <value>{0}: Der Widerstand R = {1} K/W nach VDI 6007 Blatt 1 Gl. (26) ist nicht positiv (U = {2} W/(m²K)); dafür setzt EPOS keinen Wert.</value>
+  </data>
+  <data name="SIMENG_G3_KEINE_AUSSENBAUTEILE" xml:space="preserve">
+    <value>{0}: Der Bauteilsatz hat kein opakes Außenbauteil; der Wandzweig trägt die Kapazität der Außenbauteilgruppe.</value>
+  </data>
+  <data name="SIMENG_G3_BAUWEISE" xml:space="preserve">
+    <value>{0}: Die Speichermasse je Nutzfläche {1} Wh/(m²K) liegt nicht in {2} … {3} Wh/(m²K); eine Bauteilgruppe ohne Schichten nimmt ihre Kapazität aus der Bauweise.</value>
+  </data>
+  <data name="SIMENG_G3_PFLICHT" xml:space="preserve">
+    <value>{0}: {1} = {2} ist nicht größer null; der Bauteilweg braucht diese Größe.</value>
+  </data>
+  <data name="SIMENG_G3_UWERT_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: Der eingetragene U-Wert {1} W/(m²K) weicht vom aus den Schichten gerechneten {2} W/(m²K) um {3} % ab; in der Rechnung gilt der eingetragene.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>
