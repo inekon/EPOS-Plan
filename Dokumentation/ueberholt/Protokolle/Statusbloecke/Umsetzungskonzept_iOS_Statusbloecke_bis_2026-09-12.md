@@ -10228,3 +10228,83 @@ Hüllfläche (`Flaeche_Außenwand` auf rund 15 110 m² nachführen oder
 Ost/West-Fenster auf 1 520,4 m² zurücksetzen) — Anwenderentscheid; (c)
 Nebenbefund `KrankenH-F-*`, `gr_Hotel-G-134`, `Kaufhaus` als Kandidat für
 eine Folgewelle, noch nicht geprüft; (d) Schrittnummer 131 frei.
+
+## #490 — Projektassistent, Bearbeiten-Zweig: Abgleich je Gewerk, Änderungsdatum nur bei echter Änderung (24.09.2026)
+
+Anwenderauftrag „starte: Bearbeiten-Zweig des Assistenten“
+(24.09.2026); Basis `571a80e5`, Merge `1f515ed4` auf `c2403cc4` (G3
+Welle A Teil 1 der Cloud-Sitzung). Commits (Opus 5.5): `80cb49ee`
+(Kern), `8f795d67` (Tests), `b80ba595` (Konzept).
+
+**Umsetzung.** Neue Klasse
+`EPOS.Kern/Controller/AssistentAbgleich.cs` (`AssistentGewerk`,
+`Abdruck`, `Abdruecke`, `KopfGleichGespeichert`). `AssistentCtrl`
+nimmt einen Abdruck je Gewerk am Ende von `Laden` und nach jedem
+festgeschriebenen Speichern (der Assistent bleibt offen);
+`Fortschreiben` vergleicht jedes Gewerk mit dem Abdruck und
+überspringt gleiche Gewerke samt anhängenden Schritten, Reihenfolge
+unverändert. Verglichen wird nur, was der Schreibweg trägt: Erzeuger
+(`Del_Projekt_Waermeerzeuger`/`Add_WP_Waermeerzeuger`/`ProjektgeraeteNachziehen`/`Add_Projekt_Energietraeger`/`NeueAnlagenSenkenNachziehen`)
+per Reflexion über alle Wertfelder ohne `ID`/`ID_Projekt`,
+Pufferzeilen ausgenommen (FR-1), `PV_Straenge` ausdrücklich (`null`
+= nicht angefasst, leere gesetzte Liste = Eingabe); Prozesswärme und
+Stromverbraucher: Bezeichner + Summe; Stromganglinie: Bezeichner
+(8760 Werte hängen an der Projektkopie); externer Wärmebedarf:
+Bezeichner + Kanal (leer = Heizung); Kopf gegen die Datenbank (Name,
+Bearbeiter, Kunde, Beschreibung, Klimaregion per Name); Gebäude
+weiter über den eigenen Abgleich (#475/#487). Ohne Abdruck (auch
+nach `BereitsGeladen = false`) wird wie zuvor alles geschrieben.
+Neue Auskünfte `GeschriebeneGewerke`, `KopfGeschrieben`.
+
+**Zwei nebenbei behobene Fehler.** (1) Wärmepumpen-Stammfelder:
+Wurde die WP-Seite nie gezeigt, schrieb `ProjektgeraeteNachziehen`
+bei jedem Speichern leere Firma/Beschreibung und Nennleistung 0 in
+`Tab_WP`; `LadeErzeuger` füllt sie jetzt beim Laden
+(`GeraetedatenFuellen`, WP und Referenz-WP). (2) Kanal des
+Wärmebedarfs: `LadeWaermebedarf` las ihn nicht, jedes Speichern
+setzte Brauchwasser- und Prozesskanal auf Heizung zurück; ruft jetzt
+`KanaeleNachladen`.
+
+**Nebenwirkungen abgesichert.** Ein unveränderter Erzeuger lässt
+Anlagen, Puffer, Senken, Stränge, Kostenanker (`Tab_ProjektWerte`),
+Projektgeräte und Trägersätze mit ihren Ids stehen;
+`NeueAnlagenSenkenNachziehen` läuft nur nach Neuschreiben der
+Anlagen; Zuordnungs-Ids werden bewusst nicht nachgezogen (der
+Schreibweg nutzt sie nicht, der Vergleich schließt sie aus);
+Projektgeräte-Ids bleiben.
+
+**Tests.** Neu `EPOS.Kern.Tests/AssistentAbgleichTests.cs`, 11 Fälle
+auf Projekt 1041 (Abbild von 20 Tabellen samt Ids und Datum): ohne
+Änderung auch nach Seitenbesuch und zweitem Speichern nichts
+geschrieben, `HatAenderungen` false; Theory über 6 Fälle (fünf
+Gewerke + Kopf) → nur dieses Gewerk geändert, Datum gesetzt, Rest
+inkl. Puffer/Senken/WP-Stammfelder gleich; WP-Stammfelder ohne
+WP-Seite; Kanal beim Laden; ohne Vergleichsstand alle fünf Gewerke;
+Abdruck ohne Datenbank. Angepasst
+`FachspaltenRettungTests.UeberDenAssistentenSpeichern` (setzt
+`BereitsGeladen = false`, weil die Rettung nur beim Neuschreiben
+läuft).
+
+**Gate (losgelöster Worktree, Stand `1f515ed4` inkl. G3).**
+Kern-Filter 0 Fehler; Tests EPOS.Kern 6.139, EPOS.UI 6.020, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen);
+`Werkzeuge/Auslieferungsvorlage` 30/30; Windows-Schale Debug x64 0
+Fehler; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4.207.049 Werte); SqlDialektPruefer
+1.826 Texte, 0 Fundstellen (Agent).
+
+**Papiere.** Konzept Administrationsdialoge 7.1 (a) Ist-Zustand
+„Abgleich je Gewerk“, Kopfzeile #490. Wiki unverändert.
+
+**Logbuch.** Satz vorgeschlagen (Version beim Anwender): „Ein
+Speichern im Projektassistenten ohne inhaltliche Änderung ändert das
+Änderungsdatum des Projekts nicht mehr, und das letzte
+Simulationsergebnis bleibt aktuell.“
+
+**Offen (in „Nach #490“).** (a) Energieträger: bei unverändertem
+Erzeuger läuft `Add_Projekt_Energietraeger` nicht mehr, fehlende
+Trägersätze heilen dann nicht mehr beim Speichern ohne
+Anlagenänderung; (b) Id-Nachzug der Zuordnungen nicht gebaut; (c)
+veraltete Listen nach Projektwechsel ohne Neuladen (Bestand); (d)
+Feld-für-Feld-Nachweis am Windows-Gerät `Referenzlauf.exe projekt`
+(R-W16-6) steht aus.
