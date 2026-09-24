@@ -122,9 +122,11 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         bool extrapolationErlaubt = true,
         Func<int, bool>? projektkopieVorhanden = null,
         Func<int, WaermepumpeUebernahmeVorschau?>? uebernahmeVorschau = null,
-        Func<int, bool, KatalogSpeicherErgebnis>? inStammUebernehmen = null)
+        Func<int, bool, KatalogSpeicherErgebnis>? inStammUebernehmen = null,
+        WaermepumpeKuehlGaben? kuehlung = null)
         => Render<WaermepumpeAnlageDialog>(p => p
             .Add(x => x.Daten, daten ?? Voll())
+            .Add(x => x.Kuehlung, kuehlung)
             .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
             .Add(x => x.Eingebettet, eingebettet)
             .Add(x => x.ExtrapolationSchreiben, extrapolationSchreiben)
@@ -1976,5 +1978,67 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         Assert.Contains(cut.FindAll(".epos-wp-spalte--mitte .epos-herleitung-text"),
                         e => e.TextContent == "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme");
+    }
+
+    // =================================================================================
+    // Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, 8.6)
+    // =================================================================================
+
+    private static WaermepumpeKuehlGaben Kuehlgaben() => new()
+    {
+        Vorlaeufe = _ => new[] { new KuehlVorlaufEintrag(7), new KuehlVorlaufEintrag(18) },
+        Sperrgrund = _ => null,
+        Stromtraeger = new[] { (58, "Strom Kühlung"), (60, "Strom Projekt") },
+        ProjektStromtraeger = 60
+    };
+
+    /// <summary>Der Dialog reicht die Kühlgaben an die Konfiguration durch; ohne sie steht keine Gruppe „Kühlbetrieb".</summary>
+    [Fact]
+    public void Die_Konfiguration_zeigt_den_Kuehlbetrieb_nur_mit_Kuehlgaben()
+    {
+        var ohne = Aufbauen();
+        KonfigurationOeffnen(ohne);
+        Assert.DoesNotContain("Kühlbetrieb",
+            ohne.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
+
+        var mit = Aufbauen(kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(mit);
+        Assert.Contains("Kühlbetrieb",
+            mit.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
+    }
+
+    /// <summary>Abbrechen der Konfiguration nimmt auch die fünf Kühlfelder zurück (Hausregel „Geschrieben wird im OK-Weg").</summary>
+    [Fact]
+    public void Abbrechen_der_Konfiguration_nimmt_die_Kuehlfelder_zurueck()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten, kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(cut);
+
+        cut.FindAll("label.epos-schalter").First(l => l.TextContent.Trim() == "Maschine auch zum Kühlen benutzen")
+           .QuerySelector("input")!.Change(true);
+        Assert.True(daten.Kuehlbetrieb);
+        Feld(cut, "Hilfsstromanteil").Input("8");
+        Assert.Equal(0.08, daten.KuehlHilfsstromanteil!.Value, 12);
+
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+        Assert.False(daten.Kuehlbetrieb);
+        Assert.Null(daten.KuehlHilfsstromanteil);
+    }
+
+    /// <summary>OK der Konfiguration prüft die Kühlfelder: Ein Hilfsstromanteil ab 100 % hält die Überlagerung offen und nennt den Mangel dort.</summary>
+    [Fact]
+    public void Ein_Hilfsstromanteil_ab_100_Prozent_haelt_die_Konfiguration_offen()
+    {
+        var daten = Voll();
+        daten.Kuehlbetrieb = true;
+        var cut = Aufbauen(daten, kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(cut);
+        Feld(cut, "Hilfsstromanteil").Input("100");
+
+        Ueberlagerungsknopf(cut, "OK").Click();
+        Assert.Contains("Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.",
+                        cut.Find(".epos-ueberlagerung").TextContent);
+        Assert.True(cut.Instance.KonfigurationOffen);
     }
 }

@@ -157,6 +157,34 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Kältestrom einer Wärmepumpe trägt einen abweichenden Kühlträger (E34), und diesem
+        /// fehlt der Arbeitspreis — die Energiekosten bleiben aus, statt den Kältestrom still mit
+        /// dem Stromträger des Projekts zu bepreisen.
+        /// </summary>
+        internal static string GRUND_KUEHLTRAEGER_PREIS_FEHLT
+        {
+            get
+            {
+                return T("WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT",
+                    "Energiekosten nicht bestimmbar: Der Stromträger der Kühlung „{0}“ trägt keinen " +
+                    "Arbeitspreis. Ausweg: unter „Berichte & Kosten › Energieträger“ den Arbeitspreis " +
+                    "pflegen oder im Wärmepumpendialog den Stromträger der Kühlung auf „wie " +
+                    "Heizbetrieb“ stellen.");
+            }
+        }
+
+        /// <summary>Setzt die Ausweisfelder des Kältestroms auf „nicht gerechnet" (KU2 Welle 3, E34).</summary>
+        private static void KaeltestromZuruecksetzen(VariantenDaten v)
+        {
+            v.KaeltestromNetzbezugMWh = null;
+            v.KaeltestromKosten = null;
+            v.KaeltestromCO2t = null;
+            v.StromkostenKuehltraeger = 0.0;
+            v.NetzbezugKuehltraegerMWh = 0.0;
+            v.KuehlzaehlerMWh = 0.0;
+        }
+
         /// <summary>Die Rechnung selbst ist gescheitert (Fangzaun in <see cref="Berechne"/>).</summary>
         internal static string GRUND_RECHENFEHLER
         {
@@ -250,6 +278,7 @@ namespace WindowsFormsApplication1
                 v.StrombedarfOhneVerwendungMWh = null;
                 v.BezugsspitzeKW = null;
                 v.LeistungspreisOhneSpitze = null;
+                KaeltestromZuruecksetzen(v);
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
@@ -262,6 +291,7 @@ namespace WindowsFormsApplication1
             v.CO2TraegerRueckfall = null;        // Auftrag #293
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.LeistungspreisOhneSpitze = null;
+            KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
 
             // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
             // steht auch dann an der Variante, wenn kein Leistungspreis gepflegt ist —
@@ -512,6 +542,34 @@ namespace WindowsFormsApplication1
             // Netzbezug: Energiekosten = Brennstoffkosten, kein Fehlgrund.
             double netzbezugBewertet = stromOhneVerwendung ? 0.0 : netzbezugMWh;
 
+            // ---- DER KÄLTESTROM EINES ABWEICHENDEN KÜHLTRÄGERS (Entscheid E34, KU2 Welle 3) ----
+            //
+            // Trägt eine Wärmepumpe für die Kühlung einen anderen Stromträger als das Projekt, hat
+            // der Lauf die Menge je Anlage gespeichert (Modulspalte Kaeltestrom_Netzbezug samt
+            // Kühlträger und Abrechnungsart, Schemaschritt 115). HIER — und nur hier — wird sie
+            // bepreist und bewertet:
+            //  - ANTEILIG AM NETZBEZUG (Vorgabe): die Menge ist ein TEIL von Stromrestbedarf. Sie
+            //    trägt Arbeitspreis und CO₂-Faktor des Kühlträgers; der Stromträger des Projekts
+            //    bepreist den Rest — samt Grund- und Leistungspreis, die Bezugsspitze bleibt die
+            //    des ganzen Anschlusses.
+            //  - EIGENER ZÄHLER: die Menge liegt NEBEN Stromrestbedarf und trägt ganz den
+            //    Kühlträger.
+            // Grund- und Leistungspreis des Kühlträgers setzt die Regel nicht an (Kühlkonzept 6.1:
+            // Arbeitspreis und CO₂-Faktor). Ohne abweichenden Kühlträger ist die Liste leer, und
+            // jede Zahl unten entsteht Zeichen für Zeichen wie ohne diesen Block.
+            List<Kaeltestromabrechnung.Anteil> kuehlAnteile = stromOhneVerwendung
+                ? new List<Kaeltestromabrechnung.Anteil>() : Kaeltestromabrechnung.Anteile(m);
+            double kuehlAnteiligMWh = 0.0, kuehlZaehlerMWh = 0.0;
+            foreach (Kaeltestromabrechnung.Anteil a in kuehlAnteile)
+            {
+                if (a.EigenerZaehler) kuehlZaehlerMWh += a.MengeMwh;
+                else kuehlAnteiligMWh += a.MengeMwh;
+            }
+            // Der Teil des Netzbezugs, den der Stromträger des Projekts trägt.
+            double netzbezugProjektMWh = kuehlAnteiligMWh > 0
+                ? Math.Max(0.0, netzbezugMWh - kuehlAnteiligMWh) : netzbezugMWh;
+            double netzbezugProjektBewertet = stromOhneVerwendung ? 0.0 : netzbezugProjektMWh;
+
             double? stromKosten = null;
             double stromCO2 = STROMMIX_CO2_G_JE_KWH;   // Vorgabewert, falls kein Träger gepflegt
             int stromCarrier = stromCarrierId;   // bereits vor der Brennstoffschleife bestimmt (KD4)
@@ -524,13 +582,16 @@ namespace WindowsFormsApplication1
             // #267: DIE KOSTENSEITE fragt den Träger mit Rückfall (stromCarrierKosten),
             // die CO₂-Seite den ZUGEORDNETEN (stromCarrier). Sind beide gleich — der
             // Regelfall —, wird auch nur EINMAL geladen. Ohne Verwendung gar nicht.
+            double? projektArbeitspreis = null;   // KU2 Welle 3: für den Ausweis des Kältestroms
             if (!stromOhneVerwendung && stromCarrierKosten > 0)
             {
                 TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten);
                 stromPreisTraeger = TraegerName(stromCarrierKosten);
+                projektArbeitspreis = preistraeger.PreisArbeit;
                 if (preistraeger.PreisArbeit.HasValue)
                 {
-                    stromKosten = netzbezugMWh * 1000.0 * preistraeger.PreisArbeit.Value;
+                    // E34: ohne den Anteil der abweichenden Kühlträger (sonst der ganze Netzbezug).
+                    stromKosten = netzbezugProjektMWh * 1000.0 * preistraeger.PreisArbeit.Value;
                     if (preistraeger.Grundpreis.HasValue) stromKosten += preistraeger.Grundpreis.Value;
 
                     // ---- DER LEISTUNGSPREIS DES STROMTRÄGERS (Anwenderentscheid
@@ -641,9 +702,53 @@ namespace WindowsFormsApplication1
             }
             // Ohne (bewerteten) Netzbezug ändert der Vorgabewert nichts - dann ist er kein
             // Rückfall, sondern eine Zahl, die mit 0 MWh multipliziert wird.
-            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugBewertet > 0;
+            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugProjektBewertet > 0;
 
-            double netzCO2t = netzbezugBewertet * stromCO2 / 1000.0;
+            // E34: der Stromträger des Projekts trägt den Netzbezug ohne den Anteil der
+            // abweichenden Kühlträger; die tragen ihre Menge mit IHREM Faktor (dieselbe Stufenfolge,
+            // Emissionsquelle.Netzstrom - ein Kühlträger ohne Faktor rechnet mit dem Vorgabewert
+            // und meldet das wie der Träger des Projekts).
+            double netzCO2t = netzbezugProjektBewertet * stromCO2 / 1000.0;
+
+            double kuehlKosten = 0.0, kuehlCO2t = 0.0;
+            var kuehlOhnePreis = new List<string>();
+            foreach (Kaeltestromabrechnung.Anteil a in kuehlAnteile)
+            {
+                TraegerInfo kt = LadeTraeger(v.IdProjekt, a.Traeger);
+                if (kt.PreisArbeit.HasValue) kuehlKosten += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                else
+                {
+                    string name = TraegerName(a.Traeger);
+                    if (!kuehlOhnePreis.Contains(name)) kuehlOhnePreis.Add(name);
+                }
+
+                Emissionsfaktoren kf = Emissionsquelle.Netzstrom(v.IdProjekt, a.Traeger, modus);
+                double faktor = kf != null && kf.Co2GKwh > 0 ? kf.Co2GKwh : STROMMIX_CO2_G_JE_KWH;
+                if (kf == null || !kf.Co2Gepflegt || !(kf.Co2GKwh > 0)) v.CO2StrommixRueckfall = true;
+                kuehlCO2t += a.MengeMwh * faktor / 1000.0;
+            }
+            netzCO2t += kuehlCO2t;
+
+            v.StromkostenKuehltraeger = kuehlOhnePreis.Count == 0 ? kuehlKosten : 0.0;
+            v.NetzbezugKuehltraegerMWh = kuehlAnteiligMWh;
+            v.KuehlzaehlerMWh = kuehlZaehlerMWh;
+
+            // DER AUSWEIS DES KÄLTESTROMS (Kühlkonzept 6.2, 6.3): sein Netzbezug — über alle
+            // Anlagen, gleich welcher Träger ihn bepreist —, seine Arbeitskosten und seine
+            // Emissionen. Die Anteile der abweichenden Kühlträger stehen oben; der Rest trägt
+            // Arbeitspreis und Faktor des Projekts. Nur ein Ausweis: In Energiekosten und
+            // CO2Gesamt steht der Kältestrom genau einmal (als Teil des Netzbezugs bzw. als
+            // Menge eines Kühlträgers).
+            double? kaelteNetzbezug = stromOhneVerwendung ? null : Kaeltestromabrechnung.NetzbezugKaeltestromMwh(m);
+            if (kaelteNetzbezug.HasValue)
+            {
+                double restMWh = Math.Max(0.0, kaelteNetzbezug.Value - kuehlAnteiligMWh - kuehlZaehlerMWh);
+                v.KaeltestromNetzbezugMWh = kaelteNetzbezug.Value;
+                v.KaeltestromKosten = kuehlOhnePreis.Count > 0 || (restMWh > 0 && !projektArbeitspreis.HasValue)
+                    ? (double?)null
+                    : kuehlKosten + (restMWh > 0 ? restMWh * 1000.0 * projektArbeitspreis.Value : 0.0);
+                v.KaeltestromCO2t = kuehlCO2t + restMWh * stromCO2 / 1000.0;
+            }
 
             // ---------------- ETAPPE B7: Energiekosten JE ANLAGE (Konzept § 3.5) ----
             //
@@ -664,9 +769,18 @@ namespace WindowsFormsApplication1
             // alles, was Strom bezieht (Wärmepumpe, Hilfsenergie, Gebäude) — der
             // Rechenkern führt den Restbezug als eine Menge, und eine Aufteilung nach
             // Verbrauchern gäbe es nur als Schätzung. Ohne Verwendung keine Zeile.
-            if (netzbezugBewertet > 0 && stromCarrierKosten > 0)
+            // E34: Die Zeile „Netzbezug" trägt den Teil des Stromträgers des Projekts; der Kältestrom
+            // eines abweichenden Kühlträgers steht als eigene Zeile daneben.
+            if (netzbezugProjektBewertet > 0 && stromCarrierKosten > 0)
                 AnlageZeile(jeAnlage, v.IdProjekt, MyResource.Resource.WIRT_ENK_NETZBEZUG,
-                            stromCarrierKosten, netzbezugBewertet);
+                            stromCarrierKosten, netzbezugProjektBewertet);
+            foreach (Kaeltestromabrechnung.Anteil a in kuehlAnteile)
+                AnlageZeile(jeAnlage, v.IdProjekt,
+                            string.Format(BerichtTexte.Kultur,
+                                a.EigenerZaehler ? MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER
+                                                 : MyResource.Resource.WIRT_ENK_KAELTESTROM,
+                                string.Join(", ", a.Anlagen)),
+                            a.Traeger, a.MengeMwh);
             v.EnergiekostenJeAnlage = jeAnlage;
 
             // ---------------- Kennzahlen setzen ----------------
@@ -675,11 +789,17 @@ namespace WindowsFormsApplication1
             v.StromkostenNetz = stromKosten;
 
             // Ohne Verwendung ist netzbezugBewertet null (Regel oben, beim Netzbezug):
-            // Die Energiekosten sind dann die Brennstoffkosten, ohne Fehlgrund.
-            v.Energiekosten = (kostenVollstaendig && stromKosten.HasValue)
+            // Die Energiekosten sind dann die Brennstoffkosten, ohne Fehlgrund. E34: Der Kältestrom
+            // eines eigenen Zählers ist Verbrauch auch ohne Netzbezug am Hauptanschluss, und die
+            // Kosten der abweichenden Kühlträger kommen hinzu — fehlt einem der Arbeitspreis, bleibt
+            // die Summe aus (Fehlgrund unten).
+            double? energie = (kostenVollstaendig && stromKosten.HasValue)
                 ? (double?)(brennstoffKosten + stromKosten.Value)
-                : (kostenVollstaendig && verbrauchJeTraeger.Count > 0 && netzbezugBewertet <= 0
+                : (kostenVollstaendig && (verbrauchJeTraeger.Count > 0 || kuehlZaehlerMWh > 0) && netzbezugBewertet <= 0
                     ? (double?)brennstoffKosten : null);
+            if (energie.HasValue && kuehlAnteile.Count > 0)
+                energie = kuehlOhnePreis.Count > 0 ? (double?)null : energie.Value + kuehlKosten;
+            v.Energiekosten = energie;
 
             // AUFTRAG #267 — KEIN STILLES NULL. Bleibt die Zahl aus, steht ab hier im
             // Klartext, WORAN es liegt und WAS zu tun ist. Die Reihenfolge ist die der
@@ -687,7 +807,8 @@ namespace WindowsFormsApplication1
             // fehlende Preis, zuletzt der Verbrauch ohne Trägerzuordnung.
             if (!v.Energiekosten.HasValue)
             {
-                if (verbrauchJeTraeger.Count == 0 && verbrauchOhneTraeger <= 0 && netzbezugBewertet <= 0)
+                if (verbrauchJeTraeger.Count == 0 && verbrauchOhneTraeger <= 0 && netzbezugBewertet <= 0 &&
+                    kuehlZaehlerMWh <= 0)
                     v.EnergiekostenGrund = GRUND_KEIN_VERBRAUCH;
                 else if (verbrauchOhneTraeger > 0)
                     v.EnergiekostenGrund = string.Format(GRUND_VERBRAUCH_OHNE_TRAEGER,
@@ -709,6 +830,10 @@ namespace WindowsFormsApplication1
                 else if (ohnePreis.Count > 0)
                     v.EnergiekostenGrund = string.Format(GRUND_BRENNSTOFFPREIS_FEHLT,
                         string.Join(", ", ohnePreis));
+                // E34: Der Kühlträger einer Wärmepumpe trägt keinen Arbeitspreis — beim Namen genannt.
+                else if (kuehlOhnePreis.Count > 0)
+                    v.EnergiekostenGrund = string.Format(GRUND_KUEHLTRAEGER_PREIS_FEHLT,
+                        string.Join(", ", kuehlOhnePreis));
                 else
                     v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }

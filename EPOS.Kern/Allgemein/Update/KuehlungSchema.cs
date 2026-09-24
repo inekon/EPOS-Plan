@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
     /// Anlagenzeile (<see cref="SPALTE_KUEHL_ID_CARRIER"/>). Ebenfalls reines DDL: Jede
     /// Waermepumpe steht danach auf „kein Kuehlbetrieb", die uebrigen Spalten auf NULL, und kein
     /// Rechenweg liest sie.</para>
+    ///
+    /// <para><b>Schritt 115</b> — Stufe KU2 Welle 3 (Kuehlkonzept 6.1–6.4, 8.4; Entscheid E34): die
+    /// Abrechnungsart des Kaeltestroms bei abweichendem Kuehltraeger an der Anlagenzeile
+    /// (<see cref="SPALTE_KUEHL_EIGENER_ZAEHLER"/>) und die sieben Ergebnisspalten der Kaelteseite
+    /// der Waermepumpe (<see cref="Kaelteerzeugerspalten"/>). Reines DDL, alle NULL; der Lauf
+    /// schreibt die Ergebnisspalten nur mit gerechneter Kaeltekaskade.</para>
     /// </summary>
     public static class KuehlungSchema
     {
@@ -235,6 +241,108 @@ namespace WindowsFormsApplication1
             SPALTE_KUEHL_ID_CARRIER + "\" " + TYP_KUEHL_ID_CARRIER;
 
         // =====================================================================
+        //  Schritt 115 — die Abrechnungsart des Kältestroms (E34) und die
+        //  Kälteseite der Wärmepumpenergebnisse (Kühlkonzept 6.1–6.4, 7.3, 7.4, 8.4)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c> — <b>die Abrechnungsart des Kältestroms bei
+        /// einem abweichenden Kühlträger</b> (Entscheid E34, Konzept Gebäudesimulation N1.39):
+        /// <b>NULL = anteilig am Netzbezug (Vorgabe)</b> — der Kältestrom läuft durch die
+        /// Stufenrechnung, Eigenverbrauch aus Photovoltaik und Stromspeicher bleiben gemeinsam, und
+        /// der Netzbezug jedes Zeitschritts wird nach dem Anteil des Kältestroms am Stromverbrauch
+        /// geteilt; <b>1 = eigener Zähler</b> — der Kältestrom läuft neben der Stufenrechnung und
+        /// wird ganz mit dem Kühlträger bepreist und bewertet; 0 heißt wie NULL „anteilig" (der
+        /// Schreibweg schreibt es nie, er schreibt NULL).
+        ///
+        /// <para><b>Wirkungslos ohne abweichenden Kühlträger</b> (<see cref="SPALTE_KUEHL_ID_CARRIER"/>
+        /// NULL oder gleich dem Stromträger des Projekts) — dann läuft der Kältestrom wie der
+        /// Wärmepumpenstrom und trägt Tarif und Faktor des Projekts; der Dialog bietet die Wahl dann
+        /// nicht an.</para>
+        ///
+        /// <para><b>Nullbar, ohne Vorgabe</b> — Typangabe „YESNO_NULL", übersetzt zu
+        /// <c>INTEGER CHECK (… IN (0,1))</c> ohne <c>NOT NULL</c> und ohne <c>DEFAULT</c>. Eine
+        /// DDL-Vorgabe überschriebe die Aussage „Vorgabe" und träfe jede neue Zeile. Eine MODELLspalte
+        /// wie <see cref="SPALTE_KUEHL_ID_CARRIER"/>: Die Einfügeanweisung der Anlagenzeile
+        /// (<c>AnlagenSql</c>) nennt sie, sie reist mit dem Speicherweg Löschen + Neuanlegen im
+        /// Modell und steht deshalb nicht in der Rettungsmenge <c>WizardCtrl.Fachspalten</c>.</para>
+        /// </summary>
+        public const string SPALTE_KUEHL_EIGENER_ZAEHLER = "Kuehl_EigenerZaehler";
+
+        /// <summary>Die Abrechnungsart an der Anlagenzeile — ein <see cref="SchemaSpalte"/>-Eintrag.</summary>
+        public static readonly SchemaSpalte Abrechnungsspalte =
+            new SchemaSpalte(SchemaKatalog.TAB_ENERGIEANLAGEN, SPALTE_KUEHL_EIGENER_ZAEHLER, "YESNO_NULL");
+
+        /// <summary>Die Modulzeilen der Wärmepumpenergebnisse (derselbe Name wie <c>ErgebnisCtrl.TAB_WP_MODUL</c>).</summary>
+        public const string TAB_ERGEBNIS_WP_MODUL = "Tab_ErgebnisWaermepumpeModul";
+
+        /// <summary><c>Tab_ErgebnisWaermepumpe.Kaelteproduktion_WP</c> [MWh/a] — die gedeckte Kälte aller Wärmepumpen, Gegenstück zu <c>Waermeproduktion_WP</c> (E21).</summary>
+        public const string SPALTE_KAELTEPRODUKTION_WP = "Kaelteproduktion_WP";
+
+        /// <summary>
+        /// <c>Stromverbrauch_Kuehlung</c> [MWh/a] — der Kältestrom samt Hilfsstrom (Kühlkonzept 6.1),
+        /// Gegenstück zu <c>Stromverbrauch_WP</c> bzw. <c>Stromverbrauch</c> der Modulzeile; an
+        /// <c>Tab_ErgebnisWaermepumpe</c> (alle Wärmepumpen) und an der Modulzeile.
+        /// </summary>
+        public const string SPALTE_STROMVERBRAUCH_KUEHLUNG = "Stromverbrauch_Kuehlung";
+
+        /// <summary><c>Tab_ErgebnisWaermepumpeModul.Kaelteproduktion</c> [MWh/a] — die gedeckte Kälte der Anlage, Gegenstück zu <c>Waermeproduktion</c>.</summary>
+        public const string SPALTE_MODUL_KAELTEPRODUKTION = "Kaelteproduktion";
+
+        /// <summary>
+        /// <c>Tab_ErgebnisWaermepumpeModul.Kaeltestrom_Netzbezug</c> [MWh/a] — <b>der Netzbezug, der
+        /// dem Kältestrom der Anlage zukommt</b>: anteilig am Netzbezug Σ Netzbezug(t) · Kältestrom(t)
+        /// / Stromverbrauch(t) über die Viertelstunden der Stufenrechnung (E34, Wahl 1 — und ebenso,
+        /// wenn der Kältestrom den Träger des Projekts trägt); über einen eigenen Zähler der ganze
+        /// Kältestrom (Wahl 2). Mit ihm tragen Arbeitspreis und CO₂-Faktor den Kältestrom
+        /// (<c>KostenEmissionRechner</c>).
+        /// </summary>
+        public const string SPALTE_KAELTESTROM_NETZBEZUG = "Kaeltestrom_Netzbezug";
+
+        /// <summary>
+        /// <c>Tab_ErgebnisWaermepumpeModul.Kuehl_carrier_id</c> — der Kühlträger, mit dem der Lauf den
+        /// Kältestrom der Anlage abgerechnet hat (<c>energy_carrier.id</c>, nach dem Muster von
+        /// <c>carrier_id</c> der Kessel- und BHKW-Module, ohne Beziehung — ein Ergebnis bleibt, wenn
+        /// der Träger geht). <b>NULL = Stromträger des Projekts</b>: kein oder kein abweichender
+        /// Kühlträger.
+        /// </summary>
+        public const string SPALTE_MODUL_KUEHL_CARRIER = "Kuehl_carrier_id";
+
+        /// <summary>
+        /// Die sieben Ergebnisspalten der Kälteseite der Wärmepumpe (Schritt 115): zwei an
+        /// <c>Tab_ErgebnisWaermepumpe</c>, fünf an der Modulzeile — <b>DOUBLE, nullbar, ohne Vorgabe</b>
+        /// bzw. <c>LONG</c> und <c>YESNO_NULL</c>. NULL heißt „keine Kälteerzeugung gerechnet": Der
+        /// Lauf schreibt sie nur mit einer gerechneten Kältekaskade, und der Referenzlauf-Export nimmt
+        /// sie nur mit Wert auf — ein Projekt ohne Kälteerzeuger schreibt dieselben Zeilen wie vorher.
+        ///
+        /// <para><b>Warum als Spalte und nicht als Skalar</b> (K24 bzw. K18a, E27): Der Bericht verlangt
+        /// den Kältestrom je Anlage (Kälteerzeugertabelle, Kühlkonzept 8.4), und die Kosten und
+        /// Emissionen des Kältestroms (E34) entstehen aus dem gespeicherten Ergebnis — ohne frischen
+        /// Lauf. KU-S4 (Schritt 110) war bereits ausgerollt; die Spalten kommen deshalb mit der Wahl der
+        /// Abrechnungsart in EINEM Schritt, ohne eigenen Einfrieranlass.</para>
+        ///
+        /// <para>Nicht in <see cref="SchemaKatalog.Alle"/> — wie die KU-S4-Spalten: Wer sie schreibt
+        /// (<c>ErgebnisCtrl.Save</c>), legt sich die Vorsorge vor dem Schreiben selbst an.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Kaelteerzeugerspalten =
+        {
+            new SchemaSpalte(SchemaKatalog.TAB_ERGEBNISWAERMEPUMPE, SPALTE_KAELTEPRODUKTION_WP,     "DOUBLE"),
+            new SchemaSpalte(SchemaKatalog.TAB_ERGEBNISWAERMEPUMPE, SPALTE_STROMVERBRAUCH_KUEHLUNG, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_MODUL_KAELTEPRODUKTION,  "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_STROMVERBRAUCH_KUEHLUNG, "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_KAELTESTROM_NETZBEZUG,   "DOUBLE"),
+            new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_MODUL_KUEHL_CARRIER,     "LONG"),
+            new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_KUEHL_EIGENER_ZAEHLER,   "YESNO_NULL"),
+        };
+
+        /// <summary>Alle acht Einträge von Schritt 115: die Abrechnungsart an der Anlagenzeile, dann die sieben Ergebnisspalten.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt115Spalten()
+        {
+            yield return Abrechnungsspalte;
+            foreach (SchemaSpalte s in Kaelteerzeugerspalten) yield return s;
+        }
+
+        // =====================================================================
         //  Auskunft (Nachprobe der Migration, Werkzeug, Nachweis)
         // =====================================================================
 
@@ -258,6 +366,57 @@ namespace WindowsFormsApplication1
         {
             return Erzeugerspalten.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name))
                 && DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN, SPALTE_KUEHL_ID_CARRIER);
+        }
+
+        /// <summary>
+        /// Steht Schritt 115? Die Abrechnungsart des Kältestroms an der Anlagenzeile und die sieben
+        /// Ergebnisspalten der Kälteseite der Wärmepumpe stehen.
+        /// </summary>
+        public static bool Schritt115Vollstaendig()
+        {
+            return Schritt115Spalten().All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+        }
+
+        /// <summary>
+        /// Führt Schritt 115 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// <c>EPOS.Kern.Tests</c>; die Migration der Schale geht denselben Weg über ihre eigenen
+        /// Helfer, aus denselben Definitionen (<see cref="Schritt115Spalten"/>). <b>Wiederholbar:</b>
+        /// Eine vorhandene Spalte wird übergangen. <b>Kein DML</b> — alle acht Spalten stehen danach
+        /// auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (höchstens acht).</returns>
+        public static int Schritt115Alle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var alle = Schritt115Spalten().ToList();
+            var fehlend = alle.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                         alle.Count.ToString(CultureInfo.InvariantCulture) +
+                         " Spalte(n) angelegt (Abrechnungsart des Kaeltestroms an Tab_Energieanlagen, " +
+                         "Kaelteseite an Tab_ErgebnisWaermepumpe und Tab_ErgebnisWaermepumpeModul)");
+            return angelegt;
         }
 
         /// <summary>

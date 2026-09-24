@@ -535,6 +535,18 @@ namespace WindowsFormsApplication1
                 if (kaelte != null && kaelte.Gerechnet && kaelte.Kaskade != null)
                     w.Deckung_Kanal[Kanal.KUEHLUNG] = DeckungKuehlkanalProzent(kaelte);
 
+                // STUFE KU2 WELLE 3 (Schemaschritt 115; Kühlkonzept 6.1, 6.4, 8.4; E34): die
+                // Kälteseite der Wärmepumpe - Kälte, Kältestrom und sein Netzbezug samt Kühlträger
+                // und Abrechnungsart. NUR mit gerechneter Kältekaskade; sonst bleiben die Felder
+                // null und die Spalten NULL - ein Projekt ohne Kälteerzeuger schreibt dieselben
+                // Zeilen wie vorher.
+                Kaeltekaskade kaskade = (kaelte != null && kaelte.Gerechnet) ? kaelte.Kaskade : null;
+                if (kaskade != null)
+                {
+                    w.Kaelteproduktion_WP = kaskade.DeckungGesamtKwh / 1000.0;
+                    w.Stromverbrauch_Kuehlung = kaskade.StromGesamtKwh / 1000.0;
+                }
+
                 // Modulauflistung.
                 for (int i = 0; i < wp.wp_list.Count; i++)
                 {
@@ -545,6 +557,7 @@ namespace WindowsFormsApplication1
                     mo.Stromverbrauch = wp.Modul_WP_Strombedarf[i] / 1000.0;
                     mo.Heizstab = wp.Modul_Heizstab[i] / 1000.0;
                     mo.Betriebsstunden = wp.Modul_WP_Laufzeit[i];
+                    if (kaskade != null) KaelteseiteDesModuls(mo, kaskade, i);
                     w.Module.Add(mo);
                 }
 
@@ -1137,6 +1150,35 @@ namespace WindowsFormsApplication1
         {
             if (kaelte == null || !kaelte.Gerechnet || kaelte.Kaskade == null) return 0.0;
             return DeckungProzent(kaelte.Kaskade.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt);
+        }
+
+        /// <summary>
+        /// Die Kälteseite EINER Modulzeile der Wärmepumpe (Schemaschritt 115; Kühlkonzept 6.1, 8.4;
+        /// E34): Kälte, Kältestrom und dessen Netzbezug des Kälteerzeugers auf diesem Modulplatz, dazu
+        /// ein abweichender Kühlträger samt Abrechnungsart. Ein Modul, das nicht kühlt, trägt 0 — die
+        /// Kältekaskade hat gerechnet, dieses Gerät nur nicht gekühlt. Werte in MWh.
+        /// </summary>
+        internal static void KaelteseiteDesModuls(ErgebnisWaermepumpeModulModel mo, Kaeltekaskade kaskade,
+                                                  int modulindex)
+        {
+            mo.Kaelteproduktion = 0.0;
+            mo.Stromverbrauch_Kuehlung = 0.0;
+            mo.Kaeltestrom_Netzbezug = 0.0;
+            if (kaskade == null) return;
+
+            foreach (Kaelteerzeuger e in kaskade.Erzeuger)
+            {
+                if (e.Modulindex != modulindex) continue;
+                mo.Kaelteproduktion = e.KaelteGesamtKwh / 1000.0;
+                mo.Stromverbrauch_Kuehlung = e.StromGesamtKwh / 1000.0;
+                mo.Kaeltestrom_Netzbezug = e.NetzbezugKwh / 1000.0;
+                if (e.Kuehltraeger > 0)
+                {
+                    mo.Kuehl_CarrierId = e.Kuehltraeger;
+                    mo.Kuehl_EigenerZaehler = e.EigenerZaehler;
+                }
+                return;
+            }
         }
 
         /// <summary>

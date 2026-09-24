@@ -92,6 +92,39 @@ namespace WindowsFormsApplication1
             get { return StromGesamtKwh > 0 ? KaelteGesamtKwh / StromGesamtKwh : 0.0; }
         }
 
+        // ---- Abrechnung des Kältestroms (Entscheid E34; Kühlkonzept 6.1) -------------
+
+        /// <summary>
+        /// Der Kühlträger dieser Anlage, WENN er vom Stromträger des Projekts abweicht
+        /// (<c>Tab_Energieanlagen.Kuehl_ID_Carrier</c>, <c>energy_carrier.id</c>); <b>0 = der
+        /// Kältestrom trägt den Stromträger des Projekts</b> — kein oder derselbe Kühlträger, dann
+        /// ist die Abrechnungsart wirkungslos (E34).
+        /// </summary>
+        public int Kuehltraeger;
+
+        /// <summary>
+        /// <b>Eigener Zähler</b> (E34, Wahl 2; <c>Kuehl_EigenerZaehler</c> = 1): Der Kältestrom läuft
+        /// NEBEN der Stufenrechnung — er geht nicht in den Viertelstundenrest, wird also weder aus
+        /// Photovoltaik noch aus dem Stromspeicher gedeckt und erhöht deren Eigenverbrauch nicht.
+        /// Nur mit abweichendem <see cref="Kuehltraeger"/> gesetzt.
+        /// </summary>
+        public bool EigenerZaehler;
+
+        /// <summary>Läuft der Kältestrom dieser Anlage außerhalb der Stufenrechnung (eigener Zähler)?</summary>
+        public bool NebenDerStufenrechnung
+        {
+            get { return Kuehltraeger > 0 && EigenerZaehler; }
+        }
+
+        /// <summary>
+        /// <b>Der Netzbezug, der dem Kältestrom dieser Anlage zukommt</b> [kWh]: über die
+        /// Stufenrechnung (anteilig am Netzbezug, E34 Wahl 1 — ebenso ohne abweichenden Kühlträger)
+        /// Σ Netzbezug(t) · Kältestrom(t) / Stromverbrauch(t) über die Viertelstunden, mit dem
+        /// eigenen Zähler (Wahl 2) der ganze Kältestrom. Gesetzt am Laufende
+        /// (<c>SimulationControl.KaeltestromNetzbezugAufteilen</c>).
+        /// </summary>
+        public double NetzbezugKwh;
+
         /// <summary>Setzt das Ergebnis auf den Laufanfang.</summary>
         internal void Nullen()
         {
@@ -100,6 +133,7 @@ namespace WindowsFormsApplication1
             KaelteGesamtKwh = 0;
             StromGesamtKwh = 0;
             HilfsstromGesamtKwh = 0;
+            NetzbezugKwh = 0;
             StundenMitKaelte = 0;
             StundenUnterKennlinie = 0;
             StundenUeberKennlinie = 0;
@@ -337,6 +371,51 @@ namespace WindowsFormsApplication1
                 if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
                 else RestAnHeiztagenKwh += rest;
             }
+        }
+
+        // =====================================================================
+        //  Der Netzbezug des Kältestroms (Entscheid E34; Kühlkonzept 6.1)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Anteil des Kältestroms am Netzbezug</b> [kWh] — die Rechenregel „anteilig am
+        /// Netzbezug" aus E34: je Viertelstunde t trägt der Kältestrom
+        /// <c>Netzbezug(t) · Kältestrom(t) / Stromverbrauch(t)</c>; Eigenverbrauch aus Photovoltaik
+        /// und Stromspeicher deckt Kältestrom und übrigen Strom damit im selben Verhältnis, ohne
+        /// Vorrang.
+        ///
+        /// <para><b>Raster:</b> Netzbezug und Stromverbrauch als Leistung [kW] je Viertelstunde (die
+        /// Reihen der Stufenrechnung), der Kältestrom als Stundenwert [kWh] — in jeder Viertelstunde
+        /// derselben Stunde dieselbe Leistung, wie <c>Stundenwerte_zu_viertelstunden</c> ihn in den
+        /// Rest gibt. Die Energie einer Viertelstunde ist Leistung / 4.</para>
+        ///
+        /// <para><b>Ränder:</b> Ein Viertel ohne Netzbezug, ohne Stromverbrauch oder ohne Kältestrom
+        /// trägt nichts; der Anteil ist höchstens 1 (der Kältestrom ist Teil des Stromverbrauchs).
+        /// Nicht endliche Werte tragen nichts.</para>
+        /// </summary>
+        /// <param name="netzbezugKw">Netzbezug je Viertelstunde [kW] (der Rest nach PV und Speicher).</param>
+        /// <param name="stromverbrauchKw">Stromverbrauch je Viertelstunde [kW], einschließlich des Kältestroms.</param>
+        /// <param name="kaeltestromKwh">Kältestrom der Anlage je Stunde [kWh].</param>
+        public static double NetzbezugAnteilKwh(double[] netzbezugKw, double[] stromverbrauchKw,
+                                                double[] kaeltestromKwh)
+        {
+            if (netzbezugKw == null || stromverbrauchKw == null || kaeltestromKwh == null) return 0.0;
+            int viertel = Math.Min(netzbezugKw.Length, stromverbrauchKw.Length);
+            double summe = 0.0;
+            for (int q = 0; q < viertel; q++)
+            {
+                int h = q / 4;
+                if (h >= kaeltestromKwh.Length) break;
+                double k = kaeltestromKwh[h];
+                double n = netzbezugKw[q];
+                double v = stromverbrauchKw[q];
+                if (!(k > 0) || !(n > 0) || !(v > 0) || double.IsInfinity(k) || double.IsInfinity(n) ||
+                    double.IsInfinity(v)) continue;
+                double anteil = k / v;
+                if (anteil > 1.0) anteil = 1.0;
+                summe += n * anteil / 4.0;
+            }
+            return summe;
         }
 
         // =====================================================================

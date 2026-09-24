@@ -369,6 +369,13 @@ public sealed class SimulationParameterDienste
     /// </summary>
     public Func<IReadOnlyList<EnergietraegerWahl.Eintrag>>? WaermepumpeTraegerkatalog;
 
+    /// <summary>
+    /// Die Kühlgaben der Wärmepumpen-Konfiguration (Stufe KU2 Welle 3; Kühlkonzept 8.2) —
+    /// Stützstellen, Sperrgrund und die Stromträger des Projekts; <c>null</c> = keine Gruppe
+    /// „Kühlbetrieb". Wie der Trägerkatalog beim Öffnen EINMAL gerufen.
+    /// </summary>
+    public Func<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben?>? WaermepumpeKuehlGaben;
+
     // KEIN Weg fuer die TEXTE: Das Buendel WaermepumpeKonfigurationTexte fuellt sich
     // selbst aus MyResource in der Oberflaechensprache - die Huelle muss nichts
     // beisteuern, und ein Delegat dafuer waere eine Naht ohne Gegenueber.

@@ -354,6 +354,21 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `8a3bebaf…`).
 
+> **Nachtrag: Schemastand 115 (Kühlung, Stufe KU2, Welle 3), die Basis bleibt.** Migrationsschritt
+> **115** (`SCHRITT_115_KAELTESTROM`: `Tab_Energieanlagen.Kuehl_EigenerZaehler` — 0/1 mit `CHECK`, nullbar,
+> ohne Vorgabe, NULL = anteilig am Netzbezug, Entscheid E34 — und sieben nullbare Ergebnisspalten der
+> Kälteseite an `Tab_ErgebnisWaermepumpe` (`Kaelteproduktion_WP`, `Stromverbrauch_Kuehlung`) und
+> `Tab_ErgebnisWaermepumpeModul` (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`,
+> `Kuehl_carrier_id`, `Kuehl_EigenerZaehler`); Quelle `KuehlungSchema`), **reines DDL** (Kühlkonzept 6.1–6.4,
+> 8.4). Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> auf der Fassung 114; ein zweiter Lauf legt nichts an. Zellvergleich aller 131 Tabellen (samt `sqlite_sequence`) gegen die
+> Fassung 114 (10 497 071 Zellen): `SchemaVersion` 114 → 115 und die acht neuen Spalten, alle NULL, sonst nichts; die 14
+> Sichten und alle Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer, 130 von 130
+> Fachtabellen STRICT, Größe unverändert 67 751 936 Byte. **Keine Einfrierregel ist berührt:** Die neuen
+> Spalten tragen keinen gesäten Wert; die Ergebnisspalten schreibt nur ein Lauf mit Kältekaskade, und kein
+> Referenzprojekt kühlt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
+> (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `76a8f295…`).
+
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
 > den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in

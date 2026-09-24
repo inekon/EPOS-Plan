@@ -26335,7 +26335,7 @@ Möchten Sie das zulassen?</value>
     <value>Wärmepumpe „{0}": Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KUEHLTRAEGER" xml:space="preserve">
-    <value>Wärmepumpe „{0}": Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts.</value>
+    <value>Wärmepumpe „{0}“: Der Kältestrom trägt den Stromträger „{1}“ — {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB" xml:space="preserve">
     <value>Wärmepumpe „{0}", Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}).</value>
@@ -26369,5 +26369,89 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts</value>
+  </data>
+  <data name="SIMENG_KAELTE_ABRECHNUNG_ZAEHLER" xml:space="preserve">
+    <value>über einen eigenen Zähler, ohne Eigenstrom aus Photovoltaik und Stromspeicher</value>
+  </data>
+  <data name="SIMENG_KAELTE_KUEHLTRAEGER_MENGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“.</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM" xml:space="preserve">
+    <value>Kältestrom {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
+    <value>Kältestrom {0} (eigener Zähler)</value>
+  </data>
+  <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Der Stromträger der Kühlung „{0}“ trägt keinen Arbeitspreis. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ den Arbeitspreis pflegen oder im Wärmepumpendialog den Stromträger der Kühlung auf „wie Heizbetrieb“ stellen.</value>
+  </data>
+  <data name="WIRT_TARIF_KUEHLTRAEGER" xml:space="preserve">
+    <value>Rollentarif: {0} MWh/a Netzbezug des Kältestroms tragen den Stromträger der Kühlung und stehen nicht im Reststromtarif ({1} €/a).</value>
+  </data>
+  <data name="WPK_GRP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPK_CHK_KUEHLBETRIEB" xml:space="preserve">
+    <value>Maschine auch zum Kühlen benutzen</value>
+  </data>
+  <data name="WPK_HRL_NENNKUEHL_OHNE_KENNLINIE" xml:space="preserve">
+    <value>Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme.</value>
+  </data>
+  <data name="WPK_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPK_PH_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Vorgabe: kleinster Stützwert ({0} °C)</value>
+  </data>
+  <data name="WPK_HRL_UMSCHALTUNG" xml:space="preserve">
+    <value>Umschaltung je Tag: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt die Maschine an diesem Tag; Brauchwasser bleibt bedienbar.</value>
+  </data>
+  <data name="WPK_LBL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil</value>
+  </data>
+  <data name="WPK_PH_HILFSSTROM" xml:space="preserve">
+    <value>Vorgabe: kein Zuschlag</value>
+  </data>
+  <data name="WPK_HRL_HILFSSTROM" xml:space="preserve">
+    <value>Pumpen und Ventilatoren des Kältekreises als Anteil an der Verdichterarbeit.</value>
+  </data>
+  <data name="WPK_MSG_HILFSSTROM_BEREICH" xml:space="preserve">
+    <value>Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.</value>
+  </data>
+  <data name="WPK_LBL_KUEHLTRAEGER" xml:space="preserve">
+    <value>Stromträger des Kältestroms</value>
+  </data>
+  <data name="WPK_PH_KUEHLTRAEGER" xml:space="preserve">
+    <value>wie Heizbetrieb</value>
+  </data>
+  <data name="WPK_HRL_KUEHLTRAEGER_WEITERE" xml:space="preserve">
+    <value>Einen weiteren Stromträger ordnen Sie dem Projekt unter „Berichte &amp; Kosten › Energieträger“ zu.</value>
+  </data>
+  <data name="WPK_LBL_ABRECHNUNG" xml:space="preserve">
+    <value>Abrechnung des Kältestroms</value>
+  </data>
+  <data name="WPK_OPT_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug (Vorgabe)</value>
+  </data>
+  <data name="WPK_OPT_ZAEHLER" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="WPK_HRL_ANTEILIG" xml:space="preserve">
+    <value>Ein Netzanschluss: Der Netzbezug jeder Viertelstunde wird nach dem Anteil des Kältestroms geteilt; dieser Anteil trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers. Eigenstrom aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts.</value>
+  </data>
+  <data name="WPK_HRL_ZAEHLER" xml:space="preserve">
+    <value>Der ganze Kältestrom trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers; er wird nicht aus Photovoltaik oder Stromspeicher gedeckt.</value>
+  </data>
+  <data name="WPK_HRL_WIE_PROJEKT" xml:space="preserve">
+    <value>Der Kältestrom trägt Tarif und Emissionsfaktor des Stromträgers des Projekts.</value>
+  </data>
+  <data name="WPK_VORLAUF_HEIZLAGE" xml:space="preserve">
+    <value>Kennlinie in Heizlage — wird nicht gerechnet</value>
+  </data>
+  <data name="WPK_VORLAUF_ACHSEN" xml:space="preserve">
+    <value>Achsen der Kennlinie vertauscht — wird nicht gerechnet</value>
   </data>
 </root>

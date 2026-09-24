@@ -143,11 +143,26 @@ namespace WindowsFormsApplication1
                     // 0 heisst hier "nicht anfassen", nicht "kein Traeger": Der Dialog
                     // bietet keine Moeglichkeit, die Wahl ZURUECKZUNEHMEN - er laesst
                     // sie nur unberuehrt, solange die Anlage noch keine fuehrt.
-                    IdCarrier: daten.CarrierId > 0 ? daten.CarrierId : (int?)null));
+                    IdCarrier: daten.CarrierId > 0 ? daten.CarrierId : (int?)null,
+                    // KU2 Welle 3 (E33, E34): Kuehltraeger (0 = wie Heizbetrieb, NULL) und
+                    // Abrechnungsart (false = anteilig, NULL) - gelesen mit der Zeile, also
+                    // unveraendert, wenn niemand sie angefasst hat.
+                    KuehlIdCarrier: daten.KuehlCarrierId ?? 0,
+                    KuehlEigenerZaehler: daten.KuehlEigenerZaehler == true));
 
             // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
             // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
             if (e.Ok) ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, daten.CarrierId);
+
+            // KU2 Welle 3 (Kuehlkonzept 8.2): die drei Geraetefelder des Kuehlbetriebs in die
+            // Projektkopie - ueber den einen Schreibweg des Kerns samt Sperrgruenden, nur wenn
+            // sie sich geaendert haben. Ein abgelehnter Kuehlbetrieb meldet seinen Grund.
+            if (e.Ok)
+            {
+                string kuehlGrund = WaermepumpeGeraeteCtrl.KuehlkonfigurationNachziehen(
+                    daten.IdWp, idProjekt, daten.Kuehlbetrieb, daten.KuehlVorlauf, daten.KuehlHilfsstromanteil);
+                if (kuehlGrund != null) return new AnlagenkonfigErgebnis(false, kuehlGrund);
+            }
 
             return new AnlagenkonfigErgebnis(e.Ok, e.Meldung ?? "");
         }

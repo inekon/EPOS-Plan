@@ -1390,6 +1390,30 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 115: die Abrechnungsart des Kaeltestroms und die Kaelteseite der
+            //      Waermepumpenergebnisse (Kuehlkonzept 6.1-6.4, 8.4; Stufe KU2 Welle 3; E34).
+            //      REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_115_Kaeltestrom bedient (KuehlungSchema):
+            //      Tab_Energieanlagen.Kuehl_EigenerZaehler (0/1, nullbar, ohne Vorgabe) und sieben
+            //      nullbare Ergebnisspalten an Tab_ErgebnisWaermepumpe und
+            //      Tab_ErgebnisWaermepumpeModul.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - alle Spalten bleiben NULL; die Wahl wirkt
+            //      nur bei abweichendem Kuehltraeger, die Ergebnisspalten schreibt nur ein Lauf mit
+            //      Kaeltekaskade.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 115 - Abrechnungsart des Kaeltestroms und Kaelteseite der Ergebnisse: " +
+                              (KuehlungSchema.Schritt115Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht115 = new List<string>();
+                angelegt += KuehlungSchema.Schritt115Alle(bericht115);
+                foreach (string zeile in bericht115)
+                    Console.WriteLine("Schritt 115 - " + zeile + ".");
+                Console.WriteLine("Schritt 115 - vollstaendig: " + KuehlungSchema.Schritt115Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

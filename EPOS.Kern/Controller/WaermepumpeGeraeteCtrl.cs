@@ -67,7 +67,55 @@ namespace WindowsFormsApplication1
             // bearbeitbar. Ohne diese Zeile stuende sie leer da, und NachModell
             // schriebe sie so zurueck (dieselbe Falle wie bei Ä22/Ä23).
             ziel.Kuehlleistung = quelle.Kuehlleistung;
+
+            // KU2 Welle 3 (Kuehlkonzept 8.2): die drei Geraetefelder des Kuehlbetriebs - der
+            // Anlagendialog zeigt und aendert sie, ProjektgeraetNachziehen schreibt sie zurueck.
+            KuehlfelderUebernehmen(ziel, quelle);
             return true;
+        }
+
+        /// <summary>Die drei Gerätefelder des Kühlbetriebs aus einem Gerätesatz — und die Marke, dass die Zeile sie trägt.</summary>
+        private static void KuehlfelderUebernehmen(WErzeugerModel ziel, WPModel quelle)
+        {
+            ziel.Kuehlbetrieb = quelle.Kuehlbetrieb;
+            ziel.KuehlVorlauf = quelle.KuehlVorlauf;
+            ziel.KuehlHilfsstromanteil = quelle.KuehlHilfsstromanteil;
+            ziel.KuehlfelderGeladen = true;
+        }
+
+        /// <summary>
+        /// Füllt die drei Gerätefelder des Kühlbetriebs einer Anlagenzeile, WENN sie sie noch nicht
+        /// trägt (Stufe KU2 Welle 3) — Projektkopie vor Katalog, dieselbe zweistufige Suche. Für die
+        /// Wege, die eine Anlagenzeile ohne <see cref="GeraetedatenFuellen"/> in den Dialog reichen.
+        /// </summary>
+        internal static void KuehlfelderFuellen(WErzeugerModel ziel)
+        {
+            if (ziel == null || ziel.KuehlfelderGeladen || ziel.ID_WP <= 0) return;
+            WPModel quelle = Geraetedaten(ziel.ID_WP);
+            if (quelle != null) KuehlfelderUebernehmen(ziel, quelle);
+        }
+
+        /// <summary>
+        /// Schreibt die Kühlkonfiguration in die PROJEKTKOPIE, wenn sie sich vom gespeicherten Stand
+        /// unterscheidet (Stufe KU2 Welle 3) — über den einen Schreibweg des Kerns samt Sperrgründen
+        /// (<see cref="WPCtrl.KuehlkonfigurationSchreiben"/>). Unverändert = kein Schreiben, keine
+        /// Änderungsmarke am Projekt.
+        /// </summary>
+        /// <returns><c>null</c> = geschrieben oder nichts zu tun; sonst der Grund im Klartext.</returns>
+        internal static string KuehlkonfigurationNachziehen(int idWp, int idProjekt, bool kuehlbetrieb,
+                                                            int? kuehlVorlauf, double? hilfsstromanteil)
+        {
+            if (idWp <= 0 || idProjekt <= 0) return null;
+            WPCtrl projekt = new WPCtrl();
+            projekt.ReadAll("ID=" + idWp);
+            if (projekt.items.Count == 0) return null;   // keine Projektkopie - nichts zu schreiben
+            WPModel ist = projekt.items[0];
+            if (ist.Kuehlbetrieb == kuehlbetrieb && ist.KuehlVorlauf == kuehlVorlauf &&
+                ist.KuehlHilfsstromanteil == hilfsstromanteil) return null;
+
+            WPCtrl.SpeicherErgebnis e = WPCtrl.KuehlkonfigurationSchreiben(idWp, idProjekt, kuehlbetrieb,
+                                                                          kuehlVorlauf, hilfsstromanteil);
+            return e.Ok ? null : e.Meldung;
         }
 
         // =================================================================================
@@ -127,7 +175,15 @@ namespace WindowsFormsApplication1
                     // der Anlagendialog laesst sie als Kommazahl eingeben.
                     Kuehlleistung: quelle.Kuehlleistung));
 
-            return ergebnis.Ok ? null : ergebnis.Meldung;
+            if (!ergebnis.Ok) return ergebnis.Meldung;
+
+            // KU2 Welle 3 (Kuehlkonzept 8.2): die Kuehlkonfiguration - NUR, wenn die Zeile sie
+            // traegt (KuehlfelderGeladen); sonst truege sie die Vorgaben und loeschte einen
+            // gesetzten Kuehlbetrieb.
+            return quelle.KuehlfelderGeladen
+                ? KuehlkonfigurationNachziehen(quelle.ID_WP, idProjekt, quelle.Kuehlbetrieb,
+                                               quelle.KuehlVorlauf, quelle.KuehlHilfsstromanteil)
+                : null;
         }
 
         /// <summary>

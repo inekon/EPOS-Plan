@@ -53927,6 +53927,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_ABRECHNUNG_ANTEILIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_ABRECHNUNG_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über einen eigenen Zähler, ohne Eigenstrom aus Photovoltaik und Stromspeicher ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_ABRECHNUNG_ZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_ABRECHNUNG_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprobe Kälte: Der Kühlkanal weicht in {0} Stunden von den gebuchten Kältebeiträgen ab (größte Abweichung {1} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_BEDARFSPROBE {
@@ -53995,6 +54013,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_KENNLINIE_VERLAENGERT {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_KENNLINIE_VERLAENGERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KUEHLTRAEGER_MENGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KUEHLTRAEGER_MENGE", resourceCulture);
             }
         }
         
@@ -54107,7 +54134,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}“: Der Kältestrom trägt den Stromträger „{1}“ — {2}. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_WP_KUEHLTRAEGER {
             get {
@@ -67885,6 +67912,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom {0} (eigener Zähler) ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM_ZAEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug Strom ähnelt.
         /// </summary>
         public static string WIRT_ENK_NETZBEZUG {
@@ -68691,6 +68736,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GRUND_KEIN_VERBRAUCH {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_KEIN_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der Stromträger der Kühlung „{0}“ trägt keinen Arbeitspreis. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ den Arbeitspreis pflegen oder im Wärmepumpendialog den Stromträger der Kühlung auf „wie Heizbetrieb“ stellen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT", resourceCulture);
             }
         }
         
@@ -70644,6 +70698,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SZ_UEBERSCHRIFT {
             get {
                 return ResourceManager.GetString("WIRT_SZ_UEBERSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rollentarif: {0} MWh/a Netzbezug des Kältestroms tragen den Stromträger der Kühlung und stehen nicht im Reststromtarif ({1} €/a). ähnelt.
+        /// </summary>
+        public static string WIRT_TARIF_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_TARIF_KUEHLTRAEGER", resourceCulture);
             }
         }
         
@@ -72774,11 +72837,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maschine auch zum Kühlen benutzen ähnelt.
+        /// </summary>
+        public static string WPK_CHK_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("WPK_CHK_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur mit Kühlfunktion ähnelt.
         /// </summary>
         public static string WPK_CHK_NUR_KUEHLUNG {
             get {
                 return ResourceManager.GetString("WPK_CHK_NUR_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string WPK_GRP_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("WPK_GRP_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Netzanschluss: Der Netzbezug jeder Viertelstunde wird nach dem Anteil des Kältestroms geteilt; dieser Anteil trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers. Eigenstrom aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_ANTEILIG {
+            get {
+                return ResourceManager.GetString("WPK_HRL_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pumpen und Ventilatoren des Kältekreises als Anteil an der Verdichterarbeit. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPK_HRL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einen weiteren Stromträger ordnen Sie dem Projekt unter „Berichte &amp; Kosten › Energieträger“ zu. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_KUEHLTRAEGER_WEITERE {
+            get {
+                return ResourceManager.GetString("WPK_HRL_KUEHLTRAEGER_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_NENNKUEHL_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("WPK_HRL_NENNKUEHL_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umschaltung je Tag: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt die Maschine an diesem Tag; Brauchwasser bleibt bedienbar. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_UMSCHALTUNG {
+            get {
+                return ResourceManager.GetString("WPK_HRL_UMSCHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kältestrom trägt Tarif und Emissionsfaktor des Stromträgers des Projekts. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_WIE_PROJEKT {
+            get {
+                return ResourceManager.GetString("WPK_HRL_WIE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ganze Kältestrom trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers; er wird nicht aus Photovoltaik oder Stromspeicher gedeckt. ähnelt.
+        /// </summary>
+        public static string WPK_HRL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("WPK_HRL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abrechnung des Kältestroms ähnelt.
+        /// </summary>
+        public static string WPK_LBL_ABRECHNUNG {
+            get {
+                return ResourceManager.GetString("WPK_LBL_ABRECHNUNG", resourceCulture);
             }
         }
         
@@ -72815,6 +72968,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_LBL_HERSTELLER {
             get {
                 return ResourceManager.GetString("WPK_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil ähnelt.
+        /// </summary>
+        public static string WPK_LBL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPK_LBL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Kältestroms ähnelt.
+        /// </summary>
+        public static string WPK_LBL_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("WPK_LBL_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
+        /// </summary>
+        public static string WPK_LBL_KUEHL_VORLAUF {
+            get {
+                return ResourceManager.GetString("WPK_LBL_KUEHL_VORLAUF", resourceCulture);
             }
         }
         
@@ -72887,6 +73067,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_LBL_ZUHEIZUNG {
             get {
                 return ResourceManager.GetString("WPK_LBL_ZUHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen. ähnelt.
+        /// </summary>
+        public static string WPK_MSG_HILFSSTROM_BEREICH {
+            get {
+                return ResourceManager.GetString("WPK_MSG_HILFSSTROM_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug (Vorgabe) ähnelt.
+        /// </summary>
+        public static string WPK_OPT_ANTEILIG {
+            get {
+                return ResourceManager.GetString("WPK_OPT_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Zähler ähnelt.
+        /// </summary>
+        public static string WPK_OPT_ZAEHLER {
+            get {
+                return ResourceManager.GetString("WPK_OPT_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: kein Zuschlag ähnelt.
+        /// </summary>
+        public static string WPK_PH_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPK_PH_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Heizbetrieb ähnelt.
+        /// </summary>
+        public static string WPK_PH_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("WPK_PH_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: kleinster Stützwert ({0} °C) ähnelt.
+        /// </summary>
+        public static string WPK_PH_KUEHL_VORLAUF {
+            get {
+                return ResourceManager.GetString("WPK_PH_KUEHL_VORLAUF", resourceCulture);
             }
         }
         
@@ -72977,6 +73211,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_TREFFER {
             get {
                 return ResourceManager.GetString("WPK_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Achsen der Kennlinie vertauscht — wird nicht gerechnet ähnelt.
+        /// </summary>
+        public static string WPK_VORLAUF_ACHSEN {
+            get {
+                return ResourceManager.GetString("WPK_VORLAUF_ACHSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinie in Heizlage — wird nicht gerechnet ähnelt.
+        /// </summary>
+        public static string WPK_VORLAUF_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("WPK_VORLAUF_HEIZLAGE", resourceCulture);
             }
         }
         

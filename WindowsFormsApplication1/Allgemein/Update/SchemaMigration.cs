@@ -3897,6 +3897,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
 
+        /// <summary>
+        /// Schritt 115 — <b>die Abrechnungsart des Kältestroms und die Kälteseite der
+        /// Wärmepumpenergebnisse</b> (Kühlkonzept 6.1–6.4, 8.4; Stufe KU2, Welle 3; Entscheid E34
+        /// vom 23.09.2026). Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, acht Spalten: <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c>
+        /// (0/1 mit <c>CHECK</c>, nullbar, ohne Vorgabe — NULL = anteilig am Netzbezug, 1 = eigener
+        /// Zähler; wirkt nur bei abweichendem Kühlträger) und sieben nullbare Ergebnisspalten an
+        /// <c>Tab_ErgebnisWaermepumpe</c> (<c>Kaelteproduktion_WP</c>, <c>Stromverbrauch_Kuehlung</c>)
+        /// und <c>Tab_ErgebnisWaermepumpeModul</c> (<c>Kaelteproduktion</c>,
+        /// <c>Stromverbrauch_Kuehlung</c>, <c>Kaeltestrom_Netzbezug</c>, <c>Kuehl_carrier_id</c>,
+        /// <c>Kuehl_EigenerZaehler</c>). Die Definitionen stehen bei <see cref="KuehlungSchema"/>
+        /// (<see cref="KuehlungSchema.Schritt115Spalten"/>) — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Alle Spalten stehen danach auf NULL; die Wahl wirkt nur bei
+        /// abweichendem Kühlträger, und die Ergebnisspalten schreibt nur ein Lauf mit Kältekaskade.
+        /// Der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_115_KAELTESTROM = 115;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5462,6 +5485,19 @@ namespace WindowsFormsApplication1
                         "sich - jede Waermepumpe steht auf 'kein Kuehlbetrieb', die uebrigen Spalten " +
                         "bleiben leer, und kein Rechenweg liest sie.",
                         Schritt_114_KuehlungErzeuger),
+
+            // KUEHLKONZEPT 6.1-6.4 und 8.4 (Stufe KU2 Welle 3; Entscheid E34) - die
+            // Abrechnungsart des Kaeltestroms und die Kaelteseite der Waermepumpenergebnisse.
+            // REIN DDL; die Quelle ist KuehlungSchema. Er steht NACH 114 ohne
+            // Reihenfolgebedingung - er legt allein acht neue Spalten an.
+            new Schritt(SCHRITT_115_KAELTESTROM,
+                        "Tab_Energieanlagen: Abrechnungsart des Kaeltestroms; " +
+                        "Tab_ErgebnisWaermepumpe(Modul): Kaelteerzeugung und Kaeltestrom",
+                        "Der Kaeltestrom eines abweichenden Kuehltraegers liesse sich nicht ueber einen " +
+                        "eigenen Zaehler abrechnen, und das Ergebnis truege Kaelteerzeugung und " +
+                        "Kaeltestrom je Anlage nicht. KEIN Rechenergebnis aendert sich - alle Spalten " +
+                        "bleiben leer, bis eine Waermepumpe kuehlt.",
+                        Schritt_115_Kaeltestrom),
         };
 
         /// <summary>
@@ -8648,6 +8684,58 @@ namespace WindowsFormsApplication1
                     " (Verweis auf energy_carrier.id, NULL = wie Heizbetrieb). KEIN DML: Jede " +
                     "Waermepumpe steht auf 0, die uebrigen Spalten bleiben leer, und kein Rechenweg " +
                     "liest sie; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 115 - Abrechnungsart des Kaeltestroms und Kaelteseite der
+        // Waermepumpenergebnisse (Stufe KU2 Welle 3, E34)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 115 — Anlass und Wirkung stehen bei <see cref="SCHRITT_115_KAELTESTROM"/>, die
+        /// Spalten bei <see cref="KuehlungSchema.Schritt115Spalten"/>. Dieselbe Schleife wie Schritt
+        /// 110 über die Typübersetzung (<c>YESNO_NULL</c> wird <c>INTEGER CHECK (… IN (0,1))</c>
+        /// ohne Vorgabe, <c>LONG</c> wird <c>INTEGER</c>, <c>DOUBLE</c> wird <c>REAL</c>);
+        /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen. Die Nachprobe fragt
+        /// <see cref="KuehlungSchema.Schritt115Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_115_Kaeltestrom(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in KuehlungSchema.Schritt115Spalten())
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = KuehlungSchema.Schritt115Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten der Abrechnungsart des Kaeltestroms und der Kaelteseite " +
+                                  "der Waermepumpenergebnisse stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz("115: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("115: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Spalte(n) angelegt - " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." + KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
+                    " (0/1, nullbar, NULL = anteilig am Netzbezug), Kaelteproduktion_WP und " +
+                    "Stromverbrauch_Kuehlung an Tab_ErgebnisWaermepumpe, Kaelteproduktion, " +
+                    "Stromverbrauch_Kuehlung, Kaeltestrom_Netzbezug, Kuehl_carrier_id und " +
+                    "Kuehl_EigenerZaehler an Tab_ErgebnisWaermepumpeModul. KEIN DML: Alle Spalten " +
+                    "bleiben leer; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

@@ -429,11 +429,20 @@ namespace WindowsFormsApplication1
         /// auf <c>energy_carrier.id</c>, NULL = wie Heizbetrieb) — alle bei
         /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> kein Rechenweg
         /// liest die Spalten; der Referenzlauf bleibt byte-gleich.
+        /// Mit der ABRECHNUNGSART DES KAELTESTROMS UND DER KAELTESEITE DER
+        /// WAERMEPUMPENERGEBNISSE (Schritt 115, Stufe KU2 Welle 3; Kuehlkonzept 6.1–6.4 und 8.4,
+        /// Entscheid E34 vom 23.09.2026) steht das Ziel auf <b>115</b>:
+        /// <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c> (0/1, nullbar, NULL = anteilig am
+        /// Netzbezug) und sieben nullbare Ergebnisspalten an <c>Tab_ErgebnisWaermepumpe</c> und
+        /// <c>Tab_ErgebnisWaermepumpeModul</c> (<see cref="KuehlungSchema.Kaelteerzeugerspalten"/>).
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Wahl wirkt nur bei abweichendem Kuehltraeger,
+        /// die Ergebnisspalten schreibt nur ein Lauf mit Kaeltekaskade; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 114;
+        public const int Zielversion = 115;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
