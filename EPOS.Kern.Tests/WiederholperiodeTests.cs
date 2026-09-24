@@ -45,8 +45,8 @@ namespace EPOS.Kern.Tests
         public void Der_Schritt_fuehrt_die_Spalte_an_beiden_Tabellen()
         {
             Assert.True(SchemaStand.Zielversion >= WiederholperiodeSchema.SCHRITT);
-            Assert.True(WiederholperiodeSchema.SCHRITT > ProjektWirkungSchema.SCHRITT,
-                        "Der Schritt muss nach 127 stehen.");
+            Assert.True(WiederholperiodeSchema.SCHRITT > ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS,
+                        "Der Schritt muss nach dem Heizkreis (128) stehen.");
             Assert.Equal(2, WiederholperiodeSchema.Spalten.Length);
             Assert.Equal(new[] { SchemaKatalog.TAB_PROJEKTWERTE, SchemaKatalog.TAB_KOSTENVORLAGEPOSITION },
                          WiederholperiodeSchema.Spalten.Select(s => s.Tabelle).ToArray());
@@ -63,7 +63,7 @@ namespace EPOS.Kern.Tests
         /// DIE WERKZEUG-WACHE (Quelle): Migration, Werkzeug und Nachzieh-Liste der
         /// Testvorrichtung ziehen den Schritt aus DERSELBEN Quelle, die Nummer steht allein bei
         /// <see cref="WiederholperiodeSchema.SCHRITT"/>, und in der Schrittliste der Schale
-        /// steht der Schritt nach 127.
+        /// steht der Schritt nach dem Heizkreis (128).
         /// </summary>
         [Fact]
         public void Migration_Werkzeug_und_Testdatenbank_ziehen_den_Schritt_aus_einer_Quelle()
@@ -73,9 +73,9 @@ namespace EPOS.Kern.Tests
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Update", "SchemaMigration.cs"));
             Assert.Contains("public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;", migration, StringComparison.Ordinal);
-            int ort127 = migration.IndexOf("new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN", StringComparison.Ordinal);
+            int ort128 = migration.IndexOf("new Schritt(SCHRITT_128_ERGEBNIS_HEIZKREIS", StringComparison.Ordinal);
             int ortE16 = migration.IndexOf("new Schritt(SCHRITT_WIEDERHOLPERIODE", StringComparison.Ordinal);
-            Assert.True(ort127 > 0 && ortE16 > ort127, "Der Schritt steht nicht nach 127 in der Schrittliste.");
+            Assert.True(ort128 > 0 && ortE16 > ort128, "Der Schritt steht nicht nach 128 in der Schrittliste.");
             Assert.Contains("private static bool Schritt_Wiederholperiode(Lauf l)", migration, StringComparison.Ordinal);
             Assert.Contains("WiederholperiodeSchema.Spalten", migration, StringComparison.Ordinal);
 

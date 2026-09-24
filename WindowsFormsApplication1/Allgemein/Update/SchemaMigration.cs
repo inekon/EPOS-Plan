@@ -4177,7 +4177,7 @@ namespace WindowsFormsApplication1
 
         /// Schritt <see cref="WiederholperiodeSchema.SCHRITT"/> — <b>die Wiederholperiode je
         /// Kostenposition</b> (Etappe E16; Konzept Wirtschaftlichkeit § 2.11.2 V‑G3, DIN EN 17463
-        /// 6.3.1 „alle n Jahre"). Er folgt auf <see cref="SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN"/>
+        /// 6.3.1 „alle n Jahre"). Er folgt auf <see cref="SCHRITT_128_ERGEBNIS_HEIZKREIS"/> (128)
         /// ohne Reihenfolgebedingung.
         ///
         /// <para><b>REIN DDL:</b> die nullbare Spalte <c>Wiederholperiode_a</c> (INTEGER, Jahre)
@@ -5934,7 +5934,7 @@ namespace WindowsFormsApplication1
 
             // ETAPPE E16 (V-G3, DIN EN 17463 6.3.1) - die Wiederholperiode je Kostenposition
             // ("alle n Jahre") an Tab_ProjektWerte und Tab_KostenVorlagePosition. REIN DDL; die
-            // Quelle ist WiederholperiodeSchema (Spalten und Nummer). Er steht NACH 127 ohne
+            // Quelle ist WiederholperiodeSchema (Spalten und Nummer). Er steht NACH 128 ohne
             // Reihenfolgebedingung.
             new Schritt(SCHRITT_WIEDERHOLPERIODE,
                         "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die Wiederholperiode " +

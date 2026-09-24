@@ -42,8 +42,9 @@ namespace WindowsFormsApplication1
     public static class WiederholperiodeSchema
     {
         /// <summary>Die Nummer des Schemaschritts (E16) — die EINZIGE Stelle der Zahl für
-        /// Migration, Werkzeug, Testvorrichtung und Zielstand.</summary>
-        public const int SCHRITT = 128;
+        /// Migration, Werkzeug, Testvorrichtung und Zielstand. 128 trägt der Heizkreis je
+        /// Gebäude (Anlagenkopplung AK1 Welle 3), der zuerst veröffentlicht wurde.</summary>
+        public const int SCHRITT = 129;
 
         /// <summary>Der Spaltenname — an beiden Tabellen derselbe. Einheit Jahre; NULL, 0
         /// und 1 = jährlich.</summary>

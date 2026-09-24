@@ -1647,7 +1647,7 @@ namespace Testdatenbankschema
 
             // ---- Schritt WiederholperiodeSchema.SCHRITT: die Wiederholperiode je
             //      Kostenposition (Etappe E16, V-G3, DIN EN 17463 6.3.1 "alle n Jahre"). NACH
-            //      127. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      128 (Heizkreis). REIN DDL aus DERSELBEN Quelle, aus der sich
             //      SchemaMigration.Schritt_Wiederholperiode bedient (WiederholperiodeSchema):
             //      Wiederholperiode_a (INTEGER, nullbar) an Tab_ProjektWerte und
             //      Tab_KostenVorlagePosition.
