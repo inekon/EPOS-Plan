@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -59,7 +62,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Der_Vorgabesatz_sind_die_freien_Kategorien_der_kleinsten_Nutzungsart()
+        public void Der_Vorgabesatz_sind_die_freien_Kategorien()
         {
             using var db = new TwwTestdatenbank();
             int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
@@ -76,6 +79,144 @@ namespace EPOS.Kern.Tests
             Assert.All(v, k => Assert.Equal(0, k.IdNutzungsart));
             Assert.All(v, k => Assert.Equal(Herkunftsart.Frei, k.Herkunft.Art));
             Assert.Equal(10.0, v[0].KappungLJeMin);
+        }
+
+        /// <summary>
+        /// Der Vorgabesatz ist eindeutig: nie der Teilsatz der kleinsten Nutzungsart (eine Kategorie an
+        /// Ort und Stelle gelöscht), nie ein geänderter Satz (eine Kategorie Eigenkonstruktion), sondern
+        /// der freie Satz, den die meisten Nutzungsarten gleich tragen; Zeilen der Auslieferung gehen vor.
+        /// </summary>
+        [Fact]
+        public void Der_Vorgabesatz_ist_kein_Teilsatz_und_kein_geaenderter_Satz()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int teil = TwwTestdatenbank.NutzungsartAnlegen("Nutzung Teil", "T1", satz);
+            int gemischt = TwwTestdatenbank.NutzungsartAnlegen("Nutzung gemischt", "T1", satz);
+            int b = TwwTestdatenbank.NutzungsartAnlegen("Nutzung B", "T1", satz);
+            int c = TwwTestdatenbank.NutzungsartAnlegen("Nutzung C", "T1", satz);
+            const string F = TwwSchema.HERKUNFT_FREI;
+            TwwTestdatenbank.KategorieAnlegen(teil, "Kurz", 1, 2.0, 1, 0.6, 1.0, herkunftsart: F);
+            TwwTestdatenbank.KategorieAnlegen(gemischt, "Kurz", 1, 2.0, 1, 0.6, 1.0, herkunftsart: F);
+            TwwTestdatenbank.KategorieAnlegen(gemischt, "Lang", 2, 9.0, 5, 0.4, 2.0, herkunftsart: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+            foreach (int n in new[] { b, c })
+            {
+                TwwTestdatenbank.KategorieAnlegen(n, "Kurz", 1, 2.0, 1, 0.6, 1.0, herkunftsart: F);
+                TwwTestdatenbank.KategorieAnlegen(n, "Lang", 2, 8.0, 5, 0.4, 2.0, herkunftsart: F);
+            }
+
+            IReadOnlyList<Zapfkategorie> v = TwwNutzungsartCtrl.KategorienVorgabe();
+            Assert.Equal(new[] { "Kurz", "Lang" }, v.Select(k => k.Name).ToArray());
+            Assert.Equal(8.0, v[1].VolumenstromLJeMin);
+            Assert.All(v, k => Assert.Equal(0, k.IdNutzungsart));
+
+            // Die unveränderlichen Zeilen der Auslieferung gehen vor — auch vor der Mehrheit.
+            int geliefert = TwwTestdatenbank.NutzungsartAnlegen("Nutzung geliefert", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(geliefert, "Nur", 1, 5.0, 2, 1.0, 1.0, status: TwwSchema.STATUS_AUSLIEFERUNG,
+                                              readOnly: true, herkunftsart: F);
+            Assert.Equal("Nur", Assert.Single(TwwNutzungsartCtrl.KategorienVorgabe()).Name);
+        }
+
+        /// <summary>
+        /// Auf der Repo-Testdatenbank ist der Vorgabesatz genau der Paketteil
+        /// (<c>Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv</c>): Namen, Werte und
+        /// Reihenfolge wie die Datei, Herkunftsart <c>FREI</c>. Ohne Testdatenbank schweigt der Fall.
+        /// </summary>
+        [Fact]
+        public void Der_Vorgabesatz_der_Testdatenbank_ist_der_Paketteil()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string[] zeilen = File.ReadAllLines(Path.Combine(Wurzel(), "Referenzlaeufe", "Katalogpaket_frei", "Tab_TwwZapfkategorie_STAMM.csv"))
+                                  .Where(z => z.Trim().Length > 0).ToArray();
+            string[] kopf = zeilen[0].TrimStart('\uFEFF').Split(';');
+            List<Dictionary<string, string>> soll = zeilen.Skip(1)
+                .Select(z => kopf.Zip(z.Split(';'), (k, w) => (k, w)).ToDictionary(p => p.k, p => p.w)).ToList();
+            Assert.NotEmpty(soll);
+
+            IReadOnlyList<Zapfkategorie> v = TwwNutzungsartCtrl.KategorienVorgabe();
+            Assert.Equal(soll.Count, v.Count);
+            for (int i = 0; i < soll.Count; i++)
+            {
+                Assert.Equal(soll[i]["Kategorie"], v[i].Name);
+                Assert.Equal(Zahl(soll[i]["Volumenstrom_l_min"]), v[i].VolumenstromLJeMin);
+                Assert.Equal(Zahl(soll[i]["Sigma"]), v[i].StreuungLJeMin);
+                Assert.Equal(Zahl(soll[i]["Anteil"]), v[i].Anteil);
+                Assert.Equal((int)Zahl(soll[i]["Dauer_min"]), v[i].DauerMin);
+                Assert.Equal(soll[i]["Kappung_l_min"].Length == 0 ? (double?)null : Zahl(soll[i]["Kappung_l_min"]), v[i].KappungLJeMin);
+                Assert.Equal(Herkunftsart.Frei, v[i].Herkunft.Art);
+                Assert.Equal(soll[i]["Quelle"], v[i].Herkunft.Quelle);
+            }
+        }
+
+        /// <summary>
+        /// Eine BENUTZTE Nutzungsart (eine Zone steht auf ihr) ist gesperrt: ohne Katalogversion wird
+        /// nichts geschrieben, mit ihr entsteht per „Speichern unter" eine neue, freie Nutzungsart; die
+        /// alte samt Zone bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Eine_benutzte_Nutzungsart_speichert_nur_als_neue_Katalogversion()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int n = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(n, "Erste", 1, 4.0, 1, 1.0, 1.0);
+            int zone = TwwTestdatenbank.ZoneAnlegen(1, n, "Zone", 10.0);
+            Assert.Equal(TwwKatalogAusgang.BenutztGesperrt, TwwNutzungsartCtrl.KategorienLesen(n).Sperre);
+
+            var entwurf = new[] { K("Erste", 4.0, 1, 1.0, 2.0) };
+            Assert.Equal(TwwKatalogAusgang.EntwurfUnvollstaendig, TwwNutzungsartCtrl.KategorienSpeichern(n, entwurf).Ausgang);
+            TwwKategorienErgebnis e = TwwNutzungsartCtrl.KategorienSpeichern(n, entwurf, "T2");
+            Assert.True(e.Ok);
+            Assert.True(e.NeueZeile);
+            Assert.NotEqual(n, e.IdNutzungsart);
+            Assert.Equal(2.0, Assert.Single(TwwNutzungsartCtrl.KategorienLesen(e.IdNutzungsart).Kategorien).StreuungLJeMin);
+            Assert.True(TwwNutzungsartCtrl.KategorienLesen(e.IdNutzungsart).Frei);
+
+            Assert.Equal(1.0, Assert.Single(TwwNutzungsartCtrl.KategorienLesen(n).Kategorien).StreuungLJeMin);
+            Assert.Equal(TwwKatalogAusgang.BenutztGesperrt, TwwNutzungsartCtrl.KategorienLesen(n).Sperre);
+            Assert.Equal((long)n, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT ID_Nutzungsart FROM Tab_TwwZone WHERE ID = ?", new DbParam("@id", zone))));
+        }
+
+        /// <summary>
+        /// Bricht der Vorgang mitten im Schreiben (hier ein Auslöser, der die zweite Kategorie
+        /// abweist), rollt ALLES zurück: an Ort und Stelle bleiben die alten Kategorien samt
+        /// Freigabevermerk, bei „Speichern unter" entsteht keine neue Nutzungsart.
+        /// </summary>
+        [Fact]
+        public void Ein_Fehler_im_Vorgang_rollt_alles_zurueck()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int n = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(n, "Erste", 1, 4.0, 1, 1.0, 1.0);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_TwwNutzungsart_STAMM SET Freigabe = 'geprüft' WHERE ID = ?", new DbParam("@id", n));
+            Assert.True(DataRepository.ExecuteSQL("CREATE TRIGGER Probe_Bruch BEFORE INSERT ON Tab_TwwZapfkategorie_STAMM " +
+                                                  "WHEN NEW.Kategorie = 'Bruch' BEGIN SELECT RAISE(ABORT, 'Probe'); END"));
+            var entwurf = new[] { K("Neu", 2.0, 1, 0.5, 0.5), K("Bruch", 1.0, 1, 0.5, 0.5) };
+
+            Assert.Equal(TwwKatalogAusgang.Fehlgeschlagen, TwwNutzungsartCtrl.KategorienSpeichern(n, entwurf).Ausgang);
+            Assert.Equal("Erste", Assert.Single(TwwNutzungsartCtrl.KategorienLesen(n).Kategorien).Name);
+            Assert.Equal("geprüft", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Freigabe FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", n))));
+
+            TwwTestdatenbank.ZoneAnlegen(1, n, "Zone", 10.0);
+            long vorher = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwNutzungsart_STAMM"));
+            Assert.Equal(TwwKatalogAusgang.Fehlgeschlagen, TwwNutzungsartCtrl.KategorienSpeichern(n, entwurf, "T2").Ausgang);
+            Assert.Equal(vorher, Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwNutzungsart_STAMM")));
+            Assert.Equal("Erste", Assert.Single(TwwNutzungsartCtrl.KategorienLesen(n).Kategorien).Name);
+        }
+
+        private static double Zahl(string s) => double.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        private static string Wurzel([CallerFilePath] string eigeneDatei = "")
+        {
+            string ordner = Path.GetDirectoryName(eigeneDatei);
+            while (ordner != null && !File.Exists(Path.Combine(ordner, "WP-Plan.Kern.slnf")))
+                ordner = Path.GetDirectoryName(ordner);
+            Assert.True(ordner != null, "Die Wurzel des Arbeitsbaums ist nicht zu finden.");
+            return ordner;
         }
 
         /// <summary>

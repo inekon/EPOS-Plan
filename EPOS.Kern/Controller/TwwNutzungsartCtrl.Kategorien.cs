@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -85,27 +86,68 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Vorgabesatz</b> (N12 (p)): die frei verfügbaren Kategorien (Herkunftsart
-        /// <c>FREI</c>, der Paketteil unter <c>Referenzlaeufe/Katalogpaket_frei/</c>), wie sie beim
-        /// Einspielen an die Nutzungsarten gebunden wurden — die der kleinsten Nutzungsart, die sie
-        /// führt, in deren Reihenfolge und mit Provenienz, ohne Bindung (<c>IdNutzungsart</c> 0).
-        /// Startwerte des Editors, wenn eine Nutzungsart keine Kategorien führt; leer, wenn der
-        /// Katalog keinen Vorgabesatz trägt.
+        /// <b>Der Vorgabesatz</b> (N12 (p)): die frei verfügbaren Kategorien des Paketteils
+        /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>), so wie sie beim Einspielen an die
+        /// Nutzungsarten gebunden wurden — in ihrer Reihenfolge und mit Provenienz, ohne Bindung
+        /// (<c>IdNutzungsart</c> 0). Startwerte des Editors, wenn eine Nutzungsart keine Kategorien
+        /// führt; leer, wenn der Katalog keinen Vorgabesatz trägt.
+        ///
+        /// <para><b>Eindeutig, auch nach Kopien und Änderungen</b> (nicht „die freien Kategorien der
+        /// kleinsten Nutzungsart", die nach einer Änderung an Ort und Stelle einen Teilsatz trifft):
+        /// In Frage kommt nur eine Nutzungsart, deren Kategorien ALLE Herkunftsart <c>FREI</c> tragen
+        /// (eine geänderte Kategorie ist Eigenkonstruktion). Gibt es solche mit lauter Zeilen der
+        /// Auslieferung (Status <c>AUSLIEFERUNG</c> — unveränderlich, so spielt die Vorlage den
+        /// Paketteil ein), zählen nur sie. Unter den Kandidaten gilt der Satz, den die meisten
+        /// Nutzungsarten gleich tragen (Namen und Werte in ihrer Reihenfolge — der Paketteil hängt an
+        /// jeder Nutzungsart ohne eigene Kategorien), bei Gleichstand der größere, dann der der
+        /// kleinsten Nutzungsart.</para>
         /// </summary>
         internal static IReadOnlyList<Zapfkategorie> KategorienVorgabe()
         {
-            var liste = new List<Zapfkategorie>();
-            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)) return liste;
-            string frei = TwwWertemengen.Text(Herkunftsart.Frei);
+            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)) return new Zapfkategorie[0];
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT Kategorie, Volumenstrom_l_min, Sigma, Dauer_min, Anteil, Kappung_l_min, Quelle, Ausgabe, Version, " +
-                "Herkunftsart FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " WHERE Herkunftsart = ? AND ID_Nutzungsart = " +
-                "(SELECT MIN(ID_Nutzungsart) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " WHERE Herkunftsart = ?) " +
-                "ORDER BY Reihenfolge, ID",
-                new DbParam("@frei", frei), new DbParam("@frei2", frei));
-            if (dt == null) return liste;
-            foreach (DataRow r in dt.Rows) liste.Add(Kategorie(r, 0));
-            return liste;
+                "SELECT ID_Nutzungsart, Kategorie, Volumenstrom_l_min, Sigma, Dauer_min, Anteil, Kappung_l_min, Quelle, Ausgabe, " +
+                "Version, Herkunftsart, Status FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
+                " ORDER BY ID_Nutzungsart, Reihenfolge, ID");
+            if (dt == null) return new Zapfkategorie[0];
+
+            string frei = TwwWertemengen.Text(Herkunftsart.Frei);
+            string auslieferung = TwwWertemengen.Text(ZapfKatalogstatus.Auslieferung);
+            var saetze = new List<(int Id, List<Zapfkategorie> Kategorien, bool Frei, bool Ausgeliefert)>();
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = ZapfprofilCtrl.Ganz(r, "ID_Nutzungsart");
+                if (saetze.Count == 0 || saetze[saetze.Count - 1].Id != id) saetze.Add((id, new List<Zapfkategorie>(), true, true));
+                var s = saetze[saetze.Count - 1];
+                s.Kategorien.Add(Kategorie(r, 0));
+                bool istFrei = string.Equals(ZapfprofilCtrl.Text(r, "Herkunftsart"), frei, StringComparison.Ordinal);
+                bool istAusgeliefert = string.Equals(ZapfprofilCtrl.Text(r, "Status"), auslieferung, StringComparison.Ordinal);
+                saetze[saetze.Count - 1] = (s.Id, s.Kategorien, s.Frei && istFrei, s.Ausgeliefert && istAusgeliefert);
+            }
+
+            var kandidaten = saetze.FindAll(s => s.Frei);
+            if (kandidaten.Exists(s => s.Ausgeliefert)) kandidaten = kandidaten.FindAll(s => s.Ausgeliefert);
+            List<Zapfkategorie> bester = null;
+            int besteZahl = 0;
+            foreach (var s in kandidaten)                                  // aufsteigend nach Nutzungsart
+            {
+                int zahl = kandidaten.Count(t => GleicherSatz(t.Kategorien, s.Kategorien));
+                if (bester == null || zahl > besteZahl || (zahl == besteZahl && s.Kategorien.Count > bester.Count))
+                {
+                    bester = s.Kategorien;
+                    besteZahl = zahl;
+                }
+            }
+            return bester != null ? bester.AsReadOnly() : (IReadOnlyList<Zapfkategorie>)new Zapfkategorie[0];
+        }
+
+        /// <summary>Zwei Sätze gleich: dieselben Namen mit denselben Werten in derselben Reihenfolge.</summary>
+        private static bool GleicherSatz(List<Zapfkategorie> a, List<Zapfkategorie> b)
+        {
+            if (a.Count != b.Count) return false;
+            for (int i = 0; i < a.Count; i++)
+                if (!string.Equals(a[i].Name, b[i].Name, StringComparison.Ordinal) || !WerteGleich(a[i], b[i])) return false;
+            return true;
         }
 
         /// <summary>
