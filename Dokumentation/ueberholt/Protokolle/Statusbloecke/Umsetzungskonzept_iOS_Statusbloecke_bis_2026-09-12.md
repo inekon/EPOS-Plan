@@ -9700,3 +9700,83 @@ Builds 0 Fehler; kein Referenzlauf nötig.
 0 rot; Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
 `2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
 121.
+
+## #475 — Gebäudeliste eines Projekts: Abgleich statt Neuaufbau, Startseite speichert im Vorgang (24.09.2026)
+
+Anwenderentscheid „fahre fort“ nach den Folgeaufträgen aus #473. Commits
+(Zweig `worktree-agent-a975443a257bccf40`, Basis `3ff9840b`): `cf8e9b39`
+Gebäudeliste abgleichen statt neu schreiben (Kern); `16519fc2` Startseite
+speichert die Liste im Vorgang, Fehlerbanner (Oberfläche); `f06a43f8`
+Papiere. Merge in den Hauptbaum `b20e48c5`, konfliktfrei.
+
+**Punkt 1 — Abgleich statt Neuaufbau.** Befund: Assistent (Bearbeiten) und
+Startseite löschten beim Speichern alle `Tab_Gebaeude`-Kopien des Projekts
+und kopierten neu — verloren gingen dabei Feld-Übernahmen in die Kopie, die
+Tagesverteilung (`Tab_DBTagV`), die Löschweitergabe an
+`Tab_ErgebnisGebaeude` und die Gebäudebindung von `Tab_TwwZone` (NULL).
+Neue gemeinsame Kernmethode
+`WizardCtrl.Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang[,
+out fehlgebaeude])`: eine Zeile bleibt, wenn ihre `ID_Z` eine Zuordnung des
+Projekts mit genau einer Kopie trifft und der Katalogverweis gleich ist
+(`ID_Gebaeude_Stamm`, ohne Verweis derselbe Name) — dann nur die
+`Z_ProjektGebaeude`-Werte per UPDATE (Fläche/Verbrauch, Einheit,
+Jahresnutzungsgrad, dezentrales Warmwasser); fehlende Zuordnungen gehen
+über `Del_Projekt_ZuordungGebäude`, übrige entstehen neu (Helfer
+`GebaeudeZuordnungAnlegen`, auch von `Add_…` genutzt).
+`MarkiereProjektGeaendert` läuft wie bisher bei jedem Speichern;
+Ergebniszeilen bleibender Kopien bleiben stehen und gelten über das
+Änderungsdatum als veraltet. `AssistentCtrl.Fortschreiben` ruft die
+Methode im Vorgang (Schrittname `Schreibe_Projekt_ZuordungGebaeude`); der
+Neu-Zweig bleibt bei `Add_…`.
+
+**Punkt 2 — Startseite speichert im Vorgang.**
+`WizardCtrl.Speichere_Projekt_Gebaeudeliste` fasst den Abgleich in
+`DataRepository.Vorgang()` (Festschreiben/Rückrollen) und gibt
+`(Gelungen, Meldung)` zurück, mit den neuen Schlüsseln
+`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` (nennt das Gebäude) und
+`GEB_MSG_LISTE_NICHT_GESPEICHERT` (de/en, Designer neu erzeugt).
+`StartseiteHuelle.Gebaeude` (`WindowsFormsApplication1`) ruft diesen Weg
+und merkt die Meldung; `Startseite.razor` bekommt den neuen Parameter
+`Fehlerhinweis` (`Func<string>`) und zeigt ihn als Fehlerbanner ohne
+Selbstverfall, wie den Klimaregion-Fehler. Die iOS-Hülle reicht den
+Parameter nicht durch (bleibt leer).
+
+**Tests.** Neu `EPOS.Kern.Tests/GebaeudelisteAbgleichTests.cs`, sechs
+Fälle auf Kopien mit Projekt 1007: Kopie mit Feld-Übernahme und
+Tagesverteilung bleibt, Zuordnungswerte werden geschrieben, das
+Änderungsdatum gesetzt; der Assistent behält die Kopie; eine neue Zeile
+entsteht, eine entfernte geht, eine leere Liste räumt ab; ein geänderter
+Verweis oder eine fremde Zeile wird neu angelegt; ein Fehlschlag in der
+Mitte rollt alles zurück und meldet benannt, ein Fehlschlag ohne Namen
+meldet allgemein. bunit
+`StartseiteTests.Der_Fehlerhinweis_steht_als_Fehlerbanner_ohne_Verfall`.
+Angepasst: `AssistentCtrlTests.Nach_der_Umbenennung_im_Katalog_…` (die
+Kopie behält Zeile, Id und alten Namen — gewollt),
+`Ein_Fehlschlag_in_der_Mitte_…` (neuer Schrittname),
+`GebaeudeKatalogverweisTests` Abschnitt 7 (Kommentar).
+
+**Papiere.** Konzept Administrationsdialoge (Kopfnotiz, 7.1 (a) „Abgleich
+statt Neuaufbau“); Simulationsablauf und Wiki unverändert — nichts
+beschreibt dort das bisherige Neuschreiben, ein Fehlerbanner erscheint nur
+im Fehlfall. Logbuch-Vorschlag entworfen: „Projekteigene Gebäudewerte
+bleiben beim erneuten Speichern der Gebäudeliste erhalten.“, Version beim
+Anwender erfragen, Upload gebündelt mit dem nächsten Sammel-Upload.
+
+**Was offen bleibt.** Im Assistenten behalten neu übernommene Zeilen bis
+zum Neuladen ihre vorläufige Id (ab 100000) — ein zweites Speichern in
+derselben Sitzung legt deren Kopie erneut an, Werte gehen dabei nur bei
+einer zwischenzeitlichen Feld-Übernahme verloren. Das Änderungsdatum wird
+bei jedem Speichern gesetzt, auch ohne inhaltliche Änderung (Bestand, eine
+Verfeinerung wäre möglich).
+
+**Gate im Worktree des Umsetzungsagenten.** Builds 0 Fehler; gefiltert
+Kern 286, UI 584; voll Kern 5 831, UI 5 912, KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Referenzlauf 13/13
+GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`; SQL-Prüfer 1 782 Texte,
+0 Fundstellen.
+
+**Gate nach Merge auf `b20e48c5`.** Kern-Filter 0 Fehler; Kern 5 831, UI
+5 912, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS
+gegen `2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz),
+Schemastand 123.
