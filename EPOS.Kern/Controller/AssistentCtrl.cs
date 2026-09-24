@@ -67,7 +67,8 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Reihenfolge der Schreibschritte ist BITGLEICH übernommen.</b> Sie
     /// ist keine Geschmacksfrage: <c>Add_Projekt</c> liefert erst die echte
     /// <c>Tab_Projekt.ID</c>, an der die Energieträgersätze hängen; der
-    /// Bearbeiten-Zweig löscht je Gewerk und legt neu an; und
+    /// Bearbeiten-Zweig löscht je GEÄNDERTEM Gewerk und legt neu an (Abgleich #490,
+    /// <see cref="AssistentAbgleich"/>); und
     /// <c>Del_WaermebedarfExtern</c> steht im NEU-Zweig VOR dem Anlegen, obwohl es
     /// dort nichts zu löschen gibt. Wer hier umsortiert, ändert den Datenbestand.</para>
     ///
@@ -151,8 +152,20 @@ namespace WindowsFormsApplication1
         /// Sind die sechs Ladewege für dieses Projekt schon gelaufen? Der Rahmen setzt
         /// das Kennzeichen zurück, wenn in der linken Spalte ein anderes Projekt
         /// markiert wird (<c>WizardParent.bBereitsGeladen</c>).
+        /// <para>#490: Zurückgesetzt verfällt auch der Vergleichsstand der Gewerke —
+        /// er gehörte dem bisher geladenen Projekt.</para>
         /// </summary>
-        public bool BereitsGeladen { get; set; }
+        public bool BereitsGeladen
+        {
+            get { return _bereitsGeladen; }
+            set
+            {
+                _bereitsGeladen = value;
+                if (!value) _gewerkStand = null;
+            }
+        }
+
+        private bool _bereitsGeladen;
 
         /// <summary>Hat der letzte Speicherlauf geschrieben?</summary>
         public bool Gespeichert { get; private set; }
@@ -163,6 +176,26 @@ namespace WindowsFormsApplication1
         /// (<see cref="WizardCtrl.EchteIdsUebernehmen"/>).
         /// </summary>
         private IReadOnlyDictionary<Z_ProjGebModel, int> _neueGebaeudeIds;
+
+        /// <summary>
+        /// Der Abdruck der fünf Gewerke (<see cref="AssistentAbgleich"/>) nach den
+        /// Ladewegen bzw. nach dem letzten gelungenen Speicherlauf — der Stand der
+        /// Datenbank, gegen den der Bearbeiten-Zweig vergleicht. <c>null</c> = kein
+        /// Stand bekannt; dann wird jedes Gewerk geschrieben.
+        /// </summary>
+        private string[] _gewerkStand;
+
+        private readonly List<AssistentGewerk> _geschriebeneGewerke = new List<AssistentGewerk>();
+
+        /// <summary>
+        /// Die Gewerke, die der letzte Bearbeiten-Lauf gelöscht und neu angelegt hat
+        /// (#490). Leer, wenn keines geändert war; die Gebäudeliste steht nicht darin
+        /// (sie gleicht selbst ab).
+        /// </summary>
+        public IReadOnlyList<AssistentGewerk> GeschriebeneGewerke => _geschriebeneGewerke;
+
+        /// <summary>Hat der letzte Bearbeiten-Lauf den Projektkopf geschrieben?</summary>
+        public bool KopfGeschrieben { get; private set; }
 
         private readonly bool[] _seiteAktiv = new bool[SEITEN];
 
@@ -447,6 +480,11 @@ namespace WindowsFormsApplication1
             // kann in diesem Augenblick bereits eine Eingabe tragen - Laden laeuft
             // unmittelbar nachdem die Projektseite verlassen wurde.
             _abdruckListen = ListenAbdruck();
+
+            // #490: Derselbe Zeitpunkt ist der Vergleichsstand des Bearbeiten-Zweigs -
+            // was bis zum Speichern gleich bleibt, wird nicht neu geschrieben. Ohne
+            // Projektnamen ist nichts geladen, also auch kein Stand bekannt.
+            _gewerkStand = string.IsNullOrEmpty(projektName) ? null : AssistentAbgleich.Abdruecke(this);
         }
 
         /// <summary>
@@ -476,7 +514,17 @@ namespace WindowsFormsApplication1
                 // Datenbank fehlt (AusZeile laesst ID_Projekt dann auf 0 stehen).
                 werzctrl.items[n].ID_Projekt = projctrl.m_ID;
 
-                Erzeuger.Add(werzctrl.items[n]);
+                // #490: Die Stammfelder der Waermepumpen-Projektkopie gleich beim Laden -
+                // dieselbe Fuellung, die die Waermepumpenseite beim Aufbau macht
+                // (WaermepumpenHuelle.Gaben, Ä22). Ohne sie aenderte schon das blosse
+                // Betreten der Seite den Stand der Zeile, und ProjektgeraeteNachziehen
+                // schriebe bei einem Lauf, der die Seite nie zeigt, leere Felder in die
+                // Projektkopie.
+                WErzeugerModel item = werzctrl.items[n];
+                if (item.ID_Type == WizardItemClass.WP_TYP || item.ID_Type == WizardItemClass.REF_WP_TYP)
+                    WaermepumpeGeraeteCtrl.GeraetedatenFuellen(item, item.ID_WP);
+
+                Erzeuger.Add(item);
             }
         }
 
@@ -592,6 +640,11 @@ namespace WindowsFormsApplication1
             }
 
             rs.Close();
+
+            // #490: Der Kanal der Zuordnung (Schritt 48, F18) - die Seite traegt ihn beim
+            // Aufbau ohnehin nach (WaermebedarfExternHuelle.Gaben); ohne ihn schriebe ein
+            // Speichern, das die Seite nie zeigt, jede Ganglinie als Heizung zurueck.
+            Z_ProjektGebGanglinieCtrl.KanaeleNachladen(projctrl.m_ID, Waermebedarf);
         }
 
         /// <summary>Die Stromverbraucherzuordnungen (Standardprofile).</summary>
@@ -628,7 +681,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Übernimmt die sieben Kopffelder der ersten Assistentenseite in
         /// <see cref="Projekt"/> (wörtlich <c>WizardParent.ProjektkopfUebernehmen</c>).
-        /// Das Änderungsdatum steht ausdrücklich auf JETZT.
+        /// Das Änderungsdatum steht ausdrücklich auf JETZT — das ist nur der
+        /// Schreibpuffer des NEU-Zweigs (<c>Add_Projekt</c>); der Bearbeiten-Zweig schreibt
+        /// den Projektsatz nur bei geändertem Kopf (#490).
         /// </summary>
         public void ProjektkopfUebernehmen()
         {
@@ -778,6 +833,10 @@ namespace WindowsFormsApplication1
                 WizardCtrl.EchteIdsUebernehmen(_neueGebaeudeIds);
                 _neueGebaeudeIds = null;
 
+                // #490: Was jetzt in den Listen steht, steht in der Datenbank - ein zweites
+                // Speichern desselben Laufs ohne weitere Eingabe schreibt nichts.
+                _gewerkStand = AssistentAbgleich.Abdruecke(this);
+
                 return ergebnis;
             }
         }
@@ -840,65 +899,116 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der BEARBEITEN-Zweig — erst filtern, dann je Gewerk löschen und neu
-        /// anlegen, zuletzt der Projektsatz.
+        /// Der BEARBEITEN-Zweig — erst filtern, dann je GEÄNDERTEM Gewerk löschen und
+        /// neu anlegen, zuletzt der Projektsatz, wenn sich der Kopf geändert hat.
+        ///
+        /// <para><b>Abgleich je Gewerk (#490).</b> Jedes Gewerk wird mit seinem Stand
+        /// nach dem Laden bzw. nach dem letzten gelungenen Speichern verglichen
+        /// (<see cref="AssistentAbgleich"/>); ein unverändertes wird übersprungen — samt
+        /// allen Schreibschritten, die an ihm hängen. Weil jeder dieser Schritte das
+        /// Projekt als geändert markiert, bleibt das Änderungsdatum eines Laufs ohne
+        /// Eingabe stehen, und das Simulationsergebnis gilt weiter als aktuell. Die
+        /// Reihenfolge der Schritte, die laufen, ist unverändert.</para>
         /// </summary>
         private AssistentErgebnis Fortschreiben(WizardCtrl ctrl, DbVorgang vorgang)
         {
             Erzeuger.RemoveAll(NichtAktivesElement);
             EntferneNichtAktiveZuordnungen();
 
-            if (!ctrl.Del_Projekt_Waermeerzeuger(ProjektId, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Waermeerzeuger");
+            _geschriebeneGewerke.Clear();
+            KopfGeschrieben = false;
 
-            if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WP_Waermeerzeuger");
+            bool erzeuger = GewerkGeaendert(AssistentGewerk.Erzeuger);
+            bool prozess = GewerkGeaendert(AssistentGewerk.Prozess);
+            bool stromganglinie = GewerkGeaendert(AssistentGewerk.Stromganglinie);
+            bool waermebedarf = GewerkGeaendert(AssistentGewerk.Waermebedarf);
+            bool stromverbraucher = GewerkGeaendert(AssistentGewerk.Stromverbraucher);
 
-            // Wortgleich zum NEU-Zweig: die Stammfelder in die Projektkopie nachziehen
-            // (Anwenderentscheid 16.09.2026).
-            using (Vorgangsklammer.Halter wpKlammer = Vorgangsklammer.Setzen(vorgang))
-                WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(Erzeuger, ProjektId);
+            // --- Erzeuger: Anlagenzeilen, Projektgeraete, Traegersaetze ---------------
+            // Unveraendert heisst: keine Anlagenzeile, keine Projektkopie, kein
+            // Kostenanker, keine Senke und kein Strang wird angefasst; die Pufferzeilen
+            // ohnehin nicht (FR-1). Auch Add_Projekt_Energietraeger bleibt aus - die
+            // Saetze stehen seit dem Speichern, das diese Anlagen geschrieben hat.
+            if (erzeuger)
+            {
+                _geschriebeneGewerke.Add(AssistentGewerk.Erzeuger);
 
-            // Auch hier: neu hinzugekommene Traeger bekommen ihre projektgebundenen
-            // Saetze, bereits zugeordnete faengt der COUNT-Test ab.
-            if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
+                if (!ctrl.Del_Projekt_Waermeerzeuger(ProjektId, vorgang))
+                    return Fehler("Del_Projekt_Waermeerzeuger");
+
+                if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
+                    return Fehler("Add_WP_Waermeerzeuger");
+
+                // Wortgleich zum NEU-Zweig: die Stammfelder in die Projektkopie nachziehen
+                // (Anwenderentscheid 16.09.2026).
+                using (Vorgangsklammer.Halter wpKlammer = Vorgangsklammer.Setzen(vorgang))
+                    WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(Erzeuger, ProjektId);
+
+                // Auch hier: neu hinzugekommene Traeger bekommen ihre projektgebundenen
+                // Saetze, bereits zugeordnete faengt der COUNT-Test ab.
+                if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
+                    return Fehler("Add_Projekt_Energietraeger");
+            }
 
             // Die Gebaeudeliste wird ABGEGLICHEN, nicht neu aufgebaut (Konzept
             // Administrationsdialoge 7.1 (a)): Unveraenderte Zuordnungen behalten ihre
             // Projektkopie samt Feld-Uebernahmen - derselbe Weg wie die Startseite.
             // Die echten Ids der neuen Zeilen traegt Speichern erst nach dem Festschreiben ein.
             if (!ctrl.Schreibe_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang, out _, out _neueGebaeudeIds))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Schreibe_Projekt_ZuordungGebaeude");
+                return Fehler("Schreibe_Projekt_ZuordungGebaeude");
 
-            if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Prozess");
+            if (prozess)
+            {
+                _geschriebeneGewerke.Add(AssistentGewerk.Prozess);
 
-            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Prozess");
+                if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
+                    return Fehler("Del_Projekt_Prozess");
 
-            if (!ctrl.Del_Stromganglinie(ProjektId, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Stromganglinie");
+                if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
+                    return Fehler("Add_Projekt_Prozess");
+            }
 
-            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Stromganglinie");
+            if (stromganglinie)
+            {
+                _geschriebeneGewerke.Add(AssistentGewerk.Stromganglinie);
 
-            if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_WaermebedarfExtern");
+                if (!ctrl.Del_Stromganglinie(ProjektId, vorgang))
+                    return Fehler("Del_Stromganglinie");
 
-            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WaermebedarfExtern");
+                if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
+                    return Fehler("Add_Stromganglinie");
+            }
 
-            if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId, vorgang: vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Stromverbraucher");
+            if (waermebedarf)
+            {
+                _geschriebeneGewerke.Add(AssistentGewerk.Waermebedarf);
 
-            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
+                if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
+                    return Fehler("Del_WaermebedarfExtern");
+
+                if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
+                    return Fehler("Add_WaermebedarfExtern");
+            }
+
+            if (stromverbraucher)
+            {
+                _geschriebeneGewerke.Add(AssistentGewerk.Stromverbraucher);
+
+                if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId, vorgang: vorgang))
+                    return Fehler("Del_Projekt_Stromverbraucher");
+
+                if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
+                    return Fehler("Add_Projekt_Stromverbraucher");
+            }
 
             // Senken beim Anlegen - wortgleich zum NEU-Zweig: Prozesswaerme und
-            // Waermeganglinien sind eben neu geschrieben; nur die im Assistenten NEU
-            // hinzugekommenen Anlagen bekommen ihre Senken aus diesem Bedarf.
-            ctrl.NeueAnlagenSenkenNachziehen(ProjektId, vorgang);
+            // Waermeganglinien stehen jetzt; nur die im Assistenten NEU hinzugekommenen
+            // Anlagen bekommen ihre Senken aus diesem Bedarf. NUR wenn die Anlagen eben
+            // geschrieben wurden: Die Liste der neuen Anlagen gehoert dem letzten
+            // Add_WP_Waermeerzeuger - ohne ihn stammte sie aus einem frueheren Lauf und
+            // ueberschriebe die Senken bestehender Anlagen.
+            if (erzeuger)
+                ctrl.NeueAnlagenSenkenNachziehen(ProjektId, vorgang);
 
             Projekt.m_Aenderungsdatum = DateTime.Now;
             Projekt.m_szBearbeiter = Kopf[0].Bearbeiter ?? "";
@@ -906,11 +1016,34 @@ namespace WindowsFormsApplication1
             Projekt.m_szBeschreibung = Kopf[0].Beschreibung ?? "";
             Projekt.m_szKlimaregion = Kopf[0].Klimaname ?? "";
 
-            if (!ctrl.Update_Projekt(ProjektId, Projekt, vorgang))
-                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Update_Projekt");
+            // Der Projektsatz nur, wenn der Kopf sich von der Datenbank unterscheidet -
+            // Update_Projekt setzt das Aenderungsdatum immer auf jetzt. Hat ein Gewerk
+            // geschrieben, hat dessen Schreibweg das Datum bereits gesetzt.
+            if (!AssistentAbgleich.KopfGleichGespeichert(ProjektId, Kopf[0]))
+            {
+                KopfGeschrieben = true;
+                if (!ctrl.Update_Projekt(ProjektId, Projekt, vorgang))
+                    return Fehler("Update_Projekt");
+            }
 
             Gespeichert = true;
             return new AssistentErgebnis(AssistentAusgang.Gespeichert, "");
+        }
+
+        /// <summary>
+        /// Ist das Gewerk seit dem Vergleichsstand geändert? Ohne Vergleichsstand: ja —
+        /// dann schreibt der Zweig wie vor dem Abgleich.
+        /// </summary>
+        private bool GewerkGeaendert(AssistentGewerk gewerk)
+        {
+            if (_gewerkStand == null) return true;
+            return !string.Equals(_gewerkStand[(int)gewerk], AssistentAbgleich.Abdruck(this, gewerk),
+                                  StringComparison.Ordinal);
+        }
+
+        private static AssistentErgebnis Fehler(string schritt)
+        {
+            return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, schritt);
         }
 
         // =============================================================================

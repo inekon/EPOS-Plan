@@ -39,7 +39,8 @@ jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schrei
 (7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
 (7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
 Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
-die Löschsperre der Verwaltung (7.1 a).
+die Löschsperre der Verwaltung (7.1 a); **mit #490 (24.09.2026)** gleicht auch der Bearbeiten-Zweig
+des Assistenten seine übrigen Gewerke ab — ein Speichern ohne Eingabe schreibt nichts (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -650,8 +651,24 @@ angelegte Zeile der Liste ihre echte Zuordnungs-Id statt der vorläufigen ab 100
 (`WizardCtrl.EchteIdsUebernehmen`, im Assistenten nach dem Festschreiben seines Vorgangs; die Hülle
 `GebaeudeHuelle` zieht sie in die Anzeigezeile nach) — ein zweites Speichern derselben Liste legt
 nichts neu an, und eine Feld-Übernahme dazwischen bleibt stehen (#487; Nachweis
-`GebaeudelisteAbgleichTests`). Der Assistent setzt im Bearbeiten-Zweig das Änderungsdatum weiterhin
-bei jedem Speichern, weil er die übrigen Gewerke neu schreibt. Die Startseite schreibt in **einem**
+`GebaeudelisteAbgleichTests`). ✔ **Die übrigen Gewerke des Assistenten — erledigt mit #490
+(24.09.2026):** Der Bearbeiten-Zweig (`AssistentCtrl.Fortschreiben`) gleicht auch Erzeuger,
+Prozesswärme, Stromganglinie, externen Wärmebedarf und Stromverbraucher ab: `AssistentAbgleich` nimmt
+nach den Ladewegen und nach jedem gelungenen Speichern einen Abdruck je Gewerk — genau das, was der
+Schreibweg aus der Liste in die Datenbank trägt (Erzeuger über Reflexion ohne `ID`/`ID_Projekt`, samt
+Strangliste des PV-Dialogs; die Zuordnungen über Bezeichner, Summe bzw. Kanal, ohne Ids und
+Projektverweise, die der Add-Weg aus dem Bezeichner neu ableitet) —, und nur ein geändertes Gewerk wird
+gelöscht und neu angelegt. Ein unveränderter Erzeuger lässt Anlagenzeilen, Pufferzeilen, Senken,
+Stränge, Kostenanker, Projektgeräte und Trägersätze stehen; `NeueAnlagenSenkenNachziehen` läuft nur
+nach einem Neuschreiben der Anlagen. Der Projektsatz (`Update_Projekt`) wird nur geschrieben, wenn der
+Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). Damit setzt ein Speichern
+ohne Eingabe das Änderungsdatum nicht, und das letzte Simulationsergebnis bleibt aktuell; eine Eingabe
+in einem Gewerk schreibt genau dieses und setzt das Datum. Ohne Vergleichsstand (Ladekennzeichen
+zurückgesetzt) schreibt der Zweig jedes Gewerk. Die Ladewege füllen dafür, was die Seiten beim Aufbau
+nachtragen — die Stammfelder der Wärmepumpen-Projektkopie und den Kanal des Wärmebedarfs —, sodass
+schon das Betreten einer Seite keine Änderung ist und ein Lauf, der die Seite nie zeigt, weder leere
+Stammfelder in die Projektkopie noch jeden Kanal als Heizung zurückschreibt. Nachweis:
+`AssistentAbgleichTests`. Die Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
@@ -684,11 +701,19 @@ Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abw
 der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
 Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
 `gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
-313,8 m / 13,6 Geschosse ≈ 3,5 m). Nicht entscheidbar und dem Anwender vorgelegt: die Anschlusslänge
-Fenster–Wand 1 800 m (0,95 m je m² Fenster, Ausgangssatz 2,54; physikalisch möglich, die Untergrenze für
-Fensterbänder ist 2 · 1 895,9 m² / 3,5 m ≈ 1 083 m) und die Außenwand von 12 094 m², die nicht um die
-1 120,4 m² gewachsen ist, um die Ost/West kleiner ist als beim Ausgangssatz (Hüllfläche 13 989,9 statt
-15 110,3 m²). (b)
+313,8 m / 13,6 Geschosse ≈ 3,5 m). ✔ **Anschlusslängen berichtigt (#493, Schemaschritt
+`GebaeudeAnschlusslaengenReparatur.SCHRITT`, Anwenderentscheid „Ersetzt durch plausible Werte“):** Beim
+Krankenhaussatz steht die Anschlusslänge Fenster–Wand auf 4 812 m (Laibung je m² Fenster des
+Ausgangssatzes 2,538 × 1 895,9 m²) und die Außenwand auf 13 214,4 m² (Hüllfläche 15 110,3 m² der
+Geometrie minus Fensterfläche). Die Sätze `KrankenH-F-*`, `gr_Hotel-G-134` und `Kaufhaus`, die aus einer
+Quelle dieselben Längen 243,7 / 7 879 / 1 392,8 m trugen (Laibung 0,08 m je m² Fenster, Dachkante das
+51-Fache der Quadratkante), führen jetzt Laibung 7 879 m (Tausch mit der Dachkante, 2,573 m je m²) bzw.
+beim Kaufhaus 5 820,8 m (dasselbe Verhältnis × 2 262,36 m²) und Dach- und Kellerkante gleich dem
+Umfang 313,8 m der gemeinsamen Grundfläche 1 469 m². Der Schritt trifft je Satz und Spalte nur
+Bezeichner UND unplausiblen Wert; Projektkopien bleiben (Nachweis `GebaeudeAnschlusslaengenReparaturTests`,
+Herleitungen in `Referenzlaeufe/LIESMICH.md`). Weitere Sätze mit auffälligen Anschlusslängen (etwa
+185 / 985 m bei 540 m² Dach in den Altenheim-, Pflegeheim-, Schul- und Hallenbadsätzen, 5 380,8 m
+Dachkante bei `Hotel-F-228`) sind nicht Teil des Entscheids und bleiben, wie sie sind. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
