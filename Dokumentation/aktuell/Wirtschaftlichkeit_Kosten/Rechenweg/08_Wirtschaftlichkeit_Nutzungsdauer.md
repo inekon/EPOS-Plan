@@ -58,6 +58,7 @@ KW [€] = − I₀
 A_t = Betrieb_t × (1 + p_B)^(t−1)
     + Energie_1 × (1 + p_E)^(t−1)
     + CO2_t + Ersatz_t
+    + Σ_w Betrag_w × (1 + p_w)^(t−1)              nur in den Zahlungsjahren der Position w (unten)
 E_t = Einspeiseerlös_1                            nominal KONSTANT
     + Σ Erlösreihen: KWKG_ZUSCHLAG · KWKG_PAUSCHALE · ENERGIESTEUER_GUTSCHRIFT ·
                      STROMSTEUER_BEFREIUNG · STROMSTEUER_ENTLASTUNG · PV_VERGUETUNG
@@ -78,6 +79,16 @@ Nutzungsdauer, Ersatz, Restwert, Startjahr
     ErsatzFuehren = nein    ⇒ keine Ersatzkette ; die letzte Beschaffung bleibt die erste
     RestwertAnsetzen = nein ⇒ RW_T = 0 ; entkoppelt — eine nicht ersetzte Position trägt ihren
                               Restwert aus der ersten Beschaffung weiter
+
+Wiederholperiode je Betriebsposition (Schemaschritt 129, Konzept § 2.13 (3)) — 6.3.1 „alle n Jahre"
+  n = Wiederholperiode_a ; leer, 0, 1 ⇒ jährlich (in Betrieb_t bzw. im Endenergie-Topf)
+  n ≥ 2 ⇒ Zahlungsjahre s, s+n, s+2n, … ≤ T ; s = StartJahr, falls > 1 ; sonst 1
+          Regel KapitalwertRechner.ZahltImJahr(s, n, t) ⇔ t ≥ s und (t − s) mod n = 0
+          Zahlung im Jahr t = Betrag × (1 + p_B)^(t−1)   (Endenergie-Topf: p_E)
+  nur Betriebspositionen ; eine Investition „alle n Jahre" ist die Ersatzkette oben
+  Betriebskosten p. a. = Zahl des ersten Jahres: die Position zählt nur mit s ≤ 1
+  Ausweis: Herleitung „alle n Jahre ab Jahr s" ; Formelmappe je Topf eine Hilfsspalte
+           IF(AND(Jahr>=s,MOD(Jahr-s,n)=0),Betrag,0) ; Betrieb = (Basis+Wiederholt)×(1+p)^(Jahr−1)
 
 Kennzahlen
   Annuitätenfaktor a(i,n) = i·(1+i)^n / ((1+i)^n − 1) ; a = 1/n bei i ≈ 0
@@ -171,15 +182,15 @@ Barwert der Differenz vor Restwert am Horizontende 1.564.393 / 1.744.663 / 1.929
 | # | Anforderung | Stand | Behandlung |
 |---|---|---|---|
 | V-G2 | Degradation je Position mit Quelle | fehlt | neues Attribut, Vorgabe 0 (`03`) |
-| V-G3 | Zeitpunkt „alle n Jahre" | fehlt | kleiner Ausbau der Bemessung |
+| V-G3 | Zeitpunkt „alle n Jahre" | gebaut #484 (Schemaschritt 129) | Wiederholperiode je Betriebsposition: Zahlungsjahre s, s + n, … ≤ T (`KapitalwertRechner.ZahltImJahr`); Feld „Zahlung alle: [n] Jahre" im Zeileneditor, „alle n Jahre ab Jahr X" in der Betriebskostentabelle, Hilfsspalte je Topf in der Formelmappe |
 | V-G4 | kein Restwertverfahren | Restwert linear | dokumentierte Abweichung, Deklarationszeile |
 | V-G5 | Szenarien = alle Parameter gleichzeitig | nur Betragsspalten | **entschieden 31.08.2026:** vollständige Abdeckung (§ 2.11.5), Etappe V-E |
 | V-G6 | Sensitivität mit Steigung €/% und Diagramm | 5 Fälle; Steigungsspalte gebaut #434 (Seite, Wort- und Tabellenbericht) | T-Variation, Endzahlungen und Diagramm offen |
-| V-G7 | Risiko: Zinszuschlag oder Abzug R_loss × p_loss | fehlt | optionales Modul, Vorgabe aus |
+| V-G7 | Risiko: Zinszuschlag oder Abzug R_loss × p_loss | gebaut #478 (Schemaschritt 125) | optionales Modul, Vorgabe aus (Konzept § 2.11.2) |
 | V-G8 | IZF/Amortisation nur nachrichtlich, Mehrdeutigkeitswarnung | gebaut #434 | Marke „nachrichtlich (Anhang C)" an Amortisation und Zinsfuß, Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
 | V-G9 | Steuerdeklaration Pflicht | gebaut #434 | zweiteilige Deklarationszeile (`WIRT_DEKL_STEUERN`) auf der Seite und in beiden Berichten |
 | V-G10 | Bericht mit editierbarer XLSX mit Formeln (Anhang A) | Formelmappe in den Stufen 0 bis 3 (gebaut #455) | der ganze Bericht formelbasiert, soweit ableitbar (Konzept § 2.11.6) — EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu |
-| V-G11 | nicht monetarisierbare Wirkungen | Freitext gebaut (W5‑B‑12), auf der Seite in Block 5 und in beiden Berichten | Kategorie und Beurteilung nach Dauer × Wirkung offen; nie im NPV |
+| V-G11 | nicht monetarisierbare Wirkungen | Liste mit Kategorie und Beurteilung gebaut #479 (Schemaschritt 127) | Beurteilung Dauer × stärkste Wirkung; auf der Seite und in beiden Berichten; nie im NPV |
 | V-G12 | Anhang-E-Checkliste (15 Punkte) | gebaut #455 | Abschlussseite beider Berichte, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" |
 
 Externe Gegenprobe der Etappe: Anhang D der Norm (BHKW 90 kW_th, 18 Jahre, NPV 64.480 €, Worst
