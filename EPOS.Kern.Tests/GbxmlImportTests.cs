@@ -389,34 +389,46 @@ namespace EPOS.Kern.Tests
             Assert.Null(aufbau.UWertWm2K);   // die Datei trägt keinen U-Wert
         }
 
-        [Fact(Skip = "wartet auf Bauteilreduktion (G3): U-Wert aus der Schichtung eines masselosen Aufbaus")]
-        public void Probe8_U_Wert_kommt_aus_der_Schichtung()
-        {
-            // Mauerwerk 0,24/0,8 = 0,30 + Luftschicht 0,18 + R_si 0,13 + R_se 0,04 = 0,65 m²K/W → U = 1/0,65.
-            GebaeudeImportSatz s = Satz("gbxml_rwert_schicht.xml");
-            Nah(1.0 / 0.65, Wert(s, GebaeudeZielfelder.U_AUSSENWAND), 1e-9);
-            Assert.Equal(Importherkunft.GbXml, s.Zeile(GebaeudeZielfelder.U_AUSSENWAND).Herkunft);
-        }
-
-        [Fact(Skip = "wartet auf Bauteilreduktion (G3): U-Wert und flächenbezogene Wärmekapazität von Hand")]
-        public void Schichtaufbau_U_und_Masse_eines_bekannten_Aufbaus()
-        {
-            // Außenwand des Probenhauses: R = 0,02 + 0,30 + 2,00 + 0,01 = 2,33 m²K/W,
-            // + R_si 0,13 + R_se 0,04 = 2,50 → U = 0,4 W/(m²K);
-            // C = 0,02·1800·1000 + 0,24·1600·1000 + 0,08·100·1000 + 0,01·1400·1000 = 442 000 J/(m²K).
-            GebaeudeImportAblauf a = LesenDatei("gbxml_haus_si.xml");
-            AbbildAufbau aufbau = a.Abbild.Gebaeude[0].Bauteile.Single(b => b.Kennung == "aw-eg-nord-wohnen").Aufbau;
-            Assert.Equal(0.4, SchichtwerteNaht.UWertAusSchichten(aufbau, 90.0, Randbedingung.Aussenluft).Value, 12);
-            Assert.Equal(442000.0, SchichtwerteNaht.KapazitaetAusSchichten(aufbau).Value, 6);
-        }
-
         [Fact]
-        public void Bis_G3_rechnet_die_Schichtnaht_nichts()
+        public void Probe8_der_U_Wert_kommt_aus_der_Schichtung_die_Masse_nicht()
+        {
+            // Mauerwerk 0,24/0,8 = 0,30 + Luftschicht 0,18 (eingetragener R-Wert, keine Luftschicht
+            // nach Tabelle 8) + R_si 0,13 + R_se 0,04 = 0,65 m²K/W → U = 1/0,65.
+            GebaeudeImportSatz s = Satz("gbxml_rwert_schicht.xml");
+            Nah(1.0 / 0.65, Wert(s, GebaeudeZielfelder.U_AUSSENWAND), 1e-12);
+            Assert.Equal(Importherkunft.GbXml, s.Zeile(GebaeudeZielfelder.U_AUSSENWAND).Herkunft);
+            Assert.Equal(Importherkunft.Vorgabe, s.Zeile(GebaeudeZielfelder.BAUART).Herkunft);   // Masse aus der Vorgabe
+
+            AbbildAufbau aufbau = LesenDatei("gbxml_rwert_schicht.xml").Abbild.Gebaeude[0].Bauteile.First(b => b.Kennung == "aw-nord").Aufbau;
+            Assert.Null(SchichtwerteNaht.KapazitaetAusSchichten(aufbau));
+        }
+
+        /// <summary>
+        /// Die Aufbauten des Probenhauses von Hand nachgerechnet (DIN EN ISO 6946: R_si 0,13 waagerecht,
+        /// 0,10 aufwärts, 0,17 abwärts; R_se 0,04 an Außenluft, = R_si gegen Unbeheizt).
+        /// </summary>
+        [Fact]
+        public void Schichtaufbau_U_und_Masse_der_Aufbauten_des_Probenhauses()
         {
             GebaeudeImportAblauf a = LesenDatei("gbxml_haus_si.xml");
-            AbbildAufbau aufbau = a.Abbild.Gebaeude[0].Bauteile.Single(b => b.Kennung == "aw-eg-nord-wohnen").Aufbau;
-            Assert.Null(SchichtwerteNaht.UWertAusSchichten(aufbau, 90.0, Randbedingung.Aussenluft));
-            Assert.Null(SchichtwerteNaht.KapazitaetAusSchichten(aufbau));
+            AbbildAufbau Aufbau(string kennung) => a.Abbild.Gebaeude[0].Bauteile.Single(b => b.Kennung == kennung).Aufbau;
+
+            // Außenwand mit Innendämmung: R = 0,02 + 0,30 + 2,00 + 0,01 = 2,33 → 1/(0,13 + 2,33 + 0,04) = 0,4;
+            // C = 0,02·1800·1000 + 0,24·1600·1000 + 0,08·100·1000 + 0,01·1400·1000 = 442 000 J/(m²K).
+            AbbildAufbau wand = Aufbau("aw-eg-nord-wohnen");
+            Assert.Equal(0.4, SchichtwerteNaht.UWertAusSchichten(wand, 90.0, Randbedingung.Aussenluft, out string grund).Value, 12);
+            Assert.Null(grund);
+            Assert.Equal(442000.0, SchichtwerteNaht.KapazitaetAusSchichten(wand).Value, 6);
+
+            // Flachdach, Wärmestrom aufwärts: R = 3,75 + 0,10 + 0,01 = 3,86 → 1/(0,10 + 3,86 + 0,04) = 0,25.
+            Assert.Equal(0.25, SchichtwerteNaht.UWertAusSchichten(Aufbau("dach-og"), 0.0, Randbedingung.Aussenluft, out _).Value, 12);
+
+            // Kellerdecke, Wärmestrom abwärts gegen Unbeheizt: R = 2,00 + 0,08 + 0,08 = 2,16 → 1/(0,17 + 2,16 + 0,17) = 0,4.
+            Assert.Equal(0.4, SchichtwerteNaht.UWertAusSchichten(Aufbau("decke-kg-eg-wohnen"), 180.0, Randbedingung.Unbeheizt, out _).Value, 12);
+
+            // Ohne Neigung oder bei unbekannter Randbedingung wird nichts gerechnet.
+            Assert.Null(SchichtwerteNaht.UWertAusSchichten(wand, null, Randbedingung.Aussenluft, out _));
+            Assert.Null(SchichtwerteNaht.UWertAusSchichten(wand, 90.0, Randbedingung.Unbekannt, out _));
         }
 
         // ==================================================================

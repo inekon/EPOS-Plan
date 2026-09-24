@@ -27,8 +27,8 @@ namespace WindowsFormsApplication1
     /// negativ → 0, Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
     /// <item><b>U-Werte:</b> flächengewichtet je Gruppe, U = Σ(U·A)/ΣA; fehlt der U-Wert bei mehr
     /// als 30 % der Gruppenfläche, gilt die Gruppe als nicht aus der Datei → Vorgabe der Klasse. Ein
-    /// eingetragener U-Wert hat Vorrang; die Rechnung aus den Schichten kommt über
-    /// <see cref="SchichtwerteNaht"/>.</item>
+    /// eingetragener U-Wert hat Vorrang; sonst rechnet <see cref="Bauteilreduktion"/> ihn aus den
+    /// Schichten (über <see cref="SchichtwerteNaht"/>).</item>
     /// <item><b>Fenster:</b> Sektor nach dem Azimut des Wirtsbauteils — nächste Mitte (N 0°, O 90°,
     /// S 180°, W 270°), Breite 90°, die Grenze gehört zum größeren Sektor (45° → Ost). Ohne Azimut
     /// (auch auf waagerechten Wirten) gleichmäßig auf alle vier, mit Warnung.</item>
@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
             public double? BruttoM2;
             public double AbzugM2;
             public double? U;
+            public Randbedingung Rand;
             public string Paar;
             public string Richtung;
             public bool Verworfen;
@@ -120,6 +121,7 @@ namespace WindowsFormsApplication1
             }
             Trennflaechen(posten, profil, meldungen);
             Oeffnungen(posten, profil, z, meldungen);
+            UWerte(posten, meldungen);
             foreach (KeyValuePair<string, double[]> e in zaehler)
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + e.Key,
                     Zahl(e.Value[0]), Zahl(e.Value[1])));
@@ -330,8 +332,8 @@ namespace WindowsFormsApplication1
 
             if (!p.BruttoM2.HasValue)
                 z[FeldDerGruppe(p.Gruppe)].Markieren(PruefStufe.Warnung);   // Geometrie fehlt (3.8)
-            p.U = UWert(s, seite == Seite.Aussen ? Randbedingung.Aussenluft
-                         : seite == Seite.Erdreich ? Randbedingung.Erdreich : Randbedingung.Unbeheizt);
+            p.Rand = seite == Seite.Aussen ? Randbedingung.Aussenluft
+                   : seite == Seite.Erdreich ? Randbedingung.Erdreich : Randbedingung.Unbeheizt;
             return p;
         }
 
@@ -381,15 +383,37 @@ namespace WindowsFormsApplication1
             => art == Bauteilart.Decke || art == Bauteilart.Bodenplatte || art == Bauteilart.Dach;
 
         /// <summary>
-        /// Der U-Wert eines Bauteils: der eingetragene, sonst der aus den Schichten (Naht zu G3),
-        /// sonst keiner.
+        /// Die U-Werte der Hüllenbauteile, ihrer Fenster und Türen — nach dem Einordnen, weil erst
+        /// dann die Randbedingung feststeht; Öffnungen ohne eigene Neigung nehmen die ihres Wirts.
         /// </summary>
-        private static double? UWert(AbbildBauteil b, Randbedingung rand)
+        private static void UWerte(List<Posten> posten, List<PruefMeldung> meldungen)
+        {
+            var gemeldet = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Posten p in posten)
+            {
+                p.U = UWert(p.Bauteil, p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                foreach (Fensterposten f in p.Fenster)
+                    f.U = UWert(f.Oeffnung, f.Oeffnung.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                foreach (Posten t in p.Tueren)
+                    t.U = UWert(t.Bauteil, t.Bauteil.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+            }
+        }
+
+        /// <summary>
+        /// Der U-Wert eines Bauteils: der eingetragene (Vorrang, Mehrzonenkonzept 3.4), sonst der aus
+        /// den Schichten über <see cref="Bauteilreduktion"/>, sonst keiner. Liegen die Stoffwerte
+        /// außerhalb des Bandes, wird das je Aufbau einmal gemeldet — nie geworfen.
+        /// </summary>
+        private static double? UWert(AbbildBauteil b, double? neigungGrad, Randbedingung rand,
+                                     List<PruefMeldung> meldungen, HashSet<string> gemeldet)
         {
             if (b.UWertWm2K.HasValue) return b.UWertWm2K;
-            if (b.Aufbau != null && (b.Aufbau.Status == Aufbaustatus.Vollstaendig || b.Aufbau.Status == Aufbaustatus.Masselos))
-                return SchichtwerteNaht.UWertAusSchichten(b.Aufbau, b.NeigungGrad, rand);
-            return null;
+            if (b.Aufbau == null) return null;
+            double? u = SchichtwerteNaht.UWertAusSchichten(b.Aufbau, neigungGrad, rand, out string grund);
+            if (grund != null && gemeldet.Add(b.Aufbau.Kennung))
+                meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GebaeudeImportAblauf.MELDUNG + "SCHICHTEN_AUSSERHALB",
+                    b.Aufbau.Kennung, grund));
+            return u;
         }
 
         // ==================================================================
@@ -434,8 +458,7 @@ namespace WindowsFormsApplication1
                     {
                         p.Fenster.Add(new Fensterposten
                         {
-                            Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut,
-                            U = UWert(o, Randbedingung.Aussenluft), G = o.GWert,
+                            Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
                         });
                     }
                     else if (o.Art == Bauteilart.Tuer)
@@ -443,7 +466,7 @@ namespace WindowsFormsApplication1
                         p.Tueren.Add(new Posten
                         {
                             Bauteil = o, Gruppe = Huelle.Sonstige, NettoM2 = o.BruttoflaecheM2, BruttoM2 = o.BruttoflaecheM2,
-                            U = UWert(o, Randbedingung.Aussenluft), Verworfen = p.Verworfen,
+                            Rand = p.Rand, Verworfen = p.Verworfen,
                         });
                     }
                     else continue;

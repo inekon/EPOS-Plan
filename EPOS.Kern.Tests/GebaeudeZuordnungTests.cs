@@ -102,6 +102,40 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        private static string Geschichtet(string id, params (string Id, double Dicke, double Lambda, double Rho, double Cp)[] schichten)
+            => "<Construction id=\"" + id + "\"><LayerId layerIdRef=\"" + id + "-l\"/></Construction>"
+               + "<Layer id=\"" + id + "-l\">" + string.Concat(schichten.Select(s => "<MaterialId materialIdRef=\"" + s.Id + "\"/>")) + "</Layer>"
+               + string.Concat(schichten.Select(s => "<Material id=\"" + s.Id + "\"><Thickness>" + Z(s.Dicke) + "</Thickness>"
+                   + "<Conductivity unit=\"WPerMeterK\">" + Z(s.Lambda) + "</Conductivity><Density unit=\"KgPerCubicM\">" + Z(s.Rho)
+                   + "</Density><SpecificHeat unit=\"JPerKgK\">" + Z(s.Cp) + "</SpecificHeat></Material>"));
+
+        [Fact]
+        public void Ohne_eingetragenen_U_Wert_rechnet_die_Bauteilreduktion_aus_den_Schichten()
+        {
+            // außen Mauerwerk 0,24/0,8 = 0,30, innen Dämmung 0,10/0,04 = 2,50 → 1/(0,13 + 2,80 + 0,04)
+            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5), kon: "k-schicht"),
+                Geschichtet("k-schicht", ("m-mw", 0.24, 0.8, 1600, 1000), ("m-dae", 0.10, 0.04, 30, 1500)));
+            GebaeudeFeldzeile u = s.Zeile(GebaeudeZielfelder.U_AUSSENWAND);
+            Nah(1.0 / 2.97, u.Wert, 1e-12);
+            Assert.Equal(Importherkunft.GbXml, u.Herkunft);
+            Assert.DoesNotContain(s.Meldungen, m => m.Schluessel == G + "SCHICHTEN_AUSSERHALB");
+        }
+
+        [Fact]
+        public void Stoffwerte_ausserhalb_des_Bandes_werden_gemeldet_nicht_geworfen()
+        {
+            // λ = 1 000 W/(mK) liegt über dem Band (500) — die Reduktion würde werfen, der Import meldet.
+            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5), kon: "k-band") + Klein.Wand("aw-2", 180, Masse(10, 2.5), kon: "k-band"),
+                Geschichtet("k-band", ("m-ausserhalb", 0.01, 1000, 2000, 1000)), 'E');
+            GebaeudeFeldzeile u = s.Zeile(GebaeudeZielfelder.U_AUSSENWAND);
+            Assert.Equal(Importherkunft.Vorgabe, u.Herkunft);
+            Nah(1.08, u.Wert);
+            PruefMeldung m = s.Meldungen.Single(x => x.Schluessel == G + "SCHICHTEN_AUSSERHALB");   // einmal je Aufbau
+            Assert.Equal(PruefStufe.Warnung, m.Stufe);
+            Assert.Equal("k-band", m.Werte[0]);
+            Assert.False(string.IsNullOrWhiteSpace(m.Werte[1]));
+        }
+
         // ==================================================================
         //  Fenster nach Himmelsrichtung
         // ==================================================================

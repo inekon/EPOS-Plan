@@ -30801,6 +30801,9 @@ Do you want to allow this?</value>
   <data name="IMP_GEB_PROT_RAUMFLAECHE_FEHLT" xml:space="preserve">
     <value>{0} heated spaces have no area ({1}) — the usable area stays empty.</value>
   </data>
+  <data name="IMP_GEB_PROT_SCHICHTEN_AUSSERHALB" xml:space="preserve">
+    <value>Construction {0}: the layers are outside the plausibility range ({1}) — no U-value from the layers.</value>
+  </data>
   <data name="IMP_GEB_PROT_SOLLWERT_UNEINHEITLICH" xml:space="preserve">
     <value>The heating setpoints of the zones are not uniform ({0} to {1} °C; {2} spaces with, {3} without a value) — the daytime heating setpoint stays empty.</value>
   </data>

@@ -30808,6 +30808,9 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GEB_PROT_RAUMFLAECHE_FEHLT" xml:space="preserve">
     <value>{0} beheizten Räumen fehlt die Fläche ({1}) — die Nutzfläche bleibt leer.</value>
   </data>
+  <data name="IMP_GEB_PROT_SCHICHTEN_AUSSERHALB" xml:space="preserve">
+    <value>Konstruktion {0}: Die Schichten liegen außerhalb des Plausibilitätsbands ({1}) — kein U-Wert aus der Schichtung.</value>
+  </data>
   <data name="IMP_GEB_PROT_SOLLWERT_UNEINHEITLICH" xml:space="preserve">
     <value>Die Heizsollwerte der Zonen sind nicht einheitlich ({0} bis {1} °C; {2} Räume mit, {3} ohne Angabe) — der Heizsollwert am Tag bleibt leer.</value>
   </data>

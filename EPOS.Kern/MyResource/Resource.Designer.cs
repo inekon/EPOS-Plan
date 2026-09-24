@@ -23538,6 +23538,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konstruktion {0}: Die Schichten liegen außerhalb des Plausibilitätsbands ({1}) — kein U-Wert aus der Schichtung. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_SCHICHTEN_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_SCHICHTEN_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizsollwerte der Zonen sind nicht einheitlich ({0} bis {1} °C; {2} Räume mit, {3} ohne Angabe) — der Heizsollwert am Tag bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_SOLLWERT_UNEINHEITLICH {
