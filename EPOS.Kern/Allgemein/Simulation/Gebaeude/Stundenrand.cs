@@ -26,6 +26,12 @@
     /// <see cref="Uebergabe"/> ≠ <c>null</c> ist die Heizung keine ideale Regelung mehr, sondern
     /// eine Übergabe bei <see cref="VorlaufC"/> mit dem Raumregler <see cref="ReglerbandK"/>
     /// (Schritt H). <c>null</c> heißt: der Bestandsweg, Zeichen für Zeichen.</para>
+    ///
+    /// <para><b>Kälteseite der Kopplung (Schritt K, E37).</b> Mit
+    /// <see cref="KuehlUebergabeGespiegelt"/> ≠ <c>null</c> ist die Kühlung keine ideale Regelung
+    /// mehr, sondern eine Kühlübergabe beim festen Kaltwasser-Vorlauf <see cref="KuehlVorlaufC"/>
+    /// mit demselben Raumregler <see cref="ReglerbandK"/>; sie setzt eine Kühlung voraus
+    /// (<see cref="MitKuehlung"/>). <c>null</c> heißt: die Kühlung des Bestands.</para>
     /// </summary>
     internal readonly struct Stundenrand
     {
@@ -44,8 +50,16 @@
             double zusatzleitwertWK = 0.0,
             Uebergabekennwerte uebergabe = null,
             double vorlaufC = double.NaN,
-            double reglerbandK = 0.0)
+            double reglerbandK = 0.0,
+            Uebergabekennwerte kuehlUebergabeGespiegelt = null,
+            double kuehlVorlaufC = double.NaN,
+            double kuehlStrahlungsanteil = 0.0,
+            bool kuehlVorlaufGekappt = false)
         {
+            KuehlUebergabeGespiegelt = kuehlUebergabeGespiegelt;
+            KuehlVorlaufC = kuehlVorlaufC;
+            KuehlStrahlungsanteil = kuehlStrahlungsanteil;
+            KuehlVorlaufGekappt = kuehlVorlaufGekappt;
             ThetaOut = thetaOut;
             ThetaEq = thetaEq;
             ThetaSoll = thetaSoll;
@@ -125,6 +139,24 @@
 
         /// <summary>Rechnet die Heizung als Übergabe (Anlagenkopplung, Schritt H)?</summary>
         internal bool MitUebergabe => Uebergabe != null;
+
+        /// <summary>
+        /// Die Kennwerte der Kühlübergabe, <b>gespiegelt</b> (−V, −R, −θ_i,N; Schritt K, E37);
+        /// <c>null</c> = ideale Kühlung, der Bestandsweg.
+        /// </summary>
+        internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; }
+
+        /// <summary>Fester Kaltwasser-Vorlauf der Stunde [°C], schon auf die Vorlaufgrenze hochgemischt (7.2). Nur mit Kühlübergabe.</summary>
+        internal double KuehlVorlaufC { get; }
+
+        /// <summary>Strahlungsanteil der Kühlübergabe [–] (Vorgabe der Art); verteilt wie die Heizseite.</summary>
+        internal double KuehlStrahlungsanteil { get; }
+
+        /// <summary>Steht der Kaltwasser-Vorlauf an der Vorlaufgrenze, weil die Anlage kälter liefert (7.2)?</summary>
+        internal bool KuehlVorlaufGekappt { get; }
+
+        /// <summary>Rechnet die Kühlung als Kühlübergabe (Anlagenkopplung, Schritt K, E37)?</summary>
+        internal bool MitKuehluebergabe => KuehlUebergabeGespiegelt != null;
     }
 
     /// <summary>
