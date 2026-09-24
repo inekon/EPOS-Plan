@@ -345,7 +345,7 @@ Form_Klimazonenkarte.btn_Help = Wärmequelle Erdreich
 Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
-Form_Gesetzesparameter.btn_Help = Gesetzesparameter
+Form_Gesetzesparameter.btn_Help = Kosten#gesetzliche-parameter
 Form_KatalogDubletten.btn_Help = Katalogpflege
 Form_Emissionskatalog.btn_Help = Emissionen
 

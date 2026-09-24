@@ -155,6 +155,11 @@ Eine neu angelegte Investitionsposition und eine aus einer Kostenvorlage überno
 * '''Herkunft der Nutzungsdauer''' – unter dem Feld steht in kleiner Schrift, woher der Wert stammt: ''Vorgabe der Technik'', ''AfA-Tabelle'' mit der Positionsart oder ''eigener Wert'', sobald der Wert von der Vorgabe abweicht. Ohne gepflegte Nutzungsdauer bleibt die Zeile leer; die Tafel [[#ersatz-restwert|Ersatz und Restwert]] nennt solche Positionen.
 * {{Anker|ersatz-restwert-kennzeichen}}'''Ersatzbeschaffung und Restwert je Position''' – der Zeileneditor hinter dem Stift führt auf der Investitionsseite zwei Klapplisten: ''Ersatzbeschaffung führen'' und ''Restwert ansetzen'', je mit ''ja'' und ''nein''. Leer lässt die Nutzungsdauer entscheiden: Ersetzt wird, sobald sie vor dem Ende des Betrachtungszeitraums abläuft, und der Restwert steht linear im letzten Jahr; ''ja'' rechnet genauso. ''nein'' schaltet das eine ohne das andere ab – eine Position ohne Ersatzbeschaffung behält den Restwert ihrer ersten Beschaffung, solange er nicht selbst abgeschaltet ist. Eine Zeile unter den Klapplisten nennt die Wahl. Die Kostenvorlagen führen dieselben Klapplisten; ''Aus Vorlage übernehmen…'', das Kopieren eines Projekts und ''Speichern unter'' nehmen die Wahl mit.
 
+== Gesetzliche Parameter ==
+{{Anker|gesetzliche-parameter}}
+
+Der Dialog '''Gesetzliche Parameter''' führt die jahresscharfen Sätze, mit denen die Wirtschaftlichkeit rechnet – KWK-Zuschlag, EEG-Vergütung, Energie- und Stromsteuer, CO₂-Preis, Umsatzsteuer und die Bilanzkonvention – in einem eigenen Katalog. Er steht unter {{Menü|Administration|Kosten|Gesetzliche Parameter…}}. Ein Auswahlfeld wählt den Bereich; darunter steht die Liste seiner Jahreszeilen mit Suche über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf – dasselbe Schema wie in den Gerätekatalogen. Eine Gesetzesänderung wird als neue Jahreszeile gepflegt und nicht als Änderung der alten: Nur so liefert eine heute gerechnete Variante auch in einigen Jahren dieselben Zahlen; die Maske fragt deshalb nach, wenn eine Zeile bearbeitet wird, deren Gültigkeitsjahr in der Vergangenheit liegt.
+
 == Kosten in der Speicherauslegung ==
 {{Anker|speicherauslegung-kosten}}
 
