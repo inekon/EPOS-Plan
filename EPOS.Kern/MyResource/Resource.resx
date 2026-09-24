@@ -4662,12 +4662,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Vertrieb</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2,05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0,05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der Anteile: {0} ct/kWh</value>
   </data>
@@ -30795,5 +30789,47 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
     <value>Positionen alle n Jahre mit p_E [€/a]</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ERFASST" xml:space="preserve">
+    <value>Erfasster Stromsteueranteil im Strompreis „{0}": {1} ct/kWh ({2}).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="BHW_S_STANTEIL_INAKTIV" xml:space="preserve">
+    <value>abgeschaltet</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEINER" xml:space="preserve">
+    <value>Im Strompreis „{0}" ist kein Stromsteueranteil erfasst.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEIN_TRAEGER" xml:space="preserve">
+    <value>Dem Projekt ist kein Strom-Energieträger zugeordnet — es ist kein Stromsteueranteil erfasst.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_NICHT_LESBAR" xml:space="preserve">
+    <value>Der erfasste Stromsteueranteil ließ sich nicht lesen: {0}</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REGEL" xml:space="preserve">
+    <value>Das ist der Regelsatz {0} ({1} ct/kWh, § 3 StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REDUZIERT" xml:space="preserve">
+    <value>Das ist der reduzierte Satz {0} ({1} ct/kWh, § 9b StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ABWEICHEND" xml:space="preserve">
+    <value>Das ist weder der Regelsatz ({0} ct/kWh) noch der reduzierte Satz ({1} ct/kWh) des Jahres {2}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REGEL" xml:space="preserve">
+    <value>Regelsatz</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REDUZIERT" xml:space="preserve">
+    <value>reduzierten Satz</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PASST" xml:space="preserve">
+    <value>Passt zur Unternehmensart: Sie legt den {0} nahe.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_VORSCHLAG" xml:space="preserve">
+    <value>Die Unternehmensart legt den {0} nahe — gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
+    <value>Gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
   </data>
 </root>

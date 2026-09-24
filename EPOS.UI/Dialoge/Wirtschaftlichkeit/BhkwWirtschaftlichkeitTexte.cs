@@ -147,6 +147,51 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "Stromsteuer enthält.");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 
+    // ETAPPE E18 (Konzept § 6.3 Nr. 16) — der erfasste Stromsteueranteil unter der
+    // Unternehmensart: reine Anzeige, gepflegt wird er in „Strompreis Details".
+
+    /// <summary>{0} = Träger, {1} = Anteil [ct/kWh], {2} = aktiv/abgeschaltet.</summary>
+    public string StAnteilErfasst { get; } = T("BHW_S_STANTEIL_ERFASST",
+        "Erfasster Stromsteueranteil im Strompreis „{0}\": {1} ct/kWh ({2}).");
+    public string StAnteilAktiv { get; } = T("BHW_S_STANTEIL_AKTIV", "aktiv");
+    public string StAnteilInaktiv { get; } = T("BHW_S_STANTEIL_INAKTIV", "abgeschaltet");
+
+    /// <summary>{0} = Träger.</summary>
+    public string StAnteilKeiner { get; } = T("BHW_S_STANTEIL_KEINER",
+        "Im Strompreis „{0}\" ist kein Stromsteueranteil erfasst.");
+    public string StAnteilKeinTraeger { get; } = T("BHW_S_STANTEIL_KEIN_TRAEGER",
+        "Dem Projekt ist kein Strom-Energieträger zugeordnet — es ist kein Stromsteueranteil erfasst.");
+
+    /// <summary>{0} = Grund.</summary>
+    public string StAnteilNichtLesbar { get; } = T("BHW_S_STANTEIL_NICHT_LESBAR",
+        "Der erfasste Stromsteueranteil ließ sich nicht lesen: {0}");
+
+    /// <summary>{0} = Jahr, {1} = Satz [ct/kWh].</summary>
+    public string StAnteilRegel { get; } = T("BHW_S_STANTEIL_REGEL",
+        "Das ist der Regelsatz {0} ({1} ct/kWh, § 3 StromStG).");
+
+    /// <summary>{0} = Jahr, {1} = Satz [ct/kWh].</summary>
+    public string StAnteilReduziert { get; } = T("BHW_S_STANTEIL_REDUZIERT",
+        "Das ist der reduzierte Satz {0} ({1} ct/kWh, § 9b StromStG).");
+
+    /// <summary>{0} = Regelsatz, {1} = reduzierter Satz [ct/kWh], {2} = Jahr.</summary>
+    public string StAnteilAbweichend { get; } = T("BHW_S_STANTEIL_ABWEICHEND",
+        "Das ist weder der Regelsatz ({0} ct/kWh) noch der reduzierte Satz ({1} ct/kWh) des Jahres {2}.");
+
+    public string StAnteilSatzRegel { get; } = T("BHW_S_STANTEIL_SATZ_REGEL", "Regelsatz");
+    public string StAnteilSatzReduziert { get; } = T("BHW_S_STANTEIL_SATZ_REDUZIERT", "reduzierten Satz");
+
+    /// <summary>{0} = Satzname.</summary>
+    public string StAnteilPasst { get; } = T("BHW_S_STANTEIL_PASST",
+        "Passt zur Unternehmensart: Sie legt den {0} nahe.");
+
+    /// <summary>{0} = Satzname.</summary>
+    public string StAnteilVorschlag { get; } = T("BHW_S_STANTEIL_VORSCHLAG",
+        "Die Unternehmensart legt den {0} nahe — gepflegt wird der Anteil unter „Strompreis Details\" des Energieträgers; hier steht er nur zur Ansicht.");
+
+    public string StAnteilPflege { get; } = T("BHW_S_STANTEIL_PFLEGE",
+        "Gepflegt wird der Anteil unter „Strompreis Details\" des Energieträgers; hier steht er nur zur Ansicht.");
+
     /// <summary>Der Sprung laeuft ueber die Huelle und schliesst diesen Dialog
     /// vorher (siehe <see cref="BhkwSprung"/>). Er nimmt denselben Weg wie OK —
     /// erst schreiben, dann hinaus —, sonst waeren die Eingaben des Anwenders mit

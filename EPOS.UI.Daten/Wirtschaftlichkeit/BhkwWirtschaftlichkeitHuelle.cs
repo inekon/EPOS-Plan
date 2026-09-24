@@ -123,7 +123,12 @@ namespace WindowsFormsApplication1
                 // ETAPPE E9b (E9a-Q7): Ist das Tarif-Rollenmodell wirksam, bewertet es die
                 // Einspeisung mit seinem Einspeisetarif - eine Szenario-Einspeiseverguetung
                 // KWK bleibt dann ohne Wirkung. Derselbe Satz wie am Ergebnis.
-                ["EinspeisungKwkSzenarioHinweise"] = EinspeisungKwkSzenarioHinweise(ctrl, idStamm)
+                ["EinspeisungKwkSzenarioHinweise"] = EinspeisungKwkSzenarioHinweise(ctrl, idStamm),
+
+                // ETAPPE E18 (Konzept § 6.3 Nr. 16): der im Strompreis erfasste
+                // Stromsteueranteil — nur Anzeige unter der Unternehmensart. Der Kernweg
+                // wirft nie; ein Lesefehler kommt als „nicht lesbar" mit Grund.
+                ["Stromsteueranteil"] = StrompreisZerlegungCtrl.StromsteuerErfasst(idStamm)
             };
         }
 
