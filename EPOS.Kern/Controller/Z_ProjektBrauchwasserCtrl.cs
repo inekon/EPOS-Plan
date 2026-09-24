@@ -77,6 +77,31 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// <b>Gleicht die Liste dem gespeicherten Stand?</b> — die Probe vor dem Neuschreiben der
+        /// Brauchwasser-Zuordnungen (Löschen und Neuanlegen, <c>WizardCtrl.Del_/Add_Projekt_Brauchwasser</c>),
+        /// damit ein OK ohne Änderung nichts schreibt und das Änderungsdatum des Projekts nicht
+        /// setzt. Gleich heißt: dieselbe Zahl Zeilen in derselben Reihenfolge wie
+        /// <see cref="LiesProjekt"/>, je Zeile derselbe Bezeichner und dieselbe Summe, und die
+        /// gespeicherte Zeile zeigt schon auf die Projektkopie ihres Bezeichners — genau den Stand,
+        /// den das Neuanlegen herstellen würde. Im Zweifel ungleich: dann wird geschrieben.
+        /// </summary>
+        public static bool GleichGespeichert(int idProjekt, IReadOnlyList<Z_ProjektBrauchwasserModel> liste)
+        {
+            liste ??= Array.Empty<Z_ProjektBrauchwasserModel>();
+            List<Z_ProjektBrauchwasserModel> bestand = LiesProjekt(idProjekt);
+            if (bestand.Count != liste.Count) return false;
+            for (int i = 0; i < bestand.Count; i++)
+            {
+                Z_ProjektBrauchwasserModel alt = bestand[i], neu = liste[i];
+                if (neu == null) return false;
+                if (!string.Equals(alt.szBezeichner ?? "", neu.szBezeichner ?? "", StringComparison.Ordinal)) return false;
+                if (!alt.Summe.Equals(neu.Summe)) return false;
+                if (alt.ID_Brauchwasser != BrauchwasserStammCtrl.GetProjektId(alt.szBezeichner, idProjekt)) return false;
+            }
+            return true;
+        }
+
         public void ReadAll(string sql)
         {
             // Daten abrufen über das zentrale DataRepository

@@ -678,7 +678,17 @@ je Nutzer" (`EFH-BZ2`, `KrankenH-F-U-400`, `KMEH-M-U-54`, `Z-EFH-A-S-126`) trage
 Bewohner; die acht Testreste (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) sind gelöscht. Der Schritt trifft je Satz
 nur Bezeichner UND Schadensbild — ein schon berichtigter oder anderer Satz einer Kundendatenbank bleibt,
 ein benutzter Testrest ebenso (Protokoll). Alle 269 Katalogsätze bestehen jetzt die Prüfung des
-Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). (b)
+Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). ✔ **Der Satz
+`Krankenhaus_92-EnEV2016` ist ganz durchgesehen — geprüft, keine weitere Berichtigung (#491):** Jede
+Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abweichungen sind die Werte
+der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
+Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
+`gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
+313,8 m / 13,6 Geschosse ≈ 3,5 m). Nicht entscheidbar und dem Anwender vorgelegt: die Anschlusslänge
+Fenster–Wand 1 800 m (0,95 m je m² Fenster, Ausgangssatz 2,54; physikalisch möglich, die Untergrenze für
+Fensterbänder ist 2 · 1 895,9 m² / 3,5 m ≈ 1 083 m) und die Außenwand von 12 094 m², die nicht um die
+1 120,4 m² gewachsen ist, um die Ost/West kleiner ist als beim Ausgangssatz (Hüllfläche 13 989,9 statt
+15 110,3 m²). (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im

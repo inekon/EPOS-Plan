@@ -258,6 +258,63 @@ namespace EPOS.Kern.Tests
             Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(PROJEKT));
         }
 
+        /// <summary>
+        /// Welle #489: Ein OK der Profilliste ohne Änderung schreibt die Zuordnungen nicht neu und
+        /// lässt das Änderungsdatum des Projekts stehen; eine geänderte Summe schreibt und setzt es.
+        /// </summary>
+        [Fact]
+        public void Der_Schreibweg_ohne_Aenderung_laesst_Zuordnungen_und_Aenderungsdatum_stehen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<BedarfsProfilZeile> zeilen = Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT)
+                .Select(m => new BedarfsProfilZeile { IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser, Name = m.szBezeichner, Summe = m.Summe })
+                .ToList();
+            Assert.NotEmpty(zeilen);
+            List<int> idsVorher = Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Select(m => m.ID_Z).ToList();
+
+            DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET Aenderungsdatum = ? WHERE ID = ?",
+                new DbParam("@d", "2020-01-01 00:00:00"), new DbParam("@id", PROJEKT));
+            DateTime? vorher = MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT);
+            Assert.True(vorher.HasValue && vorher.Value.Year == 2020);
+
+            // Unverändert, unberührter Behälter: nichts geschrieben.
+            Assert.Equal("", ZapfprofilHuelle.Schreibweg(PROJEKT, zeilen, new ZapfprofilBehaelter(PROJEKT)));
+            Assert.Equal(vorher, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
+            Assert.Equal(idsVorher, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Select(m => m.ID_Z).ToList());
+
+            // Eine geänderte Summe: geschrieben und markiert.
+            zeilen[0].Summe += 1.5;
+            Assert.Equal("", ZapfprofilHuelle.Schreibweg(PROJEKT, zeilen, null));
+            DateTime? nachher = MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT);
+            Assert.True(nachher.HasValue && nachher.Value.Year > 2020, "Aenderungsdatum nicht gesetzt.");
+            Assert.Equal(zeilen[0].Summe, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT)[0].Summe, 9);
+        }
+
+        /// <summary>
+        /// Welle #489: Die Probe <see cref="Z_ProjektBrauchwasserCtrl.GleichGespeichert"/> — gleich
+        /// nur bei derselben Folge aus Bezeichner und Summe; eine fehlende oder zusätzliche Zeile ist
+        /// ungleich.
+        /// </summary>
+        [Fact]
+        public void Die_Gleichheitsprobe_der_Zuordnungen_erkennt_Aenderungen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<Z_ProjektBrauchwasserModel> liste = Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT);
+            Assert.NotEmpty(liste);
+            Assert.True(Z_ProjektBrauchwasserCtrl.GleichGespeichert(PROJEKT, liste));
+
+            var mehr = new List<Z_ProjektBrauchwasserModel>(liste) { liste[0] };
+            Assert.False(Z_ProjektBrauchwasserCtrl.GleichGespeichert(PROJEKT, mehr));
+            Assert.False(Z_ProjektBrauchwasserCtrl.GleichGespeichert(PROJEKT, new List<Z_ProjektBrauchwasserModel>()));
+
+            liste[0].szBezeichner = (liste[0].szBezeichner ?? "") + " anders";
+            Assert.False(Z_ProjektBrauchwasserCtrl.GleichGespeichert(PROJEKT, liste));
+        }
+
         private static int Nutzungsart()
             => Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ? AND Katalogversion = ?",
