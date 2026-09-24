@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -220,7 +220,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 4–9 | erledigt mit B6 bzw. schon vorher | § 3.2 |
 | 9a–9d | erledigt mit E4, B7P, U17 (#346) | § 3.3 |
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
-| 9h–9k | 9i und 9k erledigt; 9h zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9; mit E7c3 (#452) gemessen, der Wortlaut vor #452 in § 8.11); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9, § 8.11 |
+| 9h–9k | 9i und 9k erledigt; 9h erledigt mit E10 (#463), der Wortlaut vor #463 und der Grund in § 8.23 — vorher zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9; mit E7c3 (#452) gemessen, der Wortlaut vor #452 in § 8.11); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9, § 8.11, § 8.23 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
 | 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3; 30 ganz erledigt mit E7c1 (#440), der Wortlaut vor #440 und der Grund in § 8.7 | § 5.1, § 8.3, § 8.7 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
@@ -1282,7 +1282,8 @@ jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`),
 Merge #460 über den Entscheid-Papieren zu E8b, `46023235`), in § 8.19 und § 8.20 **vor #461** (Stand `62613292`, der
 Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.21 und § 8.22 **vor #462** (Stand
 `75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
-Papieren zu #461) —, nicht vor dem Schnitt.*
+Papieren zu #461), in § 8.23 und § 8.24 **vor #463** (Stand `94521f2e`, der Merge #463 über `502fea3c` = Dialog
+Design #466 samt den Papieren zu #462) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2223,3 +2224,139 @@ Die Stellen, die mit E9b veraltet sind; „vorher" ist der Wortlaut vor #462 (St
 | § 6.1 | Kurztafel bis E9a (#461) | Zeile „E9b Szenarioabdeckung, Teil b" (#462) |
 | § 6.2 | endete mit „… E9a bewegt keinen Anker." | dazu `SzenarioAbdeckungTests` (15), `EnergietraegerSzenarioHuelleTests` (6) und der Satz „E9b bewegt keinen Anker" |
 | § 7 und Anhang | § 7: Wortlaut in § 8.21, dazu die Aufzählung „… E8 Teil b (#455) und E9 Teil a (#461)" und „E7 und E8 sind damit abgeschlossen"; Kürzeltafel „V-E Teil a = **#461**" und „Teil b mit E9b", Mockup-Anhang „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeile „E9 Teil b … E12 — nächste Etappe: E9b (voraussichtlich #462)" | § 7 mit E9 Teil b (#462), „E7, E8 und E9 sind damit abgeschlossen", als Nächstes E10, offen dazu die fünf Fragen aus E9b; Kürzeltafel „V-E = **#461**/**#462**", neue Zeile V‑E Teil b = #462, „U15 erledigt #461/#462, U10 entfallen #462"; Etappenzeilen „E9 Teil b — V‑E in den Dialogen" = #462 (Merge `75d45630`) und „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" |
+
+### 8.23 E10 — Nutzungsdauer S3 und Speicherflotte: Sätze je Technik, Speicherflotte an der Nutzungsdauertabelle, Kennzeichnung A8 (#463)
+
+Protokoll [`E10_Nutzungsdauer_S3_Speicherflotte_Protokoll.md`](E10_Nutzungsdauer_S3_Speicherflotte_Protokoll.md); der
+Stand von A7 und A8 (R‑A), von ND‑Q4, ND‑Q6 und ND‑Q7 (R‑ND) und von Nr. 20 (R‑NR) im Register; die sieben Fragen der
+Welle — gebaut jeweils Lesart a, Empfehlung jeweils a, E10‑Q5 erledigt, sechs offen — unter R‑E10. Die Welle ist die
+Etappe E10 des Analysepapiers; mit ihr ist § 6.3 Nr. 9h erledigt und der Mockup-Anhang U39 geschlossen.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E10** (#463, Merge `94521f2e`) | Schemaschritt 120 sät die Instandsetzungssätze der fünf Standardzeilen der Nutzungsdauertabelle (die Mitte der Vorlagenbereiche), der Dialog „Nutzungsdauern (AfA)" zeigt Instandsetzung und Wartung; die Sätze wirken nur über die ausdrückliche Vorbelegung — Übernahme einer Kostenvorlage oder „Sätze vorbelegen…" der Betriebsseite —, die Herkunft steht am Satz, in Herleitung und Formelmappe (Nachweisfassung 10); ein neuer Kesseleintrag in %/a übernimmt den Wartungssatz; die Flottenstudie rechnet den Restwert je Einheit linear aus der Nutzungsdauer, ohne eigenes Intervall aus der Batteriezeile, der feste Restwert der Einheit ist Altfeld; die Nutzungsdauer von Kessel und BHKW als Gerätedaten gekennzeichnet (A8); 24 Ressourcenschlüssel neu, 6 geändert; Testdatenbank auf Schemastand 120 | **keine ohne Zutun** — der zuerst gebaute Rückfall auf den Tabellensatz zur Rechenzeit ist zurückgebaut (E10/9, ND‑Q4); A/B mit dem Knopf auf einer Arbeitskopie (1030 −630.612,02 €), Flottenstudie 1046 +3.432,79 €; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich, keine R14; Gate auf `94521f2e`: Kern-Filter 0 Fehler, ChartProben 146/146 gleich der Windows-Messlatte, voller Lauf 12.580 bestanden / 0 Fehler / 1 übersprungen, Dokumentationswachen 26/26 |
+
+*Kopf (Z. 3) und die Schritte dieses Feldes (Z. 30–31):*
+
+> **Stand 24.09.2026** · Codestand `75d45630` · `SchemaStand.Zielversion` = 119 · Schemaschritte 90–119 vergeben
+> (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2) · …
+>
+> **118** — die Erlössätze best/worst (`SCHRITT_118_ERLOESSATZ_SZENARIO`). Wer hier einen Schritt plant, nimmt die
+> nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+
+**Umgesetzt mit E10 (#463):** Codestand `94521f2e`, Zielversion 120, „90–120 vergeben (…; 120 die Sätze der
+Nutzungsdauertabelle, Etappe E10)"; unter den Schritten dieses Feldes steht **120** hinter 118
+(`SCHRITT_120_NUTZUNGSDAUER_SAETZE`, reines DML, § 3.4).
+
+*§ 2.1, die Zeilen BHKW und Heizkessel der Anlagentafel (Z. 140, 142), Spalte „Investitionsfelder":*
+
+> … · `Wartungskosten_kwhel` · Nutzungsdauer
+>
+> `Investitionskosten` · `Wartungskosten` mit Einheit (€/a \| €/kWh \| %/a) · Nutzungsdauer
+
+**Umgesetzt mit E10 (#463):** je „Nutzungsdauer (Gerätedaten, nicht rechenwirksam — A8, #463)"; beim Kessel dazu
+„ein neuer Eintrag in %/a übernimmt den Wartungssatz der Nutzungsdauertabelle".
+
+*§ 2.8, Rahmen der Seite, die Rasterknöpfe (Z. 659–660):*
+
+> - **Vier Rasterknöpfe:** „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…" ·
+>   „Nutzungsdauern vorbelegen…"; darunter die Dialogleiste „Abbrechen · Speichern · OK".
+
+**Umgesetzt mit E10 (#463):** dazu der vierte Knopf der Betriebsseite, „Sätze vorbelegen…" — leere Sätze füllen,
+belegte nach Rückfrage, geschrieben mit „Speichern"/„OK" —, und die Herkunft unter dem Satzfeld.
+
+*§ 2.13 (3), die zwei Stücke aus U39 (Z. 1230–1236) und der Schluss des Absatzes zur Hinweiszeile (Z. 1245–1246):*
+
+> **Was der späteren Umsetzung fehlt** (zwei Stücke, im Mockup-Anhang als **U39** geführt):
+>
+> 1. die **geräteeigenen Nutzungsdauer-Spalten** (`Tab_BHKW`, `Tab_Heizkessel`,
+>    `Tab_StromspeicherVariante`) — eine zweite Wahrheit, die kein Wirtschaftlichkeitsrechner liest;
+> 2. der **Anschluss der Speicherflotte**, die ihren Ersatz über die gleichnamigen **Felder des
+>    Flottenstands** (`ErsatzintervallJahre`, `RestwertEuro` als JSON in `Tab_SpeicherAuslegung`) führt
+>    — nicht über Spalten; der Anschluss berührt deshalb die **Einfrierregel** des Projekts 1046.
+>
+> … die Hülle sammelt nicht mehr selbst. Offen bleiben die zwei Stücke oben (U39); die Entkopplung von Ersatz und
+> Restwert ist umgesetzt #446.
+
+**Umgesetzt mit E10 (#463):** „Die zwei Stücke aus U39 — gebaut mit E10 (#463)": (1) die Spalten von BHKW und Kessel
+als „Nutzungsdauer (Gerätedaten)" gekennzeichnet, keine entfernt, `Tab_StromspeicherVariante` rechnet weiter selbst,
+der Halbsatz aus A8 zu den Positionsarten 20/21 offen; (2) die Speicherflotte mit linearem Restwert je Einheit auf der
+Ersatzkette der Flotte, der Intervall-Vorgabe aus der Standardzeile „Stromspeicher · Batterie" und dem Altfeld
+`RestwertEuro`, ohne neue Basis. Der Schluss sagt „U39 ist damit erledigt; offen bleibt allein der Halbsatz aus A8 zur
+Speichervariante".
+
+*§ 3.4:* neu, hinter „Basis „% der Investition" auf der Betriebsseite" (Z. 1778–1780), der Absatz „**Sätze der
+Nutzungsdauertabelle**" — die Saat aus Schritt 120, „die Tabelle rechnet nicht selbst" (ND‑Q4), die ausdrückliche
+Vorbelegung über Kostenvorlage und „Sätze vorbelegen…", die Zuordnung über den Positionsschlüssel und die Herkunft am
+Satz (Nachweisfassung 10).
+
+*§ 6.3 Nr. 9h (Z. 2712–2725):*
+
+> 9h. **Nutzungsdauer, Ersatz, Restwert — zwei fehlende Stücke (Mockup-Anhang U39):** die ungelesenen
+>     geräteeigenen Nutzungsdauer-Spalten und der Anschluss der Speicherflotte — offen mit ND‑S3 (E10; A7
+>     und A8 binden beides daran). **Gemessen mit E7c3 (#452):** `Tab_BHKW` führt eine Nutzungsdauer in 3 von
+>     6 Zeilen der Testdatenbank (10 a), im Stamm in 44 von 79; `Tab_Heizkessel` in 1 von 22 (20 a), im Stamm
+>     in 0 von 63 — beide ohne Leser in der Wirtschaftlichkeit; `Tab_StromspeicherVariante` in 13 von 13 (20 a),
+>     sie rechnet in der Speicherwirtschaftlichkeit und im Peak-Shaving. Die Nutzungsdauer-Tabelle führt
+>     abweichend BHKW-Modul 15 a und Batterie 10 a; die Flotte von 1046 zwei Einheiten mit Ersatzintervall 10 a
+>     und Restwert 500 bzw. 300 €. **Vorschlag für ND‑S3:** die Gerätespalten nur als „Gerätedaten"
+>     kennzeichnen (A8); für Speichervariante und Flottenintervall die Tabelle nur als Vorgabe neuer Einträge
+>     nehmen — das bewegt nichts; ein linearer Restwert aus der Nutzungsdauer erst mit ND‑S3 und einer neu
+>     eingefrorenen Basis für 1046. Erledigt sind die Nachpflege des Bestands und der
+>     Pflegeort der Positionsart (#357), der Hinweis „T über Vorgabe, Position ohne Dauer" und die
+>     Zeitraumzeile auf Seite und Bericht (E5, #434) sowie die Entkopplung von Ersatz und Restwert
+>     (E7c2, #446, Schemaschritt 111, § 2.13 (3)) — siehe Protokoll.
+
+**Erledigt mit E10 (#463):** beide Stücke — die Gerätespalten von BHKW und Kessel sind als Gerätedaten gekennzeichnet
+(A8), die Speicherflotte ist angeschlossen (A7). Abweichend vom Vorschlag der Messung gilt die Intervall-Vorgabe der
+Flotte zur Rechenzeit der Studie, nicht nur für neue Einträge (Auftrag E10, Punkt 6; mitzuentscheiden mit E10‑Q3); der
+lineare Restwert kam ohne neue Basis, weil der Referenzlauf keine Flottenwirtschaftlichkeit führt. Die Speichervariante
+liest weiter ihre eigene Spalte (der Halbsatz aus A8 ist offen). Im Konzept steht der Punkt als Einzeiler.
+
+*§ 6.3 Nr. 19 (Z. 2745):*
+
+> 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"
+
+**Umgesetzt mit E10 (#463):** „dokumentiert mit E10 (#463)" (E10‑Q6, Lesart a) — der Kessel führt seine Wartung je
+Katalogeintrag in €/a, €/kWh oder %/a, ein neuer Eintrag in %/a übernimmt den Wartungssatz der Tabelle; das BHKW führt
+sie fest in €/kWh el und bekommt keine Vorbelegung. Der Punkt bleibt offen; behoben ist nichts.
+
+*§ 6.1, § 6.2 und § 6.5:* neu die Zeile „E10 Nutzungsdauer S3 und Speicherflotte" (#463) der Kurztafel; der Satz zu den
+Testklassen `NutzungsdauerS3Tests` (16), `SpeicherFlottenNutzungsdauerTests` (9) und `NutzungsdauerKennzeichnungTests`
+(4) mit „E10 bewegt keinen Anker"; die Doppelung „Nutzungsdauer an zwei Orten" als benannt, nicht gekoppelt.
+
+*§ 7, die Sätze zur nächsten Etappe (Z. 2841–2844):*
+
+> Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.11.7). **Als Nächstes kommt E10**
+> (Nutzungsdauer S3 und Speicherflotte, voraussichtlich #463) nach dem eigenen Entscheid zu ND‑S3. Offen
+> sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
+> (→ Register R‑E9a) und die fünf aus E9b (→ Register R‑E9b); …
+
+**Umgesetzt mit E10 (#463):** E10 ist gebaut, den eigenen Entscheid zu ND‑S3 vertreten die Fragen aus E10; als
+Nächstes kommt E12 (Wiki-Runden), E11 entfällt — der Etappenplan ist bis auf E12 abgearbeitet; offen dazu sechs der
+sieben Fragen aus E10. In der Aufzählung davor „… E9 Teil b (#462) und E10 (#463)" und „E7, E8, E9 und E10 sind damit
+abgeschlossen".
+
+*Anhang:* in der Kürzeltafel „§ 6.3 Nr. 9h" mit #463 und „erledigt mit ND‑S3 (E10)", eine neue Zeile der Welle (A7 · A8
+· § 3.4 · § 6.3 Nr. 9h und Nr. 19 · U39 · ND‑Q6 · ND‑Q7 · E10‑Q1…Q7 = #463), „S3 = #463" statt „S3 offen (E10)" und im
+Mockup-Anhang „U39 erledigt #446 und #463" statt „U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3)"; in der
+Etappentafel die Zeile „E10 — Nutzungsdauer S3 und Speicherflotte" = #463 (Merge `94521f2e`) und „E11 … E12 — nächste
+Etappe: E12" statt „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)".
+
+### 8.24 Berichtigungen im gültigen Stand (#463)
+
+Die Stellen, die mit E10 veraltet sind; „vorher" ist der Wortlaut vor #463 (Stand `94521f2e`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `75d45630`, Zielversion 119, „90–119 vergeben"; die Schritte dieses Feldes enden mit 118 | Codestand `94521f2e`, Zielversion 120, „90–120 vergeben"; 120 (die Sätze der Nutzungsdauertabelle, E10) unter den Schritten dieses Feldes |
+| § 2.1 | BHKW und Heizkessel „· Nutzungsdauer" | „Nutzungsdauer (Gerätedaten, nicht rechenwirksam — A8, #463)"; beim Kessel der Wartungssatz für neue Einträge in %/a |
+| § 2.8 | „Vier Rasterknöpfe: … „Nutzungsdauern vorbelegen…"; darunter die Dialogleiste" | dazu „Sätze vorbelegen…" auf der Betriebsseite und die Herkunft unter dem Satzfeld |
+| § 2.13 (3) | „Was der späteren Umsetzung fehlt" (die zwei Stücke U39); „Offen bleiben die zwei Stücke oben (U39)" | „Die zwei Stücke aus U39 — gebaut mit E10 (#463)"; „U39 ist damit erledigt; offen bleibt allein der Halbsatz aus A8 zur Speichervariante" |
+| § 3.4 | — | neuer Absatz „Sätze der Nutzungsdauertabelle" |
+| § 6.1 | Kurztafel bis E9b (#462) | Zeile „E10 Nutzungsdauer S3 und Speicherflotte" (#463) |
+| § 6.2 | endete mit „… E9b bewegt keinen Anker." | dazu `NutzungsdauerS3Tests` (16), `SpeicherFlottenNutzungsdauerTests` (9), `NutzungsdauerKennzeichnungTests` (4) und „E10 bewegt keinen Anker" |
+| § 6.3 Nr. 9h | Wortlaut in § 8.23 | Einzeiler „erledigt mit E10 (#463)"; offen der Halbsatz zur Speichervariante |
+| § 6.3 Nr. 19 | „Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"" | „dokumentiert mit E10 (#463)" mit der Beschreibung; der Punkt bleibt offen |
+| § 6.5 | — | neue Zeile „Nutzungsdauer an zwei Orten … — benannt, nicht gekoppelt (A8, #463)" |
+| § 7 und Anhang | § 7: Wortlaut in § 8.23, dazu „… E9 Teil a (#461) und E9 Teil b (#462)" und „E7, E8 und E9 sind damit abgeschlossen"; Kürzeltafel „S3 offen (E10)", „U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3)"; Etappenzeile „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" | § 7 mit E10 (#463), „E7, E8, E9 und E10 sind damit abgeschlossen", als Nächstes E12, offen dazu sechs Fragen aus E10; Kürzeltafel „S3 = #463", neue Zeile der Welle, „U39 erledigt #446 und #463"; Etappenzeilen „E10 — Nutzungsdauer S3 und Speicherflotte" = #463 (Merge `94521f2e`) und „E11 … E12 — nächste Etappe: E12" |
