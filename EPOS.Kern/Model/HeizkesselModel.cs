@@ -30,6 +30,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Wartungskosten_Einheit;
 
+        /// <summary>
+        /// Nutzungsdauer laut Gerätekatalog [a] — Gerätedaten, NICHT rechenwirksam; maßgeblich
+        /// ist die Nutzungsdauertabelle (Etappe E10, Kennzeichnung A8, Empfehlung E10-Q4 a).
+        /// </summary>
         public double Nutzungsdauer;
         public double CO2;
         public double SO2;

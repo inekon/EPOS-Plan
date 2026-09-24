@@ -201,6 +201,7 @@ namespace WindowsFormsApplication1
                     Einheit = feld.Einheit,
                     Art = feld.Art,
                     Editierbar = feld.Editierbar,
+                    Hinweis = feld.Hinweis ?? "",
                     Wert = wert ?? ""
                 });
             }

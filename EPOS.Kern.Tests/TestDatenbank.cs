@@ -598,7 +598,12 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
                     SpalteSicherstellen(s);
 
-                // Schritt 120 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
+                // Schritt 120 (Etappe E10, Stufe S3): die Saetze der Nutzungsdauertabelle.
+                // Reines DML aus DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // (NutzungsdauerSaetze); wiederholbar - gesetzt wird nur, was leer ist.
+                NutzungsdauerSaetze.Ausfuehren();
+
+                // Schritt 121 (Zapfprofilgenerator Stufe Z4, T3): die Laufangaben der Auslegung an
                 // Tab_TwwProjekt und die Bezugsart am Bedarfstag. Aus DERSELBEN Quelle wie Migration
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);

@@ -141,7 +141,9 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
 
         Eingabe(cut, "Ersatzkosten:").Input("12000");
         Eingabe(cut, "Ersatzintervall:").Input("8");
-        Eingabe(cut, "Restwert der Einheit:").Input("2500");
+        // ETAPPE E10: Die Beschriftung nennt den festen Restwert „Gerätedaten" — er bleibt
+        // pflegbar, rechnet aber nicht mehr (Empfehlung E10-Q3 a).
+        Eingabe(cut, "Restwert der Einheit (Gerätedaten):").Input("2500");
 
         Assert.Equal(12000, gemeldet!.Einheiten[0].ErsatzkostenEuro);
         Assert.Equal(8, gemeldet.Einheiten[0].ErsatzintervallJahre);
@@ -274,6 +276,35 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-flotte-feldraster--fehler"));
         Assert.Contains("Punkt 2", cut.Find("p.epos-flotte-hinweis--problem").TextContent,
                         StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// ETAPPE E10 (Empfehlung E10‑Q3 a): Unter „Ersatz und Restwert" sagen zwei leise
+    /// Zeilen, was ein Intervall 0 bedeutet — die Nutzungsdauer der Nutzungsdauertabelle,
+    /// mit ihrer Zahl, wenn der Wirt sie kennt — und dass der feste Restwert
+    /// Gerätedaten ist, die nicht mehr rechnen.
+    /// </summary>
+    [Fact]
+    public void Ersatz_und_Restwert_nennen_Tabelle_und_Altfeld()
+    {
+        var mitZahl = Render<SpeicherFlottenEditor>(p => p
+            .Add(x => x.Wert, KonfigurationMitEinheit())
+            .Add(x => x.ErsatzintervallVorgabeJahre, 10));
+        Assert.Equal("Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher " +
+                     "(10 Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert.",
+                     mitZahl.Find("p.epos-flotte-ersatzvorgabe").TextContent.Trim());
+        Assert.Contains("Gerätedaten, nicht mehr rechenwirksam",
+                        mitZahl.Find("p.epos-flotte-restwert-altfeld").TextContent);
+
+        var ohneTabelle = Render<SpeicherFlottenEditor>(p => p
+            .Add(x => x.Wert, KonfigurationMitEinheit())
+            .Add(x => x.ErsatzintervallVorgabeJahre, 0));
+        Assert.Contains("keine Nutzungsdauer", ohneTabelle.Find("p.epos-flotte-ersatzvorgabe").TextContent);
+
+        var ohneWirt = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
+        string text = ohneWirt.Find("p.epos-flotte-ersatzvorgabe").TextContent;
+        Assert.Contains("Nutzungsdauertabelle", text);
+        Assert.DoesNotContain("Jahre)", text);
     }
 
     private static FlottenStudieKonfiguration KonfigurationMitEinheit()

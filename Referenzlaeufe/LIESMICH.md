@@ -118,6 +118,18 @@ unmittelbar in die Referenz.
 > `@Projektflotte`: Sie erreichen den Projektlauf nicht. Die übrigen Projekte der
 > Testdatenbank führen gar keinen Flottenstand.
 
+**Anschluss an die Nutzungsdauertabelle (E10, #463).** Die Wirtschaftlichkeit der Flottenstudie
+rechnet den Restwert je Einheit linear aus ihrer Nutzungsdauer (Ersatzintervall) auf der
+Ersatzkette der Flotte; eine Einheit ohne eigenes Intervall nimmt die Nutzungsdauer der
+Standardzeile „Stromspeicher · Batterie" der Nutzungsdauertabelle, und der feste Restwert je Einheit
+ist ein Altfeld, das nicht mehr rechnet. Zur Regel gehören damit auch **Ersatzintervall und
+Ersatzkosten der Einheiten von `@Projektflotte`** und — sobald eine Einheit ohne eigenes Intervall
+rechnet — **die Nutzungsdauer der Zeile „Stromspeicher · Batterie"**. Die Basis führt heute keine
+Flottenwirtschaftlichkeit (`aggregate.csv` von 1046 trägt nur die Physik), eine Änderung dort
+bewegt sie also nicht; die Zahlen hält `EPOS.Kern.Tests/SpeicherFlottenNutzungsdauerTests`
+(1046: Restwert 800 → 7 000 €, Kapitalwert +3 432,79 €). Wer diese Größen ändert, zieht den
+Test nach, rechnet den Referenzlauf und friert neu ein, sobald die Basis sich bewegt.
+
 Das Projekt entsteht wiederholbar aus
 [`Skripte/pruefprojekt_1046_speicherflotte.py`](Skripte/pruefprojekt_1046_speicherflotte.py);
 Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen im
@@ -285,7 +297,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`, Nachträge 114, 115, 119 und 120 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+**113**, LFS-SHA-256 `769143e4…`, Nachträge 114 bis 121 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
 kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
@@ -417,6 +429,21 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `8a3bebaf…`).
 
+> **Nachtrag: Schemastände 116 bis 118 (Szenarioabdeckung der Wirtschaftlichkeit, Etappe E9a,
+> #461), die Basis bleibt.** Migrationsschritte **116** (`SCHRITT_116_SZENARIO_RAHMEN`: vier nullbare
+> Spalten `Szen_Best_/Szen_Worst_Zeitraum` und `…_Menge` an `Tab_ProjektWirtschaftlichkeit`), **117**
+> (`SCHRITT_117_TRAEGERPREIS_SZENARIO`: sechs nullbare Spalten `custom_price_work/base/power_best/_worst`
+> an `energy_project_settings`) und **118** (`SCHRITT_118_ERLOESSATZ_SZENARIO`: acht nullbare Spalten —
+> `Einspeiseverguetung(_KWK)_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_` und
+> `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`), **reines DDL**; NULL heißt „wie Erwartet". Mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
+> Fassung 115 (LFS-SHA-256 `fbc30835…`, 67 780 608 Byte) nachgezogen: 18 Spalten angelegt, Marker 118;
+> ein zweiter Lauf legt nichts an. Gegen 115 unterscheiden sich allein die drei Tabellen um die 18
+> neuen, leeren Spalten und `SchemaVersion` 115 → 118; `integrity_check` ok, `foreign_key_check` leer,
+> Größe 67 784 704 Byte (LFS-SHA-256 `e9748b7f…`). **Keine Einfrierregel ist berührt:** Keine Spalte
+> trägt einen gesäten Wert, und der Referenzlauf führt keine Wirtschaftlichkeitsgröße — er bleibt
+> byte-gleich.
+
 > **Nachtrag: Schemastand 119 (Kühlung, Stufe KU2, Welle 3), die Basis bleibt.** Migrationsschritt
 > **119** (`SCHRITT_119_KAELTESTROM`: `Tab_Energieanlagen.Kuehl_EigenerZaehler` — 0/1 mit `CHECK`, nullbar,
 > ohne Vorgabe, NULL = anteilig am Netzbezug, Entscheid E34 — und sieben nullbare Ergebnisspalten der
@@ -434,24 +461,48 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Referenzprojekt kühlt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
 > (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `6259b348…`).
 
-> **Nachtrag: Schemastand 120 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3), die Basis bleibt.**
-> Migrationsschritt **120** (`SCHRITT_120_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
+> **Nachtrag E10 (#463): Schemastand 120 und der Anschluss der Speicherflotte an die
+> Nutzungsdauertabelle, die Basis bleibt.** Migrationsschritt **120**
+> (`SCHRITT_120_NUTZUNGSDAUER_SAETZE`, Nutzungsdauer-Konzept Stufe S3), **reines DML** an
+> `Tab_Nutzungsdauer`: Die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+> Empfehlungsbereichs derselben Position der Betriebsvorlagen-Saat (Quelle `NutzungsdauerSaetze`) —
+> fünf Zellen `Instandsetzung_Prozent`: Heizkessel · Wärmeerzeuger 2,0, BHKW · Modul 6,0,
+> Wärmezentrale · Rohrleitungen 2,0, Stromeinspeisung · Netzanschluss 2,0, Bauliche Anlagen 1,25;
+> `Wartung_Prozent` bleibt überall leer. Mit `Werkzeuge/Testdatenbankschema` auf der Fassung 119
+> nachgezogen; ein zweiter Lauf setzt nichts (0/5). Zellvergleich gegen die Fassung 119: allein
+> `SchemaVersion` 119 → 120 und diese fünf Zellen; `integrity_check` ok, `foreign_key_check` leer,
+> Größe unverändert 67 784 704 Byte (LFS-SHA-256 `52c4729d…`). **Ergebnisneutral:** Ein Satz der
+> Tabelle rechnet erst, wenn der Anwender ihn über „Sätze vorbelegen…" oder die Übernahme einer
+> Kostenvorlage in eine Position schreibt; der Rechenweg liest weiter den Satz der Position.
+>
+> **Mit derselben Welle** rechnet die Wirtschaftlichkeit der Speicherflotten-STUDIE den Restwert je
+> Einheit linear aus ihrer Nutzungsdauer auf der Ersatzkette der Flotte (Betrag der letzten
+> Beschaffung × Restdauer ÷ Nutzungsdauer); eine Einheit ohne eigenes Ersatzintervall nimmt die
+> Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" (10 a), und der feste Restwert je
+> Einheit ist ein Altfeld, das nicht mehr rechnet. Der Projektlauf rechnet keine
+> Flottenwirtschaftlichkeit, und `aggregate.csv` führt für 1046 nur die Physik der Flotte — die
+> Referenz bewegt sich nicht (dritte Einfrierregel, Absatz „Anschluss an die Nutzungsdauertabelle").
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
+
+> **Nachtrag: Schemastand 121 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3), die Basis bleibt.**
+> Migrationsschritt **121** (`SCHRITT_120_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
 > Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an `Tab_TwwProjekt` die Laufangaben
 > der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2), `Personen_Auto` (0/1, Vorgabe 1),
 > `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an `Tab_TwwBedarfstag_STAMM` die
-> `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar. Nachgezogen auf der Fassung **119**
-> (Nachtrag oben) mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
+> `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar. Nachgezogen auf der Fassung **120**
+> (Nachtrag E10 oben) mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
 > danach [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py): Es führt am
 > Ecodesign-Zapfprofil L des freien Paketteils die Bezugsart 2 (Wohneinheiten) nach (0 angelegt,
-> 1 nachgeführt); ein zweiter Lauf meldet 0/0. Zellvergleich aller 132 Tabellen gegen die Fassung 119
-> (10 498 997 Zellen): `SchemaVersion` 119 → 120, die sechs neuen Spalten — `Tab_TwwProjekt` ohne Zeile,
+> 1 nachgeführt); ein zweiter Lauf meldet 0/0. Zellvergleich aller 132 Tabellen gegen die Fassung 120
+> (10 498 997 Zellen): `SchemaVersion` 120 → 121, die sechs neuen Spalten — `Tab_TwwProjekt` ohne Zeile,
 > die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei fiktiven Tagen NULL —, sonst nichts; die
 > 14 Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von
 > 131 Fachtabellen STRICT, Größe unverändert 67 784 704 Byte. **Keine Einfrierregel ist berührt:** Kein
 > Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
 > Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `e9c9cac3…`).
 
-> **Nachtrag: drei Setzungen des freien Paketteils (Zapfprofilgenerator, Stufe Z4), Schemastand 120,
+> **Nachtrag: drei Setzungen des freien Paketteils (Zapfprofilgenerator, Stufe Z4), Schemastand 121,
 > die Basis bleibt.** [`Katalogpaket_frei/Tab_TwwParameter_STAMM.csv`](Katalogpaket_frei/LIESMICH.md) trägt
 > `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (1,5), `Zapfprofil.Anzeigetemperatur` (45 °C) und
 > `Zapfprofil.Stundenschwelle` (0,1 kW) — Setzungen von INEKON zur Bestätigung (ZU21);

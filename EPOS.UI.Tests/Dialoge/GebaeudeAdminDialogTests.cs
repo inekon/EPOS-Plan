@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
@@ -16,10 +18,12 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// <b>Die Gebäudeverwaltung im Gerüst der Verwaltungen</b> (Konzept Administrationsdialoge,
-/// Stufe 5, V16; Bestand A9) — Katalogliste mit Profil statt eigener Tabelle und vier
-/// Vorfiltern, Stammblatt mit Kenndaten, Hülle und „Alle Daten", Auswahlleiste mit
-/// Vergleichen, Duplizieren… und Löschen (Verwendungssperre), Fußleiste Speichern ·
-/// Verwerfen · Status · Neu… · Beenden.
+/// Stufe 5, V16; Bestand A9; Welle #465) — Katalogliste mit Profil, Auswahlleiste mit
+/// Vergleichen, Duplizieren…, Schloss und Löschen (Verwendungssperre), Fußleiste Speichern ·
+/// Verwerfen · Status · Neu… · Beenden, und ein Stammblatt, das JEDES Feld des Katalogeditors
+/// führt: Kenndaten, Hülle, Fenster, Kenngrößen und „Alle Daten" — auf demselben Arbeitsstand,
+/// mit derselben Prüfung und demselben Schreibweg wie der Editor. Dazu die eigene Maske beim
+/// Hilfe-Assistenten (<c>Form_Gebaeude_Admin</c>).
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
@@ -52,6 +56,51 @@ public class GebaeudeAdminDialogTests : EposBunitContext
                 .MitZahl(Katalogfilterprofil.SpFlaecheM2, h.Flaeche, 0))
             .ToList();
 
+    /// <summary>
+    /// Ein GÜLTIGER Feldsatz — er besteht die Prüfung des Katalogeditors: Pflichtzahlen gesetzt,
+    /// U-Werte im Bereich, Bauweise 50 je m² (schwer), Ferien ohne Angabe.
+    /// </summary>
+    private static GebaeudeKatalogDaten Feldsatz(Haus h) => new()
+    {
+        Name = h.Name,
+        Typ = "Wohnblock",
+        Gebaeudeart = h.Art,
+        Verwendung = h.Verwendung,
+        Baualtersklasse = h.Klasse,
+        Beschreibung = "Beschreibung " + h.Name,
+        Bauart = 1,
+        Bauweise = h.Flaeche * 50,
+        WohnflaecheGesamt = h.Flaeche,
+        FlaecheNutzer = 35,
+        Waermegewinne = 5,
+        Fensterdurchlassgrad = 0.6,
+        Raumhoehe = 2.5,
+        Luftwechselrate = 0.6,
+        FensterflaecheNord = 10,
+        FensterflaecheSued = 20,
+        FensterflaecheOstWest = 10,
+        FlaecheAussenwand = 120,
+        Dachflaeche = 80,
+        Grundflaeche = 80,
+        SonstigeFlaechen = 0,
+        UWertAussenwand = 0.35,
+        UWertFenster = 1.1,
+        UWertDachflaeche = 0.25,
+        UWertGrundflaeche = 0.4,
+        UWertSonstiges = 0,
+        SollTag = 20,
+        NachtAbsenkung = 16,
+        MaxTemperatur = 26,
+        WochenendAbsenkung = 0,
+        SollFerien = 0,
+        WbvkFensterWand = 0.05,
+        WbvkAussenwandKeller = 0,
+        WbvkWandDach = 0,
+        AnschlussFensterWand = 40,
+        AnschlussWandDach = 0,
+        AnschlussAussenwandKeller = 0
+    };
+
     private static GebaeudeStammblattDaten Satz(Haus h, int id) => new()
     {
         Id = id,
@@ -74,7 +123,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         {
             Stammblattwert.Abschnitt("Kenngrößen"),
             new Stammblattwert("Raumhöhe", "2,50", "m")
-        }
+        },
+        Feldsatz = Feldsatz(h)
     };
 
     public GebaeudeAdminDialogTests()
@@ -86,10 +136,10 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <summary>Was die Wege des Dialogs gerufen haben — die Tests prüfen es.</summary>
     private sealed class Protokoll
     {
-        internal readonly List<GebaeudeKenndaten> Gespeichert = new();
+        internal readonly List<(GebaeudeKatalogDaten Daten, bool Neu, string Name)> Gespeichert = new();
         internal readonly List<string> Geloescht = new();
         internal readonly List<(int Id, string Name)> Dupliziert = new();
-        internal readonly List<string> Editor = new();
+        internal int Editor;
         internal int Gebaeudetypen;
         internal int Typlisten;
         internal bool? Geschlossen;
@@ -124,10 +174,10 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             .Add(x => x.Baualtersklassen, KLASSEN)
             .Add(x => x.Verwendungen, new[] { "Wohngebäude", "Gewerbe+Sonstige" })
             .Add(x => x.Verwendung, () => verwendung ?? new Dictionary<string, IReadOnlyList<string>>())
-            .Add(x => x.Speichern, d =>
+            .Add(x => x.Speichern, (d, neu, name) =>
             {
-                pr.Gespeichert.Add(d);
-                return new KatalogSpeicherErgebnis(true, "", d.Name);
+                pr.Gespeichert.Add((d.Kopie(), neu, name));
+                return new GebaeudeKatalogErgebnis(true, "");
             })
             .Add(x => x.Loeschen, n =>
             {
@@ -144,7 +194,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             })
             .Add(x => x.Exists, n => pr.Katalog.Any(h => h.Name == n))
             .Add(x => x.KatalogGaben, mitEditor
-                ? n => { pr.Editor.Add(n); return new Dictionary<string, object>(); }
+                ? () => { pr.Editor++; return new Dictionary<string, object>(); }
                 : null)
             .Add(x => x.GebaeudetypGaben, mitTypen
                 ? () => { pr.Gebaeudetypen++; return new Dictionary<string, object>(); }
@@ -161,15 +211,25 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     private static IElement Fussleiste(IRenderedComponent<GebaeudeAdminDialog> cut)
         => cut.FindAll(".epos-katalog-dialog > .epos-leiste").Last();
 
+    /// <summary>Das Eingabefeld „U bzw. ψ" einer Zeile des Hüll-Rasters.</summary>
+    private static IElement Kennwertfeld(IRenderedComponent<GebaeudeAdminDialog> cut, string bauteil)
+        => cut.FindAll($".epos-gebaeude-huellraster tr[data-bauteil={bauteil}] input")[0];
+
+    /// <summary>Ein Zahlenfeld des Stammblatts nach seiner Beschriftung.</summary>
+    private static IElement Feld(IRenderedComponent<GebaeudeAdminDialog> cut, string beschriftung)
+        => cut.FindAll(".epos-stammblatt label.epos-feld")
+              .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+              .QuerySelector("input, select, textarea")!;
+
     // =================================================================================
     // Feldbestand und Gerüst
     // =================================================================================
 
     /// <summary>
     /// <b>Das Gerüst der Verwaltung</b>: Katalogliste mit fünf Spalten (Name, Gebäudeart,
-    /// Verwendung, Baujahr, Fläche) statt der eigenen Tabelle, kein Projektteil, keine
-    /// Vorfilter über der Liste; Stammblatt mit Kenndaten, Hülle und „Alle Daten";
-    /// Fußleiste Speichern · Verwerfen · Neu… · Beenden.
+    /// Verwendung, Baujahr, Fläche), kein Projektteil, keine Vorfilter über der Liste; im
+    /// Stammblatt die Gruppen des Katalogeditors — Kenndaten, Hülle, Fenster, Kenngrößen und
+    /// „Alle Daten"; Fußleiste Speichern · Verwerfen · Neu… · Beenden.
     /// </summary>
     [Fact]
     public void Das_Geruest_steht_wie_bei_den_Verwaltungen()
@@ -188,7 +248,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baujahr", "Fläche [m²]" }, koepfe);
         Assert.Equal(4, cut.FindAll(".epos-katalogliste tbody tr").Count);
 
-        Assert.Equal(new[] { "Kenndaten", "Hülle", "Alle Daten" },
+        Assert.Equal(new[] { "Kenndaten", "Hülle", "Fenster nach Orientierung", "Kenngrößen", "Alle Daten" },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu…", "Beenden" },
                      Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
@@ -226,6 +286,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
                      cut.Find(".epos-stammblatt-unter").TextContent);
         Assert.Equal(new[] { "Wohn-/Nutzfläche", "H_ges", "Rechenweg" },
                      cut.FindAll(".epos-stammblatt-kennzahl dt").Select(e => e.TextContent).ToArray());
+        Assert.Equal(2400, cut.Instance.Arbeitsstand.WohnflaecheGesamt);
         Assert.Contains("Außenwand", cut.Find(".epos-stammblatt").TextContent);
     }
 
@@ -246,39 +307,133 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Kenndaten: direkt bedienbar, Speichern und Verwerfen
+    // Das Stammblatt: jedes Feld des Katalogeditors (#465)
     // =================================================================================
 
     /// <summary>
-    /// <b>Speichern schreibt die fünf Kenndaten</b>: Gebäudetyp, Gebäudeart, Verwendung
-    /// (Steuerwert), Baujahr (Index) und Beschreibung — danach meldet die Statuszeile.
+    /// <b>Hülle und Wohnfläche sind bedienbar</b>: Das Hüll-Raster trägt acht Zeilen mit dem
+    /// Kennwert als Eingabe (die Fensterfläche gerechnet), die Wohn-/Nutzfläche ist ein
+    /// Zahlenfeld, die Bauart eine Klappliste — sechs Klapplisten stehen im Blatt (Typ, Art,
+    /// Baujahr, Verwendung, Bauart, Randbedingung); „Alle Daten" ist zugeklappt.
     /// </summary>
     [Fact]
-    public void Speichern_schreibt_die_Kenndaten()
+    public void Huelle_und_Wohnflaeche_sind_bedienbar()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(8, cut.FindAll(".epos-gebaeude-huellraster tbody tr").Count);
+        Assert.Equal(15, cut.FindAll(".epos-gebaeude-huellraster tbody input").Count);
+        Assert.Contains("40,00 m²", cut.Find(".epos-gebaeude-huellraster tr[data-bauteil=Fenster]").TextContent);
+        Assert.Equal(6, cut.FindAll(".epos-stammblatt select").Count);
+        Assert.Equal("140", Feld(cut, "Wohn-/Nutzfläche").GetAttribute("value"));
+        Assert.Contains("H_ges", cut.Find(".epos-stammblatt").TextContent);
+        Assert.False(cut.Instance.AlleDatenOffen);
+        Assert.Empty(cut.FindAll(".epos-gebaeude-alledaten"));
+    }
+
+    /// <summary>
+    /// <b>Speichern schreibt den ganzen Feldsatz über den Weg des Katalogeditors</b>: Kenndaten
+    /// und ein Hüllwert geändert, der Fuß zählt drei Felder; geschrieben wird unter dem
+    /// Bezeichner, als Überschreiben (nicht „neu"), mit den Ableitungen des Editors
+    /// (Winterferienbeginn 0 → 366, WW_Bedarf 0). Danach meldet die Statuszeile.
+    /// </summary>
+    [Fact]
+    public void Speichern_schreibt_den_Feldsatz_ueber_den_Weg_des_Editors()
     {
         var p = new Protokoll();
         var cut = Aufbauen(p);
-
-        var klapplisten = cut.FindAll(".epos-stammblatt select");
-        Assert.Equal(4, klapplisten.Count);                     // Typ, Art, Baujahr, Verwendung
         Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
 
         cut.FindAll(".epos-stammblatt select")[0].Change("1");      // Gebäudetyp Schule
-        cut.FindAll(".epos-stammblatt select")[3].Change("1");      // Verwendung Gewerbe
         cut.Find(".epos-stammblatt textarea").Input("neu");
+        Kennwertfeld(cut, "Aussenwand").Input("0,3");
 
         Assert.True(cut.Instance.Geaendert);
         Assert.Equal("3 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
 
         Knopf(cut, "Speichern").Click();
 
-        GebaeudeKenndaten d = Assert.Single(p.Gespeichert);
-        Assert.Equal(new GebaeudeKenndaten("Haus A", "Schule", "Einfamilienhaus", "Nicht Wohngebaeude", 1, "neu"), d);
+        var (d, neu, name) = Assert.Single(p.Gespeichert);
+        Assert.False(neu);
+        Assert.Equal("Haus A", name);
+        Assert.Equal("Schule", d.Typ);
+        Assert.Equal("neu", d.Beschreibung);
+        Assert.Equal(0.3, d.UWertAussenwand);
+        Assert.Equal(120, d.FlaecheAussenwand);
+        Assert.Equal(366, d.Ferienbeginn[0]);
+        Assert.Equal(0, d.WwBedarf);
         Assert.False(cut.Instance.Geaendert);
         Assert.StartsWith("Gespeichert um", cut.Instance.Status);
     }
 
-    /// <summary>Verwerfen nimmt den Arbeitsstand zurück; nichts wird geschrieben.</summary>
+    /// <summary>
+    /// <b>Die Bauart zieht die Bauweise nach</b> (W9‑O‑2) — derselbe Weg wie im Editor:
+    /// „sehr schwer" bei 140 m² ergibt 14 000.
+    /// </summary>
+    [Fact]
+    public void Die_Bauart_zieht_die_Bauweise_nach()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Feld(cut, "Bauart").Change("2");
+        Knopf(cut, "Speichern").Click();
+
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.Equal(2, d.Bauart);
+        Assert.Equal(14000, d.Bauweise);
+    }
+
+    /// <summary>
+    /// <b>Die Prüfung ist die des Katalogeditors</b>: eine Nutzfläche 0 hält den Speicherweg
+    /// an, das Warnband nennt die Regel, geschrieben wird nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Pruefung_ist_die_des_Katalogeditors()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Feld(cut, "Wohn-/Nutzfläche").Input("0");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Empty(p.Gespeichert);
+        Assert.Equal("Die Nutzfläche muss größer als 0 sein.", cut.Instance.Meldung);
+        Assert.True(cut.Instance.Geaendert);
+    }
+
+    /// <summary>
+    /// <b>Eine verletzte Ferienregel klappt „Alle Daten" auf</b> — dort steht ihr Feld; die
+    /// Meldung ist die des Editors.
+    /// </summary>
+    [Fact]
+    public void Eine_Ferienregel_klappt_Alle_Daten_auf()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.True(cut.Instance.AlleDatenOffen);
+
+        // Winter: Beginn 1. Januar, Ende 1. Februar - der Beginn liegt VOR dem Ende.
+        IReadOnlyList<IElement> ferien = cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]");
+        Assert.True(ferien.Count >= 16, ferien.Count.ToString(CultureInfo.InvariantCulture));
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[0].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[1].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[8].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[9].Input("2");
+
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.False(cut.Instance.AlleDatenOffen);
+
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Empty(p.Gespeichert);
+        Assert.Equal("Die Ferien müssen über die Jahresgrenze gehen!", cut.Instance.Meldung);
+        Assert.True(cut.Instance.AlleDatenOffen);
+    }
+
+    /// <summary>Verwerfen nimmt den Arbeitsstand zurück — Kenndaten wie Hülle; nichts wird geschrieben.</summary>
     [Fact]
     public void Verwerfen_nimmt_den_Arbeitsstand_zurueck()
     {
@@ -286,11 +441,14 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         var cut = Aufbauen(p);
 
         cut.FindAll(".epos-stammblatt select")[0].Change("2");
+        Kennwertfeld(cut, "Dach").Input("0,5");
         Assert.Equal("Hotel", cut.Instance.ArbeitTyp);
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.UWertDachflaeche);
 
         Knopf(cut, "Verwerfen").Click();
 
         Assert.Equal("Wohnblock", cut.Instance.ArbeitTyp);
+        Assert.Equal(0.25, cut.Instance.Arbeitsstand.UWertDachflaeche);
         Assert.False(cut.Instance.Geaendert);
         Assert.Empty(p.Gespeichert);
     }
@@ -305,7 +463,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         var p = new Protokoll();
         var cut = Aufbauen(p);
 
-        cut.Find(".epos-stammblatt textarea").Input("geändert");
+        Kennwertfeld(cut, "Aussenwand").Input("0,3");
 
         Zeilenklick.Zeile(cut, 1);
         Assert.Equal("Haus A", cut.Instance.Gewaehlt);
@@ -319,8 +477,9 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Ein Auslieferungssatz</b> (V13): Schloss im Kopf, die Kenndaten als Text statt
-    /// Klapplisten, „Speichern" und „Bearbeiten…" weich gesperrt, „Löschen" weich gesperrt.
+    /// <b>Ein Auslieferungssatz</b> (V13): Schloss im Kopf, Kenndaten und Hülle als Text statt
+    /// Eingaben, „Speichern" und „Löschen" weich gesperrt; einen Knopf „Bearbeiten…" gibt es
+    /// nicht mehr.
     /// </summary>
     [Fact]
     public void Ein_Auslieferungssatz_ist_nur_lesbar()
@@ -331,9 +490,11 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         Assert.NotNull(cut.Find(".epos-stammblatt-kopf .epos-schloss"));
         Assert.Empty(cut.FindAll(".epos-stammblatt select"));
+        Assert.Empty(cut.FindAll(".epos-stammblatt input"));
+        Assert.Contains("120,0 m² · U 0,35 W/(m²K)", cut.Find(".epos-stammblatt").TextContent);
         Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
-        Assert.Equal("true", Knopf(cut, "Bearbeiten…").GetAttribute("aria-disabled"));
         Assert.Equal("true", Handlung(cut, "Löschen").GetAttribute("aria-disabled"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Bearbeiten…");
 
         Knopf(cut, "Speichern").Click();
         Assert.Contains("Auslieferungssatz", cut.Instance.Meldung);
@@ -422,39 +583,25 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Überlagerungen: Katalogeditor, Neu, Gebäudetypen
+    // Überlagerungen: Katalogeditor (nur Neu…), Gebäudetypen
     // =================================================================================
 
     /// <summary>
-    /// <b>„Bearbeiten…"</b> im Kopf der Gruppe Hülle öffnet den Katalogeditor des gewählten
-    /// Satzes als Überlagerung — mit Titel und genau einem Kreuz.
+    /// <b>„Neu…" ist der einzige Weg in den Katalogeditor</b> (AD-Q6) — bearbeitet wird im
+    /// Stammblatt; ein neuer Satz ist danach gewählt.
     /// </summary>
-    [Fact]
-    public void Bearbeiten_oeffnet_den_Katalogeditor_als_Ueberlagerung()
-    {
-        var p = new Protokoll();
-        var cut = Aufbauen(p);
-
-        Knopf(cut, "Bearbeiten…").Click();
-
-        Assert.True(cut.Instance.KatalogeditorOffen);
-        Assert.Equal(new[] { "Haus A" }, p.Editor);
-        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-zu"));
-        Assert.Contains("Gebäudedaten", cut.Find(".epos-ueberlagerung-titel").TextContent);
-
-        cut.Find(".epos-ueberlagerung-zu").Click();
-        Assert.False(cut.Instance.KatalogeditorOffen);
-    }
-
-    /// <summary>„Neu…" öffnet den Editor ohne Namen; ein neuer Satz ist danach gewählt.</summary>
     [Fact]
     public void Neu_oeffnet_den_Editor_und_waehlt_den_neuen_Satz()
     {
         var p = new Protokoll();
         var cut = Aufbauen(p);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Bearbeiten…");
 
         Knopf(cut, "Neu…").Click();
-        Assert.Equal(new[] { "" }, p.Editor);
+        Assert.Equal(1, p.Editor);
+        Assert.True(cut.Instance.KatalogeditorOffen);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-zu"));
+        Assert.Equal("Neu…", cut.Find(".epos-ueberlagerung-titel").TextContent);
 
         p.Katalog.Add(new Haus("Neubau E", "Einfamilienhaus", "Wohngebaeude", 0, 120));
         cut.Find(".epos-ueberlagerung-zu").Click();
@@ -486,7 +633,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(vorher + 1, p.Typlisten);
     }
 
-    /// <summary>Ohne Delegaten stehen weder „Bearbeiten…", „Neu…" noch „Gebäudetypen…" da.</summary>
+    /// <summary>Ohne Delegaten stehen weder „Neu…" noch „Gebäudetypen…" da.</summary>
     [Fact]
     public void Ohne_Delegat_kein_Knopf()
     {
@@ -530,33 +677,196 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Der Hilfe-Assistent: dieselbe Sicht wie der Projektdialog
+    // Der Hilfe-Assistent: die eigene Maske Form_Gebaeude_Admin (#465)
     // =================================================================================
 
     /// <summary>
-    /// Die Verwaltung meldet sich unter derselben Maske an wie der Projektdialog; das Feld
-    /// „verwaltung" sagt <c>true</c>, und ein Filterfeld setzt den TRICHTER seiner Spalte.
+    /// <b>Die Verwaltung meldet ihre EIGENE Maske an</b> — unter ihrem Navigationsschlüssel,
+    /// mit dem Satz und der Feldliste des Katalogeditors; die Projektdialog-Sicht
+    /// <c>Form_Gebaeude</c> bleibt unangemeldet. Beim Schließen meldet sie ab.
     /// </summary>
     [Fact]
-    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_einen_Trichter()
+    public void Die_Verwaltung_meldet_ihre_eigene_Maske_an_und_ab()
     {
-        var stand = new Katalogfilterstand();
-        var cut = Aufbauen(filterstand: stand);
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.GEBAEUDE_ADMIN;
 
-        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE));
-        Assert.Equal("Haus A", KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "name").Lesen());
-        Assert.Contains(KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE),
-                        f => f.Name == "verwaltung" && f.Text.Length > 0);
+        Assert.Equal(WindowsFormsApplication1.Masken.GebaeudeAdmin, maske);
+        Assert.True(KiMaskenbruecke.IstAngemeldet(maske));
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE));
+        Assert.Equal(maske, KiMaskenbruecke.AktiveMaske());
+        IReadOnlyList<KiFeldwert> werte = KiMaskenbruecke.Lesen(maske);
+        Assert.Contains(werte, w => w.Name == "satz" && w.IstWahl);
+        Assert.Contains(werte, w => w.Name == "u_aussenwand");
+        Assert.Contains(werte, w => w.Name == "kuehlung_aktiv");
+        Assert.DoesNotContain(werte, w => w.Name == "betriebsart");
+        Assert.Equal("Haus A", KiMaskenbruecke.Feldzugang(maske, "satz")!.Lesen());
+        Assert.Equal("Haus A", KiMaskenbruecke.Feldzugang(maske, "name")!.Lesen());
+        Assert.False(KiMaskenbruecke.Feldzugang(maske, "name")!.Setzbar);
 
-        WindowsFormsApplication1.KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "filter_baujahr");
-        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "1958 bis 1968");
-        Assert.True(umsetzung.Ok, umsetzung.Grund);
-        zugang.Setzen(umsetzung.Wert);
+        // Der Infoknopf gibt dem Assistenten den Namen der Verwaltung mit.
+        Assert.Contains(cut.FindComponents<InfoKnopf>(), k => k.Instance.Dialogname == "Verwaltung Gebäude");
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(maske));
+    }
+
+    /// <summary>
+    /// <b>Der Assistent setzt einen Hüllwert</b> — er landet im Arbeitsstand des Stammblatts,
+    /// „Speichern" wird frei und der Fuß zählt das Feld.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_einen_Huellwert_und_Speichern_wird_frei()
+    {
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.GEBAEUDE_ADMIN;
+
+        WindowsFormsApplication1.KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, "u_aussenwand")!;
+        Assert.True(zugang.Setzbar);
+        Assert.Equal(0.35, zugang.Lesen());
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(zugang, "0.3");
+        Assert.True(u.Ok, u.Grund);
+        zugang.Setzen(u.Wert);
+        KiMaskenbruecke.Haken(maske).Auffrischung();
         cut.Render();
 
-        Assert.Equal("1958 bis 1968", stand.Ausdruck(Katalogfilterprofil.SpBaujahr));
-        Assert.Single(cut.FindAll(".epos-katalogliste tbody tr"));
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.UWertAussenwand);
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        Assert.Equal("1 Feld geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
     }
+
+    /// <summary>
+    /// <b>Prüfung und Speicherweg des Assistenten sind die des Knopfes</b>: ohne Änderung
+    /// benannt abgelehnt; eine Nutzfläche 0 nennt der Prüfhaken; mit gültigem Wert schreibt
+    /// der Speicherhaken denselben Feldsatz und die Statuszeile meldet es. Die Bauart zieht
+    /// auch hier die Bauweise nach.
+    /// </summary>
+    [Fact]
+    public async Task Pruefung_und_Speicherweg_des_Assistenten_sind_die_des_Knopfes()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        const string maske = KiMaskennamen.GEBAEUDE_ADMIN;
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+
+        Assert.Equal(KiKern.KiStatus.Abgelehnt, (await haken.Speichern()).Status);
+
+        KiMaskenbruecke.Feldzugang(maske, "wohnflaeche")!.Setzen(0.0);
+        cut.Render();
+        Assert.Equal("Die Nutzfläche muss größer als 0 sein.", haken.Befund());
+        Assert.Equal(KiKern.KiStatus.Abgelehnt, (await haken.Speichern()).Status);
+        Assert.Empty(p.Gespeichert);
+
+        KiMaskenbruecke.Feldzugang(maske, "wohnflaeche")!.Setzen(200.0);
+        KiMaskenbruecke.Feldzugang(maske, "bauart")!.Setzen(0);
+        cut.Render();
+        Assert.Equal("", haken.Befund());
+
+        KiKern.KiErgebnis ok = await haken.Speichern();
+
+        Assert.Equal(KiKern.KiStatus.Ausgefuehrt, ok.Status);
+        var (d, neu, name) = Assert.Single(p.Gespeichert);
+        Assert.False(neu);
+        Assert.Equal("Haus A", name);
+        Assert.Equal(200, d.WohnflaecheGesamt);
+        Assert.Equal(4000, d.Bauweise);                  // leicht: 200 m² × 20
+        Assert.StartsWith("Gespeichert um", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz ist für den Assistenten geschützt</b> (AD-Q11, AD-Q15): Schon
+    /// <c>feld_setzen</c> lehnt ab und nennt „Duplizieren" und „Schloss", ebenso der
+    /// Speicherweg. Die WAHL des Satzes bleibt frei.
+    /// </summary>
+    [Fact]
+    public async Task Ein_Auslieferungssatz_lehnt_ab_und_nennt_den_Weg_die_Satzwahl_bleibt_frei()
+    {
+        Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var weg = new EPOS.UI.Bausteine.Schlossweg((ids, _) =>
+                new EPOS.UI.Bausteine.SchlossErgebnis(true, "") { Geaendert = ids });
+            var cut = Aufbauen(schloss: weg);
+            const string maske = KiMaskennamen.GEBAEUDE_ADMIN;
+
+            KiSatzSetzen(cut, maske, "Schule D");
+            Assert.Equal("Schule D", cut.Instance.Gewaehlt);
+
+            KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+            Assert.True(haken.IstSchreibgeschuetzt());
+            Assert.Contains("duplizieren", haken.Schutzgrund());
+            Assert.Contains("Schloss", haken.Schutzgrund());
+
+            string? grund = Vorbedingung("feld_setzen", maske, ("feld", "u_aussenwand"), ("wert", "0.3"));
+            Assert.NotNull(grund);
+            Assert.Contains("Schloss", grund);
+            Assert.Equal(KiKern.KiStatus.Abgelehnt, (await haken.Speichern()).Status);
+
+            // Die Satzwahl geht durch, und der eigene Satz ist setzbar.
+            Assert.Null(Vorbedingung("feld_setzen", maske, ("feld", "satz"), ("wert", "Haus A")));
+            KiSatzSetzen(cut, maske, "Haus A");
+            Assert.False(haken.IstSchreibgeschuetzt());
+            Assert.Null(Vorbedingung("feld_setzen", maske, ("feld", "u_aussenwand"), ("wert", "0.3")));
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = schreibrechtVorher;
+        }
+    }
+
+    /// <summary>
+    /// <b>„satz" wechselt die Zeile</b> wie ein Klick — und ungespeicherte Änderungen halten
+    /// den Wechsel an: BENANNT, mit dem Text des Warnbands.
+    /// </summary>
+    [Fact]
+    public void Der_Satz_wechselt_die_Zeile_und_Aenderungen_halten_den_Wechsel_an()
+    {
+        var cut = Aufbauen();
+        const string maske = KiMaskennamen.GEBAEUDE_ADMIN;
+
+        WindowsFormsApplication1.KiFeldzugang satz = KiMaskenbruecke.Feldzugang(maske, "satz")!;
+        Assert.True(satz.IstWahl);
+        Assert.Equal(4, satz.Wahleintraege().Count);
+
+        KiSatzSetzen(cut, maske, "Haus B");
+        Assert.Equal("Haus B", cut.Instance.Gewaehlt);
+        Assert.Equal(900, cut.Instance.Arbeitsstand.WohnflaecheGesamt);
+
+        KiMaskenbruecke.Feldzugang(maske, "u_dachflaeche")!.Setzen(0.5);
+        cut.Render();
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => satz.Setzen("Haus A"));
+        Assert.Contains("Speichern", fehler.Message);
+        cut.Render();
+        Assert.Equal("Haus B", cut.Instance.Gewaehlt);
+        Assert.Contains("Speichern", cut.Instance.Meldung);
+    }
+
+    /// <summary>Setzt den Satz über die Brücke — der Weg des Assistenten.</summary>
+    private static void KiSatzSetzen(IRenderedComponent<GebaeudeAdminDialog> cut, string maske, string name)
+    {
+        WindowsFormsApplication1.KiFeldzugang satz = KiMaskenbruecke.Feldzugang(maske, "satz")!;
+        KiFeldumsetzung u = KiFeldwandler.Wandle(satz, name);
+        Assert.True(u.Ok, u.Grund);
+        satz.Setzen(u.Wert);
+        cut.Render();
+    }
+
+    /// <summary>Die Vorbedingung einer Formularaktion — die Stelle, die ablehnt oder durchlässt.</summary>
+    private static string? Vorbedingung(string aktion, string maske, params (string Name, string Wert)[] werte)
+    {
+        var parameter = new Dictionary<string, object?> { ["maske"] = maske };
+        foreach (var (name, wert) in werte) parameter[name] = wert;
+
+        var schicht = new KiAusfuehrung { Schreibrecht = () => true };
+        KiKern.KiPruefErgebnis p = KiKern.KiPruefung.Pruefe(schicht.Register, aktion, parameter);
+        Assert.True(p.Gueltig, p.FehlerText());
+
+        return schicht.Register.Finde(aktion)!.Vorbedingung!(p.Aufruf!);
+    }
+
     // =================================================================================
     // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
     // =================================================================================
@@ -564,7 +874,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <summary>
     /// <b>Das Schloss eines Gebäudes aufheben</b> (AD-Q15): Die Handlung steht zwischen
     /// „Duplizieren…" und „Löschen"; nach dem „Ja" ist „Schule D" ein eigener Satz, die
-    /// Kenndaten sind bedienbar, „Speichern" ist frei und das Stammblatt trägt das Band.
+    /// Felder sind bedienbar, „Speichern" ist frei und das Stammblatt trägt das Band.
     /// </summary>
     [Fact]
     public void Schloss_aufheben_nach_Rueckfrage_gibt_Speichern_frei()
@@ -591,5 +901,6 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.True(Schlosspruefung.Band(cut));
         Assert.Equal("Schloss von „Schule D“ aufgehoben.", cut.Instance.Status);
         Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
+        Assert.Equal(8, cut.FindAll(".epos-gebaeude-huellraster tbody tr").Count);
     }
 }

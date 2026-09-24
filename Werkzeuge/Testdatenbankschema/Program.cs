@@ -1461,8 +1461,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
-            // ---- Schritt 120: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
-            //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 119. REIN DDL aus
+            // ---- Schritt 120: die Saetze der Nutzungsdauertabelle (Etappe E10, Stufe S3 des
+            //      Nutzungsdauer-Konzepts). NACH 119; braucht 75 (Tab_Nutzungsdauer).
+            //      REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_120_NutzungsdauerSaetze bedient (NutzungsdauerSaetze):
+            //      die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+            //      Empfehlungsbereichs der Betriebsvorlagen-Saat - gesetzt wird nur, was leer ist.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Basis fuehrt keine Wirtschaftlichkeitsgroesse;
+            //      rechenwirksam wird ein Satz erst in der Satzermittlung der Betriebskosten.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 120 - Saetze der Nutzungsdauertabelle, offen vorher: " +
+                              NutzungsdauerSaetze.Offen() + ".");
+            if (!trocken)
+            {
+                NutzungsdauerSaetze.Bericht bericht120 = NutzungsdauerSaetze.Ausfuehren();
+                Console.WriteLine("Schritt 120 - " + bericht120.Text() + "; offen: " +
+                                  NutzungsdauerSaetze.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 121: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
+            //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 120. REIN DDL aus
             //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_120_ZapfprofilLaufangaben
             //      bedient (TwwSchema.SpaltenT3): Erzeugerart, Uebertrager_Werkstoff, Personen_Auto
             //      (0/1, Vorgabe 1), Personen_Manuell, Fuellstand_Bezug an Tab_TwwProjekt und
@@ -1472,15 +1491,15 @@ namespace Testdatenbankschema
             //      Personen automatisch; kein Referenzprojekt steht auf dem Generator. Die Bezugsart
             //      des Ecodesign-Zapfprofils spielt danach das Katalogskript aus dem Paketteil ein.
             Console.WriteLine();
-            Console.WriteLine("Schritt 120 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag: " +
+            Console.WriteLine("Schritt 121 - Laufangaben der Zapfprofil-Auslegung und Bezugsart am Bedarfstag: " +
                               (TwwSchema.T3Vollstaendig() ? "stehen bereits" : "offen") + ".");
             if (!trocken)
             {
-                var bericht120 = new List<string>();
-                angelegt += TwwSchema.T3Alle(bericht120);
-                foreach (string zeile in bericht120)
-                    Console.WriteLine("Schritt 120 - " + zeile + ".");
-                Console.WriteLine("Schritt 120 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
+                var bericht121 = new List<string>();
+                angelegt += TwwSchema.T3Alle(bericht121);
+                foreach (string zeile in bericht121)
+                    Console.WriteLine("Schritt 121 - " + zeile + ".");
+                Console.WriteLine("Schritt 121 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
             Console.WriteLine();

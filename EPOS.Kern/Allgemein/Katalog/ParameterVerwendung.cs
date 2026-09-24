@@ -299,7 +299,8 @@ namespace WindowsFormsApplication1
                 E("Wartungskosten", t("KESSEL_WARTUNG_LBL"), "", WIRT,
                   "TechnikPlanwertCtrl.cs:823 (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("HZKK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
-                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog" +
+                  " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
                 E("CO2", "CO2:", "g / MWh", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("SO2", "SO2:", "g / MWh", DLG,
@@ -388,7 +389,8 @@ namespace WindowsFormsApplication1
                 E("Wartungskosten_kwhel", t("BHKWK_LBL_WARTUNG"), "€ / kWhel", WIRT,
                   "TechnikPlanwertCtrl.cs:706 (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("BHKWK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
-                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog" +
+                  " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
                 E("NOX", "NOx:", "g / MWh", DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("SO2", "SO2:", "g / MWh", DLG,

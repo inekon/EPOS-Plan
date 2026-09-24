@@ -8444,6 +8444,30 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     overflow-wrap: anywhere;
 }
 
+/* Das HUELL-RASTER des Gebaeude-Stammblatts (Welle #465): drei Spalten (Bauteil,
+   U bzw. psi, A bzw. L) in 340 bis 440 px. Die Spalten haben feste Anteile, und ein
+   Eingabefeld nimmt die Breite seiner Zelle statt seiner eigenen (size=20, rund 165 px);
+   die Einheit rueckt unter das Feld, wo die Zelle zu schmal ist. Ohne diese Regel stand
+   das Raster 426 px breit in einer 341 px breiten Gruppe und rollte quer. */
+.epos-gebaeude-huellraster {
+    table-layout: fixed;
+}
+
+.epos-gebaeude-huellraster thead th:first-child {
+    width: 30%;
+}
+
+.epos-gebaeude-huellraster .epos-feld-zeile {
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.epos-gebaeude-huellraster .epos-eingabe {
+    flex: 1 1 2.5em;
+    width: 2.5em;
+    min-width: 0;
+}
+
 /* Die WERKZEUGLEISTE der Katalogliste traegt einen Schalter des Wirts (die
    Waermepumpe: "nur mit Kuehlfunktion", Stufe 4). Er steht neben dem
    Suchfeld und weicht nicht - die Leiste bricht um, wo es eng wird. */

@@ -168,16 +168,25 @@ namespace WindowsFormsApplication1
         // Razor-Komponente heute mehrere von ihnen bedient.
 
         /// <summary>
-        /// Die Gebaeudemaske (<c>GebaeudeDialog</c>) — Projektliste und Katalog
-        /// nebeneinander.
+        /// Die Gebaeudemaske des PROJEKTS (<c>GebaeudeDialog</c>) — Projektliste und
+        /// Katalog nebeneinander, in den Betriebsarten Projekt und Assistent.
         /// </summary>
         /// <remarks>
-        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt fuehrt sie beide Listen, in
-        /// der Katalogverwaltung nur den Katalog; die Felder sind dieselben, und welche
-        /// Betriebsart gilt, steht als Feld darin. Ein zweiter Katalogeintrag haette
-        /// zwei Wahrheiten ueber ein und dieselbe gezeichnete Maske gefuehrt.
+        /// Die Gebaeudeverwaltung ist eine eigene Komponente mit eigenem Schluessel
+        /// (<see cref="GEBAEUDE_ADMIN"/>); das Feld „verwaltung" dieser Maske meldet deshalb
+        /// immer „nein".
         /// </remarks>
         public const string GEBAEUDE = "Form_Gebaeude";
+
+        /// <summary>
+        /// Die GEBAEUDEVERWALTUNG (<c>GebaeudeAdminDialog</c>, Welle #465) — Katalogliste
+        /// und Stammblatt; ihr Stammblatt fuehrt jedes Feld des Katalogeditors.
+        /// </summary>
+        /// <remarks>
+        /// Der Schluessel IST der Navigationsschluessel der Verwaltung — dieselbe Regel wie
+        /// bei den Verwaltungen der Erzeugerkataloge (<see cref="HEIZKESSEL_ADMIN"/>).
+        /// </remarks>
+        public const string GEBAEUDE_ADMIN = Masken.GebaeudeAdmin;
 
         /// <summary>
         /// Die Wohn-/Nutzflaechenangabe eines Projektgebaeudes
@@ -679,6 +688,7 @@ namespace WindowsFormsApplication1
                 Gebaeude(),
                 GebaeudeWohnflaeche(),
                 GebaeudeKatalog(),
+                GebaeudeVerwaltung(),
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
                 Typprofil(),
@@ -825,6 +835,92 @@ namespace WindowsFormsApplication1
                 default: return KiParameterTyp.Text;
             }
         }
+
+        /// <summary>
+        /// Die Felder der vier KATALOGEDITOREN, die ihre Verwaltung unter einem ANDEREN
+        /// Schluessel fuehrt: Editorfeld → Profilschluessel
+        /// (<see cref="KatalogBrowserProfil"/>). Was hier fehlt, fuehrt die Verwaltung
+        /// unter demselben Schluessel.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum eine erklaerte Zuordnung und kein Namensvergleich.</b> Editor und
+        /// Verwaltung sind EIN Weg (<c>KiAktionenDialog.Zielmaske</c>): Die Absage nennt
+        /// die Verwaltung, wenn sie die genannten Felder fuehrt. Ob sie das tut, ist eine
+        /// Frage der IDENTITAET - derselbe Wert desselben Katalogsatzes - und wird deshalb
+        /// ueber Schluessel beantwortet. Die Beschriftungen stehen uebersetzt in
+        /// <c>MyResource.Resource</c>; ein toleranter Vergleich mit ihnen traf
+        /// <c>bereitschaftsverlust</c> nur unter der deutschen Beschriftung
+        /// „Betriebsbereitschaftsverluste", unter <c>en-US</c> nicht mehr.
+        /// </para>
+        /// <para>
+        /// Der Waechter <c>EPOS.Kern.Tests/KiKatalogKulturTests</c> haelt fest, dass jedes
+        /// Feld der vier Editoren so in seiner Verwaltung steht und jede Zuordnung hier
+        /// auf ein vorhandenes Feld zeigt.
+        /// </para>
+        /// </remarks>
+        private static readonly Dictionary<string, Dictionary<string, string>> VERWALTUNGSFELDER =
+            new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal)
+            {
+                [KiMaskennamen.HEIZKESSEL] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
+                    ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
+                    ["bereitschaftsverlust"] = KatalogBrowserProfil.FeldBBVerlust
+                },
+                [KiMaskennamen.BHKW] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["energietraeger"] = KatalogBrowserProfil.FeldBrennstoff,
+                    ["th_leistung"] = KatalogBrowserProfil.FeldPtherm,
+                    ["el_leistung"] = KatalogBrowserProfil.FeldPel,
+                    ["wirkungsgrad_gesamt"] = KatalogBrowserProfil.FeldWirkungsgrad
+                },
+                [KiMaskennamen.SOLARKOLLEKTOR] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma
+                },
+                [KiMaskennamen.PUFFERSPEICHER] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["name"] = KatalogBrowserProfil.FeldBezeichner,
+                    ["hersteller"] = KatalogBrowserProfil.FeldFirma,
+                    ["gesamtvolumen"] = KatalogBrowserProfil.FeldVolumen,
+                    ["bereitschaftsverluste"] = KatalogBrowserProfil.FeldVerluste
+                }
+            };
+
+        /// <summary>
+        /// Der Schluessel, unter dem die ZIELMASKE der Maske <paramref name="maskenname"/>
+        /// (<see cref="KiMaskenziele.Ziel"/>) deren Feld <paramref name="feld"/> fuehrt -
+        /// das erklaerte Gegenstueck eines Katalogeditors in seiner Verwaltung, sonst
+        /// derselbe Schluessel.
+        /// </summary>
+        /// <remarks>
+        /// Sprachneutral: Die Antwort haengt nur an Schluesseln und ist deshalb in jeder
+        /// Anzeigesprache dieselbe.
+        /// </remarks>
+        public static string Zielfeldname(string maskenname, string feld)
+        {
+            Dictionary<string, string> felder;
+            string profilschluessel;
+
+            if (maskenname != null && feld != null &&
+                VERWALTUNGSFELDER.TryGetValue(maskenname, out felder) &&
+                felder.TryGetValue(feld, out profilschluessel))
+                return profilschluessel.ToLowerInvariant();
+
+            return feld;
+        }
+
+        /// <summary>
+        /// Die vier Katalogeditoren, deren Felder <see cref="Zielfeldname"/> in ihre
+        /// Verwaltung uebersetzt - fuer den Waechter.
+        /// </summary>
+        public static IReadOnlyCollection<string> Katalogeditoren => VERWALTUNGSFELDER.Keys;
 
         // =====================================================================
         // „Alle Daten" der sechs Erzeugermasken des Projekts   (Welle #458, Stufe 2)
@@ -2314,8 +2410,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Nutzungsdauern (AfA) — fuenf Kopffelder und drei SPALTEN aus
-        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c>.
+        /// Die Nutzungsdauern (AfA) — sieben Kopffelder und fuenf SPALTEN aus
+        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c> (Etappe E10: je Neuzeile und
+        /// Tabellenzeile dazu die Saetze Instandsetzung und Wartung).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -2359,6 +2456,19 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.NudNeuAfaName, KiParameterTyp.Zahl,
                                      KiDialogTexte.NudNeuAfaErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    // ETAPPE E10 (Stufe S3): die zwei Saetze der Neuzeile - Instandsetzung
+                    // und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tab. A2).
+                    new KiDialogFeld("neue_instandsetzung",
+                                     "NutzungsdauerKiSicht.NeueInstandsetzung",
+                                     KiDialogTexte.NudNeuInstandsetzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuInstandsetzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     min: 0, max: 100),
+                    new KiDialogFeld("neue_wartung", "NutzungsdauerKiSicht.NeueWartung",
+                                     KiDialogTexte.NudNeuWartungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuWartungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     min: 0, max: 100),
 
                     // ---- Die Tabelle: je Satz eine Zeile ----------------------------
                     new KiDialogFeld("nutzungsdauer",
@@ -2373,6 +2483,20 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.NudAfaErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
                                      zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("instandsetzung",
+                                     "NutzungsdauerKiSicht.Zeilen[].InstandsetzungProzent",
+                                     KiDialogTexte.NudInstandsetzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudInstandsetzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER,
+                                     min: 0, max: 100),
+                    new KiDialogFeld("wartung",
+                                     "NutzungsdauerKiSicht.Zeilen[].WartungProzent",
+                                     KiDialogTexte.NudWartungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudWartungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER,
+                                     min: 0, max: 100),
                     new KiDialogFeld("quelle", "NutzungsdauerKiSicht.Zeilen[].Quelle",
                                      KiDialogTexte.NudQuelleName, KiParameterTyp.Text,
                                      KiDialogTexte.NudQuelleErl, leerErlaubt: true,
@@ -3854,11 +3978,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt stehen Projektliste und
-        /// Katalog nebeneinander, in der Katalogverwaltung nur der Katalog; gezeichnet
-        /// wird dieselbe Komponente mit denselben Bedienelementen. Welche Betriebsart
-        /// gilt, sagt das Feld <c>verwaltung</c> — so muss der Assistent nicht raten und
-        /// der Katalog nicht zweimal dasselbe fuehren.
+        /// <b>Die Maske des PROJEKTS.</b> Projektliste und Katalog stehen nebeneinander (in
+        /// den Betriebsarten Projekt und Assistent). Die Gebaeudeverwaltung ist eine eigene
+        /// Komponente mit eigener Maske (<see cref="GebaeudeVerwaltung"/>); das Feld
+        /// <c>verwaltung</c> meldet hier deshalb immer „nein".
         /// </para>
         /// <para>
         /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
@@ -4054,12 +4177,92 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.GEBAEUDE_KATALOG,
                 anzeigename: KiDialogTexte.MaskeGebaeudeKatalog,
-                felder: new[]
+                felder: GebaeudeKatalogFelder(verwaltung: false),
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("werte_uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfWerteUebernehmen),
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("speichern", "btn_Speichern",
+                                      KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gebaeude_Admin  ->  GebaeudeAdminDialog   (Welle #465)
+        // =====================================================================
+
+        /// <summary>
+        /// Die GEBAEUDEVERWALTUNG — das Wahlfeld <c>satz</c> und die Felder des
+        /// Katalogeditors aus DERSELBEN Liste (<see cref="GebaeudeKatalogFelder"/>) an
+        /// derselben Sichtklasse (<c>GebaeudeKatalogKiSicht</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Wahrheit, keine zweite Feldliste.</b> Das Stammblatt der Verwaltung fuehrt
+        /// jedes Feld, das der Katalogeditor bearbeitet, auf demselben Arbeitsstand
+        /// (<c>GebaeudeArbeitsstand</c>) mit derselben Pruefung und demselben Schreibweg; die
+        /// Feldkarte ist deshalb dieselbe. Zwei Unterschiede: Der NAME ist hier nur lesbar
+        /// (umbenannt wird ueber „Duplizieren…", einen anderen Satz waehlt <c>satz</c>), und
+        /// die BETRIEBSART des Editors gibt es in der Verwaltung nicht.
+        /// </para>
+        /// <para>
+        /// <b>Der Satz ist die Wahl der Liste</b> — dasselbe Muster wie die
+        /// Erzeugerverwaltungen (<see cref="ErzeugerVerwaltung"/>): SATZWAHL, frei auch aus
+        /// einem Auslieferungssatz heraus; ein Auslieferungssatz ist schreibgeschuetzt, die
+        /// Absage nennt „Duplizieren…" und „Schloss aufheben…".
+        /// </para>
+        /// <para>
+        /// <b>Nicht ueber den Assistenten</b> gehen „Neu…", „Duplizieren…", „Schloss
+        /// aufheben…" und „Loeschen" — sie legen Saetze an, nehmen sie weg oder heben einen
+        /// Schutz auf (KI-D-Q11, AD-Q15).
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeVerwaltung()
+        {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("satz", "GebaeudeKatalogKiSicht.Satz",
+                                 KiDialogTexte.KbrowSatzName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.KbrowSatzErl, satzwahl: true)
+            };
+            felder.AddRange(GebaeudeKatalogFelder(verwaltung: true));
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_ADMIN,
+                anzeigename: KiDialogTexte.MaskeGebaeudeAdmin,
+                felder: felder,
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("verwerfen", "btn_Verwerfen", KiDialogTexte.KnopfVerwerfen),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// <b>Die Felder eines Gebaeude-Katalogsatzes</b> — die EINE Liste fuer den
+        /// Katalogeditor (<see cref="KiMaskennamen.GEBAEUDE_KATALOG"/>) und die Verwaltung
+        /// (<see cref="KiMaskennamen.GEBAEUDE_ADMIN"/>).
+        /// </summary>
+        /// <param name="verwaltung">
+        /// <c>true</c>: der Name nur lesbar, ohne Betriebsart (siehe
+        /// <see cref="GebaeudeVerwaltung"/>).
+        /// </param>
+        private static List<KiDialogFeld> GebaeudeKatalogFelder(bool verwaltung)
+        {
+            var felder = new List<KiDialogFeld>
                 {
                     // ---- Kenngroessen ----------------------------------------------
-                    new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
-                                     KiDialogTexte.GebkNameName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkNameErl),
+                    verwaltung
+                        ? new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
+                                           KiDialogTexte.GebkNameName, KiParameterTyp.Text,
+                                           KiDialogTexte.GebaNameErl, leerErlaubt: true, nurLesen: true)
+                        : new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
+                                           KiDialogTexte.GebkNameName, KiParameterTyp.Text,
+                                           KiDialogTexte.GebkNameErl),
                     new KiDialogFeld("gebaeudetyp", "GebaeudeKatalogKiSicht.Typ",
                                      KiDialogTexte.GebkTypName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkTypErl, leerErlaubt: true),
@@ -4300,22 +4503,14 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
                     new KiDialogFeld("rechenweg", "GebaeudeKatalogKiSicht.Rechenweg",
                                      KiDialogTexte.GebkRechenwegName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkRechenwegErl, nurLesen: true),
+                                     KiDialogTexte.GebkRechenwegErl, nurLesen: true)
+                };
 
-                    new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
-                                     KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
-                                     KiDialogTexte.GebkBetriebsartErl, nurLesen: true)
-                },
-                knoepfe: new[]
-                {
-                    new KiDialogKnopf("werte_uebernehmen", "btn_Uebernehmen",
-                                      KiDialogTexte.KnopfWerteUebernehmen),
-                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
-                                      KiDialogTexte.KnopfUeberschreiben),
-                    new KiDialogKnopf("speichern", "btn_Speichern",
-                                      KiDialogTexte.KnopfSpeichern),
-                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
-                });
+            if (!verwaltung)
+                felder.Add(new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
+                                            KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
+                                            KiDialogTexte.GebkBetriebsartErl, nurLesen: true));
+            return felder;
         }
 
         // =====================================================================

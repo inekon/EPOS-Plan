@@ -2029,8 +2029,19 @@ namespace WindowsFormsApplication1
         /// <summary>Bezugsmenge der Bemessung; <c>null</c> = nicht gepflegt.</summary>
         public double? Menge;
 
-        /// <summary>Satz der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        /// <summary>Satz der Bemessung, mit dem gerechnet wurde; <c>null</c> = keiner.</summary>
         public double? Einheitpreis;
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3, Nachweisumschlag Fassung 10) — WOHER der Satz kommt:
+        /// <c>NutzungsdauerSatzCtrl.HERKUNFT_TABELLE</c>, wenn der gepflegte Satz einer
+        /// Position „Instandhaltung …"/„Wartung …" mit „% der Investition" genau der der
+        /// Nutzungsdauertabelle für ihre Technik ist — vorbelegt oder mit der Vorlage
+        /// übernommen; <c>null</c> = ein eigener Satz oder keiner. Gerechnet wird in jedem
+        /// Fall mit dem Satz der Zeile; die Herkunft ist Ausweis, keine Rechengröße.
+        /// <c>null</c> steht nicht im Umschlag (<c>WhenWritingNull</c>).
+        /// </summary>
+        public string SatzHerkunft;
 
         /// <summary>Angesetzter Jahresbetrag [€/a] — positiv Ausgabe, negativ Einnahme.</summary>
         public double BetragJahr;

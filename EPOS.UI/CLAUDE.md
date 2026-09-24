@@ -79,7 +79,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Jede neue Schrift-auf-Fläche-Paarung hält 4,5:1** (große fette Schrift 3:1).
 - **Eine Tabelle in einer `Stammblattgruppe` füllt deren Breite und bricht ihren Text um, statt
   quer zu rollen** — die Hausregel „Namen brechen nicht" (`.epos-raster td`) gilt für Listen,
-  nicht für eine Tabelle aus Beschriftung und Wert im Stammblatt.
+  nicht für eine Tabelle aus Beschriftung und Wert im Stammblatt. **Trägt sie Eingabefelder, nimmt
+  jedes Feld die Breite seiner Zelle** (`table-layout: fixed`, feste Spaltenanteile, kleine
+  Grundbreite des Feldes) — mit seiner Eigenbreite (rund 165 px) schöbe es die Tabelle quer
+  (`.epos-gebaeude-huellraster`).
 - **bunit misst weder Farbe noch Breite noch Höhe:** Eine Stilregel wird als REGEL geprüft oder
   im Browser gemessen.
 
@@ -159,7 +162,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Kopf (Name, Herkunft samt Kennzeichen, Kennzahlen), steckbaren `Stammblattgruppe`n (feste
   Gruppen Kenndaten, Kosten, Alle Daten, dazu dialogspezifische wie Kennlinie oder Wochenprofil),
   Fuß mit geänderter Feldzahl, Verwerfen, Speichern. Ab zwei gewählten Zeilen zeigt es die
-  `Vergleichstabelle` statt der Felder der Fokuszeile.
+  `Vergleichstabelle` statt der Felder der Fokuszeile. **Führt das Stammblatt die Felder eines
+  Katalogeditors, teilen beide EINEN Arbeitsstand** (Prüfung, Ableitungen, Schreibweg — Vorbild
+  `GebaeudeArbeitsstand`) und beim Assistenten EINE Feldliste an derselben Sichtklasse; der Editor
+  bleibt dann nur hinter „Neu…" (AD-Q6).
 - **Mehrfachwahl über eine KÄSTCHENSPALTE:** `Katalogliste` trägt eine eigene Spalte für das
   Kästchen (Kopfkästchen = alle sichtbaren), die Leertaste setzt das Kästchen der Fokuszeile,
   Strg-Klick markiert weiter — ohne Obergrenze der Zeilenzahl.
@@ -228,7 +234,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Herstellerimport, also keinen Knopf). Ihre `Ueberlagerung` trägt hier KEINEN eigenen Kopf —
   der Importdialog darin führt Titel und Kreuz selbst, weil er sein Kreuz während eines
   laufenden Imports wegnimmt und Esc dann als „Lauf abbrechen" deutet; ein Kreuz der
-  `Ueberlagerung` schlösse mitten im Lauf.
+  `Ueberlagerung` schlösse mitten im Lauf. Nach einer Übernahme sind alle neuen Sätze gewählt
+  (`Zeilenauswahl.Uebernommen`), der erste ist Fokuszeile; ein einzelner neuer Satz ist allein
+  die Wahl. Ein Fenster, das einen Import als Überlagerung trägt, wünscht mindestens dessen
+  Maß (`Fenstermass.MitUeberlagerung`).
 - **Eine Zeitreihe zeigt ihren Verlauf über GANGLINIENBLATTGRUPPE, nicht als Diagramm im
   Detailblock:** `Ganglinienblattgruppe` und `Ganglinienblatt` bringen Jahresverlauf und Herkunft
   (mit „Verwendet in“) ins Stammblatt; eine im Projekt verwendete Zeitreihe ist weich gegen

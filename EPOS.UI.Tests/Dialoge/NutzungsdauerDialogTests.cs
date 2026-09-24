@@ -14,7 +14,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Technik und Positionsart", Stufe S1, Abschnitt 2.5).
 ///
 /// <para>Soll ist die Feldkarte: Kopf mit Kontextzeile, Suchfeld und
-/// Wiederherstellen-Knopf, das nach Technik gruppierte Raster mit sechs Spalten,
+/// Wiederherstellen-Knopf, das nach Technik gruppierte Raster mit acht Spalten (Etappe
+/// E10: dazu Instandsetzung und Wartung),
 /// die Neuzeile und die Schlussleiste. Dazu die drei Regeln, die dieser Dialog
 /// mehr trägt als ein gewöhnlicher: Eine Auslieferungszeile ist im Wert änderbar
 /// und NICHT löschbar (ND‑Q5), das Wiederherstellen fragt zurück, und eine
@@ -104,9 +105,12 @@ public class NutzungsdauerDialogTests : EposBunitContext
         Assert.Equal("Nutzungsdauern (AfA)", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Ersatzbeschaffung", cut.Find(".epos-kontextzeile").TextContent);
         Assert.Single(cut.FindAll(".epos-raster"));
-        Assert.Equal(6, cut.FindAll(".epos-raster thead th").Count);
+        // ETAPPE E10 (Stufe S3): zwei Spalten mehr — Instandsetzung und Wartung (6 → 8).
+        Assert.Equal(8, cut.FindAll(".epos-raster thead th").Count);
         Assert.Contains("Nutzungsdauer [a]", cut.Markup);
         Assert.Contains("AfA steuerlich [a]", cut.Markup);
+        Assert.Contains("Instandsetzung [%/a]", cut.Markup);
+        Assert.Contains("Wartung [%/a]", cut.Markup);
         Assert.Contains("Auslieferungswerte wiederherstellen", cut.Markup);
         Assert.Single(cut.FindAll(".epos-leiste"));
     }
@@ -263,6 +267,60 @@ public class NutzungsdauerDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal(new[] { 1 }, geschrieben.ToArray()));
     }
 
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Instandsetzung und Wartung stehen je Zeile als eigene
+    /// Felder — gezeigt, eingegeben und mit der Zeile gespeichert —, und die leise Zeile
+    /// über dem Raster nennt ihre Herkunft (VDI 2067 Blatt 1, Tabelle A2).
+    /// </summary>
+    [Fact]
+    public void Instandsetzung_und_Wartung_werden_mit_der_Zeile_gespeichert()
+    {
+        var geschrieben = new List<NutzungsdauerZeileAnzeige>();
+        NutzungsdauerZeileAnzeige kessel = Kessel;
+        kessel.InstandsetzungProzent = 2.0;
+        var cut = Zeige(p => p.Add(x => x.Speichern, zeilen =>
+        {
+            geschrieben.AddRange(zeilen);
+            return null;
+        }), new[] { kessel, Abgas, Eigene, Module, Montage });
+
+        Assert.Contains("VDI 2067 Blatt 1, Tabelle A2", cut.Find(".epos-nd-saetze").TextContent);
+
+        // Je Zeile: Nutzungsdauer, AfA, Instandsetzung, Wartung, Quelle.
+        cut.FindAll(".epos-raster tbody input")[2].Input("3,5");
+        cut.FindAll(".epos-raster tbody input")[3].Input("0.75");
+        cut.WaitForAssertion(() =>
+            Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled")));
+
+        cut.FindAll(".epos-leiste button")[0].Click();
+
+        cut.WaitForAssertion(() => Assert.Single(geschrieben));
+        Assert.Equal(1, geschrieben[0].Id);
+        Assert.Equal(3.5, geschrieben[0].InstandsetzungProzent);
+        Assert.Equal(0.75, geschrieben[0].WartungProzent);
+    }
+
+    /// <summary>ETAPPE E10: Die Neuzeile trägt die zwei Sätze mit.</summary>
+    [Fact]
+    public void Die_Neuzeile_traegt_Instandsetzung_und_Wartung()
+    {
+        NutzungsdauerNeuEingabe? angelegt = null;
+        var cut = Zeige(p => p.Add(x => x.AnlegenDelegat, e => { angelegt = e; return null; }));
+
+        var neuzeile = cut.FindAll(".epos-kontextleiste")[1];
+        var felder = neuzeile.QuerySelectorAll("input");   // Positionsart, Nutzungsdauer, AfA, Instandsetzung, Wartung
+        felder[0].Input("Eigene Art 2");
+        cut.FindAll(".epos-kontextleiste")[1].QuerySelectorAll("input")[3].Input("1,5");
+        cut.FindAll(".epos-kontextleiste")[1].QuerySelectorAll("input")[4].Input("0,5");
+
+        cut.FindAll(".epos-kontextleiste")[1].QuerySelectorAll("button")[0].Click();
+
+        cut.WaitForAssertion(() => Assert.True(angelegt.HasValue));
+        Assert.Equal("Eigene Art 2", angelegt!.Value.Positionsart);
+        Assert.Equal(1.5, angelegt.Value.InstandsetzungProzent);
+        Assert.Equal(0.5, angelegt.Value.WartungProzent);
+    }
+
     /// <summary>Eine Neuzeile ohne Positionsart wird benannt abgelehnt.</summary>
     [Fact]
     public void Eine_Neuzeile_ohne_Positionsart_wird_abgelehnt()
@@ -349,7 +407,7 @@ public class NutzungsdauerDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
-    /// Sichtklasse <c>NutzungsdauerKiSicht</c>: fünf Kopffelder und drei SPALTEN
+    /// Sichtklasse <c>NutzungsdauerKiSicht</c>: sieben Kopffelder und fünf SPALTEN
     /// über die lebende Zeilenliste — je Zeile wird aus einer Spaltendeklaration ein
     /// gewöhnliches Feld, benannt nach der Positionsart.
     /// </summary>

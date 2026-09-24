@@ -20,7 +20,7 @@
    rechten Rand des Blocks - so wie im Vorbild (Form_AdminPV: Feld 62 px,
    Einheit 4 px dahinter). Ausserhalb eines Formularrasters aendert die Klasse
    nichts. *@
-<label class="epos-feld epos-feld--kurz">
+<label class="epos-feld epos-feld--kurz" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
@@ -41,6 +41,13 @@
 @code {
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Ein Vermerk zum Feld als Tooltip (<c>title</c>) der Beschriftung; leer = keiner.
+    /// Er ergaenzt die Beschriftung und ersetzt sie nicht - auf einem Touchgeraet
+    /// erscheint er nicht (Etappe E10, Kennzeichnung A8).
+    /// </summary>
+    [Parameter] public string Titel { get; set; } = "";
 
     /// <summary>Der Wert; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
     [Parameter] public double? Wert { get; set; }

@@ -25,9 +25,23 @@ namespace EPOS.Kern.Tests
     /// sich aus den Feldnamen erschließen lässt — und dass sie dort schweigt, wo die
     /// Zuordnung mehrdeutig wäre. Geraten wird nichts.
     /// </para>
+    /// <para>
+    /// <b>Die Kultur ist gepinnt</b> (<see cref="Kulturvorrichtung"/>, Hausregel
+    /// „Kulturpinnung"): Die Fälle halten Anzeigenamen und Absagetexte aus
+    /// <c>MyResource.Resource</c>, die über <c>CurrentUICulture</c> auflösen. Die Fälle
+    /// des Weges zur Verwaltung laufen zusätzlich als Theorie in <c>de-DE</c> UND
+    /// <c>en-US</c>: Auf dem Windows-Läufer (<c>en-US</c>) nannte die Absage für
+    /// <c>bereitschaftsverlust</c> den Editor statt der Verwaltung, weil die Zielmaske
+    /// über ihre deutsche Beschriftung gefunden wurde - der Katalog entscheidet das jetzt
+    /// über Schlüssel (<see cref="KiDialoge.Zielfeldname"/>).
+    /// </para>
     /// </remarks>
-    public class KiMaskenwegTests
+    public class KiMaskenwegTests : IDisposable
     {
+        private readonly Kulturvorrichtung _kultur = new();
+
+        public void Dispose() => _kultur.Dispose();
+
         private static KiAusfuehrung Frisch() => new KiAusfuehrung { Schreibrecht = () => true };
 
         /// <summary>
@@ -72,9 +86,13 @@ namespace EPOS.Kern.Tests
         /// an dieselbe Stelle, und dort, in der Verwaltung, lassen sich die Werte setzen.
         /// Der Editor ist nur noch die Überlagerung von „Neu…".</para>
         /// </remarks>
-        [Fact]
-        public void Die_Absage_nennt_die_Maske_zu_den_Feldern()
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Die_Absage_nennt_die_Maske_zu_den_Feldern(string kultur)
         {
+            using var k = new Kulturvorrichtung(kultur);
+
             string text = Grund("formular_ausfuellen",
                 new Dictionary<string, object>
                 { ["werte"] = "wirkungsgrad_gas=0,95; bereitschaftsverlust=1,5" });
@@ -90,9 +108,13 @@ namespace EPOS.Kern.Tests
             Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
         }
 
-        [Fact]
-        public void Auch_feld_setzen_bekommt_den_Weg_genannt()
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Auch_feld_setzen_bekommt_den_Weg_genannt(string kultur)
         {
+            using var k = new Kulturvorrichtung(kultur);
+
             string text = Grund("feld_setzen",
                 new Dictionary<string, object>
                 { ["feld"] = "bereitschaftsverlust", ["wert"] = "1,5" });
@@ -108,9 +130,13 @@ namespace EPOS.Kern.Tests
         /// Katalogeditor und seine Verwaltung beide führen, ist nicht mehrdeutig — sie
         /// öffnen an derselben Stelle. Die Absage nennt die Verwaltung.
         /// </summary>
-        [Fact]
-        public void Editor_und_Verwaltung_sind_ein_Weg_die_Absage_nennt_die_Verwaltung()
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Editor_und_Verwaltung_sind_ein_Weg_die_Absage_nennt_die_Verwaltung(string kultur)
         {
+            using var k = new Kulturvorrichtung(kultur);
+
             // Vorbedingung: Das Feld steht wirklich an beiden, und beide haben dasselbe Ziel.
             KiDialog editor = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL);
             KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN);
@@ -467,9 +493,13 @@ namespace EPOS.Kern.Tests
         /// Lassen die Felder eine Maske erkennen, steht ihr Weg HINTER dem Grund — der
         /// Anwender erfährt beides: warum hier nicht, und wo sonst.
         /// </summary>
-        [Fact]
-        public void Aus_einer_ausgenommenen_Maske_folgt_der_Weg_zur_gemeinten_Maske()
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Aus_einer_ausgenommenen_Maske_folgt_der_Weg_zur_gemeinten_Maske(string kultur)
         {
+            using var k = new Kulturvorrichtung(kultur);
+
             string text = MitAufruf("Form_KiChat.btn_Help",
                 () => Grund("feld_setzen",
                             new Dictionary<string, object>

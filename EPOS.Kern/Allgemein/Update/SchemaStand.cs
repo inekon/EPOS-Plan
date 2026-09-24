@@ -462,8 +462,16 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> Die Wahl wirkt nur bei abweichendem Kuehltraeger,
         /// die Ergebnisspalten schreibt nur ein Lauf mit Kaeltekaskade; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit den SAETZEN DER NUTZUNGSDAUERTABELLE (Schritt 120, Etappe E10, Stufe S3 des
+        /// Nutzungsdauer-Konzepts) steht das Ziel auf <b>120</b>: Die leeren Satzzellen
+        /// <c>Instandsetzung_Prozent</c>/<c>Wartung_Prozent</c> der Standardzeilen bekommen die
+        /// Mitte des Empfehlungsbereichs der Betriebsvorlagen-Saat
+        /// (<see cref="NutzungsdauerSaetze"/>). <b>Reines DML</b> an <c>Tab_Nutzungsdauer</c>;
+        /// gesetzt wird nur, was leer ist. <b>Ergebnisneutral:</b> Ein Satz der Tabelle rechnet
+        /// erst, wenn die Vorbelegung ihn in eine Position schreibt; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Mit den LAUFANGABEN DER ZAPFPROFIL-AUSLEGUNG UND DER BEZUGSART AM BEDARFSTAG (Schritt
-        /// 120, Zapfprofilgenerator Stufe Z4, Schemaschritt T3) steht das Ziel auf <b>120</b>:
+        /// 121, Zapfprofilgenerator Stufe Z4, Schemaschritt T3) steht das Ziel auf <b>121</b>:
         /// <c>Erzeugerart</c>, <c>Uebertrager_Werkstoff</c>, <c>Personen_Auto</c>,
         /// <c>Personen_Manuell</c> und <c>Fuellstand_Bezug</c> an <c>Tab_TwwProjekt</c>,
         /// <c>Bezugsart</c> an <c>Tab_TwwBedarfstag_STAMM</c> (<see cref="TwwSchema.SpaltenT3"/>).
@@ -474,7 +482,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 120;
+        public const int Zielversion = 121;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

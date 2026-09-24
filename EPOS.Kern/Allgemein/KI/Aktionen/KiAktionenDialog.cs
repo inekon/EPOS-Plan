@@ -1001,8 +1001,13 @@ namespace WindowsFormsApplication1
         /// Zu diesem Zeitpunkt ist gerade KEINE Maske angemeldet, die Bruecke wuesste also
         /// nichts. Der Katalog dagegen fuehrt alle sieben Masken samt Feldern, immer.
         /// </para>
+        /// <para>
+        /// <b>Intern statt privat</b> fuer den Waechter
+        /// <c>EPOS.Kern.Tests/KiKatalogKulturTests</c>: Fuer jeden Feldschluessel des
+        /// Katalogs muss die Antwort in jeder Sprache dieselbe sein.
+        /// </para>
         /// </remarks>
-        private static KiDialog GemeinteMaske(string genannt, string[] felder)
+        internal static KiDialog GemeinteMaske(string genannt, string[] felder)
         {
             if (genannt.Length > 0)
             {
@@ -1071,13 +1076,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Eine Ueberlagerung wird ueber ihre Verwaltung genannt</b> (Welle #456):
-        /// Ist das Ziel der gemeinten Maske selbst eine Katalogmaske, und kennt sie alle
-        /// genannten Felder (auch tolerant, ueber den Anzeigenamen), dann nennt die
-        /// Absage DIESE - dort geht <c>dialog_oeffnen</c> auf, und dort lassen sich die
-        /// Werte setzen. Kennt die Zielmaske die Felder nicht (die Photovoltaik des
-        /// Projekts fuehrt auf den Modulkatalog, der ihre Felder nicht hat), bleibt es
-        /// bei der gemeinten Maske.
+        /// Ist das Ziel der gemeinten Maske selbst eine Katalogmaske, und fuehrt sie alle
+        /// genannten Felder, dann nennt die Absage DIESE - dort geht <c>dialog_oeffnen</c>
+        /// auf, und dort lassen sich die Werte setzen. Fuehrt die Zielmaske die Felder
+        /// nicht (die Photovoltaik des Projekts fuehrt auf den Modulkatalog, der ihre
+        /// Felder nicht hat), bleibt es bei der gemeinten Maske.
         /// </summary>
+        /// <remarks>
+        /// <b>Ob die Zielmaske ein Feld fuehrt, entscheiden SCHLUESSEL</b>
+        /// (<see cref="ZielFuehrtFeld"/>), nie ihre Anzeigenamen: Die stehen uebersetzt
+        /// in <c>MyResource.Resource</c>, und dieselbe Frage bekaeme sonst je Sprache
+        /// eine andere Antwort. Genau so nannte die Absage unter <c>en-US</c> fuer
+        /// <c>bereitschaftsverlust</c> den Editor statt der Verwaltung - die Verwaltung
+        /// fuehrt das Feld als <c>bbverlust</c>, und nur ihre deutsche Beschriftung
+        /// („Betriebsbereitschaftsverluste") traf den Namen tolerant.
+        /// </remarks>
         private static KiDialog Zielmaske(KiDialog gemeint, string[] felder)
         {
             KiDialog ziel = KiDialoge.Katalog.Finde(KiMaskenziele.Ziel(gemeint.Maskenname));
@@ -1086,10 +1099,49 @@ namespace WindowsFormsApplication1
             foreach (string feld in felder)
             {
                 if (string.IsNullOrWhiteSpace(feld)) continue;
-                if (!ziel.KenntFeldTolerant(feld.Trim())) return gemeint;
+                if (!ZielFuehrtFeld(gemeint, ziel, feld.Trim())) return gemeint;
             }
 
             return ziel;
+        }
+
+        /// <summary>
+        /// Fuehrt die Zielmaske <paramref name="ziel"/> das Feld, das der Aufruf an der
+        /// gemeinten Maske <paramref name="gemeint"/> nennt?
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Zuerst wird der genannte Name an der GEMEINTEN Maske aufgeloest - buchstabengetreu,
+        /// sonst tolerant, dieselbe Nachsicht, mit der sie gefunden wurde. Danach zaehlt
+        /// nur noch der Schluessel dieses Feldes: Die Zielmaske fuehrt es unter demselben
+        /// Schluessel oder unter dem, den der Katalog als sein Gegenstueck ERKLAERT
+        /// (<see cref="KiDialoge.Zielfeldname"/> - der Katalogeditor nennt die
+        /// Bereitschaftsverluste <c>bereitschaftsverlust</c>, seine Verwaltung
+        /// <c>bbverlust</c>).
+        /// </para>
+        /// <para>
+        /// Kennt die gemeinte Maske den Namen gar nicht, bleibt nur der Schluessel selbst.
+        /// </para>
+        /// <para>
+        /// <b>Die Nachsicht an der Zielmaske gilt nur ihren SCHLUESSELN</b>
+        /// (<see cref="KiWahl"/> ueber Paare aus Schluessel und Schluessel): Das Feld
+        /// <c>katalog_breite</c> des Aufklappers „Alle Daten" steht im Modulkatalog als
+        /// <c>breite</c>. Ihre Beschriftungen nimmt sie nicht in die Suche.
+        /// </para>
+        /// </remarks>
+        private static bool ZielFuehrtFeld(KiDialog gemeint, KiDialog ziel, string feld)
+        {
+            KiDialogFeld eigenes = gemeint.FindeFeld(feld) ?? gemeint.FindeFeldTolerant(feld);
+            string schluessel = eigenes == null
+                ? feld
+                : KiDialoge.Zielfeldname(gemeint.Maskenname, eigenes.Name);
+
+            if (ziel.KenntFeld(schluessel)) return true;
+
+            var schluesselpaare = new List<KiWahleintrag>(ziel.Felder.Count);
+            foreach (KiDialogFeld f in ziel.Felder) schluesselpaare.Add(new KiWahleintrag(f.Name));
+
+            return KiWahl.Treffer(schluesselpaare, schluessel).Eindeutig;
         }
 
         /// <summary>

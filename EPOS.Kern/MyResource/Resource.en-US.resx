@@ -11402,7 +11402,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Space requirements:</value>
   </data>
   <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Duration of use:</value>
+    <value>Service life (device data):</value>
   </data>
   <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
     <value>Years</value>
@@ -11528,7 +11528,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Maintenance costs:</value>
   </data>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Duration of use:</value>
+    <value>Service life (device data):</value>
   </data>
   <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
     <value>This record comes from the delivery catalogue and is write-protected.
@@ -17890,7 +17890,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Replacement interval:</value>
   </data>
   <data name="FLOTTE_ED_RESTWERT_EINHEIT" xml:space="preserve">
-    <value>Residual value of the unit:</value>
+    <value>Residual value of the unit (device data):</value>
   </data>
   <data name="FLOTTE_ED_NETZ_PLANUNG" xml:space="preserve">
     <value>Grid limits and scheduling</value>
@@ -20067,6 +20067,15 @@ Do you want to allow this?</value>
   <data name="ND_SP_AFA" xml:space="preserve">
     <value>Tax depreciation [y]</value>
   </data>
+  <data name="ND_SP_INSTANDSETZUNG" xml:space="preserve">
+    <value>Repair [%/y]</value>
+  </data>
+  <data name="ND_SP_WARTUNG" xml:space="preserve">
+    <value>Maintenance [%/y]</value>
+  </data>
+  <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
+    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). Cost management enters them into operating cost items “% of investment” with “Preset rates…”, as does adopting a cost template; the calculation uses the item's rate. An empty cell means “no rate”. The delivered rates are the middle of the cost template's recommended range, where it has one.</value>
+  </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
   </data>
@@ -20162,6 +20171,30 @@ Do you want to allow this?</value>
   </data>
   <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
     <value>{0} item(s) already carry a service life. Should these be overwritten from the depreciation table as well?</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Preset rates…</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} rate(s) (repair, maintenance) preset from the service life table.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>There is nothing to preset: every item “Instandhaltung …” or “Wartung …” measured as “% of investment” already carries the service life table's rate, or the table has none for this technology.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} item(s) already carry a different rate or an entered amount. Should these be overwritten with the service life table's rate as well?</value>
+  </data>
+  <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
+    <value>{0} % · rate from the service life table: {1} · {2} ({3})</value>
+  </data>
+  <data name="ND_SATZ_HERKUNFT" xml:space="preserve">
+    <value>rate from the service life table</value>
+  </data>
+  <data name="ND_SATZART_INSTANDSETZUNG" xml:space="preserve">
+    <value>repair</value>
+  </data>
+  <data name="ND_SATZART_WARTUNG" xml:space="preserve">
+    <value>maintenance</value>
   </data>
   <data name="ND_TAFEL_TITEL" xml:space="preserve">
     <value>Replacement and residual value</value>
@@ -21996,6 +22029,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
     <value>The name of the catalogue record. In catalogue management it selects the record the screen loads; otherwise it names the record that is written.</value>
   </data>
+  <data name="KI_DLG_GEBA_NAME_ERL" xml:space="preserve">
+    <value>The name of the selected building – read-only. The field “satz” selects another record; a record gets a new name via “Duplicate...”.</value>
+  </data>
   <data name="KI_DLG_GEBK_TYP_ERL" xml:space="preserve">
     <value>The building type from the type catalogue; it brings along the daily consumption profiles.</value>
   </data>
@@ -22793,6 +22829,30 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
     <value>Where the period comes from (VDI 2067, depreciation table, manufacturer data, own decision).</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_NAME" xml:space="preserve">
+    <value>Repair rate of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_ERL" xml:space="preserve">
+    <value>The repair rate of the new record as a percentage of the investment per year under VDI 2067 Part 1, Table A2; empty means “no rate”.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_NAME" xml:space="preserve">
+    <value>Maintenance rate of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_ERL" xml:space="preserve">
+    <value>The maintenance rate of the new record as a percentage of the investment per year under VDI 2067 Part 1, Table A2; empty means “no rate”.</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_NAME" xml:space="preserve">
+    <value>Repair</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
+    <value>The repair rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. “Preset rates…” in cost management enters it into an operating cost item “Instandhaltung …” measured as “% of investment”, as does adopting a cost template.</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
+    <value>The maintenance rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. “Preset rates…” in cost management enters it into an operating cost item “Wartung …” measured as “% of investment”, as does adopting a cost template.</value>
   </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Edit cost position</value>
@@ -23737,10 +23797,10 @@ Do you want to allow this?</value>
     <value>What replacing this unit costs.</value>
   </data>
   <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
-    <value>After how many years this unit is replaced; 0 = no replacement.</value>
+    <value>Service life of this unit: after how many years it is replaced; its linear residual value follows from it. 0 = the service life from the service life table for battery storage.</value>
   </data>
   <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
-    <value>The residual value of this unit at the end of the study period.</value>
+    <value>Device data, no longer used in the calculation: a fixed residual value of this unit that is only kept on record. The net present value derives the residual value linearly from the service life (replacement interval).</value>
   </data>
   <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
     <value>Where the electricity demand comes from: the EPOS calculation or an imported file.</value>
@@ -26397,14 +26457,11 @@ Do you want to allow this?</value>
   <data name="GEBA_SB_HUELLE" xml:space="preserve">
     <value>Envelope</value>
   </data>
-  <data name="GEBA_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Edit…</value>
-  </data>
   <data name="GEBA_BTN_GEBAEUDETYPEN" xml:space="preserve">
     <value>Building types…</value>
   </data>
   <data name="GEBA_SB_HUELLE_HINWEIS" xml:space="preserve">
-    <value>Areas and U-values are changed via “Edit…”, together with windows per orientation, room temperatures, holidays and thermal bridges.</value>
+    <value>The window area is the sum of the four orientations under “All data”, together with room temperatures, holidays, model parameters and cooling.</value>
   </data>
   <data name="GEBA_HUELLE_WERT" xml:space="preserve">
     <value>{0} m² · U {1} W/(m²K)</value>
@@ -26440,7 +26497,7 @@ Do you want to allow this?</value>
     <value>Description</value>
   </data>
   <data name="GEBA_MSG_FEHLER" xml:space="preserve">
-    <value>The key data could not be written.</value>
+    <value>The building record could not be written.</value>
   </data>
   <data name="GEBA_MSG_NEU" xml:space="preserve">
     <value>“{0}” created.</value>
@@ -26536,7 +26593,7 @@ Do you want to allow this?</value>
     <value>“{0}” read – not stored.</value>
   </data>
   <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
-    <value>{0} records imported.</value>
+    <value>{0} records imported and selected.</value>
   </data>
   <data name="KI_DLG_KBROW_SATZ_NAME" xml:space="preserve">
     <value>Selected record</value>
@@ -26560,7 +26617,7 @@ Do you want to allow this?</value>
     <value>What the maintenance costs refer to, as stated in the catalogue (free text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>The expected service life of the unit in years.</value>
+    <value>The service life of the unit according to the catalogue, in years — device data, not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>The manufacturer’s figure for the emission of {0} per MWh; it is maintained here, calculations use the emission catalogue of the energy carrier.</value>
@@ -28543,7 +28600,7 @@ Do you want to allow this?</value>
     <value>the reference of the state of charge</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_SPALTE_FEHLT" xml:space="preserve">
-    <value>column {0} is missing in this database (schema version before 120).</value>
+    <value>column {0} is missing in this database (schema version before 121).</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KONSTRUKTOR_BEZUGSMENGE" xml:space="preserve">
     <value>A constructed design day with a reference quantity needs a positive quantity and its reference type.</value>
@@ -28604,5 +28661,20 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_KALIBRIERT_OHNE_VORSCHLAG" xml:space="preserve">
     <value>No catalogue proposal — calibrated to the annual measured value: {0:0.#} kWh/d (factor {1:0.###}).</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_VORGABE" xml:space="preserve">
+    <value>Replacement interval 0: the service life from the service life table for battery storage applies ({0} years). Replacement and linear residual value follow from the interval.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_TABELLE" xml:space="preserve">
+    <value>Replacement interval 0: the service life from the service life table for battery storage applies. Replacement and linear residual value follow from the interval.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE" xml:space="preserve">
+    <value>Replacement interval 0: the service life table has no service life for battery storage — the unit is not replaced and carries no residual value.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ALTFELD" xml:space="preserve">
+    <value>Residual value of the unit: device data, no longer used in the calculation. The study derives the residual value linearly — amount of the last purchase × remaining life ÷ service life.</value>
+  </data>
+  <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
+    <value>Device data — not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
 </root>

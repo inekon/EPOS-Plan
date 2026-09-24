@@ -824,40 +824,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Kenndaten eines eigenen Satzes schreiben</b> (Stufe 5: das Stammblatt der
-        /// Gebaeudeverwaltung, direkt bedienbar) — genau die fuenf Spalten, die die Gruppe
-        /// Kenndaten fuehrt: Gebaeudetyp, Gebaeudeart, Verwendung (Steuerwert), Baualtersklasse
-        /// (Buchstabe) und Beschreibung.
-        ///
-        /// <para><b>Nur diese fuenf Spalten.</b> Flaechen, U-Werte und die Bauweise haengen
-        /// aneinander (Bauart × Nutzflaeche, Summe der Fensterflaechen) und bleiben dem
-        /// Katalogeditor, der ihre Regeln fuehrt; ein Rundlauf ueber das ganze Modell
-        /// schriebe abgeleitete Spalten neu, die der Anwender hier gar nicht sieht.</para>
-        ///
-        /// <para>Ein Auslieferungssatz wird nie geschrieben (<c>AND ReadOnly = 0</c>); die
-        /// Oberflaeche sperrt ihn vorher weich.</para>
-        /// </summary>
-        /// <returns><c>true</c>, wenn der Satz geschrieben wurde.</returns>
-        public static bool KenndatenSchreiben(string bezeichner, string typ, string gebaeudeart,
-                                              string verwendung, string baualtersklasse,
-                                              string beschreibung)
-        {
-            if (string.IsNullOrEmpty(bezeichner)) return false;
-            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
-
-            return DataRepository.ExecuteSQL(
-                "UPDATE [" + TABLE + "] SET [Typ] = ?, [Gebaeudeart] = ?, " +
-                "[Wohngebaeude_Nicht_Wohngebaeude] = ?, [Baualtersklasse] = ?, [Beschreibung] = ? " +
-                "WHERE Bezeichner = ? AND ReadOnly = 0",
-                new DbParam("@typ", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
-                new DbParam("@art", DbParamTyp.VarWChar) { Wert = (object)(gebaeudeart ?? "") },
-                new DbParam("@verw", DbParamTyp.VarWChar) { Wert = (object)(verwendung ?? "") },
-                new DbParam("@bak", DbParamTyp.VarWChar) { Wert = (object)(baualtersklasse ?? "") },
-                new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") },
-                new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)bezeichner });
-        }
-
-        /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
         /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze weich und
         /// fragt vorher zurueck; <see cref="Delete"/> meldete die Sperre ueber

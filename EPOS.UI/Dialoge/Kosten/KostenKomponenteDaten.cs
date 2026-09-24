@@ -123,6 +123,16 @@ public sealed class KostenPositionZeile
     /// </summary>
     public string NutzungsdauerHerleitung { get; set; } = "";
 
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Die HERKUNFTSZEILE unter dem Satzfeld einer
+    /// Betriebsposition „Instandhaltung …"/„Wartung …" mit „% der Investition" —
+    /// „2 % · Satz aus Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger (Instandsetzung)".
+    /// Sie steht, wenn das Feld den Satz der Tabelle trägt (vorbelegt oder mit der Vorlage
+    /// übernommen); ein leeres Feld rechnet mit nichts und bekommt keine Zeile. Fertig aus
+    /// dem Kern (<c>NutzungsdauerSatzCtrl.Herleitungszeile</c>), leer heißt keine Zeile.
+    /// </summary>
+    public string SatzHerleitung { get; set; } = "";
+
     /// <summary>Darf die Zeile bearbeitet werden? (Auslieferungsvorlagen nicht.)</summary>
     public bool Schreibbar { get; set; } = true;
 }
@@ -296,6 +306,14 @@ public sealed class KostenKomponenteStand
     /// der Investitionsseite einer schreibbaren Vorlage bzw. eines Projekts.
     /// </summary>
     public bool NutzungsdauerVorbelegbar { get; set; }
+
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Derselbe Knopf auf der BETRIEBSSEITE — als „Sätze
+    /// vorbelegen…": Er füllt die leeren Sätze der Positionen „Instandhaltung …"/
+    /// „Wartung …" mit „% der Investition" aus der Nutzungsdauertabelle. Nur auf der
+    /// Betriebsseite einer schreibbaren Vorlage bzw. eines Projekts.
+    /// </summary>
+    public bool SaetzeVorbelegbar { get; set; }
 
     /// <summary>Zeigt den Abschnitt „Ertrag/Bonus" (FK5: nur BHKW und Photovoltaik).</summary>
     public bool ErtragSichtbar { get; set; }
