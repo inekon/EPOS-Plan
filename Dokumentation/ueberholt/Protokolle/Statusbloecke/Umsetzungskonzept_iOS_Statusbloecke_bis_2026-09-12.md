@@ -9780,3 +9780,57 @@ GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`; SQL-Prüfer 1 782 Texte,
 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS
 gegen `2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz),
 Schemastand 123.
+
+## #476 — Wiki-Quelle für die Seite „Gebäude“ angelegt, help_mapping auf ihre Anker (24.09.2026)
+
+Anwenderentscheid „fahre fort“. Commits (Zweig
+`worktree-agent-af0bb10d00da5dd25`, Basis `3ff9840b`): `3e59f838`
+Wiki-Quelle Gebaeude angelegt, help_mapping auf ihre Anker; `bf3d9ade`
+Papiere. Merge in den Hauptbaum `cf446092`, konfliktfrei.
+
+**Quelle.** Die Live-Seite ist ohne Anmeldung abrufbar (3 654 Zeichen,
+zwölf Anker) und beschrieb noch die alten Masken „Gebäude und
+Gebäudetyp in DB“ mit zwei Editormasken. Die neue Repo-Quelle
+`Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` (165 Zeilen)
+verbindet die zwölf Live-Anker mit dem Ist-Zustand der Masken
+(`GebaeudeAdminDialog`, `GebaeudeStammblattFelder`, `GebaeudeDialog`,
+`GebaeudeKatalogDialog`, `GebaeudeWohnflaecheDialog`, ihre Hüllen,
+`GebaeudeStammCtrl`).
+
+**Aufbau.** Einleitung/Aufruf; Gebäude des Projekts (Projektliste und
+Katalog, Übernahme, Verbrauch/Ändern/Simulation, Fußleiste, Assistent);
+Katalogeditor (nur „Neu…“); Verwaltung (Liste, Auswahlleiste mit
+Vergleichen/Duplizieren/Schloss/Löschen mit Sperre, Stammblatt mit
+Kenndaten/Hülle/Fenster/Kenngrößen/Alle Daten, Speichern/Verwerfen,
+„Neu…“, Schloss, Fußleiste, Hilfe-Assistent, Grenzen); Gebäudetypen;
+Berechnung; Siehe auch — der Abschnitt „Berechnung“ steht vor „Siehe
+auch“. Zwölf Live-Anker bleiben erhalten, 25 Anker sind neu.
+
+**help_mapping.txt.** `Form_Gebaeude1.btn_Help`/`Form_Gebaeude2.btn_Help`
+zeigen auf `Gebäude#katalogeditor`, `Form_EingGebTyp.btn_Help` auf
+`Gebäude#gebaeudetypen`; `Form_Gebaeude.btn_Help` bleibt auf der Seite
+stehen. `Form_Gebaeude_Admin` bekommt keine Zeile (KI-Maske, kein
+Hilfeschlüssel).
+
+**Papiere.** Konzept Hilfesystem (Tafel: Seite Gebäude mit Repo-Quelle,
+noch nicht hochgeladen); `Wiki_Update_2026-09-26.md` (Upload-Zeile
+Gebäude, Logbuch-Satz aus #465 übernommen, Punkt „sieben Dialoge“).
+Kein Logbuch-Eintrag — die Seite ist Doku.
+
+**Was offen bleibt.** Der Hilfeknopf `Form_GebWohnflaeche.btn_Help` hat
+kein Ziel: sein Präfix `Form_GebWohnflaeche` fehlt in
+`KiChatKontext.BEREICH_JE_HILFEPRAEFIX` (`B_GEBAEUDE` nachzutragen,
+Kern-Nachtrag). „Gebäude in DB löschen“ im Projektdialog bleibt ohne
+Nutzungssperre (Bestand). Vor dem Upload den Live-Stand mit `--probe`
+gegen die neue Quelle vergleichen.
+
+**Gate im Worktree des Umsetzungsagenten.** Kern-Build 0 Fehler;
+`DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests`,
+`HelpMappingAnkerWacheTests`, `RepositoryOrdnungWacheTests` und
+`KiDialogaufrufTests` zusammen 64/64; UI
+`BerechnungsknopfTests`/`BerechnungshilfeTests` 222/222; Regex 0
+Treffer.
+
+**Gate nach Merge auf `cf446092`.** `DokumentationLinkWacheTests`,
+`WikiProduktdatenWacheTests`, `HelpMappingAnkerWacheTests`,
+`RepositoryOrdnungWacheTests` 30/30 grün.

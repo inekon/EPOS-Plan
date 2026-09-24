@@ -30,7 +30,7 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 
 ''In das Projekt übernehmen'' setzt den markierten Katalogsatz als neue Zeile in die Projektliste, vorbelegt mit der Art der Angabe ''Wohnfläche [m²]'', der Wohnfläche des Katalogsatzes und dem Jahresnutzungsgrad 1. Übernommen wird mit ''OK''; ''Abbrechen'' verwirft die Änderungen der Liste.
 
-Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts neu: Jede Kopie entsteht dabei frisch aus ihrem Katalogsatz, und die Angaben des Projekts – Art der Angabe, Nutzfläche bzw. Verbrauch, Jahresnutzungsgrad und dezentrale Warmwasserbereitung – bleiben erhalten. Was Sie am Katalogsatz ändern, gelangt so mit dem nächsten ''OK'' in das Projekt.
+Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts fort: Eine unveränderte Zeile bleibt mit ihrem ganzen Stand erhalten, auch mit projekteigenen Werten aus Feldübernahmen und der Tagesverteilung. Nur entfernte Zeilen werden gelöscht und neu hinzugekommene Katalogsätze neu angelegt; die Zuordnungswerte jeder Zeile – Fläche bzw. Verbrauch, ihre Einheit, der Jahresnutzungsgrad und die dezentrale Warmwasserbereitung – aktualisiert EPOS-Plan dabei aus dem Katalogsatz. Schlägt das Speichern fehl, etwa weil der Katalogsatz eines Altbestands ohne Verweis umbenannt wurde, bleibt der Stand des Projekts unverändert, und die Startseite zeigt eine Meldung.
 
 === Gebäude: Verbrauch ===
 
