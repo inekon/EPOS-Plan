@@ -20,7 +20,9 @@
 
    AUSLEGUNG (Stufe Z2). Der Knopf "Auslegung..." oeffnet die Ueberlagerung
    ZapfprofilAuslegungDialog zum aktuellen Arbeitsstand (Parametersatz ueber den Delegaten
-   AuslegungGaben der Huelle). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
+   AuslegungGaben der Huelle, samt dem Schalter "Stochastisch rechnen": aus bei "Auslegung...",
+   an beim Fussknopf "Stochastisch rechnen" - die Laufangabe bleibt nicht im Arbeitsstand
+   stehen, jedes Oeffnen setzt sie neu). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
    (ZapfprofilEingabeDaten.Auslegung), geschrieben wird erst mit dem OK des
    Bedarfsprofil-Dialogs; Abbrechen verwirft. Ohne Delegat steht der Knopf weich gesperrt.
    Aendert der Anwender danach eine Zone so, dass sich die Auslegung aendert (neue, doppelte
@@ -413,7 +415,6 @@
             @if (_auslegungGaben is not null)
             {
                 <ZapfprofilAuslegungDialog @attributes="_auslegungGaben" TitelAnzeigen="false"
-                                           StochastischBeimOeffnen="@_auslegungStochastisch"
                                            Geschlossen="AuslegungGeschlossen" />
             }
         </KindInhalt>
@@ -469,10 +470,12 @@
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>
-    /// Der Parametersatz der Überlagerung „Auslegung" zum Arbeitsstand (Stufe Z2) — der
-    /// Delegat der Hülle. Kein Delegat = der Knopf „Auslegung…" steht weich gesperrt mit Grund.
+    /// Der Parametersatz der Überlagerung „Auslegung" zum Arbeitsstand (Stufe Z2) samt dem
+    /// Schalter „Stochastisch rechnen" (Laufangabe: <c>false</c> bei „Auslegung…", <c>true</c>
+    /// beim Fußknopf „Stochastisch rechnen") — der Delegat der Hülle. Kein Delegat = der Knopf
+    /// „Auslegung…" steht weich gesperrt mit Grund.
     /// </summary>
-    [Parameter] public Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
+    [Parameter] public Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
@@ -1202,7 +1205,7 @@
         if (AuslegungGaben is null) return;
         _hinweis = "";
         _auslegungStochastisch = false;
-        _auslegungGaben = AuslegungGaben(_eingabe.Kopie());
+        _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), false);
     }
 
     // =================================================================================
@@ -1228,7 +1231,7 @@
         if (AuslegungGaben is not null)
         {
             _auslegungStochastisch = true;
-            _auslegungGaben = AuslegungGaben(_eingabe.Kopie());
+            _auslegungGaben = AuslegungGaben(_eingabe.Kopie(), true);
         }
         else if (!jahresreihe)
             _hinweis = Texte.HinweisJahresreiheDeterministisch;
@@ -1307,6 +1310,7 @@
         _auslegungGaben = null;
         if (auslegung is null) return;
         _eingabe.Auslegung = auslegung.Kopie();
+        _eingabe.Auslegung.Stochastisch = false;             // eine Laufangabe — jedes Öffnen setzt sie neu
         _eingabe.PunktUeberholt = false;
         _okMeldung = "";
         _okKennung = null;

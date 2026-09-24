@@ -365,11 +365,13 @@ namespace EPOS.Kern.Tests
             IReadOnlyDictionary<string, object> gaben = ZapfprofilHuelle.Gaben(PROJEKT, null);
             ParameterPruefen(typeof(ZapfprofilDialog), gaben);
 
-            var auslegungGaben = (Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>)gaben["AuslegungGaben"];
-            IReadOnlyDictionary<string, object> ausl = auslegungGaben(Zonen());
+            var auslegungGaben = (Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>)gaben["AuslegungGaben"];
+            IReadOnlyDictionary<string, object> ausl = auslegungGaben(Zonen(), false);
             ParameterPruefen(typeof(ZapfprofilAuslegungDialog), ausl);
             Assert.True(((ZapfprofilAuslegungStartDaten)ausl["Daten"]).Verfuegbar);
             Assert.IsType<ZapfprofilAuslegungTexte>(ausl["Texte"]);
+            // Mit dem Schalter (Fußknopf „Stochastisch rechnen") dieselben Parameter.
+            ParameterPruefen(typeof(ZapfprofilAuslegungDialog), auslegungGaben(Zonen(), true));
         }
 
         private static void ParameterPruefen(Type komponente, IReadOnlyDictionary<string, object> gaben)

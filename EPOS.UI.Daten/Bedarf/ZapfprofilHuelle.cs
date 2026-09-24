@@ -97,8 +97,9 @@ namespace WindowsFormsApplication1
                 ["Jahresreihe"] = new Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>(
                     (e, abbruch) => Kulturweitergabe.Starten(() => Jahresreihe(idProjekt, e, basis, abbruch), abbruch)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
-                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>(
-                    e => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach)),
+                // Der Schalter „Stochastisch rechnen" ist eine Laufangabe: aus bei „Auslegung…", an beim Fußknopf.
+                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>(
+                    (e, stochastisch) => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach, stochastisch)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };

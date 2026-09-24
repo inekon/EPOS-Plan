@@ -35,8 +35,9 @@
    samt Spannweite als Tabellenzeilen, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P mit
    Bezug), den Vermerk "nicht belastbar" bei R < 1/(1 - p); die Speichergruppe traegt den
    Konsistenzhinweis als Kohaerenzzeile. Ohne Schalter bleibt das Perzentil "noch nicht
-   gerechnet"; der Wirt kann die Ueberlagerung mit eingeschaltetem Schalter oeffnen
-   (StochastischBeimOeffnen, Knopf "Stochastisch rechnen" des Zapfprofils). Kein neues Bild.
+   gerechnet"; der Wirt oeffnet die Ueberlagerung mit eingeschaltetem Schalter ueber die
+   Eingaben (Knopf "Stochastisch rechnen" des Zapfprofils) - dann ohne Ergebnis, und genau ein
+   Lauf rechnet gleich nebenlaeufig mit Ensemble. Kein neues Bild.
 
    BENANNT GESPERRT. Der Konsistenzhinweis vor dem Lauf (braucht das Perzentil), der
    Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der Entnahmearmaturen fehlt im
@@ -532,12 +533,6 @@
     /// <summary>Wartezeit der Neuberechnung nach der letzten Eingabe [ms]; 0 = sofort (bunit).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
-    /// <summary>
-    /// Öffnet mit eingeschaltetem „Stochastisch rechnen" (Knopf „Stochastisch rechnen" des
-    /// Zapfprofils) und rechnet gleich stochastisch; <c>false</c> = die Eingaben, wie sie kommen.
-    /// </summary>
-    [Parameter] public bool StochastischBeimOeffnen { get; set; }
-
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
@@ -589,13 +584,10 @@
         _ergebnis = Daten.Ergebnis;
         _aktuell = _ergebnis is not null;
         _konstruktorOffen = KonstruktorFaellig(null, _ergebnis);
-        // „Stochastisch rechnen" des Zapfprofils: gleich mit Ensemble — der Konstruktor folgt
-        // dem Stand beim Öffnen, nicht dieser Neuberechnung.
-        if (StochastischBeimOeffnen && !_eingabe.Stochastisch)
-        {
-            _eingabe.Stochastisch = true;
-            Neurechnen(konstruktorFolgen: false);
-        }
+        // „Stochastisch rechnen" des Zapfprofils: Der Schalter kommt mit den Eingaben, und ohne
+        // Ergebnis rechnet genau EIN Lauf — gleich nebenläufig mit Ensemble, kein
+        // deterministischer Vorlauf. Sein erstes Ergebnis darf den Konstruktor öffnen (4.5).
+        if (_ergebnis is null && _eingabe.Stochastisch) Neurechnen(konstruktorFolgen: true);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

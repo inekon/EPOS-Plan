@@ -968,24 +968,41 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Empty(b.QuerySelectorAll("table"));
     }
 
-    /// <summary>Der Knopf „Stochastisch rechnen" des Zapfprofils öffnet die Überlagerung mit eingeschaltetem Schalter.</summary>
+    /// <summary>
+    /// Der Knopf „Stochastisch rechnen" des Zapfprofils öffnet die Überlagerung mit eingeschaltetem
+    /// Schalter in den Eingaben und ohne Ergebnis: Es rechnet genau EIN Lauf, gleich nebenläufig mit
+    /// Ensemble — kein deterministischer Vorlauf im Zeichenlauf (kein Doppellauf).
+    /// </summary>
     [Fact]
-    public void Stochastisch_beim_Oeffnen_rechnet_gleich_mit_dem_Ensemble()
+    public void Mit_Schalter_geoeffnet_rechnet_genau_ein_Lauf_mit_Ensemble()
     {
-        var gesehen = new List<ZapfprofilAuslegungEingabeDaten>();
+        var imZeichenlauf = new List<ZapfprofilAuslegungEingabeDaten>();
+        var nebenlaeufig = new List<ZapfprofilAuslegungEingabeDaten>();
+        ZapfprofilAuslegungStartDaten start = StartMitStochastik();
+        start.Ergebnis = null;
+        start.Eingabe.Stochastisch = true;
         var cut = Render<ZapfprofilAuslegungDialog>(p => p
-            .Add(x => x.Daten, StartMitStochastik())
+            .Add(x => x.Daten, start)
             .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
-            .Add(x => x.Rechnen, e => { gesehen.Add(e); return ErgebnisZu(e); })
-            .Add(x => x.StochastischRechnen, (e, _) => { gesehen.Add(e); return Task.FromResult(ErgebnisZu(e)); })
-            .Add(x => x.EntprellungMs, 0)
-            .Add(x => x.StochastischBeimOeffnen, true));
+            .Add(x => x.Rechnen, e => { imZeichenlauf.Add(e); return ErgebnisZu(e); })
+            .Add(x => x.StochastischRechnen, (e, _) => { nebenlaeufig.Add(e); return Task.FromResult(ErgebnisZu(e)); })
+            .Add(x => x.EntprellungMs, 0));
 
+        Assert.Empty(imZeichenlauf);
+        Assert.True(Assert.Single(nebenlaeufig).Stochastisch);
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".epos-zapfausl-streuband")));
         Assert.True(cut.Instance.Eingabe.Stochastisch);
-        Assert.True(Assert.Single(gesehen).Stochastisch);
-        Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
         Assert.True(Feld(cut, "Stochastisch rechnen").HasAttribute("checked"));
         Assert.False(cut.Instance.KonstruktorOffen);
+
+        // Ohne Schalter öffnet sie mit dem Ergebnis der Hülle und rechnet gar nicht.
+        imZeichenlauf.Clear();
+        nebenlaeufig.Clear();
+        cut = Aufbauen(StartMitStochastik(), rechnen: e => { imZeichenlauf.Add(e); return ErgebnisZu(e); },
+                       stochastisch: (e, _) => { nebenlaeufig.Add(e); return Task.FromResult(ErgebnisZu(e)); });
+        Assert.Empty(imZeichenlauf);
+        Assert.Empty(nebenlaeufig);
+        Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));
     }
 
     /// <summary>

@@ -75,12 +75,13 @@ namespace WindowsFormsApplication1
         /// Arbeitsfaden mit Abbruchmarke (5.1).
         /// </summary>
         internal static IReadOnlyDictionary<string, object> AuslegungGaben(int idProjekt, ZapfprofilEingabeDaten eingabe,
-                                                                           ZapfprofilStand basis, ZapfprofilStufe stufe)
+                                                                           ZapfprofilStand basis, ZapfprofilStufe stufe,
+                                                                           bool stochastisch = false)
         {
             ZapfprofilEingabeDaten zonen = (eingabe ?? new ZapfprofilEingabeDaten()).Kopie();
             return new Dictionary<string, object>
             {
-                ["Daten"] = AuslegungStart(idProjekt, zonen, basis, stufe),
+                ["Daten"] = AuslegungStart(idProjekt, zonen, basis, stufe, stochastisch),
                 ["Texte"] = AuslegungTexte(),
                 ["Rechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>(
                     a => Auslegung(idProjekt, zonen, Deterministisch(a), basis, stufe)),
@@ -96,16 +97,23 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Stand der Überlagerung beim Öffnen: die Eingaben (die des Arbeitsstands, sonst aus
         /// den Projektgrößen), die Bedarfstage des Katalogs, die Zapfregeln samt Namensvorschlag,
-        /// die Verfügbarkeit und das erste Ergebnis.
+        /// die Verfügbarkeit und das erste Ergebnis. „Stochastisch rechnen" ist eine Laufangabe:
+        /// Sie kommt allein aus <paramref name="stochastisch"/> — „Auslegung…" öffnet mit dem
+        /// Schalter aus, der Fußknopf „Stochastisch rechnen" mit ihm an; ein Schalter aus einem
+        /// früheren OK gilt nicht mehr. Mit Schalter gibt es kein erstes Ergebnis — die Überlagerung
+        /// rechnet gleich EINEN nebenläufigen Lauf samt Ensemble, keinen deterministischen davor.
         /// </summary>
         internal static ZapfprofilAuslegungStartDaten AuslegungStart(int idProjekt, ZapfprofilEingabeDaten eingabe,
-                                                                     ZapfprofilStand basis, ZapfprofilStufe stufe)
+                                                                     ZapfprofilStand basis, ZapfprofilStufe stufe,
+                                                                     bool stochastisch = false)
         {
             eingabe ??= new ZapfprofilEingabeDaten();
+            ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
+            anfang.Stochastisch = stochastisch;
             var start = new ZapfprofilAuslegungStartDaten
             {
                 Stufe = stufe,
-                Eingabe = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis),
+                Eingabe = anfang,
                 Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
                                  eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
             };
@@ -135,9 +143,9 @@ namespace WindowsFormsApplication1
             }
             catch (ParametersatzException) { /* das Ergebnis nennt den Grund */ }
 
-            // Das erste Ergebnis rechnet im Zeichenlauf — deterministisch; das Ensemble zieht die
-            // Überlagerung nebenläufig (StochastischRechnen).
-            start.Ergebnis = Auslegung(idProjekt, eingabe, Deterministisch(start.Eingabe), basis, stufe);
+            // Das erste Ergebnis rechnet im Zeichenlauf — deterministisch; mit Schalter keines: Das
+            // Ensemble zieht die Überlagerung gleich nebenläufig (StochastischRechnen), ein Lauf.
+            if (!stochastisch) start.Ergebnis = Auslegung(idProjekt, eingabe, start.Eingabe, basis, stufe);
             return start;
         }
 

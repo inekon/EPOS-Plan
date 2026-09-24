@@ -622,7 +622,8 @@ public class ZapfprofilDialogTests : EposBunitContext
     public void Stochastisch_rechnen_oeffnet_die_Auslegung_mit_eingeschaltetem_Schalter()
     {
         var geoeffnet = new List<ZapfprofilEingabeDaten>();
-        var cut = MitAuslegung(geoeffnet);
+        var schalter = new List<bool>();
+        var cut = MitAuslegung(geoeffnet, schalter: schalter);
 
         IElement knopf = Knopf(cut, "Stochastisch rechnen");
         Assert.Null(knopf.GetAttribute("aria-disabled"));
@@ -638,6 +639,38 @@ public class ZapfprofilDialogTests : EposBunitContext
         Knopf(cut, "Auslegung…").Click();
         Assert.False(cut.Instance.AuslegungStochastisch);
         Assert.False(cut.FindComponent<ZapfprofilAuslegungDialog>().Instance.Eingabe.Stochastisch);
+        Assert.Equal(new[] { true, false }, schalter);                     // der Schalter reist über die Gaben
+    }
+
+    /// <summary>
+    /// Die Laufangabe „Stochastisch rechnen" bleibt nicht im Arbeitsstand: Nach einem OK mit
+    /// Schalter öffnet „Auslegung…" die Überlagerung wieder mit dem Schalter aus — sie rechnet
+    /// nicht sofort ein Ensemble; die übrigen Eingaben samt Punkt kommen mit.
+    /// </summary>
+    [Fact]
+    public void Nach_OK_mit_Schalter_oeffnet_Auslegung_wieder_ohne_ihn()
+    {
+        var geoeffnet = new List<ZapfprofilEingabeDaten>();
+        var schalter = new List<bool>();
+        var cut = MitAuslegung(geoeffnet, schalter: schalter);
+
+        Knopf(cut, "Stochastisch rechnen").Click();
+        IRenderedComponent<ZapfprofilAuslegungDialog> a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        Assert.True(a.Instance.Eingabe.Stochastisch);
+        Knopf(a, "OK").Click();
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.False(cut.Instance.Eingabe.Auslegung.Stochastisch);          // keine Laufangabe im Arbeitsstand
+
+        Knopf(cut, "Auslegung…").Click();
+        Assert.Equal(new[] { true, false }, schalter);
+        Assert.False(geoeffnet[1].Auslegung!.Stochastisch);
+        Assert.Equal(300, geoeffnet[1].Auslegung!.PunktVolumenL);
+        a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        Assert.False(a.Instance.Eingabe.Stochastisch);
+        Assert.False(a.Instance.EnsembleLaeuft);
+        Assert.False(a.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Stochastisch rechnen")
+                      .QuerySelector("input")!.HasAttribute("checked"));
     }
 
     // =================================================================================
@@ -666,20 +699,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         }
     };
 
+    /// <summary>
+    /// Der Dialog mit dem Delegaten der Auslegung — er spielt die Hülle: Der Schalter „Stochastisch
+    /// rechnen" kommt allein aus dem Öffnen (<paramref name="schalter"/> hält ihn fest).
+    /// </summary>
     private IRenderedComponent<ZapfprofilDialog> MitAuslegung(List<ZapfprofilEingabeDaten> geoeffnet,
-                                                              Action<ZapfprofilErgebnisDaten?>? geschlossen = null)
+                                                              Action<ZapfprofilErgebnisDaten?>? geschlossen = null,
+                                                              List<bool>? schalter = null)
         => Render<ZapfprofilDialog>(p => p
             .Add(x => x.Daten, Daten())
             .Add(x => x.Texte, new ZapfprofilTexte())
             .Add(x => x.Vorschau, e => Vorschau(e))
             .Add(x => x.Pruefen, _ => Array.Empty<ZapfprofilMeldung>())
             .Add(x => x.EntprellungMs, 0)
-            .Add(x => x.AuslegungGaben, e =>
+            .Add(x => x.AuslegungGaben, (e, stochastisch) =>
             {
                 geoeffnet.Add(e);
+                schalter?.Add(stochastisch);
+                ZapfprofilAuslegungStartDaten start = AuslegungStart(e.Auslegung?.Kopie());
+                start.Eingabe.Stochastisch = stochastisch;
                 return new Dictionary<string, object>
                 {
-                    ["Daten"] = AuslegungStart(e.Auslegung),
+                    ["Daten"] = start,
                     ["Texte"] = new ZapfprofilAuslegungTexte(),
                     ["EntprellungMs"] = 0
                 };

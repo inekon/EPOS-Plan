@@ -616,6 +616,36 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// „Stochastisch rechnen" ist eine Laufangabe: Der Schalter kommt allein aus dem Öffnen
+        /// (Delegat <c>AuslegungGaben</c> der Gaben) — ein Schalter aus einem früheren OK gilt nicht.
+        /// „Auslegung…" (aus) bringt das erste Ergebnis deterministisch mit; der Fußknopf (an) bringt
+        /// keines, die Überlagerung rechnet gleich EINEN nebenläufigen Lauf.
+        /// </summary>
+        [Fact]
+        public void Der_Schalter_der_Auslegung_kommt_allein_aus_dem_Oeffnen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+            ZapfprofilEingabeDaten zonen = Zonen();
+            zonen.Auslegung = MitTag();
+            zonen.Auslegung.Stochastisch = true;                             // aus einem früheren OK
+
+            var oeffnen = (Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>)
+                          ZapfprofilHuelle.Gaben(PROJEKT, ZapfprofilCtrl.Lies(PROJEKT))["AuslegungGaben"];
+            var aus = (ZapfprofilAuslegungStartDaten)oeffnen(zonen, false)["Daten"];
+            Assert.False(aus.Eingabe.Stochastisch);
+            Assert.NotNull(aus.Ergebnis);
+            Assert.False(aus.Ergebnis.Stochastisch);
+            Assert.Null(Assert.Single(aus.Ergebnis.Gruppen).PerzentilErgebnis);
+
+            var an = (ZapfprofilAuslegungStartDaten)oeffnen(zonen, true)["Daten"];
+            Assert.True(an.Eingabe.Stochastisch);
+            Assert.Null(an.Ergebnis);
+            Assert.True(zonen.Auslegung.Stochastisch);                        // der Arbeitsstand des Wirts bleibt unberührt
+        }
+
+        /// <summary>
         /// Fehlen der Nutzungsart die Zapfkategorien, bleibt das Perzentil benannt nicht rechenbar —
         /// der Satz nennt die Nutzungsart, die Warnliste den Eintrag „Stochastik nicht rechenbar";
         /// Summenlinie und Empfehlung stehen weiter.
