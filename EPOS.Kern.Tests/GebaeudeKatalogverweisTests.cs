@@ -428,7 +428,10 @@ namespace EPOS.Kern.Tests
             foreach (string name in new[] { "AltenH-95-EnEV2016", "Pflegeheim-122-EnEV2016",
                                             "SpH-Umkl-287-EnEV2016", "SpH-Umkl-NE",
                                             "Krankenhaus_92-EnEV2016", "EFH-BZ2", "KrankenH-F-U-400",
-                                            "KMEH-M-U-54", "Z-EFH-A-S-126" })
+                                            "KMEH-M-U-54", "Z-EFH-A-S-126",
+                                            // Welle #493: die berichtigten Anschlusslaengen.
+                                            "KrankenH-F-S-136", "KrankenH-F-TS-236", "KrankenH-F-U-400-Pinneberg",
+                                            "gr_Hotel-G-134", "Kaufhaus" })
                 Assert.Contains(name, frei);
         }
 

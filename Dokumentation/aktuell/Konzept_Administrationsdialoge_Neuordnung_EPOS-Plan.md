@@ -701,11 +701,19 @@ Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abw
 der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
 Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
 `gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
-313,8 m / 13,6 Geschosse ≈ 3,5 m). Nicht entscheidbar und dem Anwender vorgelegt: die Anschlusslänge
-Fenster–Wand 1 800 m (0,95 m je m² Fenster, Ausgangssatz 2,54; physikalisch möglich, die Untergrenze für
-Fensterbänder ist 2 · 1 895,9 m² / 3,5 m ≈ 1 083 m) und die Außenwand von 12 094 m², die nicht um die
-1 120,4 m² gewachsen ist, um die Ost/West kleiner ist als beim Ausgangssatz (Hüllfläche 13 989,9 statt
-15 110,3 m²). (b)
+313,8 m / 13,6 Geschosse ≈ 3,5 m). ✔ **Anschlusslängen berichtigt (#493, Schemaschritt
+`GebaeudeAnschlusslaengenReparatur.SCHRITT`, Anwenderentscheid „Ersetzt durch plausible Werte“):** Beim
+Krankenhaussatz steht die Anschlusslänge Fenster–Wand auf 4 812 m (Laibung je m² Fenster des
+Ausgangssatzes 2,538 × 1 895,9 m²) und die Außenwand auf 13 214,4 m² (Hüllfläche 15 110,3 m² der
+Geometrie minus Fensterfläche). Die Sätze `KrankenH-F-*`, `gr_Hotel-G-134` und `Kaufhaus`, die aus einer
+Quelle dieselben Längen 243,7 / 7 879 / 1 392,8 m trugen (Laibung 0,08 m je m² Fenster, Dachkante das
+51-Fache der Quadratkante), führen jetzt Laibung 7 879 m (Tausch mit der Dachkante, 2,573 m je m²) bzw.
+beim Kaufhaus 5 820,8 m (dasselbe Verhältnis × 2 262,36 m²) und Dach- und Kellerkante gleich dem
+Umfang 313,8 m der gemeinsamen Grundfläche 1 469 m². Der Schritt trifft je Satz und Spalte nur
+Bezeichner UND unplausiblen Wert; Projektkopien bleiben (Nachweis `GebaeudeAnschlusslaengenReparaturTests`,
+Herleitungen in `Referenzlaeufe/LIESMICH.md`). Weitere Sätze mit auffälligen Anschlusslängen (etwa
+185 / 985 m bei 540 m² Dach in den Altenheim-, Pflegeheim-, Schul- und Hallenbadsätzen, 5 380,8 m
+Dachkante bei `Hotel-F-228`) sind nicht Teil des Entscheids und bleiben, wie sie sind. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
