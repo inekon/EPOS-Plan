@@ -10547,6 +10547,20 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-bottom: 0;
 }
 
+/* Die Kaelteerzeugertabelle (Kuehlkonzept 8.4): dieselbe Tabellenform, in einer
+   Huelle, die quer rollt, statt im schmalen Fenster Spalten abzuschneiden. Der
+   Stromtraeger ist Text und steht hinten - links und umbrechbar. */
+.epos-simueb-kaeltetabelle {
+    overflow-x: auto;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-simueb-tabelle th.epos-simueb-text,
+.epos-simueb-tabelle td.epos-simueb-text {
+    text-align: left;
+    white-space: normal;
+}
+
 /* --- Der Fuss ------------------------------------------------------------ */
 
 .epos-simueb-fuss {

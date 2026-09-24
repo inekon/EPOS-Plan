@@ -71,7 +71,13 @@
             {
                 <WaermepumpeKonfiguration Daten="@Anlage" Traegerkatalog="@Traegerkatalog"
                                           Texte="@Texte" Aktiv="@(!NurLesen)"
+                                          Kuehlung="@Kuehlung"
                                           Geaendert="Neugezeichnet" />
+
+                @if (_kuehlWarnung.Length > 0)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kuehlWarnung" />
+                }
             }
             else
             {
@@ -157,6 +163,15 @@
     /// Dann steht in der Wärmepumpe nur die Projekteinstellung.
     /// </summary>
     [Parameter] public WaermepumpeAnlageDaten? Anlage { get; set; }
+
+    /// <summary>
+    /// Die Kühlgaben der Wärmepumpen-Konfiguration (Stufe KU2 Welle 3; Kühlkonzept 8.2);
+    /// <c>null</c> = keine Gruppe „Kühlbetrieb".
+    /// </summary>
+    [Parameter] public WaermepumpeKuehlGaben? Kuehlung { get; set; }
+
+    /// <summary>Der Mangel an den Kühlfeldern beim OK — er hält den Dialog offen.</summary>
+    private string _kuehlWarnung = "";
 
     /// <summary>Der Trägerkatalog der Energieträgerwahl; leer = keine Wahl.</summary>
     [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
@@ -310,6 +325,10 @@
         BhkwLeistungsgrenzeSetzen = w => LeistungsgrenzeGesetzt(w),
         AnlageLesen = () => Anlage,
 
+        // Stufe KU2 Welle 3: die Kuehlgaben - mit ihnen loest die Sichtklasse die drei
+        // Wahlfelder der Gruppe „Kuehlbetrieb" auf und lehnt ab, was die Maske weich sperrt.
+        Kuehlgaben = () => Kuehlung,
+
         // KI-F1b: die drei Klapplisten der Maske. Ihre Eintraege stehen dort, wo auch
         // die Maske sie herholt - die zwei festen Listen im Dialog bzw. im Baustein,
         // der Traegerkatalog in der Huelle.
@@ -355,13 +374,28 @@
     /// Die Wärmepumpen-Konfiguration hat an der Arbeitskopie etwas geändert — nur
     /// zeichnen; geschrieben wird im OK-Weg des Wirts.
     /// </summary>
-    private void Neugezeichnet() => StateHasChanged();
+    private void Neugezeichnet()
+    {
+        _kuehlWarnung = "";
+        StateHasChanged();
+    }
 
     // =====================================================================
     // Schließen
     // =====================================================================
 
-    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+    private Task BeiErgebnis(bool ok)
+    {
+        // KU2 Welle 3: dieselbe Prüfregel der Kühlfelder wie im Anlagendialog - eine
+        // verletzte Regel meldet und hält den Dialog offen.
+        if (ok && Anlage is not null)
+        {
+            string? fehler = WaermepumpeKonfiguration.KuehlFehler(Anlage, Kuehlung, Texte);
+            if (fehler is not null) { _kuehlWarnung = fehler; return Task.CompletedTask; }
+        }
+        _kuehlWarnung = "";
+        return Geschlossen.InvokeAsync(ok);
+    }
 
     /// <summary>
     /// Esc bricht ab. Enter ist NICHT belegt: Der Dialog schreibt über den Wirt in

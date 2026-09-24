@@ -309,8 +309,8 @@ namespace WindowsFormsApplication1
             KopfZeile(ws, 1, deltaStart + varianten.Count - 1);
 
             int r = 2;
-            foreach (string gruppe in new[] { KennzahlenKatalog.GR_ENERGIE, KennzahlenKatalog.GR_EFFIZIENZ,
-                                              KennzahlenKatalog.GR_EMISSION, KennzahlenKatalog.GR_KOSTEN })
+            // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
+            foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
                 var zeilen = katalog.Where(x => x.Gruppe == gruppe)
                     .Where(x => daten.Varianten.Any(v =>

@@ -104,6 +104,11 @@ namespace WindowsFormsApplication1
                 // das Buendel sie selbst) - der Block gehoert jetzt der Konfiguration.
                 ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_WAERMEPUMPE),
 
+                // KU2 Welle 3 (Kuehlkonzept 8.2): die Kuehlgaben der Konfiguration -
+                // Stuetzstellen, Sperrgrund und Stromtraeger des Projekts, plattformfrei gebaut.
+                // Ohne Projekt keine Gruppe "Kuehlbetrieb".
+                ["Kuehlung"] = projektId > 0 ? WaermepumpeKuehlGabenBau.Bauen(projektId) : null,
+
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
 
@@ -516,6 +521,11 @@ namespace WindowsFormsApplication1
         /// <summary>Aus der Anlagenzeile in den Feldsatz — <c>SetControls</c>:151.</summary>
         internal static WaermepumpeAnlageDaten AusModell(WErzeugerModel m)
         {
+            // KU2 Welle 3: die drei Geraetefelder des Kuehlbetriebs, falls der Aufrufer die
+            // Zeile ohne GeraetedatenFuellen hereinreicht - sonst zeigte der Dialog "aus",
+            // und der Speicherweg liesse den gespeicherten Stand ohnehin stehen.
+            WaermepumpeGeraeteCtrl.KuehlfelderFuellen(m);
+
             var d = new WaermepumpeAnlageDaten
             {
                 Bezeichner = m.Bezeichner ?? "",
@@ -558,6 +568,15 @@ namespace WindowsFormsApplication1
                 // Nennleistung daneben. Sie ist eine Kommazahl (Tab_WP.Kuehlleistung
                 // ist REAL); ein int schnitte 5,5 kW still auf 5 kW.
                 Kuehlleistung = m.Kuehlleistung,
+
+                // KU2 Welle 3 (Kuehlkonzept 8.2; E15, E33, E34): der Kuehlbetrieb - drei Felder
+                // der Projektkopie, zwei der Anlagenzeile.
+                Kuehlbetrieb = m.Kuehlbetrieb,
+                KuehlVorlauf = m.KuehlVorlauf,
+                KuehlHilfsstromanteil = m.KuehlHilfsstromanteil,
+                KuehlCarrierId = m.Kuehl_ID_Carrier,
+                KuehlEigenerZaehler = m.Kuehl_EigenerZaehler,
+
                 Modulkosten = m.Modulkosten,
                 Volumen = m.Volumen,
                 Solaranteil = m.Solaranteil,
@@ -618,6 +637,19 @@ namespace WindowsFormsApplication1
             // Leer laesst den bisherigen Wert stehen - ein Aufrufer, der die
             // Kuehlleistung gar nicht fuehrt (Pruefstand), soll sie nicht nullen.
             if (d.Kuehlleistung.HasValue) m.Kuehlleistung = d.Kuehlleistung.Value;
+
+            // KU2 Welle 3 (Kuehlkonzept 8.2; E34): Kuehltraeger und Abrechnungsart gehoeren der
+            // Anlagenzeile und reisen mit Loeschen + Neuanlegen im Modell; die drei
+            // Geraetefelder schreibt ProjektgeraetNachziehen in die Projektkopie - nur, wenn die
+            // Zeile sie traegt (KuehlfelderGeladen, gesetzt beim Fuellen in AusModell).
+            m.Kuehl_ID_Carrier = d.KuehlCarrierId is int kt && kt > 0 ? kt : (int?)null;
+            m.Kuehl_EigenerZaehler = d.KuehlEigenerZaehler == true ? true : (bool?)null;
+            if (m.KuehlfelderGeladen)
+            {
+                m.Kuehlbetrieb = d.Kuehlbetrieb;
+                m.KuehlVorlauf = d.KuehlVorlauf;
+                m.KuehlHilfsstromanteil = d.KuehlHilfsstromanteil;
+            }
         }
 
         private static string Text_(string schluessel, string rueckfall)

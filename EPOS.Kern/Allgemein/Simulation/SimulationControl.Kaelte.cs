@@ -27,9 +27,14 @@ namespace WindowsFormsApplication1
     /// leer, das Wärmepumpenmodul erfährt nichts, und kein Wert der Wärme- oder Stromseite ändert
     /// sich.</para>
     ///
-    /// <para><b>Übergang bis zur dritten Welle (E34, benannt):</b> Der Kältestrom geht in die
-    /// Stufenrechnung wie der Wärmepumpenstrom und trägt Tarif und Faktor des Projekts; ein
-    /// gewählter Kühlträger (<c>Kuehl_ID_Carrier</c>) steht als Hinweis im Protokoll.</para>
+    /// <para><b>Der Kältestrom eines abweichenden Kühlträgers (E34, Kühlkonzept 6.1):</b> Trägt
+    /// eine Anlage einen anderen Stromträger für die Kühlung als das Projekt, läuft ihr Kältestrom
+    /// entweder <b>anteilig am Netzbezug</b> durch die Stufenrechnung (Vorgabe — Eigenverbrauch aus
+    /// Photovoltaik und Stromspeicher gemeinsam) oder über einen <b>eigenen Zähler</b> NEBEN ihr (nicht
+    /// in den Rest, nicht in die Lastreihe des Speichers). Am Laufende teilt
+    /// <see cref="KaeltestromNetzbezugAufteilen"/> den Netzbezug jeder Viertelstunde nach dem Anteil
+    /// des Kältestroms am Stromverbrauch; bepreist und bewertet wird er einmal, im
+    /// <c>KostenEmissionRechner</c>.</para>
     /// </summary>
     partial class SimulationControl
     {
@@ -42,12 +47,22 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen ein Wärmekanal sich während der Kältekaskade verändert hat — für die Deckungsprobe.</summary>
         private int _waermekanalAbweichungen;
 
+        /// <summary>
+        /// <b>Der Kältestrom, der durch die Stufenrechnung läuft</b> [kWh je Stunde] — die Summe der
+        /// Kälteerzeuger OHNE eigenen Zähler (E34). Ihn liest die Lastreihe des Stromspeichers
+        /// (<c>StromspeicherSimCtrl.BaueLastreihe</c>), damit Speicher und Flotte dieselbe Last sehen
+        /// wie der Rest; und er ist Teil des Stromverbrauchs, nach dem der Netzbezug geteilt wird.
+        /// <c>null</c> ohne gerechnete Kältekaskade — dann ändert sich an der Lastreihe nichts.
+        /// </summary>
+        public double[] Kaeltestrom_Stufenrechnung_stuendlich;
+
         /// <summary>Den Kältezustand des Vorlaufs verwerfen — am Beginn von <see cref="Kaskade_Zweikanalig"/>.</summary>
         private void KaelteseiteZuruecksetzen()
         {
             _kaelteerzeuger = null;
             _kuehltage = null;
             _waermekanalAbweichungen = 0;
+            Kaeltestrom_Stufenrechnung_stuendlich = null;
         }
 
         private static string Anzeigename(WErzeugerModel m)
@@ -80,6 +95,9 @@ namespace WindowsFormsApplication1
 
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
             bool erhoben = kaelte != null && kaelte.Gerechnet;
+
+            // Der Stromträger des Projekts - einmal je Lauf und erst, wenn ein Kälteerzeuger ihn braucht (E34).
+            int projekttraeger = -1;
 
             for (int i = 0; i < simulation_wp.wp_model.Count && i < SimulationWaermepumpe.MAX_WP; i++)
             {
@@ -185,14 +203,20 @@ namespace WindowsFormsApplication1
                                           name, h));
                 }
 
-                // E34, Übergang bis Welle 3: ein gewählter Kühlträger wirkt noch nicht - benannt.
-                if (m.Kuehl_ID_Carrier.HasValue && m.Kuehl_ID_Carrier.Value > 0)
-                {
-                    int heiztraeger = m.ID_Carrier > 0 ? m.ID_Carrier : Emissionsquelle.StromTraeger(m_ID_Projekt);
-                    if (m.Kuehl_ID_Carrier.Value != heiztraeger)
-                        Protokoll.HinweisEinmal("kuehl-wp-kuehltraeger-" + m.ID,
-                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_KUEHLTRAEGER, name));
-                }
+                // E34 (Kühlkonzept 6.1): Nur ein ABWEICHENDER Kühlträger wirkt - dann gilt die
+                // Abrechnungsart der Anlage (NULL = anteilig am Netzbezug, 1 = eigener Zähler).
+                // Ohne Kühlträger oder mit dem Stromträger des Projekts läuft der Kältestrom wie der
+                // Wärmepumpenstrom und trägt Tarif und Faktor des Projekts.
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt);
+                int kuehltraeger = Kaeltestromabrechnung.Abweichend(m.Kuehl_ID_Carrier, projekttraeger)
+                    ? m.Kuehl_ID_Carrier.Value : 0;
+                bool eigenerZaehler = kuehltraeger > 0 && m.Kuehl_EigenerZaehler == true;
+                if (kuehltraeger > 0)
+                    Protokoll.HinweisEinmal("kuehl-wp-kuehltraeger-" + m.ID,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_KUEHLTRAEGER,
+                                      name, Emissionsquelle.TraegerName(kuehltraeger),
+                                      eigenerZaehler ? MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ZAEHLER
+                                                     : MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ANTEILIG));
 
                 _kaelteerzeuger.Add(new Kaelteerzeuger
                 {
@@ -202,7 +226,9 @@ namespace WindowsFormsApplication1
                     Modulindex = i,
                     Kennlinie = k,
                     Hilfsstromanteil = hilfsstromanteil,
-                    Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null
+                    Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null,
+                    Kuehltraeger = kuehltraeger,
+                    EigenerZaehler = eigenerZaehler
                 });
             }
 
@@ -264,12 +290,87 @@ namespace WindowsFormsApplication1
                         if (kanaele.Bedarf[k][h] != vorher[k][h]) { _waermekanalAbweichungen++; break; }
 
             // 6.1: der Kältestrom als eigene Reihe in die Stufenrechnung - addiert im Rest, nicht in
-            // der Reihe der Wärmepumpe (5.1, Festlegung 5).
-            ReststromMwh += kaskade.StromGesamtKwh / 1000.0;
-            double[] temp = Stundenwerte_zu_viertelstunden(kaskade.Stromverbrauch_Kuehlung_stuendlich);
+            // der Reihe der Wärmepumpe (5.1, Festlegung 5). E34: OHNE den Kältestrom der Anlagen mit
+            // eigenem Zähler - der läuft neben der Stufenrechnung, wird also weder aus PV-Eigenstrom
+            // noch aus dem Stromspeicher gedeckt. Ohne eigenen Zähler ist die Reihe die der Kaskade.
+            double stufeKwh;
+            Kaeltestrom_Stufenrechnung_stuendlich = KaeltestromDerStufenrechnung(kaskade, out stufeKwh);
+            ReststromMwh += stufeKwh / 1000.0;
+            double[] temp = Stundenwerte_zu_viertelstunden(Kaeltestrom_Stufenrechnung_stuendlich);
             Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
 
             KennlinienlageMelden(kaskade);
+        }
+
+        /// <summary>
+        /// Der Kältestrom, der durch die Stufenrechnung läuft [kWh je Stunde] — die Reihe der Kaskade,
+        /// wenn keine Anlage einen eigenen Zähler führt (dann Zeichen für Zeichen dieselbe Reihe und
+        /// dieselbe Jahressumme wie ohne Abrechnungsart), sonst die Summe der übrigen Anlagen (E34).
+        /// </summary>
+        private static double[] KaeltestromDerStufenrechnung(Kaeltekaskade kaskade, out double summeKwh)
+        {
+            if (!kaskade.Erzeuger.Any(e => e.NebenDerStufenrechnung))
+            {
+                summeKwh = kaskade.StromGesamtKwh;
+                return (double[])kaskade.Stromverbrauch_Kuehlung_stuendlich.Clone();
+            }
+
+            var reihe = new double[Kaeltekaskade.STUNDEN];
+            summeKwh = 0.0;
+            for (int h = 0; h < Kaeltekaskade.STUNDEN; h++)
+                foreach (Kaelteerzeuger e in kaskade.Erzeuger)
+                {
+                    if (e.NebenDerStufenrechnung) continue;
+                    reihe[h] += e.Strom_stuendlich[h];
+                    summeKwh += e.Strom_stuendlich[h];
+                }
+            return reihe;
+        }
+
+        // =====================================================================
+        //  2a. Am Laufende: der Netzbezug des Kältestroms (E34, Kühlkonzept 6.1)
+        // =====================================================================
+
+        /// <summary>
+        /// Teilt am Laufende — nach Photovoltaik und Stromspeicher, wenn der Viertelstundenrest der
+        /// Netzbezug ist — den Netzbezug auf den Kältestrom jeder Anlage auf
+        /// (<see cref="Kaelteerzeuger.NetzbezugKwh"/>): über die Stufenrechnung
+        /// Σ Netzbezug(t) · Kältestrom(t) / Stromverbrauch(t) je Viertelstunde, mit dem
+        /// Stromverbrauch aus der Lastreihe des Laufs (Gebäude, Wärmepumpe, Heizstab, Kessel,
+        /// Kältestrom der Stufenrechnung — dieselbe Reihe, die der Stromspeicher sieht); mit eigenem
+        /// Zähler der ganze Kältestrom. Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt so
+        /// gemeinsam, ohne Vorrang (E34, Wahl 1).
+        ///
+        /// <para><b>Nur eine Aufteilung, kein zweiter Rechenweg:</b> Rest, Netzbezug und
+        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Ohne Kältekaskade ein sofortiger
+        /// Rücksprung. Bepreist und bewertet wird die Menge einmal, im <c>KostenEmissionRechner</c>
+        /// — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger des Projekts.</para>
+        /// </summary>
+        private void KaeltestromNetzbezugAufteilen()
+        {
+            if (m_bError || _kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
+            if (kaelte == null || kaelte.Kaskade == null) return;
+
+            double[] last = null;
+            foreach (Kaelteerzeuger e in kaelte.Kaskade.Erzeuger)
+            {
+                if (e.NebenDerStufenrechnung) { e.NetzbezugKwh = e.StromGesamtKwh; }
+                else if (!(e.StromGesamtKwh > 0)) { e.NetzbezugKwh = 0.0; }
+                else
+                {
+                    if (last == null) last = new StromspeicherSimCtrl().BaueLastreihe(this);
+                    e.NetzbezugKwh = Kaeltekaskade.NetzbezugAnteilKwh(Rest_Strombedarf_viertelstuendlich,
+                                                                      last, e.Strom_stuendlich);
+                }
+
+                if (e.Kuehltraeger > 0)
+                    Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KAELTE_KUEHLTRAEGER_MENGE, e.Bezeichner,
+                        (e.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                        (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                        Emissionsquelle.TraegerName(e.Kuehltraeger)));
+            }
         }
 
         /// <summary>

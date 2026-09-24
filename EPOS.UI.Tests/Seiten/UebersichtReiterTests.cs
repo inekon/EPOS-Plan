@@ -831,4 +831,103 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Empty(ZeichnenMitKaelte(null).FindAll("section.epos-simueb-kaelte"));
         Assert.Empty(ZeichnenMitKaelte(Kaelte(0.0)).FindAll("section.epos-simueb-kaelte"));
     }
+
+    // =====================================================================
+    //  Stufe KU2 Welle 3 — die Deckung im Kälteblock (Kühlkonzept 8.4; E21, E34)
+    // =====================================================================
+
+    /// <summary>Phantasiewerte: 12,5 MWh/a Kältebedarf, davon 5 MWh/a gedeckt mit 1,25 MWh/a Kältestrom.</summary>
+    private static KaelteDaten KaelteMitErzeuger()
+    {
+        KaelteDaten k = Kaelte(12.5);
+        k.KaelterestbedarfMwh = 7.5;
+        k.Deckungshinweis = "Die Wärmepumpen im Kühlbetrieb decken 5,00 MWh/a des Kältebedarfs (40,0 %).";
+        k.DeckungsgradProzent = 40.0;
+        k.KaeltestromMwh = 1.25;
+        k.EerJahreswert = 4.0;
+        k.KaeltestromNetzbezugMwh = 0.8;
+        k.Erzeuger = new[]
+        {
+            new KaelteerzeugerAnzeige("WP Probe", 18, 5.0, 1.25, 4.0, 0.8, "„Kühlstrom“, anteilig am Netzbezug")
+        };
+        k.Legende = new[]
+        {
+            new Ringanteil("WP Probe", 5.0, 40.0, "#2ECC71"),
+            new Ringanteil("Rest (ungedeckt)", 7.5, 60.0, "#A0A0A0", IstRest: true)
+        };
+        return k;
+    }
+
+    private IRenderedComponent<UebersichtReiter> ZeichnenMitKaelteerzeuger(Zeichenmodell? ring)
+        => Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Daten, Daten());
+            p.Add(x => x.RingWaerme, _ring);
+            p.Add(x => x.RingStrom, _ring);
+            p.Add(x => x.RingKaelte, ring);
+            p.Add(x => x.Bedarf, new BedarfDaten { Kaelte = KaelteMitErzeuger() });
+        });
+
+    /// <summary>
+    /// Mit Kälteerzeuger trägt der Block die Deckung nach dem Muster der zwei Spalten: Deckungsgrad,
+    /// Kältestrom und Jahresarbeitszahl Kälte als zweites Kennzahlenband, die leise Zeile mit dem
+    /// Netzbezug des Kältestroms, den Ring mit HTML-Legende (eigene Kennung) und die
+    /// Kälteerzeugertabelle mit dem Stromträger je Anlage (E34); der Satz zur Deckung und die
+    /// Grenze der Zahl (K5) bleiben darunter.
+    /// </summary>
+    [Fact]
+    public void Mit_Kaelteerzeuger_zeigt_der_Block_Deckung_Ring_und_Kaelteerzeugertabelle()
+    {
+        var seite = ZeichnenMitKaelteerzeuger(_ring);
+        var block = seite.Find("section.epos-simueb-kaelte");
+
+        Assert.Equal(6, block.QuerySelectorAll(".epos-simueb-kennzahl").Length);
+        string text = block.TextContent;
+        Assert.Contains(Resource.SIMUEB_LBL_DECKUNG, text, StringComparison.Ordinal);
+        Assert.Contains(Resource.SIMUEB_LBL_KAELTESTROM, text, StringComparison.Ordinal);
+        Assert.Contains(Resource.SIMUEB_LBL_JAZ_KAELTE, text, StringComparison.Ordinal);
+        Assert.Contains("40,0", text);
+        Assert.Contains(string.Format(Resource.SIMUEB_KAELTESTROM_NETZ, "0,80"), text, StringComparison.Ordinal);
+
+        // Der Ring mit eigener Kennung und die HTML-Legende daneben.
+        Assert.Single(block.QuerySelectorAll(".epos-simueb-ring"));
+        var ringe = seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal(new[] { "simerg-ring-waerme", "simerg-ring-strom", "simerg-ring-kaelte" },
+                     ringe.Select(r => r.Instance.Kennung).ToArray());
+        Assert.False(ringe[2].Instance.LegendeSchaltbar);
+        Assert.Equal(2, block.QuerySelectorAll("ul.epos-simueb-legende li").Length);
+        Assert.Single(block.QuerySelectorAll("li.epos-simueb-legende-rest"));
+
+        // Die Kälteerzeugertabelle: sieben Spalten, eine Zeile, Stromträger als Text hinten.
+        Assert.Equal(7, block.QuerySelectorAll(".epos-simueb-kaeltetabelle thead th").Length);
+        var zeile = Assert.Single(block.QuerySelectorAll(".epos-simueb-kaeltetabelle tbody tr"));
+        string[] zellen = zeile.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "WP Probe", "18", "5,00", "1,25", "4,00", "0,80", "„Kühlstrom“, anteilig am Netzbezug" }, zellen);
+
+        Assert.Contains("Die Wärmepumpen im Kühlbetrieb decken", text, StringComparison.Ordinal);
+        Assert.Contains(WindowsFormsApplication1.SimulationKaeltebedarf.GrenzeFeuchte, text, StringComparison.Ordinal);
+        Assert.Equal(2, seite.FindAll(".epos-simueb-spalten > section").Count);
+    }
+
+    /// <summary>Ohne Ringmodell (kein gültiges Ergebnis) fällt nur der Ring weg — Zahlen und Tabelle bleiben.</summary>
+    [Fact]
+    public void Mit_Kaelteerzeuger_ohne_Ringmodell_bleiben_Zahlen_und_Tabelle()
+    {
+        var block = ZeichnenMitKaelteerzeuger(null).Find("section.epos-simueb-kaelte");
+        Assert.Empty(block.QuerySelectorAll(".epos-simueb-ring"));
+        Assert.Equal(6, block.QuerySelectorAll(".epos-simueb-kennzahl").Length);
+        Assert.Single(block.QuerySelectorAll(".epos-simueb-kaeltetabelle tbody tr"));
+    }
+
+    /// <summary>Ohne Kälteerzeuger steht im Kälteblock weder Deckungsband noch Ring noch Tabelle.</summary>
+    [Fact]
+    public void Ohne_Kaelteerzeuger_steht_im_Kaelteblock_weder_Ring_noch_Tabelle()
+    {
+        var block = ZeichnenMitKaelte(Kaelte(12.5)).Find("section.epos-simueb-kaelte");
+        Assert.Equal(3, block.QuerySelectorAll(".epos-simueb-kennzahl").Length);
+        Assert.Empty(block.QuerySelectorAll(".epos-simueb-ring"));
+        Assert.Empty(block.QuerySelectorAll(".epos-simueb-kaeltetabelle"));
+        Assert.DoesNotContain(Resource.SIMUEB_LBL_JAZ_KAELTE, block.TextContent, StringComparison.Ordinal);
+    }
 }

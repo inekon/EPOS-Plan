@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Waermepumpe;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
 /// Das FLACHE Abbild des Wärmepumpen-Anlagendialogs für den Hilfe-Assistenten
@@ -30,7 +32,16 @@ public sealed class WaermepumpeAnlageKiSicht
     /// </summary>
     public Func<bool, string?>? ExtrapolationSetzen { get; init; }
 
+    /// <summary>
+    /// Die Kühlgaben des Dialogs — Stützstellen, Sperrgrund und Stromträger des Projekts
+    /// (Stufe KU2 Welle 3). <c>null</c> = der Wirt bietet keinen Kühlbetrieb an; dann lehnt
+    /// jede Setzung eines Kühlfeldes benannt ab, statt Werte zu schreiben, die niemand sieht.
+    /// </summary>
+    public Func<WaermepumpeKuehlGaben?>? Kuehlgaben { get; init; }
+
     private WaermepumpeAnlageDaten? D => Datenquelle?.Invoke();
+
+    private WaermepumpeKuehlGaben? G => Kuehlgaben?.Invoke();
 
     // =====================================================================
     //  Die Projekteinstellung
@@ -71,6 +82,59 @@ public sealed class WaermepumpeAnlageKiSicht
     public int CarrierId { get => D?.CarrierId ?? 0; set { if (D is { } d) d.CarrierId = value; } }
     public string Betriebsart { get => D?.Betriebsart ?? ""; set { if (D is { } d) d.Betriebsart = value ?? ""; } }
     public double? Abschaltpunkt { get => D?.Abschaltpunkt; set { if (D is { } d) d.Abschaltpunkt = value; } }
+
+    // ---- Der Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, E15, E33, E34) -----
+    //
+    // Die Wege stehen EINMAL, in WaermepumpeKuehlKiWege (und deren Regeln in den statischen
+    // Wegen der Konfiguration) - dieselben für die Konfiguration der Simulation
+    // (KomponentenKonfigurationKiSicht). Was die Maske weich sperrt, lehnt die Setzung benannt ab.
+
+    /// <summary>„Maschine auch zum Kühlen benutzen" — gesperrt ohne Kühlkennlinie oder mit Quellspeicher.</summary>
+    public bool Kuehlbetrieb
+    {
+        get => D?.Kuehlbetrieb ?? false;
+        set => WaermepumpeKuehlKiWege.KuehlbetriebSetzen(D, G, value);
+    }
+
+    /// <summary>Der Kühl-Vorlauf [°C] aus den Stützstellen; leer = kleinster Stützwert.</summary>
+    public int? KuehlVorlauf
+    {
+        get => D?.KuehlVorlauf;
+        set => WaermepumpeKuehlKiWege.VorlaufSetzen(D, G, value);
+    }
+
+    /// <summary>Die Stützstellen der Kühlkennlinie, die die Maske zur Wahl stellt — ohne die gesperrten.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlVorlaufWahl => WaermepumpeKuehlKiWege.VorlaufWahl(D, G);
+
+    /// <summary>Der Hilfsstromanteil in PROZENT, wie die Maske ihn zeigt; gespeichert wird der Anteil.</summary>
+    public double? KuehlHilfsstromanteil
+    {
+        get => WaermepumpeKuehlKiWege.HilfsstromProzent(D);
+        set => WaermepumpeKuehlKiWege.HilfsstromSetzen(D, G, value);
+    }
+
+    /// <summary>Der Stromträger des Kältestroms; leer = wie Heizbetrieb.</summary>
+    public int? KuehlCarrierId
+    {
+        get => D?.KuehlCarrierId;
+        set => WaermepumpeKuehlKiWege.KuehltraegerSetzen(D, G, value);
+    }
+
+    /// <summary>Die Stromträger des Projekts, die die Maske für den Kältestrom zur Wahl stellt.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlCarrierIdWahl => WaermepumpeKuehlKiWege.TraegerWahl(G);
+
+    /// <summary>
+    /// Die Abrechnungsart des Kältestroms (E34): 0 = anteilig am Netzbezug, 1 = eigener Zähler —
+    /// wählbar nur, wenn der Kühlträger vom Stromträger des Projekts abweicht.
+    /// </summary>
+    public int KuehlAbrechnung
+    {
+        get => WaermepumpeKuehlKiWege.Abrechnung(D);
+        set => WaermepumpeKuehlKiWege.AbrechnungSetzen(D, G, value);
+    }
+
+    /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl => WaermepumpeKuehlKiWege.AbrechnungWahl();
 
     // ---- Die Stammfelder des Geräts ---------------------------------------------
 

@@ -116,6 +116,7 @@ namespace WindowsFormsApplication1
                     case Bilder.BedarfKaelte: return ModellBedarfKaelte(a);
                     case Bilder.RingWaerme: return ModellRingWaerme();
                     case Bilder.RingStrom: return ModellRingStrom();
+                    case Bilder.RingKaelte: return ModellRingKaelte();
                     case Bilder.WpProduktion: return ModellWpProduktion(a);
                     case Bilder.WpStromverbrauch: return ModellWpStrom(a);
                     case Bilder.WpLeistungTemperatur: return ModellStreuwolke(a);
@@ -283,6 +284,42 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.SIMUEB_LEGENDE_REST, k.RestwaermebedarfMwh, R_REST_GRAU));
 
             return segmente;
+        }
+
+        /// <summary>
+        /// Die Segmente des KÄLTERINGS (Stufe KU2 Welle 3; Kühlkonzept 8.4, E21) — dieselbe Regel wie
+        /// bei der Wärme: je Kälteerzeuger ein Segment, der ungedeckte Kältebedarf als LETZTES, im
+        /// Grau der beiden Ringe. EINE Liste für Bild und Legende.
+        /// </summary>
+        private static List<ChartRenderer.Ringsegment> SegmenteKaelte(SimulationErgebnisCtrl.KaelteErgebnis k)
+        {
+            SKColor[] farben = { R_WP, R_REST, R_SPEICHER, R_SOLAR, R_HEIZSTAB };
+            var segmente = new List<ChartRenderer.Ringsegment>();
+            if (k == null) return segmente;
+            for (int i = 0; i < k.Erzeuger.Count; i++)
+            {
+                SimulationErgebnisCtrl.KaelteerzeugerZeile z = k.Erzeuger[i];
+                segmente.Add(new ChartRenderer.Ringsegment(
+                    string.IsNullOrEmpty(z.Bezeichner) ? MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE : z.Bezeichner,
+                    z.KaelteMwh, farben[i % farben.Length]));
+            }
+            segmente.Add(new ChartRenderer.Ringsegment(
+                MyResource.Resource.SIMUEB_LEGENDE_REST, k.KaelterestbedarfMwh, R_REST_GRAU));
+            return segmente;
+        }
+
+        /// <summary>
+        /// Der Ring „Kältedeckung" (Stufe KU2 Welle 3; Kühlkonzept 8.4) — nur mit Kälteerzeuger; in
+        /// der Mitte der Deckungsgrad des Kühlkanals.
+        /// </summary>
+        private Zeichenmodell ModellRingKaelte()
+        {
+            SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
+            if (k == null || k.Erzeuger.Count == 0 || !(k.KaeltebedarfMwh > 0)) return null;
+
+            return ChartRenderer.RingModell(MyResource.Resource.SIMUEB_RING_KAELTE_TITEL,
+                                            SegmenteKaelte(k), k.DeckungsgradProzent ?? 0.0, "%",
+                                            MyResource.Resource.SIMUEB_RING_GEDECKT, false);
         }
 
         /// <summary>Die Segmente des STROMRINGS — dieselbe Regel wie bei der Wärme.</summary>

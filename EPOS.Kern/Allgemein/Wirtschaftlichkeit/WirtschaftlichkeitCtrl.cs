@@ -2708,8 +2708,23 @@ namespace WindowsFormsApplication1
             StromErloesErgebnis r = StromTarifRechner.Rechne(
                 eingabe, tarif.Bezug, tarif.Reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
 
-            e.StromkostenTarif = r.Reststrom.SummeEur;
-            e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur;
+            // KU2 WELLE 3 (Entscheid E34, Kühlkonzept 6.1): Die Reststrommenge der Matrix ist der
+            // ganze Netzbezug des Anschlusses - samt dem Anteil, den ein abweichender Kühlträger
+            // trägt. Dieser Anteil steht mit dem Arbeitspreis des Kühlträgers schon in den
+            // Energiekosten (KostenEmissionRechner, außerhalb von StromkostenNetz); der Tarif bepreist
+            // ihn deshalb nicht ein zweites Mal. Leistungs- und Grundpreis bleiben beim Tarif des
+            // Anschlusses. Ohne abweichenden Kühlträger ist der Abzug 0.
+            double kuehlAbzug = v.NetzbezugKuehltraegerMWh > 0
+                ? v.NetzbezugKuehltraegerMWh * 1000.0 * tarif.Reststrom.ArbeitspreisEurKWh : 0.0;
+            if (kuehlAbzug != 0.0)
+                Melde(e, string.Format(BerichtTexte.Kultur, T("WIRT_TARIF_KUEHLTRAEGER",
+                    "Rollentarif: {0} MWh/a Netzbezug des Kältestroms tragen den Stromträger der Kühlung " +
+                    "und stehen nicht im Reststromtarif ({1} €/a)."),
+                    v.NetzbezugKuehltraegerMWh.ToString("N2", BerichtTexte.Kultur),
+                    kuehlAbzug.ToString("N2", BerichtTexte.Kultur)));
+
+            e.StromkostenTarif = r.Reststrom.SummeEur - kuehlAbzug;
+            e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur - kuehlAbzug;
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
             e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
 

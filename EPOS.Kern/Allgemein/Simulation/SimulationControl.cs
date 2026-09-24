@@ -613,6 +613,11 @@ namespace WindowsFormsApplication1
                 ? Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                 : Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
 
+            // KU2 Welle 3 (E34, Kühlkonzept 6.1): der Netzbezug des Kältestroms je Anlage - eine
+            // Aufteilung des fertigen Netzbezugs, kein zweiter Rechenweg. Ohne Kältekaskade ein
+            // sofortiger Rücksprung.
+            KaeltestromNetzbezugAufteilen();
+
             // ***********************************************************************
             // Nachlauf (Paket 7): Kennzahlen aller beteiligten Speicher aus ihren
             // Ganglinien bilden (SOC_Mittel/SOC_Max/Vollzyklen, Konzept 6.6) und die

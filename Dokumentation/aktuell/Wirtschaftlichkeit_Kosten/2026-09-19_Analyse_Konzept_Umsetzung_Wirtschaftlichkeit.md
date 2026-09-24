@@ -569,7 +569,9 @@ Commit `24074b3a`). **Vergabe vom 24.09.2026:** **115** — die Zapfkategorien d
 `SCHRITT_115_ZAPFKATEGORIEN`, `Tab_TwwZapfkategorie_STAMM`, #453) — und die Schritte B, C und D der Etappe E9 als
 **116, 117 und 118** (`SCHRITT_116_SZENARIO_RAHMEN`, `SCHRITT_117_TRAEGERPREIS_SZENARIO`,
 `SCHRITT_118_ERLOESSATZ_SZENARIO`, gebaut #461, E9a; die Lücke bei 115 ist mit dem Nachzug von Z3 vor dem Merge
-geschlossen). `SchemaStand.Zielversion` steht auf **118**; der nächste freie Schritt ist 119. Die Angabe vom 23.09.2026 („114 Zapfprofil-Stufe Z3, 115
+geschlossen). `SchemaStand.Zielversion` steht auf **119**: **119** trägt die Abrechnungsart des Kältestroms und die
+Kälteseite der Wärmepumpenergebnisse (Kühlung KU2 Welle 3, Entscheid E34, `SCHRITT_119_KAELTESTROM`); der
+nächste freie Schritt ist 120. Die Angabe vom 23.09.2026 („114 Zapfprofil-Stufe Z3, 115
 Nachbarsitzung „Dialog Design"") ist damit überholt: 114 hat die Kühlung genommen, „Dialog Design" braucht für #458
 und #459 keinen Schritt.
 
