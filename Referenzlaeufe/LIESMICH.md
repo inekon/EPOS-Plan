@@ -310,7 +310,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **125**, LFS-SHA-256 `6c4c32f9…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **127**, LFS-SHA-256 `87e49ed1…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -495,6 +495,24 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > heißt „kein Risiko", und kein Referenzprojekt trägt eines; die Wirtschaftlichkeit geht ohnehin nicht in
 > `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
 > diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E17 (#479): Schemastand 127 (nicht monetarisierbare Wirkungen der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **127** (`SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN`; Quelle `ProjektWirkungSchema` für Migration,
+> Werkzeug und Testvorrichtung) legt die Tabelle `Tab_ProjektWirkung` an (STRICT; `ID`, `ID_Projekt` mit
+> Fremdschlüssel auf `Tab_Projekt` ON DELETE/UPDATE CASCADE, `Sortierung`, `Kategorie` mit CHECK
+> `ENERGIEFLUSS`/`FINANZIELL`/`SONSTIG`, `Beschreibung`, `Dauer` 1–3, `Wirkung_Organisation`, `Wirkung_Mitarbeiter`,
+> `Wirkung_Umwelt` je 0–3, NULL = nicht beurteilt) samt Index `idx_ProjektWirkung_Projekt` und übernimmt einen
+> gepflegten Freitext `Tab_ProjektWirtschaftlichkeit.Nicht_Monetaer` als eine Wirkung SONSTIG ohne Beurteilung
+> (DIN EN 17463, 6.1 und 8.2; Konzept Wirtschaftlichkeit § 2.11.2, V‑G11). Der Schritt steht nach **126** (Reparatur
+> der Gebäude-Katalogsätze, #485, Nachtrag Schemastand 126). Nachgezogen auf der Fassung **126** (`0fe67575…`,
+> 67 788 800 Byte) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: nur Tabelle und Index
+> neu, **0 Freitexte übernommen** (kein Referenzprojekt pflegt einen), Schritt 126 fand nichts offen, Marker 127;
+> 132 Tabellen, alle STRICT, 14 Sichten, 210 Indizes; `integrity_check` ok, `foreign_key_check` leer, ein zweiter Lauf
+> meldet den Schritt als stehend. Größe 67 796 992 Byte (LFS-SHA-256 `87e49ed1…`). **Ergebnisneutral:** Kein Rechenweg liest die Tabelle,
+> und die Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf
+> aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer
+> `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
