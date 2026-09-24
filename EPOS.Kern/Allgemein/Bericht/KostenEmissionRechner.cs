@@ -233,10 +233,27 @@ namespace WindowsFormsApplication1
 
         public static void Berechne(VariantenDaten v)
         {
+            Berechne(v, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C, E9a‑Q3 Lesart a) — dieselbe Rechnung mit den
+        /// <b>Trägerpreisen eines Szenarios</b>: Für BEST und WORST ersetzt ein gepflegter
+        /// Szenariopreis (<see cref="TraegerpreisSzenario"/>) Arbeits-, Grund- bzw.
+        /// Leistungspreis des Trägers als Ganzes; ohne Pflege, für ERWARTET und für
+        /// <c>null</c> ist die Rechnung Zeichen für Zeichen die von <see cref="Berechne(VariantenDaten)"/>.
+        /// Aufgerufen von der Wirtschaftlichkeit auf einer KOPIE der Variante
+        /// (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>) — das Original trägt weiter die
+        /// Erwartet-Zahlen.
+        /// </summary>
+        public static void Berechne(VariantenDaten v, string szenario)
+        {
             if (v == null || v.Ergebnis == null) return;
-            try { BerechneIntern(v); }
+            try { BerechneIntern(v, szenario); }
             catch
             {
+                v.SzenarioStrompreisGepflegt = false;              // E9a
+                v.SzenarioLeistungspreisOhneWirkung = new List<string>();
                 v.Energiekosten = null; v.StromkostenNetz = null;
                 v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
@@ -254,10 +271,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void BerechneIntern(VariantenDaten v)
+        private static void BerechneIntern(VariantenDaten v, string szenario)
         {
             ErgebnisModel m = v.Ergebnis;
             v.EnergiekostenGrund = null;         // Auftrag #267 — frischer Lauf
+            v.SzenarioStrompreisGepflegt = false;                          // E9a
+            v.SzenarioLeistungspreisOhneWirkung = new List<string>();     // E9a
             v.StromTraegerRueckfall = null;
             v.CO2TraegerRueckfall = null;        // Auftrag #293
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
@@ -397,7 +416,8 @@ namespace WindowsFormsApplication1
 
             foreach (KeyValuePair<int, double> kv in verbrauchJeTraeger)
             {
-                TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key);
+                // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen.
+                TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key, szenario);
 
                 // L13: die MENGE biogener Träger — unabhängig davon, ob ein Faktor
                 // gepflegt ist. Die Konventionsfrage entscheidet der Aufrufer.
@@ -441,6 +461,12 @@ namespace WindowsFormsApplication1
                 // Ein Stromanschluss wird nicht nach vorgehaltener Anlagenleistung
                 // abgerechnet, sondern nach der gemessenen Bezugsspitze. Sein Anteil
                 // entsteht deshalb im Netzbezugsblock weiter unten.
+                // ETAPPE E9a (E9a‑Q3): Eine gepflegte Saisonreihe geht dem konstanten Satz vor
+                // — ein Szenario-Leistungspreis bleibt dann ohne Wirkung und wird benannt.
+                if (info.LeistungSzenarioGepflegt && info.ReihenSummeJeKW.HasValue &&
+                    kv.Key != stromCarrierId)
+                    SzenarioLeistungOhneWirkung(v, kv.Key);
+
                 if ((info.ReihenSummeJeKW.HasValue || info.PreisLeistung.HasValue) &&
                     kv.Key != stromCarrierId)
                 {
@@ -526,7 +552,15 @@ namespace WindowsFormsApplication1
             // Regelfall —, wird auch nur EINMAL geladen. Ohne Verwendung gar nicht.
             if (!stromOhneVerwendung && stromCarrierKosten > 0)
             {
-                TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten);
+                // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen
+                // des Stromträgers; ob einer davon gepflegt war, wird vermerkt — das
+                // Rollenmodell ersetzt den Stromanteil und meldet dann, dass der
+                // Szenario-Strompreis nicht wirkt (E9a‑Q7).
+                TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten, szenario);
+                v.SzenarioStrompreisGepflegt = preistraeger.SzenarioGepflegt;
+                if (preistraeger.LeistungSzenarioGepflegt &&
+                    (preistraeger.Staffel.Gepflegt || preistraeger.ReiheJeKW != null))
+                    SzenarioLeistungOhneWirkung(v, stromCarrierKosten);
                 stromPreisTraeger = TraegerName(stromCarrierKosten);
                 if (preistraeger.PreisArbeit.HasValue)
                 {
@@ -656,17 +690,17 @@ namespace WindowsFormsApplication1
             var jeAnlage = new List<EnergieAnlageNachweis>();
             if (m.BHKW != null && m.BHKW.Module != null)
                 foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
-                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch);
+                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch, szenario);
             if (m.Heizkessel != null && m.Heizkessel.Module != null)
                 foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
-                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch);
+                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch, szenario);
             // Die Stromseite als EINE Zeile: Netzbezug × Arbeitspreis. Sie steht für
             // alles, was Strom bezieht (Wärmepumpe, Hilfsenergie, Gebäude) — der
             // Rechenkern führt den Restbezug als eine Menge, und eine Aufteilung nach
             // Verbrauchern gäbe es nur als Schätzung. Ohne Verwendung keine Zeile.
             if (netzbezugBewertet > 0 && stromCarrierKosten > 0)
                 AnlageZeile(jeAnlage, v.IdProjekt, MyResource.Resource.WIRT_ENK_NETZBEZUG,
-                            stromCarrierKosten, netzbezugBewertet);
+                            stromCarrierKosten, netzbezugBewertet, szenario);
             v.EnergiekostenJeAnlage = jeAnlage;
 
             // ---------------- Kennzahlen setzen ----------------
@@ -743,10 +777,10 @@ namespace WindowsFormsApplication1
         /// KEINE Zeile — die Aufschlüsselung soll erklären, nicht behaupten.
         /// </summary>
         private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,
-                                        string anlage, int carrierId, double mengeMWh)
+                                        string anlage, int carrierId, double mengeMWh, string szenario)
         {
             if (ziel == null || carrierId <= 0 || mengeMWh <= 0) return;
-            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId, szenario);   // E9a: wie die Summe
             if (info == null || !info.PreisArbeit.HasValue) return;
 
             bool ueberHeizwert = info.EffHi.HasValue && info.EffHi.Value > 0;
@@ -822,6 +856,54 @@ namespace WindowsFormsApplication1
             /// <c>null</c>.
             /// </summary>
             public LeistungspreisStaffel Staffel = new LeistungspreisStaffel();
+
+            /// <summary>ETAPPE E9a (Schritt C): mindestens einer der drei Preise dieses
+            /// Trägers kommt aus einem gepflegten Szenariopreis.</summary>
+            public bool SzenarioGepflegt;
+
+            /// <summary>ETAPPE E9a (Schritt C): der Leistungspreis kommt aus einem
+            /// gepflegten Szenariopreis (er wirkt nur ohne Staffel und Saisonreihe).</summary>
+            public bool LeistungSzenarioGepflegt;
+        }
+
+        /// <summary>ETAPPE E9a: Ist das ein Szenario mit eigenem Preissatz (BEST oder WORST)?</summary>
+        private static bool IstSzenario(string szenario)
+        {
+            return string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal) ||
+                   string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal);
+        }
+
+        /// <summary>ETAPPE E9a (E9a‑Q3): vermerkt einen Träger, dessen Szenario-Leistungspreis
+        /// neben Staffel oder Saisonreihe ohne Wirkung bleibt — je Name einmal.</summary>
+        private static void SzenarioLeistungOhneWirkung(VariantenDaten v, int carrierId)
+        {
+            string name = TraegerName(carrierId);
+            if (v.SzenarioLeistungspreisOhneWirkung == null)
+                v.SzenarioLeistungspreisOhneWirkung = new List<string>();
+            if (!string.IsNullOrEmpty(name) && !v.SzenarioLeistungspreisOhneWirkung.Contains(name))
+                v.SzenarioLeistungspreisOhneWirkung.Add(name);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C, E9a‑Q3 Lesart a) — die Szenariopreise auf den WIRKSAMEN
+        /// Erwartet-Satz legen: nach der ganzen Rückfallkette (Projektwert → Preisstand →
+        /// Katalog) ersetzt ein gepflegter Szenariowert den Preis als Ganzes
+        /// (<see cref="TraegerpreisSzenario.Wirksam"/>, die EINE Regel). Für ERWARTET und ohne
+        /// gepflegten Wert bleibt der Satz, wie er ist.
+        /// </summary>
+        private static void SzenarioPreiseAnwenden(TraegerInfo info, int idProjekt, int carrierId,
+                                                   string szenario)
+        {
+            if (info == null || !IstSzenario(szenario)) return;
+            TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, carrierId);
+            if (sz.Leer) return;
+
+            bool arbeit, grund, leistung;
+            info.PreisArbeit = TraegerpreisSzenario.Wirksam(info.PreisArbeit, sz.Arbeitspreis(szenario), out arbeit);
+            info.Grundpreis = TraegerpreisSzenario.Wirksam(info.Grundpreis, sz.Grundpreis(szenario), out grund);
+            info.PreisLeistung = TraegerpreisSzenario.Wirksam(info.PreisLeistung, sz.Leistungspreis(szenario), out leistung);
+            info.SzenarioGepflegt = arbeit || grund || leistung;
+            info.LeistungSzenarioGepflegt = leistung;
         }
 
         /// <summary>
@@ -1019,7 +1101,12 @@ namespace WindowsFormsApplication1
 
                 TraegerInfo info = LadeTraeger(idProjekt, traeger);
                 // Q11: Auch die zweistufige Staffel bemisst sich an der Bezugsspitze.
-                return info.Staffel.Gepflegt || info.ReiheJeKW != null || info.PreisLeistung.HasValue;
+                if (info.Staffel.Gepflegt || info.ReiheJeKW != null || info.PreisLeistung.HasValue)
+                    return true;
+                // ETAPPE E9a (Schritt C): Ein Leistungspreis, den nur ein SZENARIO trägt,
+                // braucht die Bezugsspitze ebenso — sonst fehlte er im Szenariolauf still.
+                TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, traeger);
+                return (sz.LeistungspreisBest ?? 0) > 0 || (sz.LeistungspreisWorst ?? 0) > 0;
             }
             catch { return false; }
         }
@@ -1052,6 +1139,17 @@ namespace WindowsFormsApplication1
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
+        {
+            return LadeTraeger(idProjekt, carrierId, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: derselbe Träger mit den Preisen eines SZENARIOS — die Rückfallkette
+        /// darunter ist unverändert; erst ihr Ergebnis bekommt die gepflegten Szenariopreise
+        /// (<see cref="SzenarioPreiseAnwenden"/>). <paramref name="szenario"/> = <c>null</c> oder
+        /// ERWARTET ist der Weg von vor E9a.
+        /// </summary>
+        private static TraegerInfo LadeTraeger(int idProjekt, int carrierId, string szenario)
         {
             var info = new TraegerInfo();
             try
@@ -1234,6 +1332,10 @@ namespace WindowsFormsApplication1
                              : (Historienpreis(idProjekt, carrierId)
                                 ?? ((kPreis.HasValue && kPreis.Value > 0) ? kPreis : null));
             info.Grundpreis = sGrund ?? kGrund;
+
+            // ETAPPE E9a (Schritt C): die EINE Stelle, an der die Energiekosten einen
+            // Szenariopreis lesen — nach der vollständigen Rückfallkette.
+            SzenarioPreiseAnwenden(info, idProjekt, carrierId, szenario);
             return info;
         }
 
@@ -1256,8 +1358,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double? ArbeitspreisJeKwh(int idProjekt, int carrierId)
         {
+            return ArbeitspreisJeKwh(idProjekt, carrierId, null);
+        }
+
+        /// <summary>ETAPPE E9a: derselbe Arbeitspreis [€/kWh] im Szenario — mit dem
+        /// wirksamen Szenariopreis des Trägers (der Endenergie-Auflöser der Betriebskosten
+        /// liest ihn im Szenariolauf, die „E7c-Wege" B‑4).</summary>
+        internal static double? ArbeitspreisJeKwh(int idProjekt, int carrierId, string szenario)
+        {
             if (carrierId <= 0) return null;
-            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId, szenario);
             if (!info.PreisArbeit.HasValue) return null;
             return (info.EffHi.HasValue && info.EffHi.Value > 0)
                 ? info.PreisArbeit.Value / info.EffHi.Value
@@ -1288,6 +1398,23 @@ namespace WindowsFormsApplication1
             TraegerInfo info = LadeTraeger(idProjekt, carrierId);
             arbeitspreis = info.PreisArbeit;
             leistungspreis = info.PreisLeistung;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a — die drei WIRKSAMEN Preise eines Trägers in einem Szenario (Arbeit je
+        /// Abrechnungseinheit, Grund in €/a, Leistung je Modus), genau so, wie die
+        /// Energiekosten sie ansetzen: Rückfallkette, dann die Szenariopreise. Nur ein zweiter
+        /// Leser (Parameterblock des Berichts), kein zweiter Rechenweg.
+        /// </summary>
+        internal static void PreisSatz(int idProjekt, int carrierId, string szenario,
+                                       out double? arbeit, out double? grund, out double? leistung)
+        {
+            arbeit = null; grund = null; leistung = null;
+            if (carrierId <= 0) return;
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId, szenario);
+            arbeit = info.PreisArbeit;
+            grund = info.Grundpreis;
+            leistung = info.PreisLeistung;
         }
 
         /// <summary><c>energy_carrier.id</c> des Stromträgers des Projekts

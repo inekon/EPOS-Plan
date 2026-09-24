@@ -68155,6 +68155,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengenänderung ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_MENGE {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projektwert — in allen drei Szenarien gleich ähnelt.
         /// </summary>
         public static string WIRT_ANN_PROJEKTWERT {
@@ -68178,6 +68187,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ANN_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_ANN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung PV ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_VERGUETUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_VERGUETUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung KWK ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_VERGUETUNG_KWK {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_VERGUETUNG_KWK", resourceCulture);
             }
         }
         
@@ -69352,6 +69379,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengen — Änderung gegenüber Erwartet ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_MENGE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name in den Formeln ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_NAME {
@@ -69393,6 +69429,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FM_PARAM_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_FM_PARAM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis {0} ({1}) je Abrechnungseinheit ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_TP_ARBEIT {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_TP_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis {0} ({1}) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_TP_GRUND {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_TP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis {0} ({1}) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_TP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_TP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung PV [€/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_VERGUETUNG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_VERGUETUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung KWK [€/kWh] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_VERGUETUNG_KWK {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_VERGUETUNG_KWK", resourceCulture);
             }
         }
         
@@ -71539,11 +71620,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt auch in diesem Szenario. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_PV_DIALOG_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_PV_DIALOG_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eige [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_SZ_QUELLEN {
             get {
                 return ResourceManager.GetString("WIRT_SZ_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet die Einspeisung mit dem Einspeisetarif des Tarifsatzes. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ROLLEN_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ROLLEN_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — Bezug, Reststrom und Einspeisung rechnen in allen Szenarien mit den Preisen des Tarifsatzes. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ROLLEN_STROMPREIS {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ROLLEN_STROMPREIS", resourceCulture);
             }
         }
         
@@ -71598,6 +71715,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SZ_SP_WORST {
             get {
                 return ResourceManager.GetString("WIRT_SZ_SP_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_TP_ARBEIT {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_TP_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_TP_GRUND {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_TP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_TP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_TP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägerpreise dieses Szenarios: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_TRAEGERPREISE {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_TRAEGERPREISE", resourceCulture);
             }
         }
         

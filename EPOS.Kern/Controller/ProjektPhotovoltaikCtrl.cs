@@ -191,6 +191,11 @@ namespace WindowsFormsApplication1
                 DvEntgelt = m.DvEntgelt,
                 PpaPreis = m.PpaPreis,
                 PpaSpotAufschlag = m.PpaSpotAufschlag,
+                // ETAPPE E9a (Schritt D): die Erlössätze je Szenario gehören zum Block.
+                DvEntgeltBest = m.DvEntgeltBest,
+                DvEntgeltWorst = m.DvEntgeltWorst,
+                PpaPreisBest = m.PpaPreisBest,
+                PpaPreisWorst = m.PpaPreisWorst,
                 Par51_Anwenden = m.Par51_Anwenden,
                 IMSys_Einbaujahr = m.IMSys_Einbaujahr,
                 AusfallanteilProzent = m.AusfallanteilProzent,
@@ -244,6 +249,17 @@ namespace WindowsFormsApplication1
             {
                 m.GeaendertAm = DateTime.Now;
 
+                // ETAPPE E9a (Schritt D, Schemaschritt 118): die Erlössätze je Szenario
+                // wandern mit, wo die Spalten stehen; eine Datenbank vor 118 schreibt die
+                // übrigen Felder wie bisher (Muster Preisbasis der Trägerkarte).
+                bool mitSzenario = SzenarioSpaltenVorhanden();
+                string szenarioSet = mitSzenario
+                    ? "[" + SchemaKatalog.SPALTE_PPV_DV_ENTGELT_BEST + "] = ?, [" +
+                      SchemaKatalog.SPALTE_PPV_DV_ENTGELT_WORST + "] = ?, [" +
+                      SchemaKatalog.SPALTE_PPV_PPA_PREIS_BEST + "] = ?, [" +
+                      SchemaKatalog.SPALTE_PPV_PPA_PREIS_WORST + "] = ?, "
+                    : "";
+
                 int rows = (int)DataRepository.ExecuteNonQuery(
                     "UPDATE [" + TABELLE + "] SET Aktiv = ?, Vermarktungsform = ?, " +
                     "Einspeiseart = ?, Inbetriebnahme = ?, KwpOverride = ?, AwOverride = ?, " +
@@ -251,9 +267,9 @@ namespace WindowsFormsApplication1
                     "IMSys_Einbaujahr = ?, AusfallanteilProzent = ?, Par51a_Kompensieren = ?, " +
                     "Kappung60_Anwenden = ?, MarktwertJahresmittel = ?, MarktwertEntwicklung = ?, " +
                     "BezugAusPreisreihe = ?, Degradation = ?, [" +
-                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "] = ?, " +
+                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "] = ?, " + szenarioSet +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
-                    Parameter(m, projektAnsEnde: true));
+                    Parameter(m, projektAnsEnde: true, mitSzenario: mitSzenario));
                 if (rows > 0) return true;
 
                 object max = DataRepository.ExecuteScalar("SELECT MAX(ID) FROM [" + TABELLE + "]");
@@ -265,9 +281,17 @@ namespace WindowsFormsApplication1
                     "PpaSpotAufschlag, Par51_Anwenden, IMSys_Einbaujahr, AusfallanteilProzent, " +
                     "Par51a_Kompensieren, Kappung60_Anwenden, MarktwertJahresmittel, " +
                     "MarktwertEntwicklung, BezugAusPreisreihe, Degradation, [" +
-                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "], GeaendertAm) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    ParameterInsert(m));
+                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "], " +
+                    (mitSzenario
+                        ? "[" + SchemaKatalog.SPALTE_PPV_DV_ENTGELT_BEST + "], [" +
+                          SchemaKatalog.SPALTE_PPV_DV_ENTGELT_WORST + "], [" +
+                          SchemaKatalog.SPALTE_PPV_PPA_PREIS_BEST + "], [" +
+                          SchemaKatalog.SPALTE_PPV_PPA_PREIS_WORST + "], "
+                        : "") +
+                    "GeaendertAm) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+                    (mitSzenario ? ", ?, ?, ?, ?" : "") + ")",
+                    ParameterInsert(m, mitSzenario));
             }
             catch (Exception ex)
             {
@@ -509,6 +533,12 @@ namespace WindowsFormsApplication1
                 DvEntgelt = Zahl(r, "DvEntgelt"),
                 PpaPreis = Zahl(r, "PpaPreis"),
                 PpaSpotAufschlag = Zahl(r, "PpaSpotAufschlag"),
+                // ETAPPE E9a (Schritt D, Schemaschritt 118): tolerant — eine fehlende
+                // Spalte ist „wie Erwartet", eine 0 ebenso (NULL/0-Regel).
+                DvEntgeltBest = OhneNull(Zahl(r, SchemaKatalog.SPALTE_PPV_DV_ENTGELT_BEST)),
+                DvEntgeltWorst = OhneNull(Zahl(r, SchemaKatalog.SPALTE_PPV_DV_ENTGELT_WORST)),
+                PpaPreisBest = OhneNull(Zahl(r, SchemaKatalog.SPALTE_PPV_PPA_PREIS_BEST)),
+                PpaPreisWorst = OhneNull(Zahl(r, SchemaKatalog.SPALTE_PPV_PPA_PREIS_WORST)),
                 Par51_Anwenden = Text(r, "Par51_Anwenden", DbWerte.PV_SCHALTER_AUTO),
                 IMSys_Einbaujahr = Ganz(r, "IMSys_Einbaujahr"),
                 AusfallanteilProzent = Zahl(r, "AusfallanteilProzent"),
@@ -535,7 +565,58 @@ namespace WindowsFormsApplication1
             return m;
         }
 
-        private static DbParam[] Parameter(ProjektPhotovoltaikModel m, bool projektAnsEnde)
+        /// <summary>
+        /// ETAPPE E9a (Schritt D): Führt <c>Tab_ProjektPhotovoltaik</c> die vier Spalten der
+        /// Erlössätze je Szenario (Schemaschritt 118)? Ohne sie schreibt
+        /// <see cref="Speichern"/> die übrigen Felder wie bisher.
+        /// </summary>
+        public static bool SzenarioSpaltenVorhanden()
+        {
+            try
+            {
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzPhotovoltaik)
+                    if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D) — die WIRKSAME Vergütungszeile eines Szenarios: eine Kopie,
+        /// in der DV-Entgelt und PPA-Festpreis durch ihren gepflegten Szenariowert ersetzt
+        /// sind (Regel <see cref="SzenarioSatz.Gepflegt(double?, double)"/>: nicht leer, nicht
+        /// 0, vom Erwartungswert verschieden). Für ERWARTET und ohne Pflege kommt
+        /// <b>dieselbe Referenz</b> zurück — der Rechenweg bleibt bitgleich. Die EINE Stelle,
+        /// an der der Rechenweg die PV-Erlössätze je Szenario liest.
+        /// </summary>
+        public static ProjektPhotovoltaikModel FuerSzenario(ProjektPhotovoltaikModel m, string szenario)
+        {
+            if (m == null) return null;
+            double? dv = Szenariowert(szenario, m.DvEntgeltBest, m.DvEntgeltWorst);
+            double? ppa = Szenariowert(szenario, m.PpaPreisBest, m.PpaPreisWorst);
+            bool dvGepflegt = SzenarioSatz.Gepflegt(dv, m.DvEntgelt ?? 0.0);
+            bool ppaGepflegt = SzenarioSatz.Gepflegt(ppa, m.PpaPreis ?? 0.0);
+            if (!dvGepflegt && !ppaGepflegt) return m;
+
+            ProjektPhotovoltaikModel k = Kopie(m);
+            if (dvGepflegt) k.DvEntgelt = dv;
+            if (ppaGepflegt) k.PpaPreis = ppa;
+            return k;
+        }
+
+        private static double? Szenariowert(string szenario, double? best, double? worst)
+        {
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal)) return best;
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal)) return worst;
+            return null;
+        }
+
+        private static double? OhneNull(double? wert)
+        {
+            return wert.HasValue && wert.Value != 0 ? wert : null;
+        }
+
+        private static DbParam[] Parameter(ProjektPhotovoltaikModel m, bool projektAnsEnde, bool mitSzenario)
         {
             var p = new System.Collections.Generic.List<DbParam>
             {
@@ -556,21 +637,30 @@ namespace WindowsFormsApplication1
                 D("@deg", m.Degradation),
                 // Konzept § 2.16: 0/1, nie NULL - eine Zeile, die geschrieben wird,
                 // sagt ausdruecklich, ob sie gilt.
-                new DbParam("@ueb", DbParamTyp.Integer) { Wert = m.UebernahmeStamm ? 1 : 0 },
-                new DbParam("@ga", DbParamTyp.Date) { Wert = m.GeaendertAm ?? (object)DBNull.Value }
+                new DbParam("@ueb", DbParamTyp.Integer) { Wert = m.UebernahmeStamm ? 1 : 0 }
             };
+            // ETAPPE E9a (Schritt D): die vier Erlössätze je Szenario, in der Reihenfolge der
+            // Spaltenliste von Speichern; leer oder 0 schreibt NULL („wie Erwartet").
+            if (mitSzenario)
+            {
+                p.Add(D("@dvb", OhneNull(m.DvEntgeltBest)));
+                p.Add(D("@dvw", OhneNull(m.DvEntgeltWorst)));
+                p.Add(D("@ppab", OhneNull(m.PpaPreisBest)));
+                p.Add(D("@ppaw", OhneNull(m.PpaPreisWorst)));
+            }
+            p.Add(new DbParam("@ga", DbParamTyp.Date) { Wert = m.GeaendertAm ?? (object)DBNull.Value });
             if (projektAnsEnde) p.Add(new DbParam("@pid", m.ID_Projekt));
             return p.ToArray();
         }
 
-        private static DbParam[] ParameterInsert(ProjektPhotovoltaikModel m)
+        private static DbParam[] ParameterInsert(ProjektPhotovoltaikModel m, bool mitSzenario)
         {
             var kopf = new System.Collections.Generic.List<DbParam>
             {
                 new DbParam("@id", m.ID),
                 new DbParam("@pid", m.ID_Projekt)
             };
-            kopf.AddRange(Parameter(m, projektAnsEnde: false));
+            kopf.AddRange(Parameter(m, projektAnsEnde: false, mitSzenario: mitSzenario));
             return kopf.ToArray();
         }
 

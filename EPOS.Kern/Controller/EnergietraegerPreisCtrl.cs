@@ -96,8 +96,186 @@ namespace WindowsFormsApplication1
                 PreisbasisSpalteFehlt = !row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS),
                 Preisbasis = row.Table.Columns.Contains(SchemaKatalog.SPALTE_EPS_PREISBASIS) &&
                              row[SchemaKatalog.SPALTE_EPS_PREISBASIS] != DBNull.Value
-                    ? Convert.ToString(row[SchemaKatalog.SPALTE_EPS_PREISBASIS]) : null
+                    ? Convert.ToString(row[SchemaKatalog.SPALTE_EPS_PREISBASIS]) : null,
+                // ETAPPE E9a (Schritt C, Schemaschritt 117): die Preise je Szenario — tolerant
+                // gelesen; eine Datenbank vor 117 liefert einen leeren Satz („wie Erwartet").
+                Szenario = SzenarioAus(row)
             };
+        }
+
+        // =====================================================================
+        // Die Trägerpreise je Szenario (Etappe E9a, Schritt C, Schemaschritt 117)
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E9a: Führt <c>energy_project_settings</c> die sechs Spalten der
+        /// Trägerpreise je Szenario (Schemaschritt 117)? Ohne sie gibt es nichts zu schreiben,
+        /// und jeder Leser rechnet „wie Erwartet".
+        /// </summary>
+        public static bool SzenarioSpaltenVorhanden()
+        {
+            try
+            {
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                    if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: die Trägerpreise je Szenario eines Trägers im Projekt. Leer (nie
+        /// <c>null</c>), wenn die Zeile oder die Spalten fehlen — dann rechnet der Träger in
+        /// allen Szenarien mit seinem Erwartet-Preis. Eigene Abfrage wie bei
+        /// <see cref="StaffelLesen"/>, damit eine Datenbank ohne die Spalten die übrigen Preise
+        /// nicht verliert.
+        /// </summary>
+        public static TraegerpreisSzenario SzenarioLesen(int projektId, int traegerId)
+        {
+            if (projektId <= 0 || traegerId <= 0) return new TraegerpreisSzenario();
+            try
+            {
+                if (!SzenarioSpaltenVorhanden()) return new TraegerpreisSzenario();
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [" + SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST +
+                    "] FROM energy_project_settings WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                    new DbParam("@p", projektId),
+                    new DbParam("@c", traegerId));
+                if (dt != null && dt.Rows.Count > 0) return SzenarioAus(dt.Rows[0]);
+            }
+            catch { }
+            return new TraegerpreisSzenario();
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: schreibt die Trägerpreise je Szenario an die Projektübersteuerung des
+        /// Trägers — der Schreibweg der Trägerkarte, getrennt von <see cref="Projektwerte"/>
+        /// (Muster <see cref="StaffelSchreiben"/>): Ein Speichern der Karte ohne die sechs
+        /// Felder darf gepflegte Szenariopreise nicht leeren. Ein leeres Feld (oder 0) schreibt
+        /// NULL („wie Erwartet"). Die Zeile muss stehen.
+        /// </summary>
+        /// <returns>true, wenn genau die Zeile des Trägers getroffen wurde; false ohne die
+        /// Spalten (Datenbank vor Schemaschritt 117).</returns>
+        public static bool SzenarioSchreiben(int projektId, int traegerId, TraegerpreisSzenario szenario)
+        {
+            if (!SzenarioSpaltenVorhanden()) return false;
+            if (szenario == null) szenario = new TraegerpreisSzenario();
+            int zeilen = DataRepository.ExecuteNonQuery(
+                "UPDATE energy_project_settings SET [" + SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST + "] = ?, [" +
+                SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST + "] = ?, [" +
+                SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST + "] = ?, [" +
+                SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST + "] = ?, [" +
+                SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST + "] = ?, [" +
+                SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST +
+                "] = ? WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam[]
+                {
+                    Szenariowert("@ab", szenario.ArbeitspreisBest),
+                    Szenariowert("@aw", szenario.ArbeitspreisWorst),
+                    Szenariowert("@gb", szenario.GrundpreisBest),
+                    Szenariowert("@gw", szenario.GrundpreisWorst),
+                    Szenariowert("@lb", szenario.LeistungspreisBest),
+                    Szenariowert("@lw", szenario.LeistungspreisWorst),
+                    new DbParam("@pid", projektId),
+                    new DbParam("@eid", traegerId)
+                });
+            return zeilen == 1;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: Trägt irgendein Träger des Projekts einen Szenariopreis (Wert ungleich
+        /// 0) für dieses Szenario? Die schnelle Vorprobe des Szenariolaufs — ohne Treffer
+        /// rechnet die Variante mit ihren Erwartet-Energiekosten, ohne neu zu bepreisen. Ob ein
+        /// Wert gegenüber dem Erwartet-Preis wirklich abweicht, entscheidet danach
+        /// <see cref="TraegerpreisSzenario.Wirksam"/>. Für ERWARTET und ohne die Spalten false.
+        /// </summary>
+        public static bool SzenarioGepflegt(int projektId, string szenario)
+        {
+            bool best = string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal);
+            bool worst = string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal);
+            if (projektId <= 0 || (!best && !worst)) return false;
+            try
+            {
+                if (!SzenarioSpaltenVorhanden()) return false;
+                string a = best ? SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST : SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST;
+                string g = best ? SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST : SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST;
+                string l = best ? SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST : SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST;
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = ? AND " +
+                    "(COALESCE([" + a + "], 0) <> 0 OR COALESCE([" + g + "], 0) <> 0 OR " +
+                    "COALESCE([" + l + "], 0) <> 0)",
+                    new DbParam("@p", projektId));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: die Trägerpreise je Szenario ALLER Träger eines Projekts, die einen
+        /// Wert tragen — Träger-Id und Satz, in der Reihenfolge der Träger-Id. Leer ohne
+        /// Spalten oder ohne gepflegten Wert. Grundlage der Nachweiszeile des Berichts
+        /// (<see cref="TraegerpreisSzenario.Nachweiszeile"/>).
+        /// </summary>
+        public static List<KeyValuePair<int, TraegerpreisSzenario>> SzenarioJeTraeger(int projektId)
+        {
+            var liste = new List<KeyValuePair<int, TraegerpreisSzenario>>();
+            if (projektId <= 0) return liste;
+            try
+            {
+                if (!SzenarioSpaltenVorhanden()) return liste;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT [ID_Energieträger] AS Traeger, [" + SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST + "], [" +
+                    SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST +
+                    "] FROM energy_project_settings WHERE ID_Projekt = ? ORDER BY [ID_Energieträger]",
+                    new DbParam("@p", projektId));
+                if (dt == null) return liste;
+                foreach (DataRow r in dt.Rows)
+                {
+                    double? traeger = Zahl(r, "Traeger");
+                    if (!traeger.HasValue || traeger.Value <= 0) continue;
+                    TraegerpreisSzenario sz = SzenarioAus(r);
+                    if (!sz.Leer) liste.Add(new KeyValuePair<int, TraegerpreisSzenario>((int)traeger.Value, sz));
+                }
+            }
+            catch { }
+            return liste;
+        }
+
+        /// <summary>Die sechs Szenariopreise einer Zeile, tolerant (fehlende Spalte = leer);
+        /// eine 0 wird leer — „NULL/0 heißt wie Erwartet".</summary>
+        private static TraegerpreisSzenario SzenarioAus(DataRow row)
+        {
+            return new TraegerpreisSzenario
+            {
+                ArbeitspreisBest = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST)),
+                ArbeitspreisWorst = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST)),
+                GrundpreisBest = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST)),
+                GrundpreisWorst = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST)),
+                LeistungspreisBest = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST)),
+                LeistungspreisWorst = OhneNull(Zahl(row, SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST))
+            };
+        }
+
+        private static double? OhneNull(double? wert)
+        {
+            return wert.HasValue && wert.Value != 0 ? wert : null;
+        }
+
+        /// <summary>Ein Szenariopreis als Parameter — leer oder 0 geht als NULL in die
+        /// Datenbank (Nullregel der Szenariospalten).</summary>
+        private static DbParam Szenariowert(string name, double? wert)
+        {
+            return new DbParam(name, DbParamTyp.Double)
+            { Wert = wert.HasValue && wert.Value != 0 ? (object)wert.Value : DBNull.Value };
         }
 
         /// <summary>
@@ -834,6 +1012,12 @@ namespace WindowsFormsApplication1
             /// <summary>ETAPPE E7c: Die Datenbank führt die Spalte noch nicht (vor
             /// Schemaschritt 112) — die Karte nennt das, statt still zurückzufallen.</summary>
             public bool PreisbasisSpalteFehlt;
+
+            /// <summary>ETAPPE E9a (Schritt C, Schemaschritt 117): Arbeits-, Grund- und
+            /// Leistungspreis je Szenario (Günstig/Ungünstig) — sechs nullbare Felder, leer =
+            /// „wie Erwartet"; nie <c>null</c>. Geschrieben wird der Satz getrennt über
+            /// <see cref="SzenarioSchreiben"/>.</summary>
+            public TraegerpreisSzenario Szenario = new TraegerpreisSzenario();
         }
 
         private static double? Zahl(DataRow r, string spalte)

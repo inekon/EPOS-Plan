@@ -3897,6 +3897,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
 
+        /// <summary>
         /// Schritt 115 — die <b>Zapfkategorien des Zapfprofilgenerators</b> (Umsetzungskonzept
         /// Zapfprofilgenerator 3.1/3.2, Papiername T2, Stufe Z3): die Tabelle
         /// <c>Tab_TwwZapfkategorie_STAMM</c> mit Volumenstrom, Streuung, Dauer, Anteil und
@@ -3915,6 +3916,54 @@ namespace WindowsFormsApplication1
         /// <b>Wiederholbar</b> über <c>IF NOT EXISTS</c>.</para>
         /// </summary>
         public const int SCHRITT_115_ZAPFKATEGORIEN = 115;
+
+        /// <summary>
+        /// Schritt 116 — <b>der Szenariorahmen</b> (Schritt B des Analysepapiers § 6, Etappe
+        /// E9a der vollständigen Szenarioabdeckung V‑E, Konzept Wirtschaftlichkeit § 2.11.5).
+        /// Er folgt auf <see cref="SCHRITT_115_ZAPFKATEGORIEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Szen_Best_Zeitraum</c>, <c>Szen_Worst_Zeitraum</c> (ganze Jahre) und
+        /// <c>Szen_Best_Menge</c>, <c>Szen_Worst_Menge</c> (Prozent) — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; jede Zeile steht danach
+        /// leer, und der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene
+        /// Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_116_SZENARIO_RAHMEN = 116;
+
+        /// <summary>
+        /// Schritt 117 — <b>die Trägerpreise best/worst</b> (Schritt C des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, sechs nullbare Spalten an <c>energy_project_settings</c>:
+        /// <c>custom_price_work_best</c>/<c>_worst</c>, <c>custom_price_base_best</c>/<c>_worst</c>
+        /// und <c>custom_price_power_best</c>/<c>_worst</c> — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_117_TRAEGERPREIS_SZENARIO = 117;
+
+        /// <summary>
+        /// Schritt 118 — <b>die Erlössätze best/worst</b> (Schritt D des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, acht nullbare Spalten: <c>Einspeiseverguetung_Best</c>/
+        /// <c>_Worst</c> und <c>Einspeiseverguetung_KWK_Best</c>/<c>_Worst</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, <c>DvEntgelt_Best</c>/<c>_Worst</c> und
+        /// <c>PpaPreis_Best</c>/<c>_Worst</c> an <c>Tab_ProjektPhotovoltaik</c> — die Listen
+        /// stehen bei <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_118_ERLOESSATZ_SZENARIO = 118;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5493,6 +5542,42 @@ namespace WindowsFormsApplication1
                         "stochastisch gerechnete Zone benannt ab. Der deterministische Weg und der " +
                         "Bestandsweg des Brauchwassers rechnen unveraendert.",
                         Schritt_115_Zapfkategorien),
+
+            // ETAPPE E9a (Schritt B, vollstaendige Szenarioabdeckung V-E) - der
+            // Szenariorahmen: Betrachtungszeitraum und Mengenfaktor je Szenario. REIN DDL;
+            // die Quelle ist SchemaKatalog.Schritt116_Szenariorahmen. Er steht NACH 115 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_116_SZENARIO_RAHMEN,
+                        "Tab_ProjektWirtschaftlichkeit: Betrachtungszeitraum und Mengenfaktor " +
+                        "je Szenario (Best/Worst)",
+                        "Die Szenarien Guenstig und Unguenstig liessen sich nicht mit eigenem " +
+                        "Betrachtungszeitraum und eigenem Mengenfaktor rechnen. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_116_SzenarioRahmen),
+
+            // ETAPPE E9a (Schritt C) - die Traegerpreise best/worst an der
+            // Projektuebersteuerung. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt117_TraegerpreisSzenario. Er steht NACH 116 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_117_TRAEGERPREIS_SZENARIO,
+                        "energy_project_settings: Arbeits-, Grund- und Leistungspreis je Szenario " +
+                        "(Best/Worst)",
+                        "Die Energietraeger liessen sich nicht mit eigenen Preisen fuer die Szenarien " +
+                        "Guenstig und Unguenstig rechnen. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_117_TraegerpreisSzenario),
+
+            // ETAPPE E9a (Schritt D) - die Erloessaetze best/worst: Einspeiseverguetung
+            // (PV und KWK) an der Parametertabelle, DV-Entgelt und PPA-Preis an der
+            // PV-Verguetung. REIN DDL; die Quelle ist SchemaKatalog.Schritt118_ErloessatzSzenario.
+            // Er steht NACH 117 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_118_ERLOESSATZ_SZENARIO,
+                        "Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik: Erloessaetze " +
+                        "je Szenario (Best/Worst)",
+                        "Einspeiseverguetung, DV-Entgelt und PPA-Preis liessen sich nicht je Szenario " +
+                        "pflegen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, und " +
+                        "leer heisst 'wie Erwartet'.",
+                        Schritt_118_ErloessatzSzenario),
         };
 
         /// <summary>
@@ -8708,6 +8793,104 @@ namespace WindowsFormsApplication1
                     gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) der " +
                     "Zapfkategorien angelegt. KEIN DML: die Tabelle ist nach dem Schritt LEER, " +
                     "kein Projekt steht auf dem Generator. KEIN Rechenergebnis aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 116 - der Szenariorahmen (Schritt B, Etappe E9a, V-E)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 116 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>. <b>Reines DDL</b>, dieselbe
+        /// Schleife wie bei Schritt 111: Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c> („LONG" → <c>INTEGER</c>, „DOUBLE" → <c>REAL</c>),
+        /// nullbar und ohne Vorgabe. <b>Wiederholbar</b>: Eine vorhandene Spalte wird
+        /// übergangen.
+        /// </summary>
+        private static bool Schritt_116_SzenarioRahmen(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("116: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt116_Szenariorahmen.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + " (ganze Jahre), " +
+                    SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + ", " + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE +
+                    " (Prozent) an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". KEIN DML: Leer heisst " +
+                    "'wie Erwartet' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 117 - die Traegerpreise best/worst (Schritt C, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 117 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>. <b>Reines DDL</b>,
+        /// dieselbe Schleife wie bei Schritt 116; „DOUBLE" wird <c>REAL</c> an der
+        /// STRICT-Tabelle, nullbar und ohne Vorgabe. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_117_TraegerpreisSzenario(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("117: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt117_TraegerpreisSzenario.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Arbeits-, Grund- und Leistungspreis je Best und Worst an " +
+                    SchemaKatalog.ENERGY_PROJECT_SETTINGS + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 118 - die Erloessaetze best/worst (Schritt D, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 118 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_118_ERLOESSATZ_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>. <b>Reines DDL</b> an zwei
+        /// Tabellen, dieselbe Schleife wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_118_ErloessatzSzenario(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("118: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Einspeiseverguetung (PV, KWK) je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ", DV-Entgelt und PPA-Preis je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
                     "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
