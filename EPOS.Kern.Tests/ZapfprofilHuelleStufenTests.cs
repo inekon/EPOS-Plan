@@ -117,11 +117,12 @@ namespace EPOS.Kern.Tests
             Assert.Null(a.Wohnungen[0].Personen);
             Assert.Equal(9, a.Wohnungen[1].IdAusstattung);
             // Der Zähler: Tagesgangsatz, Personen, Fläche, Topologie, Zirkulation, zwei Ferienzeiträume,
-            // Messwert, Speicherverlust, manuell, manueller Wert, spezifischer Bedarf, Zapftemperatur,
-            // Kaltwasser Mittel und Amplitude, zwei Auslastungsmonate, Wohnungstabelle.
-            Assert.Equal(18, a.Ueberschrieben());
-            Assert.Equal(18, e.Zonen[0].UeberschriebenZahl);
-            Assert.Equal(ZapfprofilHuelle.Ueberschrieben(stand.Zonen[0]), e.Zonen[0].UeberschriebenZahl);
+            // Messwert, Speicherverlust (Grenze 3 mit Messwert), manuell (das Paar auto/manuell zählt
+            // einmal), spezifischer Bedarf, Zapftemperatur, Kaltwasser Mittel und Amplitude, zwei
+            // Auslastungsmonate, Wohnungstabelle.
+            Assert.Equal(17, a.Ueberschrieben());
+            Assert.Equal(17, e.Zonen[0].UeberschriebenZahl());
+            Assert.Equal(ZapfprofilHuelle.Ueberschrieben(stand.Zonen[0]), e.Zonen[0].UeberschriebenZahl());
 
             ZapfprofilGebaeudeDaten g = e.Gebaeude;
             Assert.NotNull(g);
@@ -147,6 +148,57 @@ namespace EPOS.Kern.Tests
             Assert.Equal(r.Auslastung, z.Auslastung);
             Assert.Equal(new[] { 30, 31 }, z.Wohnungen.Select(w => w.Id).ToArray());
             Assert.Equal(new[] { 1, 2 }, z.Wohnungen.Select(w => w.Reihenfolge).ToArray());
+        }
+
+        /// <summary>
+        /// Z4, Gruppe 2a Punkt 5: Nur wirksame Abweichungen zählen — ein manueller Wert bei „auto"
+        /// nicht, der Speicherverlust ohne Grenze 3 oder ohne Messwert nicht, eine Wohnungstabelle
+        /// nur, wenn die Nutzungsart sie führt.
+        /// </summary>
+        [Fact]
+        public void Der_Zaehler_zaehlt_nur_wirksame_Abweichungen()
+        {
+            var a = new ZapfprofilZonenangabenDaten
+            {
+                TagesbedarfAuto = true,
+                TagesbedarfManuellKwh = 42.0,                          // "auto": der Wert ist wirkungslos
+                Jahresmesswert = 900.0,
+                JahresmesswertBilanzgrenze = ZapfprofilBilanzgrenze.MitVerteilung,   // nicht Grenze 3
+                SpeicherverlustKwhJeJahr = 120.0
+            };
+            a.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 2 });
+
+            // Nur der Messwert zählt: der Speicherverlust ohne Grenze 3 nicht, "auto" lässt den
+            // manuellen Wert wirkungslos, die Wohnungstabelle bleibt hier bewusst ausgeklammert.
+            Assert.Equal(1, a.Ueberschrieben(wohnungstabelleWirksam: false));
+            Assert.Equal(2, a.Ueberschrieben());                                     // + Wohnungstabelle (Vorgabe: wirksam)
+
+            a.JahresmesswertBilanzgrenze = ZapfprofilBilanzgrenze.MitSpeicher;        // Grenze 3 mit Messwert: zählt jetzt mit
+            Assert.Equal(2, a.Ueberschrieben(wohnungstabelleWirksam: false));
+            a.Jahresmesswert = null;                                                 // Grenze 3 OHNE Messwert: zählt wieder nicht
+            Assert.Equal(0, a.Ueberschrieben(wohnungstabelleWirksam: false));
+
+            a.TagesbedarfAuto = false;                                               // das Paar auto/manuell zählt einmal
+            Assert.Equal(1, a.Ueberschrieben(wohnungstabelleWirksam: false));
+            Assert.Equal(2, a.Ueberschrieben());                                     // + Wohnungstabelle
+        }
+
+        /// <summary>Z4, Gruppe 2a Punkt 5: die Zirkulationsangaben einer NICHT gewählten Methode zählen nicht.</summary>
+        [Fact]
+        public void Der_Gebaeudezaehler_zaehlt_nur_die_gewaehlte_Zirkulationsmethode()
+        {
+            var vorgabe = new ZapfprofilGebaeudeDaten();
+            var g = new ZapfprofilGebaeudeDaten
+            {
+                ZirkMethode = ZapfprofilZirkulationsmethode.Flaechenkennwert,
+                ZirkLaengeM = 50.0,               // gehört zu Leitungslänge — nicht die gewählte Methode
+                ZirkKennwert = 8.0                // gehört zu Flächenkennwert — die gewählte Methode
+            };
+            Assert.Equal(1, g.Ueberschrieben(vorgabe));
+
+            g.ZirkAuto = false;                    // manuelle Zirkulation: keine Methodenangabe zählt
+            g.ZirkManuellKw = 1.0;
+            Assert.Equal(1, g.Ueberschrieben(vorgabe));   // das Paar auto/manuell statt der Methode
         }
 
         [Fact]
@@ -305,7 +357,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(50.0, g.ZirkLaengeM);   // nicht geteilt: bleibt
 
             Assert.Equal(0, new ZapfprofilGebaeudeDaten().Ueberschrieben(null));
-            Assert.Equal(4, g.Ueberschrieben(new ZapfprofilGebaeudeDaten()));   // manuell, Wert, Fenster, Länge
+            // Das Paar Ladeleistung auto/manuell zählt einmal, dazu das Fenster; die Zirkulationslänge
+            // gehört zur Methode Leitungslänge, nicht zur gewählten (Vorgabe Flächenkennwert) und zählt nicht.
+            Assert.Equal(2, g.Ueberschrieben(new ZapfprofilGebaeudeDaten()));
         }
 
         // =================================================================================

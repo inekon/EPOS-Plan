@@ -365,8 +365,16 @@ public sealed class ZapfprofilZonenangabenDaten
     /// Größe mit Wert, jeder Schalter abseits seiner Vorgabe, jeder Ferienzeitraum und jeder
     /// Auslastungsmonat mit Wert, eine gepflegte Wohnungstabelle. Die Bindung an ein Gebäude ist
     /// keine Überschreibung. EINE Stelle: Die Hülle zählt den Stand des Kerns hierüber.
+    ///
+    /// <para><b>Nur WIRKSAME Abweichungen zählen</b> (Z4, Gruppe 2a Punkt 5): das Paar
+    /// „Tagesbedarf auto/manuell" zählt EINMAL (ein manueller Wert bei „auto" ist wirkungslos und
+    /// zählt für sich allein nicht); der Speicherverlust nur mit Bilanzgrenze 3 UND einem
+    /// Messwert (sonst rechnet ihn niemand); die Wohnungstabelle nur, wenn
+    /// <paramref name="wohnungstabelleWirksam"/> gilt (Bezugsart Wohneinheiten/Personen der
+    /// Nutzungsart, <c>Mengengeruest.WohnungstabelleWirksam</c> im Kern) — sonst ist sie verdeckt
+    /// und zählt nicht, auch mit gepflegten Zeilen.</para>
     /// </summary>
-    public int Ueberschrieben()
+    public int Ueberschrieben(bool wohnungstabelleWirksam = true)
     {
         int n = 0;
         if (IdTagesgangsatz.HasValue) n++;
@@ -376,15 +384,15 @@ public sealed class ZapfprofilZonenangabenDaten
         if (!Zirkulation) n++;
         n += (Ferien ?? new List<ZapfprofilFerienDaten>()).Count(f => f is not null && f.Belegt);
         if (Jahresmesswert.HasValue) n++;
-        if (SpeicherverlustKwhJeJahr.HasValue) n++;
-        if (!TagesbedarfAuto) n++;
-        if (TagesbedarfManuellKwh.HasValue) n++;
+        if (SpeicherverlustKwhJeJahr.HasValue && JahresmesswertBilanzgrenze == ZapfprofilBilanzgrenze.MitSpeicher
+            && Jahresmesswert.HasValue) n++;
+        if (!TagesbedarfAuto) n++;                    // das Paar auto/manuell zählt einmal
         if (BedarfSpezKwhJeEinheitTag.HasValue) n++;
         if (ZapftemperaturC.HasValue) n++;
         if (KaltwasserMittelC.HasValue) n++;
         if (KaltwasserAmplitudeK.HasValue) n++;
         if (Auslastung is not null) n += Auslastung.Count(a => a.HasValue);
-        if (Wohnungen is { Count: > 0 }) n++;
+        if (wohnungstabelleWirksam && Wohnungen is { Count: > 0 }) n++;
         return n;
     }
 
@@ -436,24 +444,39 @@ public sealed class ZapfprofilGebaeudeDaten
     /// <summary>
     /// Wie viele Größen von der <paramref name="vorgabe"/> abweichen (die Vorgaben der DDL; ohne
     /// Vorgabe die des DTO) — der Anteil des Gebäudes am Zähler „n Werte überschrieben".
+    ///
+    /// <para><b>Nur WIRKSAME Abweichungen zählen</b> (Z4, Gruppe 2a Punkt 5): die Paare
+    /// „Zirkulation/Ladeleistung auto/manuell" zählen je EINMAL — ein manueller Wert bei „auto"
+    /// ist wirkungslos; die Angaben einer Zirkulationsmethode zählen nur, wenn sie auch die
+    /// GEWÄHLTE ist und die Zirkulation „auto" rechnet (der Kern liest sie bei manueller
+    /// Zirkulation nicht).</para>
     /// </summary>
     public int Ueberschrieben(ZapfprofilGebaeudeDaten? vorgabe)
     {
         ZapfprofilGebaeudeDaten v = vorgabe ?? new ZapfprofilGebaeudeDaten();
         int n = 0;
-        if (ZirkAuto != v.ZirkAuto) n++;
+        // Das Paar Zirkulation auto/manuell zählt einmal — ein manueller Wert bei "auto" nicht.
+        if (ZirkAuto != v.ZirkAuto || (!ZirkAuto && ZirkManuellKw != v.ZirkManuellKw)) n++;
         if (ZirkMethode != v.ZirkMethode) n++;
-        if (ZirkLage != v.ZirkLage) n++;
-        if (ZirkLaengeM != v.ZirkLaengeM) n++;
-        if (ZirkVerlustWJeM != v.ZirkVerlustWJeM) n++;
-        if (ZirkAnteil != v.ZirkAnteil) n++;
-        if (ZirkKennwert != v.ZirkKennwert) n++;
-        if (ZirkFlaecheM2 != v.ZirkFlaecheM2) n++;
+        // Die Angaben einer Methode zählen nur bei "auto" und nur für die GEWÄHLTE Methode.
+        bool GewaehlteMethode(ZapfprofilZirkulationsmethode m) => ZirkAuto && ZirkMethode == m;
+        if (GewaehlteMethode(ZapfprofilZirkulationsmethode.Flaechenkennwert))
+        {
+            if (ZirkLage != v.ZirkLage) n++;
+            if (ZirkKennwert != v.ZirkKennwert) n++;
+            if (ZirkFlaecheM2 != v.ZirkFlaecheM2) n++;
+        }
+        if (GewaehlteMethode(ZapfprofilZirkulationsmethode.Leitungslaenge))
+        {
+            if (ZirkLaengeM != v.ZirkLaengeM) n++;
+            if (ZirkVerlustWJeM != v.ZirkVerlustWJeM) n++;
+        }
+        if (GewaehlteMethode(ZapfprofilZirkulationsmethode.Anteil))
+            if (ZirkAnteil != v.ZirkAnteil) n++;
         if (ZirkLaufzeitH != v.ZirkLaufzeitH) n++;
-        if (ZirkManuellKw != v.ZirkManuellKw) n++;
         if (LeitungsinhaltL != v.LeitungsinhaltL) n++;
-        if (LadeAuto != v.LadeAuto) n++;
-        if (LadeManuellKw != v.LadeManuellKw) n++;
+        // Das Paar Ladeleistung auto/manuell zählt einmal.
+        if (LadeAuto != v.LadeAuto || (!LadeAuto && LadeManuellKw != v.LadeManuellKw)) n++;
         if (LadefensterH != v.LadefensterH) n++;
         if (LadefensterBeginnH != v.LadefensterBeginnH) n++;
         if (SpeicherC != v.SpeicherC) n++;
@@ -527,8 +550,12 @@ public sealed class ZapfprofilZoneDaten
     /// </summary>
     public ZapfprofilZonenangabenDaten? Angaben { get; set; }
 
-    /// <summary>Der Anteil der Zone am Zähler „n Werte überschrieben" — aus den Angaben, sonst die Zahl der Hülle.</summary>
-    public int UeberschriebenZahl => Angaben?.Ueberschrieben() ?? Ueberschrieben;
+    /// <summary>
+    /// Der Anteil der Zone am Zähler „n Werte überschrieben" — aus den Angaben, sonst die Zahl der
+    /// Hülle. <paramref name="wohnungstabelleWirksam"/> gilt nur für die Angaben (Z4, Gruppe 2a
+    /// Punkt 5); Vorgabe <c>true</c> — ohne Katalogbezug zählt eine gepflegte Tabelle wie bisher.
+    /// </summary>
+    public int UeberschriebenZahl(bool wohnungstabelleWirksam = true) => Angaben?.Ueberschrieben(wohnungstabelleWirksam) ?? Ueberschrieben;
 
     /// <summary>Eine unabhängige Kopie (der Dialog arbeitet bis OK auf Kopien) samt Angaben.</summary>
     public ZapfprofilZoneDaten Kopie() => new()
@@ -1020,15 +1047,17 @@ public sealed class ZapfprofilDaten
 
     /// <summary>
     /// <b>Der Zähler „n Werte überschrieben"</b> — an EINER Stelle: die Größen der höheren Stufen
-    /// je Zone (<see cref="ZapfprofilZoneDaten.UeberschriebenZahl"/>), die gebäudeweiten Größen
-    /// abseits ihrer Vorgabe und die der Stochastik — der Rechenweg „stochastisch", ein Seed oder
-    /// eine Zahl der Realisierungen abseits der Vorgabe. Die Stufe blendet nur aus, die
+    /// je Zone (<see cref="ZapfprofilZoneDaten.UeberschriebenZahl"/>, ihre Wohnungstabelle nur
+    /// gezählt, wenn die Nutzungsart der Zone sie wirksam führt — <see cref="Katalog"/>,
+    /// <see cref="ZapfprofilNutzungsartDaten.Wohnen"/>, Z4 Gruppe 2a Punkt 5), die gebäudeweiten
+    /// Größen abseits ihrer Vorgabe und die der Stochastik — der Rechenweg „stochastisch", ein
+    /// Seed oder eine Zahl der Realisierungen abseits der Vorgabe. Die Stufe blendet nur aus, die
     /// Überschreibung bleibt.
     /// </summary>
     public int UeberschriebenIn(ZapfprofilEingabeDaten? eingabe)
     {
         if (eingabe is null) return 0;
-        int n = eingabe.Zonen.Sum(z => z.UeberschriebenZahl);
+        int n = eingabe.Zonen.Sum(z => z.UeberschriebenZahl(Katalog.FirstOrDefault(a => a.Id == z.IdNutzungsart)?.Wohnen == true));
         if (eingabe.Gebaeude is { } g) n += g.Ueberschrieben(GebaeudeVorgabe);
         if (eingabe.JahresreiheStochastisch) n++;
         if (eingabe.Seed is int seed && SeedVorgabe is int sv && seed != sv) n++;
