@@ -462,10 +462,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Das gemessene Beispiel: Projekt 1017.</b> Die Waermepumpe steht ohne Platz,
-        /// <c>Tool_3/4</c> sind frei — das Aufnehmen waere also moeglich, und die Meldung
-        /// traegt den Knopf. Sie geschieht aber NICHT von selbst: Keine Automatik fuer
-        /// andere Erzeugerarten als den Heizkessel.
+        /// <b>Das gemessene Beispiel: Projekt 1017.</b> Seine Waermepumpe steht auf Platz 3 — sie
+        /// ist der Kaelteerzeuger des Referenzprojekts (Einfrierregel „gesaete Kaeltedaten",
+        /// <c>Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py</c>) und wird nicht
+        /// gemeldet. Die Probe nimmt sie im MODELL wieder heraus, ohne die Datenbank anzufassen:
+        /// Dann steht die Waermepumpe ohne Platz, <c>Tool_3/4</c> sind frei — das Aufnehmen waere
+        /// also moeglich, und die Meldung traegt den Knopf. Sie geschieht aber NICHT von selbst:
+        /// Keine Automatik fuer andere Erzeugerarten als den Heizkessel.
         /// </summary>
         [Fact]
         public void Projekt_1017_meldet_die_Waermepumpe_und_haette_einen_freien_Platz()
@@ -475,6 +478,10 @@ namespace EPOS.Kern.Tests
 
             KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(1017);
             Assert.NotNull(konfig);
+            Assert.Equal(DbWerte.ERZEUGER_WAERMEPUMPE, konfig.m_Tool_3);
+            Assert.DoesNotContain(SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(1017, konfig),
+                                  b => b.Steuerwert == DbWerte.ERZEUGER_WAERMEPUMPE);
+            konfig.m_Tool_3 = "";
 
             var gemeldet = new List<string>();
             foreach (Warnbefund b in SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(1017, konfig))

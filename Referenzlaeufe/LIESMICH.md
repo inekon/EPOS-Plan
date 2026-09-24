@@ -184,10 +184,11 @@ mehr mit `BauweiseUnplausibel` abgelehnt.
 Dieselbe Klasse von Falle, fünfter Ort, und wie die Gebäudedaten nach ihrem Gegenstand benannt, nicht
 durchgezählt (Systementwurf Gebäudesimulation 8.3). Den Kühlkanal eines Referenzprojekts rechnet die
 Gebäudesimulation aus den Kühleingaben seiner Gebäude, und nur, wenn der Projektschalter steht;
-ohne wirksame Kühlung läuft ein Gebäude frei (E32). Eine einzige geänderte Zelle schaltet damit die
-Kälteseite eines Projekts ein oder aus, verschiebt seine Raumtemperatur, seine Heizwärme in der
-Übergangszeit und seine Überhitzungsstunden — und lässt Dateien und Schlüssel im Export entstehen
-oder verschwinden.
+ohne wirksame Kühlung läuft ein Gebäude frei (E32). Gedeckt wird er von den Wärmepumpen im
+Kühlbetrieb, über ihre Kühlkennlinie. Eine einzige geänderte Zelle schaltet damit die Kälteseite
+eines Projekts ein oder aus, verschiebt seine Raumtemperatur, seine Heizwärme in der Übergangszeit
+und seine Überhitzungsstunden, seine Kältedeckung, seinen Kältestrom und mit ihm Netzbezug, Kosten
+und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschwinden.
 
 > **Wer gesäte Kältedaten der Testdatenbank ändert, friert im selben Schritt die Basis neu ein und
 > begründet den Wechsel hier.**
@@ -196,16 +197,27 @@ oder verschwinden.
 > Referenzprojekts, an den Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`,
 > `Kuehl_Sollwert_Nacht`, `Kuehlleistung_Max` in `Tab_Gebaeude`; in `Tab_Gebaeude_STAMM`, sobald
 > ein Katalogsatz in ein Referenzprojekt übernommen wird) und an der Kanalzuordnung „Kühlung“ eines
-> Lastgangs eines Referenzprojekts (`Z_ProjektWaermebedarf.Kanal`) — und, sobald ein Kälteerzeuger
-> rechnet, an der gesäten Kühlleistung, der Kühlkennlinie samt ihren Vorlauf-Stützstellen und dem
-> `Kuehl_Vorlauf` einer Anlage eines Referenzprojekts.
+> Lastgangs eines Referenzprojekts (`Z_ProjektWaermebedarf.Kanal`) — und an seiner
+> **Kälteerzeugung**: am Kaskadenplatz einer Wärmepumpe (`Tab_Einstellungen.Tool_1` bis `Tool_4`),
+> an ihrem Kühlbetrieb, Kühl-Vorlauf und Hilfsstromanteil (`Kuehlbetrieb`, `Kuehl_Vorlauf`,
+> `Kuehl_Hilfsstromanteil` in `Tab_WP`), an Kühlträger und Abrechnungsart ihrer Anlagenzeile
+> (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler` in `Tab_Energieanlagen`) und an der Kühlkennlinie
+> des Projektgeräts samt Vorlauf-Stützstellen, Temperaturen, EER, Kälteleistung und Laststufe
+> (`Tab_Kenndaten_Kuehlung`); in `Tab_WP_STAMM` und `Tab_Kenndaten_Kuehlung_STAMM`, sobald ein
+> Katalogsatz in ein Referenzprojekt übernommen wird.
 >
 > **Rechenwirkung hat allein Projekt 1017:** Projektschalter ein, Gebäude 10599 mit Haken,
 > Kühlsollwert 24 °C und Kühlleistungsgrenze 15 kW — vier Zellen aus
-> [`Skripte/kuehlung_1017_referenzprojekt.py`](Skripte/kuehlung_1017_referenzprojekt.py). Die
-> übrigen zwölf Referenzprojekte stehen auf 0; ihre Gebäude laufen frei.
+> [`Skripte/kuehlung_1017_referenzprojekt.py`](Skripte/kuehlung_1017_referenzprojekt.py); dazu
+> der Kälteerzeuger — die Wärmepumpe (Anlage 10211, Projektgerät 1017033) auf Kaskadenplatz 3, im
+> Kühlbetrieb mit Kühl-Vorlauf 18 °C und Hilfsstromanteil 5 %, ohne Kühlträger und
+> Abrechnungsart, mit einer gesäten Kühlkennlinie aus zehn Zeilen (Vorlauf 7 und 18 °C, 20 bis 40 °C,
+> Laststufe 100) — vier Zellen und zehn Zeilen aus
+> [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py).
+> Die übrigen zwölf Referenzprojekte stehen auf 0; ihre Gebäude laufen frei, keine ihrer
+> Wärmepumpen kühlt.
 >
-> **Nicht** betroffen sind Kühleingaben von Projekten außerhalb der Referenzliste.
+> **Nicht** betroffen sind Kühleingaben und Kälteerzeuger von Projekten außerhalb der Referenzliste.
 
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheid ZU19)
 

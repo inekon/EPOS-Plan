@@ -2626,6 +2626,12 @@ bedient, Heiztag ohne Kälte, Kältestrom in eigener Reihe, Deckungsspalte, Expo
 Deckungsprobe still), die Sperrgründe im Lauf und die Probe an 1017 mit Wärmepumpen-Kühlbetrieb in der
 Arbeitskopie.
 
+**Umgesetzt mit KU2 Welle 4** (`ReferenzprojektKaelteerzeugerTests`): die gesäten Kältedaten des
+Referenzprojekts 1017 so, wie das Skript sie schreibt (10.4), die **Rechenprobe gegen die Handrechnung
+je Vorlauf** am Referenzprojekt selbst — 18 °C wie gesät und 7 °C in der Arbeitskopie, je Stunde Kälte
+und Kältestrom, im Jahr die Summen und die gespeicherten Modulspalten — und Kosten und Emissionen des
+Kältestroms gegen den Stand ohne Kälteerzeuger.
+
 Nach jeder neuen oder geänderten SQL-Anweisung:
 `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite`.
 
@@ -2674,6 +2680,36 @@ Einfrierregel „gesäte Kältedaten" steht an beiden Orten, die Basis ist
 `2026-09-23_R13_Kuehlung`: Kältebedarf 2,52 MWh/a in 402 Stunden, Kältelast 14,99 kW, davon 25
 Stunden an der Grenze, ungedeckt. Die Kühlfunktion der Wärmepumpe (`Kuehl_Vorlauf`, gesäte
 Kühlkenndaten) kommt mit KU2 und dessen eigenem Einfrierschritt (K19).
+
+**So umgesetzt — KU2, vierte Welle (24.09.2026): 1017 mit Kälteerzeuger.** Die einzige Wärmepumpe von
+1017 (Anlage 10211, Projektgerät 1017033, Sole-Wasser, Wärmequelle nicht gepflegt, also die Außenluft)
+kühlt — vier Zellen und zehn Zeilen aus
+[`Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py`](../../Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py):
+
+- **Kaskadenplatz 3** (`Tab_Einstellungen.Tool_3`), hinter BHKW und Elektrokessel — die Kältekaskade
+  rechnet die Wärmepumpen des Laufs, ohne Platz rechnet die Maschine nicht; auf Platz 3 übernimmt sie
+  in der Heizzeit nur, was die beiden übrig lassen, und die Wärmeseite bleibt fast unverändert.
+- **`Kuehlbetrieb = 1`, `Kuehl_Vorlauf = 18`** — eine der zwei Stützstellen (K21): Flächenkühlung über
+  dem Taupunkt, die Lage sensibler Kälte ohne Entfeuchtung (K5).
+- **`Kuehl_Hilfsstromanteil = 0,05`** statt NULL: Die Basis soll den Zuschlag tragen (Kältestrom = Kälte
+  / EER · 1,05, Skalar `Kaelte.HilfsstromMwh`); mit NULL bliebe der Zweig im Regressionsnetz unbewacht.
+  Ein runder Beispielwert, kein Messwert — der Schutz aus 6.1 („keine geratene Zahl") gilt für
+  Anwenderprojekte, nicht für eine Testvorrichtung.
+- **Kühlträger und Abrechnungsart NULL** — wie Heizbetrieb, der Referenzfall ohne den Sonderweg aus E34.
+- **Eine gesäte Kühlkennlinie**, weil der Katalogsatz des Geräts keine trägt und eine Übernahme es damit
+  nicht gibt (5.0.2, 5.0.4): zwei Vorläufe (7 und 18 °C) × fünf Außentemperaturen (20 bis 40 °C),
+  Laststufe 100, EER in der Spalte `COP` (K22), in Kaltwasserlage, Achsen richtig, ohne Dubletten —
+  runde, erfundene Werte, dieselbe Phantasie-Kennlinie wie die Proben der Wellen 2 und 3; bei 18 °C
+  liefert sie 15 bis 13 kW, in heißen Stunden also weniger als die Kühlleistungsgrenze des Gebäudes.
+- **Die Nennkühlleistung (`Tab_WP.Kuehlleistung`) bleibt leer** — sie ist eine Berichts-, keine
+  Rechengröße (5.1, Festlegung 3).
+
+**Ergebnis:** gedeckt 2,48 von 2,52 MWh/a (98,4 %), Kältestrom 0,55 MWh/a samt 0,03 MWh/a Hilfsstrom,
+Jahresarbeitszahl Kälte 4,52, 43 Kühltage, 396 Stunden mit Kälte; ungedeckt 0,04 MWh/a an Heiztagen und
+in Stunden über der Kälteleistung. Die **Rechenprobe gegen die Handrechnung je Vorlauf** (10.3,
+`ReferenzprojektKaelteerzeugerTests`) rechnet 1017 mit 18 und mit 7 °C und hält je Stunde Kälte und
+Kältestrom gegen die Handrechnung aus den gesäten Stützstellen; mit 7 °C deckt die Maschine 91,9 % bei
+einer Jahresarbeitszahl Kälte von 3,25.
 
 ### 10.5 Die Einfrierschritte — und warum KU1 zu G1 + G2 gehört
 

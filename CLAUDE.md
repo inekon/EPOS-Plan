@@ -166,8 +166,10 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   das Anlegen oder Entfernen eines ihrer Gebäude;
 - gesäte Kältedaten: der Projektschalter `Tab_Einstellungen.Kuehlbetrieb` eines Referenzprojekts,
   die Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht`,
-  `Kuehlleistung_Max`), der Kanal „Kühlung“ eines seiner Lastgänge und, sobald ein Kälteerzeuger
-  rechnet, dessen gesäte Kühlleistung, Kühlkennlinie samt Vorlauf-Stützstellen und `Kuehl_Vorlauf`.
+  `Kuehlleistung_Max`), der Kanal „Kühlung“ eines seiner Lastgänge und sein Kälteerzeuger: der
+  Kaskadenplatz der Wärmepumpe, ihr Kühlbetrieb, `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`,
+  Kühlträger und Abrechnungsart ihrer Anlagenzeile (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`)
+  und die Kühlkennlinie des Projektgeräts samt Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`).
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
