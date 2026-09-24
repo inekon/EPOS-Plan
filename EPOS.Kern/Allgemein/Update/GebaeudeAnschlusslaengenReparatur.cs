@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         /// Die Nummer des Schemaschritts — die EINZIGE Stelle im Code, an der sie als Zahl
         /// steht (Migration, Werkzeug und Protokoll lesen sie von hier).
         /// </summary>
-        public const int SCHRITT = 131;
+        public const int SCHRITT = 130;
 
         /// <summary>Der Katalog.</summary>
         public const string TABELLE = "Tab_Gebaeude_STAMM";
