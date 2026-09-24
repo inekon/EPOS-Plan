@@ -31,6 +31,13 @@ public class ZapfprofilDialogTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    /// <summary>
+    /// Die Frist jedes Wartens auf einen gezeichneten Zustand nach dem Ende eines nebenläufigen
+    /// Laufs: großzügig, weil ein belasteter Läufer die Fortsetzung im Verteiler verzögert — gewartet
+    /// wird nur, bis der Zustand steht.
+    /// </summary>
+    private static readonly TimeSpan Frist = TimeSpan.FromSeconds(10);
+
     // =================================================================================
     // Prüfdaten (erfunden)
     // =================================================================================
@@ -619,9 +626,17 @@ public class ZapfprofilDialogTests : EposBunitContext
     /// steht mit Abbrechen unter der Vorschau, die Fußleiste nennt „rechnet …". Abbrechen reicht
     /// die Marke an den Lauf und sagt es als leise Zeile; eine Eingabe verwirft einen laufenden
     /// Lauf samt spätem Ergebnis; OK beendet ihn; ein vollendeter Lauf kommt über InvokeAsync.
+    ///
+    /// <para>Deterministisch: Jeder Lauf hängt an einer <see cref="TaskCompletionSource{TResult}"/>,
+    /// die allein der Test freigibt (oder die Marke beendet) — „rechnet …" steht, bis dahin. Jedes
+    /// Ereignis geht über die <c>…Async</c>-Form und wird abgewartet: Das synchrone <c>Click()</c>
+    /// reiht es nur ein, solange die Fortsetzung eines beendeten Laufs den Verteiler noch belegt,
+    /// und der nächste Assert läse den Stand davor (EPOS.UI/CLAUDE.md, Tests). Auf das Ende eines
+    /// Laufs, das auf einem anderen Faden kommt, wartet <c>WaitForAssertion</c> mit
+    /// <see cref="Frist"/>.</para>
     /// </summary>
     [Fact]
-    public void Stochastisch_rechnen_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
+    public async Task Stochastisch_rechnen_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
     {
         ZapfprofilEingabeDaten e = Eingabe();
         e.JahresreiheStochastisch = true;
@@ -634,9 +649,11 @@ public class ZapfprofilDialogTests : EposBunitContext
             laeufe.Add((ende, marke));
             return ende.Task;
         });
-        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        await cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").ClickAsync(new());
 
-        Knopf(cut, "Stochastisch rechnen").Click();
+        // Der Lauf steht, bis der Test ihn freigibt: „rechnet …" ist kein verfliegender Zwischenstand.
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Single(laeufe);
         Assert.True(cut.Instance.JahresreiheLaeuft);
         Assert.Equal("Jahresreihe rechnet … · Seed 1 · 10 Jahre", cut.Find(".epos-fortschritt-text").TextContent);
         Assert.Contains("Stochastik · rechnet …", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
@@ -644,7 +661,7 @@ public class ZapfprofilDialogTests : EposBunitContext
 
         // Abbrechen am Fortschritt: die Marke erreicht den Lauf, eine leise Zeile nennt den Abbruch.
         // Das Ende kommt auf einem anderen Faden: erst der gezeichnete Zustand zählt (EPOS.UI/CLAUDE.md, Tests).
-        cut.Find(".epos-fortschritt-abbruch").Click();
+        await cut.Find(".epos-fortschritt-abbruch").ClickAsync(new());
         Assert.True(laeufe[0].Marke.IsCancellationRequested);
         cut.WaitForAssertion(() =>
         {
@@ -652,29 +669,34 @@ public class ZapfprofilDialogTests : EposBunitContext
             Assert.Equal("Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.",
                          cut.Find(".epos-zapfprofil-hinweis").TextContent);
             Assert.Empty(cut.FindAll(".epos-fortschritt"));
-        });
+        }, Frist);
         Assert.Null(cut.Instance.StochastikErgebnis);
 
         // Eine Eingabe während des Laufs verwirft ihn — sein spätes Ergebnis bleibt draußen.
-        Knopf(cut, "Stochastisch rechnen").Click();
-        Option(cut, "hoch").Change("3");
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Equal(2, laeufe.Count);
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        await Option(cut, "hoch").ChangeAsync("3");
         Assert.True(laeufe[1].Marke.IsCancellationRequested);
         Assert.False(cut.Instance.JahresreiheLaeuft);
         Assert.Null(cut.Instance.StochastikErgebnis);
 
         // Ein vollendeter Lauf: das Ergebnis per InvokeAsync, der Kopf nennt Seed und Jahre.
-        Knopf(cut, "Stochastisch rechnen").Click();
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Equal(3, laeufe.Count);
+        Assert.True(cut.Instance.JahresreiheLaeuft);                      // der verworfene Lauf hinterließ nichts
         laeufe[2].Ende.SetResult(Gezogen(cut.Instance.Eingabe));
         cut.WaitForAssertion(() =>
         {
             Assert.NotNull(cut.Instance.StochastikErgebnis);
             Assert.False(cut.Instance.JahresreiheLaeuft);
             Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
-        });
+        }, Frist);
 
         // OK beendet einen laufenden Lauf; die Jahresreihe zieht der Lauf der Simulation.
-        Knopf(cut, "Stochastisch rechnen").Click();
-        Knopf(cut, "OK").Click();
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        await Knopf(cut, "OK").ClickAsync(new());
         Assert.True(laeufe[3].Marke.IsCancellationRequested);
         Assert.NotNull(ergebnis);
         Assert.Equal(4, laeufe.Count);

@@ -29,6 +29,13 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    /// <summary>
+    /// Die Frist jedes Wartens auf einen gezeichneten Zustand nach dem Ende eines nebenläufigen
+    /// Laufs: großzügig, weil ein belasteter Läufer die Fortsetzung im Verteiler verzögert — gewartet
+    /// wird nur, bis der Zustand steht.
+    /// </summary>
+    private static readonly TimeSpan Frist = TimeSpan.FromSeconds(10);
+
     // =================================================================================
     // Prüfdaten (erfunden)
     // =================================================================================
@@ -1112,9 +1119,16 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     /// Ergebnis kommt per InvokeAsync; eine Eingabe startet einen neuen Lauf; Abbrechen schaltet
     /// „Stochastisch rechnen" aus und rechnet deterministisch nach; OK beendet einen laufenden Lauf
     /// und nimmt den Punkt aus der deterministischen Rechnung.
+    ///
+    /// <para>Deterministisch: Jeder Lauf hängt an einer <see cref="TaskCompletionSource{TResult}"/>,
+    /// die allein der Test freigibt (oder die Marke beendet). Jedes Ereignis geht über die
+    /// <c>…Async</c>-Form und wird abgewartet — das synchrone <c>Click()</c>/<c>Input()</c> reiht es
+    /// nur ein, solange die Fortsetzung eines beendeten Laufs den Verteiler noch belegt
+    /// (EPOS.UI/CLAUDE.md, Tests); auf das Ende eines Laufs wartet <c>WaitForAssertion</c> mit
+    /// <see cref="Frist"/>.</para>
     /// </summary>
     [Fact]
-    public void Das_Ensemble_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
+    public async Task Das_Ensemble_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
     {
         var laeufe = new List<(TaskCompletionSource<ZapfprofilAuslegungDaten> Ende, CancellationToken Marke, ZapfprofilAuslegungEingabeDaten Eingabe)>();
         var imZeichenlauf = new List<ZapfprofilAuslegungEingabeDaten>();
@@ -1129,7 +1143,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
                 return ende.Task;
             });
 
-        Feld(cut, "Stochastisch rechnen").Change(true);
+        await Feld(cut, "Stochastisch rechnen").ChangeAsync(true);
         Assert.True(cut.Instance.EnsembleLaeuft);
         Assert.True(Assert.Single(laeufe).Eingabe.Stochastisch);
         Assert.Empty(imZeichenlauf);                                         // nie das Ensemble im Zeichenlauf
@@ -1144,13 +1158,13 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
             Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
             Assert.False(cut.Instance.EnsembleLaeuft);
             Assert.Empty(cut.FindAll(".epos-fortschritt"));
-        });
+        }, Frist);
 
         // Eine Eingabe startet einen neuen Lauf; Abbrechen am Fortschritt schaltet aus und rechnet deterministisch nach.
-        Feld(cut, "Speichertemperatur").Input("55");
+        await Feld(cut, "Speichertemperatur").InputAsync("55");
         Assert.Equal(2, laeufe.Count);
         Assert.True(cut.Instance.EnsembleLaeuft);
-        cut.Find(".epos-fortschritt-abbruch").Click();
+        await cut.Find(".epos-fortschritt-abbruch").ClickAsync(new());
         Assert.True(laeufe[1].Marke.IsCancellationRequested);
         cut.WaitForAssertion(() =>
         {
@@ -1159,13 +1173,15 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
                          cut.Find(".epos-zapfausl-hinweis").TextContent);
             Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));            // Karte (b) wieder offen
             Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
-        });
+        }, Frist);
         Assert.False(cut.Instance.Eingabe.Stochastisch);
         Assert.False(Assert.Single(imZeichenlauf).Stochastisch);
 
         // OK während eines Laufs: Der Lauf endet, der Punkt kommt aus der deterministischen Rechnung.
-        Feld(cut, "Stochastisch rechnen").Change(true);
-        Knopf(cut, "OK").Click();
+        await Feld(cut, "Stochastisch rechnen").ChangeAsync(true);
+        Assert.Equal(3, laeufe.Count);
+        Assert.True(cut.Instance.EnsembleLaeuft);
+        await Knopf(cut, "OK").ClickAsync(new());
         Assert.True(laeufe[2].Marke.IsCancellationRequested);
         Assert.NotNull(zurueck);
         Assert.Equal(300, zurueck!.PunktVolumenL);
