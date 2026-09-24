@@ -20,7 +20,7 @@ A1 bis A3. **Stufe 5 ist umgesetzt** (23.09.2026, Commits `9cb41354`, `7e7ecb9c`
 `b3fa8658`): V16 an den Sonderlisten (A9 bis A11) — Gebäude, Gebäudetypen und Lastspitzenkappung im
 Gerüst mit Liste und Stammblatt —, dazu der Zweitweg von V14 bei A1 bis A3 (7.1 d, „Import…" in den
 Gerätekatalogen). **Damit sind alle fünf Stufen umgesetzt**; einzelne Reste stehen in 7.1 („Offen nach
-Stufe 5"). Die Auswahlleiste steht im breiten Fenster über dem Stammblatt statt über der Liste —
+Stufe 5"), die Import-Reste (d) sind am 24.09.2026 erledigt (Welle #466). Die Auswahlleiste steht im breiten Fenster über dem Stammblatt statt über der Liste —
 Abweichung vom Schema, Begründung in 3.6 Punkt 7. Das Schema (Abschnitt 3) gilt als umgesetzter Stand
 für alle elf Komponenten des Geltungsbereichs, mit den in 3.6 genannten Abweichungen. Der Ablauf aller
 fünf Stufen steht in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
@@ -255,7 +255,7 @@ Fenster.
   leer, solange die Liste Treffer hat. Ohne Treffer steht am Platz der Auswahlleiste eine leise Zeile,
   damit die Liste nicht springt.
 - **Rückmeldung:** Gelungenes meldet die Statuszeile der Fußleiste („Profil Wohnen 2 dupliziert als
-  …", „12 Sätze eingelesen"). Ein Warnband erst nach einem gescheiterten Versuch, mit `Verfaellt`
+  …", „12 Sätze übernommen und gewählt"). Ein Warnband erst nach einem gescheiterten Versuch, mit `Verfaellt`
   (Hausregel „Zustand, Meldung, Leerzustand"). Eine **Rückfrage** gibt es vor dem Löschen — nur, wenn
   gelöscht werden kann — und vor dem Umschalten des Schlosses in beiden Richtungen, dort mit „Nein"
   als Vorgabe (AD-Q15).
@@ -583,9 +583,22 @@ Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die L
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; ob CSV-Export und „In Variante
 übernehmen" in der Fußleiste zu „Statuszeile · Beenden" passen, ist eine offene Frage; die
-Auswahlleiste steht nur im schmalen Fenster, kein Vergleich. (d) Import: Nach der Übernahme steht der
-erste neue Satz im Fokus statt „neue Zeilen gewählt"; der Stromspeicherimport ist im 860 px breiten
-Modulkatalog-Fenster schmaler als vorgesehen. (e) Hilfe-Assistent (Entscheid KI‑D‑Q11, #456): Die
+Auswahlleiste steht nur im schmalen Fenster, kein Vergleich. (d) Import: ✔ **erledigt 24.09.2026**
+(Welle #466, Commits `d515b7fe`, `d614c3e7`). *Wahl nach der Übernahme:* Nach „Import…" in A1 bis A3
+sind die neuen Sätze die Auswahl (`Zeilenauswahl.Uebernommen`) — ab zweien stehen ihre Kästchen, die
+Auswahlleiste sagt „n gewählt", Vergleichen, Schloss und Löschen wirken auf genau sie; der erste neue
+Satz ist Fokuszeile und steht im Stammblatt; ein einzelner ist wie nach dem Einlesen in A4 und A6 bis A8
+als Fokuszeile allein die Wahl. Kästchen von vorher fallen, ein Vergleich endet; die Statuszeile meldet
+„n Sätze übernommen und gewählt". *Breite des Stromspeicherimports:* Kein Fehler im Stilblatt — jede
+Import-Überlagerung ist die breite (`min(96vw, 1400px)`), sie kann aber nicht breiter werden als ihr
+Fenster. Der Modulkatalog wünschte für alle drei Ausprägungen 860 × 780, der Stromspeicherimport als
+eigenes Fenster 1 180 × 700, der Modulimport (PV-Module, Wechselrichter) 1 240 × 800; bei 860 px blieben
+826 px, und der Import rollte senkrecht. Nun wünscht ein Fenster, das einen Import als Überlagerung
+trägt, mindestens dessen Maß (`Fenstermass.MitUeberlagerung`): Stromspeicher 1 180 × 780, PV-Module und
+Wechselrichter 1 240 × 800 (gemessen im Wirt der Rasterprobe: bei 1 180 × 780 eine Überlagerung von
+1 133 × 711 px, der Import passt ohne Rollen). Auf dem 1920er Schirm bei 150 % ändert das nichts — dort
+nimmt jedes Fenster ohnehin 85 % des Arbeitsbereichs (1 088 CSS-Pixel); es wirkt auf kleinen Schirmen.
+(e) Hilfe-Assistent (Entscheid KI‑D‑Q11, #456): Die
 Verwaltungen sind steuerbar wie die Projektdialoge — erledigt für A1 (die vier Erzeugerkataloge: Satz
 wählen, jedes editierbare Feld des Stammblatts setzen, Speichern über den Weg des Knopfes) und A5 (Typ,
 Beschreibung und Monatswerte); A2, A3, A4, A8, A10 und A11 waren es schon. Auslieferungssätze bleiben
