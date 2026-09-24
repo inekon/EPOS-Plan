@@ -1279,7 +1279,8 @@ jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`),
 #440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`), in § 8.11 und § 8.12 **vor #452**
 (Stand `9c7a0023`), in § 8.13 und § 8.14 **vor #454** (Stand `485052c6`), in § 8.15 und § 8.16 **vor #455** (Stand
 `09037a32`, der Merge `704356a4` samt den Papieren zu #454), in § 8.17 und § 8.18 **vor #460** (Stand `9ab55946`, der
-Merge #460 über den Entscheid-Papieren zu E8b, `46023235`) —, nicht vor dem Schnitt.*
+Merge #460 über den Entscheid-Papieren zu E8b, `46023235`), in § 8.19 und § 8.20 **vor #461** (Stand `62613292`, der
+Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2016,3 +2017,97 @@ Die Stellen, die mit E8c und der Schemaschritt-Vergabe vom 24.09.2026 veraltet s
 | § 6.1 | Kurztafel bis E8b (#455) | Zeile E8c (#460) |
 | § 6.2 | „… die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe an der Norm `AnhangDFallstudieTests` (10 …)." | dazu die zwei Klassen der Betriebskostentabelle `BemessungstexteAlleArtenTests` (21) und `BetriebskostenStartjahrGliederungTests` (12) |
 | § 7 und Anhang | § 7: Wortlaut in § 8.17; Kürzeltafel bis #455; Etappenzeilen „E8c … offen — Entscheid 23.09.2026, nach Empfehlung" und „E9 … E12 — nächste Etappe: E9 (offen die acht Fragen aus E7c3 …; E8b entschieden …)" | § 7 mit E8c (#460) gebaut, E9 in zwei Wellen (E9a mit 116 bis 118, voraussichtlich #461; E9b, voraussichtlich #462), offen dazu die zwei Fragen aus E8c; neue Zeile der Kürzeltafel = #460; Etappenzeilen „E8c — E8b‑Q2/Q3" = #460 (Merge `9ab55946`) und „E9 … E12 — E9 läuft …" |
+
+### 8.19 E9a — Vollständige Szenarioabdeckung, Teil a: Schemaschritte 116 bis 118, der Kern liest die Paare (#461)
+
+Protokoll [`E9a_Szenarioabdeckung_Kern_Protokoll.md`](E9a_Szenarioabdeckung_Kern_Protokoll.md); der Stand von V‑4,
+V‑G2 und V‑G5 (R‑V) und von A5 (R‑A) im Register, dazu der Vermerk zu V‑G7 und V‑G3 (R‑V); die sieben Fragen der Welle
+— offen, gebaut jeweils Lesart a — unter R‑E9a. Die Welle ist der erste Teil der Etappe E9 (V‑E), die einzige neben E7
+mit Rechenwirkung; die Dialoge folgen mit E9b.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E9 Teil a** (#461, Merge `62613292` auf dem Hilfszweig `pm8`) | V‑E im Kern: die Schemaschritte 116 (Szenariorahmen: Betrachtungszeitraum und Mengenänderung je Szenario), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), reines DDL; der Kern liest Zeitraum, Mengenfaktor, Trägerpreise, Einspeisevergütungen, DV-Entgelt und PPA-Preis je Szenario an je einer Stelle; Nachweiszeile, Parameterblock der Formelmappe (15 Zeilen) und Verlauf je Szenario; 17 Ressourcenschlüssel; Testdatenbank 118 | **ja, je Pflege** — ohne Pflege bitgleich: A/B über neun Größen mit Erwartet bitgleich, die Ankertests unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich (keine Pflege in den Referenzprojekten); Gate auf `62613292` grün |
+
+*Kopf, die Schemaschritte (Z. 3, 5, 14 und 24–26):*
+
+> **Stand 24.09.2026** · Codestand `9ab55946` · `SchemaStand.Zielversion` = 114 · Schemaschritte 90–114 vergeben,
+> 115 zugesagt, 116–118 an E9a vergeben · …
+>
+> Die Schritte 97 bis 101, 103, 107 bis 110 und 114 gehören nicht diesem Feld, ebenso der zugesagte 115: … und
+> **115**, der Zapfprofil-Stufe Z3 zugesagt (T2). … Für die Schritte B, C und D der Etappe E9 (§ 2.11.5) sind am
+> 24.09.2026 **116**, **117** und **118** vergeben (Teil a, E9a).
+
+**Umgesetzt mit E9a (#461):** Codestand `62613292`, Zielversion 118, „90–118 vergeben (116–118 die Schritte B, C und D
+der Etappe E9a)"; 115 als Schritt der Zapfprofil-Stufe Z3 unter den fremden Schritten (`SCHRITT_115_ZAPFKATEGORIEN`,
+#453); 116 bis 118 mit ihren Konstanten unter den Schritten dieses Feldes.
+
+*§ 2.11.2, die Zeile V-G5 der Gap-Tafel (Z. 773), Spalte „Lücke / Behandlung":*
+
+> **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten,
+> Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5
+
+**Umgesetzt mit E9a (#461):** dahinter die Marke „**Stand: teilweise gebaut #461** (V‑E Teil a, Kern)" mit dem
+Verweis auf die Regeln des Kerns; die Spalte „EPOS heute" bleibt als Messung vom 18.09.2026 stehen.
+
+*§ 2.11.4, die Zeile V-E (Z. 833):*
+
+> | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7),
+> n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert
+> durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie
+> Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** |
+
+**Umgesetzt mit E9a (#461):** Die Spalte „entspricht / bereits geliefert durch" nennt Teil a mit den drei
+Schemaschritten, der einen Lesestelle je Größe, Tests und A/B; Risiko (V‑G7) und n-jährliche Zeitpunkte (V‑G3) baut E9
+nicht (E9a‑Q6); Stand „**E9** — Teil a gebaut #461 (Kern); Teil b … mit E9b".
+
+*§ 2.11.5, die Spalte „Stand" der Parametertafel (Z. 860–863) und die Regeln „Pflege" und „Ausweis im Bericht"
+(Z. 878–883):*
+
+> | **Energiepreise** je Träger | … | **neu** |
+> | **Erlössätze** (Marktgrößen) | … | **neu** |
+> | **Rahmen** | … | **6 von 8 vorhanden** seit Schritt 71 (`Szen_Best/Worst_Zins`, `_Preis_E`, `_Preis_B`); neu sind
+> allein Best/Worst des **Betrachtungszeitraums**. Namensvorsicht: … |
+> | **Mengen** (Simulationsergebnis) | … | **neu** |
+>
+> - **Pflege**: der vorhandene ±-Knopf (`CaseEingabeDialog`) als einheitliches Muster auch an
+>   Trägerpreisen, Erlösfeldern und der Rahmen-Gruppe; die ValERI-Ansicht zeigt je Szenario, welche
+>   Parameter gepflegte Abweichungen tragen („12 von 31 Parametern szenariert").
+> - **Ausweis im Bericht** (Norm 9c): Die Kalkulationstabelle je Szenario nennt die
+>   Parametereinstellungen vollständig — die Szenariospalten der Rahmenzeile erscheinen im
+>   Parameterblock des XLSX-Blatts.
+
+**Umgesetzt mit E9a (#461):** je Zeile „**Kern gebaut #461**" mit den Spalten der Schritte 116 bis 118, die
+Rahmenzeile „**8 von 8**"; die Regel „Pflege" mit dem Satz, dass die neuen Größen bis E9b keine Eingabestelle haben;
+„Ausweis im Bericht" mit dem Vermerk „Umgesetzt #455 und #461" (Nachweiszeile, Parameterblock, Annahmentafel); neu
+der Block „**Regeln des Kerns**" — keine Vorgaben, Zeitraum je Szenario, Mengenfaktor, Trägerpreis-Ersatz,
+Erlössätze, Rollenmodell, Nachweis —, je Regel mit ihrer Lesestelle und der Frage aus E9a.
+
+*§ 7, die Sätze zur laufenden Etappe (Z. 2742–2748):*
+
+> **E9** (V‑E, die Szenarioabdeckung nach § 2.11.5) läuft in zwei Wellen: **E9a** mit den Schemaschritten 116 (B,
+> Betrachtungszeitraum und Mengenfaktor je Szenario), 117 (C, Trägerpreise best/worst) und 118 (D, Erlössätze
+> best/worst) und dem Kern, der die Paare liest (voraussichtlich #461), danach **E9b** mit dem ±-Knopf an den neuen
+> Orten, mit ihr entfällt der Hinweistext (§ 2.11.7; voraussichtlich #462); ohne Degradation (A5), rechenwirksam je
+> Pflege. Offen
+> sind die acht Fragen aus E7c3 (→ Register R‑E7c3) und die zwei aus E8c (→ Register R‑E8c); die sechs aus E8b sind
+> entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b).
+
+**Umgesetzt mit E9a (#461):** E9 Teil a ist gebaut; als Nächstes kommt E9b (voraussichtlich #462) mit dem ±-Knopf an
+den drei neuen Orten und den Zeilen 8 und 9 der Szenariotafel, mit ihr entfällt der Hinweistext zugunsten des
+Ausweises „n von m Parametern szenariert"; offen sind dazu die sieben Fragen aus E9a.
+
+### 8.20 Berichtigungen im gültigen Stand (#461)
+
+Die Stellen, die mit E9a veraltet sind; „vorher" ist der Wortlaut vor #461 (Stand `62613292`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Wortlaut in § 8.19 | Codestand `62613292`, Zielversion 118, „90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a)"; 115 unter den fremden Schritten (Zapfprofil Z3, #453); 116 bis 118 unter den Schritten dieses Feldes |
+| § 2.11.2 | V‑G5 ohne Stand; Wortlaut in § 8.19 | „Stand: teilweise gebaut #461 (V‑E Teil a, Kern)" |
+| § 2.11.4 | V‑E: Wortlaut in § 8.19; Fußnote „… und E8 (#454, #455; die Nachbesserung E8c #460)" | V‑E mit Teil a gebaut #461; Fußnote „…, E8 (#454, #455; die Nachbesserung E8c #460) und E9 Teil a (#461)" |
+| § 2.11.5 | Spalte „Stand" und die Regeln „Pflege" und „Ausweis im Bericht": Wortlaut in § 8.19 | „Kern gebaut #461" mit den Spalten je Zeile, „8 von 8"; „Pflege" mit dem Satz zu E9b; „Ausweis im Bericht" mit dem Umgesetzt-Vermerk; neuer Block „Regeln des Kerns" |
+| § 2.11.7 | endete mit dem Absatz zu A14 („… und in Wort- und Tabellenbericht.") | dazu der Absatz „Bis E9b (Stand #461)": der Hinweistext bleibt bis E9b und stimmt nur noch ohne Pflege der neuen Größen; an seiner Stelle kommt der Ausweis „n von m" |
+| § 6.1 | Kurztafel bis E8c (#460) | Zeile „E9a Szenarioabdeckung, Teil a" (#461) mit den Schemaschritten 116 bis 118, ihren Tabellen und Spalten |
+| § 6.2 | endete mit „… und `BetriebskostenStartjahrGliederungTests` (12, die Probe mit den Positionen des ersten Jahres)." | dazu `SzenarioParameterTests` (39) und der Satz „E9a bewegt keinen Anker" |
+| § 7 und Anhang | § 7: Wortlaut in § 8.19, dazu die Aufzählung „… E8 Teil a (#454) und E8 Teil b (#455)"; Kürzeltafel „V-D = **#455**" und „V-E = **E9**", Mockup-Anhang bis „U12 und U43 erledigt #455"; Etappenzeile „E9 … E12 — E9 läuft: E9a mit den Schritten 116 bis 118 (voraussichtlich #461), dann E9b (voraussichtlich #462) …" | § 7 mit E9 Teil a (#461) gebaut, als Nächstes E9b, offen dazu die sieben Fragen aus E9a; Kürzeltafel „V-E Teil a = **#461**", neue Zeile = #461, „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeilen „E9 Teil a — V‑E im Kern" = #461 (Merge `62613292`) und „E9 Teil b … E12 — nächste Etappe: E9b" |
