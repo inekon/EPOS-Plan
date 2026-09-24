@@ -5,7 +5,7 @@ in Kapitel 7 und der Nachtrag N13 im
 [Umsetzungskonzept](../../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md); Abschnitt 11
 der [Übergabe](../../../aktuell/Zapfprofilgenerator/2026-09-23_Uebergabe_Zapfprofilgenerator.md);
 Vorstufe im Protokoll [Z3](2026-09-24_Z3_Stochastik.md). Zweig `z4` von `b7572d42`,
-48 eigene Commits bis `8cddb04a`; Merges von `origin` (`48d8836d` in `d083d9fc`, `4a9d7449`
+48 eigene Commits bis `8cddb04a`, Papiere `101164f8` (Push), Kern-Lauf 36026628108 rot: sieben Fälle der Katalogimport-Tests nur auf Linux, weil der Testhelfer Zeilenenden mit festem CRLF mutierte; behoben mit `85da8fa7` (Testhelfer normalisiert auf CRLF); Merges von `origin` (`48d8836d` in `d083d9fc`, `4a9d7449`
 in `abae7685`, `3ff9840b` in `5ca34e44`). Alle Gates im Worktree, ohne CI-Lauf bis zum Push.
 
 ## Auftrag
