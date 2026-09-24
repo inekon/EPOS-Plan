@@ -145,7 +145,8 @@
                           Filterstand="@Filterstand" Texte="@Texte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
                           ZeileIstWahl="true" Kaestchen="true"
-                          Gewaehlte="@_auswahl.Gewaehlte" GewaehlteChanged="BeiKaestchen" />
+                          Gewaehlte="@_auswahl.Gewaehlte" GewaehlteChanged="BeiKaestchen"
+                          Zeigeanlass="@_auswahl.Uebernahmen" />
         </Liste>
 
         <Auswahl>
@@ -1484,10 +1485,12 @@
                 _importOffen = false;
 
                 // V14: die neue Region steht gewaehlt, die Kaestchen fallen - die
-                // naechste Handlung gilt ihr.
-                _auswahl.Aufheben();
-                _vergleichszeilen = null;
+                // naechste Handlung gilt ihr. Derselbe Weg wie jede Uebernahme
+                // (Zeilenauswahl.Uebernommen): Die Liste rollt die neue Fokuszeile
+                // ins Bild (Zeigeanlass).
                 _gewaehlt = erg.Bezeichner ?? "";
+                _auswahl.Uebernommen(new[] { _gewaehlt });
+                _vergleichszeilen = null;
                 await RegionenLaden();
 
                 _status = erg.Meldung.Length > 0

@@ -1532,6 +1532,51 @@ public class KlimadatenDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Nach dem Einlesen rollt die Liste zur neuen Region</b> — derselbe Weg wie jede
+    /// Übernahme (<c>Zeilenauswahl.Uebernommen</c> → <c>Zeigeanlass</c>): die Katalogliste
+    /// ruft <c>zeileZeigen</c> mit der Stelle der neuen Region. Das Öffnen rollt nicht.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Einlesen_rollt_die_Liste_zur_neuen_Region()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var liste = new List<Katalogfilterzeile>(Regionen());
+        var cut = Zeige(regionen: liste,
+            importieren: (_, _) =>
+            {
+                liste.Add(Zeile(99, "Lyon", "PVGIS-Testreferenzjahr (weltweit)", "Lyon, Frankreich",
+                                4.83, 45.76, "2026-09-23", false));
+                return Task.FromResult(new KlimaImportErgebnis
+                {
+                    Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = ""
+                });
+            });
+        cut.WaitForAssertion(() => Assert.Contains(modul.Invocations, i => i.Identifier == "anmelden"),
+                             TimeSpan.FromSeconds(10));
+
+        ImportOeffnen(cut);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        Einlesen(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.Equal("Lyon", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+        int stelle = cut.FindAll(".epos-katalogliste tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Lyon", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+        }, TimeSpan.FromSeconds(10));
+    }
+
+    /// <summary>
     /// <b>Löschen mehrerer Regionen</b> (AD-Q9): Die Rückfrage nennt die gelöschten und
     /// die, die als Auslieferungssatz stehen bleiben; die Statuszeile nennt beide Zahlen.
     /// </summary>
