@@ -1,4 +1,4 @@
-﻿# Merge 2 `origin/ios_migration` → `ios_migration` (03.09.2026, nachmittags)
+# Merge 2 `origin/ios_migration` → `ios_migration` (03.09.2026, nachmittags)
 
 Zweite Zusammenführung desselben Strangs. Merge 1 hatte den **Umzug** nach `EPOS.Kern` /
 `EPOS.UI` geholt; Merge 2 holt, was seither dazukam: **38 Remote-Commits** — iU9 (Blazor-

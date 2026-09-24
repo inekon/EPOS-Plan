@@ -1,4 +1,4 @@
-﻿# iU9 — Welle 13: Katalog-Importe VDI 3805, Wärmebedarf-Ganglinien, CEC/PAN
+# iU9 — Welle 13: Katalog-Importe VDI 3805, Wärmebedarf-Ganglinien, CEC/PAN
 
 **Stand 04.09.2026.** Vermessung: `iU9_W13_Vermessung.md` (1 815 Zeilen, Stand
 `81a04ec`) mit den Befunden W13‑B1 … W13‑B55. Basis dieser Welle: `08c489a`

@@ -1,4 +1,4 @@
-﻿# Merge 4 `origin/ios_migration` → `ios_migration` (03.09.2026, früher Nachmittag)
+# Merge 4 `origin/ios_migration` → `ios_migration` (03.09.2026, früher Nachmittag)
 
 Vierte Zusammenführung desselben Strangs am selben Tag. Merge 1 holte den **Umzug** nach
 `EPOS.Kern` / `EPOS.UI`, Merge 2 iU9/iU10 und das SQL-Dialekt-Audit, Merge 3 die **Welle 1**

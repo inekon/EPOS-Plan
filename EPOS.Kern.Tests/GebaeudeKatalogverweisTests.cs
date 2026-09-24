@@ -424,6 +424,116 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  7 - Neuschreiben der Gebäudeliste: zuerst die Id, dann der Name
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Weg der Startseite</b> (<c>Z_ProjGebCtrl.LiesProjekt</c> →
+        /// <c>Del_Projekt_ZuordungGebäude</c> → <c>Add_Projekt_ZuordungGebäude</c>): Die Liste
+        /// trägt den Katalogverweis, und nach einer Umbenennung des Katalogsatzes entsteht die
+        /// neue Kopie aus DEMSELBEN Satz — mit dessen neuem Namen und den Zuordnungswerten der
+        /// Zeile.
+        /// </summary>
+        [Fact]
+        public void Neuschreiben_nach_der_Umbenennung_findet_den_Satz_ueber_die_Id()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            Z_ProjGebModel zeile = Assert.Single(liste);
+            Assert.Equal(STAMM_EFH, zeile.ID_Gebaeude_Stamm);
+            double flaeche = zeile.Wohnflaeche;
+
+            const string NEU = NAME_EFH + " (umbenannt)";
+            Sql("UPDATE Tab_Gebaeude_STAMM SET Bezeichner = ? WHERE ID = ?", NEU, STAMM_EFH);
+
+            var wizard = new WizardCtrl();
+            Assert.True(wizard.Del_Projekt_ZuordungGebäude(PROJEKT));
+            Assert.True(wizard.Add_Projekt_ZuordungGebäude(PROJEKT, liste));
+
+            Z_ProjGebModel neu = Assert.Single(Z_ProjGebCtrl.LiesProjekt(PROJEKT));
+            Assert.Equal(NEU, neu.Gebaeudename);
+            Assert.Equal(STAMM_EFH, neu.ID_Gebaeude_Stamm);
+            Assert.Equal(flaeche, neu.Wohnflaeche);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", PROJEKT));
+        }
+
+        /// <summary>
+        /// <b>Altbestand ohne Verweis geht über den Namen</b> — und bekommt dabei den Verweis
+        /// (die neue Kopie entsteht über <c>CopyFromStamm</c>). Ohne Verweis und nach einer
+        /// Umbenennung findet der Rückfall nichts: Das Neuschreiben meldet <c>false</c>, wie
+        /// vor dem Verweis.
+        /// </summary>
+        [Fact]
+        public void Neuschreiben_ohne_Verweis_faellt_auf_den_Namen_zurueck()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = NULL WHERE ID_Projekt = ?", PROJEKT);
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            Assert.Null(Assert.Single(liste).ID_Gebaeude_Stamm);
+
+            var wizard = new WizardCtrl();
+            Assert.True(wizard.Del_Projekt_ZuordungGebäude(PROJEKT));
+            Assert.True(wizard.Add_Projekt_ZuordungGebäude(PROJEKT, liste));
+            Z_ProjGebModel neu = Assert.Single(Z_ProjGebCtrl.LiesProjekt(PROJEKT));
+            Assert.Equal(NAME_EFH, neu.Gebaeudename);
+            Assert.Equal(STAMM_EFH, neu.ID_Gebaeude_Stamm);
+
+            // Ohne Verweis und umbenannt: kein Treffer, keine Kopie.
+            liste[0].ID_Gebaeude_Stamm = null;
+            Sql("UPDATE Tab_Gebaeude_STAMM SET Bezeichner = ? WHERE ID = ?", NAME_EFH + " (weg)", STAMM_EFH);
+            Assert.True(wizard.Del_Projekt_ZuordungGebäude(PROJEKT));
+            Assert.False(wizard.Add_Projekt_ZuordungGebäude(PROJEKT, liste));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", PROJEKT));
+        }
+
+        /// <summary>
+        /// <b>Ein Verweis auf einen Satz, den es nicht mehr gibt</b>, fällt ebenfalls auf den
+        /// Namen zurück — die Id allein entscheidet nicht über einen Fehlschlag.
+        /// </summary>
+        [Fact]
+        public void Ein_Verweis_ins_Leere_faellt_auf_den_Namen_zurueck()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int idZ = Assert.Single(Z_ProjGebCtrl.LiesProjekt(PROJEKT)).ID_Z;
+            int neu = new GebaeudeStammCtrl().CopyFromStamm(987654, NAME_GMH, PROJEKT, idZ);
+            Assert.True(neu > 0, "Kopie ueber den Namen fehlgeschlagen.");
+            Assert.Equal((long)STAMM_GMH, Zahl("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", neu));
+            Assert.Equal(NAME_GMH, Convert.ToString(Wert("SELECT Gebaeudename FROM Tab_Gebaeude WHERE ID = ?", neu)));
+        }
+
+        /// <summary>
+        /// <b>Die Hülle führt den Verweis durch</b> (<c>GebaeudeHuelle</c>, Weg von Assistent
+        /// und Startseite): Die Projektzeile trägt ihn aus der Kopie, eine übernommene
+        /// Katalogzeile aus dem Satz, und die Rückabbildung ins Modell gibt ihn weiter.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_fuehrt_den_Verweis_von_der_Zeile_ins_Modell()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, PROJEKTNAME, modelle, false);
+
+            var zeilen = (List<GebaeudeProjektZeile>)gaben["Zeilen"];
+            Assert.Equal(STAMM_EFH, Assert.Single(zeilen).IdKatalog);
+
+            var stammSatz = (Func<string, GebaeudeProjektZeile>)gaben["StammSatz"];
+            GebaeudeProjektZeile aufgenommen = stammSatz(NAME_GMH);
+            Assert.Equal(STAMM_GMH, aufgenommen.IdKatalog);
+
+            Assert.Equal(STAMM_GMH, GebaeudeHuelle.NachModell(aufgenommen, PROJEKT).ID_Gebaeude_Stamm);
+            Assert.Equal(STAMM_EFH, GebaeudeHuelle.NachModell(zeilen[0], PROJEKT).ID_Gebaeude_Stamm);
+            Assert.Null(GebaeudeHuelle.AusModell(new Z_ProjGebModel()).IdKatalog);
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

@@ -1,4 +1,4 @@
-﻿# iU9 Welle 14c — Gesetze, Klimadaten, Einstellungen, Dubletten: Portprotokoll
+# iU9 Welle 14c — Gesetze, Klimadaten, Einstellungen, Dubletten: Portprotokoll
 
 **Fünf WinForms-Masken → fünf Razor-Komponenten in vier Fenstern und vier Hüllen**, jede
 WinForms-Fassung im selben Commit gelöscht (Regel M1). Stand 04.09.2026, Basis `4e77221`

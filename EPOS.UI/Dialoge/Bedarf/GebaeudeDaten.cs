@@ -21,6 +21,13 @@ public sealed class GebaeudeProjektZeile
     /// <summary>Der Schlüssel des Projektgebäudes (<c>Tab_Gebaeude.ID_ProjektGebaeude</c>).</summary>
     public int IdGebaeude { get; set; }
 
+    /// <summary>
+    /// Der Katalogsatz (<c>Tab_Gebaeude_STAMM.ID</c>), aus dem die Projektkopie stammt bzw.
+    /// beim Speichern entsteht; <c>null</c> = kein Verweis (Altbestand). Das Neuschreiben
+    /// der Liste sucht den Satz darüber, der Name ist nur der Rückfall.
+    /// </summary>
+    public int? IdKatalog { get; set; }
+
     /// <summary>Der Gebäudename.</summary>
     public string Name { get; set; } = "";
 

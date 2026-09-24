@@ -627,6 +627,123 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  P14 — Der Katalogverweis der Wärmepumpe reist nicht (Schritt 80)
+        // =============================================================================
+
+        /// <summary>
+        /// <b><c>Tab_WP.ID_Stamm</c> reist nicht über die Paketgrenze</b> — wie der
+        /// Gebäudeverweis: Das Paket führt den Wärmepumpenkatalog nicht unter
+        /// <c>fill/</c>, der Import setzt den Verweis nicht unter der Original-Id, sondern
+        /// trägt ihn am Ziel über den Bezeichner nach (genau ein Treffer, sonst NULL), und
+        /// der Katalog wächst dabei nicht.
+        ///
+        /// <para>(a) Das Ziel führt die Wärmepumpe unter einer ANDEREN Id, und unter der
+        /// Original-Id steht ein fremder Satz → Verweis auf den Satz gleichen Namens.
+        /// (b) Das Ziel kennt den Namen nicht → NULL. (c) Ein Altpaket, das den Katalog noch
+        /// unter <c>fill/</c> führt, legt keinen Katalogsatz an.</para>
+        /// </summary>
+        [Fact]
+        public void P14_Der_Waermepumpenverweis_wird_am_Ziel_ueber_den_Namen_gefunden()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            const string QUELLE = "Laurentiuskirche";   // Projekt 1007, eine Wärmepumpe
+            int quelle = Id(QUELLE);
+            Assert.True(quelle > 0);
+            DataTable wp = DataRepository.GetDataTable(
+                "SELECT Bezeichner, ID_Stamm FROM Tab_WP WHERE ID_Projekt = ?", new DbParam("@p", quelle));
+            Assert.Equal(1, wp.Rows.Count);
+            string name = Convert.ToString(wp.Rows[0]["Bezeichner"]);
+            long altStamm = Convert.ToInt64(wp.Rows[0]["ID_Stamm"]);
+
+            string paket = ordner.Datei("wp.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(QUELLE, paket));
+            Dictionary<string, byte[]> eintraege = Eintraege(paket);
+            Assert.DoesNotContain("fill/Tab_WP_STAMM.json", eintraege.Keys);
+            Assert.Contains("data/Tab_WP.json", eintraege.Keys);
+
+            // (a) Unter der Original-Id steht am Ziel ein Satz anderen Namens; ein neuer
+            //     Satz traegt den Namen.
+            Sql("UPDATE Tab_WP_STAMM SET Bezeichner = ? WHERE ID = ?", name + " (fremd)", altStamm);
+            Sql("INSERT INTO Tab_WP_STAMM (Bezeichner) VALUES (?)", name);
+            long neuerStamm = Zahl("SELECT ID FROM Tab_WP_STAMM WHERE Bezeichner = ?", name);
+            Assert.NotEqual(altStamm, neuerStamm);
+            long katalog = Zahl("SELECT COUNT(*) FROM Tab_WP_STAMM");
+
+            int a = io.Importieren(paket, "WP-Verweis P14a", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fa);
+            Assert.True(a > 0, "Import fehlgeschlagen: " + fa);
+            Assert.Equal(neuerStamm, Zahl("SELECT ID_Stamm FROM Tab_WP WHERE ID_Projekt = ?", a));
+            Assert.Equal(katalog, Zahl("SELECT COUNT(*) FROM Tab_WP_STAMM"));
+
+            // (b) Den Namen kennt das Ziel nicht: kein Verweis, kein neuer Katalogsatz.
+            Sql("UPDATE Tab_WP_STAMM SET Bezeichner = ? WHERE ID = ?", name + " (weg)", neuerStamm);
+            int b = io.Importieren(paket, "WP-Verweis P14b", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fb);
+            Assert.True(b > 0, "Import fehlgeschlagen: " + fb);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_WP WHERE ID_Projekt = ?", b));
+            Assert.Equal(-1L, Zahl("SELECT ID_Stamm FROM Tab_WP WHERE ID_Projekt = ?", b));   // NULL
+            Assert.Equal(katalog, Zahl("SELECT COUNT(*) FROM Tab_WP_STAMM"));
+
+            // (c) Ein Altpaket mit dem Katalog unter fill/ legt keinen Satz an.
+            const long ALT_ID = 987654;
+            string alt = ordner.Datei("wp-alt.wpx");
+            MitWpFuellung(paket, alt, ALT_ID, name);
+            int c = io.Importieren(alt, "WP-Verweis P14c", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fc);
+            Assert.True(c > 0, "Import fehlgeschlagen: " + fc);
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_WP_STAMM WHERE ID = ?", ALT_ID));
+            Assert.Equal(katalog, Zahl("SELECT COUNT(*) FROM Tab_WP_STAMM"));
+        }
+
+        /// <summary>Schreibt das Paket neu und legt ihm — wie ein vor der Regel exportiertes
+        /// Paket — eine Katalogzeile <c>Tab_WP_STAMM</c> unter <c>fill/</c> bei.</summary>
+        private static void MitWpFuellung(string quelle, string ziel, long id, string bezeichner)
+        {
+            Dictionary<string, byte[]> eintraege = Eintraege(quelle);
+            JsonObject wurzel = JsonNode.Parse(Text(eintraege["manifest.json"])).AsObject();
+            JsonArray fill = wurzel["fill"] as JsonArray;
+            if (fill == null) { fill = new JsonArray(); wurzel["fill"] = fill; }
+            fill.Add(new JsonObject
+            {
+                ["name"] = "Tab_WP_STAMM",
+                ["pk"] = "ID",
+                ["naturalKey"] = new JsonArray("ID")
+            });
+            string manifest = wurzel.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            string zeilen = new JsonArray(new JsonObject
+            {
+                ["ID"] = id,
+                ["Bezeichner"] = bezeichner + " (Altpaket)"
+            }).ToJsonString();
+
+            using var stream = new FileStream(ziel, FileMode.Create);
+            using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
+            foreach (var kvp in eintraege)
+            {
+                using var s = zip.CreateEntry(kvp.Key, CompressionLevel.Optimal).Open();
+                byte[] roh = kvp.Key == "manifest.json" ? new UTF8Encoding(false).GetBytes(manifest) : kvp.Value;
+                s.Write(roh, 0, roh.Length);
+            }
+            using (var f = zip.CreateEntry("fill/Tab_WP_STAMM.json", CompressionLevel.Optimal).Open())
+            {
+                byte[] roh = new UTF8Encoding(false).GetBytes(zeilen);
+                f.Write(roh, 0, roh.Length);
+            }
+        }
+
+        private static void Sql(string sql, params object[] werte) =>
+            Assert.True(DataRepository.ExecuteSQL(sql, werte.Select((w, i) => new DbParam("@p" + i, w)).ToArray()),
+                        "Fehlgeschlagen: " + sql);
+
+        /// <summary>Ein Skalar als Zahl; NULL oder keine Zeile ergibt −1.</summary>
+        private static long Zahl(string sql, params object[] werte)
+        {
+            object o = DataRepository.ExecuteScalar(sql, werte.Select((w, i) => new DbParam("@p" + i, w)).ToArray());
+            return (o == null || o == DBNull.Value) ? -1 : Convert.ToInt64(o);
+        }
+
+        // =============================================================================
         //  Handwerkszeug
         // =============================================================================
 

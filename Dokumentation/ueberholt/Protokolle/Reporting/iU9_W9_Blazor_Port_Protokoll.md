@@ -1,4 +1,4 @@
-﻿# iU9 Welle 9 — Bedarfsmasken vom Startbild — Portprotokoll
+# iU9 Welle 9 — Bedarfsmasken vom Startbild — Portprotokoll
 
 > Umsetzung 03.09.2026 auf `ios_migration`, Basis `8995d3e` (nach dem Merge der
 > Welle 8). Vorbild in Aufbau und Tiefe: das Protokoll der Welle 8 im selben

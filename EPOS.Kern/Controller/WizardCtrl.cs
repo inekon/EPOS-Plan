@@ -2640,7 +2640,10 @@ namespace WindowsFormsApplication1
 
                 // 2) Gebaeude-Stammdatensatz in die Projekt-Tabelle Tab_Gebaeude kopieren
                 //    (setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude = zID).
-                if (ctrlStamm.CopyFromStamm(item.Gebaeudename, projektID, zID) <= 0) return false;
+                //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
+                //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
+                //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
+                if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return false;
             }
             return true;
         }

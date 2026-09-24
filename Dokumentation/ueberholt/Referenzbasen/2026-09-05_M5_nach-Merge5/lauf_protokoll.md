@@ -1,4 +1,4 @@
-﻿# Referenzlauf-Protokoll
+# Referenzlauf-Protokoll
 
 **Zeitpunkt:** 05.09.2026 21:02:46
 

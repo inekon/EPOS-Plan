@@ -1,4 +1,4 @@
-﻿# iU9 Welle 6 — Erzeuger-Eingabemasken I — Portprotokoll
+# iU9 Welle 6 — Erzeuger-Eingabemasken I — Portprotokoll
 
 > Umsetzung 03.09.2026 auf `ios_migration`, Basis `740c73e` (nach W4), zusammengeführt
 > mit Welle 5 (`ddaea70`). Vorbild in Aufbau und Tiefe: das Protokoll der Welle 4 im

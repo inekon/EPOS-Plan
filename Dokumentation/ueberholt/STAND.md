@@ -1,4 +1,4 @@
-﻿# STAND.md — datierte Stände des Anwendungsprojekts
+# STAND.md — datierte Stände des Anwendungsprojekts
 
 Hier steht, was altert: Schemanummern, Etappen, Zahlen, Basen. Wer etwas hieraus verwendet, prüft
 das Datum. Die Regeln stehen in [`CLAUDE.md`](../../WindowsFormsApplication1/CLAUDE.md); diese Datei wird nur bei Bedarf gelesen.

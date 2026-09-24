@@ -1,4 +1,4 @@
-﻿# iU9 Welle 8 — Bedarfsblätter (W8a + W8b) — Portprotokoll
+# iU9 Welle 8 — Bedarfsblätter (W8a + W8b) — Portprotokoll
 
 > Umsetzung 03.09.2026 auf `ios_migration`, Basis `e5114e1` (nach dem Merge der
 > Welle 7). Vorbild in Aufbau und Tiefe: das Protokoll der Welle 7 im selben

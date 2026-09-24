@@ -1,4 +1,4 @@
-﻿# iU9 Welle 16a — Der Assistent: Wizard_Stromlastgang, Wizard_Komponenten, WizardParent, ProjektAuswahl — Portprotokoll
+# iU9 Welle 16a — Der Assistent: Wizard_Stromlastgang, Wizard_Komponenten, WizardParent, ProjektAuswahl — Portprotokoll
 
 > Teilwelle **W16a** des Pakets iU9 (Welle 16 = der Rahmen K5 in drei Teilwellen).
 > Grundlage: `iU9_W16_Vermessung.md` (1 907 Zeilen, Stand `4101740`) und die

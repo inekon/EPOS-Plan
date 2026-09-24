@@ -1,4 +1,4 @@
-﻿# iU9 Welle 10b — Simulationskonfiguration II: die Seite mit Karten und Schema — Portprotokoll
+# iU9 Welle 10b — Simulationskonfiguration II: die Seite mit Karten und Schema — Portprotokoll
 
 > Umsetzung 03./04.09.2026 im Arbeitsbaum `agent-ad9f1ddc5853ec526`, Basis
 > `427fd59` (nach dem Merge der Welle 10a). Vorbild in Aufbau und Tiefe: die
