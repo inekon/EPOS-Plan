@@ -96,6 +96,9 @@ namespace WindowsFormsApplication1
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
+            // Schritt 125 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
+            // ebenso vor der Transaktion gefragt; vor 125 bleibt die Zeile die des Schritts 107.
+            bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -789,12 +792,20 @@ namespace WindowsFormsApplication1
                     if (m.Gebaeude != null && m.Gebaeude.Count > 0 && gebaeudeTabelle)
                     {
                         int gId = NextId(v, TAB_GEB);
+                        // Schritt 125: die vier Spalten des Heizkreises nur, wo die Datenbank sie
+                        // traegt - ein Gebaeude ohne Kopplung schreibt dort NULL.
                         string sqlG = "INSERT INTO " + TAB_GEB + " (" +
                             "ID, ID_Ergebnis, ID_Gebaeude, Merkplatz, Gebaeudename, Rechenweg, " +
                             "Heizwaerme_Mwh, Spitze_Kw, SpitzeTagesmittel_Kw, Spitze95_Kw, " +
                             "Kuehlenergie_Mwh, Kuehlstunden_H, MittlereRaumtemperatur_C, " +
-                            "Ueberhitzungsstunden_H, Sommerlueftungsstunden_H, ObereRaumtemperatur_C) " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?)";
+                            "Ueberhitzungsstunden_H, Sommerlueftungsstunden_H, ObereRaumtemperatur_C" +
+                            (heizkreisSpalten
+                                ? ", " + ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART + ", " +
+                                  ErgebnisGebaeudeSchema.SPALTE_VORLAUF_MITTEL + ", " +
+                                  ErgebnisGebaeudeSchema.SPALTE_RUECKLAUF_MITTEL + ", " +
+                                  ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_BEGRENZT
+                                : "") + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") + ")";
                         foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
                         {
                             List<DbParam> p = new List<DbParam>();
@@ -814,6 +825,17 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@g8", DbParamTyp.Integer) { Wert = Oder(g.UeberhitzungsstundenH) });
                             p.Add(new DbParam("@g9", DbParamTyp.Integer) { Wert = Oder(g.SommerlueftungsstundenH) });
                             p.Add(new DbParam("@g10", DbParamTyp.Double) { Wert = Oder(g.ObereRaumtemperaturC) });
+                            if (heizkreisSpalten)
+                            {
+                                // Ohne Kopplung ALLE vier NULL - auch die Stunden, die ein
+                                // gekoppeltes Gebaeude mit 0 fuehren kann ("nicht gerechnet"
+                                // ist etwas anderes als "nie begrenzt").
+                                bool gekoppelt = g.IstGekoppelt;
+                                p.Add(new DbParam("@h1", DbParamTyp.VarWChar) { Wert = gekoppelt ? (object)g.UebergabeArt : DBNull.Value });
+                                p.Add(new DbParam("@h2", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.VorlaufMittelC) : DBNull.Value });
+                                p.Add(new DbParam("@h3", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.RuecklaufMittelC) : DBNull.Value });
+                                p.Add(new DbParam("@h4", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.UebergabeBegrenztStundenH) : DBNull.Value });
+                            }
                             v.Ausfuehren(sqlG, p.ToArray());
                         }
                     }
@@ -1235,6 +1257,12 @@ namespace WindowsFormsApplication1
                     g.UeberhitzungsstundenH = GanzOderNull(rg, "Ueberhitzungsstunden_H");
                     g.SommerlueftungsstundenH = GanzOderNull(rg, "Sommerlueftungsstunden_H");
                     g.ObereRaumtemperaturC = DN(rg, "ObereRaumtemperatur_C");
+                    // Schritt 125 (Anlagenkopplung AK1): NULL bleibt null - "nicht gekoppelt".
+                    string art = S(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART);
+                    g.UebergabeArt = art.Length > 0 ? art : null;
+                    g.VorlaufMittelC = DN(rg, ErgebnisGebaeudeSchema.SPALTE_VORLAUF_MITTEL);
+                    g.RuecklaufMittelC = DN(rg, ErgebnisGebaeudeSchema.SPALTE_RUECKLAUF_MITTEL);
+                    g.UebergabeBegrenztStundenH = DN(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_BEGRENZT);
                     m.Gebaeude.Add(g);
                 }
 

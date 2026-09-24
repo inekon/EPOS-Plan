@@ -1571,6 +1571,27 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt 125: der Heizkreis je Gebaeude im Ergebnis (Anlagenkopplung AK1
+            //      Welle 3, Muster E30). NACH 124, braucht 107. REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_125_ErgebnisHeizkreis bedient
+            //      (ErgebnisGebaeudeSchema.SpaltenHeizkreis): Uebergabe_Art, VorlaufMittel_C,
+            //      RuecklaufMittel_C, UebergabeBegrenzt_H an Tab_ErgebnisGebaeude, alle nullbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - NULL heisst "nicht gekoppelt gerechnet";
+            //      kein Referenzprojekt rechnet gekoppelt, und der Export liest die Tabelle nicht.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 125 - Heizkreis je Gebaeude im Ergebnis: " +
+                              (ErgebnisGebaeudeSchema.HeizkreisVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht125 = new List<string>();
+                angelegt += ErgebnisGebaeudeSchema.HeizkreisAlle(bericht125);
+                foreach (string zeile in bericht125)
+                    Console.WriteLine("Schritt 125 - " + zeile + ".");
+                Console.WriteLine("Schritt 125 - vollstaendig: " + ErgebnisGebaeudeSchema.HeizkreisVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

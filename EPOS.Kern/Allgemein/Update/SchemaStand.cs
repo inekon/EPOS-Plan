@@ -499,11 +499,18 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne
         /// Spalte, und kein Referenzprojekt steht auf dem Generator; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit dem HEIZKREIS JE GEBÄUDE (Schritt 125, Anlagenkopplung AK1 Welle 3; Konzept
+        /// Anlagenkopplung 8.3, 9.4, Muster E30) steht das Ziel auf <b>125</b>:
+        /// <c>Uebergabe_Art</c>, <c>VorlaufMittel_C</c>, <c>RuecklaufMittel_C</c> und
+        /// <c>UebergabeBegrenzt_H</c> an <c>Tab_ErgebnisGebaeude</c>
+        /// (<see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>), nullbar, NULL = nicht gekoppelt
+        /// gerechnet. <b>Reines DDL, ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und
+        /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 124;
+        public const int Zielversion = 125;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

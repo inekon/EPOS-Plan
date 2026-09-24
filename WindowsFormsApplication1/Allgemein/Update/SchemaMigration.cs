@@ -4097,6 +4097,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;
 
+        /// <summary>
+        /// Schritt 125 — <b>der Heizkreis je Gebäude im Ergebnis</b> (Konzept Anlagenkopplung
+        /// 8.3 und 9.4, Muster E30; Stufe AK1 Welle 3). Er folgt auf
+        /// <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/> ohne Reihenfolgebedingung; er braucht
+        /// <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/>, dessen Tabelle er erweitert.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ErgebnisGebaeude</c>:
+        /// <c>Uebergabe_Art</c> (CHECK der drei Übergabearten), <c>VorlaufMittel_C</c>,
+        /// <c>RuecklaufMittel_C</c> und <c>UebergabeBegrenzt_H</c> (0 … 8 760) — NULL heißt „nicht
+        /// gekoppelt gerechnet". Die Definitionen stehen bei
+        /// <see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und der
+        /// Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich. <b>Wiederholbar:</b>
+        /// Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_125_ERGEBNIS_HEIZKREIS = 125;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5785,6 +5804,19 @@ namespace WindowsFormsApplication1
                         "truege keine Bezugsart. KEIN Rechenergebnis aendert sich - die Spalten stehen " +
                         "auf 'keine Angabe' bzw. Personen automatisch.",
                         Schritt_124_ZapfprofilLaufangaben),
+
+            // KONZEPT ANLAGENKOPPLUNG 8.3/9.4 (Stufe AK1 Welle 3, Muster E30) - der Heizkreis je
+            // Gebaeude: Uebergabeart, mittlerer Vor- und Ruecklauf, Stunden mit begrenzter
+            // Uebergabe an Tab_ErgebnisGebaeude. REIN DDL; die Quelle ist
+            // ErgebnisGebaeudeSchema.SpaltenHeizkreis. Er steht NACH 124 ohne
+            // Reihenfolgebedingung und braucht 107.
+            new Schritt(SCHRITT_125_ERGEBNIS_HEIZKREIS,
+                        "Tab_ErgebnisGebaeude: Heizkreis je Gebaeude (Uebergabeart, mittlerer Vor- und " +
+                        "Ruecklauf, Stunden mit begrenzter Uebergabe)",
+                        "Der Bericht faende die Kennzahlen des Heizkreises je Gebaeude nicht. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten bleiben leer, bis ein Lauf die " +
+                        "Uebergabe rechnet.",
+                        Schritt_125_ErgebnisHeizkreis),
         };
 
         /// <summary>
@@ -9398,6 +9430,42 @@ namespace WindowsFormsApplication1
                     "Fuellstand_Bezug an " + TwwSchema.TAB_TWW_PROJEKT + ", Bezugsart an " +
                     TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ". KEIN DML: Alles steht auf 'keine Angabe' " +
                     "bzw. Personen automatisch; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 125 - der Heizkreis je Gebaeude im Ergebnis (Anlagenkopplung AK1 Welle 3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 125 — Anlass und Wirkung stehen bei <see cref="SCHRITT_125_ERGEBNIS_HEIZKREIS"/>,
+        /// die Spalten bei <see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>. Die SQLite-Definition
+        /// steht dort fertig (STRICT-Typ samt CHECK); <b>nur <see cref="SqliteSpalteAnlegen"/></b>.
+        /// <b>Wiederholbar</b>, eine vorhandene Spalte wird übergangen. Fehlt die Tabelle (Schritt 107
+        /// ist nicht gelaufen), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_125_ErgebnisHeizkreis(Lauf l)
+        {
+            if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
+            {
+                l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " fehlt; Schritt 107 ist nicht gelaufen.";
+                l.Notiz("125: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+            {
+                if (SqliteSpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ErgebnisGebaeudeSchema.TAB, s.Key, s.Value)) return false;
+                angelegt++;
+            }
+
+            l.Notiz("125: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ErgebnisGebaeudeSchema.SpaltenHeizkreis.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) des Heizkreises an " + ErgebnisGebaeudeSchema.TAB + " angelegt - " +
+                    "Uebergabe_Art, VorlaufMittel_C, RuecklaufMittel_C, UebergabeBegrenzt_H, alle nullbar. " +
+                    "KEIN DML: NULL heisst 'nicht gekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

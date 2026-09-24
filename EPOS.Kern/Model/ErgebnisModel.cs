@@ -111,12 +111,21 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
         public double? ObereRaumtemperaturC;
 
-        // ---- Anlagenkopplung (AK1): je Gebäude schon hier, gespeichert noch nicht ----------
+        // ---- Anlagenkopplung (AK1): der Heizkreis je Gebäude (Schemaschritt 125) -----------
         //
         // Die drei Größen der Projektzeile (Schritt 123) je Gebäude — gebildet aus dem
-        // Heizkreis des Gebäudes. Ob sie auch nach Tab_ErgebnisGebaeude gehören (Muster E30),
-        // entscheidet die dritte Welle; bis dahin schreibt ErgebnisCtrl sie nicht. null ohne
-        // wirksame Kopplung.
+        // Heizkreis des Gebäudes — und die Übergabeart, mit der es gekoppelt gerechnet hat.
+        // ErgebnisCtrl legt sie nach Tab_ErgebnisGebaeude (Muster E30). null ohne wirksame
+        // Kopplung („nicht gekoppelt gerechnet").
+
+        /// <summary>
+        /// Die Übergabeart des gekoppelt gerechneten Gebäudes (<c>DbWerte.UEBERGABE_*</c>);
+        /// <c>null</c> = nicht gekoppelt — zugleich die Kennung der Kopplung in der Ergebniszeile.
+        /// </summary>
+        public string UebergabeArt;
+
+        /// <summary>Hat das Gebäude gekoppelt gerechnet (Anlagenkopplung AK1)?</summary>
+        public bool IstGekoppelt => !string.IsNullOrEmpty(UebergabeArt);
 
         /// <summary>Heizzeitgewichtetes Mittel des Vorlaufs [°C]; nur mit wirksamer Kopplung.</summary>
         public double? VorlaufMittelC;

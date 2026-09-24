@@ -102,19 +102,81 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            // Die Messlatte traegt die Tabelle des Schritts 107 und dahinter die vier Spalten des
+            // Schritts 125 (SQLite schreibt ein ADD COLUMN in den gespeicherten Text).
             string soll = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@n", ErgebnisGebaeudeSchema.TAB)));
-            Assert.Equal(ErgebnisGebaeudeSchema.SQL_CREATE.Replace("CREATE TABLE IF NOT EXISTS", "CREATE TABLE"), soll);
-            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= 107);
+            string kopf107 = ErgebnisGebaeudeSchema.SQL_CREATE.Replace("CREATE TABLE IF NOT EXISTS", "CREATE TABLE");
+            kopf107 = kopf107.Substring(0, kopf107.LastIndexOf("\n) STRICT", StringComparison.Ordinal));
+            Assert.StartsWith(kopf107, soll, StringComparison.Ordinal);
+            Assert.EndsWith(") STRICT", soll, StringComparison.Ordinal);
+            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= 125);
+            Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
+            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
-            // Vorzustand herstellen, Schritt fahren, zweimal.
+            // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 125, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);
             Assert.False(ErgebnisGebaeudeSchema.Vorhanden());
+            Assert.False(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
+            Assert.Equal(0, ErgebnisGebaeudeSchema.HeizkreisAlle(null));   // ohne Tabelle: nichts
             for (int lauf = 0; lauf < 2; lauf++)
                 foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value);
             Assert.True(ErgebnisGebaeudeSchema.Vorhanden());
             Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            Assert.False(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
+
+            var bericht = new List<string>();
+            Assert.Equal(4, ErgebnisGebaeudeSchema.HeizkreisAlle(bericht));
+            Assert.Equal(0, ErgebnisGebaeudeSchema.HeizkreisAlle(bericht));   // wiederholbar
+            Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
+            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            Assert.Contains(bericht, z => z.StartsWith("4 von 4", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Schritt 125 — der Heizkreis je Gebäude</b> (Anlagenkopplung AK1 Welle 3): vier
+        /// nullbare Spalten, die Prüfungen der Übergabeart und der Stunden, und NULL heißt „nicht
+        /// gekoppelt gerechnet" — eine Zeile ohne Kopplung bleibt, wie sie war.
+        /// </summary>
+        [Fact]
+        public void Schritt_125_haengt_den_Heizkreis_an_und_prueft_Art_und_Stunden()
+        {
+            using SqliteConnection c = Leer();
+            Anlegen(c);
+            Ausfuehren(c, "INSERT INTO Tab_Ergebnis (ID) VALUES (1)");
+            Ausfuehren(c, "INSERT INTO Tab_Gebaeude (ID) VALUES (7)");
+            Ausfuehren(c, "INSERT INTO Tab_ErgebnisGebaeude (ID, ID_Ergebnis, ID_Gebaeude, Merkplatz, Rechenweg, " +
+                          "Heizwaerme_Mwh, Spitze_Kw, SpitzeTagesmittel_Kw, Spitze95_Kw) VALUES (1, 1, 7, 0, 'VDI6007', 1.0, 2.0, 1.5, 1.0)");
+
+            foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+                Ausfuehren(c, ErgebnisGebaeudeSchema.SpalteAnlegen(s));
+            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, Spalten(c).Count);
+            Assert.EndsWith(") STRICT", (string)Skalar(c, "SELECT sql FROM sqlite_master WHERE name = 'Tab_ErgebnisGebaeude'"), StringComparison.Ordinal);
+
+            // Die vorhandene Zeile: alles NULL - nicht gekoppelt gerechnet.
+            foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+                Assert.Equal(DBNull.Value, Skalar(c, "SELECT \"" + s.Key + "\" FROM Tab_ErgebnisGebaeude"));
+
+            // Eine gekoppelte Zeile.
+            Ausfuehren(c, "UPDATE Tab_ErgebnisGebaeude SET Uebergabe_Art = 'RADIATOR', VorlaufMittel_C = 35.3, " +
+                          "RuecklaufMittel_C = 32.05, UebergabeBegrenzt_H = 210.9");
+            Assert.Equal(210.9, (double)Skalar(c, "SELECT UebergabeBegrenzt_H FROM Tab_ErgebnisGebaeude"));
+
+            foreach (string fremd in new[]
+            {
+                "UPDATE Tab_ErgebnisGebaeude SET Uebergabe_Art = 'IDEAL'",       // ideal ist „nicht gekoppelt" = NULL
+                "UPDATE Tab_ErgebnisGebaeude SET Uebergabe_Art = 'radiator'",
+                "UPDATE Tab_ErgebnisGebaeude SET UebergabeBegrenzt_H = 8760.5",
+                "UPDATE Tab_ErgebnisGebaeude SET UebergabeBegrenzt_H = -0.1",
+                "UPDATE Tab_ErgebnisGebaeude SET VorlaufMittel_C = 'warm'",
+            })
+                Assert.True(Wirft(c, fremd), fremd);
+
+            // Die Einheit steht im Namen jeder Zahlenspalte des Schritts (Einheitenregel 3).
+            foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+                if (s.Key != ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART)
+                    Assert.True(s.Key.EndsWith("_C", StringComparison.Ordinal) || s.Key.EndsWith("_H", StringComparison.Ordinal), s.Key);
         }
 
         // =================================================================
@@ -164,6 +226,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vdi.Ueberhitzungsstunden, Convert.ToInt32(r["Ueberhitzungsstunden_H"]));
                 Assert.Equal(vdi.StundenMitSommerlueftung, Convert.ToInt32(r["Sommerlueftungsstunden_H"]));
                 Assert.Equal(vdi.ThetaMax, (double)r["ObereRaumtemperatur_C"]);
+                // Schritt 125: ohne Kopplung tragen die vier Spalten des Heizkreises NULL.
+                Assert.Null(vdi.Heizkreis);
+                Assert.False(m.IstGekoppelt);
+                foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+                    Assert.Equal(DBNull.Value, r[s.Key]);
 
                 // Die Stundenspitze der Reihe ist die Spitze des Ergebnisträgers (beide W -> kW).
                 Nahe(vdi.SpitzeKw, m.SpitzeKw);
