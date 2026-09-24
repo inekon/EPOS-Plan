@@ -618,7 +618,8 @@ namespace WindowsFormsApplication1
             Mengengeruest.HINWEIS_BANDBREITE, Mengengeruest.HINWEIS_WOHNUNGSTABELLE, "MESSWERT_SPEICHERVERLUST",
             "MESSWERT_ABWEICHUNG", ZapfprofilRechner.HINWEIS_NETZVERLUST, ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS,
             ZapfprofilRechner.HINWEIS_STOCHASTISCH, ZapfprofilRechner.HINWEIS_ENERGIEPROBE, "ZIRKULATION_ZONE_OHNE_FLAECHE",
-            "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE", "ZIRKULATION_NICHT_IN_Z1", ZapfprofilCtrl.HINWEIS_EINSTELLUNG_UNGUELTIG
+            "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE", "ZIRKULATION_NICHT_IN_Z1", ZapfprofilCtrl.HINWEIS_EINSTELLUNG_UNGUELTIG,
+            ZapfprofilRechner.HINWEIS_ANZEIGETEMPERATUR, ZapfprofilRechner.HINWEIS_STUNDENSCHWELLE
         };
 
         /// <summary>Ein Hinweis der Bilanz als Eintrag der Warnliste: Titel aus <c>ZPG_WARN_…</c>, sonst „Hinweis"; Satz des Kerns; Stufe nach der Warnlogik.</summary>

@@ -433,7 +433,7 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            Assert.Equal(16, schluessel.Length);
+            Assert.Equal(18, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
         }
 

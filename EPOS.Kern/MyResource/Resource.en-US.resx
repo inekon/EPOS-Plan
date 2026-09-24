@@ -28587,4 +28587,16 @@ Do you want to allow this?</value>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Circulation large compared with draw-off</value>
   </data>
+  <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of zone “{0}” ({2:0.#} °C) — the zone shows no litres.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>The threshold for counting hours ({0} kW) is negative or not a finite number — hours above the threshold are not counted.</value>
+  </data>
+  <data name="ZPG_WARN_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Display temperature too low</value>
+  </data>
+  <data name="ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>Hour threshold invalid</value>
+  </data>
 </root>

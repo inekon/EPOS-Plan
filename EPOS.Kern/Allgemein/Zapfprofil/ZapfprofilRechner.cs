@@ -256,7 +256,7 @@ namespace WindowsFormsApplication1
                     JahresbedarfZapfungKwh = a.Zapfreihe.JahressummeKwh,
                     JahresverlustZirkulationKwh = zirk.JahressummeKwh,
                     SpezifischKwhJeEinheitJahr = a.Zapfreihe.JahressummeKwh / a.Menge.Bezugsmenge,
-                    ZapfungLiterJeTag = Liter(a.Zapfreihe.JahressummeKwh, a.Temperaturen, e.AnzeigetemperaturC, a.Name),
+                    ZapfungLiterJeTag = Liter(a.Zapfreihe.JahressummeKwh, a.Temperaturen, e.AnzeigetemperaturC, a.Name, hinweise),
                     Temperaturfaktor = a.Menge.Temperaturfaktor,
                     Kalibrierfaktor = a.Kalibrierfaktor,
                     Kalender = Array.AsReadOnly(a.Kalender),
@@ -270,6 +270,7 @@ namespace WindowsFormsApplication1
 
             Bilanzreihe zapfung = Bilanzreihe.Summe(zapfreihen);
             Bilanzreihe zirkulation = Bilanzreihe.Summe(zirkreihen);
+            double? schwelle = Schwelle(e.SchwelleKw, hinweise);
 
             // --- 5. ZU5: Netzverluste und Zirkulation zugleich (Konzept 9, Risiko 8) ---------
             // Die Netzverlustverteilung bleibt unberührt; der Hinweis nennt nur, dass beide
@@ -299,8 +300,8 @@ namespace WindowsFormsApplication1
                 JeZone = jeZone.AsReadOnly(),
                 Zirkulationsansatz = ansatz,
                 Laufzeitfenster = fenster != null ? Array.AsReadOnly(fenster) : null,
-                Kennzahlen = Kennzahlen(zapfung, zirkulation, jeZone, e.SchwelleKw),
-                Dauerlinie = Zapfauswertung.Dauerlinie(zapfung, zirkulation, e.SchwelleKw),
+                Kennzahlen = Kennzahlen(zapfung, zirkulation, jeZone, schwelle),
+                Dauerlinie = Zapfauswertung.Dauerlinie(zapfung, zirkulation, schwelle),
                 SchaetzhilfeZirkulation = zirkulationshilfe,
                 Herkunft = prot.Abschrift(),
                 Hinweise = hinweise.AsReadOnly(),
@@ -362,6 +363,12 @@ namespace WindowsFormsApplication1
         /// Konzept 9, Risiko 8) — ein Eintrag der Warnliste des Zapfprofils (N9 (g)).
         /// </summary>
         internal const string HINWEIS_NETZVERLUST = "NETZVERLUST_UND_ZIRKULATION";
+
+        /// <summary>Kennung des Hinweises: θ_Anzeige liegt nicht über dem Kaltwassermittel einer Zone — keine Literanzeige.</summary>
+        internal const string HINWEIS_ANZEIGETEMPERATUR = "ANZEIGETEMPERATUR_UNTER_KALTWASSER";
+
+        /// <summary>Kennung des Hinweises: Die Schwelle der Stundenzählung ist negativ oder nicht endlich — keine Zählung.</summary>
+        internal const string HINWEIS_STUNDENSCHWELLE = "STUNDENSCHWELLE_UNGUELTIG";
 
         /// <summary>
         /// Kennung des Hinweises: Die Zirkulation verliert im Jahr mehr als das Verhältnis des Katalogs
@@ -463,12 +470,36 @@ namespace WindowsFormsApplication1
         // Hilfen
         // =================================================================================
 
-        private static double? Liter(double jahresKwh, Zonentemperaturen t, double? anzeigeC, string zone)
+        /// <summary>
+        /// Die Literanzeige einer Zone bei θ_Anzeige (4.6); ohne θ_Anzeige keine. Liegt θ_Anzeige nicht
+        /// über dem Kaltwassermittel der Zone, ist die Umrechnung nicht definiert: benannt abgewiesen
+        /// (Hinweis <see cref="HINWEIS_ANZEIGETEMPERATUR"/>), die Zone zeigt keine Liter.
+        /// </summary>
+        private static double? Liter(double jahresKwh, Zonentemperaturen t, double? anzeigeC, string zone,
+                                     ICollection<ZapfHinweis> hinweise)
         {
             if (!anzeigeC.HasValue) return null;
             double delta = anzeigeC.Value - t.KaltwasserMittelC;
-            if (!(delta > 0)) return null;
+            if (!(delta > 0))
+            {
+                hinweise.Add(new ZapfHinweis(zone, HINWEIS_ANZEIGETEMPERATUR,
+                    ZapfSatz.Neu("HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER", zone, anzeigeC.Value, t.KaltwasserMittelC)));
+                return null;
+            }
             return Mengengeruest.VolumenL(jahresKwh / Zapfkalender.TAGE, delta, zone);
+        }
+
+        /// <summary>
+        /// Die Schwelle der Stundenzählung, geprüft: eine negative oder nicht endliche Schwelle ist
+        /// benannt abgewiesen (Hinweis <see cref="HINWEIS_STUNDENSCHWELLE"/>) und zählt nicht.
+        /// </summary>
+        private static double? Schwelle(double? schwelleKw, ICollection<ZapfHinweis> hinweise)
+        {
+            if (!schwelleKw.HasValue) return null;
+            double s = schwelleKw.Value;
+            if (!double.IsNaN(s) && !double.IsInfinity(s) && s >= 0) return s;
+            hinweise.Add(new ZapfHinweis("", HINWEIS_STUNDENSCHWELLE, ZapfSatz.Neu("HINWEIS_STUNDENSCHWELLE_UNGUELTIG", s)));
+            return null;
         }
 
         /// <summary>Die Ablehnung aus der benannten Ausnahme — samt Kennung und Wert (etwa der Nutzungsart).</summary>

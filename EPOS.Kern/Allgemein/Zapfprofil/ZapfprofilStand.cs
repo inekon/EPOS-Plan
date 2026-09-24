@@ -248,8 +248,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Laufangaben der Anzeige (N9 (h)): Temperatur der Literanzeige und Schwelle der
-        /// Stundenzählung — nicht gespeichert; <c>null</c> = die Einstellung bzw. die Vorgabe des
-        /// Katalogs (<c>ZapfprofilCtrl.Anzeige</c>).
+        /// Stundenzählung — nicht gespeichert; <c>null</c> = die Einstellung, sonst die Vorgabe des
+        /// Parametersatzes (<see cref="ZapfParameter.ANZEIGETEMPERATUR"/>,
+        /// <see cref="ZapfParameter.STUNDENSCHWELLE"/>; aufgelöst in <c>ZapfprofilCtrl.Eingang</c>).
         /// </summary>
         public ZapfAnzeige Anzeige { get; init; }
     }
@@ -265,7 +266,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die Laufangaben der Anzeige einer Bilanz (N9 (h), 4.0, 4.6): Temperatur der Literanzeige
     /// θ_Anzeige [°C] und Schwelle der Stundenzählung [kW] — beide nur für Kennzahlen, nie für die Reihe.
-    /// <c>null</c> je Größe = Einstellung, sonst Vorgabe (θ_Anzeige: Parameter <c>Zapfprofil.Anzeigetemperatur</c>).
+    /// <c>null</c> je Größe = die Einstellung, sonst die Vorgabe des Parametersatzes
+    /// (<c>Zapfprofil.Anzeigetemperatur</c> bzw. <c>Zapfprofil.Stundenschwelle</c>).
     /// </summary>
     internal sealed record ZapfAnzeige(double? AnzeigetemperaturC, double? SchwelleKw);
 

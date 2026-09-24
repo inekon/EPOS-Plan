@@ -136,7 +136,9 @@ namespace WindowsFormsApplication1
     /// und die Vorgabe der Wohnfläche je WE für die Zonenfläche entscheiden die Rechnung nicht —
     /// fehlen sie, entfällt ihre Prüfung bzw. die Fläche, und der Hinweis
     /// <see cref="ZapfHinweis.PARAMETER_FEHLT"/> nennt den Schlüssel; einen Rückfallwert gibt es
-    /// nicht (N7).
+    /// nicht (N7). Das Hinweisverhältnis der Zirkulation, die Anzeigetemperatur und die
+    /// Stundenschwelle (Stufe Z4) sind Vorgaben der Anzeige und der Warnlogik: Fehlen sie, entfällt
+    /// der Hinweis bzw. die Literanzeige oder die Zählung — ohne eigenen Hinweis.
     /// </summary>
     internal static class ZapfParameter
     {
@@ -191,6 +193,18 @@ namespace WindowsFormsApplication1
         /// Parameter kein Hinweis.
         /// </summary>
         internal const string ZIRKULATION_HINWEISVERHAELTNIS = "Zapfprofil.Zirkulation.Hinweisverhaeltnis";
+
+        /// <summary>
+        /// Vorgabe der Temperatur der Literanzeige θ_Anzeige [°C] (4.0, 4.6; INEKON-Setzung, freier
+        /// Paketteil) — gilt, wenn weder der Dialog noch die Einstellung eine nennt; nur für Kennzahlen.
+        /// </summary>
+        internal const string ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+
+        /// <summary>
+        /// Vorgabe der Schwelle der Stundenzählung [kW] (4.6; INEKON-Setzung, freier Paketteil) — gilt,
+        /// wenn weder der Dialog noch die Einstellung eine nennt.
+        /// </summary>
+        internal const string STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
     }
 
     /// <summary>

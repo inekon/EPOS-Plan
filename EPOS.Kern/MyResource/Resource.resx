@@ -28594,4 +28594,16 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Zirkulation groß gegenüber der Zapfung</value>
   </data>
+  <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>Die Schwelle der Stundenzählung ({0} kW) ist negativ oder keine endliche Zahl — die Stunden über der Schwelle werden nicht gezählt.</value>
+  </data>
+  <data name="ZPG_WARN_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
+    <value>Anzeigetemperatur zu niedrig</value>
+  </data>
+  <data name="ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
+    <value>Stundenschwelle ungültig</value>
+  </data>
 </root>

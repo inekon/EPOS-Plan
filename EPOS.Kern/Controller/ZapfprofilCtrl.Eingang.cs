@@ -63,9 +63,14 @@ namespace WindowsFormsApplication1
             katalog ??= Katalog();
 
             IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog);
+            // Die Anzeige (4.0, 4.6): Laufangabe des Dialogs, sonst die Einstellung, sonst die Vorgabe des
+            // Parametersatzes; eine ungültige Einstellung nennt ein Hinweis, dann gilt die Vorgabe. Ob der
+            // Wert taugt (θ_Anzeige über θ̄_KW, Schwelle nicht negativ), prüft der Rechenweg.
             var vorhinweise = new List<ZapfHinweis>();
-            double? anzeigeC = stand.Anzeige?.AnzeigetemperaturC ?? EinstellungZahl(EINSTELLUNG_ANZEIGETEMPERATUR, vorhinweise);
-            double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise);
+            double? anzeigeC = stand.Anzeige?.AnzeigetemperaturC ?? EinstellungZahl(EINSTELLUNG_ANZEIGETEMPERATUR, vorhinweise)
+                               ?? Vorgabe(ps, ZapfParameter.ANZEIGETEMPERATUR);
+            double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise)
+                                 ?? Vorgabe(ps, ZapfParameter.STUNDENSCHWELLE);
 
             return new Zapfprofileingang
             {
@@ -86,12 +91,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Einstellung der Temperatur der Literanzeige θ_Anzeige [°C] (4.0: „Einstellung,
-        /// INEKON-Setzung", N9 (h)) — nur für die Kennzahlen, nie für die Reihe. Ohne Einstellung
-        /// und ohne Laufangabe des Dialogs (<see cref="ZapfprofilStand.Anzeige"/>) keine Literanzeige.
+        /// INEKON-Setzung", N9 (h)) — nur für die Kennzahlen, nie für die Reihe. Es gilt die
+        /// Laufangabe des Dialogs (<see cref="ZapfprofilStand.Anzeige"/>), sonst diese Einstellung,
+        /// sonst der Parameter <see cref="ZapfParameter.ANZEIGETEMPERATUR"/> (gleicher Schlüssel);
+        /// ohne alle drei keine Literanzeige.
         /// </summary>
         internal const string EINSTELLUNG_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
 
-        /// <summary>Die Einstellung der Schwelle der Stundenzählung [kW] (4.6, N9 (h)); ohne sie keine Zählung.</summary>
+        /// <summary>
+        /// Die Einstellung der Schwelle der Stundenzählung [kW] (4.6, N9 (h)): nach der Laufangabe, vor
+        /// dem Parameter <see cref="ZapfParameter.STUNDENSCHWELLE"/>; ohne alle drei keine Zählung.
+        /// </summary>
         internal const string EINSTELLUNG_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
 
         /// <summary>Kennung des Hinweises: Eine Einstellung der Anzeige ist keine gültige Zahl — sie gilt nicht.</summary>
@@ -114,6 +124,10 @@ namespace WindowsFormsApplication1
                 ZapfSatz.Neu("HINWEIS_EINSTELLUNG_UNGUELTIG", schluessel, text.Trim())));
             return null;
         }
+
+        /// <summary>Die Vorgabe eines Parameters der Anzeige, wenn der Satz ihn trägt; sonst <c>null</c> (keine Anzeige, kein Hinweis).</summary>
+        private static double? Vorgabe(Parametersatz ps, string schluessel)
+            => ps != null && ps.Enthaelt(schluessel) ? ps.Wert(schluessel) : (double?)null;
 
         /// <summary>Die Nutzungsarten der Zonen, je Id einmal.</summary>
         private static IEnumerable<int> NutzungsartenDerZonen(IReadOnlyList<ZonenStand> zonen)

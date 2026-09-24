@@ -83808,6 +83808,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der Zone „{0}“ ({1:0.###} kWh je Einheit und Tag) liegt außerhalb der Bandbreite des Niveaus ({2:0.###} … {3:0.###}). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE {
@@ -83885,6 +83894,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schwelle der Stundenzählung ({0} kW) ist negativ oder keine endliche Zahl — die Stunden über der Schwelle werden nicht gezählt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -84690,6 +84708,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeigetemperatur zu niedrig ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ANZEIGETEMPERATUR_UNTER_KALTWASSER {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ANZEIGETEMPERATUR_UNTER_KALTWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf außerhalb der Bandbreite ähnelt.
         /// </summary>
         public static string ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE {
@@ -84767,6 +84794,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_STOCHASTIK_ENERGIEPROBE {
             get {
                 return ResourceManager.GetString("ZPG_WARN_STOCHASTIK_ENERGIEPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenschwelle ungültig ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_STUNDENSCHWELLE_UNGUELTIG", resourceCulture);
             }
         }
         
