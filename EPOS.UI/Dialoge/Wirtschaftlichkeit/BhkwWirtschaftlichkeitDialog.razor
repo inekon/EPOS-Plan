@@ -390,6 +390,23 @@
                 </KindInhalt>
             </Formularraster>
 
+            @* ETAPPE E18 (Konzept § 6.3 Nr. 16): der Rueckweg zur Unternehmensart - der
+               im Strompreis erfasste Stromsteueranteil, NUR ANZEIGE; gepflegt wird er
+               in "Strompreis Details" des Energietraegers. *@
+            <div class="epos-stanteil">
+                @foreach (StromsteueranteilZeile z in StAnteilZeilen(_vorgaben.Unternehmensart))
+                {
+                    @if (z.Zustand is KohaerenzZustand zustand)
+                    {
+                        <Kohaerenzzeile Text="@z.Text" Zustand="@zustand" />
+                    }
+                    else
+                    {
+                        <Herleitungszeile Text="@z.Text" />
+                    }
+                }
+            </div>
+
             <Herleitungszeile Text="@_t.SModusHerleitung" />
 
             @* Kein Funktionsverlust durch K8 = c: Der Knopf der Wirtschaftlichkeitsseite,
@@ -682,6 +699,21 @@
                                            Wirkungen="@UnternehmensartWirkungen()" />
                         </div>
 
+                        @* ETAPPE E18: derselbe Rueckweg wie in Gruppe 4, zur Wahl der Ueberlagerung. *@
+                        <div class="epos-stanteil epos-ueb-stanteil">
+                            @foreach (StromsteueranteilZeile z in StAnteilZeilen(_uebP.Unternehmensart))
+                            {
+                                @if (z.Zustand is KohaerenzZustand zustand)
+                                {
+                                    <Kohaerenzzeile Text="@z.Text" Zustand="@zustand" />
+                                }
+                                else
+                                {
+                                    <Herleitungszeile Text="@z.Text" />
+                                }
+                            }
+                        </div>
+
                         <Formularraster>
                             <KindInhalt>
                             <Schalter Bezeichnung="@_t.SHocheffizienz"
@@ -848,6 +880,21 @@
     /// </summary>
     [Parameter] public IReadOnlyList<string> EinspeisungKwkSzenarioHinweise { get; set; }
         = Array.Empty<string>();
+
+    /// <summary>
+    /// ETAPPE E18 (Konzept § 6.3 Nr. 16) — der im Strompreis erfasste Stromsteueranteil
+    /// (<c>StrompreisZerlegungCtrl.StromsteuerErfasst</c>, gelesen von der Huelle).
+    /// <c>null</c> = nicht mitgegeben; dann zeigt der Dialog keine Zeile.
+    /// </summary>
+    [Parameter] public StromsteueranteilStand? Stromsteueranteil { get; set; }
+
+    /// <summary>Die Anzeigezeilen des erfassten Stromsteueranteils zur gewählten
+    /// Unternehmensart; Katalogjahr = Bilanzjahr, sonst die Bilanzkonvention (wie der
+    /// Trägerdialog, <c>EnergietraegerHuelle.KatalogjahrErmitteln</c>).</summary>
+    private IReadOnlyList<StromsteueranteilZeile> StAnteilZeilen(string? unternehmensart)
+        => StromsteueranteilAnzeige.Zeilen(Stromsteueranteil, unternehmensart,
+               Parameter.BilanzJahr > 0 ? Parameter.BilanzJahr : BilanzKonvention.BILANZJAHR_RUECKFALL,
+               Katalog, _t, BhwTexte.Kultur);
 
     /// <summary>Der Dialog ist zu Ende. Geschlossen wird das Fenster von der Huelle,
     /// nicht von der Komponente.</summary>

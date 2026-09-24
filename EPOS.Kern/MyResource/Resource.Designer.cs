@@ -4852,6 +4852,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das ist weder der Regelsatz ({0} ct/kWh) noch der reduzierte Satz ({1} ct/kWh) des Jahres {2}. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_AKTIV {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfasster Stromsteueranteil im Strompreis „{0}&quot;: {1} ct/kWh ({2}). ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_ERFASST {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_ERFASST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeschaltet ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_INAKTIV {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Strompreis „{0}&quot; ist kein Stromsteueranteil erfasst. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_KEINER {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist kein Strom-Energieträger zugeordnet — es ist kein Stromsteueranteil erfasst. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_KEIN_TRAEGER {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_KEIN_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Stromsteueranteil ließ sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Passt zur Unternehmensart: Sie legt den {0} nahe. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_PASST {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_PASST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegt wird der Anteil unter „Strompreis Details&quot; des Energieträgers; hier steht er nur zur Ansicht. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_PFLEGE {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_PFLEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das ist der reduzierte Satz {0} ({1} ct/kWh, § 9b StromStG). ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_REDUZIERT {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_REDUZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das ist der Regelsatz {0} ({1} ct/kWh, § 3 StromStG). ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_REGEL {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die reduzierten Satz ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_SATZ_REDUZIERT {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_SATZ_REDUZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelsatz ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_SATZ_REGEL {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_SATZ_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Unternehmensart legt den {0} nahe — gepflegt wird der Anteil unter „Strompreis Details&quot; des Energieträgers; hier steht er nur zur Ansicht. ähnelt.
+        /// </summary>
+        public static string BHW_S_STANTEIL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("BHW_S_STANTEIL_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unternehmensart: ähnelt.
         /// </summary>
         public static string BHW_S_UNTERNEHMENSART {
